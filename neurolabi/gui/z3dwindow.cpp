@@ -4695,15 +4695,18 @@ void Z3DWindow::deleteSelectedSplitSeed()
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
-//    m_doc->executeDeleteSwcNodeCommand();
-    if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
-      emit croppingSwcInRoi();
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
+        doc->showingCoarseOnly()) {
+      //    m_doc->executeDeleteSwcNodeCommand();
+      if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+        emit croppingSwcInRoi();
+      }
+    } else {
+      QMessageBox::warning(
+            this, "Action Failed", "Cropping only works in coarse body view.");
     }
-  } else if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-             m_doc->getTag() == neutube::Document::FLYEM_SKELETON) {
-    QMessageBox::warning(
-          this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
     selectSwcTreeNodeInRoi(false);
     m_doc->executeDeleteSwcNodeCommand();

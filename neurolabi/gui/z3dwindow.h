@@ -147,7 +147,7 @@ public: //Components
   inline ZStackDoc* getDocument() const { return m_doc.get(); }
   template <typename T>
   T* getDocument() const {
-    return dynamic_cast<T*>(m_doc.get());
+    return qobject_cast<T*>(m_doc.get());
   }
 
   inline ZSharedPointer<ZStackDoc> getSharedDocument() const {
