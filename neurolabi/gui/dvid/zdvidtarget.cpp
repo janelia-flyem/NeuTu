@@ -1204,6 +1204,16 @@ ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
   return target;
 }
 
+ZDvidTarget ZDvidTarget::getTileTarget() const
+{
+  ZDvidNode node = getTileSource();
+
+  ZDvidTarget target(node);
+  target.setMultiscale2dName(getMultiscale2dName());
+
+  return target;
+}
+
 ZDvidNode ZDvidTarget::getTileSource() const
 {
   return getSource(m_multiscale2dNameKey);
