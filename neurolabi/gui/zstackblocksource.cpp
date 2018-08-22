@@ -96,10 +96,12 @@ void ZStackBlockSource::cacheStack(int i, int j, int k, int zoom, ZStack *stack)
   if (stack) {
     if (zoom >= int(m_cache.size())) {
       m_cache.resize(zoom + 1);
+    }
+    auto &grid = m_cache[zoom];
+    if (!grid) {
       m_cache[zoom] = std::make_unique<ZStackBlockGrid>();
       m_cache[zoom]->configure(m_gridConfig, zoom);
     }
-    auto &grid = m_cache[zoom];
     grid->consumeStack(ZIntPoint(i, j, k), stack);
   }
 }
@@ -112,7 +114,11 @@ bool ZStackBlockSource::isCached(int i, int j, int k, int zoom)
 
   std::unique_ptr<ZStackBlockGrid> &grid = m_cache[zoom];
 
-  return (grid->getStack(ZIntPoint(i, j, k)) != nullptr);
+  if (grid) {
+    return (grid->getStack(ZIntPoint(i, j, k)) != nullptr);
+  }
+
+  return false;
 }
 
 bool ZStackBlockSource::isAllCached(int i, int j, int k, int n, int zoom)
