@@ -5,7 +5,6 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
-#include "neu3window.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -38,7 +37,8 @@ namespace {
 
   static const QString KEY_TASKTYPE = "task type";
   static const QString VALUE_TASKTYPE = "body cleave";
-  static const QString KEY_BODYID = "body ID";
+  static const QString KEY_BODY_ID = "body ID";
+  static const QString KEY_BODY_POINT = "body point";
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
@@ -94,7 +94,7 @@ namespace {
   // changes and restore the changed values when the tasks are done.
 
   static bool applyOverallSettingsNeeded = true;
-  static bool zoomToLoadedBodyEnabled;
+
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
   static bool showingSynapse;
@@ -106,8 +106,6 @@ namespace {
   {
     if (applyOverallSettingsNeeded) {
       applyOverallSettingsNeeded = false;
-
-      zoomToLoadedBodyEnabled = Neu3Window::zoomToLoadedBodyEnabled();
 
       garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
       bodyDoc->enableGarbageLifetimeLimit(false);
@@ -139,8 +137,6 @@ namespace {
   {
     if (!applyOverallSettingsNeeded) {
       applyOverallSettingsNeeded = true;
-
-      Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
@@ -217,10 +213,13 @@ private:
 class TaskBodyCleave::CleaveCommand : public QUndoCommand
 {
 public:
-  CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex) :
+  CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
+                const QJsonObject &cleaveReply) :
     m_task(task),
     m_meshIdToCleaveResultIndexBefore(task->m_meshIdToCleaveResultIndex),
-    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex)
+    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex),
+    m_cleaveReplyBefore(task->m_cleaveReply),
+    m_cleaveReplyAfter(cleaveReply)
   {
     setText("cleave");
   }
@@ -228,6 +227,7 @@ public:
   virtual void undo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
+    m_task->m_cleaveReply = m_cleaveReplyBefore;
     m_task->updateColors();
     m_task->updateVisibility();
   }
@@ -235,6 +235,7 @@ public:
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
+    m_task->m_cleaveReply = m_cleaveReplyAfter;
     m_task->updateColors();
     m_task->updateVisibility();
   }
@@ -243,6 +244,8 @@ private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
+  QJsonObject m_cleaveReplyBefore;
+  QJsonObject m_cleaveReplyAfter;
 };
 
 //
@@ -254,6 +257,25 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   applyOverallSettings(bodyDoc);
 
   loadJson(json);
+
+  // Backwards compatibility: If this task was started with an earlier version of
+  // the cleaving tool, the JSON may have saved state that includes a "level 1" mesh,
+  // for the overall body (as opposed go the "level 0" meshes for the super voxels).
+  // This tool no longer has the "history" slider that could create this mesh, and
+  // any such meshes should be filtered out to avoid problems.
+
+  auto clean = [](QSet<uint64_t>& s) {
+    QList<uint64_t> r;
+    foreach (uint64_t id, s) {
+      if (ZFlyEmBodyManager::encodedLevel(id) > 0) r.append(id);
+    }
+    foreach (uint64_t id, r) {
+      s.erase(s.find(id));
+    }
+  };
+  clean(m_visibleBodies);
+  clean(m_selectedBodies);
+
   buildTaskWidget();
 
   m_networkManager = new QNetworkAccessManager(m_widget);
@@ -335,27 +357,9 @@ uint64_t TaskBodyCleave::getBodyId() const
   return m_bodyId;
 }
 
-void TaskBodyCleave::updateLevel(int level)
-{
-  bool showingCleaving = m_showCleavingCheckBox->isChecked();
-  enableCleavingUI(showingCleaving && (level == 0));
-
-  // See the comment in applyPerTaskSettings().
-
-  Neu3Window::enableZoomToLoadedBody(false);
-
-  QSet<uint64_t> visible({ ZFlyEmBodyManager::encode(m_bodyId, level) });
-  updateBodies(visible, QSet<uint64_t>());
-}
-
 void TaskBodyCleave::onShowCleavingChanged(int state)
 {
   bool show = (state != Qt::Unchecked);
-  if (show) {
-    // Cleaving works on super voxels, which are what are displayed at level 0.
-    m_levelSlider->setValue(0);
-  }
-
   enableCleavingUI(show);
   applyColorMode(show);
 }
@@ -552,7 +556,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
       std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
 
-      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, replyJson));
 
       if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
         status = CLEAVING_STATUS_SERVER_INCOMPLETE;
@@ -624,7 +628,15 @@ void TaskBodyCleave::onChooseCleaveMethod()
 
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
-  taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
+  if (m_bodyPt.isApproxOrigin()) {
+    taskJson[KEY_BODY_ID] = static_cast<double>(m_bodyId);
+  } else {
+    QJsonArray array;
+    array.append(int(m_bodyPt.x()));
+    array.append(int(m_bodyPt.y()));
+    array.append(int(m_bodyPt.z()));
+    taskJson[KEY_BODY_POINT] = array;
+  }
   taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
   taskJson[KEY_MAXLEVEL] = m_maxLevel;
 
@@ -725,11 +737,7 @@ void TaskBodyCleave::onCompleted()
   }
 
   std::map<std::size_t, std::vector<uint64_t>> cleaveIndexToMeshIds;
-  std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
-  for (auto it : m_meshIdToCleaveIndex) {
-    meshIdToCleaveIndex[it.first] = it.second;
-  }
-  for (auto itMesh : meshIdToCleaveIndex) {
+  for (auto itMesh : m_meshIdToCleaveResultIndex) {
     std::size_t cleaveIndex = itMesh.second;
     auto itCleave = cleaveIndexToMeshIds.find(cleaveIndex);
     if (itCleave == cleaveIndexToMeshIds.end()) {
@@ -741,8 +749,7 @@ void TaskBodyCleave::onCompleted()
 
   // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
 
-  if (cleaveIndexToMeshIds.size() < 2) {
-    // Fewer than two cleave indices means no actual cleaving, so omit the output.
+  if (cleaveIndexToMeshIds.empty()) {
     return;
   }
 
@@ -761,6 +768,11 @@ void TaskBodyCleave::onCompleted()
     json.append(jsonForCleaveIndex);
   }
 
+  // For debugging, append verbatin the cleave server response that produced the arrays of super voxels.
+  // It can be distinguished as the only item in the output array that is a JSON object and not an array.
+
+  json.append(m_cleaveReply);
+
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key(std::to_string(m_bodyId));
@@ -775,18 +787,6 @@ std::size_t TaskBodyCleave::chosenCleaveIndex() const
 void TaskBodyCleave::buildTaskWidget()
 {
   m_widget = new QWidget();
-
-  QLabel *sliderLabel = new QLabel("History level", m_widget);
-  m_levelSlider = new QSlider(Qt::Horizontal, m_widget);
-  m_levelSlider->setMaximum(m_maxLevel);
-  m_levelSlider->setTickInterval(1);
-  m_levelSlider->setTickPosition(QSlider::TicksBothSides);
-
-  connect(m_levelSlider, SIGNAL(valueChanged(int)), this, SLOT(updateLevel(int)));
-
-  QHBoxLayout *historyLayout = new QHBoxLayout;
-  historyLayout->addWidget(sliderLabel);
-  historyLayout->addWidget(m_levelSlider);
 
   m_showCleavingCheckBox = new QCheckBox("Show cleaving", m_widget);
   connect(m_showCleavingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCleavingChanged(int)));
@@ -833,7 +833,6 @@ void TaskBodyCleave::buildTaskWidget()
   cleaveLayout2->addWidget(m_cleavingStatusLabel);
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addLayout(historyLayout);
   layout->addLayout(cleaveLayout1);
   layout->addLayout(cleaveLayout2);
 
@@ -904,7 +903,7 @@ void TaskBodyCleave::buildTaskWidget()
     m_actionToComboBoxIndex[action] = i;
   }
 
-  m_levelSlider->setValue(m_maxLevel);
+  m_showCleavingCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::updateColors()
@@ -956,16 +955,6 @@ void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
 
 void TaskBodyCleave::applyPerTaskSettings()
 {
-  // When the overall body is first loaded, the user probably wants the view to zoom to it.
-  // But when the user is going back and forth between history levels for the body, the
-  // user may have set the view to an area of interest, and it would be annoying to have
-  // zooming destroy that view.  So try a heuristic solution.  When the a task starts (or
-  // resumes) at the history level of the overall body, enable zooming.  And when the user
-  // changes the level, disable zooming (in the updateLevel() function).
-
-  bool doZoom = (m_levelSlider->value() == m_maxLevel);
-  Neu3Window::enableZoomToLoadedBody(doZoom);
-
   // The SetCleaveIndicesCommand and CleaveCommand instances on the undo stack contain information
   // particular to the task that was current when the commands were issued.  So the undo stack will
   // not make sense when switching to another task, and the easiest solution is to clear it.
@@ -1021,11 +1010,6 @@ void TaskBodyCleave::cleave()
     cleaveIndexToMeshIds[cleaveIndex].push_back(id);
   }
 
-  if (cleavedWithoutServer(cleaveIndexToMeshIds)) {
-    m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
-    return;
-  }
-
   QJsonObject requestJsonSeeds;
 
   for (auto it : cleaveIndexToMeshIds) {
@@ -1054,7 +1038,7 @@ void TaskBodyCleave::cleave()
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5552/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1068,42 +1052,6 @@ void TaskBodyCleave::cleave()
 
   m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);
-}
-
-bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>&
-                                          cleaveIndexToMeshIds)
-{
-  std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
-
-  if (cleaveIndexToMeshIds.size() == 0) {
-    // If no cleave indices are in use, just clear the map so all meshes return to the
-    // default color.
-
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
-    return true;
-  } else if (cleaveIndexToMeshIds.size() == 1) {
-    // If one cleave index is in use, just use it for all the meshes.
-
-    std::size_t cleaveIndex = cleaveIndexToMeshIds.begin()->first;
-
-    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-      ZMesh *mesh = *it;
-      meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
-    }
-
-    std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
-
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
-
-    showHiddenChangeWarning(hiddenChangedIndices);
-
-    return true;
-  }
-
-  // Other situations do require the cleave server.
-
-  return false;
 }
 
 void TaskBodyCleave::updateVisibility()
@@ -1290,14 +1238,89 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
   });
 }
 
-bool TaskBodyCleave::loadSpecific(QJsonObject json)
-{
-  if (!json.contains(KEY_BODYID)) {
+namespace {
+
+  bool pointFromJSON(const QJsonValue &value, ZPoint &result)
+  {
+    if (value.isArray()) {
+      QJsonArray array = value.toArray();
+      if (array.size() == 3) {
+        result = ZPoint(array[0].toDouble(), array[1].toDouble(), array[2].toDouble());
+        return true;
+      }
+    }
     return false;
   }
 
-  m_bodyId = json[KEY_BODYID].toDouble();
+  QString toString(const QJsonValue &value)
+  {
+    if (value.isDouble()) {
+      return QString::number(value.toDouble());
+    } else if (value.isString()) {
+      return value.toString();
+    } else {
+      QJsonDocument doc;
+      if (value.isArray()) {
+        doc = QJsonDocument(value.toArray());
+      } else if (value.isObject()) {
+        doc = QJsonDocument(value.toObject());
+      }
+      return QString(doc.toJson(QJsonDocument::Compact));
+    }
+    return QString("\'\'");
+  }
+
+}
+
+bool TaskBodyCleave::loadSpecific(QJsonObject json)
+{
+  if (json.contains(KEY_BODY_ID)) {
+
+    // The task may explicitly mention the ID of the body to be cleaved.
+
+    m_bodyId = json[KEY_BODY_ID].toDouble();
+
+    if (json.contains(KEY_BODY_POINT)) {
+      QString title = "Cleaving Task Specification Conflict";
+      QString text = "The cleaving task for body ID " + QString::number(m_bodyId) +
+          " also contains a 3D point, which is being ignored.";
+      displayWarning(title, text);
+    }
+  }
+  else if (json.contains(KEY_BODY_POINT)) {
+
+    // Or the task may mention a 3D point (e.g., from a "todo" mark), indicating that the
+    // body containing that point is what should be cleaved.
+
+    m_bodyId = 0;
+    if (pointFromJSON(json[KEY_BODY_POINT], m_bodyPt)) {
+      ZDvidReader reader;
+      reader.setVerbose(false);
+      if (reader.open(m_bodyDoc->getDvidTarget())) {
+        int x = m_bodyPt.x();
+        int y = m_bodyPt.y();
+        int z = m_bodyPt.z();
+        m_bodyId = reader.readBodyIdAt(x, y, z);
+      }
+      if (m_bodyId == 0) {
+        QString title = "Cleaving Task Specification Error";
+        QString text = KEY_BODY_POINT + " does not correspond to a valid body ID.";
+        displayWarning(title, text);
+        return false;
+      }
+    } else {
+      QString title = "Cleaving Task Specification Error";
+      QString text = "Unparsable " + KEY_BODY_POINT + ": " + toString(json[KEY_BODY_POINT]);
+      displayWarning(title, text);
+      return false;
+    }
+  } else {
+    return false;
+  }
+
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
+
+  m_visibleBodies.insert(ZFlyEmBodyManager::encode(m_bodyId, 0));
 
   QString assignedUser = json[KEY_ASSIGNED_USER].toString();
   if (!assignedUser.isEmpty()) {
