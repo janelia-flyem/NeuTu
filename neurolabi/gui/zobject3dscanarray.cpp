@@ -224,3 +224,24 @@ void ZObject3dScanArray::translate(int dx, int dy, int dz)
     obj->translate(dx, dy, dz);
   }
 }
+
+void ZObject3dScanArray::write(std::ostream &stream) const
+{
+  int count = size();
+  stream.write((const char*)(&count), sizeof(int));
+  for (const ZObject3dScan *obj : *this) {
+    obj->write(stream);
+  }
+}
+
+void ZObject3dScanArray::read(std::istream &stream)
+{
+  int count = 0;
+  stream.read((char*)(&count), sizeof(int));
+  clearAll();
+  resize(count);
+  for (auto &obj : *this) {
+    obj = new ZObject3dScan;
+    obj->read(stream);
+  }
+}

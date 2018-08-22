@@ -775,7 +775,7 @@ void ZStackWatershedContainer::run()
       exportMask(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       exportSource(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 

@@ -96,10 +96,13 @@ ZBodySplitCommand::parseSignalPath(
         if (blockCount < 50000000) {
           std::cout << "Block count: " << blockCount << std::endl;
 
+          /*
           ZDvidSparseStack *dvidStack =
               reader.readDvidSparseStack(m_bodyId, m_labelType);
           spStack = dvidStack->getSparseStack(range);
           gc.registerObject(dvidStack);
+          */
+          spStack = reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
         } else {
           LINFO() << m_bodyId << "ignored.";
         }
@@ -479,7 +482,7 @@ void ZBodySplitCommand::processResult(
       ZStackWriter writer;
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
-      ZStack *labelStack = result.toLabelField();
+      ZStack *labelStack = result.toColorField();
 
       writer.write(output, labelStack);
       delete labelStack;
