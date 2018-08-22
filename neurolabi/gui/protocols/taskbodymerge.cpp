@@ -407,7 +407,12 @@ void TaskBodyMerge::onCycleAnswer()
 
 void TaskBodyMerge::onTriggerShowHiRes()
 {
-  m_showHiResCheckBox->setChecked(true);
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  if (m_showHiResCheckBox->isEnabled()) {
+    m_showHiResCheckBox->setChecked(true);
+  }
 }
 
 void TaskBodyMerge::onButtonToggled()
@@ -442,7 +447,13 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
     visible.insert(m_bodyId1);
     visible.insert(m_bodyId2);
   }
-  updateBodies(visible, QSet<uint64_t>());
+
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+    m_showHybridCheckBox->setEnabled(!state);
+
+    updateBodies(visible, QSet<uint64_t>());
 }
 
 void TaskBodyMerge::onShowHybridStateChanged(int state)
@@ -1123,6 +1134,14 @@ void TaskBodyMerge::configureShowHiRes()
     return;
   }
 
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  if (s_showHybridMeshes) {
+    m_showHiResCheckBox->setEnabled(false);
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
 
   // Disable the controls for switching to high resolution until we verify that the
@@ -1245,11 +1264,20 @@ void TaskBodyMerge::showHybridMeshes(bool show)
 
   allowNextPrev(false);
 
+  // And evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  m_showHiResCheckBox->setEnabled(false);
+
   m_hybridLoadedCount = 0;
   connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
     if (++m_hybridLoadedCount == 2) {
       disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, 0);
       allowNextPrev(true);
+
+      if (!show) {
+        configureShowHiRes();
+      }
     }
   });
 
