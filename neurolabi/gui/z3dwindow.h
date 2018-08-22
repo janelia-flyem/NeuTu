@@ -206,6 +206,8 @@ public: //external signal call
   void emitAddTodoMarker(const ZIntPoint &pt, bool checked, uint64_t bodyId);
   void emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId);
   void emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId);
+  void emitAddToSupervoxelSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void emitAddToSupervoxelSplitMarker(const ZIntPoint &pt, uint64_t bodyId);
 
 signals:
   void closed();
@@ -221,6 +223,7 @@ signals:
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void addingToSupervoxelSplitMarker(int x, int y, int z, uint64_t bodyId);
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
   void showingPuncta(bool);
@@ -363,6 +366,7 @@ public slots:
   void addTodoMarker();
   void addToMergeMarker();
   void addToSplitMarker();
+  void addToSupervoxelSplitMarker();
   void setTodoItemToSplit();
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
