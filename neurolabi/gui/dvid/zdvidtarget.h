@@ -333,6 +333,7 @@ public:
   ZDvidNode getGrayScaleSource() const;
   ZDvidNode getTileSource() const;
   ZDvidTarget getGrayScaleTarget() const;
+  ZDvidTarget getTileTarget() const;
 
   static bool Test();
 
