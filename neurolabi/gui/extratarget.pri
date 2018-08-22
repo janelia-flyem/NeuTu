@@ -2,7 +2,7 @@
 #Build neurolabi
 NEUROLABI_DIR = $${PWD}/..
 CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
+    equals(SANITIZE_BUILD, "address") {
       TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_sanitize.a
     } else {
       TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
@@ -19,7 +19,7 @@ message("Config: " $${CONDA_CONFIG})
 
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
+    equals(SANITIZE_BUILD, "address") {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
     } else {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'"
@@ -33,6 +33,34 @@ neurolabi.depends = FORCE
 QMAKE_EXTRA_TARGETS += neurolabi
 
 message($${neurolabi.commands})
+
+macx {
+  BIN_FOLDER = $${OUT_PWD}/$${TARGET}.app/Contents/MacOS
+} else {
+  BIN_FOLDER = $${OUT_PWD}
+}
+
+CONFIG_SOURCE = config.xml
+CONFIG(neu3) | CONFIG(flyem) {
+  CONFIG_SOURCE = config_flyem.xml
+} else {
+  CONFIG(biocytin) {
+    CONFIG_SOURCE = biocytin_config.xml
+  }
+}
+
+xmlconfig.target = $${BIN_FOLDER}/config.xml
+xmlconfig.depends = $${PWD}/$${CONFIG_SOURCE}
+xmlconfig.commands = cp $${PWD}/$${CONFIG_SOURCE} $$xmlconfig.target
+
+jsonconfig.target = jsonconfig
+jsonconfig.depends = FORCE
+jsonconfig.commands = cp -r $${PWD}/../json $${BIN_FOLDER}
+
+app_config.target = app_config
+app_config.depends = $$xmlconfig.target $$jsonconfig.target
+
+QMAKE_EXTRA_TARGETS += xmlconfig jsonconfig app_config
 
 #May not work in parallel compiling
 #PRE_TARGETDEPS = $${TargetFile}

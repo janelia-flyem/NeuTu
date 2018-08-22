@@ -413,7 +413,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
       ++zoom;
     }
 
-    int scale = misc::GetZoomScale(zoom);
+    int scale = zgeom::GetZoomScale(zoom);
     int remain = z % scale;
     stack = getDvidReader().readGrayScaleLowtis(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),

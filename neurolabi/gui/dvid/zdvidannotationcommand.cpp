@@ -1,5 +1,5 @@
 #include "zdvidannotationcommand.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackdoccommand.h"
 #include "neutubeconfig.h"

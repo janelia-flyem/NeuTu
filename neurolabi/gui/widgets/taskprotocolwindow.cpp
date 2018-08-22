@@ -9,12 +9,12 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QsLog.h>
 #include <QShortcut>
 
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
@@ -667,7 +667,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
 
         // make the "completed" checkbox match the current task, but prevent the signal from
-        // being triggere, so that task does not do somehing like save its results an extra time
+        // being triggered, so that task does not do somehing like save its results an extra time
         BlockSignals blockOnCompleted(ui->completedCheckBox);
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
 
@@ -732,6 +732,30 @@ void TaskProtocolWindow::updateBodyWindow() {
         const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
+#ifdef _DEBUG_
+        std::cout << "Visible bodies:";
+        foreach (uint64_t body, visible) {
+          std::cout << body << ", ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Selected bodies:";
+        foreach (uint64_t body, selected) {
+          std::cout << body << ", ";
+        }
+        std::cout << std::endl;
+#endif
+
+#ifdef _DEBUG_2
+        m_body3dDoc->setMinDsLevel(5);
+        ZFlyEmBodyConfig config(1);
+        config.setDsLevel(5);
+        config.setLocalDsLevel(0);
+        config.setRange(ZIntCuboid(ZIntPoint(2775, 6048, 2742),
+                                   ZIntPoint(3287, 6560, 3254)));
+        m_body3dDoc->addBodyConfig(config);
+#endif
+
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
             emit bodyAdded(bodyID);
@@ -767,7 +791,7 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     bool usingTars = false;
     const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
     foreach (uint64_t bodyID, visible) {
-        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
             m_bodyMeshesAddedExpected++;
             usingTars = true;
         }
@@ -775,7 +799,7 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
     const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
     foreach (uint64_t bodyID, selected) {
-        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
             m_bodyMeshesAddedExpected++;
             usingTars = true;
         }
@@ -817,6 +841,11 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
+  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
+           << "m_bodiesReused =" << m_bodiesReused;
     if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
@@ -1205,9 +1234,10 @@ void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
     enableButtonsAfterUpdating();
 }
 
-void TaskProtocolWindow::onBodyMeshLoaded()
+void TaskProtocolWindow::onBodyMeshLoaded(int numMeshes)
 {
-    m_bodyMeshLoadedReceived++;
+  m_bodyMeshLoadedReceived += numMeshes;
+//    m_bodyMeshLoadedReceived++;
     enableButtonsAfterUpdating();
 }
 

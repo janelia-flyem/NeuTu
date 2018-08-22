@@ -10,8 +10,8 @@
 class ZFlyEmBody3dDoc;
 class QAction;
 class QCheckBox;
-class QNetworkAccessManager;
 class QRadioButton;
+class QNetworkReply;
 
 class TaskBodyMerge : public TaskProtocolTask
 {
@@ -38,6 +38,7 @@ private slots:
   void onShowHiResStateChanged(int state);
   void zoomToMergePosition(bool justLoaded = false);
   void zoomOutToShowAll();
+  void updateHighResWidget(QNetworkReply *reply);
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -48,7 +49,6 @@ private:
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
 
-  QNetworkAccessManager *m_networkManager;
   size_t m_hiResCount;
 
   QTime m_usageTimer;
@@ -64,6 +64,7 @@ private:
   QRadioButton *m_mergeLaterButton;
   QRadioButton *m_irrelevantButton;
   QRadioButton *m_dontKnowButton;
+  QRadioButton *m_lastSavedButton;
   QCheckBox *m_showHiResCheckBox;
   QMenu *m_menu;
   QAction *m_showHiResAction;
@@ -81,7 +82,13 @@ private:
   void initAngleForMergePosition(bool justLoaded);
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
+  void showBirdsEyeView(bool show);
+  void showHybridMeshes();
+  void writeResult();
   void writeResult(const QString &result);
+  QString readResult();
+  void restoreResult(const QString &result);
+  void suggestWriting();
 };
 
 #endif // TASKBODYMERGE_H

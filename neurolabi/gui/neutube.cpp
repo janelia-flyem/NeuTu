@@ -81,7 +81,7 @@ std::string neutube::GetCurrentUserName()
 //    NeutubeConfig::SetUserName(qgetenv("USER").toStdString());
 //  }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "User name: " << NeutubeConfig::GetUserName() << std::endl;
 #endif
 

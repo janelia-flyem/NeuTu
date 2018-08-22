@@ -15,6 +15,7 @@ class ZStackObject;
 class ZSwcTree;
 class ZObject3dScan;
 class ZStackArray;
+class ZArray;
 
 /*!
  * \brief The class of creating a stack
@@ -92,6 +93,12 @@ public:
   static ZStack* MakeStrokeProjMask(
       const std::vector<ZStroke2d*> strokeList, int value);
   static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList, int z);
+
+  static ZStack* Compose(const std::vector<ZStack*> &stackArray);
+
+  static ZStack* MakeLabelBinaryStack(
+      const std::vector<ZArray*> &labelArray, uint64_t v);
+  static ZStack* MakeLabelColorStack(const std::vector<ZArray*> &labelArray);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

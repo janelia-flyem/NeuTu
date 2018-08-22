@@ -48,13 +48,13 @@ int getIsoDsIntvFor3DVolume(double dsRatio, bool powed);
 int getIsoDsIntvFor3DVolume(
     const ZIntCuboid &box, size_t maxVolume, bool powed);
 
-int GetZoomScale(int zoom);
 //int GetZoomLevel(int maxLevel, int width, int height, int zoom);
 
 double GetExpansionScale(size_t currentVol, size_t maxVol);
 
 size_t CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 size_t CountNeighbor(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+size_t CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 
 /*!
  * \brief A function for computing confidence
@@ -71,6 +71,7 @@ ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
 ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
+ZIntPoint GetFirstCorner(const ZArray *array);
 ZIntCuboid GetBoundBox(const ZArray *array);
 
 enum ESampleStackOption {

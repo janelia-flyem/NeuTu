@@ -32,8 +32,8 @@ class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
 class Z3DSwcFilter;
-class Z3DVolumeSource;
-class Z3DVolumeRaycaster;
+//class Z3DVolumeSource;
+//class Z3DVolumeRaycaster;
 class Z3DGraphFilter;
 class Z3DSurfaceFilter;
 class ZFlyEmTodoListFilter;
@@ -150,6 +150,10 @@ public: //Components
     return dynamic_cast<T*>(m_doc.get());
   }
 
+  inline ZSharedPointer<ZStackDoc> getSharedDocument() const {
+    return m_doc;
+  }
+
 public:
   void setMenuFactory(ZStackDocMenuFactory *factory);
 
@@ -234,6 +238,8 @@ signals:
   void cameraRotated();
   void messageGenerated(const ZWidgetMessage &msg);
 
+  void diagnosing();
+
 public slots:
   void resetCamera()
   { m_view->resetCamera(); }
@@ -261,6 +267,8 @@ public slots:
 
   void selectedObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
+  void selectedTodoChangedFrom3D(ZStackObject *p, bool append);
+  void selectedGraphChangedFrom3D(ZStackObject *p, bool append);
   void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
@@ -327,6 +335,7 @@ public slots:
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
   void viewDataExternally(bool on);
+  void viewDetail(bool on);
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -356,6 +365,7 @@ public slots:
   void addToSplitMarker();
   void setTodoItemToSplit();
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void addDoneMarker();
   void updateBody();
   void compareBody();
@@ -390,6 +400,7 @@ public slots:
 
   void markSwcSoma();
   void help();
+  void diagnose();
 
   void selectSwcTreeNodeInRoi(bool appending);
   void selectSwcTreeNodeTreeInRoi(bool appending);
@@ -400,6 +411,7 @@ public slots:
   void shootTodo(int x, int y);
   void locateWithRay(int x, int y);
   void browseWithRay(int x, int y);
+  void showDetail(int x, int y);
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
@@ -470,6 +482,9 @@ private:
 
   std::vector<ZPoint> shootMesh(const ZMesh *mesh, int x, int y);
 
+  void onSelectionChangedFrom3D(Z3DGeometryFilter *filter,
+      ZStackObject *p, ZStackObject::EType type, bool append);
+
 private:
   ZCuboid getRayBoundbox() const;
   ZLineSegment getRaySegment(int x, int y, std::string &source) const;
@@ -535,6 +550,7 @@ private:
   QAction *m_translateSwcNodeAction;
   QAction *m_changeSwcNodeSizeAction;
   QAction *m_helpAction;
+  QAction *m_diagnoseAction;
 
   QAction *m_refreshTraceMaskAction;
 
@@ -556,14 +572,7 @@ private:
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
 
-//  QAction *m_viewTodoAction = NULL;
-
-  /*
-  QMenu *m_punctaContextMenu;
-  QMenu *m_traceMenu;
-  QMenu *m_volumeContextMenu;
-  QMenu *m_swcContextMenu;
-*/
+  QActionGroup *m_interactActionGroup = nullptr;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 

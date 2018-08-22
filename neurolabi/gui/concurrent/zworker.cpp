@@ -2,7 +2,7 @@
 
 #include <QTimer>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "ztask.h"
 #include "ztaskqueue.h"
 
@@ -26,6 +26,7 @@ void ZWorker::quit()
 {
   addTask(NULL);
   m_quiting = true;
+  LDEBUG() << "Quit worker";
 }
 
 void ZWorker::process()
@@ -60,6 +61,11 @@ void ZWorker::processTask(ZTask *task)
   }
 }
 
+void ZWorker::scheduleTask(ZTask *task)
+{
+  emit schedulingTask(task);
+}
+
 void ZWorker::addTask(ZTask *task)
 {
   if (m_taskQueue != NULL) {
@@ -71,7 +77,7 @@ void ZWorker::addTask(ZTask *task)
 //      task->moveToThread(thread());
       if (task->getDelay() > 0) {
         QTimer::singleShot(task->getDelay(), this, [=]() {
-          processTask(task);
+          scheduleTask(task);
         });
       } else {
         emit schedulingTask(task);

@@ -1,8 +1,8 @@
 #include "z3dcamera.h"
 
-#include "QsLog.h"
 #include <cmath>
 
+#include "zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"

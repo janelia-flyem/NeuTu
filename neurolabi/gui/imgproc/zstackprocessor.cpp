@@ -9,7 +9,7 @@
 #include "tz_utilities.h"
 #include "tz_math.h"
 #if _QS_LOG_AVAILABLE_
-#  include "QsLog.h"
+#  include "zqslog.h"
 #endif
 #include "tz_stack.h"
 #include "tz_stack_math.h"

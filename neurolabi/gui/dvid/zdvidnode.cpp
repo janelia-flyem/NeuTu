@@ -5,7 +5,7 @@
 
 #if _QT_APPLICATION_
 #include <QtDebug>
-#include "QsLog.h"
+#include "zqslog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"

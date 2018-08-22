@@ -55,10 +55,12 @@
  * djo, 7/15
  *
  */
-FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
+FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FlyEmBodyInfoDialog)
 {
+    m_mode = mode;
+
     ui->setupUi(this);
 
     // office phone number = random seed
@@ -170,7 +172,90 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(ioBodiesLoaded()), this, SLOT(onIOBodiesLoaded()));
     connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
     connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
+    prepareWidget();
+}
 
+void FlyEmBodyInfoDialog::prepareWidget()
+{
+//  setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+  if (m_mode == MODE_QUERY) {
+    setWindowTitle("Body Information (Selected)");
+    clearStatusLabel();
+    ui->roiComboBox->hide();
+    ui->maxBodiesLabel->hide();
+
+//    ui->exportBodiesButton->hide();
+//    ui->gotoBodiesButton->hide();
+    ui->maxBodiesMenu->hide();
+//    ui->colorTab->hide();
+//    ui->saveColorFilterButton->hide();
+//    ui->closeButton->hide();
+//    ui->refreshButton->hide();
+//    ui->clearFilterButton->hide();
+
+  //  ui->connectionBodyLabel->hide();
+    ui->roiLabel->hide();
+    ui->avabilityLabel->hide();
+    ui->namedCheckBox->hide();
+    ui->line->hide();
+    ui->line_3->hide();
+    ui->horizontalSpacer->changeSize(0, 0);
+    ui->iconLabel->setText("");
+//    ui->saveColorFilterButton->hide();
+//    ui->tabWidget->removeTab(0);
+//    ui->connectionsTableLabel->hide();
+//    ui->connectionsTableView->hide();
+//    ui->regexCheckBox->setChecked(true);
+//    ui->regexCheckBox->hide();
+//    ui->bodyFilterLabel->hide();
+//    ui->bodyFilterField->hide();
+//    ui->bodyFilterLabel->setText("Body filter (regular expression supported):");
+  } else {
+    setWindowTitle("Body Information (Sequencer)");
+    QPixmap pixmap(":/images/document.png");
+    pixmap = pixmap.scaled(16, 16);
+    ui->iconLabel->setPixmap(pixmap);
+//    ui->iconLabel->setMask(pixmap.mask());
+  }
+}
+
+void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
+{
+  ZJsonArray bodies;
+  ZDvidReader &reader = m_sequencerReader;
+  if (reader.isReady()) {
+    m_bodyNames.clear();
+    m_namelessBodies.clear();
+
+    for (uint64_t bodyId : bodyList) {
+      ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
+
+      // remove name if empty
+      if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+        bodyData.removeKey("name");
+      }
+
+      // remove status if empty; change status > body status
+      if (bodyData.hasKey("status")) {
+        if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+          bodyData.setEntry("body status", bodyData["status"]);
+        }
+        // don't really need to remove this, but why not
+        bodyData.removeKey("status");
+      }
+
+      if (!bodyData.isEmpty() && m_hasLabelsz) {
+        int npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
+        int npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
+
+        bodyData.setEntry("body T-bars", npre);
+        bodyData.setEntry("body PSDs", npost);
+
+        bodies.append(bodyData);
+      }
+    }
+  }
+  emit dataChanged(bodies);
 }
 
 void FlyEmBodyInfoDialog::simplify()
@@ -284,7 +369,9 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
           ui->maxBodiesMenu->clear();
           updateRoi();
 
-          loadData();
+          if (m_mode == MODE_SEQUENCER) {
+            loadData();
+          }
         } else {
           QMessageBox errorBox;
           errorBox.setText("Error connecting to DVID");
@@ -297,8 +384,8 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     }
 }
 
-void FlyEmBodyInfoDialog::loadData() {
-
+void FlyEmBodyInfoDialog::loadData()
+{
     setStatusLabel("Loading...");
 
     QString loadingThreadId = "importBodiesDvid";
@@ -398,11 +485,19 @@ void FlyEmBodyInfoDialog::setConnectionsHeaders(QStandardItemModel * model) {
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
-    ui->bodiesLabel->setText(label);
+  if (m_mode == MODE_SEQUENCER) {
+    label = "<font color=\"#008000\">" + label + "</font>";
+//    QPixmap pixmap(":/images/document.png");
+//    pixmap = pixmap.scaled(16, 16);
+//    ui->bodiesLabel->setPixmap(pixmap);
+  }
+
+  ui->bodiesLabel->setText(label);
 }
 
-void FlyEmBodyInfoDialog::clearStatusLabel() {
-    ui->bodiesLabel->setText("Bodies");
+void FlyEmBodyInfoDialog::clearStatusLabel()
+{
+    setStatusLabel("Bodies");
 }
 
 void FlyEmBodyInfoDialog::updateStatusLabel() {
@@ -412,13 +507,19 @@ void FlyEmBodyInfoDialog::updateStatusLabel() {
         nPre += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPRE_COLUMN)).toLongLong();
         nPost += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPOST_COLUMN)).toLongLong();
     }
+    QString label = QString(
+          "Bodies (%1/%2) shown; %3/%4 pre-syn, %5/%6 post-syn").
+        arg(m_bodyProxy->rowCount()).arg(m_bodyModel->rowCount()).
+        arg(nPre).arg(m_totalPre).arg(nPost).arg(m_totalPost);
+    setStatusLabel(label);
 
     // have I mentioned how much I despise C++ strings?
-    std::ostringstream outputStream;
-    outputStream << "Bodies (" << m_bodyProxy->rowCount() << "/" << m_bodyModel->rowCount() << " shown; ";
-    outputStream << nPre << "/" <<  m_totalPre << " pre-syn, ";
-    outputStream << nPost << "/" <<  m_totalPost << " post-syn)";
-    setStatusLabel(QString::fromStdString(outputStream.str()));
+
+//    std::ostringstream outputStream;
+//    outputStream << "Bodies (" << m_bodyProxy->rowCount() << "/" << m_bodyModel->rowCount() << " shown; ";
+//    outputStream << nPre << "/" <<  m_totalPre << " pre-syn, ";
+//    outputStream << nPost << "/" <<  m_totalPost << " post-syn)";
+//    setStatusLabel(QString::fromStdString(outputStream.str()));
 }
 
 void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
@@ -587,7 +688,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
       QStringList keyList = reader.readKeys(bodyAnnotationName);
 
       //Skip for debugging
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       keyList.clear();
 #endif
 
@@ -801,8 +902,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 }
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
+  if (m_mode == MODE_SEQUENCER) {
     ui->bodyFilterField->clear();
     loadData();
+  } else {
+    emit refreshing();
+  }
 }
 
 void FlyEmBodyInfoDialog::onCloseButton() {

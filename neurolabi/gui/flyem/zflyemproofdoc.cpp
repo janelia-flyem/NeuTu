@@ -56,6 +56,7 @@
 #include "zflyemroutinechecktask.h"
 #include "dvid/zdviddataslicehelper.h"
 #include "zarray.h"
+#include "zflyembodymanager.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -63,6 +64,12 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
 {
   init();
+}
+
+ZFlyEmProofDoc::~ZFlyEmProofDoc()
+{
+  endWorkThread();
+  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
 
 void ZFlyEmProofDoc::init()
@@ -80,6 +87,8 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   connectSignalSlot();
+
+  startWorkThread();
 }
 
 void ZFlyEmProofDoc::initTimer()
@@ -1293,6 +1302,11 @@ void ZFlyEmProofDoc::setTodoItemToNormal()
   setTodoItemAction(neutube::TO_DO);
 }
 
+void ZFlyEmProofDoc::setTodoItemIrrelevant()
+{
+  setTodoItemAction(neutube::TO_DO_IRRELEVANT);
+}
+
 void ZFlyEmProofDoc::setTodoItemToMerge()
 {
   setTodoItemAction(neutube::TO_MERGE);
@@ -2127,6 +2141,28 @@ void ZFlyEmProofDoc::downloadBodyMask()
   }
 }
 */
+
+ZWidgetMessage ZFlyEmProofDoc::getAnnotationFailureMessage(uint64_t bodyId) const
+{
+  ZWidgetMessage msg;
+
+  if (getSupervisor() != NULL) {
+    std::string owner = getSupervisor()->getOwner(bodyId);
+    if (owner.empty()) {
+//            owner = "unknown user";
+       msg = ZWidgetMessage(
+              QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+              arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+              neutube::MSG_ERROR);
+    } else {
+      msg = ZWidgetMessage(
+              QString("Failed to start annotation. %1 has been locked by %2").
+              arg(bodyId).arg(owner.c_str()), neutube::MSG_ERROR);
+    }
+  }
+
+  return msg;
+}
 
 void ZFlyEmProofDoc::updateLabelSlice(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
@@ -3069,6 +3105,20 @@ uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
   return bodyId;
 }
 
+uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader &reader = getDvidReader();
+  if (reader.good()) {
+    bodyId = reader.readSupervoxelIdAt(x, y, z);
+    if (bodyId > 0) {
+      bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+    }
+  }
+
+  return bodyId;
+}
+
 void ZFlyEmProofDoc::autoSave()
 {
   autoSaveSwc();
@@ -3798,15 +3848,25 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
   updateBodyColor(colorMap);
 }
 
-void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-//  ZDvidLabelSlice *slice = getDvidLabelSlice();
-  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-       iter != sliceList.end(); ++iter) {
-    ZDvidLabelSlice *slice = *iter;
-    slice->addSelection(bodyId, neutube::BODY_LABEL_MAPPED);
+  flyem::EBodyLabelType bodyType = flyem::LABEL_BODY;
+  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+    bodyType = flyem::LABEL_SUPERVOXEL;
   }
+  if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId), bodyType)) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    //  ZDvidLabelSlice *slice = getDvidLabelSlice();
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      slice->addSelection(bodyId, neutube::BODY_LABEL_MAPPED);
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
@@ -4526,5 +4586,13 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   }
 
   return bookmark;
+}
+
+void ZFlyEmProofDoc::diagnose() const
+{
+  ZStackDoc::diagnose();
+
+  LDEBUG() << "#Selected bodies (unmapped):"
+           << getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL).size();
 }
 

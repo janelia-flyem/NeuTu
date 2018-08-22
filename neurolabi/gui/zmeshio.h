@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <vector>
 #include "assimp/scene.h"
+#include "tz_cdefs.h"
 
 class QByteArray;
 class ZMesh;
@@ -40,9 +41,11 @@ public:
       const QByteArray &buffer, const std::string &format) const;
 
 private:
-  void readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>& normals,
-                          std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const;
+  void readAllenAtlasMesh(
+      const QString& filename, std::vector<glm::vec3>& normals,
+      std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const;
   void readDracoMesh(const QString& filename, ZMesh& mesh) const;
+  ATTRIBUTE_NO_SANITIZE_ADDRESS
   void readDracoMeshFromMemory(const char *data, size_t size, ZMesh &mesh) const;
   void loadMesh(const aiScene *scene, ZMesh &mesh) const;
   void initImporter(Assimp::Importer &importer) const;

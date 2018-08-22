@@ -556,7 +556,7 @@ public:
 
   void setNameForEachValue(const QList<QString>& other)
   {
-    CHECK(other.size() >= 2);
+//    CHECK(other.size() >= 2);
     m_nameOfEachValue = other;
   }
 

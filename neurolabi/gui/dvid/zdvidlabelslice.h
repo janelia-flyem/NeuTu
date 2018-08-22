@@ -226,7 +226,6 @@ private:
 
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
-//  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
 

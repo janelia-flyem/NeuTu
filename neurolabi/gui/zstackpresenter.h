@@ -383,6 +383,7 @@ public slots:
   void notifyBodyMergeTriggered();
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
+  void notifyBodyConnectionTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
@@ -394,6 +395,7 @@ public slots:
 
   void copyCurrentPosition();
   void copyLabelId();
+  void copySupervoxelId();
 
 
   void notifyUser(const QString &msg);
@@ -432,6 +434,7 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
+  void bodyConnectionTriggered();
   void bodyCheckinTriggered(flyem::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
   void bodyCheckoutTriggered(flyem::EBodySplitMode mode);

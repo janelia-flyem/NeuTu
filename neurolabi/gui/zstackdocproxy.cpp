@@ -28,7 +28,7 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
 }
 #endif
 
-QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(ZStackDoc *doc)
+QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(const ZStackDoc *doc)
 {
   QList<ZMesh*> filteredMeshList;
 
@@ -37,6 +37,24 @@ QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(ZStackDoc *doc)
 
     foreach(ZMesh *mesh, meshList) {
       if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
+        filteredMeshList.append(mesh);
+      }
+    }
+  }
+
+  return filteredMeshList;
+}
+
+QList<ZMesh*> ZStackDocProxy::GetBodyMeshList(const ZStackDoc *doc)
+{
+  QList<ZMesh*> filteredMeshList;
+
+  if (doc != NULL) {
+    QList<ZMesh*> meshList = doc->getMeshList();
+
+    foreach(ZMesh *mesh, meshList) {
+      if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI) &&
+          !mesh->hasRole(ZStackObjectRole::ROLE_SUPERVOXEL)) { //todo: use body role
         filteredMeshList.append(mesh);
       }
     }

@@ -8,6 +8,7 @@
 #include "zstackdocnullmenufactory.h"
 #include "flyem/zflyemtododelegate.h"
 #include "zintcuboidobj.h"
+#include "zstackobjectsourcefactory.h"
 
 ZFlyEmProofMvcController::ZFlyEmProofMvcController()
 {
@@ -80,7 +81,7 @@ void ZFlyEmProofMvcController::SetTodoDelegate(
 void ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
     ZFlyEmProofMvc *mvc, const ZIntCuboid &range)
 {
-  std::string source = "#.FlyemRoi#Protocol";
+  std::string source = ZStackObjectSourceFactory::MakeProtocolRangeSource();
 
   if (range.isEmpty()) {
     ZStackDocAccessor::RemoveObject(
@@ -96,4 +97,14 @@ void ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
     ZStackDocAccessor::AddObjectUnique(mvc->getDocument().get(), obj);
   }
 }
+
+void ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(
+    ZFlyEmProofMvc *mvc, bool visible)
+{
+  std::string source = ZStackObjectSourceFactory::MakeProtocolRangeSource();
+
+  ZStackDocAccessor::SetObjectVisible(
+        mvc->getDocument().get(), ZStackObject::TYPE_INT_CUBOID, source, visible);
+}
+
 

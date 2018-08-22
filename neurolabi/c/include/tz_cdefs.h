@@ -148,4 +148,10 @@ static const double Infinity = _INFINITY;
 #define __func__ __FUNCTION__
 #endif
 
+#if defined(__clang__) || defined (__GNUC__)
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS
+#endif
+
 #endif

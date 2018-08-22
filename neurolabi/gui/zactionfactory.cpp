@@ -319,10 +319,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Split", parent);
     break;
   case ACTION_BODY_SPLIT_START:
-    action = new QAction("Launch split", parent);
+    action = new QAction("Launch Split", parent);
     break;
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
+    break;
+  case ACTION_BODY_CONNECTION:
+    action = new QAction("Show Connection", parent);
     break;
   case ACTION_BODY_CHECKIN:
     action = new QAction("Unlock", parent);
@@ -352,17 +355,23 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_DESELECT_BODY:
     action = new QAction("Deselect Body", parent);
     break;
+  case ACTION_SAVE_OBJECT_AS:
+    action = new QAction("Save as", parent);
+    break;
   case ACTION_SHOW_ORTHO:
-    action = new QAction("Show orthogonal view", parent);
+    action = new QAction("Show Orthogonal View", parent);
     break;
   case ACTION_SHOW_ORTHO_BIG:
-    action = new QAction("Show orthogonal view (1024)", parent);
+    action = new QAction("Show Orthogonal View (1024)", parent);
     break;
   case ACTION_COPY_POSITION:
-    action = new QAction("Copy position", parent);
+    action = new QAction("Copy Position", parent);
     break;
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
+    break;
+  case ACTION_COPY_SUPERVOXEL_ID:
+    action = new QAction("Copy Supervoxel ID", parent);
     break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
@@ -418,6 +427,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
+    action = new QAction("Irrelevant todo", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_MERGE:
     action = new QAction("To merge", parent);
