@@ -2,6 +2,7 @@
 #define TASKBODYCLEAVE_H
 
 #include "protocols/taskprotocoltask.h"
+#include "zpoint.h"
 #include <QObject>
 #include <QVector>
 #include <set>
@@ -16,8 +17,6 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
 class QShortcut;
-
-class QSlider;
 
 class TaskBodyCleave : public TaskProtocolTask
 {
@@ -38,8 +37,6 @@ public:
   uint64_t getBodyId() const;
 
 private slots:
-  void updateLevel(int level);
-
   void onShowCleavingChanged(int state);
   void onToggleShowCleaving();
   void onShowSeedsOnlyChanged(int state);
@@ -59,10 +56,10 @@ private slots:
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;
+  ZPoint m_bodyPt;
   int m_maxLevel;
 
   QWidget *m_widget;
-  QSlider *m_levelSlider;
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
   QPushButton *m_selectBodyButton;
@@ -90,6 +87,9 @@ private:
   QNetworkAccessManager *m_networkManager;
   bool m_cleaveReplyPending = false;
 
+  // The latest cleave server reply that was applied is saved for debugging purposes.
+  QJsonObject m_cleaveReply;
+
   std::set<QString> m_warningTextToSuppress;
 
   class SetCleaveIndicesCommand;
@@ -112,7 +112,6 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
-  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
 
   void updateVisibility();
 
