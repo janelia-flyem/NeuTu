@@ -495,6 +495,10 @@ public slots: //Commands
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
 
   void executeRotateRoiPlaneCommand(int z, double theta);

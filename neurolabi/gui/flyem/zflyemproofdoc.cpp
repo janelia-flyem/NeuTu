@@ -4370,6 +4370,19 @@ void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t 
   executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
+void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
+    int x, int y, int z, uint64_t bodyId)
+{
+  executeAddTodoItemCommand(x, y, z, neutube::TO_SUPERVOXEL_SPLIT, bodyId);
+}
+
+void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
+    const ZIntPoint &pt, uint64_t bodyId)
+{
+  executeAddToSupervoxelSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+
 void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
 {
   QUndoCommand *command =
