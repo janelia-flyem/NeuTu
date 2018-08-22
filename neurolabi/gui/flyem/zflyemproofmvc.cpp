@@ -803,6 +803,9 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(addingToSplitMarker(int,int,int,uint64_t)),
           getCompleteDocument(),
           SLOT(executeAddToSplitItemCommand(int,int,int,uint64_t)));
+  connect(window, SIGNAL(addingToSupervoxelSplitMarker(int,int,int,uint64_t)),
+          getCompleteDocument(),
+          SLOT(executeAddToSupervoxelSplitItemCommand(int,int,int,uint64_t)));
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
