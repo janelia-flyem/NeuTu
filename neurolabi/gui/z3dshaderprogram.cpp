@@ -1,11 +1,13 @@
 #include "z3dshaderprogram.h"
 
+#include <QFile>
+
 #include "z3dgl.h"
 #include "zsysteminfo.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "z3dshadermanager.h"
 #include "zexception.h"
-#include <QFile>
+
 
 Z3DShaderProgram::Z3DShaderProgram()
 {

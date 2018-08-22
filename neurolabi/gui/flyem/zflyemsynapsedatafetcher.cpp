@@ -4,7 +4,7 @@
 #include <QtConcurrentRun>
 #include <QElapsedTimer>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"

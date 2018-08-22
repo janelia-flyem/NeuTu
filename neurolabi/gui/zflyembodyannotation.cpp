@@ -8,12 +8,13 @@
 #include "zjsonobject.h"
 #include "zstring.h"
 
-const char *ZFlyEmBodyAnnotation::m_bodyIdKey = "body ID";
-const char *ZFlyEmBodyAnnotation::m_nameKey = "name";
-const char *ZFlyEmBodyAnnotation::m_typeKey = "class";
-const char *ZFlyEmBodyAnnotation::m_commentKey = "comment";
-const char *ZFlyEmBodyAnnotation::m_statusKey = "status";
-const char *ZFlyEmBodyAnnotation::m_userKey = "user";
+const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID";
+const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
+const char *ZFlyEmBodyAnnotation::KEY_TYPE = "class";
+const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
+const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
+const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
 {
@@ -28,6 +29,7 @@ void ZFlyEmBodyAnnotation::clear()
   m_name.clear();
   m_type.clear();
   m_userName.clear();
+  m_namingUser.clear();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -45,26 +47,30 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 {
   ZJsonObject obj;
   if (m_bodyId > 0) {
-    obj.setEntry(m_bodyIdKey, m_bodyId);
+    obj.setEntry(KEY_BODY_ID, m_bodyId);
 
     if (!m_name.empty()) {
-      obj.setEntry(m_nameKey, m_name);
+      obj.setEntry(KEY_NAME, m_name);
     }
 
     if (!m_type.empty()) {
-      obj.setEntry(m_typeKey, m_type);
+      obj.setEntry(KEY_TYPE, m_type);
     }
 
     if (!m_status.empty()) {
-      obj.setEntry(m_statusKey, m_status);
+      obj.setEntry(KEY_STATUS, m_status);
     }
 
     if (!m_comment.empty()) {
-      obj.setEntry(m_commentKey, m_comment);
+      obj.setEntry(KEY_COMMENT, m_comment);
     }
 
     if (!m_userName.empty()) {
-      obj.setEntry(m_userKey, m_userName);
+      obj.setEntry(KEY_USER, m_userName);
+    }
+
+    if (!m_namingUser.empty()) {
+      obj.setEntry(KEY_NAMING_USER, m_namingUser);
     }
   }
 
@@ -74,31 +80,35 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 {
-  if (obj.hasKey(m_bodyIdKey) || obj.hasKey(m_statusKey) ||
-      obj.hasKey(m_commentKey) || obj.hasKey(m_nameKey) ||
-      obj.hasKey(m_typeKey)) {
-    if (obj.hasKey(m_bodyIdKey)) {
-      setBodyId(ZJsonParser::integerValue(obj[m_bodyIdKey]));
+  if (obj.hasKey(KEY_BODY_ID) || obj.hasKey(KEY_STATUS) ||
+      obj.hasKey(KEY_COMMENT) || obj.hasKey(KEY_NAME) ||
+      obj.hasKey(KEY_TYPE) || obj.hasKey(KEY_NAMING_USER)) {
+    if (obj.hasKey(KEY_BODY_ID)) {
+      setBodyId(ZJsonParser::integerValue(obj[KEY_BODY_ID]));
     }
 
-    if (obj.hasKey(m_statusKey)) {
-      setStatus(ZJsonParser::stringValue(obj[m_statusKey]));
+    if (obj.hasKey(KEY_STATUS)) {
+      setStatus(ZJsonParser::stringValue(obj[KEY_STATUS]));
     }
 
-    if (obj.hasKey(m_commentKey)) {
-      setComment(ZJsonParser::stringValue(obj[m_commentKey]));
+    if (obj.hasKey(KEY_COMMENT)) {
+      setComment(ZJsonParser::stringValue(obj[KEY_COMMENT]));
     }
 
-    if (obj.hasKey(m_nameKey)) {
-      setName(ZJsonParser::stringValue(obj[m_nameKey]));
+    if (obj.hasKey(KEY_NAME)) {
+      setName(ZJsonParser::stringValue(obj[KEY_NAME]));
     }
 
-    if (obj.hasKey(m_typeKey)) {
-      setType(ZJsonParser::stringValue(obj[m_typeKey]));
+    if (obj.hasKey(KEY_TYPE)) {
+      setType(ZJsonParser::stringValue(obj[KEY_TYPE]));
     }
 
-    if (obj.hasKey(m_userKey)) {
-      setUser(ZJsonParser::stringValue(obj[m_userKey]));
+    if (obj.hasKey(KEY_USER)) {
+      setUser(ZJsonParser::stringValue(obj[KEY_USER]));
+    }
+
+    if (obj.hasKey(KEY_NAMING_USER)) {
+      setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER]));
     }
   } else {
     std::vector<std::string> keyList = obj.getAllKey();
@@ -125,7 +135,8 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Name: " << m_name << std::endl;
   std::cout << "  Status: " << m_status << std::endl;
   std::cout << "  Comment: " << m_comment << std::endl;
-  std::cout << "  User: " << m_userKey << std::endl;
+  std::cout << "  User: " << KEY_USER << std::endl;
+  std::cout << "  Named User: " << KEY_NAMING_USER << std::endl;
 }
 
 /*member dependent*/
@@ -201,6 +212,7 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(
 
   if (m_name.empty()) {
     m_name = annotation.m_name;
+    m_namingUser = annotation.m_namingUser;
   }
 
   if (m_type.empty()) {

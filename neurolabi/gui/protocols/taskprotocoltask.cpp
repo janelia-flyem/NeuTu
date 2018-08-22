@@ -1,6 +1,6 @@
 #include "taskprotocoltask.h"
 
-#include <QsLog.h>
+#include "zqslog.h"
 
 /*
  * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your

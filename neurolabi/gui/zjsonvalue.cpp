@@ -353,3 +353,9 @@ int ZJsonValue::getRefCount() const
 
   return m_data->refcount;
 }
+
+std::ostream& operator << (std::ostream &stream, const ZJsonValue &v)
+{
+  stream << v.dumpString(0);
+  return stream;
+}

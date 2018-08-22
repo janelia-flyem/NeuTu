@@ -50,7 +50,9 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    inputJson.load(inputPath);
+    if (ZFileType::FileType(inputPath) == ZFileType::FILE_JSON) {
+      inputJson.load(inputPath);
+    }
   }
 
   if (isFile) {
@@ -87,12 +89,20 @@ ZBodySplitCommand::parseSignalPath(
 
         target.updateData(signalInfo);
       }
+
       reader.open(target);
       if (reader.isReady()) {
-        ZDvidSparseStack *dvidStack =
-            reader.readDvidSparseStack(m_bodyId, m_labelType);
-        spStack = dvidStack->getSparseStack(range);
-        gc.registerObject(dvidStack);
+        size_t blockCount = reader.readCoarseBodySize(m_bodyId);
+        if (blockCount < 50000000) {
+          std::cout << "Block count: " << blockCount << std::endl;
+
+          ZDvidSparseStack *dvidStack =
+              reader.readDvidSparseStack(m_bodyId, m_labelType);
+          spStack = dvidStack->getSparseStack(range);
+          gc.registerObject(dvidStack);
+        } else {
+          LINFO() << m_bodyId << "ignored.";
+        }
       }
     }
 
@@ -236,6 +246,10 @@ int ZBodySplitCommand::run(
 #endif
 
 //  ZStack *signalStack = data.first;
+
+  if (data.first == NULL && data.second == NULL) {
+    return 1;
+  }
 
 
   ZStackWatershedContainer container(data);

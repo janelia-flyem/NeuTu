@@ -267,7 +267,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   auto clean = [](QSet<uint64_t>& s) {
     QList<uint64_t> r;
     foreach (uint64_t id, s) {
-      if (ZFlyEmBody3dDoc::encodedLevel(id) > 0) r.append(id);
+      if (ZFlyEmBodyManager::encodedLevel(id) > 0) r.append(id);
     }
     foreach (uint64_t id, r) {
       s.erase(s.find(id));
@@ -1320,7 +1320,7 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
 
-  m_visibleBodies.insert(ZFlyEmBody3dDoc::encode(m_bodyId, 0));
+  m_visibleBodies.insert(ZFlyEmBodyManager::encode(m_bodyId, 0));
 
   QString assignedUser = json[KEY_ASSIGNED_USER].toString();
   if (!assignedUser.isEmpty()) {

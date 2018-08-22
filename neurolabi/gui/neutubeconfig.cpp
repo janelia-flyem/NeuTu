@@ -60,6 +60,7 @@ void NeutubeConfig::init(const std::string &userName)
   m_autoSaveInterval = 600000;
   m_autoSaveEnabled =true;
   m_usingNativeDialog = true;
+  m_usingDvidBrowseDialog = false;
   m_autoSaveMaxSwcCount = 50;
 
   m_messageReporter = new ZLogMessageReporter;
@@ -302,6 +303,23 @@ bool NeutubeConfig::load(const std::string &filePath)
     if (!node.empty()) {
       if (node.getAttribute("status") == "off") {
         m_usingNativeDialog = false;
+      }
+    }
+
+    node = doc.getRootElement().queryNode("DvidBrowseDialog");
+    if (!node.empty()) {
+      std::string attr = node.getAttribute("status");
+      if (attr == "on") {
+        m_usingDvidBrowseDialog = true;
+      }
+
+      if (attr == "auto") {
+        const char *env = std::getenv("DVID_BROWSE_DIALOG");
+        if (env) {
+          if (std::string(env) == "yes") {
+            m_usingDvidBrowseDialog = true;
+          }
+        }
       }
     }
 

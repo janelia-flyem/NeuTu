@@ -476,6 +476,10 @@ void ZStackView::setSliceRange(int minSlice, int maxSlice)
   m_sliceStrategy->setRange(minSlice, maxSlice);
 }
 
+void ZStackView::enableOffsetAdjustment(bool on)
+{
+  m_imageWidget->enableOffsetAdjustment(on);
+}
 
 #if 0
 void ZStackView::resetDepthControl()
@@ -926,7 +930,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
 #endif
 
-#if defined(_NEUTUBE_MAC_)
+#if defined(__APPLE__)
   switch (QSysInfo::MacintoshVersion) {
   case QSysInfo::MV_10_5:
   case QSysInfo::MV_10_6:
@@ -1049,7 +1053,8 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 
 void ZStackView::showEvent(QShowEvent */*event*/)
 {
-  LDEBUG() << "ZStackView::showEvent:" << size();
+  LDEBUG() << "ZStackView::showEvent:" << size() << isVisible();
+//  resetViewProj();
 }
 
 void ZStackView::updateStackRange()
@@ -1863,7 +1868,7 @@ void ZStackView::updateActiveDecorationCanvas()
 
 void ZStackView::updateTileCanvas()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating tile canvas." << std::endl;
 #endif
 

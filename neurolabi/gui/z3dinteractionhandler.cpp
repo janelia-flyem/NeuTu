@@ -1,8 +1,9 @@
 #include "z3dinteractionhandler.h"
 
-#include "z3dcameraparameter.h"
-#include "QsLog.h"
 #include <boost/math/constants/constants.hpp>
+
+#include "z3dcameraparameter.h"
+#include "zqslog.h"
 
 Z3DInteractionHandler::Z3DInteractionHandler(const QString& name, QObject* parent)
   : QObject(parent)

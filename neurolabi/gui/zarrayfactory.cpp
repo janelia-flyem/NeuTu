@@ -1,6 +1,7 @@
 #include "zarrayfactory.h"
 
 #include "zstack.hxx"
+#include "zintcuboid.h"
 
 ZArrayFactory::ZArrayFactory()
 {
@@ -26,6 +27,25 @@ ZArray* ZArrayFactory::MakeArray(const ZStack *stack)
     for (size_t i = 0; i < voxelNumber; ++i) {
       labelArray[i] = stack->getIntValue(i);
     }
+  }
+
+  return array;
+}
+
+ZArray* ZArrayFactory::MakeArray(const ZIntCuboid box, mylib::Value_Type type)
+{
+  ZArray *array = NULL;
+  if (!box.isEmpty()) {
+    int ndims = 3;
+    mylib::Dimn_Type dims[3];
+    dims[0] = box.getWidth();
+    dims[1] = box.getHeight();
+    dims[2] = box.getDepth();
+
+    array = new ZArray(type, ndims, dims);
+    array->setStartCoordinate(0, box.getFirstCorner().getX());
+    array->setStartCoordinate(1, box.getFirstCorner().getY());
+    array->setStartCoordinate(2, box.getFirstCorner().getZ());
   }
 
   return array;
