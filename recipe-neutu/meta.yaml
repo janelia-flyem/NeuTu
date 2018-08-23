@@ -24,6 +24,10 @@ build:
 
 requirements:
   build:
+    - gxx_linux-64 # [linux]
+    - cmake
+
+  host:
     - python >=3.6
     - qt      5* # [linux64]
     - qt      5.9* # [osx]
