@@ -1659,7 +1659,8 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId) const
 }
 */
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
+    uint64_t bodyId, const ZIntCuboid &range) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setDvidTarget(getDvidTarget());

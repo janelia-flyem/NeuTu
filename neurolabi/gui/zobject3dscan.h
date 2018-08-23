@@ -731,6 +731,10 @@ private:
   void pushDsIntv(int xintv, int yintv, int zintv);
   void popDsIntv(int xintv, int yintv, int zintv);
 
+  void writeV0(std::ostream &stream) const;
+  void writeV1(std::ostream &stream) const;
+  void writeV2(std::ostream &stream) const;
+  void readHeader(std::istream &stream, int *version, int *stripeNumber);
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

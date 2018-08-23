@@ -482,10 +482,19 @@ void ZBodySplitCommand::processResult(
       ZStackWriter writer;
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
-      ZStack *labelStack = result.toColorField();
 
-      writer.write(output, labelStack);
-      delete labelStack;
+      if (ZFileType::isImageFile(output)) {
+        ZStack *labelStack = result.toColorField();
+
+        writer.write(output, labelStack);
+        delete labelStack;
+      } else {
+        for (ZObject3dScan *obj : result) {
+          obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+        }
+        result.save(output);
+      }
+      std::cout << "Result saved as " << output<< std::endl;
     }
 
 //      delete result;

@@ -81,7 +81,7 @@ void ZStackWriter::write(const std::string &filePath, const Mc_Stack *stack)
     return;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   const_cast<Mc_Stack*>(stack)->depth = 300;
 #endif
 
