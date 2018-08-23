@@ -411,6 +411,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_SPLIT:
     action = new QAction("To split here", parent);
     break;
+  case ACTION_ADD_TODO_SVSPLIT:
+    action = new QAction("To supervoxel split here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;
