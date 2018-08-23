@@ -795,6 +795,17 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   }
 }
 
+bool ZFlyEmProofPresenter::allowingBlinkingSegmentation() const
+{
+  return m_blinkingSegmenationAllowed;
+}
+
+void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
+{
+  m_blinkingSegmenationAllowed = on;
+  getCompleteDocument()->allowDvidLabelSliceBlinking(on);
+}
+
 bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {

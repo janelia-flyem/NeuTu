@@ -168,6 +168,8 @@ public:
                    int centerCutX, int centerCutY, bool usingCenterCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc);
 
+  void allowBlinking(bool on);
+
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 
@@ -209,6 +211,8 @@ private:
   ZDvidDataSliceHelper* getHelper() {
     return m_helper.get();
   }
+
+  void setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
 
   bool isPaintBufferAllocNeeded(int width, int height) const;
 

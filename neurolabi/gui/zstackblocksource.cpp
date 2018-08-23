@@ -170,6 +170,7 @@ void ZStackBlockSource::cacheStack(const ZObject3dScan &obj, int zoom)
 }
 
 namespace {
+/*
 std::vector<std::pair<int, int>> CutSegment(
     int x0, int x1, int cx0, int cx1)
 {
@@ -184,6 +185,7 @@ std::vector<std::pair<int, int>> CutSegment(
 
   return result;
 }
+*/
 
 std::vector<std::pair<int, int>> IntersectSegment(
     int x0, int x1, int cx0, int cx1)

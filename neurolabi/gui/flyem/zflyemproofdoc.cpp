@@ -2272,6 +2272,16 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
   processObjectModified();
 }
 
+void ZFlyEmProofDoc::allowDvidLabelSliceBlinking(bool on)
+{
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+    ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    obj->allowBlinking(on);
+  }
+}
+
 void ZFlyEmProofDoc::loadSplitFromService()
 {
 //  std::string path = GET_FLYEM_CONFIG.getSplitResultUrl(

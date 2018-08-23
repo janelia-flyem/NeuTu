@@ -5304,6 +5304,33 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::FILE_SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
+  case ZFileType::FILE_OBJECT_SCAN_ARRAY:
+  {
+    succ = false;
+    ZObject3dScanArray objArray;
+    objArray.load(filePath.toStdString());
+    if (!objArray.empty()) {
+      ZIntCuboid box = objArray.getBoundBox();
+      if (!box.isEmpty()) {
+        if (!hasStack()) {
+          ZStack *stack = ZStackFactory::MakeVirtualStack(box);
+          if (stack != NULL) {
+            stack->setSource(filePath.toStdString());
+            loadStack(stack);
+            succ = true;
+          }
+        }
+      }
+
+      if (hasStack()) {
+        for (ZObject3dScan *obj : objArray) {
+          addObject(obj, false);
+        }
+      }
+    }
+    objArray.shallowClear();
+  }
+    break;
   case ZFileType::FILE_OBJECT_SCAN:
     setTag(neutube::Document::FLYEM_BODY);
     if (hasStackData()){
