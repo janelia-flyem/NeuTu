@@ -51,6 +51,7 @@ public:
     ROLE_SPLIT_RESULT_PROPERTY_KEY,
     ROLE_MESH,
     ROLE_MESHES_TARS,
+    ROLE_TAR_SUPERVOXELS,
     ROLE_ROI_KEY,
     ROLE_ROI_DATA_KEY,
     ROLE_TEST_TASK_KEY,
@@ -121,6 +122,7 @@ private:
   static const char *m_sparsevolSizeName;
   //static const char *m_keyValueTypeName;
   static const char *m_meshesTarsName;
+  static const char *m_tarSupervoxelsName;
   static const char *m_roiKeyName;
   static const char *m_roiDataKeyName;
   static const char *m_testTaskKeyName;

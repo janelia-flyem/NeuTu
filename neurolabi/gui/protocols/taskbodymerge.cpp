@@ -1158,7 +1158,7 @@ void TaskBodyMerge::configureShowHiRes()
   // If the DVID query, issued below, returns a JSON object containing the key
   // then the tar archive exists.
 
-  disconnect(s_networkManager, 0, 0, 0);
+  disconnect(s_networkManager.data(), 0, 0, 0);
   connect(s_networkManager.data(), &QNetworkAccessManager::finished,
           this, &TaskBodyMerge::updateHiResWidget);
 

@@ -125,6 +125,7 @@ public slots:
   void tryAddTodoItem();
   void tryAddDoneItem();
   void tryAddToSplitItem();
+  void tryAddToSupervoxelSplitItem();
   void tryAddToMergeItem();
   void removeTodoItem();
   void checkTodoItem();
@@ -141,6 +142,7 @@ public slots:
   void tryAddDoneItem(const ZIntPoint &pt);
   void tryAddToMergeItem(const ZIntPoint &pt);
   void tryAddToSplitItem(const ZIntPoint &pt);
+  void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
 
 protected:
   virtual void tryAddTodoItem(
