@@ -59,6 +59,7 @@ namespace {
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
   static const QString KEY_RESULT_HISTORY = "result history";
   static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
+  static const QString KEY_USING_HYBRID_MESHES = "using hybrid meshes";
 
   // TODO: Duplicated in TaskBodyCleave, so factor out.
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -94,11 +95,6 @@ namespace {
 
   size_t initialAngleMethod()
   {
-#if 1
-    // FOR DEBUGGING: Force the prefered initial angle method.
-    return 2;
-#endif
-
     if (const char* method = std::getenv("NEU3_INITIAL_ANGLE_METHOD")) {
       try {
         size_t i = std::stoul(method);
@@ -171,6 +167,8 @@ namespace {
     }
     return result;
   }
+
+  static bool s_showHybridMeshes = true;
 
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
   // to some settings until all of them are done.  This code manages making those
@@ -338,6 +336,16 @@ void TaskBodyMerge::beforeDone()
   showBirdsEyeView(false);
 }
 
+namespace {
+  struct BlockSignals
+  {
+    BlockSignals(QObject *o) : m_o(o) { m_blocked = o->blockSignals(true); }
+    ~BlockSignals() { m_o->blockSignals(m_blocked); }
+    QObject *m_o;
+    bool m_blocked;
+  };
+}
+
 QWidget *TaskBodyMerge::getTaskWidget()
 {
   // It's possible that the bodies of the super voxels were merge together via
@@ -359,6 +367,14 @@ QWidget *TaskBodyMerge::getTaskWidget()
     if (!result.isEmpty()) {
       restoreResult(result);
     }
+  }
+
+  {
+    // Set the checkbox to reflect the persistent state, but block the action of the checkbox.
+    // That action will be done in onLoaded() instead.
+
+    BlockSignals blockStateChanged(m_showHybridCheckBox);
+    m_showHybridCheckBox->setChecked(s_showHybridMeshes);
   }
 
   configureShowHiRes();
@@ -392,7 +408,12 @@ void TaskBodyMerge::onCycleAnswer()
 
 void TaskBodyMerge::onTriggerShowHiRes()
 {
-  m_showHiResCheckBox->setChecked(true);
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  if (m_showHiResCheckBox->isEnabled()) {
+    m_showHiResCheckBox->setChecked(true);
+  }
 }
 
 void TaskBodyMerge::onButtonToggled()
@@ -427,7 +448,19 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
     visible.insert(m_bodyId1);
     visible.insert(m_bodyId2);
   }
-  updateBodies(visible, QSet<uint64_t>());
+
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+    m_showHybridCheckBox->setEnabled(!state);
+
+    updateBodies(visible, QSet<uint64_t>());
+}
+
+void TaskBodyMerge::onShowHybridStateChanged(int state)
+{
+  s_showHybridMeshes = state;
+  showHybridMeshes(s_showHybridMeshes);
 }
 
 bool TaskBodyMerge::loadSpecific(QJsonObject json)
@@ -559,6 +592,9 @@ void TaskBodyMerge::buildTaskWidget()
   m_showHiResCheckBox = new QCheckBox("Show High Resolution", m_widget);
   connect(m_showHiResCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHiResStateChanged(int)));
 
+  m_showHybridCheckBox = new QCheckBox("Show Hybrid Meshes", m_widget);
+  connect(m_showHybridCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHybridStateChanged(int)));
+
   QPushButton *zoomToInitialButton = new QPushButton("Zoom to Initial Position", m_widget);
   connect(zoomToInitialButton, SIGNAL(clicked(bool)), this, SLOT(zoomToMergePosition()));
 
@@ -566,7 +602,10 @@ void TaskBodyMerge::buildTaskWidget()
   connect(zoomOutButton, SIGNAL(clicked(bool)), this, SLOT(zoomOutToShowAll()));
 
   QHBoxLayout *bottomLayout = new QHBoxLayout;
-  bottomLayout->addWidget(m_showHiResCheckBox);
+  QVBoxLayout *checkboxLayout = new QVBoxLayout;
+  checkboxLayout->addWidget(m_showHiResCheckBox);
+  checkboxLayout->addWidget(m_showHybridCheckBox);
+  bottomLayout->addLayout(checkboxLayout);
   QVBoxLayout *buttonsLayout = new QVBoxLayout;
   buttonsLayout->addWidget(zoomToInitialButton);
   buttonsLayout->addWidget(zoomOutButton);
@@ -603,13 +642,13 @@ void TaskBodyMerge::onLoaded()
   applyColorMode(true);
   zoomToMergePosition(true);
 
-  if (const char* showHybrid = std::getenv("NEU3_SHOW_HYBRID_MESHES")) {
-    if (std::string(showHybrid) == "yes") {
-      //Do not show hybrid meshes if either of the body is shown as agglomeration
-      //of supervoxels.
-      if (!m_bodyDoc->isAgglo(m_bodyId1) && !m_bodyDoc->isAgglo(m_bodyId2)) {
-        showHybridMeshes();
-      }
+  if (s_showHybridMeshes) {
+
+    // Do not show hybrid meshes if either of the body is shown as agglomeration
+    // of supervoxels.
+
+    if (!m_bodyDoc->isAgglo(m_bodyId1) && !m_bodyDoc->isAgglo(m_bodyId2)) {
+      showHybridMeshes(s_showHybridMeshes);
     }
   }
 }
@@ -911,6 +950,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
   }
 
   if (!found) {
+    LWARN() << "closest not found, tightening aborted";
     return;
   }
 
@@ -1059,12 +1099,13 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
   filter->invalidate();
 }
 
-//Replace lambda with function for easier debuggging
-void TaskBodyMerge::updateHighResWidget(QNetworkReply *reply)
+void TaskBodyMerge::updateHiResWidget(QNetworkReply *reply)
 {
   if (reply->error() == QNetworkReply::NoError) {
     QByteArray replyBytes = reply->readAll();
+
     qDebug() << "Reply:" << replyBytes;
+
     QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
     if (replyJsonDoc.isArray()) {
       QJsonArray replyJsonArray = replyJsonDoc.array();
@@ -1094,6 +1135,14 @@ void TaskBodyMerge::configureShowHiRes()
     return;
   }
 
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  if (s_showHybridMeshes) {
+    m_showHiResCheckBox->setEnabled(false);
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
 
   // Disable the controls for switching to high resolution until we verify that the
@@ -1102,10 +1151,6 @@ void TaskBodyMerge::configureShowHiRes()
   m_showHiResCheckBox->setEnabled(false);
   m_showHiResAction->setEnabled(false);
   m_hiResCount = 0;
-
-  // TODO: Until this issue is fixed, always disable high resolution.
-  // https://github.com/janelia-flyem/NeuTu/issues/185
-//  return;
 
   if (!s_networkManager) {
     s_networkManager = new QNetworkAccessManager(m_bodyDoc->getParent3DWindow());
@@ -1116,7 +1161,7 @@ void TaskBodyMerge::configureShowHiRes()
 
   disconnect(s_networkManager.data(), 0, 0, 0);
   connect(s_networkManager.data(), &QNetworkAccessManager::finished,
-          this, &TaskBodyMerge::updateHighResWidget);
+          this, &TaskBodyMerge::updateHiResWidget);
 
   // Issue the DVID queries, each of which is a "range" query for
   // the range including just the key for one body's tar archive.
@@ -1168,7 +1213,7 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
   }
 }
 
-void TaskBodyMerge::showHybridMeshes()
+void TaskBodyMerge::showHybridMeshes(bool show)
 {
   // The high-res region of the hybrid meshes will go all the way through both bodies in the dimension
   // closest to the viewing direction.  So first compute overall boudning box of the two bodies.
@@ -1192,31 +1237,52 @@ void TaskBodyMerge::showHybridMeshes()
     view = filter->camera().center() - filter->camera().eye();
   }
 
-  // Compute the two corners of the high-res region.
+  // Compute the two corners of the high-res region.  An empty region reverts to non-hybrid
+  // (fully low-resolution) meshes.
 
   ZIntPoint p1, p2;
-  glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
-  size_t iMax = (viewAbs[0] > viewAbs[1]) ?
-        (viewAbs[0] > viewAbs[2] ? 0 : 2) :
-    (viewAbs[1] > viewAbs[2] ? 1 : 2);
-  ZPoint p = mergePosition();
-  int s = zgeom::GetZoomScale(m_bodyDoc->getMaxDsLevel());
-  for (size_t i = 0; i < 3; i++) {
-    if (i == iMax) {
-      p1[i] = bbox.minCorner()[i];
-      p2[i] = bbox.maxCorner()[i];
-    } else {
-      p1[i] = p[i] - halfWidth;
-      p2[i] = p[i] + halfWidth;
+  if (show) {
+    glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
+    size_t iMax = (viewAbs[0] > viewAbs[1]) ?
+          (viewAbs[0] > viewAbs[2] ? 0 : 2) :
+      (viewAbs[1] > viewAbs[2] ? 1 : 2);
+    ZPoint p = mergePosition();
+    for (size_t i = 0; i < 3; i++) {
+      if (i == iMax) {
+        p1[i] = bbox.minCorner()[i];
+        p2[i] = bbox.maxCorner()[i];
+      } else {
+        p1[i] = p[i] - halfWidth;
+        p2[i] = p[i] + halfWidth;
+      }
     }
-
-    // Snap the region to low-res voxel boundaries.
-
-    p1[i] -= p1[i] % s;
-    p2[i] += 64 - p2[i] % s;
   }
 
-  // Trigger asynchronous generation of hybrid meshes for the region.
+  // The asynchronous creation of the hybrid meshes can cause problems if the user
+  // is able to move to another task before the creation is finished.  So disable the
+  // user interface that allows changing of the task until signals indicate the
+  // hybrid meshes are complete.
+
+  allowNextPrev(false);
+
+  // And evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // so make them mutually exclusive.
+
+  m_showHiResCheckBox->setEnabled(false);
+
+  m_hybridLoadedCount = 0;
+  connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
+    if (++m_hybridLoadedCount == 2) {
+      disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, 0);
+      allowNextPrev(true);
+
+      if (!show) {
+        configureShowHiRes();
+      }
+    }
+  });
+
+  // Trigger asynchronous creation of hybrid meshes for the region.
 
   ZIntCuboid range(p1, p2);
   m_bodyDoc->showMoreDetail(m_bodyId1, range);
@@ -1304,6 +1370,8 @@ void TaskBodyMerge::writeResult(const QString &result)
 
   size_t i = (m_initialAngleMethod < INITIAL_ANGLE_METHOD.size()) ? m_initialAngleMethod : 0;
   json[KEY_INITIAL_ANGLE_METHOD] = INITIAL_ANGLE_METHOD[i];
+
+  json[KEY_USING_HYBRID_MESHES] = m_showHybridCheckBox->isChecked();
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
