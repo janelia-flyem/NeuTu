@@ -948,17 +948,15 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
 
 void Neu3Window::zoomToBodyMesh(int numMeshLoaded)
 {
-  if (!zoomToLoadedBodyEnabled() || numMeshLoaded != 1) {
+  if (!zoomToLoadedBodyEnabled()) {
     return;
   }
 
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   LDEBUG() << "Mesh list size:" << meshList.size();
-  if (meshList.size() == 1) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
-  }
+  ZMesh *mesh = meshList.front();
+  m_3dwin->gotoPosition(mesh->getBoundBox());
 }
 
 void Neu3Window::processSwcChangeFrom3D(

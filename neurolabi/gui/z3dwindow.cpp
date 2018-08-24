@@ -464,7 +464,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_ADD_TODO_SPLIT:
     action = m_actionLibrary->getAction(
-          item, this, SLOT(addToSplitMarker(bool)));
+          item, this, SLOT(addToSplitMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_SVSPLIT:
     break;
   case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToSplit()));
@@ -2059,6 +2061,18 @@ void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId)
   emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
+void Z3DWindow::emitAddToSupervoxelSplitMarker(
+    int x, int y, int z, uint64_t bodyId)
+{
+  emit addingToSupervoxelSplitMarker(x, y, z, bodyId);
+}
+
+void Z3DWindow::emitAddToSupervoxelSplitMarker(
+    const ZIntPoint &pt, uint64_t bodyId)
+{
+  emit addingToSupervoxelSplitMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
 static void AddTodoMarker(
     Z3DWindow *window, neutube::EToDoAction action, bool checked)
 {
@@ -2119,6 +2133,11 @@ void Z3DWindow::addToMergeMarker()
 void Z3DWindow::addToSplitMarker()
 {
   AddTodoMarker(this, neutube::TO_SPLIT, false);
+}
+
+void Z3DWindow::addToSupervoxelSplitMarker()
+{
+  AddTodoMarker(this, neutube::TO_SUPERVOXEL_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
@@ -4695,15 +4714,18 @@ void Z3DWindow::deleteSelectedSplitSeed()
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
-//    m_doc->executeDeleteSwcNodeCommand();
-    if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
-      emit croppingSwcInRoi();
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
+        doc->showingCoarseOnly()) {
+      //    m_doc->executeDeleteSwcNodeCommand();
+      if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+        emit croppingSwcInRoi();
+      }
+    } else {
+      QMessageBox::warning(
+            this, "Action Failed", "Cropping only works in coarse body view.");
     }
-  } else if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-             m_doc->getTag() == neutube::Document::FLYEM_SKELETON) {
-    QMessageBox::warning(
-          this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
     selectSwcTreeNodeInRoi(false);
     m_doc->executeDeleteSwcNodeCommand();
