@@ -59,6 +59,7 @@ namespace {
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
   static const QString KEY_RESULT_HISTORY = "result history";
   static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
+  static const QString KEY_USING_HYBRID_MESHES = "using hybrid meshes";
 
   // TODO: Duplicated in TaskBodyCleave, so factor out.
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -1369,6 +1370,8 @@ void TaskBodyMerge::writeResult(const QString &result)
 
   size_t i = (m_initialAngleMethod < INITIAL_ANGLE_METHOD.size()) ? m_initialAngleMethod : 0;
   json[KEY_INITIAL_ANGLE_METHOD] = INITIAL_ANGLE_METHOD[i];
+
+  json[KEY_USING_HYBRID_MESHES] = m_showHybridCheckBox->isChecked();
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
