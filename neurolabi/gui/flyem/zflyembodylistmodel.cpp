@@ -97,7 +97,7 @@ uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
     if (match.hasMatch()) {
       bodyId = match.captured(2).toULongLong();
       if (bodyId > 0) {
-        bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+        bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
       }
     }
   }
