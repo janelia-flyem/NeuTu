@@ -3114,7 +3114,7 @@ uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
   if (reader.good()) {
     bodyId = reader.readSupervoxelIdAt(x, y, z);
     if (bodyId > 0) {
-      bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+      bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
     }
   }
 

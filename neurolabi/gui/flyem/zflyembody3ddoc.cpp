@@ -1185,7 +1185,7 @@ void ZFlyEmBody3dDoc::releaseBody(
   QMutexLocker locker(&m_eventQueueMutex);
 
   if (labelType == flyem::LABEL_SUPERVOXEL) {
-    bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+    bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
   }
   m_protectedBodySet.remove(bodyId);
 
@@ -3064,7 +3064,10 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         ZObject3dScanArray objArray = helper.readHybridBody(
               config.getDecodedBodyId());
         ZMeshFactory mf;
+        QElapsedTimer timer;
+        timer.start();
         mesh = mf.makeMesh(objArray);
+        LINFO() << "Mesh generating time:" << timer.elapsed() << "ms";
 //        reader.readMultiscaleBody(config, zoom, true, &obj);
       }
 
@@ -3603,10 +3606,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
     if (remainderId > 0) {
-      remainderId = ZFlyEmBodyManager::encodeSupervoxel(remainderId);
+      remainderId = ZFlyEmBodyManager::EncodeSupervoxel(remainderId);
     }
 
-    oldId = ZFlyEmBodyManager::encodeSupervoxel(oldId);
+    oldId = ZFlyEmBodyManager::EncodeSupervoxel(oldId);
   }
 
 //  m_mainDvidWriter.deleteMesh(oldId);

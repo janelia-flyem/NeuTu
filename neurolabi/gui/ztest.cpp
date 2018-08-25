@@ -27452,7 +27452,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidReader grayReader;
@@ -27550,6 +27550,26 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyId << " ";
   }
   std::cout << std::endl;
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZDvidBodyHelper helper(reader);
+  helper.setRange(ZIntCuboid(ZIntPoint(16550, 31554, 31084),
+                             ZIntPoint(16806, 31810, 32749)));
+  helper.setZoom(1);
+  helper.setLowresZoom(6);
+  helper.setCoarse(true);
+
+  uint64_t bodyId = 2229212992;
+  ZObject3dScanArray objArray = helper.readHybridBody(bodyId);
+  ZMeshFactory mf;
+  QElapsedTimer timer;
+  timer.start();
+  ZMesh *mesh = mf.makeMesh(objArray);
+  LINFO() << "Mesh generating time:" << timer.elapsed() << "ms";
+
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
   std::cout << "Done." << std::endl;
