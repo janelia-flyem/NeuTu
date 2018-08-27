@@ -328,7 +328,7 @@ bool TaskBodyCleave::skip()
   }
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
-  if (now - m_timeOfLastSkipCheck < interval) {
+  if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
