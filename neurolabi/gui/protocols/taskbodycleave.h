@@ -31,6 +31,7 @@ public:
   QString tasktype() override;
   QString actionString() override;
   QString targetString() override;
+  bool skip() override;
 
   virtual void beforeNext() override;
   virtual void beforePrev() override;
@@ -79,6 +80,9 @@ private:
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
+
+  bool m_skip = false;
+  int m_timeOfLastSkipCheck = -1;
 
   ZFlyEmSupervisor *m_supervisor;
   bool m_checkedOut = false;
