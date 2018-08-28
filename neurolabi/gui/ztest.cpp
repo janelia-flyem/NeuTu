@@ -296,6 +296,8 @@
 #include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
 #include "zarrayfactory.h"
+#include "dvid/zdvidstackblockfactory.h"
+#include "zstackblocksource.h"
 
 #include "test/ztestall.h"
 
@@ -27552,7 +27554,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
   ZDvidBodyHelper helper(reader);
   helper.setRange(ZIntCuboid(ZIntPoint(16550, 31554, 31084),
@@ -27570,6 +27572,143 @@ void ZTest::test(MainWindow *host)
   LINFO() << "Mesh generating time:" << timer.elapsed() << "ms";
 
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidStackBlockFactory blockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory.setDvidTarget(reader->getDvidTarget());
+
+  ZIntPoint blockIndex(300, 300, 300);
+  std::vector<ZStack*> stackArray = blockFactory.make(blockIndex, 3, 0);
+
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidStackBlockFactory *blockFactory = new ZDvidStackBlockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory->setDvidTarget(reader->getDvidTarget());
+
+  ZStackBlockSource blockSource;
+  blockSource.setBlockFactory(blockFactory);
+  blockSource.setBlockSize(blockFactory->getDvidInfo().getBlockSize());
+  blockSource.setGridSize(blockFactory->getDvidInfo().getEndBlockIndex() + 1);
+
+  ZStack *stack = blockSource.getStack(150, 150, 150, 1);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZIntPoint center(18587, 19713, 20696);
+  ZSparseStack *spStack = reader->readSparseStackOnDemand(
+        915520244, flyem::LABEL_BODY, NULL);
+//  ZStack *stack = spStack->getStack();
+  QElapsedTimer timer;
+  timer.start();
+  ZStack *stack = spStack->makeStack(ZIntCuboid(center - 1024, center + 1024), false);
+  std::cout << timer.elapsed() << "ms" << std::endl;
+  if (stack) {
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  } else {
+    std::cout << "Null stack" << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj1;
+  obj1.setLabel(1);
+  obj1.setColor(ZStroke2d::GetLabelColor(obj1.getLabel()));
+  obj1.addSegment(0, 0, 0, 1);
+
+  ZObject3dScan obj2;
+  obj2.setLabel(2);
+  obj2.setColor(ZStroke2d::GetLabelColor(obj2.getLabel()));
+  obj2.addSegment(1, 1, 2, 3);
+  objArray.append(obj1);
+  objArray.append(obj2);
+
+  objArray.save(GET_TEST_DATA_DIR + "/_test.soba");
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_test.soba");
+  for (auto &obj : objArray) {
+    std::cout << "Label: " << obj->getLabel() << std::endl;
+    obj->printInfo();
+  }
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_test.soba");
+  std::cout << objArray.size() << " objects." << std::endl;
+  for (auto &obj : objArray) {
+    obj->printInfo();
+  }
+
+  objArray.resize(objArray.size() - 3);
+
+  ZStack *labelStack = objArray.toColorField();
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", labelStack);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setServer("emdata2.int.janelia.org");
+  target.setPort(8700);
+  target.setUuid("c62b");
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QElapsedTimer timer;
+  timer.start();
+  ZDvidSparseStack *spStack = reader.readDvidSparseStack(
+        1095007427, flyem::LABEL_BODY);
+  spStack->fillValue();
+  std::cout << "Reading time: " << timer.elapsed() << "ms" << std::endl;
+  spStack->getSparseStack()->save(GET_TEST_DATA_DIR + "/_test.zss");
+
+  spStack->getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.setServer("emdata2.int.janelia.org");
+  target.setPort(8700);
+  target.setUuid("c62b");
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZSparseStack *spStack = reader.readSparseStackOnDemand(
+        1095007427, flyem::LABEL_BODY, NULL);
+  ZStackWatershedContainer container(spStack);
+  container.exportSource(GET_TEST_DATA_DIR + "/_test2.tif");
+#endif
+
+#if 0
+  ZSparseStack spStack;
+  spStack.load(GET_TEST_DATA_DIR + "/_test.zss");
+  ZStackWatershedContainer container(&spStack);
+  container.exportSource(GET_TEST_DATA_DIR + "/_test.tif");
+//  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
   std::cout << "Done." << std::endl;

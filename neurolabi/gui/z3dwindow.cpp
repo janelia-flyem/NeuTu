@@ -4305,31 +4305,35 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
     stackSeg = getStackSeg(seg, rbox);
     source = "";
   } else if (m_doc->hasMesh()){
-    QList<ZMesh*> meshList = m_doc->getMeshList();
-    ZMesh *mesh = meshList.front();
+//    QList<ZMesh*> meshList = m_doc->getMeshList();
+//    ZMesh *mesh = meshList.front();
 
+    ZMesh *mesh = ZStackDocProxy::GetMeshForSplit(m_doc.get());
+
+    if (mesh != NULL) {
 #if defined(_NEU3_)
-    uint64_t bodyId =
-        ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(mesh->getSource());
-    if (bodyId > 0) {
-      source = ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId);
-    }
+      uint64_t bodyId =
+          ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(mesh->getSource());
+      if (bodyId > 0) {
+        source = ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId);
+      }
 #endif
 
-    ZLineSegment seg = getMeshFilter()->getScreenRay(
-          iround(x), iround(y), w, h);
-    stackSeg = getStackSeg(seg, rbox);
+      ZLineSegment seg = getMeshFilter()->getScreenRay(
+            iround(x), iround(y), w, h);
+      stackSeg = getStackSeg(seg, rbox);
 
-    if (stackSeg.isValid()) {
-      std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
-            stackSeg.getStartPoint(), stackSeg.getEndPoint());
-      if (ptArray.size() >= 2) {
-        stackSeg.setStartPoint(ptArray[0]);
-        stackSeg.setEndPoint(ptArray[1]);
-        //          ZVoxelGraphics::addLineObject(
-        //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
-      } else {
-        stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+      if (stackSeg.isValid()) {
+        std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
+              stackSeg.getStartPoint(), stackSeg.getEndPoint());
+        if (ptArray.size() >= 2) {
+          stackSeg.setStartPoint(ptArray[0]);
+          stackSeg.setEndPoint(ptArray[1]);
+          //          ZVoxelGraphics::addLineObject(
+          //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
+        } else {
+          stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+        }
       }
     }
   }

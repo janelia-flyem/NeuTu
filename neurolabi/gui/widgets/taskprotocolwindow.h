@@ -44,6 +44,7 @@ signals:
 
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
+//    void taskUpdated(const QString &type);
 
 private slots:
     void onNextButton();
@@ -165,6 +166,7 @@ private:
     void prefetchForTaskIndex(int index);
     bool checkDVIDTarget();
     void unprefetchForTaskIndex(int index);
+    QString getCurrentTaskProtocolType() const;
 };
 
 #endif // TASKPROTOCOLWINDOW_H

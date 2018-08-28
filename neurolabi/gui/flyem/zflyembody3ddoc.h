@@ -33,6 +33,7 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class ZFlyEmBodyAnnotationDialog;
+class ZFlyEmTaskHelper;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -293,6 +294,8 @@ public:
   bool isSplitActivated() const;
   bool isSplitFinished() const;
 
+  ZMesh* getMeshForSplit() const;
+
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
 
@@ -358,6 +361,8 @@ public slots:
   void clearGarbage(bool force = false);
 
   void startBodyAnnotation();
+
+//  void updateCurrentTask(const QString &taskType);
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -548,6 +553,8 @@ private:
   QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
+
+  std::unique_ptr<ZFlyEmTaskHelper> m_taskHelper;
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
