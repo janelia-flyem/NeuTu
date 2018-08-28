@@ -137,6 +137,9 @@ public:
   bool fillValue(const ZIntCuboid &box, bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable, bool fillingAll);
 
+  bool fillValue(const ZIntCuboid &box, int zoom,
+                 bool cancelable, bool fillingAll);
+
 private:
   void init();
   void initBlockGrid();
@@ -149,6 +152,9 @@ private:
   void syncObjectMask();
   void pushAttribute();
 
+  bool isValueFilled(int zoom) const;
+  void setValueFilled(int zoom, bool state);
+
   ZDvidReader& getMaskReader() const;
   ZDvidReader& getGrayscaleReader() const;
 
@@ -160,7 +166,8 @@ private:
 private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
-  bool m_isValueFilled;
+  std::vector<bool> m_isValueFilled;
+//  bool m_isValueFilled;
   bool m_prefectching = false;
   uint64_t m_label;
   flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;

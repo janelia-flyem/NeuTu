@@ -749,7 +749,7 @@ bool ZObject3dScan::save(const char *filePath) const
   return save(std::string(filePath));
 }
 
-void ZObject3dScan::write(std::ostream &stream) const
+void ZObject3dScan::writeV0(std::ostream &stream) const
 {
   int stripeNumber = (int) getStripeNumber();
   stream.write((const char*)(&stripeNumber), sizeof(int));
@@ -760,10 +760,56 @@ void ZObject3dScan::write(std::ostream &stream) const
   }
 }
 
+void ZObject3dScan::writeV1(std::ostream &stream) const
+{
+  int version = -1; //Use negative number for compatibility
+  stream.write((char*)(&version), sizeof(int));
+  stream.write((char*)(&m_uLabel), sizeof(uint64_t));
+  writeV0(stream);
+}
+
+void ZObject3dScan::writeV2(std::ostream &stream) const
+{
+  int version = -2; //Use negative number for compatibility
+  stream.write((char*)(&version), sizeof(int));
+  stream.write((char*)(&m_uLabel), sizeof(uint64_t));
+  QRgb color = getColor().rgba();
+  stream.write((char*)(&color), sizeof(QRgb));
+
+  writeV0(stream);
+}
+
+void ZObject3dScan::readHeader(
+    std::istream &stream, int *version, int *stripeNumber)
+{
+  *stripeNumber = 0;
+  stream.read((char*)(stripeNumber), sizeof(int));
+
+  *version = 0;
+  if (*stripeNumber < 0) {
+    *version = -*stripeNumber;
+  }
+  if (*version == 1 || *version == 2) {
+    stream.read((char*)(&m_uLabel), sizeof(uint64_t));
+  }
+  if (*version == 2) {
+    QRgb color = 0;
+    stream.read((char*)(&color), sizeof(QRgb));
+    setColor(QColor(qRed(color), qGreen(color), qBlue(color), qAlpha(color)));
+  }
+  stream.read((char*)(stripeNumber), sizeof(int));
+}
+
+void ZObject3dScan::write(std::ostream &stream) const
+{
+  writeV2(stream);
+}
+
 void ZObject3dScan::read(std::istream &stream)
 {
   int stripeNumber = 0;
-  stream.read((char*)(&stripeNumber), sizeof(int));
+  int version = 0;
+  readHeader(stream, &version, &stripeNumber);
 
   if (stripeNumber > 0) {
     m_stripeArray.resize(stripeNumber);
@@ -1132,6 +1178,11 @@ ZObject3dScan ZObject3dScan::downsampleBorderMask(
 void ZObject3dScan::downsampleMax(const ZIntPoint &dsIntv)
 {
   downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+}
+
+void ZObject3dScan::downsampleMax(int intv)
+{
+  downsampleMax(intv, intv, intv);
 }
 
 void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)

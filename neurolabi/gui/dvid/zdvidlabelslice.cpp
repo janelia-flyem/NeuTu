@@ -211,6 +211,22 @@ int64_t ZDvidLabelSlice::getReadingTime() const
 {
   return getHelper()->getDvidReader().getReadingTime();
 }
+
+void ZDvidLabelSlice::allowBlinking(bool on)
+{
+  if (on) {
+    setPreferredUpdatePolicy(flyem::UPDATE_HIDDEN);
+  } else {
+    setPreferredUpdatePolicy(flyem::UPDATE_LOWRES);
+  }
+}
+
+void ZDvidLabelSlice::setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+{
+  getHelper()->setPreferredUpdatePolicy(policy);
+  getHelper()->inferUpdatePolicy(getSliceAxis());
+}
+
 /*
 int ZDvidLabelSlice::getZoom() const
 {

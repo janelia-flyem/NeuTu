@@ -50,7 +50,8 @@ public:
    */
   //void downsampleBlock(int xintv, int yintv, int zintv);
 
-  ZStackBlockGrid* makeDownsample(int xintv, int yintv, int zintv);
+  ZStackBlockGrid* makeDownsample(int xintv, int yintv, int zintv) const;
+  ZStackBlockGrid* makeDownsample(const ZIntPoint &dsIntv) const;
 
   inline std::vector<ZStack*>& getStackArray() {
     return m_stackArray;

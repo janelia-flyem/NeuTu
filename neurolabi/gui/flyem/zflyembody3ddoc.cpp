@@ -43,6 +43,7 @@
 #include "data3d/zstackobjecthelper.h"
 #include "zstackdocproxy.h"
 #include "zflyembodyannotationdialog.h"
+#include "zflyemtaskhelper.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1053,6 +1054,24 @@ flyem::EBodyLabelType ZFlyEmBody3dDoc::getLabelType(uint64_t bodyId) const
   }
 
   return flyem::LABEL_BODY;
+}
+
+ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
+{
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(this);
+  if (!isSplitActivated()) {
+    if (!meshList.isEmpty()) {
+      return meshList.front();
+    }
+  } else {
+    for (ZMesh *mesh : meshList) {
+      if (mesh->getLabel() == m_splitter->getBodyId()) {
+        return mesh;
+      }
+    }
+  }
+
+  return NULL;
 }
 
 void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId)
@@ -3324,6 +3343,8 @@ void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
   updateDvidInfo();
+
+  m_splitter->setDvidTarget(target);
 }
 
 const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
@@ -3632,7 +3653,6 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   } else {
     emit removingBody(oldId);
     emit addingBody(remainderId);
-//    delete mesh;
   }
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
@@ -3641,10 +3661,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   m_splitter->setBodyId(decode(remainderId));
 
+  m_splitter->updateCachedMask(remainObj);
+  /*
   ZDvidSparseStack *sparseStack = getDataDocument()->getDvidSparseStack();
   if (sparseStack != NULL) {
     sparseStack->setObjectMask(remainObj);
   }
+  */
 
   notifyWindowMessageUpdated(summary);
 }

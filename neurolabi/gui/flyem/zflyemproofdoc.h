@@ -355,6 +355,8 @@ public:
    * \brief Fetch DVID label slice data and set body selections
    */
   void updateDvidLabelSlice(neutube::EAxis axis);
+
+  void allowDvidLabelSliceBlinking(bool on);
 //  void updateDvidLabelSlice();
 
   /*!

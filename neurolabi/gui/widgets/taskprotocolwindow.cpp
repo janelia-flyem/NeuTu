@@ -87,6 +87,9 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
             this, &TaskProtocolWindow::onBodyMeshLoaded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
             this, &TaskProtocolWindow::onBodyRecycled);
+    //Todo
+//    connect(this, &TaskProtocolWindow::taskUpdated,
+//            m_body3dDoc, &ZFlyEmBody3dDoc::updateCurrentTask);
 }
 
 // constants
@@ -194,6 +197,8 @@ void TaskProtocolWindow::onPrevButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::test()
@@ -286,6 +291,8 @@ void TaskProtocolWindow::onNextButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onDoneButton() {
@@ -344,6 +351,8 @@ void TaskProtocolWindow::onDoneButton() {
     LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
+
+//    emit taskUpdated(""); //No activated task
 }
 
 void TaskProtocolWindow::onLoadTasksButton() {
@@ -364,6 +373,8 @@ void TaskProtocolWindow::onLoadTasksButton() {
     //  or maybe enter an assignment ID or something)
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
+
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
@@ -1301,6 +1312,15 @@ void TaskProtocolWindow::applicationQuitting() {
 BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
 {
     return m_prefetchQueue;
+}
+
+QString TaskProtocolWindow::getCurrentTaskProtocolType() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return "";
+  }
+
+  return m_taskList[m_currentTaskIndex]->tasktype();
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()
