@@ -316,15 +316,19 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
     ZPoint dataPos;
     if (getSliceAxis() == neutube::A_AXIS) {
       dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+      setInfo(QString("(%1, %2, %3)").
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
               pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
+      setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
+              arg(pos.x()).arg(pos.y()).arg(z).
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     }
-    setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
-            arg(pos.x()).arg(pos.y()).arg(z).
-            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-            arg(iround(dataPos.getZ())));
+
   }
 }
 

@@ -16,7 +16,7 @@ class TaskTestTask : public TaskProtocolTask
 
 public:
     TaskTestTask(QJsonObject json);
-    QString tasktype();
+    QString tasktype() const;
     QString actionString();
     QString targetString();
     QWidget * getTaskWidget();

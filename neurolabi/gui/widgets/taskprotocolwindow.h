@@ -166,7 +166,10 @@ private:
     void prefetchForTaskIndex(int index);
     bool checkDVIDTarget();
     void unprefetchForTaskIndex(int index);
-    QString getCurrentTaskProtocolType() const;
+//    QString getCurrentTaskProtocolType() const;
+    TaskProtocolTask* getCurrentTask() const;
+    void resetBody3dDocConfig();
+    void updateBody3dDocConfig();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

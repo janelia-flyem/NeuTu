@@ -23,6 +23,7 @@
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
+#include "protocols/protocoltaskconfig.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -33,7 +34,6 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class ZFlyEmBodyAnnotationDialog;
-class ZFlyEmTaskHelper;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -237,10 +237,14 @@ public:
 
   static void SetObjectClass(ZStackObject *obj, uint64_t bodyId);
 
+  void configure(const ProtocolTaskConfig &config);
+
 public:
-  virtual void executeAddTodoCommand(
+  void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
       uint64_t bodyId) override;
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked, uint64_t bodyId);
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
@@ -554,7 +558,7 @@ private:
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
-  std::unique_ptr<ZFlyEmTaskHelper> m_taskHelper;
+  ProtocolTaskConfig m_taskConfig;
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;

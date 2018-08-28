@@ -297,6 +297,7 @@ include(test/test.pri)
 include(sandbox/sandbox.pri)
 include(command/command.pri)
 include(trace/trace.pri)
+include(neutuse/neutuse.pri)
 
 # Input
 RESOURCES = gui.qrc
@@ -909,7 +910,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
     flyem/zflyemtaskhelper.h \
-    protocols/protocoltaskfactory.h
+    protocols/protocoltaskfactory.h \
+    protocols/protocoltaskconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1592,7 +1594,8 @@ SOURCES += main.cpp \
     dvid/zdvidstackblockfactory.cpp \
     zstackblocksource.cpp \
     flyem/zflyemtaskhelper.cpp \
-    protocols/protocoltaskfactory.cpp
+    protocols/protocoltaskfactory.cpp \
+    protocols/protocoltaskconfig.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

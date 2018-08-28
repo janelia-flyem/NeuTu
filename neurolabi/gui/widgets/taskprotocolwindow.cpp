@@ -87,6 +87,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
             this, &TaskProtocolWindow::onBodyMeshLoaded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
             this, &TaskProtocolWindow::onBodyRecycled);
+
+    resetBody3dDocConfig();
     //Todo
 //    connect(this, &TaskProtocolWindow::taskUpdated,
 //            m_body3dDoc, &ZFlyEmBody3dDoc::updateCurrentTask);
@@ -198,6 +200,7 @@ void TaskProtocolWindow::onPrevButton() {
     updateBodyWindow();
     updateLabel();
 
+    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -351,6 +354,7 @@ void TaskProtocolWindow::onDoneButton() {
     LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
+    resetBody3dDocConfig();
 
 //    emit taskUpdated(""); //No activated task
 }
@@ -374,6 +378,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
 
+    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -1314,6 +1319,7 @@ BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
     return m_prefetchQueue;
 }
 
+/*
 QString TaskProtocolWindow::getCurrentTaskProtocolType() const
 {
   if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
@@ -1321,6 +1327,35 @@ QString TaskProtocolWindow::getCurrentTaskProtocolType() const
   }
 
   return m_taskList[m_currentTaskIndex]->tasktype();
+}
+*/
+
+TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return nullptr;
+  }
+
+  return m_taskList[m_currentTaskIndex].data();
+}
+
+
+void TaskProtocolWindow::resetBody3dDocConfig()
+{
+  ProtocolTaskConfig config;
+  config.setDefaultTodo(neutube::TO_SPLIT);
+  config.setTaskType("");
+  m_body3dDoc->configure(config);
+}
+
+void TaskProtocolWindow::updateBody3dDocConfig()
+{
+  TaskProtocolTask *task = getCurrentTask();
+  if (task) {
+    m_body3dDoc->configure(task->getTaskConfig());
+  } else {
+    resetBody3dDocConfig();
+  }
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()

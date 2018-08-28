@@ -269,7 +269,7 @@ TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
   buildTaskWidget();
 }
 
-QString TaskBodyMerge::tasktype()
+QString TaskBodyMerge::tasktype() const
 {
   return VALUE_TASKTYPE;
 }
