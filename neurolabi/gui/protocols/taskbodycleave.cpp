@@ -397,6 +397,19 @@ void TaskBodyCleave::beforePrev()
 void TaskBodyCleave::beforeLoading()
 {
   m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
+  if (!m_checkedOut) {
+    std::string owner = m_supervisor->getOwner(m_bodyId);
+
+    // Bodies involved in Janelia cleaving assignments are checked out by "flyem" to
+    // prevent them from being modified (e.g., merged into other bodies).  When such a
+    // body is being cleaved, this special check-out should be overridden.
+
+    if (owner == "flyem") {
+      LINFO() << "TaskBodyCleave overriding checkout by" << owner;
+      m_supervisor->checkInAdmin(m_bodyId);
+      m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
+    }
+  }
 }
 
 namespace {
@@ -414,13 +427,14 @@ namespace {
 
 void TaskBodyCleave::onLoaded()
 {
+  m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
   if (!m_checkedOut) {
     m_widget->setEnabled(false);
     m_menu->menuAction()->setEnabled(false);
 
     std::string owner = m_supervisor->getOwner(m_bodyId);
     std::string msg = "Cannot cleave ";
-    msg += !owner.empty() ? "body<br>locked by " + owner : " locked body";
+    msg += !owner.empty() ? "body<br>checked out by " + owner : " locked body";
     m_cleavingStatusLabel->setText(msg.c_str());
   } else if (m_bodyDoc->usingOldMeshesTars()) {
 
