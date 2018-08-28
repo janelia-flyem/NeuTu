@@ -4081,6 +4081,9 @@ void Z3DWindow::shootTodo(int x, int y)
         int cx = iround(pt.x());
         int cy = iround(pt.y());
         int cz = iround(pt.z());
+        doc->executeAddTodoCommand(cx, cy, cz, false, parentId);
+
+        /*
         QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
         if (action != NULL) {
           if (action->isChecked()) {
@@ -4096,6 +4099,7 @@ void Z3DWindow::shootTodo(int x, int y)
           doc->executeAddTodoCommand(
                 cx, cy, cz, false, neutube::TO_DO, parentId);
         }
+        */
       }
   //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }

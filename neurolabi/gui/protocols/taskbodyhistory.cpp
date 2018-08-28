@@ -50,7 +50,7 @@ TaskBodyHistory::TaskBodyHistory(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   }
 }
 
-QString TaskBodyHistory::tasktype()
+QString TaskBodyHistory::tasktype() const
 {
   return VALUE_TASKTYPE;
 }

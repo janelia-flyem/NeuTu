@@ -2340,6 +2340,19 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 }
 
 void ZFlyEmBody3dDoc::executeAddTodoCommand(
+    int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  neutube::EToDoAction action = m_taskConfig.getDefaultTodo();
+  if (action == neutube::TO_SPLIT) {
+    if (isSupervoxel(bodyId)) {
+      action = neutube::TO_SUPERVOXEL_SPLIT;
+    }
+  }
+
+  executeAddTodoCommand( x, y, z, checked, action, bodyId);
+}
+
+void ZFlyEmBody3dDoc::executeAddTodoCommand(
     int x, int y, int z, bool checked, neutube::EToDoAction action,
     uint64_t bodyId)
 {
@@ -4059,6 +4072,11 @@ void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
   }
 }
 
+
+void ZFlyEmBody3dDoc::configure(const ProtocolTaskConfig &config)
+{
+  m_taskConfig = config;
+}
 
 //////////////////////////////////////////////
 ZFlyEmBody3dDoc::ObjectStatus::ObjectStatus(int timeStamp)
