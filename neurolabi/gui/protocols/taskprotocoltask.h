@@ -8,6 +8,7 @@
 #include <QSet>
 
 class QMenu;
+class ProtocolTaskConfig;
 
 class TaskProtocolTask: public QObject
 {
@@ -40,7 +41,7 @@ public:
     QStringList getTags();
     void clearTags();
 
-    virtual QString tasktype() = 0;
+    virtual QString tasktype() const = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual bool skip();
@@ -48,6 +49,8 @@ public:
     virtual QMenu * getTaskMenu();
     virtual bool usePrefetching();
     virtual bool allowCompletion();
+
+    virtual ProtocolTaskConfig getTaskConfig() const;
 
 signals:
     void bodiesUpdated();

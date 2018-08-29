@@ -35,6 +35,13 @@ public:
   ZStack* toLabelField() const;
   ZStack* toLabelField(const ZIntCuboid &box) const;
   ZStack* toColorField() const;
+
+  void write(std::ostream &stream) const;
+  void read(std::istream &stream);
+
+  void save(const std::string &filePath);
+  void load(const std::string &filePath);
+
 };
 
 #endif // ZOBJECT3DSCANARRAY_H

@@ -283,7 +283,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
           this, SLOT(onNetworkReplyFinished(QNetworkReply*)));
 }
 
-QString TaskBodyCleave::tasktype()
+QString TaskBodyCleave::tasktype() const
 {
   return VALUE_TASKTYPE;
 }
@@ -1335,5 +1335,14 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
   }
 
   return true;
+}
+
+ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
+{
+  ProtocolTaskConfig config;
+  config.setTaskType(tasktype());
+  config.setDefaultTodo(neutube::TO_SUPERVOXEL_SPLIT);
+
+  return config;
 }
 

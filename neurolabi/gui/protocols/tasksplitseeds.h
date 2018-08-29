@@ -18,7 +18,7 @@ class TaskSplitSeeds : public TaskProtocolTask
 
 public:
     TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc);
-    QString tasktype();
+    QString tasktype() const;
     QString actionString();
     QString targetString();
     QWidget * getTaskWidget();
