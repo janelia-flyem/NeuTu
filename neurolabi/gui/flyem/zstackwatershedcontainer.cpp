@@ -775,6 +775,10 @@ void ZStackWatershedContainer::run()
       exportMask(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
+#ifdef _DEBUG_2
+      exportSource(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
       if (m_result.empty()) {
         getWorkspace()->conn=6;
         Stack *out = C_Stack::watershed(source, getWorkspace());

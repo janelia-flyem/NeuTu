@@ -596,7 +596,7 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   } else if (dsRatio > 16) {
     dsIntv.set(3, 3, 1);
   } else if (dsRatio > 8 ) {
-    dsIntv.set(3, 3, 0);
+    dsIntv.set(1, 1, 3);
   } else if (dsRatio > 4) {
     dsIntv.set(1, 1, 1);
   } else if (dsRatio > 1) {

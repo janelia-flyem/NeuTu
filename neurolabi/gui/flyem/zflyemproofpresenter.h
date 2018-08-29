@@ -78,6 +78,8 @@ public:
   bool connectAction(QAction *action, ZActionFactory::EAction item);
 
   void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
+
+  bool allowingBlinkingSegmentation() const;
 //  void setLabelAlpha(int alpha) {
 //    m_labelAlpha = alpha;
 //  }
@@ -144,6 +146,8 @@ public slots:
   void tryAddToSplitItem(const ZIntPoint &pt);
   void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
 
+  void allowBlinkingSegmentation(bool on);
+
 protected:
   virtual void tryAddTodoItem(
       int x, int y, int z, bool checked, neutube::EToDoAction action,
@@ -178,6 +182,7 @@ private:
   bool m_highTileContrast;
   bool m_smoothTransform;
   bool m_showingData;
+  bool m_blinkingSegmenationAllowed = true;
 
   std::unique_ptr<ZFlyEmToDoDelegate> m_todoDelegate;
 

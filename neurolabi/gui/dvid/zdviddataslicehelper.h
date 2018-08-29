@@ -121,6 +121,9 @@ public:
   void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
   void inferUpdatePolicy(neutube::EAxis axis);
 
+  void setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
+  flyem::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
+
 private:
   /*!
    * After canonizing, there is always a combination of lowres and highres areas
@@ -153,6 +156,7 @@ public:
 
   ZDvidData::ERole m_dataRole;
   flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::UPDATE_DIRECT;
+  flyem::EDataSliceUpdatePolicy m_preferredUpdatePolicy = flyem::UPDATE_LOWRES;
 
   ZDvidReader m_reader;
 };

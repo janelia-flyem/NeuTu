@@ -70,6 +70,8 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
     return FILE_MYERS_NSP;
   } else if (str.endsWith(".sobj", ZString::CASE_INSENSITIVE)) {
     return FILE_OBJECT_SCAN;
+  } else if (str.endsWith(".soba", ZString::CASE_INSENSITIVE)) {
+    return FILE_OBJECT_SCAN_ARRAY;
   } else if (str.endsWith(".jpg", ZString::CASE_INSENSITIVE)) {
     return FILE_JPG;
   } else if (str.endsWith(".dvid", ZString::CASE_INSENSITIVE)) {
@@ -165,6 +167,7 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == FILE_V3D_MARKER) ||
       (type == FILE_RAVELER_BOOKMARK) ||
       (type == FILE_OBJECT_SCAN) ||
+      (type == FILE_OBJECT_SCAN_ARRAY) ||
       (type == FILE_SPARSE_STACK) ||
       (type == FILE_MESH);
 }

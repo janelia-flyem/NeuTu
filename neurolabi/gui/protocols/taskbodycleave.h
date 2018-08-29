@@ -23,7 +23,7 @@ class TaskBodyCleave : public TaskProtocolTask
   Q_OBJECT
 public:
   TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  QString tasktype() override;
+  QString tasktype() const override;
   QString actionString() override;
   QString targetString() override;
 
@@ -35,6 +35,8 @@ public:
   virtual QMenu *getTaskMenu() override;
 
   uint64_t getBodyId() const;
+
+  ProtocolTaskConfig getTaskConfig() const override;
 
 private slots:
   void onShowCleavingChanged(int state);

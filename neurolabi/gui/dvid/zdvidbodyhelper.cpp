@@ -1,5 +1,8 @@
 #include "zdvidbodyhelper.h"
 
+#include <QElapsedTimer>
+
+#include "zqslog.h"
 #include "zdvidreader.h"
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
@@ -119,7 +122,12 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   highResHelper.setCoarse(false);
   highResHelper.setRange(range);
   highResHelper.setZoom(m_zoom);
+
+  QElapsedTimer timer;
+  timer.start();
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
+  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
+
   if (highResObj != NULL) {
     result.push_back(highResObj);
   }
@@ -137,7 +145,9 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
     } else {
       if (m_lowresZoom > m_zoom) {
         lowResHelper.setZoom(m_lowresZoom);
+        timer.restart();
         lowResObj = lowResHelper.readBody(bodyId);
+        LINFO() << "Low res reading time:" << timer.elapsed() << "ms";
         int s = zgeom::GetZoomScale(m_lowresZoom);
         scale = ZIntPoint(s, s, s);
       }
@@ -148,7 +158,9 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       ZIntCuboid box = range;
       box.scaleDown(scale);
       box.expand(-1, -1, -1);
+      timer.restart();
       lowResObj->remove(box);
+      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";
       lowResObj->setDsIntv(scale - 1);
 
       result.push_back(lowResObj);
