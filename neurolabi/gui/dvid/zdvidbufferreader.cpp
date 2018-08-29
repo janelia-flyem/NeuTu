@@ -136,7 +136,7 @@ void ZDvidBufferReader::read(
       m_status = neutube::READ_OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      std::cout << e.what() << std::endl;
+      STD_COUT << e.what() << std::endl;
       m_status = neutube::READ_FAILED;
       m_statusCode = e.getStatus();
     }
@@ -171,7 +171,7 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
     m_status = neutube::READ_OK;
     m_statusCode = 200;
   } catch (libdvid::DVIDException &e) {
-    std::cout << e.what() << std::endl;
+    STD_COUT << e.what() << std::endl;
     m_statusCode = e.getStatus();
     m_status = neutube::READ_FAILED;
   }
@@ -215,11 +215,11 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
       m_status = neutube::READ_OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      std::cout << "Exception: " << e.what() << std::endl;
+      STD_COUT << "Exception: " << e.what() << std::endl;
       m_statusCode = e.getStatus();
       m_status = neutube::READ_FAILED;
     } catch (std::exception &e) {
-      std::cout << "Any exception: " << e.what() << std::endl;
+      STD_COUT << "Any exception: " << e.what() << std::endl;
       m_statusCode = 0;
       m_status = neutube::READ_FAILED;
     }
@@ -265,7 +265,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 #endif
 
 #ifdef _DEBUG_
-  std::cout << "Exiting " << "ZDvidBufferReader::read" << std::endl;
+  STD_COUT << "Exiting " << "ZDvidBufferReader::read" << std::endl;
 #endif
 }
 

@@ -5,7 +5,7 @@
 
 #include "ui_zdvidbodypositiondialog.h"
 #include "zdialogfactory.h"
-#include "zdviddialog.h"
+#include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstring.h"
 #include "zdialogfactory.h"
@@ -29,7 +29,7 @@ ZDvidBodyPositionDialog::~ZDvidBodyPositionDialog()
   delete ui;
 }
 
-void ZDvidBodyPositionDialog::setDvidDialog(ZDvidDialog *dlg)
+void ZDvidBodyPositionDialog::setDvidDialog(ZDvidTargetProviderDialog *dlg)
 {
   m_dvidDlg = dlg;
 }

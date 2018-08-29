@@ -56,6 +56,9 @@ public:
    */
   bool definiteLessThan(const ZIntPoint &pt) const;
 
+  bool definitePositive() const;
+  bool semiDefinitePositive() const;
+
   /*!
    * \brief Check if tow points are the same.
    *
@@ -86,6 +89,7 @@ public:
   ZIntPoint& operator -= (const ZIntPoint &pt);
   ZIntPoint& operator *= (const ZIntPoint &pt);
   ZIntPoint& operator /= (const ZIntPoint &pt);
+  ZIntPoint& operator /= (int v);
 
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator + (const ZIntPoint &pt1, int v);

@@ -14,7 +14,7 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -678,7 +678,6 @@ void SynapsePredictionProtocol::processSynapseVerification(
 {
   processSynapseVerification(pt.getX(), pt.getY(), pt.getZ(), verified);
 }
-
 
 void SynapsePredictionProtocol::moveSynapse(
     const ZIntPoint &src, const ZIntPoint &dst)

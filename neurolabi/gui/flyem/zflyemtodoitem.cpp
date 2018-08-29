@@ -10,7 +10,11 @@
 
 const char* ZFlyEmToDoItem::ACTION_KEY = "action";
 const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
+const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT = "to split supervoxel";
+const char* ZFlyEmToDoItem::ACTION_IRRELEVANT = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_SPLIT_TAG = "split";
+const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT_TAG = "svsplit";
+const char* ZFlyEmToDoItem::ACTION_IRRELEVANT_TAG = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
@@ -83,6 +87,12 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
     case neutube::TO_SPLIT:
       color.setRgb(200, 0, 255, 192);
       break;
+    case neutube::TO_SUPERVOXEL_SPLIT:
+      color.setRgb(255, 80, 164, 192);
+      break;
+    case neutube::TO_DO_IRRELEVANT:
+      color.setRgb(Qt::gray);
+      break;
     }
   }
 
@@ -98,6 +108,10 @@ neutube::EToDoAction ZFlyEmToDoItem::getAction() const
     action = neutube::TO_MERGE;
   } else if (value == ACTION_SPLIT) {
     action = neutube::TO_SPLIT;
+  } else if (value == ACTION_SUPERVOXEL_SPLIT) {
+    action = neutube::TO_SUPERVOXEL_SPLIT;
+  } else if (value == ACTION_IRRELEVANT) {
+    action = neutube::TO_DO_IRRELEVANT;
   }
 
   return action;
@@ -116,6 +130,14 @@ void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
   case neutube::TO_SPLIT:
     addProperty(ACTION_KEY, ACTION_SPLIT);
     addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
+    break;
+  case neutube::TO_SUPERVOXEL_SPLIT:
+    addProperty(ACTION_KEY, ACTION_SUPERVOXEL_SPLIT);
+    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
+    break;
+  case neutube::TO_DO_IRRELEVANT:
+    addProperty(ACTION_KEY, ACTION_IRRELEVANT);
+    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
     break;
   }
 }
@@ -264,8 +286,16 @@ void ZFlyEmToDoItem::setChecked(bool checked)
     checkedStr = "1";
     removeActionTag();
   } else {
-    if (getProperty<std::string>(ACTION_KEY) == ACTION_SPLIT) {
-      addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
+    std::string prop = getProperty<std::string>(ACTION_KEY);
+    std::string tag;
+    if (prop == ACTION_SPLIT) {
+      tag = ACTION_SPLIT_TAG;
+    } else if (prop == ACTION_SUPERVOXEL_SPLIT) {
+      tag = ACTION_SUPERVOXEL_SPLIT_TAG;
+    }
+
+    if (!tag.empty()) {
+      addTag(std::string(ACTION_KEY) + ":" + tag);
     }
   }
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <neutube>
   <docUrl>https://wiki.janelia.org/wiki/display/flyem/NeuTu</docUrl>
-  <dataPath>/Users/zhaot/Work/neutube/neurolabi/data</dataPath>
   <MainWindow>
     <tracing status="off"></tracing>
   </MainWindow>
@@ -19,4 +18,5 @@
   </Z3DWindow>
   <Application>FlyEM</Application>
   <NativeFileDialog status="on"></NativeFileDialog>
+  <DvidBrowseDialog status="auto"></DvidBrowseDialog>
 </neutube>

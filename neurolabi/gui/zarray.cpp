@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "zintcuboid.h"
+
 ZArray::ZArray() : m_data(NULL)
 {
 }
@@ -223,3 +225,9 @@ void ZArray::setStartCoordinate(int index, int x)
     m_startCoordinates[index] = x;
   }
 }
+
+void ZArray::setStartCoordinate(const std::vector<int> &coord)
+{
+  m_startCoordinates = coord;
+}
+

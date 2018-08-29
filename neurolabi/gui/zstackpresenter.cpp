@@ -362,6 +362,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyAnnotationTriggered()));
       break;
+    case ZActionFactory::ACTION_BODY_CONNECTION:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyConnectionTriggered()));
+      break;
     case ZActionFactory::ACTION_BODY_SPLIT_START:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodySplitTriggered()));
@@ -437,6 +441,9 @@ bool ZStackPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_COPY_BODY_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copyLabelId()));
+      break;
+    case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
+      connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
       break;
     default:
       connected = false;
@@ -2772,6 +2779,20 @@ void ZStackPresenter::copyLabelId()
   buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
+void ZStackPresenter::copySupervoxelId()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  uint64_t id = buddyDocument()->getSupervoxelId(
+        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+
+  ZGlobal::CopyToClipboard(std::to_string(id));
+
+  buddyDocument()->notify(QString("%1 copied").arg(id));
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -2800,6 +2821,11 @@ void ZStackPresenter::notifyBodyUnmergeTriggered()
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
+}
+
+void ZStackPresenter::notifyBodyConnectionTriggered()
+{
+  emit bodyConnectionTriggered();
 }
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
@@ -2960,7 +2986,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
 
-  buddyDocument()->getObjectGroup().resetSelection();
+  buddyDocument()->getObjectGroup().resetSelector();
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_IMAGE_MOVE_DOWN:

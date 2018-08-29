@@ -6,12 +6,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QLabel>
 
+#include "zqslog.h"
 #include "flyem/zflyembody3ddoc.h"
 
 TaskSplitSeeds::TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)

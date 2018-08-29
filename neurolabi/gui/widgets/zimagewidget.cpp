@@ -4,7 +4,7 @@
 #include <cmath>
 #include <QGraphicsBlurEffect>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
@@ -13,6 +13,7 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
+#include "misc/miscutility.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -75,6 +76,11 @@ void ZImageWidget::maximizeViewPort()
 {
   qDebug() << "ZImageWidget::maximizeViewPort";
   m_viewProj.maximizeViewPort();
+}
+
+void ZImageWidget::enableOffsetAdjustment(bool on)
+{
+  m_offsetAdjustment = on;
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
@@ -763,10 +769,6 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
 
-  if (!m_isReady && isVisible()) {
-    m_viewProj.maximizeViewPort();
-    m_isReady = true;
-  }
 //  setValidViewPort(m_viewPort);
 }
 
@@ -774,6 +776,11 @@ void ZImageWidget::showEvent(QShowEvent *event)
 {
   LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
   QWidget::showEvent(event);
+
+  if (!m_isReady && isVisible()) {
+    m_viewProj.maximizeViewPort();
+    m_isReady = true;
+  }
 }
 
 void ZImageWidget::keyPressEvent(QKeyEvent *event)
@@ -820,6 +827,14 @@ double ZImageWidget::getAcutalZoomRatioY() const
 
 void ZImageWidget::updateView()
 {
+  //View port adjustment
+  if (m_offsetAdjustment) {
+    int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
+    if (zoom > 0) {
+      m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
+    }
+  }
+
   if (!isPaintBlocked()) {
     update();
   }

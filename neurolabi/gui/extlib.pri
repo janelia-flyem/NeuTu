@@ -39,7 +39,7 @@ exists($${CONDA_ENV}) {
 unix {
   #neurolabi
   LIBS += -L$${NEUROLABI_DIR}/c/lib
-  CONFIG(debug, debug|release) {
+  equals(SANITIZE_BUILD, "address") {
       contains(CONFIG, sanitize) {
         LIBS += -lneurolabi_sanitize
       } else {
@@ -164,6 +164,3 @@ macx {
 #  LIBS += -lGL -lGLU
 #}
 
-
-message($$DEFINES)
-message($$LIBS)

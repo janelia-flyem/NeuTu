@@ -49,7 +49,7 @@ class TileManager;
 class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
-class ZDvidDialog;
+class ZDvidTargetProviderDialog;
 class FlyEmBodyFilterDialog;
 class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
@@ -742,7 +742,7 @@ private:
   TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;

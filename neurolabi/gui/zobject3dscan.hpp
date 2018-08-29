@@ -48,6 +48,53 @@ int ZObject3dScan::scanArray(
 }
 
 template<class T>
+int ZObject3dScan::scanArrayV(
+    const T *array, int x, int y, int z, int width, T v)
+{
+  if (array == NULL) {
+    return 0;
+  }
+
+  if (isEmpty()) {
+//    addStripe(z, y, false);
+    addStripeFast(z, y);
+    getStripeArray().back().getSegmentArray().reserve(8);
+  } else {
+    if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
+//      addStripe(z, y, false);
+      addStripeFast(z, y);
+      getStripeArray().back().getSegmentArray().reserve(8);
+    }
+  }
+
+  int length = 0;
+  int x0 = 0;
+  int x1 = -1;
+  for (int i = 0; i < width; ++i) {
+    if (array[i] == v) {
+      if (x1 < x0) { //Initialize the run if the run starts
+        x0 = x + i;
+        x1 = x0;
+      } else { //continue the run
+        ++x1;
+      }
+    } else if (x1 >= x0) { //add a segment when the run is terminated
+      addSegmentFast(x0, x1);
+      length += x1 - x0 + 1;
+      x0 = 0;
+      x1 = -1;
+    }
+  }
+
+  if (x1 >= x0) {
+    addSegmentFast(x0, x1);
+    length += x1 - x0 + 1;
+  }
+
+  return length;
+}
+
+template<class T>
 int ZObject3dScan::scanArrayShift(
     const T *array, int start, int y, int z, int stride, int dim)
 {
