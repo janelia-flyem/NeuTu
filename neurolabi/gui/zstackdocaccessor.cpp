@@ -34,16 +34,50 @@ void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObject::EType type, bool deleteObject)
 {
   if (doc != NULL) {
-    {
-      QMutexLocker(doc->getObjectGroup().getMutex());
-      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
-      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-           ++iter) {
-        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
+void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, uint64_t label)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      if ((*iter)->getLabel() == label) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
       }
-      if (!objList.isEmpty()) {
-        doc->getDataBuffer()->deliver();
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
+void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      if ((*iter)->getLabel() != 1) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
       }
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
     }
   }
 }
@@ -53,36 +87,31 @@ void ZStackDocAccessor::RemoveObject(
     bool deleteObject)
 {
   if (doc != NULL) {
-    {
-      QMutexLocker(doc->getObjectGroup().getMutex());
-      TStackObjectList objList =
-          doc->getObjectGroup().findSameSourceUnsync(type, source);
-      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-           ++iter) {
-        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
-      }
-      if (!objList.isEmpty()) {
-        doc->getDataBuffer()->deliver();
-      }
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList =
+        doc->getObjectGroup().findSameSourceUnsync(type, source);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
     }
   }
 }
-
 
 void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
 {
   if (doc != NULL) {
-    {
-      QMutexLocker(doc->getObjectGroup().getMutex());
-      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(role);
-      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-           ++iter) {
-        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
-      }
-      if (!objList.isEmpty()) {
-        doc->getDataBuffer()->deliver();
-      }
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(role);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
     }
   }
 }
@@ -90,6 +119,23 @@ void ZStackDocAccessor::RemoveObject(
 void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
 {
   RemoveObject(doc, ZStackObject::TYPE_SWC, deleteObject);
+}
+
+void ZStackDocAccessor::SetObjectVisible(
+    ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList =
+        doc->getObjectGroup().findSameSourceUnsync(type, source);
+    for (ZStackObject *obj : objList) {
+      if (obj->isVisible() != on) {
+        obj->setVisible(on);
+        doc->bufferObjectVisibilityChanged(obj);
+      }
+    }
+    doc->processObjectModified();
+  }
 }
 
 void ZStackDocAccessor::AddObjectUnique(ZStackDoc *doc, ZStackObject *obj)
@@ -135,10 +181,8 @@ void ZStackDocAccessor::ParseWatershedContainer(
       ZObject3dScan *obj = *iter;
       obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
       objList.append(obj);
-//      getDataBuffer()->addUpdate(
-//            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     }
-//    getDataBuffer()->deliver();
+
     AddObject(doc, objList);
     result.shallowClear();
   }

@@ -25,7 +25,7 @@
 #include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"

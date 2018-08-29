@@ -69,6 +69,22 @@ public:
    * The size of the box will be scaled by \a s.
    */
   void scale(const ZIntPoint &s);
+  void scale(int s);
+
+  /*!
+   * \brief Downsize the box
+   *
+   * The size of the box will be scaled by \a 1 / s. Nothing will be done if any
+   * of the coordinate in \a s is non-positive.
+   */
+  void scaleDown(const ZIntPoint &s);
+  void scaleDown(int s);
+
+  /*!
+   * \brief Downsize the box in a way of filling blocks
+   */
+  void scaleDownBlock(int s);
+  void scaleDownBlock(const ZIntPoint &s);
 
   /*!
    * \brief Change the size of the cuboid by fixing the first corner

@@ -6,7 +6,7 @@
 #include "zdviddata.h"
 #if _QT_APPLICATION_
 #include <QtDebug>
-#include "QsLog.h"
+#include "zqslog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"
@@ -1200,6 +1200,16 @@ ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
 
   ZDvidTarget target(node);
   target.setGrayScaleName(getGrayScaleName());
+
+  return target;
+}
+
+ZDvidTarget ZDvidTarget::getTileTarget() const
+{
+  ZDvidNode node = getTileSource();
+
+  ZDvidTarget target(node);
+  target.setMultiscale2dName(getMultiscale2dName());
 
   return target;
 }

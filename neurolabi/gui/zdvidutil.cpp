@@ -11,6 +11,7 @@
 #include "dvid/zdvidversiondag.h"
 #include "zintcuboid.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidreader.h"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
@@ -465,10 +466,55 @@ std::string ZDvid::GetBodyIdTag(uint64_t bodyId)
   return stream.str();
 }
 
+std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
+    const ZDvidReader &reader,
+    const std::vector<uint64_t> &bodyIdArray, bool mergingToLargest)
+{
+  std::vector<uint64_t> merged;
+  uint64_t target = 0;
+  if (bodyIdArray.size() > 1) {
+    target = bodyIdArray[0];
+
+    if (mergingToLargest) {
+      int maxSize = 0;
+      for (uint64_t bodyId : bodyIdArray) {
+        const int bodySize = reader.readBodyBlockCount(bodyId);
+
+        DEBUG_OUT << bodyId << ": " << bodySize << std::endl;
+
+        if (bodySize > maxSize) {
+          maxSize = bodySize;
+          target = bodyId;
+        }
+      }
+
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != target) {
+          merged.push_back(bodyId);
+        }
+      }
+    } else {
+      merged.insert(merged.begin(), bodyIdArray.begin() + 1, bodyIdArray.end());
+    }
+  }
+
+  return std::pair<uint64_t, std::vector<uint64_t>>(target, merged);
+}
 
 
+std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
+    const ZDvidReader &reader, uint64_t defaultTargetId,
+    const std::vector<uint64_t> &bodyId, bool mergingToLargest)
+{
+  std::vector<uint64_t> bodyArray;
 
+  if (!bodyId.empty()) {
+    bodyArray.push_back(defaultTargetId);
+    bodyArray.insert(bodyArray.end(), bodyId.begin(), bodyId.end());
+  }
 
+  return GetMergeConfig(reader, bodyArray, mergingToLargest);
+}
 
 
 

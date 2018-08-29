@@ -2,7 +2,7 @@
 #include <iostream>
 #include <queue>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zjsonobject.h"
 #include "zstring.h"
 #include "zjsonparser.h"

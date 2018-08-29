@@ -5,7 +5,7 @@
 #include <set>
 #include "dvid/zdvidtarget.h"
 
-class ZDvidDialog;
+class ZDvidTargetProviderDialog;
 
 namespace Ui {
 class ZFlyEmNewBodySplitProjectDialog;
@@ -19,7 +19,7 @@ public:
   explicit ZFlyEmNewBodySplitProjectDialog(QWidget *parent = 0);
   ~ZFlyEmNewBodySplitProjectDialog();
 
-  void setDvidDialog(ZDvidDialog *dlg);
+  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -35,7 +35,7 @@ private slots:
 
 private:
   Ui::ZFlyEmNewBodySplitProjectDialog *ui;
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   ZDvidTarget m_dvidTarget;
 };
 

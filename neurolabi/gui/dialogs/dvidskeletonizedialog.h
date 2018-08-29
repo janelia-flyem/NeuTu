@@ -2,7 +2,7 @@
 #define DVIDSKELETONIZEDIALOG_H
 
 #include <QDialog>
-#include "zdviddialog.h"
+#include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 #include "flyembodyfilterdialog.h"
 
@@ -41,7 +41,7 @@ private:
 
 private:
   Ui::DvidSkeletonizeDialog *ui;
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   ZDvidTarget m_dvidTarget;
   FlyEmBodyFilterDialog *m_bodyDlg;
 };

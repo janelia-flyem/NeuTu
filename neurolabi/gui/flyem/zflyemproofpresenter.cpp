@@ -107,6 +107,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_SPLIT:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSplitItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_SVSPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSupervoxelSplitItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -115,6 +118,9 @@ bool ZFlyEmProofPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
       connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToNormal()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemIrrelevant()));
       break;
     case ZActionFactory::ACTION_TODO_ITEM_ANNOT_MERGE:
       connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToMerge()));
@@ -638,6 +644,11 @@ void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 //  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
+void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutube::TO_SUPERVOXEL_SPLIT);
+}
+
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, true, neutube::TO_DO);
@@ -662,6 +673,11 @@ void ZFlyEmProofPresenter::uncheckTodoItem()
 void ZFlyEmProofPresenter::setTodoItemToNormal()
 {
   getCompleteDocument()->setTodoItemToNormal();
+}
+
+void ZFlyEmProofPresenter::setTodoItemIrrelevant()
+{
+  getCompleteDocument()->setTodoItemIrrelevant();
 }
 
 void ZFlyEmProofPresenter::setTodoItemToMerge()
@@ -702,6 +718,14 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSplitItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+  tryAddToSupervoxelSplitItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()

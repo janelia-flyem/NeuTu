@@ -335,35 +335,6 @@ bool misc::exportPointList(
   return false;
 }
 
-int misc::GetZoomScale(int zoom)
-{
-  switch (zoom) {
-  case 0:
-    return 1;
-  case 1:
-    return 2;
-  case 2:
-    return 4;
-  case 3:
-    return 8;
-  case 4:
-    return 16;
-  case 5:
-    return 32;
-  case 6:
-    return 64;
-  default:
-    break;
-  }
-
-  int scale = 1;
-  while (zoom--) {
-    scale *= 2;
-  }
-
-  return scale;
-}
-
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;
@@ -649,6 +620,18 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   return curve;
 }
 
+ZIntPoint misc::GetFirstCorner(const ZArray *array)
+{
+  ZIntPoint pt;
+  if (array != NULL) {
+    pt.set(array->getStartCoordinate(0),
+           array->getStartCoordinate(1),
+           array->getStartCoordinate(2));
+  }
+
+  return pt;
+}
+
 ZIntCuboid misc::GetBoundBox(const ZArray *array)
 {
   ZIntCuboid box;
@@ -787,4 +770,22 @@ double misc::SampleStack(
 size_t misc::CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
 {
   return obj1.intersect(obj2).getVoxelNumber();
+}
+
+size_t misc::CountNeighbor(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  ZObject3dScan obj = obj1;
+  obj.dilate();
+
+  return CountOverlap(obj, obj2);
+}
+
+size_t misc::CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+//  return obj1.getVoxelNumber() + obj2.getVoxelNumber(); //mockup
+
+  ZObject3dScan obj = obj1;
+  obj.dilatePlane();
+
+  return CountOverlap(obj, obj2);
 }

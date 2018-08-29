@@ -28,7 +28,7 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/zshowsegresult.cpp \
     $$PWD/zbrowseropener.cpp
 
-contains(CONFIG, surfrecon) {
+CONFIG(surfrecon) {
   HEADERS += \
     $$PWD/surfrecon.h \
     $$PWD/zsurfreconmodule.h

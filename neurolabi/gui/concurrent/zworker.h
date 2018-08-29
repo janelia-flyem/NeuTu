@@ -33,6 +33,7 @@ signals:
 public slots:
   void process();
   void processTask(ZTask *task);
+  void scheduleTask(ZTask *task);
 
 private:
   ZTaskQueue *m_taskQueue = nullptr;

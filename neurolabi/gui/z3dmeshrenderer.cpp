@@ -4,7 +4,7 @@
 #include "z3dgpuinfo.h"
 #include "z3dshaderprogram.h"
 #include "z3dtexture.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zmesh.h"
 #include "neutubeconfig.h"
 
@@ -439,7 +439,7 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         const std::vector<glm::vec4>& colors = (*m_meshPt)[i]->colors();
         const std::vector<GLuint>& triangleIndexes = (*m_meshPt)[i]->indices();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Color count in renderer: " << colors.size() << std::endl;
 #endif
 

@@ -39,6 +39,7 @@ class ZFlyEmProofDoc : public ZStackDoc
   Q_OBJECT
 public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
+  ~ZFlyEmProofDoc();
 
   static ZFlyEmProofDoc* Make();
 
@@ -111,6 +112,7 @@ public:
   uint64_t getBodyId(const ZIntPoint &pt);
 
   uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getSupervoxelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -172,7 +174,7 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
 
-  void selectBody(uint64_t bodyId);
+  bool selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
@@ -305,6 +307,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
@@ -425,6 +428,10 @@ public:
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
+  ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
+
+  void diagnose() const override;
+
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
@@ -488,6 +495,10 @@ public slots: //Commands
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
 
   void executeRotateRoiPlaneCommand(int z, double theta);

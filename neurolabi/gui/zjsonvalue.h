@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "neurolabi_config.h"
 #include "tz_json.h"
@@ -127,6 +128,8 @@ public:
   std::string getSource() const;
 
   int getRefCount() const;
+
+  friend std::ostream& operator << (std::ostream &stream, const ZJsonValue &v);
 
 protected:
 //  json_error_t m_error;

@@ -32,6 +32,7 @@ public:
   static void SetTodoDelegate(ZFlyEmProofMvc *mvc, ZStackDoc *todoDoc);
   static void UpdateProtocolRangeGlyph(
       ZFlyEmProofMvc *mvc, const ZIntCuboid &range);
+  static void SetProtocolRangeGlyphVisible(ZFlyEmProofMvc *mvc, bool visible);
 };
 
 #endif // ZFLYEMPROOFMVCCONTROLLER_H

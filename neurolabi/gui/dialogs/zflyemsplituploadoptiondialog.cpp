@@ -5,7 +5,7 @@
 
 #include "ui_zflyemsplituploadoptiondialog.h"
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zwidgetfactory.h"
 #include "zflyembodyannotation.h"
 #include "flyem/zflyemmisc.h"

@@ -102,7 +102,7 @@ public slots:
    */
   void setBodyItemSelection(const QSet<uint64_t> &bodySet);
 
-  void zoomToBodyMesh();
+  void zoomToBodyMesh(int numMeshLoaded);
 
   /*!
    * \brief Start Neu3Window
@@ -180,6 +180,10 @@ private slots:
   void endProgress();
 
   void on_actionNeuTu_Proofread_triggered();
+
+  void on_actionDiagnose_triggered();
+
+  void diagnose();
 
 private:
   void createDockWidget();

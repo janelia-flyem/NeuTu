@@ -125,13 +125,16 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_SELECT_BODY_IN_RECT);
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
-      if (!doc->getDvidTarget().readOnly()) {
-        std::set<uint64_t> selectedOriginal =
-            doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
-        std::set<uint64_t> selectedMapped =
-            doc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
+      std::set<uint64_t> selectedOriginal =
+          doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
-        if (!selectedOriginal.empty()) {
+      if (!selectedOriginal.empty()) {
+        if (!doc->getDvidTarget().getSynapseName().empty()) {
+          config.append(ZActionFactory::ACTION_BODY_CONNECTION);
+          config.appendSeparator();
+        }
+
+        if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
             if (ZStackDocHelper::AllowingBodySplit(doc)) {
               config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
@@ -142,6 +145,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           }
 
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
+            std::set<uint64_t> selectedMapped =
+                doc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
+
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);
             }
@@ -170,6 +176,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
       config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+      if (doc->getDvidTarget().hasSupervoxel()) {
+        config.append(ZActionFactory::ACTION_ADD_TODO_SVSPLIT);
+      }
       config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
@@ -211,6 +220,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_COPY_POSITION);
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
+#ifdef _DEBUG_
+    config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
+#endif
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);

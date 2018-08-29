@@ -1051,6 +1051,13 @@ void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
   }
 }
 
+QList<QString> ZFlyEmMisc::GetDefaultBodyStatus()
+{
+  return QList<QString>() << "Not examined" << "Traced" << "Traced in ROI"
+                          << "Partially traced" << "Orphan" << "Hard to trace"
+                          << "Finalized";
+}
+
 void ZFlyEmMisc::MakeTriangle(
     const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
@@ -1506,18 +1513,21 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReaderFromUrl(
         GET_FLYEM_CONFIG.getTaskServer());
-  ZJsonObject taskJson =
-      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
-                                    taskKey.c_str());
-  if (taskJson.hasKey(neutube::json::REF_KEY)) {
-    taskJson =
-        reader->readJsonObject(
-          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
-  }
+  QList<ZStackObject*> seedList;
+  if (reader != NULL) {
+    ZJsonObject taskJson =
+        reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                      taskKey.c_str());
+    if (taskJson.hasKey(neutube::json::REF_KEY)) {
+      taskJson =
+          reader->readJsonObject(
+            ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+    }
 
-  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
-  foreach (ZStackObject *seed, seedList) {
-    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    seedList = LoadSplitTask(taskJson);
+    foreach (ZStackObject *seed, seedList) {
+      seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    }
   }
 
   return seedList;
@@ -1593,31 +1603,6 @@ bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
   return false;
 }
 
-/*
-bool ZFlyEmMisc::HasOpenTestTask()
-{
-  ZDvidReader *reader = GetTaskReader();
-  QString taskKey =  QString::fromStdString(ZDvidUrl::GetTaskKey());
-  if (reader->hasKey("task_test", taskKey)) {
-    if (!reader->hasKey("result_test", taskKey)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-*/
-
-#if 0
-void ZFlyEmMisc::StartOpenTestTask()
-{
-  if (HasOpenTestTask()) {
-//    ZJsonObject config = GetTaskReader()->readTestTask();
-    //todo
-    ZMainWindowController::StartTestTask(ZDvidUrl::GetTaskKey());
-  }
-}
-#endif
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {

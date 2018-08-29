@@ -11,8 +11,6 @@
 #include "z3ddef.h"
 #include "zstackdoc3dhelper.h"
 
-class QMainWindow;
-
 class Z3DCanvas;
 class Z3DCompositor;
 class Z3DCanvasPainter;
@@ -29,6 +27,7 @@ class Z3DBoundedFilter;
 class Z3DGeometryFilter;
 class ZStackDoc;
 class ZStackObjectInfoSet;
+class Z3D2DSliceFilter;
 
 class Z3DView : public QObject
 {
@@ -40,7 +39,7 @@ public:
     INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 
-  Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QMainWindow* parent = nullptr);
+  Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);
 
   ~Z3DView();
 
@@ -138,6 +137,11 @@ public:
 
   inline Z3DMeshFilter* getDecorationFilter() const
   { return m_decorationFilter.get(); }
+
+  inline Z3D2DSliceFilter* getSliceFilter() const
+  {
+    return m_sliceFilter.get();
+  }
 
   Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
   Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
@@ -247,10 +251,12 @@ private:
   void initSurfaceFilter();
   void initRoiFilter();
   void initDecorationFilter();
+  void initSliceFilter();
 
   void addFilter(neutube3d::ERendererLayer layer);
 
   void updateVolumeData();
+//  void updateSliceData();
 
   /*
   void updateGraphData();
@@ -265,7 +271,6 @@ private:
 private:
   ZStackDoc* m_doc;
   bool m_isStereoView;
-  QMainWindow* m_mainWin;
 
   //
   QAction* m_zoomInAction;
@@ -286,6 +291,7 @@ private:
   std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
   std::unique_ptr<Z3DMeshFilter> m_roiFilter;
   std::unique_ptr<Z3DMeshFilter> m_decorationFilter;
+  std::unique_ptr<Z3D2DSliceFilter> m_sliceFilter;
 
   std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 

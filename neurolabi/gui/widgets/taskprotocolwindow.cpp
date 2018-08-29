@@ -9,12 +9,12 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QsLog.h>
 #include <QShortcut>
 
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
@@ -163,6 +163,11 @@ void TaskProtocolWindow::init() {
 }
 
 void TaskProtocolWindow::onPrevButton() {
+    if (!ui->prevButton->isEnabled()) {
+        return;
+    }
+    m_changingTask = true;
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforePrev();
@@ -245,6 +250,11 @@ void TaskProtocolWindow::test()
 }
 
 void TaskProtocolWindow::onNextButton() {
+    if (!ui->nextButton->isEnabled()) {
+        return;
+    }
+    m_changingTask = true;
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeNext();
@@ -357,7 +367,13 @@ void TaskProtocolWindow::onLoadTasksButton() {
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
-  updateBodyWindow();
+    updateBodyWindow();
+}
+
+void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
+{
+    m_nextPrevAllowed = allowed;
+    updateNextPrevButtonsEnabled();
 }
 
 namespace {
@@ -377,18 +393,18 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
           saveState();
           updateLabel();
       } else {
-        BlockSignals blockCallingThisAgain(ui->completedCheckBox);
-        ui->completedCheckBox->setCheckState(Qt::Unchecked);
+          BlockSignals blockCallingThisAgain(ui->completedCheckBox);
+          ui->completedCheckBox->setCheckState(Qt::Unchecked);
       }
     }
 }
 
 void TaskProtocolWindow::onCompletedAndNext()
 {
-  ui->completedCheckBox->setCheckState(Qt::Checked);
-  if (ui->nextButton->isEnabled()) {
-    onNextButton();
-  }
+    ui->completedCheckBox->setCheckState(Qt::Checked);
+    if (ui->nextButton->isEnabled()) {
+       onNextButton();
+    }
 }
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
@@ -425,7 +441,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
         updateBodyWindow();
         updateLabel();
     }
-    updateButtonsEnabled();
+    updateNextPrevButtonsEnabled();
 }
 
 /*
@@ -500,9 +516,9 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 int TaskProtocolWindow::getFirst(bool includeCompleted)
 {
   for (int i = 0; i < m_taskList.size(); i++) {
-      if ((includeCompleted || !m_taskList[i]->completed()) && (!m_taskList[i]->skip())) {
-          return i;
-      }
+    if ((includeCompleted || !m_taskList[i]->completed()) && (!skip(i))) {
+        return i;
+    }
   }
   return -1;
 }
@@ -557,7 +573,7 @@ int TaskProtocolWindow::getPrevUncompleted() {
     return index;
 }
 
-int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+int TaskProtocolWindow::getPrevIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -571,12 +587,12 @@ int TaskProtocolWindow::getPrevIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
 
-int TaskProtocolWindow::getNextIndex(int currentIndex) const
+int TaskProtocolWindow::getNextIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -590,7 +606,7 @@ int TaskProtocolWindow::getNextIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
@@ -614,6 +630,29 @@ int TaskProtocolWindow::getNextUncompleted() {
   }
 
   return index;
+}
+
+bool TaskProtocolWindow::skip(int taskIndex)
+{
+  if ((taskIndex < 0) || (taskIndex >= m_taskList.size())) {
+      return false;
+  }
+
+  // In addition to calling the task's skip() function, keep track of the tasks whose
+  // skip() has returned true.  The "progress" indicator that shows the fraction of
+  // tasks that have been completed needs to decrease the total number of tasks by this
+  // number of tasks.  This approach does a reasonable job of accomodating the dynamic
+  // nature of a task's skip()  (e.g., a task that should not be skipped originally
+  // might later need to be skipped if it becomes redundant based on the completion of
+  // another task).
+
+  if (m_taskList[taskIndex]->skip()) {
+      m_skippedTaskIndices.insert(taskIndex);
+      return true;
+  } else {
+      m_skippedTaskIndices.erase(taskIndex);
+      return false;
+  }
 }
 
 /*
@@ -667,7 +706,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
 
         // make the "completed" checkbox match the current task, but prevent the signal from
-        // being triggere, so that task does not do somehing like save its results an extra time
+        // being triggered, so that task does not do somehing like save its results an extra time
         BlockSignals blockOnCompleted(ui->completedCheckBox);
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
 
@@ -682,7 +721,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->verticalLayout_3->addWidget(m_currentTaskWidget);
             // ui->horizontalLayout->addWidget(m_currentTaskWidget);
             m_currentTaskWidget->setVisible(true);
-            updateButtonsEnabled();
+            updateNextPrevButtonsEnabled();
         }
 
         updateMenu(true);
@@ -693,9 +732,10 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * ensures that the "Next" and "Prev" buttons are enabled only when there are
  * next or previous tasks to go to
  */
-void TaskProtocolWindow::updateButtonsEnabled() {
-    bool nextPrevEnabled = ((m_taskList.size() > 1) &&
-                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
+  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
+                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                          m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -734,6 +774,30 @@ void TaskProtocolWindow::updateBodyWindow() {
         const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
+#ifdef _DEBUG_
+        std::cout << "Visible bodies:";
+        foreach (uint64_t body, visible) {
+          std::cout << body << ", ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Selected bodies:";
+        foreach (uint64_t body, selected) {
+          std::cout << body << ", ";
+        }
+        std::cout << std::endl;
+#endif
+
+#ifdef _DEBUG_2
+        m_body3dDoc->setMinDsLevel(5);
+        ZFlyEmBodyConfig config(1);
+        config.setDsLevel(5);
+        config.setLocalDsLevel(0);
+        config.setRange(ZIntCuboid(ZIntPoint(2775, 6048, 2742),
+                                   ZIntPoint(3287, 6560, 3254)));
+        m_body3dDoc->addBodyConfig(config);
+#endif
+
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
             emit bodyAdded(bodyID);
@@ -769,7 +833,7 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     bool usingTars = false;
     const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
     foreach (uint64_t bodyID, visible) {
-        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
             m_bodyMeshesAddedExpected++;
             usingTars = true;
         }
@@ -777,7 +841,7 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
     const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
     foreach (uint64_t bodyID, selected) {
-        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
             m_bodyMeshesAddedExpected++;
             usingTars = true;
         }
@@ -819,13 +883,17 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
+  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
+           << "m_bodiesReused =" << m_bodiesReused;
     if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
-        updateButtonsEnabled();
         if (m_currentTaskWidget) {
             m_currentTaskWidget->setEnabled(true);
         }
@@ -840,6 +908,9 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
             m_taskList[m_currentTaskIndex]->onLoaded();
         }
+
+        m_changingTask = false;
+        updateNextPrevButtonsEnabled();
     }
 }
 
@@ -853,7 +924,10 @@ void TaskProtocolWindow::updateLabel() {
             ncomplete++;
         }
     }
-    int ntasks = m_taskList.size();
+
+    // the total task count should not include tasks known to be skipped
+    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
+
     float percent = (100.0 * ncomplete) / ntasks;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
@@ -1013,14 +1087,16 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
 
         if (!m_taskList.empty()) {
-          connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
-                  this, SLOT(onBodiesUpdated()));
-          connect(m_taskList.back().data(), SIGNAL(messageGenerated(const ZWidgetMessage&)),
-                  this, SIGNAL(messageGenerated(const ZWidgetMessage&)));
-          connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
-                  this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
-          connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
-                  this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
+            connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
+                    this, SLOT(onBodiesUpdated()));
+            connect(m_taskList.back().data(), SIGNAL(nextPrevAllowed(bool)),
+                    this, SLOT(onNextPrevAllowed(bool)));
+            connect(m_taskList.back().data(), SIGNAL(messageGenerated(const ZWidgetMessage&)),
+                    this, SIGNAL(messageGenerated(const ZWidgetMessage&)));
+            connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
+                    this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
+            connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
+                    this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
         }
     }
 
@@ -1209,9 +1285,10 @@ void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
     enableButtonsAfterUpdating();
 }
 
-void TaskProtocolWindow::onBodyMeshLoaded()
+void TaskProtocolWindow::onBodyMeshLoaded(int numMeshes)
 {
-    m_bodyMeshLoadedReceived++;
+  m_bodyMeshLoadedReceived += numMeshes;
+//    m_bodyMeshLoadedReceived++;
     enableButtonsAfterUpdating();
 }
 

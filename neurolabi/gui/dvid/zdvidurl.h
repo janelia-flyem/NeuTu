@@ -83,7 +83,8 @@ public:
   std::string getSupervoxelUrl(
       uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
   std::string getSupervoxelUrl(uint64_t bodyId, const ZIntCuboid &box) const;
-  std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom);
+  std::string getSupervoxelUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
+  std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
 //  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
   std::string getSparsevolUrl(const std::string &dataName) const;
@@ -93,7 +94,8 @@ public:
   std::string getSparsevolUrl(
       uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
-  std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom);
+  std::string getSparsevolUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
+  std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
   std::string getSparsevolSizeUrl(uint64_t bodyId) const;
 
 
@@ -143,6 +145,8 @@ public:
   std::string getBodyInfoUrl(const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId) const;
+
+  std::string getBodySizeUrl(uint64_t bodyId) const;
 
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
@@ -314,11 +318,15 @@ public:
 
 //  static bool IsSplitTask(const std::string &url);
 
+  static std::string AppendRangeQuery(
+      const std::string &url, const ZIntCuboid &box);
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
   static std::string GetServiceResultEndPoint();
+  static std::string AppendQuery(const std::string &url, const std::string query);
 
 private:
   ZDvidTarget m_dvidTarget;

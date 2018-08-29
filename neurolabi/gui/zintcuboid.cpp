@@ -111,6 +111,51 @@ void ZIntCuboid::scale(const ZIntPoint &s)
   m_lastCorner = m_firstCorner + dim * s - 1;
 }
 
+
+void ZIntCuboid::scale(int s)
+{
+  scale(ZIntPoint(s, s, s));
+}
+
+void ZIntCuboid::scaleDown(const ZIntPoint &s)
+{
+  if (s.definitePositive()) {
+    m_firstCorner /= s;
+    m_lastCorner /= s;
+  }
+}
+
+void ZIntCuboid::scaleDown(int s)
+{
+  if (s > 0) {
+    m_firstCorner /= s;
+    m_lastCorner /= s;
+  }
+}
+
+void ZIntCuboid::scaleDownBlock(int s)
+{
+  if (s > 0) {
+    m_firstCorner /= s;
+    m_lastCorner.setX(m_lastCorner.getX() / s + m_lastCorner.getX() % s);
+    m_lastCorner.setY(m_lastCorner.getY() / s + m_lastCorner.getY() % s);
+    m_lastCorner.setZ(m_lastCorner.getZ() / s + m_lastCorner.getZ() % s);
+  }
+}
+
+void ZIntCuboid::scaleDownBlock(const ZIntPoint &s)
+{
+  if (s.definitePositive()) {
+    m_firstCorner /= s;
+    m_lastCorner.setX(
+          m_lastCorner.getX() / s.getX() + m_lastCorner.getX() % s.getX());
+    m_lastCorner.setY(
+          m_lastCorner.getY() / s.getY() + m_lastCorner.getY() % s.getY());
+    m_lastCorner.setZ(
+          m_lastCorner.getZ() / s.getZ() + m_lastCorner.getZ() % s.getZ());
+  }
+}
+
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   if (!cuboid.isEmpty()) {

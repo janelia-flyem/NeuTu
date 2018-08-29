@@ -1,6 +1,6 @@
 #include "taskprotocoltask.h"
 
-#include <QsLog.h>
+#include "zqslog.h"
 
 /*
  * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your
@@ -295,7 +295,12 @@ void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
 {
   m_visibleBodies = visible;
   m_selectedBodies = selected;
-  emit(bodiesUpdated());
+  emit bodiesUpdated();
+}
+
+void TaskProtocolTask::allowNextPrev(bool allow)
+{
+  emit nextPrevAllowed(allow);
 }
 
 void TaskProtocolTask::notify(const ZWidgetMessage &msg)

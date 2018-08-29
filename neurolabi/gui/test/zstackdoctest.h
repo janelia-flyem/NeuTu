@@ -5,6 +5,7 @@
 #include "zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zobject3d.h"
+#include "zstackdocaccessor.h"
 
 #ifdef _USE_GTEST_
 TEST(ZStackDoc, Basic)
@@ -157,6 +158,53 @@ TEST(ZStackDoc, Player)
   graph = doc.get3DGraphDecoration();
   ASSERT_EQ(13, (int) graph.getNodeNumber());
   ASSERT_EQ(0, (int) graph.getEdgeNumber());
+}
+
+TEST(ZStackDoc, Accessor)
+{
+  ZStackDoc doc;
+  {
+    ZObject3d *obj = new ZObject3d;
+    obj->append(0, 0, 0);
+    obj->setLabel(1);
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    doc.addObject(obj);
+  }
+
+  ZStackDocAccessor::RemoveSideSplitSeed(&doc);
+
+  ASSERT_EQ(0, doc.getDataBuffer()->getActionCount(
+              ZStackDocObjectUpdate::ACTION_KILL));
+
+  {
+    ZObject3d *obj = new ZObject3d;
+    obj->append(0, 0, 0);
+    obj->setLabel(2);
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    doc.addObject(obj);
+  }
+
+  ZStackDocAccessor::RemoveSideSplitSeed(&doc);
+  ASSERT_EQ(1, doc.getDataBuffer()->getActionCount(
+              ZStackDocObjectUpdate::ACTION_KILL));
+
+  {
+    ZObject3d *obj = new ZObject3d;
+    obj->append(0, 0, 0);
+    obj->setLabel(3);
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    doc.addObject(obj);
+  }
+  ZStackDocAccessor::RemoveSideSplitSeed(&doc);
+  doc.getDataBuffer()->print();
+
+
+  ASSERT_EQ(3, doc.getDataBuffer()->getActionCount(
+              ZStackDocObjectUpdate::ACTION_KILL));
+
+  doc.processDataBuffer();
+  ASSERT_EQ(1, doc.getObjectList(ZStackObjectRole::ROLE_SEED).size());
+
 }
 
 TEST(ZStackDoc, Undo)

@@ -453,17 +453,19 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
   }
 
   if (e->type() == QEvent::MouseButtonRelease) {
-    if (m_pressedItem != NULL) {
+//    if (m_pressedItem != NULL) {
       if ((std::abs(e->x() - m_startCoord.x) < 2) &&
           (std::abs(m_startCoord.y - e->y()) < 2)) {
         if (e->modifiers() == Qt::ControlModifier)
           emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), true);
         else
           emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), false);
-        e->accept();
+        if (m_pressedItem != NULL) {
+          e->accept();
+        }
       }
       m_pressedItem = NULL;
-    }
+//    }
   }
 }
 

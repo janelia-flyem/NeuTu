@@ -53,6 +53,7 @@ public:
 
 signals:
     void bodiesUpdated();
+    void nextPrevAllowed(bool allowed);
     void messageGenerated(const ZWidgetMessage&);
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
@@ -71,6 +72,7 @@ protected:
     QString objectToString(QJsonObject json);
 
     void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
+    void allowNextPrev(bool allow = true);
 
     void notify(const ZWidgetMessage &msg);
 
