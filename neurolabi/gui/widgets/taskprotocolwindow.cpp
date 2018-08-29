@@ -22,6 +22,7 @@
 #include "protocols/taskbodycleave.h"
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskfalsesplitreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
@@ -1082,6 +1083,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "body cleave") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
+        } else if (taskType == "false split review") {
+            QSharedPointer<TaskProtocolTask> task(new TaskFalseSplitReview(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "body merge") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyMerge(taskJson.toObject(), m_body3dDoc));
