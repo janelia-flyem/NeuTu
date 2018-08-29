@@ -916,8 +916,23 @@ void TaskBodyCleave::onCompleted()
     std::sort(pair.second.begin(), pair.second.end());
   }
 
-  writeOutput(writer, cleaveIndexToMeshIds);
+  size_t indexNotCleavedOff = 0;
+  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff);
   writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds);
+
+  if (succeeded) {
+
+    // Hide the super voxels that are being cleaved off.
+
+    m_hiddenCleaveIndices.clear();
+    for (auto it : cleaveIndexToMeshIds) {
+      std::size_t cleaveIndex = it.first;
+      if (cleaveIndex != indexNotCleavedOff) {
+        m_hiddenCleaveIndices.insert(cleaveIndex);
+      }
+    }
+    updateVisibility();
+  }
 }
 
 std::size_t TaskBodyCleave::chosenCleaveIndex() const
@@ -1393,8 +1408,9 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
   });
 }
 
-void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
-                                 const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds)
+bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
+                                 const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+                                 std::size_t &indexNotCleavedOff)
 {
   std::string instance = writer.getDvidTarget().getBodyLabelName();
   ZDvidUrl url(writer.getDvidTarget());
@@ -1443,8 +1459,10 @@ void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
         QString text = "Writing of cleaving results " + frac + " failed, code " + QString::number(writer.getStatusCode()) + ":\n" +
             writer.getStatusErrorMessage();
         displayWarning(title, text);
-        return;
+        return false;
       }
+    } else {
+      indexNotCleavedOff = pair.first;
     }
 
     i++;
@@ -1475,6 +1493,8 @@ void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
   undoText += "]' | http POST " + url.getNodeUrl() + "/" + instance + "/merge";
   std::string undoMsg = "\nUndo the previous cleave with the following shell command (using HTTPie):\n" + undoText + "\n\n";
   std::cout << undoMsg;
+
+  return true;
 }
 
 void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
