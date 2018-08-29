@@ -140,8 +140,9 @@ private:
                       const QString& details = "",
                       bool allowSuppression = false);
 
-  void writeOutput(ZDvidWriter &writer,
-                   const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds);
+  bool writeOutput(ZDvidWriter &writer,
+                   const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds,
+                   std::size_t &indexNotCleavedOff);
   void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
                             const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds);
   ZJsonArray readAuxiliaryOutput(const ZDvidReader& reader) const;
