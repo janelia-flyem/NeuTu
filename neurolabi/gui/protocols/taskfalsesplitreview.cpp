@@ -4,7 +4,9 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
@@ -51,6 +53,7 @@ namespace {
   static const QString KEY_SOURCE = "source";
   static const QString KEY_BUILD_VERSION = "build version";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
+  static const QString KEY_TODO_COUNT = "merge todo count";
 
   static const std::vector<glm::vec4> INDEX_COLORS({
     glm::vec4(255, 255, 255, 255) / 255.0f, // white (not in the body)
@@ -372,6 +375,12 @@ void TaskFalseSplitReview::onCompleted()
   QJsonArray jsonTimes;
   std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
   json[KEY_USAGE_TIME] = jsonTimes;
+
+  std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(m_bodyId);
+  int count = std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
+    return a + (b->getAction() == neutube::TO_MERGE);
+  });
+  json[KEY_TODO_COUNT] = QJsonValue(count);
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
