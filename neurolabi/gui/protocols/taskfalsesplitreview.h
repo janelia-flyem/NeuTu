@@ -30,6 +30,7 @@ public:
   virtual QString actionString() override;
   virtual QString targetString() override;
 
+  virtual bool skip() override;
   virtual void beforeNext() override;
   virtual void beforePrev() override;
   virtual void beforeDone() override;
@@ -48,6 +49,9 @@ private slots:
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;
+
+  bool m_skip = false;
+  int m_timeOfLastSkipCheck = -1;
 
   QTime m_usageTimer;
   std::vector<int> m_usageTimes;
@@ -73,6 +77,8 @@ private:
   void displayWarning(const QString& title, const QString& text,
                       const QString& details = "",
                       bool allowSuppression = false);
+
+  void writeOutput();
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
