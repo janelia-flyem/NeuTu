@@ -8,6 +8,7 @@
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
+#include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -47,6 +48,7 @@ namespace {
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
   // For the result JSON.
+  static const QString KEY_SKIPPED = "skipped";
   static const QString KEY_USER = "user";
   static const QString KEY_TIMESTAMP = "time";
   static const QString KEY_TIME_ZONE = "time zone";
@@ -201,6 +203,48 @@ QString TaskFalseSplitReview::targetString()
   return QString::number(m_bodyId);
 }
 
+bool TaskFalseSplitReview::skip()
+{
+  // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
+  // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
+  // in rapid succession.
+
+  // An environment variable can override the interval for checking, with a value of
+  // -1 meaning never check.
+
+  int interval = 1000;
+  if (const char* overrideIntervalStr = std::getenv("NEU3_FALSE_SPLIT_REVIEW_SKIP_TEST_INTERVAL_MS")) {
+    interval = std::atoi(overrideIntervalStr);
+  }
+  if (interval < 0) {
+    return false;
+  }
+
+  int now = QTime::currentTime().msecsSinceStartOfDay();
+  if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    return m_skip;
+  }
+  m_timeOfLastSkipCheck = now;
+
+  QTime timer;
+  timer.start();
+
+  ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
+  std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(m_bodyId);
+  int statusCode = 0;
+  ZDvid::MakeHeadRequest(tarUrl, statusCode);
+  m_skip = (statusCode != 200);
+
+  LINFO() << "TaskFalseSplitReview::skip() HEAD took" << timer.elapsed() << "ms to decide to"
+          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+
+  // Record that the task was skipped.
+
+  writeOutput();
+
+  return m_skip;
+}
+
 void TaskFalseSplitReview::beforeNext()
 {
   applyPerTaskSettings();
@@ -340,52 +384,7 @@ void TaskFalseSplitReview::onCompleted()
 
   m_usageTimer.start();
 
-  ZDvidReader reader;
-  reader.setVerbose(false);
-  if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskFalseSplitReview::onCompleted() could not open DVID target for reading";
-    return;
-  }
-
-  ZDvidWriter writer;
-  if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskFalseSplitReview::onCompleted() could not open DVID target for writing";
-    return;
-  }
-
-  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
-  if (!reader.hasData(instance)) {
-    writer.createKeyvalue(instance);
-  }
-  if (!reader.hasData(instance)) {
-    LERROR() << "TaskFalseSplitReview::onCompleted() could not create DVID instance \"" << instance << "\"";
-    return;
-  }
-
-  QJsonObject json;
-  if (const char* user = std::getenv("USER")) {
-    json[KEY_USER] = user;
-  }
-  json[KEY_BODY_ID] = QJsonValue(qint64(m_bodyId));
-  json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
-  json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
-  json[KEY_SOURCE] = jsonSource();
-  json[KEY_BUILD_VERSION] = getBuildVersion().c_str();
-
-  QJsonArray jsonTimes;
-  std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
-  json[KEY_USAGE_TIME] = jsonTimes;
-
-  std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(m_bodyId);
-  int count = std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-    return a + (b->getAction() == neutube::TO_MERGE);
-  });
-  json[KEY_TODO_COUNT] = QJsonValue(count);
-
-  QJsonDocument jsonDoc(json);
-  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
-  std::string key = std::to_string(m_bodyId);
-  writer.writeJsonString(instance, key, jsonStr);
+  writeOutput();
 }
 
 ProtocolTaskConfig TaskFalseSplitReview::getTaskConfig() const
@@ -510,6 +509,58 @@ void TaskFalseSplitReview::displayWarning(const QString &title, const QString &t
       }
     }
   });
+}
+
+void TaskFalseSplitReview::writeOutput()
+{
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (!reader.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskFalseSplitReview::writeOutput() could not open DVID target for reading";
+    return;
+  }
+
+  ZDvidWriter writer;
+  if (!writer.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskFalseSplitReview::writeOutput() could not open DVID target for writing";
+    return;
+  }
+
+  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+  if (!reader.hasData(instance)) {
+    writer.createKeyvalue(instance);
+  }
+  if (!reader.hasData(instance)) {
+    LERROR() << "TaskFalseSplitReview::writeOutput() could not create DVID instance \"" << instance << "\"";
+    return;
+  }
+
+  QJsonObject json;
+
+  json[KEY_SKIPPED] = QJsonValue(m_skip);
+  if (const char* user = std::getenv("USER")) {
+    json[KEY_USER] = user;
+  }
+  json[KEY_BODY_ID] = QJsonValue(qint64(m_bodyId));
+  json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
+  json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
+  json[KEY_SOURCE] = jsonSource();
+  json[KEY_BUILD_VERSION] = getBuildVersion().c_str();
+
+  QJsonArray jsonTimes;
+  std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
+  json[KEY_USAGE_TIME] = jsonTimes;
+
+  std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(m_bodyId);
+  int count = std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
+    return a + (b->getAction() == neutube::TO_MERGE);
+  });
+  json[KEY_TODO_COUNT] = QJsonValue(count);
+
+  QJsonDocument jsonDoc(json);
+  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
+  std::string key = std::to_string(m_bodyId);
+  writer.writeJsonString(instance, key, jsonStr);
 }
 
 bool TaskFalseSplitReview::loadSpecific(QJsonObject json)
