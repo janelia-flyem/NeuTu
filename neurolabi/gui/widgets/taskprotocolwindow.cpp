@@ -27,6 +27,7 @@
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "flyem/zflyemtaskhelper.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -202,6 +203,12 @@ void TaskProtocolWindow::onPrevButton() {
 
     updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
+}
+
+void TaskProtocolWindow::updateTaskInteraction()
+{
+  ZFlyEmTaskHelper::ResolveShortcutForSplitting(
+        getCurrentTask(), m_body3dDoc->isSplitActivated());
 }
 
 void TaskProtocolWindow::test()

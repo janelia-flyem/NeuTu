@@ -298,6 +298,8 @@
 #include "zarrayfactory.h"
 #include "dvid/zdvidstackblockfactory.h"
 #include "zstackblocksource.h"
+#include "neutuse/taskwriter.h"
+#include "neutuse/task.h"
 
 #include "test/ztestall.h"
 
@@ -27685,7 +27687,7 @@ void ZTest::test(MainWindow *host)
   spStack->getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.setServer("emdata2.int.janelia.org");
   target.setPort(8700);
@@ -27709,6 +27711,27 @@ void ZTest::test(MainWindow *host)
   ZStackWatershedContainer container(&spStack);
   container.exportSource(GET_TEST_DATA_DIR + "/_test.tif");
 //  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+  neutuse::TaskWriter writer;
+  writer.open("http://zhaot-ws1:7500");
+  std::cout << writer.ready() << std::endl;
+
+  neutuse::Task task;
+  task.setType("dvid");
+  task.setName("skeletonize");
+  task.setUser("zhaot");
+  ZJsonObject config;
+  config.setEntry("bodyid", 1);
+  config.setEntry("input", "http:emdata1.int.janelia.org:8500:b6bc:bodies");
+  config.setEntry("force_update", true);
+  task.setConfig(config);
+
+  writer.uploadTask(task);
+
+  std::cout << writer.getStatusCode() << std::endl;
+  std::cout << writer.getResponse() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
