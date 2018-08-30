@@ -296,6 +296,7 @@ void TaskProtocolWindow::onNextButton() {
     updateBodyWindow();
     updateLabel();
 
+    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -379,7 +380,6 @@ void TaskProtocolWindow::onLoadTasksButton() {
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
 
-    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -523,6 +523,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+
+    updateBody3dDocConfig();
 
     m_prefetchThread->start();
 }
