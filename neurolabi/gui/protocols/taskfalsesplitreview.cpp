@@ -379,6 +379,15 @@ void TaskFalseSplitReview::onCompleted()
   writer.writeJsonString(instance, key, jsonStr);
 }
 
+ProtocolTaskConfig TaskFalseSplitReview::getTaskConfig() const
+{
+  ProtocolTaskConfig config;
+  config.setTaskType(tasktype());
+  config.setDefaultTodo(neutube::TO_MERGE);
+
+  return config;
+}
+
 void TaskFalseSplitReview::buildTaskWidget()
 {
   m_widget = new QWidget();

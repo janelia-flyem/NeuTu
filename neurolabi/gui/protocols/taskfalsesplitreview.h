@@ -79,5 +79,8 @@ private:
   virtual void onLoaded() override;
   virtual bool allowCompletion() override;
   virtual void onCompleted() override;
+
+  virtual ProtocolTaskConfig getTaskConfig() const override;
+
 };
 #endif // TASKFALSESPLITREVIEW_H
