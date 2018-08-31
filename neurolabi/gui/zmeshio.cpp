@@ -127,6 +127,30 @@ aiNode* createNodes(const ZMesh& mesh, aiNode* pParent, aiScene* pScene, std::ve
 
 using namespace draco;
 
+void makeDracoMesh(const ZMesh &in, Mesh *out)
+{
+  const std::vector<glm::vec3>& vertices = in.vertices();
+  size_t vertexDataLength = vertices.size() * 3;
+  float *vertexDataBuffer = new float[vertexDataLength];
+  float *vertexDataBufferIter = vertexDataBuffer;
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    *vertexDataBufferIter++ = vertices[i].x;
+    *vertexDataBufferIter++ = vertices[i].y;
+    *vertexDataBufferIter++ = vertices[i].z;
+  }
+
+  DataBuffer buffer;
+  buffer.Update(vertexDataBuffer, sizeof(float) * vertexDataLength);
+
+  GeometryAttribute va;
+  va.Init(GeometryAttribute::POSITION, &buffer, 3, DT_FLOAT32,
+          false, sizeof(float) * 3, 0);
+
+  out->AddAttribute(va, true, vertices.size());
+
+  delete []vertexDataBuffer;
+}
+
 void getDracoVertices(const PointCloud& pc, std::vector<glm::vec3>& vertices)
 {
   const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::POSITION);
@@ -669,7 +693,9 @@ void ZMeshIO::readDracoMeshFromMemory(
   getDracoVertices(*pc, mesh.m_vertices);
   getDracoColors(*pc, mesh.m_colors);
   getDracoNormals(*pc, mesh.m_normals);
-  getDracoTextureCoordinates(*pc, mesh.m_1DTextureCoordinates, mesh.m_2DTextureCoordinates, mesh.m_3DTextureCoordinates);
+  getDracoTextureCoordinates(
+        *pc, mesh.m_1DTextureCoordinates, mesh.m_2DTextureCoordinates,
+        mesh.m_3DTextureCoordinates);
   if (msh) {
     getDracoFaces(*msh, mesh.m_indices);
   }
