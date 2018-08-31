@@ -44,6 +44,11 @@
 #include <lowtis/LowtisConfig.h>
 #endif
 
+#include <draco/mesh/mesh.h>
+#include <draco/point_cloud/point_cloud.h>
+#include <draco/compression/decode.h>
+#include <draco/compression/encode.h>
+
 #include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
@@ -27713,9 +27718,10 @@ void ZTest::test(MainWindow *host)
 //  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   neutuse::TaskWriter writer;
-  writer.open("http://zhaot-ws1:7500");
+//  writer.open("http://zhaot-ws1:7500");
+  writer.open("http://127.0.0.1:5000");
   std::cout << writer.ready() << std::endl;
 
   neutuse::Task task;
@@ -27732,6 +27738,85 @@ void ZTest::test(MainWindow *host)
 
   std::cout << writer.getStatusCode() << std::endl;
   std::cout << writer.getResponse() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+#endif
+
+#if 1
+  ZMesh zmesh;
+  zmesh.load((GET_BENCHMARK_DIR + "/test2.obj").c_str());
+  draco::Mesh dmesh;
+
+  const std::vector<glm::vec3>& vertices = zmesh.vertices();
+  std::cout << vertices.size() << std::endl;
+
+  for (auto &vertex : vertices) {
+    std::cout << vertex << std::endl;
+  }
+
+  size_t vertexDataLength = vertices.size() * 3;
+  float *vertexDataBuffer = new float[vertexDataLength];
+  float *vertexDataBufferIter = vertexDataBuffer;
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    *vertexDataBufferIter++ = vertices[i].x;
+    *vertexDataBufferIter++ = vertices[i].y;
+    *vertexDataBufferIter++ = vertices[i].z;
+  }
+
+  draco::DataBuffer buffer;
+  buffer.Update(vertexDataBuffer, sizeof(float) * vertexDataLength);
+
+  draco::GeometryAttribute va;
+  va.Init(draco::GeometryAttribute::POSITION, nullptr, 3, draco::DT_FLOAT32,
+          false, sizeof(float) * 3, 0);
+  int attId = dmesh.AddAttribute(va, true, vertices.size());
+  dmesh.SetAttributeElementType(attId, draco::MESH_VERTEX_ATTRIBUTE);
+  dmesh.set_num_points(vertices.size());
+
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    float val[3];
+    for (size_t j = 0; j < 3; ++j) {
+      val[j] = vertices[i][j];
+    }
+    dmesh.attribute(attId)->SetAttributeValue(draco::AttributeValueIndex(i), val);
+  }
+
+
+
+
+  std::cout << (void*) vertexDataBuffer << std::endl;
+  std::cout << (void*) buffer.data() << std::endl;
+
+
+  delete []vertexDataBuffer;
+
+  {
+    std::vector<glm::vec3> newVertices;
+    const draco::PointAttribute *const att = dmesh.GetNamedAttribute(
+          draco::GeometryAttribute::POSITION);
+    std::cout << "att size: " << att->size() << std::endl;
+    if (att == nullptr || att->size() == 0)
+      throw ZIOException("no vertices found in draco file");
+    newVertices.resize(dmesh.num_points());
+    std::cout << "dmesh #vertices: " << dmesh.num_points() << std::endl;
+    for (draco::PointIndex i(0); i < dmesh.num_points(); ++i) {
+      if (!att->ConvertValue<float, 3>(
+            att->mapped_index(i), &newVertices[i.value()][0])) {
+        newVertices.clear();
+        throw ZIOException("can not decode draco vertices");
+      }
+    }
+
+    for (auto &vertex : newVertices) {
+      std::cout << vertex << std::endl;
+    }
+
+    std::cout << newVertices.size() << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

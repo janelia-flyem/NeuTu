@@ -116,7 +116,7 @@ bool ZFlyEmBodyManager::hasMapping(uint64_t id) const
 uint64_t ZFlyEmBodyManager::getAggloId(uint64_t bodyId) const
 {
   if (encodesTar(bodyId) || !couldBeSupervoxelLevel(bodyId)) {
-    return false;
+    return 0;
   }
 
   bodyId = decode(bodyId);

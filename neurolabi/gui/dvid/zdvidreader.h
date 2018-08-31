@@ -200,6 +200,8 @@ public:
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
 
+  ZMesh* readSupervoxelMesh(uint64_t svId) const;
+
   /*!
    * \brief Read meshes from a key-value instance whose values are tar archives of
    * Draco-compressed meshes.  The new "tarsupervoxels" data instance will be used
