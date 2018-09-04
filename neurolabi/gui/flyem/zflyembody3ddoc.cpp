@@ -3158,6 +3158,8 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
   const float PROGRESS_FRACTION_START = 1 / 3.0;
   emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
 
+  bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
+
   // For now, use the new "tarsupervoxels" data instance for tar archives of meshes
   // only if an environment variable is set,  When testing is complete, this approach
   // will become the default.
@@ -3181,7 +3183,6 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     reader.readMeshArchiveAsync(arc, resultVec, progress);
     //      QSet<uint64_t> mappedSet;
     uint64_t decodedBodyId = decode(bodyId);
-    bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
     for (ZMesh *mesh : resultVec) {
       finalizeMesh(mesh, decodedBodyId, 0, t);
       if (isSupervoxelTar) {
