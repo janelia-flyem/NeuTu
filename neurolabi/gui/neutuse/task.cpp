@@ -21,7 +21,9 @@ ZJsonObject Task::toJsonObject() const
   obj.setEntry(KEY_TYPE, m_type);
   obj.setEntry(KEY_NAME, m_name);
   obj.setEntry(KEY_PRIORITY, m_priority);
-  obj.setEntry(KEY_LIFE_SPAN, m_lifeSpan);
+  if (m_lifeSpan > 0) {
+    obj.setEntry(KEY_LIFE_SPAN, m_lifeSpan);
+  }
   obj.setEntry(KEY_MAX_TRIES, m_maxTries);
   obj.setEntry(KEY_USER, m_user);
   obj.setEntry(KEY_CONFIG.c_str(), m_config.getData());

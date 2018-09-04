@@ -305,6 +305,7 @@
 #include "zstackblocksource.h"
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
+#include "neutuse/taskfactory.h"
 
 #include "test/ztestall.h"
 
@@ -27718,6 +27719,23 @@ void ZTest::test(MainWindow *host)
 //  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
+#if 1
+  neutuse::TaskWriter writer;
+  writer.open("http://zhaot-ws1:5000");
+//  writer.open("http://127.0.0.1:5000");
+  std::cout << writer.ready() << std::endl;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+        "skeletonize", target, 1, true);
+
+  writer.uploadTask(task);
+
+  std::cout << writer.getStatusCode() << std::endl;
+  std::cout << writer.getResponse() << std::endl;
+#endif
+
 #if 0
   neutuse::TaskWriter writer;
 //  writer.open("http://zhaot-ws1:7500");
@@ -27729,9 +27747,11 @@ void ZTest::test(MainWindow *host)
   task.setName("skeletonize");
   task.setUser("zhaot");
   ZJsonObject config;
-  config.setEntry("bodyid", 1);
-  config.setEntry("input", "http:emdata1.int.janelia.org:8500:b6bc:bodies");
-  config.setEntry("force_update", true);
+  config.load(GET_TEST_DATA_DIR + "/_flyem/test/skeleton.json");
+//  config.setEntry("bodyid", 1);
+//  config.setEntry("input", "http:emdata1.int.janelia.org:8500:b6bc:bodies");
+//  config.setEntry("force_update", true);
+
   task.setConfig(config);
 
   writer.uploadTask(task);
@@ -27746,7 +27766,7 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
 #endif
 
-#if 1
+#if 0
   ZMesh zmesh;
   zmesh.load((GET_BENCHMARK_DIR + "/test2.obj").c_str());
   draco::Mesh dmesh;
