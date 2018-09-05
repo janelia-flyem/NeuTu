@@ -73,6 +73,7 @@ private:
   void applyColorMode(bool showingCleaving);
 
   void updateVisibility();
+  void zoomToFitMeshes();
 
   void displayWarning(const QString& title, const QString& text,
                       const QString& details = "",
