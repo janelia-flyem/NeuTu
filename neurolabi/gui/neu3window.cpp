@@ -54,6 +54,7 @@
 #include "flyem/zflyembodyidcolorscheme.h"
 #include "flyem/zflyemarbdoc.h"
 #include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemtaskhelper.h"
 
 /* Implementation details:
  *
@@ -187,7 +188,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
 
   connect(getBodyDocument(), SIGNAL(interactionStateChanged()),
-          this, SLOT(updateWidget()));
+          this, SLOT(updateUI()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
           this, &Neu3Window::zoomToBodyMesh);
@@ -730,6 +731,12 @@ void Neu3Window::endBrowse()
 {
   m_browseMode = BROWSE_NONE;
   removeSliceViewGraph();
+}
+
+void Neu3Window::updateUI()
+{
+  updateWidget();
+  m_taskProtocolWidget->updateTaskInteraction();
 }
 
 void Neu3Window::updateWidget()

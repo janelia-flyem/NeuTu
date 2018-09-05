@@ -64,6 +64,22 @@ void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, uint64_t label)
   }
 }
 
+void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
 void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
 {
   if (doc != NULL) {

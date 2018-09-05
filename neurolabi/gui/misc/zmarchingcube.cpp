@@ -71,15 +71,17 @@ ZMesh * ConvertMeshToZMesh(
 ZMesh* ZMarchingCube::March(
     const ZStack &stack, int smooth, bool offsetAdjust, ZMesh *out)
 {
-  tic();
-  ilastik::Mesh mesh = ilastik::march(
-        stack.array8(), stack.width(), stack.height(), stack.depth(), 1);
-  std::cout << "Mesh extracting time:" << toc() << std::endl;
+  if (stack.hasData()) {
+    tic();
+    ilastik::Mesh mesh = ilastik::march(
+          stack.array8(), stack.width(), stack.height(), stack.depth(), 1);
+    std::cout << "Mesh extracting time:" << toc() << std::endl;
 
-  ilastik::smooth(mesh, smooth);
+    ilastik::smooth(mesh, smooth);
 
-  out = ConvertMeshToZMesh(
-        mesh, stack.getOffset(), stack.getDsIntv(), offsetAdjust, out);
+    out = ConvertMeshToZMesh(
+          mesh, stack.getOffset(), stack.getDsIntv(), offsetAdjust, out);
+  }
 
   return out;
 }

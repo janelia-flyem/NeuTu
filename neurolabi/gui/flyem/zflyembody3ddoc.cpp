@@ -44,6 +44,7 @@
 #include "zstackdocproxy.h"
 #include "zflyembodyannotationdialog.h"
 #include "zflyemtaskhelper.h"
+#include "protocols/protocoltaskfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1128,6 +1129,11 @@ void ZFlyEmBody3dDoc::deactivateSplit()
 {
   if (m_splitter->getBodyId() > 0) {
     waitForSplitToBeDone();
+
+    if (m_taskConfig.getTaskType() == ProtocolTaskFactory::TASK_BODY_CLEAVE) {
+      removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+      ZStackDocAccessor::RemoveSplitSeed(this);
+    }
 
     uint64_t parentId = m_splitter->getBodyId();
 

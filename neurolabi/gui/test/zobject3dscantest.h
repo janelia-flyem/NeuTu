@@ -54,55 +54,64 @@ static void createStripe4(ZObject3dStripe *stripe)
 }
 
 TEST(ZObject3dStripe, TestGetProperty) {
-  ZObject3dStripe stripe;
-  createStripe(&stripe);
-  ASSERT_EQ(stripe.getMinX(), 0);
-  ASSERT_EQ(stripe.getMaxX(), 5);
-  ASSERT_EQ(stripe.getSegmentNumber(), 2);
-  ASSERT_EQ((int) stripe.getSize(), 2);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
-  ASSERT_EQ((int) stripe.getVoxelNumber(), 5);
+  {
+    ZObject3dStripe stripe;
+    createStripe(&stripe);
+    ASSERT_EQ(stripe.getMinX(), 0);
+    ASSERT_EQ(stripe.getMaxX(), 5);
+    ASSERT_EQ(stripe.getSegmentNumber(), 2);
+    ASSERT_EQ((int) stripe.getSize(), 2);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ((int) stripe.getVoxelNumber(), 5);
 
-  createStripe2(&stripe);
-  ASSERT_EQ(stripe.getSegmentNumber(), 2);
-  ASSERT_EQ((int) stripe.getSize(), 2);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
-  ASSERT_EQ((int) stripe.getVoxelNumber(), 7);
+    createStripe2(&stripe);
+    ASSERT_EQ(stripe.getSegmentNumber(), 2);
+    ASSERT_EQ((int) stripe.getSize(), 2);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ((int) stripe.getVoxelNumber(), 7);
 
-  stripe.canonize();
-  ASSERT_EQ(stripe.getMinX(), 0);
-  ASSERT_EQ(stripe.getMaxX(), 5);
-  ASSERT_EQ(stripe.getSegmentNumber(), 1);
-  ASSERT_EQ((int) stripe.getSize(), 1);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
-  ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    stripe.canonize();
+    ASSERT_EQ(stripe.getMinX(), 0);
+    ASSERT_EQ(stripe.getMaxX(), 5);
+    ASSERT_EQ(stripe.getSegmentNumber(), 1);
+    ASSERT_EQ((int) stripe.getSize(), 1);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
 
-  createStripe3(&stripe);
-  ASSERT_EQ(stripe.getMinX(), 0);
-  ASSERT_EQ(stripe.getMaxX(), 5);
-  ASSERT_EQ(stripe.getSegmentNumber(), 1);
-  ASSERT_EQ((int) stripe.getSize(), 1);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
-  ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    createStripe3(&stripe);
+    ASSERT_EQ(stripe.getMinX(), 0);
+    ASSERT_EQ(stripe.getMaxX(), 5);
+    ASSERT_EQ(stripe.getSegmentNumber(), 1);
+    ASSERT_EQ((int) stripe.getSize(), 1);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
 
-  createStripe4(&stripe);
-  ASSERT_EQ(stripe.getSegmentNumber(), 3);
-  ASSERT_EQ((int) stripe.getSize(), 3);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
+    createStripe4(&stripe);
+    ASSERT_EQ(stripe.getSegmentNumber(), 3);
+    ASSERT_EQ((int) stripe.getSize(), 3);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
 
-  stripe.canonize();
-  ASSERT_EQ(stripe.getMinX(), 0);
-  ASSERT_EQ(stripe.getMaxX(), 5);
-  ASSERT_EQ(stripe.getSegmentNumber(), 1);
-  ASSERT_EQ((int) stripe.getSize(), 1);
-  ASSERT_EQ(stripe.getY(), 3);
-  ASSERT_EQ(stripe.getZ(), 5);
-  ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    stripe.canonize();
+    ASSERT_EQ(stripe.getMinX(), 0);
+    ASSERT_EQ(stripe.getMaxX(), 5);
+    ASSERT_EQ(stripe.getSegmentNumber(), 1);
+    ASSERT_EQ((int) stripe.getSize(), 1);
+    ASSERT_EQ(stripe.getY(), 3);
+    ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+  }
+
+  {
+    ZObject3dStripe stripe;
+    ASSERT_FALSE(stripe.hasVoxel());
+    stripe.addSegment(0, 1);
+    ASSERT_TRUE(stripe.hasVoxel());
+  }
 }
 
 TEST(ZObject3dStripe, TestUnify) {
@@ -410,6 +419,18 @@ TEST(ZObject3dScan, TestGetProperty) {
 //  std::cout << area << std::endl;
 //  std::cout << obj.getVoxelNumber() << std::endl;
 
+}
+
+TEST(ZObject3dScan, Basic)
+{
+  ZObject3dScan obj;
+  ASSERT_FALSE(obj.hasVoxel());
+  obj.addStripe(0, 1);
+  obj.addStripe(3, 4);
+  ASSERT_FALSE(obj.hasVoxel());
+
+  obj.addSegment(0, 0, 1, 2);
+  ASSERT_TRUE(obj.hasVoxel());
 }
 
 TEST(ZObject3dScan, TestAddSegment) {

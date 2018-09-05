@@ -145,7 +145,7 @@ ZMesh* ZMeshFactory::MakeMesh(
 ZMesh* ZMeshFactory::MakeMesh(
     const ZObject3dScan &obj, int dsIntv, int smooth, bool offsetAdjust)
 {
-  if (obj.isEmpty()) {
+  if (!obj.hasVoxel()) {
     return NULL;
   }
 
