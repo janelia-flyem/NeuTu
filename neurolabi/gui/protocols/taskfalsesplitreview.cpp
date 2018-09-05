@@ -11,6 +11,7 @@
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "z3dcamerautils.h"
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 
@@ -344,6 +345,8 @@ void TaskFalseSplitReview::onLoaded()
   LINFO() << "TaskFalseSplitReview: build version" << getBuildVersion() << ".";
 
   m_usageTimer.start();
+
+  zoomToFitMeshes();
 }
 
 bool TaskFalseSplitReview::allowCompletion()
@@ -479,6 +482,55 @@ void TaskFalseSplitReview::updateVisibility()
     bool toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
     m_bodyDoc->setVisible(mesh, toBeVisible);
   }
+}
+
+void TaskFalseSplitReview::zoomToFitMeshes()
+{
+  Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc);
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+
+  ZBBox<glm::dvec3> bbox;
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+    if (tarBodyId == m_bodyId) {
+      bbox.expand(mesh->boundBox());
+    }
+  }
+  glm::dvec3 c = (bbox.minCorner() + bbox.maxCorner()) / 2.0;
+  ZPoint center(c.x, c.y, c.z);
+
+  double radius = 0;
+  std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>() };
+
+  const size_t stride = 3;
+
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+    if (tarBodyId == m_bodyId) {
+      for (size_t i = 0; i < mesh->vertices().size(); i++) {
+        glm::vec3 vertex = mesh->vertices()[i];
+        double r = center.distanceTo(vertex.x, vertex.y, vertex.z);
+        radius = std::max(r, radius);
+
+        // To improve performance, use only a fraction of the vertices
+        // when determining the zoom.
+
+        if (i % stride == 0) {
+          vertices.back().push_back(vertex);
+        }
+      }
+    }
+  }
+
+  Z3DCameraUtils::resetCamera(center, radius, filter->camera());
+  Z3DCameraUtils::tightenZoom(vertices, filter->camera());
+
+  // Adjust the near clipping plane to accomodate all the meshes, then rerender.
+
+  filter->camera().resetCameraNearFarPlane(bbox);
+  filter->invalidate();
 }
 
 void TaskFalseSplitReview::displayWarning(const QString &title, const QString &text,
