@@ -148,6 +148,10 @@ static void LoadFlyEmConfig(
       GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
     }
 
+#ifdef _DEBUG_2
+    GET_FLYEM_CONFIG.setServer("neutuse:http://127.0.0.1:5000");
+#endif
+
     if (config.GetTaskServer().isEmpty()) {
       QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
       if (!taskServer.isEmpty()) {

@@ -1692,6 +1692,9 @@ static void add_unit_instance(int kind, State *end)
   def = Unit_Table + Num_of_Units++;
 
   def->unit = (Atom **) mylib::Guarded_Malloc(sizeof(Atom *)*((size_t) Stop),"Process_Arguments");
+#ifdef _DEBUG_2
+  printf("unit: %p\n", def->unit);
+#endif
   memcpy(def->unit,AtStk,sizeof(Atom *)*((size_t) Stop));
   def->len    = Stop;
   def->span   = Unit_Span;

@@ -1346,3 +1346,13 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
   return config;
 }
 
+void TaskBodyCleave::disableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(false);
+}
+
+void TaskBodyCleave::enableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(true);
+}
+

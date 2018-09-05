@@ -1075,6 +1075,24 @@ const
   return mesh;
 }
 
+ZMesh* ZDvidReader::readSupervoxelMesh(uint64_t svId) const
+{
+  ZMesh *mesh = NULL;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
+  if (!url.empty()) {
+    m_bufferReader.read(url.c_str(), isVerbose());
+    if (m_bufferReader.getStatus() != neutube::READ_FAILED) {
+      const QByteArray &buffer = m_bufferReader.getBuffer();
+      mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
+    }
+    m_bufferReader.clearBuffer();
+  }
+
+  return mesh;
+}
+
 struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, bool useOldMeshesTars) const
 {
   size_t bytesTotal;

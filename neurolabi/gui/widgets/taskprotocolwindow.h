@@ -30,6 +30,13 @@ public:
 public:
     void test();
 
+    /*!
+     * \brief Update ineration behavior of the current task
+     *
+     * Mainly used for resolving conflicts between cleaving and splitting.
+     */
+    void updateTaskInteraction();
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);

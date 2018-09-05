@@ -38,6 +38,11 @@ public:
 
   ProtocolTaskConfig getTaskConfig() const override;
 
+public:
+  //Temporary solution for resolving shortcut conflict
+  void disableCleavingShortcut();
+  void enableCleavingShortcut();
+
 private slots:
   void onShowCleavingChanged(int state);
   void onToggleShowCleaving();
