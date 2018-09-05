@@ -27719,7 +27719,7 @@ void ZTest::test(MainWindow *host)
 //  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   neutuse::TaskWriter writer;
   writer.open("http://zhaot-ws1:5000");
 //  writer.open("http://127.0.0.1:5000");
@@ -27766,6 +27766,27 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
 #endif
 
+#if 1
+#endif
+  ZMesh zmesh;
+  zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
+
+  ZMeshIO meshIO;
+  meshIO.save(zmesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#if 0
+  ZMesh zmesh;
+  zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
+
+  draco::Mesh *dmesh = ZMeshIO::ToDracoMesh(zmesh, NULL);
+  draco::Encoder encoder;
+  draco::EncoderBuffer buffer;
+  encoder.EncodeMeshToBuffer(*dmesh, &buffer);
+
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/_test.drc").c_str(), "w");
+  fwrite(buffer.data(), 1, buffer.size(), fp);
+  fclose(fp);
+#endif
+
 #if 0
   ZMesh zmesh;
   zmesh.load((GET_BENCHMARK_DIR + "/test2.obj").c_str());
@@ -27805,8 +27826,14 @@ void ZTest::test(MainWindow *host)
     dmesh.attribute(attId)->SetAttributeValue(draco::AttributeValueIndex(i), val);
   }
 
-
-
+  for (size_t i = 0; i < zmesh.numTriangles(); ++i) {
+    glm::uvec3 triangle = zmesh.triangleIndices(i);
+    draco::Mesh::Face face;
+    face[0] = draco::PointIndex(triangle[0]);
+    face[1] = draco::PointIndex(triangle[1]);
+    face[2] = draco::PointIndex(triangle[2]);
+    dmesh.AddFace(face);
+  }
 
   std::cout << (void*) vertexDataBuffer << std::endl;
   std::cout << (void*) buffer.data() << std::endl;
@@ -27836,6 +27863,14 @@ void ZTest::test(MainWindow *host)
     }
 
     std::cout << newVertices.size() << std::endl;
+
+    draco::Encoder encoder;
+    draco::EncoderBuffer buffer;
+    encoder.EncodeMeshToBuffer(dmesh, &buffer);
+
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_test.drc").c_str(), "w");
+    fwrite(buffer.data(), 1, buffer.size(), fp);
+    fclose(fp);
   }
 #endif
 

@@ -10,6 +10,7 @@
 #include <draco/mesh/mesh.h>
 #include <draco/point_cloud/point_cloud.h>
 #include <draco/compression/decode.h>
+#include <draco/compression/encode.h>
 #include <QFile>
 #include <memory>
 
@@ -502,36 +503,46 @@ void ZMeshIO::save(const ZMesh& mesh, const QString& filename, std::string forma
 {
   try {
     if (format.empty()) {
-      for (int i = 0; i < m_writeExts.size(); ++i) {
-        if (filename.endsWith(QString(".%1").arg(m_writeExts[i]), Qt::CaseInsensitive))
-          format = m_writeFormats[i];
-      }
-    }
-    CHECK(m_writeFormats.contains(format));
-
-    auto sc = std::make_unique<aiScene>();
-    sc->mRootNode = new aiNode;
-    sc->mRootNode->mName.Set("modelName");
-
-    // Create nodes for the whole scene
-    std::vector<aiMesh*> meshArray;
-    createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
-
-    // Create mesh pointer buffer for this scene
-    if (sc->mNumMeshes > 0) {
-      sc->mMeshes = new aiMesh* [meshArray.size()];
-      for (size_t index = 0; index < meshArray.size(); index++) {
-        sc->mMeshes[index] = meshArray[index];
+      if (filename.endsWith(".drc")) {
+        format = "drc";
+      } else {
+        for (int i = 0; i < m_writeExts.size(); ++i) {
+          if (filename.endsWith(QString(".%1").arg(m_writeExts[i]), Qt::CaseInsensitive))
+            format = m_writeFormats[i];
+        }
       }
     }
 
-    //
-    createMaterials(sc.get());
+    if (format == "drc") {
+      writeDracoMesh(filename, mesh);
+    } else {
+      CHECK(m_writeFormats.contains(format));
 
-    Assimp::Exporter exporter;
-    aiReturn res = exporter.Export(sc.get(), format, QFile::encodeName(filename).constData());
-    if (res != aiReturn_SUCCESS) {
-      throw ZIOException(exporter.GetErrorString());
+      auto sc = std::make_unique<aiScene>();
+      sc->mRootNode = new aiNode;
+      sc->mRootNode->mName.Set("modelName");
+
+      // Create nodes for the whole scene
+      std::vector<aiMesh*> meshArray;
+      createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
+
+      // Create mesh pointer buffer for this scene
+      if (sc->mNumMeshes > 0) {
+        sc->mMeshes = new aiMesh* [meshArray.size()];
+        for (size_t index = 0; index < meshArray.size(); index++) {
+          sc->mMeshes[index] = meshArray[index];
+        }
+      }
+
+      //
+      createMaterials(sc.get());
+
+      Assimp::Exporter exporter;
+      aiReturn res = exporter.Export(
+            sc.get(), format, QFile::encodeName(filename).constData());
+      if (res != aiReturn_SUCCESS) {
+        throw ZIOException(exporter.GetErrorString());
+      }
     }
   }
   catch (const ZException& e) {
@@ -698,6 +709,58 @@ void ZMeshIO::readDracoMeshFromMemory(
         mesh.m_3DTextureCoordinates);
   if (msh) {
     getDracoFaces(*msh, mesh.m_indices);
+  }
+}
+
+draco::Mesh* ZMeshIO::ToDracoMesh(const ZMesh &zmesh, draco::Mesh *dmesh)
+{
+  if (dmesh == nullptr) {
+    dmesh = new draco::Mesh;
+  }
+
+  const std::vector<glm::vec3>& vertices = zmesh.vertices();
+  draco::GeometryAttribute va;
+  va.Init(draco::GeometryAttribute::POSITION, nullptr, 3, draco::DT_FLOAT32,
+          false, sizeof(float) * 3, 0);
+  int attId = dmesh->AddAttribute(va, true, vertices.size());
+  dmesh->SetAttributeElementType(attId, draco::MESH_VERTEX_ATTRIBUTE);
+  dmesh->set_num_points(vertices.size());
+
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    float val[3];
+    for (size_t j = 0; j < 3; ++j) {
+      val[j] = vertices[i][j];
+    }
+    dmesh->attribute(attId)->SetAttributeValue(draco::AttributeValueIndex(i), val);
+  }
+
+  for (size_t i = 0; i < zmesh.numTriangles(); ++i) {
+    glm::uvec3 triangle = zmesh.triangleIndices(i);
+    draco::Mesh::Face face;
+    face[0] = draco::PointIndex(triangle[0]);
+    face[1] = draco::PointIndex(triangle[1]);
+    face[2] = draco::PointIndex(triangle[2]);
+    dmesh->AddFace(face);
+  }
+
+  return dmesh;
+}
+
+void ZMeshIO::writeDracoMesh(const QString &filename, const ZMesh &mesh) const
+{
+  std::ofstream stream;
+  stream.open(filename.toStdString(), std::ios::binary);
+  if (stream.good()) {
+    draco::Mesh *dmesh = ToDracoMesh(mesh, nullptr);
+    if (dmesh) {
+      draco::Encoder encoder;
+      draco::EncoderBuffer buffer;
+      encoder.EncodeMeshToBuffer(*dmesh, &buffer);
+      if (buffer.size() > 0) {
+        stream.write(buffer.data(), buffer.size());
+      }
+      delete dmesh;
+    }
   }
 }
 
