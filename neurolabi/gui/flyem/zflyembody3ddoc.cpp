@@ -1075,6 +1075,14 @@ ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
   return NULL;
 }
 
+ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
+    const ZDvidReader &reader, uint64_t svId) const
+{
+  ZMesh *mesh = reader.readSupervoxelMesh(ZFlyEmBodyManager::decode(svId));
+
+  return mesh;
+}
+
 void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId)
 {
   activateSplit(bodyId, getLabelType(bodyId));
@@ -3043,7 +3051,8 @@ ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
 #endif
 
 ZMesh *ZFlyEmBody3dDoc::readMesh(
-    const ZDvidReader &reader, const ZFlyEmBodyConfig &config)
+    const ZDvidReader &reader, const ZFlyEmBodyConfig &config,
+    int *acturalMeshZoom)
 {
   int zoom = config.getDsLevel();
 
@@ -3065,7 +3074,14 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     return mesh;
   }
 
-  mesh = reader.readMesh(config.getBodyId(), zoom);
+  if (config.getLabelType() == flyem::LABEL_SUPERVOXEL) {
+    mesh = readSupervoxelMesh(reader, config.getBodyId());
+    if (mesh != NULL) {
+      *acturalMeshZoom = 0;
+    }
+  } else {
+    mesh = reader.readMesh(config.getBodyId(), zoom);
+  }
 
   if (mesh == NULL) {
     bool loaded = false;
@@ -3118,16 +3134,17 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
   return mesh;
 }
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(const ZFlyEmBodyConfig &config)
+ZMesh *ZFlyEmBody3dDoc::readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom)
 {
-  return readMesh(getWorkDvidReader(), config);
+  return readMesh(getWorkDvidReader(), config, actualMeshZoom);
 }
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom)
+ZMesh *ZFlyEmBody3dDoc::readMesh(
+    const ZDvidReader &reader, uint64_t bodyId, int *zoom)
 {
   ZFlyEmBodyConfig config(bodyId);
-  config.setDsLevel(zoom);
-  return readMesh(reader, config);
+  config.setDsLevel(*zoom);
+  return readMesh(reader, config, zoom);
 }
 
 namespace {
@@ -3242,7 +3259,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
         mesh = dynamic_cast<ZMesh*>(obj);
       }
       if (mesh == NULL) {
-        mesh = readMesh(config);
+        mesh = readMesh(config, &zoom);
         if (mesh != NULL) {
           if (IsOverSize(mesh) && zoom <= 2) {
             zoom = 0;
