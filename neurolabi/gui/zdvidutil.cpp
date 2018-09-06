@@ -94,9 +94,11 @@ libdvid::BinaryDataPtr ZDvid::MakeRequest(
     //  qDebug() << "address: " << address;
     //  qDebug() << "path: " << qurl.path();
 
-    statusCode = connection.make_request(
-          "/.." + qurl.path().toStdString(), connMethod, payload, results,
-          error_msg, type);
+    std::string path = qurl.path().toStdString();
+    std::string query = qurl.query().toStdString();
+    path += (!query.empty()) ? "?" + query : "";
+    statusCode =
+        connection.make_request("/.." + path, connMethod, payload, results, error_msg, type);
   } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
     statusCode = e.getStatus();
