@@ -197,8 +197,8 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
-  ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config);
-  ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
+  ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config, int *acturalMeshZoom);
+  ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int *zoom);
 //  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
@@ -299,6 +299,7 @@ public:
   bool isSplitFinished() const;
 
   ZMesh* getMeshForSplit() const;
+  ZMesh* readSupervoxelMesh(const ZDvidReader &reader, uint64_t svId) const;
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
@@ -391,7 +392,7 @@ private:
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
-  ZMesh *readMesh(const ZFlyEmBodyConfig &config);
+  ZMesh *readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
