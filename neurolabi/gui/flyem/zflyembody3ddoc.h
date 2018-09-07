@@ -334,6 +334,7 @@ public slots:
   bool showingTodo() const;
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
+  void updateSynapse(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
   void setSelectedTodoItemChecked(bool on);

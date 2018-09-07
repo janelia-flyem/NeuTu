@@ -106,6 +106,7 @@ public:
 
   void setTodoLoaded(uint64_t bodyId);
   void setSynapseLoaded(uint64_t bodyId);
+  void setSynapseLoaded(uint64_t bodyId, bool on);
 
   bool isTodoLoaded(uint64_t bodyId) const;
   bool isSynapseLoaded(uint64_t bodyId) const;

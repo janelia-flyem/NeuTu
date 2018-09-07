@@ -182,6 +182,8 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
   }
 }
 
+//Parse watershed results
+//Each region will be assigned an ID for finding mesh correspondence
 void ZStackDocAccessor::ParseWatershedContainer(
     ZStackDoc *doc, ZStackWatershedContainer *container)
 {
@@ -192,9 +194,11 @@ void ZStackDocAccessor::ParseWatershedContainer(
     ZOUT(LTRACE(), 5) << result.size() << "split generated.";
     QList<ZStackObject *> objList;
 
+    int id = 1;
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
+      obj->setObjectId(std::to_string(id++));
       obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
       objList.append(obj);
     }

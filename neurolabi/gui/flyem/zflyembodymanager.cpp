@@ -237,6 +237,16 @@ void ZFlyEmBodyManager::setSynapseLoaded(uint64_t bodyId)
   m_synapseLoaded.insert(bodyId);
 }
 
+void ZFlyEmBodyManager::setSynapseLoaded(uint64_t bodyId, bool on)
+{
+  bodyId = decode(bodyId);
+  if (on) {
+    m_synapseLoaded.insert(bodyId);
+  } else {
+    m_synapseLoaded.remove(bodyId);
+  }
+}
+
 bool ZFlyEmBodyManager::isTodoLoaded(uint64_t bodyId) const
 {
   bodyId = decode(bodyId);

@@ -46,6 +46,7 @@
 #include "zflyemtaskhelper.h"
 #include "protocols/protocoltaskfactory.h"
 #include "zstackdoc3dhelper.h"
+#include "zstackobjectarray.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -2066,6 +2067,38 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBody3dDoc::updateSynapse(uint64_t bodyId)
+{
+  if (m_showingSynapse) {
+    ZOUT(LTRACE(), 5) << "Update todo";
+
+    bodyId = decode(bodyId);
+
+    {
+      TStackObjectList objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
+      }
+    }
+
+    {
+      TStackObjectList objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
+      }
+    }
+
+    getBodyManager().setSynapseLoaded(bodyId, false);
+    getDataBuffer()->deliver();
+
+    addSynapse(bodyId);
+  }
+}
+
 void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
@@ -3098,9 +3131,11 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
   }
 
   if (config.getLabelType() == flyem::LABEL_SUPERVOXEL) {
-    mesh = readSupervoxelMesh(reader, config.getBodyId());
-    if (mesh != NULL) {
-      *acturalMeshZoom = 0;
+    if (!isCoarseLevel(zoom)) {
+      mesh = readSupervoxelMesh(reader, config.getBodyId());
+      if (mesh != NULL) {
+        *acturalMeshZoom = 0;
+      }
     }
   } else {
     mesh = reader.readMesh(config.getBodyId(), zoom);
@@ -3676,35 +3711,51 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   QList<ZStackObject*> objList =
       getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
 
-  QMap<uint64_t, ZStackObject*> objMap;
-  for (ZStackObject *obj : objList) {
-    if (obj->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
-      if (objMap.contains(obj->getLabel())) {
-        LWARN() << "Duplicated segmentation labels.";
-      }
-      objMap[obj->getLabel()] = obj;
-    }
-  }
+//  QMap<uint64_t, ZStackObject*> objMap;
+//  for (ZStackObject *obj : objList) {
+//    if (obj->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
+//      if (objMap.contains(obj->getLabel())) {
+//        LWARN() << "Duplicated segmentation labels.";
+//      }
+//      objMap[obj->getLabel()] = obj;
+//    }
+//  }
 
-  QMap<uint64_t, ZStackObject*> meshMap;
+  ZStackObjectArray objToDelete;
+
+  QMap<std::string, ZMesh*> meshMap;
   QList<ZStackObject*> decorList =
       m_helper->getObjectList(neutube3d::LAYER_DECORATION);
   for (auto &obj : decorList) {
-    if (obj->getType() == ZStackObject::TYPE_MESH &&
-        obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
-      if (meshMap.contains(obj->getLabel())) {
-        LWARN() << "Duplicated segmentation labels.";
+    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
+    if (mesh) {
+      if (mesh->hasRole(ZStackObjectRole::ROLE_SEGMENTATION) &&
+          !obj->getObjectId().empty()) {
+        if (meshMap.contains(obj->getObjectId())) {
+          LWARN() << "Unexpected object ID detected:" << obj->getObjectId();
+        } else {
+          meshMap[obj->getObjectId()] = mesh;
+        }
       }
-      meshMap[obj->getLabel()] = obj;
     }
   }
 
-  for (ZStackObject *obj : objMap) {
+  QList<ZMesh*> mainMeshList;
+  bool uploadingMesh = (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL);
+
+  for (ZStackObject *obj : objList) {
     ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
     if (seg != NULL) {
+      ZMesh *mesh = NULL;
+      if (meshMap.contains(obj->getObjectId())) {
+        mesh = meshMap[obj->getObjectId()];
+      } else if (uploadingMesh) {
+        mesh = ZMeshFactory::MakeMesh(*seg);
+        objToDelete.push_back(mesh);
+      }
+
       if (seg->getLabel() > 1) {
         notifyWindowMessageUpdated(QString("Uploading %1/%2"));
-
         uint64_t newBodyId = 0;
         if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
           newBodyId = m_mainDvidWriter.writeSplit(*seg, remainderId, 0);
@@ -3716,13 +3767,17 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
           notifyWindowMessageUpdated(QString("Updating mesh ..."));
 
-          ZMesh *mesh = NULL;
-          if (meshMap.contains(obj->getLabel())) {
-            mesh = dynamic_cast<ZMesh*>(meshMap[obj->getLabel()]);
-          }
           if (mesh != nullptr) {
             m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId);
           }
+
+          constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
+          if (m_splitter->fromTar()) {
+            registerBody(newBodyId);
+            m_helper->releaseObject(neutube3d::LAYER_DECORATION, mesh);
+            ZStackDocAccessor::AddObjectUnique(this, mesh);
+          }
+
 
 
 //          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
@@ -3737,11 +3792,15 @@ void ZFlyEmBody3dDoc::commitSplitResult()
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
       } else {
         remainObj->unify(*seg);
+        if (mesh) {
+          mainMeshList.append(mesh);
+        }
       }
     }
   }
 
-  if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+  if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL &&
+      !m_splitter->fromTar()) {
     if (remainderId > 0) {
       remainderId = ZFlyEmBodyManager::EncodeSupervoxel(remainderId);
     }
@@ -3752,8 +3811,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   ZMesh *mainMesh = nullptr;
 
   if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
-    if (meshMap.contains(1)) {
-      mainMesh = dynamic_cast<ZMesh*>(meshMap[1]);
+    if (mainMeshList.size() == 1) {
+      mainMesh = mainMeshList[0];
+    } else if (!mainMeshList.isEmpty()) {
+      mainMesh = new ZMesh(*mainMeshList[0]);
+      for (int i = 1; i < mainMeshList.size(); ++i) {
+        mainMesh->append(*mainMeshList[i]);
+      }
     }
   }
 
@@ -3788,6 +3852,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     */
 
     ZStackDocAccessor::AddObjectUnique(this, mainMesh);
+    if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
+      updateTodo(oldId);
+      updateSynapse(oldId);
+    }
   } else { //Replace the old ID with the remainderID
     dumpGarbage(mainMesh, true); //recycled later
 
@@ -3795,9 +3863,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     emit addingBody(remainderId);
   }
 
- if (!m_helper->releaseObject(neutube3d::LAYER_DECORATION, mainMesh)) {
-   delete mainMesh;
- }
+ m_helper->releaseObject(neutube3d::LAYER_DECORATION, mainMesh);
+
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
         this, ZStackObjectRole::ROLE_SEGMENTATION, true);
