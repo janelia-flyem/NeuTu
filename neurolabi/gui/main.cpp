@@ -142,10 +142,10 @@ static void LoadFlyEmConfig(
     if (config.GetNeuTuServer().isEmpty()) {
       QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
       if (!neutuServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
+        GET_FLYEM_CONFIG.setRemoteServer(neutuServer.toStdString());
       }
     } else {
-      GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
+      GET_FLYEM_CONFIG.setRemoteServer(config.GetNeuTuServer().toStdString());
     }
 
 #ifdef _DEBUG_2
@@ -155,7 +155,7 @@ static void LoadFlyEmConfig(
     if (config.GetTaskServer().isEmpty()) {
       QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
       if (!taskServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+        GET_FLYEM_CONFIG.setRemoteServer(taskServer.toStdString());
       }
     } else {
       GET_FLYEM_CONFIG.setTaskServer(config.GetTaskServer().toStdString());
@@ -163,7 +163,7 @@ static void LoadFlyEmConfig(
   } else {
     QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
     if (!taskServer.isEmpty()) {
-      GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+      GET_FLYEM_CONFIG.setRemoteServer(taskServer.toStdString());
     }
   }
 #endif

@@ -20,7 +20,15 @@
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {
+}
 
+ZStackDoc3dHelper::~ZStackDoc3dHelper()
+{
+  for (auto &objList : m_objectAdapter) {
+    for (ZStackObject *obj : objList) {
+      delete obj;
+    }
+  }
 }
 
 void ZStackDoc3dHelper::processObjectModified(const ZStackObjectInfoSet &objInfo)
@@ -94,23 +102,22 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
 void ZStackDoc3dHelper::addObject(neutube3d::ERendererLayer layer, ZStackObject *obj)
 {
   if (!m_objectAdapter.contains(layer)) {
-    m_objectAdapter[layer] = QList<ZStackObjectPtr>();
+    m_objectAdapter[layer] = QList<ZStackObject*>();
   }
 
-  m_objectAdapter[layer].append(ZStackObjectPtr(obj));
-}
-
-void ZStackDoc3dHelper::addObject(
-    neutube3d::ERendererLayer layer, ZStackObjectPtr obj)
-{
-  if (!m_objectAdapter.contains(layer)) {
-    m_objectAdapter[layer] = QList<ZStackObjectPtr>();
-  }
   m_objectAdapter[layer].append(obj);
 }
 
 void ZStackDoc3dHelper::resetObjectAdapter(neutube3d::ERendererLayer layer)
 {
+  if (m_objectAdapter.contains(layer)) {
+    auto &objList = m_objectAdapter[layer];
+    for (ZStackObject *obj : objList) {
+      delete obj;
+    }
+    objList.clear();
+  }
+
   m_objectAdapter.remove(layer);
 }
 
@@ -178,6 +185,10 @@ void ZStackDoc3dHelper::updateDecorationData()
       if (obj->hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR)) {
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
         if (mesh != NULL) {
+          mesh->setLabel(obj->getLabel());
+          if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+            mesh->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+          }
           mesh->setColor(obj->getColor());
           mesh->pushObjectColor();
           mesh->setVisible(obj->isVisible());
@@ -320,3 +331,32 @@ void ZStackDoc3dHelper::updateCustomCanvas(ZFlyEmBody3dDoc *doc)
   }
 }
 
+bool ZStackDoc3dHelper::releaseObject(
+    neutube3d::ERendererLayer layer, ZStackObject *obj)
+{
+  bool released = false;
+  if (m_objectAdapter.contains(layer)) {
+    auto &objList = m_objectAdapter[layer];
+    released = objList.removeOne(obj);
+  }
+
+  return released;
+}
+
+ZStackDoc3dHelper* ZStackDoc3dHelper::GetDocHelper(ZStackDoc *doc)
+{
+  ZFlyEmBody3dDoc *cdoc = qobject_cast<ZFlyEmBody3dDoc*>(doc);
+  if (cdoc != nullptr) {
+    return cdoc->getHelper();
+  }
+
+  return nullptr;
+}
+
+void ZStackDoc3dHelper::Attach(ZStackDoc *doc, Z3DView *view)
+{
+  ZStackDoc3dHelper *helper = GetDocHelper(doc);
+  if (helper) {
+    helper->attach(view);
+  }
+}

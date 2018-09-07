@@ -5,13 +5,13 @@
 #include <QMap>
 
 #include "z3ddef.h"
-#include "zstackobjectptr.h"
 
 class ZSwcTree;
 class Z3DView;
 class ZStackObject;
 class ZStackObjectInfoSet;
 class ZFlyEmBody3dDoc;
+class ZStackDoc;
 
 /*!
  * \brief The class of helping managing data for 3D visualization
@@ -26,6 +26,7 @@ class ZStackDoc3dHelper
 {
 public:
   ZStackDoc3dHelper();
+  ~ZStackDoc3dHelper();
 
   void processObjectModified(const ZStackObjectInfoSet &objInfo);
 
@@ -50,15 +51,25 @@ public:
   void updateCustomCanvas(ZFlyEmBody3dDoc *doc);
   void updateCustomCanvas();
 
+  QList<ZStackObject*> getObjectList(neutube3d::ERendererLayer layer) const {
+    return m_objectAdapter.contains(layer) ? m_objectAdapter[layer] :
+                                             QList<ZStackObject*>();
+  }
+
+  static ZStackDoc3dHelper* GetDocHelper(ZStackDoc *doc);
+  static void Attach(ZStackDoc *doc, Z3DView *view);
+
+  bool releaseObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
+
 private:
   void addObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
-  void addObject(neutube3d::ERendererLayer layer, ZStackObjectPtr obj);
+//  void addObject(neutube3d::ERendererLayer layer, ZStackObjectPtr obj);
   void resetObjectAdapter(neutube3d::ERendererLayer layer);
 
 
 private:
   Z3DView *m_view = NULL;
-  QMap<neutube3d::ERendererLayer, QList<ZStackObjectPtr> > m_objectAdapter;
+  QMap<neutube3d::ERendererLayer, QList<ZStackObject*> > m_objectAdapter;
 };
 
 #endif // ZSTACKDOC3DHELPER_H

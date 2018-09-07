@@ -335,6 +335,11 @@ bool ZStackObject::isSelected(const ZStackObject *obj)
   return false;
 }
 
+void ZStackObject::removeRole(ZStackObjectRole::TRole role)
+{
+  m_role.removeRole(role);
+}
+
 void ZStackObject::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
