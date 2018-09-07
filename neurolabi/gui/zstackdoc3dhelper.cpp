@@ -193,6 +193,7 @@ void ZStackDoc3dHelper::updateDecorationData()
           mesh->pushObjectColor();
           mesh->setVisible(obj->isVisible());
           mesh->setSelectable(false);
+          mesh->setObjectId(obj->getObjectId());
           addObject(neutube3d::LAYER_DECORATION, mesh);
           meshList.append(mesh);
         }
