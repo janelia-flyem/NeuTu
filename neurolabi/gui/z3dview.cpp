@@ -49,7 +49,8 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
 {
 //  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
-  m_docHelper.attach(this);
+//  m_docHelper.attach(this);
+  ZStackDoc3dHelper::Attach(m_doc, this);
 
   createActions();
 
@@ -972,7 +973,10 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   if (layer == neutube3d::LAYER_VOLUME) {
     updateVolumeData();
   } else {
-    m_docHelper.updateData(layer);
+    ZStackDoc3dHelper *helper = ZStackDoc3dHelper::GetDocHelper(m_doc);
+    if (helper) {
+      helper->updateData(layer);
+    }
   }
 }
 

@@ -45,8 +45,9 @@ void FlyEmSettingDialog::loadSetting()
   }
 
 #if defined(_FLYEM_)
-  ui->servicelineEdit->setText(
-        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
+  ui->servicelineEdit->setText(GET_FLYEM_CONFIG.getRemoteServer().c_str());
+//  ui->servicelineEdit->setText(
+//        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
 #ifdef _DEBUG_
@@ -131,7 +132,7 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
   GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
   GET_FLYEM_CONFIG.loadConfig();
-  GET_FLYEM_CONFIG.setServer(getNeuTuServer());
+  GET_FLYEM_CONFIG.setRemoteServer(getNeuTuServer());
 
   if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
     ui->statusLabel->setText("Normal");
