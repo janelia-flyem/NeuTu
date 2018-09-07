@@ -3223,6 +3223,22 @@ namespace {
   }
 }
 
+namespace {
+  bool usingOldMeshesTars()
+  {
+    // The old key-value data instance for tar archives of meshes is used only if
+    // the user explicitly requests it with an environment variable.  And even this
+    // possibility should be disabled when the new "tarsupervoxels" data type has
+    // proven reliable.
+
+    bool result = false;
+    if (const char* setting = std::getenv("NEU3_USE_TARSUPERVOXELS")) {
+      result = (std::string(setting) == "no");
+    }
+    return result;
+  }
+}
+
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     const ZDvidReader &reader, uint64_t bodyId, int t)
 {
@@ -3238,11 +3254,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
 
   bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
 
-  // For now, use the new "tarsupervoxels" data instance for tar archives of meshes
-  // only if an environment variable is set,  When testing is complete, this approach
-  // will become the default.
-
-  bool useOldMeshesTars = !std::getenv("NEU3_USE_TARSUPERVOXELS");
+  bool useOldMeshesTars = usingOldMeshesTars();
   if (!useOldMeshesTars) {
     bodyId = decode(bodyId);
   }
