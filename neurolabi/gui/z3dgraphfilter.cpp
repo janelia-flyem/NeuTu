@@ -54,6 +54,7 @@ void Z3DGraphFilter::clear()
   m_objectMap.clear();
   m_graphList.clear();
   m_pressedGraph.reset();
+  invalidateResult();
 }
 
 void Z3DGraphFilter::graphBound(const Z3DGraphPtr &graph, ZBBox<glm::dvec3> &result)
