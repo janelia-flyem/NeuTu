@@ -42,6 +42,9 @@ namespace {
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
+  static const QString KEY_SERVER_REPLY = "latest server reply";
+  static const QString KEY_USAGE_TIME = "time to complete (ms)";
+
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
@@ -334,6 +337,11 @@ void TaskBodyCleave::beforePrev()
   m_showBodyCheckBox->setChecked(true);
 
   m_hiddenIds.clear();
+}
+
+void TaskBodyCleave::onLoaded()
+{
+  m_usageTimer.start();
 }
 
 void TaskBodyCleave::beforeDone()
@@ -714,6 +722,14 @@ bool TaskBodyCleave::allowCompletion()
 
 void TaskBodyCleave::onCompleted()
 {
+  m_usageTimes.push_back(m_usageTimer.elapsed());
+
+  // Restart the timer, to measure the time if the user reconsiders and
+  // reaches a new decision for this task (without moving on and then coming
+  // back to this task).
+
+  m_usageTimer.start();
+
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
@@ -768,10 +784,20 @@ void TaskBodyCleave::onCompleted()
     json.append(jsonForCleaveIndex);
   }
 
-  // For debugging, append verbatin the cleave server response that produced the arrays of super voxels.
+  // It is useful to include a collection of arbitrary extra infomration at the last element of the array.
   // It can be distinguished as the only item in the output array that is a JSON object and not an array.
 
-  json.append(m_cleaveReply);
+  QJsonObject jsonExtra;
+
+  // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
+
+  jsonExtra[KEY_SERVER_REPLY] = m_cleaveReply;
+
+  QJsonArray jsonTimes;
+  std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
+  jsonExtra[KEY_USAGE_TIME] = jsonTimes;
+
+  json.append(jsonExtra);
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
