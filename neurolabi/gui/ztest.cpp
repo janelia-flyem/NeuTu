@@ -27761,18 +27761,34 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  uint64_t bodyId = 1101396820;
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
-  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
-  mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  ZObject3dScan obj;
+  reader->readSupervoxel(bodyId, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
+  writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
 #if 1
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
 #endif
+
+#if 0
   ZMesh zmesh;
   zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
 
   ZMeshIO meshIO;
   meshIO.save(zmesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#endif
+
 #if 0
   ZMesh zmesh;
   zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());

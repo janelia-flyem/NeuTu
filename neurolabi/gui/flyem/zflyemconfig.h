@@ -79,8 +79,10 @@ public:
     return m_neutuseWriter;
   }
 
-  void setServer(const std::string &server);
+  void setRemoteServer(const std::string &server);
 #endif
+
+  std::string getRemoteServer() const;
 
   std::string getUserName() const;
   /*
@@ -139,6 +141,7 @@ private:
   std::string m_defaultLibrarian;
   std::string m_userName;
   std::string m_neuroglancerServer;
+  std::string m_remoteServer;
 
   bool m_analyzingMb6;
   bool m_psdNameDetail = false;

@@ -34,6 +34,7 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class ZFlyEmBodyAnnotationDialog;
+class ZStackDoc3dHelper;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -197,8 +198,11 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
-  ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config);
-  ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
+  ZMesh *readMesh(
+      const ZDvidReader &reader, const ZFlyEmBodyConfig &config,
+      int *acturalMeshZoom);
+  ZMesh *readMesh(
+      const ZDvidReader &reader, uint64_t bodyId, int zoom, int *acturalZoom);
 //  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
@@ -293,12 +297,13 @@ public:
   bool isBodyProtected(uint64_t bodyId) const;
 
   void activateSplit(uint64_t bodyId);
-  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type);
+  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
 
   ZMesh* getMeshForSplit() const;
+  ZMesh* readSupervoxelMesh(const ZDvidReader &reader, uint64_t svId) const;
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
@@ -319,6 +324,8 @@ public:
 
   void diagnose() const override;
 
+  ZStackDoc3dHelper* getHelper() const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -327,6 +334,7 @@ public slots:
   bool showingTodo() const;
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
+  void updateSynapse(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
   void setSelectedTodoItemChecked(bool on);
@@ -391,7 +399,7 @@ private:
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
-  ZMesh *readMesh(const ZFlyEmBodyConfig &config);
+  ZMesh *readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
@@ -465,11 +473,6 @@ private:
 
   int getCoarseBodyZoom() const;
 
-#if 0
-  void runLocalSplitFunc();
-  void runSplitFunc();
-  void runFullSplitFunc();
-#endif
 
   /*!
    * \brief A safe way to get the only body in the document.
@@ -520,6 +523,8 @@ private:
 
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
+  void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -557,6 +562,7 @@ private:
   QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
+  ZSharedPointer<ZStackDoc3dHelper> m_helper;
 
   ProtocolTaskConfig m_taskConfig;
 

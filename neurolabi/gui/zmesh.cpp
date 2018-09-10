@@ -440,6 +440,9 @@ void ZMesh::prepareNormals(bool useAreaWeight)
 
 void ZMesh::generateNormals(bool useAreaWeight)
 {
+#ifdef _DEBUG_
+  std::cout << "#vertex: " << m_vertices.size() << std::endl;
+#endif
   m_normals.resize(m_vertices.size());
   for (size_t i = 0; i < m_normals.size(); ++i)
     m_normals[i] = glm::vec3(0.f);

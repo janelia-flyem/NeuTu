@@ -1,4 +1,5 @@
 #include "taskfactory.h"
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "neutuse/task.h"
 
@@ -16,6 +17,7 @@ Task TaskFactory::MakeDvidTask(
   Task task;
   task.setType("dvid");
   task.setName(name);
+  task.setUser(NeutubeConfig::GetUserName());
   ZJsonObject config;
   config.setEntry("bodyid", bodyId);
   config.setEntry("force_update", forceUpdate);

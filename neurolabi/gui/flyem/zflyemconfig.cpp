@@ -256,9 +256,16 @@ std::string ZFlyEmConfig::getSplitResultUrl(
 }
 */
 
-#ifdef _QT_GUI_USED_
-void ZFlyEmConfig::setServer(const std::string &server)
+std::string ZFlyEmConfig::getRemoteServer() const
 {
+  return m_remoteServer;
+}
+
+#ifdef _QT_GUI_USED_
+void ZFlyEmConfig::setRemoteServer(const std::string &server)
+{
+  m_remoteServer = server;
+  NeutubeConfig::SetNeuTuServer(server.c_str());
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
   bool neutuseOpened = false;
   bool serviceOpened = false;
@@ -270,7 +277,6 @@ void ZFlyEmConfig::setServer(const std::string &server)
       }
     } else {
       if (!serviceOpened) {
-        NeutubeConfig::SetNeuTuServer(server.c_str());
         getNeutuService().setServer(server);
         serviceOpened = getNeutuService().isNormal();
       }

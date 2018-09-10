@@ -20,27 +20,36 @@
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {
-
 }
 
-void ZStackDoc3dHelper::processObjectModified(const ZStackObjectInfoSet &objInfo)
+ZStackDoc3dHelper::~ZStackDoc3dHelper()
+{
+  for (auto &objList : m_objectAdapter) {
+    for (ZStackObject *obj : objList) {
+      delete obj;
+    }
+  }
+}
+
+void ZStackDoc3dHelper::processObjectModified(
+    const ZStackObjectInfoSet &objInfo, Z3DView *view)
 {
 #ifdef _DEBUG_
   std::cout << "Processing object modification: " << std::endl;
   objInfo.print();
 #endif
-  const QList<neutube3d::ERendererLayer>& layerList = m_view->getLayerList();
+  const QList<neutube3d::ERendererLayer>& layerList = view->getLayerList();
   foreach (neutube3d::ERendererLayer layer, layerList) {
     if (dataUpdateRequired(layer, objInfo)) {
 #ifdef _DEBUG_
       std::cout << "Updating layer " << layer << std::endl;
 #endif
-      m_view->updateDocData(layer);
+      view->updateDocData(layer);
     }
   }
 
   if (objInfo.contains(ZStackObject::TARGET_3D_CANVAS)) {
-    updateCustomCanvas();
+    updateCustomCanvas(view);
   }
 }
 
@@ -94,33 +103,32 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
 void ZStackDoc3dHelper::addObject(neutube3d::ERendererLayer layer, ZStackObject *obj)
 {
   if (!m_objectAdapter.contains(layer)) {
-    m_objectAdapter[layer] = QList<ZStackObjectPtr>();
+    m_objectAdapter[layer] = QList<ZStackObject*>();
   }
 
-  m_objectAdapter[layer].append(ZStackObjectPtr(obj));
-}
-
-void ZStackDoc3dHelper::addObject(
-    neutube3d::ERendererLayer layer, ZStackObjectPtr obj)
-{
-  if (!m_objectAdapter.contains(layer)) {
-    m_objectAdapter[layer] = QList<ZStackObjectPtr>();
-  }
   m_objectAdapter[layer].append(obj);
 }
 
 void ZStackDoc3dHelper::resetObjectAdapter(neutube3d::ERendererLayer layer)
 {
+  if (m_objectAdapter.contains(layer)) {
+    auto &objList = m_objectAdapter[layer];
+    for (ZStackObject *obj : objList) {
+      delete obj;
+    }
+    objList.clear();
+  }
+
   m_objectAdapter.remove(layer);
 }
 
-void ZStackDoc3dHelper::updateGraphData()
+void ZStackDoc3dHelper::updateGraphData(Z3DView *view)
 {
-  Z3DGraphFilter *filter = m_view->getGraphFilter();
+  Z3DGraphFilter *filter = view->getGraphFilter();
   if (filter != NULL) {
     filter->clear();
 
-    ZStackDoc *doc = m_view->getDocument();
+    ZStackDoc *doc = view->getDocument();
     if (doc->swcNetwork()) {
       ZPointNetwork *network = doc->swcNetwork()->toPointNetwork();
       filter->setData(*network, NULL);
@@ -144,12 +152,12 @@ void ZStackDoc3dHelper::updateGraphData()
   }
 }
 
-void ZStackDoc3dHelper::updateTodoData()
+void ZStackDoc3dHelper::updateTodoData(Z3DView *view)
 {
 #if defined(_FLYEM_)
-  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(m_view->getDocument());
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(view->getDocument());
   if (doc) {
-    ZFlyEmTodoListFilter *filter = m_view->getTodoFilter();
+    ZFlyEmTodoListFilter *filter = view->getTodoFilter();
     if (filter != NULL) {
       QList<ZFlyEmToDoItem*> objList = doc->getObjectList<ZFlyEmToDoItem>();
       filter->setData(objList);
@@ -158,30 +166,35 @@ void ZStackDoc3dHelper::updateTodoData()
 #endif
 }
 
-void ZStackDoc3dHelper::updateSwcData()
+void ZStackDoc3dHelper::updateSwcData(Z3DView *view)
 {
-  Z3DSwcFilter *filter = m_view->getSwcFilter();
+  Z3DSwcFilter *filter = view->getSwcFilter();
   if (filter) {
-    filter->setData(m_view->getDocument()->getSwcList());
+    filter->setData(view->getDocument()->getSwcList());
   }
 }
 
-void ZStackDoc3dHelper::updateDecorationData()
+void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
 {
-  Z3DMeshFilter *filter = m_view->getDecorationFilter();
+  Z3DMeshFilter *filter = view->getDecorationFilter();
   if (filter != NULL) {
     resetObjectAdapter(neutube3d::LAYER_DECORATION);
     QList<ZObject3dScan*> objList =
-        m_view->getDocument()->getObjectList<ZObject3dScan>();
+        view->getDocument()->getObjectList<ZObject3dScan>();
     QList<ZMesh*> meshList;
     foreach(ZObject3dScan *obj, objList) {
       if (obj->hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR)) {
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
         if (mesh != NULL) {
+          mesh->setLabel(obj->getLabel());
+          if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+            mesh->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+          }
           mesh->setColor(obj->getColor());
           mesh->pushObjectColor();
           mesh->setVisible(obj->isVisible());
           mesh->setSelectable(false);
+          mesh->setObjectId(obj->getObjectId());
           addObject(neutube3d::LAYER_DECORATION, mesh);
           meshList.append(mesh);
         }
@@ -192,31 +205,31 @@ void ZStackDoc3dHelper::updateDecorationData()
   }
 }
 
-void ZStackDoc3dHelper::updateMeshData()
+void ZStackDoc3dHelper::updateMeshData(Z3DView *view)
 {
-  Z3DMeshFilter *filter = m_view->getMeshFilter();
+  Z3DMeshFilter *filter = view->getMeshFilter();
   if (filter != NULL) {
 
     QList<ZMesh*> meshList =
-        ZStackDocProxy::GetGeneralMeshList(m_view->getDocument());
+        ZStackDocProxy::GetGeneralMeshList(view->getDocument());
 
     filter->setData(meshList);
   }
 }
 
-void ZStackDoc3dHelper::updateSliceData()
+void ZStackDoc3dHelper::updateSliceData(Z3DView */*view*/)
 {
   //todo
 }
 
-void ZStackDoc3dHelper::updateRoiData()
+void ZStackDoc3dHelper::updateRoiData(Z3DView *view)
 {
-  Z3DMeshFilter *filter = m_view->getRoiFilter();
+  Z3DMeshFilter *filter = view->getRoiFilter();
   if (filter != NULL) {
 //    QList<ZMesh*> meshList = m_view->getDocument()->getMeshList();
 
     QList<ZMesh*> filteredMeshList =
-        ZStackDocProxy::GetRoiMeshList(m_view->getDocument());
+        ZStackDocProxy::GetRoiMeshList(view->getDocument());
 //    foreach(ZMesh *mesh, meshList) {
 //      if (mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
 //        filteredMeshList.append(mesh);
@@ -225,7 +238,7 @@ void ZStackDoc3dHelper::updateRoiData()
 
     resetObjectAdapter(neutube3d::LAYER_ROI);
     QList<ZObject3dScan*> objList =
-        m_view->getDocument()->getObjectList<ZObject3dScan>();
+        view->getDocument()->getObjectList<ZObject3dScan>();
     foreach(ZObject3dScan *obj, objList) {
       if (obj->hasRole(ZStackObjectRole::ROLE_ROI)) {
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
@@ -243,21 +256,21 @@ void ZStackDoc3dHelper::updateRoiData()
   }
 }
 
-void ZStackDoc3dHelper::updatePunctaData()
+void ZStackDoc3dHelper::updatePunctaData(Z3DView *view)
 {
-  Z3DPunctaFilter *filter = m_view->getPunctaFilter();
+  Z3DPunctaFilter *filter = view->getPunctaFilter();
   if (filter != NULL) {
-    filter->setData(m_view->getDocument()->getPunctumList());
+    filter->setData(view->getDocument()->getPunctumList());
   }
 }
 
-void ZStackDoc3dHelper::updateSurfaceData()
+void ZStackDoc3dHelper::updateSurfaceData(Z3DView *view)
 {
-  Z3DSurfaceFilter *filter = m_view->getSurfaceFilter();
+  Z3DSurfaceFilter *filter = view->getSurfaceFilter();
   if (filter != NULL) {
     std::vector<ZCubeArray*> all;
     TStackObjectList objList =
-        m_view->getDocument()->getObjectList(ZStackObject::TYPE_3D_CUBE);
+        view->getDocument()->getObjectList(ZStackObject::TYPE_3D_CUBE);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       all.push_back(dynamic_cast<ZCubeArray*>(*iter));
@@ -266,57 +279,88 @@ void ZStackDoc3dHelper::updateSurfaceData()
   }
 }
 
-void ZStackDoc3dHelper::updateData(neutube3d::ERendererLayer layer)
+void ZStackDoc3dHelper::updateData(Z3DView *view, neutube3d::ERendererLayer layer)
 {
   switch (layer) {
   case neutube3d::LAYER_GRAPH:
-    updateGraphData();
+    updateGraphData(view);
     break;
   case neutube3d::LAYER_SWC:
-    updateSwcData();
+    updateSwcData(view);
     break;
   case neutube3d::LAYER_PUNCTA:
-    updatePunctaData();
+    updatePunctaData(view);
     break;
   case neutube3d::LAYER_SURFACE:
-    updateSurfaceData();
+    updateSurfaceData(view);
     break;
   case neutube3d::LAYER_TODO:
-    updateTodoData();
+    updateTodoData(view);
     break;
   case neutube3d::LAYER_MESH:
-    updateMeshData();
+    updateMeshData(view);
     break;
   case neutube3d::LAYER_ROI:
-    updateRoiData();
+    updateRoiData(view);
     break;
   case neutube3d::LAYER_DECORATION:
-    updateDecorationData();
+    updateDecorationData(view);
     break;
   case neutube3d::LAYER_SLICE:
-    updateSliceData();
+    updateSliceData(view);
     break;
   default:
     break;
   }
 }
 
-void ZStackDoc3dHelper::updateCustomCanvas()
+void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view)
 {
-  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(m_view->getDocument());
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(view->getDocument());
 
-  updateCustomCanvas(doc);
+  updateCustomCanvas(view, doc);
 }
 
-void ZStackDoc3dHelper::updateCustomCanvas(ZFlyEmBody3dDoc *doc)
+void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view, ZFlyEmBody3dDoc *doc)
 {
   if (doc != NULL) {
     ZDvidGraySlice *slice = doc->getArbGraySlice();
     if (slice != NULL) {
       if (slice->isVisible()) {
-        m_view->updateCustomCanvas(slice->getImage());
+        view->updateCustomCanvas(slice->getImage());
       }
     }
   }
 }
 
+bool ZStackDoc3dHelper::releaseObject(
+    neutube3d::ERendererLayer layer, ZStackObject *obj)
+{
+  bool released = false;
+  if (m_objectAdapter.contains(layer)) {
+    auto &objList = m_objectAdapter[layer];
+    released = objList.removeOne(obj);
+  }
+
+  return released;
+}
+
+ZStackDoc3dHelper* ZStackDoc3dHelper::GetDocHelper(ZStackDoc *doc)
+{
+  ZFlyEmBody3dDoc *cdoc = qobject_cast<ZFlyEmBody3dDoc*>(doc);
+  if (cdoc != nullptr) {
+    return cdoc->getHelper();
+  }
+
+  return nullptr;
+}
+
+/*
+void ZStackDoc3dHelper::Attach(ZStackDoc *doc, Z3DView *view)
+{
+  ZStackDoc3dHelper *helper = GetDocHelper(doc);
+  if (helper) {
+    helper->attach(view);
+  }
+}
+*/
