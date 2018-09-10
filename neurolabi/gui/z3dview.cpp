@@ -50,7 +50,7 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
 //  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
 //  m_docHelper.attach(this);
-  ZStackDoc3dHelper::Attach(m_doc, this);
+//  ZStackDoc3dHelper::Attach(m_doc, this);
 
   createActions();
 
@@ -769,8 +769,8 @@ void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
   ZOUT(LTRACE(), 5) << "Processing object modification in Z3DView ...";
 
   ZStackDoc3dHelper helper;
-  helper.attach(this);
-  helper.processObjectModified(objInfo);
+//  helper.attach(this);
+  helper.processObjectModified(objInfo, this);
 }
 
 void Z3DView::dump(const QString &message)
@@ -975,7 +975,7 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   } else {
     ZStackDoc3dHelper *helper = ZStackDoc3dHelper::GetDocHelper(m_doc);
     if (helper) {
-      helper->updateData(layer);
+      helper->updateData(this, layer);
     }
   }
 }
