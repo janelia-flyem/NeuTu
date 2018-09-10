@@ -265,6 +265,7 @@ std::string ZFlyEmConfig::getRemoteServer() const
 void ZFlyEmConfig::setRemoteServer(const std::string &server)
 {
   m_remoteServer = server;
+  NeutubeConfig::SetNeuTuServer(server.c_str());
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
   bool neutuseOpened = false;
   bool serviceOpened = false;
@@ -276,7 +277,6 @@ void ZFlyEmConfig::setRemoteServer(const std::string &server)
       }
     } else {
       if (!serviceOpened) {
-        NeutubeConfig::SetNeuTuServer(server.c_str());
         getNeutuService().setServer(server);
         serviceOpened = getNeutuService().isNormal();
       }
