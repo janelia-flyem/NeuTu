@@ -752,9 +752,17 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * next or previous tasks to go to
  */
 void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
-  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
-                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
-                          m_nextPrevAllowed);
+    int nonSkippedCount = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            if (++nonSkippedCount > 1) {
+                break;
+            }
+        }
+    }
+    bool nextPrevEnabled = ((nonSkippedCount > 1) && !m_changingTask &&
+                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                            m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
