@@ -467,8 +467,8 @@ void TaskFalseSplitReview::applyColorMode(bool showingSupervoxels)
     if (showingSupervoxels) {
       filter->setColorMode("Mesh Source");
     } else {
-      filter->setColorMode("Indexed Color");
       updateColors();
+      filter->setColorMode("Indexed Color");
     }
   }
 }
