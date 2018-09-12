@@ -864,9 +864,6 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
-      if (canonizing) {
-        result->canonize();
-      }
 
 #ifdef _DEBUG_
       STD_COUT << "Canonized:" << result->isCanonizedActually() << std::endl;
@@ -875,7 +872,14 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
 
       STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
       result->setLabel(bodyId);
+    } else {
+      result = readBodyWithPartition(bodyId, flyem::LABEL_SUPERVOXEL, result);
     }
+
+    if (canonizing && result) {
+      result->canonize();
+    }
+
     reader.clearBuffer();
   }
 

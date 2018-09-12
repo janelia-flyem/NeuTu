@@ -3891,6 +3891,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     sparseStack->setObjectMask(remainObj);
   }
   */
+  LINFO() << summary;
 
   notifyWindowMessageUpdated(summary);
 }

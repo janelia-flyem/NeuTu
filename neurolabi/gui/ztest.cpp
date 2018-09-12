@@ -27773,12 +27773,20 @@ void ZTest::test(MainWindow *host)
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
   ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
   if (mesh != nullptr) {
     mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
   }
+#endif
+
+
+#if 1
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZObject3dScan obj;
+  reader->readSupervoxel(582670241, true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
 #if 0
