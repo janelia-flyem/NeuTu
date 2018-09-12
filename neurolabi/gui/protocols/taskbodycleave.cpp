@@ -44,6 +44,9 @@ namespace {
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
+  static const QString KEY_SERVER_REPLY = "latest server reply";
+  static const QString KEY_BODY_IDS_CREATED = "new body IDs";
+
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
@@ -920,9 +923,10 @@ void TaskBodyCleave::onCompleted()
     std::sort(pair.second.begin(), pair.second.end());
   }
 
-  size_t indexNotCleavedOff = 0;
-  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff);
-  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds);
+  std::size_t indexNotCleavedOff = 0;
+  std::vector<QString> responseLabels;
+  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels);
+  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels);
 
   if (succeeded) {
 
@@ -1211,7 +1215,7 @@ void TaskBodyCleave::cleave()
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata3.int.janelia.org:5552/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1275,15 +1279,15 @@ std::set<std::size_t> TaskBodyCleave::hiddenChanges(const std::map<uint64_t, std
 
       auto itCleave = m_meshIdToCleaveResultIndex.find(id);
       if (itCleave != m_meshIdToCleaveResultIndex.end()) {
-        size_t index = itCleave->second;
+        std::size_t index = itCleave->second;
 
         auto itNewCleave = newMeshIdToCleaveIndex.find(id);
         if (itNewCleave != newMeshIdToCleaveIndex.end()) {
-          size_t indexNew = itNewCleave->second;
+          std::size_t indexNew = itNewCleave->second;
           if (index != indexNew) {
             bool newHidden = (m_hiddenCleaveIndices.find(indexNew) !=
                               m_hiddenCleaveIndices.end());
-            size_t indexHidden = newHidden ? indexNew : index;
+            std::size_t indexHidden = newHidden ? indexNew : index;
             changedHiddenIndices.insert(indexHidden);
           }
         }
@@ -1365,7 +1369,7 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
     }
     std::sort(missingIds.begin(), missingIds.end());
     QString details("Missing: ");
-    for (size_t i = 0; i < missingIds.size(); i++) {
+    for (std::size_t i = 0; i < missingIds.size(); i++) {
       if (i == 200) {
         details += "etc.";
         break;
@@ -1414,15 +1418,14 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 
 bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
                                  const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
-                                 std::size_t &indexNotCleavedOff)
+                                 std::size_t &indexNotCleavedOff,
+                                 std::vector<QString> &responseLabels)
 {
   std::string instance = writer.getDvidTarget().getBodyLabelName();
   ZDvidUrl url(writer.getDvidTarget());
   std::string urlCleave = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId);
 
-  QVector<QString> responseLabels;
-
-  size_t i = 0;
+  std::size_t i = 0;
   for (const auto &pair : cleaveIndexToMeshIds) {
     const std::vector<uint64_t> &ids = pair.second;
 
@@ -1476,7 +1479,7 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
   QString responsesText = "Cleaving body " + QString::number(m_bodyId) + " created new ";
   responsesText += (responseLabels.size() > 1) ? "bodies " : "body ";
-  for (int i = 0; i < responseLabels.size(); i++) {
+  for (std::size_t i = 0; i < responseLabels.size(); i++) {
     responsesText += responseLabels[i];
     if (i < responseLabels.size() - 1) {
       responsesText += ", ";
@@ -1488,7 +1491,7 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
   // And for now, at least, print to the shell the HTTPie command that would undo the cleaving.
 
   std::string undoText = "echo '[" + QString::number(m_bodyId).toStdString() + ", ";
-  for (int i = 0; i < responseLabels.size(); i++) {
+  for (std::size_t i = 0; i < responseLabels.size(); i++) {
     undoText += responseLabels[i].toStdString();
     if (i < responseLabels.size() - 1) {
       undoText += ", ";
@@ -1502,7 +1505,8 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 }
 
 void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
-                                          const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds)
+                                          const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+                                          const std::vector<QString> &newBodyIds)
 {
   std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
   if (!reader.hasData(instance)) {
@@ -1524,10 +1528,24 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
     json.append(jsonForCleaveIndex);
   }
 
-  // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
+  // It is useful to include a collection of arbitrary extra infomration at the last element of the array.
   // It can be distinguished as the only item in the output array that is a JSON object and not an array.
 
-  json.append(m_cleaveReply);
+  QJsonObject jsonExtra;
+
+  // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
+
+  jsonExtra[KEY_SERVER_REPLY] = m_cleaveReply;
+
+  // Include the IDs (labels) for the new bodies DVID created when cleaving (to allow undo later).
+
+  QJsonArray jsonNewBodyIds;
+  for (QString id : newBodyIds) {
+    jsonNewBodyIds.append(id);
+  }
+  jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
+
+  json.append(jsonExtra);
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
