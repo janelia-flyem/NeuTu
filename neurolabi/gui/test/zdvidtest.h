@@ -460,17 +460,23 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1",
             dvidUrl4.getSparsevolUrl(1));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minx=2&maxx=2&exact=false",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?minx=2&maxx=2&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, neutube::X_AXIS));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?miny=2&maxy=2&exact=false",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?miny=2&maxy=2&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, neutube::Y_AXIS));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minz=2&maxz=2&exact=false",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?minz=2&maxz=2&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, neutube::Z_AXIS));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minx=2&maxx=3",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?minx=2&maxx=3&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::X_AXIS));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?miny=2&maxy=3",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?miny=2&maxy=3&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::Y_AXIS));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minz=2&maxz=3",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?minz=2&maxz=3&exact=true",
             dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::Z_AXIS));
   ZIntCuboid box(10, 20, 30, 40, 50, 60);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
@@ -485,6 +491,9 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSparsevolUrl(1, 2, box));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true",
             dvidUrl4.getSupervoxelUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?supervoxel=true&minz=2&maxz=3&exact=true",
+            dvidUrl4.getSupervoxelUrl(1, 2, 3, neutube::Z_AXIS));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
             dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
 

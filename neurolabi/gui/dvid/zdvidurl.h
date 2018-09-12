@@ -321,13 +321,27 @@ public:
 
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
+  static std::string AppendRangeQuery(
+      const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact);
 
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
   static std::string GetServiceResultEndPoint();
-  static std::string AppendQuery(const std::string &url, const std::string query);
+//  static std::string AppendQuery(const std::string &url, const std::string query);
+//  template<typename T>
+//  static std::string AppendQuery(
+//      const std::string &url, const std::pair<std::string,T> &query);
+
+//  template<>
+//  static std::string AppendQuery<bool>(
+//      const std::string &url, const std::pair<std::string, bool> &query);
+
+  static std::string AppendQueryM(
+      const std::string &url,
+      const std::vector<std::pair<std::string, int>> &query);
+
 
 private:
   ZDvidTarget m_dvidTarget;
