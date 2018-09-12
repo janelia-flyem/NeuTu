@@ -148,6 +148,7 @@ public:
   std::string getBodyInfoUrl(uint64_t bodyId) const;
 
   std::string getBodySizeUrl(uint64_t bodyId) const;
+  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
@@ -342,6 +343,8 @@ private:
       const std::string &url,
       const std::vector<std::pair<std::string, int>> &query);
 
+public:
+  static const std::string SUPERVOXEL_FLAG;
 
 private:
   ZDvidTarget m_dvidTarget;
