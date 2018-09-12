@@ -396,6 +396,7 @@ public:
   bool hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const;
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
+  size_t readBodySize(uint64_t bodyId, flyem::EBodyLabelType type) const;
 
   bool hasGrayscale() const;
 

@@ -27784,8 +27784,12 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+
+  uint64_t bodyId = 582670241;
+  std::cout << "#voxels" << reader->readBodySize(bodyId, flyem::LABEL_SUPERVOXEL) << std::endl;
+
   ZObject3dScan obj;
-  reader->readSupervoxel(582670241, true, &obj);
+  reader->readSupervoxel(bodyId, true, &obj);
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 

@@ -32,6 +32,7 @@ const std::string ZDvidUrl::m_annotationMoveCommand = "move";
 const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
 const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
+const std::string ZDvidUrl::SUPERVOXEL_FLAG = "supervoxels";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -1054,6 +1055,11 @@ std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
   }
 
   return "";
+}
+
+std::string ZDvidUrl::getSupervoxelSizeUrl(uint64_t bodyId) const
+{
+  return AppendQuery(getBodySizeUrl(bodyId), std::make_pair(SUPERVOXEL_FLAG, true));
 }
 
 std::string ZDvidUrl::getBoundBoxUrl() const
