@@ -407,11 +407,16 @@ void TaskBodyCleave::beforeLoading()
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
-    // Bodies involved in Janelia cleaving assignments are checked out by "flyem" to
-    // prevent them from being modified (e.g., merged into other bodies).  When such a
+    // Bodies involved in Janelia cleaving assignments are checked out by a particular user
+    // to prevent them from being modified (e.g., merged into other bodies).  When such a
     // body is being cleaved, this special check-out should be overridden.
 
-    if (owner == "flyem") {
+    std::string overridableOwner = "production_cleaving";
+    if (const char *s = std::getenv("NEU3_CLEAVE_OVERRIDABLE_OWNER")) {
+      overridableOwner = std::string(s);
+    }
+
+    if (owner == overridableOwner) {
       LINFO() << "TaskBodyCleave overriding checkout by" << owner;
       m_supervisor->checkInAdmin(m_bodyId);
       m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
