@@ -32,4 +32,13 @@ Task TaskFactory::MakeDvidTask(
   return task;
 }
 
+Task TaskFactory::MakeDvidSkeletonizeTask(
+    const ZDvidTarget &target, uint64_t bodyId, bool forceUpdate)
+{
+  Task task = MakeDvidTask("skeletonize", target, bodyId, forceUpdate);
+  task.setPriority(1);
+
+  return task;
+}
+
 }
