@@ -412,7 +412,8 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
         dvidInfo.getBlockSize().getZ() - 1;
 
     int startZ = minZ;
-    int endZ = startZ + dz;
+    int endZ = (startZ + dz) / dvidInfo.getBlockSize().getZ() *
+        dvidInfo.getBlockSize().getZ() - 1;
     ZObject3dScan part;
     while (startZ <= maxZ) {
       if (endZ > maxZ) {
@@ -443,6 +444,8 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
     uint64_t bodyId, ZObject3dScan *result) const
 {
+  return readBodyWithPartition(bodyId, flyem::LABEL_BODY, result);
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -487,6 +490,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
   }
 
   return result;
+#endif
 }
 
 ZObject3dScan *ZDvidReader::readBody(
@@ -567,6 +571,9 @@ ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
+  return readBody(bodyId, flyem::LABEL_BODY, box, canonizing, result);
+
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -595,6 +602,7 @@ ZObject3dScan *ZDvidReader::readBody(
   }
 
   return result;
+#endif
 }
 
 ZObject3dScan *ZDvidReader::readBody(
@@ -611,31 +619,53 @@ ZObject3dScan *ZDvidReader::readBody(
       result = new ZObject3dScan;
     }
 
+    bool needPartition = false;
+
+    if (box.isEmpty()) {
+      size_t bodySize = readBodySize(bodyId, labelType);
+
+      if (bodySize / neutube::ONEGIGA > 4) {
+        needPartition = true;
+      }
+    }
+
     ZDvidBufferReader &reader = m_bufferReader;
 
-    //  reader.tryCompress(true);
-    ZDvidUrl dvidUrl(getDvidTarget());
-    switch (labelType) {
-    case flyem::LABEL_BODY:
-      reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
-                  isVerbose());
-      break;
-    case flyem::LABEL_SUPERVOXEL:
-      reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
-                  isVerbose());
-      break;
+    if (needPartition == false) {
+      ZDvidUrl dvidUrl(getDvidTarget());
+      switch (labelType) {
+      case flyem::LABEL_BODY:
+        reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
+                    isVerbose());
+        break;
+      case flyem::LABEL_SUPERVOXEL:
+        reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
+                    isVerbose());
+        break;
+      }
+
+      if (reader.getStatus() != neutube::READ_FAILED) {
+        const QByteArray &buffer = reader.getBuffer();
+        result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      } else {
+        if (box.isEmpty()) {
+          needPartition = true;
+        }
+      }
+      reader.clearBuffer();
     }
 
-    const QByteArray &buffer = reader.getBuffer();
-    result->importDvidObjectBuffer(buffer.data(), buffer.size());
-
-    reader.clearBuffer();
-
-    if (canonizing) {
-      result->canonize();
+    if (needPartition) {
+      result = readBodyWithPartition(bodyId, labelType, result);
     }
 
-    result->setLabel(bodyId);
+    if (result) {
+      if (canonizing) {
+        result->canonize();
+      }
+
+      result->setLabel(bodyId);
+    }
   }
 
   return result;
@@ -838,6 +868,9 @@ QByteArray ZDvidReader::readDataFromEndpoint(
 ZObject3dScan *ZDvidReader::readSupervoxel(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result) const
 {
+  return readBody(
+        bodyId, flyem::LABEL_SUPERVOXEL, ZIntCuboid(), canonizing, result);
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -900,6 +933,7 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
   }
 
   return result;
+#endif
 }
 
 uint64_t ZDvidReader::readParentBodyId(uint64_t spId) const

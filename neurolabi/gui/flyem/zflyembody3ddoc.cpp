@@ -3657,6 +3657,8 @@ void ZFlyEmBody3dDoc::runLocalSplit()
         QFuture<void> future =
             QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runLocalSplit);
         m_futureMap[THREAD_SPLIT_KEY] = future;
+      } else {
+        notifyWindowMessageUpdated("Split is still running ...");
       }
     }
   }
@@ -3671,6 +3673,8 @@ void ZFlyEmBody3dDoc::runSplit()
     QFuture<void> future =
         QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runSplit);
     m_futureMap[THREAD_SPLIT_KEY] = future;
+  } else {
+    notifyWindowMessageUpdated("Split is still running ...");
   }
 }
 
