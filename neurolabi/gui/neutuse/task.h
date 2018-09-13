@@ -19,6 +19,7 @@ public:
   void setName(const std::string &name);
   void setUser(const std::string &user);
   void setConfig(const ZJsonObject &config);
+  void setPriority(int p);
 
 public:
   static const std::string KEY_TYPE;

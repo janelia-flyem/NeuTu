@@ -17,6 +17,8 @@ public:
   static Task MakeDvidTask(
       const std::string &name,
       const ZDvidTarget &target, uint64_t bodyId, bool forceUpdate);
+  static Task MakeDvidSkeletonizeTask(
+      const ZDvidTarget &target, uint64_t bodyId, bool forceUpdate);
 };
 
 }
