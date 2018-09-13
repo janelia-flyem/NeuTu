@@ -306,6 +306,7 @@
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+#include "znetbufferreader.h"
 
 #include "test/ztestall.h"
 
@@ -27736,6 +27737,18 @@ void ZTest::test(MainWindow *host)
   std::cout << writer.getResponse() << std::endl;
 #endif
 
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+        "skeletonize", target, 2, true);
+
+
+  ZNetBufferReader reader;
+  reader.post("http://127.0.0.1:5000/api/v1/tasks",
+              task.toJsonObject().dumpString(0).c_str());
+#endif
+
 #if 0
   neutuse::TaskWriter writer;
 //  writer.open("http://zhaot-ws1:7500");
@@ -27781,8 +27794,16 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  for (size_t i = 0; i < 10000; ++i) {
+    std::cout << "i=" << i << std::endl;
+    ZNetBufferReader reader;
+    reader.read("http://emdata2.int.janelia.org:2018", false);
+    qDebug() << reader.getBuffer();
+  }
+#endif
 
-#if 1
+#if 0
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
 
   uint64_t bodyId = 582670241;
