@@ -22,6 +22,7 @@ public:
   void readHead(const QString &url);
   bool isReadable(const QString &url);
   bool hasHead(const QString &url);
+  void post(const QString &url, const QByteArray &data);
 
   neutube::EReadStatus getStatus() const;
   int getStatusCode() const {
