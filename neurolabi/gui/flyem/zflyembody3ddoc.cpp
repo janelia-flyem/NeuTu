@@ -2849,6 +2849,15 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   return tree;
 }
 
+bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
+{
+  bool result = false;
+  if (const char* setting = std::getenv("NEU3_USE_TARSUPERVOXELS")) {
+    result = (std::string(setting) == "no");
+  }
+  return result;
+}
+
 uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
 {
   return ZFlyEmBodyManager::decode(encodedId);
@@ -3142,22 +3151,6 @@ namespace {
       mesh->setSource(source);
       ZFlyEmBody3dDoc::SetObjectClass(mesh, parentId);
     }
-  }
-}
-
-namespace {
-  bool usingOldMeshesTars()
-  {
-    // The old key-value data instance for tar archives of meshes is used only if
-    // the user explicitly requests it with an environment variable.  And even this
-    // possibility should be disabled when the new "tarsupervoxels" data type has
-    // proven reliable.
-
-    bool result = false;
-    if (const char* setting = std::getenv("NEU3_USE_TARSUPERVOXELS")) {
-      result = (std::string(setting) == "no");
-    }
-    return result;
   }
 }
 
