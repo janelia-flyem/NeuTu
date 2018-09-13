@@ -5,6 +5,7 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -299,6 +300,48 @@ QString TaskBodyCleave::actionString()
 QString TaskBodyCleave::targetString()
 {
   return QString::number(m_bodyId);
+}
+
+bool TaskBodyCleave::skip()
+{
+  if (m_bodyDoc->usingOldMeshesTars()) {
+    return false;
+  }
+
+  // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
+  // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
+  // in rapid succession.
+
+  // An environment variable can override the interval for checking, with a value of
+  // -1 meaning never check.
+
+  int interval = 1000;
+  if (const char* overrideIntervalStr = std::getenv("NEU3_CLEAVE_SKIP_TEST_INTERVAL_MS")) {
+    interval = std::atoi(overrideIntervalStr);
+  }
+  if (interval < 0) {
+    return false;
+  }
+
+  int now = QTime::currentTime().msecsSinceStartOfDay();
+  if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    return m_skip;
+  }
+  m_timeOfLastSkipCheck = now;
+
+  QTime timer;
+  timer.start();
+
+  ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
+  std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(m_bodyId);
+  int statusCode = 0;
+  ZDvid::MakeHeadRequest(tarUrl, statusCode);
+  m_skip = (statusCode != 200);
+
+  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
+          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+
+  return m_skip;
 }
 
 void TaskBodyCleave::beforeNext()
