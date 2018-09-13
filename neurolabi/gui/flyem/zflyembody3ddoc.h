@@ -220,6 +220,12 @@ public:
 
   static uint64_t decode(uint64_t encodedId);
 
+  // TODO: Remove this function (and ZDvidUrl::getMeshesTarsUrl()) when the
+  // old alternative to the DVID "tarsupervoxels" data type is completely retired.
+  // This function returns true only if the user has set the the NEU3_USE_TARSUPERVOXELS
+  // environment variable to "no".
+  bool usingOldMeshesTars() const;
+
   bool fromTar(uint64_t id) const;
 //  bool isTarMode() const;
 
