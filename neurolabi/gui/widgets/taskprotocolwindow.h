@@ -30,6 +30,13 @@ public:
 public:
     void test();
 
+    /*!
+     * \brief Update ineration behavior of the current task
+     *
+     * Mainly used for resolving conflicts between cleaving and splitting.
+     */
+    void updateTaskInteraction();
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
@@ -44,6 +51,7 @@ signals:
 
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
+//    void taskUpdated(const QString &type);
 
 private slots:
     void onNextButton();
@@ -165,6 +173,10 @@ private:
     void prefetchForTaskIndex(int index);
     bool checkDVIDTarget();
     void unprefetchForTaskIndex(int index);
+//    QString getCurrentTaskProtocolType() const;
+    TaskProtocolTask* getCurrentTask() const;
+    void resetBody3dDocConfig();
+    void updateBody3dDocConfig();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

@@ -3,18 +3,10 @@
 
 #include <set>
 #include <iostream>
-#include "zswctree.h"
 
 class MainWindow;
-
-struct ZTestSwcTreeIteratorConfig {
-  int option;
-  Swc_Tree_Node *start;
-  std::set<Swc_Tree_Node*> *blocker;
-
-  ZTestSwcTreeIteratorConfig() : option(SWC_TREE_ITERATOR_NO_UPDATE),
-    start(NULL), blocker(NULL) {}
-};
+class ZSwcTree;
+struct ZTestSwcTreeIteratorConfig;
 
 class ZTest
 {

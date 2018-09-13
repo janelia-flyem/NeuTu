@@ -70,6 +70,11 @@ size_t ZObject3dStripe::getVoxelNumber() const
   return voxelNumber;
 }
 
+bool ZObject3dStripe::hasVoxel() const
+{
+  return !m_segmentArray.empty();
+}
+
 
 const int* ZObject3dStripe::getSegment(size_t index) const
 {
@@ -579,6 +584,10 @@ void ZObject3dStripe::drawStack(
     z += offset[2];
   }
 
+  if (y < 0 || z < 0) {
+    return;
+  }
+
   if (y >= C_Stack::height(stack)) {
     RECORD_ERROR(true, "y too large");
     return;
@@ -606,8 +615,15 @@ void ZObject3dStripe::drawStack(
       x0 += offset[0];
       x1 += offset[0];
     }
-    TZ_ASSERT(x0 < C_Stack::width(stack), "x too large");
-    TZ_ASSERT(x1 < C_Stack::width(stack), "x too large");
+    if (x0 < 0) {
+      x0 = 0;
+    }
+    if (x1 >= C_Stack::width(stack)) {
+      x1 = C_Stack::width(stack) - 1;
+    }
+
+//    TZ_ASSERT(x0 < C_Stack::width(stack), "x too large");
+//    TZ_ASSERT(x1 < C_Stack::width(stack), "x too large");
     for (int x = x0; x <= x1; ++x) {
       for (int c = 0; c < 3; ++c) {
 //        if (color[c] != 0) {

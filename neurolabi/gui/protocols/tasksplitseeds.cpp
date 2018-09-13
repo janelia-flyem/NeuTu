@@ -64,7 +64,7 @@ const QString TaskSplitSeeds::VALUE_TASKTYPE = "split seeds";
 const QString TaskSplitSeeds::KEY_BODYID = "body ID";
 const QString TaskSplitSeeds::TAG_SEEDS_ADDED = "seeds added";
 
-QString TaskSplitSeeds::tasktype() {
+QString TaskSplitSeeds::tasktype() const {
     return VALUE_TASKTYPE;
 }
 

@@ -316,15 +316,19 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
     ZPoint dataPos;
     if (getSliceAxis() == neutube::A_AXIS) {
       dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+      setInfo(QString("(%1, %2, %3)").
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
               pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
+      setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
+              arg(pos.x()).arg(pos.y()).arg(z).
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     }
-    setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
-            arg(pos.x()).arg(pos.y()).arg(z).
-            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-            arg(iround(dataPos.getZ())));
+
   }
 }
 
@@ -533,7 +537,7 @@ void ZStackView::configure(EMode mode)
     break;
   case MODE_PLAIN_IMAGE:
 #ifndef _DEBUG_
-    hideLayout(m_topLayout);
+//    hideLayout(m_topLayout);
 #endif
     hideLayout(m_secondTopLayout);
     hideLayout(m_zControlLayout);
@@ -3194,6 +3198,22 @@ void ZStackView::customizeWidget()
       }
     }
   }
+}
+
+void ZStackView::enableCustomCheckBox(
+    int index, const QString &text, QObject *receiver, const char *slot)
+{
+  if (m_customCheckBoxList.size() <= index) {
+    m_customCheckBoxList.resize(index + 1);
+  }
+  if (m_customCheckBoxList[index] != NULL) {
+    delete m_customCheckBoxList[index];
+  }
+  QCheckBox *widget = new QCheckBox;
+  m_customCheckBoxList[index] = widget;
+  widget->setText(text);
+  connect(widget, SIGNAL(toggled(bool)), receiver, slot);
+  m_topLayout->addWidget(widget);
 }
 
 void ZStackView::addHorizontalWidget(QWidget *widget)

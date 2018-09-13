@@ -23,6 +23,7 @@
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
+#include "protocols/protocoltaskconfig.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -215,12 +216,10 @@ public:
 
   static uint64_t decode(uint64_t encodedId);
 
-  // The old way of storing tar archives of meshes using ZDvidUrl::getMeshesTarsUrl()
-  // is being replaced with the new "tarsupervoxels" data instance using
-  // ZDvidUrl::getTarSupervoxelsUrl(). During the transition, the new approach is used
-  // only if the NEU3_USE_TARSUPERVOXELS environment variable is set.  This function returns
-  // true if we are NOT using that new approach.
-
+  // TODO: Remove this function (and ZDvidUrl::getMeshesTarsUrl()) when the
+  // old alternative to the DVID "tarsupervoxels" data type is completely retired.
+  // This function returns true only if the user has set the the NEU3_USE_TARSUPERVOXELS
+  // environment variable to "no".
   bool usingOldMeshesTars() const;
 
   bool fromTar(uint64_t id) const;
@@ -244,10 +243,14 @@ public:
 
   static void SetObjectClass(ZStackObject *obj, uint64_t bodyId);
 
+  void configure(const ProtocolTaskConfig &config);
+
 public:
-  virtual void executeAddTodoCommand(
+  void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
       uint64_t bodyId) override;
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked, uint64_t bodyId);
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
@@ -300,6 +303,8 @@ public:
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
+
+  ZMesh* getMeshForSplit() const;
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
@@ -366,6 +371,8 @@ public slots:
   void clearGarbage(bool force = false);
 
   void startBodyAnnotation();
+
+//  void updateCurrentTask(const QString &taskType);
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -556,6 +563,8 @@ private:
   QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
+
+  ProtocolTaskConfig m_taskConfig;
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;

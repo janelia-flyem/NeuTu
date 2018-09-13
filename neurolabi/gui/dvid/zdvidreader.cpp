@@ -54,6 +54,7 @@
 #include "geometry/zaffinerect.h"
 #include "zarrayfactory.h"
 #include "zobject3dfactory.h"
+#include "dvid/zdvidstackblockfactory.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -671,7 +672,7 @@ ZObject3dScan *ZDvidReader::readBody(
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {
     case flyem::LABEL_BODY:
-      if (zoom == 0) {
+      if (zoom == 0 || box.isEmpty()) {
         reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
                     isVerbose());
       } else {
@@ -1074,6 +1075,24 @@ const
   return mesh;
 }
 
+ZMesh* ZDvidReader::readSupervoxelMesh(uint64_t svId) const
+{
+  ZMesh *mesh = NULL;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
+  if (!url.empty()) {
+    m_bufferReader.read(url.c_str(), isVerbose());
+    if (m_bufferReader.getStatus() != neutube::READ_FAILED) {
+      const QByteArray &buffer = m_bufferReader.getBuffer();
+      mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
+    }
+    m_bufferReader.clearBuffer();
+  }
+
+  return mesh;
+}
+
 struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, bool useOldMeshesTars) const
 {
   size_t bytesTotal;
@@ -1451,7 +1470,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
       blockCoords[1] = blockIndex.getY();
       blockCoords[2] = blockIndex.getZ();
 #ifdef _DEBUG_
-        STD_COUT << "starting reading" << std::endl;
+        STD_COUT << "starting reading: zoom = " << zoom << std::endl;
         STD_COUT << getDvidTarget().getGrayScaleName() << std::endl;
         STD_COUT << blockCoords[0] << " " << blockCoords[1] << " " << blockCoords[2] << std::endl;
 
@@ -1610,6 +1629,8 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZObject3dScan &blockObj, const ZDvidInfo &info, int zoom) const
 {
+  DEBUG_OUT << "Reading grayscale blocks: zoom = " << zoom << std::endl;
+
   std::vector<ZStack*> result;
 
   ZObject3dScan::ConstSegmentIterator segIter(&blockObj);
@@ -1657,7 +1678,8 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId) const
 }
 */
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
+    uint64_t bodyId, const ZIntCuboid &range) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setDvidTarget(getDvidTarget());
@@ -1753,6 +1775,34 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId, int zoom) const
 #ifdef _DEBUG_2
   ptoc();
 #endif
+
+  return spStack;
+}
+
+ZSparseStack* ZDvidReader::readSparseStackOnDemand(
+    uint64_t bodyId, flyem::EBodyLabelType type, ZSparseStack *out) const
+{
+  ZSparseStack *spStack = out;
+
+  ZObject3dScan *body = readBody(bodyId, type, ZIntCuboid(), true, NULL);
+
+#ifdef _DEBUG_2
+  tic();
+#endif
+
+  if (!body->isEmpty()) {
+    if (spStack == nullptr) {
+      spStack = new ZSparseStack;
+    }
+    spStack->setObjectMask(body);
+
+    spStack->setBlockMask(readCoarseBody(bodyId, type, NULL));
+
+    ZDvidStackBlockFactory *blockFactory = new ZDvidStackBlockFactory;
+    blockFactory->setDvidTarget(getDvidTarget());
+
+    spStack->setBlockFactory(blockFactory);
+  }
 
   return spStack;
 }

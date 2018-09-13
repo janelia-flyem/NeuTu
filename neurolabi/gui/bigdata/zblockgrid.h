@@ -62,6 +62,8 @@ public:
   void setGridSize(int width, int height, int depth);
   void setGridSize(const ZIntPoint &s);
 
+  void configure(const ZBlockGrid &grid, int zoom);
+
   ZIntPoint getBlockPosition(const ZIntPoint &blockIndex) const;
   ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 

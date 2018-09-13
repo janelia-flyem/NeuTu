@@ -48,6 +48,7 @@ namespace {
   static const QString KEY_SKIPPED = "skipped";
   static const QString KEY_SERVER_REPLY = "latest server reply";
   static const QString KEY_BODY_IDS_CREATED = "new body IDs";
+  static const QString KEY_USAGE_TIME = "time to complete (ms)";
 
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
@@ -300,7 +301,7 @@ TaskBodyCleave::~TaskBodyCleave()
   }
 }
 
-QString TaskBodyCleave::tasktype()
+QString TaskBodyCleave::tasktype() const
 {
   return VALUE_TASKTYPE;
 }
@@ -458,6 +459,8 @@ namespace {
 
 void TaskBodyCleave::onLoaded()
 {
+  m_usageTimer.start();
+
   m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
   if (!m_checkedOut) {
     m_widget->setEnabled(false);
@@ -913,6 +916,14 @@ bool TaskBodyCleave::allowCompletion()
 
 void TaskBodyCleave::onCompleted()
 {
+  m_usageTimes.push_back(m_usageTimer.elapsed());
+
+  // Restart the timer, to measure the time if the user reconsiders and
+  // reaches a new decision for this task (without moving on and then coming
+  // back to this task).
+
+  m_usageTimer.start();
+
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
@@ -1577,6 +1588,10 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
       jsonNewBodyIds.append(id);
     }
     jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
+
+    QJsonArray jsonTimes;
+    std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
+    jsonExtra[KEY_USAGE_TIME] = jsonTimes;
   }
 
   json.append(jsonExtra);
@@ -1698,5 +1713,24 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
   }
 
   return true;
+}
+
+ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
+{
+  ProtocolTaskConfig config;
+  config.setTaskType(tasktype());
+  config.setDefaultTodo(neutube::TO_SUPERVOXEL_SPLIT);
+
+  return config;
+}
+
+void TaskBodyCleave::disableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(false);
+}
+
+void TaskBodyCleave::enableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(true);
 }
 

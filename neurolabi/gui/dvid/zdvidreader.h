@@ -200,6 +200,8 @@ public:
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
 
+  ZMesh* readSupervoxelMesh(uint64_t svId) const;
+
   /*!
    * \brief Read meshes from a key-value instance whose values are tar archives of
    * Draco-compressed meshes.  The new "tarsupervoxels" data instance will be used
@@ -225,8 +227,10 @@ public:
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
-
   ZSparseStack* readSparseStack(uint64_t bodyId, int zoom) const;
+
+  ZSparseStack* readSparseStackOnDemand(
+      uint64_t bodyId, flyem::EBodyLabelType type, ZSparseStack *out) const;
 
   ZDvidSparseStack* readDvidSparseStack(
       uint64_t bodyId, flyem::EBodyLabelType labelType) const;
@@ -234,6 +238,7 @@ public:
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
       uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(

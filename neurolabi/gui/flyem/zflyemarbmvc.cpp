@@ -45,6 +45,11 @@ void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
   if (reader.open(target)) {
     clear();
     getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+//    getCompletePresenter()->allowBlinkingSegmentation(true);
+    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+                                    SLOT(allowBlinkingSegmentation(bool)));
+//    getCompleteDocument()->allowDvidLabelSliceBlinking(
+//          getCompletePresenter()->allowingBlinkingSegmentation());
   }
 }
 
