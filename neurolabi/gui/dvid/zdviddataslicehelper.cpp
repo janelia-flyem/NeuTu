@@ -441,6 +441,17 @@ void ZDvidDataSliceHelper::syncActualQuality()
   setActualQuality(getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
 }
 
+void ZDvidDataSliceHelper::setPreferredUpdatePolicy(
+    flyem::EDataSliceUpdatePolicy policy)
+{
+  m_preferredUpdatePolicy = policy;
+}
+
+flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
+{
+  return m_preferredUpdatePolicy;
+}
+
 void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
 {
   if (getMaxZoom() == 0) {
@@ -451,7 +462,7 @@ void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
     }
   } else {
     if (axis == neutube::A_AXIS) {
-      setUpdatePolicy(flyem::UPDATE_LOWRES);
+      setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
       setUpdatePolicy(flyem::UPDATE_LOWRES);
     }

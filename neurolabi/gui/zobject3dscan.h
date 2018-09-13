@@ -82,6 +82,8 @@ public:
    */
   size_t getVoxelNumber() const;
 
+  bool hasVoxel() const;
+
   /*!
    * \brief Get voxel number at a certain slice
    * \param z The slice position.
@@ -331,8 +333,11 @@ public:
   void remove(const ZIntCuboid &box);
 
   void downsample(int xintv, int yintv, int zintv);
+
   void downsampleMax(int xintv, int yintv, int zintv);
   void downsampleMax(const ZIntPoint &dsIntv);
+  void downsampleMax(int intv);
+
   void downsampleMin(int xintv, int yintv, int zintv);
   ZObject3dScan downsampleBorderMask(int xintv, int yintv, int zintv);
 
@@ -728,6 +733,10 @@ private:
   void pushDsIntv(int xintv, int yintv, int zintv);
   void popDsIntv(int xintv, int yintv, int zintv);
 
+  void writeV0(std::ostream &stream) const;
+  void writeV1(std::ostream &stream) const;
+  void writeV2(std::ostream &stream) const;
+  void readHeader(std::istream &stream, int *version, int *stripeNumber);
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

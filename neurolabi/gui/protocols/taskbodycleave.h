@@ -5,6 +5,7 @@
 #include "zjsonarray.h"
 #include "zpoint.h"
 #include <QObject>
+#include <QTime>
 #include <QVector>
 #include <set>
 
@@ -28,7 +29,7 @@ class TaskBodyCleave : public TaskProtocolTask
 public:
   TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
   virtual ~TaskBodyCleave();
-  QString tasktype() override;
+  QString tasktype() const override;
   QString actionString() override;
   QString targetString() override;
   bool skip() override;
@@ -43,6 +44,13 @@ public:
   virtual QMenu *getTaskMenu() override;
 
   uint64_t getBodyId() const;
+
+  ProtocolTaskConfig getTaskConfig() const override;
+
+public:
+  //Temporary solution for resolving shortcut conflict
+  void disableCleavingShortcut();
+  void enableCleavingShortcut();
 
 private slots:
   void onShowCleavingChanged(int state);
@@ -86,6 +94,9 @@ private:
 
   ZFlyEmSupervisor *m_supervisor;
   bool m_checkedOut = false;
+
+  QTime m_usageTimer;
+  std::vector<int> m_usageTimes;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;

@@ -27,6 +27,7 @@
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "flyem/zflyemtaskhelper.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -87,6 +88,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
             this, &TaskProtocolWindow::onBodyMeshLoaded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
             this, &TaskProtocolWindow::onBodyRecycled);
+
+    resetBody3dDocConfig();
+    //Todo
+//    connect(this, &TaskProtocolWindow::taskUpdated,
+//            m_body3dDoc, &ZFlyEmBody3dDoc::updateCurrentTask);
 }
 
 // constants
@@ -194,6 +200,15 @@ void TaskProtocolWindow::onPrevButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+    updateBody3dDocConfig();
+//    emit taskUpdated(getCurrentTaskProtocolType());
+}
+
+void TaskProtocolWindow::updateTaskInteraction()
+{
+  ZFlyEmTaskHelper::ResolveShortcutForSplitting(
+        getCurrentTask(), m_body3dDoc->isSplitActivated());
 }
 
 void TaskProtocolWindow::test()
@@ -286,6 +301,8 @@ void TaskProtocolWindow::onNextButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onDoneButton() {
@@ -344,6 +361,9 @@ void TaskProtocolWindow::onDoneButton() {
     LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
+    resetBody3dDocConfig();
+
+//    emit taskUpdated(""); //No activated task
 }
 
 void TaskProtocolWindow::onLoadTasksButton() {
@@ -364,6 +384,9 @@ void TaskProtocolWindow::onLoadTasksButton() {
     //  or maybe enter an assignment ID or something)
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
+
+    updateBody3dDocConfig();
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
@@ -1305,6 +1328,45 @@ void TaskProtocolWindow::applicationQuitting() {
 BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
 {
     return m_prefetchQueue;
+}
+
+/*
+QString TaskProtocolWindow::getCurrentTaskProtocolType() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return "";
+  }
+
+  return m_taskList[m_currentTaskIndex]->tasktype();
+}
+*/
+
+TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return nullptr;
+  }
+
+  return m_taskList[m_currentTaskIndex].data();
+}
+
+
+void TaskProtocolWindow::resetBody3dDocConfig()
+{
+  ProtocolTaskConfig config;
+  config.setDefaultTodo(neutube::TO_SPLIT);
+  config.setTaskType("");
+  m_body3dDoc->configure(config);
+}
+
+void TaskProtocolWindow::updateBody3dDocConfig()
+{
+  TaskProtocolTask *task = getCurrentTask();
+  if (task) {
+    m_body3dDoc->configure(task->getTaskConfig());
+  } else {
+    resetBody3dDocConfig();
+  }
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()

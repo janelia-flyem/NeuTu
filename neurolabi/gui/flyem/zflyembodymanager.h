@@ -127,25 +127,32 @@ public:
   // tar file of meshes.  These distinct identifiers are created by encoding a
   // raw body identifier.
 
+  /*!
+   * \brief Encode a body ID.
+   *
+   * It returns 0 if \a rawId is an encoded ID.
+   */
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
 
   /*!
    * \brief Encode supervoxel
    *
    * No tar encoding is applied to a supervoxel. In fact, the whole tar encoding
-   * option might be removed in the future because it seems redundant.
+   * option might be removed in the future because it seems redundant. It returns
+   * 0 if \a rawId is an encoded ID.
    */
-  static uint64_t encodeSupervoxel(uint64_t rawId);
+  static uint64_t EncodeSupervoxel(uint64_t rawId);
 
   static uint64_t decode(uint64_t encodedId);
-  static bool encodesTar(uint64_t id);
-  static bool encodingSupervoxel(uint64_t id);
-  static unsigned int encodedLevel(uint64_t id);
-  static bool encodingSupervoxelTar(uint64_t id);
+  static bool encodesTar(uint64_t bodyId);
+  static bool encodingSupervoxel(uint64_t bodyId);
+  static unsigned int encodedLevel(uint64_t bodyId);
+  static bool encodingSupervoxelTar(uint64_t bodyId);
+  static bool IsEncoded(uint64_t bodyId);
 
 private:
-  static bool couldBeSupervoxelLevel(uint64_t id);
-  static bool couldBeSupervoxel(uint64_t id);
+  static bool couldBeSupervoxelLevel(uint64_t bodyId);
+  static bool couldBeSupervoxel(uint64_t bodyId);
 
 private:
   QMap<uint64_t, QSet<uint64_t>> m_bodyMap;

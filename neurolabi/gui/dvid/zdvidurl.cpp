@@ -208,6 +208,12 @@ std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
   return GetFullUrl(GetTarfileCommandUrl(dataUrl), key);
 }
 
+std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
+{
+  return GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
+                    GetBodyKey(bodyId));
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());

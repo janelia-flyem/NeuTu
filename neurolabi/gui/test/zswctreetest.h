@@ -21,6 +21,15 @@
 
 #ifdef _USE_GTEST_
 
+struct ZTestSwcTreeIteratorConfig {
+  int option;
+  Swc_Tree_Node *start;
+  std::set<Swc_Tree_Node*> *blocker;
+
+  ZTestSwcTreeIteratorConfig() : option(SWC_TREE_ITERATOR_NO_UPDATE),
+    start(NULL), blocker(NULL) {}
+};
+
 static void testTreeIterator(ZSwcTree &tree,
                              const ZTestSwcTreeIteratorConfig &config,
                              int *truthArray,
