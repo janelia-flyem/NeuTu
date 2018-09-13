@@ -27737,7 +27737,7 @@ void ZTest::test(MainWindow *host)
   std::cout << writer.getResponse() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
   target.setBodyLabelName("bodies");
   neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -27803,15 +27803,26 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
+  uint64_t bodyId = 1020280792;
+  ZObject3dScan obj;
+  reader->readBodyWithPartition(bodyId, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
 #if 0
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
 
-  uint64_t bodyId = 582670241;
+//  uint64_t bodyId = 582670241;
+  uint64_t bodyId = 979627466;
   std::cout << "#voxels" << reader->readBodySize(bodyId, flyem::LABEL_SUPERVOXEL) << std::endl;
 
   ZObject3dScan obj;
-  reader->readSupervoxel(bodyId, true, &obj);
-  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+//  reader->readSupervoxel(bodyId, true, &obj);
+  reader->readBody(bodyId, flyem::LABEL_BODY,
+                   ZIntCuboid(), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
 #if 0
