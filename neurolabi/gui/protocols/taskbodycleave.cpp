@@ -44,6 +44,8 @@ namespace {
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
+  static const QString KEY_USER = "user";
+  static const QString KEY_SKIPPED = "skipped";
   static const QString KEY_SERVER_REPLY = "latest server reply";
   static const QString KEY_BODY_IDS_CREATED = "new body IDs";
 
@@ -351,6 +353,23 @@ bool TaskBodyCleave::skip()
 
   LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
           << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+
+  // Add to the auxiliary output a mention that this task was skipped.
+
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (!reader.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyCleave::skip() could not open DVID target for reading";
+    return m_skip;
+  }
+
+  ZDvidWriter writer;
+  if (!writer.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyCleave::skip() could not open DVID target for writing";
+    return m_skip;
+  }
+
+  writeAuxiliaryOutput(reader, writer);
 
   return m_skip;
 }
@@ -1525,12 +1544,15 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
   // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
 
   QJsonArray json;
-  for (const auto &pair : cleaveIndexToMeshIds) {
-    QJsonArray jsonForCleaveIndex;
-    for (uint64_t id : pair.second) {
-      jsonForCleaveIndex.append(QJsonValue(qint64(id)));
+
+  if (!m_skip) {
+    for (const auto &pair : cleaveIndexToMeshIds) {
+      QJsonArray jsonForCleaveIndex;
+      for (uint64_t id : pair.second) {
+        jsonForCleaveIndex.append(QJsonValue(qint64(id)));
+      }
+      json.append(jsonForCleaveIndex);
     }
-    json.append(jsonForCleaveIndex);
   }
 
   // It is useful to include a collection of arbitrary extra infomration at the last element of the array.
@@ -1538,17 +1560,24 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
 
   QJsonObject jsonExtra;
 
-  // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
-
-  jsonExtra[KEY_SERVER_REPLY] = m_cleaveReply;
-
-  // Include the IDs (labels) for the new bodies DVID created when cleaving (to allow undo later).
-
-  QJsonArray jsonNewBodyIds;
-  for (QString id : newBodyIds) {
-    jsonNewBodyIds.append(id);
+  if (const char* user = std::getenv("USER")) {
+    jsonExtra[KEY_USER] = user;
   }
-  jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
+  jsonExtra[KEY_SKIPPED] = QJsonValue(m_skip);
+
+  if (!m_skip) {
+    // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
+
+    jsonExtra[KEY_SERVER_REPLY] = m_cleaveReply;
+
+    // Include the IDs (labels) for the new bodies DVID created when cleaving (to allow undo later).
+
+    QJsonArray jsonNewBodyIds;
+    for (QString id : newBodyIds) {
+      jsonNewBodyIds.append(id);
+    }
+    jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
+  }
 
   json.append(jsonExtra);
 
