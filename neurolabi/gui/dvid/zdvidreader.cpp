@@ -4470,6 +4470,22 @@ uint64_t ZDvidReader::readSupervoxelIdAt(int x, int y, int z) const
   return bodyId;
 }
 
+std::vector<uint64_t> ZDvidReader::readSupervoxelSet(uint64_t bodyId) const
+{
+  std::vector<uint64_t> result;
+
+  ZDvidUrl url(getDvidTarget());
+  std::string urlStr = url.getSupervoxelMapUrl(bodyId);
+  if (!urlStr.empty()) {
+    ZJsonArray jsonArray = readJsonArray(urlStr);
+    for (size_t i = 0; i < jsonArray.size(); ++i) {
+      result.push_back(ZJsonParser::integerValue(jsonArray.at(i)));
+    }
+  }
+
+  return result;
+}
+
 std::vector<std::vector<uint64_t> > ZDvidReader::readBodyIdAt(
     const std::vector<std::vector<ZIntPoint> > &ptArray) const
 {

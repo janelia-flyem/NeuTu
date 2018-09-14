@@ -4223,6 +4223,7 @@ std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
 
 std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
 {
+  getCanvas()->getGLFocus();
   std::vector<ZPoint> intersection;
   ZStackDoc *doc = getDocument();
 

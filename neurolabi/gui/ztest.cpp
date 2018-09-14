@@ -27805,6 +27805,18 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
+  uint64_t bodyId = 1452234638;
+
+  auto bodyList = reader->readSupervoxelSet(bodyId);
+  std::ofstream stream(
+        GET_TEST_DATA_DIR + "/my-mesh-job-files/supervoxels-to-process.csv");
+  for (uint64_t body : bodyList) {
+    stream << body << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
   uint64_t bodyId = 1020280792;
   ZObject3dScan obj;
   reader->readBodyWithPartition(bodyId, &obj);
