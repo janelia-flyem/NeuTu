@@ -844,9 +844,12 @@ void resetCamera(ZPoint pos, double radius, Z3DCamera &camera)
   glm::vec3 center = glm::vec3(pos.x(), pos.y(), pos.z());
 
   double angle = camera.fieldOfView();
-  if (camera.aspectRatio() < 1.0) {
-    // use horizontal angle to calculate
-    angle = 2.0 * std::atan(std::tan(angle * 0.5) * camera.aspectRatio());
+  double aspectRatio = camera.windowAspectRatio() * camera.aspectRatio();
+  if (aspectRatio < 1.0) {
+
+    // If the frustum window is taller than it is wide, use the (smaller) horizontal angle.
+
+    angle = 2.0 * std::atan(std::tan(angle * 0.5) * aspectRatio);
   }
 
   float centerDist = radius / std::sin(angle * 0.5);
