@@ -1266,7 +1266,6 @@ void TaskBodyCleave::cleave()
   m_networkManager->post(request, requestData);
 }
 
-
 void TaskBodyCleave::updateVisibility()
 {
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
@@ -1297,8 +1296,15 @@ void TaskBodyCleave::updateVisibility()
       toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
     }
 
-    m_bodyDoc->setVisible(mesh, toBeVisible);
+    // Set the visibility of the mesh in a way that will be processed once, with the final
+    // processObjectModified() call.  This approach is important to maintain good performance
+    // for a large number of meshes.
+
+    mesh->setVisible(toBeVisible);
+    m_bodyDoc->bufferObjectModified(mesh, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
   }
+
+  m_bodyDoc->processObjectModified();
 }
 
 std::set<std::size_t> TaskBodyCleave::hiddenChanges(const std::map<uint64_t, std::size_t>&
@@ -1460,15 +1466,25 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
   ZDvidUrl url(writer.getDvidTarget());
   std::string urlCleave = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId);
 
+  // Do not cleave off of the original body the group of supervoxels assigned to the first index;
+  // by convention, those supervoxels define the new version of the original body.  But skip past
+  // supervoxels with index 0, which are the supervoxels that could not be assigned by the
+  // cleaving server (because they are not reachable from the seeds).
+
+  auto it = cleaveIndexToMeshIds.begin();
+  if (it->first != 0) {
+    indexNotCleavedOff = it->first;
+  } else {
+    it++;
+    indexNotCleavedOff = it->first;
+  }
+
   std::size_t i = 0;
   for (const auto &pair : cleaveIndexToMeshIds) {
+    std::size_t cleaveIndex = pair.first;
     const std::vector<uint64_t> &ids = pair.second;
 
-    // Do not cleave the first group of super voxels off of the original body.  By convention,
-    // those super voxels define the new version of the original body.
-
-    bool cleaveOff = (i != 0);
-    if (cleaveOff) {
+    if (cleaveIndex != indexNotCleavedOff) {
       ZJsonArray jsonBody;
       for (uint64_t id : ids) {
         jsonBody.append(id);
@@ -1503,10 +1519,7 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
         displayWarning(title, text);
         return false;
       }
-    } else {
-      indexNotCleavedOff = pair.first;
     }
-
     i++;
   }
 
