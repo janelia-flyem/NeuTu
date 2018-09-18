@@ -44,6 +44,7 @@
 #include "zstackdocproxy.h"
 #include "zflyembodyannotationdialog.h"
 #include "zflyemtaskhelper.h"
+#include "protocols/protocoltaskfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1128,6 +1129,11 @@ void ZFlyEmBody3dDoc::deactivateSplit()
 {
   if (m_splitter->getBodyId() > 0) {
     waitForSplitToBeDone();
+
+    if (m_taskConfig.getTaskType() == ProtocolTaskFactory::TASK_BODY_CLEAVE) {
+      removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+      ZStackDocAccessor::RemoveSplitSeed(this);
+    }
 
     uint64_t parentId = m_splitter->getBodyId();
 
@@ -2843,6 +2849,15 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   return tree;
 }
 
+bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
+{
+  bool result = false;
+  if (const char* setting = std::getenv("NEU3_USE_TARSUPERVOXELS")) {
+    result = (std::string(setting) == "no");
+  }
+  return result;
+}
+
 uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
 {
   return ZFlyEmBodyManager::decode(encodedId);
@@ -3154,11 +3169,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
 
   bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
 
-  // For now, use the new "tarsupervoxels" data instance for tar archives of meshes
-  // only if an environment variable is set,  When testing is complete, this approach
-  // will become the default.
-
-  bool useOldMeshesTars = !std::getenv("NEU3_USE_TARSUPERVOXELS");
+  bool useOldMeshesTars = usingOldMeshesTars();
   if (!useOldMeshesTars) {
     bodyId = decode(bodyId);
   }

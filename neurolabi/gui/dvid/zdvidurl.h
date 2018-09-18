@@ -64,6 +64,7 @@ public:
 
   std::string getTarSupervoxelsUrl();
   std::string getTarSupervoxelsUrl(uint64_t bodyId);
+  std::string getSupervoxelMeshUrl(uint64_t bodyId);
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
