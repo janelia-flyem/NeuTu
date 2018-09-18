@@ -4,6 +4,7 @@
 #include "protocols/taskprotocoltask.h"
 #include "zpoint.h"
 #include <QObject>
+#include <QTime>
 #include <QVector>
 #include <set>
 
@@ -26,9 +27,11 @@ public:
   QString tasktype() const override;
   QString actionString() override;
   QString targetString() override;
+  bool skip() override;
 
   virtual void beforeNext() override;
   virtual void beforePrev() override;
+  virtual void onLoaded() override;
   virtual void beforeDone() override;
 
   virtual QWidget *getTaskWidget() override;
@@ -37,6 +40,11 @@ public:
   uint64_t getBodyId() const;
 
   ProtocolTaskConfig getTaskConfig() const override;
+
+public:
+  //Temporary solution for resolving shortcut conflict
+  void disableCleavingShortcut();
+  void enableCleavingShortcut();
 
 private slots:
   void onShowCleavingChanged(int state);
@@ -74,6 +82,12 @@ private:
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
+
+  bool m_skip = false;
+  int m_timeOfLastSkipCheck = -1;
+
+  QTime m_usageTimer;
+  std::vector<int> m_usageTimes;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;

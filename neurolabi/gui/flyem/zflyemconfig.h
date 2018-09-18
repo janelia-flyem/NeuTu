@@ -10,6 +10,7 @@
 #include "dvid/zdvidtarget.h"
 #ifdef _QT_GUI_USED_
 #include "flyem/zneutuservice.h"
+#include "neutuse/taskwriter.h"
 #endif
 
 class ZFlyEmConfig
@@ -74,6 +75,10 @@ public:
     return m_neutuService;
   }
 
+  neutuse::TaskWriter& getNeutuseWriter() {
+    return m_neutuseWriter;
+  }
+
   void setServer(const std::string &server);
 #endif
 
@@ -125,6 +130,7 @@ private:
 
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
+  neutuse::TaskWriter m_neutuseWriter;
 #endif
 //  std::string m_taskServer;
   std::string m_configPath;

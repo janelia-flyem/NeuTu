@@ -70,6 +70,11 @@ size_t ZObject3dStripe::getVoxelNumber() const
   return voxelNumber;
 }
 
+bool ZObject3dStripe::hasVoxel() const
+{
+  return !m_segmentArray.empty();
+}
+
 
 const int* ZObject3dStripe::getSegment(size_t index) const
 {

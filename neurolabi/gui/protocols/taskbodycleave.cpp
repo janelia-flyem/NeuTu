@@ -5,6 +5,7 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -41,6 +42,9 @@ namespace {
   static const QString KEY_BODY_POINT = "body point";
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
+
+  static const QString KEY_SERVER_REPLY = "latest server reply";
+  static const QString KEY_USAGE_TIME = "time to complete (ms)";
 
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
@@ -298,6 +302,48 @@ QString TaskBodyCleave::targetString()
   return QString::number(m_bodyId);
 }
 
+bool TaskBodyCleave::skip()
+{
+  if (m_bodyDoc->usingOldMeshesTars()) {
+    return false;
+  }
+
+  // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
+  // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
+  // in rapid succession.
+
+  // An environment variable can override the interval for checking, with a value of
+  // -1 meaning never check.
+
+  int interval = 1000;
+  if (const char* overrideIntervalStr = std::getenv("NEU3_CLEAVE_SKIP_TEST_INTERVAL_MS")) {
+    interval = std::atoi(overrideIntervalStr);
+  }
+  if (interval < 0) {
+    return false;
+  }
+
+  int now = QTime::currentTime().msecsSinceStartOfDay();
+  if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    return m_skip;
+  }
+  m_timeOfLastSkipCheck = now;
+
+  QTime timer;
+  timer.start();
+
+  ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
+  std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(m_bodyId);
+  int statusCode = 0;
+  ZDvid::MakeHeadRequest(tarUrl, statusCode);
+  m_skip = (statusCode != 200);
+
+  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
+          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+
+  return m_skip;
+}
+
 void TaskBodyCleave::beforeNext()
 {
   applyPerTaskSettings();
@@ -334,6 +380,11 @@ void TaskBodyCleave::beforePrev()
   m_showBodyCheckBox->setChecked(true);
 
   m_hiddenIds.clear();
+}
+
+void TaskBodyCleave::onLoaded()
+{
+  m_usageTimer.start();
 }
 
 void TaskBodyCleave::beforeDone()
@@ -714,6 +765,14 @@ bool TaskBodyCleave::allowCompletion()
 
 void TaskBodyCleave::onCompleted()
 {
+  m_usageTimes.push_back(m_usageTimer.elapsed());
+
+  // Restart the timer, to measure the time if the user reconsiders and
+  // reaches a new decision for this task (without moving on and then coming
+  // back to this task).
+
+  m_usageTimer.start();
+
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
@@ -768,10 +827,20 @@ void TaskBodyCleave::onCompleted()
     json.append(jsonForCleaveIndex);
   }
 
-  // For debugging, append verbatin the cleave server response that produced the arrays of super voxels.
+  // It is useful to include a collection of arbitrary extra infomration at the last element of the array.
   // It can be distinguished as the only item in the output array that is a JSON object and not an array.
 
-  json.append(m_cleaveReply);
+  QJsonObject jsonExtra;
+
+  // For debugging, append verbatim the cleave server response that produced the arrays of super voxels.
+
+  jsonExtra[KEY_SERVER_REPLY] = m_cleaveReply;
+
+  QJsonArray jsonTimes;
+  std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
+  jsonExtra[KEY_USAGE_TIME] = jsonTimes;
+
+  json.append(jsonExtra);
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
@@ -1038,7 +1107,7 @@ void TaskBodyCleave::cleave()
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata3.int.janelia.org:5552/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1344,5 +1413,15 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
   config.setDefaultTodo(neutube::TO_SUPERVOXEL_SPLIT);
 
   return config;
+}
+
+void TaskBodyCleave::disableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(false);
+}
+
+void TaskBodyCleave::enableCleavingShortcut()
+{
+  m_toggleInBodyAction->setEnabled(true);
 }
 

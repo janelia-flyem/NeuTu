@@ -522,6 +522,9 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
   ZDvidUrl url(m_bodyDoc->getDvidTarget());
   std::string urlMapping = url.getNodeUrl() + "/" + instance + "/mapping";
 
+  // Use the DVID "mapping" endpoint for the "labelmap" data type to find the body IDs
+  // corresponding to the supervoxel IDs.
+
   ZJsonArray jsonBody;
   jsonBody.append(m_supervoxelId1);
   jsonBody.append(m_supervoxelId2);
@@ -530,6 +533,7 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
   libdvid::BinaryDataPtr payload =
       libdvid::BinaryData::create_binary_data(payloadStr.c_str(), payloadStr.size());
   int statusCode;
+
   libdvid::BinaryDataPtr response = ZDvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
@@ -555,6 +559,49 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
                            QString::number(statusCode));
     }
   }
+
+  // As of September, 2018, there are cases of old supervoxels that may no longer exist
+  // (due to merging) yet "mapping" may not return 0 (due to some problems with older data).
+  // A work-around is to use the "sizes" endpoint to see if either supervoxel has no size.
+  // At some point, removing this work-around would be a good idea, to improve performance.
+
+  QTime timer;
+  timer.start();
+
+  statusCode = 0;
+  std::string urlSizes = url.getNodeUrl() + "/" + instance + "/sizes?supervoxels=true";
+  response = ZDvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
+  if (statusCode == 200) {
+    QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
+    if (responseDoc.isArray())  {
+      QJsonArray responseArray = responseDoc.array();
+      if (responseArray.size() == 2) {
+        QJsonValue responseElem = responseArray[0];
+        if (!responseElem.isUndefined()) {
+          if (responseElem.toDouble() == 0) {
+            m_bodyId1 = 0;
+          }
+        }
+        responseElem = responseArray[1];
+        if (!responseElem.isUndefined()) {
+          if (responseElem.toDouble() == 0) {
+            m_bodyId2 = 0;
+          }
+        }
+      }
+    }
+  } else {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QMessageBox::warning(window, "Task Loading Failed",
+                           "For merger " + QString::number(m_supervoxelId1) + " + " +
+                           QString::number(m_supervoxelId2) +
+                           ", supervoxel sizes could not be verified (DVID status " +
+                           QString::number(statusCode));
+    }
+  }
+
+  LINFO() << "TaskBodyMerge: checking sizes for supervoxels" << m_supervoxelId1 << "and" << m_supervoxelId2
+          << "took" << timer.elapsed() << "ms.";
 }
 
 void TaskBodyMerge::buildTaskWidget()

@@ -82,6 +82,8 @@ public:
    */
   size_t getVoxelNumber() const;
 
+  bool hasVoxel() const;
+
   /*!
    * \brief Get voxel number at a certain slice
    * \param z The slice position.

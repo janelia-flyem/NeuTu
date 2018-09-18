@@ -132,6 +132,7 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
   GET_FLYEM_CONFIG.loadConfig();
   GET_FLYEM_CONFIG.setServer(getNeuTuServer());
+
   if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
     ui->statusLabel->setText("Normal");
   } else {

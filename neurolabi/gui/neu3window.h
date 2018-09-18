@@ -147,6 +147,7 @@ private slots:
   void openNeuTu();
 
   void updateWidget();
+  void updateUI();
   void exitSplit();
   void startSplit();
 

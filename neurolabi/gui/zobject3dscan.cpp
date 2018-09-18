@@ -255,6 +255,17 @@ size_t ZObject3dScan::getVoxelNumber() const
   return voxelNumber;
 }
 
+bool ZObject3dScan::hasVoxel() const
+{
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    if (m_stripeArray[i].hasVoxel()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 size_t ZObject3dScan::getVoxelNumber(int z) const
 {
   size_t voxelNumber = 0;
