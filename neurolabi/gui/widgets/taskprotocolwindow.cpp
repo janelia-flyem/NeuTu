@@ -73,14 +73,23 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
-    ui->nextButton->setShortcut(Qt::Key_E);
-    ui->prevButton->setShortcut(Qt::Key_Q);
+    // keyboard shortcuts for the "next" and "prev" buttons must be specified this way
+    // so auto-repeat can be disabled
+    QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
+    QShortcut *shortcutPrev = new QShortcut(Qt::Key_Q, this);
+    connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
+    connect(shortcutPrev, SIGNAL(activated()), this, SLOT(onPrevButton()));
+    shortcutNext->setAutoRepeat(false);
+    shortcutPrev->setAutoRepeat(false);
 
     // there are two keyboard shortcuts for completed+next, for different hand sizes
-    QShortcut *shortcut1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
-    QShortcut *shortcut2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
-    connect(shortcut1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
-    connect(shortcut2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    QShortcut *shortcutCompletedNext1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
+    QShortcut *shortcutCompletedNext2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
+    connect(shortcutCompletedNext1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    connect(shortcutCompletedNext2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    // they do not auto-repeat, to avoid accidental completions
+    shortcutCompletedNext1->setAutoRepeat(false);
+    shortcutCompletedNext2->setAutoRepeat(false);
 
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
             this, &TaskProtocolWindow::onBodyMeshesAdded);
