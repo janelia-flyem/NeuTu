@@ -203,7 +203,7 @@ private:
 //  ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZDvidWriter m_writer;
-  ZDvidInfo m_dvidInfo;
+//  ZDvidInfo m_dvidInfo;
 
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;

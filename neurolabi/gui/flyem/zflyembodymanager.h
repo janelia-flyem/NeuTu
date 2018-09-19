@@ -40,6 +40,14 @@ public:
   void registerBody(uint64_t id, const QSet<uint64_t> &comp);
 
   /*!
+   * \brief Register a body (usually supervoxel) with its agglomeration ID.
+   *
+   * It adds \a bodyId to existing aggloID mapping or creates a new map if
+   * the mapping doesn't exist.
+   */
+  void registerBody(uint64_t aggloId, uint64_t bodyId);
+
+  /*!
    * \brief Deregister a body
    *
    * Remove a body from the manager. If \a id has a non-empty mapped set, the set
