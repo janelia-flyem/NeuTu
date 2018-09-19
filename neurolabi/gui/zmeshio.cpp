@@ -682,6 +682,7 @@ void ZMeshIO::readDracoMeshFromMemory(
     draco::Decoder decoder;
     auto statusor = decoder.DecodeMeshFromBuffer(&buffer);
     if (!statusor.ok()) {
+      LERROR() << statusor.status().error_msg_string();
       throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
     }
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
@@ -702,6 +703,7 @@ void ZMeshIO::readDracoMeshFromMemory(
     draco::Decoder decoder;
     auto statusor = decoder.DecodePointCloudFromBuffer(&buffer);
     if (!statusor.ok()) {
+      LERROR() << statusor.status().error_msg_string();
       throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
     }
     pc = std::move(statusor).value();
