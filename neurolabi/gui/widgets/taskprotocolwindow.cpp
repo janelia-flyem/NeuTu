@@ -22,6 +22,7 @@
 #include "protocols/taskbodycleave.h"
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskfalsesplitreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
@@ -73,14 +74,23 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
-    ui->nextButton->setShortcut(Qt::Key_E);
-    ui->prevButton->setShortcut(Qt::Key_Q);
+    // keyboard shortcuts for the "next" and "prev" buttons must be specified this way
+    // so auto-repeat can be disabled
+    QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
+    QShortcut *shortcutPrev = new QShortcut(Qt::Key_Q, this);
+    connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
+    connect(shortcutPrev, SIGNAL(activated()), this, SLOT(onPrevButton()));
+    shortcutNext->setAutoRepeat(false);
+    shortcutPrev->setAutoRepeat(false);
 
     // there are two keyboard shortcuts for completed+next, for different hand sizes
-    QShortcut *shortcut1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
-    QShortcut *shortcut2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
-    connect(shortcut1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
-    connect(shortcut2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    QShortcut *shortcutCompletedNext1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
+    QShortcut *shortcutCompletedNext2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
+    connect(shortcutCompletedNext1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    connect(shortcutCompletedNext2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    // they do not auto-repeat, to avoid accidental completions
+    shortcutCompletedNext1->setAutoRepeat(false);
+    shortcutCompletedNext2->setAutoRepeat(false);
 
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
             this, &TaskProtocolWindow::onBodyMeshesAdded);
@@ -302,6 +312,7 @@ void TaskProtocolWindow::onNextButton() {
     updateBodyWindow();
     updateLabel();
 
+    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -385,7 +396,6 @@ void TaskProtocolWindow::onLoadTasksButton() {
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
 
-    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -529,6 +539,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+
+    updateBody3dDocConfig();
 
     m_prefetchThread->start();
 }
@@ -756,9 +768,17 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * next or previous tasks to go to
  */
 void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
-  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
-                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
-                          m_nextPrevAllowed);
+    int nonSkippedCount = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            if (++nonSkippedCount > 1) {
+                break;
+            }
+        }
+    }
+    bool nextPrevEnabled = ((nonSkippedCount > 1) && !m_changingTask &&
+                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                            m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -1089,6 +1109,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "body cleave") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
+        } else if (taskType == "false split review") {
+            QSharedPointer<TaskProtocolTask> task(new TaskFalseSplitReview(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "body merge") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyMerge(taskJson.toObject(), m_body3dDoc));
