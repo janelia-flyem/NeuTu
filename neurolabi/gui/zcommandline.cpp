@@ -779,12 +779,12 @@ int ZCommandLine::runGeneral()
       config.decode(m_generalConfig);
     }
 
-    ZCommandModule *module =
-        getModule(ZJsonParser::stringValue(config["command"]));
+    std::string commandName = ZJsonParser::stringValue(config["command"]);
+    ZCommandModule *module = getModule(commandName);
     if (module != NULL) {
       return module->run(m_input, m_output, config);
     } else {
-      std::cerr << "Invalid command module." << std::endl;
+      std::cerr << "Invalid command module: " << commandName << std::endl;
 
       return 1;
     }
