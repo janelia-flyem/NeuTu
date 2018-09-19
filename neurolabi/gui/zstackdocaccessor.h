@@ -39,6 +39,8 @@ public:
       ZStackDoc *doc, ZStackWatershedContainer *container);
 
   static void RemoveSplitSeed(ZStackDoc *doc, uint64_t label);
+  static void RemoveSplitSeed(ZStackDoc *doc);
+
   /*!
    * \brief Remove seeds except those with the main label
    */

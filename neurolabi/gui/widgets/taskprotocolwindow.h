@@ -30,6 +30,13 @@ public:
 public:
     void test();
 
+    /*!
+     * \brief Update ineration behavior of the current task
+     *
+     * Mainly used for resolving conflicts between cleaving and splitting.
+     */
+    void updateTaskInteraction();
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
@@ -44,6 +51,7 @@ signals:
 
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
+//    void taskUpdated(const QString &type);
 
 private slots:
     void onNextButton();
@@ -51,6 +59,7 @@ private slots:
     void onDoneButton();
     void onLoadTasksButton();    
     void onBodiesUpdated();
+    void onNextPrevAllowed(bool allowed);
     void onCompletedStateChanged(int state);
     void onCompletedAndNext();
     void onReviewStateChanged(int state);
@@ -69,7 +78,7 @@ private:
      *         index if \a currentIndex is 0 and there are more than one tasks.
      *         It returns -1 in other cases.
      */
-    int getPrevIndex(int currentIndex) const;
+    int getPrevIndex(int currentIndex);
 
     /*!
      * \brief Get the next index.
@@ -79,7 +88,7 @@ private:
      *         \a currentIndex is the last index and not 0. It returns -1 in
      *          other cases.
      */
-    int getNextIndex(int currentIndex) const;
+    int getNextIndex(int currentIndex);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -116,6 +125,7 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
+    bool m_changingTask = false;
     QWidget * m_currentTaskWidget = nullptr;
     QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
@@ -128,6 +138,9 @@ private:
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
     int m_bodiesReused = 0;
+    std::set<int> m_skippedTaskIndices;
+    bool m_nextPrevAllowed = true;
+
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
     void showError(QString title, QString message);
@@ -142,7 +155,7 @@ private:
     void startProtocol(QJsonObject json, bool save);
     void updateLabel();
     void updateCurrentTaskLabel();
-    void updateButtonsEnabled();
+    void updateNextPrevButtonsEnabled();
     void updateMenu(bool add);
     int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
@@ -154,11 +167,16 @@ private:
     int getNextUncompleted();
     int getPrev();
     int getPrevUncompleted();
+    bool skip(int taskIndex);
     void prefetch(uint64_t bodyID);
     void prefetch(QSet<uint64_t> bodyIDs);
     void prefetchForTaskIndex(int index);
     bool checkDVIDTarget();
     void unprefetchForTaskIndex(int index);
+//    QString getCurrentTaskProtocolType() const;
+    TaskProtocolTask* getCurrentTask() const;
+    void resetBody3dDocConfig();
+    void updateBody3dDocConfig();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

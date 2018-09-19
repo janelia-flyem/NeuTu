@@ -9,12 +9,12 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QsLog.h>
 #include <QShortcut>
 
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
@@ -27,6 +27,7 @@
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "flyem/zflyemtaskhelper.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -87,6 +88,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
             this, &TaskProtocolWindow::onBodyMeshLoaded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
             this, &TaskProtocolWindow::onBodyRecycled);
+
+    resetBody3dDocConfig();
+    //Todo
+//    connect(this, &TaskProtocolWindow::taskUpdated,
+//            m_body3dDoc, &ZFlyEmBody3dDoc::updateCurrentTask);
 }
 
 // constants
@@ -163,6 +169,11 @@ void TaskProtocolWindow::init() {
 }
 
 void TaskProtocolWindow::onPrevButton() {
+    if (!ui->prevButton->isEnabled()) {
+        return;
+    }
+    m_changingTask = true;
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforePrev();
@@ -189,6 +200,15 @@ void TaskProtocolWindow::onPrevButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+    updateBody3dDocConfig();
+//    emit taskUpdated(getCurrentTaskProtocolType());
+}
+
+void TaskProtocolWindow::updateTaskInteraction()
+{
+  ZFlyEmTaskHelper::ResolveShortcutForSplitting(
+        getCurrentTask(), m_body3dDoc->isSplitActivated());
 }
 
 void TaskProtocolWindow::test()
@@ -245,6 +265,11 @@ void TaskProtocolWindow::test()
 }
 
 void TaskProtocolWindow::onNextButton() {
+    if (!ui->nextButton->isEnabled()) {
+        return;
+    }
+    m_changingTask = true;
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeNext();
@@ -276,6 +301,8 @@ void TaskProtocolWindow::onNextButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onDoneButton() {
@@ -334,6 +361,9 @@ void TaskProtocolWindow::onDoneButton() {
     LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
+    resetBody3dDocConfig();
+
+//    emit taskUpdated(""); //No activated task
 }
 
 void TaskProtocolWindow::onLoadTasksButton() {
@@ -354,10 +384,19 @@ void TaskProtocolWindow::onLoadTasksButton() {
     //  or maybe enter an assignment ID or something)
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
+
+    updateBody3dDocConfig();
+//    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
-  updateBodyWindow();
+    updateBodyWindow();
+}
+
+void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
+{
+    m_nextPrevAllowed = allowed;
+    updateNextPrevButtonsEnabled();
 }
 
 namespace {
@@ -377,18 +416,18 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
           saveState();
           updateLabel();
       } else {
-        BlockSignals blockCallingThisAgain(ui->completedCheckBox);
-        ui->completedCheckBox->setCheckState(Qt::Unchecked);
+          BlockSignals blockCallingThisAgain(ui->completedCheckBox);
+          ui->completedCheckBox->setCheckState(Qt::Unchecked);
       }
     }
 }
 
 void TaskProtocolWindow::onCompletedAndNext()
 {
-  ui->completedCheckBox->setCheckState(Qt::Checked);
-  if (ui->nextButton->isEnabled()) {
-    onNextButton();
-  }
+    ui->completedCheckBox->setCheckState(Qt::Checked);
+    if (ui->nextButton->isEnabled()) {
+       onNextButton();
+    }
 }
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
@@ -425,7 +464,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
         updateBodyWindow();
         updateLabel();
     }
-    updateButtonsEnabled();
+    updateNextPrevButtonsEnabled();
 }
 
 /*
@@ -500,9 +539,9 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 int TaskProtocolWindow::getFirst(bool includeCompleted)
 {
   for (int i = 0; i < m_taskList.size(); i++) {
-      if ((includeCompleted || !m_taskList[i]->completed()) && (!m_taskList[i]->skip())) {
-          return i;
-      }
+    if ((includeCompleted || !m_taskList[i]->completed()) && (!skip(i))) {
+        return i;
+    }
   }
   return -1;
 }
@@ -557,7 +596,7 @@ int TaskProtocolWindow::getPrevUncompleted() {
     return index;
 }
 
-int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+int TaskProtocolWindow::getPrevIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -571,12 +610,12 @@ int TaskProtocolWindow::getPrevIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
 
-int TaskProtocolWindow::getNextIndex(int currentIndex) const
+int TaskProtocolWindow::getNextIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -590,7 +629,7 @@ int TaskProtocolWindow::getNextIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
@@ -614,6 +653,29 @@ int TaskProtocolWindow::getNextUncompleted() {
   }
 
   return index;
+}
+
+bool TaskProtocolWindow::skip(int taskIndex)
+{
+  if ((taskIndex < 0) || (taskIndex >= m_taskList.size())) {
+      return false;
+  }
+
+  // In addition to calling the task's skip() function, keep track of the tasks whose
+  // skip() has returned true.  The "progress" indicator that shows the fraction of
+  // tasks that have been completed needs to decrease the total number of tasks by this
+  // number of tasks.  This approach does a reasonable job of accomodating the dynamic
+  // nature of a task's skip()  (e.g., a task that should not be skipped originally
+  // might later need to be skipped if it becomes redundant based on the completion of
+  // another task).
+
+  if (m_taskList[taskIndex]->skip()) {
+      m_skippedTaskIndices.insert(taskIndex);
+      return true;
+  } else {
+      m_skippedTaskIndices.erase(taskIndex);
+      return false;
+  }
 }
 
 /*
@@ -682,7 +744,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->verticalLayout_3->addWidget(m_currentTaskWidget);
             // ui->horizontalLayout->addWidget(m_currentTaskWidget);
             m_currentTaskWidget->setVisible(true);
-            updateButtonsEnabled();
+            updateNextPrevButtonsEnabled();
         }
 
         updateMenu(true);
@@ -693,9 +755,10 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * ensures that the "Next" and "Prev" buttons are enabled only when there are
  * next or previous tasks to go to
  */
-void TaskProtocolWindow::updateButtonsEnabled() {
-    bool nextPrevEnabled = ((m_taskList.size() > 1) &&
-                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
+  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
+                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                          m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -852,7 +915,6 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
-        updateButtonsEnabled();
         if (m_currentTaskWidget) {
             m_currentTaskWidget->setEnabled(true);
         }
@@ -867,6 +929,9 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
             m_taskList[m_currentTaskIndex]->onLoaded();
         }
+
+        m_changingTask = false;
+        updateNextPrevButtonsEnabled();
     }
 }
 
@@ -880,7 +945,10 @@ void TaskProtocolWindow::updateLabel() {
             ncomplete++;
         }
     }
-    int ntasks = m_taskList.size();
+
+    // the total task count should not include tasks known to be skipped
+    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
+
     float percent = (100.0 * ncomplete) / ntasks;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
@@ -1042,6 +1110,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (!m_taskList.empty()) {
             connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
                     this, SLOT(onBodiesUpdated()));
+            connect(m_taskList.back().data(), SIGNAL(nextPrevAllowed(bool)),
+                    this, SLOT(onNextPrevAllowed(bool)));
             connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
                     this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
             connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
@@ -1254,6 +1324,45 @@ void TaskProtocolWindow::applicationQuitting() {
 BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
 {
     return m_prefetchQueue;
+}
+
+/*
+QString TaskProtocolWindow::getCurrentTaskProtocolType() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return "";
+  }
+
+  return m_taskList[m_currentTaskIndex]->tasktype();
+}
+*/
+
+TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
+{
+  if (m_currentTaskIndex < 0 || m_currentTaskIndex >= m_taskList.size()) {
+    return nullptr;
+  }
+
+  return m_taskList[m_currentTaskIndex].data();
+}
+
+
+void TaskProtocolWindow::resetBody3dDocConfig()
+{
+  ProtocolTaskConfig config;
+  config.setDefaultTodo(neutube::TO_SPLIT);
+  config.setTaskType("");
+  m_body3dDoc->configure(config);
+}
+
+void TaskProtocolWindow::updateBody3dDocConfig()
+{
+  TaskProtocolTask *task = getCurrentTask();
+  if (task) {
+    m_body3dDoc->configure(task->getTaskConfig());
+  } else {
+    resetBody3dDocConfig();
+  }
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()

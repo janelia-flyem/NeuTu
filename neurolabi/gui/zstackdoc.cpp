@@ -124,6 +124,35 @@
 
 using namespace std;
 
+/* Implementation details
+ *
+ * ZStackDoc is designed to be the model class in a MVC framework. It hosts
+ * objects that can be represented in the 3D space. As one of oldest classes,
+ * ZStackDoc contains many lines of legacy code that can be confusing.
+ *
+ * The main member variables of ZStackDoc include:
+ *   m_stack: the stack data, which can also be virtual to specify data range of
+ *     the document.
+ *   m_objectGroup: Set of ZStackObject objects, which are main geometrical objects
+ *     of the document.
+ *
+ * Some other member variables include:
+ *   m_sparseStack: Sparse representation of a stack. This provides the support
+ *     of using sparse stack data.
+ *   m_resolution: Resolution for statck data, useful for computation and
+ *     visualization.
+ *   m_playerList: Object for managing specific roles of stack objects.
+ *   m_swcNetwork: Special object for showing a network of neurons (obsolete)
+ *   m_modelManager: Object for managing models used to list objects in a table.
+ *   m_labelField: Label field aligned with the stack data.
+ *   m_stackSource: Source of the stack.
+ *   m_additionalSource: Additional source, mainly used as an upper layer of the
+ *     stack data.
+ *   m_reader: Stack reading thread for supporting non-blocking reading.
+ *
+ *
+ */
+
 ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent)
 {
   init();
@@ -196,7 +225,7 @@ void ZStackDoc::init()
   m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
-  m_parentFrame = NULL;
+//  m_parentFrame = NULL;
   //m_masterChain = NULL;
   m_isTraceMaskObsolete = true;
   m_swcNetwork = NULL;
@@ -5274,6 +5303,33 @@ bool ZStackDoc::loadFile(const QString &filePath)
     break;
   case ZFileType::FILE_SWC_NETWORK:
     loadSwcNetwork(filePath);
+    break;
+  case ZFileType::FILE_OBJECT_SCAN_ARRAY:
+  {
+    succ = false;
+    ZObject3dScanArray objArray;
+    objArray.load(filePath.toStdString());
+    if (!objArray.empty()) {
+      ZIntCuboid box = objArray.getBoundBox();
+      if (!box.isEmpty()) {
+        if (!hasStack()) {
+          ZStack *stack = ZStackFactory::MakeVirtualStack(box);
+          if (stack != NULL) {
+            stack->setSource(filePath.toStdString());
+            loadStack(stack);
+            succ = true;
+          }
+        }
+      }
+
+      if (hasStack()) {
+        for (ZObject3dScan *obj : objArray) {
+          addObject(obj, false);
+        }
+      }
+    }
+    objArray.shallowClear();
+  }
     break;
   case ZFileType::FILE_OBJECT_SCAN:
     setTag(neutube::Document::FLYEM_BODY);

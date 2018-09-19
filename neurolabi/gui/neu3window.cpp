@@ -54,7 +54,15 @@
 #include "flyem/zflyembodyidcolorscheme.h"
 #include "flyem/zflyemarbdoc.h"
 #include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemtaskhelper.h"
 
+/* Implementation details:
+ *
+ * Neu3Window is a main window class to provide UI for neu3. It consists of
+ * several control panels and a 3D window instantiated from the Z3DWindow class.
+ *
+ *
+ */
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
@@ -180,7 +188,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
 
   connect(getBodyDocument(), SIGNAL(interactionStateChanged()),
-          this, SLOT(updateWidget()));
+          this, SLOT(updateUI()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
           this, &Neu3Window::zoomToBodyMesh);
@@ -198,8 +206,8 @@ void Neu3Window::connectSignalSlot()
   // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
   // signals emitted with each mesh.
 
-  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel);
+//  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+//          this, &Neu3Window::syncBodyListModel);
 
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
@@ -725,6 +733,12 @@ void Neu3Window::endBrowse()
   removeSliceViewGraph();
 }
 
+void Neu3Window::updateUI()
+{
+  updateWidget();
+  m_taskProtocolWidget->updateTaskInteraction();
+}
+
 void Neu3Window::updateWidget()
 {
   QAction *action = getAction(ZActionFactory::ACTION_EXIT_SPLIT);
@@ -939,7 +953,7 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
   return zoomToLoadedBody;
 }
 
-void Neu3Window::zoomToBodyMesh()
+void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
 {
   if (!zoomToLoadedBodyEnabled()) {
     return;
@@ -948,10 +962,8 @@ void Neu3Window::zoomToBodyMesh()
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   LDEBUG() << "Mesh list size:" << meshList.size();
-  if (meshList.size() == 1) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
-  }
+  ZMesh *mesh = meshList.front();
+  m_3dwin->gotoPosition(mesh->getBoundBox());
 }
 
 void Neu3Window::processSwcChangeFrom3D(
@@ -1032,13 +1044,23 @@ void Neu3Window::syncBodyListModel()
   // correctly (e.g., will not be pickable in the 3D view).
 
   LDEBUG() << "Syncing body list";
-  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  QList<ZMesh*> meshList = ZStackDocProxy::GetBodyMeshList(getBodyDocument());
   std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
     selected.insert(mesh->getLabel());
   }
 
+  QSet<uint64_t> currentBodySet = getBodyDocument()->getNormalBodySet();
+  selected.insert(currentBodySet.begin(), currentBodySet.end());
+
   ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+#ifdef _DEBUG_
+  std::string bodyStr;
+  for (uint64_t bodyId : selected) {
+    bodyStr += std::to_string(bodyId) + " ";
+  }
+  LDEBUG() << "Syncing" << bodyStr;
+#endif
   dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
 }
 

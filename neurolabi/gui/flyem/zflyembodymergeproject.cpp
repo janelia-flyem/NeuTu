@@ -42,6 +42,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
 #include "widgets/z3dtabwidget.h"
+#include "zdvidutil.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -132,7 +133,7 @@ void ZFlyEmBodyMergeProject::test()
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setSegmentationName("labels");
@@ -458,6 +459,7 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
   }
 }
 
+/*
 uint64_t ZFlyEmBodyMergeProject::getTargetId(
     uint64_t targetId, const std::vector<uint64_t> &bodyId,
     bool mergingToLargest)
@@ -475,6 +477,7 @@ uint64_t ZFlyEmBodyMergeProject::getTargetId(
 
   return targetId;
 }
+*/
 
 void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 {
@@ -508,19 +511,25 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         std::set<uint64_t> newBodySet;
         foreach (uint64_t targetId, mergeMap.keys()) {
           const std::vector<uint64_t> &merged = mergeMap.value(targetId);
-          uint64_t newTargetId = getTargetId(targetId, merged, mergingToLargest);
-          newBodySet.insert(newTargetId);
-          std::vector<uint64_t> newMerged;
-          if (targetId != newTargetId) {
-            newMerged.push_back(targetId);
-            for (uint64_t id : merged) {
-              if (id != newTargetId) {
-                newMerged.push_back(id);
-              }
-            }
-          } else {
-            newMerged = merged;
-          }
+          auto mergeConfig = ZDvid::GetMergeConfig(
+                m_writer.getDvidReader(), targetId, merged, mergingToLargest);
+          const uint64_t &newTargetId = mergeConfig.first;
+          const std::vector<uint64_t> &newMerged = mergeConfig.second;
+
+
+//          uint64_t newTargetId = getTargetId(targetId, merged, mergingToLargest);
+//          newBodySet.insert(newTargetId);
+//          std::vector<uint64_t> newMerged;
+//          if (targetId != newTargetId) {
+//            newMerged.push_back(targetId);
+//            for (uint64_t id : merged) {
+//              if (id != newTargetId) {
+//                newMerged.push_back(id);
+//              }
+//            }
+//          } else {
+//            newMerged = merged;
+//          }
 
           m_writer.mergeBody(
                 getDvidTarget().getBodyLabelName(), newTargetId, newMerged);

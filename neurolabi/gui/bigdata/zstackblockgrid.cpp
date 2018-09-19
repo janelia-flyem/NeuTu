@@ -207,7 +207,8 @@ void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
 }
 */
 
-ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv)
+ZStackBlockGrid* ZStackBlockGrid::makeDownsample(
+    int xintv, int yintv, int zintv) const
 {
   ZStackBlockGrid *grid = new ZStackBlockGrid;
   ZIntPoint newSize =
@@ -228,11 +229,12 @@ ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv
   grid->setMinPoint(getMinPoint() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1));
 
   if (isEmpty()) {
-    clearStack();
+    grid->clearStack();
   } else {
     grid->m_stackArray.resize(m_stackArray.size(), NULL);
     for (size_t i = 0; i < m_stackArray.size(); ++i) {
       ZStack *stack = m_stackArray[i];
+
       if (stack != NULL) {
         ZStack *dsStack = stack->clone();
         dsStack->downsampleMin(xintv, yintv, zintv);
@@ -242,6 +244,11 @@ ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv
   }
 
   return grid;
+}
+
+ZStackBlockGrid* ZStackBlockGrid::makeDownsample(const ZIntPoint &dsIntv) const
+{
+  return makeDownsample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 }
 
 ZIntCuboid ZStackBlockGrid::getStackBoundBox() const

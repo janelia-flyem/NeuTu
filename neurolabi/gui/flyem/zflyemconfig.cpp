@@ -5,6 +5,7 @@
 #include "zjsonparser.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidurl.h"
+#include "zstring.h"
 
 #ifdef _QT_GUI_USED_
 #include "neutube.h"
@@ -258,7 +259,22 @@ std::string ZFlyEmConfig::getSplitResultUrl(
 #ifdef _QT_GUI_USED_
 void ZFlyEmConfig::setServer(const std::string &server)
 {
-  NeutubeConfig::SetNeuTuServer(server.c_str());
-  getNeutuService().setServer(server);
+  std::vector<std::string> serverList = ZString::Tokenize(server, ';');
+  bool neutuseOpened = false;
+  bool serviceOpened = false;
+  for (const std::string &server : serverList) {
+    if (ZString(server).startsWith("neutuse:")) {
+      if (!neutuseOpened) {
+        m_neutuseWriter.open(server.substr(8));
+        neutuseOpened = m_neutuseWriter.ready();
+      }
+    } else {
+      if (!serviceOpened) {
+        NeutubeConfig::SetNeuTuServer(server.c_str());
+        getNeutuService().setServer(server);
+        serviceOpened = getNeutuService().isNormal();
+      }
+    }
+  }
 }
 #endif

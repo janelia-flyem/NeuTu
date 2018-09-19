@@ -24,10 +24,15 @@ build:
 
 requirements:
   build:
+    - gxx_linux-64 # [linux]
+    - cmake
+
+  host:
     - python >=3.6
-    - qt      5*
+    - qt      5* # [linux64]
+    - qt      5.9* # [osx]
     - fftw    3.3*
-    - jansson 2.7
+    - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
@@ -39,14 +44,15 @@ requirements:
     - assimp
     - glbinding
     - draco
-    - libarchive 3.3.2
+    - libarchive 3.3.2*
     - libiconv >=1.15
 
   run:
     - python >=3.6
-    - qt      5*
+    - qt      5* # [linux64]
+    - qt      5.9* # [osx]
     - fftw    3.3*
-    - jansson 2.7
+    - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
@@ -57,7 +63,7 @@ requirements:
     - assimp
     - glbinding
     - draco
-    - libarchive 3.3.2
+    - libarchive 3.3.2*
     - libiconv >=1.15
    
 about:

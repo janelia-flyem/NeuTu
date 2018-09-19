@@ -4,6 +4,10 @@ DEFINES += _QS_LOG_AVAILABLE_
 DEFINES += _BUILD_QS_LOG_OBJECT_
 #DEFINES += QS_LOG_DISABLE         # logging code is replaced with a no-op
 #DEFINES += QS_LOG_SEPARATE_THREAD # messages are queued and written from a separate thread
+equals(SANITIZE_BUILD, "thread") {
+  DEFINES += QS_LOG_DISABLE
+}
+
 SOURCES += $$PWD/QsLogDest.cpp \
     $$PWD/QsLog.cpp \
     $$PWD/QsLogDestConsole.cpp \

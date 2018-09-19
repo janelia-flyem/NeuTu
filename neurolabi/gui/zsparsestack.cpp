@@ -14,8 +14,7 @@
 
 //#define MAX_STACK_VOLUME 1000
 
-ZSparseStack::ZSparseStack() :
-  m_objectMask(NULL), m_stackGrid(NULL), m_stack(NULL), m_baseValue(1)
+ZSparseStack::ZSparseStack()
 {
 }
 
@@ -30,6 +29,7 @@ void ZSparseStack::deprecateDependent(EComponent component)
   case GREY_SCALE:
   case OBJECT_MASK:
     deprecate(STACK);
+    deprecate(BLOCK_MASK);
     break;
   default:
     break;
@@ -46,12 +46,21 @@ void ZSparseStack::deprecate(EComponent component)
     m_stack = NULL;
     break;
   case GREY_SCALE:
-    delete m_stackGrid;
-    m_stackGrid = NULL;
+    m_stackSource.clearCache();
+//    for (ZStackBlockGrid *grid : m_stackGrid) {
+//      delete grid;
+//    }
+//    m_stackGrid.clear();
+//    delete m_stackGrid;
+//    m_stackGrid = NULL;
     break;
   case OBJECT_MASK:
     delete m_objectMask;
     m_objectMask = NULL;
+    break;
+  case BLOCK_MASK:
+    delete m_blockMask;
+    m_blockMask = NULL;
     break;
   case ALL_COMPONET:
     deprecate(GREY_SCALE);
@@ -82,16 +91,17 @@ void ZSparseStack::setBaseValue(int baseValue)
 
 void ZSparseStack::getLineValue(int x,int y,int z,int cnt,double* buffer) const
 {
-  int width=m_stackGrid->getBlockSize().getX();
   double *dst=buffer;
   double base_value=m_baseValue;
   memset(dst,0,sizeof(double)*cnt);
   int num=0;
-  if(m_stackGrid){
+  if(getStackGrid()){
+    int width = getStackGrid()->getBlockSize().getX();
+
     while(num<cnt){
-      ZStackBlockGrid::Location location = m_stackGrid->getLocation(x+num, y, z);
+      ZStackBlockGrid::Location location = getStackGrid()->getLocation(x+num, y, z);
       int ofx=location.getLocalPosition().getX();
-      ZStack *stack = m_stackGrid->getStack(location.getBlockIndex());
+      ZStack *stack = getStackGrid()->getStack(location.getBlockIndex());
       if(stack!=NULL){
         int ofy=location.getLocalPosition().getY();
         int ofz=location.getLocalPosition().getZ();
@@ -110,8 +120,8 @@ double ZSparseStack::getValue(int x,int y,int z) const
 {
   double base_value=m_baseValue;
 
-  if(m_stackGrid){
-    return m_stackGrid->getValue(x,y,z)+base_value;
+  if(getStackGrid()){
+    return getStackGrid()->getValue(x,y,z)+base_value;
   }
   return 0.0;
 }
@@ -224,10 +234,29 @@ bool ZSparseStack::downsampleRequired() const
   return false;
 }
 
-ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
+ZStack* ZSparseStack::makeDsStack(
+    int xintv, int yintv, int zintv, bool preservingGap)
 {
   ZStack *out = NULL;
-  if (m_objectMask != NULL && m_stackGrid != NULL) {
+
+  //Determine the right zoom for making ds stack
+//  int zoom = 0;
+//  int scale = 1;
+//  for (int i = (int) m_stackGrid.size(); i >= 0; --i) {
+//    if (m_stackGrid[i]) {
+//      scale = zgeom::GetZoomScale(i);
+//      if (((xintv + 1) % scale == 0) &&
+//          ((yintv + 1) % scale == 0) &&
+//          ((zintv + 1) % scale == 0)) {
+//        zoom = i;
+//        break;
+//      }
+//    }
+//  }
+
+//  const ZStackBlockGrid *stackGrid = getStackGrid(zoom);
+
+  if (m_objectMask != NULL) {
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
 
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
@@ -235,10 +264,18 @@ ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
       ZIntPoint dsIntv(xintv, yintv, zintv);
 
       if (!dsIntv.isZero()) {
+        ZObject3dScan border;
+        if (preservingGap) {
+          border = obj->getComplementObject();
+          border.downsampleMax(xintv, yintv, zintv);
+        }
         obj->downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        if (preservingGap) {
+          border.intersect(*obj);
+        }
 
-        ZStackBlockGrid *dsGrid =
-            m_stackGrid->makeDownsample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        ZStackBlockGrid *dsGrid = makeDownsampleGrid(xintv, yintv, zintv);
+//            stackGrid->makeDownsample((dsIntv + 1) / scale - 1);
         out =  new ZStack(GREY, obj->getBoundBox(), 1);
         out->setZero();
         assignStackValue(out, *obj, *dsGrid, m_baseValue);
@@ -248,7 +285,7 @@ ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
       } else {
         out = new ZStack(GREY, cuboid, 1);
         out->setZero();
-        assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
+        assignStackValue(out, *obj, *getStackGrid(), m_baseValue);
         delete obj;
       }
     }
@@ -260,17 +297,19 @@ ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
 ZStack* ZSparseStack::makeIsoDsStack(size_t maxVolume, bool preservingGap)
 {
   ZStack *out = NULL;
-  if (m_objectMask != NULL && m_stackGrid != NULL) {
+  if (m_objectMask != NULL && getStackGrid() != NULL) {
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
 
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
-      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
+//      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
       int dsIntv = misc::getIsoDsIntvFor3DVolume(cuboid, maxVolume, true);
 
 #ifdef _DEBUG_
       std::cout << "Downsampling: " << dsIntv << std::endl;
 #endif
 
+      out = makeDsStack(dsIntv, dsIntv, dsIntv, preservingGap);
+#if 0
       if (dsIntv > 0) {
         ZObject3dScan border;
         if (preservingGap) {
@@ -296,17 +335,105 @@ ZStack* ZSparseStack::makeIsoDsStack(size_t maxVolume, bool preservingGap)
         assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
         delete obj;
       }
+#endif
     }
   }
 
   return out;
 }
 
+void ZSparseStack::cacheStackSource(int zoom)
+{
+  if (zoom <= m_stackSource.getMaxZoom()) {
+    if (m_stackSource.hasBlockFactory()) {
+      int scale = zgeom::GetZoomScale(zoom);
+      ZObject3dScan obj = *getBlockMask();
+      obj.downsampleMax(scale - 1);
+      m_stackSource.cacheStack(obj, zoom);
+    }
+  }
+}
+
+void ZSparseStack::cacheStackSource(const ZIntCuboid blockRange, int zoom)
+{
+  if (zoom <= m_stackSource.getMaxZoom()) {
+    if (m_stackSource.hasBlockFactory()) {
+      int scale = zgeom::GetZoomScale(zoom);
+      ZObject3dScan obj = *getBlockMask();
+      obj.downsampleMax(scale - 1);
+      m_stackSource.cacheStack(obj, blockRange, zoom);
+    }
+  }
+}
+
+int ZSparseStack::getOptimalZoom(int xintv, int yintv, int zintv) const
+{
+  int zoom = 0;
+  for (int i = m_stackSource.getMaxZoom(); i >= 0; --i) {
+    if (m_stackSource.getBlockGrid(i) || m_stackSource.hasBlockFactory()) {
+      int scale = zgeom::GetZoomScale(i);
+      if (((xintv + 1) % scale == 0) &&
+          ((yintv + 1) % scale == 0) &&
+          ((zintv + 1) % scale == 0)) {
+        zoom = i;
+        break;
+      }
+    }
+  }
+
+  return zoom;
+}
+
+ZStackBlockGrid* ZSparseStack::makeDownsampleGrid(
+    int xintv, int yintv, int zintv, const ZIntCuboid &range)
+{
+  if (range.isEmpty()) {
+    return makeDownsampleGrid(xintv, yintv, zintv);
+  }
+
+  int zoom = getOptimalZoom(xintv, yintv, zintv);
+  ZIntCuboid blockRange = range;
+  int scale = zgeom::GetZoomScale(zoom);
+  blockRange.scaleDownBlock(
+        m_stackSource.getBlockSize() * scale);
+  cacheStackSource(blockRange, zoom);
+
+  const ZStackBlockGrid *stackGrid = getStackGrid(zoom);
+  ZStackBlockGrid *dsGrid = NULL;
+
+  if (stackGrid) {
+    int scale = zgeom::GetZoomScale(zoom);
+    dsGrid = stackGrid->makeDownsample(
+          (ZIntPoint(xintv, yintv, zintv) + 1) / scale - 1);
+  }
+
+  return dsGrid;
+}
+
+ZStackBlockGrid* ZSparseStack::makeDownsampleGrid(
+    int xintv, int yintv, int zintv)
+{
+  int zoom = getOptimalZoom(xintv, yintv, zintv);
+
+  cacheStackSource(zoom);
+
+  const ZStackBlockGrid *stackGrid = getStackGrid(zoom);
+  ZStackBlockGrid *dsGrid = NULL;
+
+  if (stackGrid) {
+    int scale = zgeom::GetZoomScale(zoom);
+    dsGrid = stackGrid->makeDownsample(
+          (ZIntPoint(xintv, yintv, zintv) + 1) / scale - 1);
+  }
+
+  return dsGrid;
+}
+
 ZStack* ZSparseStack::makeStack(
     const ZIntCuboid &box, size_t maxVolume, bool preservingGap)
 {
   ZStack *out = NULL;
-  if (m_objectMask != NULL && m_stackGrid != NULL) {
+  if (m_objectMask != NULL) {
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
     if (!box.isEmpty()) {
       cuboid.intersect(box);
@@ -331,8 +458,10 @@ ZStack* ZSparseStack::makeStack(
           border.intersect(*obj);
         }
 
-        ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
-              tmpDsIntv.getX(), tmpDsIntv.getY(), tmpDsIntv.getZ());
+        ZStackBlockGrid *dsGrid = makeDownsampleGrid(
+              tmpDsIntv.getX(), tmpDsIntv.getY(), tmpDsIntv.getZ(), box);
+//            m_stackGrid->makeDownsample(
+//              tmpDsIntv.getX(), tmpDsIntv.getY(), tmpDsIntv.getZ());
 #ifdef _DEBUG_2
   return NULL;
 #endif
@@ -346,7 +475,12 @@ ZStack* ZSparseStack::makeStack(
       } else {
         out = new ZStack(GREY, cuboid, 1);
         out->setZero();
-        assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
+        if (m_stackSource.hasBlockFactory()) {
+          ZIntCuboid blockRange = box;
+          blockRange.scaleDownBlock(m_stackSource.getBlockSize());
+          cacheStackSource(blockRange, 0);
+        }
+        assignStackValue(out, *obj, *getStackGrid(), m_baseValue);
         out->pushDsIntv(getDsIntv());
         delete obj;
       }
@@ -388,7 +522,7 @@ void ZSparseStack::pushDsIntv(const ZIntPoint &dsIntv)
 
 ZStack* ZSparseStack::getStack()
 {
-  if (m_objectMask == NULL || m_stackGrid == NULL) {
+  if (m_objectMask == NULL) {
     return NULL;
   }
 
@@ -409,7 +543,7 @@ ZStack* ZSparseStack::getStack()
 
         obj.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
-        ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
+        ZStackBlockGrid *dsGrid = makeDownsampleGrid(
               dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 #ifdef _DEBUG_2
         return NULL;
@@ -423,7 +557,7 @@ ZStack* ZSparseStack::getStack()
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);
         m_stack->setZero();
-        assignStackValue(m_stack, *m_objectMask, *m_stackGrid, m_baseValue);
+        assignStackValue(m_stack, *m_objectMask, *getStackGrid(), m_baseValue);
         m_stack->setDsIntv(getDsIntv());
 //        m_dsIntv.set(0, 0, 0);
       }
@@ -479,7 +613,7 @@ ZStack* ZSparseStack::getSlice(int z) const
   ZIntCuboid box = slice.getBoundBox();
   ZStack *stack = new ZStack(GREY, box, 1);
   stack->setZero();
-  assignStackValue(stack, slice, *m_stackGrid, 1);
+  assignStackValue(stack, slice, *getStackGrid(), 1);
 
   return stack;
 }
@@ -509,10 +643,68 @@ ZStack* ZSparseStack::getMip() const
 
 void ZSparseStack::setGreyScale(ZStackBlockGrid *stackGrid)
 {
-  if (m_stackGrid != stackGrid) {
-    deprecate(GREY_SCALE);
-    m_stackGrid = stackGrid;
+  setGreyScale(0, stackGrid);
+  /*
+  if (m_stackGrid.empty()) {
+    m_stackGrid.push_back(stackGrid);
+  } else if (m_stackGrid[0] != stackGrid) {
+    delete m_stackGrid[0];
+    deprecateDependent(GREY_SCALE);
+    m_stackGrid[0] = stackGrid;
   }
+  */
+}
+
+void ZSparseStack::setGreyScale(int zoom, ZStackBlockGrid *stackGrid)
+{
+  m_stackSource.setBlockGrid(zoom, stackGrid);
+  deprecateDependent(GREY_SCALE);
+  /*
+  if (int(m_stackGrid.size()) <= zoom) {
+    m_stackGrid.resize(zoom + 1);
+  }
+
+  delete m_stackGrid[zoom];
+  m_stackGrid[zoom] = stackGrid;
+  deprecateDependent(GREY_SCALE);
+  */
+}
+
+const ZStackBlockGrid* ZSparseStack::getStackGrid() const
+{
+  return m_stackSource.getBlockGrid(0);
+
+  /*
+  if (m_stackGrid.empty()) {
+    return nullptr;
+  }
+
+  return m_stackGrid.at(0);
+  */
+}
+
+ZStackBlockGrid* ZSparseStack::getStackGrid()
+{
+  return const_cast<ZStackBlockGrid*>(
+        static_cast<const ZSparseStack&>(*this).getStackGrid());
+}
+
+const ZStackBlockGrid* ZSparseStack::getStackGrid(int zoom) const
+{
+  return m_stackSource.getBlockGrid(zoom);
+  /*
+  if (int(m_stackGrid.size()) <= zoom) {
+    return nullptr;
+  }
+
+  return m_stackGrid.at(zoom);
+  */
+}
+
+ZStackBlockGrid* ZSparseStack::getStackGrid(int zoom)
+{
+  return const_cast<ZStackBlockGrid*>(
+        static_cast<const ZSparseStack&>(*this).getStackGrid(zoom));
 }
 
 void ZSparseStack::setObjectMask(ZObject3dScan *obj)
@@ -528,11 +720,33 @@ void ZSparseStack::setObjectMask(ZObject3dScan *obj)
   }
 }
 
+void ZSparseStack::setBlockMask(ZObject3dScan *obj)
+{
+  if (m_blockMask != obj) {
+    deprecate(BLOCK_MASK);
+    m_blockMask = obj;
+  }
+}
+
+ZObject3dScan* ZSparseStack::getBlockMask()
+{
+  if (m_blockMask == nullptr) {
+    if (m_objectMask) {
+      m_blockMask = new ZObject3dScan;
+      *m_blockMask = *m_objectMask;
+      m_blockMask->downsampleMax(m_stackSource.getBlockSize() - 1);
+    }
+  }
+
+  return m_blockMask;
+}
+
 void ZSparseStack::merge(ZSparseStack &sparseStack)
 {
   if (!sparseStack.isEmpty()) {
     m_objectMask->unify(*(sparseStack.getObjectMask()));
-    m_stackGrid->consume(sparseStack.m_stackGrid);
+    m_stackSource.mergeCache(sparseStack.m_stackSource);
+//    getStackGrid()->consume(sparseStack.m_stackGrid[0]);
     deprecateDependent(GREY_SCALE);
     sparseStack.deprecateDependent(GREY_SCALE);
   }
@@ -562,8 +776,9 @@ void ZSparseStack::read(std::istream &stream)
   deprecate(ALL_COMPONET);
   m_objectMask = new ZObject3dScan;
   m_objectMask->read(stream);
-  m_stackGrid = new ZStackBlockGrid;
-  m_stackGrid->read(stream);
+  ZStackBlockGrid *stackGrid = new ZStackBlockGrid;
+  stackGrid->read(stream);
+  setGreyScale(stackGrid);
 }
 
 void ZSparseStack::write(std::ostream &stream) const
@@ -571,8 +786,8 @@ void ZSparseStack::write(std::ostream &stream) const
   if (m_objectMask != NULL) {
     if (stream.good()) {
       m_objectMask->write(stream);
-      if (m_stackGrid != NULL) {
-        m_stackGrid->write(stream);
+      if (getStackGrid()) {
+        getStackGrid()->write(stream);
       }
     }
   }
@@ -600,12 +815,17 @@ bool ZSparseStack::load(const std::string &filePath)
   return false;
 }
 
+void ZSparseStack::setBlockFactory(ZStackBlockFactory *factory)
+{
+  m_stackSource.setBlockFactory(factory);
+}
+
 ZSparseStack* ZSparseStack::downsample(int xintv, int yintv, int zintv)
 {
   ZSparseStack *stack = new ZSparseStack;
   stack->m_objectMask = new ZObject3dScan(*m_objectMask);
   stack->m_objectMask->downsampleMax(xintv, yintv, zintv);
-  stack->m_stackGrid = m_stackGrid->makeDownsample(xintv, yintv, zintv);
+  stack->setGreyScale(makeDownsampleGrid(xintv, yintv, zintv));
   stack->setDsIntv(getDsIntv());
   stack->pushDsIntv(xintv, yintv, zintv);
 

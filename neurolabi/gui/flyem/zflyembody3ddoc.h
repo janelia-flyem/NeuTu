@@ -11,6 +11,10 @@
 #include <QList>
 #include <QTime>
 
+#ifdef _DEBUG_
+#include "zqslog.h"
+#endif
+
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
@@ -19,6 +23,7 @@
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
+#include "protocols/protocoltaskconfig.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -92,6 +97,7 @@ public:
   QSet<uint64_t> getInvolvedNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
+  bool isAgglo(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -134,6 +140,7 @@ public:
   }
 
   const ZDvidReader& getMainDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -209,6 +216,12 @@ public:
 
   static uint64_t decode(uint64_t encodedId);
 
+  // TODO: Remove this function (and ZDvidUrl::getMeshesTarsUrl()) when the
+  // old alternative to the DVID "tarsupervoxels" data type is completely retired.
+  // This function returns true only if the user has set the the NEU3_USE_TARSUPERVOXELS
+  // environment variable to "no".
+  bool usingOldMeshesTars() const;
+
   bool fromTar(uint64_t id) const;
 //  bool isTarMode() const;
 
@@ -230,10 +243,14 @@ public:
 
   static void SetObjectClass(ZStackObject *obj, uint64_t bodyId);
 
+  void configure(const ProtocolTaskConfig &config);
+
 public:
-  virtual void executeAddTodoCommand(
+  void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
       uint64_t bodyId) override;
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked, uint64_t bodyId);
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
@@ -286,6 +303,8 @@ public:
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
+
+  ZMesh* getMeshForSplit() const;
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
@@ -352,6 +371,8 @@ public slots:
   void clearGarbage(bool force = false);
 
   void startBodyAnnotation();
+
+//  void updateCurrentTask(const QString &taskType);
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -503,6 +524,8 @@ private:
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
+  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -541,6 +564,8 @@ private:
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
+  ProtocolTaskConfig m_taskConfig;
+
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
   ZStackObjectGroup m_objCache;
@@ -548,6 +573,8 @@ private:
   QMap<uint64_t, int> m_bodyUpdateMap;
 
   ZFlyEmBodySplitter *m_splitter;
+
+  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;
@@ -584,6 +611,15 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   QSet<uint64_t> tarSet;
   QSet<uint64_t> supervoxelSet;
 //  QMap<uint64_t, uint64_t> bodyEncodeMap;
+
+#ifdef _DEBUG_
+  std::string bodyStr;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    bodyStr += std::to_string(*iter) + " ";
+  }
+  LDEBUG() << "Selection recieved:" << bodyStr;
+#endif
+
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (ZFlyEmBodyManager::encodesTar(bodyId)) {

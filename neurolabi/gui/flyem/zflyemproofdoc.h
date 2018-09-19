@@ -174,7 +174,7 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
 
-  void selectBody(uint64_t bodyId);
+  bool selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
@@ -355,6 +355,8 @@ public:
    * \brief Fetch DVID label slice data and set body selections
    */
   void updateDvidLabelSlice(neutube::EAxis axis);
+
+  void allowDvidLabelSliceBlinking(bool on);
 //  void updateDvidLabelSlice();
 
   /*!
@@ -495,6 +497,10 @@ public slots: //Commands
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddToSupervoxelSplitItemCommand(
+      const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
 
   void executeRotateRoiPlaneCommand(int z, double theta);

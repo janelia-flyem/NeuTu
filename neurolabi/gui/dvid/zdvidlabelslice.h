@@ -168,6 +168,8 @@ public:
                    int centerCutX, int centerCutY, bool usingCenterCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc);
 
+  void allowBlinking(bool on);
+
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 
@@ -210,6 +212,8 @@ private:
     return m_helper.get();
   }
 
+  void setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
+
   bool isPaintBufferAllocNeeded(int width, int height) const;
 
   int getFirstZoom(const ZStackViewParam &viewParam) const;
@@ -226,7 +230,6 @@ private:
 
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
-//  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
 

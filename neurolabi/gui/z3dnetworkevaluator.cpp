@@ -21,7 +21,7 @@
 #include "z3dmeshfilter.h"
 #include "z3drendertarget.h"
 #include "z3dtexture.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zrandom.h"
 #include "zutils.h"
 #include <boost/graph/topological_sort.hpp>

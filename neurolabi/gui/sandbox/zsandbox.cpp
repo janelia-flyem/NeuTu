@@ -2,7 +2,7 @@
 
 #include <QMenu>
 
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
 #include "zsandboxmodule.h"

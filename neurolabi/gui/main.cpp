@@ -10,7 +10,7 @@
 
 #include "mainwindow.h"
 #include "neu3window.h"
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
 #include "zerror.h"
@@ -148,6 +148,10 @@ static void LoadFlyEmConfig(
       GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
     }
 
+#ifdef _DEBUG_2
+    GET_FLYEM_CONFIG.setServer("neutuse:http://127.0.0.1:5000");
+#endif
+
     if (config.GetTaskServer().isEmpty()) {
       QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
       if (!taskServer.isEmpty()) {
@@ -245,8 +249,6 @@ int main(int argc, char *argv[])
   if (argc > 1) {
     if (QString(argv[1]).startsWith("user:")) {
       userName = std::string(argv[1]).substr(5);
-//      std::cout << userName << std::endl;
-//      return 1;
     }
   }
   if (userName.empty()) {
@@ -339,9 +341,6 @@ int main(int argc, char *argv[])
         absoluteFilePath();
   }
 
-  LINFO() << "Config path: " << configPath;
-
-
 #ifdef _FLYEM_
   LoadFlyEmConfig(configPath, config, true);
 
@@ -406,7 +405,9 @@ int main(int argc, char *argv[])
     logger.setLoggingLevel(QsLogging::TraceLevel);
   }
 
-  RECORD_INFORMATION("************* Start ******************");
+//  RECORD_INFORMATION("************* Start ******************");
+
+  LINFO() << "Config path: " << configPath;
 
   if (guiEnabled) {
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;

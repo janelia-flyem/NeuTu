@@ -8,6 +8,7 @@
 #include <QSet>
 
 class QMenu;
+class ProtocolTaskConfig;
 
 class TaskProtocolTask: public QObject
 {
@@ -40,7 +41,7 @@ public:
     QStringList getTags();
     void clearTags();
 
-    virtual QString tasktype() = 0;
+    virtual QString tasktype() const = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual bool skip();
@@ -49,8 +50,11 @@ public:
     virtual bool usePrefetching();
     virtual bool allowCompletion();
 
+    virtual ProtocolTaskConfig getTaskConfig() const;
+
 signals:
     void bodiesUpdated();
+    void nextPrevAllowed(bool allowed);
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 
@@ -68,6 +72,7 @@ protected:
     QString objectToString(QJsonObject json);
 
     void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
+    void allowNextPrev(bool allow = true);
 
 private:
     bool loadStandard(QJsonObject json);

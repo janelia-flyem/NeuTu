@@ -1,17 +1,18 @@
 #include "z3dcanvaspainter.h"
 
+#include <QImage>
+#include <QImageWriter>
+#include <QPainter>
+#include <memory>
+#include <boost/align/aligned_allocator.hpp>
+
 #include "z3dgl.h"
 #include "z3dcanvas.h"
 #include "z3dcompositor.h"
 #include "z3dgpuinfo.h"
 #include "z3dtexture.h"
 #include "zexception.h"
-#include "QsLog.h"
-#include <QImage>
-#include <QImageWriter>
-#include <QPainter>
-#include <memory>
-#include <boost/align/aligned_allocator.hpp>
+#include "zqslog.h"
 
 Z3DCanvasPainter::Z3DCanvasPainter(Z3DGlobalParameters& globalParas, Z3DCanvas& canvas, QObject* parent)
   : Z3DBoundedFilter(globalParas, parent)

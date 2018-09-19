@@ -31,6 +31,7 @@ const std::string ZDvidUrl::m_annotationLabelCommand = "label";
 const std::string ZDvidUrl::m_annotationMoveCommand = "move";
 const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
+const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -192,6 +193,27 @@ std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId
   return getKeyRangeUrl(dataUrl, key1, key2);
 }
 
+std::string ZDvidUrl::getTarSupervoxelsUrl()
+{
+  return getDataUrl(
+        ZDvidData::GetName(ZDvidData::ROLE_TAR_SUPERVOXELS,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           m_dvidTarget.getBodyLabelName()));
+}
+
+std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
+{
+  ZString dataUrl = getTarSupervoxelsUrl();
+  ZString key = GetBodyKey(bodyId);
+  return GetFullUrl(GetTarfileCommandUrl(dataUrl), key);
+}
+
+std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
+{
+  return GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
+                    GetBodyKey(bodyId));
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
@@ -227,6 +249,10 @@ std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
   return GetFullUrl(dataUrl, m_keyCommand);
 }
 
+std::string ZDvidUrl::GetTarfileCommandUrl(const std::string &dataUrl)
+{
+  return GetFullUrl(dataUrl, m_tarfileCommand);
+}
 
 std::string ZDvidUrl::getSupervoxelUrl(const std::string &dataName) const
 {

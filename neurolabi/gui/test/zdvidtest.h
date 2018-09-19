@@ -519,6 +519,12 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/labelstest/size/123",
             dvidUrl4.getBodySizeUrl(123));
 
+  target.setBodyLabelName("segmentation");
+  target.setUuid("3456");
+  dvidUrl4.setDvidTarget(target);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/segmentation_sv_meshes/supervoxel/123",
+            dvidUrl4.getSupervoxelMeshUrl(123));
+
 }
 
 TEST(ZDvidTest, Reader)

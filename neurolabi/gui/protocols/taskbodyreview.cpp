@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
+#include "zqslog.h"
 
 TaskBodyReview::TaskBodyReview(QJsonObject json)
 {
@@ -28,7 +28,7 @@ const QString TaskBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskBodyReview::VALUE_TASKTYPE = "body review";
 const QString TaskBodyReview::KEY_BODYID = "body ID";
 
-QString TaskBodyReview::tasktype() {
+QString TaskBodyReview::tasktype() const {
     return VALUE_TASKTYPE;
 }
 

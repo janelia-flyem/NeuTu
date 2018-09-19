@@ -6,12 +6,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
 
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 
+#include "zqslog.h"
 
 TaskTestTask::TaskTestTask(QJsonObject json)
 {
@@ -66,7 +66,7 @@ const QString TaskTestTask::KEY_TASKTYPE = "task type";
 const QString TaskTestTask::VALUE_TASKTYPE = "test task";
 const QString TaskTestTask::KEY_BODYID = "body ID";
 
-QString TaskTestTask::tasktype() {
+QString TaskTestTask::tasktype() const {
     return VALUE_TASKTYPE;
 }
 

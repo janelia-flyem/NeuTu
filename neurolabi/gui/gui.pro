@@ -9,15 +9,18 @@ contains(TEMPLATE, app) {
   CONFIG += staticlib
 }
 
-contains(CONFIG, neu3) {
+CONFIG(neu3) {
   DEFINES += _NEU3_
 }
 
-contains(CONFIG, neu3) | contains(CONFIG, flyem) {
-  CONFIG *=c++11
-  DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
-  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
+CONFIG(neu3) | CONFIG(flyem) {
+  DEFINES *= _FLYEM_
+} else {
+  DEFINES += _NEUTUBE_
 }
+
+DEFINES *= _ENABLE_LOWTIS_
+DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
 CONFIG += object_parallel_to_source
 message("Objs dir: $${OBJECTS_DIR}")
@@ -66,7 +69,7 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
-    contains(CONFIG, neu3) {
+    CONFIG(neu3) {
         TARGET = neu3_d
     } else {
       contains(DEFINES, _FLYEM_) {
@@ -77,17 +80,16 @@ CONFIG(debug, debug|release) {
 } else {
     QMAKE_CXXFLAGS += -g
     TARGET = neuTube
-    contains(CONFIG, neu3) {
+    CONFIG(neu3) {
       TARGET = neu3
     } else {
-      contains(DEFINES, _FLYEM_) {
+      CONFIG(flyem) {
           TARGET = neutu
       }
     }
 }
 
 message("Target: $$TARGET")
-message("Defines: $$DEFINES")
 
 unix {
   include(extratarget.pri)
@@ -109,7 +111,7 @@ qtHaveModule(webenginewidgets) {
   DEFINES += _USE_WEBENGINE_
 }
 
-DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_GUI_USED_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -124,12 +126,14 @@ contains(GIT, .*git) {
   message($$COMMIT_HASH)
 }
 
+message("Defines: $${DEFINES}")
+
 include(add_itk.pri)
 
 #Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
-  message("Qt 4")
+  warning("Obsolete setting: Qt 4")
 }
 
 #Qt5
@@ -146,7 +150,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     CONFIG *= c++11
 }
 
-contains(CONFIG, c++11) {
+CONFIG(c++11) {
   message(Using C++11)
   DEFINES += _CPP11_
   unix {
@@ -157,17 +161,28 @@ contains(CONFIG, c++11) {
   }
 }
 
-contains(CONFIG, sanitize) {
-  message(Using sanitize)
-  unix {
-    macx {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    } else {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    }
-  }
+#contains(CONFIG, sanitize) {
+#  message(Using sanitize)
+#  unix {
+#    macx {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    } else {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    }
+#  }
+#}
+
+equals(SANITIZE_BUILD, "thread") {
+  QMAKE_CXXFLAGS += -fsanitize=thread
+  QMAKE_LFLAGS += -fsanitize=thread
+  DEFINES += SANITIZE_THREAD
+}
+
+equals(SANITIZE_BUILD, "address") {
+  QMAKE_CXXFLAGS += -fsanitize=address
+  QMAKE_LFLAGS += -fsanitize=address
 }
 
 win32 {
@@ -176,6 +191,7 @@ win32 {
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
+
 unix {
     macx {
         SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
@@ -184,15 +200,14 @@ unix {
     }
 }
 
-contains(CONFIG, static_gtest) { # gtest from ext folder
+CONFIG(static_gtest) { # gtest from ext folder
   include($$PWD/ext/gtest.pri)
 }
 
 unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
-
     macx {
-        DEFINES += _NEUTUBE_MAC_
+#        DEFINES += _NEUTUBE_MAC_
         LIBS += -framework AppKit -framework IOKit \
             -framework ApplicationServices \
             -framework CoreFoundation
@@ -205,7 +220,7 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        contains(CONFIG, autotarget) {
+        CONFIG(autotarget) {
           OSX_VERSION = $$system(sw_vers -productVersion)
           message("Mac OS X $$OSX_VERSION")
           MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
@@ -220,7 +235,7 @@ unix {
           message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
           greaterThan(OSX_MINOR_VERSION, 8) {
-            contains(CONFIG, libstdc++) {
+            CONFIG(libstdc++) {
               message("Using libstdc++")
             } else {
               LIBS -= -lstdc++
@@ -232,7 +247,7 @@ unix {
           }
         } else {
           message("No auto mac version check")
-          contains(CONFIG, c++11) {
+          CONFIG(c++11) {
             isEqual(QT_MAJOR_VERSION,4) {
               message("Forcing deployment target: ")
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
@@ -253,7 +268,6 @@ unix {
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
     } else {
-        DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
 
@@ -273,8 +287,7 @@ unix {
 }
 
 win32 {
-    DEFINES += _NEUTUBE_WINDOWS_
-    RC_FILE = images/app.rc
+  RC_FILE = images/app.rc
 }
 
 include(ext/QsLog/QsLog.pri)
@@ -283,10 +296,8 @@ include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
 include(command/command.pri)
-
-message("Config: $$CONFIG")
-
-message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+include(trace/trace.pri)
+include(neutuse/neutuse.pri)
 
 # Input
 RESOURCES = gui.qrc
@@ -892,7 +903,15 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyevent.h \
     flyem/zflyembodyconfig.h \
     flyem/zflyembodymanager.h \
-    z3dwindowcontroller.h
+    z3dwindowcontroller.h \
+    z3d2dslicerenderer.h \
+    z3d2dslicefilter.h \
+    zstackblockfactory.h \
+    dvid/zdvidstackblockfactory.h \
+    zstackblocksource.h \
+    flyem/zflyemtaskhelper.h \
+    protocols/protocoltaskfactory.h \
+    protocols/protocoltaskconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1568,11 +1587,28 @@ SOURCES += main.cpp \
     flyem/zflyembodyevent.cpp \
     flyem/zflyembodyconfig.cpp \
     flyem/zflyembodymanager.cpp \
-    z3dwindowcontroller.cpp
+    z3dwindowcontroller.cpp \
+    z3d2dslicerenderer.cpp \
+    z3d2dslicefilter.cpp \
+    zstackblockfactory.cpp \
+    dvid/zdvidstackblockfactory.cpp \
+    zstackblocksource.cpp \
+    flyem/zflyemtaskhelper.cpp \
+    protocols/protocoltaskfactory.cpp \
+    protocols/protocoltaskconfig.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
     Resources/shader/wblended_init.frag
 
 
-
+#debugging
+message("[[ DEFINE ]]: $${DEFINES}")
+message("[[ QMAKE_CXXFLAGS ]]: $${QMAKE_CXXFLAGS}")
+message("[[ CONDA_ENV ]]: $${CONDA_ENV}")
+message("[[ LIBS ]]: $${LIBS}")
+message("[[ TARGET ]]: $${TARGET}")
+message("[[ OUT_PWD ]]: $${OUT_PWD}")
+macx {
+  message("[[ Mac Target ]]: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+}

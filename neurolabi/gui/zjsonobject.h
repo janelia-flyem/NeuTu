@@ -124,6 +124,10 @@ public:
   void setEntry(const char *key, uint64_t v);
   void setEntry(const char *key, int v);
 
+  void setEntry(const std::string &key, int64_t v);
+  void setEntry(const std::string &key, uint64_t v);
+  void setEntry(const std::string &key, int v);
+
   /*!
    * \brief setEntry Set an entry of the object with a double
    */
@@ -133,6 +137,7 @@ public:
    * \brief setEntry Set an entry of the object
    */
   void setEntry(const char *key, ZJsonValue &value);
+  void setEntry(const std::string &key, ZJsonValue &value);
 
   /*!
    * \brief Add an entry

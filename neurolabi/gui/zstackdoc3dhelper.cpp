@@ -204,6 +204,11 @@ void ZStackDoc3dHelper::updateMeshData()
   }
 }
 
+void ZStackDoc3dHelper::updateSliceData()
+{
+  //todo
+}
+
 void ZStackDoc3dHelper::updateRoiData()
 {
   Z3DMeshFilter *filter = m_view->getRoiFilter();
@@ -287,6 +292,9 @@ void ZStackDoc3dHelper::updateData(neutube3d::ERendererLayer layer)
     break;
   case neutube3d::LAYER_DECORATION:
     updateDecorationData();
+    break;
+  case neutube3d::LAYER_SLICE:
+    updateSliceData();
     break;
   default:
     break;

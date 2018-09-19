@@ -25,6 +25,20 @@
 #include "misc/miscutility.h"
 #include "flyem/zdvidlabelslicehighrestask.h"
 
+/* Implementation details:
+ *
+ * A DVID label slice is defined as a rectangle slice provided by a certain
+ * DVID label data instance, which should contain uint64 data. The geometry of
+ * the slice is managed by m_helper, a ZDvidDataSliceHelper object.
+ *
+ * Data update: forceUpdate() takes the viewing parameters specified in m_helper
+ *   and then converts the parameters into a dvid reading call. The slice data
+ *   is stored in m_labelArray, which might be used to generate a set of sparse
+ *   objects stored in m_objArray.
+ *
+ * Display update:
+ */
+
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
   init(512, 512);
@@ -64,14 +78,6 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_selectionFrozen = false;
 //  m_isFullView = false;
   m_sliceAxis = sliceAxis;
-
-//  m_currentZ = 0;
-//  m_currentZoom = 0;
-
-//  setColor(QColor(0, 0, 128));
-//  m_zoom = 0;
-
-//  m_objCache.setMaxCost();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -205,6 +211,22 @@ int64_t ZDvidLabelSlice::getReadingTime() const
 {
   return getHelper()->getDvidReader().getReadingTime();
 }
+
+void ZDvidLabelSlice::allowBlinking(bool on)
+{
+  if (on) {
+    setPreferredUpdatePolicy(flyem::UPDATE_HIDDEN);
+  } else {
+    setPreferredUpdatePolicy(flyem::UPDATE_LOWRES);
+  }
+}
+
+void ZDvidLabelSlice::setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+{
+  getHelper()->setPreferredUpdatePolicy(policy);
+  getHelper()->inferUpdatePolicy(getSliceAxis());
+}
+
 /*
 int ZDvidLabelSlice::getZoom() const
 {
@@ -336,6 +358,10 @@ bool ZDvidLabelSlice::hasValidPaintBuffer() const
 int ZDvidLabelSlice::getFirstZoom(const ZStackViewParam &viewParam) const
 {
   int zoom = viewParam.getZoomLevel();
+
+  if (zoom > getHelper()->getMaxZoom()) {
+    zoom = getHelper()->getMaxZoom();
+  }
 
   switch (getHelper()->getUpdatePolicy()) {
   case flyem::UPDATE_LOWRES:

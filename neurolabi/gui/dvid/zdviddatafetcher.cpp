@@ -3,7 +3,7 @@
 #include <QtConcurrentRun>
 
 #include "neutubeconfig.h"
-#include "QsLog.h"
+#include "zqslog.h"
 
 ZDvidDataFetcher::ZDvidDataFetcher(QObject *parent) :
   QObject(parent)

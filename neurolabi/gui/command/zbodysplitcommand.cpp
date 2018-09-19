@@ -89,31 +89,25 @@ ZBodySplitCommand::parseSignalPath(
 
         target.updateData(signalInfo);
       }
+
       reader.open(target);
       if (reader.isReady()) {
-        ZDvidSparseStack *dvidStack =
-            reader.readDvidSparseStack(m_bodyId, m_labelType);
-        spStack = dvidStack->getSparseStack(range);
-        gc.registerObject(dvidStack);
+        size_t blockCount = reader.readCoarseBodySize(m_bodyId);
+        if (blockCount < 50000000) {
+          std::cout << "Block count: " << blockCount << std::endl;
+
+          /*
+          ZDvidSparseStack *dvidStack =
+              reader.readDvidSparseStack(m_bodyId, m_labelType);
+          spStack = dvidStack->getSparseStack(range);
+          gc.registerObject(dvidStack);
+          */
+          spStack = reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
+        } else {
+          LINFO() << m_bodyId << "ignored.";
+        }
       }
     }
-
-//    ZDvidReader *reader =
-//        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
-//    if (read) {
-//      if (!signalInfo.isEmpty()) {
-//        if (signalInfo.hasKey(ZDvidTarget::m_sourceConfigKey)) {
-//          reader->getDvidTarget();
-//        }
-//      }
-
-//      ZDvidSparseStack *dvidStack =
-//          dvidStack = reader->readDvidSparseStack(m_bodyId);
-//      spStack = dvidStack->getSparseStack(range);
-//      gc.registerObject(dvidStack);
-//      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
-//      gc.registerObject(spStack);
-//    }
   } else {
     if (isFile) {
       signalPath = ZString(signalPath).absolutePath(dataDir);
@@ -238,6 +232,10 @@ int ZBodySplitCommand::run(
 #endif
 
 //  ZStack *signalStack = data.first;
+
+  if (data.first == NULL && data.second == NULL) {
+    return 1;
+  }
 
 
   ZStackWatershedContainer container(data);
@@ -484,10 +482,19 @@ void ZBodySplitCommand::processResult(
       ZStackWriter writer;
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
-      ZStack *labelStack = result.toLabelField();
 
-      writer.write(output, labelStack);
-      delete labelStack;
+      if (ZFileType::isImageFile(output)) {
+        ZStack *labelStack = result.toColorField();
+
+        writer.write(output, labelStack);
+        delete labelStack;
+      } else {
+        for (ZObject3dScan *obj : result) {
+          obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+        }
+        result.save(output);
+      }
+      std::cout << "Result saved as " << output<< std::endl;
     }
 
 //      delete result;

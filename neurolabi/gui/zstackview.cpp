@@ -316,15 +316,19 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
     ZPoint dataPos;
     if (getSliceAxis() == neutube::A_AXIS) {
       dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+      setInfo(QString("(%1, %2, %3)").
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
               pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
+      setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
+              arg(pos.x()).arg(pos.y()).arg(z).
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ())));
     }
-    setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
-            arg(pos.x()).arg(pos.y()).arg(z).
-            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-            arg(iround(dataPos.getZ())));
+
   }
 }
 
@@ -533,7 +537,7 @@ void ZStackView::configure(EMode mode)
     break;
   case MODE_PLAIN_IMAGE:
 #ifndef _DEBUG_
-    hideLayout(m_topLayout);
+//    hideLayout(m_topLayout);
 #endif
     hideLayout(m_secondTopLayout);
     hideLayout(m_zControlLayout);
@@ -930,7 +934,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
 #endif
 
-#if defined(_NEUTUBE_MAC_)
+#if defined(__APPLE__)
   switch (QSysInfo::MacintoshVersion) {
   case QSysInfo::MV_10_5:
   case QSysInfo::MV_10_6:
@@ -1053,7 +1057,8 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 
 void ZStackView::showEvent(QShowEvent */*event*/)
 {
-  LDEBUG() << "ZStackView::showEvent:" << size();
+  LDEBUG() << "ZStackView::showEvent:" << size() << isVisible();
+//  resetViewProj();
 }
 
 void ZStackView::updateStackRange()
@@ -1867,7 +1872,7 @@ void ZStackView::updateActiveDecorationCanvas()
 
 void ZStackView::updateTileCanvas()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating tile canvas." << std::endl;
 #endif
 
@@ -3193,6 +3198,22 @@ void ZStackView::customizeWidget()
       }
     }
   }
+}
+
+void ZStackView::enableCustomCheckBox(
+    int index, const QString &text, QObject *receiver, const char *slot)
+{
+  if (m_customCheckBoxList.size() <= index) {
+    m_customCheckBoxList.resize(index + 1);
+  }
+  if (m_customCheckBoxList[index] != NULL) {
+    delete m_customCheckBoxList[index];
+  }
+  QCheckBox *widget = new QCheckBox;
+  m_customCheckBoxList[index] = widget;
+  widget->setText(text);
+  connect(widget, SIGNAL(toggled(bool)), receiver, slot);
+  m_topLayout->addWidget(widget);
 }
 
 void ZStackView::addHorizontalWidget(QWidget *widget)

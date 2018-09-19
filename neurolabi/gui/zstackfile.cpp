@@ -535,7 +535,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
           data->setData(stack);
           data->setOffset(offset[0], offset[1], offset[2]);
           data->setDsIntv(intv[0], intv[1], intv[2]);
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
           if (initColor) {
             data->initChannelColors();
           }

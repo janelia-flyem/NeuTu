@@ -3,7 +3,7 @@
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvaseventlistener.h"
 #include "z3dscene.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zpainter.h"
 #include "zstackdrawable.h"
 #include "zopenglwidget.h"
@@ -113,7 +113,7 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
 #endif
   if (!m_interaction.processMouseReleaseEvent(e)) {

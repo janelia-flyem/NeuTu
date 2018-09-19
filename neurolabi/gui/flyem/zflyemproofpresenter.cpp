@@ -107,6 +107,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_SPLIT:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSplitItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_SVSPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSupervoxelSplitItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -641,6 +644,11 @@ void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 //  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
+void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutube::TO_SUPERVOXEL_SPLIT);
+}
+
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, true, neutube::TO_DO);
@@ -710,6 +718,14 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSplitItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+  tryAddToSupervoxelSplitItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
@@ -793,6 +809,17 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
 
 //    emit bookmarkAdded(bookmark);
   }
+}
+
+bool ZFlyEmProofPresenter::allowingBlinkingSegmentation() const
+{
+  return m_blinkingSegmenationAllowed;
+}
+
+void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
+{
+  m_blinkingSegmenationAllowed = on;
+  getCompleteDocument()->allowDvidLabelSliceBlinking(on);
 }
 
 bool ZFlyEmProofPresenter::processCustomOperator(

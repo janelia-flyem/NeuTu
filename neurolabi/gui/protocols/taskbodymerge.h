@@ -11,13 +11,14 @@ class ZFlyEmBody3dDoc;
 class QAction;
 class QCheckBox;
 class QRadioButton;
+class QNetworkReply;
 
 class TaskBodyMerge : public TaskProtocolTask
 {
   Q_OBJECT
 public:
   TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  QString tasktype() override;
+  QString tasktype() const override;
   QString actionString() override;
   QString targetString() override;
 
@@ -35,8 +36,10 @@ private slots:
   void onTriggerShowHiRes();
   void onButtonToggled();
   void onShowHiResStateChanged(int state);
+  void onShowHybridStateChanged(int state);
   void zoomToMergePosition(bool justLoaded = false);
   void zoomOutToShowAll();
+  void updateHiResWidget(QNetworkReply *reply);
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -56,6 +59,8 @@ private:
   size_t m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
+  size_t m_hybridLoadedCount;
+
   QWidget *m_widget;
   QRadioButton *m_mergeButton;
   QRadioButton *m_dontMergeButton;
@@ -64,6 +69,7 @@ private:
   QRadioButton *m_dontKnowButton;
   QRadioButton *m_lastSavedButton;
   QCheckBox *m_showHiResCheckBox;
+  QCheckBox *m_showHybridCheckBox;
   QMenu *m_menu;
   QAction *m_showHiResAction;
 
@@ -81,6 +87,7 @@ private:
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
   void showBirdsEyeView(bool show);
+  void showHybridMeshes(bool show);
   void writeResult();
   void writeResult(const QString &result);
   QString readResult();

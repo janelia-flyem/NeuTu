@@ -40,7 +40,7 @@
 #include "zswcfactory.h"
 #include "dvid/zdvidneurontracer.h"
 #include "zstack.hxx"
-//#include "mylib/utilities.h"
+#include "mylib/utilities.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -50,7 +50,9 @@
 #include "command/zstackdiffcommand.h"
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
+#if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
+#endif
 
 using namespace std;
 
@@ -96,7 +98,9 @@ void ZCommandLine::registerModule()
   registerModule<ZStackDiffCommand>("stack_diff");
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
+#if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
+#endif
 }
 
 template <typename T>
@@ -1287,8 +1291,8 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--compare_swc] [--scale <double>]",
     "[--trace] [--level <int>]","[--separate <string>]", "[--foutput <string>]",
     "[--compute_seed]",
-    "[--position <int> <int> <int>]",
-    "[--size <int> <int> <int>]",
+//    "[--position <int> <int> <int>]",
+//    "[--size <int> <int> <int>]",
     "[--dvid <string>]",
     "[--test]", "[--verbose]",
     0
@@ -1398,17 +1402,17 @@ int ZCommandLine::run(int argc, char *argv[])
     m_intvSpecified = true;
   }
 
-  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
-    for (int i = 0; i < 3; ++i) {
-      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
-    }
-  }
+//  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
+//    for (int i = 0; i < 3; ++i) {
+//      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
+//    }
+//  }
 
-  if (Is_Arg_Matched(const_cast<char*>("--size"))) {
-    for (int i = 0; i < 3; ++i) {
-      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i + 1);
-    }
-  }
+//  if (Is_Arg_Matched(const_cast<char*>("--size"))) {
+//    for (int i = 0; i < 3; ++i) {
+//      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i + 1);
+//    }
+//  }
 
   if (Is_Arg_Matched(const_cast<char*>("--bodyid"))) {
     ZString bodyIdStr(Get_String_Arg(const_cast<char*>("--bodyid")));
