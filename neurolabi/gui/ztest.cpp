@@ -27869,6 +27869,22 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZObject3dScan obj;
+  reader->readSupervoxel(5813058594, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  ZMeshIO meshIo;
+  meshIo.save(*mesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#endif
+
+#if 1
+  ZMesh mesh;
+  ZMeshIO meshIo;
+  meshIo.load((GET_TEST_DATA_DIR + "/_test.drc").c_str(), mesh);
+  std::cout << mesh.vertices().size() << std::endl;
+#endif
+
+#if 0
   ZMesh zmesh;
   zmesh.load((GET_BENCHMARK_DIR + "/test2.obj").c_str());
   draco::Mesh dmesh;
@@ -27965,7 +27981,7 @@ void ZTest::test(MainWindow *host)
   info.print();
 #endif
 
-#if 1
+#if 0
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/20180913_tif/roiname.csv");
   std::string line;
   std::unordered_map<std::string, std::string> nameMap;
