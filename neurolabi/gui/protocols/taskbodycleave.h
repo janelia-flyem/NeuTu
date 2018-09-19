@@ -154,10 +154,12 @@ private:
   bool writeOutput(ZDvidWriter &writer,
                    const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds,
                    std::size_t &indexNotCleavedOff,
-                   std::vector<QString> &responseLabels);
+                   std::vector<QString> &responseLabels,
+                   std::vector<uint64_t> &mutationIds);
   void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
                             const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds = {},
-                            const std::vector<QString> &newBodyIds = {});
+                            const std::vector<QString> &newBodyIds = {},
+                            const std::vector<uint64_t> &mutationIds = {});
   ZJsonArray readAuxiliaryOutput(const ZDvidReader& reader) const;
 
   virtual bool loadSpecific(QJsonObject json) override;
