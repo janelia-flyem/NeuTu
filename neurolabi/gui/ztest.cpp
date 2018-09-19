@@ -27878,6 +27878,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+
   ZMesh mesh;
   ZMeshIO meshIo;
   meshIo.load((GET_TEST_DATA_DIR + "/_test.drc").c_str(), mesh);
