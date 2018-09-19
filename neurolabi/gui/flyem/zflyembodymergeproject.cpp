@@ -1397,7 +1397,8 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_reader.open(target)) {
-    m_dvidInfo = m_reader.readGrayScaleInfo();
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
+//    m_dvidInfo = m_reader.readLabelInfo();
     m_writer.open(m_reader.getDvidTarget());
   }
 }

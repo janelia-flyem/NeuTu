@@ -1079,8 +1079,9 @@ void ZFlyEmProofDoc::updateDvidInfoForObject()
   UpdateDvidInfoForObject<ZFlyEmToDoList>(this);
 }
 
+namespace {
 template<typename T>
-static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
+void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
 {
   ZOUT(LTRACE(), 5) << "Update dvid target";
   QList<T*> objList = doc->getObjectList<T>();
@@ -1090,6 +1091,20 @@ static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
     obj->setDvidTarget(doc->getDvidTarget());
 //    doc->processObjectModified(obj);
   }
+}
+
+template<>
+void UpdateDvidTargetForObject<ZDvidTileEnsemble>(ZFlyEmProofDoc *doc)
+{
+  ZOUT(LTRACE(), 5) << "Update dvid target";
+  QList<ZDvidTileEnsemble*> objList = doc->getObjectList<ZDvidTileEnsemble>();
+  for (auto iter = objList.begin(); iter != objList.end(); ++iter) {
+    ZDvidTileEnsemble *obj = *iter;
+    obj->setDvidTarget(doc->getDvidTarget().getTileTarget());
+//    doc->processObjectModified(obj);
+  }
+}
+
 }
 
 void ZFlyEmProofDoc::updateDvidTargetForObject()
