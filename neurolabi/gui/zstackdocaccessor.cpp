@@ -80,6 +80,25 @@ void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc)
   }
 }
 
+void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, std::string objectClass)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    bool updated = false;
+    for (ZStackObject *obj : objList) {
+      if (obj->getObjectClass() == objectClass) {
+        doc->getDataBuffer()->addUpdate(obj, GetRemoveAction(true));
+        updated = true;
+      }
+    }
+    if (updated) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
 void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
 {
   if (doc != NULL) {

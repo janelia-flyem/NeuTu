@@ -275,6 +275,19 @@ std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
                     GetBodyKey(bodyId));
 }
 
+std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
+{
+  std::string url;
+  if (m_dvidTarget.hasSupervoxel()) {
+    url = GetFullUrl(getSegmentationUrl(), "supervoxels");
+    if (!url.empty()) {
+      url += "/" + std::to_string(bodyId);
+    }
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
@@ -933,9 +946,15 @@ std::string ZDvidUrl::getGrayScaleBlockUrl(
   return GetFullUrl(url, stream.str());
 }
 
-std::string ZDvidUrl::getLabels64Url() const
+std::string ZDvidUrl::getSegmentationUrl() const
 {
   return getDataUrl(m_dvidTarget.getSegmentationName());
+}
+
+std::string ZDvidUrl::getLabels64Url() const
+{
+  return getSegmentationUrl();
+//  return getDataUrl(m_dvidTarget.getSegmentationName());
 }
 
 std::string ZDvidUrl::getLabels64Url(int zoom) const

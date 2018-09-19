@@ -530,6 +530,7 @@ private:
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
+  void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
 
 private:
   ZFlyEmBodyManager m_bodyManager;

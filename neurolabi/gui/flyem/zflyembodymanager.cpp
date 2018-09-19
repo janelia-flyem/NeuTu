@@ -62,6 +62,13 @@ void ZFlyEmBodyManager::registerBody(uint64_t id)
   }
 }
 
+void ZFlyEmBodyManager::registerBody(uint64_t aggloId, uint64_t bodyId)
+{
+  uint64_t decodedAggloId = decode(aggloId);
+
+  m_bodyMap[decodedAggloId].insert(decode(bodyId));
+}
+
 void ZFlyEmBodyManager::registerSupervoxel(uint64_t id)
 {
   id = decode(id);

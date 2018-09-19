@@ -65,6 +65,7 @@ public:
   std::string getTarSupervoxelsUrl();
   std::string getTarSupervoxelsUrl(uint64_t bodyId);
   std::string getSupervoxelMeshUrl(uint64_t bodyId);
+  std::string getSupervoxelMapUrl(uint64_t bodyId);
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
@@ -121,6 +122,7 @@ public:
   std::string getGrayScaleBlockUrl(
       int ix, int iy, int iz, int blockNumber = 1) const;
 
+  std::string getSegmentationUrl() const;
   std::string getLabels64Url() const;
   std::string getLabels64Url(int zoom) const;
   std::string getLabels64Url(const std::string &name,

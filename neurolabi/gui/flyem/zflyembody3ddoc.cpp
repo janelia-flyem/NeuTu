@@ -2558,9 +2558,14 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
 
+      objList = getObjectGroup().findSameClass(
+            ZStackObjectRole::ROLE_SEED,
+            ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+      /*
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
       getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
+      */
 
       objList = getObjectList(ZStackObjectRole::ROLE_TMP_RESULT);
       getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
@@ -3701,6 +3706,25 @@ void ZFlyEmBody3dDoc::constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromT
   mesh->removeRole(ZStackObjectRole::ROLE_SEGMENTATION);
 }
 
+void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshMap)
+{
+  QList<ZStackObject*> decorList =
+      m_helper->getObjectList(neutube3d::LAYER_DECORATION);
+  for (auto &obj : decorList) {
+    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
+    if (mesh) {
+      if (mesh->hasRole(ZStackObjectRole::ROLE_SEGMENTATION) &&
+          !obj->getObjectId().empty()) {
+        if (meshMap->contains(obj->getObjectId())) {
+          LWARN() << "Unexpected object ID detected:" << obj->getObjectId();
+        } else {
+          (*meshMap)[obj->getObjectId()] = mesh;
+        }
+      }
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::commitSplitResult()
 {
   QAction *action = getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
@@ -3715,39 +3739,18 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   uint64_t oldId = m_splitter->getBodyId();
   uint64_t remainderId = oldId;
 
+  uint64_t parentId = getBodyManager().getAggloId(oldId); //for tar
+
   ZObject3dScan *remainObj = new ZObject3dScan;
 
   QList<ZStackObject*> objList =
       getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
 
-//  QMap<uint64_t, ZStackObject*> objMap;
-//  for (ZStackObject *obj : objList) {
-//    if (obj->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
-//      if (objMap.contains(obj->getLabel())) {
-//        LWARN() << "Duplicated segmentation labels.";
-//      }
-//      objMap[obj->getLabel()] = obj;
-//    }
-//  }
 
   ZStackObjectArray objToDelete;
 
   QMap<std::string, ZMesh*> meshMap;
-  QList<ZStackObject*> decorList =
-      m_helper->getObjectList(neutube3d::LAYER_DECORATION);
-  for (auto &obj : decorList) {
-    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
-    if (mesh) {
-      if (mesh->hasRole(ZStackObjectRole::ROLE_SEGMENTATION) &&
-          !obj->getObjectId().empty()) {
-        if (meshMap.contains(obj->getObjectId())) {
-          LWARN() << "Unexpected object ID detected:" << obj->getObjectId();
-        } else {
-          meshMap[obj->getObjectId()] = mesh;
-        }
-      }
-    }
-  }
+  retrieveSegmentationMesh(&meshMap);
 
   QList<ZMesh*> mainMeshList;
   bool uploadingMesh = (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL);
@@ -3780,14 +3783,12 @@ void ZFlyEmBody3dDoc::commitSplitResult()
             m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId);
           }
 
-          constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
           if (m_splitter->fromTar()) {
-            registerBody(newBodyId);
+            getBodyManager().registerBody(parentId, newBodyId);
             m_helper->releaseObject(neutube3d::LAYER_DECORATION, mesh);
             ZStackDocAccessor::AddObjectUnique(this, mesh);
           }
-
-
+          constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
 
 //          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
 //          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
@@ -3808,18 +3809,20 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     }
   }
 
-  if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL &&
-      !m_splitter->fromTar()) {
-    if (remainderId > 0) {
-      remainderId = ZFlyEmBodyManager::EncodeSupervoxel(remainderId);
-    }
-
-    oldId = ZFlyEmBodyManager::EncodeSupervoxel(oldId);
-  }
 
   ZMesh *mainMesh = nullptr;
 
   if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+    if (m_splitter->fromTar()) {
+      getBodyManager().registerBody(parentId, remainderId);
+    } else {
+      if (remainderId > 0) {
+        remainderId = ZFlyEmBodyManager::EncodeSupervoxel(remainderId);
+      }
+
+      oldId = ZFlyEmBodyManager::EncodeSupervoxel(oldId);
+    }
+
     if (mainMeshList.size() == 1) {
       mainMesh = mainMeshList[0];
     } else if (!mainMeshList.isEmpty()) {
@@ -3847,29 +3850,28 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   constructBodyMesh(mainMesh, remainderId, m_splitter->fromTar());
 
-
-  if (remainderId == oldId) { //Update the body if the main ID remain unchanged
-    /*
-    mainMesh->setLabel(oldId);
-    mainMesh->setSource(
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            oldId, 0, flyem::BODY_MESH));
-    SetObjectClass(mainMesh, oldId);
-    mainMesh->setColor(Qt::white);
-    mainMesh->pushObjectColor();
-    mainMesh->removeRole(ZStackObjectRole::ROLE_SEGMENTATION);
-    */
-
+  if (m_splitter->fromTar()) {
     ZStackDocAccessor::AddObjectUnique(this, mainMesh);
-    if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
-      updateTodo(oldId);
-      updateSynapse(oldId);
+    if (remainderId  != oldId) {
+      ZStackDocAccessor::RemoveObject(
+            this, ZStackObject::TYPE_MESH,
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(
+              oldId, 0, flyem::BODY_MESH), true);
+      deregisterBody(oldId);
     }
-  } else { //Replace the old ID with the remainderID
-    dumpGarbage(mainMesh, true); //recycled later
+  } else {
+    if (remainderId == oldId) { //Update the body if the main ID remain unchanged
+      ZStackDocAccessor::AddObjectUnique(this, mainMesh);
+      if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
+        updateTodo(oldId);
+        updateSynapse(oldId);
+      }
+    } else { //Replace the old ID with the remainderID
+      dumpGarbage(mainMesh, true); //recycled later
 
-    emit removingBody(oldId);
-    emit addingBody(remainderId);
+      emit removingBody(oldId);
+      emit addingBody(remainderId);
+    }
   }
 
  m_helper->releaseObject(neutube3d::LAYER_DECORATION, mainMesh);
