@@ -607,11 +607,20 @@ void DvidBranchDialog::launchOldDialog() {
         ui->todoBox->setText(QString::fromStdString(target.getTodoListName()));
         ui->bodyLabelBox->setText(QString::fromStdString(target.getBodyLabelName()));
 
+        // note that for each of the optional "use main source", we have to check
+        //  explicitly whether they match in order to set the check box state
+
         if (target.getGrayScaleSource().isValid()) {
             ui->grayscaleSourceCheckBox->setChecked(true);
             ui->grayscaleServerBox->setText(QString::fromStdString(target.getGrayScaleSource().getAddress()));
             ui->grayscalePortBox->setValue(target.getGrayScaleSource().getPort());
             ui->grayscaleUUIDBox->setText(QString::fromStdString(target.getGrayScaleSource().getUuid()));
+
+            if (target.getAddress() != target.getGrayScaleSource().getAddress() ||
+                target.getPort() != target.getGrayScaleSource().getPort() ||
+                target.getUuid() != target.getGrayScaleSource().getUuid()) {
+                ui->grayscaleSourceCheckBox->setChecked(false);
+            }
         }
 
         if (target.getTileSource().isValid()) {
@@ -619,11 +628,19 @@ void DvidBranchDialog::launchOldDialog() {
             ui->tileServerBox->setText(QString::fromStdString(target.getTileSource().getAddress()));
             ui->tilePortBox->setValue(target.getTileSource().getPort());
             ui->tileUUIDBox->setText(QString::fromStdString(target.getTileSource().getUuid()));
+
+            if (target.getAddress() != target.getTileSource().getAddress() ||
+                target.getPort() != target.getTileSource().getPort() ||
+                target.getUuid() != target.getTileSource().getUuid()) {
+                ui->tileSourceCheckBox->setChecked(false);
+            }
         }
 
         if (target.isSupervised()) {
             ui->librarianCheckBox->setChecked(true);
             ui->librarianBox->setText(QString::fromStdString(target.getSupervisor()));
+        } else {
+            ui->librarianCheckBox->setChecked(false);
         }
 
     }
