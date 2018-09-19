@@ -22,6 +22,7 @@
 #include "protocols/taskbodycleave.h"
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskfalsesplitreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
@@ -302,6 +303,7 @@ void TaskProtocolWindow::onNextButton() {
     updateBodyWindow();
     updateLabel();
 
+    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -385,7 +387,6 @@ void TaskProtocolWindow::onLoadTasksButton() {
     QJsonObject json = loadJsonFromFile(result);
     startProtocol(json, true);
 
-    updateBody3dDocConfig();
 //    emit taskUpdated(getCurrentTaskProtocolType());
 }
 
@@ -529,6 +530,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+
+    updateBody3dDocConfig();
 
     m_prefetchThread->start();
 }
@@ -756,9 +759,17 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * next or previous tasks to go to
  */
 void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
-  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
-                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
-                          m_nextPrevAllowed);
+    int nonSkippedCount = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            if (++nonSkippedCount > 1) {
+                break;
+            }
+        }
+    }
+    bool nextPrevEnabled = ((nonSkippedCount > 1) && !m_changingTask &&
+                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                            m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -1089,6 +1100,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "body cleave") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
+        } else if (taskType == "false split review") {
+            QSharedPointer<TaskProtocolTask> task(new TaskFalseSplitReview(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "body merge") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyMerge(taskJson.toObject(), m_body3dDoc));
