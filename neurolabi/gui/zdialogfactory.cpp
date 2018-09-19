@@ -301,6 +301,17 @@ void ZDialogFactory::About(QWidget *parent)
         " (" + _CURRENT_COMMIT_ + ")</p>";
   }
 #endif
+
+  QString version;
+#if defined(PKG_VERSION)
+  version = ""
+      NT_XSTR(PKG_VERSION);
+#endif
+
+  if (!version.isEmpty()) {
+    title += QString("<p>Version: %1</p>").arg(version);
+  }
+
   QString thirdPartyLib = QString(
         "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
       .arg(GET_APPLICATION_DIR.c_str());

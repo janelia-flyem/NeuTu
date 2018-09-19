@@ -14,7 +14,7 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"

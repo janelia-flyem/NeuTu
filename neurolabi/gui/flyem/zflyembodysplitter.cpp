@@ -1,7 +1,9 @@
 #include "zflyembodysplitter.h"
 
-#include <QsLog.h>
+#include <QElapsedTimer>
+
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"
@@ -9,9 +11,20 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zstackdocaccessor.h"
 #include "zflyemproofdoc.h"
+#include "zsparsestack.h"
 
 ZFlyEmBodySplitter::ZFlyEmBodySplitter(QObject *parent) : QObject(parent)
 {
+}
+
+ZFlyEmBodySplitter::~ZFlyEmBodySplitter()
+{
+  invalidateCache();
+}
+
+void ZFlyEmBodySplitter::setDvidTarget(const ZDvidTarget &target)
+{
+  m_reader.open(target);
 }
 
 uint64_t ZFlyEmBodySplitter::getBodyId() const
@@ -71,12 +84,17 @@ void ZFlyEmBodySplitter::runSplit(ZFlyEmBody3dDoc *doc)
 void ZFlyEmBodySplitter::runSplit(
     ZFlyEmBody3dDoc *doc, flyem::EBodySplitRange rangeOption)
 {
+  QElapsedTimer timer;
+  timer.start();
+
   resetSplitState();
 
   if (doc != NULL) {
     if (doc->isSplitActivated()) {
       notifyWindowMessageUpdated("Running split ...");
-      doc->loadDvidSparseStackForSplit();
+//      doc->loadDvidSparseStackForSplit();
+
+
 
       QList<ZStackObject*> seedList =
           doc->getObjectList(ZStackObjectRole::ROLE_SEED);
@@ -101,12 +119,13 @@ void ZFlyEmBodySplitter::runSplit(
           break;
         }
 
-        ZDvidSparseStack *sparseStack =
-            doc->getDataDocument()->getDvidSparseStack(
-              dataRange, flyem::BODY_SPLIT_ONLINE);
+        ZSparseStack *sparseStack = getBodyForSplit();
+//        ZDvidSparseStack *sparseStack =
+//            doc->getDataDocument()->getDvidSparseStack(
+//              dataRange, flyem::BODY_SPLIT_ONLINE);
         if (sparseStack != NULL) {
-          container.setData(
-                NULL, sparseStack->getSparseStack(container.getRange()));
+          container.setData(NULL, sparseStack);
+//                NULL, sparseStack->getSparseStack(container.getRange()));
           if (rangeOption == flyem::RANGE_LOCAL) {
             std::vector<ZStackWatershedContainer*> containerList =
                 container.makeLocalSeedContainer(256);
@@ -137,6 +156,8 @@ void ZFlyEmBodySplitter::runSplit(
     }
     doc->releaseBody(getBodyId(), getLabelType());
   }
+
+  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
 }
 
 ZFlyEmBodySplitter::EState ZFlyEmBodySplitter::getState() const
@@ -162,6 +183,44 @@ void ZFlyEmBodySplitter::updateSplitState(flyem::EBodySplitRange rangeOption)
 void ZFlyEmBodySplitter::resetSplitState()
 {
   m_state = STATE_NO_SPLIT;
+}
+
+void ZFlyEmBodySplitter::invalidateCache()
+{
+  delete m_cachedObject;
+  m_cachedObject = nullptr;
+  m_cachedBodyId = 0;
+  m_cachedLabelType = flyem::LABEL_BODY;
+}
+
+void ZFlyEmBodySplitter::cacheBody(ZSparseStack *body)
+{
+  invalidateCache();
+  m_cachedObject = body;
+  m_cachedBodyId = m_bodyId;
+  m_cachedLabelType = m_labelType;
+}
+
+ZSparseStack* ZFlyEmBodySplitter::getBodyForSplit()
+{
+  ZSparseStack *spStack = nullptr;
+  if (m_bodyId == m_cachedBodyId && m_labelType == m_cachedLabelType) {
+    spStack = m_cachedObject;
+  }
+
+  if (spStack == nullptr) {
+    spStack = m_reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
+    cacheBody(spStack);
+  }
+
+  return spStack;
+}
+
+void ZFlyEmBodySplitter::updateCachedMask(ZObject3dScan *obj)
+{
+  if (m_cachedObject != NULL) {
+    m_cachedObject->setObjectMask(obj);
+  }
 }
 
 void ZFlyEmBodySplitter::notifyWindowMessageUpdated(const QString &message)

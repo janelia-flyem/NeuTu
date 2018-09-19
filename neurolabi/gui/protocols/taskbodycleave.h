@@ -2,7 +2,9 @@
 #define TASKBODYCLEAVE_H
 
 #include "protocols/taskprotocoltask.h"
+#include "zpoint.h"
 #include <QObject>
+#include <QTime>
 #include <QVector>
 #include <set>
 
@@ -17,19 +19,19 @@ class QNetworkReply;
 class QPushButton;
 class QShortcut;
 
-class QSlider;
-
 class TaskBodyCleave : public TaskProtocolTask
 {
   Q_OBJECT
 public:
   TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  QString tasktype() override;
+  QString tasktype() const override;
   QString actionString() override;
   QString targetString() override;
+  bool skip() override;
 
   virtual void beforeNext() override;
   virtual void beforePrev() override;
+  virtual void onLoaded() override;
   virtual void beforeDone() override;
 
   virtual QWidget *getTaskWidget() override;
@@ -37,9 +39,14 @@ public:
 
   uint64_t getBodyId() const;
 
-private slots:
-  void updateLevel(int level);
+  ProtocolTaskConfig getTaskConfig() const override;
 
+public:
+  //Temporary solution for resolving shortcut conflict
+  void disableCleavingShortcut();
+  void enableCleavingShortcut();
+
+private slots:
   void onShowCleavingChanged(int state);
   void onToggleShowCleaving();
   void onShowSeedsOnlyChanged(int state);
@@ -59,10 +66,10 @@ private slots:
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;
+  ZPoint m_bodyPt;
   int m_maxLevel;
 
   QWidget *m_widget;
-  QSlider *m_levelSlider;
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
   QPushButton *m_selectBodyButton;
@@ -75,6 +82,12 @@ private:
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
+
+  bool m_skip = false;
+  int m_timeOfLastSkipCheck = -1;
+
+  QTime m_usageTimer;
+  std::vector<int> m_usageTimes;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;
@@ -89,6 +102,9 @@ private:
 
   QNetworkAccessManager *m_networkManager;
   bool m_cleaveReplyPending = false;
+
+  // The latest cleave server reply that was applied is saved for debugging purposes.
+  QJsonObject m_cleaveReply;
 
   std::set<QString> m_warningTextToSuppress;
 
@@ -112,7 +128,6 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
-  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
 
   void updateVisibility();
 

@@ -17,7 +17,7 @@
 #define Z3DPORT_H
 
 #include "z3dfilter.h"
-#include "QsLog.h"
+//#include "QsLog.h"
 #include <vector>
 
 class Z3DOutputPortBase;

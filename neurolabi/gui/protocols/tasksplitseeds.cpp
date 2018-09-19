@@ -6,12 +6,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QLabel>
 
+#include "zqslog.h"
 #include "flyem/zflyembody3ddoc.h"
 
 TaskSplitSeeds::TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
@@ -64,7 +64,7 @@ const QString TaskSplitSeeds::VALUE_TASKTYPE = "split seeds";
 const QString TaskSplitSeeds::KEY_BODYID = "body ID";
 const QString TaskSplitSeeds::TAG_SEEDS_ADDED = "seeds added";
 
-QString TaskSplitSeeds::tasktype() {
+QString TaskSplitSeeds::tasktype() const {
     return VALUE_TASKTYPE;
 }
 

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <QGraphicsBlurEffect>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
@@ -769,10 +769,6 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
 
-  if (!m_isReady && isVisible()) {
-    m_viewProj.maximizeViewPort();
-    m_isReady = true;
-  }
 //  setValidViewPort(m_viewPort);
 }
 
@@ -780,6 +776,11 @@ void ZImageWidget::showEvent(QShowEvent *event)
 {
   LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
   QWidget::showEvent(event);
+
+  if (!m_isReady && isVisible()) {
+    m_viewProj.maximizeViewPort();
+    m_isReady = true;
+  }
 }
 
 void ZImageWidget::keyPressEvent(QKeyEvent *event)
@@ -830,7 +831,7 @@ void ZImageWidget::updateView()
   if (m_offsetAdjustment) {
     int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
     if (zoom > 0) {
-      m_viewProj.alignOffset(misc::GetZoomScale(zoom));
+      m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
     }
   }
 

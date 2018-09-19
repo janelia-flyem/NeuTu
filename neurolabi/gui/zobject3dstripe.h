@@ -22,6 +22,7 @@ public:
   inline size_t getSize() const { return m_segmentArray.size() / 2; }
   inline int getSegmentNumber() const { return getSize(); }
   size_t getVoxelNumber() const;
+  bool hasVoxel() const;
 
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }

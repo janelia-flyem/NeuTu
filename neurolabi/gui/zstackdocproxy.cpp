@@ -1,5 +1,7 @@
 #include "zstackdocproxy.h"
 
+#include "flyem/zflyembody3ddoc.h"
+
 ZStackDocProxy::ZStackDocProxy()
 {
 
@@ -45,6 +47,24 @@ QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(const ZStackDoc *doc)
   return filteredMeshList;
 }
 
+QList<ZMesh*> ZStackDocProxy::GetBodyMeshList(const ZStackDoc *doc)
+{
+  QList<ZMesh*> filteredMeshList;
+
+  if (doc != NULL) {
+    QList<ZMesh*> meshList = doc->getMeshList();
+
+    foreach(ZMesh *mesh, meshList) {
+      if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI) &&
+          !mesh->hasRole(ZStackObjectRole::ROLE_SUPERVOXEL)) { //todo: use body role
+        filteredMeshList.append(mesh);
+      }
+    }
+  }
+
+  return filteredMeshList;
+}
+
 QList<ZMesh*> ZStackDocProxy::GetRoiMeshList(ZStackDoc *doc)
 {
   QList<ZMesh*> filteredMeshList;
@@ -60,4 +80,21 @@ QList<ZMesh*> ZStackDocProxy::GetRoiMeshList(ZStackDoc *doc)
   }
 
   return filteredMeshList;
+}
+
+ZMesh* ZStackDocProxy::GetMeshForSplit(ZStackDoc *doc)
+{
+  ZMesh *mesh = NULL;
+
+  ZFlyEmBody3dDoc *bodyDoc = qobject_cast<ZFlyEmBody3dDoc*>(doc);
+  if (bodyDoc != NULL) {
+    mesh = bodyDoc->getMeshForSplit();
+  } else {
+    QList<ZMesh*> meshList = doc->getMeshList();
+    if (!meshList.isEmpty()) {
+      mesh = meshList.front();
+    }
+  }
+
+  return mesh;
 }

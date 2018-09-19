@@ -319,10 +319,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Split", parent);
     break;
   case ACTION_BODY_SPLIT_START:
-    action = new QAction("Launch split", parent);
+    action = new QAction("Launch Split", parent);
     break;
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
+    break;
+  case ACTION_BODY_CONNECTION:
+    action = new QAction("Show Connection", parent);
     break;
   case ACTION_BODY_CHECKIN:
     action = new QAction("Unlock", parent);
@@ -356,13 +359,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Save as", parent);
     break;
   case ACTION_SHOW_ORTHO:
-    action = new QAction("Show orthogonal view", parent);
+    action = new QAction("Show Orthogonal View", parent);
     break;
   case ACTION_SHOW_ORTHO_BIG:
-    action = new QAction("Show orthogonal view (1024)", parent);
+    action = new QAction("Show Orthogonal View (1024)", parent);
     break;
   case ACTION_COPY_POSITION:
-    action = new QAction("Copy position", parent);
+    action = new QAction("Copy Position", parent);
     break;
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
@@ -407,6 +410,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_SPLIT:
     action = new QAction("To split here", parent);
+    break;
+  case ACTION_ADD_TODO_SVSPLIT:
+    action = new QAction("To split supervoxel here", parent);
     break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);

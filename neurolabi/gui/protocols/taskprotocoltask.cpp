@@ -1,6 +1,7 @@
 #include "taskprotocoltask.h"
 
-#include <QsLog.h>
+#include "zqslog.h"
+#include "protocoltaskconfig.h"
 
 /*
  * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your
@@ -289,6 +290,11 @@ void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
   emit(bodiesUpdated());
 }
 
+void TaskProtocolTask::allowNextPrev(bool allow)
+{
+  emit(nextPrevAllowed(allow));
+}
+
 /*
  * produce the json that holds all the task data
  */
@@ -330,4 +336,13 @@ QJsonObject TaskProtocolTask::toJson() {
     taskJson = addToJson(taskJson);
 
     return taskJson;
+}
+
+ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
+{
+  ProtocolTaskConfig config;
+  config.setTaskType(tasktype());
+  config.setDefaultTodo(neutube::TO_SPLIT);
+
+  return config;
 }

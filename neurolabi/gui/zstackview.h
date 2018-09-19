@@ -10,6 +10,7 @@
 #include <QWidget>
 #include <QPixmap>
 #include <vector>
+#include <QCheckBox>
 
 #include "zstackframe.h"
 #include "zparameter.h"
@@ -549,6 +550,8 @@ public slots:
   void setDynamicObjectAlpha(int alpha);
   void resetViewProj();
 
+  void enableCustomCheckBox(
+      int index, const QString &text, QObject *receiver, const char *slot);
 
 signals:
 //  void currentSliceChanged(int);
@@ -634,6 +637,8 @@ protected:
   QProgressBar *m_progress;
   ZSlider *m_thresholdSlider;
   QPushButton *m_autoThreButton;
+
+  QVector<QCheckBox*> m_customCheckBoxList;
 
   // used to turn on or off each channel
   std::vector<ZBoolParameter*> m_chVisibleState;

@@ -24,6 +24,7 @@ public:
 
   void setBodyId(uint64_t bodyId);
   void setPrevUser(const std::string &name);
+  void setPrevNamingUser(const std::string &name);
 
   uint64_t getBodyId() const;
   QString getComment() const;
@@ -40,18 +41,27 @@ public:
   void showFinalizedStatus();
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
+  void processUnknownStatus(const std::string &status);
+
+  void setDefaultStatusList(const QList<QString> statusList);
+  void updateStatusBox();
 
 public slots:
   void setNameEdit(const QString &name);
 
 private:
   void connectSignalSlot();
+  bool isNameChanged() const;
 
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
 
-  static const std::string m_finalizedText;
+  std::string m_oldName;
+
+  QList<QString> m_defaultStatusList;
+
+  static const QString FINALIZED_TEXT;
 };
 
 #endif // ZFLYEMBODYANNOTATIONDIALOG_H

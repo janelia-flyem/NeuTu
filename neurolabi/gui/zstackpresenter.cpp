@@ -362,6 +362,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyAnnotationTriggered()));
       break;
+    case ZActionFactory::ACTION_BODY_CONNECTION:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyConnectionTriggered()));
+      break;
     case ZActionFactory::ACTION_BODY_SPLIT_START:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodySplitTriggered()));
@@ -2817,6 +2821,11 @@ void ZStackPresenter::notifyBodyUnmergeTriggered()
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
+}
+
+void ZStackPresenter::notifyBodyConnectionTriggered()
+{
+  emit bodyConnectionTriggered();
 }
 
 void ZStackPresenter::notifyBodyCheckinTriggered()

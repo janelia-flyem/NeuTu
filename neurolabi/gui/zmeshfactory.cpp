@@ -1,4 +1,6 @@
 #include "zmeshfactory.h"
+
+//#include <QElapsedTimer>
 #include "zobject3dscan.h"
 #include "zmesh.h"
 #include "zstack.hxx"
@@ -60,6 +62,8 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
 
   if (!meshArray.empty()) {
     mesh = meshArray[0];
+//    QElapsedTimer timer;
+//    timer.start();
     for (size_t i = 1; i < meshArray.size(); ++i) {
       ZMesh *currentMesh = meshArray[i];
       if (mesh->numTriangles() < currentMesh->numTriangles()) {
@@ -68,6 +72,7 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
       mesh->append(*currentMesh);
       delete currentMesh;
     }
+//    LINFO() << "Mesh appending time:" << timer.elapsed() << "ms";
 
     if (isOverSize) {
       ZStackObjectHelper::SetOverSize(mesh);
@@ -140,7 +145,7 @@ ZMesh* ZMeshFactory::MakeMesh(
 ZMesh* ZMeshFactory::MakeMesh(
     const ZObject3dScan &obj, int dsIntv, int smooth, bool offsetAdjust)
 {
-  if (obj.isEmpty()) {
+  if (!obj.hasVoxel()) {
     return NULL;
   }
 

@@ -62,6 +62,7 @@ void Default_Swc_Tree_Node(Swc_Tree_Node *node)
     node->next = NULL;
     node->weight = 0.0;
     node->feature = 0.0;
+    node->confidence = 1.0;
     node->index = -1;
     node->flag = 0;
     node->data_link = NULL;

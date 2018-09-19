@@ -7,7 +7,9 @@
 // generation. The changed() signal can be used to change algorithm
 // or renderer behavior dynamicly.
 
-#include "QsLog.h"
+//#include "QsLog.h"
+#include "zqslog.h"
+
 #include <QObject>
 #include <QStringList>
 #include <set>

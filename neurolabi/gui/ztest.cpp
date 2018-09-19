@@ -44,6 +44,11 @@
 #include <lowtis/LowtisConfig.h>
 #endif
 
+#include <draco/mesh/mesh.h>
+#include <draco/point_cloud/point_cloud.h>
+#include <draco/compression/decode.h>
+#include <draco/compression/encode.h>
+
 #include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
@@ -190,6 +195,7 @@
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
+#include "imgproc/zstackprinter.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -294,6 +300,12 @@
 #include "flyem/zglobaldvidrepo.h"
 #include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
+#include "zarrayfactory.h"
+#include "dvid/zdvidstackblockfactory.h"
+#include "zstackblocksource.h"
+#include "neutuse/taskwriter.h"
+#include "neutuse/task.h"
+#include "neutuse/taskfactory.h"
 
 #include "test/ztestall.h"
 
@@ -27294,7 +27306,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
                             QRegularExpression::CaseInsensitiveOption);
   {
@@ -27314,6 +27326,551 @@ void ZTest::test(MainWindow *host)
     QRegularExpressionMatch match = regexp.match("sv  ");
     qDebug() << match.hasMatch();
     qDebug() << match.captured(2);
+  }
+#endif
+
+#if 0
+  ZObject3dScan *obj = ZObject3dFactory::MakeBoxObject3dScan(
+        ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(10, 10, 10)), NULL);
+  obj->setDsIntv(31, 31, 31);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+
+  ZIntCuboid range(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 100));
+  range.scaleDown(32);
+  range.expand(-1, -1, -1);
+  obj->remove(range);
+
+  obj = ZObject3dFactory::MakeBoxObject3dScan(
+          ZIntCuboid(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 200)), NULL);
+  objArray.append(obj);
+
+  ZMeshFactory mf;
+
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  ZMeshFactory mf;
+  mf.setSmooth(0);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidBodyHelper helper(reader);
+  helper.setCoarse(true);
+  helper.setZoom(0);
+  ZIntCuboid range;
+  range.setSize(256, 256, 256);
+  range.setCenter(ZIntPoint(16710, 31679, 32100));
+  helper.setRange(range);
+  tic();
+  ZObject3dScanArray objArray = helper.readHybridBody(2229212992);
+  ZMeshFactory mf;
+//  mf.setSmooth(0);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+//  reader->getDvidTarget().setUuid("7e52");
+  std::cout << "Block count: " << reader->readBodyBlockCount(770606927) << std::endl;
+  std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
+  std::vector<std::string> statusList({"Putative 0.5",
+                                       "Traced",
+                                       "Hard to trace"});
+  writer->writeBodyStatusList(statusList);
+#endif
+
+#if 0
+//  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test_merge");
+//  ZJsonArray statusJson = reader->readBodyStatusList();
+//  std::cout << statusJson.dumpString(2) << std::endl;
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test_merge");
+  writer->mergeBody(writer->getDvidTarget().getSegmentationName(),
+                    std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814, 1538600496, 1537927379, 1567960688, 1882009576}), true);
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZObject3dScan obj;
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+  reader->readBody(1167969164, flyem::LABEL_BODY, 1,
+                   ZIntCuboid(center - 128, center + 128), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZObject3dScan obj;
+//  obj.addSegment(300, 300, 300, 305);
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+
+  ZIntCuboid box = ZIntCuboid(center - 128, center + 128);
+  reader->readCoarseBody(1167969164, flyem::LABEL_BODY, box, &obj);
+
+//  obj->save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+//  obj.downsampleMax(1, 1, 1);
+
+
+  tic();
+  std::vector<ZArray*> blockArray = reader->readLabelBlock(obj, 0);
+  std::cout << "Block count: " << blockArray.size() << std::endl;
+  ptoc();
+
+
+//  blockArray.resize(1);
+  ZObject3dScan* body = ZObject3dFactory::MakeObject3dScan(
+        blockArray, 1167969164, box, NULL);
+  body->canonize();
+  body->save(GET_TEST_DATA_DIR + "/_test.sobj");
+//  body->print();
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(blockArray, 1167969164);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZArray *array = reader->readLabelBlock(300, 300, 300, 0);
+
+  std::vector<ZArray*> blockArray;
+  blockArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelColorStack(blockArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidReader grayReader;
+  grayReader.open(reader->getDvidTarget().getGrayScaleTarget());
+
+  ZObject3dScan blockObj;
+  blockObj.addSegment(300, 300, 300, 301);
+  blockObj.addSegment(300, 301, 302, 303);
+  blockObj.downsampleMax(1, 1, 1);
+  blockObj.print();
+  std::vector<ZStack*> stackArray = grayReader.readGrayScaleBlock(blockObj,  1);
+
+//  std::vector<ZStack*> blockArray;
+//  blockArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(1, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  ZIntCuboid range(5, 5, 5, 3, 4, 5);
+
+  ZObject3dScan obj;
+  ZObject3dFactory::MakeObject3dScan(labelArray, 1, range, &obj);
+  obj.print();
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  box.set(ZIntPoint(2, 3, 4), ZIntPoint(3, 4, 4));
+  array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+  labelArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(labelArray, 1);
+  ZStackPrinter printer;
+  printer.setDetailLevel(1);
+  printer.print(stack);
+
+//  stack->printInfo();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  std::cout << reader->hasBody(913831721, flyem::LABEL_SUPERVOXEL) << std::endl;
+  std::cout << reader->hasBody(913831721, flyem::LABEL_BODY) << std::endl;
+  std::cout << reader->hasBody(701742479, flyem::LABEL_BODY) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader,
+        std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        true);
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader, 770606927,
+        std::vector<uint64_t>({1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        false);
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZDvidBodyHelper helper(reader);
+  helper.setRange(ZIntCuboid(ZIntPoint(16550, 31554, 31084),
+                             ZIntPoint(16806, 31810, 32749)));
+  helper.setZoom(1);
+  helper.setLowresZoom(6);
+  helper.setCoarse(true);
+
+  uint64_t bodyId = 2229212992;
+  ZObject3dScanArray objArray = helper.readHybridBody(bodyId);
+  ZMeshFactory mf;
+  QElapsedTimer timer;
+  timer.start();
+  ZMesh *mesh = mf.makeMesh(objArray);
+  LINFO() << "Mesh generating time:" << timer.elapsed() << "ms";
+
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidStackBlockFactory blockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory.setDvidTarget(reader->getDvidTarget());
+
+  ZIntPoint blockIndex(300, 300, 300);
+  std::vector<ZStack*> stackArray = blockFactory.make(blockIndex, 3, 0);
+
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidStackBlockFactory *blockFactory = new ZDvidStackBlockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory->setDvidTarget(reader->getDvidTarget());
+
+  ZStackBlockSource blockSource;
+  blockSource.setBlockFactory(blockFactory);
+  blockSource.setBlockSize(blockFactory->getDvidInfo().getBlockSize());
+  blockSource.setGridSize(blockFactory->getDvidInfo().getEndBlockIndex() + 1);
+
+  ZStack *stack = blockSource.getStack(150, 150, 150, 1);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZIntPoint center(18587, 19713, 20696);
+  ZSparseStack *spStack = reader->readSparseStackOnDemand(
+        915520244, flyem::LABEL_BODY, NULL);
+//  ZStack *stack = spStack->getStack();
+  QElapsedTimer timer;
+  timer.start();
+  ZStack *stack = spStack->makeStack(ZIntCuboid(center - 1024, center + 1024), false);
+  std::cout << timer.elapsed() << "ms" << std::endl;
+  if (stack) {
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  } else {
+    std::cout << "Null stack" << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj1;
+  obj1.setLabel(1);
+  obj1.setColor(ZStroke2d::GetLabelColor(obj1.getLabel()));
+  obj1.addSegment(0, 0, 0, 1);
+
+  ZObject3dScan obj2;
+  obj2.setLabel(2);
+  obj2.setColor(ZStroke2d::GetLabelColor(obj2.getLabel()));
+  obj2.addSegment(1, 1, 2, 3);
+  objArray.append(obj1);
+  objArray.append(obj2);
+
+  objArray.save(GET_TEST_DATA_DIR + "/_test.soba");
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_test.soba");
+  for (auto &obj : objArray) {
+    std::cout << "Label: " << obj->getLabel() << std::endl;
+    obj->printInfo();
+  }
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_test.soba");
+  std::cout << objArray.size() << " objects." << std::endl;
+  for (auto &obj : objArray) {
+    obj->printInfo();
+  }
+
+  objArray.resize(objArray.size() - 3);
+
+  ZStack *labelStack = objArray.toColorField();
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", labelStack);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setServer("emdata2.int.janelia.org");
+  target.setPort(8700);
+  target.setUuid("c62b");
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QElapsedTimer timer;
+  timer.start();
+  ZDvidSparseStack *spStack = reader.readDvidSparseStack(
+        1095007427, flyem::LABEL_BODY);
+  spStack->fillValue();
+  std::cout << "Reading time: " << timer.elapsed() << "ms" << std::endl;
+  spStack->getSparseStack()->save(GET_TEST_DATA_DIR + "/_test.zss");
+
+  spStack->getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setServer("emdata2.int.janelia.org");
+  target.setPort(8700);
+  target.setUuid("c62b");
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZSparseStack *spStack = reader.readSparseStackOnDemand(
+        1095007427, flyem::LABEL_BODY, NULL);
+  ZStackWatershedContainer container(spStack);
+  container.exportSource(GET_TEST_DATA_DIR + "/_test2.tif");
+#endif
+
+#if 0
+  ZSparseStack spStack;
+  spStack.load(GET_TEST_DATA_DIR + "/_test.zss");
+  ZStackWatershedContainer container(&spStack);
+  container.exportSource(GET_TEST_DATA_DIR + "/_test.tif");
+//  spStack.getStack()->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  neutuse::TaskWriter writer;
+  writer.open("http://zhaot-ws1:5000");
+//  writer.open("http://127.0.0.1:5000");
+  std::cout << writer.ready() << std::endl;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+        "skeletonize", target, 1, true);
+
+  writer.uploadTask(task);
+
+  std::cout << writer.getStatusCode() << std::endl;
+  std::cout << writer.getResponse() << std::endl;
+#endif
+
+#if 0
+  neutuse::TaskWriter writer;
+//  writer.open("http://zhaot-ws1:7500");
+  writer.open("http://127.0.0.1:5000");
+  std::cout << writer.ready() << std::endl;
+
+  neutuse::Task task;
+  task.setType("dvid");
+  task.setName("skeletonize");
+  task.setUser("zhaot");
+  ZJsonObject config;
+  config.load(GET_TEST_DATA_DIR + "/_flyem/test/skeleton.json");
+//  config.setEntry("bodyid", 1);
+//  config.setEntry("input", "http:emdata1.int.janelia.org:8500:b6bc:bodies");
+//  config.setEntry("force_update", true);
+
+  task.setConfig(config);
+
+  writer.uploadTask(task);
+
+  std::cout << writer.getStatusCode() << std::endl;
+  std::cout << writer.getResponse() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+#endif
+
+#if 1
+#endif
+  ZMesh zmesh;
+  zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
+
+  ZMeshIO meshIO;
+  meshIO.save(zmesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#if 0
+  ZMesh zmesh;
+  zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
+
+  draco::Mesh *dmesh = ZMeshIO::ToDracoMesh(zmesh, NULL);
+  draco::Encoder encoder;
+  draco::EncoderBuffer buffer;
+  encoder.EncodeMeshToBuffer(*dmesh, &buffer);
+
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/_test.drc").c_str(), "w");
+  fwrite(buffer.data(), 1, buffer.size(), fp);
+  fclose(fp);
+#endif
+
+#if 0
+  ZMesh zmesh;
+  zmesh.load((GET_BENCHMARK_DIR + "/test2.obj").c_str());
+  draco::Mesh dmesh;
+
+  const std::vector<glm::vec3>& vertices = zmesh.vertices();
+  std::cout << vertices.size() << std::endl;
+
+  for (auto &vertex : vertices) {
+    std::cout << vertex << std::endl;
+  }
+
+  size_t vertexDataLength = vertices.size() * 3;
+  float *vertexDataBuffer = new float[vertexDataLength];
+  float *vertexDataBufferIter = vertexDataBuffer;
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    *vertexDataBufferIter++ = vertices[i].x;
+    *vertexDataBufferIter++ = vertices[i].y;
+    *vertexDataBufferIter++ = vertices[i].z;
+  }
+
+  draco::DataBuffer buffer;
+  buffer.Update(vertexDataBuffer, sizeof(float) * vertexDataLength);
+
+  draco::GeometryAttribute va;
+  va.Init(draco::GeometryAttribute::POSITION, nullptr, 3, draco::DT_FLOAT32,
+          false, sizeof(float) * 3, 0);
+  int attId = dmesh.AddAttribute(va, true, vertices.size());
+  dmesh.SetAttributeElementType(attId, draco::MESH_VERTEX_ATTRIBUTE);
+  dmesh.set_num_points(vertices.size());
+
+  for (size_t i = 0; i < vertices.size(); ++i) {
+    float val[3];
+    for (size_t j = 0; j < 3; ++j) {
+      val[j] = vertices[i][j];
+    }
+    dmesh.attribute(attId)->SetAttributeValue(draco::AttributeValueIndex(i), val);
+  }
+
+  for (size_t i = 0; i < zmesh.numTriangles(); ++i) {
+    glm::uvec3 triangle = zmesh.triangleIndices(i);
+    draco::Mesh::Face face;
+    face[0] = draco::PointIndex(triangle[0]);
+    face[1] = draco::PointIndex(triangle[1]);
+    face[2] = draco::PointIndex(triangle[2]);
+    dmesh.AddFace(face);
+  }
+
+  std::cout << (void*) vertexDataBuffer << std::endl;
+  std::cout << (void*) buffer.data() << std::endl;
+
+
+  delete []vertexDataBuffer;
+
+  {
+    std::vector<glm::vec3> newVertices;
+    const draco::PointAttribute *const att = dmesh.GetNamedAttribute(
+          draco::GeometryAttribute::POSITION);
+    std::cout << "att size: " << att->size() << std::endl;
+    if (att == nullptr || att->size() == 0)
+      throw ZIOException("no vertices found in draco file");
+    newVertices.resize(dmesh.num_points());
+    std::cout << "dmesh #vertices: " << dmesh.num_points() << std::endl;
+    for (draco::PointIndex i(0); i < dmesh.num_points(); ++i) {
+      if (!att->ConvertValue<float, 3>(
+            att->mapped_index(i), &newVertices[i.value()][0])) {
+        newVertices.clear();
+        throw ZIOException("can not decode draco vertices");
+      }
+    }
+
+    for (auto &vertex : newVertices) {
+      std::cout << vertex << std::endl;
+    }
+
+    std::cout << newVertices.size() << std::endl;
+
+    draco::Encoder encoder;
+    draco::EncoderBuffer buffer;
+    encoder.EncodeMeshToBuffer(dmesh, &buffer);
+
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_test.drc").c_str(), "w");
+    fwrite(buffer.data(), 1, buffer.size(), fp);
+    fclose(fp);
   }
 #endif
 
