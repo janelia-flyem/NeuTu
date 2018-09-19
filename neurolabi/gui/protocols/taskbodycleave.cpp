@@ -960,8 +960,9 @@ void TaskBodyCleave::onCompleted()
 
   std::size_t indexNotCleavedOff = 0;
   std::vector<QString> responseLabels;
-  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels);
-  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels);
+  std::vector<uint64_t> mutationIds;
+  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels, mutationIds);
+  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
 
   if (succeeded) {
 
@@ -1460,7 +1461,8 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
                                  const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
                                  std::size_t &indexNotCleavedOff,
-                                 std::vector<QString> &responseLabels)
+                                 std::vector<QString> &responseLabels,
+                                 std::vector<uint64_t> &mutationIds)
 {
   std::string instance = writer.getDvidTarget().getBodyLabelName();
   ZDvidUrl url(writer.getDvidTarget());
@@ -1500,11 +1502,19 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
         QJsonDocument responseDoc = QJsonDocument::fromJson(response.c_str());
         if (responseDoc.isObject())  {
           QJsonObject responseObj = responseDoc.object();
+
+          uint64_t mutationId = 0;
+          QJsonValue mutationIdVal = responseObj.value("MutationID");
+          if (!mutationIdVal.isUndefined()) {
+            mutationId = mutationIdVal.toDouble();
+          }
+
           QJsonValue labelVal = responseObj.value("CleavedLabel");
           if (!labelVal.isUndefined()) {
             uint64_t label = labelVal.toDouble();
             labelStr = QString::number(label);
             responseLabels.push_back(labelStr);
+            mutationIds.push_back(mutationId);
           }
         }
         if (labelStr.isEmpty()) {
@@ -1554,7 +1564,8 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
 void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
                                           const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
-                                          const std::vector<QString> &newBodyIds)
+                                          const std::vector<QString> &newBodyIds,
+                                          const std::vector<uint64_t> &mutationIds)
 {
   std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
   if (!reader.hasData(instance)) {
@@ -1611,7 +1622,19 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
+
+  // The key is the body ID plus the first valid mutation ID returned by DVID when
+  // cleaving off of the body.  The mutation ID makes the entry unique if the user
+  // goes back and does further cleaving on the same body.
+
   std::string key(std::to_string(m_bodyId));
+  for (uint64_t mutationId : mutationIds) {
+    if (mutationId != 0) {
+      key += "." + std::to_string(mutationId);
+      break;
+    }
+  }
+
   writer.writeJsonString(instance, key, jsonStr);
 }
 
