@@ -12392,6 +12392,15 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_system/big.sobj");
+  QElapsedTimer timer;
+  timer.start();
+  ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
+  std::cout << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
 
   //size_t voxelNumber =obj.getVoxelNumber();
@@ -27803,7 +27812,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
   uint64_t bodyId = 1452234638;
 
@@ -27944,6 +27953,46 @@ void ZTest::test(MainWindow *host)
     fwrite(buffer.data(), 1, buffer.size(), fp);
     fclose(fp);
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("waspem-dvid.flatironinstitute.org", "e0c7", 8000);
+  target.setMultiscale2dName("sb3911tile");
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidTileInfo info = reader.readTileInfo("sb3911tile");
+  info.print();
+#endif
+
+#if 1
+  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/20180913_tif/roiname.csv");
+  std::string line;
+  std::unordered_map<std::string, std::string> nameMap;
+  while (std::getline(stream, line)) {
+    std::cout << line << std::endl;
+    std::vector<std::string> tokens = ZString::Tokenize(line, ',');
+    for (auto &str : tokens) {
+      std::cout << str << " --- ";
+    }
+    std::cout << std::endl;
+    if (tokens.size() >= 3) {
+      nameMap[tokens[1] + ".obj"] = tokens[2];
+    }
+  }
+
+  for (auto &entry : nameMap) {
+    std::cout << entry.first << ": " << entry.second << std::endl;
+  }
+
+  //Upload: ZDvidWriter::uploadRoiMesh
+  QDir dir((GET_TEST_DATA_DIR + "/_flyem/20180913_tif").c_str());
+  QStringList fileList = dir.entryList(QStringList() << "*.obj");
+  for (auto &file : fileList) {
+    std::cout << file.toStdString() << ": " << nameMap[file.toStdString()] << std::endl;
+  }
+
+  //Write ROI data: ZDvidWriter::writeRoi
 #endif
 
   std::cout << "Done." << std::endl;

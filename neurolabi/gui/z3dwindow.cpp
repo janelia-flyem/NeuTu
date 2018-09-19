@@ -95,6 +95,7 @@
 #include "core/utilities.h"
 #include "zstackdochelper.h"
 #include "z3dwindowcontroller.h"
+#include "data3d/zstackobjectconfig.h"
 
 /*
 class Sleeper : public QThread
@@ -4082,26 +4083,7 @@ void Z3DWindow::shootTodo(int x, int y)
         int cy = iround(pt.y());
         int cz = iround(pt.z());
         doc->executeAddTodoCommand(cx, cy, cz, false, parentId);
-
-        /*
-        QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
-        if (action != NULL) {
-          if (action->isChecked()) {
-            if (doc->isSupervoxel(bodyId)) {
-              doc->executeAddTodoCommand(
-                    cx, cy, cz, false, neutube::TO_SUPERVOXEL_SPLIT, parentId);
-            } else {
-              doc->executeAddTodoCommand(
-                    cx, cy, cz, false, neutube::TO_SPLIT, parentId);
-            }
-          }
-        } else {
-          doc->executeAddTodoCommand(
-                cx, cy, cz, false, neutube::TO_DO, parentId);
-        }
-        */
       }
-  //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }
   }
 }
@@ -4230,35 +4212,40 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   neutube::assign<uint64_t>(id, 0);
 
   if (doc != NULL) {
-    if (hasSwc()) {
-      getSwcFilter()->forceNodePicking(true);
-      getSwcFilter()->invalidate();
-      //m_view->updateNetwork();
-      Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
-      if (tn != NULL) {
-        ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
-        if (tree != NULL) {
-          neutube::assign(id, tree->getLabel());
-          glm::dvec3 v1,v2;
-          int w = getCanvas()->width();
-          int h = getCanvas()->height();
-          getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
-          ZPoint lineStart(v1.x, v1.y, v1.z);
-          glm::dvec3 norm = v2 - v1;
-          ZPoint lineNorm(norm.x, norm.y, norm.z);
-          intersection = zgeom::LineShpereIntersection(
-                lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
-        }
-      }
-      getSwcFilter()->forceNodePicking(false);
-    } else {
-      getCanvas()->getGLFocus();
+    bool hit = false;
+    if (getMeshFilter()) {
       ZMesh *mesh = getMeshFilter()->hitMesh(x, y);
       if (mesh != NULL) {
         intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
           neutube::assign(id, mesh->getLabel());
+          hit = true;
         }
+      }
+    }
+
+    if (!hit) {
+      if (hasSwc()) {
+        getSwcFilter()->forceNodePicking(true);
+        getSwcFilter()->invalidate();
+        //m_view->updateNetwork();
+        Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
+        if (tn != NULL) {
+          ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+          if (tree != NULL) {
+            neutube::assign(id, tree->getLabel());
+            glm::dvec3 v1,v2;
+            int w = getCanvas()->width();
+            int h = getCanvas()->height();
+            getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+            ZPoint lineStart(v1.x, v1.y, v1.z);
+            glm::dvec3 norm = v2 - v1;
+            ZPoint lineNorm(norm.x, norm.y, norm.z);
+            intersection = zgeom::LineShpereIntersection(
+                  lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+          }
+        }
+        getSwcFilter()->forceNodePicking(false);
       }
     }
   }
@@ -4384,7 +4371,6 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
   if (m_doc->hasMesh() && getMeshFilter()) {
     std::vector<ZStroke2dPtr> strokeList;
     ZStroke2dPtr subStroke = ZStroke2dPtr(new ZStroke2d);
-    std::string source;
 
     std::vector<std::pair<int, int> > ptArray;
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
@@ -4418,8 +4404,7 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
 
     std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
 
-
-
+    std::string source;
     for (size_t i = 0; i < strokeList.size(); ++i) {
       ZStroke2dPtr subStroke = strokeList[i];
       subStroke->decimate();
