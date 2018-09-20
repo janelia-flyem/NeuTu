@@ -8,7 +8,7 @@
  * create a new task by subclassing this class
  *
  * pure virtual methods you must implement:
- * -- tasktype() should return the string that identifies the class type in the json
+ * -- taskType() should return the string that identifies the class type in the json
  * -- actionString() and targetString() will appear in the task UI; eg, "Review body:" and "12345"
  * -- loadSpecific() and addToJson() are how the task reads and writes its particular data;
  *      note that the task takes care of standard values for you (eg, completed status, tags)
@@ -355,7 +355,7 @@ QJsonObject TaskProtocolTask::toJson() {
 ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 {
   ProtocolTaskConfig config;
-  config.setTaskType(tasktype());
+  config.setTaskType(taskType());
   config.setDefaultTodo(neutube::TO_SPLIT);
 
   return config;

@@ -28,8 +28,19 @@ const QString TaskBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskBodyReview::VALUE_TASKTYPE = "body review";
 const QString TaskBodyReview::KEY_BODYID = "body ID";
 
-QString TaskBodyReview::tasktype() const {
-    return VALUE_TASKTYPE;
+QString TaskBodyReview::taskTypeStatic()
+{
+  return VALUE_TASKTYPE;
+}
+
+TaskBodyReview* TaskBodyReview::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *)
+{
+  return new TaskBodyReview(json);
+}
+
+QString TaskBodyReview::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskBodyReview::actionString() {

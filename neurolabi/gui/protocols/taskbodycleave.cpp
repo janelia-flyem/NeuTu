@@ -301,9 +301,25 @@ TaskBodyCleave::~TaskBodyCleave()
   }
 }
 
-QString TaskBodyCleave::tasktype() const
+QString TaskBodyCleave::taskTypeStatic()
 {
   return VALUE_TASKTYPE;
+}
+
+TaskBodyCleave* TaskBodyCleave::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
+{
+  return new TaskBodyCleave(json, bodyDoc);
+}
+
+TaskBodyCleave* TaskBodyCleave::createFromGui(ZFlyEmBody3dDoc *bodyDoc)
+{
+  // TODO
+  return nullptr;
+}
+
+QString TaskBodyCleave::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskBodyCleave::actionString()
@@ -1761,7 +1777,7 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
 {
   ProtocolTaskConfig config;
-  config.setTaskType(tasktype());
+  config.setTaskType(taskType());
   config.setDefaultTodo(neutube::TO_SUPERVOXEL_SPLIT);
 
   return config;

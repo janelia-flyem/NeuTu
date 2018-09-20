@@ -29,7 +29,13 @@ class TaskBodyCleave : public TaskProtocolTask
 public:
   TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
   virtual ~TaskBodyCleave();
-  QString tasktype() const override;
+
+  // For use with TaskProtocolTaskFactory.
+  static QString taskTypeStatic();
+  static TaskBodyCleave* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
+  static TaskBodyCleave* createFromGui(ZFlyEmBody3dDoc *bodyDoc);
+
+  QString taskType() const override;
   QString actionString() override;
   QString targetString() override;
   bool skip() override;
