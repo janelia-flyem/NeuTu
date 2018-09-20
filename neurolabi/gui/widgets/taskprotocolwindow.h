@@ -37,6 +37,9 @@ public:
      */
     void updateTaskInteraction();
 
+    bool allowingSplit(uint64_t bodyId) const;
+    bool isInCleavingTask() const;
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);

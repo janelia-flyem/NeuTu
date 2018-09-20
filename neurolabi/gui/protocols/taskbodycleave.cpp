@@ -1415,6 +1415,15 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
   return config;
 }
 
+bool TaskBodyCleave::allowingSplit(uint64_t bodyId) const
+{
+  if (m_meshIdToCleaveIndex.find(bodyId) != m_meshIdToCleaveIndex.end()) {
+    return false;
+  }
+
+  return true;
+}
+
 void TaskBodyCleave::disableCleavingShortcut()
 {
   m_toggleInBodyAction->setEnabled(false);

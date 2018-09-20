@@ -96,6 +96,7 @@
 #include "zstackdochelper.h"
 #include "z3dwindowcontroller.h"
 #include "data3d/zstackobjectconfig.h"
+#include "flyem/zflyembodyenv.h"
 
 /*
 class Sleeper : public QThread
@@ -173,6 +174,8 @@ Z3DWindow::Z3DWindow(
 
   m_dvidDlg = NULL;
   m_bodyCmpDlg = NULL;
+
+  m_bodyEnv = ZSharedPointer<ZFlyEmBodyEnv>(new ZFlyEmBodyEnv);
 }
 
 Z3DWindow::~Z3DWindow()
@@ -554,6 +557,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_START_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
   default:
     action = getDocument()->getAction(item);
@@ -1337,6 +1343,11 @@ void Z3DWindow::setMenuFactory(ZStackDocMenuFactory *factory)
   m_menuFactory = factory;
 }
 
+
+ZFlyEmBodyEnv* Z3DWindow::getBodyEnv() const
+{
+  return m_bodyEnv.get();
+}
 
 void Z3DWindow::cleanup()
 {
@@ -3594,6 +3605,23 @@ void Z3DWindow::changeSelectedSwcAlpha()
 void Z3DWindow::notifyCameraRotation()
 {
   emit cameraRotated();
+}
+
+void Z3DWindow::startBodySplit()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (getBodyEnv()) {
+      if (getBodyEnv()->cleaving()) {
+        doc->notify(
+              ZWidgetMessageFactory(
+                "WARNING: You will not be able to undo previous cleaving after splitting.").
+              as(neutube::MSG_WARNING));
+      }
+    }
+
+    doc->activateSplitForSelected();
+  }
 }
 
 void Z3DWindow::test()

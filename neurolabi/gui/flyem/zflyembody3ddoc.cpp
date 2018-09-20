@@ -47,6 +47,7 @@
 #include "protocols/protocoltaskfactory.h"
 #include "zstackdoc3dhelper.h"
 #include "zstackobjectarray.h"
+#include "zflyembodyenv.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1063,10 +1064,25 @@ flyem::EBodyLabelType ZFlyEmBody3dDoc::getLabelType(uint64_t bodyId) const
 
 ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
 {
+  ZMesh *meshForSplit = nullptr;
+
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(this);
   if (!isSplitActivated()) {
     if (!meshList.isEmpty()) {
-      return meshList.front();
+      if (meshList.size() == 1) {
+        meshForSplit = meshList.front();
+      } else {
+        for (ZMesh *mesh : meshList) {
+          if (mesh->isSelected()) {
+            if (meshForSplit == nullptr) {
+              meshForSplit = mesh;
+            } else { //more than one selected
+              meshForSplit = nullptr;
+              break;
+            }
+          }
+        }
+      }
     }
   } else {
     uint64_t bodyId = m_splitter->getBodyId();
@@ -1076,12 +1092,13 @@ ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
     }
     for (ZMesh *mesh : meshList) {
       if (mesh->getLabel() == bodyId) {
-        return mesh;
+        meshForSplit = mesh;
+        break;
       }
     }
   }
 
-  return NULL;
+  return meshForSplit;
 }
 
 ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
@@ -3893,6 +3910,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   LINFO() << summary;
 
   notifyWindowMessageUpdated(summary);
+
+  undoStack()->clear();
 }
 
 void ZFlyEmBody3dDoc::waitForSplitToBeDone()
@@ -4201,6 +4220,16 @@ ZStackDoc3dHelper* ZFlyEmBody3dDoc::getHelper() const
   return m_helper.get();
 }
 
+/*
+bool ZFlyEmBody3dDoc::allowingSplit(uint64_t bodyId) const
+{
+  if (getBodyEnv()) {
+    return getBodyEnv()->allowingSplit(bodyId);
+  }
+
+  return true;
+}
+*/
 
 void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
 {

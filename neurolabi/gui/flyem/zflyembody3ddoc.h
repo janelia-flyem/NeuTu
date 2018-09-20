@@ -35,6 +35,7 @@ class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class ZFlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
+class ZFlyEmBodyEnv;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -368,6 +369,7 @@ public slots:
   void cacheObject(ZStackObject *obj);
 
   void processBodySelectionChange();
+
   void runLocalSplit();
   void runSplit();
   void runFullSplit();
@@ -390,6 +392,7 @@ signals:
   //Signals for triggering external body control
   void addingBody(uint64_t bodyId);
   void removingBody(uint64_t bodyId);
+  void splitCommitted();
 
 protected:
   void autoSave() override {}
@@ -487,6 +490,8 @@ private:
 
   const ZFlyEmBodyManager& getBodyManager() const;
   ZFlyEmBodyManager& getBodyManager();
+
+//  bool allowingSplit(uint64_t bodyId) const;
 
 signals:
   void todoVisibleChanged();

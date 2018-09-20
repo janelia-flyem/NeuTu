@@ -346,3 +346,8 @@ ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 
   return config;
 }
+
+bool TaskProtocolTask::allowingSplit(uint64_t /*bodyId*/) const
+{
+  return false;
+}

@@ -27877,7 +27877,7 @@ void ZTest::test(MainWindow *host)
   meshIo.save(*mesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
 #endif
 
-#if 1
+#if 0
 
   ZMesh mesh;
   ZMeshIO meshIo;
@@ -27983,7 +27983,9 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/20180913_tif/roiname.csv");
+
   std::string line;
   std::unordered_map<std::string, std::string> nameMap;
   while (std::getline(stream, line)) {
@@ -27994,7 +27996,10 @@ void ZTest::test(MainWindow *host)
     }
     std::cout << std::endl;
     if (tokens.size() >= 3) {
-      nameMap[tokens[1] + ".obj"] = tokens[2];
+      ZString name(tokens[2]);
+      name.trim();
+      nameMap[tokens[1] + ".obj"] = name;
+      nameMap[tokens[1] + ".sobj"] = name;
     }
   }
 
@@ -28002,14 +28007,36 @@ void ZTest::test(MainWindow *host)
     std::cout << entry.first << ": " << entry.second << std::endl;
   }
 
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+
   //Upload: ZDvidWriter::uploadRoiMesh
-  QDir dir((GET_TEST_DATA_DIR + "/_flyem/20180913_tif").c_str());
-  QStringList fileList = dir.entryList(QStringList() << "*.obj");
-  for (auto &file : fileList) {
-    std::cout << file.toStdString() << ": " << nameMap[file.toStdString()] << std::endl;
+  {
+    QDir dir(dataDir.c_str());
+    QStringList fileList = dir.entryList(QStringList() << "*.obj");
+    for (QString &file : fileList) {
+      std::string name = nameMap[file.toStdString()];
+      std::cout << file.toStdString() << ": " << name << std::endl;
+      writer->uploadRoiMesh(dataDir + "/" + file.toStdString(), name);
+      //    break;
+    }
   }
 
   //Write ROI data: ZDvidWriter::writeRoi
+
+  {
+    QDir dir(dataDir.c_str());
+    QStringList fileList = dir.entryList(QStringList() << "*.sobj");
+    for (QString &file : fileList) {
+      std::string name = nameMap[file.toStdString()];
+      std::cout << file.toStdString() << ": " << name << std::endl;
+      ZObject3dScan roi;
+      roi.load(dataDir + "/" + file.toStdString());
+      if (!writer->getDvidReader().hasData(name)) {
+        writer->createData("roi", name);
+      }
+      writer->writeRoi(roi, name);
+    }
+  }
 #endif
 
   std::cout << "Done." << std::endl;
