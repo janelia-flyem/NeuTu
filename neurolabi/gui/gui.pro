@@ -911,7 +911,10 @@ HEADERS += mainwindow.h \
     zstackblocksource.h \
     flyem/zflyemtaskhelper.h \
     protocols/protocoltaskfactory.h \
-    protocols/protocoltaskconfig.h
+    protocols/protocoltaskconfig.h \
+    protocols/taskfalsesplitreview.h \
+    z3dcamerautils.h \
+    protocols/taskprotocoltaskfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1595,7 +1598,10 @@ SOURCES += main.cpp \
     zstackblocksource.cpp \
     flyem/zflyemtaskhelper.cpp \
     protocols/protocoltaskfactory.cpp \
-    protocols/protocoltaskconfig.cpp
+    protocols/protocoltaskconfig.cpp \
+    protocols/taskfalsesplitreview.cpp \
+    z3dcamerautils.cpp \
+    protocols/taskprotocoltaskfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

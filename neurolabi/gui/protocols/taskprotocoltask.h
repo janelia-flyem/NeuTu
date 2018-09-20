@@ -43,7 +43,7 @@ public:
     QStringList getTags();
     void clearTags();
 
-    virtual QString tasktype() const = 0;
+    virtual QString taskType() const = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual bool skip();
