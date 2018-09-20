@@ -15,13 +15,14 @@ class ZFlyEmBodyEnv
 public:
   ZFlyEmBodyEnv();
 
-  void setTopWindow(Neu3Window *win);
+  void setWindowEnv(Neu3Window *win);
 
 public:
   bool allowingSplit(uint64_t bodyId) const;
+  bool cleaving() const;
 
 private:
-  Neu3Window *m_new3Win = nullptr;
+  Neu3Window *m_neu3Win = nullptr;
 };
 
 #endif // ZFLYEMBODYENV_H

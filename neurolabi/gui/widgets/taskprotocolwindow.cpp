@@ -221,6 +221,24 @@ void TaskProtocolWindow::updateTaskInteraction()
         getCurrentTask(), m_body3dDoc->isSplitActivated());
 }
 
+bool TaskProtocolWindow::allowingSplit(uint64_t bodyId) const
+{
+  if (getCurrentTask()) {
+    return getCurrentTask()->allowingSplit(bodyId);
+  }
+
+  return true;
+}
+
+bool TaskProtocolWindow::isInCleavingTask() const
+{
+  if (getCurrentTask()) {
+    return getCurrentTask()->tasktype() == "body cleave";
+  }
+
+  return true;
+}
+
 void TaskProtocolWindow::test()
 {
   QJsonObject json =

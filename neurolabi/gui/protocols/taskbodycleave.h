@@ -40,6 +40,7 @@ public:
   uint64_t getBodyId() const;
 
   ProtocolTaskConfig getTaskConfig() const override;
+  bool allowingSplit(uint64_t bodyId) const override;
 
 public:
   //Temporary solution for resolving shortcut conflict

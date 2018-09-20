@@ -3,6 +3,7 @@
 #include "zflyembody3ddoc.h"
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
+#include "zflyembodyenv.h"
 
 ZFlyEmBody3dDocMenuFactory::ZFlyEmBody3dDocMenuFactory()
 {
@@ -20,7 +21,7 @@ QMenu* ZFlyEmBody3dDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *men
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
 //    menu = ZStackDocMenuFactory::makeContextMenu(window, menu);
-    ZMenuConfig config = getConfig(doc);
+    ZMenuConfig config = getConfig(doc, window->getBodyEnv());
     menu = ZMenuFactory::MakeMenu(config, window, menu);
 #if 0
     QList<ZActionFactory::EAction> actionList;
@@ -75,7 +76,8 @@ bool ZFlyEmBody3dDocMenuFactory::ReadyForAction(
   return ready;
 }
 
-ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(ZFlyEmBody3dDoc *doc)
+ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
+    ZFlyEmBody3dDoc *doc, ZFlyEmBodyEnv *bodyEnv)
 {
   ZMenuConfig config;
   if (doc != NULL) {
@@ -84,8 +86,15 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(ZFlyEmBody3dDoc *doc)
       config.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
 #if defined(_NEU3_)
-      if (doc->getSelected(ZStackObject::TYPE_MESH).size() == 1) {
-        config.append(ZActionFactory::ACTION_START_SPLIT);
+      ZMesh *mesh = doc->getMeshForSplit();
+      if (mesh != NULL && !doc->isSplitActivated()) {
+        bool allowingSplit = true;
+        if (bodyEnv != NULL) {
+          allowingSplit = bodyEnv->allowingSplit(mesh->getLabel());
+        }
+        if (allowingSplit) {
+          config.append(ZActionFactory::ACTION_START_SPLIT);
+        }
       }
 #endif
     }
