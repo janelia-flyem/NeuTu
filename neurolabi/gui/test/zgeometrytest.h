@@ -8,6 +8,21 @@
 #include "geometry/zaffineplane.h"
 
 #ifdef _USE_GTEST_
+TEST(ZGeometry, Util)
+{
+  ASSERT_EQ(0, zgeom::GetZoomLevel(1));
+  ASSERT_EQ(1, zgeom::GetZoomLevel(2));
+  ASSERT_EQ(2, zgeom::GetZoomLevel(4));
+  ASSERT_EQ(3, zgeom::GetZoomLevel(8));
+  ASSERT_EQ(4, zgeom::GetZoomLevel(16));
+  ASSERT_EQ(5, zgeom::GetZoomLevel(32));
+  ASSERT_EQ(6, zgeom::GetZoomLevel(64));
+  ASSERT_EQ(7, zgeom::GetZoomLevel(128));
+  ASSERT_EQ(8, zgeom::GetZoomLevel(256));
+  ASSERT_EQ(8, zgeom::GetZoomLevel(500));
+
+}
+
 TEST(ZGeometry, ZPlane)
 {
   {
