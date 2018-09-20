@@ -276,7 +276,7 @@ int zgeom::GetZoomLevel(int scale)
   }
 
   int zoom = 0;
-  while (scale/2 > 0) {
+  while ((scale /= 2) > 0) {
     ++zoom;
   }
 
