@@ -49,7 +49,7 @@ void FlyEmSettingDialog::loadSetting()
 //  ui->servicelineEdit->setText(
 //        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
-        GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
+        GET_FLYEM_CONFIG.hasNormalService() ? "Normal" : "Down");
 #ifdef _DEBUG_
   std::cout << "Current task server: " << GET_FLYEM_CONFIG.getTaskServer() << std::endl;
 #endif
@@ -134,7 +134,7 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.loadConfig();
   GET_FLYEM_CONFIG.setRemoteServer(getNeuTuServer());
 
-  if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+  if (GET_FLYEM_CONFIG.hasNormalService()) {
     ui->statusLabel->setText("Normal");
   } else {
     ui->statusLabel->setText("Down");

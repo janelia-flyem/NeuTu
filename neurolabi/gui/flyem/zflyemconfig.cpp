@@ -262,6 +262,21 @@ std::string ZFlyEmConfig::getRemoteServer() const
 }
 
 #ifdef _QT_GUI_USED_
+bool ZFlyEmConfig::hasNormalService() const
+{
+  if (getNeutuService().isNormal() || m_neutuseWriter.ready()) {
+    return true;
+  }
+
+  return false;
+}
+
+void ZFlyEmConfig::updateServiceStatus()
+{
+  GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+  GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
+}
+
 void ZFlyEmConfig::setRemoteServer(const std::string &server)
 {
   m_remoteServer = server;
@@ -269,6 +284,8 @@ void ZFlyEmConfig::setRemoteServer(const std::string &server)
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
   bool neutuseOpened = false;
   bool serviceOpened = false;
+  m_neutuseWriter.reset();
+  getNeutuService().reset();
   for (const std::string &server : serverList) {
     if (ZString(server).startsWith("neutuse:")) {
       if (!neutuseOpened) {

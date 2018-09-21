@@ -3054,7 +3054,7 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 #if defined(_FLYEM_)
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutube::MSG_WARNING);
-  if (GET_NETU_SERVICE.isNormal()) {
+  if (GET_FLYEM_CONFIG.hasNormalService()) {
     m_skeletonUpdateDlg->setComputingServer(
           GET_NETU_SERVICE.getServer().c_str());
     if (m_skeletonUpdateDlg->exec()) {

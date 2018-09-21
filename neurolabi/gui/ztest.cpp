@@ -28040,5 +28040,13 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  neutuse::TaskWriter writer;
+  writer.open("http://emdata2.int.janelia.org:2018");
+  writer.testConnection();
+  std::cout << writer.ready() << std::endl;
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
