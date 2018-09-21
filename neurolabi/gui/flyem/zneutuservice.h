@@ -54,9 +54,11 @@ public:
     return m_status;
   }
 
+  void reset();
   void updateStatus();
 
   bool isNormal() const;
+
 
 private:
   template <class InputIterator>

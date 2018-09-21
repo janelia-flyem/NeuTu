@@ -7470,8 +7470,9 @@ void MainWindow::runRoutineCheck()
   if (NeutubeConfig::AutoStatusCheck()) {
     std::cout << "Running routine check ..." << std::endl;
 #if defined(_FLYEM_)
-    if (!GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+    if (!GET_FLYEM_CONFIG.hasNormalService()) {
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
     }
 #endif
 #if 0

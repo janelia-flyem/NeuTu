@@ -75,9 +75,20 @@ public:
     return m_neutuService;
   }
 
+  const ZNeutuService& getNeutuService() const {
+    return m_neutuService;
+  }
+
   neutuse::TaskWriter& getNeutuseWriter() {
     return m_neutuseWriter;
   }
+
+  const neutuse::TaskWriter& getNeutuseWriter() const {
+    return m_neutuseWriter;
+  }
+
+  bool hasNormalService() const;
+  void updateServiceStatus();
 
   void setRemoteServer(const std::string &server);
 #endif
