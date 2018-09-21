@@ -38,12 +38,12 @@ requirements:
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.post58
     - cmake
-    - ninja
-    - tbb
+    - ninja 1.7.2*
+    - tbb 2018_20171205
     - vtk 7.1*
-    - assimp
-    - glbinding
-    - draco
+    - assimp 4.0.1*
+    - glbinding 2.1.3*
+    - draco 1.3.4*
     - libarchive 3.3.2*
     - libiconv >=1.15
 
@@ -57,12 +57,12 @@ requirements:
     - hdf5    1.8*
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.post58
-    - ninja
-    - tbb
+    - ninja 1.7.2*
+    - tbb 2018_20171205
     - vtk 7.1*
-    - assimp
-    - glbinding
-    - draco
+    - assimp 4.0.1*
+    - glbinding 2.1.3*
+    - draco 1.3.4*
     - libarchive 3.3.2*
     - libiconv >=1.15
    
