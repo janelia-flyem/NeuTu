@@ -25379,7 +25379,8 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
+//  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
+  ZDvidTarget target("emdata3.int.janelia.org", "0716", 8900);
   ZDvidWriter writer;
   writer.open(target);
 
