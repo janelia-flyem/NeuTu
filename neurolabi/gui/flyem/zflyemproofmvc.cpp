@@ -126,8 +126,10 @@ void ZFlyEmProofMvc::init()
   setFocusPolicy(Qt::ClickFocus);
 
   m_dvidDlg = NULL;
-  m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-        FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
+
+  // temporarily disable sequencer:
+  // m_bodyInfoDlg = new FlyEmBodyInfoDialog(FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
+  m_bodyInfoDlg = NULL;
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
