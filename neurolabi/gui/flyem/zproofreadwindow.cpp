@@ -396,7 +396,8 @@ void ZProofreadWindow::createMenu()
   m_openSequencerAction->setIcon(QIcon(":/images/document.png"));
   connect(m_openSequencerAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(openSequencer()));
-  m_toolMenu->addAction(m_openSequencerAction);
+  // temporarily disable sequencer
+  // m_toolMenu->addAction(m_openSequencerAction);
 
   m_openTodoAction = new QAction("Show Todo List", this);
   m_openTodoAction->setIcon(QIcon(":/images/todo.png"));
@@ -528,7 +529,8 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
   m_toolBar->addSeparator();
-  m_toolBar->addAction(m_openSequencerAction);
+  // temporarily disable sequencer
+  // m_toolBar->addAction(m_openSequencerAction);
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
