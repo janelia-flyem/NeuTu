@@ -418,7 +418,19 @@ void Neu3Window::initWebView()
 }
 
 void Neu3Window::createTaskWindow() {
-    QDockWidget *dockWidget = new QDockWidget("Tasks", this);
+  // set up the factory for creating "protocol tasks"
+  TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
+  factory.registerJsonCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
+  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGuiBodyId(), TaskBodyCleave::createFromGuiBodyId);
+  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGui3dPoint(), TaskBodyCleave::createFromGui3dPoint);
+  factory.registerJsonCreator(TaskBodyHistory::taskTypeStatic(), TaskBodyHistory::createFromJson);
+  factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
+  factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
+  factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
+  factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
+  factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
+
+  QDockWidget *dockWidget = new QDockWidget("Tasks", this);
     m_taskProtocolWidget =
         new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
@@ -452,17 +464,6 @@ void Neu3Window::createTaskWindow() {
     dockWidget->setFeatures(
           QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
-
-    // set up the factory for creating "protocol tasks"
-    TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
-    factory.registerJsonCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
-    factory.registerGuiCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromGui);
-    factory.registerJsonCreator(TaskBodyHistory::taskTypeStatic(), TaskBodyHistory::createFromJson);
-    factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
-    factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
-    factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
-    factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
-    factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 }
 
 void Neu3Window::createRoiWidget() {

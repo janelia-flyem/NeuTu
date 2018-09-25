@@ -58,7 +58,6 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
-
     // UI connections
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
@@ -68,6 +67,14 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
+
+    QMenu *createTasksMenu = new QMenu(ui->loadTasksButton);
+    for (QString menuLabel : TaskProtocolTaskFactory::getInstance().registeredGuiMenuLabels()) {
+      createTasksMenu->addAction(menuLabel, [menuLabel, this]() {
+        this->createTask(menuLabel);
+      });
+    }
+    ui->createTaskButton->setMenu(createTasksMenu);
 
     // keyboard shortcuts for the "next" and "prev" buttons must be specified this way
     // so auto-repeat can be disabled
@@ -1116,6 +1123,21 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
     }
 
     LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
+}
+
+void TaskProtocolWindow::createTask(QString menuLabel)
+{
+  TaskProtocolTaskFactory factory = TaskProtocolTaskFactory::getInstance();
+  QJsonArray taskList = factory.createFromGui(menuLabel, m_body3dDoc);
+  if (!taskList.isEmpty()) {
+    QJsonObject tasksObject;
+
+    tasksObject[KEY_TASKLIST] = taskList;
+    tasksObject[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
+    tasksObject[KEY_VERSION] = currentVersion;
+
+    startProtocol(tasksObject, true);
+  }
 }
 
 /*
