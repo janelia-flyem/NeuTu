@@ -33,7 +33,10 @@ public:
   // For use with TaskProtocolTaskFactory.
   static QString taskTypeStatic();
   static TaskBodyCleave* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  static TaskBodyCleave* createFromGui(ZFlyEmBody3dDoc *bodyDoc);
+  static QString menuLabelCreateFromGuiBodyId();
+  static QJsonArray createFromGuiBodyId(ZFlyEmBody3dDoc *bodyDoc);
+  static QString menuLabelCreateFromGui3dPoint();
+  static QJsonArray createFromGui3dPoint(ZFlyEmBody3dDoc *bodyDoc);
 
   QString taskType() const override;
   QString actionString() override;

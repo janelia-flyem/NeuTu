@@ -1,6 +1,7 @@
 #ifndef TASKPROTOCOLTASKFACTORY_H
 #define TASKPROTOCOLTASKFACTORY_H
 
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QString>
 
@@ -25,13 +26,13 @@ public:
 
   //
 
-  typedef std::function<TaskProtocolTask*(ZFlyEmBody3dDoc*)> GuiCreator;
+  typedef std::function<QJsonArray(ZFlyEmBody3dDoc*)> GuiCreator;
 
-  void registerGuiCreator(QString taskType, GuiCreator creator);
+  void registerGuiCreator(QString menuLabel, GuiCreator creator);
 
-  std::vector<QString> registeredGuiTaskTypes() const;
+  std::vector<QString> registeredGuiMenuLabels() const;
 
-  TaskProtocolTask* createFromGui(QString taskType, ZFlyEmBody3dDoc* doc) const;
+  QJsonArray createFromGui(QString menuLabel, ZFlyEmBody3dDoc* doc) const;
 
 private:
   TaskProtocolTaskFactory();

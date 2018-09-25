@@ -18,6 +18,7 @@
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QInputDialog>
+#include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -311,10 +312,69 @@ TaskBodyCleave* TaskBodyCleave::createFromJson(QJsonObject json, ZFlyEmBody3dDoc
   return new TaskBodyCleave(json, bodyDoc);
 }
 
-TaskBodyCleave* TaskBodyCleave::createFromGui(ZFlyEmBody3dDoc *bodyDoc)
+QString TaskBodyCleave::menuLabelCreateFromGuiBodyId()
 {
-  // TODO
-  return nullptr;
+  return "Cleave from Body ID";
+}
+
+QJsonArray TaskBodyCleave::createFromGuiBodyId(ZFlyEmBody3dDoc *bodyDoc)
+{
+  QJsonArray result;
+
+  if (Z3DWindow *window = bodyDoc->getParent3DWindow()) {
+    bool ok = false;
+    double min = std::numeric_limits<double>::min();
+    double max = std::numeric_limits<double>::max();
+    double bodyId = QInputDialog::getDouble(window, "Create Body Cleave Task", "Body ID",
+                                            0, min, max, 0, &ok);
+    if (ok && (bodyId != 0)) {
+      QJsonObject json;
+      json[KEY_BODY_ID] = QJsonValue(bodyId);
+      json[KEY_TASKTYPE] = VALUE_TASKTYPE;
+      json[KEY_MAXLEVEL] = QJsonValue(1);
+      result.append(json);
+    }
+  }
+
+  return result;
+}
+
+QString TaskBodyCleave::menuLabelCreateFromGui3dPoint()
+{
+  return "Cleave from 3D Point";
+}
+
+QJsonArray TaskBodyCleave::createFromGui3dPoint(ZFlyEmBody3dDoc *bodyDoc)
+{
+  QJsonArray result;
+
+  if (Z3DWindow *window = bodyDoc->getParent3DWindow()) {
+    bool ok = false;
+    QString ptStr = QInputDialog::getText(window, "Create Body Cleave Task", "3D Point on Body",
+                                          QLineEdit::Normal, "x, y, z", &ok,
+                                          Qt::Widget, Qt::ImhPreferNumbers);
+    if (ok) {
+      QStringList compStrs = ptStr.split(",", QString::SkipEmptyParts);
+      if (compStrs.size() == 3) {
+        QJsonArray ptArray;
+        for (QString compStr : compStrs) {
+          int comp = compStr.toInt(&ok);
+          if (ok) {
+            ptArray.append(QJsonValue(comp));
+          }
+        }
+        if (ptArray.size() == 3) {
+          QJsonObject json;
+          json[KEY_BODY_POINT] = ptArray;
+          json[KEY_TASKTYPE] = VALUE_TASKTYPE;
+          json[KEY_MAXLEVEL] = QJsonValue(1);
+          result.append(json);
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 QString TaskBodyCleave::taskType() const
@@ -724,6 +784,8 @@ void TaskBodyCleave::onToggleShowChosenCleaveBody()
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  allowNextPrev(true);
+
   m_cleaveReplyPending = false;
   QNetworkReply::NetworkError error = reply->error();
 
@@ -1285,6 +1347,8 @@ void TaskBodyCleave::cleave()
 
   QJsonDocument requestJsonDoc(requestJson);
   QByteArray requestData(requestJsonDoc.toJson());
+
+  allowNextPrev(false);
 
   m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);

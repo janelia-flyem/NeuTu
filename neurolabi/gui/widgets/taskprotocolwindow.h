@@ -57,7 +57,7 @@ private slots:
     void onNextButton();
     void onPrevButton();
     void onDoneButton();
-    void onLoadTasksButton();    
+    void onLoadTasksButton();
     void onBodiesUpdated();
     void onNextPrevAllowed(bool allowed);
     void onCompletedStateChanged(int state);
@@ -146,6 +146,7 @@ private:
     void showError(QString title, QString message);
     bool isValidJson(QJsonObject json);
     void loadTasks(QJsonObject json);
+    void createTask(QString menuLabel);
     QJsonObject storeTasks();
     void saveJsonToDvid(QJsonObject json);
     void saveState();
