@@ -1039,7 +1039,18 @@ void TaskBodyCleave::onCompleted()
   std::size_t indexNotCleavedOff = 0;
   std::vector<QString> responseLabels;
   std::vector<uint64_t> mutationIds;
-  bool succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels, mutationIds);
+  bool doWriteOutput = true;
+  if (const char* doWriteOutputStr = std::getenv("NEU3_CLEAVE_UPDATE_SEGMENTATION")) {
+
+    // For now, at least, allow direct updating of the DVID egmentation to be disabled
+    // by an environment variable.
+
+    doWriteOutput = (std::string(doWriteOutputStr) != "no");
+  }
+  bool succeeded = false;
+  if (doWriteOutput) {
+    succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels, mutationIds);
+  }
   writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
 
   if (succeeded) {
@@ -1336,7 +1347,7 @@ void TaskBodyCleave::cleave()
   }
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
