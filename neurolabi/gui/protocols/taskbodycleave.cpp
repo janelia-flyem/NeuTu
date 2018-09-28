@@ -569,6 +569,8 @@ void TaskBodyCleave::onToggleShowChosenCleaveBody()
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  allowNextPrev(true);
+
   m_cleaveReplyPending = false;
   QNetworkReply::NetworkError error = reply->error();
 
@@ -1106,8 +1108,7 @@ void TaskBodyCleave::cleave()
                          ZDvidData::ROLE_BODY_LABEL,
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
-  // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1118,6 +1119,8 @@ void TaskBodyCleave::cleave()
 
   QJsonDocument requestJsonDoc(requestJson);
   QByteArray requestData(requestJsonDoc.toJson());
+
+  allowNextPrev(false);
 
   m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);
