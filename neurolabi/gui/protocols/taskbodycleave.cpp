@@ -1346,7 +1346,7 @@ void TaskBodyCleave::cleave()
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 
-  // TODO: Teporary cleaving sevrver URL.
+  // TODO: Temporary cleaving sevrver URL.
   QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
