@@ -26465,7 +26465,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
   reader->updateMaxLabelZoom();
   reader->setVerbose(false);
