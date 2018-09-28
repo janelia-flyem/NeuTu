@@ -2849,6 +2849,11 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   return tree;
 }
 
+uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
+{
+  return ZFlyEmBodyManager::decode(encodedId);
+}
+
 bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
 {
   bool result = false;
@@ -2856,11 +2861,6 @@ bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
     result = (std::string(setting) == "no");
   }
   return result;
-}
-
-uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
-{
-  return ZFlyEmBodyManager::decode(encodedId);
 }
 
 #if 0
@@ -3290,7 +3290,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
     // only if an environment variable is set,  When testing is complete, this approach
     // will become the default.
 
-    bool useOldMeshesTars = !std::getenv("NEU3_USE_TARSUPERVOXELS");
+    bool useOldMeshesTars = usingOldMeshesTars();
     if (!useOldMeshesTars) {
       id = decode(id);
     }

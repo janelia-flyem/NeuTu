@@ -913,7 +913,8 @@ HEADERS += mainwindow.h \
     protocols/protocoltaskfactory.h \
     protocols/protocoltaskconfig.h \
     protocols/taskfalsesplitreview.h \
-    z3dcamerautils.h
+    z3dcamerautils.h \
+    protocols/taskprotocoltaskfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1599,7 +1600,8 @@ SOURCES += main.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
-    z3dcamerautils.cpp
+    z3dcamerautils.cpp \
+    protocols/taskprotocoltaskfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
