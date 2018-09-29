@@ -189,9 +189,19 @@ TaskFalseSplitReview::TaskFalseSplitReview(QJsonObject json, ZFlyEmBody3dDoc* bo
   buildTaskWidget();
 }
 
-QString TaskFalseSplitReview::tasktype() const
+QString TaskFalseSplitReview::taskTypeStatic()
 {
   return VALUE_TASKTYPE;
+}
+
+TaskFalseSplitReview* TaskFalseSplitReview::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
+{
+  return new TaskFalseSplitReview(json, bodyDoc);
+}
+
+QString TaskFalseSplitReview::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskFalseSplitReview::actionString()
@@ -393,7 +403,7 @@ void TaskFalseSplitReview::onCompleted()
 ProtocolTaskConfig TaskFalseSplitReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
-  config.setTaskType(tasktype());
+  config.setTaskType(taskType());
   config.setDefaultTodo(neutube::TO_MERGE);
 
   return config;

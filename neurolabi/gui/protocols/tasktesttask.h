@@ -10,13 +10,20 @@
 
 #include "protocols/taskprotocoltask.h"
 
+class ZFlyEmBody3dDoc;
+
 class TaskTestTask : public TaskProtocolTask
 {
     Q_OBJECT
 
 public:
     TaskTestTask(QJsonObject json);
-    QString tasktype() const;
+
+    // For use with TaskProtocolTaskFactory.
+    static QString taskTypeStatic();
+    static TaskTestTask* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
+
+    QString taskType() const;
     QString actionString();
     QString targetString();
     QWidget * getTaskWidget();

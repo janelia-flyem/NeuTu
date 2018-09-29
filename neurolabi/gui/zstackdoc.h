@@ -114,7 +114,7 @@ public:
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
-  enum TubeImportOption {
+  enum class TubeImportOption {
     ALL_TUBE,
     GOOD_TUBE,
     BAD_TUBE
@@ -609,7 +609,7 @@ public:
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
-                         TubeImportOption option = ALL_TUBE,
+                         TubeImportOption option = TubeImportOption::ALL_TUBE,
                          LoadObjectOption objopt = APPEND_OBJECT);
   void importSwc(QStringList files, LoadObjectOption objopt = APPEND_OBJECT);
   void importPuncta(const QStringList &files,
