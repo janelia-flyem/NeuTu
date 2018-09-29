@@ -7,8 +7,9 @@
 #include <QJsonObject>
 #include <QSet>
 
-class QMenu;
 class ProtocolTaskConfig;
+class QMenu;
+class ZWidgetMessage;
 
 class TaskProtocolTask: public QObject
 {
@@ -29,6 +30,7 @@ public:
 
     virtual void beforeNext();
     virtual void beforePrev();
+    virtual void beforeLoading();
     virtual void onLoaded();
     virtual void beforeDone();
 
@@ -41,7 +43,7 @@ public:
     QStringList getTags();
     void clearTags();
 
-    virtual QString tasktype() const = 0;
+    virtual QString taskType() const = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual bool skip();
@@ -56,6 +58,7 @@ public:
 signals:
     void bodiesUpdated();
     void nextPrevAllowed(bool allowed);
+    void messageGenerated(const ZWidgetMessage&);
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 
@@ -74,6 +77,8 @@ protected:
 
     void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
     void allowNextPrev(bool allow = true);
+
+    void notify(const ZWidgetMessage &msg);
 
 private:
     bool loadStandard(QJsonObject json);

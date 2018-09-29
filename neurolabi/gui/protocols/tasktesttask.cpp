@@ -66,8 +66,19 @@ const QString TaskTestTask::KEY_TASKTYPE = "task type";
 const QString TaskTestTask::VALUE_TASKTYPE = "test task";
 const QString TaskTestTask::KEY_BODYID = "body ID";
 
-QString TaskTestTask::tasktype() const {
-    return VALUE_TASKTYPE;
+QString TaskTestTask::taskTypeStatic()
+{
+  return VALUE_TASKTYPE;
+}
+
+TaskTestTask* TaskTestTask::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *)
+{
+  return new TaskTestTask(json);
+}
+
+QString TaskTestTask::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskTestTask::actionString() {
