@@ -313,13 +313,13 @@ public:
 
   int getZ(neutube::ECoordinateSystem coordSys) const;
   ZIntPoint getCenter(
-      neutube::ECoordinateSystem coordSys = neutube::COORD_STACK) const;
+      neutube::ECoordinateSystem coordSys = neutube::ECoordinateSystem::STACK) const;
 
   QRect getViewPort(neutube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter() const;
   ZStackViewParam getViewParameter(
       neutube::ECoordinateSystem coordSys,
-      neutube::View::EExploreAction action = neutube::View::EXPLORE_UNKNOWN) const;
+      neutube::View::EExploreAction action = neutube::View::EExploreAction::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
   ZViewProj getViewProj() const;

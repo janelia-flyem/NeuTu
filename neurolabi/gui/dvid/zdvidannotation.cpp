@@ -143,10 +143,10 @@ double ZDvidAnnotation::GetDefaultRadius(
   double r = GetDefaultRadius(kind);
 
   if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
-    r *= sqrt(resolution.getPlaneVoxelSize(neutube::PLANE_XY));
+    r *= sqrt(resolution.getPlaneVoxelSize(neutube::EPlane::XY));
   } else {
     r *= sqrt(resolution.getPlaneVoxelSize(
-                neutube::PLANE_XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+                neutube::EPlane::XY, ZResolution::UNIT_NANOMETER)) / 8.0;
   }
 
   return r;
@@ -199,13 +199,13 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
-  if (isSliceVisible(z, neutube::Z_AXIS)) {
+  if (isSliceVisible(z, neutube::EAxis::Z)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z, neutube::Z_AXIS);
+    double radius = getRadius(z, neutube::EAxis::Z);
 
     return d2 <= radius * radius;
   }
@@ -510,20 +510,20 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
 
 bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::A_AXIS) {
+  if (sliceAxis == neutube::EAxis::ARB) {
     return false;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }
@@ -533,20 +533,20 @@ bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 
 double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::A_AXIS) {
+  if (sliceAxis == neutube::EAxis::ARB) {
     return 0.0;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }

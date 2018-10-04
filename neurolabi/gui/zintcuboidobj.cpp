@@ -184,8 +184,8 @@ bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
 
 bool ZIntCuboidObj::hit(double x, double y, double z)
 {
-  if (isOnSlice(z, neutube::Z_AXIS)) {
-    return hit(x, y, neutube::Z_AXIS);
+  if (isOnSlice(z, neutube::EAxis::Z)) {
+    return hit(x, y, neutube::EAxis::Z);
   }
 
   return false;

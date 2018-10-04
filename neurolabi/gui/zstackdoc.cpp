@@ -165,8 +165,8 @@ ZStackDoc::~ZStackDoc()
   }
   endWorkThread();
 
-  deprecate(STACK);
-  deprecate(SPARSE_STACK);
+  deprecate(EComponent::STACK);
+  deprecate(EComponent::SPARSE_STACK);
 
   ZOUT(LTRACE(), 5) << "ZStackDoc destroyed: " << this;
 
@@ -260,8 +260,8 @@ void ZStackDoc::init()
 
 //  createActions();
 
-  setTag(neutube::Document::NORMAL);
-  setStackBackground(neutube::IMAGE_BACKGROUND_DARK);
+  setTag(neutube::Document::ETag::NORMAL);
+  setStackBackground(neutube::EImageBackground::DARK);
 
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
@@ -293,8 +293,8 @@ void ZStackDoc::shortcutTest()
 
 void ZStackDoc::clearData()
 {
-  deprecate(STACK);
-  deprecate(SPARSE_STACK);
+  deprecate(EComponent::STACK);
+  deprecate(EComponent::SPARSE_STACK);
   m_objectGroup.removeAllObject(true);
   m_playerList.clear();
 
@@ -333,7 +333,7 @@ void ZStackDoc::initNeuronTracer()
   m_neuronTracer.initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
-    if (getTag() == neutube::Document::BIOCYTIN_STACK &&
+    if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK &&
         getStack()->channelNumber() > 1) {
       m_neuronTracer.setSignalChannel(1);
 //      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
@@ -343,7 +343,7 @@ void ZStackDoc::initNeuronTracer()
     m_neuronTracer.setIntensityField(getStack());
   }
   m_neuronTracer.setBackgroundType(getStackBackground());
-  if (getTag() == neutube::Document::FLYEM_BODY) {
+  if (getTag() == neutube::Document::ETag::FLYEM_BODY) {
     m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
   }
 
@@ -508,7 +508,7 @@ void ZStackDoc::addTaskSlot(ZTask *task)
 void ZStackDoc::autoSaveSwc()
 {
   if (isSwcSavingRequired()) {
-    if (getTag() == neutube::Document::FLYEM_BODY_DISPLAY) {
+    if (getTag() == neutube::Document::ETag::FLYEM_BODY_DISPLAY) {
       return;
     }
 
@@ -1620,7 +1620,7 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   if (stack == NULL)
     return;
 
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
   ZStack* &mainStack = stackRef();
   mainStack = new ZStack;
 
@@ -1645,7 +1645,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
   if (zstack != mainStack) {
     ZIntCuboid oldBox = getDataRange();
 
-    deprecate(STACK);
+    deprecate(EComponent::STACK);
     mainStack = zstack;
     mainStack->useChannelColors(true);
     initNeuronTracer();
@@ -1658,7 +1658,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
 
 void ZStackDoc::loadReaderResult()
 {
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
 
   ZStack*& mainStack = stackRef();
   mainStack = m_reader.getStack();
@@ -1857,7 +1857,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     m_reader.setStackFile(&m_stackSource);
     m_reader.start();
   } else {
-    deprecate(STACK);
+    deprecate(EComponent::STACK);
 
     //ZStack*& mainStack = stackRef();
     //mainStack = m_stackSource.readStack();
@@ -1869,7 +1869,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
 
 void ZStackDoc::readSparseStack(const string &filePath)
 {
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
   ZSparseStack *spStack = new ZSparseStack;
   spStack->load(filePath);
   if (!spStack->isEmpty()) {
@@ -1884,7 +1884,7 @@ bool ZStackDoc::importImageSequence(const char *filePath)
   ZStackFile file;
   file.importImageSeries(filePath);
 
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
 
   ZStack*& mainStack = stackRef();
   mainStack = file.readStack();
@@ -3164,13 +3164,13 @@ void ZStackDoc::importLocsegChain(const QStringList &fileList,
 {
   if (fileList.empty())
     return;
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject(true);
   }
 
   QString file;
   foreach (file, fileList) {
-    if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
+    if (objopt == LoadObjectOption::APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZLocsegChain*> chainsToRemove;
       QList<ZLocsegChain*> chainList = getLocsegChainList();
       for (int i=0; i<chainList.size(); i++) {
@@ -3256,7 +3256,7 @@ void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
     return;
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject(true);
   }
 
@@ -3330,14 +3330,14 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
 
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject();
   }
 
   QString file;
 //  blockSignals(true);
   foreach (file, fileList) {
-    if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
+    if (objopt == LoadObjectOption::APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZStackObject*> punctaToRemove = m_objectGroup.findSameSource(
             ZStackObject::TYPE_PUNCTUM, file.toStdString());
 
@@ -4992,10 +4992,10 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
 void ZStackDoc::selectObject(ZStackObject *obj, neutube::ESelectOption option)
 {
   switch (option) {
-  case neutube::SELECT_ALONE:
+  case neutube::ESelectOption::ALONE:
     getObjectGroup().deselectAll();
     break;
-  case neutube::SELECT_ALONE_TYPE:
+  case neutube::ESelectOption::ALONE_TYPE:
     if (obj != NULL) {
       getObjectGroup().setSelected(obj->getType(), false);
     } else {
@@ -5332,7 +5332,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   }
     break;
   case ZFileType::FILE_OBJECT_SCAN:
-    setTag(neutube::Document::FLYEM_BODY);
+    setTag(neutube::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->load(filePath.toStdString());
@@ -5359,7 +5359,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     }
     break; //experimenting _DEBUG_
   case ZFileType::FILE_DVID_OBJECT:
-    setTag(neutube::Document::FLYEM_BODY);
+    setTag(neutube::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->importDvidObject(filePathStr);
@@ -5431,7 +5431,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
 void ZStackDoc::deprecateDependent(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     break;
   default:
     break;
@@ -5443,12 +5443,12 @@ void ZStackDoc::deprecate(EComponent component)
   deprecateDependent(component);
 
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     delete stackRef();
     stackRef() = NULL;
     m_neuronTracer.clear();
     break;
-  case SPARSE_STACK:
+  case EComponent::SPARSE_STACK:
     delete m_sparseStack;
     m_sparseStack = NULL;
     break;
@@ -5460,7 +5460,7 @@ void ZStackDoc::deprecate(EComponent component)
 bool ZStackDoc::isDeprecated(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     return stackRef() == NULL;
     break;
   default:
@@ -6525,7 +6525,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //          m_neuronTracer.useEdgePath(true);
 //        }
 
-        if (getTag() == neutube::Document::FLYEM_ROI) {
+        if (getTag() == neutube::Document::ETag::FLYEM_ROI) {
           m_neuronTracer.setEstimatingRadius(false);
         }
 
@@ -6544,7 +6544,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               leaf = SwcTreeNode::firstChild(leaf);
             }
             ZSwcPath originalPath(root, leaf);
-            if (getTag() == neutube::Document::BIOCYTIN_STACK) {
+            if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
               originalPath.smooth(true);
             } else {
               originalPath.smoothRadius(true);
@@ -7155,7 +7155,7 @@ bool ZStackDoc::estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter)
 
   int channel = 0;
   if (getStack()->channelNumber() == 3 &&
-      getTag() == neutube::Document::BIOCYTIN_STACK) {
+      getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
     channel = 1;
   }
 
@@ -9667,7 +9667,7 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 
   if (spStack != NULL) {
     if (m_stack != NULL) {
-      deprecate(STACK);
+      deprecate(EComponent::STACK);
     }
 
     m_stack = ZStackFactory::MakeVirtualStack(spStack->getBoundBox());

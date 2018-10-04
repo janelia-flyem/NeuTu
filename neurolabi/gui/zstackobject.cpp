@@ -14,7 +14,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
 {
   m_type = TYPE_UNIDENTIFIED;
-  setSliceAxis(neutube::Z_AXIS);
+  setSliceAxis(neutube::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
   m_timeStamp = 0;
 }

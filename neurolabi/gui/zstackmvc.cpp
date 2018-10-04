@@ -55,7 +55,7 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
-  BaseConstruct(frame, doc, neutube::Z_AXIS);
+  BaseConstruct(frame, doc, neutube::EAxis::Z);
 
   return frame;
 }
@@ -100,7 +100,7 @@ void ZStackMvc::BaseConstruct(
 
 void ZStackMvc::createView()
 {
-  createView(neutube::Z_AXIS);
+  createView(neutube::EAxis::Z);
 }
 
 void ZStackMvc::createView(neutube::EAxis axis)
@@ -272,7 +272,7 @@ bool ZStackMvc::event(QEvent *event)
 
 void ZStackMvc::processViewChange()
 {
-  processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
+  processViewChange(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
 }
 
 /*
@@ -593,7 +593,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
   getPresenter()->blockSignals(false);
 
   getView()->blockSignals(true);
-  getView()->setViewPortCenter(pt, neutube::AXIS_NORMAL);
+  getView()->setViewPortCenter(pt, neutube::EAxisSystem::NORMAL);
   getView()->blockSignals(false);
 
   getView()->processViewChange(true, depthChanged);
@@ -682,7 +682,7 @@ void ZStackMvc::setDefaultViewPort(const QRect &rect)
 
 QRect ZStackMvc::getViewPort() const
 {
-  return getView()->getViewPort(neutube::COORD_STACK);
+  return getView()->getViewPort(neutube::ECoordinateSystem::STACK);
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

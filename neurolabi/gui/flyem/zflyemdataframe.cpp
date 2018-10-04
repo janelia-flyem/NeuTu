@@ -203,9 +203,9 @@ void ZFlyEmDataFrame::addData(ZFlyEmDataBundle *data)
                                    ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
       m_imageFactory.setDownsampleInterval(7, 7, 7);
       m_imageFactory.setSourceDimension(
-            m_dataArray[0]->getSourceDimension(neutube::X_AXIS),
-          m_dataArray[0]->getSourceDimension(neutube::Y_AXIS),
-          m_dataArray[0]->getSourceDimension(neutube::Z_AXIS)
+            m_dataArray[0]->getSourceDimension(neutube::EAxis::X),
+          m_dataArray[0]->getSourceDimension(neutube::EAxis::Y),
+          m_dataArray[0]->getSourceDimension(neutube::EAxis::Z)
           );
     }
   }
@@ -2435,13 +2435,13 @@ void ZFlyEmDataFrame::updateQualityControl()
 #ifdef _DEBUG_
   double resolution[3];
   int imageSize[3];
-  resolution[0] = m_dataArray[0]->getSwcResolution(neutube::X_AXIS);
-  resolution[1] = m_dataArray[0]->getSwcResolution(neutube::Y_AXIS);
-  resolution[2] = m_dataArray[0]->getSwcResolution(neutube::Z_AXIS);
+  resolution[0] = m_dataArray[0]->getSwcResolution(neutube::EAxis::X);
+  resolution[1] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Y);
+  resolution[2] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Z);
 
-  imageSize[0] = m_dataArray[0]->getSourceDimension(neutube::X_AXIS);
-  imageSize[1] = m_dataArray[0]->getSourceDimension(neutube::Y_AXIS);
-  imageSize[2] = m_dataArray[0]->getSourceDimension(neutube::Z_AXIS);
+  imageSize[0] = m_dataArray[0]->getSourceDimension(neutube::EAxis::X);
+  imageSize[1] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Y);
+  imageSize[2] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Z);
 
   m_qualityManager->getHotSpot().exportRavelerBookmark(
         GET_DATA_DIR + "/test.json", resolution, imageSize);

@@ -74,7 +74,7 @@ ZFlyEmProofDoc::~ZFlyEmProofDoc()
 
 void ZFlyEmProofDoc::init()
 {
-  setTag(neutube::Document::FLYEM_PROOFREAD);
+  setTag(neutube::Document::ETag::FLYEM_PROOFREAD);
 
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_synapseReader);
@@ -942,7 +942,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
-  return getDvidGraySlice(neutube::Z_AXIS);
+  return getDvidGraySlice(neutube::EAxis::Z);
 }
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
@@ -991,7 +991,7 @@ void ZFlyEmProofDoc::prepareDvidData()
     initGrayscaleSlice();
   }
 
-  addDvidLabelSlice(neutube::Z_AXIS);
+  addDvidLabelSlice(neutube::EAxis::Z);
 }
 
 void ZFlyEmProofDoc::initTileData()
@@ -1011,7 +1011,7 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
     ZDvidGraySlice *slice = new ZDvidGraySlice;
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     slice->setSource(
-          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
     prepareGraySlice(slice);
     addObject(slice, true);
@@ -1183,9 +1183,9 @@ bool ZFlyEmProofDoc::hasDvidSynapse() const
 
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
-    return getDvidSynapseEnsemble(neutube::Z_AXIS)->hasSelected();
+    return getDvidSynapseEnsemble(neutube::EAxis::Z)->hasSelected();
   }
 
   return false;
@@ -1737,7 +1737,7 @@ bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode)
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
     neutube::EBodyLabelType type) const
 {
-  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(neutube::Z_AXIS);
+  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(neutube::EAxis::Z);
   if (labelSlice != NULL) {
     return labelSlice->getSelected(type);
   }
@@ -1971,7 +1971,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice(neutube::Z_AXIS)->getLabelColor(
+    slice->setColor(getDvidLabelSlice(neutube::EAxis::Z)->getLabelColor(
                       slice->getLabel(), neutube::BODY_LABEL_ORIGINAL));
     processObjectModified(slice);
     //slice->updateSelection();
@@ -2092,7 +2092,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   ZArray *array = NULL;
 
   if (m_workWriter.good()) {
-    if (viewParam.getSliceAxis() == neutube::A_AXIS) {
+    if (viewParam.getSliceAxis() == neutube::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
       array = m_workWriter.getDvidReader().readLabels64Lowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
@@ -2126,7 +2126,7 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
   ZStack *array = NULL;
 
   if (m_grayscaleWorkReader.good()) {
-    if (viewParam.getSliceAxis() == neutube::A_AXIS) {
+    if (viewParam.getSliceAxis() == neutube::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
       array = m_grayscaleWorkReader.readGrayScaleLowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
@@ -2454,9 +2454,9 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
 {
   beginObjectModifiedMode(updateMode);
 
-  updateDvidLabelObject(neutube::X_AXIS);
-  updateDvidLabelObject(neutube::Y_AXIS);
-  updateDvidLabelObject(neutube::Z_AXIS);
+  updateDvidLabelObject(neutube::EAxis::X);
+  updateDvidLabelObject(neutube::EAxis::Y);
+  updateDvidLabelObject(neutube::EAxis::Z);
 
   endObjectModifiedMode();
   processObjectModified();
@@ -3877,9 +3877,9 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  flyem::EBodyLabelType bodyType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType bodyType = flyem::EBodyLabelType::BODY;
   if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
-    bodyType = flyem::LABEL_SUPERVOXEL;
+    bodyType = flyem::EBodyLabelType::SUPERVOXEL;
   }
   if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId), bodyType)) {
     QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
@@ -4009,7 +4009,7 @@ bool ZFlyEmProofDoc::isActive(ZFlyEmBodyColorOption::EColorOption type)
 
 void ZFlyEmProofDoc::recordBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::Z_AXIS);
+  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::EAxis::Z);
   if (slice != NULL) {
     slice->recordSelection();
   }
@@ -4017,7 +4017,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 
 void ZFlyEmProofDoc::processBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::Z_AXIS);
+  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::EAxis::Z);
   if (slice != NULL) {
     slice->processSelection();
   }
@@ -4040,7 +4040,7 @@ void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
 
 void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
     std::vector<ZDvidSynapse> selectedPresyn;
@@ -4082,7 +4082,7 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
   QUndoCommand *command =
       new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected =
         se->getSelector().getSelectedSet();
@@ -4180,7 +4180,7 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofDoc::repairSelectedSynapses()
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected =
         se->getSelector().getSelectedSet();
@@ -4197,7 +4197,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 //      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
 
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected =
         se->getSelector().getSelectedSet();
@@ -4251,7 +4251,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 void ZFlyEmProofDoc::executeAddSynapseCommand(
     const ZDvidSynapse &synapse, bool tryingLink)
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     ZUndoCommand *command =
         new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
@@ -4297,7 +4297,7 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
 
 void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::Z_AXIS);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
     if (selectedSet.size() == 1) {

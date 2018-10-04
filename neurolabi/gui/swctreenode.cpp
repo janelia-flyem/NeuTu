@@ -1518,7 +1518,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   //Seed grow
   Stack_Threshold_Binarize(slice, thre);
 
-  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
@@ -1594,7 +1594,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   y1 += 3;
   */
 
-  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 

@@ -19,19 +19,19 @@ TEST(ZStackDocHelper, Range)
   ASSERT_EQ(ZIntPoint(10, 20, 30), box.getFirstCorner());
   ASSERT_EQ(ZIntPoint(109, 219, 329), box.getLastCorner());
 
-  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::Z_AXIS);
+  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::EAxis::Z);
   ASSERT_EQ(ZIntPoint(10, 20, 30), box.getFirstCorner());
   ASSERT_EQ(ZIntPoint(109, 219, 329), box.getLastCorner());
 
-  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::X_AXIS);
+  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::EAxis::X);
   ASSERT_EQ(ZIntPoint(30, 20, 10), box.getFirstCorner());
   ASSERT_EQ(ZIntPoint(329, 219, 109), box.getLastCorner());
 
-  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::Y_AXIS);
+  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::EAxis::Y);
   ASSERT_EQ(ZIntPoint(10, 30, 20), box.getFirstCorner());
   ASSERT_EQ(ZIntPoint(109, 329, 219), box.getLastCorner());
 
-  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::A_AXIS);
+  box = ZStackDocHelper::GetStackSpaceRange(doc, neutube::EAxis::ARB);
   ASSERT_EQ(iround(range.getDiagonalLength()), box.getWidth());
   ASSERT_EQ(iround(range.getDiagonalLength()), box.getHeight());
   ASSERT_EQ(iround(range.getDiagonalLength()), box.getDepth());

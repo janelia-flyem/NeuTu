@@ -201,7 +201,7 @@ void ZFlyEmBodySplitter::invalidateCache()
   delete m_cachedObject;
   m_cachedObject = nullptr;
   m_cachedBodyId = 0;
-  m_cachedLabelType = flyem::LABEL_BODY;
+  m_cachedLabelType = flyem::EBodyLabelType::BODY;
 }
 
 void ZFlyEmBodySplitter::cacheBody(ZSparseStack *body)

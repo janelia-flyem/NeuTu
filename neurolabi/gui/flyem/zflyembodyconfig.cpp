@@ -97,6 +97,6 @@ void ZFlyEmBodyConfig::setBodyId(uint64_t bodyId)
 {
   m_bodyId = bodyId;
   if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
-    m_labelType = flyem::LABEL_SUPERVOXEL;
+    m_labelType = flyem::EBodyLabelType::SUPERVOXEL;
   }
 }

@@ -166,7 +166,7 @@ private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc,
-                 neutube::EAxis axis = neutube::Z_AXIS);
+                 neutube::EAxis axis = neutube::EAxis::Z);
 
 private slots:
   void shortcutTest();

@@ -75,7 +75,7 @@ private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::BODY_DEFAULT;
-  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;

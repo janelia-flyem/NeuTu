@@ -870,7 +870,7 @@ ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
 
   if (wholeTree != NULL) {
     ZSwcPositionAdjuster adjuster;
-    adjuster.setSignal(const_cast<Stack*>(stack), neutube::IMAGE_BACKGROUND_DARK);
+    adjuster.setSignal(const_cast<Stack*>(stack), neutube::EImageBackground::DARK);
     adjuster.adjustPosition(*wholeTree);
 
     Biocytin::SwcProcessor swcProcessor;

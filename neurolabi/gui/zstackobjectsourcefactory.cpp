@@ -210,13 +210,13 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
 {
   std::string source = "#.DVIDLabelSlice";
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -232,13 +232,13 @@ std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource(
   std::string source =  "#.DVIDGraySlice";
 
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -362,10 +362,10 @@ ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeDvidSynapseEnsembleSource();
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
   default:
@@ -409,10 +409,10 @@ ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeTodoListEnsembleSource();
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
   default:

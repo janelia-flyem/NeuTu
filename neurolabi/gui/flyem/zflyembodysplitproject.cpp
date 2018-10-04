@@ -525,7 +525,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 
 //      ZStackDoc *doc = new ZStackDoc;
       m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
-      m_quickResultDoc->setTag(neutube::Document::FLYEM_BODY_DISPLAY);
+      m_quickResultDoc->setTag(neutube::Document::ETag::FLYEM_BODY_DISPLAY);
 //      m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
@@ -689,12 +689,12 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 void ZFlyEmBodySplitProject::chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(x, neutube::X_AXIS, dlg);
+  chopBody(x, neutube::EAxis::X, dlg);
 }
 
 void ZFlyEmBodySplitProject::chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(y, neutube::Y_AXIS, dlg);
+  chopBody(y, neutube::EAxis::Y, dlg);
 }
 
 
@@ -2406,7 +2406,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
       ZStackObject *obj =
           frame->document()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
       if (obj != NULL) {
         obj->setVisible(false);
         frame->updateView();
@@ -2423,7 +2423,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
 
-      QRect rect = frame->view()->getViewPort(neutube::COORD_STACK);
+      QRect rect = frame->view()->getViewPort(neutube::ECoordinateSystem::STACK);
       ZRect2d rectRoi;
       rectRoi.set(rect.x(), rect.y(), rect.width(), rect.height());
 //      ZRect2d rectRoi = frame->document()->getRect2dRoi();
@@ -2438,13 +2438,13 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_GRAY_SLICE,
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS)));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z)));
 
       if (graySlice == NULL) {
         graySlice = new ZDvidGraySlice();
         graySlice->setDvidTarget(getDvidTarget());
         graySlice->setSource(
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
         frame->document()->addObject(graySlice, false);
       }
 

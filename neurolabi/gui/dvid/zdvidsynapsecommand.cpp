@@ -818,7 +818,7 @@ void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::undo()
 {
   if (!m_synapseBackup.isEmpty()) {
-    ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble(neutube::Z_AXIS);
+    ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble(neutube::EAxis::Z);
     if (se != NULL) {
       ZDvidWriter writer;
       if (writer.open(m_doc->getDvidTarget())) {

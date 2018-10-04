@@ -13,7 +13,7 @@ public:
 
   static ZFlyEmOrthoMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
-      neutube::EAxis axis = neutube::Z_AXIS);
+      neutube::EAxis axis = neutube::EAxis::Z);
   static ZFlyEmOrthoMvc* Make(const ZDvidTarget &target, neutube::EAxis axis);
   static ZFlyEmOrthoMvc* Make(
       const ZDvidTarget &target, neutube::EAxis axis,

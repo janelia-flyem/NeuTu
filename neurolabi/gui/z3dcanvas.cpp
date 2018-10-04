@@ -251,7 +251,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
     drawable->display(painter, 0, ZStackObject::NORMAL,
-                      ZStackObject::DISPLAY_SLICE_SINGLE, neutube::Z_AXIS);
+                      ZStackObject::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
   }
 #else
   UNUSED_PARAMETER(painter);

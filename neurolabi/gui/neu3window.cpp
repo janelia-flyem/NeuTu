@@ -604,7 +604,7 @@ void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
         colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
 
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::A_AXIS);
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
     slice->setCustomColorMap(colorMap);
 
      updateSliceBrowserSelection();

@@ -180,7 +180,7 @@ private:
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
-            neutube::EAxis sliceAxis = neutube::Z_AXIS);
+            neutube::EAxis sliceAxis = neutube::EAxis::Z);
   QColor getCustomColor(uint64_t label) const;
 
   void paintBufferUnsync();

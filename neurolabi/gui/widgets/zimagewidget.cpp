@@ -69,7 +69,7 @@ void ZImageWidget::init()
   m_activeDecorationCanvas = NULL;
 //  m_widgetCanvas = NULL;
 
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
 }
 
 void ZImageWidget::maximizeViewPort()

@@ -88,7 +88,7 @@ void NewProjectMainWindow::processStacks()
         ui->messages->append(tr("Creating a 2D projection and saving to ")+projFilename);
         QCoreApplication::processEvents();
         ZStack* proj = projector.project(
-              &stack, neutube::IMAGE_BACKGROUND_BRIGHT, false, 0);
+              &stack, neutube::EImageBackground::BRIGHT, false, 0);
 
         proj->save(projFilename.toStdString());
         delete proj;

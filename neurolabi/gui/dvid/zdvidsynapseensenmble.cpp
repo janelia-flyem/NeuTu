@@ -46,7 +46,7 @@ void ZDvidSynapseEnsemble::init()
   m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
   addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
@@ -178,7 +178,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
-    if (m_dataFetcher == NULL || getSliceAxis() == neutube::Z_AXIS) {
+    if (m_dataFetcher == NULL || getSliceAxis() == neutube::EAxis::Z) {
       syncedFetch(box, startZ, endZ, false);
       /*
       updateUnsync(box);
@@ -734,7 +734,7 @@ void ZDvidSynapseEnsemble::display(
 
           if (!ready && m_view != NULL) {
             ready = synapseSlice.isReady(
-                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
