@@ -33,7 +33,7 @@ private:
 private:
   const ZDvidReader *m_reader = nullptr;
   bool m_canonizing = true;
-  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
   ZIntCuboid m_range;
   bool m_coarseVol = false;
   int m_zoom = 0;

@@ -426,7 +426,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -482,7 +482,7 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -526,7 +526,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -569,7 +569,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -654,22 +654,22 @@ std::string ZDvidUrl::AppendRangeQuery(
   std::string newUrl = url;
 
   switch (axis) {
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     newUrl = AppendQueryM(
           url, {std::make_pair("minz", minZ),
                 std::make_pair("maxz", maxZ)});
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     newUrl = AppendQueryM(
           url, {std::make_pair("minx", minZ),
                 std::make_pair("maxx", maxZ)});
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     newUrl = AppendQueryM(
           url, {std::make_pair("miny", minZ),
                 std::make_pair("maxy", maxZ)});
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 

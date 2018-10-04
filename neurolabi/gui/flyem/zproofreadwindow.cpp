@@ -95,9 +95,9 @@ void ZProofreadWindow::init()
 
   m_controlForm = new FlyEmProofControlForm;
   m_controlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(flyem::PR_NORMAL));
+        m_mainMvc->getUserBookmarkModel(flyem::EProofreadingMode::NORMAL));
   m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(flyem::PR_NORMAL));
+        m_mainMvc->getAssignedBookmarkModel(flyem::EProofreadingMode::NORMAL));
   m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
   m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -106,9 +106,9 @@ void ZProofreadWindow::init()
 
   m_splitControlForm = new FlyEmSplitControlForm;
   m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(flyem::PR_SPLIT));
+        m_mainMvc->getUserBookmarkModel(flyem::EProofreadingMode::SPLIT));
   m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(flyem::PR_SPLIT));
+        m_mainMvc->getAssignedBookmarkModel(flyem::EProofreadingMode::SPLIT));
   m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
   m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);

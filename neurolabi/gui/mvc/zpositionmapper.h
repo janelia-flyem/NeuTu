@@ -52,7 +52,7 @@ public:
   static ZPoint DataToStack(const ZPoint &pt, const ZAffinePlane &ap);
 
 private:
-  neutube::EAxis m_sliceAxis = neutube::Z_AXIS;
+  neutube::EAxis m_sliceAxis = neutube::EAxis::Z;
   ZAffinePlane m_ap;
 };
 

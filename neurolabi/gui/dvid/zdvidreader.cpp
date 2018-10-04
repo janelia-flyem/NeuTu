@@ -325,7 +325,7 @@ ZObject3dScan *ZDvidReader::readBody(
     ZDvidUrl dvidUrl(getDvidTarget());
 
     std::string url;
-    if (labelType == flyem::LABEL_BODY) {
+    if (labelType == flyem::EBodyLabelType::BODY) {
       url = dvidUrl.getSparsevolUrl(bodyId, z, z, axis);
     } else {
       url = dvidUrl.getSupervoxelUrl(bodyId, z, z, axis);
@@ -423,12 +423,12 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 #ifdef _DEBUG_
         STD_COUT << "Read first part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, labelType, startZ, endZ, true, neutube::Z_AXIS, result);
+        readBody(bodyId, labelType, startZ, endZ, true, neutube::EAxis::Z, result);
       } else {
 #ifdef _DEBUG_
         STD_COUT << "Read part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, labelType, startZ, endZ, true, neutube::Z_AXIS, &part);
+        readBody(bodyId, labelType, startZ, endZ, true, neutube::EAxis::Z, &part);
         if (!part.isEmpty()) {
           result->unify(part);
         }
@@ -444,7 +444,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
     uint64_t bodyId, ZObject3dScan *result) const
 {
-  return readBodyWithPartition(bodyId, flyem::LABEL_BODY, result);
+  return readBodyWithPartition(bodyId, flyem::EBodyLabelType::BODY, result);
 #if 0
   if (result != NULL) {
     result->clear();
@@ -545,10 +545,10 @@ ZObject3dScan *ZDvidReader::readBody(
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
 
-    if (labelType == flyem::LABEL_BODY) {
+    if (labelType == flyem::EBodyLabelType::BODY) {
       reader.read(dvidUrl.getSparsevolUrl(bodyId, minZ, maxZ, axis).c_str(),
                   isVerbose());
-    } else if (labelType == flyem::LABEL_SUPERVOXEL) {
+    } else if (labelType == flyem::EBodyLabelType::SUPERVOXEL) {
       reader.read(dvidUrl.getSupervoxelUrl(bodyId, minZ, maxZ, axis).c_str(),
                   isVerbose());
     }
@@ -571,7 +571,7 @@ ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
-  return readBody(bodyId, flyem::LABEL_BODY, box, canonizing, result);
+  return readBody(bodyId, flyem::EBodyLabelType::BODY, box, canonizing, result);
 
 #if 0
   if (result != NULL) {
@@ -634,11 +634,11 @@ ZObject3dScan *ZDvidReader::readBody(
     if (needPartition == false) {
       ZDvidUrl dvidUrl(getDvidTarget());
       switch (labelType) {
-      case flyem::LABEL_BODY:
+      case flyem::EBodyLabelType::BODY:
         reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
                     isVerbose());
         break;
-      case flyem::LABEL_SUPERVOXEL:
+      case flyem::EBodyLabelType::SUPERVOXEL:
         reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
                     isVerbose());
         break;
@@ -702,7 +702,7 @@ ZObject3dScan *ZDvidReader::readBody(
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {
-    case flyem::LABEL_BODY:
+    case flyem::EBodyLabelType::BODY:
       if (zoom == 0 || box.isEmpty()) {
         reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
                     isVerbose());
@@ -722,7 +722,7 @@ ZObject3dScan *ZDvidReader::readBody(
         buffered = false;
       }
       break;
-    case flyem::LABEL_SUPERVOXEL:
+    case flyem::EBodyLabelType::SUPERVOXEL:
       reader.read(dvidUrl.getSupervoxelUrl(bodyId, zoom, box).c_str(),
                   isVerbose());
       break;
@@ -869,7 +869,7 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result) const
 {
   return readBody(
-        bodyId, flyem::LABEL_SUPERVOXEL, ZIntCuboid(), canonizing, result);
+        bodyId, flyem::EBodyLabelType::SUPERVOXEL, ZIntCuboid(), canonizing, result);
 #if 0
   if (result != NULL) {
     result->clear();
@@ -1023,10 +1023,10 @@ ZObject3dScan *ZDvidReader::readBody(
     timer.start();
 
     switch (labelType) {
-    case flyem::LABEL_BODY:
+    case flyem::EBodyLabelType::BODY:
       reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
       break;
-    case flyem::LABEL_SUPERVOXEL:
+    case flyem::EBodyLabelType::SUPERVOXEL:
       reader.read(dvidUrl.getSupervoxelUrl(bodyId).c_str(), isVerbose());
       break;
     }
@@ -3783,9 +3783,9 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
 
 bool ZDvidReader::hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const
 {
-  if (type == flyem::LABEL_BODY) {
+  if (type == flyem::EBodyLabelType::BODY) {
     return hasBody(bodyId);
-  } else if (type == flyem::LABEL_SUPERVOXEL) {
+  } else if (type == flyem::EBodyLabelType::SUPERVOXEL) {
     if (getDvidTarget().hasSupervoxel()) {
       try {
         ZString endpoint = getDvidTarget().getSegmentationName() + "/sparsevol/";
@@ -3823,9 +3823,9 @@ size_t ZDvidReader::readBodySize(
 {
   size_t s = 0;
   std::string url;
-  if (type == flyem::LABEL_BODY) {
+  if (type == flyem::EBodyLabelType::BODY) {
     url = ZDvidUrl(getDvidTarget()).getBodySizeUrl(bodyId);
-  } else  if (type == flyem::LABEL_SUPERVOXEL) {
+  } else  if (type == flyem::EBodyLabelType::SUPERVOXEL) {
     url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
   }
   if (!url.empty()) {
@@ -4273,11 +4273,11 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::LABEL_BODY:
+  case flyem::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::LABEL_SUPERVOXEL:
+  case flyem::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
@@ -4311,11 +4311,11 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::LABEL_BODY:
+  case flyem::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::LABEL_SUPERVOXEL:
+  case flyem::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
@@ -4369,11 +4369,11 @@ ZObject3dScan ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::LABEL_BODY:
+  case flyem::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::LABEL_SUPERVOXEL:
+  case flyem::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;

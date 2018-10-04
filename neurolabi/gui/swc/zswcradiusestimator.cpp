@@ -8,7 +8,7 @@ ZSwcRadiusEstimator::ZSwcRadiusEstimator()
 
 void ZSwcRadiusEstimator::init()
 {
-  m_background = neutube::IMAGE_BACKGROUND_DARK;
+  m_background = neutube::EImageBackground::DARK;
 }
 
 

@@ -27,7 +27,7 @@ public:
 private:
   bool m_painterConst = true;
   ZStackObject::EDisplayStyle m_style = ZStackObject::NORMAL;
-  neutube::EAxis m_axis = neutube::Z_AXIS;
+  neutube::EAxis m_axis = neutube::EAxis::Z;
 };
 
 #endif // ZSTACKOBJECTPAINTER_H

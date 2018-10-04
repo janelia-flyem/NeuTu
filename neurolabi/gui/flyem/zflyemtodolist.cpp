@@ -45,7 +45,7 @@ void ZFlyEmToDoList::init()
   m_startZ = 0;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
   m_isReady = false;
 }
 
@@ -369,7 +369,7 @@ void ZFlyEmToDoList::display(
 
           if (!ready && m_view != NULL) {
             ready =itemSlice.isReady(
-                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);

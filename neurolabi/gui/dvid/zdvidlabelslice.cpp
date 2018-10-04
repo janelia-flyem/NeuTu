@@ -307,7 +307,7 @@ void ZDvidLabelSlice::paintBufferUnsync()
       }
 
       if (labelArray != NULL) {
-        if (getSliceAxis() == neutube::X_AXIS) {
+        if (getSliceAxis() == neutube::EAxis::X) {
           m_paintBuffer->drawLabelFieldTranspose(
                 labelArray, m_rgbTable, 0, 0xFFFFFFFF);
         } else {
@@ -394,7 +394,7 @@ void ZDvidLabelSlice::forceUpdate(
       clearLabelData();
     } else {
       int zoom = getFirstZoom(viewParam);
-      if (m_sliceAxis == neutube::A_AXIS) {
+      if (m_sliceAxis == neutube::EAxis::ARB) {
         forceUpdate(viewParam.getSliceViewParam(), zoom);
       } else {
         QRect viewPort = viewParam.getViewPort();
@@ -412,11 +412,11 @@ void ZDvidLabelSlice::forceUpdate(
 
 void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 {
-  if (getSliceAxis() != neutube::A_AXIS) {
+  if (getSliceAxis() != neutube::EAxis::ARB) {
     clearLabelData();
     if (!viewPort.isEmpty()) {
       ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(viewPort, z);
-      if (getSliceAxis() == neutube::Z_AXIS) {
+      if (getSliceAxis() == neutube::EAxis::Z) {
         m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
@@ -448,7 +448,7 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 void ZDvidLabelSlice::forceUpdate(
     const ZArbSliceViewParam &viewParam, int zoom)
 {
-  if (m_sliceAxis == neutube::A_AXIS) {
+  if (m_sliceAxis == neutube::EAxis::ARB) {
     clearLabelData();
     if (viewParam.isValid()) {
       m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
@@ -477,7 +477,7 @@ void ZDvidLabelSlice::updatePaintBuffer()
   if (m_labelArray != NULL) {
     int width = m_labelArray->getDim(0);
     int height = m_labelArray->getDim(1);
-    if (getSliceAxis() == neutube::X_AXIS || getSliceAxis() == neutube::Y_AXIS) {
+    if (getSliceAxis() == neutube::EAxis::X || getSliceAxis() == neutube::EAxis::Y) {
       int depth = m_labelArray->getDim(2);
       zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
     }
@@ -948,7 +948,7 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 //        nz == getHelper()->getZ()) {
 //      ZDvidReader reader;
     bool withinRange = true;
-    if (getSliceAxis() != neutube::A_AXIS) {
+    if (getSliceAxis() != neutube::EAxis::ARB) {
       zgeom::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
       if (!getHelper()->getViewPort().contains(nx, ny) ||
               nz != getHelper()->getZ()) {

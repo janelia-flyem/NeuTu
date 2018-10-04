@@ -17,7 +17,7 @@ public:
 public:
   inline void setSignal(
       Stack *signal,
-      neutube::EImageBackground background = neutube::IMAGE_BACKGROUND_DARK)
+      neutube::EImageBackground background = neutube::EImageBackground::DARK)
   {
     C_Stack::kill(m_mask);
     Kill_Sp_Grow_Workspace(m_workspace);

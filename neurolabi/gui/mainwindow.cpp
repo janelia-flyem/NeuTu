@@ -1481,9 +1481,9 @@ void MainWindow::viewObject(QAction *action)
 void MainWindow::stretchStackFrame(ZStackFrame *frame)
 {
   if (frame != NULL) {
-    frame->setSizeHintOption(neutube::SIZE_HINT_TAKING_SPACE);
+    frame->setSizeHintOption(neutube::ESizeHintOption::TAKING_SPACE);
     frame->resize(frame->sizeHint());
-    frame->setSizeHintOption(neutube::SIZE_HINT_CURRENT_BEST);
+    frame->setSizeHintOption(neutube::ESizeHintOption::CURRENT_BEST);
   }
 }
 
@@ -1538,9 +1538,9 @@ void MainWindow::openFileListFunc(const QStringList fileList)
     emit progressStarted("Opening " + fileName + " ...", 100);
     ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
     if (ZFileType::isNeutubeOpenable(fileType)) {
-      neutube::Document::ETag tag = neutube::Document::NORMAL;
+      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
-        tag = neutube::Document::BIOCYTIN_STACK;
+        tag = neutube::Document::ETag::BIOCYTIN_STACK;
       }
 
       emit progressAdvanced(0.2);
@@ -1567,9 +1567,9 @@ void MainWindow::openFileFunc(const QString &fileName)
   ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
-    neutube::Document::ETag tag = neutube::Document::NORMAL;
+    neutube::Document::ETag tag = neutube::Document::ETag::NORMAL;
     if (GET_APPLICATION_NAME == "Biocytin") {
-      tag = neutube::Document::BIOCYTIN_STACK;
+      tag = neutube::Document::ETag::BIOCYTIN_STACK;
     }
 
     emit progressAdvanced(0.2);
@@ -4753,7 +4753,7 @@ void MainWindow::on_actionMask_triggered()
 #endif
 
     if (!fileName.isEmpty()) {
-      frame->exportObjectMask(neutube::COLOR_RED, fileName);
+      frame->exportObjectMask(neutube::EColor::RED, fileName);
       m_lastOpenedFilePath = fileName;
     }
   }
@@ -4823,7 +4823,7 @@ ZStackFrame *MainWindow::createStackFrame(
   if (stack != NULL) {
 
     ZSharedPointer<ZStackDoc> doc;
-    if (tag == neutube::Document::BIOCYTIN_PROJECTION) {
+    if (tag == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
       doc = ZSharedPointer<ZStackDoc>(new ZBiocytinProjectionDoc);
       if (parentFrame != NULL) {
         ZBiocytinProjectionDoc *cdoc =
@@ -4945,7 +4945,7 @@ void MainWindow::on_actionMake_Projection_triggered()
            iter != projArray.end(); ++iter) {
         ZStack *stack = *iter;
         ZStackFrame *newFrame =
-            createStackFrame(stack, neutube::Document::BIOCYTIN_PROJECTION, frame);
+            createStackFrame(stack, neutube::Document::ETag::BIOCYTIN_PROJECTION, frame);
 //        newFrame->makeSwcProjection(frame->document().get());
         newFrame->document()->setStackOffset(frame->document()->getStackOffset());
         addStackFrame(newFrame);
@@ -5015,17 +5015,17 @@ void MainWindow::on_actionMask_SWC_triggered()
       ZStackArray maskArray;
 
       ZStack *mask = NULL;
-      if (frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
+      if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
         LINFO() << "Skeletonizing projected mask ...";
-        mask = frame->getStrokeMask(neutube::COLOR_RED);
+        mask = frame->getStrokeMask(neutube::EColor::RED);
         if (mask != NULL) {
           maskArray.append(mask);
         }
-        mask = frame->getStrokeMask(neutube::COLOR_GREEN);
+        mask = frame->getStrokeMask(neutube::EColor::GREEN);
         if (mask != NULL) {
           maskArray.append(mask);
         }
-        mask = frame->getStrokeMask(neutube::COLOR_BLUE);
+        mask = frame->getStrokeMask(neutube::EColor::BLUE);
         if (mask != NULL) {
           maskArray.append(mask);
         }
@@ -5073,7 +5073,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       if (wholeTree != NULL) {
         ZStackFrame *stackFrame = frame;
-        if (frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
+        if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
           stackFrame = frame->getParentFrame();
         }
         if (stackFrame != NULL) {
@@ -5852,7 +5852,7 @@ void MainWindow::on_actionTiles_triggered()
     progressDlg->open();
 
     ZSharedPointer<ZStackDoc> doc =
-        ZStackDocFactory::Make(neutube::Document::BIOCYTIN_STACK);
+        ZStackDocFactory::Make(neutube::Document::ETag::BIOCYTIN_STACK);
     ZTiledStackFrame *frame = ZTiledStackFrame::Make(NULL, doc);
     if (frame->importTiles(fileName)) {
       addStackFrame(frame);
@@ -6645,7 +6645,7 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             ZStackDocReader docReader;
             docReader.setStack(out);
             ZStackFrame *frame = createStackFrame(&docReader);
-            frame->document()->setTag(neutube::Document::FLYEM_BODY);
+            frame->document()->setTag(neutube::Document::ETag::FLYEM_BODY);
             addStackFrame(frame);
             presentStackFrame(frame);
           }
@@ -6669,8 +6669,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
 
     if (frame->document()->hasStack()) {
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
-        frame->document()->setTag(neutube::Document::BIOCYTIN_STACK);
+        frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        frame->document()->setTag(neutube::Document::ETag::BIOCYTIN_STACK);
         frame->document()->setResolution(1, 1, 10, 'p');
       }
       addStackFrame(frame);
@@ -6762,7 +6762,7 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
     if (labeled != NULL) {
       docReader.setStack(labeled);
       ZStackFrame *newFrame = createStackFrame(&docReader, frame);
-      newFrame->document()->setTag(neutube::Document::FLYEM_SPLIT);
+      newFrame->document()->setTag(neutube::Document::ETag::FLYEM_SPLIT);
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
@@ -6902,7 +6902,7 @@ bool MainWindow::initBodySplitProject()
         //docReader.setStack(out);
         docReader.setSparseStack(spStack);
         ZStackFrame *frame = createStackFrame(
-              docReader, neutube::Document::FLYEM_SPLIT);
+              docReader, neutube::Document::ETag::FLYEM_SPLIT);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
         m_bodySplitProjectDialog->downloadSeed();

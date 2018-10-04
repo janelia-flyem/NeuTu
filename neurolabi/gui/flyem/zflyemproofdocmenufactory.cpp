@@ -186,7 +186,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -208,7 +208,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       }
     }
 
-    if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
@@ -240,7 +240,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
 //  addAction(actionList, presenter, menu);
 
-  if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
     TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);

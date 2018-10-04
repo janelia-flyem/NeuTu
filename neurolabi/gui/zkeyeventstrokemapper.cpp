@@ -79,6 +79,6 @@ void ZKeyEventStrokeMapper::setTag(neutube::Document::ETag tag)
 
 void ZKeyEventStrokeMapper::updateKeyMap()
 {
-  if (m_docTag == neutube::Document::FLYEM_SPLIT) {
+  if (m_docTag == neutube::Document::ETag::FLYEM_SPLIT) {
   }
 }

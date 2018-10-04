@@ -136,20 +136,20 @@ double ZResolution::getUnitVoxelSize(EUnit unit) const
 
 double ZResolution::getVoxelSize(neutube::EAxis axis, EUnit unit) const
 {
-  return m_voxelSize[axis] * getUnitVoxelSize(unit);
+  return m_voxelSize[neutube::EnumValue(axis)] * getUnitVoxelSize(unit);
 }
 
 double ZResolution::getPlaneVoxelSize(neutube::EPlane plane) const
 {
   double v = 1.0;
   switch (plane) {
-  case neutube::PLANE_XY:
+  case neutube::EPlane::XY:
     v = voxelSizeX() * voxelSizeY();
     break;
-  case neutube::PLANE_YZ:
+  case neutube::EPlane::YZ:
     v = voxelSizeY() * voxelSizeZ();
     break;
-  case neutube::PLANE_XZ:
+  case neutube::EPlane::XZ:
     v = voxelSizeX() * voxelSizeZ();
     break;
   }
@@ -162,15 +162,15 @@ double ZResolution::getPlaneVoxelSpan(neutube::EPlane plane) const
   double v1 = 1.0;
   double v2 = 1.0;
   switch (plane) {
-  case neutube::PLANE_XY:
+  case neutube::EPlane::XY:
     v1 = voxelSizeX();
     v2 = voxelSizeY();
     break;
-  case neutube::PLANE_YZ:
+  case neutube::EPlane::YZ:
     v1 = voxelSizeY();
     v2 = voxelSizeZ();
     break;
-  case neutube::PLANE_XZ:
+  case neutube::EPlane::XZ:
     v1 = voxelSizeX();
     v2 = voxelSizeZ();
     break;
@@ -190,14 +190,14 @@ double ZResolution::getPlaneVoxelSize(neutube::EPlane plane, EUnit unit) const
 {
   double v = 1.0;
   switch (plane) {
-  case neutube::PLANE_XY:
-    v = getVoxelSize(neutube::X_AXIS, unit) * getVoxelSize(neutube::Y_AXIS, unit);
+  case neutube::EPlane::XY:
+    v = getVoxelSize(neutube::EAxis::X, unit) * getVoxelSize(neutube::EAxis::Y, unit);
     break;
-  case neutube::PLANE_YZ:
-    v = getVoxelSize(neutube::Y_AXIS, unit) * getVoxelSize(neutube::Z_AXIS, unit);
+  case neutube::EPlane::YZ:
+    v = getVoxelSize(neutube::EAxis::Y, unit) * getVoxelSize(neutube::EAxis::Z, unit);
     break;
-  case neutube::PLANE_XZ:
-    v = getVoxelSize(neutube::X_AXIS, unit) * getVoxelSize(neutube::Z_AXIS, unit);
+  case neutube::EPlane::XZ:
+    v = getVoxelSize(neutube::EAxis::X, unit) * getVoxelSize(neutube::EAxis::Z, unit);
     break;
   }
 

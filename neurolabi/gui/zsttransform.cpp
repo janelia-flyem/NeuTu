@@ -59,12 +59,12 @@ void ZStTransform::setScale(double sx, double sy)
 double ZStTransform::getScale(neutube::EAxis axis) const
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     return getSx();
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     return getSy();
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     return getSz();
   }
 
@@ -74,12 +74,12 @@ double ZStTransform::getScale(neutube::EAxis axis) const
 double ZStTransform::getOffset(neutube::EAxis axis) const
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     return getTx();
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     return getTy();
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     return getTz();
   }
 
@@ -203,16 +203,16 @@ void ZStTransform::estimate(
   }
 
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     m_sx = s;
     m_dx = t;
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     m_sy = s;
     m_dy = t;
     break;
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     m_sz = s;
     m_dz = t;
     break;

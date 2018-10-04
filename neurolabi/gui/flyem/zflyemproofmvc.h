@@ -65,7 +65,7 @@ public:
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
-      neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
+      neutube::EAxis axis = neutube::EAxis::Z, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);

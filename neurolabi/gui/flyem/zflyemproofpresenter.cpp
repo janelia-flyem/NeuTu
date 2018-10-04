@@ -792,7 +792,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    ZIntPoint pos(x, y, buddyView()->getZ(neutube::COORD_STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(neutube::ECoordinateSystem::STACK));
     pos.shiftSliceAxisInverse(getSliceAxis());
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
@@ -826,7 +826,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
 
   bool processed = true;
 
@@ -834,7 +834,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+      ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
       ZIntPoint pos = currentStackPos.toIntPoint();
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -1134,7 +1134,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
   return updateActiveObjectForSynapseMove(currentStackPos);
 }
 
@@ -1173,7 +1173,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
   updateActiveObjectForSynapseAdd(currentStackPos);
 }
 

@@ -197,7 +197,7 @@ int ZBodySplitCommand::run(
 
   if (config.hasKey("supervoxel")) {
     if (ZJsonParser::booleanValue(config["supervoxel"]) == true) {
-      m_labelType = flyem::LABEL_SUPERVOXEL;
+      m_labelType = flyem::EBodyLabelType::SUPERVOXEL;
     }
   }
 
@@ -353,7 +353,7 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   uint64_t currentBodyId = m_bodyId;
   if (currentBodyId > 0) {
     for (ZObject3dScan *obj : *objArray) {
-      if (m_labelType == flyem::LABEL_BODY) {
+      if (m_labelType == flyem::EBodyLabelType::BODY) {
         uint64_t newBodyId = writer.writeSplit(*obj, currentBodyId, 0);
         newBodyIdArray.push_back(newBodyId);
       } else {

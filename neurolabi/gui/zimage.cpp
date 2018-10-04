@@ -355,8 +355,8 @@ void ZImage::setData(
   int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -368,7 +368,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -395,7 +395,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 
@@ -457,8 +457,8 @@ void ZImage::setData(
   }
 
   switch (sliceAxis) {
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -468,7 +468,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -496,7 +496,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;

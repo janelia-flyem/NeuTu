@@ -120,12 +120,12 @@ public:
     BAD_TUBE
   };
 
-  enum LoadObjectOption {
+  enum class LoadObjectOption {
     REPLACE_OBJECT,
     APPEND_OBJECT
   };
 
-  enum EComponent {
+  enum class EComponent {
     STACK, STACK_MASK, STACK_SEGMENTATION, SEGMENTATION_OBJECT,
     SEGMENTATION_GRAPH, SEGMENTATION_INDEX_MAP, SPARSE_STACK
   };
@@ -610,10 +610,12 @@ public:
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
                          TubeImportOption option = TubeImportOption::ALL_TUBE,
-                         LoadObjectOption objopt = APPEND_OBJECT);
-  void importSwc(QStringList files, LoadObjectOption objopt = APPEND_OBJECT);
+                         LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
+  void importSwc(
+      QStringList files,
+      LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
   void importPuncta(const QStringList &files,
-                    LoadObjectOption objopt = APPEND_OBJECT);
+                    LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
 
   bool importPuncta(const char *filePath);
 

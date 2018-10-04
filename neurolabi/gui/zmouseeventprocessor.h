@@ -73,7 +73,7 @@ private:
   ZMouseEventRecorder m_recorder;
   ZInteractiveContext *m_context;
 //  ZImageWidget *m_imageWidget;
-  neutube::EAxis m_sliceAxis = neutube::Z_AXIS;
+  neutube::EAxis m_sliceAxis = neutube::EAxis::Z;
   ZAffinePlane m_arbSlice; //Only valid for A_AXIS
 
   ZSharedPointer<ZStackDoc> m_doc;

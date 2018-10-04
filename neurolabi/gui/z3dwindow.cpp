@@ -1784,7 +1784,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (getDocument()->getTag() == neutube::Document::FLYEM_SKELETON) {
+  if (getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
     return;
   }
 
@@ -2510,8 +2510,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D_COARSE &&
-      getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D){
+  if (getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -2551,9 +2551,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     } else if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->getTag() == neutube::Document::NORMAL ||
-          getDocument()->getTag() == neutube::Document::FLYEM_SKELETON ||
-          getDocument()->getTag() == neutube::Document::BIOCYTIN_STACK) {
+      if (getDocument()->getTag() == neutube::Document::ETag::NORMAL ||
+          getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON ||
+          getDocument()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
         keyMode = ZInteractionEngine::KM_SWC_SELECTION;
       }
     }
@@ -2821,7 +2821,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
-    if (m_doc->getTag() == neutube::Document::FLYEM_SPLIT) {
+    if (m_doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
       m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     }
   }
@@ -4738,7 +4738,7 @@ void Z3DWindow::cropSwcInRoi()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D &&
         doc->showingCoarseOnly()) {
       //    m_doc->executeDeleteSwcNodeCommand();
       if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {

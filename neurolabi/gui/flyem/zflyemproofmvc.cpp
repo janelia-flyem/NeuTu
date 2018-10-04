@@ -168,13 +168,13 @@ void ZFlyEmProofMvc::init()
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
 
-  m_assignedBookmarkModel[flyem::PR_NORMAL] =
+  m_assignedBookmarkModel[flyem::EProofreadingMode::NORMAL] =
       new ZFlyEmBookmarkListModel(this);
-  m_assignedBookmarkModel[flyem::PR_SPLIT] =
+  m_assignedBookmarkModel[flyem::EProofreadingMode::SPLIT] =
       new ZFlyEmBookmarkListModel(this);
-  m_userBookmarkModel[flyem::PR_NORMAL] =
+  m_userBookmarkModel[flyem::EProofreadingMode::NORMAL] =
       new ZFlyEmBookmarkListModel(this);
-  m_userBookmarkModel[flyem::PR_SPLIT] =
+  m_userBookmarkModel[flyem::EProofreadingMode::SPLIT] =
       new ZFlyEmBookmarkListModel(this);
 
 
@@ -395,7 +395,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
-        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::Z_AXIS, role);
+        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::EAxis::Z, role);
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
 
   mvc->connectSignalSlot();
@@ -1434,7 +1434,7 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
       if (visible) {
-        slice->update(getView()->getViewParameter(neutube::COORD_STACK));
+        slice->update(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
       }
     }
   }
@@ -1822,7 +1822,8 @@ void ZFlyEmProofMvc::diagnose()
   foreach (ZDvidTileEnsemble *te, teList) {
     emit messageGenerated(
           ZWidgetMessage(QString("  Tile axis %1: %2").
-                         arg(te->getSource().c_str()).arg(te->getSliceAxis())));
+                         arg(te->getSource().c_str()).arg(
+                           neutube::EnumValue(te->getSliceAxis()))));
     emit messageGenerated(
           ZWidgetMessage("  Contrast: " + te->getContrastProtocal().dumpString(2)));
     emit messageGenerated(
@@ -1837,7 +1838,8 @@ void ZFlyEmProofMvc::diagnose()
   foreach (ZDvidSynapseEnsemble *se, seList) {
     emit messageGenerated(
           ZWidgetMessage(QString("Synapse axis %1: %2").
-                         arg(se->getSource().c_str()).arg(se->getSliceAxis())));
+                         arg(se->getSource().c_str()).arg(
+                           neutube::EnumValue(se->getSliceAxis()))));
   }
 }
 
@@ -2336,7 +2338,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
   }
 
   ZDvidLabelSlice *labelSlice =
-      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
   if (labelSlice != NULL){
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
@@ -2940,7 +2942,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     uint64_t bodyId, ZDvidReader &reader)
 {
   ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
-  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, flyem::LABEL_BODY);
+  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, flyem::EBodyLabelType::BODY);
 
   body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
@@ -2980,7 +2982,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode
       m_splitProject.setBodyId(bodyId);
 
       ZDvidLabelSlice *labelSlice =
-          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
@@ -3111,7 +3113,8 @@ void ZFlyEmProofMvc::exportBodyStack()
           uint64_t bodyId = *iter;
           if (bodyId > 0) {
             ZDvidSparseStack *sparseStack = NULL;
-            sparseStack = reader.readDvidSparseStack(bodyId, flyem::LABEL_BODY);
+            sparseStack = reader.readDvidSparseStack(
+                  bodyId, flyem::EBodyLabelType::BODY);
             ZStackWriter stackWriter;
             ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             QString fileName = dirName + QString("/%1.tif").arg(bodyId);
@@ -3132,7 +3135,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
-          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
       if (slice != NULL) {
         std::set<uint64_t> idSet =
             slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
@@ -3141,12 +3144,14 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         ZDvidSparseStack *sparseStack = NULL;
         if (reader.isReady() && !idSet.empty()) {
           std::set<uint64_t>::const_iterator iter = idSet.begin();
-          sparseStack = reader.readDvidSparseStack(*iter, flyem::LABEL_BODY);
+          sparseStack = reader.readDvidSparseStack(
+                *iter, flyem::EBodyLabelType::BODY);
 
           ++iter;
           for (; iter != idSet.end(); ++iter) {
             ZDvidSparseStack *sparseStack2 =
-                reader.readDvidSparseStack(*iter, flyem::LABEL_BODY);
+                reader.readDvidSparseStack(
+                  *iter, flyem::EBodyLabelType::BODY);
             sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
 
             delete sparseStack2;
@@ -3191,7 +3196,7 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
-          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
       if (slice != NULL) {
         std::set<uint64_t> idSet =
             slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
@@ -3232,7 +3237,7 @@ void ZFlyEmProofMvc::exportSelectedBody()
   QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
   if (!fileName.isEmpty()) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
     if (slice != NULL) {
       std::set<uint64_t> idSet =
           slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
@@ -3351,9 +3356,9 @@ void ZFlyEmProofMvc::exitSplit()
 
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
-        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
     labelSlice->setVisible(true);
-    labelSlice->update(getView()->getViewParameter(neutube::COORD_STACK));
+    labelSlice->update(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
     labelSlice->setHitProtocal(ZStackObject::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 
@@ -3803,9 +3808,9 @@ void ZFlyEmProofMvc::chopBody()
         ZIntPoint center = getView()->getCenter();
         int v = center.getZ();
         neutube::EAxis axis = m_bodyChopDlg->getAxis();
-        if (axis == neutube::X_AXIS) {
+        if (axis == neutube::EAxis::X) {
           v = center.getX();
-        } else if (axis == neutube::Y_AXIS) {
+        } else if (axis == neutube::EAxis::Y) {
           v = center.getY();
         }
 
@@ -4119,11 +4124,11 @@ void ZFlyEmProofMvc::goToTBar()
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
   ZDvidSynapseEnsemble *se =
-      getCompleteDocument()->getDvidSynapseEnsemble(neutube::Z_AXIS);
+      getCompleteDocument()->getDvidSynapseEnsemble(neutube::EAxis::Z);
   if (se != NULL) {
     se->setVisible(visible);
     if (visible) {
-      se->download(getView()->getZ(neutube::COORD_STACK));
+      se->download(getView()->getZ(neutube::ECoordinateSystem::STACK));
     }
     getCompleteDocument()->processObjectModified(se);
     getCompleteDocument()->processObjectModified();
@@ -4145,7 +4150,7 @@ void ZFlyEmProofMvc::showRoiMask(bool visible)
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
   if (slice != NULL) {
     slice->setVisible(visible);
     if (visible) {
@@ -4159,7 +4164,7 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
 void ZFlyEmProofMvc::toggleSegmentation()
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
   if (slice != NULL) {
     showSegmentation(!slice->isVisible());
   }
@@ -4808,9 +4813,9 @@ ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getUserBookmarkModel() const
 {
   ZFlyEmBookmarkListModel *model = NULL;
   if (getCompletePresenter()->isSplitOn()) {
-    model = m_userBookmarkModel[flyem::PR_SPLIT];
+    model = m_userBookmarkModel[flyem::EProofreadingMode::SPLIT];
   } else {
-    model = m_userBookmarkModel[flyem::PR_NORMAL];
+    model = m_userBookmarkModel[flyem::EProofreadingMode::NORMAL];
   }
 
   return model;
@@ -4820,9 +4825,9 @@ ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getAssignedBookmarkModel() const
 {
   ZFlyEmBookmarkListModel *model = NULL;
   if (getCompletePresenter()->isSplitOn()) {
-    model = m_assignedBookmarkModel[flyem::PR_SPLIT];
+    model = m_assignedBookmarkModel[flyem::EProofreadingMode::SPLIT];
   } else {
-    model = m_assignedBookmarkModel[flyem::PR_NORMAL];
+    model = m_assignedBookmarkModel[flyem::EProofreadingMode::NORMAL];
   }
 
   return model;
