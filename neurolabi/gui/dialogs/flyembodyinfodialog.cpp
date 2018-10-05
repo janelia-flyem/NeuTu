@@ -178,7 +178,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 void FlyEmBodyInfoDialog::prepareWidget()
 {
 //  setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-  if (m_mode == MODE_QUERY) {
+  if (m_mode == EMode::QUERY) {
     setWindowTitle("Body Information (Selected)");
     clearStatusLabel();
     ui->roiComboBox->hide();
@@ -244,10 +244,11 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
         bodyData.removeKey("status");
       }
 
-      if (!bodyData.isEmpty() && m_hasLabelsz) {
+      if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
         int npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
         int npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
 
+        bodyData.setEntry("body ID", bodyId);
         bodyData.setEntry("body T-bars", npre);
         bodyData.setEntry("body PSDs", npost);
 
@@ -369,7 +370,7 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
           ui->maxBodiesMenu->clear();
           updateRoi();
 
-          if (m_mode == MODE_SEQUENCER) {
+          if (m_mode == EMode::SEQUENCER) {
             loadData();
           }
         } else {
@@ -485,7 +486,7 @@ void FlyEmBodyInfoDialog::setConnectionsHeaders(QStandardItemModel * model) {
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
-  if (m_mode == MODE_SEQUENCER) {
+  if (m_mode == EMode::SEQUENCER) {
     label = "<font color=\"#008000\">" + label + "</font>";
 //    QPixmap pixmap(":/images/document.png");
 //    pixmap = pixmap.scaled(16, 16);
@@ -902,7 +903,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 }
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
-  if (m_mode == MODE_SEQUENCER) {
+  if (m_mode == EMode::SEQUENCER) {
     ui->bodyFilterField->clear();
     loadData();
   } else {

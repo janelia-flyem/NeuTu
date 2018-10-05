@@ -210,7 +210,7 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
-          FlyEmBodyInfoDialog::MODE_QUERY, this);
+          FlyEmBodyInfoDialog::EMode::QUERY, this);
     m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_bodyQueryDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
