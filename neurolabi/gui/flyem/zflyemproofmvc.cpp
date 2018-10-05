@@ -2831,10 +2831,7 @@ void ZFlyEmProofMvc::annotateBody()
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         if (reader.isReady()) {
           ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-
-          if (!annotation.isEmpty()) {
-            dlg->loadBodyAnnotation(annotation);
-          }
+          dlg->loadBodyAnnotation(annotation);
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {

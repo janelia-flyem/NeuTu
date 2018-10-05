@@ -16,7 +16,7 @@ const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
 
-ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
+ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
 }
 

@@ -57,6 +57,7 @@ public:
   }
 
   static ZStackDoc3dHelper* GetDocHelper(ZStackDoc *doc);
+  static void UpdateViewData(Z3DView *view, neutube3d::ERendererLayer layer);
 //  static void Attach(ZStackDoc *doc, Z3DView *view);
 
   bool releaseObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
