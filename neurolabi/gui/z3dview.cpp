@@ -179,7 +179,7 @@ void Z3DView::updateBoundBox()
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     std::cout << "Getting bounding box of " << flt->className().toStdString() << std::endl;
 #endif
     if (flt->isVisible()) {
@@ -973,10 +973,16 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   if (layer == neutube3d::LAYER_VOLUME) {
     updateVolumeData();
   } else {
+    ZStackDoc3dHelper::UpdateViewData(this, layer);
+    /*
     ZStackDoc3dHelper *helper = ZStackDoc3dHelper::GetDocHelper(m_doc);
     if (helper) {
       helper->updateData(this, layer);
+    } else {
+      ZStackDoc3dHelper localHelper;
+      localHelper.updateData(this, layer);
     }
+    */
   }
 }
 
