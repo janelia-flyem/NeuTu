@@ -43,9 +43,11 @@ void FlyEmSettingDialog::loadSetting()
     ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
 #endif
   }
+  ui->configLineEdit->setToolTip(ui->configLineEdit->text());
 
 #if defined(_FLYEM_)
   ui->servicelineEdit->setText(GET_FLYEM_CONFIG.getRemoteServer().c_str());
+
 //  ui->servicelineEdit->setText(
 //        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
@@ -65,6 +67,8 @@ void FlyEmSettingDialog::loadSetting()
 #if defined(_FLYEM_)
   ui->defaultConfigFileCheckBox->setChecked(
         GET_FLYEM_CONFIG.usingDefaultConfig());
+  ui->defaultConfigFileCheckBox->setToolTip(
+        GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
   ui->synapseNameCheckBox->setChecked(NeutubeConfig::NamingSynapse());
 
   std::pair<int,int> centerCut = GET_FLYEM_CONFIG.getCenterCut(
