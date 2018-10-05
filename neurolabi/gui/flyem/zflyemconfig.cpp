@@ -154,6 +154,16 @@ void ZFlyEmConfig::loadConfig()
             target.setEditable(false);
             m_dvidRepo.push_back(target);
           }
+
+#ifdef _DEBUG_
+          std::cout << "Name: " << target.getName() << " ";
+          std::cout << "User:";
+          const std::set<std::string> &userSet = target.getUserNameSet();
+          std::for_each(userSet.begin(), userSet.end(),
+                        [](const std::string &user) {std::cout << user << " ";});
+
+          target.print();
+#endif
         }
       }
     }

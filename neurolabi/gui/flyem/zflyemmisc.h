@@ -122,6 +122,8 @@ QString GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
     const QSet<uint64_t> &bodySet);
 
+void UploadRoi(const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer);
+
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
 QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);

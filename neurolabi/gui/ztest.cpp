@@ -27982,9 +27982,20 @@ void ZTest::test(MainWindow *host)
   info.print();
 #endif
 
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZFlyEmMisc::UploadRoi(
+        (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
+        (GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv").c_str(),
+        writer);
+
+
+#endif
+
+
 #if 0
-  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/20180920_tif";
-  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/20180913_tif/roiname.csv");
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
+  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
   std::string line;
   std::unordered_map<std::string, std::string> nameMap;
@@ -28039,7 +28050,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   neutuse::TaskWriter writer;
   writer.open("http://emdata2.int.janelia.org:2018");
   writer.testConnection();
