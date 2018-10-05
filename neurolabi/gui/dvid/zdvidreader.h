@@ -281,12 +281,14 @@ public:
   bool hasKey(const QString &dataName, const QString &key) const;
 
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
+  QList<QByteArray> readKeyValues(const QString &dataName, const QStringList &keyList) const;
   QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
       const QString &dataName, const QString &key) const;
+  QList<ZJsonObject> readJsonObjectsFromKeys(const QString &dataName, const QStringList &keyList) const;
 
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);

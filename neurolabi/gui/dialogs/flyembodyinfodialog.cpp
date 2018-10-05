@@ -792,6 +792,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         QString bodyAnnotationName = QString::fromStdString(
               m_currentDvidTarget.getBodyAnnotationName());
         QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
+        dvidTime += dvidTimer.elapsed();
 
         #ifdef _DEBUG_
             std::cout << "populating body info dialog:" << std::endl;
@@ -799,6 +800,28 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             std::cout << "    # body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
             std::cout << "    # bodies read with synapses = " << thresholdData.size() << std::endl;
         #endif
+
+
+        // now find which of the bodies in thresholdData have annotations
+        QStringList keyList;
+        for (size_t i=0; i<thresholdData.size(); i++) {
+            ZJsonObject thresholdEntry(thresholdData.value(i));
+            int64_t bodyID = ZJsonParser::integerValue(thresholdEntry["Label"]);
+            QString bodyIDstring = QString::number(bodyID);
+            if (bodyAnnotationKeys.contains(bodyIDstring)) {
+                keyList.append(bodyIDstring);
+            }
+        }
+
+        // read the body annotations and store them
+        dvidTimer.restart();
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+        dvidTime += dvidTimer.elapsed();
+        QMap<QString, ZJsonObject> bodyAnnotations;
+        for (int i=0; i<bodyAnnotationList.size(); i++) {
+            bodyAnnotations[keyList[i]] = bodyAnnotationList[i];
+
+        }
 
         // build the data structure we pass along to the table
         ZJsonArray bodies;
@@ -827,13 +850,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 
             // body annotation info
             if (bodyAnnotationKeys.contains(bodyIDstring)) {
-                // body annotations currently stored as another json string
-                dvidTimer.restart();
-                const QByteArray &temp = reader.readKeyValue(
-                      bodyAnnotationName, bodyIDstring);
-                dvidTime += dvidTimer.elapsed();
-                ZJsonObject bodyData;
-                bodyData.decodeString(temp.data());
+                // we've fetched this values in bulk earlier
+                ZJsonObject bodyData ;
+                if (bodyAnnotations.contains(bodyIDstring)) {
+                    bodyData = bodyAnnotations[bodyIDstring];
+                }
 
                 if (bodyData.hasKey("name")) {
                     if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
@@ -888,8 +909,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
         //  they should be very low overhead
-         std::cout << "total time (ms) = " << fullTime << std::endl;
-         std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
+         std::cout << "sequencer load: total time (ms) = " << fullTime << std::endl;
+         std::cout << "sequencer load: DVID time (ms)  = " << dvidTime << std::endl;
 
          emit namedBodyChanged(namedBodies);
 
