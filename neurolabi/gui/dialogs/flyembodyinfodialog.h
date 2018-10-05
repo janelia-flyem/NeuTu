@@ -23,8 +23,8 @@ class FlyEmBodyInfoDialog : public QDialog
     Q_OBJECT
 
 public:
-  enum EMode {
-    MODE_SEQUENCER, MODE_QUERY
+  enum class EMode {
+    SEQUENCER, QUERY
   };
 
   explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
@@ -134,7 +134,7 @@ private:
         EXPORT_CONNECTIONS
     };
 
-    EMode m_mode = MODE_SEQUENCER;
+    EMode m_mode = EMode::SEQUENCER;
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
