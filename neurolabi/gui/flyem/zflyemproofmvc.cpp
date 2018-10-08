@@ -128,8 +128,12 @@ void ZFlyEmProofMvc::init()
   m_dvidDlg = NULL;
 
   // temporarily disable sequencer:
-  // m_bodyInfoDlg = new FlyEmBodyInfoDialog(FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
-  m_bodyInfoDlg = NULL;
+  if (neutube::HasEnv("USE_SEQUENCER", "yes")) {
+    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
+          FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
+  } else {
+    m_bodyInfoDlg = NULL;
+  }
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
@@ -2520,6 +2524,11 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 void ZFlyEmProofMvc::notifyStateUpdate()
 {
   emit stateUpdated(this);
+}
+
+bool ZFlyEmProofMvc::hasSequencer() const
+{
+  return m_bodyInfoDlg != NULL;
 }
 
 void ZFlyEmProofMvc::disableSequencer()
