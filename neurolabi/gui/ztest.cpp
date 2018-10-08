@@ -27399,12 +27399,18 @@ void ZTest::test(MainWindow *host)
   std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
 #endif
 
-#if 0
-  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
-  std::vector<std::string> statusList({"Putative 0.5",
+#if 1
+//  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::vector<std::string> statusList({/*"Putative 0.5",*/
+                                       "Roughly traced",
                                        "Traced",
                                        "Hard to trace"});
-  writer->writeBodyStatusList(statusList);
+  writer.writeBodyStatusList(statusList);
 #endif
 
 #if 0
@@ -27982,7 +27988,7 @@ void ZTest::test(MainWindow *host)
   info.print();
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZFlyEmMisc::UploadRoi(
         (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
@@ -28057,6 +28063,18 @@ void ZTest::test(MainWindow *host)
   std::cout << writer.ready() << std::endl;
 
 #endif
+
+#if 0
+  std::cout << GET_APPLICATION_DIR << std::endl;
+  QFileInfo configFileInfo = QFileInfo(
+        QDir((GET_APPLICATION_DIR).c_str()), "local_flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+  configFileInfo.setFile(QDir((GET_APPLICATION_DIR).c_str()), "flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

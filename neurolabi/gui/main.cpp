@@ -109,9 +109,14 @@ static void LoadFlyEmConfig(
   }
 
   GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
-  QString defaultFlyemConfigPath = QFileInfo(
-        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
-      absoluteFilePath();
+
+  QDir appDir((GET_APPLICATION_DIR).c_str());
+  QFileInfo configFileInfo = QFileInfo(appDir, "local_flyem_config.json");
+  if (!configFileInfo.exists()) {
+    configFileInfo.setFile(appDir, "flyem_config.json");
+  }
+
+  QString defaultFlyemConfigPath = configFileInfo.absoluteFilePath();
   GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
 
   QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
