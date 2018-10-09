@@ -437,7 +437,10 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
 void TaskProtocolWindow::onCompletedAndNext()
 {
     ui->completedCheckBox->setCheckState(Qt::Checked);
-    if (ui->nextButton->isEnabled()) {
+
+    // Do not go forward if allowCompletion() caused completedCheckBox to be unchecked.
+
+    if (ui->nextButton->isEnabled() && ui->completedCheckBox->isChecked()) {
        onNextButton();
     }
 }
