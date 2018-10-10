@@ -168,7 +168,8 @@ int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
     return 2;
   }
 
-  if (statusLowerCase == "partially traced") {
+  if (statusLowerCase == "partially traced" ||
+      statusLowerCase == "roughly traced") {
     return 3;
   }
 

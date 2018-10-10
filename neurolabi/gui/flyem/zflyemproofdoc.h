@@ -645,7 +645,7 @@ private:
   QString getAnnotationNameWarningDetail(
       const QMap<uint64_t, QVector<QString> > &nameMap) const;
   QString getAnnotationFinalizedWarningDetail(
-      const std::vector<uint64_t> &finalizedBodyArray) const;
+      const std::vector<uint64_t> &finalizedBodyArray, const std::string &title) const;
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
