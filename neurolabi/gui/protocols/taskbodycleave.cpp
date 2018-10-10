@@ -1858,13 +1858,31 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
   return config;
 }
 
+bool TaskBodyCleave::allowingSplit(uint64_t bodyId) const
+{
+  if (m_meshIdToCleaveIndex.find(bodyId) != m_meshIdToCleaveIndex.end()) {
+    return false;
+  }
+
+  return true;
+}
+
+void TaskBodyCleave::setCleavingShortcutEnabled(bool on)
+{
+  m_toggleInBodyAction->setEnabled(on);
+  m_toggleShowChosenCleaveBodyAction->setEnabled(on);
+  for (const auto &actionToIndex : m_actionToComboBoxIndex) {
+    actionToIndex.first->setEnabled(on);
+  }
+}
+
 void TaskBodyCleave::disableCleavingShortcut()
 {
-  m_toggleInBodyAction->setEnabled(false);
+  setCleavingShortcutEnabled(false);
 }
 
 void TaskBodyCleave::enableCleavingShortcut()
 {
-  m_toggleInBodyAction->setEnabled(true);
+  setCleavingShortcutEnabled(true);
 }
 

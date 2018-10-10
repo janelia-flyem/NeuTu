@@ -912,8 +912,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemtaskhelper.h \
     protocols/protocoltaskfactory.h \
     protocols/protocoltaskconfig.h \
+    data3d/zstackobjectconfig.h \
     protocols/taskfalsesplitreview.h \
     z3dcamerautils.h \
+    flyem/zflyembodyenv.h \
     protocols/taskprotocoltaskfactory.h
 
 FORMS += dialogs/settingdialog.ui \
@@ -1599,8 +1601,10 @@ SOURCES += main.cpp \
     flyem/zflyemtaskhelper.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
+    data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     z3dcamerautils.cpp \
+    flyem/zflyembodyenv.cpp \
     protocols/taskprotocoltaskfactory.cpp
 
 DISTFILES += \

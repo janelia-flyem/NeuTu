@@ -133,6 +133,13 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
       requestBodyUpdate(target, bodyIdArray.begin(), bodyIdArray.end(), option);
 }
 
+void ZNeutuService::reset()
+{
+  m_server.clear();
+  m_status = STATUS_DOWN;
+  m_connection.reset();
+}
+
 void ZNeutuService::updateStatus()
 {
   m_status = STATUS_DOWN;
@@ -140,10 +147,12 @@ void ZNeutuService::updateStatus()
   if (!m_server.empty()) {
     int statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
-    QMutexLocker locker(&m_connectionMutex);
-    if (ZDvid::MakeGetRequest(*m_connection, GetHomePath(), statusCode)) {
-      if (statusCode == 200) {
-        m_status = STATUS_NORMAL;
+    if (m_connection) {
+      QMutexLocker locker(&m_connectionMutex);
+      if (ZDvid::MakeGetRequest(*m_connection, GetHomePath(), statusCode)) {
+        if (statusCode == 200) {
+          m_status = STATUS_NORMAL;
+        }
       }
     }
 #endif

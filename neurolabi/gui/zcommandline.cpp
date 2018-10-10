@@ -50,6 +50,7 @@
 #include "command/zstackdiffcommand.h"
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
+#include "command/zsparsestackcommandmodule.h"
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
 #endif
@@ -98,6 +99,7 @@ void ZCommandLine::registerModule()
   registerModule<ZStackDiffCommand>("stack_diff");
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
+  registerModule<ZSparseStackCommand>("sparse_stack");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif
@@ -777,12 +779,12 @@ int ZCommandLine::runGeneral()
       config.decode(m_generalConfig);
     }
 
-    ZCommandModule *module =
-        getModule(ZJsonParser::stringValue(config["command"]));
+    std::string commandName = ZJsonParser::stringValue(config["command"]);
+    ZCommandModule *module = getModule(commandName);
     if (module != NULL) {
       return module->run(m_input, m_output, config);
     } else {
-      std::cerr << "Invalid command module." << std::endl;
+      std::cerr << "Invalid command module: " << commandName << std::endl;
 
       return 1;
     }

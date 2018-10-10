@@ -288,6 +288,11 @@ private:
   ZDvidWriter& getCommitWriter();
   ZDvidWriter& getMainWriter();
 
+  void updateBodyDep(uint64_t bodyId);
+  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
+  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+
+
 private:
   ZDvidReader m_reader;
   ZDvidWriter m_writer;

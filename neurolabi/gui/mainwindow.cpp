@@ -187,10 +187,6 @@
 #include <QInputDialog>
 #include <QMimeData>
 
-namespace neutube {
-static const char *VERSION = "1.1";
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
@@ -7470,8 +7466,9 @@ void MainWindow::runRoutineCheck()
   if (NeutubeConfig::AutoStatusCheck()) {
     std::cout << "Running routine check ..." << std::endl;
 #if defined(_FLYEM_)
-    if (!GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+    if (!GET_FLYEM_CONFIG.hasNormalService()) {
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
     }
 #endif
 #if 0

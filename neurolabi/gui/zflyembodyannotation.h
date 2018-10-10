@@ -72,7 +72,7 @@ private:
       */
 
 private:
-  uint64_t m_bodyId;
+  uint64_t m_bodyId = 0;
   std::string m_status;
   std::string m_comment;
   std::string m_name;

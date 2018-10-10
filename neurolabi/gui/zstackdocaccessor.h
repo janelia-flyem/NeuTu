@@ -40,6 +40,7 @@ public:
 
   static void RemoveSplitSeed(ZStackDoc *doc, uint64_t label);
   static void RemoveSplitSeed(ZStackDoc *doc);
+  static void RemoveSplitSeed(ZStackDoc *doc, std::string objectClass);
 
   /*!
    * \brief Remove seeds except those with the main label

@@ -53,6 +53,7 @@ public:
     virtual bool allowCompletion();
 
     virtual ProtocolTaskConfig getTaskConfig() const;
+    virtual bool allowingSplit(uint64_t bodyId) const;
 
 signals:
     void bodiesUpdated();
