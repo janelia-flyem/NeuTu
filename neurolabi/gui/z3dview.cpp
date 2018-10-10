@@ -54,6 +54,9 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
 
   createActions();
 
+  m_canvas->getInteractionEngine()->setKeyProcessor(
+        doc->getKeyProcessor());
+
   connect(m_canvas, &Z3DCanvas::openGLContextInitialized, this, &Z3DView::init);
 }
 
@@ -486,10 +489,10 @@ void Z3DView::init()
     connect(&camera(), &Z3DCameraParameter::valueChanged,
             this, &Z3DView::resetCameraClippingRange);
 
-#ifdef _FLYEM_
-    m_canvas->getInteractionEngine()->setKeyProcessor(
-          new ZFlyEmBody3dDocKeyProcessor);
-#endif
+//#ifdef _FLYEM_
+//    m_canvas->getInteractionEngine()->setKeyProcessor(
+//          new ZFlyEmBody3dDocKeyProcessor);
+//#endif
 
     emit networkConstructed();
 

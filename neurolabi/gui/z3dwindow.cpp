@@ -4738,7 +4738,7 @@ void Z3DWindow::cropSwcInRoi()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    if (!doc->getDvidTarget().readOnly()) {
+    if (doc->isDvidMutable()) {
       if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
           doc->showingCoarseOnly()) {
         //    m_doc->executeDeleteSwcNodeCommand();

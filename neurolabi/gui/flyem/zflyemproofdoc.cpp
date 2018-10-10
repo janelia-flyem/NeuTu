@@ -749,6 +749,11 @@ const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
   return m_dvidReader.getDvidTarget();
 }
 
+bool ZFlyEmProofDoc::isDvidMutable() const
+{
+  return (getDvidTarget().readOnly() == false);
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   LINFO() << "Setting dvid env in ZFlyEmProofDoc";

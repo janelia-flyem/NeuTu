@@ -187,10 +187,6 @@
 #include <QInputDialog>
 #include <QMimeData>
 
-namespace neutube {
-static const char *VERSION = "1.1";
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
