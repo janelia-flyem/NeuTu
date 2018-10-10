@@ -237,7 +237,7 @@ bool ZFlyEmConfig::hasDefaultTaskServer() const
   return !m_defaultTaskServer.empty();
 }
 
-void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
+void ZFlyEmConfig::setCustomTaskServer(const std::string &taskServer)
 {
 #ifdef _DEBUG_
   std::cout << "Setting task server to " << taskServer << std::endl;
@@ -332,7 +332,7 @@ std::string ZFlyEmConfig::getNeuTuServer() const
 //  return m_remoteServer;
 }
 
-void ZFlyEmConfig::setNeuTuServer(const std::string &server)
+void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)
 {
 #ifdef _QT_GUI_USED_
   NeutubeConfig::SetNeuTuServer(server.c_str());;
