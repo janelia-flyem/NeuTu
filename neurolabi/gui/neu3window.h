@@ -111,6 +111,9 @@ public slots:
 
   void processMessage(const ZWidgetMessage &msg);
 
+  bool allowingSplit(uint64_t bodyId) const;
+  bool cleaving() const;
+
 signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);

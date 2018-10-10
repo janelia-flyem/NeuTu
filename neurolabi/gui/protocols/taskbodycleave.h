@@ -55,11 +55,13 @@ public:
   uint64_t getBodyId() const;
 
   ProtocolTaskConfig getTaskConfig() const override;
+  bool allowingSplit(uint64_t bodyId) const override;
 
 public:
   //Temporary solution for resolving shortcut conflict
   void disableCleavingShortcut();
   void enableCleavingShortcut();
+  void setCleavingShortcutEnabled(bool on);
 
 private slots:
   void onShowCleavingChanged(int state);

@@ -34,10 +34,12 @@ public:
   uint64_t getBodyId() const;
   void setBodyId(uint64_t bodyId);
 
-  void setBody(uint64_t bodyId, flyem::EBodyLabelType type);
+  void setBody(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
 
   flyem::EBodyLabelType getLabelType() const;
   EState getState() const;
+  bool fromTar() const;
+  void setFromTar(bool status);
 
   void runSplit();
   void runLocalSplit();
@@ -65,6 +67,7 @@ private:
 private:
   uint64_t m_bodyId = 0; //Body for splitting
   flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  bool m_fromTar = false;
   EState m_state= STATE_NO_SPLIT;
 
   ZDvidReader m_reader;

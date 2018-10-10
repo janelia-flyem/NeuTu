@@ -145,14 +145,25 @@ void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
   ZDvidUrl dvidUrl(getDvidTarget());
   std::string url = dvidUrl.getMeshUrl(bodyId, zoom);
 
-  QByteArray payload = mesh.writeToMemory("obj");
-  post(url, payload, false);
+  if (!url.empty()) {
+    QByteArray payload = mesh.writeToMemory("obj");
+    post(url, payload, false);
 
+    url = ZDvidUrl::GetMeshInfoUrl(url);
+    ZJsonObject infoJson;
+    infoJson.setEntry("format", "obj");
+    post(url, infoJson.dumpString(0), true);
+  }
+}
 
-  url = ZDvidUrl::GetMeshInfoUrl(url);
-  ZJsonObject infoJson;
-  infoJson.setEntry("format", "obj");
-  post(url, infoJson.dumpString(0), true);
+void ZDvidWriter::writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
+  if (!url.empty()) {
+    QByteArray payload = mesh.writeToMemory("drc");
+    post(url, payload, false);
+  }
 }
 
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)

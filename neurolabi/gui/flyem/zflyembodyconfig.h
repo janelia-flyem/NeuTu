@@ -24,7 +24,7 @@ class ZFlyEmBodyConfig
 {
 public:
   ZFlyEmBodyConfig();
-  ZFlyEmBodyConfig(uint64_t bodyId);
+  explicit ZFlyEmBodyConfig(uint64_t bodyId);
 
   int getDsLevel() const {
     return m_dsLevel;

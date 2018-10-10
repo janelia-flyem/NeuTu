@@ -107,6 +107,17 @@ bool ZNetBufferReader::hasHead(const QString &url)
   return m_status == neutube::READ_OK;
 }
 
+void ZNetBufferReader::post(const QString &url, const QByteArray &data)
+{
+  startReading();
+  QNetworkRequest request(url);
+  resetNetworkReply();
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+  m_networkReply = m_networkManager->post(request, data);
+  connectNetworkReply();
+  waitForReading();
+}
+
 bool ZNetBufferReader::isReadable(const QString &url)
 {
   QTimer::singleShot(15000, this, SLOT(handleTimeout()));

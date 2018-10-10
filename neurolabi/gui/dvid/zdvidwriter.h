@@ -60,6 +60,8 @@ public:
 
   void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
 
+  void writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId);
+
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);

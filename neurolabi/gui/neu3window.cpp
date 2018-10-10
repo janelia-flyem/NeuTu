@@ -55,6 +55,7 @@
 #include "flyem/zflyemarbdoc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
+#include "flyem/zflyembodyenv.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"
@@ -121,6 +122,8 @@ void Neu3Window::initialize()
   m_3dwin = m_dataContainer->makeNeu3Window();
 //  m_3dwin->menuBar()->hide();
   m_3dwin->configureMenuForNeu3();
+  m_3dwin->getBodyEnv()->setWindowEnv(this);
+
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   connect(m_3dwin, SIGNAL(diagnosing()), this, SLOT(diagnose()));
@@ -983,7 +986,7 @@ void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   LDEBUG() << "Mesh list size:" << meshList.size();
-  if (!meshList.empty()) {
+  if (!meshList.isEmpty()) {
     ZMesh *mesh = meshList.front();
     m_3dwin->gotoPosition(mesh->getBoundBox());
   }
@@ -1021,6 +1024,16 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
   } else {
     m_3dwin->processMessage(msg);
   }
+}
+
+bool Neu3Window::cleaving() const
+{
+  return m_taskProtocolWidget->isInCleavingTask();
+}
+
+bool Neu3Window::allowingSplit(uint64_t bodyId) const
+{
+  return m_taskProtocolWidget->allowingSplit(bodyId);
 }
 
 void Neu3Window::processMeshChangedFrom3D(

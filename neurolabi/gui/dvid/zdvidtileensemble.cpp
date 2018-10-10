@@ -149,6 +149,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   return tileMap[index];
 }
 //#if defined(_ENABLE_LIBDVIDCPP_)
+//#define _SERVICE_ARRAY_
 #if defined(_SERVICE_ARRAY_)
 struct UpdateTileParam {
   ZDvidTileEnsemble *te;
