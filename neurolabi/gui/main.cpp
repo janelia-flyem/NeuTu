@@ -182,7 +182,7 @@ static void LoadFlyEmConfig(
     if (GET_FLYEM_CONFIG.hasDefaultNeuTuServer() == false) {
       QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
       if (!neutuServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setNeuTuServer(neutuServer.toStdString());
+        GET_FLYEM_CONFIG.setCustomNeuTuServer(neutuServer.toStdString());
         //        GET_FLYEM_CONFIG.setDefaultNeuTuServer(neutuServer.toStdString());
       }
     }
@@ -194,7 +194,7 @@ static void LoadFlyEmConfig(
     if (GET_FLYEM_CONFIG.hasDefaultTaskServer() == false) {
       QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
       if (!taskServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setTaskServer(taskServer.toStdString());
+        GET_FLYEM_CONFIG.setCustomTaskServer(taskServer.toStdString());
       }
     }
 //      GET_FLYEM_CONFIG.setDefaultTaskServer(taskServer.toStdString());
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
       std::cout << "Version: " << neutube::VERSION << std::endl;
 
 #if defined(__NEUTU_BUILD_VERSION__)
-      std::cou << "Build: " << __NEUTU_BUILD_VERSION__ << std::endl;
+      std::cout << "Build: " << __NEUTU_BUILD_VERSION__ << std::endl;
 #endif
 
       return 0;

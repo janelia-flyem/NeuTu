@@ -186,7 +186,7 @@ void FlyEmSettingDialog::update()
 
   GET_FLYEM_CONFIG.useDefaultNeuTuServer(usingDefaultService());
   if (!usingDefaultService()) {
-    GET_FLYEM_CONFIG.setNeuTuServer(getNeuTuServer());
+    GET_FLYEM_CONFIG.setCustomNeuTuServer(getNeuTuServer());
   }
 
   GET_FLYEM_CONFIG.activateNeuTuServer();
@@ -201,7 +201,7 @@ void FlyEmSettingDialog::update()
   */
   GET_FLYEM_CONFIG.useDefaultTaskServer(usingDefaultTaskServer());
   if (!usingDefaultTaskServer()) {
-    GET_FLYEM_CONFIG.setTaskServer(getTaskServer());
+    GET_FLYEM_CONFIG.setCustomTaskServer(getTaskServer());
   }
 
   GET_FLYEM_CONFIG.setAnalyzingMb6(namingSynapse());

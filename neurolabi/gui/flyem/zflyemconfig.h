@@ -64,7 +64,7 @@ public:
   void setDefaultTaskServer(const std::string &taskServer);
   bool hasDefaultTaskServer() const;
 
-  void setTaskServer(const std::string &taskServer);
+  void setCustomTaskServer(const std::string &taskServer);
   std::string getTaskServer() const;
   std::string getTaskServer(bool usingDefault) const;
 
@@ -104,7 +104,7 @@ public:
   void setDefaultNeuTuServer(const std::string &server);
   bool hasDefaultNeuTuServer() const;
 
-  void setNeuTuServer(const std::string &server);
+  void setCustomNeuTuServer(const std::string &server);
   std::string getNeuTuServer() const;
   std::string getNeuTuServer(bool usingDefault) const;
 
