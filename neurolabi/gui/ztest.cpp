@@ -27399,7 +27399,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
 #endif
 
-#if 1
+#if 0
 //  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
   ZDvidTarget target;
   target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
@@ -28075,6 +28075,10 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+//  GET_FLYEM_CONFIG.useDefaultNeuTuServer(false);
+  GET_FLYEM_CONFIG.print();
+#endif
 
   std::cout << "Done." << std::endl;
 }

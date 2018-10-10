@@ -1032,6 +1032,34 @@ void NeutubeConfig::UseDefaultFlyEmConfig(bool on)
   GetSettings().setValue("default_flyem_config", on);
 }
 
+void NeutubeConfig::UseDefaultNeuTuServer(bool on)
+{
+  GetSettings().setValue("default_neutu_server", on);
+}
+
+bool NeutubeConfig::UsingDefaultNeuTuServer()
+{
+  if (GetSettings().contains("default_neutu_server")) {
+    return GetSettings().value("default_neutu_server").toBool();
+  }
+
+  return true;
+}
+
+void NeutubeConfig::UseDefaultTaskServer(bool on)
+{
+  GetSettings().setValue("default_task_server", on);
+}
+
+bool NeutubeConfig::UsingDefaultTaskServer()
+{
+  if (GetSettings().contains("default_task_server")) {
+    return GetSettings().value("default_task_server").toBool();
+  }
+
+  return true;
+}
+
 QString NeutubeConfig::GetNeuTuServer()
 {
   return GetSettings().value("neutu_server").toString();

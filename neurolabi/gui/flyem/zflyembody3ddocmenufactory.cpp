@@ -81,19 +81,23 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 {
   ZMenuConfig config;
   if (doc != NULL) {
+    bool isMutable = (doc->getDvidTarget().readOnly() == false);
+
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
         doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       config.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
 #if defined(_NEU3_)
-      ZMesh *mesh = doc->getMeshForSplit();
-      if (mesh != NULL && !doc->isSplitActivated()) {
-        bool allowingSplit = true;
-        if (bodyEnv != NULL) {
-          allowingSplit = bodyEnv->allowingSplit(mesh->getLabel());
-        }
-        if (allowingSplit) {
-          config.append(ZActionFactory::ACTION_START_SPLIT);
+      if (isMutable) {
+        ZMesh *mesh = doc->getMeshForSplit();
+        if (mesh != NULL && !doc->isSplitActivated()) {
+          bool allowingSplit = true;
+          if (bodyEnv != NULL) {
+            allowingSplit = bodyEnv->allowingSplit(mesh->getLabel());
+          }
+          if (allowingSplit) {
+            config.append(ZActionFactory::ACTION_START_SPLIT);
+          }
         }
       }
 #endif
@@ -103,8 +107,10 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
     }
 
-    if (doc->getSelectedSingleNormalBodyId() > 0) {
-      config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+    if (isMutable) {
+      if (doc->getSelectedSingleNormalBodyId() > 0) {
+        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+      }
     }
 
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
@@ -124,10 +130,12 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       }
 
       if (swcNodeCount == 1) {
-        config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
-        config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
-        config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
-        config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+        if (isMutable) {
+          config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+          config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+          config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+          config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+        }
       }
 
       config.appendSeparator();
@@ -156,11 +164,13 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     config.appendSeparator();
 
     if (doc->hasTodoItemSelected()) {
-      config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
-      config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
-      config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
-      config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);
-      config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT);
+      if (isMutable) {
+        config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
+        config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);
+        config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT);
+      }
     }
 
     if (doc->hasSelectedPuncta()) {
@@ -169,8 +179,10 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       config.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
     }
 
-    if (doc->getSelectedSingleNormalBodyId() > 0) {
-      config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+    if (isMutable) {
+      if (doc->getSelectedSingleNormalBodyId() > 0) {
+        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+      }
     }
 
   }
