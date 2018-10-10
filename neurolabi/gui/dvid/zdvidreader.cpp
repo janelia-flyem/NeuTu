@@ -408,10 +408,12 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
     int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ()) +
         dvidInfo.getBlockSize().getZ() - 1;
 
-    int dz = 1000;
+    int dz = 1024 / dvidInfo.getBlockSize().getZ() *
+        dvidInfo.getBlockSize().getZ() - 1;
 
     int startZ = minZ;
-    int endZ = startZ + dz;
+    int endZ = (startZ + dz) / dvidInfo.getBlockSize().getZ() *
+        dvidInfo.getBlockSize().getZ() - 1;
     ZObject3dScan part;
     while (startZ <= maxZ) {
       if (endZ > maxZ) {
@@ -442,6 +444,8 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
     uint64_t bodyId, ZObject3dScan *result) const
 {
+  return readBodyWithPartition(bodyId, flyem::LABEL_BODY, result);
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -486,6 +490,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
   }
 
   return result;
+#endif
 }
 
 ZObject3dScan *ZDvidReader::readBody(
@@ -566,6 +571,9 @@ ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
+  return readBody(bodyId, flyem::LABEL_BODY, box, canonizing, result);
+
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -594,6 +602,7 @@ ZObject3dScan *ZDvidReader::readBody(
   }
 
   return result;
+#endif
 }
 
 ZObject3dScan *ZDvidReader::readBody(
@@ -610,31 +619,53 @@ ZObject3dScan *ZDvidReader::readBody(
       result = new ZObject3dScan;
     }
 
+    bool needPartition = false;
+
+    if (box.isEmpty()) {
+      size_t bodySize = readBodySize(bodyId, labelType);
+
+      if (bodySize / neutube::ONEGIGA > 4) {
+        needPartition = true;
+      }
+    }
+
     ZDvidBufferReader &reader = m_bufferReader;
 
-    //  reader.tryCompress(true);
-    ZDvidUrl dvidUrl(getDvidTarget());
-    switch (labelType) {
-    case flyem::LABEL_BODY:
-      reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
-                  isVerbose());
-      break;
-    case flyem::LABEL_SUPERVOXEL:
-      reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
-                  isVerbose());
-      break;
+    if (needPartition == false) {
+      ZDvidUrl dvidUrl(getDvidTarget());
+      switch (labelType) {
+      case flyem::LABEL_BODY:
+        reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
+                    isVerbose());
+        break;
+      case flyem::LABEL_SUPERVOXEL:
+        reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
+                    isVerbose());
+        break;
+      }
+
+      if (reader.getStatus() != neutube::READ_FAILED) {
+        const QByteArray &buffer = reader.getBuffer();
+        result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      } else {
+        if (box.isEmpty()) {
+          needPartition = true;
+        }
+      }
+      reader.clearBuffer();
     }
 
-    const QByteArray &buffer = reader.getBuffer();
-    result->importDvidObjectBuffer(buffer.data(), buffer.size());
-
-    reader.clearBuffer();
-
-    if (canonizing) {
-      result->canonize();
+    if (needPartition) {
+      result = readBodyWithPartition(bodyId, labelType, result);
     }
 
-    result->setLabel(bodyId);
+    if (result) {
+      if (canonizing) {
+        result->canonize();
+      }
+
+      result->setLabel(bodyId);
+    }
   }
 
   return result;
@@ -837,6 +868,9 @@ QByteArray ZDvidReader::readDataFromEndpoint(
 ZObject3dScan *ZDvidReader::readSupervoxel(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result) const
 {
+  return readBody(
+        bodyId, flyem::LABEL_SUPERVOXEL, ZIntCuboid(), canonizing, result);
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -846,40 +880,60 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
       result = new ZObject3dScan;
     }
 
-    ZDvidBufferReader &reader = m_bufferReader;
+    size_t bodySize = readBodySize(bodyId, flyem::LABEL_SUPERVOXEL);
+    bool needPartition = false;
+    if (bodySize / neutube::ONEGIGA > 4) {
+      needPartition = true;
+    }
 
-    reader.tryCompress(true);
-    ZDvidUrl dvidUrl(getDvidTarget());
+    if (!needPartition) {
+      ZDvidBufferReader &reader = m_bufferReader;
 
-    QElapsedTimer timer;
-    timer.start();
+      reader.tryCompress(true);
+      ZDvidUrl dvidUrl(getDvidTarget());
 
-    reader.read(dvidUrl.getSupervoxelUrl(bodyId).c_str(), isVerbose());
-
-    reader.tryCompress(false);
-
-    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
-
-    if (reader.getStatus() != neutube::READ_FAILED) {
+      QElapsedTimer timer;
       timer.start();
-      const QByteArray &buffer = reader.getBuffer();
-      result->importDvidObjectBuffer(buffer.data(), buffer.size());
-      if (canonizing) {
-        result->canonize();
-      }
+
+      reader.read(dvidUrl.getSupervoxelUrl(bodyId).c_str(), isVerbose());
+
+      reader.tryCompress(false);
+
+      STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
+
+      if (reader.getStatus() != neutube::READ_FAILED) {
+        timer.start();
+        const QByteArray &buffer = reader.getBuffer();
+        result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
 #ifdef _DEBUG_
-      STD_COUT << "Canonized:" << result->isCanonizedActually() << std::endl;
-      //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+        STD_COUT << "Canonized:" << result->isCanonizedActually() << std::endl;
+        //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-      STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
-      result->setLabel(bodyId);
+        STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
+        result->setLabel(bodyId);
+        needPartition = false;
+
+        reader.clearBuffer();
+      } else {
+        needPartition = true;
+      }
     }
-    reader.clearBuffer();
+
+    if (needPartition) {
+      result = readBodyWithPartition(bodyId, flyem::LABEL_SUPERVOXEL, result);
+    }
+
+    if (canonizing && result) {
+      result->canonize();
+    }
+
+
   }
 
   return result;
+#endif
 }
 
 uint64_t ZDvidReader::readParentBodyId(uint64_t spId) const
@@ -3764,6 +3818,24 @@ size_t ZDvidReader::readBodySize(uint64_t bodyId) const
   return s;
 }
 
+size_t ZDvidReader::readBodySize(
+    uint64_t bodyId, flyem::EBodyLabelType type) const
+{
+  size_t s = 0;
+  std::string url;
+  if (type == flyem::LABEL_BODY) {
+    url = ZDvidUrl(getDvidTarget()).getBodySizeUrl(bodyId);
+  } else  if (type == flyem::LABEL_SUPERVOXEL) {
+    url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
+  }
+  if (!url.empty()) {
+    ZJsonObject jsonObj = readJsonObject(url);
+    s = ZJsonParser::integerValue(jsonObj["voxels"]);
+  }
+
+  return s;
+}
+
 ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 {
   return readBodyPosition(bodyId);
@@ -4396,6 +4468,22 @@ uint64_t ZDvidReader::readSupervoxelIdAt(int x, int y, int z) const
   }
 
   return bodyId;
+}
+
+std::vector<uint64_t> ZDvidReader::readSupervoxelSet(uint64_t bodyId) const
+{
+  std::vector<uint64_t> result;
+
+  ZDvidUrl url(getDvidTarget());
+  std::string urlStr = url.getSupervoxelMapUrl(bodyId);
+  if (!urlStr.empty()) {
+    ZJsonArray jsonArray = readJsonArray(urlStr);
+    for (size_t i = 0; i < jsonArray.size(); ++i) {
+      result.push_back(ZJsonParser::integerValue(jsonArray.at(i)));
+    }
+  }
+
+  return result;
 }
 
 std::vector<std::vector<uint64_t> > ZDvidReader::readBodyIdAt(

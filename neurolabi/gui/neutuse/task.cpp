@@ -51,4 +51,9 @@ void Task::setConfig(const ZJsonObject &config)
   m_config = config;
 }
 
+void Task::setPriority(int p)
+{
+  m_priority = p;
+}
+
 }

@@ -37,6 +37,9 @@ public:
      */
     void updateTaskInteraction();
 
+    bool allowingSplit(uint64_t bodyId) const;
+    bool isInCleavingTask() const;
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
@@ -57,7 +60,7 @@ private slots:
     void onNextButton();
     void onPrevButton();
     void onDoneButton();
-    void onLoadTasksButton();    
+    void onLoadTasksButton();
     void onBodiesUpdated();
     void onNextPrevAllowed(bool allowed);
     void onCompletedStateChanged(int state);
@@ -146,6 +149,7 @@ private:
     void showError(QString title, QString message);
     bool isValidJson(QJsonObject json);
     void loadTasks(QJsonObject json);
+    void createTask(QString menuLabel);
     QJsonObject storeTasks();
     void saveJsonToDvid(QJsonObject json);
     void saveState();

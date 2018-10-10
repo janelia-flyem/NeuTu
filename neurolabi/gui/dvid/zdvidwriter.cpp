@@ -47,6 +47,7 @@ ZDvidWriter::~ZDvidWriter()
 void ZDvidWriter::init()
 {
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
 }
 
 bool ZDvidWriter::startService()
@@ -144,14 +145,25 @@ void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
   ZDvidUrl dvidUrl(getDvidTarget());
   std::string url = dvidUrl.getMeshUrl(bodyId, zoom);
 
-  QByteArray payload = mesh.writeToMemory("obj");
-  post(url, payload, false);
+  if (!url.empty()) {
+    QByteArray payload = mesh.writeToMemory("obj");
+    post(url, payload, false);
 
+    url = ZDvidUrl::GetMeshInfoUrl(url);
+    ZJsonObject infoJson;
+    infoJson.setEntry("format", "obj");
+    post(url, infoJson.dumpString(0), true);
+  }
+}
 
-  url = ZDvidUrl::GetMeshInfoUrl(url);
-  ZJsonObject infoJson;
-  infoJson.setEntry("format", "obj");
-  post(url, infoJson.dumpString(0), true);
+void ZDvidWriter::writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
+  if (!url.empty()) {
+    QByteArray payload = mesh.writeToMemory("drc");
+    post(url, payload, false);
+  }
 }
 
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
@@ -848,6 +860,7 @@ std::string ZDvidWriter::request(
   LINFO() << "HTTP " + method + ": " + url;
 
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
   std::string response;
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
@@ -892,6 +905,7 @@ std::string ZDvidWriter::request(
     std::cout << e.what() << std::endl;
     LWARN() << "HTTP " + method + " exception (" << e.getStatus() << "): " << e.what();
     m_statusCode = e.getStatus();
+    m_statusErrorMessage = e.what();
   }
 #endif
 
@@ -1244,6 +1258,7 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
     const std::string &dataName, const ZObject3dScan &obj, uint64_t oldLabel)
 {
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
 
   std::string url = ZDvidUrl(getDvidTarget()).getSplitSupervoxelUrl(
         dataName, oldLabel);
@@ -1278,6 +1293,7 @@ uint64_t ZDvidWriter::writeSplit(
 {
 //  uint64_t newBodyId = 0;
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
 #if defined(_ENABLE_LIBDVIDCPP_)
   UNUSED_PARAMETER(label);
   std::string url;
@@ -1525,6 +1541,7 @@ uint64_t ZDvidWriter::writePartition(
 uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel)
 {
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
   uint64_t newBodyId= 0;
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
@@ -1614,6 +1631,7 @@ void ZDvidWriter::writeMergeOperation(
 void ZDvidWriter::parseStandardOutput()
 {
   m_statusCode = 0;
+  m_statusErrorMessage.clear();
   m_jsonOutput.clear();
 
   if (!m_standardOutout.isEmpty()) {

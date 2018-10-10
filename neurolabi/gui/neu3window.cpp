@@ -55,6 +55,16 @@
 #include "flyem/zflyemarbdoc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
+#include "flyem/zflyembodyenv.h"
+
+#include "protocols/taskprotocoltaskfactory.h"
+#include "protocols/taskbodycleave.h"
+#include "protocols/taskbodyhistory.h"
+#include "protocols/taskbodymerge.h"
+#include "protocols/taskbodyreview.h"
+#include "protocols/taskfalsesplitreview.h"
+#include "protocols/tasksplitseeds.h"
+#include "protocols/tasktesttask.h"
 
 /* Implementation details:
  *
@@ -112,6 +122,8 @@ void Neu3Window::initialize()
   m_3dwin = m_dataContainer->makeNeu3Window();
 //  m_3dwin->menuBar()->hide();
   m_3dwin->configureMenuForNeu3();
+  m_3dwin->getBodyEnv()->setWindowEnv(this);
+
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   connect(m_3dwin, SIGNAL(diagnosing()), this, SLOT(diagnose()));
@@ -409,7 +421,19 @@ void Neu3Window::initWebView()
 }
 
 void Neu3Window::createTaskWindow() {
-    QDockWidget *dockWidget = new QDockWidget("Tasks", this);
+  // set up the factory for creating "protocol tasks"
+  TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
+  factory.registerJsonCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
+  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGuiBodyId(), TaskBodyCleave::createFromGuiBodyId);
+  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGui3dPoint(), TaskBodyCleave::createFromGui3dPoint);
+  factory.registerJsonCreator(TaskBodyHistory::taskTypeStatic(), TaskBodyHistory::createFromJson);
+  factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
+  factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
+  factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
+  factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
+  factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
+
+  QDockWidget *dockWidget = new QDockWidget("Tasks", this);
     m_taskProtocolWidget =
         new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
@@ -962,7 +986,7 @@ void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   LDEBUG() << "Mesh list size:" << meshList.size();
-  if (!meshList.empty()) {
+  if (!meshList.isEmpty()) {
     ZMesh *mesh = meshList.front();
     m_3dwin->gotoPosition(mesh->getBoundBox());
   }
@@ -1000,6 +1024,16 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
   } else {
     m_3dwin->processMessage(msg);
   }
+}
+
+bool Neu3Window::cleaving() const
+{
+  return m_taskProtocolWidget->isInCleavingTask();
+}
+
+bool Neu3Window::allowingSplit(uint64_t bodyId) const
+{
+  return m_taskProtocolWidget->allowingSplit(bodyId);
 }
 
 void Neu3Window::processMeshChangedFrom3D(

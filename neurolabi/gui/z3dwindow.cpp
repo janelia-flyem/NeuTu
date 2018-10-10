@@ -95,6 +95,8 @@
 #include "core/utilities.h"
 #include "zstackdochelper.h"
 #include "z3dwindowcontroller.h"
+#include "data3d/zstackobjectconfig.h"
+#include "flyem/zflyembodyenv.h"
 
 /*
 class Sleeper : public QThread
@@ -172,6 +174,8 @@ Z3DWindow::Z3DWindow(
 
   m_dvidDlg = NULL;
   m_bodyCmpDlg = NULL;
+
+  m_bodyEnv = ZSharedPointer<ZFlyEmBodyEnv>(new ZFlyEmBodyEnv);
 }
 
 Z3DWindow::~Z3DWindow()
@@ -553,6 +557,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_START_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
   default:
     action = getDocument()->getAction(item);
@@ -1336,6 +1343,11 @@ void Z3DWindow::setMenuFactory(ZStackDocMenuFactory *factory)
   m_menuFactory = factory;
 }
 
+
+ZFlyEmBodyEnv* Z3DWindow::getBodyEnv() const
+{
+  return m_bodyEnv.get();
+}
 
 void Z3DWindow::cleanup()
 {
@@ -3595,6 +3607,23 @@ void Z3DWindow::notifyCameraRotation()
   emit cameraRotated();
 }
 
+void Z3DWindow::startBodySplit()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (getBodyEnv()) {
+      if (getBodyEnv()->cleaving()) {
+        doc->notify(
+              ZWidgetMessageFactory(
+                "WARNING: You will not be able to undo previous cleaving after splitting.").
+              as(neutube::MSG_WARNING));
+      }
+    }
+
+    doc->activateSplitForSelected();
+  }
+}
+
 void Z3DWindow::test()
 {
 
@@ -4082,26 +4111,7 @@ void Z3DWindow::shootTodo(int x, int y)
         int cy = iround(pt.y());
         int cz = iround(pt.z());
         doc->executeAddTodoCommand(cx, cy, cz, false, parentId);
-
-        /*
-        QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
-        if (action != NULL) {
-          if (action->isChecked()) {
-            if (doc->isSupervoxel(bodyId)) {
-              doc->executeAddTodoCommand(
-                    cx, cy, cz, false, neutube::TO_SUPERVOXEL_SPLIT, parentId);
-            } else {
-              doc->executeAddTodoCommand(
-                    cx, cy, cz, false, neutube::TO_SPLIT, parentId);
-            }
-          }
-        } else {
-          doc->executeAddTodoCommand(
-                cx, cy, cz, false, neutube::TO_DO, parentId);
-        }
-        */
       }
-  //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }
   }
 }
@@ -4223,41 +4233,47 @@ std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
 
 std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
 {
+  getCanvas()->getGLFocus();
   std::vector<ZPoint> intersection;
   ZStackDoc *doc = getDocument();
 
   neutube::assign<uint64_t>(id, 0);
 
   if (doc != NULL) {
-    if (hasSwc()) {
-      getSwcFilter()->forceNodePicking(true);
-      getSwcFilter()->invalidate();
-      //m_view->updateNetwork();
-      Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
-      if (tn != NULL) {
-        ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
-        if (tree != NULL) {
-          neutube::assign(id, tree->getLabel());
-          glm::dvec3 v1,v2;
-          int w = getCanvas()->width();
-          int h = getCanvas()->height();
-          getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
-          ZPoint lineStart(v1.x, v1.y, v1.z);
-          glm::dvec3 norm = v2 - v1;
-          ZPoint lineNorm(norm.x, norm.y, norm.z);
-          intersection = zgeom::LineShpereIntersection(
-                lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
-        }
-      }
-      getSwcFilter()->forceNodePicking(false);
-    } else {
-      getCanvas()->getGLFocus();
+    bool hit = false;
+    if (getMeshFilter()) {
       ZMesh *mesh = getMeshFilter()->hitMesh(x, y);
       if (mesh != NULL) {
         intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
           neutube::assign(id, mesh->getLabel());
+          hit = true;
         }
+      }
+    }
+
+    if (!hit) {
+      if (hasSwc()) {
+        getSwcFilter()->forceNodePicking(true);
+        getSwcFilter()->invalidate();
+        //m_view->updateNetwork();
+        Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
+        if (tn != NULL) {
+          ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+          if (tree != NULL) {
+            neutube::assign(id, tree->getLabel());
+            glm::dvec3 v1,v2;
+            int w = getCanvas()->width();
+            int h = getCanvas()->height();
+            getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+            ZPoint lineStart(v1.x, v1.y, v1.z);
+            glm::dvec3 norm = v2 - v1;
+            ZPoint lineNorm(norm.x, norm.y, norm.z);
+            intersection = zgeom::LineShpereIntersection(
+                  lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+          }
+        }
+        getSwcFilter()->forceNodePicking(false);
       }
     }
   }
@@ -4383,7 +4399,6 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
   if (m_doc->hasMesh() && getMeshFilter()) {
     std::vector<ZStroke2dPtr> strokeList;
     ZStroke2dPtr subStroke = ZStroke2dPtr(new ZStroke2d);
-    std::string source;
 
     std::vector<std::pair<int, int> > ptArray;
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
@@ -4417,8 +4432,7 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
 
     std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
 
-
-
+    std::string source;
     for (size_t i = 0; i < strokeList.size(); ++i) {
       ZStroke2dPtr subStroke = strokeList[i];
       subStroke->decimate();
@@ -4724,15 +4738,17 @@ void Z3DWindow::cropSwcInRoi()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
-        doc->showingCoarseOnly()) {
-      //    m_doc->executeDeleteSwcNodeCommand();
-      if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
-        emit croppingSwcInRoi();
+    if (doc->isDvidMutable()) {
+      if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
+          doc->showingCoarseOnly()) {
+        //    m_doc->executeDeleteSwcNodeCommand();
+        if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+          emit croppingSwcInRoi();
+        }
+      } else {
+        QMessageBox::warning(
+              this, "Action Failed", "Cropping only works in coarse body view.");
       }
-    } else {
-      QMessageBox::warning(
-            this, "Action Failed", "Cropping only works in coarse body view.");
     }
   } else {
     selectSwcTreeNodeInRoi(false);

@@ -5,7 +5,8 @@ HEADERS += \
     $$PWD/zsurfreconcommand.h \
     $$PWD/zstackdiffcommand.h \
     $$PWD/zmultiscalewatershedcommand.h \
-    $$PWD/zbodyexportcommand.h
+    $$PWD/zbodyexportcommand.h \
+    $$PWD/zsparsestackcommandmodule.h
 
 
 SOURCES += \ 
@@ -15,7 +16,8 @@ SOURCES += \
     $$PWD/zsurfreconcommand.cpp \
     $$PWD/zstackdiffcommand.cpp \
     $$PWD/zmultiscalewatershedcommand.cpp \
-    $$PWD/zbodyexportcommand.cpp
+    $$PWD/zbodyexportcommand.cpp \
+    $$PWD/zsparsestackcommandmodule.cpp
 
 contains(DEFINES, _FLYEM_) {
   message("command.pri")
