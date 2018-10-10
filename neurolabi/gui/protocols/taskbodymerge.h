@@ -18,7 +18,12 @@ class TaskBodyMerge : public TaskProtocolTask
   Q_OBJECT
 public:
   TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  QString tasktype() const override;
+
+  // For use with TaskProtocolTaskFactory.
+  static QString taskTypeStatic();
+  static TaskBodyMerge* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
+
+  QString taskType() const override;
   QString actionString() override;
   QString targetString() override;
 

@@ -90,15 +90,21 @@ uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
 {
   uint64_t bodyId = str.toULongLong();
   if (bodyId == 0) {
-    QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
+    QRegularExpression regexp("^(supervoxel|sv|c)[:\\s]*([0-9]+)",
                               QRegularExpression::CaseInsensitiveOption);
     qDebug() << "Input body str:" << str;
     QRegularExpressionMatch match = regexp.match(str);
     if (match.hasMatch()) {
       bodyId = match.captured(2).toULongLong();
       if (bodyId > 0) {
-        bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
+        if (match.captured(1) == "c") {
+          bodyId = ZFlyEmBodyManager::encode(bodyId);
+        } else {
+          bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
+        }
       }
+    } else {
+
     }
   }
 

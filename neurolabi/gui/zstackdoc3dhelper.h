@@ -5,13 +5,14 @@
 #include <QMap>
 
 #include "z3ddef.h"
-#include "zstackobjectptr.h"
+#include "zuncopyable.h"
 
 class ZSwcTree;
 class Z3DView;
 class ZStackObject;
 class ZStackObjectInfoSet;
 class ZFlyEmBody3dDoc;
+class ZStackDoc;
 
 /*!
  * \brief The class of helping managing data for 3D visualization
@@ -22,43 +23,54 @@ class ZFlyEmBody3dDoc;
  * Another function \a dataUpdateRequired decides if a layer needs to be updated
  * according to current information of object modification.
  */
-class ZStackDoc3dHelper
+class ZStackDoc3dHelper : private ZUncopyable
 {
 public:
   ZStackDoc3dHelper();
+  ~ZStackDoc3dHelper();
 
-  void processObjectModified(const ZStackObjectInfoSet &objInfo);
+  void processObjectModified(const ZStackObjectInfoSet &objInfo, Z3DView *view);
 
   bool dataUpdateRequired(neutube3d::ERendererLayer layer,
                           const ZStackObjectInfoSet &objInfo) const;
 
-  void attach(Z3DView *view) {
-    m_view = view;
+//  void attach(Z3DView *view) {
+//    m_view = view;
+//  }
+
+  void updateGraphData(Z3DView *view);
+  void updateSwcData(Z3DView *view);
+  void updatePunctaData(Z3DView *view);
+  void updateSurfaceData(Z3DView *view);
+  void updateTodoData(Z3DView *view);
+  void updateMeshData(Z3DView *view);
+  void updateDecorationData(Z3DView *view);
+  void updateRoiData(Z3DView *view);
+  void updateSliceData(Z3DView *view);
+  void updateData(Z3DView *view, neutube3d::ERendererLayer layer);
+
+  void updateCustomCanvas(Z3DView *view);
+
+  QList<ZStackObject*> getObjectList(neutube3d::ERendererLayer layer) const {
+    return m_objectAdapter.contains(layer) ? m_objectAdapter[layer] :
+                                             QList<ZStackObject*>();
   }
 
-  void updateGraphData();
-  void updateSwcData();
-  void updatePunctaData();
-  void updateSurfaceData();
-  void updateTodoData();
-  void updateMeshData();
-  void updateDecorationData();
-  void updateRoiData();
-  void updateSliceData();
-  void updateData(neutube3d::ERendererLayer layer);
+  static ZStackDoc3dHelper* GetDocHelper(ZStackDoc *doc);
+  static void UpdateViewData(Z3DView *view, neutube3d::ERendererLayer layer);
+//  static void Attach(ZStackDoc *doc, Z3DView *view);
 
-  void updateCustomCanvas(ZFlyEmBody3dDoc *doc);
-  void updateCustomCanvas();
+  bool releaseObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
 
 private:
   void addObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
-  void addObject(neutube3d::ERendererLayer layer, ZStackObjectPtr obj);
+//  void addObject(neutube3d::ERendererLayer layer, ZStackObjectPtr obj);
   void resetObjectAdapter(neutube3d::ERendererLayer layer);
-
+  void updateCustomCanvas(Z3DView *view, ZFlyEmBody3dDoc *doc);
 
 private:
-  Z3DView *m_view = NULL;
-  QMap<neutube3d::ERendererLayer, QList<ZStackObjectPtr> > m_objectAdapter;
+//  Z3DView *m_view = NULL;
+  QMap<neutube3d::ERendererLayer, QList<ZStackObject*> > m_objectAdapter;
 };
 
 #endif // ZSTACKDOC3DHELPER_H

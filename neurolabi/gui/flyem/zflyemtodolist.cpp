@@ -247,7 +247,7 @@ bool ZFlyEmToDoList::hasLocalItem(int x, int y, int z) const
   int zIndex = z - m_startZ;
 
 
-  if (zIndex < 0 || z >= m_itemList.size()) {
+  if (zIndex < 0 || zIndex >= m_itemList.size()) {
     return false;
   }
 

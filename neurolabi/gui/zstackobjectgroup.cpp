@@ -872,6 +872,19 @@ TStackObjectList ZStackObjectGroup::findSameClassUnsync(
   return objList;
 }
 
+TStackObjectList ZStackObjectGroup::findSameClassUnsync(
+    ZStackObjectRole::TRole role, const std::string &objClass)
+{
+  TStackObjectList objList;
+  const TStackObjectList &fullObjList = getObjectListUnsync(role);
+  for (const ZStackObject *obj : fullObjList) {
+    if (obj->getObjectClass() == objClass) {
+     objList.append(const_cast<ZStackObject*>(obj));
+    }
+  }
+  return objList;
+}
+
 bool ZStackObjectGroup::isEmpty() const
 {
   return m_objectList.isEmpty();
@@ -883,6 +896,14 @@ TStackObjectList ZStackObjectGroup::findSameClass(
   QMutexLocker locker(&m_mutex);
 
   return findSameClassUnsync(type, objClass);
+}
+
+TStackObjectList ZStackObjectGroup::findSameClass(
+    ZStackObjectRole::TRole role, const std::string &objClass)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return findSameClassUnsync(role, objClass);
 }
 
 void ZStackObjectGroup::addUnsync(const ZStackObject *obj, bool uniqueSource)

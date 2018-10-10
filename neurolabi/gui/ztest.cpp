@@ -306,6 +306,7 @@
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+#include "znetbufferreader.h"
 
 #include "test/ztestall.h"
 
@@ -12387,6 +12388,15 @@ void ZTest::test(MainWindow *host)
 //    std::cout << "Memory usage after: " + ZFlyEmMisc::GetMemoryUsage().toStdString() << std::endl;
 //  }
 
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_system/big.sobj");
+  QElapsedTimer timer;
+  timer.start();
+  ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
+  std::cout << timer.elapsed() << "ms" << std::endl;
 #endif
 
 #if 0
@@ -25369,7 +25379,8 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
+//  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
+  ZDvidTarget target("emdata3.int.janelia.org", "0716", 8900);
   ZDvidWriter writer;
   writer.open(target);
 
@@ -26465,7 +26476,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
   reader->updateMaxLabelZoom();
   reader->setVerbose(false);
@@ -27390,11 +27400,17 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
-  std::vector<std::string> statusList({"Putative 0.5",
+//  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::vector<std::string> statusList({/*"Putative 0.5",*/
+                                       "Roughly traced",
                                        "Traced",
                                        "Hard to trace"});
-  writer->writeBodyStatusList(statusList);
+  writer.writeBodyStatusList(statusList);
 #endif
 
 #if 0
@@ -27737,6 +27753,18 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+        "skeletonize", target, 2, true);
+
+
+  ZNetBufferReader reader;
+  reader.post("http://127.0.0.1:5000/api/v1/tasks",
+              task.toJsonObject().dumpString(0).c_str());
+#endif
+
+#if 0
   neutuse::TaskWriter writer;
 //  writer.open("http://zhaot-ws1:7500");
   writer.open("http://127.0.0.1:5000");
@@ -27761,18 +27789,77 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  uint64_t bodyId = 1101396820;
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
-  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
-  mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  ZObject3dScan obj;
+  reader->readSupervoxel(bodyId, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
+  writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
-#if 1
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZMesh *mesh = reader->readSupervoxelMesh(1101396820);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
 #endif
+
+#if 0
+  for (size_t i = 0; i < 10000; ++i) {
+    std::cout << "i=" << i << std::endl;
+    ZNetBufferReader reader;
+    reader.read("http://emdata2.int.janelia.org:2018", false);
+    qDebug() << reader.getBuffer();
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
+  uint64_t bodyId = 1452234638;
+
+  auto bodyList = reader->readSupervoxelSet(bodyId);
+  std::ofstream stream(
+        GET_TEST_DATA_DIR + "/my-mesh-job-files/supervoxels-to-process.csv");
+  for (uint64_t body : bodyList) {
+    stream << body << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("test");
+  uint64_t bodyId = 1020280792;
+  ZObject3dScan obj;
+  reader->readBodyWithPartition(bodyId, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+
+//  uint64_t bodyId = 582670241;
+  uint64_t bodyId = 979627466;
+  std::cout << "#voxels" << reader->readBodySize(bodyId, flyem::LABEL_SUPERVOXEL) << std::endl;
+
+  ZObject3dScan obj;
+//  reader->readSupervoxel(bodyId, true, &obj);
+  reader->readBody(bodyId, flyem::LABEL_BODY,
+                   ZIntCuboid(), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
   ZMesh zmesh;
   zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
 
   ZMeshIO meshIO;
   meshIO.save(zmesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#endif
+
 #if 0
   ZMesh zmesh;
   zmesh.load((GET_TEST_DATA_DIR + "/_system/meshes/87839.tif.smooth.obj").c_str());
@@ -27785,6 +27872,23 @@ void ZTest::test(MainWindow *host)
   FILE *fp = fopen((GET_TEST_DATA_DIR + "/_test.drc").c_str(), "w");
   fwrite(buffer.data(), 1, buffer.size(), fp);
   fclose(fp);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZObject3dScan obj;
+  reader->readSupervoxel(5813058594, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  ZMeshIO meshIo;
+  meshIo.save(*mesh, (GET_TEST_DATA_DIR + "/_test.drc").c_str(), "");
+#endif
+
+#if 0
+
+  ZMesh mesh;
+  ZMeshIO meshIo;
+  meshIo.load((GET_TEST_DATA_DIR + "/_test.drc").c_str(), mesh);
+  std::cout << mesh.vertices().size() << std::endl;
 #endif
 
 #if 0
@@ -27872,6 +27976,108 @@ void ZTest::test(MainWindow *host)
     fwrite(buffer.data(), 1, buffer.size(), fp);
     fclose(fp);
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("waspem-dvid.flatironinstitute.org", "e0c7", 8000);
+  target.setMultiscale2dName("sb3911tile");
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidTileInfo info = reader.readTileInfo("sb3911tile");
+  info.print();
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZFlyEmMisc::UploadRoi(
+        (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
+        (GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv").c_str(),
+        writer);
+
+
+#endif
+
+
+#if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
+  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
+
+  std::string line;
+  std::unordered_map<std::string, std::string> nameMap;
+  while (std::getline(stream, line)) {
+    std::cout << line << std::endl;
+    std::vector<std::string> tokens = ZString::Tokenize(line, ',');
+    for (auto &str : tokens) {
+      std::cout << str << " --- ";
+    }
+    std::cout << std::endl;
+    if (tokens.size() >= 3) {
+      ZString name(tokens[2]);
+      name.trim();
+      nameMap[tokens[1] + ".obj"] = name;
+      nameMap[tokens[1] + ".sobj"] = name;
+    }
+  }
+
+  for (auto &entry : nameMap) {
+    std::cout << entry.first << ": " << entry.second << std::endl;
+  }
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+
+  //Upload: ZDvidWriter::uploadRoiMesh
+  {
+    QDir dir(dataDir.c_str());
+    QStringList fileList = dir.entryList(QStringList() << "*.obj");
+    for (QString &file : fileList) {
+      std::string name = nameMap[file.toStdString()];
+      std::cout << file.toStdString() << ": " << name << std::endl;
+      writer->uploadRoiMesh(dataDir + "/" + file.toStdString(), name);
+      //    break;
+    }
+  }
+
+  //Write ROI data: ZDvidWriter::writeRoi
+
+  {
+    QDir dir(dataDir.c_str());
+    QStringList fileList = dir.entryList(QStringList() << "*.sobj");
+    for (QString &file : fileList) {
+      std::string name = nameMap[file.toStdString()];
+      std::cout << file.toStdString() << ": " << name << std::endl;
+      ZObject3dScan roi;
+      roi.load(dataDir + "/" + file.toStdString());
+      if (!writer->getDvidReader().hasData(name)) {
+        writer->createData("roi", name);
+      }
+      writer->writeRoi(roi, name);
+    }
+  }
+#endif
+
+#if 0
+  neutuse::TaskWriter writer;
+  writer.open("http://emdata2.int.janelia.org:2018");
+  writer.testConnection();
+  std::cout << writer.ready() << std::endl;
+
+#endif
+
+#if 0
+  std::cout << GET_APPLICATION_DIR << std::endl;
+  QFileInfo configFileInfo = QFileInfo(
+        QDir((GET_APPLICATION_DIR).c_str()), "local_flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+  configFileInfo.setFile(QDir((GET_APPLICATION_DIR).c_str()), "flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+#endif
+
+#if 1
+//  GET_FLYEM_CONFIG.useDefaultNeuTuServer(false);
+  GET_FLYEM_CONFIG.print();
 #endif
 
   std::cout << "Done." << std::endl;

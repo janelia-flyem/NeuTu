@@ -40,12 +40,13 @@ void ZFlyEmBodySplitter::setBodyId(uint64_t bodyId)
   }
 }
 
-void ZFlyEmBodySplitter::setBody(uint64_t bodyId, flyem::EBodyLabelType type)
+void ZFlyEmBodySplitter::setBody(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar)
 {
   if (m_bodyId != bodyId || m_labelType != type) {
     m_bodyId = bodyId;
     m_labelType = type;
     m_state = STATE_NO_SPLIT;
+    m_fromTar = fromTar;
   }
 }
 
@@ -163,6 +164,16 @@ void ZFlyEmBodySplitter::runSplit(
 ZFlyEmBodySplitter::EState ZFlyEmBodySplitter::getState() const
 {
   return m_state;
+}
+
+bool ZFlyEmBodySplitter::fromTar() const
+{
+  return m_fromTar;
+}
+
+void ZFlyEmBodySplitter::setFromTar(bool status)
+{
+  m_fromTar = status;
 }
 
 void ZFlyEmBodySplitter::updateSplitState(flyem::EBodySplitRange rangeOption)
