@@ -50,9 +50,19 @@ TaskBodyHistory::TaskBodyHistory(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   }
 }
 
-QString TaskBodyHistory::tasktype() const
+QString TaskBodyHistory::taskTypeStatic()
 {
   return VALUE_TASKTYPE;
+}
+
+TaskBodyHistory* TaskBodyHistory::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *doc)
+{
+  return new TaskBodyHistory(json, doc);
+}
+
+QString TaskBodyHistory::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskBodyHistory::actionString()

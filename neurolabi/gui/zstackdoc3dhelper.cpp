@@ -355,6 +355,17 @@ ZStackDoc3dHelper* ZStackDoc3dHelper::GetDocHelper(ZStackDoc *doc)
   return nullptr;
 }
 
+void ZStackDoc3dHelper::UpdateViewData(Z3DView *view, neutube3d::ERendererLayer layer)
+{
+  ZStackDoc3dHelper *helper = GetDocHelper(view->getDocument());
+  if (helper) {
+    helper->updateData(view, layer);
+  } else { //Use default helper if it is not available in the document
+    ZStackDoc3dHelper localHelper;
+    localHelper.updateData(view, layer);
+  }
+}
+
 /*
 void ZStackDoc3dHelper::Attach(ZStackDoc *doc, Z3DView *view)
 {

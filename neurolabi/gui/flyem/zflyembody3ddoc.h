@@ -148,6 +148,8 @@ public:
 
   const ZDvidInfo& getDvidInfo() const;
 
+  bool isDvidMutable() const;
+
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
