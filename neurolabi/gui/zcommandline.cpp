@@ -1070,6 +1070,11 @@ int ZCommandLine::skeletonizeDvid()
   QDir outputDir(m_output.c_str());
 
   if (!QFileInfo(m_output.c_str()).isDir()) {
+    if (reader.getDvidTarget().readOnly()) {
+      LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
+      return 1;
+    }
+
     writer.open(target);
     ZDvidUrl dvidUrl(target);
 
@@ -1129,6 +1134,7 @@ int ZCommandLine::skeletonizeDvid()
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
+      std::cout << "Skeletonizing " << bodyId << std::endl;
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
@@ -1149,7 +1155,9 @@ int ZCommandLine::skeletonizeDvid()
       }
       if (tree == NULL) {
         ZObject3dScan obj;
+        std::cout << "Reading body..." << std::endl;
         reader.readBody(bodyId, true, &obj);
+        std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {
           if (savingToFile) {
