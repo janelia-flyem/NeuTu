@@ -78,7 +78,7 @@ CONFIG(debug, debug|release) {
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
-    QMAKE_CXXFLAGS += -g
+#    QMAKE_CXXFLAGS += -g
     TARGET = neuTube
     CONFIG(neu3) {
       TARGET = neu3
