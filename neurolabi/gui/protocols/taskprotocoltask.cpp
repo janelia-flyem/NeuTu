@@ -8,7 +8,7 @@
  * create a new task by subclassing this class
  *
  * pure virtual methods you must implement:
- * -- tasktype() should return the string that identifies the class type in the json
+ * -- taskType() should return the string that identifies the class type in the json
  * -- actionString() and targetString() will appear in the task UI; eg, "Review body:" and "12345"
  * -- loadSpecific() and addToJson() are how the task reads and writes its particular data;
  *      note that the task takes care of standard values for you (eg, completed status, tags)
@@ -113,6 +113,15 @@ void TaskProtocolTask::beforeNext() {
  * via "prev" button
  */
 void TaskProtocolTask::beforePrev() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
+ * do something when a task is about to be loaded as the current task
+ * via the "next" or "prev" button
+ */
+void TaskProtocolTask::beforeLoading() {
     // nothing
 }
 
@@ -287,12 +296,17 @@ void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
 {
   m_visibleBodies = visible;
   m_selectedBodies = selected;
-  emit(bodiesUpdated());
+  emit bodiesUpdated();
 }
 
 void TaskProtocolTask::allowNextPrev(bool allow)
 {
-  emit(nextPrevAllowed(allow));
+  emit nextPrevAllowed(allow);
+}
+
+void TaskProtocolTask::notify(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
 }
 
 /*
@@ -341,8 +355,13 @@ QJsonObject TaskProtocolTask::toJson() {
 ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 {
   ProtocolTaskConfig config;
-  config.setTaskType(tasktype());
+  config.setTaskType(taskType());
   config.setDefaultTodo(neutube::TO_SPLIT);
 
   return config;
+}
+
+bool TaskProtocolTask::allowingSplit(uint64_t /*bodyId*/) const
+{
+  return false;
 }

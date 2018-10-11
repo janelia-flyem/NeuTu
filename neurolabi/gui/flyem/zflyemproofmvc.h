@@ -144,6 +144,8 @@ public:
     m_3dEnabled = false;
   }
 
+  bool hasSequencer() const;
+
   void disableSequencer();
 
   void notifyStateUpdate();

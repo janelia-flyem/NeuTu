@@ -398,6 +398,7 @@ public:
   bool hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const;
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
+  size_t readBodySize(uint64_t bodyId, flyem::EBodyLabelType type) const;
 
   bool hasGrayscale() const;
 
@@ -436,6 +437,8 @@ public:
 
   uint64_t readSupervoxelIdAt(int x, int y, int z) const;
   uint64_t readSupervoxelIdAt(const ZIntPoint &pt) const;
+
+  std::vector<uint64_t> readSupervoxelSet(uint64_t bodyId) const;
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 

@@ -68,6 +68,7 @@ class ZStackDocMenuFactory;
 class ZLineSegment;
 class ZObject3d;
 class ZWidgetMessage;
+class ZFlyEmBodyEnv;
 
 
 class Z3DWindow : public QMainWindow
@@ -153,6 +154,8 @@ public: //Components
   inline ZSharedPointer<ZStackDoc> getSharedDocument() const {
     return m_doc;
   }
+
+  ZFlyEmBodyEnv *getBodyEnv() const;
 
 public:
   void setMenuFactory(ZStackDocMenuFactory *factory);
@@ -506,6 +509,7 @@ private:
 private slots:
   void about();
   void notifyCameraRotation();
+  void startBodySplit();
 
 private:
   neutube3d::EWindowType m_windowType;
@@ -583,6 +587,8 @@ private:
 
   ZSharedPointer<ZStackDoc> m_doc;
   Z3DView* m_view;
+
+  ZSharedPointer<ZFlyEmBodyEnv> m_bodyEnv;
 
   bool m_buttonStatus[4]; // 0-showgraph, 1-setting, 2-objects, 3-rois
 

@@ -43,6 +43,8 @@
 #include "zstackview.h"
 #include "widgets/z3dtabwidget.h"
 #include "zdvidutil.h"
+#include "neutuse/task.h"
+#include "neutuse/taskfactory.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -542,17 +544,28 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           } else {
 #if defined(_FLYEM_)
             std::vector<uint64_t> bodyArray = newMerged;
-            if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-              if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                    getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-                  ZNeutuService::REQUEST_FAILED) {
-                warnMsg.setMessage("Computing service failed");
+            if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
+              for (uint64_t bodyId : bodyArray) {
+                m_writer.deleteBodyAnnotation(bodyId);
+                m_writer.deleteSkeleton(bodyId);
               }
 
-              if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                    getDvidTarget(), newTargetId, ZNeutuService::UPDATE_ALL) ==
-                  ZNeutuService::REQUEST_FAILED) {
-                warnMsg.setMessage("Computing service failed");
+              neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+                    "skeletonize", getDvidTarget(), newTargetId, true);
+              GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+            } else {
+              if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+                if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                      getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
+                    ZNeutuService::REQUEST_FAILED) {
+                  warnMsg.setMessage("Computing service failed");
+                }
+
+                if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                      getDvidTarget(), newTargetId, ZNeutuService::UPDATE_ALL) ==
+                    ZNeutuService::REQUEST_FAILED) {
+                  warnMsg.setMessage("Computing service failed");
+                }
               }
             }
 #endif
@@ -1384,7 +1397,8 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_reader.open(target)) {
-    m_dvidInfo = m_reader.readGrayScaleInfo();
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
+//    m_dvidInfo = m_reader.readLabelInfo();
     m_writer.open(m_reader.getDvidTarget());
   }
 }

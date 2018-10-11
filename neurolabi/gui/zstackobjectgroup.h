@@ -81,6 +81,8 @@ public:
 
   TStackObjectList findSameClass(
       ZStackObject::EType type, const std::string &objClass);
+  TStackObjectList findSameClass(
+      ZStackObjectRole::TRole role, const std::string &objClass);
 
   ZStackObject* replaceFirstSameSource(ZStackObject *obj);
 
@@ -208,8 +210,11 @@ public:
       ZStackObject::EType type, const std::string &source) const;
   TStackObjectList findSameSourceClassUnsync(
       ZStackObject::EType type, const std::string &source);
+
   TStackObjectList findSameClassUnsync(
       ZStackObject::EType type, const std::string &objClass);
+  TStackObjectList findSameClassUnsync(
+      ZStackObjectRole::TRole role, const std::string &objClass);
 
   ZStackObject* replaceFirstSameSourceUnsync(ZStackObject *obj);
   template<typename InputIterator>
@@ -234,6 +239,7 @@ public:
   TStackObjectList takeSelectedUnsync(ZStackObject::EType type);
   TStackObjectList takeSameSourceUnsync(
       ZStackObject::EType type, const std::string &source);
+
   TStackObjectList takeSameClassUnsync(
       ZStackObject::EType type, const std::string &objClass);
 

@@ -1,4 +1,5 @@
 #include "taskfactory.h"
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "neutuse/task.h"
 
@@ -16,6 +17,7 @@ Task TaskFactory::MakeDvidTask(
   Task task;
   task.setType("dvid");
   task.setName(name);
+  task.setUser(NeutubeConfig::GetUserName());
   ZJsonObject config;
   config.setEntry("bodyid", bodyId);
   config.setEntry("force_update", forceUpdate);
@@ -26,6 +28,15 @@ Task TaskFactory::MakeDvidTask(
   dvidJson.setEntry("body_label", target.getBodyLabelName());
   config.setEntry("dvid", dvidJson);
   task.setConfig(config);
+
+  return task;
+}
+
+Task TaskFactory::MakeDvidSkeletonizeTask(
+    const ZDvidTarget &target, uint64_t bodyId, bool forceUpdate)
+{
+  Task task = MakeDvidTask("skeletonize", target, bodyId, forceUpdate);
+  task.setPriority(1);
 
   return task;
 }

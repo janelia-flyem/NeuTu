@@ -599,7 +599,9 @@ Swc_Tree_Node* Z3DSwcFilter::pickSwcNode(double x, double y)
   Swc_Tree_Node *tn = NULL;
   if (isNodePicking()) {
     const void* obj = pickObject(x, y);
-    tn = (Swc_Tree_Node*) obj;
+    if (std::find(m_swcList.begin(), m_swcList.end(), obj) == m_swcList.end()) {
+      tn = (Swc_Tree_Node*) obj;
+    }
   }
 
   return tn;

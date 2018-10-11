@@ -65,6 +65,7 @@ public:
   std::string getTarSupervoxelsUrl();
   std::string getTarSupervoxelsUrl(uint64_t bodyId);
   std::string getSupervoxelMeshUrl(uint64_t bodyId);
+  std::string getSupervoxelMapUrl(uint64_t bodyId);
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
@@ -121,6 +122,7 @@ public:
   std::string getGrayScaleBlockUrl(
       int ix, int iy, int iz, int blockNumber = 1) const;
 
+  std::string getSegmentationUrl() const;
   std::string getLabels64Url() const;
   std::string getLabels64Url(int zoom) const;
   std::string getLabels64Url(const std::string &name,
@@ -149,6 +151,7 @@ public:
   std::string getBodyInfoUrl(uint64_t bodyId) const;
 
   std::string getBodySizeUrl(uint64_t bodyId) const;
+  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
@@ -324,13 +327,29 @@ public:
 
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
+  static std::string AppendRangeQuery(
+      const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact);
 
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
   static std::string GetServiceResultEndPoint();
-  static std::string AppendQuery(const std::string &url, const std::string query);
+//  static std::string AppendQuery(const std::string &url, const std::string query);
+//  template<typename T>
+//  static std::string AppendQuery(
+//      const std::string &url, const std::pair<std::string,T> &query);
+
+//  template<>
+//  static std::string AppendQuery<bool>(
+//      const std::string &url, const std::pair<std::string, bool> &query);
+
+  static std::string AppendQueryM(
+      const std::string &url,
+      const std::vector<std::pair<std::string, int>> &query);
+
+public:
+  static const std::string SUPERVOXEL_FLAG;
 
 private:
   ZDvidTarget m_dvidTarget;

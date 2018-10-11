@@ -12,7 +12,12 @@ class TaskBodyHistory : public TaskProtocolTask
   Q_OBJECT
 public:
   TaskBodyHistory(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  QString tasktype() const override;
+
+  // For use with TaskProtocolTaskFactory.
+  static QString taskTypeStatic();
+  static TaskBodyHistory* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
+
+  QString taskType() const override;
   QString actionString() override;
   QString targetString() override;
 

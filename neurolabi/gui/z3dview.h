@@ -9,7 +9,7 @@
 #include "zbbox.h"
 #include "zstackobjectgroup.h"
 #include "z3ddef.h"
-#include "zstackdoc3dhelper.h"
+//#include "zstackdoc3dhelper.h"
 
 class Z3DCanvas;
 class Z3DCompositor;
@@ -299,7 +299,7 @@ private:
   QList<neutube3d::ERendererLayer> m_layerList;
   std::vector<Z3DBoundedFilter*> m_allFilters;
 
-  ZStackDoc3dHelper m_docHelper;
+//  ZStackDoc3dHelper m_docHelper;
 
   bool m_lock;
   EInitMode m_initMode;

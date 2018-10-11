@@ -33,6 +33,7 @@ const std::string ZDvidUrl::m_annotationMoveCommand = "move";
 const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
 const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
+const std::string ZDvidUrl::SUPERVOXEL_FLAG = "supervoxels";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -132,6 +133,66 @@ std::string ZDvidUrl::getServerInfoUrl() const
   return GetFullUrl(getApiUrl(), "server/info");
 }
 
+namespace {
+
+std::string AppendQuery(const std::string &url, const std::string query)
+{
+  std::string newUrl = url;
+
+  if (!url.empty() && !query.empty()) {
+    bool hasQuery = false;
+    for (std::string::const_reverse_iterator rit=url.rbegin(); rit!=url.rend(); ++rit) {
+      if (*rit == '/') {
+        break;
+      } else if (*rit == '?') {
+        hasQuery = true;
+        break;
+      }
+    }
+
+    if (hasQuery) {
+      newUrl += "&";
+    } else {
+      newUrl += "?";
+    }
+    newUrl += query;
+  }
+
+  return newUrl;
+}
+
+template<typename T>
+std::string AppendQuery(
+      const std::string &url, const std::pair<std::string,T> &query)
+{
+  if (!query.first.empty()) {
+    std::string qstr = query.first + "=" + std::to_string(query.second);
+    return AppendQuery(url, qstr);
+  }
+
+  return url;
+}
+
+std::string AppendQuery(
+    const std::string &url, const std::pair<std::string, bool> &query)
+{
+  if (!query.first.empty()) {
+    std::string qstr = query.first + "=";
+    if (query.second) {
+      qstr += "true";
+    } else {
+      qstr += "false";
+    }
+
+    return AppendQuery(url, qstr);
+  }
+
+  return url;
+}
+
+}
+
+
 std::string ZDvidUrl::getMeshUrl()
 {
   return getDataUrl(m_dvidTarget.getMeshName());
@@ -213,6 +274,19 @@ std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
 {
   return GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
                     GetBodyKey(bodyId));
+}
+
+std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
+{
+  std::string url;
+  if (m_dvidTarget.hasSupervoxel()) {
+    url = GetFullUrl(getSegmentationUrl(), "supervoxels");
+    if (!url.empty()) {
+      url += "/" + std::to_string(bodyId);
+    }
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getSkeletonUrl() const
@@ -368,31 +442,47 @@ std::string ZDvidUrl::getSparsevolUrl(
     return "";
   }
 
+  return AppendRangeQuery(url, z, z, axis, true);
+
+#if 0
   switch (axis) {
   case neutube::Z_AXIS:
-    url += "?minz=";
-    url.appendNumber(z);
-    url += "&maxz=";
+    url = AppendQueryM(
+          url, {std::make_pair("minz", z),
+                std::make_pair("maxz", z)});
+//    url = AppendQuery(url, std::make_pair("maxz", z));
+
+//    url += "?minz=";
+//    url.appendNumber(z);
+//    url += "&maxz=";
     break;
   case neutube::X_AXIS:
-    url += "?minx=";
-    url.appendNumber(z);
-    url += "&maxx=";
+    url = AppendQueryM(
+          url, {std::make_pair("minx", z),
+                std::make_pair("maxx", z)});
+//    url += "?minx=";
+//    url.appendNumber(z);
+//    url += "&maxx=";
     break;
   case neutube::Y_AXIS:
-    url += "?miny=";
-    url.appendNumber(z);
-    url += "&maxy=";
+    url = AppendQueryM(
+          url, {std::make_pair("miny", z),
+                std::make_pair("maxy", z)});
+//    url += "?miny=";
+//    url.appendNumber(z);
+//    url += "&maxy=";
     break;
   case neutube::A_AXIS:
     break;
   }
 
-  url.appendNumber(z);
+  url = AppendQuery(url, "exact=false");
+//  url.appendNumber(z);
 
-  url += "&exact=false";
+//  url += "&exact=false";
 
   return url;
+#endif
 }
 
 std::string ZDvidUrl::getSupervoxelUrl(
@@ -408,6 +498,9 @@ std::string ZDvidUrl::getSupervoxelUrl(
     return "";
   }
 
+  return AppendRangeQuery(url, z, z, axis, true);
+
+  /*
   switch (axis) {
   case neutube::Z_AXIS:
     url += "?minz=";
@@ -433,6 +526,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
   url += "&exact=false";
 
   return url;
+  */
 }
 
 std::string ZDvidUrl::getSupervoxelUrl(
@@ -448,6 +542,9 @@ std::string ZDvidUrl::getSupervoxelUrl(
     return "";
   }
 
+  return AppendRangeQuery(url, minZ, maxZ, axis, true);
+
+#if 0
   switch (axis) {
   case neutube::Z_AXIS:
     url += "?minz=";
@@ -472,6 +569,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
   }
 
   return url;
+#endif
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
@@ -487,6 +585,9 @@ std::string ZDvidUrl::getSparsevolUrl(
     return "";
   }
 
+  return AppendRangeQuery(url, minZ, maxZ, axis, true);
+
+  /*
   switch (axis) {
   case neutube::Z_AXIS:
     url += "?minz=";
@@ -511,6 +612,7 @@ std::string ZDvidUrl::getSparsevolUrl(
   }
 
   return url;
+  */
 }
 
 std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
@@ -529,30 +631,59 @@ std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
   return url;
 }
 
-std::string ZDvidUrl::AppendQuery(const std::string &url, const std::string query)
-{
-  std::string newUrl = url;
 
-  if (!url.empty() && !query.empty()) {
-    bool hasQuery = false;
-    for (std::string::const_reverse_iterator rit=url.rbegin(); rit!=url.rend(); ++rit) {
-      if (*rit == '/') {
-        break;
-      } else if (*rit == '?') {
-        hasQuery = true;
-        break;
+std::string ZDvidUrl::AppendQueryM(
+    const std::string &url, const std::vector<std::pair<std::string, int>> &query)
+{
+  std::string qstr;
+  for (auto &q : query) {
+    if (!q.first.empty()) {
+      std::string subqstr = q.first + "=" + std::to_string(q.second);
+      if (qstr.empty()) {
+        qstr = subqstr;
+      } else {
+        qstr += "&" + subqstr;
       }
     }
-
-    if (hasQuery) {
-      newUrl += "&";
-    } else {
-      newUrl += "?";
-    }
-    newUrl += query;
   }
 
+  return AppendQuery(url, qstr);
+}
+
+std::string ZDvidUrl::AppendRangeQuery(
+    const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact)
+{
+  if (url.empty()) {
+    return "";
+  }
+
+  std::string newUrl = url;
+
+  switch (axis) {
+  case neutube::Z_AXIS:
+    newUrl = AppendQueryM(
+          url, {std::make_pair("minz", minZ),
+                std::make_pair("maxz", maxZ)});
+    break;
+  case neutube::X_AXIS:
+    newUrl = AppendQueryM(
+          url, {std::make_pair("minx", minZ),
+                std::make_pair("maxx", maxZ)});
+    break;
+  case neutube::Y_AXIS:
+    newUrl = AppendQueryM(
+          url, {std::make_pair("miny", minZ),
+                std::make_pair("maxy", maxZ)});
+    break;
+  case neutube::A_AXIS:
+    break;
+  }
+
+  newUrl = AppendQuery(newUrl, std::make_pair("exact", exact));
+
+
   return newUrl;
+
 }
 
 std::string ZDvidUrl::AppendRangeQuery(
@@ -628,6 +759,9 @@ std::string ZDvidUrl::getSparsevolUrl(
     return "";
   }
 
+  return AppendRangeQuery(url, box);
+
+  /*
   if (!box.isEmpty()) {
     url += "?minx=";
     url.appendNumber(box.getFirstCorner().getX());
@@ -646,6 +780,7 @@ std::string ZDvidUrl::getSparsevolUrl(
   }
 
   return url;
+  */
 }
 
 std::string ZDvidUrl::getCoarseSupervoxelUrl(const std::string &dataName) const
@@ -817,9 +952,15 @@ std::string ZDvidUrl::getGrayScaleBlockUrl(
   return GetFullUrl(url, stream.str());
 }
 
-std::string ZDvidUrl::getLabels64Url() const
+std::string ZDvidUrl::getSegmentationUrl() const
 {
   return getDataUrl(m_dvidTarget.getSegmentationName());
+}
+
+std::string ZDvidUrl::getLabels64Url() const
+{
+  return getSegmentationUrl();
+//  return getDataUrl(m_dvidTarget.getSegmentationName());
 }
 
 std::string ZDvidUrl::getLabels64Url(int zoom) const
@@ -946,6 +1087,11 @@ std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
   }
 
   return "";
+}
+
+std::string ZDvidUrl::getSupervoxelSizeUrl(uint64_t bodyId) const
+{
+  return AppendQuery(getBodySizeUrl(bodyId), std::make_pair(SUPERVOXEL_FLAG, true));
 }
 
 std::string ZDvidUrl::getBoundBoxUrl() const
