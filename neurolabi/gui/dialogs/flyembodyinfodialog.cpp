@@ -786,6 +786,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
               m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
         dvidTime += dvidTimer.elapsed();
+        #ifdef _DEBUG_
+            std::cout << "read top " << m_currentMaxBodies << " synapses from DVID in " << dvidTime << " ms" << std::endl;
+        #endif
 
         // first, get the list of bodies that actually have annotations,
         //  so we don't try to retrieve annotations that aren't there
@@ -910,8 +913,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
         //  they should be very low overhead
-         std::cout << "sequencer load: total time (ms) = " << fullTime << std::endl;
-         std::cout << "sequencer load: DVID time (ms)  = " << dvidTime << std::endl;
+        #ifdef _DEBUG_
+            std::cout << "sequencer load: total time (ms) = " << fullTime << std::endl;
+            std::cout << "sequencer load: DVID time (ms)  = " << dvidTime << std::endl;
+        #endif
 
          emit namedBodyChanged(namedBodies);
 
