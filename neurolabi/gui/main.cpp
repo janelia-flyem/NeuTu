@@ -22,6 +22,7 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "core/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
@@ -294,10 +295,11 @@ int main(int argc, char *argv[])
   if (argc > 1) {
     if ((strcmp(argv[1], "-v") == 0) || (strcmp(argv[1], "--version") == 0)) {
       std::cout << argv[0] << std::endl;
+#if defined(PKG_VERSION)
+      std::cout << "Version: " << ""
+                   NT_XSTR(PKG_VERSION) << std::endl;
+#else
       std::cout << "Version: " << neutube::VERSION << std::endl;
-
-#if defined(__NEUTU_BUILD_VERSION__)
-      std::cout << "Build: " << __NEUTU_BUILD_VERSION__ << std::endl;
 #endif
 
       return 0;
