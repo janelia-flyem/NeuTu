@@ -2419,6 +2419,53 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 #endif
 }
 
+QList<QByteArray> ZDvidReader::readKeyValues(const QString &dataName, const QStringList &keyList) const
+{
+
+    ZDvidUrl url(getDvidTarget());
+    ZDvidBufferReader &bufferReader = m_bufferReader;
+
+    // encode keylist into json payload
+    QJsonArray keys = QJsonArray::fromStringList(keyList);
+    QJsonDocument doc(keys);
+    QByteArray payload = doc.toJson();
+
+    // make call with json keylist
+    bufferReader.read(QString::fromStdString(url.getKeyValuesUrl(dataName.toStdString())),
+        payload,
+        "GET",
+        isVerbose());
+    setStatusCode(bufferReader.getStatusCode());
+
+    // untar response into list of byte arrays
+    QList<QByteArray> ans;
+    const QByteArray &buffer = m_bufferReader.getBuffer();
+    struct archive *archive = archive_read_new();
+    archive_read_support_format_all(archive);
+
+    int result = archive_read_open_memory(archive, buffer.constData(), buffer.size());
+    if (result != ARCHIVE_OK) {
+        LINFO() << "couldn't expand keyvalue archive";
+        return ans;
+        }
+
+    struct archive_entry *entry;
+    while (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
+        const struct stat *s = archive_entry_stat(entry);
+        size_t size = s->st_size;
+
+        QByteArray buffer(size, 0);
+        archive_read_data(archive, buffer.data(), size);
+        ans.append(buffer);
+    }
+    result = archive_read_free(archive);
+    if (result != ARCHIVE_OK) {
+        LINFO() << "couldn't close keyvalue archive";
+    }
+
+    return ans;
+}
+
 QStringList ZDvidReader::readKeys(const QString &dataName) const
 {
   if (dataName.isEmpty()) {
@@ -4767,6 +4814,22 @@ ZJsonObject ZDvidReader::readJsonObjectFromKey(
   }
 
   return obj;
+}
+
+QList<ZJsonObject> ZDvidReader::readJsonObjectsFromKeys(const QString &dataName,
+    const QStringList &keyList) const
+{
+    QList<ZJsonObject> objects;
+    const QList<QByteArray> &buffers = readKeyValues(dataName, keyList);
+
+    for (int i=0; i<buffers.size(); i++) {
+        ZJsonObject obj;
+        if (!buffers[i].isEmpty()) {
+            obj.decodeString(buffers[i].constData());
+            objects.append(obj);
+        }
+    }
+    return objects;
 }
 
 ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
