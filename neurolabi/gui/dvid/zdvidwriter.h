@@ -233,6 +233,10 @@ public:
     return m_statusCode == 200;
   }
 
+  inline const QString& getStatusErrorMessage() const {
+    return m_statusErrorMessage;
+  }
+
   inline const QString& getStandardOutput() const {
     return m_standardOutout;
   }
@@ -317,6 +321,7 @@ private:
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;
   int m_statusCode;
+  QString m_statusErrorMessage;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;

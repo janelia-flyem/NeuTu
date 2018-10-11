@@ -49,10 +49,6 @@ public:
     return m_versionDag;
   }
 
-  void mergeSelected(ZFlyEmSupervisor *supervisor);
-  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
-  void unmergeSelected();
-
   virtual void setDvidTarget(const ZDvidTarget &target);
 
 //  virtual void updateTileData();
@@ -66,6 +62,8 @@ public:
   const ZDvidInfo& getLabelInfo() const {
     return m_labelInfo;
   }
+
+  bool isDvidMutable() const;
 
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
@@ -144,6 +142,10 @@ public:
   ZFlyEmBodyMergeProject* getMergeProject() {
     return m_mergeProject;
   }
+
+  void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
+  void unmergeSelected();
 
   void backupMergeOperation();
 //  void downloadBodyMask();
@@ -643,7 +645,7 @@ private:
   QString getAnnotationNameWarningDetail(
       const QMap<uint64_t, QVector<QString> > &nameMap) const;
   QString getAnnotationFinalizedWarningDetail(
-      const std::vector<uint64_t> &finalizedBodyArray) const;
+      const std::vector<uint64_t> &finalizedBodyArray, const std::string &title) const;
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;

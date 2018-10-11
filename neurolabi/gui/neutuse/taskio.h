@@ -26,12 +26,17 @@ public:
 
   bool ready() const;
 
+  void testConnection();
+
+  void reset();
+
 protected:
   void post(const std::string &path, const ZJsonObject &obj);
 
 protected:
-//  std::string m_address;
+  std::string m_address;
   int m_statusCode = 0;
+  bool m_connected = false;
   std::string m_response;
   std::unique_ptr<libdvid::DVIDConnection> m_connection;
 };

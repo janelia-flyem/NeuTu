@@ -915,7 +915,8 @@ HEADERS += mainwindow.h \
     data3d/zstackobjectconfig.h \
     protocols/taskfalsesplitreview.h \
     z3dcamerautils.h \
-    flyem/zflyembodyenv.h
+    flyem/zflyembodyenv.h \
+    protocols/taskprotocoltaskfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1603,7 +1604,8 @@ SOURCES += main.cpp \
     data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     z3dcamerautils.cpp \
-    flyem/zflyembodyenv.cpp
+    flyem/zflyembodyenv.cpp \
+    protocols/taskprotocoltaskfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

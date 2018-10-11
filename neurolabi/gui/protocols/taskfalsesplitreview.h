@@ -26,7 +26,12 @@ class TaskFalseSplitReview : public TaskProtocolTask
   Q_OBJECT
 public:
   TaskFalseSplitReview(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  virtual QString tasktype() const override;
+
+  // For use with TaskProtocolTaskFactory.
+  static QString taskTypeStatic();
+  static TaskFalseSplitReview* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
+
+  virtual QString taskType() const override;
   virtual QString actionString() override;
   virtual QString targetString() override;
 

@@ -20,6 +20,8 @@ public:
 public slots:
   void update();
   void updateDefaultConfigChecked(bool on);
+  void updateDefaultNeuTuServerChecked(bool on);
+  void updateDefaultTaskServerChecked(bool on);
 
 private:
   std::string getNeuTuServer() const;
@@ -27,13 +29,16 @@ private:
   std::string getConfigPath() const;
 
   bool usingDefaultConfig() const;
+  bool usingDefaultService() const;
+  bool usingDefaultTaskServer() const;
   bool namingSynapse() const;
   bool namingPsd() const;
 
   void init();
+  void updateNeutuseWidget();
 
   void connectSignalSlot();
-  QString shrink(const QString &str, int len);
+  static QString Shrink(const QString &str, int len);
 
 private:
   Ui::FlyEmSettingDialog *ui;

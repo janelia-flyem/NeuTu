@@ -126,8 +126,14 @@ void ZFlyEmProofMvc::init()
   setFocusPolicy(Qt::ClickFocus);
 
   m_dvidDlg = NULL;
-  m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-        FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
+
+  // temporarily disable sequencer:
+  if (neutube::HasEnv("USE_SEQUENCER", "yes")) {
+    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
+          FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
+  } else {
+    m_bodyInfoDlg = NULL;
+  }
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
@@ -208,7 +214,7 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
-          FlyEmBodyInfoDialog::MODE_QUERY, this);
+          FlyEmBodyInfoDialog::EMode::QUERY, this);
     m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_bodyQueryDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
@@ -2520,6 +2526,11 @@ void ZFlyEmProofMvc::notifyStateUpdate()
   emit stateUpdated(this);
 }
 
+bool ZFlyEmProofMvc::hasSequencer() const
+{
+  return m_bodyInfoDlg != NULL;
+}
+
 void ZFlyEmProofMvc::disableSequencer()
 {
   disconnect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
@@ -2829,10 +2840,7 @@ void ZFlyEmProofMvc::annotateBody()
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         if (reader.isReady()) {
           ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-
-          if (!annotation.isEmpty()) {
-            dlg->loadBodyAnnotation(annotation);
-          }
+          dlg->loadBodyAnnotation(annotation);
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
@@ -3054,7 +3062,7 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 #if defined(_FLYEM_)
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutube::MSG_WARNING);
-  if (GET_NETU_SERVICE.isNormal()) {
+  if (GET_FLYEM_CONFIG.hasNormalService()) {
     m_skeletonUpdateDlg->setComputingServer(
           GET_NETU_SERVICE.getServer().c_str());
     if (m_skeletonUpdateDlg->exec()) {

@@ -18,12 +18,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
-#include "protocols/taskbodyhistory.h"
-#include "protocols/taskbodycleave.h"
-#include "protocols/taskbodymerge.h"
-#include "protocols/taskbodyreview.h"
-#include "protocols/taskfalsesplitreview.h"
-#include "protocols/tasksplitseeds.h"
+#include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
@@ -63,7 +58,6 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
-
     // UI connections
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
@@ -73,6 +67,14 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
+
+    QMenu *createTasksMenu = new QMenu(ui->loadTasksButton);
+    for (QString menuLabel : TaskProtocolTaskFactory::getInstance().registeredGuiMenuLabels()) {
+      createTasksMenu->addAction(menuLabel, [menuLabel, this]() {
+        this->createTask(menuLabel);
+      });
+    }
+    ui->createTaskButton->setMenu(createTasksMenu);
 
     // keyboard shortcuts for the "next" and "prev" buttons must be specified this way
     // so auto-repeat can be disabled
@@ -233,7 +235,7 @@ bool TaskProtocolWindow::allowingSplit(uint64_t bodyId) const
 bool TaskProtocolWindow::isInCleavingTask() const
 {
   if (getCurrentTask()) {
-    return getCurrentTask()->tasktype() == "body cleave";
+    return getCurrentTask()->taskType() == "body cleave";
   }
 
   return true;
@@ -826,6 +828,8 @@ void TaskProtocolWindow::updateMenu(bool add) {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforeLoading();
+
         disableButtonsWhileUpdating();
 
         emit allBodiesRemoved();
@@ -1104,6 +1108,7 @@ bool TaskProtocolWindow::isValidJson(QJsonObject json) {
  * effect: load data from json into internal data structures
  */
 void TaskProtocolWindow::loadTasks(QJsonObject json) {
+    TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
 
     m_taskList.clear();
     foreach(QJsonValue taskJson, json[KEY_TASKLIST].toArray()) {
@@ -1112,37 +1117,10 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             continue;
         }
 
-        // this if-else tree will get more awkward with more types...
-        // TODO: Switch to a factory pattern that produces an instance of the appropriate
-        // TaskProtocolTask subclass given the KEY_TASKTYPE value.
-
-        // also, need to collect these keys and values better; hard-code this one
-        //  for now
         QString taskType = taskJson.toObject()[KEY_TASKTYPE].toString();
-        if (taskType == "body review") {
-            QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
-            m_taskList.append(task);
-        } else if (taskType == "body history") {
-            QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
-            m_taskList.append(task);
-        } else if (taskType == "body cleave") {
-            QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
-            m_taskList.append(task);
-        } else if (taskType == "false split review") {
-            QSharedPointer<TaskProtocolTask> task(new TaskFalseSplitReview(taskJson.toObject(), m_body3dDoc));
-            m_taskList.append(task);
-        } else if (taskType == "body merge") {
-            QSharedPointer<TaskProtocolTask> task(new TaskBodyMerge(taskJson.toObject(), m_body3dDoc));
-            m_taskList.append(task);
-        } else if (taskType == "split seeds") {
-            // I'm not really fond of this task having a different constructor signature, but
-            //  neither do I want to pass in both docs to every task just because a few might
-            //  need one or the other of them
-            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject(), m_body3dDoc));
-            m_taskList.append(task);
-        } else if (taskType == "test task") {
-            QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));
-            m_taskList.append(task);
+        TaskProtocolTask *task = factory.createFromJson(taskType, taskJson.toObject(), m_body3dDoc);
+        if (task) {
+            m_taskList.append(QSharedPointer<TaskProtocolTask>(task));
         } else {
             // unknown task type; log it and move on
             LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
@@ -1153,6 +1131,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
                     this, SLOT(onBodiesUpdated()));
             connect(m_taskList.back().data(), SIGNAL(nextPrevAllowed(bool)),
                     this, SLOT(onNextPrevAllowed(bool)));
+            connect(m_taskList.back().data(), SIGNAL(messageGenerated(const ZWidgetMessage&)),
+                    this, SIGNAL(messageGenerated(const ZWidgetMessage&)));
             connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
                     this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
             connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
@@ -1161,6 +1141,21 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
     }
 
     LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
+}
+
+void TaskProtocolWindow::createTask(QString menuLabel)
+{
+  TaskProtocolTaskFactory factory = TaskProtocolTaskFactory::getInstance();
+  QJsonArray taskList = factory.createFromGui(menuLabel, m_body3dDoc);
+  if (!taskList.isEmpty()) {
+    QJsonObject tasksObject;
+
+    tasksObject[KEY_TASKLIST] = taskList;
+    tasksObject[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
+    tasksObject[KEY_VERSION] = currentVersion;
+
+    startProtocol(tasksObject, true);
+  }
 }
 
 /*
@@ -1374,7 +1369,7 @@ QString TaskProtocolWindow::getCurrentTaskProtocolType() const
     return "";
   }
 
-  return m_taskList[m_currentTaskIndex]->tasktype();
+  return m_taskList[m_currentTaskIndex]->taskType();
 }
 */
 
