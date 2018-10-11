@@ -39,14 +39,16 @@ exists($${CONDA_ENV}) {
 unix {
   #neurolabi
   LIBS += -L$${NEUROLABI_DIR}/c/lib
+
+
   equals(SANITIZE_BUILD, "address") {
-      contains(CONFIG, sanitize) {
-        LIBS += -lneurolabi_sanitize
-      } else {
-        LIBS += -lneurolabi_debug
-      }
+    LIBS += -lneurolabi_sanitize
   } else {
+    CONFIG(debug, debug|release) {
+      LIBS += -lneurolabi_debug
+    } else {
       LIBS += -lneurolabi
+    }
   }
 
   INCLUDEPATH += $${LIBFFTW_DIR}/include \

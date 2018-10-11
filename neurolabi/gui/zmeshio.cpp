@@ -555,36 +555,46 @@ QByteArray ZMeshIO::writeToMemory(const ZMesh& mesh, std::string format) const
   QByteArray result;
 
   try {
-    CHECK(m_writeFormats.contains(format));
+    if (format == "drc") {
+      draco::Mesh *dmesh = ToDracoMesh(mesh, nullptr);
+      if (dmesh) {
+        draco::Encoder encoder;
+        draco::EncoderBuffer buffer;
+        encoder.EncodeMeshToBuffer(*dmesh, &buffer);
+        result.append(buffer.data(), buffer.size());
+        delete dmesh;
+      }
+    } else {
+      CHECK(m_writeFormats.contains(format));
 
-    auto sc = std::make_unique<aiScene>();
-    sc->mRootNode = new aiNode;
-    sc->mRootNode->mName.Set("modelName");
+      auto sc = std::make_unique<aiScene>();
+      sc->mRootNode = new aiNode;
+      sc->mRootNode->mName.Set("modelName");
 
-    // Create nodes for the whole scene
-    std::vector<aiMesh*> meshArray;
-    createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
+      // Create nodes for the whole scene
+      std::vector<aiMesh*> meshArray;
+      createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
 
-    // Create mesh pointer buffer for this scene
-    if (sc->mNumMeshes > 0) {
-      sc->mMeshes = new aiMesh* [meshArray.size()];
-      for (size_t index = 0; index < meshArray.size(); index++) {
-        sc->mMeshes[index] = meshArray[index];
+      // Create mesh pointer buffer for this scene
+      if (sc->mNumMeshes > 0) {
+        sc->mMeshes = new aiMesh* [meshArray.size()];
+        for (size_t index = 0; index < meshArray.size(); index++) {
+          sc->mMeshes[index] = meshArray[index];
+        }
+      }
+
+      //
+      createMaterials(sc.get());
+
+      Assimp::Exporter exporter;
+      const aiExportDataBlob *blob = exporter.ExportToBlob(sc.get(), format);
+      if (blob == NULL) {
+        throw ZIOException(exporter.GetErrorString());
+      } else {
+        result.append(static_cast<const char*>(blob->data), blob->size);
       }
     }
-
-    //
-    createMaterials(sc.get());
-
-    Assimp::Exporter exporter;
-    const aiExportDataBlob *blob = exporter.ExportToBlob(sc.get(), format);
-    if (blob == NULL) {
-      throw ZIOException(exporter.GetErrorString());
-    } else {
-      result.append(static_cast<const char*>(blob->data), blob->size);
-    }
-  }
-  catch (const ZException& e) {
+  } catch (const ZException& e) {
     throw ZIOException(QString("Can not save mesh: %1").arg(e.what()));
   }
 
@@ -672,6 +682,7 @@ void ZMeshIO::readDracoMeshFromMemory(
     draco::Decoder decoder;
     auto statusor = decoder.DecodeMeshFromBuffer(&buffer);
     if (!statusor.ok()) {
+      LERROR() << statusor.status().error_msg_string();
       throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
     }
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
@@ -692,6 +703,7 @@ void ZMeshIO::readDracoMeshFromMemory(
     draco::Decoder decoder;
     auto statusor = decoder.DecodePointCloudFromBuffer(&buffer);
     if (!statusor.ok()) {
+      LERROR() << statusor.status().error_msg_string();
       throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
     }
     pc = std::move(statusor).value();

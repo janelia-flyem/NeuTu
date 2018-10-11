@@ -326,6 +326,8 @@ public:
     m_role.addRole(role);
   }
 
+  void removeRole(ZStackObjectRole::TRole role);
+
   /*
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;

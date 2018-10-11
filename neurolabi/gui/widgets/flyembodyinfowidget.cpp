@@ -12,7 +12,7 @@ FlyEmBodyInfoWidget::FlyEmBodyInfoWidget(QWidget *parent) :
   ui->setupUi(this);
 
   m_mainWidget = new FlyEmBodyInfoDialog(
-        FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
+        FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
   m_mainWidget->setSizePolicy(
         QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 //  setWidget(m_mainWidget);

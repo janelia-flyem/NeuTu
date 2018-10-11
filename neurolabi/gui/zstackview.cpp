@@ -2264,6 +2264,7 @@ void ZStackView::paintDynamicObjectBuffer()
   if (m_dynamicObjectCanvas != NULL) {
     ZPainter painter(m_dynamicObjectCanvas);
     painter.setOpacity(m_dynamicObjectOpacity);
+    painter.setZOffset(buddyDocument()->getStackOffset().getZ());
     paintObjectBuffer(painter, ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
 
     if (painter.isPainted()) {

@@ -131,14 +131,14 @@ private:
   QAction *m_viewTodoAction;
   QAction *m_viewRoiAction;
 
-  QAction *m_importBookmarkAction;
-  QAction *m_openSequencerAction;
-  QAction *m_openProtocolsAction;
-  QAction *m_contrastAction;
-  QAction *m_smoothAction;
-  QAction *m_openTodoAction;
-  QAction *m_roiToolAction;
-  QAction *m_bodyExplorerAction;
+  QAction *m_importBookmarkAction = nullptr;
+  QAction *m_openSequencerAction = nullptr;
+  QAction *m_openProtocolsAction = nullptr;
+  QAction *m_contrastAction = nullptr;
+  QAction *m_smoothAction = nullptr;
+  QAction *m_openTodoAction = nullptr;
+  QAction *m_roiToolAction = nullptr;
+  QAction *m_bodyExplorerAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

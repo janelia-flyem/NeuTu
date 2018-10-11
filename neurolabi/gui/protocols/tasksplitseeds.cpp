@@ -64,8 +64,19 @@ const QString TaskSplitSeeds::VALUE_TASKTYPE = "split seeds";
 const QString TaskSplitSeeds::KEY_BODYID = "body ID";
 const QString TaskSplitSeeds::TAG_SEEDS_ADDED = "seeds added";
 
-QString TaskSplitSeeds::tasktype() const {
-    return VALUE_TASKTYPE;
+QString TaskSplitSeeds::taskTypeStatic()
+{
+  return VALUE_TASKTYPE;
+}
+
+TaskSplitSeeds* TaskSplitSeeds::createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
+{
+  return new TaskSplitSeeds(json, bodyDoc);
+}
+
+QString TaskSplitSeeds::taskType() const
+{
+  return taskTypeStatic();
 }
 
 QString TaskSplitSeeds::actionString() {

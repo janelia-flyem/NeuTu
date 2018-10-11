@@ -1333,23 +1333,25 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)
     ZObject3dScan slice1 = getSlice(z);
     ZObject3dScan slice2 = obj.getSlice(z);
     ZStack *stack1 = slice1.toStackObject();
-    int stripeNumber = slice2.getStripeNumber();
-    for (int i = 0; i < stripeNumber; ++i) {
-      const ZObject3dStripe &stripe = slice2.getStripe(i);
-      int segmentNumber = stripe.getSegmentNumber();
-      int y = stripe.getY();
-      for (int j = 0; j < segmentNumber; ++j) {
-        int minX = stripe.getSegmentStart(j);
-        int maxX = stripe.getSegmentEnd(j);
-        for (int x = minX; x <= maxX; ++x) {
-          if (stack1->getIntValue(x, y, z) > 0) {
-            delete stack1;
-            return true;
+    if (stack1) {
+      int stripeNumber = slice2.getStripeNumber();
+      for (int i = 0; i < stripeNumber; ++i) {
+        const ZObject3dStripe &stripe = slice2.getStripe(i);
+        int segmentNumber = stripe.getSegmentNumber();
+        int y = stripe.getY();
+        for (int j = 0; j < segmentNumber; ++j) {
+          int minX = stripe.getSegmentStart(j);
+          int maxX = stripe.getSegmentEnd(j);
+          for (int x = minX; x <= maxX; ++x) {
+            if (stack1->getIntValue(x, y, z) > 0) {
+              delete stack1;
+              return true;
+            }
           }
         }
       }
+      delete stack1;
     }
-    delete stack1;
   }
 
   return false;

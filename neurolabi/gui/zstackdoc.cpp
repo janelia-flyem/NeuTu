@@ -3191,14 +3191,14 @@ void ZStackDoc::importLocsegChain(const QStringList &fileList,
     if (!chain->isEmpty()) {
       bool loadIt = true;
 
-      if (option != ALL_TUBE) {
+      if (option != TubeImportOption::ALL_TUBE) {
         double conf = chain->confidence(getStack()->c_stack());
         qDebug() << conf << "\n";
-        if (option == GOOD_TUBE) {
+        if (option == TubeImportOption::GOOD_TUBE) {
           if (conf < 0.5) {
             loadIt = false;
           }
-        } else if (option == BAD_TUBE) {
+        } else if (option == TubeImportOption::BAD_TUBE) {
           if (conf >= 0.5) {
             loadIt = false;
           }

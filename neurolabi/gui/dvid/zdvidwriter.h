@@ -60,6 +60,8 @@ public:
 
   void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
 
+  void writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId);
+
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
@@ -231,6 +233,10 @@ public:
     return m_statusCode == 200;
   }
 
+  inline const QString& getStatusErrorMessage() const {
+    return m_statusErrorMessage;
+  }
+
   inline const QString& getStandardOutput() const {
     return m_standardOutout;
   }
@@ -315,6 +321,7 @@ private:
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;
   int m_statusCode;
+  QString m_statusErrorMessage;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;

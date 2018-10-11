@@ -49,9 +49,13 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
 {
 //  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
-  m_docHelper.attach(this);
+//  m_docHelper.attach(this);
+//  ZStackDoc3dHelper::Attach(m_doc, this);
 
   createActions();
+
+  m_canvas->getInteractionEngine()->setKeyProcessor(
+        doc->getKeyProcessor());
 
   connect(m_canvas, &Z3DCanvas::openGLContextInitialized, this, &Z3DView::init);
 }
@@ -178,7 +182,7 @@ void Z3DView::updateBoundBox()
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     std::cout << "Getting bounding box of " << flt->className().toStdString() << std::endl;
 #endif
     if (flt->isVisible()) {
@@ -485,10 +489,10 @@ void Z3DView::init()
     connect(&camera(), &Z3DCameraParameter::valueChanged,
             this, &Z3DView::resetCameraClippingRange);
 
-#ifdef _FLYEM_
-    m_canvas->getInteractionEngine()->setKeyProcessor(
-          new ZFlyEmBody3dDocKeyProcessor);
-#endif
+//#ifdef _FLYEM_
+//    m_canvas->getInteractionEngine()->setKeyProcessor(
+//          new ZFlyEmBody3dDocKeyProcessor);
+//#endif
 
     emit networkConstructed();
 
@@ -768,8 +772,8 @@ void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
   ZOUT(LTRACE(), 5) << "Processing object modification in Z3DView ...";
 
   ZStackDoc3dHelper helper;
-  helper.attach(this);
-  helper.processObjectModified(objInfo);
+//  helper.attach(this);
+  helper.processObjectModified(objInfo, this);
 }
 
 void Z3DView::dump(const QString &message)
@@ -972,7 +976,16 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   if (layer == neutube3d::LAYER_VOLUME) {
     updateVolumeData();
   } else {
-    m_docHelper.updateData(layer);
+    ZStackDoc3dHelper::UpdateViewData(this, layer);
+    /*
+    ZStackDoc3dHelper *helper = ZStackDoc3dHelper::GetDocHelper(m_doc);
+    if (helper) {
+      helper->updateData(this, layer);
+    } else {
+      ZStackDoc3dHelper localHelper;
+      localHelper.updateData(this, layer);
+    }
+    */
   }
 }
 

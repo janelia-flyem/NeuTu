@@ -80,6 +80,25 @@ void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc)
   }
 }
 
+void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, std::string objectClass)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    bool updated = false;
+    for (ZStackObject *obj : objList) {
+      if (obj->getObjectClass() == objectClass) {
+        doc->getDataBuffer()->addUpdate(obj, GetRemoveAction(true));
+        updated = true;
+      }
+    }
+    if (updated) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
 void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
 {
   if (doc != NULL) {
@@ -182,6 +201,8 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
   }
 }
 
+//Parse watershed results
+//Each region will be assigned an ID for finding mesh correspondence
 void ZStackDocAccessor::ParseWatershedContainer(
     ZStackDoc *doc, ZStackWatershedContainer *container)
 {
@@ -192,9 +213,11 @@ void ZStackDocAccessor::ParseWatershedContainer(
     ZOUT(LTRACE(), 5) << result.size() << "split generated.";
     QList<ZStackObject *> objList;
 
+    int id = 1;
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
+      obj->setObjectId(std::to_string(id++));
       obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
       objList.append(obj);
     }
