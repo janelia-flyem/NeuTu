@@ -413,6 +413,11 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(showOrthoWindow(double,double,double)));
   connect(getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
           this, SLOT(showBigOrthoWindow(double,double,double)));
+  connect(getPresenter(), SIGNAL(checkingBookmark()),
+          this, SLOT(checkSelectedBookmark()));
+  connect(getPresenter(), SIGNAL(uncheckingBookmark()),
+          this, SLOT(uncheckSelectedBookmark()));
+
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
   connect(getView(), SIGNAL(sliceSliderPressed()),
@@ -4677,15 +4682,39 @@ void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
 {
   TStackObjectSet &selected = getCompleteDocument()->getSelected(
         ZStackObject::TYPE_FLYEM_BOOKMARK);
+  bool userBookmarkUpdated = false;
+  bool assignedBookmarkUpdated = false;
   for (TStackObjectSet::iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
     bookmark->setChecked(checking);
     recordBookmark(bookmark);
+    if (bookmark->isCustom()) {
+      userBookmarkUpdated = true;
+    } else {
+      assignedBookmarkUpdated = true;
+    }
   }
   if (!selected.isEmpty()) {
+    if (userBookmarkUpdated) {
+      updateUserBookmarkTable();
+    }
+    if (assignedBookmarkUpdated) {
+      updateAssignedBookmarkTable();
+    }
+
 //    emit bookmarkUpdated();
   }
+}
+
+void ZFlyEmProofMvc::checkSelectedBookmark()
+{
+  checkSelectedBookmark(true);
+}
+
+void ZFlyEmProofMvc::uncheckSelectedBookmark()
+{
+  checkSelectedBookmark(false);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)

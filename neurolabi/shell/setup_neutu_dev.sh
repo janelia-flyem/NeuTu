@@ -29,6 +29,16 @@ else
   install_dir=$1
 fi
 
+if [ $# -gt 0 ]
+then
+  package=$2
+fi
+
+if [ $# -gt 1 ]
+then
+  channel=$3
+fi
+
 echo "Installing NeuTu under $install_dir"
 initdir $install_dir
 bindir=$install_dir/bin
@@ -37,7 +47,11 @@ initdir $bindir
 
 downloadDir=$install_dir/Download
 initdir $downloadDir
-condaDir=$install_dir/Download/miniconda
+
+if [ -z $condaDir ]
+then
+  condaDir=$install_dir/Download/miniconda
+fi
 #echo $PATH
 #which md5
 #exit
@@ -60,19 +74,31 @@ echo '  - conda-forge' >> $condarc
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
 
+suffix='-develop'
+if [ ! -z $package ]
+then
+  suffix="-$package"
+fi
+
+channel_arg=''
+if [ ! -z $channel ]
+then
+  channel_arg="-c $channel"
+fi
+
 envName='neutu-env'
 source $condaDir/bin/activate root
 conda create -n $envName python=3.6 -y
 source $condaDir/bin/activate $envName
-conda install neutu-develop -y
-conda install neu3-develop -y
+conda install neutu$suffix -y $channel_arg
+conda install neu3$suffix -y $channel_arg
 
 updateFile=$bindir/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
-echo "conda update neutu-develop -y" >> $updateFile
-echo "conda update neu3-develop -y" >> $updateFile
+echo "conda update neutu$suffix -y $channel_arg" >> $updateFile
+echo "conda update neu3$suffix -y $channel_arg" >> $updateFile
 chmod u+x $updateFile
 
 if [ `uname` = 'Darwin' ]
