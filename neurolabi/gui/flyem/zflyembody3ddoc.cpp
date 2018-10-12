@@ -1062,6 +1062,31 @@ flyem::EBodyLabelType ZFlyEmBody3dDoc::getLabelType(uint64_t bodyId) const
   return flyem::LABEL_BODY;
 }
 
+void ZFlyEmBody3dDoc::showAllMesh()
+{
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(this);
+  for (ZMesh *mesh : meshList) {
+    if (!mesh->isVisible()) {
+      mesh->setVisible(true);
+      bufferObjectVisibilityChanged(mesh);
+    }
+  }
+  processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::hideNoSplitMesh()
+{
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(this);
+  ZMesh* splitMesh = getMeshForSplit();
+  for (ZMesh *mesh : meshList) {
+    if (mesh != splitMesh) {
+      mesh->setVisible(false);
+      bufferObjectVisibilityChanged(mesh);
+    }
+  }
+  processObjectModified();
+}
+
 ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
 {
   ZMesh *meshForSplit = nullptr;
@@ -1133,6 +1158,9 @@ void ZFlyEmBody3dDoc::activateSplit(
 
     if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
       m_splitter->setBody(bodyId, type, fromTar);
+
+//      hideNoSplitMesh();
+
       QString msg = "Split activated for ";
       if (type == flyem::LABEL_SUPERVOXEL) {
         msg += "supervoxel ";
@@ -1176,10 +1204,12 @@ void ZFlyEmBody3dDoc::deactivateSplit()
   if (m_splitter->getBodyId() > 0) {
     waitForSplitToBeDone();
 
-    if (m_taskConfig.getTaskType() == ProtocolTaskFactory::TASK_BODY_CLEAVE) {
+//    if (m_taskConfig.getTaskType() == ProtocolTaskFactory::TASK_BODY_CLEAVE) {
+    if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
       removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
       ZStackDocAccessor::RemoveSplitSeed(this);
     }
+//    }
 
     uint64_t parentId = m_splitter->getBodyId();
 
@@ -1190,9 +1220,27 @@ void ZFlyEmBody3dDoc::deactivateSplit()
           parentId, flyem::BODY_SPLIT_ONLINE);
 
     m_splitter->setBodyId(0);
+
+    QAction *action = m_actionLibrary->getAction(
+          ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY);
+    if (action) {
+      action->setChecked(false);
+    }
+
     emit interactionStateChanged();
   }
 }
+
+
+void ZFlyEmBody3dDoc::showMeshForSplitOnly(bool on)
+{
+  if (on) {
+    hideNoSplitMesh();
+  } else {
+    showAllMesh();
+  }
+}
+
 
 void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
 {
@@ -1211,6 +1259,10 @@ void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_BODY_ANNOTATION:
         connect(action, SIGNAL(triggered()),
                 this, SLOT(startBodyAnnotation()));
+        break;
+      case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
+        connect(action, SIGNAL(toggled(bool)),
+                this, SLOT(showMeshForSplitOnly(bool)));
         break;
       default:
         break;
