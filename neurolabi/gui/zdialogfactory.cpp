@@ -303,9 +303,9 @@ void ZDialogFactory::About(QWidget *parent)
 #endif
 
   QString version;
-#if defined(PKG_VERSION)
+#if defined(_PKG_VERSION)
   version = ""
-      NT_XSTR(PKG_VERSION);
+      NT_XSTR(_PKG_VERSION);
 #endif
 
   if (!version.isEmpty()) {
