@@ -449,7 +449,7 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     }
 
     if (annotation.getStatus().empty()) {
-      annotation.setStatus("Not examined");
+//      annotation.setStatus("Not examined");
     }
 
     if (!annotation.isEmpty()) {

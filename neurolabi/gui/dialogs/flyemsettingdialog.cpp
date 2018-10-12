@@ -20,6 +20,15 @@ FlyEmSettingDialog::~FlyEmSettingDialog()
   delete ui;
 }
 
+void FlyEmSettingDialog::updateNeutuseWidget()
+{
+  QPalette *palette = new QPalette();
+  palette->setColor(
+        QPalette::Text,
+        GET_FLYEM_CONFIG.hasNormalService() ? Qt::darkGreen : Qt::darkRed);
+  ui->servicelineEdit->setPalette(*palette);
+}
+
 void FlyEmSettingDialog::init()
 {
   loadSetting();
@@ -27,10 +36,13 @@ void FlyEmSettingDialog::init()
   ui->configPushButton->hide();
   ui->dataDirPushButton->hide();
   ui->defaultConfigLineEdit->setText(
-        shrink(GET_FLYEM_CONFIG.getDefaultConfigPath().c_str(), 40));
+        Shrink(GET_FLYEM_CONFIG.getDefaultConfigPath().c_str(), 40));
   ui->defaultConfigLineEdit->setToolTip(
         GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
+
   updateDefaultConfigChecked(usingDefaultConfig());
+  updateDefaultNeuTuServerChecked(usingDefaultService());
+  updateDefaultTaskServerChecked(usingDefaultTaskServer());
 }
 
 void FlyEmSettingDialog::loadSetting()
@@ -43,13 +55,18 @@ void FlyEmSettingDialog::loadSetting()
     ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
 #endif
   }
+  ui->configLineEdit->setToolTip(ui->configLineEdit->text());
 
 #if defined(_FLYEM_)
-  ui->servicelineEdit->setText(GET_FLYEM_CONFIG.getRemoteServer().c_str());
+  updateNeutuseWidget();
+
+  ui->servicelineEdit->setText(GET_FLYEM_CONFIG.getNeuTuServer().c_str());
+
 //  ui->servicelineEdit->setText(
 //        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
-  ui->statusLabel->setText(
-        GET_FLYEM_CONFIG.hasNormalService() ? "Normal" : "Down");
+
+//  ui->statusLabel->setText(
+//        GET_FLYEM_CONFIG.hasNormalService() ? "Normal" : "Down");
 #ifdef _DEBUG_
   std::cout << "Current task server: " << GET_FLYEM_CONFIG.getTaskServer() << std::endl;
 #endif
@@ -65,6 +82,12 @@ void FlyEmSettingDialog::loadSetting()
 #if defined(_FLYEM_)
   ui->defaultConfigFileCheckBox->setChecked(
         GET_FLYEM_CONFIG.usingDefaultConfig());
+  ui->defaultConfigFileCheckBox->setToolTip(
+        GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
+  ui->defaultServiceCheckBox->setChecked(
+        GET_FLYEM_CONFIG.usingDefaultNeuTuServer());
+  ui->defaultTaskServerCheckBox->setChecked(
+        GET_FLYEM_CONFIG.usingDefaultTaskServer());
   ui->synapseNameCheckBox->setChecked(NeutubeConfig::NamingSynapse());
 
   std::pair<int,int> centerCut = GET_FLYEM_CONFIG.getCenterCut(
@@ -87,11 +110,25 @@ void FlyEmSettingDialog::connectSignalSlot()
   connect(ui->closePushButton, SIGNAL(clicked()), this, SLOT(close()));
   connect(ui->defaultConfigFileCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(updateDefaultConfigChecked(bool)));
+  connect(ui->defaultServiceCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateDefaultNeuTuServerChecked(bool)));
+  connect(ui->defaultTaskServerCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateDefaultTaskServerChecked(bool)));
 }
 
 bool FlyEmSettingDialog::usingDefaultConfig() const
 {
   return ui->defaultConfigFileCheckBox->isChecked();
+}
+
+bool FlyEmSettingDialog::usingDefaultService() const
+{
+  return ui->defaultServiceCheckBox->isChecked();
+}
+
+bool FlyEmSettingDialog::usingDefaultTaskServer() const
+{
+  return ui->defaultTaskServerCheckBox->isChecked();
 }
 
 bool FlyEmSettingDialog::namingSynapse() const
@@ -126,20 +163,47 @@ void FlyEmSettingDialog::updateDefaultConfigChecked(bool on)
   ui->configPushButton->setVisible(!on);
 }
 
+void FlyEmSettingDialog::updateDefaultNeuTuServerChecked(bool on)
+{
+  ui->servicelineEdit->setText(GET_FLYEM_CONFIG.getNeuTuServer(on).c_str());
+  ui->servicelineEdit->setReadOnly(on);
+  ui->servicelineEdit->setFrame(!on);
+}
+
+void FlyEmSettingDialog::updateDefaultTaskServerChecked(bool on)
+{
+  ui->taskServerLineEdit->setText(GET_FLYEM_CONFIG.getTaskServer(on).c_str());
+  ui->taskServerLineEdit->setReadOnly(on);
+  ui->taskServerLineEdit->setFrame(!on);
+}
+
 void FlyEmSettingDialog::update()
 {
 #if defined(_FLYEM_)
   GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
   GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
   GET_FLYEM_CONFIG.loadConfig();
-  GET_FLYEM_CONFIG.setRemoteServer(getNeuTuServer());
 
+  GET_FLYEM_CONFIG.useDefaultNeuTuServer(usingDefaultService());
+  if (!usingDefaultService()) {
+    GET_FLYEM_CONFIG.setCustomNeuTuServer(getNeuTuServer());
+  }
+
+  GET_FLYEM_CONFIG.activateNeuTuServer();
+  updateNeutuseWidget();
+
+  /*
   if (GET_FLYEM_CONFIG.hasNormalService()) {
     ui->statusLabel->setText("Normal");
   } else {
     ui->statusLabel->setText("Down");
   }
-  GET_FLYEM_CONFIG.setTaskServer(getTaskServer());
+  */
+  GET_FLYEM_CONFIG.useDefaultTaskServer(usingDefaultTaskServer());
+  if (!usingDefaultTaskServer()) {
+    GET_FLYEM_CONFIG.setCustomTaskServer(getTaskServer());
+  }
+
   GET_FLYEM_CONFIG.setAnalyzingMb6(namingSynapse());
 
   GET_FLYEM_CONFIG.setCenterCut(
@@ -162,12 +226,14 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
+  NeutubeConfig::UseDefaultNeuTuServer(usingDefaultService());
+  NeutubeConfig::UseDefaultTaskServer(usingDefaultTaskServer());
   NeutubeConfig::SetNamingSynapse(namingSynapse());
   NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
 }
 
-QString FlyEmSettingDialog::shrink(const QString &str, int len)
+QString FlyEmSettingDialog::Shrink(const QString &str, int len)
 {
   QString newStr = str;
   if (str.size() > len) {

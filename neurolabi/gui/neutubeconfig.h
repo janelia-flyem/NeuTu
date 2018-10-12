@@ -57,6 +57,12 @@ public:
   static void UseDefaultFlyEmConfig(bool on);
   static bool UsingDefaultFlyemConfig();
 
+  static void UseDefaultNeuTuServer(bool on);
+  static bool UsingDefaultNeuTuServer();
+
+  static void UseDefaultTaskServer(bool on);
+  static bool UsingDefaultTaskServer();
+
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
   static QString GetTaskServer();

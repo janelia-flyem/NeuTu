@@ -46,6 +46,8 @@ public:
     return m_configPath;
   }
 
+  std::string getActiveConfigPath() const;
+
   void setDefaultConfigPath(const std::string &path);
   std::string getDefaultConfigPath() const {
     return m_defaultConfigPath;
@@ -59,8 +61,12 @@ public:
 
   std::string getDvidRootNode(const std::string &name) const;
 
-  void setTaskServer(const std::string &taskServer);
+  void setDefaultTaskServer(const std::string &taskServer);
+  bool hasDefaultTaskServer() const;
+
+  void setCustomTaskServer(const std::string &taskServer);
   std::string getTaskServer() const;
+  std::string getTaskServer(bool usingDefault) const;
 
   std::string getDefaultLibrarian() const {
     return m_defaultLibrarian;
@@ -90,10 +96,18 @@ public:
   bool hasNormalService() const;
   void updateServiceStatus();
 
-  void setRemoteServer(const std::string &server);
+  void activateNeuTuServer();
+
+//  void setRemoteServer(const std::string &server);
 #endif
 
-  std::string getRemoteServer() const;
+  void setDefaultNeuTuServer(const std::string &server);
+  bool hasDefaultNeuTuServer() const;
+
+  void setCustomNeuTuServer(const std::string &server);
+  std::string getNeuTuServer() const;
+  std::string getNeuTuServer(bool usingDefault) const;
+
 
   std::string getUserName() const;
   /*
@@ -118,6 +132,21 @@ public:
     return m_usingDefaultConfig;
   }
 
+  void useDefaultNeuTuServer(bool on) {
+    m_usingDefaultNeuTuServer = on;
+  }
+
+  bool usingDefaultNeuTuServer() const {
+    return m_usingDefaultNeuTuServer;
+  }
+
+  void useDefaultTaskServer(bool on) {
+    m_usingDefaultTaskServer = on;
+  }
+  bool usingDefaultTaskServer() const {
+    return m_usingDefaultTaskServer;
+  }
+
   std::pair<int,int> getCenterCut(const std::string &name) const;
   void setCenterCut(const std::string &name, int cx, int cy);
 
@@ -130,6 +159,16 @@ public:
     m_psdNameDetail = on;
   }
 
+public:
+  const static char *DVID_REPO_KEY;
+  const static char *DVID_ROOT_KEY;
+  const static char *IP_KEY;
+  const static char *LIBRARIAN_KEY;
+  const static char *MB6_KEY;
+  const static char *TASK_SERVER_KEY;
+  const static char *NEUTU_SERVER_KEY;
+  const static char *NEUROGLANCER_KEY;
+  const static char *CENTERCUT_KEY;
 
 private:
   void init();
@@ -152,21 +191,16 @@ private:
   std::string m_defaultLibrarian;
   std::string m_userName;
   std::string m_neuroglancerServer;
-  std::string m_remoteServer;
+  bool m_usingDefaultNeuTuServer = true;
+  std::string m_defaultNeuTuServer;
+  bool m_usingDefaultTaskServer = true;
+  std::string m_defaultTaskServer;
 
   bool m_analyzingMb6;
   bool m_psdNameDetail = false;
 
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
-  const static char *DVID_REPO_KEY;
-  const static char *DVID_ROOT_KEY;
-  const static char *IP_KEY;
-  const static char *LIBRARIAN_KEY;
-  const static char *MB6_KEY;
-  const static char *TASK_SERVER_KEY;
-  const static char *NEUROGLANCER_KEY;
-  const static char *CENTERCUT_KEY;
 
 };
 

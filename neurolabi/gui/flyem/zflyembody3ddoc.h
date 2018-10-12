@@ -148,6 +148,8 @@ public:
 
   const ZDvidInfo& getDvidInfo() const;
 
+  bool isDvidMutable() const;
+
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
@@ -312,6 +314,9 @@ public:
   ZMesh* getMeshForSplit() const;
   ZMesh* readSupervoxelMesh(const ZDvidReader &reader, uint64_t svId) const;
 
+  void hideNoSplitMesh();
+  void showAllMesh();
+
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
 
@@ -381,7 +386,7 @@ public slots:
   void clearGarbage(bool force = false);
 
   void startBodyAnnotation();
-
+  void showMeshForSplitOnly(bool on);
 //  void updateCurrentTask(const QString &taskType);
 
 signals:

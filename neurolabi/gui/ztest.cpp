@@ -27400,11 +27400,17 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
-  std::vector<std::string> statusList({"Putative 0.5",
+//  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::vector<std::string> statusList({/*"Putative 0.5",*/
+                                       "Roughly traced",
                                        "Traced",
                                        "Hard to trace"});
-  writer->writeBodyStatusList(statusList);
+  writer.writeBodyStatusList(statusList);
 #endif
 
 #if 0
@@ -27983,8 +27989,19 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/20180920_tif";
-  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/20180913_tif/roiname.csv");
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZFlyEmMisc::UploadRoi(
+        (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
+        (GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv").c_str(),
+        writer);
+
+
+#endif
+
+
+#if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
+  std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
   std::string line;
   std::unordered_map<std::string, std::string> nameMap;
@@ -28039,12 +28056,28 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   neutuse::TaskWriter writer;
   writer.open("http://emdata2.int.janelia.org:2018");
   writer.testConnection();
   std::cout << writer.ready() << std::endl;
 
+#endif
+
+#if 0
+  std::cout << GET_APPLICATION_DIR << std::endl;
+  QFileInfo configFileInfo = QFileInfo(
+        QDir((GET_APPLICATION_DIR).c_str()), "local_flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+  configFileInfo.setFile(QDir((GET_APPLICATION_DIR).c_str()), "flyem_config.json");
+  qDebug() << configFileInfo.absoluteFilePath();
+
+#endif
+
+#if 1
+//  GET_FLYEM_CONFIG.useDefaultNeuTuServer(false);
+  GET_FLYEM_CONFIG.print();
 #endif
 
   std::cout << "Done." << std::endl;

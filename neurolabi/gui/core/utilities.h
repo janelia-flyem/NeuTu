@@ -56,6 +56,8 @@ int numDigits(T number)
   return digits;
 }
 
+bool HasEnv(const std::string &name, const std::string &value);
+
 }
 
 //template<>

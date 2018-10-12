@@ -16,6 +16,7 @@ const char* ZFlyEmToDoItem::ACTION_SPLIT_TAG = "split";
 const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT_TAG = "svsplit";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT_TAG = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
+const char* ZFlyEmToDoItem::ACTION_MERGE_TAG = "merge";
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -126,6 +127,7 @@ void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
     break;
   case neutube::TO_MERGE:
     addProperty(ACTION_KEY, ACTION_MERGE);
+    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
     break;
   case neutube::TO_SPLIT:
     addProperty(ACTION_KEY, ACTION_SPLIT);

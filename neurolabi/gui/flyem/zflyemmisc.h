@@ -103,6 +103,8 @@ QList<ZStackObject*> LoadSplitTask(const ZJsonObject &taskJson);
 ZJsonObject MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
     ZJsonArray roiJson);
+
+//Call it in the main thread ONLY
 void RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId);
 
 bool IsTaskOpen(const QString &taskKey);
@@ -121,6 +123,8 @@ ZStack* MakeColorSegmentation(const ZDvidReader &reader, int x0, int y0, int z0,
 QString GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
     const QSet<uint64_t> &bodySet);
+
+void UploadRoi(const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

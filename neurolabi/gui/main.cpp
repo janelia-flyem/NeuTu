@@ -22,6 +22,7 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "core/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
@@ -99,6 +100,37 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
   }
 }
 
+namespace {
+
+void SetFlyEmConfigpath(
+    const QString &rootConfigPath, const ZJsonObject configObj)
+{
+  ZJsonArray defaultConfigCandidate(configObj.value("flyem"));
+
+  QFileInfo rootConfigFileInfo(rootConfigPath);
+  QFileInfo configFileInfo;
+//  QDir appDir((GET_APPLICATION_DIR).c_str());
+  QDir rootDir = rootConfigFileInfo.absoluteDir();
+
+  for (size_t i = 0; i < defaultConfigCandidate.size(); ++i) {
+    std::string path = ZJsonParser::stringValue(configObj["flyem"], i);
+    configFileInfo.setFile(rootDir, path.c_str());
+    if (configFileInfo.exists()) {
+      break;
+    }
+  }
+
+  if (configFileInfo.exists()) {
+    GET_FLYEM_CONFIG.setDefaultConfigPath(
+          configFileInfo.absoluteFilePath().toStdString());
+  }
+
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+}
+
+} //namespace
+
 static void LoadFlyEmConfig(
     const QString &configPath, NeutubeConfig &config, bool usingConfig)
 {
@@ -109,63 +141,67 @@ static void LoadFlyEmConfig(
   }
 
   GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
-  QString defaultFlyemConfigPath = QFileInfo(
-        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
-      absoluteFilePath();
-  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.useDefaultNeuTuServer(NeutubeConfig::UsingDefaultNeuTuServer());
+  GET_FLYEM_CONFIG.useDefaultTaskServer(NeutubeConfig::UsingDefaultTaskServer());
 
-  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
-  if (flyemConfigPath.isEmpty()) {
-    QFileInfo configFileInfo(configPath);
+//  QDir appDir((GET_APPLICATION_DIR).c_str());
+//  QFileInfo configFileInfo = QFileInfo(appDir, "local_flyem_config.json");
+//  if (!configFileInfo.exists()) {
+//    configFileInfo.setFile(appDir, "flyem_config.json");
+//  }
 
-    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
-    if (flyemConfigPath.isEmpty()) {
-      flyemConfigPath = defaultFlyemConfigPath;
-    } else {
-      QFileInfo flyemConfigFileInfo(flyemConfigPath);
-      if (!flyemConfigFileInfo.isAbsolute()) {
-        flyemConfigPath =
-            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
-      }
-    }
-  }
+//  QString defaultFlyemConfigPath = configFileInfo.absoluteFilePath();
+//  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
 
-  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+//  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+//  if (flyemConfigPath.isEmpty()) {
+//    QFileInfo configFileInfo(configPath);
+
+//    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+//    if (flyemConfigPath.isEmpty()) {
+//      flyemConfigPath = defaultFlyemConfigPath;
+//    } else {
+//      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+//      if (!flyemConfigFileInfo.isAbsolute()) {
+//        flyemConfigPath =
+//            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+//      }
+//    }
+//  }
+
+  SetFlyEmConfigpath(configPath, configObj);
+
   GET_FLYEM_CONFIG.loadConfig();
   GET_FLYEM_CONFIG.loadUserSettings();
 
+  //Settings provided by a more general source
   if (usingConfig) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "NeuTu server: " << config.GetNeuTuServer().toStdString() << std::endl;
 #endif
 
-    if (config.GetNeuTuServer().isEmpty()) {
+    if (GET_FLYEM_CONFIG.hasDefaultNeuTuServer() == false) {
       QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
       if (!neutuServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setRemoteServer(neutuServer.toStdString());
+        GET_FLYEM_CONFIG.setCustomNeuTuServer(neutuServer.toStdString());
+        //        GET_FLYEM_CONFIG.setDefaultNeuTuServer(neutuServer.toStdString());
       }
-    } else {
-      GET_FLYEM_CONFIG.setRemoteServer(config.GetNeuTuServer().toStdString());
     }
 
 #ifdef _DEBUG_2
     GET_FLYEM_CONFIG.setServer("neutuse:http://127.0.0.1:5000");
 #endif
 
-    if (config.GetTaskServer().isEmpty()) {
+    if (GET_FLYEM_CONFIG.hasDefaultTaskServer() == false) {
       QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
       if (!taskServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setRemoteServer(taskServer.toStdString());
+        GET_FLYEM_CONFIG.setCustomTaskServer(taskServer.toStdString());
       }
-    } else {
-      GET_FLYEM_CONFIG.setTaskServer(config.GetTaskServer().toStdString());
     }
-  } else {
-    QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
-    if (!taskServer.isEmpty()) {
-      GET_FLYEM_CONFIG.setRemoteServer(taskServer.toStdString());
-    }
+//      GET_FLYEM_CONFIG.setDefaultTaskServer(taskServer.toStdString());
   }
+
+  GET_FLYEM_CONFIG.activateNeuTuServer();
 #endif
 }
 
@@ -257,6 +293,18 @@ int main(int argc, char *argv[])
   NeutubeConfig::getInstance().init(userName);
 
   if (argc > 1) {
+    if ((strcmp(argv[1], "-v") == 0) || (strcmp(argv[1], "--version") == 0)) {
+      std::cout << argv[0] << std::endl;
+#if defined(PKG_VERSION)
+      std::cout << "Version: " << ""
+                   NT_XSTR(PKG_VERSION) << std::endl;
+#else
+      std::cout << "Version: " << neutube::VERSION << std::endl;
+#endif
+
+      return 0;
+    }
+
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
     }

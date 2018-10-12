@@ -16,7 +16,7 @@ const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
 
-ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
+ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
 }
 
@@ -168,7 +168,8 @@ int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
     return 2;
   }
 
-  if (statusLowerCase == "partially traced") {
+  if (statusLowerCase == "partially traced" ||
+      statusLowerCase == "roughly traced") {
     return 3;
   }
 

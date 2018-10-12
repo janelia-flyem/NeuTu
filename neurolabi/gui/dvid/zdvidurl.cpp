@@ -12,6 +12,7 @@
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
+const std::string ZDvidUrl::m_keyValuesCommand = "keyvalues";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 //const std::string ZDvidUrl::m_supervoxelCommand = "sparsevol-supervoxel";
@@ -321,6 +322,11 @@ std::string ZDvidUrl::getSkeletonConfigUrl(const std::string &bodyLabelName)
 std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
 {
   return GetFullUrl(dataUrl, m_keyCommand);
+}
+
+std::string ZDvidUrl::GetKeyValuesCommandUrl(const std::string &dataUrl)
+{
+    return GetFullUrl(dataUrl, m_keyValuesCommand);
 }
 
 std::string ZDvidUrl::GetTarfileCommandUrl(const std::string &dataUrl)
@@ -1016,6 +1022,13 @@ std::string ZDvidUrl::getKeyRangeUrl(
   */
 
   return GetFullUrl(getDataUrl(name), m_keyRangeCommand + "/" + key1 + "/" + key2);
+}
+
+std::string ZDvidUrl::getKeyValuesUrl(const std::string &name) const
+{
+    std::string url = GetKeyValuesCommandUrl(getDataUrl(name));
+    url += "?jsontar=true";
+    return url;
 }
 
 std::string ZDvidUrl::getBodyAnnotationName() const

@@ -1,6 +1,7 @@
 {
   "librarian": "emdata3.int.janelia.org:9100",
   "mb6_paper": false,
+  "neutu_server": "neutuse:http://emdata2.int.janelia.org:2018",
   "task server": "http://zhaot-ws1:9000/api/node/194d",
   "neuroglancer server": "emdata1.int.janelia.org",
   "dvid root": {
@@ -52,7 +53,7 @@
       "body_label": "*", 
       "synapse": "rough_PB26_tbars",
       "comment": "central complex",
-      "user_name": ["zhaot", "takemuras"]
+      "user_name": "[]"
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -64,7 +65,7 @@
       "label_block": "pb-seg-np0.2-conservative-stitch",
       "synapse": "rough_PB26_syn_flt_nms_unq",
       "comment": "central complex",
-      "user_name": ["zhaot", "takemuras"]
+      "user_name": ["takemuras"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -75,7 +76,7 @@
       "label_block": "labels0802",
       "multires_tile": "graytiles",
       "comment": "FIB-25 export 08-02-2015",
-      "user_name": ["zhaot", "takemuras"] 
+      "user_name": ["takemuras"] 
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -135,7 +136,7 @@
       "comment": "FIB-25 tile test",
       "multires_tile": "graytiles",
       "label_block": "bodies",
-      "user_name": ["takemuras", "zhaot"]
+      "user_name": ["takemuras"]
     },
     {
       "address": "emrecon100.janelia.priv",
@@ -146,7 +147,7 @@
       "body_label": "bodies121714",
       "multires_tile": "graytiles",
       "label_block": "segmentation121714",
-      "user_name": ["zhaot"]
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -156,7 +157,7 @@
       "comment": "AL child node for splitting",
       "body_label": "bodies121714",
       "label_block": "segmentation121714",
-      "user_name": ["zhaot"]
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -166,7 +167,7 @@
       "comment": "AL child node for testing split",
       "body_label": "bodies121714",
       "label_block": "segmentation121714",
-      "user_name": ["zhaot"]
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -257,7 +258,7 @@
       "comment": "MB seg (branched from 0f33)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "neacee"]
+      "user_name": ["neacee"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -348,7 +349,7 @@
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["ordishc", "zhaot"]
+      "user_name": ["ordishc"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -358,7 +359,7 @@
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["shinomiyaa", "zhaot"]
+      "user_name": ["shinomiyaa"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -368,7 +369,7 @@
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["shinomiyak", "zhaot"]
+      "user_name": ["shinomiyak"]
     },
     {
       "address": "emdata2.int.janelia.org",

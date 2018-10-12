@@ -561,6 +561,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
+//  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
+//    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
+//    break;
   default:
     action = getDocument()->getAction(item);
     break;
@@ -3607,6 +3610,8 @@ void Z3DWindow::notifyCameraRotation()
   emit cameraRotated();
 }
 
+
+
 void Z3DWindow::startBodySplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
@@ -4738,15 +4743,17 @@ void Z3DWindow::cropSwcInRoi()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D &&
-        doc->showingCoarseOnly()) {
-      //    m_doc->executeDeleteSwcNodeCommand();
-      if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
-        emit croppingSwcInRoi();
+    if (doc->isDvidMutable()) {
+      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D &&
+          doc->showingCoarseOnly()) {
+        //    m_doc->executeDeleteSwcNodeCommand();
+        if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+          emit croppingSwcInRoi();
+        }
+      } else {
+        QMessageBox::warning(
+              this, "Action Failed", "Cropping only works in coarse body view.");
       }
-    } else {
-      QMessageBox::warning(
-            this, "Action Failed", "Cropping only works in coarse body view.");
     }
   } else {
     selectSwcTreeNodeInRoi(false);

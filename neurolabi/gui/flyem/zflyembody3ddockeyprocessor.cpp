@@ -25,8 +25,9 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(QKeyEvent *event)
 //      processed = true;
 //      break;
     case Qt::Key_Delete:
-      if (doc->hasTodoItemSelected()) {
+      if (doc->hasTodoItemSelected() && (doc->isDvidMutable())) {
         doc->executeRemoveTodoCommand();
+        processed = true;
       }
       break;
     }
@@ -42,12 +43,20 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
   m_operator.clear();
   m_operator.setShift(event->modifiers() == Qt::ShiftModifier);
 
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  bool allowingMutableAction = true;
+  if (doc) {
+    allowingMutableAction = doc->isDvidMutable();
+  }
+
   switch (event->key()) {
   case Qt::Key_R:
 #ifdef _FLYEM_
     if (event->modifiers() == Qt::NoModifier) {
-      m_operator.setOperation(ZStackOperator::OP_START_PAINT_STROKE);
-      processed = true;
+      if (allowingMutableAction) {
+        m_operator.setOperation(ZStackOperator::OP_START_PAINT_STROKE);
+        processed = true;
+      }
     } else
 #endif
     if (event->modifiers() == Qt::ShiftModifier) {
@@ -56,16 +65,20 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
     }
     break;
   case Qt::Key_Space:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY);
-    } else if (event->modifiers() & Qt::AltModifier) {
-      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_FULL);
-    } else {
-      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL);
+    if (allowingMutableAction) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY);
+      } else if (event->modifiers() & Qt::AltModifier) {
+        m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_FULL);
+      } else {
+        m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL);
+      }
+      processed = true;
     }
     break;
   case Qt::Key_Escape:
     m_operator.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+    processed = true;
     break;
   case Qt::Key_0:
   case Qt::Key_1:
@@ -95,8 +108,10 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
   case Qt::Key_T:
 #ifdef _FLYEM_
     if (event->modifiers() == Qt::NoModifier) {
-      m_operator.setOperation(ZStackOperator::OP_FLYEM_TODO_ADD);
-      processed = true;
+      if (allowingMutableAction) {
+        m_operator.setOperation(ZStackOperator::OP_FLYEM_TODO_ADD);
+        processed = true;
+      }
     }
 #else
     if (event->modifiers() & Qt::ControlModifier) {
@@ -110,13 +125,17 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
 #endif
     break;
   case Qt::Key_X:
-    m_operator.setOperation(ZStackOperator::OP_FLYEM_CROP_BODY);
-    processed = true;
+    if (allowingMutableAction) {
+      m_operator.setOperation(ZStackOperator::OP_FLYEM_CROP_BODY);
+      processed = true;
+    }
     break;
   case Qt::Key_Delete:
   case Qt::Key_Backspace:
-    m_operator.setOperation(ZStackOperator::OP_OBJECT_DELETE_SELECTED);
-    processed = true;
+//    if (allowingMutableAction) { //Delegate it to later processing
+      m_operator.setOperation(ZStackOperator::OP_OBJECT_DELETE_SELECTED);
+      processed = true;
+//    }
     break;
   default:
     break;
