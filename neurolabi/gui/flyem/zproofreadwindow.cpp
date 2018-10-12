@@ -392,10 +392,15 @@ void ZProofreadWindow::createMenu()
 
   m_toolMenu = new QMenu("Tools", this);
 
-  m_openSequencerAction = new QAction("Open Sequencer", this);
-  m_openSequencerAction->setIcon(QIcon(":/images/document.png"));
-  connect(m_openSequencerAction, SIGNAL(triggered()),
-          m_mainMvc, SLOT(openSequencer()));
+  if (m_mainMvc->hasSequencer()) {
+    m_openSequencerAction = new QAction("Open Sequencer", this);
+    m_openSequencerAction->setIcon(QIcon(":/images/document.png"));
+    connect(m_openSequencerAction, SIGNAL(triggered()),
+            m_mainMvc, SLOT(openSequencer()));
+
+    m_toolMenu->addAction(m_openSequencerAction);
+  }
+
   // temporarily disable sequencer
   // m_toolMenu->addAction(m_openSequencerAction);
 
@@ -529,8 +534,11 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
   m_toolBar->addSeparator();
-  // temporarily disable sequencer
-  // m_toolBar->addAction(m_openSequencerAction);
+
+  if (m_openSequencerAction != NULL) {
+     m_toolBar->addAction(m_openSequencerAction);
+  }
+
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);

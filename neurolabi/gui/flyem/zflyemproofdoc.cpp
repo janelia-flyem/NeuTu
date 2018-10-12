@@ -563,12 +563,12 @@ QString ZFlyEmProofDoc::getAnnotationNameWarningDetail(
 }
 
 QString ZFlyEmProofDoc::getAnnotationFinalizedWarningDetail(
-    const std::vector<uint64_t> &finalizedBodyArray) const
+    const std::vector<uint64_t> &finalizedBodyArray, const std::string &title) const
 {
   QString detail;
 
   if (!finalizedBodyArray.empty()) {
-    detail = "<p>Finalized: </p>";
+    detail = "<p>" + QString(title.c_str()) + ": </p>";
     detail += "<ul>";
     for (std::vector<uint64_t>::const_iterator iter = finalizedBodyArray.begin();
          iter != finalizedBodyArray.end(); ++iter) {
@@ -588,6 +588,8 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   cleanBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
+  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
+
   std::vector<uint64_t> finalizedBodyArray;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
@@ -603,14 +605,29 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
     }
     if (anno.getStatus() == "Finalized") {
       finalizedBodyArray.push_back(iter.key());
+    } else if (ZString(anno.getStatus()).lower() == "roughly traced") {
+      roughlyTracedBodyArray.push_back(iter.key());
     }
   }
 
   if (!finalizedBodyArray.empty()) {
-    QString detail = getAnnotationFinalizedWarningDetail(finalizedBodyArray);
+    QString detail = getAnnotationFinalizedWarningDetail(
+          finalizedBodyArray, "Finalized");
     okToContinue = ZDialogFactory::Ask(
           "Merging Finalized Body",
           "At least one of the bodies to be merged is finalized. Do you want to continue?" +
+          detail,
+          NULL);
+  }
+
+  if (roughlyTracedBodyArray.size() > 1) {
+    QString detail = getAnnotationFinalizedWarningDetail(
+          roughlyTracedBodyArray, "Roughly traced");
+    okToContinue = ZDialogFactory::Ask(
+          "Merging multiple roughly-traced bodies",
+          "At least two bodies to be merged are roughly traced. "
+          "<font color=\"#FF0000\">You should NOT merge them unless you want to be resposible for any side effects.</font>"
+          "<p>Do you want to continue?</p>" +
           detail,
           NULL);
   }
@@ -747,6 +764,11 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
 {
   return m_dvidReader.getDvidTarget();
+}
+
+bool ZFlyEmProofDoc::isDvidMutable() const
+{
+  return (getDvidTarget().readOnly() == false);
 }
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)

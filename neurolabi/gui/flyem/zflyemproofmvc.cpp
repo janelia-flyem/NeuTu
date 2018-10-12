@@ -128,8 +128,12 @@ void ZFlyEmProofMvc::init()
   m_dvidDlg = NULL;
 
   // temporarily disable sequencer:
-  // m_bodyInfoDlg = new FlyEmBodyInfoDialog(FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
-  m_bodyInfoDlg = NULL;
+  if (neutube::HasEnv("USE_SEQUENCER", "yes")) {
+    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
+          FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
+  } else {
+    m_bodyInfoDlg = NULL;
+  }
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
@@ -210,7 +214,7 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
-          FlyEmBodyInfoDialog::MODE_QUERY, this);
+          FlyEmBodyInfoDialog::EMode::QUERY, this);
     m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_bodyQueryDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
@@ -409,6 +413,11 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(showOrthoWindow(double,double,double)));
   connect(getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
           this, SLOT(showBigOrthoWindow(double,double,double)));
+  connect(getPresenter(), SIGNAL(checkingBookmark()),
+          this, SLOT(checkSelectedBookmark()));
+  connect(getPresenter(), SIGNAL(uncheckingBookmark()),
+          this, SLOT(uncheckSelectedBookmark()));
+
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
   connect(getView(), SIGNAL(sliceSliderPressed()),
@@ -2524,6 +2533,11 @@ void ZFlyEmProofMvc::notifyStateUpdate()
   emit stateUpdated(this);
 }
 
+bool ZFlyEmProofMvc::hasSequencer() const
+{
+  return m_bodyInfoDlg != NULL;
+}
+
 void ZFlyEmProofMvc::disableSequencer()
 {
   disconnect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
@@ -2833,10 +2847,7 @@ void ZFlyEmProofMvc::annotateBody()
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         if (reader.isReady()) {
           ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-
-          if (!annotation.isEmpty()) {
-            dlg->loadBodyAnnotation(annotation);
-          }
+          dlg->loadBodyAnnotation(annotation);
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
@@ -4676,15 +4687,39 @@ void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
 {
   TStackObjectSet &selected = getCompleteDocument()->getSelected(
         ZStackObject::TYPE_FLYEM_BOOKMARK);
+  bool userBookmarkUpdated = false;
+  bool assignedBookmarkUpdated = false;
   for (TStackObjectSet::iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
     bookmark->setChecked(checking);
     recordBookmark(bookmark);
+    if (bookmark->isCustom()) {
+      userBookmarkUpdated = true;
+    } else {
+      assignedBookmarkUpdated = true;
+    }
   }
   if (!selected.isEmpty()) {
+    if (userBookmarkUpdated) {
+      updateUserBookmarkTable();
+    }
+    if (assignedBookmarkUpdated) {
+      updateAssignedBookmarkTable();
+    }
+
 //    emit bookmarkUpdated();
   }
+}
+
+void ZFlyEmProofMvc::checkSelectedBookmark()
+{
+  checkSelectedBookmark(true);
+}
+
+void ZFlyEmProofMvc::uncheckSelectedBookmark()
+{
+  checkSelectedBookmark(false);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)

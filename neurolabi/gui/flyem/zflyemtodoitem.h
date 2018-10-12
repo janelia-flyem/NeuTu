@@ -51,6 +51,7 @@ public:
   static const char *ACTION_SPLIT_TAG;
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;
+  static const char *ACTION_MERGE_TAG;
 
 private:
   void init();

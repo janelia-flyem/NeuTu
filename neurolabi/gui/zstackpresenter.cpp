@@ -406,10 +406,10 @@ bool ZStackPresenter::connectAction(
               this, SLOT(notifyBodyUnmergeTriggered()));
       break;
     case ZActionFactory::ACTION_BOOKMARK_CHECK:
-      connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
+      connect(action, SIGNAL(triggered()), this, SIGNAL(checkingBookmark()));
       break;
     case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
-      connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
+      connect(action, SIGNAL(triggered()), this, SIGNAL(uncheckingBookmark()));
       break;
     case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
       connect(action, SIGNAL(triggered()),

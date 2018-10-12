@@ -144,6 +144,8 @@ public:
     m_3dEnabled = false;
   }
 
+  bool hasSequencer() const;
+
   void disableSequencer();
 
   void notifyStateUpdate();
@@ -334,6 +336,8 @@ public slots:
   void scalePlaneRoi(double sx, double sy);
 
   void checkSelectedBookmark(bool checking);
+  void checkSelectedBookmark();
+  void uncheckSelectedBookmark();
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);

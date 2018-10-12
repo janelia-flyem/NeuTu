@@ -11,12 +11,20 @@
 #include "neutube.h"
 #endif
 
+/* Implementation Details
+ *
+ * ZFlyEmConfig is used to manage configuration related to flyem proofreading.
+ *
+ */
+
+
 const char* ZFlyEmConfig::DVID_REPO_KEY = "dvid repo";
 const char* ZFlyEmConfig::IP_KEY = "ip";
 const char* ZFlyEmConfig::LIBRARIAN_KEY = "librarian";
 const char* ZFlyEmConfig::DVID_ROOT_KEY = "dvid root";
 const char* ZFlyEmConfig::MB6_KEY = "mb6_paper";
 const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
+const char* ZFlyEmConfig::NEUTU_SERVER_KEY = "neutu_server";
 const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
 const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
 
@@ -65,12 +73,25 @@ void ZFlyEmConfig::setDefaultConfigPath(const std::string &path)
 void ZFlyEmConfig::print() const
 {
   std::cout << "FlyEM Configuration:" << std::endl;
-  if (m_emptyDvidTarget.isValid()) {
-    std::cout << "  ";
-    m_emptyDvidTarget.print();
+  std::cout << "  Source: " << getActiveConfigPath() << std::endl;
+  std::cout << "  " << m_dvidRepo.size() << " DVID repos" << std::endl;
+  std::cout << "  " << "Default neutu server: " << m_defaultNeuTuServer << std::endl;
+  std::cout << "  " << "Neutu server to use: " << getNeuTuServer() << std::endl;
+  std::cout << "  " << "Default task server: " << m_defaultTaskServer << std::endl;
+  std::cout << "  " << "Task server to use: " << getTaskServer() << std::endl;
+
+}
+
+std::string ZFlyEmConfig::getActiveConfigPath() const
+{
+  std::string filePath;
+  if (usingDefaultConfig()) {
+    filePath = m_defaultConfigPath;
   } else {
-    std::cout << "  No DVID repository." << std::endl;
+    filePath = m_configPath;
   }
+
+  return filePath;
 }
 
 void ZFlyEmConfig::loadConfig()
@@ -79,12 +100,7 @@ void ZFlyEmConfig::loadConfig()
   m_rootMap.clear();
   m_addressMap.clear();
 
-  std::string filePath;
-  if (usingDefaultConfig()) {
-    filePath = m_defaultConfigPath;
-  } else {
-    filePath = m_configPath;
-  }
+  std::string filePath = getActiveConfigPath();
 
   std::cout << "Loading FlyEM config: " << filePath << std::endl;
 
@@ -112,10 +128,12 @@ void ZFlyEmConfig::loadConfig()
         setAnalyzingMb6(ZJsonParser::booleanValue(obj[MB6_KEY]));
       }
 
-      if (getTaskServer().empty()) {
-        if (obj.hasKey(TASK_SERVER_KEY)) {
-          setTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
-        }
+      if (obj.hasKey(TASK_SERVER_KEY)) {
+        setDefaultTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
+      }
+
+      if (obj.hasKey(NEUTU_SERVER_KEY)) {
+        setDefaultNeuTuServer(ZJsonParser::stringValue(obj[NEUTU_SERVER_KEY]));
       }
 
       if (obj.hasKey(NEUROGLANCER_KEY)) {
@@ -154,6 +172,16 @@ void ZFlyEmConfig::loadConfig()
             target.setEditable(false);
             m_dvidRepo.push_back(target);
           }
+
+#ifdef _DEBUG_
+          std::cout << "Name: " << target.getName() << " ";
+          std::cout << "User:";
+          const std::set<std::string> &userSet = target.getUserNameSet();
+          std::for_each(userSet.begin(), userSet.end(),
+                        [](const std::string &user) {std::cout << user << " ";});
+
+          target.print();
+#endif
         }
       }
     }
@@ -199,7 +227,17 @@ std::string ZFlyEmConfig::mapAddress(const std::string &address) const
   return address;
 }
 
-void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
+void ZFlyEmConfig::setDefaultTaskServer(const std::string &taskServer)
+{
+  m_defaultTaskServer = taskServer;
+}
+
+bool ZFlyEmConfig::hasDefaultTaskServer() const
+{
+  return !m_defaultTaskServer.empty();
+}
+
+void ZFlyEmConfig::setCustomTaskServer(const std::string &taskServer)
 {
 #ifdef _DEBUG_
   std::cout << "Setting task server to " << taskServer << std::endl;
@@ -214,13 +252,22 @@ void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
 #endif
 }
 
+std::string ZFlyEmConfig::getTaskServer(bool usingDefault) const
+{
+  if (usingDefault) {
+    return m_defaultTaskServer;
+  } else {
+#ifdef _QT_GUI_USED_
+    return NeutubeConfig::GetTaskServer().toStdString();
+#else
+    return "";
+#endif
+  }
+}
+
 std::string ZFlyEmConfig::getTaskServer() const
 {
-#ifdef _QT_GUI_USED_
-  return NeutubeConfig::GetTaskServer().toStdString();
-#else
-  return "";
-#endif
+  return getTaskServer(usingDefaultTaskServer());
 }
 
 std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const
@@ -256,9 +303,40 @@ std::string ZFlyEmConfig::getSplitResultUrl(
 }
 */
 
-std::string ZFlyEmConfig::getRemoteServer() const
+void ZFlyEmConfig::setDefaultNeuTuServer(const std::string &server)
 {
-  return m_remoteServer;
+  m_defaultNeuTuServer = server;
+}
+
+bool ZFlyEmConfig::hasDefaultNeuTuServer() const
+{
+  return !m_defaultNeuTuServer.empty();
+}
+
+std::string ZFlyEmConfig::getNeuTuServer(bool usingDefault) const
+{
+  if (usingDefault) {
+    return m_defaultNeuTuServer;
+  } else {
+#ifdef _QT_GUI_USED_
+    return NeutubeConfig::GetNeuTuServer().toStdString();
+#else
+    return "";
+#endif
+  }
+}
+
+std::string ZFlyEmConfig::getNeuTuServer() const
+{
+  return getNeuTuServer(usingDefaultNeuTuServer());
+//  return m_remoteServer;
+}
+
+void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)
+{
+#ifdef _QT_GUI_USED_
+  NeutubeConfig::SetNeuTuServer(server.c_str());;
+#endif
 }
 
 #ifdef _QT_GUI_USED_
@@ -277,9 +355,32 @@ void ZFlyEmConfig::updateServiceStatus()
   GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
 }
 
+void ZFlyEmConfig::activateNeuTuServer()
+{
+  std::string server = getNeuTuServer();
+  std::vector<std::string> serverList = ZString::Tokenize(server, ';');
+  bool neutuseOpened = false;
+  bool serviceOpened = false;
+  m_neutuseWriter.reset();
+  getNeutuService().reset();
+  for (const std::string &server : serverList) {
+    if (ZString(server).startsWith("neutuse:")) {
+      if (!neutuseOpened) {
+        m_neutuseWriter.open(server.substr(8));
+        neutuseOpened = m_neutuseWriter.ready();
+      }
+    } else {
+      if (!serviceOpened) {
+        getNeutuService().setServer(server);
+        serviceOpened = getNeutuService().isNormal();
+      }
+    }
+  }
+}
+
+/*
 void ZFlyEmConfig::setRemoteServer(const std::string &server)
 {
-  m_remoteServer = server;
   NeutubeConfig::SetNeuTuServer(server.c_str());
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
   bool neutuseOpened = false;
@@ -300,4 +401,5 @@ void ZFlyEmConfig::setRemoteServer(const std::string &server)
     }
   }
 }
+*/
 #endif

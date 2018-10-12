@@ -2,7 +2,8 @@
 #define NEUTUBE_DEF_H
 
 #include <limits>
-#include "functional"
+#include <functional>
+
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
@@ -11,6 +12,8 @@ namespace neutube {
 
 static const uint64_t ONEGIGA = 1073741824;
 static const uint64_t HALFGIGA = 536870912;
+
+static const char *VERSION = "1.1";
 
 enum class ESyncOption {
   SYNC, NO_SYNC

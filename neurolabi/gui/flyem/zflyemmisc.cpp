@@ -1419,6 +1419,64 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
   return path;
 }
 
+void ZFlyEmMisc::UploadRoi(
+    const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
+{
+  if (writer) {
+    std::ifstream stream(roiNameFile.toStdString());
+
+    std::string line;
+    std::unordered_map<std::string, std::string> nameMap;
+    while (std::getline(stream, line)) {
+      std::cout << line << std::endl;
+      std::vector<std::string> tokens = ZString::Tokenize(line, ',');
+      for (auto &str : tokens) {
+        std::cout << str << " --- ";
+      }
+      std::cout << std::endl;
+      if (tokens.size() >= 3) {
+        ZString name(tokens[2]);
+        name.trim();
+        nameMap[tokens[1] + ".obj"] = name;
+        nameMap[tokens[1] + ".sobj"] = name;
+      }
+    }
+
+    for (auto &entry : nameMap) {
+      std::cout << entry.first << ": " << entry.second << std::endl;
+    }
+
+    //Upload: ZDvidWriter::uploadRoiMesh
+    {
+      QDir dir(dataDir);
+      QStringList fileList = dir.entryList(QStringList() << "*.obj");
+      for (QString &file : fileList) {
+        std::string name = nameMap[file.toStdString()];
+        std::cout << file.toStdString() << ": " << name << std::endl;
+        writer->uploadRoiMesh((dataDir + "/" + file).toStdString(), name);
+        //    break;
+      }
+    }
+
+    //Write ROI data: ZDvidWriter::writeRoi
+
+    {
+      QDir dir(dataDir);
+      QStringList fileList = dir.entryList(QStringList() << "*.sobj");
+      for (QString &file : fileList) {
+        std::string name = nameMap[file.toStdString()];
+        std::cout << file.toStdString() << ": " << name << std::endl;
+        ZObject3dScan roi;
+        roi.load((dataDir + "/" + file).toStdString());
+        if (!writer->getDvidReader().hasData(name)) {
+          writer->createData("roi", name);
+        }
+        writer->writeRoi(roi, name);
+      }
+    }
+  }
+}
+
 
 ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 {
