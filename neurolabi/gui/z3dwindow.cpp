@@ -561,6 +561,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
+//  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
+//    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
+//    break;
   default:
     action = getDocument()->getAction(item);
     break;
@@ -3606,6 +3609,8 @@ void Z3DWindow::notifyCameraRotation()
 {
   emit cameraRotated();
 }
+
+
 
 void Z3DWindow::startBodySplit()
 {

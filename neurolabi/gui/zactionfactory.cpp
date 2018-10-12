@@ -525,6 +525,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
     break;
+  case ACTION_SHOW_SPLIT_MESH_ONLY:
+    action = new QAction("Show Mesh to Split Only", parent);
+    action->setCheckable(true);
+    break;
   case ACTION_EXIT_SPLIT:
     action = new QAction("Exit Split", parent);
     break;

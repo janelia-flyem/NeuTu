@@ -90,13 +90,17 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 #if defined(_NEU3_)
       if (isMutable) {
         ZMesh *mesh = doc->getMeshForSplit();
-        if (mesh != NULL && !doc->isSplitActivated()) {
-          bool allowingSplit = true;
-          if (bodyEnv != NULL) {
-            allowingSplit = bodyEnv->allowingSplit(mesh->getLabel());
-          }
-          if (allowingSplit) {
-            config.append(ZActionFactory::ACTION_START_SPLIT);
+        if (mesh != NULL) {
+          if (doc->isSplitActivated()) {
+            config.append(ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY);
+          } else {
+            bool allowingSplit = true;
+            if (bodyEnv != NULL) {
+              allowingSplit = bodyEnv->allowingSplit(mesh->getLabel());
+            }
+            if (allowingSplit) {
+              config.append(ZActionFactory::ACTION_START_SPLIT);
+            }
           }
         }
       }
