@@ -10,10 +10,11 @@
 
 namespace neutube {
 
-static const uint64_t ONEGIGA = 1073741824;
-static const uint64_t HALFGIGA = 536870912;
+static constexpr uint64_t ONEGIGA = 1073741824;
+static constexpr uint64_t HALFGIGA = 536870912;
 
-static const char *VERSION = "1.1";
+extern const char *VERSION;
+extern const char *PKG_VERSION;
 
 enum class ESyncOption {
   SYNC, NO_SYNC

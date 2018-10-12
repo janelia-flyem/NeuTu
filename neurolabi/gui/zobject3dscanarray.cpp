@@ -92,7 +92,7 @@ ZIntCuboid ZObject3dScanArray::getBoundBox() const
     cuboid.join(obj.getBoundBox());
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << cuboid.toJsonArray().dumpString() << std::endl;
 #endif
 
