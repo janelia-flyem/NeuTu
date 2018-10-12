@@ -1470,7 +1470,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
       ZFlyEmBodyAnnotation annot;
       annot.setBodyId(newBodyId);
-      annot.setStatus("Not examined");
+//      annot.setStatus("Not examined");
       writer.writeBodyAnntation(annot);
 
       emitMessage(msg);
@@ -1799,7 +1799,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
       ZFlyEmBodyAnnotation annot;
       annot.setBodyId(newBodyId);
-      annot.setStatus("Not examined");
+//      annot.setStatus("Not examined");
       writer.writeBodyAnntation(annot);
 
       emitMessage(msg);
