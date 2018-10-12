@@ -4,6 +4,7 @@
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
 #include "zflyembodyenv.h"
+#include "zstackdocproxy.h"
 
 ZFlyEmBody3dDocMenuFactory::ZFlyEmBody3dDocMenuFactory()
 {
@@ -91,7 +92,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       if (isMutable) {
         ZMesh *mesh = doc->getMeshForSplit();
         if (mesh != NULL) {
-          if (doc->isSplitActivated()) {
+          if (doc->isSplitActivated() &&
+              ZStackDocProxy::GetGeneralMeshList(doc).size() > 1) {
             config.append(ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY);
           } else {
             bool allowingSplit = true;
