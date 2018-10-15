@@ -184,6 +184,7 @@ private:
 
   ZStackView *m_view;
   int m_maxPartialArea;
+  bool m_fetchingFullAllowed = false;
 
   ZIntCuboid m_dataRange;
   bool m_isReady;
