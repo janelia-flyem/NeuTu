@@ -1624,6 +1624,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
       getCompleteDocument()->downloadTodoList();
+
+      ZFlyEmToDoList *todoList =
+          getCompleteDocument()->getTodoList(neutube::Z_AXIS);
+      if (todoList) {
+        todoList->attachView(getView());
+      }
     }
   }
 
