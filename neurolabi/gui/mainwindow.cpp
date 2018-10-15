@@ -2209,9 +2209,9 @@ void MainWindow::about()
 #endif
 
   QString version;
-#if defined(PKG_VERSION)
+#if defined(_PKG_VERSION)
   version = ""
-      PKG_VERSION;
+      _PKG_VERSION;
 #endif
 
   if (!version.isEmpty()) {

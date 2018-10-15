@@ -132,7 +132,7 @@ void SetFlyEmConfigpath(
 } //namespace
 
 static void LoadFlyEmConfig(
-    const QString &configPath, NeutubeConfig &config, bool usingConfig)
+    const QString &configPath, NeutubeConfig &/*config*/, bool usingConfig)
 {
 #ifdef _FLYEM_
   ZJsonObject configObj;
@@ -295,12 +295,7 @@ int main(int argc, char *argv[])
   if (argc > 1) {
     if ((strcmp(argv[1], "-v") == 0) || (strcmp(argv[1], "--version") == 0)) {
       std::cout << argv[0] << std::endl;
-#if defined(PKG_VERSION)
-      std::cout << "Version: " << ""
-                   NT_XSTR(PKG_VERSION) << std::endl;
-#else
-      std::cout << "Version: " << neutube::VERSION << std::endl;
-#endif
+      std::cout << neutube::GetVersionString() << std::endl;
 
       return 0;
     }
@@ -458,7 +453,8 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << configPath;
 
   if (guiEnabled) {
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+            + " " + neutube::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)

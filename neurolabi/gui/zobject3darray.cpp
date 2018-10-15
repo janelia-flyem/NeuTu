@@ -259,7 +259,7 @@ double ZObject3dArray::angleShift()
   if (size() > 1) {
     ZPoint vec = averageDirection();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     cout << vec.toString() << endl;
 #endif
 
