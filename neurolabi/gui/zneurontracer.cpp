@@ -989,58 +989,6 @@ void ZNeuronTracer::clearBuffer()
   m_seedDsIntv.set(0, 0, 0);
 }
 
-#if 0
-std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
-    const Stack *stack, std::vector<Locseg_Chain*> &chainArray)
-{
-  std::vector<double> scoreArray(chainArray.size(), 0.0);
-  std::vector<double> intensityArray(chainArray.size(), 0.0);
-  std::vector<double> lengthArray(chainArray.size(), 0.0);
-
-  std::vector<Locseg_Chain*> goodChainArray;
-
-  double minIntensity = Infinity;
-//  double minIntensity = 0.0;
-  int count = 0;
-
-  const double scoreThreshold = 0.6;
-  size_t index = 0;
-  for (std::vector<Locseg_Chain*>::iterator iter = chainArray.begin();
-       iter != chainArray.end(); ++iter, ++index) {
-    Locseg_Chain *chain = *iter;
-    scoreArray[index] = Locseg_Chain_Average_Score(
-          chain, stack, 1.0, STACK_FIT_CORRCOEF);
-    intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
-    //intensityArray[index] = Locseg_Chain_Min_Seg_Signal(chain, stack, 1.0);
-    if (scoreArray[index] >= 0.5) {
-      minIntensity += intensityArray[index];
-      ++count;
-      //intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
-      //STACK_FIT_LOW_MEAN_SIGNAL
-//      if (intensityArray[index] < minIntensity) {
-//        minIntensity = intensityArray[index];
-//      }
-    }
-  }
-
-  /*
-  if (count > 0) {
-    minIntensity /= count;
-  }
-  */
-
-  for (index = 0; index < chainArray.size(); ++index) {
-    if (scoreArray[index] >= 0.5 || intensityArray[index] >= minIntensity) {
-      goodChainArray.push_back(chainArray[index]);
-    } else {
-      delete chainArray[index];
-    }
-  }
-
-  return goodChainArray;
-}
-#endif
-
 std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
     const Stack *stack, std::vector<Locseg_Chain*> &chainArray)
 {
