@@ -9,7 +9,7 @@
 ZWorker::ZWorker(EMode mode, QObject *parent) : QObject(parent),
   m_mode(mode)
 {
-  if (mode == MODE_QUEUE) {
+  if (mode == EMode::QUEUE) {
     m_taskQueue = new ZTaskQueue(this);
   } else {
     connect(this, SIGNAL(schedulingTask(ZTask*)),

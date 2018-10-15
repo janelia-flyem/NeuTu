@@ -69,7 +69,7 @@ void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
 {
   if (m_backup.hasKey("Pos")) {
     ZFlyEmToDoItem item;
-    item.loadJsonObject(m_backup, flyem::LOAD_PARTNER_RELJSON);
+    item.loadJsonObject(m_backup, flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON);
     m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
     m_doc->notifyTodoEdited(item.getPosition());
     QString msg = QString("Todo removal undone at (%1, %2, %3)").

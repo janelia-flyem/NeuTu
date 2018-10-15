@@ -23,7 +23,7 @@ void ZDvidAnnotation::init()
 {
   m_type = GetType();
   m_projectionVisible = false;
-  m_kind = KIND_INVALID;
+  m_kind = EKind::KIND_INVALID;
   m_bodyId = 0;
   m_status = STATUS_NORMAL;
   setDefaultRadius();
@@ -155,9 +155,9 @@ double ZDvidAnnotation::GetDefaultRadius(
 double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
-  case KIND_POST_SYN:
+  case EKind::KIND_POST_SYN:
     return 3.0;
-  case KIND_PRE_SYN:
+  case EKind::KIND_PRE_SYN:
     return 7.0;
   default:
     break;
@@ -179,11 +179,11 @@ void ZDvidAnnotation::setDefaultRadius(const ZResolution &resolution)
 QColor ZDvidAnnotation::GetDefaultColor(EKind kind)
 {
   switch (kind) {
-  case KIND_POST_SYN:
+  case EKind::KIND_POST_SYN:
     return QColor(0, 0, 255);
-  case KIND_PRE_SYN:
+  case EKind::KIND_PRE_SYN:
     return QColor(0, 255, 0);
-  case KIND_NOTE:
+  case EKind::KIND_NOTE:
     return QColor(0, 200, 200);
   default:
     break;
@@ -253,7 +253,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
 void ZDvidAnnotation::clear()
 {
   m_position.set(0, 0, 0);
-  m_kind = KIND_INVALID;
+  m_kind = EKind::KIND_INVALID;
   m_tagSet.clear();
   m_partnerHint.clear();
   m_relJson.clear();
@@ -300,7 +300,7 @@ std::string ZDvidAnnotation::GetRelationType(const ZJsonObject &relJson)
 
 ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const ZJsonObject &obj)
 {
-  EKind kind = KIND_INVALID;
+  EKind kind = EKind::KIND_INVALID;
 
   if (obj.hasKey("Kind")) {
     kind = GetKind(ZJsonParser::stringValue(obj["Kind"]));
@@ -348,7 +348,7 @@ void ZDvidAnnotation::loadJsonObject(
     if (obj.hasKey("Kind")) {
       setKind(ZJsonParser::stringValue(obj["Kind"]));
     } else {
-      setKind(KIND_INVALID);
+      setKind(EKind::KIND_INVALID);
     }
 
     if (obj.hasKey("Tags")) {
@@ -358,14 +358,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != flyem::LOAD_NO_PARTNER) {
+    if (mode != flyem::EDvidAnnotationLoadMode::NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case flyem::LOAD_PARTNER_RELJSON:
+        case flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case flyem::LOAD_PARTNER_LOCATION:
+        case flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0
@@ -407,19 +407,19 @@ void ZDvidAnnotation::loadJsonObject(
 
 bool ZDvidAnnotation::isValid() const
 {
-  return getKind() != KIND_INVALID;
+  return getKind() != EKind::KIND_INVALID;
 }
 
 void ZDvidAnnotation::setKind(const std::string &kind)
 {
   if (kind == "PostSyn") {
-    setKind(KIND_POST_SYN);
+    setKind(EKind::KIND_POST_SYN);
   } else if (kind == "PreSyn") {
-    setKind(KIND_PRE_SYN);
+    setKind(EKind::KIND_PRE_SYN);
   } else if (kind == "Note") {
-    setKind(KIND_NOTE);
+    setKind(EKind::KIND_NOTE);
   } else {
-    setKind(KIND_INVALID);
+    setKind(EKind::KIND_INVALID);
   }
 }
 
@@ -611,13 +611,13 @@ void ZDvidAnnotation::removeProperty(const std::string &key)
 std::string ZDvidAnnotation::GetKindName(EKind kind)
 {
   switch (kind) {
-  case ZDvidAnnotation::KIND_POST_SYN:
+  case ZDvidAnnotation::EKind::KIND_POST_SYN:
     return "PostSyn";
-  case ZDvidAnnotation::KIND_PRE_SYN:
+  case ZDvidAnnotation::EKind::KIND_PRE_SYN:
     return "PreSyn";
-  case ZDvidAnnotation::KIND_NOTE:
+  case ZDvidAnnotation::EKind::KIND_NOTE:
     return "Note";
-  case ZDvidAnnotation::KIND_UNKNOWN:
+  case ZDvidAnnotation::EKind::KIND_UNKNOWN:
     return "Unknown";
   default:
     break;
@@ -629,16 +629,16 @@ std::string ZDvidAnnotation::GetKindName(EKind kind)
 ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const std::string &name)
 {
   if (name == "PostSyn") {
-    return ZDvidAnnotation::KIND_POST_SYN;
+    return ZDvidAnnotation::EKind::KIND_POST_SYN;
   } else if (name == "PreSyn") {
-    return ZDvidAnnotation::KIND_PRE_SYN;
+    return ZDvidAnnotation::EKind::KIND_PRE_SYN;
   } else if (name == "Note") {
-    return ZDvidAnnotation::KIND_NOTE;
+    return ZDvidAnnotation::EKind::KIND_NOTE;
   } else if (name == "Unknown") {
-    return ZDvidAnnotation::KIND_UNKNOWN;
+    return ZDvidAnnotation::EKind::KIND_UNKNOWN;
   }
 
-  return ZDvidAnnotation::KIND_INVALID;
+  return ZDvidAnnotation::EKind::KIND_INVALID;
 }
 
 void ZDvidAnnotation::AddProperty(

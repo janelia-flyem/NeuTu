@@ -1065,7 +1065,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
           //For testing
           emit messageGenerated(
               ZWidgetMessage(
-                "test", msg, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+                "test", msg, neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
 #endif
           return doc.object();
         }
@@ -1315,7 +1315,7 @@ void TaskProtocolWindow::showError(QString title, QString message) {
 
     emit messageGenerated(
         ZWidgetMessage(
-          title, message, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+          title, message, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
 }
 
 /*
@@ -1386,7 +1386,7 @@ TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
 void TaskProtocolWindow::resetBody3dDocConfig()
 {
   ProtocolTaskConfig config;
-  config.setDefaultTodo(neutube::TO_SPLIT);
+  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
   config.setTaskType("");
   m_body3dDoc->configure(config);
 }

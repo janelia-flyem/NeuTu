@@ -206,7 +206,7 @@ void ZStackDoc::endWorkThread()
 void ZStackDoc::startWorkThread()
 {
   if (m_workThread == NULL) {
-    m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
+    m_worker = new ZWorker(ZWorker::EMode::SCHEDULE);
     m_workThread = new ZWorkThread(m_worker);
     connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
     m_workThread->start();
@@ -484,7 +484,7 @@ void ZStackDoc::addTask(ZTask *task)
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
   if (m_worker != NULL) {
     if (task->getDelay() > 0) {
-      if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+      if (m_worker->getMode() == ZWorker::EMode::QUEUE) {
         QTimer::singleShot(task->getDelay(), this, [=]() {
           this->addTaskSlot(task);
         });
@@ -5839,7 +5839,7 @@ void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::MSG_INFORMATION,
+          message, neutube::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }
 
@@ -7420,7 +7420,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   }
 
   notify(ZWidgetMessage(
-           message, neutube::MSG_INFORMATION,
+           message, neutube::EMessageType::INFORMATION,
            ZWidgetMessage::TARGET_STATUS_BAR));
 
   return succ;
@@ -8538,7 +8538,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 {
   emit messageGenerated(
         ZWidgetMessage("Multi-channel image tracing is yet to be supported",
-                       neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+                       neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
 
   return false;
 }
@@ -8803,7 +8803,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
     if (swcList.size() > 1) {
       /*
       report("Save failed", "More than one SWC tree exist.",
-             NeuTube::MSG_ERROR);
+             neutube::EMessageType::MSG_ERROR);
              */
       emit statusMessageUpdated("Save failed. More than one SWC tree exist.");
     } else {
@@ -8834,7 +8834,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           notifySwcModified();
           QString msg = QString(tree->getSource().c_str()) + " saved.";
           emit statusMessageUpdated(msg);
-          emit messageGenerated(ZWidgetMessage(msg, neutube::MSG_INFORMATION));
+          emit messageGenerated(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION));
         }
       }
     }
@@ -10144,7 +10144,7 @@ void ZStackDoc::runSeededWatershed()
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(neutube::MSG_WARNING);
+    message.setType(neutube::EMessageType::WARNING);
 
     emit messageGenerated(message);
     return;

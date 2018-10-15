@@ -18,7 +18,7 @@ public:
 
 private:
   QString m_taskType;
-  neutube::EToDoAction m_defaultTodo = neutube::TO_DO;
+  neutube::EToDoAction m_defaultTodo = neutube::EToDoAction::TO_DO;
 };
 
 #endif // PROTOCOLTASKCONFIG_H

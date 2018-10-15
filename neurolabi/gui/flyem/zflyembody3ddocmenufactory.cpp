@@ -106,6 +106,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
           }
         }
       }
+#else
+      Q_UNUSED(bodyEnv);
 #endif
     }
 

@@ -72,7 +72,7 @@ private:
   QNetworkReply *m_networkReply = nullptr;
   QEventLoop *m_eventLoop = nullptr;
   bool m_isReadingDone = false;
-  neutube::EReadStatus m_status = neutube::READ_NULL;
+  neutube::EReadStatus m_status = neutube::EReadStatus::NONE;
   int m_statusCode = 0;
   int m_maxSize = 0;
 };

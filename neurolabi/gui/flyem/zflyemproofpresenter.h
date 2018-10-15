@@ -50,7 +50,7 @@ public:
   }
 
   inline bool isSplitWindow() const {
-    return m_splitMode != flyem::BODY_SPLIT_NONE;
+    return m_splitMode != flyem::EBodySplitMode::NONE;
 //    return m_splitWindowMode;
   }
 

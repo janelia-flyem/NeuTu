@@ -27,7 +27,7 @@ void ZDvidSynapse::init()
 {
   m_type = GetType();
   m_projectionVisible = false;
-  m_kind = KIND_INVALID;
+  m_kind = EKind::KIND_INVALID;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -116,7 +116,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
 
   bool v = true;
 
-  if (getKind() == KIND_PRE_SYN) {
+  if (getKind() == EKind::KIND_PRE_SYN) {
     std::vector<ZIntPoint> psdArray = getPartners();
     if (!psdArray.empty()) {
       ZDvidReader reader;
@@ -125,7 +125,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::LOAD_NO_PARTNER);
+              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
@@ -212,7 +212,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     if (radius > 0.0) {
       double oldWidth = pen.widthF();
       QColor oldColor = pen.color();
-      if (getKind() == KIND_POST_SYN) {
+      if (getKind() == EKind::KIND_POST_SYN) {
         if (option != SKELETON) {
           pen.setWidthF(oldWidth + 1.0);
         }
@@ -238,13 +238,13 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       color.setRgb(0, 0, 0);
 
       if (isSelected()) {
-        if (getKind() == KIND_PRE_SYN) {
+        if (getKind() == EKind::KIND_PRE_SYN) {
           color.setRgb(0, 255, 0);
           size_t index = 0;
           for (std::vector<bool>::const_iterator iter = m_isPartnerVerified.begin();
                iter != m_isPartnerVerified.end(); ++iter, ++index) {
             bool verified = *iter;
-            if (m_partnerKind[index] == KIND_POST_SYN) {
+            if (m_partnerKind[index] == EKind::KIND_POST_SYN) {
               if (!verified) {
                 color.setRgb(0, 0, 0);
                 break;
@@ -274,7 +274,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double green = conf;
       QColor color;
       color.setRedF(red);
-      if (getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+      if (getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
         color.setBlueF(green);
       } else {
         color.setGreenF(green);
@@ -384,7 +384,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPointF ptArray[4];
     //      double s = 5.0;
     if (z > center.getZ()) {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::CD_NORTH);
+      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
@@ -394,7 +394,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                         rect.top() + rect.height() / s);
 */
     } else {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::CD_SOUTH);
+      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);
@@ -445,9 +445,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           painter.drawLine(pt[0], pt[2]);
         }
 
-        if (m_partnerKind[index] == KIND_POST_SYN) {
+        if (m_partnerKind[index] == EKind::KIND_POST_SYN) {
           ZDvidSynapse partnerSynapse;
-          partnerSynapse.setKind(KIND_POST_SYN);
+          partnerSynapse.setKind(EKind::KIND_POST_SYN);
           partnerSynapse.setStatus(m_partnerStatus[index]);
           partnerSynapse.setPosition(partner);
           partnerSynapse.setDefaultColor();
@@ -465,10 +465,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);
-      if (getKind() == KIND_PRE_SYN && m_partnerKind[index] == KIND_PRE_SYN) {
+      if (getKind() == EKind::KIND_PRE_SYN && m_partnerKind[index] == EKind::KIND_PRE_SYN) {
         line.setColor(QColor(0, 255, 255));
         line.setFocusColor(QColor(0, 255, 255));
-      } else if (m_partnerKind[index] == KIND_UNKNOWN) {
+      } else if (m_partnerKind[index] == EKind::KIND_UNKNOWN) {
         line.setColor(QColor(164, 0, 0));
         line.setFocusColor(QColor(255, 0, 0));
       } else {
@@ -492,13 +492,13 @@ std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
 {
   //"Kind": (x, y, z)
   switch (synapse.getKind()) {
-  case ZDvidSynapse::KIND_POST_SYN:
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
     stream << "PostSyn";
     break;
-  case ZDvidSynapse::KIND_PRE_SYN:
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
     stream << "PreSyn";
     break;
-  case ZDvidSynapse::KIND_INVALID:
+  case ZDvidSynapse::EKind::KIND_INVALID:
     stream << "Invalid";
     break;
   default:
@@ -517,10 +517,10 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
 {
   std::string rel;
   switch (getKind()) {
-  case ZDvidSynapse::KIND_POST_SYN:
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
     rel = "PostSynTo";
     break;
-  case ZDvidSynapse::KIND_PRE_SYN:
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
     rel = "PreSynTo";
     break;
   default:
@@ -532,7 +532,7 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
 
 ZDvidAnnotation::EKind ZDvidSynapse::getParterKind(size_t i) const
 {
-  EKind kind = KIND_INVALID;
+  EKind kind = EKind::KIND_INVALID;
   if (i < m_partnerKind.size()) {
     kind = m_partnerKind[i];
   }
@@ -546,7 +546,7 @@ ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
 
   marker.setCenter(
         getPosition().getX(), getPosition().getY(), getPosition().getZ());
-  if (getKind() == KIND_PRE_SYN) {
+  if (getKind() == EKind::KIND_PRE_SYN) {
     marker.setColor(255, 255, 0);
     marker.setType(1);
   } else {
@@ -566,13 +566,13 @@ ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
 void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
-  m_partnerKind.resize(m_partnerHint.size(), KIND_UNKNOWN);
+  m_partnerKind.resize(m_partnerHint.size(), EKind::KIND_UNKNOWN);
   m_partnerStatus.resize(m_partnerHint.size(), STATUS_NORMAL);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], flyem::LOAD_PARTNER_LOCATION);
+          reader.readSynapse(m_partnerHint[i], flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();
@@ -584,7 +584,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
         }*/
       } else {
         m_isPartnerVerified[i] = false;
-        m_partnerKind[i] = ZDvidSynapse::KIND_INVALID;
+        m_partnerKind[i] = ZDvidSynapse::EKind::KIND_INVALID;
       }
     }
   }

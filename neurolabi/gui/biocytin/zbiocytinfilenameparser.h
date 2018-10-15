@@ -9,7 +9,7 @@ class ZBiocytinFileNameParser
 public:
   ZBiocytinFileNameParser();
 
-  enum ESuffixRole {
+  enum class ESuffixRole {
     EDIT, PROJECTION, MASK, ROI, ORIGINAL
   };
 

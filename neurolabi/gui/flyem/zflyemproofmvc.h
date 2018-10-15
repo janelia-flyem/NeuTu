@@ -227,10 +227,10 @@ public slots:
   void checkOutBody(flyem::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::BODY_SPLIT_NONE);
+      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::EBodySplitMode::NONE);
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut,
-      flyem::EBodySplitMode mode = flyem::BODY_SPLIT_NONE);
+      flyem::EBodySplitMode mode = flyem::EBodySplitMode::NONE);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();

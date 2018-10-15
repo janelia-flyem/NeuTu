@@ -355,7 +355,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
     const std::string &basePath, int minZ, int maxZ)
 {
   ZString str = ZString::removeFileExt(basePath) +
-      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::PROJECTION);
 
   str += "_";
   str.appendNumber(minZ);
@@ -370,7 +370,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
     const std::string &basePath, int slabCount)
 {
   ZString str = ZString::removeFileExt(basePath) +
-      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::PROJECTION);
 
   str += "_s";
   str.appendNumber(slabCount);

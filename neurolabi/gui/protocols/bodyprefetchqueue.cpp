@@ -64,7 +64,7 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
 
         if (mesh != NULL) {
           auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyID, 0, flyem::BODY_MESH);
+                bodyID, 0, flyem::EBodyType::MESH);
           mesh->setSource(source);
 
           m_doc->getDataBuffer()->addUpdate(

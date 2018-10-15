@@ -382,7 +382,7 @@ void ZStackMvc::emitMessage(const QString &msg, bool appending)
     target = ZWidgetMessage::TARGET_TEXT_APPENDING;
   }
 
-  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION, target);
+  ZWidgetMessage message(msg, neutube::EMessageType::MSG_INFORMATION, target);
   emit messageGenerated(message);
 }
 
@@ -394,7 +394,7 @@ void ZStackMvc::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::MSG_ERROR, target));
 }
 */
 
@@ -446,7 +446,7 @@ void ZStackMvc::focusInEvent(QFocusEvent *event)
 #ifdef _DEBUG_
   std::cout << "MVC in focus" << std::endl;
   emit messageGenerated(
-        ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+        ZWidgetMessage("MVC in focus", neutube::EMessageType::MSG_INFORMATION,
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
@@ -456,7 +456,7 @@ void ZStackMvc::focusOutEvent(QFocusEvent *event)
 #ifdef _DEBUG_
   std::cout << "MVC out focus" << std::endl;
   emit messageGenerated(
-        ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+        ZWidgetMessage("MVC out focus", neutube::EMessageType::MSG_INFORMATION,
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
@@ -470,14 +470,14 @@ void ZStackMvc::changeEvent(QEvent *event)
 #ifdef _DEBUG_
       std::cout << "MVC in focus" << std::endl;
       emit messageGenerated(
-            ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+            ZWidgetMessage("MVC in focus", neutube::EMessageType::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
     } else {
 #ifdef _DEBUG_
       std::cout << "MVC out focus" << std::endl;
       emit messageGenerated(
-            ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+            ZWidgetMessage("MVC out focus", neutube::EMessageType::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
     }

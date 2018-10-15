@@ -456,15 +456,15 @@ void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
 {
   if (getMaxZoom() == 0) {
     if (axis == neutube::EAxis::ARB) {
-      setUpdatePolicy(flyem::UPDATE_HIDDEN);
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
     } else {
-      setUpdatePolicy(flyem::UPDATE_SMALL);
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::SMALL);
     }
   } else {
     if (axis == neutube::EAxis::ARB) {
       setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
-      setUpdatePolicy(flyem::UPDATE_LOWRES);
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
     }
   }
 }

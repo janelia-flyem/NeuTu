@@ -1620,11 +1620,11 @@ void ZStackFrame::importMask(const QString &filePath)
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
-               neutube::MSG_ERROR);
+               neutube::EMessageType::ERROR);
       }
     } else {
       report("Loading mask failed", "Must be single 8-bit image",
-             neutube::MSG_ERROR);
+             neutube::EMessageType::ERROR);
     }
     delete stack;
   }
@@ -1692,7 +1692,7 @@ void ZStackFrame::loadRoi(bool isExclusive)
     ZString sourcePath = document()->stackSourcePath();
 
     ZString suffix =
-        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ROI);
+        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::ROI);
 
     sourcePath = sourcePath.dirPath() + ZString::FileSeparator +
         ZBiocytinFileNameParser::getCoreName(sourcePath);

@@ -23,7 +23,7 @@ void ZMainWindowMessageProcessor::processMessage(
       ZJsonObject messageBody = message->getMessageBody();
       std::string title = ZJsonParser::stringValue(messageBody["title"]);
       std::string msg = ZJsonParser::stringValue(messageBody["body"]);
-      realHost->report(title, msg, neutube::MSG_INFORMATION);
+      realHost->report(title, msg, neutube::EMessageType::INFORMATION);
 
       message->deactivate();
     }

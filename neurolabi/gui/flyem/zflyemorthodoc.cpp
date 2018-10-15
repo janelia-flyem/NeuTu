@@ -126,7 +126,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
              iter != seList.end(); ++iter) {
           ZDvidSynapseEnsemble *se = *iter;

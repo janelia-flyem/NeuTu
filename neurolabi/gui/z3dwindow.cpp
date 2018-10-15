@@ -2105,19 +2105,19 @@ static void AddTodoMarker(
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
-      case neutube::TO_DO:
+      case neutube::EToDoAction::TO_DO:
         window->emitAddTodoMarker(pt, checked, bodyId);
         break;
-      case neutube::TO_MERGE:
+      case neutube::EToDoAction::TO_MERGE:
         window->emitAddToMergeMarker(pt, bodyId);
         break;
-      case neutube::TO_SPLIT:
+      case neutube::EToDoAction::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
-      case neutube::TO_DO_IRRELEVANT: //todo
+      case neutube::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
         break;
-      case neutube::TO_SUPERVOXEL_SPLIT: //Ignored
+      case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
         LWARN() << "TO_SUPERVOXEL_SPLIT not available";
         break;
       }
@@ -2137,34 +2137,34 @@ void Z3DWindow::updateTodoVisibility()
 
 void Z3DWindow::addTodoMarker()
 {
-  AddTodoMarker(this, neutube::TO_DO, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_DO, false);
 }
 
 void Z3DWindow::addToMergeMarker()
 {
-  AddTodoMarker(this, neutube::TO_MERGE, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_MERGE, false);
 }
 
 void Z3DWindow::addToSplitMarker()
 {
-  AddTodoMarker(this, neutube::TO_SPLIT, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_SPLIT, false);
 }
 
 void Z3DWindow::addToSupervoxelSplitMarker()
 {
-  AddTodoMarker(this, neutube::TO_SUPERVOXEL_SPLIT, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  AddTodoMarker(this, neutube::TO_DO, true);
+  AddTodoMarker(this, neutube::EToDoAction::TO_DO, true);
 }
 
 void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_SPLIT);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
   }
 }
 
@@ -2172,7 +2172,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_DO);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_DO);
   }
 }
 
@@ -2180,7 +2180,7 @@ void Z3DWindow::setTodoItemIrrelevant()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_DO_IRRELEVANT);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_DO_IRRELEVANT);
   }
 }
 
@@ -3621,7 +3621,7 @@ void Z3DWindow::startBodySplit()
         doc->notify(
               ZWidgetMessageFactory(
                 "WARNING: You will not be able to undo previous cleaving after splitting.").
-              as(neutube::MSG_WARNING));
+              as(neutube::EMessageType::WARNING));
       }
     }
 

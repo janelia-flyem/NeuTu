@@ -87,32 +87,32 @@ enum class ESelectOption {
   APPEND, ALONE, ALONE_TYPE
 };
 
-enum EWindowConfig {
+enum class EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
 
-enum EMessageType {
-  MSG_INFORMATION, MSG_WARNING, MSG_ERROR, MSG_DEBUG
+enum class EMessageType {
+  INFORMATION, WARNING, ERROR, DEBUG
 };
 
-enum EBodyLabelType {
-  BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
+enum class EBodyLabelType {
+  ORIGINAL, MAPPED
 };
 
-enum EBiDirection {
-  DIRECTION_FORWARD, DIRECTION_BACKWARD
+enum class EBiDirection {
+  FORWARD, BACKWARD
 };
 
-enum ECardinalDirection {
-  CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
+enum class ECardinalDirection {
+  NORTH, EAST, SOUTH, WEST
 };
 
-enum EReadStatus {
-  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
-  READ_BAD_RESPONSE
+enum class EReadStatus {
+  NONE, OK, FAILED, TIMEOUT, CANCELED,
+  BAD_RESPONSE
 };
 
-enum EToDoAction {
+enum class EToDoAction {
   TO_DO, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
 };
 
@@ -173,32 +173,32 @@ static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 }
 
 namespace flyem {
-enum EDvidAnnotationLoadMode {
-  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
+enum class EDvidAnnotationLoadMode {
+  NO_PARTNER, PARTNER_LOCATION, PARTNER_RELJSON
 };
 
 enum class EProofreadingMode {
   NORMAL, SPLIT
 };
 
-enum EBodyType {
-  BODY_DEFAULT, BODY_SPHERE, BODY_SKELETON, BODY_MESH
+enum class EBodyType {
+  DEFAULT, SPHERE, SKELETON, MESH
 };
 
 enum class EBodyLabelType {
   BODY, SUPERVOXEL
 };
 
-enum EBodySplitMode {
-  BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
+enum class EBodySplitMode {
+  NONE, ONLINE, OFFLINE
 };
 
-enum EBodySplitRange {
-  RANGE_FULL, RANGE_SEED, RANGE_LOCAL
+enum class EBodySplitRange {
+  FULL, SEED, LOCAL
 };
 
-enum EDataSliceUpdatePolicy {
-  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
+enum class EDataSliceUpdatePolicy {
+  DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
 };
 
 static const uint64_t LABEL_ID_SELECTION =

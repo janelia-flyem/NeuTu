@@ -234,13 +234,13 @@ void Neu3Window::updateBodyState()
 #ifdef _DEBUG_
   std::cout << "Update state: "
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
-                 neutube::BODY_LABEL_ORIGINAL).size() << " bodies" << std::endl;
+                 neutube::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
 #if 0
   if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
         neutube::BODY_LABEL_ORIGINAL).size() == 1) {
-    m_dataContainer->enableSplit(flyem::BODY_SPLIT_ONLINE);
+    m_dataContainer->enableSplit(flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
   } else {
     m_dataContainer->disableSplit();
   }
@@ -1097,7 +1097,7 @@ void Neu3Window::syncBodyListModel()
   }
   LDEBUG() << "Syncing" << bodyStr;
 #endif
-  dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
+  dataDoc->setSelectedBody(selected, neutube::EBodyLabelType::MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;

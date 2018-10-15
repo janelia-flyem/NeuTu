@@ -10,8 +10,8 @@ class ZWorker : public QObject
 {
   Q_OBJECT
 public:
-  enum EMode {
-    MODE_QUEUE, MODE_SCHEDULE
+  enum class EMode {
+    QUEUE, SCHEDULE
   };
 
   explicit ZWorker(EMode mode, QObject *parent = nullptr);
@@ -38,7 +38,7 @@ public slots:
 private:
   ZTaskQueue *m_taskQueue = nullptr;
   bool m_quiting =false;
-  EMode m_mode = MODE_QUEUE;
+  EMode m_mode = EMode::QUEUE;
 };
 
 #endif // ZWORKER_H

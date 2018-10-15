@@ -8115,11 +8115,11 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   NeuTube::getMessageReporter()->report(
-        "test", "error 1", NeuTube::MSG_ERROR);
+        "test", "error 1", neutube::EMessageType::MSG_ERROR);
   NeuTube::getMessageReporter()->report(
-        "test", "warning 1", NeuTube::MSG_WARNING);
+        "test", "warning 1", neutube::EMessageType::MSG_WARNING);
   NeuTube::getMessageReporter()->report(
-        "test", "output 1", NeuTube::MSG_INFORMATION);
+        "test", "output 1", neutube::EMessageType::MSG_INFORMATION);
 #endif
 
 #if 0
@@ -26062,7 +26062,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZWidgetMessage msg = ZWidgetMessageFactory("test").
       to(ZWidgetMessage::TARGET_CUSTOM_AREA).
-      as(neutube::MSG_WARNING).
+      as(neutube::EMessageType::MSG_WARNING).
       title("Test Title");
   qDebug() << msg.getTitle();
   qDebug() << msg.toHtmlString();

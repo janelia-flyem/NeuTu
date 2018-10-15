@@ -549,7 +549,7 @@ private:
 
   mutable QMutex m_BodySetMutex;
 
-  flyem::EBodyType m_bodyType = flyem::BODY_SPHERE;
+  flyem::EBodyType m_bodyType = flyem::EBodyType::SPHERE;
   QSet<uint64_t> m_selectedBodySet;
   QSet<uint64_t> m_protectedBodySet;
   mutable QMutex m_protectedBodySetMutex;
