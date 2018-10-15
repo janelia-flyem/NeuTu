@@ -1183,6 +1183,20 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
   return NULL;
 }
 
+ZFlyEmToDoList* ZFlyEmProofDoc::getTodoList(neutube::EAxis axis) const
+{
+  ZOUT(LTRACE(), 5) << "Get todo list";
+  QList<ZFlyEmToDoList*> teList = getObjectList<ZFlyEmToDoList>();
+//  QList<ZStackObject*> teList = getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+  for (ZFlyEmToDoList* te : teList) {
+    if (te->getSliceAxis() == axis) {
+      return te;
+    }
+  }
+
+  return NULL;
+}
+
 QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
