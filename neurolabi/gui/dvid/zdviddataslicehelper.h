@@ -155,8 +155,8 @@ public:
   bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
-  flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::UPDATE_DIRECT;
-  flyem::EDataSliceUpdatePolicy m_preferredUpdatePolicy = flyem::UPDATE_LOWRES;
+  flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::EDataSliceUpdatePolicy::DIRECT;
+  flyem::EDataSliceUpdatePolicy m_preferredUpdatePolicy = flyem::EDataSliceUpdatePolicy::LOWRES;
 
   ZDvidReader m_reader;
 };

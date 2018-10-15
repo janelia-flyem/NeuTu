@@ -25,7 +25,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
     emit messageGenerated(
-          ZWidgetMessage("Failed to open the node.", neutube::MSG_ERROR));
+          ZWidgetMessage("Failed to open the node.", neutube::EMessageType::ERROR));
   }
 }
 

@@ -23,7 +23,7 @@ TEST(FlyEmBody3d, source)
   ASSERT_EQ("#.FlyEmBody#123_1", source);
 
   source =
-      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, flyem::BODY_SPHERE);
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, flyem::EBodyType::SPHERE);
   ASSERT_EQ("#.FlyEmBody#123_1#.sphere", source);
 
   /*

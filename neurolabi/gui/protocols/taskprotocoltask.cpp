@@ -356,7 +356,7 @@ ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::TO_SPLIT);
+  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
 
   return config;
 }

@@ -6,7 +6,7 @@
 class ZSwcNode : public ZBall
 {
 public:
-  enum EType{
+  enum class EType{
       UNKNOWN = 0, SOMA = 1, AXON, BASAL_DENDRITE, APICAL_DENDRITE, DENDRITE,
       NEURITE
   };

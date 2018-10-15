@@ -182,7 +182,7 @@ int ZStackDocHelper::CountSelectedBody(
 
 bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 {
-  return CountSelectedBody(doc, neutube::BODY_LABEL_ORIGINAL) > 0;
+  return CountSelectedBody(doc, neutube::EBodyLabelType::ORIGINAL) > 0;
 }
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
@@ -207,7 +207,7 @@ QColor ZStackDocHelper::GetBodyColor(
   QColor color;
   ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::EAxis::Z);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutube::EBodyLabelType::ORIGINAL);
   }
 
   return color;

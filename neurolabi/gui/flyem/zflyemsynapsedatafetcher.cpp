@@ -131,7 +131,7 @@ void ZFlyEmSynapseDataFetcher::addSynapse(ZDvidSynapseEnsemble *se)
       ZJsonObject synapseJson(m_data.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
       }
     }

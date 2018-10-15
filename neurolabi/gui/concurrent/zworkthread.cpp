@@ -17,7 +17,7 @@ void ZWorkThread::setWorker(ZWorker *worker)
 {
   m_worker = worker;
   m_worker->moveToThread(this);
-  if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+  if (m_worker->getMode() == ZWorker::EMode::QUEUE) {
     connect(m_worker, SIGNAL(finished()), this, SLOT(quit()));
     connect(this, SIGNAL(started()), m_worker, SLOT(process()));
   }

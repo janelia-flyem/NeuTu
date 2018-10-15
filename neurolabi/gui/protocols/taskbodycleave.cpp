@@ -298,7 +298,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 TaskBodyCleave::~TaskBodyCleave()
 {
   if (m_checkedOut) {
-    m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+    m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
   }
 }
 
@@ -454,7 +454,7 @@ bool TaskBodyCleave::skip()
 void TaskBodyCleave::beforeNext()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -480,7 +480,7 @@ void TaskBodyCleave::beforeNext()
 void TaskBodyCleave::beforePrev()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -499,7 +499,7 @@ void TaskBodyCleave::beforePrev()
 
 void TaskBodyCleave::beforeLoading()
 {
-  m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
+  m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
@@ -515,7 +515,7 @@ void TaskBodyCleave::beforeLoading()
     if (owner == overridableOwner) {
       LINFO() << "TaskBodyCleave overriding checkout by" << owner;
       m_supervisor->checkInAdmin(m_bodyId);
-      m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
+      m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
     }
   }
 }
@@ -1533,7 +1533,7 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -1853,7 +1853,7 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::TO_SUPERVOXEL_SPLIT);
+  config.setDefaultTodo(neutube::EToDoAction::TO_SUPERVOXEL_SPLIT);
 
   return config;
 }

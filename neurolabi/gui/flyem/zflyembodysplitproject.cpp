@@ -64,7 +64,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
-  m_splitMode = flyem::BODY_SPLIT_ONLINE;
+  m_splitMode = flyem::EBodySplitMode::ONLINE;
 
 //  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
 //  connect(this, SIGNAL(result3dQuickViewReady()),
@@ -1146,7 +1146,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
       emit messageGenerated(
             ZWidgetMessage(QString("Split %1 failed.").
                            arg(getBodyId()),
-                           neutube::MSG_ERROR));
+                           neutube::EMessageType::ERROR));
     } else {
       updateBodyDep(getBodyId(), bodyId);
 #if defined(_FLYEM_2)
@@ -2177,7 +2177,7 @@ void ZFlyEmBodySplitProject::updateBodyId()
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     std::set<uint64_t> bodySet =
-        doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+        doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
     if (bodySet.size() == 1) {
       m_bodyId = *(bodySet.begin());
     }
@@ -2270,7 +2270,7 @@ void ZFlyEmBodySplitProject::importSeed(const QString &fileName)
             ZWidgetMessage(
               QString("Invalid seed file: %1. Seeds remain unchanged").
               arg(fileName),
-              neutube::MSG_ERROR));
+              neutube::EMessageType::ERROR));
     }
   }
 }
@@ -2724,7 +2724,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     succ = false;
   }
 
-  message.setType(neutube::MSG_ERROR);
+  message.setType(neutube::EMessageType::ERROR);
 
   emit messageGenerated(message.toHtmlString(), true);
 //  emit messageGenerated(message);
@@ -2742,12 +2742,12 @@ void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::MSG_INFORMATION, target));
+        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
 }
 
 void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
 {
-  ZWidgetMessage message(msg, neutube::MSG_INFORMATION);
+  ZWidgetMessage message(msg, neutube::EMessageType::INFORMATION);
   message.setTarget(ZWidgetMessage::TARGET_DIALOG);
   emit messageGenerated(message);
 }
@@ -2761,7 +2761,7 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::MSG_ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
 }
 
 void ZFlyEmBodySplitProject::update3DViewPlane()

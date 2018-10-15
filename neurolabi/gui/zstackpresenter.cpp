@@ -2830,7 +2830,7 @@ void ZStackPresenter::notifyBodyConnectionTriggered()
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
-  emit bodyCheckinTriggered(flyem::BODY_SPLIT_NONE);
+  emit bodyCheckinTriggered(flyem::EBodySplitMode::NONE);
 }
 
 void ZStackPresenter::notifyBodyForceCheckinTriggered()
@@ -2840,7 +2840,7 @@ void ZStackPresenter::notifyBodyForceCheckinTriggered()
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()
 {
-  emit bodyCheckoutTriggered(flyem::BODY_SPLIT_NONE);
+  emit bodyCheckoutTriggered(flyem::EBodySplitMode::NONE);
 }
 
 void ZStackPresenter::selectDownstreamNode()
@@ -2970,7 +2970,7 @@ static void SyncDvidLabelSliceSelection(
     if (buddySlice != labelSlice) {
       const std::set<uint64_t> &selectedSet =
           labelSlice->getSelectedOriginal();
-      buddySlice->setSelection(selectedSet, neutube::BODY_LABEL_ORIGINAL);
+      buddySlice->setSelection(selectedSet, neutube::EBodyLabelType::ORIGINAL);
     }
   }
 }

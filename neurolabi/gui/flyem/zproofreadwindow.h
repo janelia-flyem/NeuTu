@@ -60,7 +60,7 @@ signals:
 
 public slots:
   void launchSplit(
-      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::BODY_SPLIT_ONLINE);
+      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE);
   void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);

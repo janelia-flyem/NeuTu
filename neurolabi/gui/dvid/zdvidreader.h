@@ -502,20 +502,20 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label, const ZDvidRoi &roi,
       flyem::EDvidAnnotationLoadMode mode) const;
 
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

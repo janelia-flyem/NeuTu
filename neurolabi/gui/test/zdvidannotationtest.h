@@ -62,16 +62,16 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 //  item.toJsonObject().print();
 
   item.setChecked(true);
-  item.setAction(neutube::TO_MERGE);
+  item.setAction(neutube::EToDoAction::TO_MERGE);
 //  item.toJsonObject().print();
-  ASSERT_EQ(neutube::TO_MERGE, item.getAction());
+  ASSERT_EQ(neutube::EToDoAction::TO_MERGE, item.getAction());
 
-  item.setAction(neutube::TO_SPLIT);
-  ASSERT_EQ(neutube::TO_SPLIT, item.getAction());
+  item.setAction(neutube::EToDoAction::TO_SPLIT);
+  ASSERT_EQ(neutube::EToDoAction::TO_SPLIT, item.getAction());
 
-  item.setAction(neutube::TO_DO);
+  item.setAction(neutube::EToDoAction::TO_DO);
 //  item.toJsonObject().print();
-  ASSERT_EQ(neutube::TO_DO, item.getAction());
+  ASSERT_EQ(neutube::EToDoAction::TO_DO, item.getAction());
 
   std::string splitTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
       + ZFlyEmToDoItem::ACTION_SPLIT_TAG;
@@ -83,7 +83,7 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   item.removeActionTag();
   ASSERT_FALSE(item.hasTag(splitTag));
 
-  item.setAction(neutube::TO_SPLIT);
+  item.setAction(neutube::EToDoAction::TO_SPLIT);
   ASSERT_TRUE(item.hasTag(splitTag));
 
   item.setChecked(true);
@@ -100,9 +100,9 @@ TEST(ZDvidAnnotation, Radius)
   resolution.setUnit(ZResolution::UNIT_PIXEL);
   resolution.setVoxelSize(1.0, 1.0, 1.0);
   ASSERT_DOUBLE_EQ(
-        ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::KIND_POST_SYN),
+        ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::EKind::KIND_POST_SYN),
         ZDvidAnnotation::GetDefaultRadius(
-          ZDvidAnnotation::KIND_POST_SYN, resolution));
+          ZDvidAnnotation::EKind::KIND_POST_SYN, resolution));
 }
 
 #endif
