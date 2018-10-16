@@ -3883,6 +3883,41 @@ size_t ZDvidReader::readBodySize(
   return s;
 }
 
+std::tuple<size_t, size_t, ZIntCuboid> ZDvidReader::readBodySizeInfo(
+    uint64_t bodyId, flyem::EBodyLabelType type) const
+{
+  size_t voxelCount = 0;
+  size_t blockCount = 0;
+  ZIntCuboid boundBox;
+
+  std::string url;
+  if (type == flyem::EBodyLabelType::BODY) {
+    url = ZDvidUrl(getDvidTarget()).getSparsevolSizeUrl(bodyId);
+  } else if (type == flyem::EBodyLabelType::SUPERVOXEL) {
+    url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
+  }
+
+  if (!url.empty()) {
+    ZJsonObject jsonObj = readJsonObject(url);
+    voxelCount = ZJsonParser::integerValue(jsonObj["voxels"]);
+    blockCount = ZJsonParser::integerValue(jsonObj["numblocks"]);
+    boundBox.setFirstCorner(
+          ZJsonParser::integerValue(jsonObj["minvoxel"], 0),
+          ZJsonParser::integerValue(jsonObj["minvoxel"], 1),
+          ZJsonParser::integerValue(jsonObj["minvoxel"], 2)
+        );
+    boundBox.setLastCorner(
+          ZJsonParser::integerValue(jsonObj["maxvoxel"], 0),
+          ZJsonParser::integerValue(jsonObj["maxvoxel"], 1),
+          ZJsonParser::integerValue(jsonObj["maxvoxel"], 2)
+        );
+  }
+
+  return std::make_tuple(voxelCount, blockCount, boundBox);
+}
+
+
+
 ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 {
   return readBodyPosition(bodyId);
@@ -4274,7 +4309,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
 
 int ZDvidReader::readBodyBlockCount(uint64_t bodyId) const
 {
-  int count = -1;
+  int count = 0;
   ZDvidUrl dvidUrl(getDvidTarget());
   ZJsonObject jsonObj = readJsonObject(dvidUrl.getSparsevolSizeUrl(bodyId));
   if (jsonObj.hasKey("numblocks")) {
@@ -4441,7 +4476,7 @@ ZObject3dScan ZDvidReader::readCoarseBody(
 
 int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
 {
-  int count = -1;
+  int count = 0;
 
   ZDvidBufferReader &reader = m_bufferReader;
   reader.tryCompress(false);

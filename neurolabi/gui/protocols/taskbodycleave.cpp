@@ -164,23 +164,85 @@ namespace {
 
 //
 
-class TaskBodyCleave::SetCleaveIndicesCommand : public QUndoCommand
+class TaskBodyCleave::CleaveCommand : public QUndoCommand
 {
 public:
-  SetCleaveIndicesCommand(TaskBodyCleave *task,
-                          std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
-                          const std::vector< QString>& comboBoxItemsText) :
+
+  CleaveCommand(TaskBodyCleave *task,
+                std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
+                const std::vector< QString>& comboBoxItemsText) :
     m_task(task),
     m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
     m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex),
     m_comboBoxItemsTextBefore(getComboBoxItemsText(task->m_cleaveIndexComboBox)),
-    m_comboBoxItemsTextAfter(comboBoxItemsText)
+    m_comboBoxItemsTextAfter(comboBoxItemsText),
+    m_requestNumber(s_requestNumber++)
   {
-    setText("seeding for next cleave");
+    setText("cleaving");
+
+    // Each command to set seeds is followed by an asychronous request to the server to cleave
+    // using all seeds set so far. Requests are numbered sequentially, and the server replies
+    // can be retrieved from a cache indexed by request number, when the reply is availble.
+    // To undo a command, the request number of the previous command is needed, to restore
+    // that command's reply, when it is available.
+
+    m_requestNumberBefore = 0;
+    if (const CleaveCommand *last = lastCleaveCommand(m_task->m_bodyDoc->undoStack())) {
+      m_requestNumberBefore = last->requestNumber();
+    }
+  }
+
+  unsigned int requestNumber() const
+  {
+    return m_requestNumber;
+  }
+
+  // Add the server reply to a cache, referenced by the request number.
+
+  static void addReply(unsigned int requestNumber,
+                       std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex,
+                       const QJsonObject &cleaveReply)
+  {
+    CleaveReply reply(meshIdToCleaveResultIndex, cleaveReply);
+    if (requestNumber == s_cleaveReplyByRequestNumber.size()) {
+      s_cleaveReplyByRequestNumber.push_back(reply);
+    } else {
+      s_cleaveReplyByRequestNumber.resize(requestNumber + 1);
+      s_cleaveReplyByRequestNumber[requestNumber] = reply;
+    }
+  }
+
+  // Display the reply for the given request number.  But do not do so if another request
+  // has happened more recently than that request.  Since each request involves all the seeds
+  // set so far, the more recent request's reply, when it arrives, will show the earlier
+  // reply, too.
+
+  static void displayReply(TaskBodyCleave *task, unsigned int requestNumber)
+  {
+    if (const CleaveCommand *lastCommand = lastCleaveCommand(task->m_bodyDoc->undoStack())) {
+      if (lastCommand->requestNumber() == requestNumber) {
+        if (requestNumber < (unsigned int) s_cleaveReplyByRequestNumber.size()) {
+          const CleaveReply &reply = s_cleaveReplyByRequestNumber[requestNumber];
+          task->m_meshIdToCleaveResultIndex = reply.m_meshIdToCleaveResultIndex;
+          task->m_cleaveReply = reply.m_cleaveReply;
+          task->updateColors();
+          task->updateVisibility();
+        }
+      }
+    }
   }
 
   virtual void undo() override
   {
+    if (m_requestNumberBefore < (unsigned int) s_cleaveReplyByRequestNumber.size()) {
+
+      // If the reply from the previous command's request is in the cache, then display it.
+
+      const CleaveReply &reply = s_cleaveReplyByRequestNumber[m_requestNumberBefore];
+      m_task->m_meshIdToCleaveResultIndex = reply.m_meshIdToCleaveResultIndex;
+      m_task->m_cleaveReply = reply.m_cleaveReply;
+    }
+
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
     m_task->updateColors();
     m_task->updateVisibility();
@@ -189,10 +251,29 @@ public:
 
   virtual void redo() override
   {
+    if (m_requestNumber < (unsigned int) s_cleaveReplyByRequestNumber.size()) {
+
+      // If the reply from this command's request is in the cache, then display it.
+
+      const CleaveReply &reply = s_cleaveReplyByRequestNumber[m_requestNumber];
+      m_task->m_meshIdToCleaveResultIndex = reply.m_meshIdToCleaveResultIndex;
+      m_task->m_cleaveReply = reply.m_cleaveReply;
+    }
+
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexAfter;
     m_task->updateColors();
     m_task->updateVisibility();
     setComboBoxItemsText(m_task->m_cleaveIndexComboBox, m_comboBoxItemsTextAfter);
+  }
+
+  // Clear the static data structures that cache replies, indexed by request numbers,
+  // which are needed for undo processing.
+
+  static void clearReplyUndo()
+  {
+    s_cleaveReplyByRequestNumber.clear();
+    s_cleaveReplyByRequestNumber.resize(1);
+    s_requestNumber = s_cleaveReplyByRequestNumber.size();
   }
 
 private:
@@ -212,50 +293,54 @@ private:
     }
   }
 
+  static const CleaveCommand *lastCleaveCommand(const QUndoStack *undoStack)
+  {
+    int index = undoStack->index();
+    while (index > 0) {
+      index--;
+      if (const CleaveCommand *cleaveCommand =
+          dynamic_cast<const CleaveCommand *>(undoStack->command(index))) {
+        return cleaveCommand;
+      }
+    }
+    return nullptr;
+  }
+
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexAfter;
   std::vector<QString> m_comboBoxItemsTextBefore;
   std::vector<QString> m_comboBoxItemsTextAfter;
+
+  // The request numbers for the previous command on the undo history,
+  // and for this command.
+
+  unsigned int m_requestNumberBefore;
+  unsigned int m_requestNumber;
+
+  // The next request number to use for the next commend.
+
+  static unsigned int s_requestNumber;
+
+  // A record in the cache of server replies.
+
+  struct CleaveReply
+  {
+    CleaveReply(const std::map<uint64_t, std::size_t> &m = {},
+                QJsonObject r = QJsonObject()) :
+      m_meshIdToCleaveResultIndex(m), m_cleaveReply(r) {}
+    std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;
+    QJsonObject m_cleaveReply;
+  };
+
+  // The cache of server replies, indexed by request numbers.
+
+  static std::vector<CleaveReply> s_cleaveReplyByRequestNumber;
 };
 
-class TaskBodyCleave::CleaveCommand : public QUndoCommand
-{
-public:
-  CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
-                const QJsonObject &cleaveReply) :
-    m_task(task),
-    m_meshIdToCleaveResultIndexBefore(task->m_meshIdToCleaveResultIndex),
-    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex),
-    m_cleaveReplyBefore(task->m_cleaveReply),
-    m_cleaveReplyAfter(cleaveReply)
-  {
-    setText("cleave");
-  }
-
-  virtual void undo() override
-  {
-    m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
-    m_task->m_cleaveReply = m_cleaveReplyBefore;
-    m_task->updateColors();
-    m_task->updateVisibility();
-  }
-
-  virtual void redo() override
-  {
-    m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
-    m_task->m_cleaveReply = m_cleaveReplyAfter;
-    m_task->updateColors();
-    m_task->updateVisibility();
-  }
-
-private:
-  TaskBodyCleave *m_task;
-  std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
-  std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
-  QJsonObject m_cleaveReplyBefore;
-  QJsonObject m_cleaveReplyAfter;
-};
+unsigned int TaskBodyCleave::CleaveCommand::s_requestNumber = 0;
+std::vector<TaskBodyCleave::CleaveCommand::CleaveReply>
+  TaskBodyCleave::CleaveCommand::s_cleaveReplyByRequestNumber;
 
 //
 
@@ -768,9 +853,10 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
     itemTexts.push_back(text);
   }
 
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex, itemTexts));
+  CleaveCommand *command = new CleaveCommand(this, meshIdToCleaveIndex, itemTexts);
+  m_bodyDoc->pushUndoCommand(command);
 
-  cleave();
+  cleave(command->requestNumber());
 }
 
 void TaskBodyCleave::onToggleShowChosenCleaveBody()
@@ -786,7 +872,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
   allowNextPrev(true);
 
-  m_cleaveReplyPending = false;
+  m_cleaveRepliesPending--;
   QNetworkReply::NetworkError error = reply->error();
 
   // In addition to checking for QNetworkReply::NetworkError, also check for
@@ -795,7 +881,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
   int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
   const int STATUS_OK = 200;
 
-  QString status = CLEAVING_STATUS_DONE;
+  QString status = (m_cleaveRepliesPending > 0) ? CLEAVING_STATUS_IN_PROGRESS : CLEAVING_STATUS_DONE;
 
   QByteArray replyBytes = reply->readAll();
   QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
@@ -824,7 +910,9 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
       std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
 
-      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, replyJson));
+      unsigned int replyRequestNumber = replyJson["request-number"].toInt();
+      CleaveCommand::addReply(replyRequestNumber, meshIdToCleaveIndex, replyJson);
+      CleaveCommand::displayReply(this, replyRequestNumber);
 
       if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
         status = CLEAVING_STATUS_SERVER_INCOMPLETE;
@@ -927,7 +1015,7 @@ bool TaskBodyCleave::allowCompletion()
 {
   bool allow = true;
 
-  if (m_cleaveReplyPending) {
+  if (m_cleaveRepliesPending > 0) {
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
       QString title = "Warning";
       QString text = "A reply from the cleave server is pending. "
@@ -1263,6 +1351,8 @@ void TaskBodyCleave::applyPerTaskSettings()
 
   m_bodyDoc->undoStack()->clear();
 
+  CleaveCommand::clearReplyUndo();
+
   bool showingCleaving = m_showCleavingCheckBox->isChecked();
   applyColorMode(showingCleaving);
 }
@@ -1294,7 +1384,7 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
   }
 }
 
-void TaskBodyCleave::cleave()
+void TaskBodyCleave::cleave(unsigned int requestNumber)
 {
   m_cleavingStatusLabel->setText(CLEAVING_STATUS_IN_PROGRESS);
 
@@ -1346,7 +1436,9 @@ void TaskBodyCleave::cleave()
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 
-  // TODO: Temporary cleaving sevrver URL.
+  requestJson["request-number"] = int(requestNumber);
+
+  // TODO: Teporary cleaving sevrver URL.
   QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
@@ -1361,7 +1453,7 @@ void TaskBodyCleave::cleave()
 
   allowNextPrev(false);
 
-  m_cleaveReplyPending = true;
+  m_cleaveRepliesPending++;
   m_networkManager->post(request, requestData);
 }
 

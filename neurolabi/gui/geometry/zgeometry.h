@@ -41,6 +41,9 @@ ZIntCuboid MakeSphereBox(const ZIntPoint &center, int radius);
 
 int GetZoomScale(int zoom);
 int GetZoomLevel(int scale);
+
+void CopyToArray(const ZIntPoint &pt, int v[]);
+
 }
 
 

@@ -178,7 +178,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
-    if (m_dataFetcher == NULL || getSliceAxis() == neutube::EAxis::Z) {
+    if (m_dataFetcher == NULL /*|| getSliceAxis() == neutube::Z_AXIS*/) {
       syncedFetch(box, startZ, endZ, false);
       /*
       updateUnsync(box);
@@ -191,7 +191,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     } else {
       unsyncedFetch(box);
     }
-  } else {
+  } else if (m_fetchingFullAllowed) {
     ZIntPoint lastCorner = m_dvidInfo.getEndCoordinates();
     ZIntPoint firstCorner = m_dvidInfo.getStartCoordinates();
 
@@ -253,7 +253,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
     } else {
       if (currentArea > 0 && currentArea < m_maxPartialArea) {
         downloadUnsync(z);
-      } else {
+      } else if (m_fetchingFullAllowed) {
         int blockIndex = m_dvidInfo.getBlockIndexZ(z);
         blockZSet.insert(blockIndex);
       }
