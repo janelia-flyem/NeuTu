@@ -384,6 +384,7 @@ public slots:
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyConnectionTriggered();
+  void notifyBodyProfileTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
@@ -435,6 +436,7 @@ signals:
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
   void bodyConnectionTriggered();
+  void bodyProfileTriggered();
   void bodyCheckinTriggered(flyem::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
   void bodyCheckoutTriggered(flyem::EBodySplitMode mode);

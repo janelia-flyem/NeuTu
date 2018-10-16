@@ -282,3 +282,10 @@ int zgeom::GetZoomLevel(int scale)
 
   return zoom;
 }
+
+void zgeom::CopyToArray(const ZIntPoint &pt, int v[])
+{
+  v[0] = pt.getX();
+  v[1] = pt.getY();
+  v[2] = pt.getZ();
+}
