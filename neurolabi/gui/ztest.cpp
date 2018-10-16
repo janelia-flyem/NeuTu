@@ -28075,9 +28075,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
 //  GET_FLYEM_CONFIG.useDefaultNeuTuServer(false);
   GET_FLYEM_CONFIG.print();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
+  size_t bodySize = 0;
+  size_t blockCount = 0;
+  ZIntCuboid box;
+  std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
+        662776660, flyem::LABEL_BODY);
+  std::cout << bodySize << " " << blockCount << std::endl;
+  std::cout << box.toString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
