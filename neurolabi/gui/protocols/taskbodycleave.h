@@ -121,14 +121,13 @@ private:
   QString m_cleaveMethod;
 
   QNetworkAccessManager *m_networkManager;
-  bool m_cleaveReplyPending = false;
+  std::size_t m_cleaveRepliesPending = 0;
 
   // The latest cleave server reply that was applied is saved for debugging purposes.
   QJsonObject m_cleaveReply;
 
   std::set<QString> m_warningTextToSuppress;
 
-  class SetCleaveIndicesCommand;
   class CleaveCommand;
 
   std::size_t chosenCleaveIndex() const;
@@ -149,7 +148,7 @@ private:
   void applyColorMode(bool showingCleaving);
   void enableCleavingUI(bool showingCleaving);
 
-  void cleave();
+  void cleave(unsigned int requestNumber);
 
   void updateVisibility();
 
