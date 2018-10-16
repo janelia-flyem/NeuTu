@@ -49,19 +49,16 @@ public:
 ZSegmentationNode* find(QString label);
 void makeMask(ZObject3dScan* mask);
 void display(QStandardItem* tree);
-int getColorIndex();
 
 private:
 void consumeSegmentations(ZObject3dScanArray& segmentations);
+int estimateScale(size_t volume);
 
 private:
 QString m_label;
 ZObject3dScan* m_data;
 ZSegmentationNode* m_parent;
 std::vector<ZSegmentationNode*> m_children;
-
-public:
-std::map<QString,int> static m_color_table;
 };
 
 
@@ -97,8 +94,9 @@ private slots:
 private:
   std::vector<ZStackObject*> getSeeds();
   void removeSeeds();
-
+  void clearTreeView();
   QStandardItem* getSelectedNodeItem();
+  void highLight(ZSegmentationNode* node, QColor color= QColor(255,0,0));
 
 private:
   void init();
