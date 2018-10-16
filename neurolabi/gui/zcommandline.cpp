@@ -41,6 +41,7 @@
 #include "dvid/zdvidneurontracer.h"
 #include "zstack.hxx"
 #include "mylib/utilities.h"
+#include "misc/miscutility.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -1063,6 +1064,7 @@ int ZCommandLine::skeletonizeDvid()
 
   ZDvidReader reader;
   reader.open(target);
+  reader.updateMaxLabelZoom();
 
   ZDvidWriter writer;
 
@@ -1155,8 +1157,14 @@ int ZCommandLine::skeletonizeDvid()
       }
       if (tree == NULL) {
         ZObject3dScan obj;
+        const int blockCount = reader.readBodyBlockCount(bodyId);
+        constexpr int maxBlockCount = 3000;
+        int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+        int zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+
         std::cout << "Reading body..." << std::endl;
-        reader.readBody(bodyId, true, &obj);
+//        reader.readBody(bodyId, true, &obj);
+        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {

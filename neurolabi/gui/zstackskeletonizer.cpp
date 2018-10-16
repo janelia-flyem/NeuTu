@@ -91,42 +91,53 @@ void ZStackSkeletonizer::addSwcComment(ZSwcTree *tree, const int *dsIntv)
   }
 }
 
+void ZStackSkeletonizer::downsampleToSizeLimit(
+    ZObject3dScan *obj, const ZIntCuboid &box)
+{
+  int dsIntv[3];
+  for (int i = 0; i < 3; ++i) {
+    dsIntv[i] = m_downsampleInterval[i];
+  }
+  //    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
+  //           > m_sizeLimit) {
+  while (box.getDsMaxVolume(dsIntv[0], dsIntv[1], dsIntv[2]) > m_sizeLimit) {
+    for (int i = 0; i < 3; ++i) {
+      dsIntv[i] += 1;
+    }
+  }
+
+  if (dsIntv[0] == 0 && dsIntv[1] == 0 && dsIntv[2] == 0) {
+    std::cout << "No downsampling" << std::endl;
+  } else {
+    std::cout << "Downsampling "
+              << dsIntv[0] + 1 << " x "
+              << dsIntv[1] + 1 << " x "
+              << dsIntv[2] + 1 << std::endl;
+    obj->downsampleMax(dsIntv[0], dsIntv[1], dsIntv[2]);
+  }
+}
+
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 {
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
     ZIntCuboid box = obj.getBoundBox();
-    int dsIntv[3];
-    for (int i = 0; i < 3; ++i) {
-      dsIntv[i] = m_downsampleInterval[i];
-    }
-//    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
-//           > m_sizeLimit) {
-    while (box.getDsMaxVolume(dsIntv[0], dsIntv[1], dsIntv[2]) > m_sizeLimit) {
-      for (int i = 0; i < 3; ++i) {
-        dsIntv[i] += 1;
-      }
-    }
+    ZIntPoint originalDsIntv = newObj.getDsIntv();
 
-    if (dsIntv[0] == 0 && dsIntv[1] == 0 && dsIntv[2] == 0) {
-      std::cout << "No downsampling" << std::endl;
-    } else {
-      std::cout << "Downsampling "
-                << dsIntv[0] + 1 << " x "
-                << dsIntv[1] + 1 << " x "
-                << dsIntv[2] + 1 << std::endl;
-      newObj.downsampleMax(dsIntv[0], dsIntv[1], dsIntv[2]);
-    }
+    downsampleToSizeLimit(&newObj, box);
+
+    int finalDsIntv[3];
+    zgeom::CopyToArray(newObj.getDsIntv(), finalDsIntv);
 
     int offset[3] = {0, 0, 0};
     Stack *stack = newObj.toStack(offset);
-    tree = makeSkeletonWithoutDs(stack, dsIntv);
+    tree = makeSkeletonWithoutDs(stack, finalDsIntv);
 
     if (tree != NULL) {
-      addSwcComment(tree, dsIntv);
+      addSwcComment(tree, finalDsIntv);
       const ZIntPoint pt = box.getFirstCorner();
-      tree->translate(pt.getX(), pt.getY(), pt.getZ());
+      tree->translate(pt * (originalDsIntv + 1));
     }
   }
 
