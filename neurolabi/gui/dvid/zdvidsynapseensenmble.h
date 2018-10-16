@@ -278,6 +278,8 @@ private:
 
   ZStackView *m_view;
   int m_maxPartialArea;
+  bool m_fetchingFullAllowed = false;
+//  int m_maxFetchingArea = 4153344; //2048*2048 by default. 0 means no restriction.
 
 //  NeuTube::EAxis m_sliceAxis;
 

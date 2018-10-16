@@ -12,6 +12,7 @@ class ZObject3dScan;
 class ZJsonObject;
 class ZIntPoint;
 class ZStackArray;
+class ZIntCuboid;
 
 class ZStackSkeletonizer : public ZProgressable
 {
@@ -117,6 +118,7 @@ private:
   ZSwcTree *makeSkeletonWithoutDsTest(Stack *stack);
   std::string toSwcComment(const int *intv) const;
   void addSwcComment(ZSwcTree *tree, const int *dsIntv);
+  void downsampleToSizeLimit(ZObject3dScan *obj, const ZIntCuboid &box);
 
 
 private:

@@ -1624,6 +1624,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
       getCompleteDocument()->downloadTodoList();
+
+      ZFlyEmToDoList *todoList =
+          getCompleteDocument()->getTodoList(neutube::EAxis::Z);
+      if (todoList) {
+        todoList->attachView(getView());
+      }
     }
   }
 
@@ -1900,6 +1906,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBody()));
   connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
           this, SLOT(showBodyConnection()));
+  connect(getPresenter(), SIGNAL(bodyProfileTriggered()),
+          this, SLOT(showBodyProfile()));
   connect(getPresenter(), SIGNAL(bodyCheckinTriggered(flyem::EBodySplitMode)),
           this, SLOT(checkInSelectedBody(flyem::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
@@ -2831,6 +2839,31 @@ void ZFlyEmProofMvc::showBodyConnection()
   getBodyQueryDlg()->setBodyList(bodyIdArray);
   getBodyQueryDlg()->show();
   getBodyQueryDlg()->raise();
+}
+
+void ZFlyEmProofMvc::showBodyProfile()
+{
+  std::set<uint64_t> bodyIdArray =
+      getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
+  QString msg;
+  for (uint64_t bodyId : bodyIdArray) {
+    msg = QString("Body %1:").arg(bodyId);
+    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+    if (reader.isReady()) {
+      size_t bodySize = 0;
+      size_t blockCount = 0;
+      ZIntCuboid box;
+      std::tie(bodySize, blockCount, box) = reader.readBodySizeInfo(
+            bodyId, flyem::EBodyLabelType::BODY);
+      msg += QString("#voxels: %1; #blocks: %2; Range: %3").arg(bodySize).
+          arg(blockCount).arg(box.toString().c_str());
+    }
+  }
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          msg, neutube::EMessageType::INFORMATION,
+          ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
 }
 
 void ZFlyEmProofMvc::annotateBody()

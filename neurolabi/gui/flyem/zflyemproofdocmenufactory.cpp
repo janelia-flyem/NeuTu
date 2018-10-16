@@ -142,6 +142,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             if (ZStackDocHelper::AllowingBodyAnnotation(doc)) {
               config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
+            config.append(ZActionFactory::ACTION_BODY_PROFILE);
           }
 
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {

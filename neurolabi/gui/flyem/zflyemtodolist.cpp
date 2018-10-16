@@ -113,7 +113,7 @@ void ZFlyEmToDoList::download(int z)
       slice.setDataRect(viewPort);
       slice.setStatus(STATUS_PARTIAL_READY);
     }
-  } else {
+  } else if (m_fetchingFullAllowed) {
     ZIntPoint lastCorner = m_dvidInfo.getEndCoordinates();
     ZIntPoint firstCorner = m_dvidInfo.getStartCoordinates();
 

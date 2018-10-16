@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 
 //#include "zdvidclient.h"
 #include "flyem/zflyem.h"
@@ -180,6 +181,12 @@ public:
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
 
+  /*!
+   * \brief Read a body at a given scale
+   *
+   * The scale information will be stored in the result object as its downsampling
+   * interval.
+   */
   ZObject3dScan* readMultiscaleBody(
       uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const;
 
@@ -399,6 +406,8 @@ public:
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId, flyem::EBodyLabelType type) const;
+  std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
+      uint64_t bodyId, flyem::EBodyLabelType type) const;
 
   bool hasGrayscale() const;
 

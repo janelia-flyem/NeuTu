@@ -221,6 +221,7 @@ public slots:
   void notifySplitTriggered();
   void annotateBody();
   void showBodyConnection();
+  void showBodyProfile();
   void annotateSynapse();
   void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();

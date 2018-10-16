@@ -522,7 +522,7 @@ ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
 
 double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
 {
-  double ratio = (double) maxVol / currentVol;
+  double ratio = (double) currentVol / maxVol;
 
   return Cube_Root(ratio);
 }
