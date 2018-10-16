@@ -440,7 +440,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 
   src_clone->crop(box);
 
-  std::cout<<"----------# voxels within bounding box:"<<src_clone->getVoxelNumber()<<std::endl;
+  std::cout<<"----------voxels within bounding box:"<<src_clone->getVoxelNumber()<<std::endl;
 
   seed->crop(box);
 
@@ -550,9 +550,9 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     downsample->setDsFactor(scale,scale,scale);
     sampled=downsample->filterStack(*src);
     delete downsample;
-    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
+    /*ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
     ZSandbox::GetMainWindow()->addStackFrame(frame);
-    ZSandbox::GetMainWindow()->presentStackFrame(frame);
+    ZSandbox::GetMainWindow()->presentStackFrame(frame);*/
   }
   else{
     sampled=src->clone();
