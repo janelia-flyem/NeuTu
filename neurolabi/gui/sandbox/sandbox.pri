@@ -12,7 +12,8 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/zmultiscalewatershedmodule.h \
     $$PWD/zshowsegresult.h \
     $$PWD/zbrowseropener.h \
-    $$PWD/zffnskeleton.h
+    $$PWD/zffnskeleton.h \
+    $$PWD/zmultiscalesegmentationmanagement.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zsurfreconmodule.cpp\
@@ -28,7 +29,8 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/zmultiscalewatershedmodule.cpp \
     $$PWD/zshowsegresult.cpp \
     $$PWD/zbrowseropener.cpp \
-    $$PWD/zffnskeleton.cpp
+    $$PWD/zffnskeleton.cpp \
+    $$PWD/zmultiscalesegmentationmanagement.cpp
 
 contains(CONFIG, surfrecon) {
   HEADERS += \
