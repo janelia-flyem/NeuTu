@@ -1362,7 +1362,7 @@ void SwcTreeNode::kill(set<Swc_Tree_Node *> &nodeSet)
 
 void SwcTreeNode::kill(Swc_Tree_Node *tn)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Deleting Swc node " << tn << std::endl;
 //  Print_Swc_Tree_Node(tn);
 #endif

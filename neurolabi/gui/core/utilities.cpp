@@ -2,6 +2,8 @@
 
 #include <cstdlib>
 
+#include "neutube_def.h"
+
 bool neutube::HasEnv(const std::string &name, const std::string &value)
 {
   bool result = false;
@@ -11,4 +13,9 @@ bool neutube::HasEnv(const std::string &name, const std::string &value)
   }
 
   return result;
+}
+
+std::string neutube::GetVersionString()
+{
+  return std::string(neutube::VERSION) + " (" + neutube::PKG_VERSION + ")";
 }

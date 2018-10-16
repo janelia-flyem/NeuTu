@@ -123,7 +123,7 @@ fi
 
 if [ -n "$PKG_VERSION" ]
 then
-  qmake_args="$qmake_args DEFINES+=PKG_VERSION=\"$PKG_VERSION\""
+  qmake_args="$qmake_args DEFINES+=_PKG_VERSION=\"$PKG_VERSION\""
 fi
 
 if [ -n "$ext_qmake_args" ]

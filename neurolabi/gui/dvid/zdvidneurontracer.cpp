@@ -78,17 +78,6 @@ ZSwcTree* ZDvidNeuronTracer::getResult() const
   return tree;
 }
 
-#if 0
-ZSwcTree* ZDvidNeuronTracer::takeResult()
-{
-  ZSwcTree *result = m_resultTree;
-
-  m_resultTree = NULL;
-
-  return result;
-}
-#endif
-
 ZStack* ZDvidNeuronTracer::readStack(const ZIntCuboid &box)
 {
   ZStack *stack = m_dvidReader.readGrayScale(box);

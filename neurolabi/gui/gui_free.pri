@@ -451,5 +451,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $$PWD/zswcdirectionfeatureanalyzer.cpp \
     $$PWD/geometry/zplane.cpp \
     $$PWD/geometry/zaffineplane.cpp \
-    $$PWD/geometry/zaffinerect.cpp
+    $$PWD/geometry/zaffinerect.cpp \
+    $$PWD/neutube_def.cpp
 
