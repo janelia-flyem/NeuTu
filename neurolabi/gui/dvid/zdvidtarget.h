@@ -185,6 +185,8 @@ public:
 
   bool hasBodyLabel() const;
   bool hasSegmentation() const;
+  bool hasLabelMapData() const;
+  bool hasBlockCoding() const;
   bool hasSupervoxel() const;
   bool isSegmentationSyncable() const;
 //  bool usingLabelArray() const;
