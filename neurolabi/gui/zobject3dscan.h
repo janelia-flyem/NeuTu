@@ -105,7 +105,7 @@ public:
 
   void clear();
 
-  void addStripe(int z, int y);
+  bool addStripe(int z, int y);
   void addStripeFast(int z, int y);
   void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
@@ -192,6 +192,9 @@ public:
    * \brief Import object from a byte array
    */
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
+
+  bool importDvidBlockBuffer(
+      const char *byteArray, size_t byteNumber, bool canonizing);
 
   static size_t CountVoxelNumber(const char *byteArray, size_t byteNumber);
 
@@ -658,6 +661,62 @@ public:
   }
   */
 
+  class Appender {
+  public:
+    Appender(ZObject3dScan *obj) : m_obj(obj) {}
+    void addSegment(int z, int y, int x0, int x1);
+    void addSegment(int x0, int x1);
+
+    /*!
+     * \brief Add segments by parsing a 8-bit mask from dvid block
+     *
+     * Each bit of \a bitCode corresponds to a voxel:
+     *      0 -> background, 1 -> foreground
+     * The lowest bit is at \a x0, and the n-th bit is at \a x0 + n.
+     */
+    void addCodeSegment(uint8_t dvidCode, int x0);
+    void addCodeSegment(uint8_t dvidCode, int x0, int y0, int z0);
+
+//    void addCodeSegment(uint64_t dvidCode, int pos, int x0);
+
+    /*!
+     * \brief Add segments by parsing a 64-bit mask from dvid block
+     *
+     * Each byte is a 8-bit mask code. The position of the lowest byte starts
+     * from (\a x0, \a y0, \a z0) and the position of the n-th byte starts from
+     * (\a x0, \a y0 + n, \a z0).
+     */
+    void addCodeSegment(uint64_t dvidCode, int x0, int y0, int z0);
+
+    /*!
+     * \brief Add segments by parsing an array of 64-bit masks
+     *
+     * The n-th element of \a dvidCode starts from (\a x0, \a y0, \a z0 + n).
+     */
+    void addCodeSegment(const std::vector<uint64_t> &dvidCode, int x0, int y0, int z0);
+    void addCodeSegment(const uint64_t *dvidCode, size_t length, int x0, int y0, int z0);
+
+    /*!
+     * \brief Add segments from a single DVID block
+     *
+     * \a dvidBlock is a buffer with size \a n that contains DVID blocks. The
+     * start of \a dvidBlock must be the start of a block (i.e. its offset).
+     * It returns a pointer that points to the next block unless the buffer is
+     * depleted, which returns NULL instead.
+     */
+    const char* addBlockSegment(
+        const char *dvidBlock, size_t n, int gx, int gy, int gz);
+
+    void clearCache();
+
+  private:
+    static int Hash(int z, int y);
+
+  private:
+    ZObject3dScan *m_obj = nullptr;
+    ZObject3dStripe *m_currentStripe = nullptr;
+    std::unordered_map<int, size_t> m_stripeMap;
+  };
 
   class Segment {
   public:

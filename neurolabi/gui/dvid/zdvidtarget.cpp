@@ -748,7 +748,7 @@ bool ZDvidTarget::hasSegmentation() const
   return !getSegmentationName().empty();
 }
 
-bool ZDvidTarget::hasSupervoxel() const
+bool ZDvidTarget::hasLabelMapData() const
 {
   if (hasSegmentation()) {
     if (getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
@@ -757,6 +757,16 @@ bool ZDvidTarget::hasSupervoxel() const
   }
 
   return false;
+}
+
+bool ZDvidTarget::hasBlockCoding() const
+{
+  return hasLabelMapData();
+}
+
+bool ZDvidTarget::hasSupervoxel() const
+{
+  return hasLabelMapData();
 }
 
 bool ZDvidTarget::isSegmentationSyncable() const
