@@ -3353,7 +3353,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
   return true;
 }
 
-bool ZObject3dScan::importDvidBlockBuffer(const char *byteArray, size_t byteNumber)
+bool ZObject3dScan::importDvidBlockBuffer(
+    const char *byteArray, size_t byteNumber, bool canonizing)
 {
   clear();
 
@@ -3365,11 +3366,17 @@ bool ZObject3dScan::importDvidBlockBuffer(const char *byteArray, size_t byteNumb
     int gy = 0;
     int gz = 0;
     stream >> gx >> gy >> gz;
-    std::cout << gx << " " << gy << " " << gz << std::endl;
+
+#ifdef _DEBUG_
+    std::cout << "Block size: " << gx << " " << gy << " " << gz << std::endl;
+#endif
 
     uint64_t fg = 0;
     stream >> fg;
-    std::cout << fg << std::endl;
+
+#ifdef _DEBUG_
+    std::cout << "Foreground: " << fg << std::endl;
+#endif
 
     ZObject3dScan::Appender appender(this);
 
@@ -3379,7 +3386,9 @@ bool ZObject3dScan::importDvidBlockBuffer(const char *byteArray, size_t byteNumb
       dataPtr = appender.addBlockSegment(dataPtr, n, gx, gy, gz);
     }
 
-    sort();
+    if (canonizing) {
+      sort();
+    }
   } catch (std::exception &e) {
     LERROR() << "Parsing dvid block failed:" << e.what();
     return false;
@@ -4778,11 +4787,13 @@ void ZObject3dScan::Appender::addCodeSegment(
   }
 }
 
+/*
 void ZObject3dScan::Appender::addCodeSegment(uint64_t dvidCode, int pos, int x0)
 {
   uint8_t *codeArray = reinterpret_cast<uint8_t*>(&dvidCode);
   addCodeSegment(codeArray[pos], x0);
 }
+*/
 
 void ZObject3dScan::Appender::addCodeSegment(
     uint64_t dvidCode, int x0, int y0, int z0)
@@ -4825,7 +4836,7 @@ const char* ZObject3dScan::Appender::addBlockSegment(
 
   stream >> x0 >> y0 >> z0;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Offset: " << x0 << " " << y0 << " " << z0 << std::endl;
   if (x0 == 0 && y0 == 0 && z0 == 0) {
     std::cout << "Debug here" << std::endl;

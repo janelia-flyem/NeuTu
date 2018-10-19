@@ -685,6 +685,39 @@ ZObject3dScan *ZDvidReader::readBody(
       result = new ZObject3dScan;
     }
 
+    if (getDvidTarget().hasBlockCoding()) {
+      ZDvidUrl::SparsevolConfig config;
+      config.bodyId = bodyId;
+      config.format = "blocks";
+      config.range = box;
+      config.zoom = zoom;
+
+      ZDvidUrl dvidUrl(getDvidTarget());
+      QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
+      result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+    } else {
+      readBodyRle(bodyId, labelType, zoom, box, canonizing, result);
+    }
+
+  }
+
+  return result;
+}
+
+ZObject3dScan *ZDvidReader::readBodyRle(
+    uint64_t bodyId, flyem::EBodyLabelType labelType, int zoom,
+    const ZIntCuboid &box, bool canonizing,
+    ZObject3dScan *result) const
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
     ZDvidBufferReader &reader = m_bufferReader;
 
     /*
@@ -1311,6 +1344,14 @@ void ZDvidReader::readMeshArchiveEnd(struct archive *arc) const
 ZObject3dScan* ZDvidReader::readMultiscaleBody(
     uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const
 {
+  result = readBody(
+        bodyId, flyem::LABEL_BODY, zoom, ZIntCuboid(), canonizing, result);
+  int scale = zgeom::GetZoomScale(zoom);
+  result->setDsIntv(scale - 1);
+
+  return result;
+
+#if 0
   if (result != NULL) {
     result->clear();
   }
@@ -1358,6 +1399,7 @@ ZObject3dScan* ZDvidReader::readMultiscaleBody(
   }
 
   return result;
+#endif
 }
 
 /*

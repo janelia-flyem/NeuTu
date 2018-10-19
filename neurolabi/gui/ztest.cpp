@@ -28093,6 +28093,51 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  if (reader) {
+    size_t bodySize = 0;
+    size_t blockCount = 0;
+    ZIntCuboid box;
+    std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
+          5813050455, flyem::LABEL_BODY);
+    std::cout << blockCount << std::endl;
+
+    ZObject3dScan obj;
+    tic();
+    reader->readMultiscaleBody(1168314368, 2, true, &obj);
+//    reader->readBody(1168314368, flyem::LABEL_BODY, 2, ZIntCuboid(), true, &obj);
+    ptoc();
+    std::cout << obj.isCanonizedActually() << std::endl;
+    std::cout << obj.getDsIntv().toString() << std::endl;
+    obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  } else {
+    std::cout << "Cannot retrieve reader. Make sure the database name is correct."
+              << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
+  ZDvidUrl dvidUrl(reader->getDvidTarget());
+
+  ZDvidUrl::SparsevolConfig config;
+  config.bodyId = 1250458360;
+  config.format = "blocks";
+//  config.range = ZIntCuboid(1, 2, 3, 10, 20, 30);
+//  config.supervoxel = true;
+  std::cout << dvidUrl.getSparsevolUrl(config) << std::endl;
+
+  QByteArray buffer = reader->readBuffer(dvidUrl.getSparsevolUrl(config));
+  ZObject3dScan obj;
+  obj.importDvidBlockBuffer(buffer.data(), buffer.size(), true);
+  std::cout << obj.isCanonizedActually() << std::endl;
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
   QFile file((GET_BENCHMARK_DIR + "/dvidblock.dat").c_str());
   if (file.exists()) {
     file.open(QFile::ReadOnly);
