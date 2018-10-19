@@ -105,7 +105,7 @@ public:
 
   void clear();
 
-  void addStripe(int z, int y);
+  bool addStripe(int z, int y);
   void addStripeFast(int z, int y);
   void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
@@ -192,6 +192,8 @@ public:
    * \brief Import object from a byte array
    */
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
+
+  bool importDvidBlockBuffer(const char *byteArray, size_t byteNumber);
 
   static size_t CountVoxelNumber(const char *byteArray, size_t byteNumber);
 
@@ -658,6 +660,33 @@ public:
   }
   */
 
+  class Appender {
+  public:
+    Appender(ZObject3dScan *obj) : m_obj(obj) {}
+    void addSegment(int z, int y, int x0, int x1);
+    void addSegment(int x0, int x1);
+
+    void addCodeSegment(uint8_t dvidCode, int x0);
+    void addCodeSegment(uint8_t dvidCode, int x0, int y0, int z0);
+
+    void addCodeSegment(uint64_t dvidCode, int pos, int x0);
+    void addCodeSegment(uint64_t dvidCode, int x0, int y0, int z0);
+    void addCodeSegment(const std::vector<uint64_t> &dvidCode, int x0, int y0, int z0);
+    void addCodeSegment(const uint64_t *dvidCode, size_t length, int x0, int y0, int z0);
+
+    const char* addBlockSegment(
+        const char *dvidBlock, size_t n, int gx, int gy, int gz);
+
+    void clearCache();
+
+  private:
+    static int Hash(int z, int y);
+
+  private:
+    ZObject3dScan *m_obj = nullptr;
+    ZObject3dStripe *m_currentStripe = nullptr;
+    std::unordered_map<int, size_t> m_stripeMap;
+  };
 
   class Segment {
   public:
