@@ -307,6 +307,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
+#include "core/memorystream.h"
 
 #include "test/ztestall.h"
 
@@ -28080,7 +28081,7 @@ void ZTest::test(MainWindow *host)
   GET_FLYEM_CONFIG.print();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
   size_t bodySize = 0;
   size_t blockCount = 0;
@@ -28089,6 +28090,92 @@ void ZTest::test(MainWindow *host)
         662776660, flyem::LABEL_BODY);
   std::cout << bodySize << " " << blockCount << std::endl;
   std::cout << box.toString() << std::endl;
+#endif
+
+#if 1
+  QFile file((GET_BENCHMARK_DIR + "/dvidblock.dat").c_str());
+  if (file.exists()) {
+    file.open(QFile::ReadOnly);
+    QByteArray data = file.readAll();
+    file.close();
+
+#if 0
+    const char* originalDataPtr = data.data();
+    ZMemoryInputStream stream(originalDataPtr, data.size());
+
+    int gx = 0;
+    int gy = 0;
+    int gz = 0;
+    stream >> gx >> gy >> gz;
+    std::cout << gx << " " << gy << " " << gz << std::endl;
+
+    uint64_t fg = 0;
+    stream >> fg;
+    std::cout << fg << std::endl;
+
+    ZObject3dScan obj;
+    ZObject3dScan::Appender appender(&obj);
+
+    const char* dataPtr = stream.getCurrentDataPointer();
+    while (dataPtr) {
+      size_t n = data.size() - (dataPtr - originalDataPtr);
+      dataPtr = appender.addBlockSegment(dataPtr, n, gx, gy, gz);
+    }
+
+    obj.sort();
+#endif
+
+    ZObject3dScan obj;
+    obj.importDvidBlockBuffer(data.data(), data.size());
+    std::cout << obj.isCanonizedActually() << std::endl;
+    obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+
+  tic();
+  obj.importDvidObject(GET_DATA_DIR + "/_system/1261432158.dvid");
+  obj.sort();
+  ptoc();
+
+  std::cout << obj.isCanonizedActually() << std::endl;
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  for (uint8_t c = 0; c < 255; ++c) {
+    std::cout << std::bitset<8>(c) << std::endl;
+    ZObject3dScan obj;
+    obj.addStripe(0, 1);
+    ZObject3dScan::Appender appender(&obj);
+    appender.addCodeSegment(c, 0);
+    obj.print();
+  }
+#endif
+
+#if 0
+  uint64_t v = 0x0F000F000FF00A00;
+  ZObject3dScan obj;
+  obj.addStripe(0, 1);
+  ZObject3dScan::Appender appender(&obj);
+  appender.addCodeSegment(v, 0, 1, 2);
+  obj.print();
+#endif
+
+#if 0
+  std::vector<uint64_t> codeArray;
+  codeArray.push_back(0x0000000000001001);
+  codeArray.push_back(0x0000000000000002);
+  codeArray.push_back(0x0000000000000003);
+
+  ZObject3dScan obj;
+  obj.addStripe(0, 1);
+  ZObject3dScan::Appender appender(&obj);
+  appender.addCodeSegment(codeArray, 0, 1, 2);
+  obj.print();
 #endif
 
   std::cout << "Done." << std::endl;
