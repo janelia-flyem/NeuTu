@@ -161,19 +161,6 @@ CONFIG(c++11) {
   }
 }
 
-#contains(CONFIG, sanitize) {
-#  message(Using sanitize)
-#  unix {
-#    macx {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    } else {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    }
-#  }
-#}
-
 equals(SANITIZE_BUILD, "thread") {
   QMAKE_CXXFLAGS += -fsanitize=thread
   QMAKE_LFLAGS += -fsanitize=thread
@@ -193,11 +180,11 @@ win32 {
 }
 
 unix {
-    macx {
-        SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
-    } else {
-        SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
-    }
+  macx {
+      SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+  } else {
+      SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+  }
 }
 
 CONFIG(static_gtest) { # gtest from ext folder
@@ -916,7 +903,9 @@ HEADERS += mainwindow.h \
     protocols/taskfalsesplitreview.h \
     z3dcamerautils.h \
     flyem/zflyembodyenv.h \
-    protocols/taskprotocoltaskfactory.h
+    protocols/taskprotocoltaskfactory.h \
+    dvid/zdvidblockstream.h \
+    core/memorystream.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1605,12 +1594,13 @@ SOURCES += main.cpp \
     protocols/taskfalsesplitreview.cpp \
     z3dcamerautils.cpp \
     flyem/zflyembodyenv.cpp \
-    protocols/taskprotocoltaskfactory.cpp
+    protocols/taskprotocoltaskfactory.cpp \
+    dvid/zdvidblockstream.cpp \
+    core/memorystream.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
     Resources/shader/wblended_init.frag
-
 
 #debugging
 message("[[ DEFINE ]]: $${DEFINES}")

@@ -7,9 +7,9 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"
+#include "zintcuboid.h"
 
 class ZIntPoint;
-class ZIntCuboid;
 
 class ZDvidUrl
 {
@@ -89,6 +89,14 @@ public:
   std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
 //  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
+  struct SparsevolConfig {
+    uint64_t bodyId = 0;
+    ZIntCuboid range;
+    int zoom = 0;
+    std::string format;
+    flyem::EBodyLabelType labelType;
+  };
+
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
@@ -100,6 +108,7 @@ public:
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
   std::string getSparsevolSizeUrl(uint64_t bodyId) const;
 
+  std::string getSparsevolUrl(const SparsevolConfig &config);
 
 
 //  std::string getCoarseSparsevolUrl() const;
