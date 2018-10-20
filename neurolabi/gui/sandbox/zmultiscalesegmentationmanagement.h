@@ -7,46 +7,55 @@
 #include <QWidget>
 #include <QTreeView>
 #include "zintpoint.h"
+#include "zintcuboid.h"
 #include "zsandboxmodule.h"
 
-class ZObject3dScan;
-class ZObject3dScanArray;
 class QStandardItem;
 class ZStack;
 class ZStackObject;
-class ZIntCuboid;
+class ZObject3dScan;
 
 class ZSegmentationScan
 {
 public:
 ZSegmentationScan();
-~ZSegmentationScan();
+~ZSegmentationScan(){};
 //void init();
 
 public:
-void loadStack(ZStack* stack);
+void fromStack(ZStack* stack);
+void fromObject3DScan(ZObject3dScan* obj);
+
+ZObject3dScan* toObject3dScan();
+ZStack* toStack();
+
 void maskStack(ZStack* stack);
 void labelStack(ZStack* stack, int v=1);
 
-//void setOffset(ZIntPoint offset){m_offset = offset;}
-//void setOffset(int x, int y, int z){m_offset = ZIntPoint(x,y,z);}
-//ZIntPoint getOffset()const{return m_offset;}
+void setOffset(ZIntPoint offset){m_offset = offset;}
+void setOffset(int x, int y, int z){m_offset = ZIntPoint(x,y,z);}
+ZIntPoint getOffset()const{return m_offset;}
+
 void unify(ZSegmentationScan* obj);
 inline std::vector<int>& getStrip(int z, int y){return (z < m_sz || z > m_ez || y < m_sy || y > m_ey) ? m_empty_vec : getSlice(z)[y-m_sy];}
 inline std::vector<std::vector<int>>& getSlice(int z){return (z < m_sz || z > m_ez) ? m_empty_vec_vec : m_data[z-m_sz];}
 std::vector<std::vector<std::vector<int>>>& getData(){return m_data;}
+
 public:
 inline int minZ()const {return m_sz;}
 inline int maxZ()const {return m_ez;}
 inline int minY()const {return m_sy;}
 inline int maxY()const {return m_ey;}
+inline int minX()const {return m_sx;}
+inline int maxX()const {return m_ex;}
+inline ZIntCuboid getBoundBox()const{return ZIntCuboid(m_sx,m_sy,m_sz,m_ex,m_ey,m_ez);}
+void translate(ZIntPoint offset);
+void translate(int ofx, int ofy, int ofz);
 
 private:
 inline void addSegment(int z, int y, int sx, int ex);
 ZIntCuboid getStackForegroundBoundBox(ZStack* stack);
-//void canonizeStrip(int z, int y);
 std::vector<int> canonize(std::vector<int>&a, std::vector<int>& b);
-
 void clearData();
 void preprareData(int depth, int height);
 
@@ -54,9 +63,10 @@ private:
 std::vector<std::vector<std::vector<int>>> m_data;
 std::vector<int> m_empty_vec;
 std::vector<std::vector<int>> m_empty_vec_vec;
-//ZIntPoint m_offset;
 int m_sz, m_ez;
 int m_sy, m_ey;
+int m_sx, m_ex;
+ZIntPoint m_offset;
 };
 
 
@@ -71,8 +81,8 @@ public:
 QString label(){return m_label;}
 void setLabel(QString label){m_label = label;}
 void updateChildrenLabel();
-void setData(ZObject3dScan* data){m_data = data;}
-ZObject3dScan* data()const{return m_data;}
+void setData(ZSegmentationScan* data){m_data = data;}
+ZSegmentationScan* data()const{return m_data;}
 
 bool isRoot()const{return m_parent == NULL;}
 bool isLeaf()const{return m_children.size()==0;}
@@ -93,16 +103,16 @@ void regularize();
 
 public:
 ZSegmentationNode* find(QString label);
-void makeMask(ZObject3dScan* mask);
+void makeMask(ZSegmentationScan* mask);
 void display(QStandardItem* tree);
 
 private:
-void consumeSegmentations(ZObject3dScanArray& segmentations);
+void consumeSegmentations(std::vector<ZSegmentationScan*>& segmentations);
 int estimateScale(size_t volume);
 
 private:
 QString m_label;
-ZObject3dScan* m_data;
+ZSegmentationScan* m_data;
 ZSegmentationNode* m_parent;
 std::vector<ZSegmentationNode*> m_children;
 };
