@@ -41,6 +41,7 @@
 #include "zintcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
+#include "core/memorystream.h"
 
 ///////////////////////////////////////////////////
 
@@ -313,13 +314,17 @@ ZObject3dStripe &ZObject3dScan::getStripe(size_t index)
   return m_stripeArray[index];
 }
 
-void ZObject3dScan::addStripe(int z, int y)
+bool ZObject3dScan::addStripe(int z, int y)
 {
+//  ZObject3dStripe *bufferStripe = nullptr;
+
   bool adding = true;
   if (!m_stripeArray.empty()) {
     if (y == m_stripeArray.back().getY() &&
         z == m_stripeArray.back().getZ()) {
       adding = false;
+
+//      bufferStripe = &(m_stripeArray.back());
     }
   }
 
@@ -330,6 +335,8 @@ void ZObject3dScan::addStripe(int z, int y)
 
     addStripe(stripe, false);
   }
+
+  return adding;
 }
 
 void ZObject3dScan::addStripeFast(int z, int y)
@@ -346,7 +353,8 @@ void ZObject3dScan::addStripeFast(const ZObject3dStripe &stripe)
   m_stripeArray.push_back(stripe);
 }
 
-void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
+void ZObject3dScan::addStripe(
+    const ZObject3dStripe &stripe, bool canonizing)
 {
   bool lastStripeMergable = false;
 
@@ -387,7 +395,7 @@ void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
     processEvent(event);
   }
 
-  if (canonizing) {
+  if (!m_isCanonized && canonizing) {
     canonize();
   }
 
@@ -411,11 +419,6 @@ void ZObject3dScan::addSegment(int x1, int x2, bool canonizing)
         }
       }
 
-      /*
-    deprecate(INDEX_SEGMENT_MAP);
-    deprecate(ACCUMULATED_STRIPE_NUMBER);
-    */
-
       processEvent(event);
     }
 
@@ -431,45 +434,18 @@ void ZObject3dScan::addSegmentFast(int x1, int x2)
     ZObject3dStripe &stripe = m_stripeArray.back();
     stripe.getSegmentArray().push_back(x1);
     stripe.getSegmentArray().push_back(x2);
-//    m_stripeArray.back().addSegment(x1, x2, false);
   }
 }
 
-void ZObject3dScan::addSegment(int z, int y, int x1, int x2, bool canonizing)
+void ZObject3dScan::addSegment(
+    int z, int y, int x1, int x2, bool canonizing)
 {
   addStripe(z, y);
+
   addSegment(x1, x2, canonizing);
 }
 
-/*
-const int* ZObject3dScan::getLastStripe() const
-{
-  if (isDeprecated(LAST_STRIPE)) {
-    size_t numStripe = getStripeNumber();
-    const int *stripe = getFirstStripe();
 
-    for (size_t i = 0; i < numStripe - 1; i++) {
-      int numScanLine = getStripeSize(stripe);
-      const int *scanLine = getSegment(stripe);
-      for (int j = 0; j < numScanLine; j++) {
-        if (j < numScanLine - 1) {
-          scanLine += 2;
-        }
-      }
-      stripe = scanLine + 1;
-    }
-
-    m_lastStripe = const_cast<int*>(stripe);
-  }
-
-  return m_lastStripe;
-}
-
-int* ZObject3dScan::getLastStripe()
-{
-  return const_cast<int*>(static_cast<const ZObject3dScan&>(*this).getLastStripe());
-}
-*/
 ZObject3d* ZObject3dScan::toObject3d() const
 {
   if (isEmpty()) {
@@ -1871,7 +1847,8 @@ bool ZObject3dScan::isCanonizedActually()
       } else if (m_stripeArray[i - 1].getZ() == m_stripeArray[i].getZ()) {
         if (m_stripeArray[i - 1].getY() >= m_stripeArray[i].getY()) {
 #ifdef _DEBUG_
-          std::cout << "Previous Z/Y is bigger: " << m_stripeArray[i - 1].getY()
+          std::cout << "Previous Z/Y is bigger: " << m_stripeArray[i].getZ()
+                    << " : " << m_stripeArray[i - 1].getY()
                     << " " << m_stripeArray[i].getY() << std::endl;
 #endif
           return false;
@@ -1879,6 +1856,10 @@ bool ZObject3dScan::isCanonizedActually()
       }
     }
     if (!m_stripeArray[i].isCanonizedActually()) {
+#ifdef _DEBUG_
+      std::cout << "Stripe " << i << " not canonized" << std::endl;
+      m_stripeArray[i].print();
+#endif
       return false;
     }
   }
@@ -3248,6 +3229,8 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     n = fread(&numberOfSpans, 4, 1, fp);
     READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
 
+    Appender appender(this);
+
     tz_uint32 readSegmentNumber = 0;
     while (!feof(fp)) {
       tz_int32 coord[3];
@@ -3273,6 +3256,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         return false;
       }
 
+//      appender.addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1);
       addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
       ++readSegmentNumber;
       if (readSegmentNumber == numberOfSpans) {
@@ -3368,6 +3352,50 @@ bool ZObject3dScan::importDvidObjectBuffer(
     } else {
       addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
     }
+  }
+
+  return true;
+}
+
+bool ZObject3dScan::importDvidBlockBuffer(
+    const char *byteArray, size_t byteNumber, bool canonizing)
+{
+  clear();
+
+  try {
+    const char* originalDataPtr = byteArray;
+    ZMemoryInputStream stream(originalDataPtr, byteNumber);
+
+    int gx = 0;
+    int gy = 0;
+    int gz = 0;
+    stream >> gx >> gy >> gz;
+
+#ifdef _DEBUG_
+    std::cout << "Block size: " << gx << " " << gy << " " << gz << std::endl;
+#endif
+
+    uint64_t fg = 0;
+    stream >> fg;
+
+#ifdef _DEBUG_
+    std::cout << "Foreground: " << fg << std::endl;
+#endif
+
+    ZObject3dScan::Appender appender(this);
+
+    const char* dataPtr = stream.getCurrentDataPointer();
+    while (dataPtr) {
+      size_t n = byteNumber - (dataPtr - originalDataPtr);
+      dataPtr = appender.addBlockSegment(dataPtr, n, gx, gy, gz);
+    }
+
+    if (canonizing) {
+      sort();
+    }
+  } catch (std::exception &e) {
+    LERROR() << "Parsing dvid block failed:" << e.what();
+    return false;
   }
 
   return true;
@@ -4659,6 +4687,211 @@ void ZObject3dScan::ConstVoxelIterator::advance()
       m_nextX = seg.getStart();
     }
   }
+}
+
+int ZObject3dScan::Appender::Hash(int z, int y)
+{
+  return z * 100000 + y;
+}
+
+void ZObject3dScan::Appender::addSegment(int z, int y, int x0, int x1)
+{
+  if (m_obj) {
+    if (m_currentStripe) {
+      if (m_currentStripe->getZ() != z || m_currentStripe->getY() != y) {
+        m_currentStripe = nullptr;
+      }
+    }
+
+#if 1
+    if (y == 23447 && z == 20024) {
+      std::cout << "debug here" << std::endl;
+    }
+#endif
+
+    if (m_currentStripe == nullptr) {
+      int key = Hash(z, y);
+      size_t index = 0;
+
+      auto p = m_stripeMap.find(key);
+      if (p != m_stripeMap.end()) {
+        index = p->second;
+        m_currentStripe = &(m_obj->getStripe(index));
+        m_currentStripe->addSegment(x0, x1, false);
+      } else {
+        m_obj->addSegment(z, y, x0, x1, false);
+        index = m_obj->getStripeNumber() - 1;
+        m_stripeMap[key] = index;
+        m_currentStripe = &(m_obj->getStripe(index));
+      }
+
+    }
+  }
+}
+
+void ZObject3dScan::Appender::addSegment(int x0, int x1)
+{
+  if (m_obj) {
+    if (m_currentStripe) {
+      m_currentStripe->addSegment(x0, x1, false);
+    } else {
+      m_obj->addSegment(x0, x1, false);
+    }
+  }
+}
+
+void ZObject3dScan::Appender::addCodeSegment(uint8_t dvidCode, int x0)
+{
+  bool onSeg = false;
+  int segStart = 0;
+  for (int i = 0; i < 8; ++i) {
+    if (onSeg) {
+      if ((dvidCode & 1) == 0) {
+        addSegment(segStart, x0 + i - 1);
+        onSeg = false;
+      }
+    } else {
+      if ((dvidCode & 1) > 0) {
+        segStart = x0 + i;
+        onSeg = true;
+      }
+    }
+    dvidCode >>= 1;
+  }
+
+  if (onSeg) {
+    addSegment(segStart, x0 + 7);
+  }
+}
+
+void ZObject3dScan::Appender::addCodeSegment(
+    uint8_t dvidCode, int x0, int y0, int z0)
+{
+  if (dvidCode > 0) {
+    bool onSeg = false;
+    int segStart = 0;
+    for (int i = 0; i < 8; ++i) {
+      if (onSeg) {
+        if ((dvidCode & 1) == 0) {
+          addSegment(z0, y0, segStart, x0 + i - 1);
+          onSeg = false;
+        }
+      } else {
+        if ((dvidCode & 1) > 0) {
+          segStart = x0 + i;
+          onSeg = true;
+        }
+      }
+      dvidCode >>= 1;
+    }
+
+    if (onSeg) {
+      addSegment(z0, y0, segStart, x0 + 7);
+    }
+  }
+}
+
+/*
+void ZObject3dScan::Appender::addCodeSegment(uint64_t dvidCode, int pos, int x0)
+{
+  uint8_t *codeArray = reinterpret_cast<uint8_t*>(&dvidCode);
+  addCodeSegment(codeArray[pos], x0);
+}
+*/
+
+void ZObject3dScan::Appender::addCodeSegment(
+    uint64_t dvidCode, int x0, int y0, int z0)
+{
+  uint8_t *codeArray = reinterpret_cast<uint8_t*>(&dvidCode);
+  for (size_t i = 0; i < 8; ++i) {
+    addCodeSegment(codeArray[i], x0, y0++, z0);
+  }
+}
+
+void ZObject3dScan::Appender::addCodeSegment(
+    const std::vector<uint64_t> &dvidCode, int x0, int y0, int z0)
+{
+  for (uint64_t code : dvidCode) {
+    addCodeSegment(code, x0, y0, z0++);
+  }
+}
+
+void ZObject3dScan::Appender::addCodeSegment(
+    const uint64_t *dvidCode, size_t length, int x0, int y0, int z0)
+{
+  if (dvidCode) {
+    for (size_t i = 0; i < length; ++i) {
+      addCodeSegment(dvidCode[i], x0, y0, z0++);
+    }
+  }
+}
+
+const char* ZObject3dScan::Appender::addBlockSegment(
+    const char *dvidBlock, size_t n, int gx, int gy, int gz)
+{
+//  constexpr size_t maxSubblockByteCount = 65;
+//  const size_t maxBlockByteCount = gx * gy * gz * maxSubblockByteCount + 13;
+
+  ZMemoryInputStream stream(dvidBlock, n);
+
+  int x0 = 0;
+  int y0 = 0;
+  int z0 = 0;
+
+  stream >> x0 >> y0 >> z0;
+
+#ifdef _DEBUG_2
+  std::cout << "Offset: " << x0 << " " << y0 << " " << z0 << std::endl;
+  if (x0 == 0 && y0 == 0 && z0 == 0) {
+    std::cout << "Debug here" << std::endl;
+  }
+#endif
+
+  uint8_t flag = 0;
+  stream >> flag;
+
+  if (flag == 1) { //all foreground
+    const int x1 = x0 + gx * 8 - 1;
+    for (int z = 0; z < gz * 8; ++z) {
+      for (int y = 0; y < gy * 8; ++y) {
+        addSegment(z0 + z, y0 + y, x0, x1);
+      }
+    }
+  } else if (flag == 2) {
+    uint8_t subblockFlag = 0;
+    int z = z0;
+    for (int bz = 0; bz < gz; ++bz) {
+      int y = y0;
+      for (int by = 0; by < gy; ++by) {
+        int x = x0;
+        for (int bx = 0; bx < gx; ++bx) {
+          stream >> subblockFlag;
+          if (subblockFlag == 1) {
+            for (int k = 0; k < 8; ++k) {
+              for (int j = 0; j < 8; ++j) {
+                addSegment(z + k, y + j, x, x + 7);
+              }
+            }
+          } else if (subblockFlag == 2) {
+            addCodeSegment(
+                  reinterpret_cast<const uint64_t*>(stream.getCurrentDataPointer()),
+                  8, x, y, z);
+            stream.move(64);
+          }
+          x += 8;
+        }
+        y += 8;
+      }
+      z += 8;
+    }
+  }
+
+  return stream.getCurrentDataPointer();
+}
+
+void ZObject3dScan::Appender::clearCache()
+{
+  m_stripeMap.clear();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

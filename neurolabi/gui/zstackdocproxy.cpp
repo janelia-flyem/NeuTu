@@ -1,6 +1,7 @@
 #include "zstackdocproxy.h"
 
 #include "flyem/zflyembody3ddoc.h"
+#include "zmesh.h"
 
 ZStackDocProxy::ZStackDocProxy()
 {

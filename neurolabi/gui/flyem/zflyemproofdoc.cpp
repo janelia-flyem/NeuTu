@@ -57,6 +57,7 @@
 #include "dvid/zdviddataslicehelper.h"
 #include "zarray.h"
 #include "zflyembodymanager.h"
+#include "zmesh.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 

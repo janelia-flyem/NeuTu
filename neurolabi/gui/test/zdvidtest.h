@@ -491,8 +491,7 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSparsevolUrl(1, 2, box));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true",
             dvidUrl4.getSupervoxelUrl(1));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
-            "?supervoxel=true&minz=2&maxz=3&exact=true",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&minz=2&maxz=3&exact=true",
             dvidUrl4.getSupervoxelUrl(1, 2, 3, neutube::EAxis::Z));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
             dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
