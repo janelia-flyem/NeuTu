@@ -10849,3 +10849,104 @@ void ZStackDoc::removeRect2dRoi()
 {
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
+
+template <class InputIterator>
+void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZMesh*> selected;
+  QList<ZMesh*> deselected;
+  for (InputIterator it = first; it != last; ++it) {
+    ZMesh *mesh = *it;
+    if (mesh->isSelected() != select) {
+      mesh->setSelected(select);
+      m_objectGroup.setSelected(mesh, select);
+      if (select) {
+        //m_selectedPuncta.insert(punctum);
+        selected.push_back(mesh);
+      } else {
+        //m_selectedPuncta.erase(punctum);
+        deselected.push_back(mesh);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+}
+
+//   template  //
+
+
+template <typename T>
+void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
+                                     const std::set<T*> &newSelected)
+{
+  QList<T*> selected;
+  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
+  for (typename std::set<T*>::const_iterator iter = addedSet.begin();
+       iter != addedSet.end(); ++iter) {
+    selected.append(const_cast<T*>(*iter));
+  }
+  /*
+
+
+  for (typename std::set<T*>::const_iterator iter = newSelected.begin();
+       iter != newSelected.end(); ++iter) {
+    if (oldSelected.count(*iter) == 0) {
+      selected.append(const_cast<T*>(*iter));
+    }
+  }
+*/
+  notifySelected(selected);
+  //notifySelectionChanged(selected, QList<T*>());
+}
+
+template <typename T>
+void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
+                                       const std::set<T*> &newSelected)
+{
+  QList<T*> deselected;
+  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
+  for (typename std::set<T*>::const_iterator iter = removedSet.begin();
+       iter != removedSet.end(); ++iter) {
+    deselected.append(const_cast<T*>(*iter));
+  }
+
+  notifyDeselected(deselected);
+}
+
+template
+void ZStackDoc::notifySelectionRemoved(const std::set<ZSwcTree*> &oldSelected,
+                                       const std::set<ZSwcTree*> &newSelected);
+
+template
+void ZStackDoc::notifySelectionRemoved(const std::set<_Swc_Tree_Node*> &oldSelected,
+                                       const std::set<_Swc_Tree_Node*> &newSelected);
+
+template <typename T>
+void ZStackDoc::notifySelected(const QList<T*> &selected)
+{
+  notifySelectionChanged(selected, QList<T*>());
+}
+
+template <typename T>
+void ZStackDoc::notifyDeselected(const QList<T*> &deselected)
+{
+  notifySelectionChanged(QList<T*>(), deselected);
+}
+
+template <typename T>
+QList<T*> ZStackDoc::getUserList() const
+{
+  QList<T*> userList;
+  for (QList<QObject*>::const_iterator iter = m_userList.begin();
+       iter != m_userList.end(); ++iter) {
+    T *user = qobject_cast<T*>(*iter);
+    if (user != NULL) {
+      userList.append(user);
+    }
+  }
+
+  return userList;
+}
+
+
+

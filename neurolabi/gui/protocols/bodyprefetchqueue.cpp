@@ -7,6 +7,7 @@
 
 #include "zstackdocdatabuffer.h"
 #include "zstackobjectsourcefactory.h"
+#include "zmesh.h"
 
 /*
  * this queue should be moved into its own thread after creation; see

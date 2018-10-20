@@ -495,6 +495,48 @@ TEST(ZObject3dScan, TestAddSegment) {
   ASSERT_EQ(15, (int) obj.getVoxelNumber());
 }
 
+TEST(ZObject3dScan, Appender) {
+  {
+    ZObject3dScan obj;
+    ZObject3dScan::Appender appender(&obj);
+    appender.addSegment(1, 0, 1, 2);
+    appender.addSegment(3, 4);
+
+    ASSERT_TRUE(obj.isCanonized());
+  }
+
+  {
+    ZObject3dScan obj;
+    ZObject3dScan::Appender appender(&obj);
+
+    appender.addSegment(0, 0, 0, 1);
+    appender.addSegment(0, 0, 0, 5);
+    appender.addSegment(0, 0, 0, 8);
+    appender.addSegment(0, 1, 3, 3);
+    appender.addSegment(0, 1, 0, 1);
+    appender.addSegment(0, 1, 5, 7);
+
+    ASSERT_EQ(2, (int) obj.getStripeNumber());
+    ASSERT_EQ(15, (int) obj.getVoxelNumber());
+  }
+
+  {
+    ZObject3dScan obj;
+    ZObject3dScan::Appender appender(&obj);
+
+    appender.addSegment(0, 0, 0, 1);
+    appender.addSegment(0, 1, 3, 3);
+    appender.addSegment(0, 0, 0, 5);
+    appender.addSegment(0, 1, 5, 7);
+    appender.addSegment(0, 0, 0, 8);
+    appender.addSegment(0, 1, 0, 1);
+
+    ASSERT_EQ(2, (int) obj.getStripeNumber());
+    ASSERT_EQ(15, (int) obj.getVoxelNumber());
+  }
+
+}
+
 TEST(ZObject3dScan, downsample) {
   ZObject3dScan obj;
   createObject(&obj);
