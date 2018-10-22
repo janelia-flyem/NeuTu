@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <string.h>
 #include <stack>
+#include <cmath>
 
 #include "tz_error.h"
 #include "zswctree.h"

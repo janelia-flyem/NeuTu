@@ -1,4 +1,6 @@
-#include "cstdlib"
+#include <cstdlib>
+#include <cmath>
+
 #include "zdownsamplefilter.h"
 #include "zstack.hxx"
 #include "zsparsestack.h"
@@ -10,7 +12,7 @@ ZDownsampleFilter::ZDownsampleFilter()
   m_dsX=m_dsY=m_dsZ=1;
 }
 
- ZDownsampleFilter* ZDownsampleFilter::create(QString type){
+ ZDownsampleFilter* ZDownsampleFilter::create(std::string type){
   if (type=="Min"){
     return new ZMinDsFilter();
   }

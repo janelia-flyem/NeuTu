@@ -132,7 +132,7 @@ ZStack* ZObject3dScanArray::toLabelField() const
 ZStack* ZObject3dScanArray::toColorField() const
 {
   ZStack *stack = NULL;
-
+#ifdef _QT_GUI_USED_
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
     stack = ZStackFactory::MakeZeroStack(COLOR, cuboid);
@@ -149,6 +149,7 @@ ZStack* ZObject3dScanArray::toColorField() const
 //      obj->drawStack(stack->c_stack(), label++, offset);
     }
   }
+#endif
 
   return stack;
 }

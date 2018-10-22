@@ -3,7 +3,12 @@
 #include <iostream>
 
 #include "dvid/zdviddata.h"
+#if defined(_QT_GUI_USED_)
 #include "neutube.h"
+#else
+#include "neutube_def.h"
+#endif
+#include "neutubeconfig.h"
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
@@ -1857,7 +1862,7 @@ std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
 
 std::string ZDvidUrl::GetTaskKey()
 {
-  return "task__" + neutube::GetCurrentUserName();
+  return "task__" + NeutubeConfig::GetUserName();
 }
 
 std::string ZDvidUrl::GetServiceResultEndPoint()
