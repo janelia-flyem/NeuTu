@@ -410,6 +410,7 @@ protected slots:
   void updateSkeletonWindow();
   void updateMeshWindow();
   void updateCoarseMeshWindow();
+  void updateCoarseMeshWindowDeep();
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();

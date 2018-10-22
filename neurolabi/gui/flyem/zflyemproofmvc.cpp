@@ -697,12 +697,16 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateCoarseBodyWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+          this, SLOT(updateCoarseMeshWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateBookmarkTable()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBodyWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateCoarseBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseMeshWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBookmarkTable()));
 
@@ -1170,12 +1174,28 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
       doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
-//      doc->processEvent();
       doc->endObjectModifiedMode();
       doc->processObjectModified();
     }
   }
-//  updateCoarseBodyWindow(false, false, true);
+}
+
+void ZFlyEmProofMvc::updateCoarseMeshWindowDeep()
+{
+  if (m_coarseMeshWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseMeshWindow->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllBody(false);
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processEventFunc();
+      doc->endObjectModifiedMode();
+      doc->processObjectModified();
+    }
+  }
 }
 
 void ZFlyEmProofMvc::updateBodyWindow()
@@ -1208,17 +1228,6 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
       doc->processObjectModified();
     }
   }
-#if 0
-  if (m_bodyWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
-    ZFlyEmBody3dDoc *doc =
-        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
-    if (doc != NULL){
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
-    }
-  }
-#endif
 }
 
 void ZFlyEmProofMvc::updateSkeletonWindow()
