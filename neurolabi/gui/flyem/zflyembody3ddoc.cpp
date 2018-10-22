@@ -4339,6 +4339,14 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     removeObject(tree, false);
     dumpGarbage(tree, recycable);
   }
+
+  ZOUT(LTRACE(), 5) << "Dump meshes";
+  QList<ZMesh*> meshList = getMeshList();
+  for (ZMesh *mesh : meshList) {
+    removeObject(mesh, false);
+    dumpGarbage(mesh, recycable);
+  }
+
   getBodyManager().clear();
 //  m_bodySet.clear();
   endObjectModifiedMode();
