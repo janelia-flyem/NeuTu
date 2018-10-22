@@ -86,9 +86,11 @@ void NeutubeConfig::init(const std::string &userName)
   m_loggingProfile = false;
   m_verboseLevel = 1;
 
+#ifdef _QT_GUI_USED_
   if (m_settings.contains("mesh_split_thre")) {
     m_meshSplitThreshold = m_settings.value("mesh_split_thre").toInt();
   }
+#endif
 
   updateLogDir();
 
@@ -970,7 +972,9 @@ bool NeutubeConfig::IsAdvancedMode()
 void NeutubeConfig::setMeshSplitThreshold(size_t thre)
 {
   m_meshSplitThreshold = thre;
+#ifdef _QT_GUI_USED_
   m_settings.setValue("mesh_split_thre", int(thre));
+#endif
 }
 
 size_t NeutubeConfig::getMeshSplitThreshold() const

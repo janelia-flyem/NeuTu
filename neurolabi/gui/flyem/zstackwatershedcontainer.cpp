@@ -602,7 +602,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
   if (m_source == NULL) {
     if (m_spStack != NULL) {
       if (m_scale > 1) {
-        ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
+        ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod.toStdString());
         filter->setDsFactor(m_scale,m_scale,m_scale);
         m_source = filter->filterStack(*m_spStack);
         m_source->pushDsIntv(m_spStack->getDsIntv());

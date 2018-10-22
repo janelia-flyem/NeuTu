@@ -665,8 +665,10 @@ private:
 
 //  bool m_isLSMFile;
 
-#ifdef _QT_GUI_USED_
   bool m_usingChannelColors = false; //Temporary hack.
+
+#ifdef _QT_GUI_USED_
+
   //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
 
