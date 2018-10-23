@@ -493,6 +493,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
       ZWidgetMessage warnMsg;
       warnMsg.setType(neutube::MSG_WARNING);
 
+      auto oldSelection = getSelection(neutube::BODY_LABEL_ORIGINAL);
+
       if (!labelMap.isEmpty()) {
         //reorganize the map
         QMap<uint64_t, std::vector<uint64_t> > mergeMap;
@@ -568,21 +570,27 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
                 }
               }
             }
+
+            if (oldSelection.count(newTargetId) > 0) {
+              newBodySet.insert(newTargetId);
+            }
 #endif
           }
 
           //Temporary fix for mesh update, which should be moved the remote service
           m_writer.deleteMesh(newTargetId);
 
-          QList<ZDvidLabelSlice*> labelList =
-              getDocument()->getDvidLabelSliceList();
-          foreach (ZDvidLabelSlice *slice, labelList) {
-            slice->setSelection(newBodySet, neutube::BODY_LABEL_ORIGINAL);
-//            slice->mapSelection();
-          }
+
           ZOUT(LTRACE(), 5) << "Label slice updated";
         }
         getProgressSignal()->advanceProgress(0.1);
+
+        QList<ZDvidLabelSlice*> labelList =
+            getDocument()->getDvidLabelSliceList();
+        foreach (ZDvidLabelSlice *slice, labelList) {
+          slice->setSelection(newBodySet, neutube::BODY_LABEL_ORIGINAL);
+//            slice->mapSelection();
+        }
 
         m_selectedOriginal.clear();
         for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
@@ -590,9 +598,10 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           m_selectedOriginal.insert(*iter);
         }
 
-        if (getDocument<ZFlyEmProofDoc>() != NULL) {
-          getDocument<ZFlyEmProofDoc>()->clearBodyForSplit();
-          getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
+        ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
+        if (proofDoc != NULL) {
+          proofDoc->clearBodyForSplit();
+          proofDoc->refreshDvidLabelBuffer(2000);
           ZOUT(LTRACE(), 5) << "Label buffer refreshed";
         }
 
