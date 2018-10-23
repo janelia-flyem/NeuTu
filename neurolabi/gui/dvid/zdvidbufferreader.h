@@ -54,6 +54,8 @@ public:
     return m_buffer;
   }
 
+  void clear();
+
   void clearBuffer();
 
 //  void readQt(const QString &url, bool outputUrl = true);
