@@ -409,6 +409,7 @@ protected slots:
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void updateMeshWindow();
+  void updateMeshWindowDeep();
   void updateCoarseMeshWindow();
   void updateCoarseMeshWindowDeep();
   void cropCoarseBody3D();
@@ -486,7 +487,8 @@ private:
 
   void makeMeshWindow(bool coarse);
 
-  void updateWindow(Z3DWindow *window);
+  void updateBodyWindow(Z3DWindow *window);
+  void updateBodyWindowDeep(Z3DWindow *window);
 
   ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
 

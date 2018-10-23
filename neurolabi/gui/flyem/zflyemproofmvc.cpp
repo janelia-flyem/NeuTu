@@ -698,6 +698,8 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           this, SLOT(updateCoarseBodyWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateCoarseMeshWindowDeep()));
+  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
+          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateBookmarkTable()));
 
@@ -707,6 +709,8 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           this, SLOT(updateCoarseBodyWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateCoarseMeshWindowDeep()));
+  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploadedExternally,
+          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBookmarkTable()));
 
@@ -1164,6 +1168,8 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow()
 
 void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
 {
+  updateBodyWindowDeep(m_coarseBodyWindow);
+  /*
   if (m_coarseBodyWindow != NULL) {
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
@@ -1178,10 +1184,13 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
       doc->processObjectModified();
     }
   }
+  */
 }
 
 void ZFlyEmProofMvc::updateCoarseMeshWindowDeep()
 {
+  updateBodyWindowDeep(m_coarseMeshWindow);
+  /*
   if (m_coarseMeshWindow != NULL) {
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
@@ -1196,6 +1205,12 @@ void ZFlyEmProofMvc::updateCoarseMeshWindowDeep()
       doc->processObjectModified();
     }
   }
+  */
+}
+
+void ZFlyEmProofMvc::updateMeshWindowDeep()
+{
+  updateBodyWindowDeep(m_meshWindow);
 }
 
 void ZFlyEmProofMvc::updateBodyWindow()
@@ -1213,6 +1228,8 @@ void ZFlyEmProofMvc::updateBodyWindow()
 
 void ZFlyEmProofMvc::updateBodyWindowDeep()
 {
+  updateBodyWindowDeep(m_bodyWindow);
+  /*
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
@@ -1228,24 +1245,25 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
       doc->processObjectModified();
     }
   }
+  */
 }
 
 void ZFlyEmProofMvc::updateSkeletonWindow()
 {
-  updateWindow(m_skeletonWindow);
+  updateBodyWindow(m_skeletonWindow);
 }
 
 void ZFlyEmProofMvc::updateMeshWindow()
 {
-  updateWindow(m_meshWindow);
+  updateBodyWindow(m_meshWindow);
 }
 
 void ZFlyEmProofMvc::updateCoarseMeshWindow()
 {
-  updateWindow(m_coarseMeshWindow);
+  updateBodyWindow(m_coarseMeshWindow);
 }
 
-void ZFlyEmProofMvc::updateWindow(Z3DWindow *window)
+void ZFlyEmProofMvc::updateBodyWindow(Z3DWindow *window)
 {
   if (window != NULL) {
     std::set<uint64_t> bodySet =
@@ -1254,6 +1272,24 @@ void ZFlyEmProofMvc::updateWindow(Z3DWindow *window)
         qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::updateBodyWindowDeep(Z3DWindow *window)
+{
+  if (window != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllBody(false);
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processEventFunc();
+      doc->endObjectModifiedMode();
+      doc->processObjectModified();
     }
   }
 }
@@ -3641,7 +3677,7 @@ void ZFlyEmProofMvc::showWindow(
   if (window == NULL) {
     _makeWindow();
     m_bodyViewers->addWindow(tab, window, title);
-    updateWindow(window);
+    updateBodyWindow(window);
     window->setYZView();
   } else {
     m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(tab));
