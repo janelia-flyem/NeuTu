@@ -133,6 +133,7 @@ public:
   ZIntCuboid update(const ZIntCuboid &box);
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
+  void update(const std::vector<ZIntPoint> &ptArray);
 
   void updatePartner(ZFlyEmToDoItem &item);
 
