@@ -174,6 +174,17 @@ std::string AppendQuery(
 }
 
 std::string AppendQuery(
+      const std::string &url, const std::pair<std::string,std::string> &query)
+{
+  if (!query.first.empty()) {
+    std::string qstr = query.first + "=" + query.second;
+    return AppendQuery(url, qstr);
+  }
+
+  return url;
+}
+
+std::string AppendQuery(
     const std::string &url, const std::pair<std::string, bool> &query)
 {
   if (!query.first.empty()) {
@@ -425,6 +436,22 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const
       url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
     }
   }
+
+  return url;
+}
+
+std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
+{
+  std::string url = getMultiscaleSparsevolUrl(config.bodyId, config.zoom);
+
+  if (!config.format.empty()) {
+    url = AppendQuery(url, std::make_pair(std::string("format"), config.format));
+  }
+  if (config.labelType == flyem::LABEL_SUPERVOXEL) {
+    url = AppendQuery(url, std::make_pair(std::string("supervoxels"), true));
+  }
+
+  url = AppendRangeQuery(url, config.range);
 
   return url;
 }
