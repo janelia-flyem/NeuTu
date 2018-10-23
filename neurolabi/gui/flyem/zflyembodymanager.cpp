@@ -356,6 +356,9 @@ void ZFlyEmBodyManager::eraseSupervoxel(uint64_t bodyId)
 void ZFlyEmBodyManager::clear()
 {
   m_bodyMap.clear();
+  m_bodyConfigMap.clear();
+  m_todoLoaded.clear();
+  m_synapseLoaded.clear();
 }
 
 void ZFlyEmBodyManager::print() const
