@@ -794,7 +794,9 @@ private:
 
   void writeV0(std::ostream &stream) const;
   void writeV1(std::ostream &stream) const;
+#ifdef _QT_GUI_USED_
   void writeV2(std::ostream &stream) const;
+#endif
   void readHeader(std::istream &stream, int *version, int *stripeNumber);
 
 protected:

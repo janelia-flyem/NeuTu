@@ -905,7 +905,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyenv.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
-    core/memorystream.h
+    core/memorystream.h \
+    imgproc/zstackmultiscalewatershed.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1596,7 +1597,8 @@ SOURCES += main.cpp \
     flyem/zflyembodyenv.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
-    core/memorystream.cpp
+    core/memorystream.cpp \
+    imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

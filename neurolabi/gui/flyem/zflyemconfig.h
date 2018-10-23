@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <map>
+#ifdef _QT_GUI_USED_
 #include <QMap>
 #include <QSize>
+#endif
 
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
