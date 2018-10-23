@@ -177,6 +177,10 @@ public:
                           int zoom, const ZIntCuboid &box, bool canonizing,
                           ZObject3dScan *result) const;
 
+  ZObject3dScan* readBodyRle(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                             int zoom, const ZIntCuboid &box, bool canonizing,
+                             ZObject3dScan *result) const;
+
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
