@@ -113,7 +113,9 @@ void ZStackObject::setColor(int red, int green, int blue)
 
 void ZStackObject::setColor(int red, int green, int blue, int alpha)
 {
+#if defined(_QT_GUI_USED_)
   setColor(QColor(red, green, blue, alpha));
+#endif
 
 //#if defined(_QT_GUI_USED_)
 //  m_color.setRed(red);

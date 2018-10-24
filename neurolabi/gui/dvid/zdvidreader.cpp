@@ -89,6 +89,13 @@ void ZDvidReader::clear()
   m_lowtisService.reset();
   m_lowtisServiceGray.reset();
 #endif
+  m_service.reset();
+  m_connection.reset();
+
+  m_errorMsg.clear();
+  m_statusCode = 0;
+  m_bufferReader.clear();
+
 }
 
 bool ZDvidReader::startService()
@@ -870,6 +877,9 @@ ZObject3dScan *ZDvidReader::readBodyDs(
 
 QByteArray ZDvidReader::readBuffer(const std::string &url) const
 {
+  if (isVerbose()) {
+    std::cout << "Reading " << url << std::endl;
+  }
   m_bufferReader.read(url.c_str());
 
   return m_bufferReader.getBuffer();

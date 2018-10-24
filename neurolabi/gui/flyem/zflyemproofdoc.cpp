@@ -2630,6 +2630,18 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
   }
 }
 
+void ZFlyEmProofDoc::downloadTodo(const std::vector<ZIntPoint> &ptArray)
+{
+  ZOUT(LTRACE(), 5) << "Download to do items";
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (ZFlyEmToDoList* td : todoList) {
+    td->update(ptArray);
+    processObjectModified(td);
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
 {
   ZOUT(LTRACE(), 5) << "Download to do items";
