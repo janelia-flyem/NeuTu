@@ -1075,8 +1075,9 @@ int ZCommandLine::skeletonizeDvid()
   if (!QFileInfo(m_output.c_str()).isDir()) {
     if (reader.getDvidTarget().readOnly()) {
       ZDvidVersionDag dag = reader.readVersionDag();
-      std::string childUuid = dag.getChild(reader.getDvidTarget().getUuid(), 0);
-      if (!childUuid.empty()) {
+      std::string childUuid =
+          dag.getFirstLeafNode(reader.getDvidTarget().getUuid());
+      if (!dag.isLocked(childUuid)) {
         LWARN() << "Switching to unlocked child node:" << childUuid;
         target.setUuid(childUuid);
         reader.clear();
