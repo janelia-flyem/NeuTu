@@ -1081,10 +1081,11 @@ int ZCommandLine::skeletonizeDvid()
         target.setUuid(childUuid);
         reader.clear();
         reader.open(target);
+        reader.updateMaxLabelZoom();
+      } else {
+        LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
+        return 1;
       }
-
-      LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
-      return 1;
     }
 
     writer.open(reader.getDvidTarget());
