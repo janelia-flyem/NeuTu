@@ -80,6 +80,8 @@ protected:
 private:
     int getDsIntv() const;
     void makeGUI();
+    void setCheckStatus(int row, bool on);
+    void toggleCheckStatus(int row);
 
 public:
     //
