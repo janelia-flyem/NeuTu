@@ -485,10 +485,18 @@ ZStack* ZSparseStack::makeStack(
         delete obj;
       }
     } else {
+#ifdef _QT_GUI_USED_
       ZOUT(LTRACE(), 5) << "Invalid range. No stack created.";
+#else
+      std::cout << "Invalid range. No stack created.";
+#endif
     }
   } else {
+#ifdef _QT_GUI_USED_
     ZOUT(LTRACE(), 5) << "Object mask or grayscale data missing. No stack created.";
+#else
+    std::cout << "Object mask or grayscale data missing. No stack created.";
+#endif
   }
 
   return out;

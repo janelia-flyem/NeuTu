@@ -1,7 +1,10 @@
 #include <fstream>
+#if defined(_QT_GUI_USED_)
 #include <QFile>
 #include <QTime>
 #include <QCoreApplication>
+#endif
+
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
 #include "zobject3dfactory.h"

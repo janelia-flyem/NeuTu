@@ -165,6 +165,19 @@ std::string ZDvidVersionDag::getRoot() const
   return uuid;
 }
 
+std::string ZDvidVersionDag::getFirstLeafNode(const std::string &uuid) const
+{
+  std::string childUuid = uuid;
+  std::string leaf;
+  while (!childUuid.empty()) {
+    leaf = childUuid;
+    childUuid = getChild(childUuid, 0);
+  }
+
+  return leaf;
+}
+
+
 std::string ZDvidVersionDag::getChild(const std::string uuid, int index) const
 {
   std::string childUuid;

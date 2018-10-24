@@ -164,6 +164,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
           config.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
         }
       }
+    } else if (doc->getTag() == neutube::Document::ETag::FLYEM_MESH) {
+      config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
     }
 
     if (ReadyForAction(doc, ZActionFactory::ACTION_COPY_POSITION)) {

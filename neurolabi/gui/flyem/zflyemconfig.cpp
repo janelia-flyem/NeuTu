@@ -190,6 +190,7 @@ void ZFlyEmConfig::loadConfig()
 
 void ZFlyEmConfig::loadUserSettings()
 {
+#ifdef _QT_GUI_USED_
   //Load local settings
   if (NeutubeConfig::GetSettings().contains(CENTERCUT_KEY)) {
     QMap<QString, QVariant> centercutMap =
@@ -202,6 +203,7 @@ void ZFlyEmConfig::loadUserSettings()
           std::pair<int,int>(s.width(), s.height());
     }
   }
+#endif
 }
 
 std::pair<int,int> ZFlyEmConfig::getCenterCut(const std::string &name) const
@@ -281,6 +283,7 @@ std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const
 
 void ZFlyEmConfig::saveSettings() const
 {
+#ifdef _QT_GUI_USED_
   QMap<QString, QVariant> setting;
   for (const auto &cc : m_centerCut) {
     setting[cc.first.c_str()] = QSize(cc.second.first, cc.second.second);
@@ -288,6 +291,7 @@ void ZFlyEmConfig::saveSettings() const
   if (!setting.isEmpty()) {
     NeutubeConfig::GetSettings().setValue(CENTERCUT_KEY, setting);
   }
+#endif
   /*
   for (const auto &cc : m_centerCut) {
     NeutubeConfig::GetSettings().setValue(

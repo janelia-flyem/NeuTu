@@ -470,6 +470,7 @@ std::string GetTestJsonString(const T &json)
 }
 bool ZDvidTarget::Test()
 {
+#ifdef _QT_GUI_USED_
   std::cout << "Testing private functions ..." << std::endl;
   {
     TileConfig tg;
@@ -551,7 +552,7 @@ bool ZDvidTarget::Test()
       }
     }
   }
-
+#endif
 //  std::cout << json.dumpString(0) << std::endl;
 
   return true;

@@ -671,6 +671,8 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
 
 void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
 {
+  std::vector<ZIntPoint> ptArray;
+
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM);
   for (TStackObjectSet::const_iterator iter = objSet.begin();
@@ -680,10 +682,13 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
       if (action != item->getAction()) {
         item->setAction(action);
         m_mainDvidWriter.writeToDoItem(*item);
+        ptArray.push_back(item->getPosition());
         bufferObjectModified(item);
       }
     }
   }
+
+  getDataDocument()->downloadTodo(ptArray);
 
   processObjectModified();
 }
@@ -691,6 +696,8 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
 void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
 {
 //  bool changed = false;
+
+  std::vector<ZIntPoint> ptArray;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM);
@@ -701,11 +708,15 @@ void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
       if (item->isChecked() != on) {
         item->setChecked(on);
         m_mainDvidWriter.writeToDoItem(*item);
+        ptArray.push_back(item->getPosition());
 //        changed = true;
         bufferObjectModified(item);
       }
     }
   }
+
+  getDataDocument()->downloadTodo(ptArray);
+
   processObjectModified();
 
 //  if (changed) {
@@ -2328,32 +2339,42 @@ void ZFlyEmBody3dDoc::addTodoSliently(const ZFlyEmToDoItem &item)
 
 void ZFlyEmBody3dDoc::addTodo(const QList<ZFlyEmToDoItem> &itemList)
 {
+  std::vector<ZIntPoint> ptArray;
+
   QSet<uint64_t> bodySet;
   foreach (const ZFlyEmToDoItem &item, itemList) {
     addTodoSliently(item);
     if (item.getBodyId() > 0) {
       bodySet.insert(item.getBodyId());
     }
+    ptArray.push_back(item.getPosition());
   }
 
   foreach (uint64_t bodyId, bodySet) {
     updateTodo(bodyId);
   }
+
+  getDataDocument()->downloadTodo(ptArray);
 }
 
 void ZFlyEmBody3dDoc::removeTodo(const QList<ZFlyEmToDoItem> &itemList)
 {
+  std::vector<ZIntPoint> ptArray;
+
   QSet<uint64_t> bodySet;
   foreach (const ZFlyEmToDoItem &item, itemList) {
     removeTodoSliently(item);
     if (item.getBodyId() > 0) {
       bodySet.insert(item.getBodyId());
     }
+    ptArray.push_back(item.getPosition());
   }
 
   foreach (uint64_t bodyId, bodySet) {
     updateTodo(bodyId);
   }
+
+  getDataDocument()->downloadTodo(ptArray);
 }
 
 void ZFlyEmBody3dDoc::removeTodo(ZFlyEmToDoItem &item, uint64_t bodyId)
@@ -4339,6 +4360,14 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     removeObject(tree, false);
     dumpGarbage(tree, recycable);
   }
+
+  ZOUT(LTRACE(), 5) << "Dump meshes";
+  QList<ZMesh*> meshList = getMeshList();
+  for (ZMesh *mesh : meshList) {
+    removeObject(mesh, false);
+    dumpGarbage(mesh, recycable);
+  }
+
   getBodyManager().clear();
 //  m_bodySet.clear();
   endObjectModifiedMode();

@@ -42,6 +42,7 @@
 #include "zstack.hxx"
 #include "mylib/utilities.h"
 #include "misc/miscutility.h"
+#include "dvid/zdvidversiondag.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -1073,12 +1074,23 @@ int ZCommandLine::skeletonizeDvid()
 
   if (!QFileInfo(m_output.c_str()).isDir()) {
     if (reader.getDvidTarget().readOnly()) {
-      LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
-      return 1;
+      ZDvidVersionDag dag = reader.readVersionDag();
+      std::string childUuid =
+          dag.getFirstLeafNode(reader.getDvidTarget().getUuid());
+      if (!dag.isLocked(childUuid)) {
+        LWARN() << "Switching to unlocked child node:" << childUuid;
+        target.setUuid(childUuid);
+        reader.clear();
+        reader.open(target);
+        reader.updateMaxLabelZoom();
+      } else {
+        LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
+        return 1;
+      }
     }
 
-    writer.open(target);
-    ZDvidUrl dvidUrl(target);
+    writer.open(reader.getDvidTarget());
+    ZDvidUrl dvidUrl(reader.getDvidTarget());
 
     if (!writer.isSwcWrittable()) {
       std::cout << "Server return code: " << writer.getStatusCode() << std::endl;

@@ -755,6 +755,7 @@ void ZObject3dScan::writeV1(std::ostream &stream) const
   writeV0(stream);
 }
 
+#ifdef _QT_GUI_USED_
 void ZObject3dScan::writeV2(std::ostream &stream) const
 {
   int version = -2; //Use negative number for compatibility
@@ -765,6 +766,7 @@ void ZObject3dScan::writeV2(std::ostream &stream) const
 
   writeV0(stream);
 }
+#endif
 
 void ZObject3dScan::readHeader(
     std::istream &stream, int *version, int *stripeNumber)
@@ -779,17 +781,28 @@ void ZObject3dScan::readHeader(
   if (*version == 1 || *version == 2) {
     stream.read((char*)(&m_uLabel), sizeof(uint64_t));
   }
+
   if (*version == 2) {
+#ifdef _QT_GUI_USED_
     QRgb color = 0;
     stream.read((char*)(&color), sizeof(QRgb));
     setColor(QColor(qRed(color), qGreen(color), qBlue(color), qAlpha(color)));
+#else
+    stream.clear(std::ios_base::badbit);
+    return;
+#endif
   }
+
   stream.read((char*)(stripeNumber), sizeof(int));
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
 {
+#ifdef _QT_GUI_USED_
   writeV2(stream);
+#else
+  writeV1(stream);
+#endif
 }
 
 void ZObject3dScan::read(std::istream &stream)
@@ -1184,7 +1197,9 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 
   TEvent event = EVENT_NULL;
 
+#ifdef _QT_GUI_USED_
   ZOUT(LINFO(), 3) << "Downsmapling obj: " << xintv << yintv << zintv;
+#endif
 
   if (yintv > 0 || zintv > 0) {
     for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
@@ -1198,7 +1213,9 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   }
 
   if (xintv > 0) {
+#ifdef _QT_GUI_USED_
     ZOUT(LINFO(), 3) << "Downsmapling x: " << xintv;
+#endif
     for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->downsampleMax(xintv);
@@ -1207,10 +1224,15 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
     event |= EVENT_OBJECT_UNCANONIZED;
   }
 
+#ifdef _QT_GUI_USED_
   ZOUT(LINFO(), 3) << "Processing " << event;
+#endif
   processEvent(event);
 
+#ifdef _QT_GUI_USED_
   ZOUT(LINFO(), 3) << "Resetting ds";
+#endif
+
   pushDsIntv(xintv, yintv, zintv);
 
 #ifdef _DEBUG_2
@@ -1218,7 +1240,10 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
       std::cout << getMaxZ() << std::endl;
 #endif
 
+#ifdef _QT_GUI_USED_
   ZOUT(LINFO(), 3) << "Canonizing ... " << xintv << yintv << zintv;
+#endif
+
   canonize();
 
   //deprecate(ALL_COMPONENT);
@@ -3394,7 +3419,9 @@ bool ZObject3dScan::importDvidBlockBuffer(
       sort();
     }
   } catch (std::exception &e) {
+#ifdef _QT_GUI_USED_
     LERROR() << "Parsing dvid block failed:" << e.what();
+#endif
     return false;
   }
 

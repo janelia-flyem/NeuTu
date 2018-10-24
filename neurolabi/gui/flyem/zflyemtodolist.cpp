@@ -83,6 +83,18 @@ void ZFlyEmToDoList::update(int x, int y, int z)
   }
 }
 
+void ZFlyEmToDoList::update(const ZIntPoint &pt)
+{
+  update(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZFlyEmToDoList::update(const std::vector<ZIntPoint> &ptArray)
+{
+  for (const ZIntPoint &pt : ptArray) {
+    update(pt);
+  }
+}
+
 void ZFlyEmToDoList::attachView(ZStackView *view)
 {
   m_view = view;
