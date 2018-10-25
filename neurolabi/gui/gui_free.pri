@@ -233,6 +233,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidnode.h \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
+    $$PWD/zsegmentationscan.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -444,5 +445,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcutil.cpp \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
-   $$PWD/zswcdirectionfeatureanalyzer.cpp
+   $$PWD/zswcdirectionfeatureanalyzer.cpp \
+    $$PWD/zsegmentationscan.cpp
 
