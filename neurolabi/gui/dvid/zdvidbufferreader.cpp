@@ -89,6 +89,13 @@ void ZDvidBufferReader::clearBuffer()
   m_buffer.clear();
 }
 
+void ZDvidBufferReader::clear()
+{
+  m_service.reset();
+  m_statusCode = 0;
+  clearBuffer();
+}
+
 void ZDvidBufferReader::read(
     const QString &url, const QByteArray &payload, const std::string &method,
     bool outputingUrl)
