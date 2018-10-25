@@ -1135,6 +1135,7 @@ void ZFlyEmProofMvc::roiToggled(bool on)
 
 void ZFlyEmProofMvc::setProtocolRangeVisible(bool on)
 {
+
   ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(this, on);
 }
 
