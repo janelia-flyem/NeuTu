@@ -4362,7 +4362,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   }
 
   ZOUT(LTRACE(), 5) << "Dump meshes";
-  QList<ZMesh*> meshList = getMeshList();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetNonRoiMeshList(this);
   for (ZMesh *mesh : meshList) {
     removeObject(mesh, false);
     dumpGarbage(mesh, recycable);
