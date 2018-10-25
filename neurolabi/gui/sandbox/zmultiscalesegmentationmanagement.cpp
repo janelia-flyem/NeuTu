@@ -1,464 +1,29 @@
-#include <QAction>
-#include <QGridLayout>
-#include <QMessageBox>
+#include <QStandardItem>
 #include <QPushButton>
 #include <QLabel>
-#include <QFileDialog>
-#include <QTreeView>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include <QModelIndex>
-#include <QTreeWidgetItem>
-#include "flyem/zstackwatershedcontainer.h"
+#include <QAction>
+#include <QString>
+#include <QLayout>
+#include <QCheckBox>
 #include "zmultiscalesegmentationmanagement.h"
-#include "zstack.hxx"
+#include "zstackobject.h"
+#include "flyem/zstackwatershedcontainer.h"
 #include "zobject3dscanarray.h"
-#include "zstackdoc.h"
 #include "zstackframe.h"
 #include "zsandbox.h"
-#include "zstroke2d.h"
-#include "zobject3dscan.h"
 #include "zstackdocdatabuffer.h"
-#include "zcolorscheme.h"
-#include "zstackview.h"
+#include "imgproc/zstackprocessor.h"
+#include "zstackdoc.h"
 #include "mainwindow.h"
 
 
-//implementation for ZSegmentationScan
-
-ZSegmentationScan::ZSegmentationScan()
-{
-  clearData();
-}
-
-
-void ZSegmentationScan::clearData()
-{
-  if(m_data.size() !=0 )
-  {
-    m_data.clear();
-  }
-  m_sz = MAX_INT32;
-  m_ez = 0;
-  m_sy = MAX_INT32;
-  m_ey = 0;
-  m_sx = MAX_INT32;
-  m_ex = 0;
-}
-
-
-void ZSegmentationScan::unify(ZSegmentationScan *obj)
-{
-
-  int sz = std::min(minZ(), obj->minZ());
-  int ez = std::max(maxZ(), obj->maxZ());
-  int size_z = ez - sz + 1;
-
-  int sy = std::min(minY(), obj->minY());
-  int ey = std::max(maxY(), obj->maxY());
-  int size_y = ey - sy + 1;
-
-  int sx = std::min(minX(), obj->minX());
-  int ex = std::max(maxX(), obj->maxX());
-
-  std::cout<<sx<<" "<<ex<<" "<<sy<<" "<<ey<<" "<<sz<<" "<<ez<<endl;
-  std::vector<std::vector<std::vector<int>>> new_data;
-  new_data.resize(size_z);
-  for(int z = 0; z < size_z; ++z)
-  {
-    new_data[z].resize(size_y);
-  }
-
-  for(int z = 0; z < size_z; ++z)
-  {
-    for(int y = 0; y < size_y; ++y)
-    {
-      new_data[z][y] = canonize(getStrip(z+sz,y+sy),obj->getStrip(z+sz,y+sy));
-    }
-  }
-
-  m_data = new_data;
-  m_sz = sz;
-  m_ez = ez;
-  m_sy = sy;
-  m_ey = ey;
-  m_sx = sx;
-  m_ex = ex;
-}
-
-
-std::vector<int> ZSegmentationScan::canonize(std::vector<int> &a, std::vector<int> &b)
-{
-  if(a.size() == 0)
-  {
-    return b;
-  }
-  if(b.size() == 0)
-  {
-    return a;
-  }
-
-  std::vector<int> rv;
-  std::vector<int>::iterator itas = a.begin();
-  std::vector<int>::iterator itbs = b.begin();
-  std::vector<int>::iterator itae = itas + 1;
-  std::vector<int>::iterator itbe = itbs + 1;
-
-  while(itae < a.end() && itbe < b.end())
-  {
-    int a = *itas;
-    int b = *itae;
-    if(*itas < *itbs)
-    {
-      itas += 2;
-      itae += 2;
-    }
-    else
-    {
-      a = *itbs;
-      b = *itbe;
-      itbs += 2;
-      itbe += 2;
-    }
-    if(rv.size() == 0)
-    {
-      rv.push_back(a);
-      rv.push_back(b);
-    }
-    else
-    {
-      int d = rv.back();
-      rv.pop_back();
-      if(a <= d)
-      {
-        rv.push_back(b);
-      }
-      else
-      {
-        rv.push_back(d);
-        rv.push_back(a);
-        rv.push_back(b);
-      }
-    }
-  }
-
-  while(itae < a.end())
-  {
-    rv.push_back(*itas);
-    rv.push_back(*itae);
-    itas += 2;
-    itae += 2;
-  }
-  while(itbe < b.end())
-  {
-    rv.push_back(*itbs);
-    rv.push_back(*itbe);
-    itbs += 2;
-    itbe += 2;
-  }
-  return rv;
-}
-
-
-void ZSegmentationScan::preprareData(int depth, int height)
-{
-  //clearData();
-  m_data.resize(depth);
-
-  for(int i = 0; i < depth; ++i)
-  {
-    m_data[i].resize(height);
-  }
-}
-
-
-ZIntCuboid ZSegmentationScan::getStackForegroundBoundBox(ZStack *stack)
-{
-  ZIntCuboid box(0,0,0,-1,-1,-1);
-  if(!stack)
-  {
-    return box;
-  }
-
-  uint8_t *p = stack->array8();
-  int width = stack->width();
-  int height = stack->height();
-  int depth = stack->depth();
-  size_t area = width * height;
-
-  int min_x = width, max_x = -1;
-  int min_y = height, max_y = -1;
-  int min_z = depth, max_z = -1;
-
-  for(int z = 0 ; z < depth; ++z)
-  {
-    for(int y = 0; y < height; ++y)
-    {
-      uint8_t *q = p + z*area + y*width;
-      for(int x = 0; x < width; ++x, ++q)
-      {
-        if(*q)
-        {
-          if(z < min_z) min_z = z;
-          if(z > max_z) max_z = z;
-          if(y < min_y) min_y = y;
-          if(y > max_y) max_y = y;
-          if(x < min_x) min_x = x;
-          if(x > max_x) max_x = x;
-        }
-      }
-    }
-  }
-  box.setFirstCorner(min_x,min_y,min_z);
-  box.setLastCorner(max_x,max_y,max_z);
-  box.translate(stack->getOffset());
-  return box;
-}
-
-//int i = 1000;
-void ZSegmentationScan::fromObject3DScan(ZObject3dScan *obj)
-{
-  ZIntCuboid box = obj->getBoundBox();
-  ZStack * stack = new ZStack(GREY,box.getWidth(),box.getHeight(),box.getDepth(),1);
-  stack->setOffset(obj->getBoundBox().getFirstCorner());
-  obj->drawStack(stack,1);
-  //stack->save((QString("/home/deli/")+QString::number(i++)+".tif").toStdString());
-  fromStack(stack);
-  delete stack;
-}
-
-
-ZObject3dScan* ZSegmentationScan::toObject3dScan()
-{
-  ZStack* stack = toStack();
-  if(stack)
-  {
-    ZObject3dScan *rv = new ZObject3dScan();
-    rv->loadStack(*stack);
-    //stack->save("/home/deli/stack1.tif");
-    delete stack;
-    return rv;
-  }
-  return NULL;
-}
-
-
-ZStack* ZSegmentationScan::toStack()
-{
-  if(m_data.size() == 0)
-  {
-    return NULL;
-  }
-  ZIntCuboid box = getBoundBox();
-  ZStack* rv = new ZStack(GREY, box.getWidth(), box.getHeight(), box.getDepth(), 1);
-  rv->setOffset(box.getFirstCorner());
-  labelStack(rv);
-  return rv;
-}
-
-
-void ZSegmentationScan::fromStack(ZStack* stack)
-{
-  if(!stack)
-  {
-    return ;
-  }
-  clearData();
-  int width = stack->width();
-  int height = stack->height();
-  size_t area  = width*height;
-
-  ZIntCuboid box = getStackForegroundBoundBox(stack);
-
-  if(box.getDepth() <= 0 || box.getHeight() <=0 || box.getWidth() <=0)
-  {
-    return ;
-  }
-
-  int ofx = stack->getOffset().m_x;
-  int ofy = stack->getOffset().m_y;
-  int ofz = stack->getOffset().m_z;
-  m_offset = stack->getOffset();
-
-  m_sz = box.getFirstCorner().m_z;
-  m_sy = box.getFirstCorner().m_y;
-  m_sx = box.getFirstCorner().m_x;
-  m_ez = box.getLastCorner().m_z;
-  m_ey = box.getLastCorner().m_y;
-  m_ex = box.getLastCorner().m_x;
-
-  preprareData(box.getDepth(), box.getHeight());
-
-  uint8_t* p = stack->array8();
-
-  for(int k = m_sz; k <= m_ez; ++k)
-  {
-    for(int j = m_sy; j <= m_ey; ++j)
-    {
-      uint8_t * q = p + (k-ofz)*area + (j-ofy)*width + (m_sx-ofx);
-      int sx = -1, ex = -1;
-      int flag = 0;
-      for(int i = m_sx; i <= m_ex; ++i, ++q)
-      {
-        if(*q && (flag == 0))
-        {
-          sx = i;
-          flag = 1;
-        }
-        else if((!*q) && (flag ==1))
-        {
-          ex = i -1;
-          flag = 0;
-          addSegment(k,j,sx,ex);
-        }
-      }
-      if(flag ==1)
-      {
-        addSegment(k,j,sx,m_ex);
-      }
-    }
-  }
-}
-
-
-void ZSegmentationScan::labelStack(ZStack *stack, int v)
-{
-  if(!stack)
-  {
-    return ;
-  }
-
-  uint8_t *p = stack->array8();
-  int width = stack->width();
-  int height = stack->height();
-  int area = width * height;
-
-  int ofx = stack->getOffset().m_x;//m_offset.m_x;
-  int ofy = stack->getOffset().m_y;//m_offset.m_y;
-  int ofz = stack->getOffset().m_z;//m_offset.m_z;
-
-  for(uint z = 0; z < m_data.size(); ++z)
-  {
-    std::vector<std::vector<int>>& dy = m_data[z];
-    for(uint y = 0; y < dy.size(); ++y)
-    {
-      std::vector<int>& dx = dy[y];
-      uint8_t *q = p + (z + m_sz - ofz)*area + (y + m_sy - ofy)*width;
-      for(uint x = 0; x < dx.size(); x += 2)
-      {
-        int sx = dx[x] - ofx;
-        int ex = dx[x+1] - ofx;
-        uint8_t* pd = q + sx;
-        for(int i = sx; i <= ex; ++i)
-        {
-          *pd++ = v;
-        }
-      }
-    }
-  }
-}
-
-
-void ZSegmentationScan::maskStack(ZStack *stack)
-{
-  if(!stack)
-  {
-    return ;
-  }
-
-  int width = stack->width();
-  int height = stack->height();
-  int depth = stack->depth();
-
-  ZStack* label = new ZStack(GREY, width, height, depth, 1);
-  label->setOffset(stack->getOffset());
-  labelStack(label);
-
-  uint8_t *p = label->array8();
-  uint8_t *pend = p + label->getVoxelNumber();
-  uint8_t *q = stack->array8();
-
-  for(; p != pend; ++p, ++q)
-  {
-    *q = (*q) * (*p);
-  }
-
-  delete label;
-}
-
-
-void ZSegmentationScan::addSegment(int z, int y, int sx, int ex)
-{
-  getStrip(z,y).push_back(sx);
-  getStrip(z,y).push_back(ex);
-}
-
-
-void ZSegmentationScan::translate(ZIntPoint offset)
-{
-  translate(offset.getX(), offset.getY(), offset.getZ());
-}
-
-
-void ZSegmentationScan::translate(int ofx, int ofy, int ofz)
-{
-  for(uint z = 0; z < m_data.size(); ++z)
-  {
-    std::vector<std::vector<int>>& slice = m_data[z];
-    for(uint y = 0; y < slice.size(); ++y)
-    {
-      std::vector<int>& strip = slice[y];
-      for(uint x = 0; x < strip.size(); ++x)
-      {
-        strip[x] += ofx;
-      }
-    }
-  }
-  m_sx += ofx;
-  m_ex += ofx;
-  m_sy += ofy;
-  m_ey += ofy;
-  m_sz += ofz;
-  m_ez += ofz;
-}
-
+int ZSegmentationNode::s_id = 0;
 
 //implementation for ZSegmentationNode
-void ZSegmentationNode::updateChildrenLabel()
-{
-  int i=1;
-  for(auto it = m_children.begin(); it!=m_children.end();++it)
-  {
-    ZSegmentationNode* child = *it;
-    if(this->isRoot())
-    {
-      child->setLabel(QString::number(i));
-    }
-    else
-    {
-      child->setLabel(m_label+"."+QString::number(i));
-    }
-    child->updateChildrenLabel();
-    ++i;
-  }
-}
-
-
 void ZSegmentationNode::consumeSegmentations(std::vector<ZSegmentationScan*> &segmentations)
 {
-  if(segmentations.size() == 0)
+  if(segmentations.size() <= 1)
   {
-    return;
-  }
-
-  if(segmentations.size() == 1)
-  {
-    if(m_data)
-    {
-      delete m_data;
-      m_data = NULL;
-    }
-    m_data = segmentations[0];
     return;
   }
 
@@ -478,7 +43,6 @@ void ZSegmentationNode::consumeSegmentations(std::vector<ZSegmentationScan*> &se
     child->setData(obj);
     m_children.push_back(child);
   }
-  this->updateChildrenLabel();
 }
 
 
@@ -503,9 +67,10 @@ void ZSegmentationNode::removeChild(ZSegmentationNode *child, bool b_delete)
 
 void ZSegmentationNode::clearChildren()
 {
-  for(auto it = m_children.begin(); it!=m_children.end();++it)
+  //for(auto it = m_children.begin(); it!=m_children.end();++it)
+  while(m_children.size() > 0)
   {
-    ZSegmentationNode* node = *it;
+    ZSegmentationNode* node = m_children[0];
     node->destroy();
   }
   m_children.clear();
@@ -525,16 +90,38 @@ int ZSegmentationNode::indexOf(ZSegmentationNode *node)
 }
 
 
-ZSegmentationNode* ZSegmentationNode::find(QString label)
+std::vector<ZSegmentationNode*> ZSegmentationNode::getLeaves()
 {
-  if(m_label == label)
+  std::vector<ZSegmentationNode*> rv;
+  collectLeaves(rv);
+  return rv;
+}
+
+
+void ZSegmentationNode::collectLeaves(std::vector<ZSegmentationNode*>& rv)
+{
+  if(this->isLeaf())
+  {
+    rv.push_back(this);
+    return ;
+  }
+  for(auto child: children())
+  {
+    child->collectLeaves(rv);
+  }
+}
+
+
+ZSegmentationNode* ZSegmentationNode::find(int id)
+{
+  if(m_id == id)
   {
     return this;
   }
   for(auto it = m_children.begin(); it != m_children.end(); ++it)
   {
     ZSegmentationNode* child = *it;
-    ZSegmentationNode* rv = child->find(label);
+    ZSegmentationNode* rv = child->find(id);
     if(rv)
     {
       return rv;
@@ -550,11 +137,7 @@ void ZSegmentationNode::makeMask(ZSegmentationScan* mask)
   {
     if(m_data)
     {
-      //std::cout<<m_label.toStdString()<<std::endl;
-      //std::cout<<m_data->minX()<<" "<<m_data->maxX()<<std::endl;
-      std::cout<<"Begin unify"<<std::endl;
       mask->unify(m_data);
-      std::cout<<"End unify"<<std::endl;
     }
     return;
   }
@@ -596,8 +179,6 @@ void ZSegmentationNode::mergeNode(ZSegmentationNode *node)
     }
     this->appendChild(node);
   }
-  updateChildrenLabel();
-
 }
 
 
@@ -642,7 +223,8 @@ void ZSegmentationNode::destroy()
 }
 
 
-void ZSegmentationNode::splitNode(ZStack *stack, std::vector<ZStackObject *> &seeds)
+template<typename T>
+void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds)
 {
 
   ZStack* stack_valid = NULL;
@@ -656,18 +238,13 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<ZStackObject *> &se
     this->makeMask(mask);
     ZIntCuboid box = mask->getBoundBox();
     stack_valid = stack->makeCrop(box);
-    //stack_valid->save("/home/deli/stack_valid.tif");
-    //mask->translate(-stack->getOffset());
     mask->maskStack(stack_valid);
-    //stack_valid->save("/home/deli/stack_valid2.tif");
     delete mask;
   }
 
   ZStackWatershedContainer* container = new ZStackWatershedContainer(stack_valid);
-  for(auto it= seeds.begin();it!=seeds.end();++it )
-  {
-    container->addSeed(*it);
-  }
+  addSeed(*container, seeds);
+
   container->setAlgorithm("watershed");
   container->setScale(estimateScale(stack_valid->getVoxelNumber()));
   container->setDsMethod("Min(ignore zero)");
@@ -715,7 +292,7 @@ int ZSegmentationNode::estimateScale(size_t volume)
 
 void ZSegmentationNode::display(QStandardItem* tree)
 {
-  QStandardItem* current = new QStandardItem(m_label);
+  QStandardItem* current = new QStandardItem(QString::number(m_id));
 
   current->setDragEnabled(true);
   current->setDropEnabled(true);
@@ -736,19 +313,52 @@ void ZTreeView::dropEvent(QDropEvent *event)
   QStandardItemModel* tree = static_cast<QStandardItemModel*>(this->model());
 
   QStandardItem* selected = tree->itemFromIndex(this->currentIndex());
+  QStandardItem* clone = deepCopy(selected);
   QStandardItem* old_parent = selected->parent();
+
   QString text = selected->text();
+
+  int row = selected->row();
 
   QTreeView::dropEvent(event);
 
-  //remove it from old parent
-  old_parent->removeRow(selected->row());
-
   ZMultiscaleSegmentationWindow* window=  static_cast<ZMultiscaleSegmentationWindow*>(this->parent());
+  //remove it from old parent
 
-  QStandardItem* new_parent = window->findItemByText(tree->invisibleRootItem(),text)->parent();
+  old_parent->removeRow(selected->row());
+  QStandardItem* tmp = window->findItemById(tree->invisibleRootItem(),text.toInt());
 
-  window->moveNode(text, new_parent->text());
+  if(tmp == NULL)//drop on self
+  {
+    old_parent->insertRow(row,clone);
+  }
+  else
+  {
+    QStandardItem* new_parent = tmp->parent();
+    if(new_parent == NULL)//drop at blank
+    {
+      window->clearTreeView();
+      window->m_root->display(tree->invisibleRootItem());
+      window->m_tree_view->expandAll();
+    }
+    else
+    {
+      window->moveNode(text, new_parent->text());
+    }
+    delete clone;
+  }
+
+}
+
+
+QStandardItem* ZTreeView::deepCopy(QStandardItem *item)
+{
+  QStandardItem* rv = item->clone();
+  for(int i = 0 ;i < item->rowCount(); ++i)
+  {
+    rv->insertRow(i, deepCopy(item->child(i)));
+  }
+  return rv;
 }
 
 
@@ -793,21 +403,30 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   m_tree_view->setDragEnabled(true);
   m_tree_view->setAcceptDrops(true);
   m_tree->setHorizontalHeaderLabels(QStringList()<<"Multiscale Segmentations:");
-  m_tree->invisibleRootItem()->setEditable(true);
   m_tree->invisibleRootItem()->setText("0");
 
-  QPushButton* open_stack = new QPushButton("Open Stack");
+  QPushButton* open_stack = new QPushButton("Open");
   QPushButton* clear = new QPushButton("Clear");
-  QPushButton* segment = new QPushButton("Segment");
   QPushButton* export_node = new QPushButton("Export");
+  QPushButton* segment = new QPushButton("Segment");
+  QPushButton* auto_segment = new QPushButton("AutoSegment");
+  QPushButton* merge = new QPushButton("Merge");
+  QPushButton* flood = new QPushButton("Flood");
+
+  m_show_leaf = new QCheckBox("Show Leaf");
+  m_show_leaf->setChecked(true);
 
   //setup layout
   QGridLayout* lay=new QGridLayout(this);
-  lay->addWidget(m_tree_view,0,0,9,12);
-  lay->addWidget(open_stack,9,0,1,3);
-  lay->addWidget(clear,9,3,1,3);
-  lay->addWidget(export_node,9,6,1,3);
-  lay->addWidget(segment,9,9,1,3);
+  lay->addWidget(m_tree_view,0,0,8,15);
+  lay->addWidget(m_show_leaf,8,0,1,5);
+  lay->addWidget(open_stack,9,0,1,5);
+  lay->addWidget(clear,9,5,1,5);
+  lay->addWidget(export_node,9,10,1,5);
+  lay->addWidget(segment,10,0,1,4);
+  lay->addWidget(auto_segment,10,4,1,4);
+  lay->addWidget(merge,10,8,1,4);
+  lay->addWidget(flood,10,12,1,3);
 
 
   //events
@@ -816,10 +435,93 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   connect(clear,SIGNAL(clicked()),this,SLOT(onClear()));
   connect(export_node,SIGNAL(clicked()),this,SLOT(onExport()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
+  connect(auto_segment,SIGNAL(clicked()),this,SLOT(onAutoSegment()));
+  connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
+  connect(flood,SIGNAL(clicked()),this,SLOT(onFlood()));
 
   this->setLayout(lay);
   this->setMinimumSize(400,600);
   this->move(300,200);
+}
+
+
+void ZMultiscaleSegmentationWindow::onFlood()
+{
+  if(!m_frame || !m_root)
+  {
+    return ;
+  }
+
+  QList<ZObject3dScan*> selected = m_frame->document()->getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+
+  if(selected.size() < 1)
+  {
+    return ;
+  }
+
+  ZSegmentationNode* node = m_root->find(selected.first()->getLabel());
+
+  if(!node || !node->isLeaf())
+  {
+    return ;
+  }
+
+  for(ZSegmentationNode* child: m_root->getLeaves())
+  {
+    if(child != node)
+    {
+      if(node->data()->getBoundBox().contains(child->data()->getBoundBox()))
+      {
+        node->mergeNode(child);
+      }
+    }
+  }
+  m_root->regularize();
+  clearTreeView();
+  m_root->display(m_tree->invisibleRootItem());
+  m_tree_view->expandAll();
+  highLight(m_root);
+}
+
+
+void ZMultiscaleSegmentationWindow::onMerge()
+{
+  if(!m_frame || !m_root)
+  {
+    return ;
+  }
+
+  QList<ZObject3dScan*> selected = m_frame->document()->getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+
+  if(selected.size() <= 1)
+  {
+    return ;
+  }
+
+  QList<ZObject3dScan*>::iterator it = selected.begin();
+  ZSegmentationNode *node = m_root->find((*it)->getLabel());
+
+  if(!node)
+  {
+    return ;
+  }
+
+  for(++it; it != selected.end(); ++it)
+  {
+    ZSegmentationNode* p = m_root->find((*it)->getLabel());
+    if(!p)
+    {
+      continue;
+    }
+    node->mergeNode(p);
+  }
+
+  m_root->regularize();
+  clearTreeView();
+  //m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
+  m_root->display(m_tree->invisibleRootItem());
+  m_tree_view->expandAll();
+  highLight(m_root);
 }
 
 
@@ -829,8 +531,8 @@ void ZMultiscaleSegmentationWindow::onSelectNode(QModelIndex index)
   {
     return ;
   }
-  m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
-  ZSegmentationNode* node = m_root->find(m_tree->itemFromIndex(index)->text());
+  //m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
+  ZSegmentationNode* node = m_root->find(m_tree->itemFromIndex(index)->text().toInt());
   highLight(node);
 }
 
@@ -843,39 +545,62 @@ void ZMultiscaleSegmentationWindow::onSegment()
   }
 
   QStandardItem* selected_item = getSelectedNodeItem();
-  QString text = selected_item->text();
-  //mask segmentation stack
-  ZSegmentationNode* selected_node = m_root->find(selected_item->text());
+  ZSegmentationNode* selected_node = m_root->find(selected_item->text().toInt());
+
+  if(!selected_node)
+  {
+    return ;
+  }
 
   std::vector<ZStackObject*> seeds = getSeeds();
+  selected_node->splitNode<ZStackObject>(m_stack, seeds);
 
-  std::cout<<"Begin Splitting"<<std::endl;
-
-  selected_node->splitNode(m_stack, seeds);
-
-  std::cout<<"Splitting finished"<<std::endl;
 
   //display tree in UI
   clearTreeView();
   m_root->display(m_tree->invisibleRootItem());
-  m_tree_view->setCurrentIndex(findItemByText(m_tree->invisibleRootItem(),text)->index());
+  m_tree_view->expandAll();
+  highLight(m_root);
+  removeSeeds();
+}
+
+
+void ZMultiscaleSegmentationWindow::onAutoSegment()
+{
+  if(!m_frame || !m_stack)
+  {
+    return;
+  }
+
+  QStandardItem* selected_item = getSelectedNodeItem();
+  QString text = selected_item->text();
+  //mask segmentation stack
+  ZSegmentationNode* selected_node = m_root->find(text.toInt());
+
+  if(!selected_node)
+  {
+    return ;
+  }
+  ZSegmentationScan* scan = new ZSegmentationScan();
+  selected_node->makeMask(scan);
+  ZStack* tmp = m_stack->makeCrop(scan->getBoundBox());
+  scan->maskStack(tmp);
+  std::vector<ZStack*> seeds = seedsFromMaximum(tmp);
+
+  selected_node->splitNode<ZStack>(m_stack, seeds);
+
+  //display tree in UI
+  clearTreeView();
+  m_root->display(m_tree->invisibleRootItem());
+  m_tree_view->setCurrentIndex(findItemById(m_tree->invisibleRootItem(),text.toInt())->index());
   m_tree_view->expandAll();
 
-  int i = 1;
-  ZColorScheme scheme;
-  scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
-  m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
-
-  std::cout<<"Begin hilighting"<<std::endl;
-  highLight(selected_node,scheme.getColor(0));
-
-  for(auto it = selected_node->children().begin(); it != selected_node->children().end(); ++it, ++i)
+  highLight(m_root);
+  delete scan;
+  for(auto seed: seeds)
   {
-    highLight(*it, scheme.getColor(i));
+    delete seed;
   }
-  std::cout<<"Highliting finished"<<std::endl;
-
-  removeSeeds();
 }
 
 
@@ -901,8 +626,8 @@ void ZMultiscaleSegmentationWindow::onOpenStack()
     ZSandbox::GetMainWindow()->addStackFrame(m_frame);
     ZSandbox::GetMainWindow()->presentStackFrame(m_frame);
 
+    ZSegmentationNode::s_id = 0;
     m_root = new ZSegmentationNode();
-    m_root->setLabel("0");
     m_root->setParent(NULL);
     ZSegmentationScan* data = new ZSegmentationScan();
     data->fromStack(m_stack);
@@ -919,28 +644,28 @@ void ZMultiscaleSegmentationWindow::onExport()
   {
     return ;
   }
-/*
-  QStandardItem* item = this->getSelectedNodeItem();
-  ZStack* result = new ZStack(m_stack->kind(),m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->channelNumber());
 
-  ZObject3dScan* mask = new ZObject3dScan();
-  ZSegmentationNode* node = m_root->find(item->text());
+  QStandardItem* item = this->getSelectedNodeItem();
+  //ZStack* result = new ZStack(m_stack->kind(),m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->channelNumber());
+
+  //ZObject3dScan* mask = new ZObject3dScan();
+  ZSegmentationScan* mask = new ZSegmentationScan();
+  ZSegmentationNode* node = m_root->find(item->text().toInt());
   node->makeMask(mask);
-  mask->translate(-m_stack->getOffset());
-  mask->labelStack(result->c_stack(),1);
-  result->save(QFileDialog::getSaveFileName(this,"Export Segmentation","","Tiff file(*.tif)").toStdString());
+  //mask->translate(-m_stack->getOffset());
+  //mask->labelStack(result->c_stack(),1);
+  //result->save(QFileDialog::getSaveFileName(this,"Export Segmentation","","Tiff file(*.tif)").toStdString());
   //mask->getComplementObject().maskStack(m_stack);
   //m_frame->update();
-  mask->labelStack(m_stack->c_stack(),0);
+  mask->labelStack(m_stack,0);
   //m_frame->scroll(1,1);
   node->destroy();
   m_root->regularize();
-  m_root->updateChildrenLabel();
   clearTreeView();
   m_root->display(m_tree->invisibleRootItem());
   m_tree_view->expandAll();
   delete mask;
-  delete result;*/
+  //delete result;
 }
 
 
@@ -962,33 +687,57 @@ void ZMultiscaleSegmentationWindow::onClear()
 }
 
 
-void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node, QColor color)
+void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node)
 {
-  ZSegmentationScan* scan = new ZSegmentationScan();
+  if(!node)
+  {
+    return ;
+  }
 
-  std::cout<<"Begin masking"<<std::endl;
-  node->makeMask(scan);
-  std::cout<<"End masking"<<std::endl;
+  m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
 
-  std::cout<<"To Object3dScan"<<std::endl;
-  ZObject3dScan *mask = scan->toObject3dScan();//here
-  std::cout<<"To Object3dScan finished"<<std::endl;
-  delete scan;
-  mask->setColor(color);
-  mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
-  m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  if(m_show_leaf->isChecked())
+  {
+    ZColorScheme scheme;
+    int i = 1;
+    scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+    for(auto it: node->getLeaves())
+    {
+      ZSegmentationScan* scan = new ZSegmentationScan();
+      it->makeMask(scan);
+      ZObject3dScan *mask = scan->toObject3dScan();//here
+      delete scan;
+      mask->setColor(scheme.getColor(i++));
+      mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+      mask->setLabel(it->id());
+      mask->setSelectable(true);
+      m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+  }
+  else
+  {
+    ZSegmentationScan* scan = new ZSegmentationScan();
+    node->makeMask(scan);
+    ZObject3dScan *mask = scan->toObject3dScan();//here
+    delete scan;
+    mask->setColor(QColor(255,0,0));
+    mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+    mask->setLabel(node->id());
+    mask->setSelectable(true);
+    m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
 }
 
 
-QStandardItem* ZMultiscaleSegmentationWindow::findItemByText(QStandardItem *root, QString text)
+QStandardItem* ZMultiscaleSegmentationWindow::findItemById(QStandardItem *root, int id)
 {
-  if(root->text() == text)
+  if(root->text().toInt() == id)
   {
     return root;
   }
   for(int i=0;i<root->rowCount();++i)
   {
-    QStandardItem* rv = findItemByText(root->child(i),text);
+    QStandardItem* rv = findItemById(root->child(i),id);
     if(rv)
     {
       return rv;
@@ -1001,25 +750,38 @@ QStandardItem* ZMultiscaleSegmentationWindow::findItemByText(QStandardItem *root
 void ZMultiscaleSegmentationWindow::moveNode(QString label, QString new_parent_label)
 {
 
-  ZSegmentationNode* node = m_root->find(label);
-  ZSegmentationNode* new_parent = m_root->find(new_parent_label);
+  ZSegmentationNode* node = m_root->find(label.toInt());
+  ZSegmentationNode* new_parent = m_root->find(new_parent_label.toInt());
 
   new_parent->mergeNode(node);
 
   m_root->regularize();
-  m_root->updateChildrenLabel();
   clearTreeView();
   m_root->display(m_tree->invisibleRootItem());
-
-  m_tree_view->setCurrentIndex(findItemByText(m_tree->invisibleRootItem(),new_parent->label())->index());
+  highLight(m_root);
+  //m_tree_view->setCurrentIndex(findItemById(m_tree->invisibleRootItem(),new_parent->id())->index());
   m_tree_view->expandAll();
 }
 
 
 QStandardItem* ZMultiscaleSegmentationWindow::getSelectedNodeItem()
 {
-  QModelIndex index = m_tree_view->currentIndex();
-  return index.isValid() ? m_tree->itemFromIndex(index) : m_tree->invisibleRootItem();
+  if(!m_frame)
+  {
+    return NULL;
+  }
+
+  QList<ZObject3dScan*> selected_masks = m_frame->document()->getSelectedObjectList<ZObject3dScan>();
+  if(selected_masks.size() == 1)
+  {
+    return findItemById(m_tree->invisibleRootItem(),(*selected_masks.begin())->getLabel());
+  }
+
+  else
+  {
+    QModelIndex index = m_tree_view->currentIndex();
+    return index.isValid() ? m_tree->itemFromIndex(index) : m_tree->invisibleRootItem();
+  }
 }
 
 
@@ -1027,10 +789,13 @@ void ZMultiscaleSegmentationWindow::clearTreeView()
 {
   if(m_tree)
   {
-    for(int i=0;i<m_tree->invisibleRootItem()->rowCount();++i)
+    m_tree->clear();
+    m_tree->invisibleRootItem()->setText("0");
+    m_tree->setHorizontalHeaderLabels(QStringList()<<"Multiscale Segmentations:");
+    /*for(int i=0;i<m_tree->invisibleRootItem()->rowCount();++i)
     {
       m_tree->invisibleRootItem()->removeRow(i);
-    }
+    }*/
   }
 }
 
@@ -1045,6 +810,74 @@ void ZMultiscaleSegmentationWindow::removeSeeds()
   {
     m_frame->document()->removeObject(stroke);
   }
+}
+
+
+std::vector<ZStack*> ZMultiscaleSegmentationWindow::seedsFromMaximum(ZStack *stack)
+{
+  std::vector<ZStack*> rv;
+  if(!stack)
+  {
+    return rv;
+  }
+
+  //ZStackProcessor::GaussianSmooth(stack->c_stack(),5,5);
+  ZStackProcessor processor;
+  processor.medianFilter(stack);
+  int width = stack->width();
+  int height = stack->height();
+  int depth = stack->depth();
+  size_t area = width * height;
+
+  ZStack* seeds = new ZStack(stack->kind(), width, height, depth,stack->channelNumber());
+  seeds->setOffset(stack->getOffset());
+
+  uint8_t *p = stack->array8();
+  uint8_t* q = seeds->array8();
+
+  int label = 1;
+  int step_x = std::max(5, width/20);
+  int step_y = std::max(5, height/20);
+  int step_z = std::max(5, depth/20);
+  for(int k = 1; k < depth-1 && label <256; k+= step_z)
+  {
+    for(int j = 1; j < height-1 && label < 256; j+= step_y)
+    {
+      for(int i = 1; i < width-1 && label < 256; i+= step_x)
+      {
+        bool flag  = true;
+        for(int z = -1; z <= 1 && flag; ++z)
+        {
+          for(int y = -1; y <= 1 && flag; ++y)
+          {
+            for(int x = -1; x <=1 && flag; ++x)
+            {
+              if( x==0 && y==0 && z==0)
+              {
+                continue;
+              }
+              else if(p[area*(k+z) + width*(j+y) + i+x] >= p[area*k + width*j + i])
+              {
+                flag = false;
+              }
+            }
+          }
+        }
+        if(flag)
+        {
+          //std::cout<<k<<" "<<j<<" "<<i<<std::endl;
+          q[k*area + j*width + i] = label++;
+        }
+        else
+        {
+
+        }
+      }
+    }
+  }
+
+  rv.push_back(seeds);
+  return rv;
 }
 
 

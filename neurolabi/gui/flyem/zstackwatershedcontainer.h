@@ -8,7 +8,7 @@
 #include "zintcuboid.h"
 #include "zstackptr.h"
 #include "zstackarray.h"
-
+#include "zsegmentationscan.h"
 #include <QString>
 
 class ZStack;
@@ -123,6 +123,7 @@ public:
   ZObject3dScanArray* makeSplitResult(
       uint64_t minLabel, ZObject3dScanArray *result);
 
+  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
   /*!
    * \brief Check if the actual computation is done in the downsampled space.
    */

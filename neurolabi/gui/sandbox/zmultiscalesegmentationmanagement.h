@@ -2,85 +2,28 @@
 #define ZMULTISCALEMANAGEMENT_H
 
 #include <vector>
-#include <map>
-#include <memory>
-#include <QWidget>
-#include <QTreeView>
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include <qtreeview.h>
+#include "zsegmentationscan.h"
 #include "zsandboxmodule.h"
+#include "zstack.hxx"
+#include "flyem/zstackwatershedcontainer.h"
 
 class QStandardItem;
+class QStandardItemModel;
 class ZStack;
 class ZStackObject;
-class ZObject3dScan;
-
-class ZSegmentationScan
-{
-public:
-ZSegmentationScan();
-~ZSegmentationScan(){};
-//void init();
-
-public:
-void fromStack(ZStack* stack);
-void fromObject3DScan(ZObject3dScan* obj);
-
-ZObject3dScan* toObject3dScan();
-ZStack* toStack();
-
-void maskStack(ZStack* stack);
-void labelStack(ZStack* stack, int v=1);
-
-void setOffset(ZIntPoint offset){m_offset = offset;}
-void setOffset(int x, int y, int z){m_offset = ZIntPoint(x,y,z);}
-ZIntPoint getOffset()const{return m_offset;}
-
-void unify(ZSegmentationScan* obj);
-inline std::vector<int>& getStrip(int z, int y){return (z < m_sz || z > m_ez || y < m_sy || y > m_ey) ? m_empty_vec : getSlice(z)[y-m_sy];}
-inline std::vector<std::vector<int>>& getSlice(int z){return (z < m_sz || z > m_ez) ? m_empty_vec_vec : m_data[z-m_sz];}
-std::vector<std::vector<std::vector<int>>>& getData(){return m_data;}
-
-public:
-inline int minZ()const {return m_sz;}
-inline int maxZ()const {return m_ez;}
-inline int minY()const {return m_sy;}
-inline int maxY()const {return m_ey;}
-inline int minX()const {return m_sx;}
-inline int maxX()const {return m_ex;}
-inline ZIntCuboid getBoundBox()const{return ZIntCuboid(m_sx,m_sy,m_sz,m_ex,m_ey,m_ez);}
-void translate(ZIntPoint offset);
-void translate(int ofx, int ofy, int ofz);
-
-private:
-inline void addSegment(int z, int y, int sx, int ex);
-ZIntCuboid getStackForegroundBoundBox(ZStack* stack);
-std::vector<int> canonize(std::vector<int>&a, std::vector<int>& b);
-void clearData();
-void preprareData(int depth, int height);
-
-private:
-std::vector<std::vector<std::vector<int>>> m_data;
-std::vector<int> m_empty_vec;
-std::vector<std::vector<int>> m_empty_vec_vec;
-int m_sz, m_ez;
-int m_sy, m_ey;
-int m_sx, m_ex;
-ZIntPoint m_offset;
-};
-
+class ZStackFrame;
+class QCheckBox;
 
 class ZSegmentationNode
 {
 public:
-ZSegmentationNode(){m_parent = NULL; m_data = NULL; m_label="";}
+ZSegmentationNode(){m_parent = NULL; m_data = NULL; m_id = getNextId();}
 ~ZSegmentationNode(){destroy();}
 void destroy();
 
 public:
-QString label(){return m_label;}
-void setLabel(QString label){m_label = label;}
-void updateChildrenLabel();
+int id(){return m_id;}
 void setData(ZSegmentationScan* data){m_data = data;}
 ZSegmentationScan* data()const{return m_data;}
 
@@ -90,28 +33,39 @@ bool isLeaf()const{return m_children.size()==0;}
 void setParent(ZSegmentationNode* parent){m_parent = parent;}
 ZSegmentationNode* parent()const{return m_parent;}
 
+
 void appendChild(ZSegmentationNode* child){ child->setParent(this); m_children.push_back(child);}
 void removeChild(ZSegmentationNode* child, bool b_delete=false);
 std::vector<ZSegmentationNode*>& children(){return m_children;}
 void clearChildren();
 
+std::vector<ZSegmentationNode*> getLeaves();
+
 int indexOf(ZSegmentationNode* node);
+static int getNextId(){return s_id++;}
 
 void mergeNode(ZSegmentationNode* node);
-void splitNode(ZStack* stack, std::vector<ZStackObject*>& seeds);
+
+template<typename T>
+void splitNode(ZStack* stack, std::vector<T*>& seeds);
 void regularize();
 
 public:
-ZSegmentationNode* find(QString label);
+ZSegmentationNode* find(int id);
 void makeMask(ZSegmentationScan* mask);
 void display(QStandardItem* tree);
 
 private:
 void consumeSegmentations(std::vector<ZSegmentationScan*>& segmentations);
 int estimateScale(size_t volume);
+void addSeed(ZStackWatershedContainer& container, std::vector<ZStackObject*>& seeds){for(auto seed: seeds)container.addSeed(seed);}
+void addSeed(ZStackWatershedContainer& container, std::vector<ZStack*>& seeds){for(auto seed:seeds)container.addSeed(*seed);}
+void collectLeaves(std::vector<ZSegmentationNode*>& leaves);
 
+public:
+int static s_id;
 private:
-QString m_label;
+int m_id;
 ZSegmentationScan* m_data;
 ZSegmentationNode* m_parent;
 std::vector<ZSegmentationNode*> m_children;
@@ -124,12 +78,9 @@ public:
   ZTreeView(QWidget* parent):QTreeView::QTreeView(parent){}
  protected:
   void  dropEvent(QDropEvent * event);
+  QStandardItem* deepCopy(QStandardItem* item);
 };
 
-class ZStack;
-class ZStackObject;
-class ZStackFrame;
-class QStandardItemModel;
 
 class ZMultiscaleSegmentationWindow:public QWidget
 {
@@ -138,32 +89,37 @@ public:
   ZMultiscaleSegmentationWindow(QWidget *parent = 0);
   ~ZMultiscaleSegmentationWindow();
   void moveNode(QString label, QString new_parent_label);
-  QStandardItem* findItemByText(QStandardItem* root, QString text);
+  QStandardItem* findItemById(QStandardItem* root, int id);
+  void clearTreeView();
 
 private slots:
   void onOpenStack();
   void onSegment();
+  void onAutoSegment();
   void onClear();
   void onExport();
   void onSelectNode(QModelIndex index);
+  void onMerge();
+  void onFlood();
 
 private:
   std::vector<ZStackObject*> getSeeds();
+  std::vector<ZStack*> seedsFromMaximum(ZStack* stack);
   void removeSeeds();
-  void clearTreeView();
   QStandardItem* getSelectedNodeItem();
-  void highLight(ZSegmentationNode* node, QColor color= QColor(255,0,0));
+  void highLight(ZSegmentationNode* node);
 
 private:
   void init();
   void initWidgets();
-
+public:
+  ZSegmentationNode* m_root;
+  ZTreeView* m_tree_view;
 private:
   ZStack* m_stack;
   ZStackFrame* m_frame;
-  ZTreeView* m_tree_view;
   QStandardItemModel* m_tree;
-  ZSegmentationNode* m_root;
+  QCheckBox* m_show_leaf;
 };
 
 
