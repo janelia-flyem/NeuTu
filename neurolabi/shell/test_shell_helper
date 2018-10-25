@@ -1,0 +1,26 @@
+#!/bin/bash
+
+source shell_helper
+
+array=("s" "q")
+if contains_element "s" "${array[@]}"
+then
+  echo 'found'
+fi
+
+if contains_element "q" "${array[@]}"
+then
+  echo 'found'
+fi
+ 
+if contains_element "t" "${array[@]}"
+then
+  echo 'found'
+fi
+
+if askyn "Start test"
+then
+  echo "yes"
+else
+  echo "no"
+fi

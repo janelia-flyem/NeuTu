@@ -244,16 +244,28 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
         bodyData.removeKey("status");
       }
 
+      int npre = 0;
+      int npost = 0;
       if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
-        int npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
-        int npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
+        npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
+        npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
+      } else {
+        std::vector<ZDvidSynapse> synapses = reader.readSynapse(
+              bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
 
-        bodyData.setEntry("body ID", bodyId);
-        bodyData.setEntry("body T-bars", npre);
-        bodyData.setEntry("body PSDs", npost);
-
-        bodies.append(bodyData);
+        for (size_t i=0; i<synapses.size(); i++) {
+          if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+            npre++;
+          } else {
+            npost++;
+          }
+        }
       }
+
+      bodyData.setEntry("body ID", bodyId);
+      bodyData.setEntry("body T-bars", npre);
+      bodyData.setEntry("body PSDs", npost);
+      bodies.append(bodyData);
     }
   }
   emit dataChanged(bodies);

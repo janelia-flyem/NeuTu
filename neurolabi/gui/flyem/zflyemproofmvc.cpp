@@ -1126,23 +1126,25 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 
 void ZFlyEmProofMvc::roiToggled(bool on)
 {
-  ZROIWidget *widget = m_bodyViewers->roiPanel(on);
-  if (on && widget != NULL) {
-    widget->loadROIs(
-          m_bodyViewers->getCurrentWindow(), m_roiList, m_loadedROIs, m_roiSourceList);
-  }
+  m_bodyViewers->roiPanel(on);
+//  if (on && widget != NULL) {
+//    widget->loadROIs(
+//          m_bodyViewers->getCurrentWindow(), m_roiList, m_loadedROIs, m_roiSourceList);
+//  }
 }
 
 void ZFlyEmProofMvc::setProtocolRangeVisible(bool on)
 {
+
   ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(this, on);
 }
 
 void ZFlyEmProofMvc::mergeCoarseBodyWindow()
 {
   if (m_coarseBodyWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){

@@ -33,6 +33,11 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
 
 QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(const ZStackDoc *doc)
 {
+  return GetNonRoiMeshList(doc);
+}
+
+QList<ZMesh*> ZStackDocProxy::GetNonRoiMeshList(const ZStackDoc *doc)
+{
   QList<ZMesh*> filteredMeshList;
 
   if (doc != NULL) {
