@@ -53,11 +53,16 @@ ZDvidVersionNode ZDvidVersionDag::getNode(const std::string &uuid) const
 const ZTreeNode<ZDvidVersionNode>*
 ZDvidVersionDag::getDagNode(const std::string &uuid) const
 {
-  if (getVersionList().count(uuid) == 0) {
+  std::string normalUuid = uuid;
+  if (normalUuid.length() > DVID_UUID_COMMON_LENGTH) {
+    normalUuid = uuid.substr(0, DVID_UUID_COMMON_LENGTH);
+  }
+
+  if (getVersionList().count(normalUuid) == 0) {
     return NULL;
   }
 
-  return getVersionList().at(uuid);
+  return getVersionList().at(normalUuid);
 }
 
 ZTreeNode<ZDvidVersionNode>*
@@ -164,6 +169,19 @@ std::string ZDvidVersionDag::getRoot() const
 
   return uuid;
 }
+
+std::string ZDvidVersionDag::getFirstLeafNode(const std::string &uuid) const
+{
+  std::string childUuid = uuid;
+  std::string leaf;
+  while (!childUuid.empty()) {
+    leaf = childUuid;
+    childUuid = getChild(childUuid, 0);
+  }
+
+  return leaf;
+}
+
 
 std::string ZDvidVersionDag::getChild(const std::string uuid, int index) const
 {
