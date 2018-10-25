@@ -109,6 +109,24 @@ void ZROIWidget::loadROIs(std::vector<std::string> roiList,
   }
 }
 
+void ZROIWidget::setCheckStatus(int row, bool on)
+{
+  if (row >= 0 && row < (int) m_checkStatus.size()) {
+    m_checkStatus[row] = on;
+
+    QTableWidgetItem *item = tw_ROIs->item(row, 0);
+    item->setCheckState(on ? Qt::Checked : Qt::Unchecked);
+  }
+}
+
+void ZROIWidget::toggleCheckStatus(int row)
+{
+  if (row >= 0 && row < (int) m_checkStatus.size()) {
+    bool on = !m_checkStatus[row];
+    setCheckStatus(row, on);
+  }
+}
+
 void ZROIWidget::makeGUI()
 {
     if(m_roiList.empty())
@@ -221,7 +239,11 @@ void ZROIWidget::updateROISelections(QModelIndex idx)
 {
     int row = idx.row();
     int col = idx.column();
-
+    if (col == 0) {
+      toggleCheckStatus(row);
+      updateROIs();
+    }
+#if 0
     //
     if(col==0)
     {
@@ -248,6 +270,7 @@ void ZROIWidget::updateROISelections(QModelIndex idx)
     {
         // edit color
     }
+#endif
 }
 
 int ZROIWidget::getDsIntv() const
