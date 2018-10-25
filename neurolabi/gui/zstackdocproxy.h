@@ -14,6 +14,7 @@ public:
       */
 
   static QList<ZMesh*> GetGeneralMeshList(const ZStackDoc *doc);
+  static QList<ZMesh*> GetNonRoiMeshList(const ZStackDoc *doc);
   static QList<ZMesh*> GetBodyMeshList(const ZStackDoc *doc);
   static QList<ZMesh*> GetRoiMeshList(ZStackDoc *doc);
   static ZMesh* GetMeshForSplit(ZStackDoc *doc);
