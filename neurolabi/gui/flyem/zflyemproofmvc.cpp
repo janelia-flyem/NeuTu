@@ -1126,7 +1126,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 
 void ZFlyEmProofMvc::roiToggled(bool on)
 {
-  ZROIWidget *widget = m_bodyViewers->roiPanel(on);
+  m_bodyViewers->roiPanel(on);
 //  if (on && widget != NULL) {
 //    widget->loadROIs(
 //          m_bodyViewers->getCurrentWindow(), m_roiList, m_loadedROIs, m_roiSourceList);
