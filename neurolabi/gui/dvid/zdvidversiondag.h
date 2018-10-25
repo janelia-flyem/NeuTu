@@ -43,6 +43,8 @@ public:
   std::string getRoot() const;
   std::string getChild(const std::string uuid, int index) const;
 
+  std::string getFirstLeafNode(const std::string &uuid) const;
+
   void print() const;
 
   /*!
