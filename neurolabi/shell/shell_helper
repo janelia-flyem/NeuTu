@@ -1,0 +1,20 @@
+#!/bin/bash
+
+contains_element () {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
+}
+ 
+askyn() {
+  read -p "$1 (y/N)? " answer
+  case ${answer:0:1} in
+    y|Y )
+      return 0
+      ;;
+    * )
+      return 1
+      ;;
+  esac
+}
