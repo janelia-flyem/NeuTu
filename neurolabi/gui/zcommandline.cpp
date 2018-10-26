@@ -1068,6 +1068,7 @@ int ZCommandLine::skeletonizeDvid()
   reader.updateMaxLabelZoom();
 
   ZDvidWriter writer;
+  ZDvidReader bodyReader;
 
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
@@ -1090,6 +1091,13 @@ int ZCommandLine::skeletonizeDvid()
     }
 
     writer.open(reader.getDvidTarget());
+    std::string mirror = reader.readMirror();
+    ZDvidTarget target = reader.getDvidTarget();
+    if (!mirror.empty()) {
+      target.setServer(mirror);
+    }
+    bodyReader.open(target);
+
     ZDvidUrl dvidUrl(reader.getDvidTarget());
 
     if (!writer.isSwcWrittable()) {
@@ -1176,7 +1184,7 @@ int ZCommandLine::skeletonizeDvid()
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
-        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
+        bodyReader.readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {

@@ -562,6 +562,8 @@ public:
   std::string readMasterNode() const;
   std::vector<std::string> readMasterList() const;
 
+  std::string readMirror() const;
+
   enum EReadOption {
     READ_CURRENT, READ_TRACE_BACK
   };
@@ -659,6 +661,8 @@ private:
       const ZDvidBufferReader &bufferReader);
   static std::vector<std::string> GetMasterListFromBuffer(
       const ZDvidBufferReader &bufferReader);
+  static std::string GetMirrorAddressFromBuffer(
+     const ZDvidBufferReader &bufferReader);
   ZJsonObject readDefaultDataSettingCurrent() const;
   ZJsonObject readDefaultDataSettingTraceBack() const;
   void loadDefaultDataSetting();

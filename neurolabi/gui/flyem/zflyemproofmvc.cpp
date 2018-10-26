@@ -1142,8 +1142,8 @@ void ZFlyEmProofMvc::setProtocolRangeVisible(bool on)
 void ZFlyEmProofMvc::mergeCoarseBodyWindow()
 {
   if (m_coarseBodyWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){

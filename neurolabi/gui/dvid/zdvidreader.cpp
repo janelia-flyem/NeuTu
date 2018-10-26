@@ -4304,6 +4304,20 @@ std::string ZDvidReader::GetMasterNodeFromBuffer(
   return master;
 }
 
+std::string ZDvidReader::GetMirrorAddressFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::string mirror;
+
+  if (!bufferReader.getBuffer().isEmpty()) {
+    ZJsonObject jsonObj;
+    jsonObj.decodeString(bufferReader.getBuffer().data());
+    mirror = ZJsonParser::stringValue(jsonObj["address"]);
+  }
+
+  return mirror;
+}
+
 std::vector<std::string> ZDvidReader::GetMasterListFromBuffer(
     const ZDvidBufferReader &bufferReader)
 {
@@ -5104,6 +5118,21 @@ ZDvidSynapse ZDvidReader::readSynapse(
     const ZIntPoint &pt, flyem::EDvidAnnotationLoadMode mode) const
 {
   return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
+}
+
+std::string ZDvidReader::readMirror() const
+{
+  std::string mirror;
+
+  if (isReady()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getMirrorInfoUrl();
+    m_bufferReader.read(url.c_str());
+
+    mirror = GetMirrorAddressFromBuffer(m_bufferReader);
+  }
+
+  return mirror;
 }
 
 std::string ZDvidReader::readMasterNode() const

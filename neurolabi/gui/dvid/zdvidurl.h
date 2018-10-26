@@ -38,6 +38,7 @@ public:
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
   std::string getMasterUrl() const;
+  std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
   std::string getDataMapUrl() const;
 
