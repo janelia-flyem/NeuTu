@@ -517,6 +517,16 @@ std::string ZDvidUrl::getSparsevolUrl(
 #endif
 }
 
+std::string ZDvidUrl::getSparsevolLastModUrl(uint64_t bodyId)
+{
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+    return GetFullUrl(
+          GetFullUrl(getSegmentationUrl(), "lastmod"), std::to_string(bodyId));
+  }
+
+  return "";
+}
+
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {

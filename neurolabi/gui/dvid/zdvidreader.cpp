@@ -4090,6 +4090,20 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
   return bodyInfo;
 }
 
+int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
+{
+  int64_t mutId = 0;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getSparsevolLastModUrl(bodyId);
+  if (!url.empty()) {
+    ZJsonObject obj = readJsonObject(url);
+    mutId = ZJsonParser::integerValue(obj["mutation id"]);
+  }
+
+  return mutId;
+}
+
 void ZDvidReader::updateMaxGrayscaleZoom(
     const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
 {
