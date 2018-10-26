@@ -28099,9 +28099,11 @@ void ZTest::test(MainWindow *host)
   writer->writeJson("branches", "mirror", jsonObj);
 #endif
 
-#if 1
-  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("MB_Test");
   std::cout << "Mirror: " << reader->readMirror() << std::endl;
+
+  std::cout << "Mutation ID: " << reader->readBodyMutationId(2) << std::endl;
 #endif
 
 #if 0
@@ -28234,6 +28236,29 @@ void ZTest::test(MainWindow *host)
   appender.addCodeSegment(codeArray, 0, 1, 2);
   obj.print();
 #endif
+
+#if 0
+  ZSwcTree tree;
+  tree.loadFromBuffer("#${\"mutation id\": 1}\n1 2 1 2 3 1 -1");
+  std::cout << "mid: " <<flyem::GetMutationId(&tree) << std::endl;
+  tree.print();
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/meta.swc");
+  std::cout << "mid: " <<flyem::GetMutationId(&tree) << std::endl;
+  tree.print();
+#endif
+
+#if 1
+  ZSwcTree tree;
+  flyem::SetMutationId(&tree, 123);
+  std::cout << "mid: " <<flyem::GetMutationId(&tree) << std::endl;
+
+#endif
+
+
 
   std::cout << "Done." << std::endl;
 }

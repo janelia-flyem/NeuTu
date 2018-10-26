@@ -5,6 +5,7 @@
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zstack.hxx"
+#include "zswctree.h"
 
 double flyem::GetFlyEmRoiMarkerRadius(double s)
 {
@@ -80,4 +81,48 @@ ZIntPoint flyem::FindClosestBg(const ZStack *stack, int x, int y, int z)
   }
 
   return pt;
+}
+
+namespace {
+static const char* mutation_key = "mutation id";
+}
+
+int64_t flyem::GetMutationId(const ZSwcTree &tree)
+{
+  int64_t mid = 0;
+
+  std::vector<std::string> commentList = tree.getComment();
+  for (const std::string &comment : commentList) {
+    ZString s = comment;
+    if (s.startsWith("${") && s.endsWith("}")) {
+      ZJsonObject jsonObj;
+      jsonObj.decodeString(s.substr(1).c_str());
+
+      if (jsonObj.hasKey(mutation_key)) {
+        mid = ZJsonParser::integerValue(jsonObj[mutation_key]);
+        break;
+      }
+    }
+  }
+
+  return mid;
+}
+
+int64_t flyem::GetMutationId(const ZSwcTree *tree)
+{
+  int64_t mid = 0;
+  if (tree) {
+    mid = GetMutationId(*tree);
+  }
+
+  return mid;
+}
+
+void flyem::SetMutationId(ZSwcTree *tree, int64_t mid)
+{
+  if (tree) {
+    ZJsonObject jsonObj;
+    jsonObj.setEntry(mutation_key, mid);
+    tree->addComment("$" + jsonObj.dumpString(0));
+  }
 }
