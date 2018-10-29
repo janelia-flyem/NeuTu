@@ -85,12 +85,18 @@ public:
 class ZMultiscaleSegmentationWindow:public QWidget
 {
   Q_OBJECT
+protected:
+  ZMultiscaleSegmentationWindow();
+
 public:
-  ZMultiscaleSegmentationWindow(QWidget *parent = 0);
+  static ZMultiscaleSegmentationWindow* instance();
   ~ZMultiscaleSegmentationWindow();
+
   void moveNode(QString label, QString new_parent_label);
   QStandardItem* findItemById(QStandardItem* root, int id);
   void clearTreeView();
+  void selectNode(int id);
+  void deselectNode(int id);
 
 private slots:
   void onOpenStack();
@@ -100,7 +106,8 @@ private slots:
   void onExport();
   void onSelectNode(QModelIndex index);
   void onMerge();
-  void onFlood();
+  //void onFlood();
+  void onPromote();
 
 private:
   std::vector<ZStackObject*> getSeeds();
@@ -108,6 +115,7 @@ private:
   void removeSeeds();
   QStandardItem* getSelectedNodeItem();
   void highLight(ZSegmentationNode* node);
+  void showMask(ZObject3dScan* mask);
 
 private:
   void init();
@@ -120,6 +128,7 @@ private:
   ZStackFrame* m_frame;
   QStandardItemModel* m_tree;
   QCheckBox* m_show_leaf;
+  static ZMultiscaleSegmentationWindow* s_window;
 };
 
 
