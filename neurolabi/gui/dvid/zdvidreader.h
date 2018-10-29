@@ -413,6 +413,8 @@ public:
   std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
       uint64_t bodyId, flyem::EBodyLabelType type) const;
 
+  int64_t readBodyMutationId(uint64_t bodyId) const;
+
   bool hasGrayscale() const;
 
   ZIntPoint readBodyLocation(uint64_t bodyId) const;

@@ -424,6 +424,7 @@ protected slots:
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
+  void skeletonizeSynapseTopBody();
   void updateMeshForSelected();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -669,6 +670,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
+  connect(panel, SIGNAL(skeletonizingTopBody()),
+          this, SLOT(skeletonizeSynapseTopBody()));
   connect(panel, SIGNAL(updatingMeshForSelectedBody()),
           this, SLOT(updateMeshForSelected()));
   connect(panel, SIGNAL(reportingBodyCorruption()),

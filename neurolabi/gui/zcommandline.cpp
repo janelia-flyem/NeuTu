@@ -43,6 +43,7 @@
 #include "mylib/utilities.h"
 #include "misc/miscutility.h"
 #include "dvid/zdvidversiondag.h"
+#include "zflyemutilities.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -1160,24 +1161,33 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      if (!m_forceUpdate) {
+      const int mid = bodyReader.readBodyMutationId(bodyId);
+      if (!m_forceUpdate || mid > 0) {
         if (savingToFile) {
           if (outputFileInfo.exists()) {
             tree = new ZSwcTree;
             tree->load(outputFileInfo.absoluteFilePath().toStdString());
-            if (tree->isEmpty()) {
-              delete tree;
-              tree = NULL;
-            }
-            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
+//            if (tree->isEmpty()) {
+//              delete tree;
+//              tree = NULL;
+//            }
+//            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
           }
         } else {
           tree = reader.readSwc(bodyId);
         }
       }
+
+      if (tree != NULL && mid > 0) {
+        if (flyem::GetMutationId(tree) != mid) {
+          delete tree;
+          tree = NULL;
+        }
+      }
+
       if (tree == NULL) {
         ZObject3dScan obj;
-        const int blockCount = reader.readBodyBlockCount(bodyId);
+        const int blockCount = bodyReader.readBodyBlockCount(bodyId);
         constexpr int maxBlockCount = 3000;
         int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
         int zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
@@ -1188,6 +1198,9 @@ int ZCommandLine::skeletonizeDvid()
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {
+          if (mid > 0) {
+            flyem::SetMutationId(tree, mid);
+          }
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stack>
 #include <cmath>
+#include <fstream>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -230,13 +231,19 @@ void ZSwcTree::clearComment()
 
 void ZSwcTree::writeSwc(FILE *fp)
 {
-  ZSwcTree::DepthFirstIterator iter(this);
-  while (iter.hasNext()) {
-    Swc_Tree_Node *tn = iter.next();
-    if (SwcTreeNode::isRegular(tn)) {
-      fprintf(fp, "%d %d %g %g %g %g %d\n",
-              tn->node.id, tn->node.type, tn->node.x, tn->node.y,
-              tn->node.z, tn->node.d, tn->node.parent_id);
+  if (fp != NULL) {
+    for (const std::string &comment : m_comment) {
+      fprintf(fp, "#%s", comment.c_str());
+    }
+
+    ZSwcTree::DepthFirstIterator iter(this);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      if (SwcTreeNode::isRegular(tn)) {
+        fprintf(fp, "%d %d %g %g %g %g %d\n",
+                tn->node.id, tn->node.type, tn->node.x, tn->node.y,
+                tn->node.z, tn->node.d, tn->node.parent_id);
+      }
     }
   }
 }
@@ -288,6 +295,103 @@ void ZSwcTree::save(const string &filePath, const ZJsonObject &info)
 }
 */
 
+void ZSwcTree::parseComment(istream &stream)
+{
+  ZString line;
+  ZString styleFilePath;
+  while (stream.good()) {
+    std::getline(stream, line);
+    if (line.startsWith("#@")) {
+      styleFilePath = line.substr(2);
+      styleFilePath.trim();
+    } else if (line.startsWith("#$")) {
+      line = line.substr(1);
+      line.trim();
+      m_comment.push_back(line);
+    }
+  }
+
+  ZJsonObject jsonObj;
+  if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
+    if (!styleFilePath.isAbsolutePath()) {
+      styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
+    }
+    if (fexist(styleFilePath.c_str())) {
+      jsonObj.load(styleFilePath.c_str());
+    }
+  } else {
+    if (styleFilePath.startsWith("{")) {
+      jsonObj.decodeString(styleFilePath.c_str());
+    }
+  }
+
+  if (!jsonObj.isEmpty()) {
+    json_t *value = jsonObj["color"];
+    if (value != NULL) {
+      int alpha = 255;
+      if (ZJsonParser::arraySize(value) == 4) {
+        alpha = iround(ZJsonParser::numberValue(value, 3) * 255.0);
+      }
+
+      setColor(iround(ZJsonParser::numberValue(value, 0) * 255.0),
+               iround(ZJsonParser::numberValue(value, 1) * 255.0),
+               iround(ZJsonParser::numberValue(value, 2) * 255.0),
+               alpha);
+    }
+
+    value = jsonObj["resolution"];
+    if (value != NULL) {
+      double res[3] = {1, 1, 1};
+      if (ZJsonParser::arraySize(value) == 3) {
+        for (int i = 0; i < 3; ++i) {
+          res[i] = ZJsonParser::numberValue(value, i);
+        }
+
+        rescale(res[0], res[1], res[2]);
+      }
+    }
+
+    value = jsonObj["transform"];
+    if (value != NULL) {
+      bool scaleFirst = true;
+      double scaleFactor[3] = {1, 1, 1};
+      double offset[3] = {1, 1, 1};
+
+      ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+      const json_t *transformField = transformObj["scale"];
+      if (transformField != NULL) {
+        if (ZJsonParser::arraySize(transformField) == 3) {
+          for (int i = 0; i < 3; ++i) {
+            scaleFactor[i] = ZJsonParser::numberValue(transformField, i);
+          }
+        }
+      }
+
+      transformField = transformObj["translate"];
+      if (transformField != NULL) {
+        if (ZJsonParser::arraySize(transformField) == 3) {
+          for (int i = 0; i < 3; ++i) {
+            offset[i] = ZJsonParser::numberValue(transformField, i);
+          }
+        }
+      }
+
+      transformField = transformObj["scale_first"];
+      if (transformField != NULL) {
+        scaleFirst = ZJsonParser::booleanValue(transformField);
+      }
+
+      if (scaleFirst) {
+        rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
+      }
+      translate(offset[0], offset[1], offset[2]);
+      if (!scaleFirst) {
+        rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
+      }
+    }
+  }
+}
+
 void ZSwcTree::loadFromBuffer(const char *buffer)
 {
   if (m_tree != NULL) {
@@ -295,8 +399,11 @@ void ZSwcTree::loadFromBuffer(const char *buffer)
   }
 
   char *newBuffer = strdup(buffer);
-  m_tree = Swc_Tree_Parse_String(newBuffer);
+  m_tree = Swc_Tree_Parse_String(newBuffer); //newBuffer will be modified by the funciton
   free(newBuffer);
+
+  std::istringstream stream(buffer);
+  parseComment(stream);
 }
 
 bool ZSwcTree::load(const char *filePath)
@@ -321,89 +428,105 @@ bool ZSwcTree::load(const char *filePath)
 
   if (m_tree != NULL) {
     //Read meta information
-    FILE *fp = fopen(filePath, "r");
+    std::ifstream stream;
+    stream.open(filePath);
+    parseComment(stream);
+
+#if 0
     ZString line;
     ZString styleFilePath;
-    if (line.readLine(fp)) {
+    while (stream.good()) {
+      std::getline(stream, line);
       if (line.startsWith("#@")) {
         styleFilePath = line.substr(2);
         styleFilePath.trim();
+      } else if (line.startsWith("#$")) {
+        line = line.substr(1);
+        line.trim();
+        m_comment.push_back(line);
       }
     }
 
+    ZJsonObject jsonObj;
     if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
       if (!styleFilePath.isAbsolutePath()) {
         styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
       }
       if (fexist(styleFilePath.c_str())) {
-        ZJsonObject jsonObj;
         jsonObj.load(styleFilePath.c_str());
-        json_t *value = jsonObj["color"];
-        if (value != NULL) {
-          int alpha = 255;
-          if (ZJsonParser::arraySize(value) == 4) {
-            alpha = iround(ZJsonParser::numberValue(value, 3) * 255.0);
-          }
+      }
+    } else {
+      if (styleFilePath.startsWith("{")) {
+        jsonObj.decodeString(styleFilePath.c_str());
+      }
+    }
 
-          setColor(iround(ZJsonParser::numberValue(value, 0) * 255.0),
-                   iround(ZJsonParser::numberValue(value, 1) * 255.0),
-                   iround(ZJsonParser::numberValue(value, 2) * 255.0),
-                   alpha);
+    if (!jsonObj.isEmpty()) {
+      json_t *value = jsonObj["color"];
+      if (value != NULL) {
+        int alpha = 255;
+        if (ZJsonParser::arraySize(value) == 4) {
+          alpha = iround(ZJsonParser::numberValue(value, 3) * 255.0);
         }
 
-        value = jsonObj["resolution"];
-        if (value != NULL) {
-          double res[3] = {1, 1, 1};
-          if (ZJsonParser::arraySize(value) == 3) {
+        setColor(iround(ZJsonParser::numberValue(value, 0) * 255.0),
+                 iround(ZJsonParser::numberValue(value, 1) * 255.0),
+                 iround(ZJsonParser::numberValue(value, 2) * 255.0),
+                 alpha);
+      }
+
+      value = jsonObj["resolution"];
+      if (value != NULL) {
+        double res[3] = {1, 1, 1};
+        if (ZJsonParser::arraySize(value) == 3) {
+          for (int i = 0; i < 3; ++i) {
+            res[i] = ZJsonParser::numberValue(value, i);
+          }
+
+          rescale(res[0], res[1], res[2]);
+        }
+      }
+
+      value = jsonObj["transform"];
+      if (value != NULL) {
+        bool scaleFirst = true;
+        double scaleFactor[3] = {1, 1, 1};
+        double offset[3] = {1, 1, 1};
+
+        ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+        const json_t *transformField = transformObj["scale"];
+        if (transformField != NULL) {
+          if (ZJsonParser::arraySize(transformField) == 3) {
             for (int i = 0; i < 3; ++i) {
-              res[i] = ZJsonParser::numberValue(value, i);
+              scaleFactor[i] = ZJsonParser::numberValue(transformField, i);
             }
-
-            rescale(res[0], res[1], res[2]);
           }
         }
 
-        value = jsonObj["transform"];
-        if (value != NULL) {
-          bool scaleFirst = true;
-          double scaleFactor[3] = {1, 1, 1};
-          double offset[3] = {1, 1, 1};
-
-          ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
-          const json_t *transformField = transformObj["scale"];
-          if (transformField != NULL) {
-            if (ZJsonParser::arraySize(transformField) == 3) {
-              for (int i = 0; i < 3; ++i) {
-                scaleFactor[i] = ZJsonParser::numberValue(transformField, i);
-              }
+        transformField = transformObj["translate"];
+        if (transformField != NULL) {
+          if (ZJsonParser::arraySize(transformField) == 3) {
+            for (int i = 0; i < 3; ++i) {
+              offset[i] = ZJsonParser::numberValue(transformField, i);
             }
           }
+        }
 
-         transformField = transformObj["translate"];
-          if (transformField != NULL) {
-            if (ZJsonParser::arraySize(transformField) == 3) {
-              for (int i = 0; i < 3; ++i) {
-                offset[i] = ZJsonParser::numberValue(transformField, i);
-              }
-            }
-          }
+        transformField = transformObj["scale_first"];
+        if (transformField != NULL) {
+          scaleFirst = ZJsonParser::booleanValue(transformField);
+        }
 
-          transformField = transformObj["scale_first"];
-          if (transformField != NULL) {
-            scaleFirst = ZJsonParser::booleanValue(transformField);
-          }
-
-          if (scaleFirst) {
-            rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
-          }
-          translate(offset[0], offset[1], offset[2]);
-          if (!scaleFirst) {
-            rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
-          }
+        if (scaleFirst) {
+          rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
+        }
+        translate(offset[0], offset[1], offset[2]);
+        if (!scaleFirst) {
+          rescale(scaleFactor[0], scaleFactor[1], scaleFactor[2]);
         }
       }
     }
-    fclose(fp);
+#endif
   }
 
   deprecate(ALL_COMPONENT);
