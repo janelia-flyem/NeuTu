@@ -28092,7 +28092,19 @@ void ZTest::test(MainWindow *host)
   std::cout << box.toString() << std::endl;
 #endif
 
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("address", "emdata1.int.janelia.org:8900");
+  writer->writeJson("branches", "mirror", jsonObj);
+#endif
+
 #if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
+  std::cout << "Mirror: " << reader->readMirror() << std::endl;
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
   reader->updateMaxLabelZoom();
 
