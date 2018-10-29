@@ -2760,6 +2760,7 @@ void ZFlyEmProofDoc::prepareLabelSlice()
   }
 }
 
+/*
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
 {
   std::vector<ZPunctum*> puncta;
@@ -2853,6 +2854,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 
   return puncta;
 }
+*/
 
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
