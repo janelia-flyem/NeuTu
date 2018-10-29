@@ -3140,14 +3140,50 @@ void ZFlyEmProofMvc::updateMeshForSelected()
   getCompleteDocument()->updateMeshForSelected();
 }
 
+void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
+{
+  ZWidgetMessage warnMsg;
+  warnMsg.setType(neutube::MSG_WARNING);
+  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+    m_skeletonUpdateDlg->setComputingServer(
+          GET_NETU_SERVICE.getServer().c_str());
+    m_skeletonUpdateDlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::TOP);
+    if (m_skeletonUpdateDlg->exec()) {
+      ZJsonArray thresholdData =
+          getCompleteDocument()->getDvidReader().readSynapseLabelsz(
+            m_skeletonUpdateDlg->getTopCount(), ZDvid::INDEX_ALL_SYN);
+
+      for (size_t i = 0; i < thresholdData.size(); ++i) {
+        ZJsonObject labelJson(thresholdData.value(i));
+        uint64_t bodyId = ZJsonParser::integerValue(labelJson["Label"]);
+
+        if (bodyId > 0) {
+          neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+                "skeletonize", getDvidTarget(), bodyId,
+                m_skeletonUpdateDlg->isOverwriting());
+
+          GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+        }
+      }
+    }
+  } else {
+    warnMsg.setMessage(
+          "Skeletonization failed: The skeletonization service is not available.");
+  }
+
+  if (warnMsg.hasMessage()) {
+    emit messageGenerated(warnMsg);
+  }
+}
+
 void ZFlyEmProofMvc::skeletonizeSelectedBody()
 {
-#if defined(_FLYEM_)
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutube::MSG_WARNING);
   if (GET_FLYEM_CONFIG.hasNormalService()) {
     m_skeletonUpdateDlg->setComputingServer(
           GET_NETU_SERVICE.getServer().c_str());
+    m_skeletonUpdateDlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::SELECTED);
     if (m_skeletonUpdateDlg->exec()) {
       const std::set<uint64_t> &bodySet =
           getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
@@ -3184,7 +3220,6 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
   if (warnMsg.hasMessage()) {
     emit messageGenerated(warnMsg);
   }
-#endif
 }
 
 void ZFlyEmProofMvc::exportBodyStack()

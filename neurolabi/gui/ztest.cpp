@@ -28251,14 +28251,20 @@ void ZTest::test(MainWindow *host)
   tree.print();
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   flyem::SetMutationId(&tree, 123);
   std::cout << "mid: " <<flyem::GetMutationId(&tree) << std::endl;
 
 #endif
 
-
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+  ZJsonArray thresholdData = reader->readSynapseLabelsz(
+        20000, ZDvid::INDEX_ALL_SYN);
+  thresholdData.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
 
   std::cout << "Done." << std::endl;
 }
