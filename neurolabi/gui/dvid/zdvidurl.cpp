@@ -917,6 +917,11 @@ std::string ZDvidUrl::getMasterUrl() const
   return getKeyUrl("branches", "master");
 }
 
+std::string ZDvidUrl::getMirrorInfoUrl() const
+{
+  return getKeyUrl("branches", "mirror");
+}
+
 std::string ZDvidUrl::getDefaultDataInstancesUrl() const
 {
   return getKeyUrl("default_instances", "data");
