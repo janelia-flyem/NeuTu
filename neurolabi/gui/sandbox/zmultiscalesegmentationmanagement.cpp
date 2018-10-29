@@ -5,6 +5,7 @@
 #include <QString>
 #include <QLayout>
 #include <QCheckBox>
+#include <QShortcut>
 #include "zmultiscalesegmentationmanagement.h"
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
@@ -17,9 +18,10 @@
 #include "mainwindow.h"
 
 
+//implementation for ZSegmentationNode
 int ZSegmentationNode::s_id = 0;
 
-//implementation for ZSegmentationNode
+
 void ZSegmentationNode::consumeSegmentations(std::vector<ZSegmentationScan*> &segmentations)
 {
   if(segmentations.size() <= 1)
@@ -322,11 +324,9 @@ void ZTreeView::dropEvent(QDropEvent *event)
 
   QTreeView::dropEvent(event);
 
-  ZMultiscaleSegmentationWindow* window=  static_cast<ZMultiscaleSegmentationWindow*>(this->parent());
   //remove it from old parent
-
   old_parent->removeRow(selected->row());
-  QStandardItem* tmp = window->findItemById(tree->invisibleRootItem(),text.toInt());
+  QStandardItem* tmp = ZMultiscaleSegmentationWindow::instance()->findItemById(tree->invisibleRootItem(),text.toInt());
 
   if(tmp == NULL)//drop on self
   {
@@ -337,13 +337,13 @@ void ZTreeView::dropEvent(QDropEvent *event)
     QStandardItem* new_parent = tmp->parent();
     if(new_parent == NULL)//drop at blank
     {
-      window->clearTreeView();
-      window->m_root->display(tree->invisibleRootItem());
-      window->m_tree_view->expandAll();
+      ZMultiscaleSegmentationWindow::instance()->clearTreeView();
+      ZMultiscaleSegmentationWindow::instance()->m_root->display(tree->invisibleRootItem());
+      ZMultiscaleSegmentationWindow::instance()->m_tree_view->expandAll();
     }
     else
     {
-      window->moveNode(text, new_parent->text());
+      ZMultiscaleSegmentationWindow::instance()->moveNode(text, new_parent->text());
     }
     delete clone;
   }
@@ -363,8 +363,10 @@ QStandardItem* ZTreeView::deepCopy(QStandardItem *item)
 
 
 //implementation for ZMultiscaleSegmentationWindow
-ZMultiscaleSegmentationWindow::ZMultiscaleSegmentationWindow(QWidget *parent) :
-  QWidget(parent)
+ZMultiscaleSegmentationWindow* ZMultiscaleSegmentationWindow::s_window = nullptr;
+
+
+ZMultiscaleSegmentationWindow::ZMultiscaleSegmentationWindow()
 {
   init();
 }
@@ -411,7 +413,8 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   QPushButton* segment = new QPushButton("Segment");
   QPushButton* auto_segment = new QPushButton("AutoSegment");
   QPushButton* merge = new QPushButton("Merge");
-  QPushButton* flood = new QPushButton("Flood");
+  /*QPushButton* flood = new QPushButton("Flood");*/
+  QPushButton* promote = new QPushButton("Promote");
 
   m_show_leaf = new QCheckBox("Show Leaf");
   m_show_leaf->setChecked(true);
@@ -426,7 +429,9 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   lay->addWidget(segment,10,0,1,4);
   lay->addWidget(auto_segment,10,4,1,4);
   lay->addWidget(merge,10,8,1,4);
-  lay->addWidget(flood,10,12,1,3);
+  //lay->addWidget(flood,10,12,1,3);
+  lay->addWidget(promote,10,12,1,3);
+
 
 
   //events
@@ -437,7 +442,8 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
   connect(auto_segment,SIGNAL(clicked()),this,SLOT(onAutoSegment()));
   connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
-  connect(flood,SIGNAL(clicked()),this,SLOT(onFlood()));
+  //connect(flood,SIGNAL(clicked()),this,SLOT(onFlood()));
+  connect(promote,SIGNAL(clicked()),this,SLOT(onPromote()));
 
   this->setLayout(lay);
   this->setMinimumSize(400,600);
@@ -445,6 +451,7 @@ void ZMultiscaleSegmentationWindow::initWidgets()
 }
 
 
+/*
 void ZMultiscaleSegmentationWindow::onFlood()
 {
   if(!m_frame || !m_root)
@@ -481,6 +488,21 @@ void ZMultiscaleSegmentationWindow::onFlood()
   m_root->display(m_tree->invisibleRootItem());
   m_tree_view->expandAll();
   highLight(m_root);
+}
+*/
+
+
+void ZMultiscaleSegmentationWindow::onPromote()
+{
+  QStandardItem* item =  getSelectedNodeItem();
+  if(item && m_root)
+  {
+    m_root->mergeNode(m_root->find(item->text().toInt()));
+    m_root->regularize();
+    clearTreeView();
+    m_root->display(m_tree->invisibleRootItem());
+    m_tree_view->expandAll();
+  }
 }
 
 
@@ -545,7 +567,8 @@ void ZMultiscaleSegmentationWindow::onSegment()
   }
 
   QStandardItem* selected_item = getSelectedNodeItem();
-  ZSegmentationNode* selected_node = m_root->find(selected_item->text().toInt());
+  QString text = selected_item->text();
+  ZSegmentationNode* selected_node = m_root->find(text.toInt());
 
   if(!selected_node)
   {
@@ -561,6 +584,12 @@ void ZMultiscaleSegmentationWindow::onSegment()
   m_root->display(m_tree->invisibleRootItem());
   m_tree_view->expandAll();
   highLight(m_root);
+
+  QStandardItem* item = findItemById(m_tree->invisibleRootItem(),text.toInt());
+  if(item && item->index().isValid())
+  {
+    m_tree_view->setCurrentIndex(item->index());
+  }
   removeSeeds();
 }
 
@@ -631,8 +660,6 @@ void ZMultiscaleSegmentationWindow::onOpenStack()
     m_root->setParent(NULL);
     ZSegmentationScan* data = new ZSegmentationScan();
     data->fromStack(m_stack);
-    //data->maskStack(m_stack);
-    //m_stack->save("/home/deli/stack.tif");
     m_root->setData(data);
   }
 }
@@ -687,6 +714,44 @@ void ZMultiscaleSegmentationWindow::onClear()
 }
 
 
+void onSelectMask(ZStackObject* obj)
+{
+  int id = obj->getLabel();
+  ZMultiscaleSegmentationWindow::instance()->selectNode(id);
+}
+
+
+void onDeselectMask(ZStackObject* obj)
+{
+  int id = obj->getLabel();
+  ZMultiscaleSegmentationWindow::instance()->deselectNode(id);
+}
+
+
+void ZMultiscaleSegmentationWindow::selectNode(int id)
+{
+  QStandardItem* item = findItemById(m_tree->invisibleRootItem(),id);
+  if(item)
+  {
+    //item->setCheckState(Qt::Checked);
+    m_tree_view->setCurrentIndex(item->index());
+    std::cout<< id <<" is selected"<<std::endl;
+  }
+}
+
+
+void ZMultiscaleSegmentationWindow::deselectNode(int /*id*/)
+{
+/*
+  QStandardItem* item = findItemById(m_tree->invisibleRootItem(),id);
+  {
+    item->setCheckState(Qt::Checked);
+    std::cout<< id <<" is deselected"<<std::endl;
+  }
+  */
+}
+
+
 void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node)
 {
   if(!node)
@@ -707,11 +772,9 @@ void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node)
       it->makeMask(scan);
       ZObject3dScan *mask = scan->toObject3dScan();//here
       delete scan;
-      mask->setColor(scheme.getColor(i++));
-      mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
       mask->setLabel(it->id());
-      mask->setSelectable(true);
-      m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+      mask->setColor(scheme.getColor(i++));
+      showMask(mask);
     }
   }
   else
@@ -721,11 +784,19 @@ void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node)
     ZObject3dScan *mask = scan->toObject3dScan();//here
     delete scan;
     mask->setColor(QColor(255,0,0));
-    mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
     mask->setLabel(node->id());
-    mask->setSelectable(true);
-    m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    showMask(mask);
   }
+}
+
+
+void ZMultiscaleSegmentationWindow::showMask(ZObject3dScan *mask)
+{
+  mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+  mask->setSelectable(true);
+  mask->addCallBackOnSelection(onSelectMask);
+  mask->addCallBackOnDeselection(onDeselectMask);
+  m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
 }
 
 
@@ -759,29 +830,19 @@ void ZMultiscaleSegmentationWindow::moveNode(QString label, QString new_parent_l
   clearTreeView();
   m_root->display(m_tree->invisibleRootItem());
   highLight(m_root);
-  //m_tree_view->setCurrentIndex(findItemById(m_tree->invisibleRootItem(),new_parent->id())->index());
   m_tree_view->expandAll();
 }
 
 
 QStandardItem* ZMultiscaleSegmentationWindow::getSelectedNodeItem()
 {
-  if(!m_frame)
+  if(!m_tree_view || !m_tree)
   {
     return NULL;
   }
 
-  QList<ZObject3dScan*> selected_masks = m_frame->document()->getSelectedObjectList<ZObject3dScan>();
-  if(selected_masks.size() == 1)
-  {
-    return findItemById(m_tree->invisibleRootItem(),(*selected_masks.begin())->getLabel());
-  }
-
-  else
-  {
-    QModelIndex index = m_tree_view->currentIndex();
-    return index.isValid() ? m_tree->itemFromIndex(index) : m_tree->invisibleRootItem();
-  }
+  QModelIndex index = m_tree_view->currentIndex();
+  return index.isValid() ? m_tree->itemFromIndex(index) : m_tree->invisibleRootItem();
 }
 
 
@@ -792,10 +853,6 @@ void ZMultiscaleSegmentationWindow::clearTreeView()
     m_tree->clear();
     m_tree->invisibleRootItem()->setText("0");
     m_tree->setHorizontalHeaderLabels(QStringList()<<"Multiscale Segmentations:");
-    /*for(int i=0;i<m_tree->invisibleRootItem()->rowCount();++i)
-    {
-      m_tree->invisibleRootItem()->removeRow(i);
-    }*/
   }
 }
 
@@ -910,6 +967,17 @@ std::vector<ZStackObject*> ZMultiscaleSegmentationWindow::getSeeds()
 }
 
 
+ZMultiscaleSegmentationWindow* ZMultiscaleSegmentationWindow::instance()
+{
+  if(!s_window)
+  {
+    s_window = new ZMultiscaleSegmentationWindow();
+  }
+
+  return s_window;
+}
+
+
 //implementation for ZMultiscaleSegmentationManagementModule
 ZMultiscaleSegManagementModule::ZMultiscaleSegManagementModule(QObject* parent):
 ZSandboxModule(parent)
@@ -920,7 +988,7 @@ ZSandboxModule(parent)
 
 ZMultiscaleSegManagementModule::~ZMultiscaleSegManagementModule()
 {
-  delete m_window;
+  delete ZMultiscaleSegmentationWindow::instance();
 }
 
 
@@ -928,12 +996,11 @@ void ZMultiscaleSegManagementModule::init()
 {
   m_action = new QAction("Multiscale Segmentation", this);
   connect(m_action, SIGNAL(triggered()), this, SLOT(execute()));
-  m_window=new ZMultiscaleSegmentationWindow();
 }
 
 
 void ZMultiscaleSegManagementModule::execute()
 {
-  m_window->show();
+  ZMultiscaleSegmentationWindow::instance()->show();
 }
 

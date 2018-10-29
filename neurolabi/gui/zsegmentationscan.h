@@ -12,7 +12,7 @@ class ZSegmentationScan
 {
 public:
 ZSegmentationScan();
-~ZSegmentationScan(){};
+~ZSegmentationScan(){m_data.clear();}
 //void init();
 
 public:

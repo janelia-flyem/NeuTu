@@ -566,7 +566,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
   ZStack* sampled_watershed=NULL;
 
-  if(algorithm=="watershed"){
+  if(algorithm == "" || algorithm=="watershed"){
     sampled_watershed=watershed.run(sampled,seed);
   }
 
