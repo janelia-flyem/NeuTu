@@ -254,6 +254,10 @@ public:
   // convert swc to locsegchains..., return next .tb file idx
   int saveAsLocsegChains(const char *prefix, int startNum);
 
+  const std::vector<std::string>& getComment() const {
+    return m_comment;
+  }
+
   /*!
    * \brief Test if a node is a part of the tree
    */
@@ -857,6 +861,8 @@ private:
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
+
+  void parseComment(std::istream &stream);
 
   void writeSwc(FILE *fp);
 

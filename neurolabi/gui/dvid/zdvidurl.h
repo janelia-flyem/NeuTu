@@ -111,6 +111,7 @@ public:
 
   std::string getSparsevolUrl(const SparsevolConfig &config);
 
+  std::string getSparsevolLastModUrl(uint64_t bodyId);
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
