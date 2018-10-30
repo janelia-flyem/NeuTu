@@ -3147,7 +3147,7 @@ void ZFlyEmProofMvc::updateMeshForSelected()
 void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 {
   ZWidgetMessage warnMsg;
-  warnMsg.setType(neutube::MSG_WARNING);
+  warnMsg.setType(neutube::EMessageType::WARNING);
   if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
     m_skeletonUpdateDlg->setComputingServer(
           GET_NETU_SERVICE.getServer().c_str());
