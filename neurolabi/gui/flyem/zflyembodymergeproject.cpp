@@ -153,9 +153,9 @@ void ZFlyEmBodyMergeProject::test()
 
 void ZFlyEmBodyMergeProject::changeDvidNode(const std::string &newUuid)
 {
-  ZDvidTarget target = m_reader.getDvidTarget();
+  ZDvidTarget target = getDvidReader().getDvidTarget();
   target.setUuid(newUuid);
-  m_reader.open(target);
+//  m_reader.open(target);
   m_writer.open(target);
   m_selectedOriginal.clear();
 }
@@ -170,8 +170,8 @@ void ZFlyEmBodyMergeProject::loadSlice(
 void ZFlyEmBodyMergeProject::loadSliceFunc(
     int x, int y, int z, int width, int height)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.good()) {
     //int width = 512;
     //int height = 512;
 
@@ -191,7 +191,7 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(
             ZDvidData::getName(ZDvidData::ROLE_MERGE_TEST_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #else
-      ZArray *array = m_reader.readLabels64(
+      ZArray *array = reader.readLabels64(
             x0, y0, z, width, height, 1);
 #endif
       emit originalLabelUpdated(array, &m_selectedOriginal);
@@ -437,8 +437,8 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyId)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = m_writer.getDvidReader();
+  if (reader.isReady()) {
     ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(targetId);
     for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
          iter != bodyId.end(); ++iter) {
@@ -453,9 +453,8 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     }
 
     if (!annotation.isEmpty()) {
-      ZDvidWriter writer;
-      if (writer.open(getDvidTarget())) {
-        writer.writeBodyAnntation(annotation);
+      if (m_writer.good()) {
+        m_writer.writeBodyAnntation(annotation);
       }
     }
   }
@@ -519,21 +518,6 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
                 m_writer.getDvidReader(), targetId, merged, mergingToLargest);
           const uint64_t &newTargetId = mergeConfig.first;
           const std::vector<uint64_t> &newMerged = mergeConfig.second;
-
-
-//          uint64_t newTargetId = getTargetId(targetId, merged, mergingToLargest);
-//          newBodySet.insert(newTargetId);
-//          std::vector<uint64_t> newMerged;
-//          if (targetId != newTargetId) {
-//            newMerged.push_back(targetId);
-//            for (uint64_t id : merged) {
-//              if (id != newTargetId) {
-//                newMerged.push_back(id);
-//              }
-//            }
-//          } else {
-//            newMerged = merged;
-//          }
 
           m_writer.mergeBody(
                 getDvidTarget().getBodyLabelName(), newTargetId, newMerged);
@@ -1198,21 +1182,6 @@ std::string ZFlyEmBodyMergeProject::createVersionBranch()
   return "";
 }
 
-#if 0
-void ZFlyEmBodyMergeProject::setDocument(ZSharedPointer<ZStackDoc> doc)
-{
-  m_doc = doc;
-
-  if (m_doc.get() != NULL) {
-    connect(m_doc.get(), SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
-            this, SIGNAL(selectionChanged(ZStackObjectSelector)));
-    connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
-            this, SLOT(update3DBodyView(ZStackObjectSelector)));
-    connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
-  }
-}
-#endif
-
 ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
 {
   return qobject_cast<ZStackDoc*>(parent());
@@ -1405,11 +1374,7 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
 
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
-  if (m_reader.open(target)) {
-//    m_dvidInfo = m_reader.readGrayScaleInfo();
-//    m_dvidInfo = m_reader.readLabelInfo();
-    m_writer.open(m_reader.getDvidTarget());
-  }
+  m_writer.open(target);
 }
 
 void ZFlyEmBodyMergeProject::syncWithDvid()
@@ -1417,7 +1382,7 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
   if (getDvidTarget().isValid()) {
     ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
     if (bodyMerger != NULL) {
-      QByteArray buffer = m_reader.readBuffer(
+      QByteArray buffer = getDvidReader().readBuffer(
             ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
               neutube::GetCurrentUserName()));
       bodyMerger->decodeJsonString(buffer.data());
