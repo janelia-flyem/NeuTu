@@ -29,10 +29,11 @@ class ZStackDoc;
 class ZStackObjectInfoSet;
 class Z3D2DSliceFilter;
 
+class QRubberBand;
+
 class Z3DView : public QObject
 {
 Q_OBJECT
-
 
 public:
   enum EInitMode {
@@ -303,6 +304,9 @@ private:
 
   bool m_lock;
   EInitMode m_initMode;
+
+  QRubberBand* m_rubberBand;
+  QPoint m_rubberBandOrigin;
 };
 
 #endif // Z3DVIEW_H
