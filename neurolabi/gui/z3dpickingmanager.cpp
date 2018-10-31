@@ -143,6 +143,26 @@ const void* Z3DPickingManager::objectAtWidgetPos(glm::ivec2 pos)
   return objectOfColor(m_renderTarget->colorAtPos(pos));
 }
 
+std::set<const void*> Z3DPickingManager::objectsInWidgetRect(glm::ivec2 p0, glm::ivec2 p1)
+{
+  assert(m_devicePixelRatio >= 1);
+  p0[0] = p0[0] * m_devicePixelRatio;
+  p0[1] = p0[1] * m_devicePixelRatio;
+  p1[0] = p1[0] * m_devicePixelRatio;
+  p1[1] = p1[1] * m_devicePixelRatio;
+
+  glm::ivec3 texSize = glm::ivec3(m_renderTarget->attachment(GL_COLOR_ATTACHMENT0)->dimension());
+  p0[1] = texSize[1] - p0[1];
+  p1[1] = texSize[1] - p1[1];
+  std::vector<glm::col4> colors = m_renderTarget->colorsInRect(p0, p1);
+
+  std::set<const void*> objects;
+  for (const glm::col4 &color : colors) {
+    objects.insert(objectOfColor(color));
+  }
+  return objects;
+}
+
 std::vector<const void*> Z3DPickingManager::sortObjectsByDistanceToPos(const glm::ivec2& pos, int radius, bool ascend)
 {
   std::map<glm::col4, int, Col4Compare> col2dist;

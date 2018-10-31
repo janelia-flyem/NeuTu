@@ -78,6 +78,9 @@ public slots:
 signals:
   void meshSelected(ZMesh*, bool append);
   void clearingParamGarbage();
+  void selectionRectStarted(int x, int y);
+  void selectionRectChanged(int x, int y);
+  void selectionRectEnded();
 
 protected:
   void prepareColor();
@@ -141,8 +144,9 @@ private:
   std::vector<glm::vec4> m_meshPickingColors;
 
   ZEventListenerParameter m_selectMeshEvent;
-  glm::ivec2 m_startCoord;
-//  ZMesh* m_pressedMesh;
+
+  class SelectionStateMachine;
+  std::shared_ptr<SelectionStateMachine> m_selectionStateMachine;
 
   // generate and save to speed up bound box rendering for big mesh
   std::map<ZMesh*, ZBBox<glm::dvec3>> m_meshBoundboxMapper;
