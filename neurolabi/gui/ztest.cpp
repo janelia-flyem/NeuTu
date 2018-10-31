@@ -27108,17 +27108,16 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZJsonObject obj;
-  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data_bundle.json");
+  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data/data_bundle.json");
   ZJsonArray neuronArrayJson(obj.value("neuron"));
   std::cout << neuronArrayJson.size() << std::endl;
 
   ZObject3dScanArray objArray;
-
   std::vector<ZIntCuboid> boxArray;
   for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
     ZJsonObject neuronJson(neuronArrayJson.value(i));
     std::string volumeFile =
-        GET_TEST_DATA_DIR + "/_paper/neuron_type/" +
+        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/" +
         ZJsonParser::stringValue(neuronJson["volume"]);
     QFileInfo fileInfo(volumeFile.c_str());
     if (!fileInfo.exists()) {
@@ -28258,12 +28257,114 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
   reader->updateMaxLabelZoom();
   ZJsonArray thresholdData = reader->readSynapseLabelsz(
         20000, ZDvid::INDEX_ALL_SYN);
   thresholdData.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/data_bundle.json");
+  std::vector<ZFlyEmNeuron> neuronArray = bundle.getNeuronArray();
+  std::cout << "Number of neurons: " << neuronArray.size() << std::endl;
+
+  std::string neuronNameFilePath = GET_DATA_DIR + "/_paper/neuron_type/data/neuron_name.txt";
+  std::string neuronIdFilePath = GET_DATA_DIR + "/_paper/neuron_type/data/neuron_id.txt";
+  std::string neuronTypeFilePath = GET_DATA_DIR + "/neuron_type.txt";
+
+
+  std::ofstream nameStream(neuronNameFilePath.c_str());
+  std::ofstream idStream(neuronIdFilePath.c_str());
+  std::ofstream typeStream(neuronTypeFilePath.c_str());
+
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    nameStream << neuron.getName() << std::endl;
+    idStream << neuron.getId() << std::endl;
+    typeStream << neuron.getType() << std::endl;
+  }
+#endif
+
+#if 0
+  ZDoubleVector offset;
+  offset.importTextFile("/Users/zhaot/Work/neutu/neurolabi/data/_paper/neuron_type/data/offset2/3856.offset.txt");
+#endif
+
+#if 1
+  std::string dataDir = GET_TEST_DATA_DIR + "/_paper/neuron_type/data";
+  std::string volumeDir = dataDir + "/volume/old";
+
+  QFileInfoList fileList;
+  QDir dir(volumeDir.c_str());
+  QStringList filters;
+  filters << "*.sobj";
+  fileList = dir.entryInfoList(filters);
+
+  QDir offsetDir = QDir((dataDir + "/offset2").c_str());
+  QDir outputDir = QDir((dataDir + "/volume/aligned").c_str());
+
+  foreach (QFileInfo fileInfo, fileList) {
+
+    ZString objPath = fileInfo.absoluteFilePath().toStdString();
+
+    std::cout << objPath << std::endl;
+    ZObject3dScan obj;
+    obj.load(objPath.c_str());
+    uint64_t bodyId = objPath.lastUint64();
+
+    QString offsetFile = offsetDir.absoluteFilePath(
+          (std::to_string(bodyId) + ".offset.txt").c_str());
+    if (QFileInfo(offsetFile).exists()) {
+      ZDoubleVector offset;
+      offset.importTextFile(offsetFile.toStdString());
+      std::cout << offset[0] << " " << offset[1] << " " << offset[2] << std::endl;
+      obj.translate(offset[0] / 2 - offset[0], offset[1] / 2 - offset[1], 0);
+      obj.save(outputDir.absoluteFilePath((std::to_string(bodyId) + ".sobj").c_str()).toStdString());
+    } else {
+      std::cout << "No offset found. Abort." << std::endl;
+      return;
+    }
+  }
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
+  obj1.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data/volume/446263.sobj");
+  obj1.setColor(255, 0, 0);
+  {
+    ZDoubleVector offset;
+    offset.importTextFile(
+          GET_TEST_DATA_DIR + "/_paper/neuron_type/data/offset/Mi1a_446263.tif.offset.txt");
+    std::cout << offset[0] << " " << offset[1] << " " << offset[2] << std::endl;
+    obj1.translate(-offset[0] / 2, -offset[1] / 2, 0);
+  }
+
+
+  obj2.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data/volume/1196.sobj");
+  obj2.setColor(0, 255, 0);
+  {
+    ZDoubleVector offset;
+    offset.importTextFile(
+          GET_TEST_DATA_DIR + "/_paper/neuron_type/data/offset/Pm2-1_1196.tif.offset.txt");
+    std::cout << offset[0] << " " << offset[1] << " " << offset[2] << std::endl;
+    obj2.translate(-offset[0] / 2, -offset[1] / 2, 0);
+  }
+
+  ZObject3dScanArray objArray;
+  objArray.append(obj1);
+  objArray.append(obj2);
+
+  std::cout << objArray.getBoundBox().toString() << std::endl;
+
+  objArray.save(GET_TEST_DATA_DIR + "/_test.soba");
+//  ZStack *stack = ZStackFactory::MakeColorStack(objArray);
+//  stack->save(GET_TEST_DATA_DIR + "/test.v3draw");
 #endif
 
   std::cout << "Done." << std::endl;
