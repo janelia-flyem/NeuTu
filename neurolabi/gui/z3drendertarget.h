@@ -52,6 +52,7 @@ public:
   std::vector<glm::col4> colorAtPos(const std::vector<glm::ivec2> &posArray);
   std::vector<glm::col4> colorAtPos(
       const std::vector<std::pair<int, int> > &posArray);
+  std::vector<glm::col4> colorsInRect(const glm::ivec2& p0, const glm::ivec2& p1);
 
   GLfloat depthAtPos(const glm::ivec2& pos);
 
