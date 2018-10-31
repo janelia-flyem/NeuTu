@@ -57,8 +57,12 @@ public:
 
   void changeDvidNode(const std::string &newUuid);
 
+  const ZDvidReader& getDvidReader() const {
+    return m_writer.getDvidReader();
+  }
+
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_reader.getDvidTarget();
+    return getDvidReader().getDvidTarget();
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -201,7 +205,7 @@ private:
 //  Z3DWindow *m_coarseBodyWindow;
 //  Z3DWindow *m_bodyWindow;
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_reader;
+//  ZDvidReader m_reader;
   ZDvidWriter m_writer;
 //  ZDvidInfo m_dvidInfo;
 
