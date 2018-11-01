@@ -400,6 +400,11 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
 }
 
+void ZDvidWriter::mergeBody(uint64_t targetId, const std::vector<uint64_t> &bodyId)
+{
+  mergeBody(getDvidTarget().getBodyLabelName(), targetId, bodyId);
+}
+
 #if 0
 void ZDvidWriter::mergeBody(
     const std::string &dataName, const std::vector<uint64_t> &bodyId,
