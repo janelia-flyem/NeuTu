@@ -73,6 +73,8 @@ private slots:
   void onSelectBody();
   void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
+  void onAddToChosenCleaveBody();
+  void updateChosenCleaveBody(bool toggle);
   void onToggleShowChosenCleaveBody();
   void onHideSelected();
   void onClearHidden();
@@ -96,6 +98,7 @@ private:
   QShortcut *m_shortcutToggle;
   QMenu *m_menu;
   QAction *m_showSeedsOnlyAction;
+  QAction *m_addToBodyAction;
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
