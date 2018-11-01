@@ -1136,6 +1136,11 @@ void Neu3Window::meshArchiveLoadingEnded()
 {
   if (m_progressDialog) {
     m_progressDialog->setValue(PROGRESS_MAX);
+
+    // The following seems necesssary to make the dialog really disappear in all cases on Linux.
+
+    m_progressDialog->deleteLater();
+    m_progressDialog = nullptr;
   }
 }
 
