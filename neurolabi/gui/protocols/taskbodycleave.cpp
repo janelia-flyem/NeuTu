@@ -766,6 +766,8 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   std::set<uint64_t> bodiesForIndex;
   bodiesForCleaveIndex(bodiesForIndex, chosenCleaveIndex(), true);
 
+  selectBodies(bodiesForIndex, false);
+
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
@@ -1345,15 +1347,17 @@ void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
   }
 }
 
-void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
+void TaskBodyCleave::selectBodies(const std::set<uint64_t> &bodies, bool select)
 {
-  m_bodyDoc->deselectAllMesh();
+  if (select) {
+    m_bodyDoc->deselectAllMesh();
+  }
 
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
-    if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
-      m_bodyDoc->setMeshSelected(mesh, true);
+    if (bodies.find(mesh->getLabel()) != bodies.end()) {
+      m_bodyDoc->setMeshSelected(mesh, select);
     }
   }
 }
