@@ -15,6 +15,7 @@
 #include "zflyembookmarkarray.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "zflyembodyannotation.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -186,8 +187,23 @@ private:
 
   QString getSelectionMessage() const;
 
-  void mergeBodyAnnotation(
-      uint64_t targetId, const std::vector<uint64_t> &bodyId);
+  void mergeBodyAnnotation(uint64_t targetId, const std::vector<uint64_t> &bodyIdArray);
+  void refreshBodyAnnotationCache();
+  void updateMergeMap();
+  void updateAffliatedData(
+      uint64_t targetId, const std::vector<uint64_t> &bodyArray,
+      ZWidgetMessage &warnMsg);
+  void updateSelection(const std::set<uint64_t> &newBodySet);
+  void refreshSegmentationView();
+  void unlockBody(const std::set<uint64_t> &bodySet);
+  void unlockBody(uint64_t bodyId);
+  void unlockBody(const std::vector<uint64_t> &bodyArray);
+  bool mergeVerified(
+      uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
+  void removeMerge(uint64_t bodyId);
+  void removeMerge(const std::vector<uint64_t> &bodyArray);
+
+  void clearUndoStack();
 
 //  uint64_t getTargetId(
 //      uint64_t targetId, const std::vector<uint64_t> &bodyId,
@@ -197,31 +213,15 @@ private:
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
-//  ZSharedPointer<ZStackDoc> m_doc;
 
-//  Z3DMainWindow* m_bodyViewWindow;
-//  Z3DTabWidget* m_bodyViewers;
-
-//  Z3DWindow *m_coarseBodyWindow;
-//  Z3DWindow *m_bodyWindow;
-//  ZDvidTarget m_dvidTarget;
-//  ZDvidReader m_reader;
   ZDvidWriter m_writer;
-//  ZDvidInfo m_dvidInfo;
 
-//  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
 
-//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
-
-//  Z3DWindow *m_resultWindow;
-//  Z3DWindow *m_quickViewWindow;
-//  ZFlyEmBookmarkArray m_bookmarkArray;
-//  std::vector<ZStackObject*> m_bookmarkDecoration;
-//  bool m_isBookmarkVisible;
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
-//  QSet<uint64_t> m_currentSelected;
+  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationCache;
+  QMap<uint64_t, std::vector<uint64_t>> m_mergeMap;
 
   ZProgressSignal *m_progressSignal;
 };
