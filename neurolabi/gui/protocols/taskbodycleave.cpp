@@ -781,6 +781,16 @@ void TaskBodyCleave::onShowBodyChanged(int state)
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
 {
+  updateChosenCleaveBody(true);
+}
+
+void TaskBodyCleave::onAddToChosenCleaveBody()
+{
+  updateChosenCleaveBody(false);
+}
+
+void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
+{
   if (!uiIsEnabled()) {
     return;
   }
@@ -815,10 +825,10 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
       countChanges[chosenCleaveIndex()] += 1;
       countChanges[itCleave->second] -= 1;
       meshIdToCleaveIndex[id] = chosenCleaveIndex();
-    } else {
+    } else if (toggle) {
 
-      // The selected mesh has been assigned to the current color, so it is being assigned no color,
-      // and the current color's count decreases by one.
+      // The selected mesh has been assigned to the current color, so if toggling, it is being assigned
+      // no color, and the current color's count decreases by one.
 
       countChanges[chosenCleaveIndex()] -= 1;
       meshIdToCleaveIndex.erase(id);
@@ -1231,6 +1241,11 @@ void TaskBodyCleave::buildTaskWidget()
   m_toggleInBodyAction->setShortcut(Qt::Key_Space);
   m_menu->addAction(m_toggleInBodyAction);
   connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
+
+  m_addToBodyAction = new QAction("Add Selection to Current Body", m_widget);
+  m_addToBodyAction->setShortcut(Qt::SHIFT + Qt::Key_Space);
+  m_menu->addAction(m_addToBodyAction);
+  connect(m_addToBodyAction, SIGNAL(triggered()), this, SLOT(onAddToChosenCleaveBody()));
 
   m_toggleShowChosenCleaveBodyAction = new QAction("Toggle Visibilty of Current Body", m_widget);
   m_toggleShowChosenCleaveBodyAction->setShortcut(Qt::Key_H);
