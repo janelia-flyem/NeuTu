@@ -145,7 +145,7 @@ private:
   void bodiesForCleaveIndex(std::set<uint64_t>& result, std::size_t cleaveIndex,
                             bool ignoreSeedsOnly = false);
 
-  void selectBodies(const std::set<uint64_t>& toSelect);
+  void selectBodies(const std::set<uint64_t>& bodies, bool select = true);
 
   void applyPerTaskSettings();
   void applyColorMode(bool showingCleaving);
