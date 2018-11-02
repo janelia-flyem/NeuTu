@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QScrollArea>
 #include <QLabel>
+#include <QRubberBand>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -46,6 +47,7 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
   , m_isStereoView(stereo)
   , m_lock(false)
   , m_initMode(initMode)
+  , m_rubberBand(nullptr)
 {
 //  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
@@ -631,6 +633,29 @@ void Z3DView::initMeshFilter()
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_meshFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
   m_layerList.append(neutube3d::LAYER_MESH);
+
+  // When the user is dragging a rectangle to select its contents, display that rectangle.
+
+  connect(m_meshFilter.get(), &Z3DMeshFilter::selectionRectStarted, this, [this](int x, int y) {
+    if (!this->m_rubberBand) {
+      this->m_rubberBand = new QRubberBand(QRubberBand::Rectangle, this->m_canvas);
+    }
+    this->m_rubberBandOrigin = QPoint(x, y);
+    this->m_rubberBand->setGeometry(QRect(this->m_rubberBandOrigin, QSize()));
+    this->m_rubberBand->show();
+  });
+
+  connect(m_meshFilter.get(), &Z3DMeshFilter::selectionRectChanged, this, [this](int x, int y) {
+    if (this->m_rubberBand) {
+      this->m_rubberBand->setGeometry((QRect(this->m_rubberBandOrigin, QPoint(x, y)).normalized()));
+    }
+  });
+
+  connect(m_meshFilter.get(), &Z3DMeshFilter::selectionRectEnded, this, [this]() {
+    if (this->m_rubberBand) {
+      this->m_rubberBand->hide();
+    }
+  });
 }
 
 void Z3DView::initRoiFilter()

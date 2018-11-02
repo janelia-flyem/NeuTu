@@ -217,6 +217,27 @@ std::vector<glm::col4> Z3DRenderTarget::colorAtPos(
   return pixelArray;
 }
 
+std::vector<glm::col4> Z3DRenderTarget::colorsInRect(const glm::ivec2 &p0, const glm::ivec2 &p1)
+{
+  glm::ivec2 min(std::min(p0.x, p1.x), std::min(p0.y, p1.y));
+  glm::ivec2 max(std::max(p0.x, p1.x), std::max(p0.y, p1.y));
+  int width = max.x - min.x;
+  int height = max.y - min.y;
+
+  bind();
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  std::vector<glm::col4> pixels(width * height);
+  glReadPixels(min.x, min.y,
+               width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixels[0]);
+
+  for (glm::col4 &pixel : pixels) {
+    std::swap(pixel.r, pixel.b);
+  }
+  release();
+
+  return pixels;
+}
+
 GLfloat Z3DRenderTarget::depthAtPos(const glm::ivec2& pos)
 {
   bind();
