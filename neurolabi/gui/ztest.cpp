@@ -308,6 +308,7 @@
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
+#include "tbb/tbb.h"
 
 #include "test/ztestall.h"
 
@@ -28295,7 +28296,7 @@ void ZTest::test(MainWindow *host)
   offset.importTextFile("/Users/zhaot/Work/neutu/neurolabi/data/_paper/neuron_type/data/offset2/3856.offset.txt");
 #endif
 
-#if 1
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_paper/neuron_type/data";
   std::string volumeDir = dataDir + "/volume/old";
 
