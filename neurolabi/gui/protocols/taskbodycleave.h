@@ -150,6 +150,8 @@ private:
 
   void cleave(unsigned int requestNumber);
 
+  bool getUnassignedMeshes(std::vector<uint64_t> &result) const;
+
   void updateVisibility();
 
   std::set<std::size_t> hiddenChanges(const std::map<uint64_t, std::size_t>& newMeshIdToCleaveIndex) const;
@@ -161,9 +163,11 @@ private:
                       const QString& details = "",
                       bool allowSuppression = false);
 
+  std::size_t getIndexNotCleavedOff() const;
+
   bool writeOutput(ZDvidWriter &writer,
                    const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds,
-                   std::size_t &indexNotCleavedOff,
+                   const std::size_t &indexNotCleavedOff,
                    std::vector<QString> &responseLabels,
                    std::vector<uint64_t> &mutationIds);
   void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
