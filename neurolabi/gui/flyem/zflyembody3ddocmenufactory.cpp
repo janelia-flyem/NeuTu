@@ -113,6 +113,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 
     if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D) {
       config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+      config.append(ZActionFactory::ACTION_REMOVE_ALL_TODO);
     }
 
     if (isMutable) {

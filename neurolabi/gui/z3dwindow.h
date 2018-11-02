@@ -380,6 +380,7 @@ public slots:
   void copyPosition();
   void setNormalTodoVisible(bool visible);
   void updateTodoVisibility();
+  void removeAllTodo();
 
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)

@@ -427,9 +427,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Set unchecked", parent);
     break;
   case ACTION_SHOW_NORMAL_TODO:
-    action = new QAction("Show Normal Todo", parent);
+    action = new QAction("Show normal todo", parent);
     action->setCheckable(true);
     action->setChecked(true);
+    break;
+  case ACTION_REMOVE_ALL_TODO:
+    action = new QAction("Remove all todo", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
