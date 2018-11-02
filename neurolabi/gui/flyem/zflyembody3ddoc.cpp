@@ -2961,6 +2961,10 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         tree = reader.readSwc(bodyId);
       } else if (isCoarseLevel(zoom)) {
         ZObject3dScan obj = reader.readCoarseBody(bodyId);
+        if (m_quitting) {
+          return NULL;
+        }
+
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
 //          tree->translate(-getDvidInfo().getStartBlockIndex());
@@ -2984,9 +2988,10 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         if (cachedBody == NULL) {
           ZObject3dScan obj;
           reader.readMultiscaleBody(bodyId, zoom, true, &obj);
-#ifdef _DEBUG_2
-          m_dvidReader.readBodyDs(bodyId, true, &obj);
-#endif
+          if (m_quitting) {
+            return NULL;
+          }
+
           if (!obj.isEmpty()) {
             tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
           }
