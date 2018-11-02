@@ -768,17 +768,7 @@ void TaskBodyCleave::onShowBodyChanged(int state)
 
   selectBodies(bodiesForIndex, false);
 
-  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
-      if (m_hiddenIds.find(mesh->getLabel()) != m_hiddenIds.end()) {
-        continue;
-      }
-
-      m_bodyDoc->setVisible(mesh, state);
-    }
-  }
+  updateVisibility();
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
