@@ -66,6 +66,17 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 //  item.toJsonObject().print();
   ASSERT_EQ(neutube::EToDoAction::TO_MERGE, item.getAction());
 
+
+  std::string mergeTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
+      + ZFlyEmToDoItem::ACTION_MERGE_TAG;
+  ASSERT_FALSE(item.hasTag(mergeTag));
+
+  item.setChecked(false);
+  ASSERT_TRUE(item.hasTag(mergeTag));
+
+  item.setChecked(true);
+  ASSERT_FALSE(item.hasTag(mergeTag));
+
   item.setAction(neutube::EToDoAction::TO_SPLIT);
   ASSERT_EQ(neutube::EToDoAction::TO_SPLIT, item.getAction());
 
@@ -84,6 +95,9 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   ASSERT_FALSE(item.hasTag(splitTag));
 
   item.setAction(neutube::EToDoAction::TO_SPLIT);
+  ASSERT_FALSE(item.hasTag(splitTag));
+
+  item.setChecked(false);
   ASSERT_TRUE(item.hasTag(splitTag));
 
   item.setChecked(true);
