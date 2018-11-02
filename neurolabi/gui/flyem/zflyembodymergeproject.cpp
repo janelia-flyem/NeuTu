@@ -555,7 +555,7 @@ void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySe
   QList<ZDvidLabelSlice*> labelList =
       getDocument()->getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, labelList) {
-    slice->setSelection(newBodySet, neutube::BODY_LABEL_ORIGINAL);
+    slice->setSelection(newBodySet, neutube::EBodyLabelType::ORIGINAL);
 //            slice->mapSelection();
   }
 
@@ -582,7 +582,7 @@ void ZFlyEmBodyMergeProject::unlockBody(const std::set<uint64_t> &bodySet)
 {
   for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter) {
-    emit checkingInBody(*iter, flyem::BODY_SPLIT_NONE);
+    emit checkingInBody(*iter, flyem::EBodySplitMode::NONE);
   }
 }
 
@@ -595,7 +595,7 @@ void ZFlyEmBodyMergeProject::unlockBody(const std::vector<uint64_t> &bodyArray)
 
 void ZFlyEmBodyMergeProject::unlockBody(uint64_t bodyId)
 {
-  emit checkingInBody(bodyId, flyem::BODY_SPLIT_NONE);
+  emit checkingInBody(bodyId, flyem::EBodySplitMode::NONE);
 }
 
 void ZFlyEmBodyMergeProject::removeMerge(uint64_t bodyId)
@@ -655,12 +655,12 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 //      ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
 
       ZWidgetMessage warnMsg;
-      warnMsg.setType(neutube::MSG_WARNING);
+      warnMsg.setType(neutube::EMessageType::WARNING);
 
       getProgressSignal()->advanceProgress(0.1);
 
 //      std::set<uint64_t> bodySet = getSelection(neutube::BODY_LABEL_ORIGINAL);
-      auto oldSelection = getSelection(neutube::BODY_LABEL_ORIGINAL);
+      auto oldSelection = getSelection(neutube::EBodyLabelType::ORIGINAL);
 
       std::set<uint64_t> newBodySet;
       getProgressSignal()->startProgress(0.5);
@@ -678,7 +678,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           if (m_writer.getStatusCode() != 200) {
             emit messageGenerated(
                   ZWidgetMessage(
-                    "Failed to upload merging results", neutube::MSG_ERROR));
+                    "Failed to upload merging results",
+                    neutube::EMessageType::ERROR));
           } else {
             updateAffliatedData(newTargetId, newMerged, warnMsg);
 
