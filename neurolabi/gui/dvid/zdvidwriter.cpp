@@ -1789,11 +1789,15 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   ZJsonArray itemJson;
   itemJson.append(item.toJsonObject());
 
+  LINFO() << itemJson.dumpString(0);
+
 #ifdef _DEBUG_
-  std::cout << itemJson.dumpString(0) << std::endl;
+  std::cout << "Todo query url: "
+            << url.getTodoListUrl(item.getX(), item.getY(), item.getZ())
+            << std::endl;
 #endif
 
-  writeJson(url.getTodlListElementsUrl(), itemJson);
+  writeJson(url.getTodoListElementsUrl(), itemJson);
 }
 
 void ZDvidWriter::writeLabel(const ZArray &label)
