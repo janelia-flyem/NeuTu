@@ -123,24 +123,68 @@ void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
   switch (action) {
   case neutube::TO_DO:
     removeProperty(ACTION_KEY);
-    removeActionTag();
+//    removeActionTag();
     break;
   case neutube::TO_MERGE:
     addProperty(ACTION_KEY, ACTION_MERGE);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
     break;
   case neutube::TO_SPLIT:
     addProperty(ACTION_KEY, ACTION_SPLIT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;
   case neutube::TO_SUPERVOXEL_SPLIT:
     addProperty(ACTION_KEY, ACTION_SUPERVOXEL_SPLIT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
     break;
   case neutube::TO_DO_IRRELEVANT:
     addProperty(ACTION_KEY, ACTION_IRRELEVANT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
     break;
+  }
+
+  syncActionTag();
+}
+
+std::string ZFlyEmToDoItem::GetActionTag(neutube::EToDoAction action)
+{
+  std::string tag;
+
+  auto make_tag = [](const char *actionTag) {
+    return std::string(ACTION_KEY) + ":" + actionTag; };
+
+  switch (action) {
+  case neutube::TO_DO:
+    break;
+  case neutube::TO_MERGE:
+    tag = make_tag(ACTION_MERGE_TAG);
+    break;
+  case neutube::TO_SPLIT:
+    tag = make_tag(ACTION_SPLIT_TAG);
+    break;
+  case neutube::TO_SUPERVOXEL_SPLIT:
+    tag = make_tag(ACTION_SUPERVOXEL_SPLIT_TAG);
+    break;
+  case neutube::TO_DO_IRRELEVANT:
+    tag = make_tag(ACTION_IRRELEVANT_TAG);
+    break;
+  }
+
+  return tag;
+}
+
+void ZFlyEmToDoItem::syncActionTag()
+{
+  std::string tag;
+
+  if (!isChecked()) {
+    tag = GetActionTag(getAction());
+  }
+
+  if (tag.empty()) {
+    removeActionTag();
+  } else {
+    addTag(tag);
   }
 }
 
@@ -286,22 +330,10 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   std::string checkedStr = "0";
   if (checked) {
     checkedStr = "1";
-    removeActionTag();
-  } else {
-    std::string prop = getProperty<std::string>(ACTION_KEY);
-    std::string tag;
-    if (prop == ACTION_SPLIT) {
-      tag = ACTION_SPLIT_TAG;
-    } else if (prop == ACTION_SUPERVOXEL_SPLIT) {
-      tag = ACTION_SUPERVOXEL_SPLIT_TAG;
-    }
-
-    if (!tag.empty()) {
-      addTag(std::string(ACTION_KEY) + ":" + tag);
-    }
   }
-
   m_propertyJson.setEntry("checked", checkedStr);
+
+  syncActionTag();
 }
 
 
