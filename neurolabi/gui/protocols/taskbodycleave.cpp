@@ -170,12 +170,12 @@ public:
 
   CleaveCommand(TaskBodyCleave *task,
                 std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
-                const std::vector< QString>& comboBoxItemsText) :
+                const std::vector< QString>& comboBoxItemsText = {}) :
     m_task(task),
     m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
     m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex),
     m_comboBoxItemsTextBefore(getComboBoxItemsText(task->m_cleaveIndexComboBox)),
-    m_comboBoxItemsTextAfter(comboBoxItemsText),
+    m_comboBoxItemsTextAfter(!comboBoxItemsText.empty() ? comboBoxItemsText : m_comboBoxItemsTextBefore),
     m_requestNumber(s_requestNumber++)
   {
     setText("cleaving");
@@ -201,7 +201,7 @@ public:
 
   static void addReply(unsigned int requestNumber,
                        std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex,
-                       const QJsonObject &cleaveReply)
+                       const QJsonObject &cleaveReply = QJsonObject())
   {
     CleaveReply reply(meshIdToCleaveResultIndex, cleaveReply);
     if (requestNumber == s_cleaveReplyByRequestNumber.size()) {
@@ -224,7 +224,9 @@ public:
         if (requestNumber < (unsigned int) s_cleaveReplyByRequestNumber.size()) {
           const CleaveReply &reply = s_cleaveReplyByRequestNumber[requestNumber];
           task->m_meshIdToCleaveResultIndex = reply.m_meshIdToCleaveResultIndex;
-          task->m_cleaveReply = reply.m_cleaveReply;
+          if (!reply.m_cleaveReply.isEmpty()) {
+            task->m_cleaveReply = reply.m_cleaveReply;
+          }
           task->updateColors();
           task->updateVisibility();
         }
@@ -1079,6 +1081,33 @@ bool TaskBodyCleave::allowCompletion()
     }
   }
 
+  std::vector<uint64_t> unassigned;
+  if (getUnassignedMeshes(unassigned)) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = (unassigned.size() == 1) ? "A supervoxel is unassigned. " : "Some supervoxels are unassigned. ";
+      std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
+      text += "Save them with the main body (seed color " + QString::number(indexNotCleavedOff) + ")?";
+
+      QMessageBox::StandardButton chosen =
+          QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
+                               QMessageBox::Cancel);
+      if (chosen == QMessageBox::Save) {
+        CleaveCommand *command = new CleaveCommand(this, m_meshIdToCleaveIndex);
+        m_bodyDoc->pushUndoCommand(command);
+
+        std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex(m_meshIdToCleaveResultIndex);
+        for (uint64_t id : unassigned) {
+          meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+        }
+        CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
+        CleaveCommand::displayReply(this, command->requestNumber());
+      } else {
+        allow = false;
+      }
+    }
+  }
+
   return allow;
 }
 
@@ -1126,7 +1155,7 @@ void TaskBodyCleave::onCompleted()
     std::sort(pair.second.begin(), pair.second.end());
   }
 
-  std::size_t indexNotCleavedOff = 0;
+  std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
   std::vector<QString> responseLabels;
   std::vector<uint64_t> mutationIds;
   bool doWriteOutput = true;
@@ -1466,6 +1495,17 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   m_networkManager->post(request, requestData);
 }
 
+bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const
+{
+  for (auto it : m_meshIdToCleaveResultIndex) {
+    std::size_t cleaveIndex = it.second;
+    if (cleaveIndex == 0) {
+      result.push_back(it.first);
+    }
+  }
+  return (!result.empty());
+}
+
 void TaskBodyCleave::updateVisibility()
 {
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
@@ -1657,28 +1697,40 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
   });
 }
 
+std::size_t TaskBodyCleave::getIndexNotCleavedOff() const
+{
+  // Do not cleave off of the original body the group of supervoxels assigned to the first index;
+  // by convention, those supervoxels define the new version of the original body.  But skip past
+  // supervoxels with index 0, which are the supervoxels that could not be assigned by the
+  // cleaving server (because they are not reachable from the seeds).
+
+  std::size_t result = SIZE_MAX;
+  for (auto it : m_meshIdToCleaveIndex) {
+    std::size_t index = it.second;
+    if (index != 0) {
+      if (index == 1) {
+
+        // By convention, users usually choose 1 as the first index.  If it is ever found,
+        // we can return it immediately, as they can be no lower non-zero index.
+
+        result = 1;
+        break;
+      }
+      result = std::min(result, index);
+    }
+  }
+  return result;
+}
+
 bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
                                  const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
-                                 std::size_t &indexNotCleavedOff,
+                                 const std::size_t &indexNotCleavedOff,
                                  std::vector<QString> &responseLabels,
                                  std::vector<uint64_t> &mutationIds)
 {
   std::string instance = writer.getDvidTarget().getBodyLabelName();
   ZDvidUrl url(writer.getDvidTarget());
   std::string urlCleave = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId);
-
-  // Do not cleave off of the original body the group of supervoxels assigned to the first index;
-  // by convention, those supervoxels define the new version of the original body.  But skip past
-  // supervoxels with index 0, which are the supervoxels that could not be assigned by the
-  // cleaving server (because they are not reachable from the seeds).
-
-  auto it = cleaveIndexToMeshIds.begin();
-  if (it->first != 0) {
-    indexNotCleavedOff = it->first;
-  } else {
-    it++;
-    indexNotCleavedOff = it->first;
-  }
 
   std::size_t i = 0;
   for (const auto &pair : cleaveIndexToMeshIds) {

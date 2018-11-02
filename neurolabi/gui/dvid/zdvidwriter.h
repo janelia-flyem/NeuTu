@@ -110,6 +110,7 @@ public:
 
   void mergeBody(const std::string &dataName, uint64_t targetId,
                  const std::vector<uint64_t> &bodyId);
+  void mergeBody(uint64_t targetId, const std::vector<uint64_t> &bodyId);
 //  void mergeBody(
 //      const std::string &dataName,
 //      const std::vector<uint64_t> &bodyId,
