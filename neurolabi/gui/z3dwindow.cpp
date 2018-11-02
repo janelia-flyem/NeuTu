@@ -457,6 +457,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(setNormalTodoVisible(bool)));
     break;
+  case ZActionFactory::ACTION_REMOVE_ALL_TODO:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(removeAllTodo()));
+    break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
     break;
@@ -2128,6 +2132,11 @@ static void AddTodoMarker(
 void Z3DWindow::setNormalTodoVisible(bool visible)
 {
   emit settingNormalTodoVisible(visible);
+}
+
+void Z3DWindow::removeAllTodo()
+{
+
 }
 
 void Z3DWindow::updateTodoVisibility()
