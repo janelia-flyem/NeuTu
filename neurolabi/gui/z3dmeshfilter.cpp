@@ -5,6 +5,103 @@
 #include <QFileInfo>
 #include <QPushButton>
 
+class Z3DMeshFilter::SelectionStateMachine
+{
+public:
+  void onEvent(QMouseEvent* e, Z3DMeshFilter* filter)
+  {
+    bool atStart = ((std::abs(e->x() - m_startCoord.x) < 2) &&
+                    (std::abs(m_startCoord.y - e->y()) < 2));
+
+    State nextState = m_state;
+    switch (e->type()) {
+      case QEvent::MouseButtonPress:
+        if (m_state != FINISHED) {
+          // Defend against a missed QEvent::MouseButtonRelease.
+          m_state = NOT_STARTED;
+        }
+        m_startCoord = glm::ivec2(e->x(), e->y());
+        nextState = CLICK;
+        break;
+
+      case QEvent::MouseMove:
+        if (m_state == CLICK) {
+          if (!atStart) {
+            nextState = (e->modifiers() == Qt::ControlModifier) ? DRAG : NO_ACTION;
+          }
+        } else if (m_state == DRAG) {
+          if (atStart) {
+            nextState = CLICK;
+          }
+          if (e->modifiers() != Qt::ControlModifier) {
+            nextState = NO_ACTION;
+          }
+        }
+        break;
+
+      case QEvent::MouseButtonRelease:
+        if (m_state == CLICK) {
+          // Defend against missed QEvent::MouseMove with Qt::NoModifier.
+          if (!atStart) {
+            m_state = (e->modifiers() == Qt::ControlModifier) ? DRAG : NO_ACTION;
+          }
+        }
+        if ((m_state == CLICK) || (m_state == DRAG)) {
+          m_clicked = (m_state == CLICK);
+          m_appended = (e->modifiers() == Qt::ControlModifier);
+          m_endCoord = m_clicked ? glm::ivec2(m_startCoord.x + 1, m_startCoord.y + 1) : glm::ivec2(e->x(), e->y());
+        } else {
+          m_clicked = m_appended = false;
+          m_endCoord = m_startCoord;
+        }
+        nextState = FINISHED;
+        break;
+
+      default:
+        break;
+
+    }
+
+    emitSignal(e, nextState, filter);
+    m_state = nextState;
+  }
+
+  bool finished(bool& clicked, bool& appended, glm::ivec2& rectP0, glm::ivec2& rectP1)
+  {
+    if (m_state == FINISHED) {
+      clicked = m_clicked;
+      appended = m_appended;
+      rectP0 = m_startCoord;
+      rectP1 = m_clicked ? glm::ivec2(m_startCoord.x + 1, m_startCoord.y + 1) : m_endCoord;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+private:
+  enum State { NOT_STARTED, CLICK, DRAG, FINISHED, NO_ACTION };
+
+  void emitSignal(QMouseEvent* e, State nextState, Z3DMeshFilter* filter)
+  {
+    if ((m_state != DRAG) && (nextState == DRAG)) {
+      emit filter->selectionRectStarted(m_startCoord.x, m_startCoord.y);
+    } else if ((m_state == DRAG) && (nextState == DRAG)) {
+      emit filter->selectionRectChanged(e->x(), e->y());
+    } else if ((m_state == DRAG) && (nextState != DRAG)) {
+      emit filter->selectionRectEnded();
+    }
+  }
+
+  State m_state = NOT_STARTED;
+  glm::ivec2 m_startCoord = glm::ivec2(-1, -1);
+  glm::ivec2 m_endCoord = glm::ivec2(-1, -1);
+  bool m_clicked = false;
+  bool m_appended = false;
+};
+
+//
+
 Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)
   , m_meshRenderer(m_rendererBase)
@@ -16,7 +113,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   , m_preserveSourceColors(false)
   , m_showSourceColors(true)
   , m_selectMeshEvent("Select Mesh", false)
-//  , m_pressedMesh(nullptr)
+  , m_selectionStateMachine(new SelectionStateMachine)
   , m_dataIsInvalid(false)
 {
   setControlName("Mesh");
@@ -48,7 +145,17 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   m_selectMeshEvent.listenTo(
         "append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectMeshEvent.listenTo(
+        "rect select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseMove);
+  m_selectMeshEvent.listenTo(
         "append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
+
+  // If the user starts dragging a selection rectangle, using Qt::ControlModifier, it is best
+  // to cancel this interaction if the user changes the modifier mid drag.  But the result
+  // of each modifier change must be registered explicilty here.  It is feasible only to register
+  // the most likely change, to Qt::NoModifier.
+  m_selectMeshEvent.listenTo(
+        "rect select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseMove);
+
   connect(&m_selectMeshEvent, &ZEventListenerParameter::mouseEventTriggered,
           this, &Z3DMeshFilter::selectMesh);
   addEventListener(m_selectMeshEvent);
@@ -594,40 +701,31 @@ void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
 #endif
 
   e->ignore();
-  switch (e->type()) {
-  case QEvent::MouseButtonPress:
-    if (e->type() == QEvent::MouseButtonPress) { //Record mouse position for movement check
-      m_startCoord.x = e->x();
-      m_startCoord.y = e->y();
-    }
-    break;
-  case QEvent::MouseButtonRelease:
-    if (std::abs(e->x() - m_startCoord.x) < 2
-        && std::abs(m_startCoord.y - e->y()) < 2) {
-      const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
-      ZMesh *hitMesh = NULL;
-      if (obj != NULL) {
-        // Check if any point was selected...
-        for (auto m : m_meshList) {
-          if (m == obj) {
-            hitMesh = m;
-            break;
-          }
+
+  m_selectionStateMachine->onEvent(e, this);
+
+  bool clicked = false;
+  bool appended = false;
+  glm::ivec2 p0, p1;
+  if (m_selectionStateMachine->finished(clicked, appended, p0, p1)) {
+    if (clicked || appended) {
+      std::set<const void*> objs = pickingManager().objectsInWidgetRect(p0, p1);
+      bool accept = false;
+      for (auto m : m_meshList) {
+        if (objs.find(m) != objs.end()) {
+          emit meshSelected(m, appended);
+          accept = true;
         }
       }
-
-      if (e->modifiers() == Qt::ControlModifier) {
-        emit meshSelected(hitMesh, true);
-      } else {
-        emit meshSelected(hitMesh, false);
+      if (clicked && (objs.size() == 1) && (objs.count(nullptr) == 1)) {
+        // In this case, the user clicked on empty space, so the selection should be cleared.
+        emit meshSelected(nullptr, false);
+        accept = true;
       }
-
-      if (hitMesh != NULL) {
+      if (accept) {
         e->accept();
       }
     }
-  default:
-    break;
   }
 }
 
