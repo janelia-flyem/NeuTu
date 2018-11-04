@@ -200,8 +200,6 @@ static void LoadFlyEmConfig(
     }
 //      GET_FLYEM_CONFIG.setDefaultTaskServer(taskServer.toStdString());
   }
-
-  GET_FLYEM_CONFIG.activateNeuTuServer();
 #endif
 }
 
@@ -347,6 +345,8 @@ int main(int argc, char *argv[])
   }
 
   if (guiEnabled) {
+    GET_FLYEM_CONFIG.activateNeuTuServer();
+
 #ifdef _QT5_
     QSurfaceFormat format;
 #if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
