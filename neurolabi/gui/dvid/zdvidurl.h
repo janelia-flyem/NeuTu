@@ -277,7 +277,7 @@ public:
       const ZIntPoint &from, const ZIntPoint &to) const;
 
   std::string getTodoListUrl() const;
-  std::string getTodlListElementsUrl() const;
+  std::string getTodoListElementsUrl() const;
   std::string getTodoListDeleteUrl(int x, int y, int z) const;
   std::string getTodoListUrl(const ZIntCuboid &cuboid) const;
   std::string getTodoListUrl(int x, int y, int z,

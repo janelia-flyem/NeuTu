@@ -400,6 +400,11 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
 }
 
+void ZDvidWriter::mergeBody(uint64_t targetId, const std::vector<uint64_t> &bodyId)
+{
+  mergeBody(getDvidTarget().getBodyLabelName(), targetId, bodyId);
+}
+
 #if 0
 void ZDvidWriter::mergeBody(
     const std::string &dataName, const std::vector<uint64_t> &bodyId,
@@ -1789,11 +1794,15 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   ZJsonArray itemJson;
   itemJson.append(item.toJsonObject());
 
+  LINFO() << itemJson.dumpString(0);
+
 #ifdef _DEBUG_
-  std::cout << itemJson.dumpString(0) << std::endl;
+  std::cout << "Todo query url: "
+            << url.getTodoListUrl(item.getX(), item.getY(), item.getZ())
+            << std::endl;
 #endif
 
-  writeJson(url.getTodlListElementsUrl(), itemJson);
+  writeJson(url.getTodoListElementsUrl(), itemJson);
 }
 
 void ZDvidWriter::writeLabel(const ZArray &label)

@@ -1187,10 +1187,15 @@ int ZCommandLine::skeletonizeDvid()
 
       if (tree == NULL) {
         ZObject3dScan obj;
-        const int blockCount = bodyReader.readBodyBlockCount(bodyId);
-        constexpr int maxBlockCount = 3000;
-        int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
-        int zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+
+        int zoom = 0;
+        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+          constexpr int maxBlockCount = 3000;
+          int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+          zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+        }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
