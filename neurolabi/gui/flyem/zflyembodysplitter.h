@@ -66,7 +66,7 @@ private:
 
 private:
   uint64_t m_bodyId = 0; //Body for splitting
-  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
   bool m_fromTar = false;
   EState m_state= STATE_NO_SPLIT;
 
@@ -74,7 +74,7 @@ private:
 
   ZSparseStack *m_cachedObject = nullptr;
   uint64_t m_cachedBodyId = 0;
-  flyem::EBodyLabelType m_cachedLabelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_cachedLabelType = flyem::EBodyLabelType::BODY;
 };
 
 #endif // ZFLYEMBODYSPLITTER_H

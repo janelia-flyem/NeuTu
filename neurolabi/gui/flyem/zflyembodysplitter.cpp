@@ -63,17 +63,17 @@ T* ZFlyEmBodySplitter::getParentDoc() const
 
 void ZFlyEmBodySplitter::runSplit()
 {
-  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::RANGE_SEED);
+  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::EBodySplitRange::SEED);
 }
 
 void ZFlyEmBodySplitter::runFullSplit()
 {
-  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::RANGE_FULL);
+  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::EBodySplitRange::FULL);
 }
 
 void ZFlyEmBodySplitter::runLocalSplit()
 {
-  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::RANGE_LOCAL);
+  runSplit(getParentDoc<ZFlyEmBody3dDoc>(), flyem::EBodySplitRange::LOCAL);
 }
 /*
 void ZFlyEmBodySplitter::runSplit(ZFlyEmBody3dDoc *doc)
@@ -108,13 +108,13 @@ void ZFlyEmBodySplitter::runSplit(
 
         ZIntCuboid dataRange;
         switch (rangeOption) {
-        case flyem::RANGE_FULL:
+        case flyem::EBodySplitRange::FULL:
           container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
           break;
-        case flyem::RANGE_SEED:
+        case flyem::EBodySplitRange::SEED:
           container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_ROI);
           break;
-        case flyem::RANGE_LOCAL:
+        case flyem::EBodySplitRange::LOCAL:
           container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
           dataRange = container.getRange();
           break;
@@ -123,11 +123,11 @@ void ZFlyEmBodySplitter::runSplit(
         ZSparseStack *sparseStack = getBodyForSplit();
 //        ZDvidSparseStack *sparseStack =
 //            doc->getDataDocument()->getDvidSparseStack(
-//              dataRange, flyem::BODY_SPLIT_ONLINE);
+//              dataRange, flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
         if (sparseStack != NULL) {
           container.setData(NULL, sparseStack);
 //                NULL, sparseStack->getSparseStack(container.getRange()));
-          if (rangeOption == flyem::RANGE_LOCAL) {
+          if (rangeOption == flyem::EBodySplitRange::LOCAL) {
             std::vector<ZStackWatershedContainer*> containerList =
                 container.makeLocalSeedContainer(256);
 
@@ -179,13 +179,13 @@ void ZFlyEmBodySplitter::setFromTar(bool status)
 void ZFlyEmBodySplitter::updateSplitState(flyem::EBodySplitRange rangeOption)
 {
   switch (rangeOption) {
-  case flyem::RANGE_FULL:
+  case flyem::EBodySplitRange::FULL:
     m_state = STATE_FULL_SPLIT;
     break;
-  case flyem::RANGE_SEED:
+  case flyem::EBodySplitRange::SEED:
     m_state = STATE_SPLIT;
     break;
-  case flyem::RANGE_LOCAL:
+  case flyem::EBodySplitRange::LOCAL:
     m_state = STATE_LOCAL_SPLIT;
     break;
   }
@@ -201,7 +201,7 @@ void ZFlyEmBodySplitter::invalidateCache()
   delete m_cachedObject;
   m_cachedObject = nullptr;
   m_cachedBodyId = 0;
-  m_cachedLabelType = flyem::LABEL_BODY;
+  m_cachedLabelType = flyem::EBodyLabelType::BODY;
 }
 
 void ZFlyEmBodySplitter::cacheBody(ZSparseStack *body)
@@ -238,6 +238,6 @@ void ZFlyEmBodySplitter::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::MSG_INFORMATION,
+          message, neutube::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }

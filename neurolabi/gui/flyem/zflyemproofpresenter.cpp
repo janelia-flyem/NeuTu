@@ -46,7 +46,7 @@ void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
 //  m_splitWindowMode = false;
-  m_splitMode = flyem::BODY_SPLIT_NONE;
+  m_splitMode = flyem::EBodySplitMode::NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -446,23 +446,23 @@ void ZFlyEmProofPresenter::highlightPsd(bool on)
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()
 {
-  tryAddSynapseMode(ZDvidSynapse::KIND_PRE_SYN);
+  tryAddSynapseMode(ZDvidSynapse::EKind::KIND_PRE_SYN);
 }
 
 void ZFlyEmProofPresenter::tryAddPostSynapseMode()
 {
-  tryAddSynapseMode(ZDvidSynapse::KIND_POST_SYN);
+  tryAddSynapseMode(ZDvidSynapse::EKind::KIND_POST_SYN);
 }
 
 void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
 {
   turnOnActiveObject(ROLE_SYNAPSE, false);
   switch (kind) {
-  case ZDvidSynapse::KIND_PRE_SYN:
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
     m_interactiveContext.setSynapseEditMode(
           ZInteractiveContext::SYNAPSE_ADD_PRE);
     break;
-  case ZDvidSynapse::KIND_POST_SYN:
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
     m_interactiveContext.setSynapseEditMode(
           ZInteractiveContext::SYNAPSE_ADD_POST);
     break;
@@ -541,7 +541,7 @@ bool ZFlyEmProofPresenter::isSplitOn() const
 
 void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
 {
-  if (mode == flyem::BODY_SPLIT_NONE) {
+  if (mode == flyem::EBodySplitMode::NONE) {
     disableSplit();
   } else {
     setSplitMode(mode);
@@ -551,7 +551,7 @@ void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitMode(flyem::BODY_SPLIT_NONE);
+  setSplitMode(flyem::EBodySplitMode::NONE);
   setSplitEnabled(false);
 }
 
@@ -578,10 +578,10 @@ void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt, bool tryingLink)
 {
   switch (interactiveContext().synapseEditMode()) {
   case ZInteractiveContext::SYNAPSE_ADD_PRE:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN, tryingLink);
+    tryAddSynapse(pt, ZDvidSynapse::EKind::KIND_PRE_SYN, tryingLink);
     break;
   case ZInteractiveContext::SYNAPSE_ADD_POST:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN, tryingLink);
+    tryAddSynapse(pt, ZDvidSynapse::EKind::KIND_POST_SYN, tryingLink);
     break;
   default:
     break;
@@ -628,30 +628,30 @@ void ZFlyEmProofPresenter::tryAddTodoItem(
 
 void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::TO_DO);
+  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_DO);
 //  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
 }
 
 void ZFlyEmProofPresenter::tryAddToMergeItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::TO_MERGE);
+  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_MERGE);
 //  getCompleteDocument()->executeAddToMergeItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::TO_SPLIT);
+  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_SPLIT);
 //  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::TO_SUPERVOXEL_SPLIT);
+  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT);
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, true, neutube::TO_DO);
+  tryAddTodoItem(pt, true, neutube::EToDoAction::TO_DO);
 //  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
 }
 
@@ -682,12 +682,12 @@ void ZFlyEmProofPresenter::setTodoItemIrrelevant()
 
 void ZFlyEmProofPresenter::setTodoItemToMerge()
 {
-  getCompleteDocument()->setTodoItemAction(neutube::TO_MERGE);
+  getCompleteDocument()->setTodoItemAction(neutube::EToDoAction::TO_MERGE);
 }
 
 void ZFlyEmProofPresenter::setTodoItemToSplit()
 {
-  getCompleteDocument()->setTodoItemAction(neutube::TO_SPLIT);
+  getCompleteDocument()->setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
 }
 
 void ZFlyEmProofPresenter::setTodoDelegate(
@@ -792,7 +792,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    ZIntPoint pos(x, y, buddyView()->getZ(neutube::COORD_STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(neutube::ECoordinateSystem::STACK));
     pos.shiftSliceAxisInverse(getSliceAxis());
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
@@ -826,7 +826,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
 
   bool processed = true;
 
@@ -834,7 +834,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+      ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
       ZIntPoint pos = currentStackPos.toIntPoint();
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -999,13 +999,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::BODY_LABEL_ORIGINAL);
+          bodySet, neutube::EBodyLabelType::ORIGINAL);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::BODY_LABEL_MAPPED);
+          neutube::EBodyLabelType::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1019,13 +1019,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::BODY_LABEL_MAPPED);
+          bodySet, neutube::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::BODY_LABEL_MAPPED);
+          neutube::EBodyLabelType::MAPPED);
     std::set<uint64_t> newBodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1038,13 +1038,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          newBodySet, neutube::BODY_LABEL_MAPPED);
+          newBodySet, neutube::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::BODY_LABEL_MAPPED);
+          neutube::EBodyLabelType::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1054,7 +1054,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::BODY_LABEL_MAPPED);
+          bodySet, neutube::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
@@ -1134,7 +1134,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
   return updateActiveObjectForSynapseMove(currentStackPos);
 }
 
@@ -1173,7 +1173,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
   updateActiveObjectForSynapseAdd(currentStackPos);
 }
 
@@ -1186,13 +1186,13 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
   pos.shiftSliceAxis(buddyView()->getSliceAxis());
   stroke->set(pos.x(), pos.y());
 
-  ZDvidSynapse::EKind kind  = ZDvidSynapse::KIND_UNKNOWN;
+  ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;
   switch (interactiveContext().synapseEditMode()) {
   case ZInteractiveContext::SYNAPSE_ADD_PRE:
-    kind = ZDvidSynapse::KIND_PRE_SYN;
+    kind = ZDvidSynapse::EKind::KIND_PRE_SYN;
     break;
   case ZInteractiveContext::SYNAPSE_ADD_POST:
-    kind = ZDvidSynapse::KIND_POST_SYN;
+    kind = ZDvidSynapse::EKind::KIND_POST_SYN;
     break;
   default:
     break;

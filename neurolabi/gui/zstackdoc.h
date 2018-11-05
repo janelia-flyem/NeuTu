@@ -45,7 +45,7 @@
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
-#include "zmesh.h"
+//#include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
 #include "core/utilities.h"
@@ -92,6 +92,7 @@ class ZStackObjectInfo;
 class ZRoiObjsModel;
 class ZActionLibrary;
 class ZSwcTree;
+class ZMesh;
 class ZObject3d;
 class ZArbSliceViewParam;
 class ZObjsModelManager;
@@ -120,12 +121,12 @@ public:
     BAD_TUBE
   };
 
-  enum LoadObjectOption {
+  enum class LoadObjectOption {
     REPLACE_OBJECT,
     APPEND_OBJECT
   };
 
-  enum EComponent {
+  enum class EComponent {
     STACK, STACK_MASK, STACK_SEGMENTATION, SEGMENTATION_OBJECT,
     SEGMENTATION_GRAPH, SEGMENTATION_INDEX_MAP, SPARSE_STACK
   };
@@ -610,10 +611,12 @@ public:
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
                          TubeImportOption option = TubeImportOption::ALL_TUBE,
-                         LoadObjectOption objopt = APPEND_OBJECT);
-  void importSwc(QStringList files, LoadObjectOption objopt = APPEND_OBJECT);
+                         LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
+  void importSwc(
+      QStringList files,
+      LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
   void importPuncta(const QStringList &files,
-                    LoadObjectOption objopt = APPEND_OBJECT);
+                    LoadObjectOption objopt = LoadObjectOption::APPEND_OBJECT);
 
   bool importPuncta(const char *filePath);
 
@@ -1488,7 +1491,18 @@ protected:
   ZSharedPointer<ZActionLibrary> m_actionLibrary;
 };
 
-//   template  //
+template <typename InputIterator>
+void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    addObjectFast(obj);
+  }
+  endObjectModifiedMode();
+  processObjectModified();
+}
+
 template <class InputIterator>
 void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool select)
 {
@@ -1512,80 +1526,6 @@ void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool
 }
 
 template <class InputIterator>
-void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool select)
-{
-  QList<ZMesh*> selected;
-  QList<ZMesh*> deselected;
-  for (InputIterator it = first; it != last; ++it) {
-    ZMesh *mesh = *it;
-    if (mesh->isSelected() != select) {
-      mesh->setSelected(select);
-      m_objectGroup.setSelected(mesh, select);
-      if (select) {
-        //m_selectedPuncta.insert(punctum);
-        selected.push_back(mesh);
-      } else {
-        //m_selectedPuncta.erase(punctum);
-        deselected.push_back(mesh);
-      }
-    }
-  }
-  notifySelectionChanged(selected, deselected);
-}
-
-
-template <typename T>
-void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
-                                     const std::set<T*> &newSelected)
-{
-  QList<T*> selected;
-  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
-  for (typename std::set<T*>::const_iterator iter = addedSet.begin();
-       iter != addedSet.end(); ++iter) {
-    selected.append(const_cast<T*>(*iter));
-  }
-  /*
-
-
-  for (typename std::set<T*>::const_iterator iter = newSelected.begin();
-       iter != newSelected.end(); ++iter) {
-    if (oldSelected.count(*iter) == 0) {
-      selected.append(const_cast<T*>(*iter));
-    }
-  }
-*/
-  notifySelected(selected);
-  //notifySelectionChanged(selected, QList<T*>());
-}
-
-template <typename T>
-void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
-                                       const std::set<T*> &newSelected)
-{
-  QList<T*> deselected;
-  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
-  for (typename std::set<T*>::const_iterator iter = removedSet.begin();
-       iter != removedSet.end(); ++iter) {
-    deselected.append(const_cast<T*>(*iter));
-  }
-
-  notifyDeselected(deselected);
-}
-
-template <typename T>
-void ZStackDoc::notifySelected(const QList<T*> &selected)
-{
-  notifySelectionChanged(selected, QList<T*>());
-}
-
-template <typename T>
-void ZStackDoc::notifyDeselected(const QList<T*> &deselected)
-{
-  notifySelectionChanged(QList<T*>(), deselected);
-}
-
-
-template <class InputIterator>
 void ZStackDoc::setSwcTreeNodeSelected(
     InputIterator first, InputIterator last, bool select)
 {
@@ -1595,11 +1535,10 @@ void ZStackDoc::setSwcTreeNodeSelected(
   }
 }
 
-template <typename T>
-QList<T*> ZStackDoc::getSelectedObjectList() const
+template<typename T>
+QList<T*> ZStackDoc::getObjectList() const
 {
-  T phony;
-  return getSelectedObjectList<T>(phony.getType());
+  return m_objectGroup.getObjectList<T>();
 }
 
 template <typename T>
@@ -1639,57 +1578,17 @@ std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
 }
 
 template <typename T>
-QList<T*> ZStackDoc::getUserList() const
-{
-  QList<T*> userList;
-  for (QList<QObject*>::const_iterator iter = m_userList.begin();
-       iter != m_userList.end(); ++iter) {
-    T *user = qobject_cast<T*>(*iter);
-    if (user != NULL) {
-      userList.append(user);
-    }
-  }
-
-  return userList;
-}
-
-template <typename InputIterator>
-void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
-{
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-  for (InputIterator iter = first; iter != last; ++iter) {
-    ZStackObject *obj = *iter;
-    addObjectFast(obj);
-  }
-  endObjectModifiedMode();
-  processObjectModified();
-}
-
-template<typename T>
-QList<T*> ZStackDoc::getObjectList() const
-{
-  return m_objectGroup.getObjectList<T>();
-}
-
-template <typename T>
 T* ZStackDoc::getObject(const std::string &source) const
 {
   return dynamic_cast<T*>(getObject(T::GetType(), source));
 }
 
-#if 0
 template <typename T>
-void ZStackDoc::registerUser(T *user)
+QList<T*> ZStackDoc::getSelectedObjectList() const
 {
-  if (!m_userList.contains(user)) {
-    m_userList.append(user);
-    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(removeUser(QObject*)));
-#ifdef _DEBUG_
-    connect(user, SIGNAL(destroyed()), this, SLOT(emptySlot()));
-    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(emptySlot()));
-#endif
-  }
+  T phony;
+  return getSelectedObjectList<T>(phony.getType());
 }
-#endif
+
 
 #endif

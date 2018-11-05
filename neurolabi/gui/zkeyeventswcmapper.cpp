@@ -80,8 +80,8 @@ void ZKeyEventSwcMapper::setTag(neutube::Document::ETag tag)
 
 void ZKeyEventSwcMapper::updateKeyMap()
 {
-  if (m_docTag == neutube::Document::FLYEM_SPLIT ||
-      m_docTag == neutube::Document::FLYEM_PROOFREAD) {
+  if (m_docTag == neutube::Document::ETag::FLYEM_SPLIT ||
+      m_docTag == neutube::Document::ETag::FLYEM_PROOFREAD) {
     m_plainKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_NULL;
     m_plainKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_NULL;
     m_controlKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_ADD_NODE;

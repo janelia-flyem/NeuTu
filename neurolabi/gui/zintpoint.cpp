@@ -370,13 +370,13 @@ void ZIntPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     return m_x;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     return m_y;
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     return m_z;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     return m_z;
   }
 

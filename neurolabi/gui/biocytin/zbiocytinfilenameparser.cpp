@@ -8,13 +8,13 @@ using namespace std;
 
 const static ZBiocytinFileNameParser::TSuffixMap::value_type rawMap[] = {
   ZBiocytinFileNameParser::TSuffixMap::value_type(
-  ZBiocytinFileNameParser::EDIT, ".Edit"),
+  ZBiocytinFileNameParser::ESuffixRole::EDIT, ".Edit"),
   ZBiocytinFileNameParser::TSuffixMap::value_type(
-  ZBiocytinFileNameParser::PROJECTION, ".Proj"),
+  ZBiocytinFileNameParser::ESuffixRole::PROJECTION, ".Proj"),
   ZBiocytinFileNameParser::TSuffixMap::value_type(
-  ZBiocytinFileNameParser::MASK, ".Mask"),
+  ZBiocytinFileNameParser::ESuffixRole::MASK, ".Mask"),
   ZBiocytinFileNameParser::TSuffixMap::value_type(
-  ZBiocytinFileNameParser::ROI, ".Roi")
+  ZBiocytinFileNameParser::ESuffixRole::ROI, ".Roi")
 };
 
 const int MapEntryCount = sizeof(rawMap) / sizeof(rawMap[0]);
@@ -58,7 +58,7 @@ ZBiocytinFileNameParser::getRole(const std::string &path)
     }
   }
 
-  return ORIGINAL;
+  return ESuffixRole::ORIGINAL;
 }
 
 std::string ZBiocytinFileNameParser::getSuffix(ESuffixRole role)
@@ -75,5 +75,5 @@ int ZBiocytinFileNameParser::getTileIndex(const string &path)
 
 std::string ZBiocytinFileNameParser::getSwcEditPath(const string &path)
 {
-  return getCorePath(path) + getSuffix(EDIT) + ".swc";
+  return getCorePath(path) + getSuffix(ESuffixRole::EDIT) + ".swc";
 }

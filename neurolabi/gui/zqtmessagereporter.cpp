@@ -20,19 +20,19 @@ void ZQtMessageReporter::report(
     neutube::EMessageType msgType)
 {
   switch (msgType) {
-  case neutube::MSG_ERROR:
+  case neutube::EMessageType::ERROR:
     QMessageBox::critical(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Critical);
     break;
-  case neutube::MSG_WARNING:
+  case neutube::EMessageType::WARNING:
     QMessageBox::warning(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Warning);
     break;
-  case neutube::MSG_INFORMATION:
+  case neutube::EMessageType::INFORMATION:
     QMessageBox::information(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Information);
     break;
-  case neutube::MSG_DEBUG:
+  case neutube::EMessageType::DEBUG:
     ZMessageReporter::report(title, message, msgType);
     break;
   }

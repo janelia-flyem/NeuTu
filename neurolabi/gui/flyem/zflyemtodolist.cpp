@@ -45,7 +45,7 @@ void ZFlyEmToDoList::init()
   m_startZ = 0;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
   m_isReady = false;
 }
 
@@ -64,7 +64,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (itemJson.hasKey("Pos")) {
         ZFlyEmToDoItem item;
-        item.loadJsonObject(itemJson, flyem::LOAD_PARTNER_RELJSON);
+        item.loadJsonObject(itemJson, flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON);
         addItem(item, DATA_LOCAL);
       }
     }
@@ -381,7 +381,7 @@ void ZFlyEmToDoList::display(
 
           if (!ready && m_view != NULL) {
             ready =itemSlice.isReady(
-                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);

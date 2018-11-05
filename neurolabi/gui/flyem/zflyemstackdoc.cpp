@@ -213,17 +213,17 @@ void ZFlyEmStackDoc::updateBodyIndexMap()
 void ZFlyEmStackDoc::deprecateDependent(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     if (stackRef() == m_segmentationBundle.getBodyStackRef()) {
-      deprecateDependent(STACK_SEGMENTATION);
+      deprecateDependent(EComponent::STACK_SEGMENTATION);
     }
     break;
-  case STACK_SEGMENTATION:
-    deprecate(SEGMENTATION_OBJECT);
-    deprecate(SEGMENTATION_GRAPH);
+  case EComponent::STACK_SEGMENTATION:
+    deprecate(EComponent::SEGMENTATION_OBJECT);
+    deprecate(EComponent::SEGMENTATION_GRAPH);
     break;
-  case SEGMENTATION_OBJECT:
-    deprecate(SEGMENTATION_INDEX_MAP);
+  case EComponent::SEGMENTATION_OBJECT:
+    deprecate(EComponent::SEGMENTATION_INDEX_MAP);
     break;
   default:
     break;
@@ -235,17 +235,17 @@ void ZFlyEmStackDoc::deprecate(EComponent component)
   deprecateDependent(component);
 
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     ZStackDoc::deprecate(component);
     break;
-  case STACK_SEGMENTATION:
+  case EComponent::STACK_SEGMENTATION:
     m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_STACK);
     break;
-  case SEGMENTATION_OBJECT:
+  case EComponent::SEGMENTATION_OBJECT:
     break;
-  case SEGMENTATION_INDEX_MAP:
+  case EComponent::SEGMENTATION_INDEX_MAP:
     break;
-  case SEGMENTATION_GRAPH:
+  case EComponent::SEGMENTATION_GRAPH:
     m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_GRAPH);
     break;
   default:
@@ -256,18 +256,18 @@ void ZFlyEmStackDoc::deprecate(EComponent component)
 bool ZFlyEmStackDoc::isDeprecated(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     return ZStackDoc::isDeprecated(component);
-  case STACK_SEGMENTATION:
+  case EComponent::STACK_SEGMENTATION:
     return m_segmentationBundle.isDeprecated(
           flyem::ZSegmentationBundle::BODY_STACK);
-  case SEGMENTATION_OBJECT:
+  case EComponent::SEGMENTATION_OBJECT:
     return m_segmentationBundle.isDeprecated(
           flyem::ZSegmentationBundle::BODY_STACK);
-  case SEGMENTATION_INDEX_MAP:
+  case EComponent::SEGMENTATION_INDEX_MAP:
     return m_segmentationBundle.isDeprecated(
           flyem::ZSegmentationBundle::BODY_INDEX_MAP);
-  case SEGMENTATION_GRAPH:
+  case EComponent::SEGMENTATION_GRAPH:
     return m_segmentationBundle.isDeprecated(
           flyem::ZSegmentationBundle::BODY_GRAPH);
   default:

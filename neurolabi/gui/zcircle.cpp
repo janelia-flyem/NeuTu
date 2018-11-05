@@ -63,7 +63,7 @@ void ZCircle::display(
     ZPainter &painter, int n,
     ZStackObject::EDisplayStyle style, neutube::EAxis sliceAxis) const
 {
-  if (!isVisible() || sliceAxis != neutube::Z_AXIS) {
+  if (!isVisible() || sliceAxis != neutube::EAxis::Z) {
     return;
   }
 

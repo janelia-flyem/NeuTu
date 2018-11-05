@@ -33,9 +33,9 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case neutube::Document::FLYEM_MERGE:
+  case neutube::Document::ETag::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
+    frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
     frame->setObjectDisplayStyle(ZStackObject::SOLID);
     break;
   default:
@@ -61,9 +61,9 @@ ZFrameFactory::MakeStackFrame(
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case neutube::Document::FLYEM_MERGE:
+  case neutube::Document::ETag::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
+    frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
     break;
   default:
     frame = ZStackFrame::Make(NULL);

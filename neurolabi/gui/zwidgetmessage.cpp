@@ -4,7 +4,7 @@
 #include <QDateTime>
 
 ZWidgetMessage::ZWidgetMessage(ETarget target) :
-  m_type(neutube::MSG_INFORMATION), m_target(target)
+  m_type(neutube::EMessageType::INFORMATION), m_target(target)
 {
 }
 
@@ -44,14 +44,14 @@ QString ZWidgetMessage::ToHtmlString(
 
   if (!output.startsWith("<p>")) {
     switch (type) {
-    case neutube::MSG_INFORMATION:
+    case neutube::EMessageType::INFORMATION:
 //      output += "<font color = \"#007700\">test</font>";
 //      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
       break;
-    case neutube::MSG_ERROR:
+    case neutube::EMessageType::ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
       break;
-    case neutube::MSG_WARNING:
+    case neutube::EMessageType::WARNING:
       output = "<p><font color=\"#777700\">" + output + "</font></p>";
       break;
     default:

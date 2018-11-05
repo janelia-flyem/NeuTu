@@ -16,6 +16,7 @@
 #include "neutubeconfig.h"
 #include "zswctree.h"
 #include "zobjsmodelmanager.h"
+#include "zmesh.h"
 
 #include <QSortFilterProxyModel>
 #include <QHBoxLayout>

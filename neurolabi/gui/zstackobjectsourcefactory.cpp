@@ -61,15 +61,15 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
     flyem::EBodyType bodyType)
 {
   switch (bodyType) {
-  case flyem::BODY_DEFAULT:
+  case flyem::EBodyType::DEFAULT:
     break;
-  case flyem::BODY_SPHERE:
+  case flyem::EBodyType::SPHERE:
     return "sphere";
 //  case flyem::BODY_COARSE:
 //    return "coarse";
-  case flyem::BODY_SKELETON:
+  case flyem::EBodyType::SKELETON:
     return "skeleton";
-  case flyem::BODY_MESH:
+  case flyem::EBodyType::MESH:
     return "mesh";
     break;
   }
@@ -159,13 +159,13 @@ flyem::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
       const std::string &source)
 {
   ZString str(source);
-  flyem::EBodyType bodyType = flyem::BODY_DEFAULT;
-  if (str.contains("#." + GetBodyTypeName(flyem::BODY_SPHERE))) {
-    bodyType = flyem::BODY_SPHERE;
-  } else if (str.contains("#." + GetBodyTypeName(flyem::BODY_MESH))) {
-    bodyType = flyem::BODY_MESH;
-  } else if (str.contains("#." + GetBodyTypeName(flyem::BODY_SKELETON))) {
-    bodyType = flyem::BODY_SKELETON;
+  flyem::EBodyType bodyType = flyem::EBodyType::DEFAULT;
+  if (str.contains("#." + GetBodyTypeName(flyem::EBodyType::SPHERE))) {
+    bodyType = flyem::EBodyType::SPHERE;
+  } else if (str.contains("#." + GetBodyTypeName(flyem::EBodyType::MESH))) {
+    bodyType = flyem::EBodyType::MESH;
+  } else if (str.contains("#." + GetBodyTypeName(flyem::EBodyType::SKELETON))) {
+    bodyType = flyem::EBodyType::SKELETON;
   }
 
   return bodyType;
@@ -210,13 +210,13 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
 {
   std::string source = "#.DVIDLabelSlice";
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -232,13 +232,13 @@ std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource(
   std::string source =  "#.DVIDGraySlice";
 
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -362,10 +362,10 @@ ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeDvidSynapseEnsembleSource();
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
   default:
@@ -409,10 +409,10 @@ ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeTodoListEnsembleSource();
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     source += ".X";
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     source += ".Y";
     break;
   default:

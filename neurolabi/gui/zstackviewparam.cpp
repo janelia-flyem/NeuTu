@@ -8,7 +8,7 @@
 
 ZStackViewParam::ZStackViewParam()
 {
-  init(neutube::COORD_RAW_STACK);
+  init(neutube::ECoordinateSystem::RAW_STACK);
 }
 
 ZStackViewParam::ZStackViewParam(neutube::ECoordinateSystem coordSys)
@@ -20,9 +20,9 @@ void ZStackViewParam::init(neutube::ECoordinateSystem coordSys)
 {
   m_z = 0;
   m_coordSys = coordSys;
-  m_action = neutube::View::EXPLORE_UNKNOWN;
+  m_action = neutube::View::EExploreAction::EXPLORE_UNKNOWN;
   m_fixingZ = false;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
 }
 
 QRectF ZStackViewParam::getProjRect() const
@@ -114,7 +114,7 @@ bool ZStackViewParam::operator ==(const ZStackViewParam &param) const
     return false;
   }
 
-  if (getSliceAxis() == neutube::A_AXIS) {
+  if (getSliceAxis() == neutube::EAxis::ARB) {
     if (getSliceViewParam() != param.getSliceViewParam()) {
       return false;
     }
@@ -132,7 +132,7 @@ bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
 bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
   if (getSliceAxis() == param.getSliceAxis()) {
-    if (getSliceAxis() == neutube::A_AXIS) {
+    if (getSliceAxis() == neutube::EAxis::ARB) {
       return getSliceViewParam().contains(param.getSliceViewParam());
     } else if (m_z == param.m_z) {
       if (param.getViewPort().isEmpty()) {
@@ -259,7 +259,7 @@ void ZStackViewParam::setArbSliceView(const ZArbSliceViewParam &param)
 void ZStackViewParam::moveSlice(int step)
 {
   m_z += step;
-  if (m_sliceAxis == neutube::A_AXIS) {
+  if (m_sliceAxis == neutube::EAxis::ARB) {
     ZPoint dp = m_v1.cross(m_v2) * step;
     m_center += dp.toIntPoint();
   }
@@ -274,7 +274,7 @@ bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
 {
   bool result = false;
   if (m_sliceAxis == param.m_sliceAxis) {
-    if (m_sliceAxis == neutube::A_AXIS) {
+    if (m_sliceAxis == neutube::EAxis::ARB) {
       result = zgeom::IsSameAffinePlane(
             m_center.toPoint(), m_v1, m_v2,
             param.m_center.toPoint(), param.m_v1, param.m_v2);

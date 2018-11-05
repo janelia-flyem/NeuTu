@@ -148,7 +148,7 @@ void ZDvidSparseStack::display(
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
           getLabel(), getLabelType(), painter.getZ(slice),
-          neutube::Z_AXIS, true, NULL);
+          neutube::EAxis::Z, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -240,7 +240,7 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
   ZObject3dScan *obj = new ZObject3dScan;
 
   flyem::EBodyLabelType labelType = getLabelType();
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Label type: " << m_labelType << std::endl;
   std::cout << "Label type: " << getLabelType() << std::endl;
   std::cout << "Label type: " << labelType << std::endl;

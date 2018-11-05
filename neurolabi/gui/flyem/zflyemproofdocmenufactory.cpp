@@ -126,7 +126,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
       std::set<uint64_t> selectedOriginal =
-          doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+          doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
         if (!doc->getDvidTarget().getSynapseName().empty()) {
@@ -147,7 +147,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             std::set<uint64_t> selectedMapped =
-                doc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
+                doc->getSelectedBodySet(neutube::EBodyLabelType::MAPPED);
 
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);
@@ -187,7 +187,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -209,7 +209,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       }
     }
 
-    if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
@@ -241,7 +241,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
 //  addAction(actionList, presenter, menu);
 
-  if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
     TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);

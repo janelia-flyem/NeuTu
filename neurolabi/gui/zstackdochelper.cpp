@@ -34,7 +34,7 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
   }
 
   ZStack *stack = NULL;
-  if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
     const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
@@ -102,7 +102,7 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
       const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
       if (cdoc != NULL) {
         box = cdoc->getSplitRoi()->getCuboid();
@@ -134,7 +134,7 @@ ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
 
   if (doc.hasStack()) {
     box = doc.getStack()->getBoundBox();
-    if (sliceAxis == neutube::A_AXIS) {
+    if (sliceAxis == neutube::EAxis::ARB) {
       ZIntPoint center = box.getCenter();
       int length = iround(box.getDiagonalLength());
       box.setSize(length, length, length);
@@ -182,7 +182,7 @@ int ZStackDocHelper::CountSelectedBody(
 
 bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 {
-  return CountSelectedBody(doc, neutube::BODY_LABEL_ORIGINAL) > 0;
+  return CountSelectedBody(doc, neutube::EBodyLabelType::ORIGINAL) > 0;
 }
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
@@ -205,9 +205,9 @@ QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
   QColor color;
-  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::Z_AXIS);
+  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::EAxis::Z);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutube::EBodyLabelType::ORIGINAL);
   }
 
   return color;
@@ -226,23 +226,23 @@ std::string ZStackDocHelper::SaveStack(
 
 bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD;
+  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD;
 }
 
 bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
 }

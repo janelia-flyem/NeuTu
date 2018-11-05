@@ -16,18 +16,16 @@ static constexpr uint64_t HALFGIGA = 536870912;
 extern const char *VERSION;
 extern const char *PKG_VERSION;
 
-enum ESyncOption {
+enum class ESyncOption {
   SYNC, NO_SYNC
 };
 
-enum EDocumentableType {
-  Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
-  Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
-  Documentable_SPARSE_OBJECT, Documentable_Circle
+enum class EDocumentableType { //Obsolete
+  SWC, PUNCTUM, OBJ3D, STROKE, LOCSEG_CHAIN, CONN, SPARSE_OBJECT, Circle
 };
 
 namespace Document {
-enum ETag {
+enum class ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_COARSE_BODY,
   FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
@@ -37,78 +35,84 @@ enum ETag {
 }
 
 namespace View {
-enum EExploreAction {
+enum class EExploreAction {
   EXPLORE_NONE, EXPLORE_MOVE, EXPLORE_ZOOM, EXPLORE_SLICE,
   EXPLORE_ZOOM_DONE, EXPLORE_MOVE_DONE,
   EXPLORE_UNKNOWN
 };
 }
 
-enum EImageBackground {
-  IMAGE_BACKGROUND_BRIGHT, IMAGE_BACKGROUND_DARK
+enum class EImageBackground {
+  BRIGHT, DARK
 };
 
-enum ESizeHintOption {
-  SIZE_HINT_DEFAULT, SIZE_HINT_CURRENT_BEST, SIZE_HINT_TAKING_SPACE
+enum class ESizeHintOption {
+  DEFAULT, CURRENT_BEST, TAKING_SPACE
 };
 
 //Must have value X=0, Y=1, Z=2 for indexing
-enum EAxis {
-  X_AXIS = 0, Y_AXIS = 1, Z_AXIS = 2
-  , A_AXIS //arbitrary axis
+enum class EAxis : int {
+  X = 0, Y = 1, Z = 2
+  , ARB //arbitrary axis
 };
 
-enum EPlane {
-  PLANE_XY = 0, PLANE_XZ, PLANE_YZ
+template <typename T>
+constexpr typename std::underlying_type<T>::type EnumValue(T val)
+{
+    return static_cast<typename std::underlying_type<T>::type>(val);
+}
+
+enum class EPlane {
+  XY = 0, XZ, YZ
 };
 
-enum EAxisSystem {
-  AXIS_NORMAL, AXIS_SHIFTED
+enum class EAxisSystem {
+  NORMAL, SHIFTED
 };
 
-enum ECoordinateSystem {
-  COORD_WIDGET,
-  COORD_SCREEN,
-  COORD_RAW_STACK, //Coordiantes relative to the first stack corner
-  COORD_STACK,     //Absolute coordinates in the current stack alignment
-  COORD_ORGDATA,   //Coordinates registered to the original data
-  COORD_WORLD_2D, COORD_CANVAS
+enum class ECoordinateSystem {
+  WIDGET,
+  SCREEN,
+  RAW_STACK, //Coordiantes relative to the first stack corner
+  STACK,     //Absolute coordinates in the current stack alignment
+  ORGDATA,   //Coordinates registered to the original data
+  WORLD_2D, CANVAS
 };
 
-enum EColor {
-  COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_ALL
+enum class EColor {
+  RED, GREEN, BLUE, ALL
 };
 
-enum ESelectOption {
-  SELECT_APPEND, SELECT_ALONE, SELECT_ALONE_TYPE
+enum class ESelectOption {
+  APPEND, ALONE, ALONE_TYPE
 };
 
-enum EWindowConfig {
+enum class EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
 
-enum EMessageType {
-  MSG_INFORMATION, MSG_WARNING, MSG_ERROR, MSG_DEBUG
+enum class EMessageType {
+  INFORMATION, WARNING, ERROR, DEBUG
 };
 
-enum EBodyLabelType {
-  BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
+enum class EBodyLabelType {
+  ORIGINAL, MAPPED
 };
 
-enum EBiDirection {
-  DIRECTION_FORWARD, DIRECTION_BACKWARD
+enum class EBiDirection {
+  FORWARD, BACKWARD
 };
 
-enum ECardinalDirection {
-  CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
+enum class ECardinalDirection {
+  NORTH, EAST, SOUTH, WEST
 };
 
-enum EReadStatus {
-  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
-  READ_BAD_RESPONSE
+enum class EReadStatus {
+  NONE, OK, FAILED, TIMEOUT, CANCELED,
+  BAD_RESPONSE
 };
 
-enum EToDoAction {
+enum class EToDoAction {
   TO_DO, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
 };
 
@@ -169,32 +173,32 @@ static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 }
 
 namespace flyem {
-enum EDvidAnnotationLoadMode {
-  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
+enum class EDvidAnnotationLoadMode {
+  NO_PARTNER, PARTNER_LOCATION, PARTNER_RELJSON
 };
 
-enum EProofreadingMode {
-  PR_NORMAL, PR_SPLIT
+enum class EProofreadingMode {
+  NORMAL, SPLIT
 };
 
-enum EBodyType {
-  BODY_DEFAULT, BODY_SPHERE, BODY_SKELETON, BODY_MESH
+enum class EBodyType {
+  DEFAULT, SPHERE, SKELETON, MESH
 };
 
-enum EBodyLabelType {
-  LABEL_BODY, LABEL_SUPERVOXEL
+enum class EBodyLabelType {
+  BODY, SUPERVOXEL
 };
 
-enum EBodySplitMode {
-  BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
+enum class EBodySplitMode {
+  NONE, ONLINE, OFFLINE
 };
 
-enum EBodySplitRange {
-  RANGE_FULL, RANGE_SEED, RANGE_LOCAL
+enum class EBodySplitRange {
+  FULL, SEED, LOCAL
 };
 
-enum EDataSliceUpdatePolicy {
-  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
+enum class EDataSliceUpdatePolicy {
+  DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
 };
 
 static const uint64_t LABEL_ID_SELECTION =

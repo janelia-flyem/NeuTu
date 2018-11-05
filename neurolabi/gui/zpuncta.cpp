@@ -39,7 +39,7 @@ void ZPuncta::sort() const
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
                       neutube::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::Z_AXIS) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::EAxis::Z) {
     return;
   }
 

@@ -13,7 +13,7 @@ namespace neutube
 template<typename T>
 void read(std::istream &stream, T &v)
 {
-  stream.read((char*)(&v), sizeof(T));
+  stream.read(reinterpret_cast<char*>(&v), sizeof(T));
 }
 
 template<typename T>
@@ -33,6 +33,15 @@ void write(std::ostream &stream, const T *v, size_t n)
 {
   stream.write((const char*)(v), sizeof(T) * n);
 }
+
+template <typename T>
+std::ostream& operator << (
+    typename std::enable_if<std::is_enum<T>::value, std::ostream>::type &stream,
+    const T &v)
+{
+  return stream << static_cast<typename std::underlying_type<T>::type>(v);
+}
+
 
 template<typename T>
 void assign(T *out, const T &v);

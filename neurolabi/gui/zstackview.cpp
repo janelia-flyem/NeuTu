@@ -101,7 +101,7 @@ void ZStackView::init()
   m_imageWidget->setFocusPolicy(Qt::ClickFocus);
   m_imageWidget->setPaintBundle(&m_paintBundle);
 
-  setSliceAxis(neutube::Z_AXIS);
+  setSliceAxis(neutube::EAxis::Z);
 
   m_infoLabel = new QLabel(this);
   m_infoLabel->setText(tr("Stack Information"));
@@ -186,7 +186,7 @@ void ZStackView::init()
   connectSignalSlot();
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  m_sizeHintOption = neutube::SIZE_HINT_DEFAULT;
+  m_sizeHintOption = neutube::ESizeHintOption::DEFAULT;
 
   m_isRedrawBlocked = false;
 
@@ -314,7 +314,7 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
     QPointF stackPos = ZPositionMapper::WidgetToStack(
           widgetPos.x(), widgetPos.y(), getViewProj());
     ZPoint dataPos;
-    if (getSliceAxis() == neutube::A_AXIS) {
+    if (getSliceAxis() == neutube::EAxis::ARB) {
       dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
       setInfo(QString("(%1, %2, %3)").
               arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
@@ -624,7 +624,7 @@ void ZStackView::updateChannelControl()
   m_zSpinBox->setVisible(false);
   ZStack *stack = stackData();
   if (stack != NULL) {
-    if (getDepth() > 1 && getSliceAxis() != neutube::A_AXIS) {
+    if (getDepth() > 1 && getSliceAxis() != neutube::EAxis::ARB) {
       m_zSpinBox->setVisible(true);
     }
 
@@ -637,7 +637,7 @@ void ZStackView::updateChannelControl()
       for (int ch=0; ch<stack->channelNumber(); ++ch) {
         QWidget *checkWidget = m_chVisibleState[ch]->createWidget();
         checkWidget->setFocusPolicy(Qt::NoFocus);
-        if (buddyDocument()->getTag() != neutube::Document::FLYEM_ORTHO) {
+        if (buddyDocument()->getTag() != neutube::Document::ETag::FLYEM_ORTHO) {
           m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
           m_channelControlLayout->addWidget(
                 channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
@@ -649,7 +649,7 @@ void ZStackView::updateChannelControl()
         colorWidget->setMaximumHeight(20);
         colorWidget->setMaximumWidth(30);
         colorWidget->setFocusPolicy(Qt::NoFocus);
-        if (buddyDocument()->getTag() != neutube::Document::FLYEM_ORTHO) {
+        if (buddyDocument()->getTag() != neutube::Document::ETag::FLYEM_ORTHO) {
           m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
           m_channelControlLayout->addSpacing(20);
         }
@@ -722,7 +722,7 @@ int ZStackView::getCurrentZ() const
 
 void ZStackView::setZ(int z)
 {
-  if (z != getZ(neutube::COORD_STACK)) {
+  if (z != getZ(neutube::ECoordinateSystem::STACK)) {
     setSliceIndex(z - getZ0());
   }
 }
@@ -829,7 +829,7 @@ void ZStackView::restoreFromBadView()
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
   ZOUT(LTRACE(), 5) << "ZStackView::updateImageScreen: index="
-           << this->getZ(neutube::COORD_STACK);
+           << this->getZ(neutube::ECoordinateSystem::STACK);
 
   if (option != UPDATE_NONE) {
     updatePaintBundle();
@@ -859,11 +859,11 @@ QSize ZStackView::sizeHint() const
   QSize viewSize = QWidget::sizeHint();
 
   switch (m_sizeHintOption) {
-  case neutube::SIZE_HINT_CURRENT_BEST:
+  case neutube::ESizeHintOption::CURRENT_BEST:
     //m_imageWidget->updateGeometry();
     viewSize = QWidget::sizeHint();
     break;
-  case neutube::SIZE_HINT_TAKING_SPACE:
+  case neutube::ESizeHintOption::TAKING_SPACE:
   {
     ZStackFrame *frame = getParentFrame();
     if (frame != NULL) {
@@ -1025,7 +1025,7 @@ void ZStackView::resizeEvent(QResizeEvent *event)
   event->accept();
 
   if (isVisible()) {
-    if (getSliceAxis() == neutube::A_AXIS) {
+    if (getSliceAxis() == neutube::EAxis::ARB) {
       //Adjust center
       QPointF stackPos = ZPositionMapper::WidgetToStack(
             imageWidget()->width() / 2, imageWidget()->height() / 2,
@@ -1255,8 +1255,8 @@ void ZStackView::displayActiveDecoration(bool display)
 void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
 {
   switch (m_sliceAxis) {
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
   {
     void *dataArray = stack->getDataPointer(0, slice);
 
@@ -1291,8 +1291,8 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
     }
   }
     break;
-  case neutube::X_AXIS:
-  case neutube::Y_AXIS:
+  case neutube::EAxis::X:
+  case neutube::EAxis::Y:
     switch (stack->kind()) {
     case GREY:
       m_image->setData(
@@ -1712,7 +1712,7 @@ ZPixmap *ZStackView::updateViewPortCanvas(ZPixmap *canvas)
 {
   ZStTransform transform = getViewTransform();
 
-  QRect viewPort = getViewPort(neutube::COORD_STACK);
+  QRect viewPort = getViewPort(neutube::ECoordinateSystem::STACK);
   QSize viewPortSize = viewPort.size();
   QSize newSize = viewPortSize;
 
@@ -1751,7 +1751,7 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas, ZPainter *painter)
 
   bool usingProjSize = true;
 
-  QRect viewPort = getViewPort(neutube::COORD_STACK);
+  QRect viewPort = getViewPort(neutube::ECoordinateSystem::STACK);
 
   //Get transform from viewport to projection region
   ZStTransform transform = getViewTransform();
@@ -2338,19 +2338,19 @@ ZStack* ZStackView::getStrokeMask(neutube::EColor color)
     if (isMask) {
       if (!stroke->isEraser()) {
         switch (color) {
-        case neutube::COLOR_RED:
+        case neutube::EColor::RED:
           isMask = (stroke->getColor().red() > 0 && stroke->getColor().green() == 0 &&
                     stroke->getColor().blue() == 0);
           break;
-        case neutube::COLOR_GREEN:
+        case neutube::EColor::GREEN:
           isMask = (stroke->getColor().red() == 0 && stroke->getColor().green() > 0 &&
                     stroke->getColor().blue() == 0);
           break;
-        case neutube::COLOR_BLUE:
+        case neutube::EColor::BLUE:
           isMask = (stroke->getColor().red() == 0 && stroke->getColor().green() == 0 &&
                     stroke->getColor().blue() > 0);
           break;
-        case neutube::COLOR_ALL:
+        case neutube::EColor::ALL:
           isMask = true;
           break;
         }
@@ -2435,17 +2435,17 @@ ZStack* ZStackView::getObjectMask(neutube::EColor color, uint8_t maskValue)
         QRgb rgb = image.pixel(x, y);
         bool isForeground = false;
         switch (color) {
-        case neutube::COLOR_RED:
+        case neutube::EColor::RED:
           if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
             isForeground = true;
           }
           break;
-        case neutube::COLOR_GREEN:
+        case neutube::EColor::GREEN:
           if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
             isForeground = true;
           }
           break;
-        case neutube::COLOR_BLUE:
+        case neutube::EColor::BLUE:
           if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
             isForeground = true;
           }
@@ -2502,7 +2502,7 @@ void ZStackView::configurePainter(ZStackObjectPainter &painter)
 void ZStackView::printViewParam() const
 {
 #ifdef _DEBUG_
-    std::cout << "Axis: " << m_sliceAxis << std::endl;
+    std::cout << "Axis: " << neutube::EnumValue(m_sliceAxis) << std::endl;
     getViewProj().print();
 #endif
 }
@@ -2576,7 +2576,7 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
 void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 {
   if (m_maxViewPort > 0) {
-    QSize viewPortSize = getViewPort(neutube::COORD_STACK).size();
+    QSize viewPortSize = getViewPort(neutube::ECoordinateSystem::STACK).size();
     if (viewPortSize.width() * viewPortSize.height() >= m_maxViewPort) {
       return;
     }
@@ -2625,7 +2625,7 @@ ZIntPoint ZStackView::getCenter(neutube::ECoordinateSystem coordSys) const
 int ZStackView::getZ(neutube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
-  if (coordSys == neutube::COORD_STACK) {
+  if (coordSys == neutube::ECoordinateSystem::STACK) {
     z += getZ0();
   }
 
@@ -2635,7 +2635,7 @@ int ZStackView::getZ(neutube::ECoordinateSystem coordSys) const
 QRect ZStackView::getViewPort(neutube::ECoordinateSystem coordSys) const
 {
   QRect rect = m_imageWidget->viewPort();
-  if (coordSys == neutube::COORD_RAW_STACK) {
+  if (coordSys == neutube::ECoordinateSystem::RAW_STACK) {
     ZIntCuboid box = getViewBoundBox();
     rect.translate(
           QPoint(-box.getFirstCorner().getX(), -box.getLastCorner().getY()));
@@ -2693,7 +2693,7 @@ void ZStackView::updateViewParam(const ZStackViewParam &param)
       setZQuitely(param.getZ());
 
 #ifdef _DEBUG_
-      std::cout << "View param updated: z=" << getZ(neutube::COORD_STACK)
+      std::cout << "View param updated: z=" << getZ(neutube::ECoordinateSystem::STACK)
                 << std::endl;
 #endif
 
@@ -2724,7 +2724,7 @@ void ZStackView::resetViewParam(const ZArbSliceViewParam &param)
 
 ZStackViewParam ZStackView::getViewParameter() const
 {
-  return getViewParameter(neutube::COORD_STACK);
+  return getViewParameter(neutube::ECoordinateSystem::STACK);
 //  return m_currentViewParam;
 }
 
@@ -2740,7 +2740,7 @@ ZStackViewParam ZStackView::getViewParameter(
   param.setSliceAxis(m_sliceAxis);
   param.setZOffset(getZ0());
 
-  if (m_sliceAxis == neutube::A_AXIS) {
+  if (m_sliceAxis == neutube::EAxis::ARB) {
     ZArbSliceViewParam viewParam = m_sliceViewParam;
     viewParam.setSize(0, 0);
     param.setArbSliceView(viewParam);
@@ -2752,10 +2752,10 @@ ZStackViewParam ZStackView::getViewParameter(
 
 ZStackViewParam ZStackView::getViewParameter(const ZArbSliceViewParam &param) const
 {
-  ZStackViewParam viewParam = getViewParameter(neutube::COORD_STACK);
+  ZStackViewParam viewParam = getViewParameter(neutube::ECoordinateSystem::STACK);
   viewParam.setZ(param.getZ());
   viewParam.setViewPort(param.getViewPort());
-  viewParam.setSliceAxis(neutube::A_AXIS);
+  viewParam.setSliceAxis(neutube::EAxis::ARB);
   viewParam.setArbSliceView(param);
 
   return viewParam;
@@ -2786,7 +2786,7 @@ ZStTransform ZStackView::getViewTransform() const
   QRectF projRegion = getProjRegion();
   projRegion.moveTopLeft(QPointF(0, 0));
 
-  transform.estimate(getViewPort(neutube::COORD_STACK), projRegion);
+  transform.estimate(getViewPort(neutube::ECoordinateSystem::STACK), projRegion);
 
   return transform;
 }
@@ -2805,7 +2805,7 @@ void ZStackView::setViewPortOffset(int x, int y)
 
 void ZStackView::updateSliceViewParam()
 {
-  if (getSliceAxis() == neutube::A_AXIS) {
+  if (getSliceAxis() == neutube::EAxis::ARB) {
     if (m_oldViewParam.getSliceViewParam().hasSamePlaneCenter(m_sliceViewParam)) {
       ZStackViewParam viewParam = getViewParameter();
       if (viewParam.isValid() && m_oldViewParam.isValid()) {
@@ -2880,11 +2880,11 @@ void ZStackView::setViewPortCenter(
     int x, int y, int z, neutube::EAxisSystem system)
 {
   switch (system) {
-  case neutube::AXIS_NORMAL:
+  case neutube::EAxisSystem::NORMAL:
     zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
-    setViewPortCenter(x, y, z, neutube::AXIS_SHIFTED);
+    setViewPortCenter(x, y, z, neutube::EAxisSystem::SHIFTED);
     break;
-  case neutube::AXIS_SHIFTED:
+  case neutube::EAxisSystem::SHIFTED:
   {
     /* Note that cx=x_0+floor((w-1)/2) */
     imageWidget()->setViewPortOffset(
@@ -2901,10 +2901,10 @@ ZIntPoint ZStackView::getViewCenter() const
 {
   ZIntPoint center;
 
-  QRect viewPort = getViewPort(neutube::COORD_STACK);
+  QRect viewPort = getViewPort(neutube::ECoordinateSystem::STACK);
   QPoint viewPortCenter = viewPort.center();
   center.set(viewPortCenter.x(), viewPortCenter.y(),
-             getZ(neutube::COORD_STACK));
+             getZ(neutube::ECoordinateSystem::STACK));
 
   center.shiftSliceAxisInverse(getSliceAxis());
 
@@ -2948,13 +2948,13 @@ void ZStackView::setView(const ZStackViewParam &param)
     ZViewProj viewProj = param.getViewProj();
 
     switch (param.getCoordinateSystem()) {
-    case neutube::COORD_RAW_STACK:
+    case neutube::ECoordinateSystem::RAW_STACK:
     {
       viewProj.move(box.getFirstCorner().getX(),
                     box.getFirstCorner().getY());
     }
       break;
-    case neutube::COORD_STACK:
+    case neutube::ECoordinateSystem::STACK:
     {
 //      QRect viewPort = param.getViewPort();
       slice -= box.getFirstCorner().getZ();
@@ -3043,7 +3043,7 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData()
 
 bool ZStackView::isViewChanged(const ZStackViewParam &param) const
 {
-  ZStackViewParam currentParam = getViewParameter(neutube::COORD_STACK);
+  ZStackViewParam currentParam = getViewParameter(neutube::ECoordinateSystem::STACK);
 
   return (currentParam != param);
 }
@@ -3109,7 +3109,7 @@ void ZStackView::notifyViewChanged(NeuTube::View::EExploreAction action)
 
 void ZStackView::notifyViewChanged()
 {
-  notifyViewChanged(getViewParameter(neutube::COORD_STACK));
+  notifyViewChanged(getViewParameter(neutube::ECoordinateSystem::STACK));
 }
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
@@ -3148,7 +3148,7 @@ bool ZStackView::isImageMovable() const
 
 void ZStackView::customizeWidget()
 {
-  if (buddyDocument()->getTag() == neutube::Document::FLYEM_MERGE) {
+  if (buddyDocument()->getTag() == neutube::Document::ETag::FLYEM_MERGE) {
     QPushButton *mergeButton = new QPushButton(this);
     mergeButton->setText("Merge");
     m_secondTopLayout->addWidget(mergeButton);
@@ -3177,7 +3177,7 @@ void ZStackView::customizeWidget()
     m_secondTopLayout->addWidget(vis3dButton);
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
 
-    if (buddyDocument()->getTag() == neutube::Document::NORMAL) {
+    if (buddyDocument()->getTag() == neutube::Document::ETag::NORMAL) {
       QPushButton *settingButton = new QPushButton(this);
       settingButton->setText("Settings");
       settingButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -3187,7 +3187,7 @@ void ZStackView::customizeWidget()
 
     if (GET_APPLICATION_NAME == "Biocytin") {
       if (buddyDocument() != NULL) {
-        if (buddyDocument()->getTag() == neutube::Document::BIOCYTIN_STACK) {
+        if (buddyDocument()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
           QPushButton *closeChildFrameButton = new QPushButton(this);
           closeChildFrameButton->setText("Close Projection Windows");
           closeChildFrameButton->setSizePolicy(
@@ -3240,7 +3240,7 @@ void ZStackView::request3DVis()
 {
   if (m_messageManager != NULL) {
     ZMessage message(this);
-    if (buddyDocument()->getTag() == neutube::Document::FLYEM_SPLIT) {
+    if (buddyDocument()->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
       ZMessageFactory::MakeFlyEmSplit3DVisMessage(message);
     } else {
       ZMessageFactory::Make3DVisMessage(message);
@@ -3261,7 +3261,7 @@ void ZStackView::requestQuick3DVis()
 {
   if (m_messageManager != NULL) {
     ZMessage message(this);
-    if (buddyDocument()->getTag() == neutube::Document::FLYEM_MERGE) {
+    if (buddyDocument()->getTag() == neutube::Document::ETag::FLYEM_MERGE) {
       ZMessageFactory::MakeQuick3DVisMessage(message, 1);
     }
     m_messageManager->processMessage(&message, true);
@@ -3272,7 +3272,7 @@ void ZStackView::requestHighresQuick3DVis()
 {
   if (m_messageManager != NULL) {
     ZMessage message(this);
-    if (buddyDocument()->getTag() == neutube::Document::FLYEM_MERGE) {
+    if (buddyDocument()->getTag() == neutube::Document::ETag::FLYEM_MERGE) {
       ZMessageFactory::MakeQuick3DVisMessage(message, 0);
     }
     m_messageManager->processMessage(&message, true);

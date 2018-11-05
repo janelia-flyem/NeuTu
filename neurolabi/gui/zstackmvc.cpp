@@ -55,7 +55,7 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
-  BaseConstruct(frame, doc, neutube::Z_AXIS);
+  BaseConstruct(frame, doc, neutube::EAxis::Z);
 
   return frame;
 }
@@ -100,7 +100,7 @@ void ZStackMvc::BaseConstruct(
 
 void ZStackMvc::createView()
 {
-  createView(neutube::Z_AXIS);
+  createView(neutube::EAxis::Z);
 }
 
 void ZStackMvc::createView(neutube::EAxis axis)
@@ -272,7 +272,7 @@ bool ZStackMvc::event(QEvent *event)
 
 void ZStackMvc::processViewChange()
 {
-  processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
+  processViewChange(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
 }
 
 /*
@@ -382,7 +382,7 @@ void ZStackMvc::emitMessage(const QString &msg, bool appending)
     target = ZWidgetMessage::TARGET_TEXT_APPENDING;
   }
 
-  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION, target);
+  ZWidgetMessage message(msg, neutube::EMessageType::MSG_INFORMATION, target);
   emit messageGenerated(message);
 }
 
@@ -394,7 +394,7 @@ void ZStackMvc::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::MSG_ERROR, target));
 }
 */
 
@@ -446,7 +446,7 @@ void ZStackMvc::focusInEvent(QFocusEvent *event)
 #ifdef _DEBUG_
   std::cout << "MVC in focus" << std::endl;
   emit messageGenerated(
-        ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+        ZWidgetMessage("MVC in focus", neutube::EMessageType::MSG_INFORMATION,
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
@@ -456,7 +456,7 @@ void ZStackMvc::focusOutEvent(QFocusEvent *event)
 #ifdef _DEBUG_
   std::cout << "MVC out focus" << std::endl;
   emit messageGenerated(
-        ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+        ZWidgetMessage("MVC out focus", neutube::EMessageType::MSG_INFORMATION,
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
@@ -470,14 +470,14 @@ void ZStackMvc::changeEvent(QEvent *event)
 #ifdef _DEBUG_
       std::cout << "MVC in focus" << std::endl;
       emit messageGenerated(
-            ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+            ZWidgetMessage("MVC in focus", neutube::EMessageType::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
     } else {
 #ifdef _DEBUG_
       std::cout << "MVC out focus" << std::endl;
       emit messageGenerated(
-            ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+            ZWidgetMessage("MVC out focus", neutube::EMessageType::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
     }
@@ -593,7 +593,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
   getPresenter()->blockSignals(false);
 
   getView()->blockSignals(true);
-  getView()->setViewPortCenter(pt, neutube::AXIS_NORMAL);
+  getView()->setViewPortCenter(pt, neutube::EAxisSystem::NORMAL);
   getView()->blockSignals(false);
 
   getView()->processViewChange(true, depthChanged);
@@ -682,7 +682,7 @@ void ZStackMvc::setDefaultViewPort(const QRect &rect)
 
 QRect ZStackMvc::getViewPort() const
 {
-  return getView()->getViewPort(neutube::COORD_STACK);
+  return getView()->getViewPort(neutube::ECoordinateSystem::STACK);
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

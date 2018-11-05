@@ -42,6 +42,10 @@ public:
 
   void removeActionTag();
 
+private:
+  void syncActionTag();
+  static std::string GetActionTag(neutube::EToDoAction action);
+
 public:
   static const char *ACTION_KEY;
   static const char *ACTION_SPLIT;

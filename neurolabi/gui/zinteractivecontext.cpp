@@ -19,7 +19,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_synapseEditMode = SYNAPSE_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
   m_acceptingRect = false;
   m_rectSpan = false;
   m_keyIndex = 1;

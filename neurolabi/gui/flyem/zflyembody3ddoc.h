@@ -549,7 +549,7 @@ private:
 
   mutable QMutex m_BodySetMutex;
 
-  flyem::EBodyType m_bodyType = flyem::BODY_SPHERE;
+  flyem::EBodyType m_bodyType = flyem::EBodyType::SPHERE;
   QSet<uint64_t> m_selectedBodySet;
   QSet<uint64_t> m_protectedBodySet;
   mutable QMutex m_protectedBodySetMutex;
@@ -611,137 +611,6 @@ private:
   const static char *THREAD_SPLIT_KEY;
 };
 
-template <typename InputIterator>
-void ZFlyEmBody3dDoc::addBodyChangeEvent(
-    const InputIterator &first, const InputIterator &last)
-{
-  std::cout << "Locking mutex ..." << std::endl;
-  QMutexLocker locker(&m_eventQueueMutex);
 
-  //Update event map and body set; the current event queue is cleared
-  QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(false, NULL);
-  QSet<uint64_t> oldBodySet = getNormalBodySet();
-
-//  m_eventQueue.clear();
-
-  QSet<uint64_t> newBodySet;
-  QSet<uint64_t> tarSet;
-  QSet<uint64_t> supervoxelSet;
-//  QMap<uint64_t, uint64_t> bodyEncodeMap;
-
-#ifdef _DEBUG_
-  std::string bodyStr;
-  for (InputIterator iter = first; iter != last; ++iter) {
-    bodyStr += std::to_string(*iter) + " ";
-  }
-  LDEBUG() << "Selection recieved:" << bodyStr;
-#endif
-
-  for (InputIterator iter = first; iter != last; ++iter) {
-    uint64_t bodyId = *iter;
-    if (ZFlyEmBodyManager::encodesTar(bodyId)) {
-      tarSet.insert(bodyId);
-    } else if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
-      supervoxelSet.insert(bodyId);
-    } else {
-      newBodySet.insert(decode(bodyId));
-    }
-//    bodyEncodeMap[decode(bodyId)] = bodyId;
-  }
-
-  QSet<uint64_t> addedBodySet = newBodySet - oldBodySet;
-  QSet<uint64_t> removedBodySet = oldBodySet - newBodySet;
-  QSet<uint64_t> commonBodySet = newBodySet.intersect(oldBodySet);
-
-  //Remove bodies not in the current set
-  foreach (uint64_t bodyId, removedBodySet) {
-    addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
-  }
-
-  //Keep the event of common bodies if it's not removing the body
-  foreach (uint64_t bodyId, commonBodySet) {
-    if (actionMap.contains(bodyId)) {
-      const ZFlyEmBodyEvent &bodyEvent = actionMap[bodyId];
-      if (bodyEvent.getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
-        addEvent(bodyEvent);
-      }
-    }
-  }
-
-  /*
-  for (QMap<uint64_t, ZFlyEmBodyEvent>::iterator
-       iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
-    uint64_t bodyId = iter.key();
-    if (newBodySet.contains(bodyId)) {
-      if (iter.value().getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
-        //In the new body set had the bodyID and not remove, add event
-        addEvent(iter.value());
-      }
-    }
-  }
-  */
-
-  //Add new bodies
-  foreach (uint64_t bodyId, addedBodySet) {
-    if (!getBodyManager().isSupervoxel(bodyId)) {
-      addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-    }
-  }
-
-  //Process tar set
-  foreach (uint64_t bodyId, tarSet) {
-    if (ZFlyEmBodyManager::encodedLevel(bodyId) == 0) { //supervoxel tar
-      if (!getBodyManager().hasMapping(bodyId)) {
-        addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-      }
-    } else { //normal body
-      if (!getBodyManager().contains(bodyId)) {
-        addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-      }
-    }
-  }
-
-  /*
-  foreach (uint64_t bodyId, tarSet) {
-    if (!getBodyManager().contains(bodyId)) {
-      addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-    }
-  }
-  */
-
-  //Process supervoxel set
-  QSet<uint64_t> addedSupervoxelSet =
-      getBodyManager().getSupervoxelToAdd(supervoxelSet, true);
-  foreach (uint64_t bodyId, addedSupervoxelSet) {
-    addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-  }
-
-  QSet<uint64_t> removedSupervoxelSet =
-      getBodyManager().getSupervoxelToRemove(supervoxelSet, true);
-  foreach (uint64_t bodyId, removedSupervoxelSet) {
-    addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
-  }
-
-  QSet<uint64_t> commonSupervoxelSet = supervoxelSet - addedSupervoxelSet;
-  foreach (uint64_t bodyId, commonSupervoxelSet) {
-    if (actionMap.contains(bodyId)) {
-      const ZFlyEmBodyEvent &bodyEvent = actionMap[bodyId];
-      if (bodyEvent.getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
-        addEvent(bodyEvent);
-      }
-    }
-  }
-
-
-
-#if 0
-  for (InputIterator iter = first; iter != last; ++iter) {
-    uint64_t bodyId = *iter;
-    if (!actionMap.contains(bodyId)) { //If the action map has no such body id
-      addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
-    }
-  }
-#endif
-}
 
 #endif // ZFLYEMBODY3DDOC_H

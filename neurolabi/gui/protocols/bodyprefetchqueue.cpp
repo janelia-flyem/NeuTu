@@ -7,6 +7,7 @@
 
 #include "zstackdocdatabuffer.h"
 #include "zstackobjectsourcefactory.h"
+#include "zmesh.h"
 
 /*
  * this queue should be moved into its own thread after creation; see
@@ -64,7 +65,7 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
 
         if (mesh != NULL) {
           auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyID, 0, flyem::BODY_MESH);
+                bodyID, 0, flyem::EBodyType::MESH);
           mesh->setSource(source);
 
           m_doc->getDataBuffer()->addUpdate(

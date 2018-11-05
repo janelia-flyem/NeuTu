@@ -160,7 +160,7 @@ public:
   typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
   typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
-  ZPaintBundle(neutube::EAxis sliceAxis = neutube::Z_AXIS);
+  ZPaintBundle(neutube::EAxis sliceAxis = neutube::EAxis::Z);
 
   inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
   inline const_iterator end() const { return const_iterator(this, const_iterator::End); }

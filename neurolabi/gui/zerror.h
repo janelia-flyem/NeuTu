@@ -14,7 +14,7 @@
     std::ostringstream stream2;         \
     stream2 << __FILE__ << ":"  << __LINE__ << ": " << msg; \
     NeutubeConfig::getInstance().getMessageReporter()->report(\
-      stream.str(), stream2.str(), neutube::MSG_ERROR); \
+      stream.str(), stream2.str(), neutube::EMessageType::ERROR); \
     std::cerr << msg << std::endl; \
   }									\
 }
@@ -26,7 +26,7 @@
   std::ostringstream stream2;         \
   stream2 << __FILE__ << ":"  << __LINE__ << ": " << msg; \
   NeutubeConfig::getInstance().getMessageReporter()->report(\
-  stream.str(), stream2.str(), neutube::MSG_ERROR); \
+  stream.str(), stream2.str(), neutube::EMessageType::ERROR); \
   std::cerr << msg << std::endl; \
 }
 
@@ -39,7 +39,7 @@
     std::ostringstream stream2;         \
     stream2 << __FILE__ << ":"  << __LINE__ << ": " << msg; \
     NeutubeConfig::getInstance().getMessageReporter()->report(\
-      stream.str(), stream2.str(), neutube::MSG_ERROR); \
+      stream.str(), stream2.str(), neutube::EMessageType::ERROR); \
     action; \
   }									\
 }
@@ -51,7 +51,7 @@
   std::ostringstream stream2;         \
   stream2 << __FILE__ << ":"  << __LINE__ << ": " << msg; \
   NeutubeConfig::getInstance().getMessageReporter()->report(\
-    stream.str(), stream2.str(), neutube::MSG_WARNING); \
+    stream.str(), stream2.str(), neutube::EMessageType::WARNING); \
   std::cerr << msg << std::endl; \
 }
 
@@ -73,7 +73,7 @@
 #define RECORD_TITLED_INFORMATION(title, msg) \
 { \
   NeutubeConfig::getInstance().getMessageReporter()->report(\
-    title, msg, neutube::MSG_INFORMATION); \
+    title, msg, neutube::EMessageType::INFORMATION); \
 }
 
 #define RECORD_INFORMATION(msg) \
@@ -81,7 +81,7 @@
   std::ostringstream stream;                          \
   stream << __FILE__ << ":"  << __func__ << ": ";		\
   NeutubeConfig::getInstance().getMessageReporter()->report(\
-    stream.str(), msg, neutube::MSG_INFORMATION); \
+    stream.str(), msg, neutube::EMessageType::INFORMATION); \
 }
 
 #endif // ZERROR_H

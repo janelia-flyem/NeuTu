@@ -19,16 +19,16 @@ public:
 
   ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const std::string &msg,
-                 neutube::EMessageType type = neutube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const char *msg,
-                 neutube::EMessageType type = neutube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const QString &msg,
-                 neutube::EMessageType type = neutube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const QString &title, const QString &msg,
-                 neutube::EMessageType type = neutube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
 
   QString toHtmlString() const;

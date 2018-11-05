@@ -80,7 +80,7 @@ void ZFlyEmBodyEvent::mergeEvent(
   }
 
   switch (direction) {
-  case neutube::DIRECTION_FORWARD: //event comes first
+  case neutube::EBiDirection::FORWARD: //event comes first
     switch (getAction()) {
     case ACTION_UPDATE:
       switch (event.getAction()) {
@@ -117,10 +117,10 @@ void ZFlyEmBodyEvent::mergeEvent(
       break;
     }
     break;
-  case neutube::DIRECTION_BACKWARD:
+  case neutube::EBiDirection::BACKWARD:
   {
     ZFlyEmBodyEvent tmpEvent = event;
-    tmpEvent.mergeEvent(*this, neutube::DIRECTION_FORWARD);
+    tmpEvent.mergeEvent(*this, neutube::EBiDirection::FORWARD);
     *this = tmpEvent;
   }
     break;

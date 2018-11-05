@@ -165,14 +165,14 @@ void ZPixmap::clean(const QRect &rect)
 QRectF ZPixmap::getActiveArea(neutube::ECoordinateSystem coord) const
 {
   switch (coord) {
-  case neutube::COORD_WORLD_2D:
+  case neutube::ECoordinateSystem::WORLD_2D:
     if (m_activeArea.isEmpty()) {
       return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
     } else {
       return m_activeArea;
     }
-  case neutube::COORD_CANVAS:
+  case neutube::ECoordinateSystem::CANVAS:
     if (m_activeArea.isEmpty()) {
       return QRectF(0, 0, width(), height());
     } else {
@@ -205,17 +205,17 @@ ZStack* ZPixmap::toPlainStack(neutube::EColor color, uint8_t maskValue)
       QRgb rgb = image.pixel(x, y);
       bool isForeground = false;
       switch (color) {
-      case neutube::COLOR_RED:
+      case neutube::EColor::RED:
         if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
           isForeground = true;
         }
         break;
-      case neutube::COLOR_GREEN:
+      case neutube::EColor::GREEN:
         if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
           isForeground = true;
         }
         break;
-      case neutube::COLOR_BLUE:
+      case neutube::EColor::BLUE:
         if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
           isForeground = true;
         }

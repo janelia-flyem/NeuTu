@@ -103,7 +103,7 @@ QString ZFlyEmMB6Analyzer::getPunctumName(const ZDvidSynapse &synapse)
     std::vector<uint64_t> bodyIdArray =
         m_reader->readBodyIdAt(partners.begin(), partners.end());
 
-    if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+    if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
       QString partnerName;
       for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
            iter != bodyIdArray.end(); ++iter) {

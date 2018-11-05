@@ -457,13 +457,13 @@ void ZIntCuboid::shiftSliceAxisInverse(neutube::EAxis axis)
 int ZIntCuboid::getDim(neutube::EAxis axis) const
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     return getWidth();
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     return getHeight();
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     return getDepth();
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 

@@ -170,7 +170,7 @@ private:
 //  bool m_isValueFilled;
   bool m_prefectching = false;
   uint64_t m_label;
-  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;
