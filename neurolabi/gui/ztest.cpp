@@ -8718,7 +8718,8 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::string sessionDir = dataPath + "/flyem/skeletonization/session3";
+  std::string dataPath = "/nearline/flyem/proj/zhaot/data";
+  std::string sessionDir = dataPath + "/skeletonization/session_c";
 
   QFileInfoList fileList;
   QDir dir(sessionDir.c_str());
@@ -8727,8 +8728,8 @@ void ZTest::test(MainWindow *host)
   fileList = dir.entryInfoList(filters);
 
   foreach (QFileInfo fileInfo, fileList) {
-    ZString objPath = sessionDir + "/";
-    objPath.appendNumber(ZString::lastInteger(fileInfo.baseName().toStdString()));
+    ZString objPath = sessionDir + "/sobj/";
+    objPath.appendNumber(ZString::LastInteger(fileInfo.baseName().toStdString()));
     objPath += ".sobj";
 
     std::cout << fileInfo.absoluteFilePath().toStdString() << std::endl;
@@ -8742,7 +8743,7 @@ void ZTest::test(MainWindow *host)
       offset.importTextFile(
             fileInfo.absoluteFilePath().toStdString() + ".offset.txt");
       if (offset.size() == 3) {
-        obj.translate(offset[0], offset[1], offset[2]);
+        obj.translate(offset[0] / 2, offset[1] / 2, offset[2]);
         std::cout << "Saving " << objPath << std::endl;
         obj.save(objPath);
       } else {
@@ -27106,9 +27107,10 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 0
+#if 1
   ZJsonObject obj;
-  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data/data_bundle.json");
+  std::string dataDir = "/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data";
+  obj.load(dataDir + "/_paper/neuron_type/data/data_bundle.json");
   ZJsonArray neuronArrayJson(obj.value("neuron"));
   std::cout << neuronArrayJson.size() << std::endl;
 
@@ -27117,7 +27119,7 @@ void ZTest::test(MainWindow *host)
   for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
     ZJsonObject neuronJson(neuronArrayJson.value(i));
     std::string volumeFile =
-        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/" +
+        dataDir + "/_paper/neuron_type/data/" +
         ZJsonParser::stringValue(neuronJson["volume"]);
     QFileInfo fileInfo(volumeFile.c_str());
     if (!fileInfo.exists()) {
@@ -27151,7 +27153,7 @@ void ZTest::test(MainWindow *host)
   }
 
   std::ofstream stream(
-        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/adjmat.txt");
+        dataDir + "/_paper/neuron_type/data/adjmat.txt");
 
   for (size_t i = 0; i < objArray.size(); ++i) {
     for (size_t j = 0; j < objArray.size(); ++j) {
@@ -28295,7 +28297,7 @@ void ZTest::test(MainWindow *host)
   offset.importTextFile("/Users/zhaot/Work/neutu/neurolabi/data/_paper/neuron_type/data/offset2/3856.offset.txt");
 #endif
 
-#if 1
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_paper/neuron_type/data";
   std::string volumeDir = dataDir + "/volume/old";
 
