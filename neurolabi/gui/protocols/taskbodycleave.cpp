@@ -969,6 +969,12 @@ void TaskBodyCleave::onHideSelected()
     m_hiddenIds.insert(mesh->getLabel());
   }
   updateVisibility();
+
+  std::set<uint64_t> selectedBodies;
+  for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
+    selectedBodies.insert((*itSelected)->getLabel());
+  }
+  selectBodies(selectedBodies, false);
 }
 
 void TaskBodyCleave::onClearHidden()
