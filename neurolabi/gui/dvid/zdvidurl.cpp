@@ -1713,7 +1713,7 @@ std::string ZDvidUrl::getTodoListUrl() const
   return getAnnotationUrl(m_dvidTarget.getTodoListName());
 }
 
-std::string ZDvidUrl::getTodlListElementsUrl() const
+std::string ZDvidUrl::getTodoListElementsUrl() const
 {
   return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
 }

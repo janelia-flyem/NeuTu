@@ -58,6 +58,7 @@ public:
   std::vector<const void*> objectAtWidgetPos(std::vector<glm::ivec2> &posArray);
   std::vector<const void*> objectAtWidgetPos(
       const std::vector<std::pair<int, int> > &posArray);
+  std::set<const void*> objectsInWidgetRect(glm::ivec2 p0, glm::ivec2 p1);
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image
