@@ -194,17 +194,17 @@ public slots:
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
+      ZStack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      Stack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
+      Stack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
-      neutube::Document::ETag tag = neutube::Document::NORMAL);
+      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL);
 
   ZStackFrame* showStackDoc(ZStackDocPtr doc);
   ZStackFrame* showStackDoc(ZStackDoc *doc);

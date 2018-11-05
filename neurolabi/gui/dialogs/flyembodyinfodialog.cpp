@@ -251,10 +251,10 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
         npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
-              bodyId, flyem::LOAD_PARTNER_LOCATION);
+              bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
 
         for (size_t i=0; i<synapses.size(); i++) {
-          if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+          if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
             npre++;
           } else {
             npost++;
@@ -1551,9 +1551,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
                 bodyID, *getRoi(ui->roiComboBox->currentText()),
-                flyem::LOAD_PARTNER_LOCATION);
+                flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
         } else {
-          synapses = reader.readSynapse(bodyID, flyem::LOAD_PARTNER_LOCATION);
+          synapses = reader.readSynapse(bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
         }
 
         // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;
@@ -1563,7 +1563,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         int npre = 0;
         int npost = 0;
         for (size_t i=0; i<synapses.size(); i++) {
-            if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+            if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
                 npre++;
             } else {
                 npost++;
@@ -1591,8 +1591,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
             // if we are looking for input bodies, pick out the sites
             //  that are post-synaptic, and vice versa:
-            if ( (m_connectionsTableState == CT_INPUT && synapses[i].getKind() == ZDvidSynapse::KIND_POST_SYN) ||
-                 (m_connectionsTableState == CT_OUTPUT && synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) )  {
+            if ( (m_connectionsTableState == CT_INPUT && synapses[i].getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) ||
+                 (m_connectionsTableState == CT_OUTPUT && synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) )  {
 
                 // find the partner site and the body at that location
                 // note that there could be multiple partners for outputs

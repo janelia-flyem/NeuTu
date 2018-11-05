@@ -30,7 +30,7 @@ class ZDvidAnnotation : public ZStackObject
 public:
   ZDvidAnnotation();
 
-  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
+  enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
 
   enum EStatus { STATUS_NORMAL, STATUS_DUPLICATED };

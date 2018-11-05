@@ -32,7 +32,7 @@ ZStroke2d::ZStroke2d() :
 {
   setLabel(1);
   m_type = GetType();
-  setSliceAxis(neutube::Z_AXIS);
+  setSliceAxis(neutube::EAxis::Z);
   //setEraser(m_isEraser);
 }
 

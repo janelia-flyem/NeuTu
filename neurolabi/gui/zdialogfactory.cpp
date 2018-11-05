@@ -350,11 +350,11 @@ void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
 {
   if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
       switch (msg.getType()) {
-      case neutube::MSG_INFORMATION:
+      case neutube::EMessageType::INFORMATION:
         QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());
         break;
-      case neutube::MSG_WARNING:
-      case neutube::MSG_ERROR:
+      case neutube::EMessageType::WARNING:
+      case neutube::EMessageType::ERROR:
         QMessageBox::warning(parent, msg.getTitle(), msg.toHtmlString());
         break;
       default:

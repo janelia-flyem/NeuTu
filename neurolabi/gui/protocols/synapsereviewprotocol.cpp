@@ -96,13 +96,13 @@ bool SynapseReviewProtocol::initialize() {
             }
 
             // get synapses
-            synapseList = reader.readSynapse(bodyID, flyem::LOAD_PARTNER_LOCATION);
+            synapseList = reader.readSynapse(bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
 
         } else if (option == SynapseReviewInputDialog::BY_VOLUME) {
             // I think volume is foolproof given our widgets; I set minimum
             //  width, etc. to 1, so we'll never get an invalid volume
             ZIntCuboid box = inputDialog.getVolume();
-            synapseList = reader.readSynapse(box, flyem::LOAD_PARTNER_LOCATION);
+            synapseList = reader.readSynapse(box, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
         }
 
     } else {
@@ -120,7 +120,7 @@ bool SynapseReviewProtocol::initialize() {
     m_finishedList.clear();
     for (size_t i=0; i<synapseList.size(); i++) {
         // check if it's a T-bar or PSD, and only keep T-bars
-        if (synapseList.at(i).getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+        if (synapseList.at(i).getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN) {
             m_pendingList.append(synapseList.at(i).getPosition());
         }
     }
@@ -215,7 +215,7 @@ void SynapseReviewProtocol::populatePSDTable(std::vector<ZDvidSynapse> synapse) 
 
         // need to exclude other things that could be linked;
         //  eg, other T-bars (in a multi- or convergent configuration)
-        if (site.getKind() != ZDvidAnnotation::KIND_POST_SYN) {
+        if (site.getKind() != ZDvidAnnotation::EKind::KIND_POST_SYN) {
             continue;
         }
 
@@ -243,13 +243,13 @@ std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point
     std::vector<ZDvidSynapse> result;
     ZDvidReader &reader = m_dvidReader;
     if (reader.good()) {
-        ZDvidSynapse synapse = reader.readSynapse(point, flyem::LOAD_PARTNER_LOCATION);
+        ZDvidSynapse synapse = reader.readSynapse(point, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
 
         if (!synapse.isValid()) {
             return result;
         }
 
-        if (synapse.getKind() != ZDvidAnnotation::KIND_PRE_SYN) {
+        if (synapse.getKind() != ZDvidAnnotation::EKind::KIND_PRE_SYN) {
             return result;
         }
         result.push_back(synapse);
@@ -257,7 +257,7 @@ std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point
         // get all the post-synaptic sites
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], flyem::LOAD_NO_PARTNER);
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], flyem::EDvidAnnotationLoadMode::NO_PARTNER);
             result.push_back(post);
         }
     }

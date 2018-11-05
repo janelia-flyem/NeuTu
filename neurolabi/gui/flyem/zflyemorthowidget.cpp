@@ -41,16 +41,16 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target,
       ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc(width, height, depth));
   sharedDoc->setDvidTarget(target);
 
-  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::Z_AXIS);
+  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Z);
   m_xyMvc->setDvidLabelSliceSize(width, height);
 //  xyWidget->setDvidTarget(target);
 //  m_xyMvc->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
 
-  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::X_AXIS);
+  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::X);
   m_yzMvc->setDvidLabelSliceSize(depth, height);
 //  yzWidget->setDvidTarget(target);
 
-  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::Y_AXIS);
+  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Y);
   m_xzMvc->setDvidLabelSliceSize(width, depth);
 //  xzWidget->setDvidTarget(target);
 
@@ -395,7 +395,7 @@ void ZFlyEmOrthoWidget::endCrossHairSync()
 
 void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
     return;
   }
 
@@ -405,19 +405,19 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     helper.syncCrossHair(m_yzMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 
@@ -426,7 +426,7 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
     return;
   }
 
@@ -436,26 +436,26 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     helper.syncViewPort(m_yzMvc);
     helper.syncViewPort(m_xzMvc);
 
 //    m_yzMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(mvc->getView());
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_xzMvc);
 //    m_xyMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());
 //    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 

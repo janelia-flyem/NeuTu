@@ -111,7 +111,7 @@ ZStack* Biocytin::ZStackProjector::project(
                           stack->channelNumber());
         for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
           Image *projBuffer = NULL;
-          if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
+          if (bg == neutube::EImageBackground::BRIGHT) {
             projBuffer = C_Stack::makeMinProjZ(
                   stack->c_stack(channel), range.first, range.second);
           } else {
@@ -199,7 +199,7 @@ ZStack* Biocytin::ZStackProjector::project(
 
                 double v = colorToValueH(
                       red, green, blue, regularizer);
-                if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
+                if (bg == neutube::EImageBackground::BRIGHT) {
                   if (projMat->array[projIndex] > v) {
                     projMat->array[projIndex] = v;
                     m_depthArray[projIndex] = z;
@@ -355,7 +355,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
     const std::string &basePath, int minZ, int maxZ)
 {
   ZString str = ZString::removeFileExt(basePath) +
-      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::PROJECTION);
 
   str += "_";
   str.appendNumber(minZ);
@@ -370,7 +370,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
     const std::string &basePath, int slabCount)
 {
   ZString str = ZString::removeFileExt(basePath) +
-      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::PROJECTION);
 
   str += "_s";
   str.appendNumber(slabCount);

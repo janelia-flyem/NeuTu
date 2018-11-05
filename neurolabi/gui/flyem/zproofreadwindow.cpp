@@ -95,9 +95,9 @@ void ZProofreadWindow::init()
 
   m_controlForm = new FlyEmProofControlForm;
   m_controlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(flyem::PR_NORMAL));
+        m_mainMvc->getUserBookmarkModel(flyem::EProofreadingMode::NORMAL));
   m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(flyem::PR_NORMAL));
+        m_mainMvc->getAssignedBookmarkModel(flyem::EProofreadingMode::NORMAL));
   m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
   m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -106,9 +106,9 @@ void ZProofreadWindow::init()
 
   m_splitControlForm = new FlyEmSplitControlForm;
   m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(flyem::PR_SPLIT));
+        m_mainMvc->getUserBookmarkModel(flyem::EProofreadingMode::SPLIT));
   m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(flyem::PR_SPLIT));
+        m_mainMvc->getAssignedBookmarkModel(flyem::EProofreadingMode::SPLIT));
   m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
   m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -552,7 +552,7 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         neutube::MSG_INFORMATION,
+         neutube::EMessageType::INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -587,7 +587,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        neutube::BODY_LABEL_ORIGINAL);
+        neutube::EBodyLabelType::ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -598,9 +598,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        flyem::EBodySplitMode mode = flyem::BODY_SPLIT_ONLINE;
+        flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = flyem::BODY_SPLIT_OFFLINE;
+          mode = flyem::EBodySplitMode::OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
@@ -613,7 +613,7 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from splitting mode.", neutube::MSG_INFORMATION,
+         "Back from splitting mode.", neutube::EMessageType::INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -660,16 +660,16 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 
   //Record message in files
   switch (msg.getType()) {
-  case neutube::MSG_INFORMATION:
+  case neutube::EMessageType::INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case neutube::MSG_WARNING:
+  case neutube::EMessageType::WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case neutube::MSG_ERROR:
+  case neutube::EMessageType::ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case neutube::MSG_DEBUG:
+  case neutube::EMessageType::DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }
@@ -773,16 +773,16 @@ void ZProofreadWindow::logMessage(const QString &msg)
 void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
 {
   switch (msg.getType()) {
-  case neutube::MSG_INFORMATION:
+  case neutube::EMessageType::INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case neutube::MSG_WARNING:
+  case neutube::EMessageType::WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case neutube::MSG_ERROR:
+  case neutube::EMessageType::ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case neutube::MSG_DEBUG:
+  case neutube::EMessageType::DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }

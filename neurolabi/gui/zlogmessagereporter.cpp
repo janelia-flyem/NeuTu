@@ -12,21 +12,21 @@ void ZLogMessageReporter::report(
     const std::string &title, const std::string &message,
     neutube::EMessageType msgType)
 {
-  if (msgType == neutube::MSG_DEBUG) {
+  if (msgType == neutube::EMessageType::DEBUG) {
     ZMessageReporter::report(std::cout, title, message, msgType);
   } else {
     switch (msgType) {
-    case neutube::MSG_INFORMATION:
+    case neutube::EMessageType::INFORMATION:
       if (m_infoStream.is_open()) {
         ZMessageReporter::report(m_infoStream, title, message, msgType);
       }
       break;
-    case neutube::MSG_WARNING:
+    case neutube::EMessageType::WARNING:
       if (m_warnStream.is_open()) {
         ZMessageReporter::report(m_warnStream, title, message, msgType);
       }
       break;
-    case neutube::MSG_ERROR:
+    case neutube::EMessageType::ERROR:
       if (m_errorStream.is_open()) {
         ZMessageReporter::report(m_errorStream, title, message, msgType);
       }

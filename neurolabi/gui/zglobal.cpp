@@ -221,7 +221,8 @@ ZDvidSparseStack* ZGlobal::readDvidSparseStack(const std::string &url) const
     ZDvidReader *reader = getDvidReaderFromUrl(url);
     if (reader != NULL) {
       if (reader->getDvidTarget().hasBodyLabel()) {
-        spStack = reader->readDvidSparseStack(bodyId, flyem::LABEL_BODY);
+        spStack = reader->readDvidSparseStack(
+              bodyId, flyem::EBodyLabelType::BODY);
       }
     }
   }

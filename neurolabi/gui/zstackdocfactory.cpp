@@ -15,16 +15,16 @@ ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(neutube::Document::ETag tag)
 {
   ZStackDoc *doc = NULL;
   switch (tag) {
-  case neutube::Document::BIOCYTIN_PROJECTION:
+  case neutube::Document::ETag::BIOCYTIN_PROJECTION:
     doc = new ZBiocytinProjectionDoc;
     break;
-  case neutube::Document::FLYEM_PROOFREAD:
+  case neutube::Document::ETag::FLYEM_PROOFREAD:
     doc = new ZFlyEmProofDoc;
     break;
-  case neutube::Document::FLYEM_STACK:
+  case neutube::Document::ETag::FLYEM_STACK:
     doc = new ZFlyEmStackDoc;
     break;
-  case neutube::Document::FLYEM_MERGE:
+  case neutube::Document::ETag::FLYEM_MERGE:
     doc = new ZFlyEmBodyMergeDoc;
     break;
   default:
@@ -33,9 +33,9 @@ ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(neutube::Document::ETag tag)
   }
 
   doc->setTag(tag);
-  if (tag == neutube::Document::BIOCYTIN_STACK) {
+  if (tag == neutube::Document::ETag::BIOCYTIN_STACK) {
     doc->setResolution(1, 1, 8, 'p');
-    doc->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
+    doc->setStackBackground(neutube::EImageBackground::BRIGHT);
   }
 
   return ZSharedPointer<ZStackDoc>(doc);

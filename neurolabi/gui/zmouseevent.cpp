@@ -5,21 +5,21 @@ ZMouseEvent::ZMouseEvent() : m_buttons(Qt::NoButton),
   m_action(ZMouseEvent::ACTION_NONE), m_modifiers(Qt::NoModifier),
   m_isInStack(false)
 {
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
 }
 
 ZPoint ZMouseEvent::getPosition(neutube::ECoordinateSystem cs) const
 {
   switch (cs) {
-  case neutube::COORD_WIDGET:
+  case neutube::ECoordinateSystem::WIDGET:
     return m_widgetPosition.toPoint();
-  case neutube::COORD_STACK:
+  case neutube::ECoordinateSystem::STACK:
     return m_stackPosition;
-  case neutube::COORD_RAW_STACK:
+  case neutube::ECoordinateSystem::RAW_STACK:
     return m_rawStackPosition;
-  case neutube::COORD_SCREEN:
+  case neutube::ECoordinateSystem::SCREEN:
     return m_globalPosition.toPoint();
-  case neutube::COORD_ORGDATA:
+  case neutube::ECoordinateSystem::ORGDATA:
     return m_dataPosition;
   default:
     break;

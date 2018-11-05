@@ -173,7 +173,7 @@ void ZObject3d::display(
 {  
   UNUSED_PARAMETER(option);
 
-  if (sliceAxis == neutube::A_AXIS) {
+  if (sliceAxis == neutube::EAxis::ARB) {
     return;
   }
 
@@ -192,7 +192,7 @@ void ZObject3d::display(
   std::vector<QPoint> pointArray;
 
   switch (sliceAxis) {
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
@@ -205,8 +205,8 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::X_AXIS:
-  case neutube::Y_AXIS:
+  case neutube::EAxis::X:
+  case neutube::EAxis::Y:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
@@ -223,7 +223,7 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 

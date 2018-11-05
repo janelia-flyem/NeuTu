@@ -29,7 +29,7 @@ void ZFlyEmSynapseAnnotationDialog::setOption(ZDvidAnnotation::EKind kind)
 {
   ui->annotComboBox->clear();
   ui->annotComboBox->addItem("Custom");
-  if (kind == ZDvidAnnotation::KIND_PRE_SYN) {
+  if (kind == ZDvidAnnotation::EKind::KIND_PRE_SYN) {
     ui->annotComboBox->addItem("Multi");
     ui->annotComboBox->addItem("Convergent");
   }

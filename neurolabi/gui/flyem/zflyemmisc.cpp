@@ -185,7 +185,7 @@ void ZFlyEmMisc::HackathonEvaluator::evalulate()
 //  QString information =
 //      QString("Accuracy: %1 / %2").arg(count).arg(idArray.size());
 
-//  report("Evaluation", information.toStdString(), NeuTube::MSG_INFORMATION);
+//  report("Evaluation", information.toStdString(), neutube::EMessageType::MSG_INFORMATION);
 }
 
 Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
@@ -1062,22 +1062,22 @@ void ZFlyEmMisc::MakeTriangle(
     const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
   switch (direction) {
-  case neutube::CD_EAST:
+  case neutube::ECardinalDirection::EAST:
     ptArray[0] = QPointF(rect.right(), rect.center().y());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.bottomLeft();
     break;
-  case neutube::CD_WEST:
+  case neutube::ECardinalDirection::WEST:
     ptArray[0] = QPointF(rect.left(), rect.center().y());
     ptArray[1] = rect.topRight();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::CD_NORTH:
+  case neutube::ECardinalDirection::NORTH:
     ptArray[0] = QPointF(rect.center().x(), rect.top());
     ptArray[1] = rect.bottomLeft();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::CD_SOUTH:
+  case neutube::ECardinalDirection::SOUTH:
     ptArray[0] = QPointF(rect.center().x(), rect.bottom());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.topRight();
@@ -1752,17 +1752,17 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
         uint64_t bodyId = reader.readBodyIdAt(pos);
         QString name = ZJsonParser::stringValue(obj["name"]);
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-              bodyId, flyem::LOAD_NO_PARTNER);
+              bodyId, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
              iter != synapseArray.end(); ++iter) {
           const ZDvidSynapse &synapse = *iter;
           ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
-          if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+          if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
             marker.setColor(255, 255, 255);
             postMarkerArray.push_back(marker);
-          } else if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          } else if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN) {
             marker.setColor(255, 255, 0);
             preMarkerArray.push_back(marker);
           }

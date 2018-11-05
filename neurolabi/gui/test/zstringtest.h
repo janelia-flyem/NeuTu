@@ -134,21 +134,21 @@ TEST(ZBiocytinFileNameParser, Basic)
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.Mask.tif"));
 
 
-  ASSERT_EQ(ZBiocytinFileNameParser::ORIGINAL,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::ORIGINAL,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::EDIT,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::EDIT,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.Edit.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::EDIT,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::EDIT,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.edit.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::PROJECTION,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::PROJECTION,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.proj.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::ROI,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::ROI,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.roi.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::ROI,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::ROI,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.ROI.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::MASK,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::MASK,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.mask.tif"));
-  ASSERT_EQ(ZBiocytinFileNameParser::MASK,
+  ASSERT_EQ(ZBiocytinFileNameParser::ESuffixRole::MASK,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.Mask.tif"));
 }
 

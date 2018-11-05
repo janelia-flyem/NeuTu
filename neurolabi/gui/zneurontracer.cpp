@@ -190,7 +190,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
-  m_backgroundType(neutube::IMAGE_BACKGROUND_DARK),
+  m_backgroundType(neutube::EImageBackground::DARK),
   m_vertexOption(ZStackGraph::VO_ALL)
 {
   init();
@@ -511,7 +511,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     if (m_usingEdgePath) {
       stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
     } else {
-      if (m_backgroundType == neutube::IMAGE_BACKGROUND_BRIGHT) {
+      if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
         stackGraph.setWeightFunction(Stack_Voxel_Weight_Sr);
       } else {
         stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
@@ -1069,7 +1069,7 @@ Stack* ZNeuronTracer::computeSeedMask()
 
 Stack* ZNeuronTracer::computeSeedMask(Stack *stack)
 {
-  if (m_backgroundType == neutube::IMAGE_BACKGROUND_BRIGHT) {
+  if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);
     Stack_Csub(stack, maxValue);
   }
@@ -1280,7 +1280,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *signal, bool doResampleAfterTracing)
 
   Stack *stack = C_Stack::clone(signal);
 
-  if (m_backgroundType == neutube::IMAGE_BACKGROUND_BRIGHT) {
+  if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);
     Stack_Csub(stack, maxValue);
   }

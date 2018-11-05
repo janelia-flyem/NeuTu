@@ -452,7 +452,7 @@ std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
   if (!config.format.empty()) {
     url = AppendQuery(url, std::make_pair(std::string("format"), config.format));
   }
-  if (config.labelType == flyem::LABEL_SUPERVOXEL) {
+  if (config.labelType == flyem::EBodyLabelType::SUPERVOXEL) {
     url = AppendQuery(url, std::make_pair(std::string("supervoxels"), true));
   }
 
@@ -464,7 +464,7 @@ std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -530,7 +530,7 @@ std::string ZDvidUrl::getSparsevolLastModUrl(uint64_t bodyId)
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -574,7 +574,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -617,7 +617,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
-  if (axis == neutube::A_AXIS) {
+  if (axis == neutube::EAxis::ARB) {
     return "";
   }
 
@@ -702,22 +702,22 @@ std::string ZDvidUrl::AppendRangeQuery(
   std::string newUrl = url;
 
   switch (axis) {
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     newUrl = AppendQueryM(
           url, {std::make_pair("minz", minZ),
                 std::make_pair("maxz", maxZ)});
     break;
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     newUrl = AppendQueryM(
           url, {std::make_pair("minx", minZ),
                 std::make_pair("maxx", maxZ)});
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     newUrl = AppendQueryM(
           url, {std::make_pair("miny", minZ),
                 std::make_pair("maxy", maxZ)});
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 
@@ -1713,7 +1713,7 @@ std::string ZDvidUrl::getTodoListUrl() const
   return getAnnotationUrl(m_dvidTarget.getTodoListName());
 }
 
-std::string ZDvidUrl::getTodlListElementsUrl() const
+std::string ZDvidUrl::getTodoListElementsUrl() const
 {
   return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
 }

@@ -23,7 +23,7 @@ ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent
 
 void ZFlyEmOrthoDoc::init(int width, int height, int depth)
 {
-  setTag(neutube::Document::FLYEM_ORTHO);
+  setTag(neutube::Document::ETag::FLYEM_ORTHO);
   m_width = width;
   m_height = height;
   m_depth = depth;
@@ -78,9 +78,9 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(neutube::EAxis axis)
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble()
 {
-  initSynapseEnsemble(neutube::X_AXIS);
-  initSynapseEnsemble(neutube::Y_AXIS);
-  initSynapseEnsemble(neutube::Z_AXIS);
+  initSynapseEnsemble(neutube::EAxis::X);
+  initSynapseEnsemble(neutube::EAxis::Y);
+  initSynapseEnsemble(neutube::EAxis::Z);
 }
 
 void ZFlyEmOrthoDoc::initTodoList(neutube::EAxis axis)
@@ -93,9 +93,9 @@ void ZFlyEmOrthoDoc::initTodoList(neutube::EAxis axis)
 
 void ZFlyEmOrthoDoc::initTodoList()
 {
-  initTodoList(neutube::X_AXIS);
-  initTodoList(neutube::Y_AXIS);
-  initTodoList(neutube::Z_AXIS);
+  initTodoList(neutube::EAxis::X);
+  initTodoList(neutube::EAxis::Y);
+  initTodoList(neutube::EAxis::Z);
 }
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
@@ -126,7 +126,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
              iter != seList.end(); ++iter) {
           ZDvidSynapseEnsemble *se = *iter;
@@ -167,8 +167,8 @@ void ZFlyEmOrthoDoc::prepareDvidData()
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();
     initTodoList();
-    addDvidLabelSlice(neutube::X_AXIS);
-    addDvidLabelSlice(neutube::Y_AXIS);
-    addDvidLabelSlice(neutube::Z_AXIS);
+    addDvidLabelSlice(neutube::EAxis::X);
+    addDvidLabelSlice(neutube::EAxis::Y);
+    addDvidLabelSlice(neutube::EAxis::Z);
   }
 }

@@ -1787,7 +1787,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (getDocument()->getTag() == neutube::Document::FLYEM_SKELETON) {
+  if (getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
     return;
   }
 
@@ -2105,19 +2105,19 @@ static void AddTodoMarker(
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
-      case neutube::TO_DO:
+      case neutube::EToDoAction::TO_DO:
         window->emitAddTodoMarker(pt, checked, bodyId);
         break;
-      case neutube::TO_MERGE:
+      case neutube::EToDoAction::TO_MERGE:
         window->emitAddToMergeMarker(pt, bodyId);
         break;
-      case neutube::TO_SPLIT:
+      case neutube::EToDoAction::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
-      case neutube::TO_DO_IRRELEVANT: //todo
+      case neutube::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
         break;
-      case neutube::TO_SUPERVOXEL_SPLIT: //Ignored
+      case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
         LWARN() << "TO_SUPERVOXEL_SPLIT not available";
         break;
       }
@@ -2137,34 +2137,34 @@ void Z3DWindow::updateTodoVisibility()
 
 void Z3DWindow::addTodoMarker()
 {
-  AddTodoMarker(this, neutube::TO_DO, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_DO, false);
 }
 
 void Z3DWindow::addToMergeMarker()
 {
-  AddTodoMarker(this, neutube::TO_MERGE, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_MERGE, false);
 }
 
 void Z3DWindow::addToSplitMarker()
 {
-  AddTodoMarker(this, neutube::TO_SPLIT, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_SPLIT, false);
 }
 
 void Z3DWindow::addToSupervoxelSplitMarker()
 {
-  AddTodoMarker(this, neutube::TO_SUPERVOXEL_SPLIT, false);
+  AddTodoMarker(this, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  AddTodoMarker(this, neutube::TO_DO, true);
+  AddTodoMarker(this, neutube::EToDoAction::TO_DO, true);
 }
 
 void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_SPLIT);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
   }
 }
 
@@ -2172,7 +2172,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_DO);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_DO);
   }
 }
 
@@ -2180,7 +2180,7 @@ void Z3DWindow::setTodoItemIrrelevant()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::TO_DO_IRRELEVANT);
+    doc->setTodoItemAction(neutube::EToDoAction::TO_DO_IRRELEVANT);
   }
 }
 
@@ -2513,8 +2513,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D_COARSE &&
-      getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D){
+  if (getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -2554,9 +2554,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     } else if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->getTag() == neutube::Document::NORMAL ||
-          getDocument()->getTag() == neutube::Document::FLYEM_SKELETON ||
-          getDocument()->getTag() == neutube::Document::BIOCYTIN_STACK) {
+      if (getDocument()->getTag() == neutube::Document::ETag::NORMAL ||
+          getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON ||
+          getDocument()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
         keyMode = ZInteractionEngine::KM_SWC_SELECTION;
       }
     }
@@ -2824,7 +2824,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
-    if (m_doc->getTag() == neutube::Document::FLYEM_SPLIT) {
+    if (m_doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
       m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     }
   }
@@ -3621,7 +3621,7 @@ void Z3DWindow::startBodySplit()
         doc->notify(
               ZWidgetMessageFactory(
                 "WARNING: You will not be able to undo previous cleaving after splitting.").
-              as(neutube::MSG_WARNING));
+              as(neutube::EMessageType::WARNING));
       }
     }
 
@@ -4744,7 +4744,7 @@ void Z3DWindow::cropSwcInRoi()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     if (doc->isDvidMutable()) {
-      if (doc->getTag() == neutube::Document::FLYEM_BODY_3D &&
+      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D &&
           doc->showingCoarseOnly()) {
         //    m_doc->executeDeleteSwcNodeCommand();
         if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {

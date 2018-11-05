@@ -156,7 +156,7 @@ int ZObject3dScan::scanArray(
   }
 
   size_t stride = 1;
-  if (axis == neutube::X_AXIS) {
+  if (axis == neutube::EAxis::X) {
     stride = width;
   }
 

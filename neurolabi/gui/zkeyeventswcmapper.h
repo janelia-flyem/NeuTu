@@ -10,7 +10,7 @@ class QKeyEvent;
 class ZKeyEventSwcMapper
 {
 public:
-  ZKeyEventSwcMapper(neutube::Document::ETag tag = neutube::Document::NORMAL);
+  ZKeyEventSwcMapper(neutube::Document::ETag tag = neutube::Document::ETag::NORMAL);
 
   ZSwcTree::EOperation getOperation(QKeyEvent *event);
   void setTag(neutube::Document::ETag tag);

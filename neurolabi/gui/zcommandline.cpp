@@ -1187,10 +1187,15 @@ int ZCommandLine::skeletonizeDvid()
 
       if (tree == NULL) {
         ZObject3dScan obj;
-        const int blockCount = bodyReader.readBodyBlockCount(bodyId);
-        constexpr int maxBlockCount = 3000;
-        int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
-        int zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+
+        int zoom = 0;
+        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+          constexpr int maxBlockCount = 3000;
+          int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+          zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+        }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
@@ -1260,7 +1265,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        neutube::MSG_ERROR);
+        neutube::EMessageType::ERROR);
     return 1;
   }
 
@@ -1286,7 +1291,7 @@ int ZCommandLine::skeletonizeFile()
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        neutube::MSG_ERROR);
+                        neutube::EMessageType::ERROR);
       return 1;
     }
     ZStack stack;
@@ -1308,7 +1313,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        neutube::MSG_ERROR);
+        neutube::EMessageType::ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 

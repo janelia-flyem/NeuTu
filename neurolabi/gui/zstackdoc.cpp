@@ -165,8 +165,8 @@ ZStackDoc::~ZStackDoc()
   }
   endWorkThread();
 
-  deprecate(STACK);
-  deprecate(SPARSE_STACK);
+  deprecate(EComponent::STACK);
+  deprecate(EComponent::SPARSE_STACK);
 
   ZOUT(LTRACE(), 5) << "ZStackDoc destroyed: " << this;
 
@@ -206,7 +206,7 @@ void ZStackDoc::endWorkThread()
 void ZStackDoc::startWorkThread()
 {
   if (m_workThread == NULL) {
-    m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
+    m_worker = new ZWorker(ZWorker::EMode::SCHEDULE);
     m_workThread = new ZWorkThread(m_worker);
     connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
     m_workThread->start();
@@ -260,8 +260,8 @@ void ZStackDoc::init()
 
 //  createActions();
 
-  setTag(neutube::Document::NORMAL);
-  setStackBackground(neutube::IMAGE_BACKGROUND_DARK);
+  setTag(neutube::Document::ETag::NORMAL);
+  setStackBackground(neutube::EImageBackground::DARK);
 
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
@@ -293,8 +293,8 @@ void ZStackDoc::shortcutTest()
 
 void ZStackDoc::clearData()
 {
-  deprecate(STACK);
-  deprecate(SPARSE_STACK);
+  deprecate(EComponent::STACK);
+  deprecate(EComponent::SPARSE_STACK);
   m_objectGroup.removeAllObject(true);
   m_playerList.clear();
 
@@ -333,7 +333,7 @@ void ZStackDoc::initNeuronTracer()
   m_neuronTracer.initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
-    if (getTag() == neutube::Document::BIOCYTIN_STACK &&
+    if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK &&
         getStack()->channelNumber() > 1) {
       m_neuronTracer.setSignalChannel(1);
 //      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
@@ -343,7 +343,7 @@ void ZStackDoc::initNeuronTracer()
     m_neuronTracer.setIntensityField(getStack());
   }
   m_neuronTracer.setBackgroundType(getStackBackground());
-  if (getTag() == neutube::Document::FLYEM_BODY) {
+  if (getTag() == neutube::Document::ETag::FLYEM_BODY) {
     m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
   }
 
@@ -484,7 +484,7 @@ void ZStackDoc::addTask(ZTask *task)
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
   if (m_worker != NULL) {
     if (task->getDelay() > 0) {
-      if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+      if (m_worker->getMode() == ZWorker::EMode::QUEUE) {
         QTimer::singleShot(task->getDelay(), this, [=]() {
           this->addTaskSlot(task);
         });
@@ -508,7 +508,7 @@ void ZStackDoc::addTaskSlot(ZTask *task)
 void ZStackDoc::autoSaveSwc()
 {
   if (isSwcSavingRequired()) {
-    if (getTag() == neutube::Document::FLYEM_BODY_DISPLAY) {
+    if (getTag() == neutube::Document::ETag::FLYEM_BODY_DISPLAY) {
       return;
     }
 
@@ -1620,7 +1620,7 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   if (stack == NULL)
     return;
 
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
   ZStack* &mainStack = stackRef();
   mainStack = new ZStack;
 
@@ -1645,7 +1645,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
   if (zstack != mainStack) {
     ZIntCuboid oldBox = getDataRange();
 
-    deprecate(STACK);
+    deprecate(EComponent::STACK);
     mainStack = zstack;
     mainStack->useChannelColors(true);
     initNeuronTracer();
@@ -1658,7 +1658,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
 
 void ZStackDoc::loadReaderResult()
 {
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
 
   ZStack*& mainStack = stackRef();
   mainStack = m_reader.getStack();
@@ -1857,7 +1857,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     m_reader.setStackFile(&m_stackSource);
     m_reader.start();
   } else {
-    deprecate(STACK);
+    deprecate(EComponent::STACK);
 
     //ZStack*& mainStack = stackRef();
     //mainStack = m_stackSource.readStack();
@@ -1869,7 +1869,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
 
 void ZStackDoc::readSparseStack(const string &filePath)
 {
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
   ZSparseStack *spStack = new ZSparseStack;
   spStack->load(filePath);
   if (!spStack->isEmpty()) {
@@ -1884,7 +1884,7 @@ bool ZStackDoc::importImageSequence(const char *filePath)
   ZStackFile file;
   file.importImageSeries(filePath);
 
-  deprecate(STACK);
+  deprecate(EComponent::STACK);
 
   ZStack*& mainStack = stackRef();
   mainStack = file.readStack();
@@ -3164,13 +3164,13 @@ void ZStackDoc::importLocsegChain(const QStringList &fileList,
 {
   if (fileList.empty())
     return;
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject(true);
   }
 
   QString file;
   foreach (file, fileList) {
-    if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
+    if (objopt == LoadObjectOption::APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZLocsegChain*> chainsToRemove;
       QList<ZLocsegChain*> chainList = getLocsegChainList();
       for (int i=0; i<chainList.size(); i++) {
@@ -3256,7 +3256,7 @@ void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
     return;
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject(true);
   }
 
@@ -3330,14 +3330,14 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
 
-  if (objopt == REPLACE_OBJECT) {
+  if (objopt == LoadObjectOption::REPLACE_OBJECT) {
     removeAllObject();
   }
 
   QString file;
 //  blockSignals(true);
   foreach (file, fileList) {
-    if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
+    if (objopt == LoadObjectOption::APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZStackObject*> punctaToRemove = m_objectGroup.findSameSource(
             ZStackObject::TYPE_PUNCTUM, file.toStdString());
 
@@ -4992,10 +4992,10 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
 void ZStackDoc::selectObject(ZStackObject *obj, neutube::ESelectOption option)
 {
   switch (option) {
-  case neutube::SELECT_ALONE:
+  case neutube::ESelectOption::ALONE:
     getObjectGroup().deselectAll();
     break;
-  case neutube::SELECT_ALONE_TYPE:
+  case neutube::ESelectOption::ALONE_TYPE:
     if (obj != NULL) {
       getObjectGroup().setSelected(obj->getType(), false);
     } else {
@@ -5332,7 +5332,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   }
     break;
   case ZFileType::FILE_OBJECT_SCAN:
-    setTag(neutube::Document::FLYEM_BODY);
+    setTag(neutube::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->load(filePath.toStdString());
@@ -5359,7 +5359,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     }
     break; //experimenting _DEBUG_
   case ZFileType::FILE_DVID_OBJECT:
-    setTag(neutube::Document::FLYEM_BODY);
+    setTag(neutube::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->importDvidObject(filePathStr);
@@ -5431,7 +5431,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
 void ZStackDoc::deprecateDependent(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     break;
   default:
     break;
@@ -5443,12 +5443,12 @@ void ZStackDoc::deprecate(EComponent component)
   deprecateDependent(component);
 
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     delete stackRef();
     stackRef() = NULL;
     m_neuronTracer.clear();
     break;
-  case SPARSE_STACK:
+  case EComponent::SPARSE_STACK:
     delete m_sparseStack;
     m_sparseStack = NULL;
     break;
@@ -5460,7 +5460,7 @@ void ZStackDoc::deprecate(EComponent component)
 bool ZStackDoc::isDeprecated(EComponent component)
 {
   switch (component) {
-  case STACK:
+  case EComponent::STACK:
     return stackRef() == NULL;
     break;
   default:
@@ -5839,7 +5839,7 @@ void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::MSG_INFORMATION,
+          message, neutube::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }
 
@@ -6525,7 +6525,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //          m_neuronTracer.useEdgePath(true);
 //        }
 
-        if (getTag() == neutube::Document::FLYEM_ROI) {
+        if (getTag() == neutube::Document::ETag::FLYEM_ROI) {
           m_neuronTracer.setEstimatingRadius(false);
         }
 
@@ -6544,7 +6544,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               leaf = SwcTreeNode::firstChild(leaf);
             }
             ZSwcPath originalPath(root, leaf);
-            if (getTag() == neutube::Document::BIOCYTIN_STACK) {
+            if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
               originalPath.smooth(true);
             } else {
               originalPath.smoothRadius(true);
@@ -7155,7 +7155,7 @@ bool ZStackDoc::estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter)
 
   int channel = 0;
   if (getStack()->channelNumber() == 3 &&
-      getTag() == neutube::Document::BIOCYTIN_STACK) {
+      getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
     channel = 1;
   }
 
@@ -7420,7 +7420,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   }
 
   notify(ZWidgetMessage(
-           message, neutube::MSG_INFORMATION,
+           message, neutube::EMessageType::INFORMATION,
            ZWidgetMessage::TARGET_STATUS_BAR));
 
   return succ;
@@ -8538,7 +8538,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 {
   emit messageGenerated(
         ZWidgetMessage("Multi-channel image tracing is yet to be supported",
-                       neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+                       neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
 
   return false;
 }
@@ -8803,7 +8803,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
     if (swcList.size() > 1) {
       /*
       report("Save failed", "More than one SWC tree exist.",
-             NeuTube::MSG_ERROR);
+             neutube::EMessageType::MSG_ERROR);
              */
       emit statusMessageUpdated("Save failed. More than one SWC tree exist.");
     } else {
@@ -8834,7 +8834,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           notifySwcModified();
           QString msg = QString(tree->getSource().c_str()) + " saved.";
           emit statusMessageUpdated(msg);
-          emit messageGenerated(ZWidgetMessage(msg, neutube::MSG_INFORMATION));
+          emit messageGenerated(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION));
         }
       }
     }
@@ -9667,7 +9667,7 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 
   if (spStack != NULL) {
     if (m_stack != NULL) {
-      deprecate(STACK);
+      deprecate(EComponent::STACK);
     }
 
     m_stack = ZStackFactory::MakeVirtualStack(spStack->getBoundBox());
@@ -10144,7 +10144,7 @@ void ZStackDoc::runSeededWatershed()
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(neutube::MSG_WARNING);
+    message.setType(neutube::EMessageType::WARNING);
 
     emit messageGenerated(message);
     return;
@@ -10849,3 +10849,104 @@ void ZStackDoc::removeRect2dRoi()
 {
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
+
+template <class InputIterator>
+void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZMesh*> selected;
+  QList<ZMesh*> deselected;
+  for (InputIterator it = first; it != last; ++it) {
+    ZMesh *mesh = *it;
+    if (mesh->isSelected() != select) {
+      mesh->setSelected(select);
+      m_objectGroup.setSelected(mesh, select);
+      if (select) {
+        //m_selectedPuncta.insert(punctum);
+        selected.push_back(mesh);
+      } else {
+        //m_selectedPuncta.erase(punctum);
+        deselected.push_back(mesh);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+}
+
+//   template  //
+
+
+template <typename T>
+void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
+                                     const std::set<T*> &newSelected)
+{
+  QList<T*> selected;
+  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
+  for (typename std::set<T*>::const_iterator iter = addedSet.begin();
+       iter != addedSet.end(); ++iter) {
+    selected.append(const_cast<T*>(*iter));
+  }
+  /*
+
+
+  for (typename std::set<T*>::const_iterator iter = newSelected.begin();
+       iter != newSelected.end(); ++iter) {
+    if (oldSelected.count(*iter) == 0) {
+      selected.append(const_cast<T*>(*iter));
+    }
+  }
+*/
+  notifySelected(selected);
+  //notifySelectionChanged(selected, QList<T*>());
+}
+
+template <typename T>
+void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
+                                       const std::set<T*> &newSelected)
+{
+  QList<T*> deselected;
+  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
+  for (typename std::set<T*>::const_iterator iter = removedSet.begin();
+       iter != removedSet.end(); ++iter) {
+    deselected.append(const_cast<T*>(*iter));
+  }
+
+  notifyDeselected(deselected);
+}
+
+template
+void ZStackDoc::notifySelectionRemoved(const std::set<ZSwcTree*> &oldSelected,
+                                       const std::set<ZSwcTree*> &newSelected);
+
+template
+void ZStackDoc::notifySelectionRemoved(const std::set<_Swc_Tree_Node*> &oldSelected,
+                                       const std::set<_Swc_Tree_Node*> &newSelected);
+
+template <typename T>
+void ZStackDoc::notifySelected(const QList<T*> &selected)
+{
+  notifySelectionChanged(selected, QList<T*>());
+}
+
+template <typename T>
+void ZStackDoc::notifyDeselected(const QList<T*> &deselected)
+{
+  notifySelectionChanged(QList<T*>(), deselected);
+}
+
+template <typename T>
+QList<T*> ZStackDoc::getUserList() const
+{
+  QList<T*> userList;
+  for (QList<QObject*>::const_iterator iter = m_userList.begin();
+       iter != m_userList.end(); ++iter) {
+    T *user = qobject_cast<T*>(*iter);
+    if (user != NULL) {
+      userList.append(user);
+    }
+  }
+
+  return userList;
+}
+
+
+

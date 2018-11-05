@@ -99,10 +99,10 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     }
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
-    if (doc->getTag() != neutube::Document::NORMAL &&
-        doc->getTag() != neutube::Document::BIOCYTIN_STACK &&
-        doc->getTag() != neutube::Document::FLYEM_ROI &&
-        doc->getTag() != neutube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() != neutube::Document::ETag::NORMAL &&
+        doc->getTag() != neutube::Document::ETag::BIOCYTIN_STACK &&
+        doc->getTag() != neutube::Document::ETag::FLYEM_ROI &&
+        doc->getTag() != neutube::Document::ETag::FLYEM_PROOFREAD) {
       opable = false;
     }
     break;

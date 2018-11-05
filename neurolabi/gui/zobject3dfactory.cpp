@@ -301,7 +301,7 @@ std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject
   std::map<uint64_t, ZObject3dScan*> *bodySet =
       ZObject3dScan::extractAllForegroundObject(
         stack.array8(), stack.width(), stack.height(), stack.depth(),
-        neutube::Z_AXIS);
+        neutube::EAxis::Z);
   if (bodySet != NULL) {
     for (auto &bodyIter : *bodySet) {
       ZObject3dScan *body = bodyIter.second;

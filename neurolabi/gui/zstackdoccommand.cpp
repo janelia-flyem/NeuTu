@@ -93,7 +93,7 @@ void ZUndoCommand::startUndo()
 void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
 {
   switch (type) {
-  case neutube::Documentable_SWC:
+  case neutube::EDocumentableType::SWC:
     m_isSwcSaved = state;
     break;
   default:
@@ -104,7 +104,7 @@ void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
 bool ZUndoCommand::isSaved(neutube::EDocumentableType type) const
 {
   switch (type) {
-  case neutube::Documentable_SWC:
+  case neutube::EDocumentableType::SWC:
     return m_isSwcSaved;
   default:
     return false;
@@ -543,7 +543,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
-  } else if (m_doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+  } else if (m_doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
     m_tree->useCosmeticPen(true);
     m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
   }

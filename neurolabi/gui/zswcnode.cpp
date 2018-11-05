@@ -2,7 +2,7 @@
 
 ZSwcNode::ZSwcNode()
 {
-  ZSwcNode(0, NEURITE, 0.0, 0.0, 0.0, 1.0);
+  ZSwcNode(0, EType::NEURITE, 0.0, 0.0, 0.0, 1.0);
 }
 
 ZSwcNode::ZSwcNode(int id, EType type, double x, double y, double z, double r) :

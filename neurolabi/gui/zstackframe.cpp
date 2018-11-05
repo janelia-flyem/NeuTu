@@ -199,7 +199,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
 
   updateDocument();
 
-  if (document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
+  if (document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
     m_presenter->setViewMode(ZInteractiveContext::VIEW_OBJECT_PROJECT);
   }
   setView(m_view);
@@ -304,7 +304,7 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
   connectAction(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)), Qt::AutoConnection);
 
-  if (m_doc->getTag() != neutube::Document::BIOCYTIN_PROJECTION) {
+  if (m_doc->getTag() != neutube::Document::ETag::BIOCYTIN_PROJECTION) {
     connectAction(m_doc.get(), SIGNAL(zoomingToSelectedSwcNode()),
                   this, SLOT(zoomToSelectedSwcNodes()), Qt::AutoConnection);
   }
@@ -1198,7 +1198,7 @@ void ZStackFrame::importSwcAsReference(const QStringList &pathList)
     m_traceProject = new ZTraceProject(this);
   }
 
-  document()->importSwc(pathList, ZStackDoc::APPEND_OBJECT);
+  document()->importSwc(pathList, ZStackDoc::LoadObjectOption::APPEND_OBJECT);
   foreach (QString path, pathList) {
     m_traceProject->addDecoration(path, "swc");
   }
@@ -1327,7 +1327,7 @@ void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 
 void ZStackFrame::setViewPortCenter(int x, int y, int z)
 {
-  view()->setViewPortCenter(x, y, z, neutube::AXIS_NORMAL);
+  view()->setViewPortCenter(x, y, z, neutube::EAxisSystem::NORMAL);
 //  presenter()->setViewPortCenter(x, y, z);
 }
 
@@ -1345,7 +1345,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
-  view()->setViewPortCenter(x, y, z, neutube::AXIS_SHIFTED);
+  view()->setViewPortCenter(x, y, z, neutube::EAxisSystem::SHIFTED);
 
 //  presenter()->setViewPortCenter(x, y, z);
 }
@@ -1620,11 +1620,11 @@ void ZStackFrame::importMask(const QString &filePath)
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
-               neutube::MSG_ERROR);
+               neutube::EMessageType::ERROR);
       }
     } else {
       report("Loading mask failed", "Must be single 8-bit image",
-             neutube::MSG_ERROR);
+             neutube::EMessageType::ERROR);
     }
     delete stack;
   }
@@ -1692,7 +1692,7 @@ void ZStackFrame::loadRoi(bool isExclusive)
     ZString sourcePath = document()->stackSourcePath();
 
     ZString suffix =
-        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ROI);
+        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ESuffixRole::ROI);
 
     sourcePath = sourcePath.dirPath() + ZString::FileSeparator +
         ZBiocytinFileNameParser::getCoreName(sourcePath);
@@ -1904,8 +1904,8 @@ void ZStackFrame::MessageProcessor::processMessage(
   {
     ZStackFrame *frame = qobject_cast<ZStackFrame*>(host);
     if (frame != NULL) {
-      if (frame->document()->getTag() == neutube::Document::BIOCYTIN_STACK ||
-          frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
+      if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK ||
+          frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
         ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {

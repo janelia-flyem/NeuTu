@@ -87,7 +87,7 @@ void ZObject3dScan::init()
 //  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
-  m_sliceAxis = neutube::Z_AXIS;
+  m_sliceAxis = neutube::EAxis::Z;
   setColor(255, 255, 255, 255);
 }
 
@@ -539,8 +539,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
   zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
-  case neutube::Z_AXIS: //XY plane
-  case neutube::A_AXIS: //Arbitrary cutting plane is treated as the same as Z
+  case neutube::EAxis::Z: //XY plane
+  case neutube::EAxis::ARB: //Arbitrary cutting plane is treated as the same as Z
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; ++y) {
       int x1 = -1;
@@ -580,8 +580,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
     }
   }
   break;
-  case neutube::Y_AXIS: //XZ plane
-  case neutube::X_AXIS: //ZY plane
+  case neutube::EAxis::Y: //XZ plane
+  case neutube::EAxis::X: //ZY plane
     for (int z = 0; z < sd; ++z) {
       for (int y = 0; y < sh; ++y) {
         int x1 = -1;
@@ -901,10 +901,14 @@ void ZObject3dScan::drawStack(ZStack *stack, int v) const
 void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
 {
-  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
-       iter != m_stripeArray.end(); ++iter) {
-    const ZObject3dStripe &stripe = *iter;
-    stripe.drawStack(stack, red, green, blue, m_sliceAxis, offset);
+  assert(m_sliceAxis == neutube::EAxis::Z);
+
+  if (m_sliceAxis == neutube::EAxis::Z) {
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      const ZObject3dStripe &stripe = *iter;
+      stripe.drawStack(stack, red, green, blue, offset);
+    }
   }
 }
 
@@ -3366,7 +3370,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
     zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
-    if (getSliceAxis() == neutube::X_AXIS) {
+    if (getSliceAxis() == neutube::EAxis::X) {
       for (int i = 0; i < runLength; ++i) {
         addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
       }
@@ -4000,16 +4004,16 @@ ZObject3dScan* ZObject3dScan::chop(
     ZObject3dScan *result) const
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     return chopX(v, remain, result);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     return chopY(v, remain, result);
     break;
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     return chopZ(v, remain, result);
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 

@@ -43,7 +43,7 @@ MainWindow* ZSegmentationProjectDialog::getMainWindow()
 ZStackFrame* ZSegmentationProjectDialog::newDataFrame()
 {
   ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
-        neutube::Document::SEGMENTATION_TARGET);
+        neutube::Document::ETag::SEGMENTATION_TARGET);
 
   connect(frame, SIGNAL(closed(ZStackFrame*)),
           m_model->getProject(), SLOT(detachFrame()));
@@ -54,7 +54,7 @@ ZStackFrame* ZSegmentationProjectDialog::newDataFrame()
 ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
 {
   ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
-        reader, neutube::Document::SEGMENTATION_TARGET);
+        reader, neutube::Document::ETag::SEGMENTATION_TARGET);
 
   connect(frame, SIGNAL(closed(ZStackFrame*)),
           m_model->getProject(), SLOT(detachFrame()));

@@ -118,7 +118,7 @@ void ZLocsegChain::updateBufferChain()
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
                            neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::Z_AXIS) {
+  if (sliceAxis != neutube::EAxis::Z) {
     return;
   }
 

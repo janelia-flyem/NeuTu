@@ -859,7 +859,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     return;
   }
 
-  if (axis != neutube::Z_AXIS) {
+  if (axis != neutube::EAxis::Z) {
     return;
   }
 
@@ -1505,7 +1505,7 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, neutube::EAxis axis)
 {
-  if (axis == neutube::Z_AXIS) {
+  if (axis == neutube::EAxis::Z) {
     if (data() != NULL) {
       return Swc_Tree_Hit_Node_P(data(), x, y);
     }

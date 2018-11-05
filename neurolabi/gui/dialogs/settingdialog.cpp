@@ -256,19 +256,19 @@ void SettingDialog::setUnit(char unit)
 neutube::EImageBackground SettingDialog::getBackground() const
 {
   if (backgroundComboBox->currentIndex() == 0) {
-    return neutube::IMAGE_BACKGROUND_DARK;
+    return neutube::EImageBackground::DARK;
   }
 
-  return neutube::IMAGE_BACKGROUND_BRIGHT;
+  return neutube::EImageBackground::BRIGHT;
 }
 
 void SettingDialog::setBackground(neutube::EImageBackground bg)
 {
   switch (bg) {
-  case neutube::IMAGE_BACKGROUND_DARK:
+  case neutube::EImageBackground::DARK:
     backgroundComboBox->setCurrentIndex(0);
     break;
-  case neutube::IMAGE_BACKGROUND_BRIGHT:
+  case neutube::EImageBackground::BRIGHT:
     backgroundComboBox->setCurrentIndex(1);
   }
 }

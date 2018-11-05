@@ -51,16 +51,16 @@ template <typename T>
 void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
 //    std::swap(x, y);
     std::swap(x, z);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     std::swap(y, z);
     break;
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 }
@@ -69,16 +69,16 @@ template <typename T>
 void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     std::swap(x, z);
 //    std::swap(x, y);
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     std::swap(y, z);
     break;
-  case neutube::Z_AXIS:
+  case neutube::EAxis::Z:
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     break;
   }
 }

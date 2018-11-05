@@ -154,7 +154,7 @@ void ZLineSegmentObject::display(
 
 bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
-  if (getSliceAxis() == neutube::A_AXIS) {
+  if (getSliceAxis() == neutube::EAxis::ARB) {
     return false;
   }
 
@@ -165,13 +165,13 @@ bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
     }
 
     switch (sliceAxis) {
-    case neutube::X_AXIS:
+    case neutube::EAxis::X:
       return getLowerX() <= z && getUpperX() >= z;
-    case neutube::Y_AXIS:
+    case neutube::EAxis::Y:
       return getLowerY() <= z && getUpperY() >= z;
-    case neutube::Z_AXIS:
+    case neutube::EAxis::Z:
       return getLowerZ() <= z && getUpperZ() >= z;
-    case neutube::A_AXIS:
+    case neutube::EAxis::ARB:
       break;
     }
   }

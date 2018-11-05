@@ -64,7 +64,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
-  m_splitMode = flyem::BODY_SPLIT_ONLINE;
+  m_splitMode = flyem::EBodySplitMode::ONLINE;
 
 //  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
 //  connect(this, SIGNAL(result3dQuickViewReady()),
@@ -525,7 +525,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 
 //      ZStackDoc *doc = new ZStackDoc;
       m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
-      m_quickResultDoc->setTag(neutube::Document::FLYEM_BODY_DISPLAY);
+      m_quickResultDoc->setTag(neutube::Document::ETag::FLYEM_BODY_DISPLAY);
 //      m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
@@ -689,12 +689,12 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 void ZFlyEmBodySplitProject::chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(x, neutube::X_AXIS, dlg);
+  chopBody(x, neutube::EAxis::X, dlg);
 }
 
 void ZFlyEmBodySplitProject::chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(y, neutube::Y_AXIS, dlg);
+  chopBody(y, neutube::EAxis::Y, dlg);
 }
 
 
@@ -1146,7 +1146,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
       emit messageGenerated(
             ZWidgetMessage(QString("Split %1 failed.").
                            arg(getBodyId()),
-                           neutube::MSG_ERROR));
+                           neutube::EMessageType::ERROR));
     } else {
       updateBodyDep(getBodyId(), bodyId);
 #if defined(_FLYEM_2)
@@ -2177,7 +2177,7 @@ void ZFlyEmBodySplitProject::updateBodyId()
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     std::set<uint64_t> bodySet =
-        doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+        doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
     if (bodySet.size() == 1) {
       m_bodyId = *(bodySet.begin());
     }
@@ -2270,7 +2270,7 @@ void ZFlyEmBodySplitProject::importSeed(const QString &fileName)
             ZWidgetMessage(
               QString("Invalid seed file: %1. Seeds remain unchanged").
               arg(fileName),
-              neutube::MSG_ERROR));
+              neutube::EMessageType::ERROR));
     }
   }
 }
@@ -2406,7 +2406,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
       ZStackObject *obj =
           frame->document()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
       if (obj != NULL) {
         obj->setVisible(false);
         frame->updateView();
@@ -2423,7 +2423,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
 
-      QRect rect = frame->view()->getViewPort(neutube::COORD_STACK);
+      QRect rect = frame->view()->getViewPort(neutube::ECoordinateSystem::STACK);
       ZRect2d rectRoi;
       rectRoi.set(rect.x(), rect.y(), rect.width(), rect.height());
 //      ZRect2d rectRoi = frame->document()->getRect2dRoi();
@@ -2438,13 +2438,13 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_GRAY_SLICE,
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS)));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z)));
 
       if (graySlice == NULL) {
         graySlice = new ZDvidGraySlice();
         graySlice->setDvidTarget(getDvidTarget());
         graySlice->setSource(
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
         frame->document()->addObject(graySlice, false);
       }
 
@@ -2724,7 +2724,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     succ = false;
   }
 
-  message.setType(neutube::MSG_ERROR);
+  message.setType(neutube::EMessageType::ERROR);
 
   emit messageGenerated(message.toHtmlString(), true);
 //  emit messageGenerated(message);
@@ -2742,12 +2742,12 @@ void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::MSG_INFORMATION, target));
+        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
 }
 
 void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
 {
-  ZWidgetMessage message(msg, neutube::MSG_INFORMATION);
+  ZWidgetMessage message(msg, neutube::EMessageType::INFORMATION);
   message.setTarget(ZWidgetMessage::TARGET_DIALOG);
   emit messageGenerated(message);
 }
@@ -2761,7 +2761,7 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::MSG_ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
 }
 
 void ZFlyEmBodySplitProject::update3DViewPlane()

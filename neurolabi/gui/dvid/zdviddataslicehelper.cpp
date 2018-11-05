@@ -349,7 +349,7 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 
   if (m_currentViewParam.getViewPort().isEmpty() &&
       !viewParam.getViewPort().isEmpty()) {
-    if (m_currentViewParam.getSliceAxis() == neutube::A_AXIS) {
+    if (m_currentViewParam.getSliceAxis() == neutube::EAxis::ARB) {
       //Must be on the same plane to be contained
       if (m_currentViewParam.getSliceViewParam().hasSamePlaneCenter(
             viewParam.getSliceViewParam())) {
@@ -455,16 +455,16 @@ flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() c
 void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
 {
   if (getMaxZoom() == 0) {
-    if (axis == neutube::A_AXIS) {
-      setUpdatePolicy(flyem::UPDATE_HIDDEN);
+    if (axis == neutube::EAxis::ARB) {
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
     } else {
-      setUpdatePolicy(flyem::UPDATE_SMALL);
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::SMALL);
     }
   } else {
-    if (axis == neutube::A_AXIS) {
+    if (axis == neutube::EAxis::ARB) {
       setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
-      setUpdatePolicy(flyem::UPDATE_LOWRES);
+      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
     }
   }
 }

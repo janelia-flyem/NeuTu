@@ -185,6 +185,7 @@ void ZDoubleVector::importTextFile(const string &filePath)
       std::vector<double> array = str.toDoubleArray();
       insert(end(), array.begin(), array.end());
     }
+    fclose(fp);
   }
 }
 

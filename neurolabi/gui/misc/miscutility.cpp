@@ -157,14 +157,14 @@ static int ComputeLightIntensity(
   double norm = 1.0;
   if (dx != 0.0 || dy != 0.0 || dz != 0.0) {
     switch (axis) {
-    case neutube::X_AXIS:
+    case neutube::EAxis::X:
       norm = fabs(dx / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::Y_AXIS:
+    case neutube::EAxis::Y:
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::Z_AXIS:
-    case neutube::A_AXIS:
+    case neutube::EAxis::Z:
+    case neutube::EAxis::ARB:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -192,16 +192,16 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   int outHeight = 0;
 
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
     outWidth = height;
     outHeight = depth;
     break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
     outWidth = width;
     outHeight = depth;
     break;
-  case neutube::Z_AXIS:
-  case neutube::A_AXIS:
+  case neutube::EAxis::Z:
+  case neutube::EAxis::ARB:
     outWidth = width;
     outHeight = height;
     break;
@@ -214,7 +214,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   size_t offset2 = 0;
 
   switch (axis) {
-  case neutube::X_AXIS:
+  case neutube::EAxis::X:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int y = 0; y < C_Stack::height(stack); ++y) {
       bool hit = false;
@@ -235,7 +235,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::Y_AXIS:
+  case neutube::EAxis::Y:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -256,8 +256,8 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::A_AXIS:
-  case neutube::Z_AXIS:
+  case neutube::EAxis::ARB:
+  case neutube::EAxis::Z:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;

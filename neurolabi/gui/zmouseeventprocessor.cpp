@@ -78,11 +78,11 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZPoint dataPos = stackPosition;
   switch (getSliceAxis()) {
-  case neutube::X_AXIS:
-  case neutube::Y_AXIS:
+  case neutube::EAxis::X:
+  case neutube::EAxis::Y:
     dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
     break;
-  case neutube::A_AXIS:
+  case neutube::EAxis::ARB:
     dataPos = ZPositionMapper::StackToData(stackPosition, m_arbSlice);
     break;
   default:

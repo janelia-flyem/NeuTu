@@ -180,7 +180,7 @@ private:
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
-            neutube::EAxis sliceAxis = neutube::Z_AXIS);
+            neutube::EAxis sliceAxis = neutube::EAxis::Z);
   QColor getCustomColor(uint64_t label) const;
 
   void paintBufferUnsync();
@@ -260,7 +260,7 @@ void ZDvidLabelSlice::xorSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    xorSelection(*iter, neutube::BODY_LABEL_MAPPED);
+    xorSelection(*iter, neutube::EBodyLabelType::MAPPED);
   }
 }
 
@@ -277,7 +277,7 @@ void ZDvidLabelSlice::addSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    addSelection(*iter, neutube::BODY_LABEL_MAPPED);
+    addSelection(*iter, neutube::EBodyLabelType::MAPPED);
   }
 }
 
@@ -299,14 +299,14 @@ void ZDvidLabelSlice::xorSelectionGroup(
   std::set<uint64_t> labelSet; //original label set
 
   switch (labelType) {
-  case neutube::BODY_LABEL_MAPPED:
+  case neutube::EBodyLabelType::MAPPED:
     for (InputIterator iter = begin; iter != end; ++iter) {
 //      uint64_t label = getMappedLabel(*iter, labelType);
       std::set<uint64_t> sourceLabel = getOriginalLabelSet(*iter);
       labelSet.insert(sourceLabel.begin(), sourceLabel.end());
     }
     break;
-  case neutube::BODY_LABEL_ORIGINAL:
+  case neutube::EBodyLabelType::ORIGINAL:
     for (InputIterator iter = begin; iter != end; ++iter) {
       uint64_t label = *iter;
       labelSet.insert(label);

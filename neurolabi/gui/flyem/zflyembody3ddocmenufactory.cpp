@@ -84,10 +84,10 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
   if (doc != NULL) {
     bool isMutable = (doc->getDvidTarget().readOnly() == false);
 
-    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == neutube::Document::FLYEM_SKELETON) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D ||
+        doc->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
       config.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
-    } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
+    } else if (doc->getTag() == neutube::Document::ETag::FLYEM_MESH) {
 #if defined(_NEU3_)
       if (isMutable) {
         ZMesh *mesh = doc->getMeshForSplit();
@@ -106,10 +106,12 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
           }
         }
       }
+#else
+      Q_UNUSED(bodyEnv);
 #endif
     }
 
-    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D) {
       config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
     }
 
@@ -119,9 +121,9 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       }
     }
 
-    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE ||
-        doc->getTag() == neutube::Document::FLYEM_SKELETON) {
+    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D ||
+        doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
       int swcNodeCount = doc->getSelectedSwcNodeNumber();
 
       if (swcNodeCount == 2) {
@@ -130,7 +132,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       }
 
       if (swcNodeCount >= 2) {
-        if (doc->getTag() == neutube::Document::FLYEM_SKELETON) {
+        if (doc->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
           config.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH);
         }
       }
@@ -154,15 +156,15 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         config.append(ZActionFactory::ACTION_SAVE_OBJECT_AS);
       }
 
-      if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-          doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
+      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D ||
+          doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D_COARSE) {
         config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 
         if (ReadyForAction(doc, ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
           config.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
         }
       }
-    } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
+    } else if (doc->getTag() == neutube::Document::ETag::FLYEM_MESH) {
 #if !defined(_NEU3_)
       config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 #endif

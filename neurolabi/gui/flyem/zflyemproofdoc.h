@@ -187,8 +187,8 @@ public:
   void processBodySelection();
   void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
-  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
-  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
+//  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+//  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
   getSynapse(uint64_t bodyId);

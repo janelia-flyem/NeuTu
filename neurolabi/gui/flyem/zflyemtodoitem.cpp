@@ -20,7 +20,7 @@ const char* ZFlyEmToDoItem::ACTION_MERGE_TAG = "merge";
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
-  init(KIND_INVALID);
+  init(EKind::KIND_INVALID);
 }
 
 void ZFlyEmToDoItem::init(EKind kind)
@@ -35,13 +35,13 @@ void ZFlyEmToDoItem::init(EKind kind)
 
 ZFlyEmToDoItem::ZFlyEmToDoItem(const ZIntPoint &pos)
 {
-  init(KIND_NOTE);
+  init(EKind::KIND_NOTE);
   setPosition(pos);
 }
 
 ZFlyEmToDoItem::ZFlyEmToDoItem(int x, int y, int z)
 {
-  init(KIND_NOTE);
+  init(EKind::KIND_NOTE);
   setPosition(x, y, z);
 }
 
@@ -50,16 +50,16 @@ std::ostream& operator<< (std::ostream &stream, const ZFlyEmToDoItem &item)
 {
   //"Kind": (x, y, z)
   switch (item.getKind()) {
-  case ZDvidAnnotation::KIND_POST_SYN:
+  case ZDvidAnnotation::EKind::KIND_POST_SYN:
     stream << "PostSyn";
     break;
-  case ZDvidAnnotation::KIND_PRE_SYN:
+  case ZDvidAnnotation::EKind::KIND_PRE_SYN:
     stream << "PreSyn";
     break;
-  case ZDvidAnnotation::KIND_NOTE:
+  case ZDvidAnnotation::EKind::KIND_NOTE:
     stream << "Note";
     break;
-  case ZDvidAnnotation::KIND_INVALID:
+  case ZDvidAnnotation::EKind::KIND_INVALID:
     stream << "Invalid";
     break;
   default:
@@ -79,19 +79,19 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   QColor color = getColor();
   if (!isChecked()) {
     switch (getAction()) {
-    case neutube::TO_DO:
+    case neutube::EToDoAction::TO_DO:
       color.setRgb(255, 0, 0, 192);
       break;
-    case neutube::TO_MERGE:
+    case neutube::EToDoAction::TO_MERGE:
       color.setRgb(255, 164, 0, 192);
       break;
-    case neutube::TO_SPLIT:
+    case neutube::EToDoAction::TO_SPLIT:
       color.setRgb(200, 0, 255, 192);
       break;
-    case neutube::TO_SUPERVOXEL_SPLIT:
+    case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT:
       color.setRgb(255, 80, 164, 192);
       break;
-    case neutube::TO_DO_IRRELEVANT:
+    case neutube::EToDoAction::TO_DO_IRRELEVANT:
       color.setRgb(Qt::gray);
       break;
     }
@@ -104,15 +104,15 @@ neutube::EToDoAction ZFlyEmToDoItem::getAction() const
 {
   const char *key = "action"; //coupled with setAction
   std::string value = getProperty<std::string>(key);
-  neutube::EToDoAction action = neutube::TO_DO;
+  neutube::EToDoAction action = neutube::EToDoAction::TO_DO;
   if (value == ACTION_MERGE) {
-    action = neutube::TO_MERGE;
+    action = neutube::EToDoAction::TO_MERGE;
   } else if (value == ACTION_SPLIT) {
-    action = neutube::TO_SPLIT;
+    action = neutube::EToDoAction::TO_SPLIT;
   } else if (value == ACTION_SUPERVOXEL_SPLIT) {
-    action = neutube::TO_SUPERVOXEL_SPLIT;
+    action = neutube::EToDoAction::TO_SUPERVOXEL_SPLIT;
   } else if (value == ACTION_IRRELEVANT) {
-    action = neutube::TO_DO_IRRELEVANT;
+    action = neutube::EToDoAction::TO_DO_IRRELEVANT;
   }
 
   return action;
@@ -121,26 +121,70 @@ neutube::EToDoAction ZFlyEmToDoItem::getAction() const
 void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
 {
   switch (action) {
-  case neutube::TO_DO:
+  case neutube::EToDoAction::TO_DO:
     removeProperty(ACTION_KEY);
-    removeActionTag();
+//    removeActionTag();
     break;
-  case neutube::TO_MERGE:
+  case neutube::EToDoAction::TO_MERGE:
     addProperty(ACTION_KEY, ACTION_MERGE);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
     break;
-  case neutube::TO_SPLIT:
+  case neutube::EToDoAction::TO_SPLIT:
     addProperty(ACTION_KEY, ACTION_SPLIT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;
-  case neutube::TO_SUPERVOXEL_SPLIT:
+  case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT:
     addProperty(ACTION_KEY, ACTION_SUPERVOXEL_SPLIT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
     break;
-  case neutube::TO_DO_IRRELEVANT:
+  case neutube::EToDoAction::TO_DO_IRRELEVANT:
     addProperty(ACTION_KEY, ACTION_IRRELEVANT);
-    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
+//    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
     break;
+  }
+
+  syncActionTag();
+}
+
+std::string ZFlyEmToDoItem::GetActionTag(neutube::EToDoAction action)
+{
+  std::string tag;
+
+  auto make_tag = [](const char *actionTag) {
+    return std::string(ACTION_KEY) + ":" + actionTag; };
+
+  switch (action) {
+  case neutube::EToDoAction::TO_DO:
+    break;
+  case neutube::EToDoAction::TO_MERGE:
+    tag = make_tag(ACTION_MERGE_TAG);
+    break;
+  case neutube::EToDoAction::TO_SPLIT:
+    tag = make_tag(ACTION_SPLIT_TAG);
+    break;
+  case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT:
+    tag = make_tag(ACTION_SUPERVOXEL_SPLIT_TAG);
+    break;
+  case neutube::EToDoAction::TO_DO_IRRELEVANT:
+    tag = make_tag(ACTION_IRRELEVANT_TAG);
+    break;
+  }
+
+  return tag;
+}
+
+void ZFlyEmToDoItem::syncActionTag()
+{
+  std::string tag;
+
+  if (!isChecked()) {
+    tag = GetActionTag(getAction());
+  }
+
+  if (tag.empty()) {
+    removeActionTag();
+  } else {
+    addTag(tag);
   }
 }
 
@@ -286,22 +330,10 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   std::string checkedStr = "0";
   if (checked) {
     checkedStr = "1";
-    removeActionTag();
-  } else {
-    std::string prop = getProperty<std::string>(ACTION_KEY);
-    std::string tag;
-    if (prop == ACTION_SPLIT) {
-      tag = ACTION_SPLIT_TAG;
-    } else if (prop == ACTION_SUPERVOXEL_SPLIT) {
-      tag = ACTION_SUPERVOXEL_SPLIT_TAG;
-    }
-
-    if (!tag.empty()) {
-      addTag(std::string(ACTION_KEY) + ":" + tag);
-    }
   }
-
   m_propertyJson.setEntry("checked", checkedStr);
+
+  syncActionTag();
 }
 
 
