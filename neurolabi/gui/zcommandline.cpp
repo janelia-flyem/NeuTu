@@ -1202,6 +1202,8 @@ int ZCommandLine::skeletonizeDvid()
         bodyReader.readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
+
+
         if (tree != NULL) {
           if (mid > 0) {
             flyem::SetMutationId(tree, mid);
@@ -1209,7 +1211,20 @@ int ZCommandLine::skeletonizeDvid()
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            writer.writeSwc(bodyId, tree);
+            if (mid > 0) {
+              const int latestMid = bodyReader.readBodyMutationId(bodyId);
+
+              if (mid != latestMid) {
+                LWARN() << bodyId << ":" << mid << "->" << latestMid
+                        <<  "The body has been changed during skeletonization. "
+                            "No skeleton will be updated.";
+                delete tree;
+                tree = NULL;
+              }
+            }
+            if (tree != NULL) {
+              writer.writeSwc(bodyId, tree);
+            }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
