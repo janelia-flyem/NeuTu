@@ -16,7 +16,7 @@ class ZIntCuboid;
 class ZStackMultiScaleWatershed
 {
 public:
-  ZStackMultiScaleWatershed();
+  ZStackMultiScaleWatershed(double alpha, double beta){m_alpha = alpha, m_beta = beta;}
   ~ZStackMultiScaleWatershed();
 public:
 #if defined(_QT_GUI_USED_)
@@ -38,6 +38,8 @@ private:
   bool checkNeighbors(const uint8_t* pboundary, const uint8_t* pstack,int x,int y, int z,int width,int height,int depth);
 private:
   int m_scale = 1;
+  double m_alpha;
+  double m_beta;
 };
 
 #endif // ZSTACKMULTISCALEWATERSHED_H

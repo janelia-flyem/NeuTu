@@ -20,6 +20,7 @@
 #include "zstackdocdatabuffer.h"
 #include "neutubeconfig.h"
 #include "zdownsamplefilter.h"
+#include "zwatershedmst.h"
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -382,12 +383,12 @@ ZStack* ZStackMultiScaleWatershed::labelAreaNeedUpdate(ZStack* boundary_map,ZSta
   return rv;
 }
 
-
+/*
 ZStackMultiScaleWatershed::ZStackMultiScaleWatershed()
 {
 
 }
-
+*/
 
 ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 {
@@ -570,6 +571,11 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     sampled_watershed=watershed.run(sampled,seed);
   }
 
+  else if (algorithm == "watershedmst")
+  {
+    ZWatershedMST mst(sampled,seed,m_alpha,m_beta);
+    sampled_watershed = mst.run();
+  }
   else if(algorithm=="random_walker"){
     //std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
         //on QCoreApplication::applicationDirPath()+"/../python/service/random_walker";

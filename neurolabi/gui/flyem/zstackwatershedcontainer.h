@@ -66,7 +66,7 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  void run();
+  void run(double alpha = 1.0, double beta = 1.0);
 
   void addSeed(const ZStack &seed);
   void addSeed(const ZObject3dScan &seed);
