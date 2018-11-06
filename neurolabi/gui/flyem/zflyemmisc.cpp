@@ -47,6 +47,7 @@
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
+#include "zmeshfactory.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -1475,6 +1476,19 @@ void ZFlyEmMisc::UploadRoi(
       }
     }
   }
+}
+
+void ZFlyEmMisc::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
+{
+  ZObject3dScan obj;
+  writer.getDvidReader().readSupervoxel(svId, true, &obj);
+  ZMeshFactory factory;
+  ZMesh *mesh = factory.makeMesh(obj);
+  if (mesh != NULL) {
+    writer.writeSupervoxelMesh(*mesh, svId);
+  }
+
+  delete mesh;
 }
 
 
