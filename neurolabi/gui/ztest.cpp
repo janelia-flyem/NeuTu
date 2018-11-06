@@ -28367,5 +28367,12 @@ void ZTest::test(MainWindow *host)
 //  stack->save(GET_TEST_DATA_DIR + "/test.v3draw");
 #endif
 
+#if 1
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+
+  ZFlyEmMisc::UpdateSupervoxelMesh(*writer, 5813082914);
+#endif
+
   std::cout << "Done." << std::endl;
 }
