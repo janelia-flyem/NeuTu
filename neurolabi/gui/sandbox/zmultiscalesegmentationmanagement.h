@@ -14,6 +14,8 @@ class ZStack;
 class ZStackObject;
 class ZStackFrame;
 class QCheckBox;
+class QSpinBox;
+
 
 class ZSegmentationNode
 {
@@ -47,7 +49,7 @@ static int getNextId(){return s_id++;}
 void mergeNode(ZSegmentationNode* node);
 
 template<typename T>
-void splitNode(ZStack* stack, std::vector<T*>& seeds);
+void splitNode(ZStack* stack, std::vector<T*>& seeds, QString algorithm = "watershed", double alpha = 1.0, double beta = 1.0);
 void regularize();
 
 public:
@@ -128,6 +130,8 @@ private:
   ZStackFrame* m_frame;
   QStandardItemModel* m_tree;
   QCheckBox* m_show_leaf;
+  QCheckBox* m_leaky_boundary;
+  QSpinBox *m_alpha, *m_beta;
   static ZMultiscaleSegmentationWindow* s_window;
 };
 

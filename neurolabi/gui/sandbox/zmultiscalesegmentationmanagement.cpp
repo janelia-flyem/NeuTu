@@ -5,7 +5,7 @@
 #include <QString>
 #include <QLayout>
 #include <QCheckBox>
-#include <QShortcut>
+#include <QSpinBox>
 #include "zmultiscalesegmentationmanagement.h"
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
@@ -226,7 +226,7 @@ void ZSegmentationNode::destroy()
 
 
 template<typename T>
-void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds)
+void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds, QString algorithm, double alpha, double beta)
 {
 
   ZStack* stack_valid = NULL;
@@ -247,10 +247,10 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds)
   ZStackWatershedContainer* container = new ZStackWatershedContainer(stack_valid);
   addSeed(*container, seeds);
 
-  container->setAlgorithm("watershed");
+  container->setAlgorithm(algorithm);
   container->setScale(estimateScale(stack_valid->getVoxelNumber()));
   container->setDsMethod("Min(ignore zero)");
-  container->run();
+  container->run(alpha,beta);
 
   std::vector<ZSegmentationScan*> scan_array;
 
@@ -419,10 +419,24 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   m_show_leaf = new QCheckBox("Show Leaf");
   m_show_leaf->setChecked(true);
 
+  m_leaky_boundary = new QCheckBox("Boudary Leak");
+  m_leaky_boundary->setChecked(false);
+
+  m_alpha = new QSpinBox();
+  m_alpha->setRange(-5,5);
+
+  m_beta = new QSpinBox();
+  m_beta->setRange(-5,5);
+
   //setup layout
   QGridLayout* lay=new QGridLayout(this);
   lay->addWidget(m_tree_view,0,0,8,15);
-  lay->addWidget(m_show_leaf,8,0,1,5);
+  lay->addWidget(m_show_leaf,8,0,1,3);
+  lay->addWidget(m_leaky_boundary,8,3,1,3);
+  lay->addWidget(new QLabel("alpha:"),8,6,1,2);
+  lay->addWidget(m_alpha,8,8,1,3);
+  lay->addWidget(new QLabel("beta:"),8,11,1,2);
+  lay->addWidget(m_beta,8,13,1,3);
   lay->addWidget(open_stack,9,0,1,5);
   lay->addWidget(clear,9,5,1,5);
   lay->addWidget(export_node,9,10,1,5);
@@ -576,8 +590,17 @@ void ZMultiscaleSegmentationWindow::onSegment()
   }
 
   std::vector<ZStackObject*> seeds = getSeeds();
-  selected_node->splitNode<ZStackObject>(m_stack, seeds);
 
+  if(m_leaky_boundary->isChecked())
+  {
+    double alpha = std::pow(10.0,m_alpha->value());
+    double beta = std::pow(10.0,m_beta->value());
+    selected_node->splitNode<ZStackObject>(m_stack, seeds,"watershedmst",alpha,beta);
+  }
+  else
+  {
+    selected_node->splitNode<ZStackObject>(m_stack, seeds,"watershed");
+  }
 
   //display tree in UI
   clearTreeView();
