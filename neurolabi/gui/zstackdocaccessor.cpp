@@ -208,7 +208,7 @@ void ZStackDocAccessor::ParseWatershedContainer(
 {
   if (doc != NULL && container != NULL) {
     ZObject3dScanArray result;
-    container->makeSplitResult(1, &result);
+    container->makeSplitResult(1, &result, NULL);
 
     ZOUT(LTRACE(), 5) << result.size() << "split generated.";
     QList<ZStackObject *> objList;

@@ -3849,6 +3849,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   ZObject3dScan *remainObj = new ZObject3dScan;
 
+  *remainObj = *(m_splitter->getBodyForSplit()->getObjectMask());
+
   QList<ZStackObject*> objList =
       getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
 
@@ -3859,7 +3861,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   retrieveSegmentationMesh(&meshMap);
 
   QList<ZMesh*> mainMeshList;
-  bool uploadingMesh = (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL);
+  bool uploadingMesh =
+      (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL);
 
   for (ZStackObject *obj : objList) {
     ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
@@ -3906,12 +3909,14 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
-      } else {
+
+        remainObj->subtractSliently(*seg);
+      }/* else {
         remainObj->unify(*seg);
         if (mesh) {
           mainMeshList.append(mesh);
         }
-      }
+      }*/
     }
   }
 
@@ -3943,10 +3948,16 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     mainMesh = ZMeshFactory::MakeMesh(*remainObj);
   }
 
-  if (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL) {
-    m_mainDvidWriter.writeSupervoxelMesh(*mainMesh, decode(remainderId));
-  } else {
-    m_mainDvidWriter.writeMesh(*mainMesh, remainderId, 0);
+#ifdef _DEBUG_
+  uploadingMesh = true;
+#endif
+
+  if (uploadingMesh) {
+    if (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL) {
+      m_mainDvidWriter.writeSupervoxelMesh(*mainMesh, decode(remainderId));
+    } else {
+      m_mainDvidWriter.writeMesh(*mainMesh, remainderId, 0);
+    }
   }
 
 //  m_mainDvidWriter.deleteMesh(oldId);
