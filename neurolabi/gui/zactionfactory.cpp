@@ -373,6 +373,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
     break;
+  case ACTION_SHOW_SUPERVOXEL_LIST:
+    action = new QAction("Show Supervoxel List", parent);
+    break;
   case ACTION_COPY_SUPERVOXEL_ID:
     action = new QAction("Copy Supervoxel ID", parent);
     break;
