@@ -144,31 +144,6 @@ static void LoadFlyEmConfig(
   GET_FLYEM_CONFIG.useDefaultNeuTuServer(NeutubeConfig::UsingDefaultNeuTuServer());
   GET_FLYEM_CONFIG.useDefaultTaskServer(NeutubeConfig::UsingDefaultTaskServer());
 
-//  QDir appDir((GET_APPLICATION_DIR).c_str());
-//  QFileInfo configFileInfo = QFileInfo(appDir, "local_flyem_config.json");
-//  if (!configFileInfo.exists()) {
-//    configFileInfo.setFile(appDir, "flyem_config.json");
-//  }
-
-//  QString defaultFlyemConfigPath = configFileInfo.absoluteFilePath();
-//  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
-
-//  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
-//  if (flyemConfigPath.isEmpty()) {
-//    QFileInfo configFileInfo(configPath);
-
-//    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
-//    if (flyemConfigPath.isEmpty()) {
-//      flyemConfigPath = defaultFlyemConfigPath;
-//    } else {
-//      QFileInfo flyemConfigFileInfo(flyemConfigPath);
-//      if (!flyemConfigFileInfo.isAbsolute()) {
-//        flyemConfigPath =
-//            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
-//      }
-//    }
-//  }
-
   SetFlyEmConfigpath(configPath, configObj);
 
   GET_FLYEM_CONFIG.loadConfig();
@@ -345,8 +320,6 @@ int main(int argc, char *argv[])
   }
 
   if (guiEnabled) {
-    GET_FLYEM_CONFIG.activateNeuTuServer();
-
 #ifdef _QT5_
     QSurfaceFormat format;
 #if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
@@ -386,6 +359,9 @@ int main(int argc, char *argv[])
 
 #ifdef _FLYEM_
   LoadFlyEmConfig(configPath, config, true);
+  if (guiEnabled) {
+    GET_FLYEM_CONFIG.activateNeuTuServer();
+  }
 
   ZGlobalDvidRepo::GetInstance().init();
 #endif
