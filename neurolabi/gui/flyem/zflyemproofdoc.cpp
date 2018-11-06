@@ -3506,7 +3506,7 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
