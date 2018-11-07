@@ -27399,18 +27399,19 @@ void ZTest::test(MainWindow *host)
   std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
 #endif
 
-#if 0
-//  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
-  ZDvidTarget target;
-  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
-  ZDvidWriter writer;
-  writer.open(target);
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain_test");
+//  ZDvidTarget target;
+//  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/d59e/segmenation/sparsevol");
+//  ZDvidWriter writer;
+//  writer.open(target);
 
   std::vector<std::string> statusList({/*"Putative 0.5",*/
+                                       "Prelim Roughly traced",
                                        "Roughly traced",
                                        "Traced",
                                        "Hard to trace"});
-  writer.writeBodyStatusList(statusList);
+  writer->writeBodyStatusList(statusList);
 #endif
 
 #if 0

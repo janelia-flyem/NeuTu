@@ -3586,7 +3586,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {
-      slice->setDvidTarget(getMainDvidReader().getDvidTarget());
+      slice->setDvidTarget(getMainDvidReader().getDvidTarget().getGrayScaleTarget());
     }
   }
 }
