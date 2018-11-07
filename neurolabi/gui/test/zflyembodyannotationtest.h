@@ -62,10 +62,17 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
 
-
   annotation2.setStatus("Partially traced");
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Partially traced", annotation1.getStatus());
+
+  annotation2.setStatus("Prelim Roughly traced");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Prelim Roughly traced", annotation1.getStatus());
+
+  annotation2.setStatus("Roughly traced");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Roughly traced", annotation1.getStatus());
 
   annotation2.setStatus("Traced in ROI");
   annotation1.mergeAnnotation(annotation2);
