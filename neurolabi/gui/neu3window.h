@@ -161,7 +161,7 @@ private slots:
   void updateSliceBrowserSelection();
   void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
 
-  void hideGrayscale();
+//  void hideGrayscale();
   void processCameraRotation();
 //  void closeWebView();
 
