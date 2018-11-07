@@ -145,6 +145,8 @@ public:
   friend ZObject3dStripe operator - (
       const ZObject3dStripe &s1, const ZObject3dStripe &s2);
 
+  bool hasOverlap(const ZObject3dStripe &stripe);
+
 private:
   template<typename T>
   void drawArray(

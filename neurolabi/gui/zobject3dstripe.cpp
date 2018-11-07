@@ -1061,3 +1061,40 @@ ZObject3dStripe operator - (
 
   return result;
 }
+
+
+bool ZObject3dStripe::hasOverlap(const ZObject3dStripe &stripe) const
+{
+  ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
+  ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
+
+  bool overlapping = false;
+
+  if ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+      !s1.m_segmentArray.empty() && !s2.m_segmentArray.empty()) {
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End < s1Start) { //t2 - s1
+        MOVE_SECOND_SEGMENT;
+      } else if (s1End < s2Start) { // t1 - t2
+        MOVE_FIRST_SEGMENT;
+      } else {
+        overlapping = true;
+        break;
+      }
+    }
+  }
+
+  return overlapping;
+}
+

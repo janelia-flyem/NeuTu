@@ -1312,14 +1312,21 @@ bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
   canonize();
   obj.canonize();
 
-  if (getVoxelNumber() < obj.getVoxelNumber()) {
-    ZObject3dScan tmpObj = *this;
-    tmpObj.dilate();
-    return obj.hasOverlap(tmpObj);
-  } else {
-    ZObject3dScan tmpObj = obj;
-    tmpObj.dilate();
-    return hasOverlap(tmpObj);
+  ZIntCuboid box1 = getBoundBox();
+  ZIntCuboid box2 = obj.getBoundBox();
+
+  box1.expand(1, 1, 1);
+
+  if (box1.hasOverlap(box2)) {
+    if (getVoxelNumber() < obj.getVoxelNumber()) {
+      ZObject3dScan tmpObj = *this;
+      tmpObj.dilate();
+      return obj.hasOverlap(tmpObj);
+    } else {
+      ZObject3dScan tmpObj = obj;
+      tmpObj.dilate();
+      return hasOverlap(tmpObj);
+    }
   }
 
   return false;
@@ -3906,6 +3913,8 @@ ZObject3dScan operator - (
 
 void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
 {
+  this->copyDataFrom(*this - obj);
+#if 0
   int originalMinZ = getMinZ();
   int originalMaxZ = getMaxZ();
 
@@ -3959,6 +3968,7 @@ void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
 //  remained.canonize();
 
   this->copyDataFrom(remained);
+#endif
 }
 
 ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
