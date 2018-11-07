@@ -698,6 +698,7 @@ ZObject3dScan *ZDvidReader::readBody(
       config.format = "blocks";
       config.range = box;
       config.zoom = zoom;
+      config.labelType = labelType;
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
