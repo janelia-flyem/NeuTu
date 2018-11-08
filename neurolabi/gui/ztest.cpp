@@ -28367,11 +28367,25 @@ void ZTest::test(MainWindow *host)
 //  stack->save(GET_TEST_DATA_DIR + "/test.v3draw");
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer =
       ZGlobal::GetInstance().getDvidWriter("hemibran-production");
 
   ZFlyEmMisc::UpdateSupervoxelMesh(*writer, 5813082914);
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 2);
+  obj.addSegment(0, 1, 2, 3);
+  obj.addSegment(1, 1, 2, 3);
+  obj.addSegment(2, 1, 1, 3);
+
+  ZObject3dScan::ConstStripeIterator iter(&obj);
+  while (iter.hasNext()) {
+    iter.next().print();
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;

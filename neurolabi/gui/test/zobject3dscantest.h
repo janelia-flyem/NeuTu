@@ -302,6 +302,144 @@ TEST(ZObject3dStripe, TestCanonize) {
   ASSERT_EQ(15, (int) stripe.getVoxelNumber());
 }
 
+TEST(ZObject3dStripe, Relation)
+{
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s2.setY(0);
+    s2.setZ(1);
+
+    ASSERT_FALSE(s1.hasOverlap(s2));
+    ASSERT_FALSE(s2.hasOverlap(s1));
+    ASSERT_FALSE(s1.isAdjacentTo(s2));
+    ASSERT_FALSE(s2.isAdjacentTo(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(0, 1);
+
+    s2.setY(0);
+    s2.setZ(2);
+    s2.addSegment(0, 1);
+
+    ASSERT_FALSE(s1.hasOverlap(s2));
+    ASSERT_FALSE(s2.hasOverlap(s1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(0, 1);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(2, 3);
+
+    ASSERT_FALSE(s1.hasOverlap(s2));
+    ASSERT_FALSE(s2.hasOverlap(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(0, 1);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(1, 2);
+
+    ASSERT_TRUE(s1.hasOverlap(s2));
+    ASSERT_TRUE(s2.hasOverlap(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(0, 2);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(1, 1);
+
+    ASSERT_TRUE(s1.hasOverlap(s2));
+    ASSERT_TRUE(s2.hasOverlap(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(0, 5);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(1, 10);
+
+    ASSERT_TRUE(s1.hasOverlap(s2));
+    ASSERT_TRUE(s2.hasOverlap(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(5, 10);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(1, 1);
+    s2.addSegment(2, 3);
+    s2.addSegment(4, 5);
+
+    ASSERT_TRUE(s1.hasOverlap(s2));
+    ASSERT_TRUE(s2.hasOverlap(s1));
+  }
+
+  {
+    ZObject3dStripe s1;
+    ZObject3dStripe s2;
+
+    s1.setY(0);
+    s1.setZ(1);
+    s1.addSegment(5, 10);
+    s1.addSegment(0, 0);
+    s1.addSegment(-5, -10);
+
+    s2.setY(0);
+    s2.setZ(1);
+    s2.addSegment(1, 1);
+    s2.addSegment(2, 3);
+    s2.addSegment(4, 5);
+
+    ASSERT_TRUE(s1.hasOverlap(s2));
+    ASSERT_TRUE(s2.hasOverlap(s1));
+  }
+}
+
 static void createObject(ZObject3dScan *obj)
 {
   obj->clear();
@@ -1328,7 +1466,7 @@ TEST(ZObject3dScan, relation)
   obj2.addSegment(0, 0, 1, 2);
   ASSERT_EQ(1, (int) misc::CountOverlap(obj1, obj2));
 
-  obj2.addSegment(0, 0, 2, 3);
+  obj2.addSegment(0, 0, 3, 4);
   ASSERT_EQ(0, (int) misc::CountOverlap(obj1, obj2));
 
   ASSERT_EQ(1, (int) misc::CountNeighbor(obj1, obj2));
