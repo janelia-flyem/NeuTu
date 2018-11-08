@@ -1307,6 +1307,77 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
   canonize();
 }
 
+namespace {
+
+//Assuming s1 and s2 are canonized slices
+bool IsSliceAdjacent(const ZObject3dScan &slice1, const ZObject3dScan &slice2)
+{
+  bool adjacent = false;
+
+  ZObject3dScan::ConstStripeIterator iter1(&slice1);
+  ZObject3dScan::ConstStripeIterator iter2(&slice2);
+
+  while (iter1.hasNext() && iter2.hasNext()) {
+    const ZObject3dStripe &s1 = iter1.peekNext();
+    const ZObject3dStripe &s2 = iter2.peekNext();
+
+    int dy = s2.getY() - s1.getY();
+    if (std::abs(dy) <= 1) {
+      if (s1.isAdjacentTo(s2)) {
+        adjacent = true;
+        break;
+      }
+    }
+
+    if (dy < 1) {
+      iter2.advance();
+    } else {
+      iter1.advance();
+    }
+  }
+
+  return adjacent;
+}
+
+}
+
+bool ZObject3dScan::isAdjacentTo(const ZObject3dScan &obj) const
+{
+  const_cast<ZObject3dScan&>(*this).canonize();
+  const_cast<ZObject3dScan&>(obj).canonize();
+
+  size_t index1 = 0;
+  size_t index2 = 0;
+  size_t ns1 = m_stripeArray.size();
+  size_t ns2 = obj.m_stripeArray.size() - 1;
+
+  bool adjacent = false;
+
+  while (index1 < ns1 && index2 < ns2) {
+    const ZObject3dStripe &s1 = m_stripeArray[index1];
+    const ZObject3dStripe &s2 = obj.m_stripeArray[index2];
+
+    int dy = s1.getY() - s2.getY();
+    int dz = s1.getZ() - s2.getZ();
+    if (std::abs(dy) + std::abs(dz) <= 1) {
+      if (s1.isAdjacentTo(s2)) {
+        adjacent = true;
+        break;
+      }
+    }
+
+    if (s1.getZ() < s2.getZ() ||
+        (s1.getZ() == s2.getZ() && s1.getY() < s2.getY())) {
+      ++index1;
+    } else {
+      ++index2;
+    }
+  }
+
+  return adjacent;
+}
+
+#if 0
 bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 {
   canonize();
@@ -1318,7 +1389,7 @@ bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
   box1.expand(1, 1, 1);
 
   if (box1.hasOverlap(box2)) {
-    if (getVoxelNumber() < obj.getVoxelNumber()) {
+    if (getStripeNumber() < obj.getStripeNumber()) {
       ZObject3dScan tmpObj = *this;
       tmpObj.dilate();
       return obj.hasOverlap(tmpObj);
@@ -1331,6 +1402,7 @@ bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 
   return false;
 }
+#endif
 
 bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)
 {
@@ -2252,7 +2324,7 @@ void ZObject3dScan::dilate()
 {
   size_t oldStripeNumber = getStripeNumber();
   for (size_t i = 0; i < oldStripeNumber; ++i) {
-    ZObject3dStripe baseStripe = m_stripeArray[i];
+    ZObject3dStripe &baseStripe = m_stripeArray[i];
     ZObject3dStripe stripe = baseStripe;
     stripe.setY(stripe.getY() - 1);
     m_stripeArray.push_back(stripe);
@@ -2269,7 +2341,7 @@ void ZObject3dScan::dilate()
     stripe.setZ(stripe.getZ() + 1);
     m_stripeArray.push_back(stripe);
     //addStripe(stripe, false);
-    m_stripeArray[i].dilate();
+    baseStripe.dilate();
   }
 
   setCanonized(false);
@@ -2467,6 +2539,19 @@ void ZObject3dScan::exportImageSlice(
       delete stack;
     }
   }
+}
+
+bool ZObject3dScan::hasSlice(int z) const
+{
+  z /= (m_dsIntv.getZ() + 1);
+
+  ZObject3dStripe tmpStripe;
+  tmpStripe.setZ(z);
+
+  return std::binary_search(m_stripeArray.begin(), m_stripeArray.end(), tmpStripe,
+                            [](const ZObject3dStripe &s1, const ZObject3dStripe &s2) {
+    return s1.getZ() < s2.getZ();
+  });
 }
 
 ZObject3dScan ZObject3dScan::getSlice(int z) const
@@ -4589,6 +4674,115 @@ bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj, bool appending)
 }
 
 /////////////////////////Iterators/////////////////////////
+/////////////////////////Slice Iterator//////////////////
+ZObject3dScanConstSliceIterator::ZObject3dScanConstSliceIterator(
+    const ZObject3dScan *obj) : m_obj(obj)
+{
+  const_cast<ZObject3dScan&>(*m_obj).canonize();
+
+  m_nextZ = m_obj->getMinZ();
+  m_maxZ = m_obj->getMaxZ();
+}
+
+const ZObject3dScan& ZObject3dScanConstSliceIterator::next()
+{
+  if (hasNext()) {
+    m_slice = m_obj->getSlice(m_nextZ);
+    advance();
+  } else {
+    m_slice.clear();
+  }
+
+  return m_slice;
+}
+
+const ZObject3dScan& ZObject3dScanConstSliceIterator::current() const
+{
+  return m_slice;
+}
+
+bool ZObject3dScanConstSliceIterator::hasNext() const
+{
+  if (m_obj == NULL) {
+    return false;
+  }
+
+  return (m_nextZ <= m_maxZ);
+}
+
+void ZObject3dScanConstSliceIterator::skipOverEmptySlice()
+{
+  /*
+  if (m_obj != NULL) {
+    while (m_nextZ < m_maxZ) {
+      if () {
+        ++m_nextZ;
+      } else {
+        break;
+      }
+    }
+  }
+  */
+}
+
+void ZObject3dScanConstSliceIterator::advance()
+{
+  /*
+  if (m_nextStripeIndex < m_obj->getStripeNumber()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+    if (m_nextSegmentIndex < stripe.getSegmentNumber() - 1) {
+      ++m_nextSegmentIndex;
+    } else {
+      m_nextSegmentIndex = 0;
+      ++m_nextStripeIndex;
+      skipOverEmptyStripe();
+    }
+  }
+  */
+}
+
+
+/////////////////////////Stripe Iterator//////////////////
+ZObject3dScan::ConstStripeIterator::ConstStripeIterator(
+    const ZObject3dScan *obj) :
+  m_obj(obj)
+{
+}
+
+const ZObject3dStripe& ZObject3dScan::ConstStripeIterator::next()
+{
+  if (hasNext()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+    advance();
+
+    return stripe;
+  }
+
+  return m_emptyStripe;
+}
+
+const ZObject3dStripe& ZObject3dScan::ConstStripeIterator::peekNext() const
+{
+  if (hasNext()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+    return stripe;
+  }
+
+  return m_emptyStripe;
+}
+
+bool ZObject3dScan::ConstStripeIterator::hasNext() const
+{
+  return m_nextStripeIndex < m_obj->getStripeNumber();
+}
+
+void ZObject3dScan::ConstStripeIterator::advance()
+{
+  ++m_nextStripeIndex;
+}
+
+
+/////////////////////////Segment Iterator//////////////////
 ZObject3dScan::ConstSegmentIterator::ConstSegmentIterator(
     const ZObject3dScan *obj) :
   m_obj(obj), m_nextStripeIndex(0), m_nextSegmentIndex(0)

@@ -439,6 +439,7 @@ public:
 
   void duplicateSlice(int depth);
 
+  bool hasSlice(int z) const;
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getMedianSlice() const;
 
@@ -648,7 +649,7 @@ public:
   /*!
    * \brief Check if an object is ajacent to another
    */
-  bool isAdjacentTo(ZObject3dScan &obj);
+  bool isAdjacentTo(const ZObject3dScan &obj) const;
 
 
   /*
@@ -744,6 +745,22 @@ public:
     int m_z;
   };
 
+  class ConstStripeIterator {
+  public:
+    //The iterator always starts from the position prior to the first element.
+    ConstStripeIterator(const ZObject3dScan *obj = NULL);
+    const ZObject3dStripe& next(); //Go to next and return the elment
+    const ZObject3dStripe& peekNext() const; //Go to next and return the elment
+    const ZObject3dStripe& begin();
+    bool hasNext() const;
+    void advance();
+
+  private:
+    const ZObject3dScan *m_obj = nullptr;
+    size_t m_nextStripeIndex = 0;
+    ZObject3dStripe m_emptyStripe;
+  };
+
   class ConstSegmentIterator {
   public:
     //The iterator always starts from the position prior to the first element.
@@ -822,6 +839,25 @@ protected:
   const static TEvent EVENT_OBJECT_VIEW_CHANGED;
   const static TEvent EVENT_NULL;
 #endif
+};
+
+class ZObject3dScanConstSliceIterator {
+public:
+  //The iterator always starts from the position prior to the first element.
+  ZObject3dScanConstSliceIterator(const ZObject3dScan *obj = NULL);
+  const ZObject3dScan& next(); //Go to next and return the elment
+  const ZObject3dScan& current() const;
+  bool hasNext() const;
+  void advance();
+
+private:
+  void skipOverEmptySlice();
+
+private:
+  const ZObject3dScan *m_obj = nullptr;
+  int m_nextZ = 0;
+  int m_maxZ = -1;
+  ZObject3dScan m_slice;
 };
 
 #include "zobject3dscan.hpp"
