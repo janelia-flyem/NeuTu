@@ -1070,6 +1070,7 @@ int ZCommandLine::skeletonizeDvid()
 
   ZDvidWriter writer;
   ZDvidReader *bodyReader = &reader;
+  ZDvidReader mirrorReader;
 
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
@@ -1095,7 +1096,6 @@ int ZCommandLine::skeletonizeDvid()
     std::string mirror = reader.readMirror();
     ZDvidTarget target = reader.getDvidTarget();
 
-    ZDvidReader mirrorReader;
     if (!mirror.empty()) {
       target.setServer(mirror);
       if (mirrorReader.open(target)) {
