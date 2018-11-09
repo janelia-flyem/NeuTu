@@ -906,7 +906,8 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
     core/memorystream.h \
-    imgproc/zstackmultiscalewatershed.h
+    imgproc/zstackmultiscalewatershed.h \
+    protocols/taskmergereview.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1598,7 +1599,8 @@ SOURCES += main.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
     core/memorystream.cpp \
-    imgproc/zstackmultiscalewatershed.cpp
+    imgproc/zstackmultiscalewatershed.cpp \
+    protocols/taskmergereview.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
