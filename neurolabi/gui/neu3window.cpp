@@ -63,6 +63,7 @@
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/taskfalsesplitreview.h"
+#include "protocols/taskmergereview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 
@@ -430,6 +431,7 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
   factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
   factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
+  factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
   factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 
