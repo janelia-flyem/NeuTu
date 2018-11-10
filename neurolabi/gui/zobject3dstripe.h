@@ -147,7 +147,9 @@ public:
       const ZObject3dStripe &s1, const ZObject3dStripe &s2);
 
   bool hasOverlap(const ZObject3dStripe &stripe) const;
-  bool isAdjacentTo(const ZObject3dStripe &stripe) const;
+  bool isAdjacentTo(
+      const ZObject3dStripe &stripe,
+      neutube::EStackNeighborhood nbr) const;
   bool isAdjacentOnPlaneTo(const ZObject3dStripe &stripe) const;
 
 private:

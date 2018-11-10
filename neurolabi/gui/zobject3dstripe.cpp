@@ -1073,25 +1073,62 @@ inline bool HasPotentialOverlap(
 }
 
 inline bool HasPotentialAdjacency(
-    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2,int diffYZ,
+    neutube::EStackNeighborhood nbr)
 {
-  return ((std::abs(s1.getY() - s2.getY()) + std::abs(s1.getZ() - s2.getZ()) <= 1) &&
+  bool goodDiffYZ = true;
+  switch (nbr) {
+  case neutube::EStackNeighborhood::D1:
+    goodDiffYZ = (diffYZ <= 1);
+    break;
+  case neutube::EStackNeighborhood::D2:
+  case neutube::EStackNeighborhood::D3:
+    goodDiffYZ = (diffYZ <= 2);
+    break;
+  }
+
+
+  return (goodDiffYZ &&
           !s1.isEmpty() && !s2.isEmpty() &&
-          s1.getSegmentArray().back() >= s2.getSegmentArray().front() &&
-          s2.getSegmentArray().back() >= s1.getSegmentArray().front());
+          s1.getSegmentArray().back() + 1 >= s2.getSegmentArray().front() &&
+          s2.getSegmentArray().back() + 1 >= s1.getSegmentArray().front());
 }
+
 }
 
 //6-conn neighborhood
-bool ZObject3dStripe::isAdjacentTo(const ZObject3dStripe &stripe) const
+bool ZObject3dStripe::isAdjacentTo(
+    const ZObject3dStripe &stripe, neutube::EStackNeighborhood nbr) const
 {
   ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
   ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
 
   bool adjacent = false;
 
-  if (HasPotentialAdjacency(s1, s2)) {
-    int dg = std::abs(s1.getY() - s2.getY()) + std::abs(s1.getZ() - s2.getZ());
+  int diffY = std::abs(s1.getY() - s2.getY());
+  int diffZ = std::abs(s1.getZ() - s2.getZ());
+  if (diffY > 1 || diffZ > 1) {
+    return false;
+  }
+
+   int diffYZ = diffY + diffZ;
+  if (HasPotentialAdjacency(s1, s2, diffYZ, nbr)) {
+    int dg = 1;
+
+    switch (nbr) {
+    case neutube::EStackNeighborhood::D1:
+      dg = 1 - diffYZ;
+      break;
+    case neutube::EStackNeighborhood::D2:
+      if (diffYZ == 2) { //X must overlap
+        dg = 0;
+      } else { //X can be adjacent
+        dg = 1;
+      }
+      break;
+    case neutube::EStackNeighborhood::D3:
+      break;
+    }
 
     int seg1 = 0;
     int seg2 = 0;

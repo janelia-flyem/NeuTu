@@ -28133,6 +28133,17 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
+  obj1.load(GET_TEST_DATA_DIR + "/_test.sobj");
+  obj2.load(GET_TEST_DATA_DIR + "/_test2.sobj");
+
+  ZObject3dScan diffObj = obj2 - obj1;
+  diffObj.print();
+  diffObj.save(GET_TEST_DATA_DIR + "/_test3.sobj");
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
   ZDvidUrl dvidUrl(reader->getDvidTarget());
 
@@ -28147,7 +28158,7 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan obj;
   obj.importDvidBlockBuffer(buffer.data(), buffer.size(), true);
   std::cout << obj.isCanonizedActually() << std::endl;
-  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
 #endif
 
 #if 0
@@ -28374,7 +28385,7 @@ void ZTest::test(MainWindow *host)
   ZFlyEmMisc::UpdateSupervoxelMesh(*writer, 5813082914);
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.addSegment(0, 0, 1, 2);
   obj.addSegment(0, 1, 2, 3);
@@ -28386,6 +28397,46 @@ void ZTest::test(MainWindow *host)
     iter.next().print();
   }
 
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 2);
+  obj.addSegment(0, 1, 2, 3);
+  obj.addSegment(1, 1, 2, 3);
+  obj.addSegment(2, 1, 1, 3);
+  obj.addSegment(2, 2, 1, 3);
+  obj.addSegment(2, 3, 1, 3);
+  obj.addSegment(3, 1, 1, 3);
+
+  ZObject3dScan::ConstSliceIterator iter(&obj);
+  while (iter.hasNext()) {
+    iter.next().print();
+    std::cout << iter.current().isCanonized() << std::endl;
+  }
+#endif
+
+#if 1
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 1, 0, 1);
+  obj1.addSegment(0, 3, 0, 1);
+  obj1.addSegment(0, 5, 0, 1);
+  obj1.addSegment(0, 6, 0, 1);
+  obj1.addSegment(0, 9, 0, 1);
+  obj1.addSegment(0, 10, 0, 1);
+  obj1.addSegment(0, 11, 0, 1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(0, 2, 3, 4);
+  obj2.addSegment(0, 3, 3, 4);
+  obj2.addSegment(0, 7, 3, 4);
+  obj2.addSegment(0, 8, 3, 4);
+  obj2.addSegment(0, 9, 3, 4);
+  obj2.addSegment(0, 10, 3, 4);
+  obj2.addSegment(0, 12, 1, 4);
+  obj2.addSegment(0, 13, 3, 4);
+  obj1.isAdjacentTo(obj2);
+//  ASSERT_TRUE(obj2.isAdjacentTo(obj1));
 #endif
 
   std::cout << "Done." << std::endl;

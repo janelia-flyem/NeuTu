@@ -643,13 +643,14 @@ public:
    *
    * 26-neighborhood.
    */
-  bool hasOverlap(ZObject3dScan &obj);
+  bool hasOverlap(ZObject3dScan &obj) const;
 
 
   /*!
    * \brief Check if an object is ajacent to another
    */
-  bool isAdjacentTo(const ZObject3dScan &obj) const;
+  bool isAdjacentTo(const ZObject3dScan &obj,
+                    neutube::EStackNeighborhood nbr = neutube::EStackNeighborhood::D1) const;
 
 
   /*
@@ -745,15 +746,39 @@ public:
     int m_z;
   };
 
+  class ConstSliceIterator {
+  public:
+    //The iterator always starts from the position prior to the first element.
+    ConstSliceIterator(const ZObject3dScan *obj = NULL);
+    const ZObject3dScan& next(); //Go to next and return the slice
+    const ZObject3dScan& current() const;
+    bool hasNext() const;
+    void advance();
+
+  private:
+    const ZObject3dScan *m_obj = nullptr;
+  //  int m_nextZ = 0;
+  //  int m_maxZ = -1;
+    size_t m_stripeIndex = 0;
+    std::shared_ptr<ZObject3dScan> m_slice; //
+  };
+
   class ConstStripeIterator {
   public:
     //The iterator always starts from the position prior to the first element.
     ConstStripeIterator(const ZObject3dScan *obj = NULL);
     const ZObject3dStripe& next(); //Go to next and return the elment
     const ZObject3dStripe& peekNext() const; //Go to next and return the elment
-    const ZObject3dStripe& begin();
+//    const ZObject3dStripe& begin();
     bool hasNext() const;
+    bool hasNextNext() const;
+
+    //Advance the iterator; it should NOT destroy the value returned before.
     void advance();
+
+    const ZObject3dStripe& operator *() const;
+    friend ConstStripeIterator& operator++(ConstStripeIterator &iter);
+    bool ended() const;
 
   private:
     const ZObject3dScan *m_obj = nullptr;
@@ -816,6 +841,10 @@ private:
 #endif
   void readHeader(std::istream &stream, int *version, int *stripeNumber);
 
+  void canonizeConst() const;
+
+  bool isAdjacentTo_Old(const ZObject3dScan &obj) const;
+
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   bool m_isCanonized;
@@ -839,25 +868,6 @@ protected:
   const static TEvent EVENT_OBJECT_VIEW_CHANGED;
   const static TEvent EVENT_NULL;
 #endif
-};
-
-class ZObject3dScanConstSliceIterator {
-public:
-  //The iterator always starts from the position prior to the first element.
-  ZObject3dScanConstSliceIterator(const ZObject3dScan *obj = NULL);
-  const ZObject3dScan& next(); //Go to next and return the elment
-  const ZObject3dScan& current() const;
-  bool hasNext() const;
-  void advance();
-
-private:
-  void skipOverEmptySlice();
-
-private:
-  const ZObject3dScan *m_obj = nullptr;
-  int m_nextZ = 0;
-  int m_maxZ = -1;
-  ZObject3dScan m_slice;
 };
 
 #include "zobject3dscan.hpp"
