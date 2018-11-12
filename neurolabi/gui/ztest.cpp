@@ -28417,6 +28417,185 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZRandomGenerator rng;
+
+//  for (int t = 0; t < 100000; ++t) {
+  while (1) {
+    int v = rng.rndint(2, 1000);
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), 0, 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, 0, rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, rng.rndint(-1, 1), 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), rng.rndint(-1, 1), 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), 0, rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, rng.rndint(-1, 1), rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), rng.rndint(-1, 1), rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D3));
+      }
+
+      {
+        std::vector<ZObject3dScan> objArray = obj1.getConnectedComponent(
+              ZObject3dScan::ACTION_NONE);
+        std::cout << objArray.size() << " components" << std::endl;
+        if (objArray.size() > 1) {
+          for (size_t i = 0; i < objArray.size() - 1; ++i) {
+            for (size_t j = i + 1; j < objArray.size(); ++j) {
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D1));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D2));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D3));
+            }
+          }
+        }
+      }
+
+      {
+        std::vector<ZObject3dScan> objArray = obj2.getConnectedComponent(
+              ZObject3dScan::ACTION_NONE);
+        std::cout << objArray.size() << " components" << std::endl;
+        if (objArray.size() > 1) {
+          for (size_t i = 0; i < objArray.size() - 1; ++i) {
+            for (size_t j = i + 1; j < objArray.size(); ++j) {
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D1));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D2));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D3));
+            }
+          }
+        }
+      }
+    }
+  }
+
+#endif
+
+#if 0
   ZObject3dScan obj1;
   obj1.addSegment(0, 1, 0, 1);
   obj1.addSegment(0, 3, 0, 1);
