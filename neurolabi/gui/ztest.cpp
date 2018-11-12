@@ -131,7 +131,7 @@
 #include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "zfiletype.h"
 #include "tz_geometry.h"
 #include "z3dgraph.h"
