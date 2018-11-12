@@ -445,6 +445,7 @@ private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
   void setProtocolRangeVisible(bool on);
+  void showSupervoxelList();
 
 private:
   void init();
