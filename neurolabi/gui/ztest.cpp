@@ -28419,8 +28419,7 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZRandomGenerator rng;
 
-//  for (int t = 0; t < 100000; ++t) {
-  while (1) {
+  for (int t = 0; t < 100000; ++t) {
     int v = rng.rndint(2, 1000);
 
     {
