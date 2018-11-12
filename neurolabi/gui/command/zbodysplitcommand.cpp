@@ -263,7 +263,7 @@ int ZBodySplitCommand::run(
 
     if (testing) {
       ZObject3dScanArray result;
-      container.makeSplitResult(1, &result);
+      container.makeSplitResult(1, &result, NULL);
       ZStack *labelStack = result.toColorField();
       labelStack->save(output);
       delete labelStack;
@@ -396,7 +396,7 @@ void ZBodySplitCommand::processResult(
   std::cout << "Processing results ..." << std::endl;
   if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
-    ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
+    ZObject3dScanArray *result = container.makeSplitResult(2, NULL, NULL);
 
     if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
       ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
@@ -481,7 +481,7 @@ void ZBodySplitCommand::processResult(
     } else {
       ZStackWriter writer;
       ZObject3dScanArray result;
-      container.makeSplitResult(1, &result);
+      container.makeSplitResult(1, &result, NULL);
 
       if (ZFileType::isImageFile(output)) {
         ZStack *labelStack = result.toColorField();

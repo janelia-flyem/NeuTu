@@ -398,7 +398,6 @@ public slots:
   void copyLabelId();
   void copySupervoxelId();
 
-
   void notifyUser(const QString &msg);
 
   /*!

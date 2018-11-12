@@ -418,6 +418,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(checkSelectedBookmark()));
   connect(getPresenter(), SIGNAL(uncheckingBookmark()),
           this, SLOT(uncheckSelectedBookmark()));
+  connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
+          this, SLOT(showSupervoxelList()));
 
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
@@ -1138,6 +1140,25 @@ void ZFlyEmProofMvc::setProtocolRangeVisible(bool on)
 {
 
   ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(this, on);
+}
+
+void ZFlyEmProofMvc::showSupervoxelList()
+{
+  const std::set<uint64_t>& bodySet =
+      getCompleteDocument()->getSelectedBodySet(
+        neutube::EBodyLabelType::ORIGINAL);
+  QString text;
+  for (uint64_t bodyId : bodySet) {
+    text += QString("%1:").arg(bodyId);
+    const auto &svList =
+        getCompleteDocument()->getDvidReader().readSupervoxelSet(bodyId);
+    for (uint64_t svId : svList) {
+      text += QString(" %1").arg(svId);
+    }
+    text += "\n";
+  }
+  m_infoDlg->setText(text);
+  m_infoDlg->exec();
 }
 
 void ZFlyEmProofMvc::mergeCoarseBodyWindow()
