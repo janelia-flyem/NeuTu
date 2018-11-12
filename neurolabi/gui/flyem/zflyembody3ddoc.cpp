@@ -48,6 +48,7 @@
 #include "zstackdoc3dhelper.h"
 #include "zstackobjectarray.h"
 #include "zflyembodyenv.h"
+#include "zflyembodystatus.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1921,7 +1922,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
       std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty()) {
+      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
         statusList.append(status.c_str());
       }
     }
