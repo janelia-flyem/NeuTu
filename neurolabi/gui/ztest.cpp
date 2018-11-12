@@ -27409,8 +27409,11 @@ void ZTest::test(MainWindow *host)
   std::vector<std::string> statusList({/*"Putative 0.5",*/
                                        "Prelim Roughly traced",
                                        "Roughly traced",
-                                       "Traced",
-                                       "Hard to trace"});
+                                       "Leaves",
+                                       "Orphan hotknife",
+                                       "Orphan"
+                                       /*"Traced",*/
+                                       /*"Hard to trace"}*/});
   writer->writeBodyStatusList(statusList);
 #endif
 
