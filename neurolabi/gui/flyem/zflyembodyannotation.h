@@ -66,10 +66,6 @@ public:
 
 private:
   static int GetStatusRank(const std::string &status);
-  /*
-  static int CompareStatus(
-      const std::string &status1, const std::string &status2);
-      */
 
 private:
   uint64_t m_bodyId = 0;

@@ -96,6 +96,7 @@
 #include "zstack.hxx"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+#include "zflyembodystatus.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -242,7 +243,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
       std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty()) {
+      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
         statusList.append(status.c_str());
       }
     }

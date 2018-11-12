@@ -149,7 +149,7 @@ bool ZFlyEmBodyAnnotation::isEmpty() const
 int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
 {
   if (status.empty()) {
-    return 999;
+    return 9999;
   }
 
   std::string statusLowerCase = status;
@@ -161,38 +161,46 @@ int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
   }
 
   if (statusLowerCase == "traced") {
-    return 1;
+    return 10;
   }
 
   if (statusLowerCase == "traced in roi") {
-    return 2;
+    return 20;
   }
 
   if (statusLowerCase == "roughly traced") {
-    return 3;
+    return 30;
   }
 
   if (statusLowerCase == "prelim roughly traced") {
-    return 4;
+    return 40;
   }
 
   if (statusLowerCase == "partially traced") {
-    return 5;
+    return 50;
   }
 
   if (statusLowerCase == "hard to trace") {
-    return 6;
+    return 60;
+  }
+
+  if (statusLowerCase == "leaves") {
+    return 70;
   }
 
   if (statusLowerCase == "not examined") {
-    return 7;
+    return 80;
+  }
+
+  if (statusLowerCase == "orphan hotknife") {
+    return 90;
   }
 
   if (statusLowerCase == "orphan") {
-    return 8;
+    return 100;
   }
 
-  return 99;
+  return 999;
 }
 
 #if 0
