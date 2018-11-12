@@ -7,7 +7,7 @@
 
 #include "zqslog.h"
 #include "zwidgetfactory.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyemmisc.h"
 
 ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
