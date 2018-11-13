@@ -684,31 +684,45 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader &reader = m_sequencerReader;
     if (m_sequencerReader.isReady()) {
-         m_bodyNames.clear();
-         m_namelessBodies.clear();
+        m_bodyNames.clear();
+        m_namelessBodies.clear();
 
-        // we need to construct a json structure from scratch to
-        //  match what we'd get out of the bookmarks annotation file;
-        //  probably this should be refactored 
+        // the specific form of json we're passing around is a
+        //  historical accident; should be refactored someday
 
-        // get all the bodies that have annotations in this UUID        
+        // get all the bodies that have annotations in this UUID;
         // note that this list contains body IDs in strings, *plus*
-        //  some other nonnumeric strings (!!)
+        //  some other nonnumeric strings (!!), so we remove those
 
-//        QString bodyAnnotationName = m_currentDvidTarget.getBodyAnnotationName().c_str();
-      QString bodyAnnotationName =
-          reader.getDvidTarget().getBodyAnnotationName().c_str();
-      QStringList keyList = reader.readKeys(bodyAnnotationName);
+        QString bodyAnnotationName = reader.getDvidTarget().getBodyAnnotationName().c_str();
+        QStringList keyList = reader.readKeys(bodyAnnotationName);
+        QMutableListIterator<QString> iter(keyList);
+        bool ok;
+        while (iter.hasNext()) {
+            QString bodyIDstr = iter.next();
+            qlonglong bodyID = bodyIDstr.toLongLong(&ok);
+            if (!ok) {
+                iter.remove();
+            }
+        }
 
-      //Skip for debugging
+        //Skip for debugging
 #ifdef _DEBUG_2
-      keyList.clear();
+        keyList.clear();
 #endif
 
+        // read all the body annotations at once
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+
+        #ifdef _DEBUG_
+            std::cout << "populating body info dialog:" << std::endl;
+            std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
+            std::cout << "    # body annotation keys = " << keyList.size() << std::endl;
+        #endif
+
         ZJsonArray bodies;
-        bool ok;
         qlonglong bodyID;
-        foreach (const QString &bodyIDstr, keyList) {
+        for (int i=0; i<keyList.size(); i++) {
             if (m_quitting || m_cancelLoading) {
 #ifdef _DEBUG_
                 std::cout << "Sequencer loading canceled." << std::endl;
@@ -716,13 +730,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 return;
             }
 
-            // skip the few non-numeric keys mixed in there
-            bodyID = bodyIDstr.toLongLong(&ok);
+            // remember, we've already removed the values that won't convert,
+            //  so we don't *need* to check the return...but I'll leave it in anyway
+            bodyID = keyList[i].toLongLong(&ok);
             if (ok) {
-                // get body annotations and transform to what we need
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);
-                ZJsonObject bodyData;
-                bodyData.decodeString(temp.data());
+                // grab the previously retrieved data and modify it:
+                ZJsonObject bodyData = bodyAnnotationList[i];
 
                 // remove name if empty
                 if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
