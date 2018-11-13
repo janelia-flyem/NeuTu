@@ -700,16 +700,18 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
         bool ok;
         while (iter.hasNext()) {
             QString bodyIDstr = iter.next();
-            qlonglong bodyID = bodyIDstr.toLongLong(&ok);
+            // we don't care about the result of this conversion, only that
+            //  it *can* be parsed:
+            bodyIDstr.toLongLong(&ok);
             if (!ok) {
                 iter.remove();
             }
         }
 
         //Skip for debugging
-#ifdef _DEBUG_2
+        #ifdef _DEBUG_2
         keyList.clear();
-#endif
+        #endif
 
         // read all the body annotations at once
         QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
@@ -724,9 +726,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
         qlonglong bodyID;
         for (int i=0; i<keyList.size(); i++) {
             if (m_quitting || m_cancelLoading) {
-#ifdef _DEBUG_
-                std::cout << "Sequencer loading canceled." << std::endl;
-#endif
+                #ifdef _DEBUG_
+                    std::cout << "Sequencer loading canceled." << std::endl;
+                #endif
                 return;
             }
 
@@ -1641,31 +1643,38 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         }
         // std::cout << "built qmap: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
-        // name check; if we aren't loading all bodies in the top table,
-        //  we may not have names available for all bodies that could
+        // name check; since we don't load all bodies in the top table,
+        //  we may not have names available for every body that could
         //  appear in the lower table; try to fill in the gaps
+
+        // find out which bodies we don't have names for but do have body annotations and
+        //  thus *might* have names available
         QString bodyAnnotationName = QString::fromStdString(m_currentDvidTarget.getBodyAnnotationName());
+        QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
+        QList<QString> keyList;
         for (size_t i=0; i<bodyList.size(); i++) {
-            // if body id not in name list or nameless list,
-            // try to grab it; fill in the data
             if (!m_bodyNames.contains(bodyList[i]) && !m_namelessBodies.contains(bodyList[i]) &&
-                m_bodyAnnotationKeys.contains(QString::number(bodyList[i]))) {
+                bodyAnnotationKeys.contains(QString::number(bodyList[i]))) {
+                keyList.append(QString::number(bodyList[i]));
+            }
+        }
 
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, QString::number(bodyList[i]));
-                ZJsonObject bodyData;
-                bodyData.decodeString(temp.data());
+        // grab all the possible annotations at once, then those that have names,
+        //  put in our name stash
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
 
-                if (bodyData.hasKey("name")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
-                        m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
-                    } else {
-                        m_namelessBodies.insert(bodyID);
-                    }
+        foreach (ZJsonObject bodyData, bodyAnnotationList) {
+            if (bodyData.hasKey("name")) {
+                if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
+                    m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
                 } else {
                     m_namelessBodies.insert(bodyID);
                 }
+            } else {
+                m_namelessBodies.insert(bodyID);
             }
         }
+
         // std::cout << "got previously unknown names: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         emit ioBodiesLoaded();
     } else {
