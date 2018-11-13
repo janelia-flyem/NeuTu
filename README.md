@@ -5,6 +5,8 @@ NeuTu-EM
 
 Software for proofreading EM connectomics
 
+Publication to cite: [NeuTu: Software for Collaborative, Large-Scale, Segmentation-Based Connectome Reconstruction](https://doi.org/10.3389/fncir.2018.00101), Ting Zhao*, Donald J. Olbris, Yang Yu and Stephen M. Plaza (2018)
+
 ## Installation
 
 NeuTu can be installed on a Mac or Linux machine.
