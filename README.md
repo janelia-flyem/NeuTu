@@ -61,10 +61,10 @@ Not supported yet.
 
 ## Manual
 
-### Short manual
-https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
+### Quick start
+https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/quick_start.pdf
 
-### A detailed manual for exploring data in NeuTu
+### Full manual
 
-https://www.dropbox.com/s/lxvvelfn16mhc60/NeuTu_Explorer_Manual_Mac.pdf?dl=0
+https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/manual.pdf
 
