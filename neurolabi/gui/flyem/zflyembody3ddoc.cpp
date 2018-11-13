@@ -48,6 +48,7 @@
 #include "zstackdoc3dhelper.h"
 #include "zstackobjectarray.h"
 #include "zflyembodyenv.h"
+#include "zflyembodystatus.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1921,7 +1922,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
       std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty()) {
+      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
         statusList.append(status.c_str());
       }
     }
@@ -3586,7 +3587,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {
-      slice->setDvidTarget(getMainDvidReader().getDvidTarget());
+      slice->setDvidTarget(getMainDvidReader().getDvidTarget().getGrayScaleTarget());
     }
   }
 }
@@ -3849,6 +3850,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   ZObject3dScan *remainObj = new ZObject3dScan;
 
+  *remainObj = *(m_splitter->getBodyForSplit()->getObjectMask());
+
   QList<ZStackObject*> objList =
       getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
 
@@ -3859,7 +3862,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   retrieveSegmentationMesh(&meshMap);
 
   QList<ZMesh*> mainMeshList;
-  bool uploadingMesh = (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL);
+  bool uploadingMesh =
+      (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL);
 
   for (ZStackObject *obj : objList) {
     ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
@@ -3906,12 +3910,14 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
-      } else {
+
+        remainObj->subtractSliently(*seg);
+      }/* else {
         remainObj->unify(*seg);
         if (mesh) {
           mainMeshList.append(mesh);
         }
-      }
+      }*/
     }
   }
 
@@ -3943,10 +3949,16 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     mainMesh = ZMeshFactory::MakeMesh(*remainObj);
   }
 
-  if (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL) {
-    m_mainDvidWriter.writeSupervoxelMesh(*mainMesh, decode(remainderId));
-  } else {
-    m_mainDvidWriter.writeMesh(*mainMesh, remainderId, 0);
+#ifdef _DEBUG_
+  uploadingMesh = true;
+#endif
+
+  if (uploadingMesh) {
+    if (m_splitter->getLabelType() == flyem::EBodyLabelType::SUPERVOXEL) {
+      m_mainDvidWriter.writeSupervoxelMesh(*mainMesh, decode(remainderId));
+    } else {
+      m_mainDvidWriter.writeMesh(*mainMesh, remainderId, 0);
+    }
   }
 
 //  m_mainDvidWriter.deleteMesh(oldId);

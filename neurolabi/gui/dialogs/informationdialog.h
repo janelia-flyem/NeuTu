@@ -18,6 +18,8 @@ public:
   ~InformationDialog();
 
   void setText(const std::string &text);
+  void setText(const QString &text);
+  void setText(const char *text);
   
 private:
   Ui::InformationDialog *ui;

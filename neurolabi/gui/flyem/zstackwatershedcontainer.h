@@ -168,7 +168,8 @@ public:
   }
 
   ZObject3dScanArray* makeSplitResult(
-      uint64_t minLabel, ZObject3dScanArray *result);
+      uint64_t minLabel, ZObject3dScanArray *result,
+      ZObject3dScan *remainBody = NULL);
 
 
   void setCcaPost(bool on) {
@@ -240,7 +241,7 @@ private:
   void updateSeedMask();
 
   ZObject3dScan* processSplitResult(
-      const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adpoting);
+      const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adopting);
   void assignComponent(
       ZObject3dScan &remainBody, ZObject3dScan &mainBody,
       ZObject3dScanArray *result);

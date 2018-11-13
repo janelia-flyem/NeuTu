@@ -73,6 +73,8 @@ private slots:
   void onSelectBody();
   void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
+  void onAddToChosenCleaveBody();
+  void updateChosenCleaveBody(bool toggle);
   void onToggleShowChosenCleaveBody();
   void onHideSelected();
   void onClearHidden();
@@ -96,6 +98,7 @@ private:
   QShortcut *m_shortcutToggle;
   QMenu *m_menu;
   QAction *m_showSeedsOnlyAction;
+  QAction *m_addToBodyAction;
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
@@ -142,7 +145,7 @@ private:
   void bodiesForCleaveIndex(std::set<uint64_t>& result, std::size_t cleaveIndex,
                             bool ignoreSeedsOnly = false);
 
-  void selectBodies(const std::set<uint64_t>& toSelect);
+  void selectBodies(const std::set<uint64_t>& bodies, bool select = true);
 
   void applyPerTaskSettings();
   void applyColorMode(bool showingCleaving);
