@@ -136,7 +136,7 @@ void ZWaterShedWindow::onOk()
   std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
 
   ZObject3dScanArray result;
-  container.makeSplitResult(1, &result);
+  container.makeSplitResult(1, &result, NULL);
   for (ZObject3dScanArray::iterator iter = result.begin();
        iter != result.end(); ++iter) {
     ZObject3dScan *obj = *iter;

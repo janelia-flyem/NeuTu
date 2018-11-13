@@ -1023,7 +1023,7 @@ bool ZStackWatershedContainer::Test()
   container.setFloodFillingZero(true);
   container.run();
 
-  ZObject3dScanArray *result = container.makeSplitResult(1, NULL);
+  ZObject3dScanArray *result = container.makeSplitResult(1, NULL, NULL);
   if (result->size() != 2) {
     std::cout << "Unexpected region count: " << result->size() << std::endl;
     return false;
@@ -1052,7 +1052,7 @@ bool ZStackWatershedContainer::Test()
 
   container.run();
 
-  container.makeSplitResult(1, result);
+  container.makeSplitResult(1, result, NULL);
   if (result->size() != 4) {
     std::cout << "Unexpected region count: " << result->size() << std::endl;
     return false;
@@ -1066,7 +1066,7 @@ bool ZStackWatershedContainer::Test()
     container2.setFloodFillingZero(true);
     container2.addSeed(container.getSeedArray());
     container2.run();
-    container2.makeSplitResult(1, result);
+    container2.makeSplitResult(1, result, NULL);
 /*
     ZStack *labelStack = result->toColorField();
     labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
@@ -1079,7 +1079,7 @@ bool ZStackWatershedContainer::Test()
   }
 
   container.refineBorder();
-  container.makeSplitResult(1, result);
+  container.makeSplitResult(1, result, NULL);
   if (result->size() != 4) {
     std::cout << "Unexpected region count: " << result->size() << std::endl;
     return false;
@@ -1109,7 +1109,7 @@ bool ZStackWatershedContainer::Test()
 //    container3.setFloodFillingZero(true);
     container3.addSeed(container2.getSeedArray());
     container3.run();
-    container3.makeSplitResult(1, result);
+    container3.makeSplitResult(1, result, NULL);
 
     ZStack *labelStack = result->toColorField();
     labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
@@ -1123,7 +1123,7 @@ bool ZStackWatershedContainer::Test()
 
   container2.refineBorder();
 //  container2.run();
-  container2.makeSplitResult(1, result);
+  container2.makeSplitResult(1, result, NULL);
 
   ZStack *labelStack = result->toColorField();
   labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -1201,14 +1201,14 @@ void ZStackWatershedContainer::test()
 }
 
 ZObject3dScan* ZStackWatershedContainer::processSplitResult(
-    const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adpoting)
+    const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adopting)
 {
   ZObject3dScan *currentBody = new ZObject3dScan;
   *currentBody = remainBody->subtract(obj);
   uint64_t splitLabel = obj.getLabel();
   currentBody->setLabel(splitLabel);
 
-  if (adpoting) {
+  if (adopting) {
     std::vector<ZObject3dScan> ccArray =
         currentBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
     for (std::vector<ZObject3dScan>::iterator iter = ccArray.begin();
@@ -1264,6 +1264,7 @@ void ZStackWatershedContainer::assignComponent(
     if (count > 0) {
       ZObject3dScan *split = (*result)[splitIndex];
       split->concat(obj);
+      remainBody.subtractSliently(obj);
     }
   }
 }
@@ -1288,7 +1289,7 @@ void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
 }
 
 ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
-    ZObject3dScanArray *result)
+    ZObject3dScanArray *result, ZObject3dScan *remainBody)
 {
   if (result != NULL) {
     result->clearAll();
@@ -1327,14 +1328,18 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     wholeBody->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-    ZObject3dScan remainBody;
+    ZObject3dScan remainBodyBuffer;
+    if (remainBody == NULL) {
+      remainBody = &remainBodyBuffer;
+    }
+
     if (ccaPost()) {
-      remainBody = *wholeBody;
+      *remainBody = *wholeBody;
     } else {
       if (getRange().contains(getDataRange())) {
-        remainBody = *wholeBody;
+        *remainBody = *wholeBody;
       } else {
-        wholeBody->subobject(getRange(), NULL, &remainBody);
+        wholeBody->subobject(getRange(), NULL, remainBody);
       }
     }
 
@@ -1349,7 +1354,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 //        if (!dsIntv.isZero()) { //Process downsampled regions
         if (dsIntv != orgDsIntv) {
           ZObject3dScan *currentBody =
-              processSplitResult(obj, &remainBody, adopting);
+              processSplitResult(obj, remainBody, adopting);
           result->append(currentBody);
 #ifdef _DEBUG_2
           std::cout << "Voxel count: " << currentBody->getVoxelNumber() << std::endl;
@@ -1359,7 +1364,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
         } else {
           if (ccaPost()) {
-            remainBody.subtractSliently(obj);
+            remainBody->subtractSliently(obj);
           }
           result->append(obj);
         }
@@ -1377,7 +1382,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
     if (ccaPost()) {
 //      mainBody.upSample(dsIntv);
-      assignComponent(remainBody, mainBody, result);
+      assignComponent(*remainBody, mainBody, result);
     }
     delete objArray;
   } else {
