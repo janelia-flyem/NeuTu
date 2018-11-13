@@ -51,6 +51,7 @@ private slots:
   void zoomOutToShowAll();
   void onHideSelected();
   void onClearHidden();
+  void onToggleIsolation();
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
