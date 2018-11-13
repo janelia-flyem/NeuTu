@@ -429,6 +429,7 @@ void TaskMergeReview::onNextBodyToSelect()
     m_bodyToSelect = m_bodyIds.cbegin();
   }
   updateSelectCurrentBodyButton();
+  onSelectCurrentBody();
 }
 
 void TaskMergeReview::onPrevBodyToSelect()
@@ -438,6 +439,7 @@ void TaskMergeReview::onPrevBodyToSelect()
   }
   m_bodyToSelect--;
   updateSelectCurrentBodyButton();
+  onSelectCurrentBody();
 }
 
 void TaskMergeReview::onShowSupervoxelsChanged(int state)
@@ -487,6 +489,41 @@ void TaskMergeReview::onClearHidden()
 {
   selectBodies(m_hiddenIds);
   m_hiddenIds.clear();
+  updateVisibility();
+}
+
+void TaskMergeReview::onToggleIsolation()
+{
+  m_hiddenIds.clear();
+
+  bool isolate = false;
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  if (!selectedMeshes.isEmpty()) {
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+      ZMesh *mesh = *it;
+      if (mesh->isVisible()) {
+        if (!selectedMeshes.contains(mesh)) {
+
+          // If there is a visible mesh that is not a selected mesh, then visiblilty is not
+          // isolated to the selected meshes, and isolation needs to be performed.
+
+          isolate = true;
+          break;
+        }
+      }
+    }
+
+    if (isolate) {
+      for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+        ZMesh *mesh = *it;
+        if (!selectedMeshes.contains(mesh)) {
+          m_hiddenIds.insert(mesh->getLabel());
+        }
+      }
+    }
+  }
+
   updateVisibility();
 }
 
@@ -606,10 +643,10 @@ void TaskMergeReview::buildTaskWidget()
   m_selectCurrentBodyButton = new QPushButton("Select", m_widget);
   connect(m_selectCurrentBodyButton, SIGNAL(clicked(bool)), this, SLOT(onSelectCurrentBody()));
 
-  m_nextBodyToSelectButton = new QPushButton("Next", m_widget);
+  m_nextBodyToSelectButton = new QPushButton("Select Next", m_widget);
   connect(m_nextBodyToSelectButton, SIGNAL(clicked(bool)), this, SLOT(onNextBodyToSelect()));
 
-  m_prevBodyToSelectButton = new QPushButton("Previous", m_widget);
+  m_prevBodyToSelectButton = new QPushButton("Select Previous", m_widget);
   connect(m_prevBodyToSelectButton, SIGNAL(clicked(bool)), this, SLOT(onPrevBodyToSelect()));
 
   QHBoxLayout *selectionLayout = new QHBoxLayout;
@@ -658,6 +695,11 @@ void TaskMergeReview::buildTaskWidget()
   clearHiddenAction->setShortcut(Qt::Key_F2);
   m_menu->addAction(clearHiddenAction);
   connect(clearHiddenAction, SIGNAL(triggered()), this, SLOT(onClearHidden()));
+
+  QAction *isolateAction = new QAction("Toggle Isolation of Selected Meshes", m_widget);
+  isolateAction->setShortcut(Qt::Key_F3);
+  m_menu->addAction(isolateAction);
+  connect(isolateAction, SIGNAL(triggered()), this, SLOT(onToggleIsolation()));
 }
 
 void TaskMergeReview::updateColors()
@@ -741,8 +783,16 @@ void TaskMergeReview::updateVisibility()
     ZMesh *mesh = *itMesh;
     uint64_t id = mesh->getLabel();
     bool toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
-    m_bodyDoc->setVisible(mesh, toBeVisible);
+
+    // Set the visibility of the mesh in a way that will be processed once, with the final
+    // processObjectModified() call.  This approach is important to maintain good performance
+    // for a large number of meshes.
+
+    mesh->setVisible(toBeVisible);
+    m_bodyDoc->bufferObjectModified(mesh, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
   }
+
+  m_bodyDoc->processObjectModified();
 }
 
 void TaskMergeReview::zoomToFitMeshes()
