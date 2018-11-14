@@ -45,6 +45,7 @@ namespace {
 
   static const QString KEY_TASKTYPE = "task type";
   static const QString VALUE_TASKTYPE = "merge review";
+  static const QString KEY_TASK_ID = "task id";
   static const QString KEY_SUPERVOXEL_IDS = "supervoxel IDs";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
@@ -239,12 +240,7 @@ QString TaskMergeReview::actionString()
 
 QString TaskMergeReview::targetString()
 {
-  QString result = "none";
-  if (m_superVoxelIds.size() > 0) {
-    result = QString::number(*(m_superVoxelIds.begin())) + "+" +
-        QString::number(m_superVoxelIds.size() - 1);
-  }
-  return result;
+  return "task " + m_taskId;
 }
 
 bool TaskMergeReview::skip()
@@ -295,7 +291,7 @@ bool TaskMergeReview::skip()
   }
 
   LINFO() << "TaskMergeReview::skip() HEAD took" << timer.elapsed() << "ms to decide to"
-          << ((m_skip == Skip::NOT_SKIPPED) ? "not skip" : "skip") << "bodies" << targetString();
+          << ((m_skip == Skip::NOT_SKIPPED) ? "not skip" : "skip") << targetString();
 
   // Record that the task was skipped.
 
@@ -599,7 +595,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
     return SetBodiesResult::FAILED_SIZES;
   }
 
-  LINFO() << "TaskBodyMerge: checking sizes for supervoxels" << targetString()
+  LINFO() << "TaskBodyMerge: checking sizes for" << targetString()
           << "took" << timer.elapsed() << "ms.";
 
   m_bodyToSelect = m_bodyIds.cbegin();
@@ -876,17 +872,7 @@ void TaskMergeReview::displayWarning(const QString &title, const QString &text,
 
 std::string TaskMergeReview::outputKey() const
 {
-  std::string result;
-  uint64_t sum = 0;
-  for (uint64_t id : m_superVoxelIds) {
-    if (result.empty()) {
-      result = std::to_string(id);
-    } else {
-      sum += id;
-    }
-  }
-  result += "." + std::to_string(sum);
-  return result;
+  return m_taskId.toStdString();
 }
 
 void TaskMergeReview::writeOutput()
@@ -918,6 +904,8 @@ void TaskMergeReview::writeOutput()
   if (m_lastSavedButton) {
     m_lastSavedButton->setStyleSheet("");
   }
+
+  json[KEY_TASK_ID] = m_taskId;
 
   switch (m_skip) {
     case Skip::SKIPPED_MAPPING:
@@ -1050,11 +1038,26 @@ bool TaskMergeReview::loadSpecific(QJsonObject json)
     return false;
   }
 
+  if (json.contains(KEY_TASK_ID)) {
+    QJsonValue value = json[KEY_TASK_ID];
+    if (value.isString()) {
+        m_taskId = value.toString();
+    }
+  }
+  if (m_taskId.isEmpty()) {
+    uint64_t sum = 0;
+    for (uint64_t id : m_superVoxelIds) {
+      sum += id;
+    }
+    m_taskId = QString::number(sum);
+  }
+
   return true;
 }
 
 QJsonObject TaskMergeReview::addToJson(QJsonObject taskJson)
 {
+  taskJson[KEY_TASK_ID] = m_taskId;
   QJsonArray array;
   for (uint64_t id : m_superVoxelIds) {
     array.append(static_cast<double>(id));

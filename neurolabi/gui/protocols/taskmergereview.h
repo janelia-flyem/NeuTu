@@ -55,6 +55,7 @@ private slots:
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
+  QString m_taskId;
   std::set<uint64_t> m_superVoxelIds;
   std::set<uint64_t> m_bodyIds;
 
