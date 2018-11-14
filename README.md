@@ -13,11 +13,10 @@ NeuTu can be installed on a Mac or Linux machine. Its binary releases are availa
 
 ### Use Script (The Easiest Way)
 
-1. Download https://raw.githubusercontent.com/janelia-flyem/NeuTu/master/neurolabi/shell/setup_neutu.sh
-    
     curl -X GET https://raw.githubusercontent.com/janelia-flyem/NeuTu/master/neurolabi/shell/setup_neutu.sh > setup_neutu.sh
-
-2. Run 'bash setup_neutu.sh <intall_dir>', where <install_dir> is the installation directory. 
+    bash setup_neutu.sh <intall_dir>
+    
+Here <install_dir> is the installation directory. 
 
 Once the installation is done, you can launch the program by running
 
