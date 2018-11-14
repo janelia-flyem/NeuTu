@@ -61,6 +61,7 @@ private:
 
   std::map<uint64_t, std::size_t> m_bodyIdToColorIndex;
   std::set<uint64_t>::const_iterator m_bodyToSelect;
+  std::size_t m_bodyToSelectIndex;
 
   enum class Skip { NOT_SKIPPED, SKIPPED_MAPPING, SKIPPED_SIZES, SKIPPED_MESHES };
   Skip m_skip = Skip::NOT_SKIPPED;

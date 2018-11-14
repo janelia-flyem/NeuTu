@@ -360,6 +360,7 @@ QWidget *TaskMergeReview::getTaskWidget()
   applyPerTaskSettings();
 
   m_bodyToSelect = m_bodyIds.cbegin();
+  m_bodyToSelectIndex = 1;
   updateSelectCurrentBodyButton();
 
   return m_widget;
@@ -421,8 +422,10 @@ void TaskMergeReview::onSelectCurrentBody()
 void TaskMergeReview::onNextBodyToSelect()
 {
   m_bodyToSelect++;
+  m_bodyToSelectIndex++;
   if (m_bodyToSelect == m_bodyIds.cend()) {
     m_bodyToSelect = m_bodyIds.cbegin();
+    m_bodyToSelectIndex = 1;
   }
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
@@ -432,8 +435,10 @@ void TaskMergeReview::onPrevBodyToSelect()
 {
   if (m_bodyToSelect == m_bodyIds.cbegin()) {
     m_bodyToSelect = m_bodyIds.cend();
+    m_bodyToSelectIndex = m_bodyIds.size() + 1;
   }
   m_bodyToSelect--;
+  m_bodyToSelectIndex--;
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
 }
@@ -599,6 +604,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
           << "took" << timer.elapsed() << "ms.";
 
   m_bodyToSelect = m_bodyIds.cbegin();
+  m_bodyToSelectIndex = 1;
 
   return SetBodiesResult::SUCCEEDED;
 }
@@ -736,7 +742,7 @@ void TaskMergeReview::updateSelectCurrentBodyButton()
   QIcon icon(pixmap);
   m_selectCurrentBodyButton->setIcon(icon);
 
-  m_selectCurrentBodyButton->setText("Select " + QString::number(id));
+  m_selectCurrentBodyButton->setText("Select " + QString::number(m_bodyToSelectIndex) + ": " + QString::number(id));
 }
 
 void TaskMergeReview::selectBodies(const std::set<uint64_t> &bodies, bool select)
