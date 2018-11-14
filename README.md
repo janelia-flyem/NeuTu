@@ -1,4 +1,4 @@
-NeuTu-EM
+NeuTu
 =====
 
 <!--[![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)-->
