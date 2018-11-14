@@ -9,7 +9,7 @@ Publication to cite: [NeuTu: Software for Collaborative, Large-Scale, Segmentati
 
 ## Installation
 
-NeuTu can be installed on a Mac or Linux machine. Its binary releases are available as [conda packages] (https://anaconda.org/flyem-forge/neutu). You can install it manually with conda commands or through the setup script.
+NeuTu can be installed on a Mac or Linux machine. Its binary releases are available as [conda packages](https://anaconda.org/flyem-forge/neutu). You can install it manually with conda commands or through the setup script.
 
 ### Use Script (The Easiest Way)
 
