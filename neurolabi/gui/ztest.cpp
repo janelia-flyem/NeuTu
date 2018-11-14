@@ -27399,7 +27399,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain_test");
 //  ZDvidTarget target;
 //  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/d59e/segmenation/sparsevol");
@@ -28417,7 +28417,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZRandomGenerator rng;
 
   for (int t = 0; t < 100000; ++t) {
@@ -28616,6 +28616,20 @@ void ZTest::test(MainWindow *host)
   obj2.addSegment(0, 13, 3, 4);
   obj1.isAdjacentTo(obj2);
 //  ASSERT_TRUE(obj2.isAdjacentTo(obj1));
+#endif
+
+#if 0
+  uint64_t bodyId = 5813087431;
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+
+  ZObject3dScan obj;
+  writer->getDvidReader().readSupervoxel(bodyId, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
+
+  writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
   std::cout << "Done." << std::endl;
