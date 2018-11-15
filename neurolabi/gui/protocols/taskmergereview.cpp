@@ -47,6 +47,7 @@ namespace {
   static const QString VALUE_TASKTYPE = "merge review";
   static const QString KEY_TASK_ID = "task id";
   static const QString KEY_SUPERVOXEL_IDS = "supervoxel IDs";
+  static const QString KEY_MAJOR_SUPERVOXEL_IDS = "supervoxel IDs 0.5";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
   // For the result JSON.
@@ -421,11 +422,11 @@ void TaskMergeReview::onSelectCurrentBody()
 
 void TaskMergeReview::onNextBodyToSelect()
 {
-  m_bodyToSelect++;
-  m_bodyToSelectIndex++;
-  if (m_bodyToSelect == m_bodyIds.cend()) {
-    m_bodyToSelect = m_bodyIds.cbegin();
-    m_bodyToSelectIndex = 1;
+  incrBodyToSelect();
+  if (m_showMajorOnlyCheckBox->isChecked()) {
+    while (!bodyToSelectIsMajor()) {
+      incrBodyToSelect();
+    }
   }
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
@@ -433,12 +434,12 @@ void TaskMergeReview::onNextBodyToSelect()
 
 void TaskMergeReview::onPrevBodyToSelect()
 {
-  if (m_bodyToSelect == m_bodyIds.cbegin()) {
-    m_bodyToSelect = m_bodyIds.cend();
-    m_bodyToSelectIndex = m_bodyIds.size() + 1;
+  decrBodyToSelect();
+  if (m_showMajorOnlyCheckBox->isChecked()) {
+    while (!bodyToSelectIsMajor()) {
+      decrBodyToSelect();
+    }
   }
-  m_bodyToSelect--;
-  m_bodyToSelectIndex--;
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
 }
@@ -447,6 +448,18 @@ void TaskMergeReview::onShowSupervoxelsChanged(int state)
 {
   bool show = (state != Qt::Unchecked);
   applyColorMode(show);
+}
+
+void TaskMergeReview::onShowMajorOnlyChanged(int state)
+{
+  bool show = (state != Qt::Unchecked);
+  if (show) {
+    while (!bodyToSelectIsMajor()) {
+      incrBodyToSelect();
+    }
+    updateSelectCurrentBodyButton();
+  }
+  updateVisibility();
 }
 
 void TaskMergeReview::onToggleShowSupervoxels()
@@ -554,13 +567,18 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
       QJsonArray responseArray = responseDoc.array();
-      for (QJsonValue responseElem : responseArray) {
+      for (int i = 0; i < responseArray.size(); i++) {
+        QJsonValue responseElem = responseArray.at(i);
         if (!responseElem.isUndefined()) {
-          uint64_t id = responseElem.toDouble();
-          if (id == 0) {
+          uint64_t bodyId= responseElem.toDouble();
+          if (bodyId == 0) {
             return SetBodiesResult::FAILED_MAPPING;
           }
-          m_bodyIds.insert(id);
+          m_bodyIds.insert(bodyId);
+          uint64_t svId = jsonBody.value(i).toReal();
+          if (m_majorSuperVoxelIds.find(svId) != m_majorSuperVoxelIds.end()) {
+            m_majorBodyIds.insert(bodyId);
+          }
         }
       }
     }
@@ -658,14 +676,21 @@ void TaskMergeReview::buildTaskWidget()
   selectionLayout->addWidget(m_nextBodyToSelectButton);
   selectionLayout->addStretch();
 
+  m_showMajorOnlyCheckBox = new QCheckBox("Show only 'major' bodies", m_widget);
+  connect(m_showMajorOnlyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowMajorOnlyChanged(int)));
+
   m_showSupervoxelsCheckBox = new QCheckBox("Show supervoxels", m_widget);
   connect(m_showSupervoxelsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowSupervoxelsChanged(int)));
+
+  QVBoxLayout *showLayout = new QVBoxLayout;
+  showLayout->addWidget(m_showMajorOnlyCheckBox);
+  showLayout->addWidget(m_showSupervoxelsCheckBox);
 
   QPushButton *zoomOutButton = new QPushButton("Zoom Out to Show All", m_widget);
   connect(zoomOutButton, SIGNAL(clicked(bool)), this, SLOT(zoomOutToShowAll()));
 
   QHBoxLayout *bottomLayout = new QHBoxLayout;
-  bottomLayout->addWidget(m_showSupervoxelsCheckBox);
+  bottomLayout->addLayout(showLayout);
   bottomLayout->addWidget(zoomOutButton);
 
   QVBoxLayout *layout = new QVBoxLayout;
@@ -730,6 +755,34 @@ void TaskMergeReview::updateColors()
   }
 }
 
+bool TaskMergeReview::bodyToSelectIsMajor() const
+{
+  if (m_majorBodyIds.empty()) {
+    return true;
+  }
+  return (m_majorBodyIds.find(*m_bodyToSelect) != m_majorBodyIds.end());
+}
+
+void TaskMergeReview::incrBodyToSelect()
+{
+  m_bodyToSelect++;
+  m_bodyToSelectIndex++;
+  if (m_bodyToSelect == m_bodyIds.cend()) {
+    m_bodyToSelect = m_bodyIds.cbegin();
+    m_bodyToSelectIndex = 1;
+  }
+}
+
+void TaskMergeReview::decrBodyToSelect()
+{
+  if (m_bodyToSelect == m_bodyIds.cbegin()) {
+    m_bodyToSelect = m_bodyIds.cend();
+    m_bodyToSelectIndex = m_bodyIds.size() + 1;
+  }
+  m_bodyToSelect--;
+  m_bodyToSelectIndex--;
+}
+
 void TaskMergeReview::updateSelectCurrentBodyButton()
 {
   uint64_t id = *m_bodyToSelect;
@@ -785,6 +838,11 @@ void TaskMergeReview::updateVisibility()
     ZMesh *mesh = *itMesh;
     uint64_t id = mesh->getLabel();
     bool toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
+
+    if (toBeVisible && m_showMajorOnlyCheckBox->isChecked()) {
+      uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
+      toBeVisible = (m_majorBodyIds.find(tarBodyId) != m_majorBodyIds.end());
+    }
 
     // Set the visibility of the mesh in a way that will be processed once, with the final
     // processObjectModified() call.  This approach is important to maintain good performance
@@ -1042,6 +1100,18 @@ bool TaskMergeReview::loadSpecific(QJsonObject json)
     }
   } else {
     return false;
+  }
+
+  if (json.contains(KEY_MAJOR_SUPERVOXEL_IDS)) {
+    QJsonValue value = json[KEY_MAJOR_SUPERVOXEL_IDS];
+    if (value.isArray()) {
+      QJsonArray array = value.toArray();
+      for (QJsonValue idValue : array) {
+        if (idValue.isDouble()) {
+          m_majorSuperVoxelIds.insert(idValue.toDouble());
+        }
+      }
+    }
   }
 
   if (json.contains(KEY_TASK_ID)) {

@@ -46,6 +46,7 @@ private slots:
   void onSelectCurrentBody();
   void onNextBodyToSelect();
   void onPrevBodyToSelect();
+  void onShowMajorOnlyChanged(int state);
   void onShowSupervoxelsChanged(int state);
   void onToggleShowSupervoxels();
   void zoomOutToShowAll();
@@ -57,7 +58,9 @@ private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   QString m_taskId;
   std::set<uint64_t> m_superVoxelIds;
+  std::set<uint64_t> m_majorSuperVoxelIds;
   std::set<uint64_t> m_bodyIds;
+  std::set<uint64_t> m_majorBodyIds;
 
   std::map<uint64_t, std::size_t> m_bodyIdToColorIndex;
   std::set<uint64_t>::const_iterator m_bodyToSelect;
@@ -80,6 +83,7 @@ private:
   QPushButton *m_selectCurrentBodyButton;
   QPushButton *m_nextBodyToSelectButton;
   QPushButton *m_prevBodyToSelectButton;
+  QCheckBox *m_showMajorOnlyCheckBox;
   QCheckBox *m_showSupervoxelsCheckBox;
   QMenu *m_menu;
 
@@ -92,7 +96,11 @@ private:
   void buildTaskWidget();
   void updateColors();
 
+  bool bodyToSelectIsMajor() const;
+  void incrBodyToSelect();
+  void decrBodyToSelect();
   void updateSelectCurrentBodyButton();
+
   void selectBodies(const std::set<uint64_t>& bodies, bool toSelect = true);
 
   void applyPerTaskSettings();
