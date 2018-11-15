@@ -1,5 +1,9 @@
 #!/bin/bash
 
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
 pkg=$1
 if [[ t$pkg != "tneutu" ]] && [[ t$pkg != "tneu3" ]]
 then
@@ -22,7 +26,7 @@ then
   suffix='-alpha'
 elif [[ $branch != master ]]
 then
-  echo "Unsupported branch: $branch"
+  echo "${red}Unsupported branch: $branch${reset}"
   exit  1
 fi
 
@@ -38,4 +42,11 @@ fi
 
 cd $scriptDir/../../
 sh conda_build.sh $pkgname
+
+channel='tingzhao'
+if [[ $origin == 'https://github.com/janelia-flyem/NeuTu.git' ]]
+then
+  channel='flyem-forge'
+fi
  
+echo "Upload to ===> ${green}-u $channel${reset} "
