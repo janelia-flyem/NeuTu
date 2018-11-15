@@ -3,6 +3,7 @@
 #include "zflyembodyannotation.h"
 #include "neutube.h"
 #include "zflyemmisc.h"
+#include "zflyembodystatus.h"
 
 const QString ZFlyEmBodyAnnotationDialog::FINALIZED_TEXT = "Finalized";
 
@@ -226,7 +227,8 @@ void ZFlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->addItem(status.c_str());
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
-    if (!neutube::IsAdminUser()) {
+//    if (!neutube::IsAdminUser()) {
+    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
       ui->statusComboBox->setEnabled(false);
     }
   }
