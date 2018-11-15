@@ -1,33 +1,36 @@
-NeuTu-EM
+NeuTu - Software for Connectome Reconstruction
 =====
 
 <!--[![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)-->
 
-Software for proofreading EM connectomics
+Publication to cite: [NeuTu: Software for Collaborative, Large-Scale, Segmentation-Based Connectome Reconstruction](https://doi.org/10.3389/fncir.2018.00101), Ting Zhao*, Donald J. Olbris, Yang Yu and Stephen M. Plaza (2018)
 
 ## Installation
 
-NeuTu can be installed on a Mac or Linux machine.
+NeuTu can be installed on a Mac or Linux machine. Its binary releases are available as [conda packages](https://anaconda.org/flyem-forge/neutu). You can install it manually with conda commands or through the setup script.
 
-### The Easiest Way
+### Use Script (The Easiest Way)
 
-1. Download https://raw.githubusercontent.com/janelia-flyem/NeuTu/develop/neurolabi/shell/setup_neutu_dev.sh
-
-2. Run 'bash setup_neutu_dev.sh <intall_dir>', where <install_dir> is the installation directory. 
+    curl -X GET https://raw.githubusercontent.com/janelia-flyem/NeuTu/master/neurolabi/shell/setup_neutu.sh > setup_neutu.sh
+    bash setup_neutu.sh <intall_dir>
+    
+Here <install_dir> is the installation directory. 
 
 Once the installation is done, you can launch the program by running
 
     <install_dir>/bin/neutu
 
-We use conda to manage our package, so you can also install the software in a more manual way with miniconda3.
+### Use Conda Commands
 
-### Mac (OSX 10.12+ preferred)
+#### Mac (OSX 10.12+ preferred)
     curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
     bash Miniconda-latest-MacOSX-x86_64.sh
     
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda create -n <NAME> -c flyem neutu
+    conda config --add channels conda-forge
+    conda config --add channels flyem-forge
+    conda create -n <NAME> -c flyem-forge neutu
     
     #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
   
@@ -35,14 +38,16 @@ Here \<NAME\> is the conda environment name. If you don't know what it is, just 
 
 After successful installation, you should be able to lauch the application neutu.app in \<CONDA_ROOT\>/envs/\<NAME\>/bin.
 
-### Linux (Tested on Ubuntu 16.04, Fedora 16+ and Scientific Linux 7)
+#### Linux (Tested on Ubuntu 16.04, Fedora 16+ and Scientific Linux 7)
     curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
     bash Miniconda-latest-Linux-x86_64.sh
     
     #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda create -n <NAME> -c flyem neutu
+    conda config --add channels conda-forge
+    conda config --add channels flyem-forge
+    conda create -n <NAME> -c flyem-forge neutu
     
     #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
   
@@ -53,16 +58,13 @@ After successful installation, you can launch the program with the following com
     source <CONDA_ROOT>/bin/activate <NAME>
     neutu 
  
-### Windows
-
-Not supported yet.
 
 ## Manual
 
-### Short manual
-https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
+### Quick start
+https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/quick_start.pdf
 
-### A detailed manual for exploring data in NeuTu
+### Full manual
 
-https://www.dropbox.com/s/lxvvelfn16mhc60/NeuTu_Explorer_Manual_Mac.pdf?dl=0
+https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/manual.pdf
 
