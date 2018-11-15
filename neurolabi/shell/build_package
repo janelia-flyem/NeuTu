@@ -1,0 +1,42 @@
+#!/bin/bash
+
+pkg=$1
+if [[ t$pkg != "tneutu" ]] && [[ t$pkg != "tneu3" ]]
+then
+  echo "Usage: build_package <neutu/neu3>"
+  exit 1
+fi
+
+echo "Building package for $pkg ..."
+
+suffix=''
+
+origin=`git config --get remote.origin.url`
+branch=`git rev-parse --abbrev-ref HEAD`
+
+branch=develop
+if [[ $branch == develop ]]
+then
+  suffix='-develop'
+elif [[ $branch == flyem_alpha ]]
+then
+  suffix='-alpha'
+elif [[ $branch != master ]]
+then
+  echo "Unsupported branch: $branch"
+  exit  1
+fi
+
+pkgname=$pkg$suffix
+
+echo "Package name: $pkgname"
+
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
+cd $scriptDir/../../
+sh conda_build.sh $pkgname
+ 
