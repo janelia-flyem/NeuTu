@@ -183,6 +183,8 @@ void Neu3Window::initGrayscaleWidget()
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
     ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
+
+    applyBrowserColorScheme();
   }
 }
 
@@ -601,15 +603,21 @@ void Neu3Window::updateSliceBrowserSelection()
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 {
+  m_browserColorScheme =
+      ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyIdColorScheme(idToColor));
   if (m_sliceWidget) {
-    const ZSharedPointer<ZFlyEmBodyColorScheme>
-        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+    applyBrowserColorScheme();
+  }
+}
 
+void Neu3Window::applyBrowserColorScheme()
+{
+  if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
     ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
-    slice->setCustomColorMap(colorMap);
+    slice->setCustomColorMap(m_browserColorScheme);
 
-     updateSliceBrowserSelection();
+    updateSliceBrowserSelection();
   }
 }
 

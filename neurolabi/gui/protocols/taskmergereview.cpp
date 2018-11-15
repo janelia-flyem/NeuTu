@@ -735,7 +735,7 @@ void TaskMergeReview::updateColors()
     m_bodyIdToColorIndex.clear();
     std::size_t index = 1;
     for (uint64_t id : m_bodyIds) {
-      m_bodyIdToColorIndex[id] = index;
+      m_bodyIdToColorIndex[id] = m_mergeButton->isChecked() ? 1 : index;
       index++;
       if (index == INDEX_COLORS.size()) {
         index = 1;
@@ -745,13 +745,17 @@ void TaskMergeReview::updateColors()
     filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
       uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
       auto it = m_bodyIds.find(tarBodyId);
-      std::size_t result = 0;
-      if (it != m_bodyIds.end()) {
-        result = m_mergeButton->isChecked() ? 1 : m_bodyIdToColorIndex.at(*it);
-      }
-      return result;
+      return (it != m_bodyIds.end()) ? m_bodyIdToColorIndex.at(*it) : 0;
     });
 
+    QHash<uint64_t, QColor> idToColor;
+    for (uint64_t id : m_bodyIds) {
+      std::size_t index = m_bodyIdToColorIndex[id];
+      glm::vec4 color = INDEX_COLORS[index] * 255.0f;
+      idToColor[id] = QColor(color.x, color.y, color.z);
+    }
+
+    emit updateGrayscaleColor(idToColor);
   }
 }
 
@@ -1149,6 +1153,9 @@ void TaskMergeReview::onLoaded()
   LINFO() << "TaskMergeReview: build version" << getBuildVersion() << ".";
 
   m_usageTimer.start();
+
+  bool showingSupervoxels = m_showSupervoxelsCheckBox->isChecked();
+  applyColorMode(showingSupervoxels);
 
   zoomToFitMeshes();
 }
