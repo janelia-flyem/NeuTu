@@ -14,7 +14,6 @@ suffix=''
 origin=`git config --get remote.origin.url`
 branch=`git rev-parse --abbrev-ref HEAD`
 
-branch=develop
 if [[ $branch == develop ]]
 then
   suffix='-develop'
