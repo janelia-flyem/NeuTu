@@ -46,7 +46,8 @@ private slots:
   void onSelectCurrentBody();
   void onNextBodyToSelect();
   void onPrevBodyToSelect();
-  void onShowMajorOnlyChanged(int state);
+  void onShowMajorChanged(int state);
+  void onShowMinorChanged(int state);
   void onShowSupervoxelsChanged(int state);
   void onToggleShowSupervoxels();
   void zoomOutToShowAll();
@@ -83,7 +84,8 @@ private:
   QPushButton *m_selectCurrentBodyButton;
   QPushButton *m_nextBodyToSelectButton;
   QPushButton *m_prevBodyToSelectButton;
-  QCheckBox *m_showMajorOnlyCheckBox;
+  QCheckBox *m_showMajorCheckBox;
+  QCheckBox *m_showMinorCheckBox;
   QCheckBox *m_showSupervoxelsCheckBox;
   QMenu *m_menu;
 
@@ -96,7 +98,7 @@ private:
   void buildTaskWidget();
   void updateColors();
 
-  bool bodyToSelectIsMajor() const;
+  bool bodyToSelectIsFilteredOut() const;
   void incrBodyToSelect();
   void decrBodyToSelect();
   void updateSelectCurrentBodyButton();
