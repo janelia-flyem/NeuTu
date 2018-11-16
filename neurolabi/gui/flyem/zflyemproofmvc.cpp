@@ -5077,7 +5077,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
   ZFlyEmBookmarkListModel *model = getAssignedBookmarkModel();
 
   model->clear();
-  ZOUT(LTRACE(), 5) << "Update user bookmark table";
+  ZOUT(LTRACE(), 5) << "Update assigned bookmark table";
   QList<ZFlyEmBookmark*> bookmarkList =
       getDocument()->getObjectList<ZFlyEmBookmark>();
   appendAssignedBookmarkTable(bookmarkList);
