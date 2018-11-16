@@ -220,6 +220,7 @@ public slots:
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
+  void setExpertBodyStatus();
   void showBodyConnection();
   void showBodyProfile();
   void annotateSynapse();
@@ -528,6 +529,9 @@ private:
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+
+  void updateBodyMessage(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
 
 protected:
   bool m_showSegmentation;
