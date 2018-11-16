@@ -12,6 +12,8 @@ public:
 
   static bool IsAccessible(const std::string &status);
 
+  static std::string GetExpertStatus();
+
 private:
   std::string m_status;
   int m_priority = 999;
