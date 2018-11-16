@@ -3045,11 +3045,6 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
-//    ZUndoCommand *command = new ZUndoCommand;
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *removeCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL, command);
-
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -3059,14 +3054,10 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
-//          removeCommand->addRemoving(bookmark);
         }
       }
     }
 #endif
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *addCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, NULL, command);
 
     ZJsonObject obj;
 
