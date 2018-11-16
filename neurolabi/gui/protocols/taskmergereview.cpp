@@ -423,10 +423,8 @@ void TaskMergeReview::onSelectCurrentBody()
 void TaskMergeReview::onNextBodyToSelect()
 {
   incrBodyToSelect();
-  if (m_showMajorOnlyCheckBox->isChecked()) {
-    while (!bodyToSelectIsMajor()) {
-      incrBodyToSelect();
-    }
+  while (bodyToSelectIsFilteredOut()) {
+    incrBodyToSelect();
   }
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
@@ -435,10 +433,8 @@ void TaskMergeReview::onNextBodyToSelect()
 void TaskMergeReview::onPrevBodyToSelect()
 {
   decrBodyToSelect();
-  if (m_showMajorOnlyCheckBox->isChecked()) {
-    while (!bodyToSelectIsMajor()) {
-      decrBodyToSelect();
-    }
+  while (bodyToSelectIsFilteredOut()) {
+    decrBodyToSelect();
   }
   updateSelectCurrentBodyButton();
   onSelectCurrentBody();
@@ -450,16 +446,35 @@ void TaskMergeReview::onShowSupervoxelsChanged(int state)
   applyColorMode(show);
 }
 
-void TaskMergeReview::onShowMajorOnlyChanged(int state)
+void TaskMergeReview::onShowMajorChanged(int state)
 {
   bool show = (state != Qt::Unchecked);
-  if (show) {
-    while (!bodyToSelectIsMajor()) {
+  if (!show) {
+    while (bodyToSelectIsFilteredOut()) {
       incrBodyToSelect();
     }
     updateSelectCurrentBodyButton();
   }
   updateVisibility();
+
+  // If major bodies are not being shown, disable the control for showing
+  // minor bodies, to prevent all bodies from not being shown.
+
+  m_showMinorCheckBox->setEnabled(show);
+}
+
+void TaskMergeReview::onShowMinorChanged(int state)
+{
+  bool show = (state != Qt::Unchecked);
+  if (!show) {
+    while (bodyToSelectIsFilteredOut()) {
+      incrBodyToSelect();
+    }
+    updateSelectCurrentBodyButton();
+  }
+  updateVisibility();
+
+  m_showMajorCheckBox->setEnabled(show);
 }
 
 void TaskMergeReview::onToggleShowSupervoxels()
@@ -676,14 +691,23 @@ void TaskMergeReview::buildTaskWidget()
   selectionLayout->addWidget(m_nextBodyToSelectButton);
   selectionLayout->addStretch();
 
-  m_showMajorOnlyCheckBox = new QCheckBox("Show only 'major' bodies", m_widget);
-  connect(m_showMajorOnlyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowMajorOnlyChanged(int)));
+  m_showMajorCheckBox = new QCheckBox("Show major", m_widget);
+  m_showMajorCheckBox->setChecked(true);
+  connect(m_showMajorCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowMajorChanged(int)));
+
+  m_showMinorCheckBox = new QCheckBox("Show minor", m_widget);
+  m_showMinorCheckBox->setChecked(true);
+  connect(m_showMinorCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowMinorChanged(int)));
+
+  QHBoxLayout *showMajorMinorLayout = new QHBoxLayout;
+  showMajorMinorLayout->addWidget(m_showMajorCheckBox);
+  showMajorMinorLayout->addWidget(m_showMinorCheckBox);
 
   m_showSupervoxelsCheckBox = new QCheckBox("Show supervoxels", m_widget);
   connect(m_showSupervoxelsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowSupervoxelsChanged(int)));
 
   QVBoxLayout *showLayout = new QVBoxLayout;
-  showLayout->addWidget(m_showMajorOnlyCheckBox);
+  showLayout->addLayout(showMajorMinorLayout);
   showLayout->addWidget(m_showSupervoxelsCheckBox);
 
   QPushButton *zoomOutButton = new QPushButton("Zoom Out to Show All", m_widget);
@@ -759,12 +783,14 @@ void TaskMergeReview::updateColors()
   }
 }
 
-bool TaskMergeReview::bodyToSelectIsMajor() const
+bool TaskMergeReview::bodyToSelectIsFilteredOut() const
 {
   if (m_majorBodyIds.empty()) {
-    return true;
+    return false;
   }
-  return (m_majorBodyIds.find(*m_bodyToSelect) != m_majorBodyIds.end());
+  bool isMajor = (m_majorBodyIds.find(*m_bodyToSelect) != m_majorBodyIds.end());
+  return ((isMajor && !m_showMajorCheckBox->isChecked()) ||
+          (!isMajor && !m_showMinorCheckBox->isChecked()));
 }
 
 void TaskMergeReview::incrBodyToSelect()
@@ -843,9 +869,13 @@ void TaskMergeReview::updateVisibility()
     uint64_t id = mesh->getLabel();
     bool toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
 
-    if (toBeVisible && m_showMajorOnlyCheckBox->isChecked()) {
+    if (toBeVisible) {
       uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
-      toBeVisible = (m_majorBodyIds.find(tarBodyId) != m_majorBodyIds.end());
+      bool isMajor = (m_majorBodyIds.find(tarBodyId) != m_majorBodyIds.end());
+      if ((isMajor && !m_showMajorCheckBox->isChecked()) ||
+          (!isMajor && !m_showMinorCheckBox->isChecked())) {
+        toBeVisible = false;
+      }
     }
 
     // Set the visibility of the mesh in a way that will be processed once, with the final
