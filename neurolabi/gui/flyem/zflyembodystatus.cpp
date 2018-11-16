@@ -21,3 +21,8 @@ bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 
   return true;
 }
+
+std::string ZFlyEmBodyStatus::GetExpertStatus()
+{
+  return "Roughly traced";
+}

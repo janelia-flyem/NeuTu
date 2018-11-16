@@ -160,15 +160,15 @@ public:
   virtual bool processCustomOperator(const ZStackOperator &op,
                                      ZInteractionEvent *e  = NULL);
 
-  void createActions();
-  void createTraceActions();
-  void createPunctaActions();
-  void createSwcActions();
+//  void createActions();
+//  void createTraceActions();
+//  void createPunctaActions();
+//  void createSwcActions();
   //void createTubeActions();
-  void createStrokeActions();
-  void createDocDependentActions();
-  void createBodyActions();
-  void createMiscActions();
+//  void createStrokeActions();
+//  void createDocDependentActions();
+//  void createBodyActions();
+//  void createMiscActions();
   void createMainWindowActions();
 
   QAction* getAction(ZActionFactory::EAction item) const;
@@ -383,6 +383,7 @@ public slots:
   void notifyBodyMergeTriggered();
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
+  void notifyExpertBodyStatus();
   void notifyBodyConnectionTriggered();
   void notifyBodyProfileTriggered();
   void notifyBodyCheckinTriggered();
@@ -434,6 +435,7 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
+  void bodyExpertStatusTriggered();
   void bodyConnectionTriggered();
   void bodyProfileTriggered();
   void bodyCheckinTriggered(flyem::EBodySplitMode mode);

@@ -24,6 +24,8 @@
 #include "zsparsestack.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zstack.hxx"
+#include "zswctree.h"
+#include "zstroke2d.h"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)
