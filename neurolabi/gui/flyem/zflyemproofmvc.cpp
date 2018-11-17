@@ -97,6 +97,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zflyembodystatus.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -2093,6 +2094,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
           this, SLOT(annotateSynapse()));
+  connect(getCompletePresenter(), SIGNAL(annotatingTodo()),
+          this, SLOT(annotateTodo()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
   connect(getCompletePresenter(), SIGNAL(uploadingMerge()),
@@ -4896,8 +4899,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
-      ZDvidWriter writer;
-      if (writer.open(getDvidTarget())) {
+      ZDvidWriter &writer = getCompleteDocument()->getDvidWriter();
+      if (writer.good()) {
         writer.writeBookmark(bookmark->toDvidAnnotationJson());
       }
       if (!writer.isStatusOk()) {
@@ -4915,17 +4918,12 @@ void ZFlyEmProofMvc::annotateSynapse()
 {
   ZFlyEmSynapseAnnotationDialog dlg(this);
   getCompleteDocument()->annotateSelectedSynapse(&dlg, getView()->getSliceAxis());
-/*
-  if (dlg.exec()) {
-    double c = dlg.getConfidence();
-    ZJsonObject propJson;
-    std::ostringstream stream;
-    stream << c;
-    propJson.setEntry("confidence", stream.str());
-    getCompleteDocument()->annotateSelectedSynapse(
-          propJson, getView()->getSliceAxis());
-  }
-  */
+}
+
+void ZFlyEmProofMvc::annotateTodo()
+{
+  ZFlyEmTodoAnnotationDialog dlg(this);
+  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
 }
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
@@ -4933,18 +4931,6 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
   getCompleteDocument()->selectBodyInRoi(
         getView()->getCurrentZ(), appending, true);
 }
-/*
-void ZFlyEmProofMvc::prepareBookmarkModel(
-    ZFlyEmBookmarkListModel *model, QSortFilterProxyModel *proxy)
-{
-  if (proxy != NULL) {
-    proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterKeyColumn(-1);
-    proxy->setSourceModel(model);
-  }
-}
-*/
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {

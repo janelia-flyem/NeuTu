@@ -669,6 +669,12 @@ void ZDvidAnnotation::Annotate(ZJsonObject &json, const std::string &annot)
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, bool value)
 {
+  if (value) {
+    AddProperty(json, key, "1");
+  } else {
+    AddProperty(json, key, "0");
+  }
+  /*
   ZJsonObject propJson = json.value("Prop");
   if (value == true) {
     propJson.setEntry(key, "1");
@@ -678,6 +684,13 @@ void ZDvidAnnotation::AddProperty(
   if (!propJson.hasKey("Prop")) {
     json.setEntry("Prop", propJson);
   }
+  */
+}
+
+void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, int value)
+{
+  AddProperty(json, key, std::to_string(value));
 }
 
 std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(const ZJsonObject &json)

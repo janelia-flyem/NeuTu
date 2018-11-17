@@ -859,6 +859,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE:
     emit annotatingSynapse();
     break;
+  case ZStackOperator::OP_FLYEM_TODO_ANNOTATE:
+    emit annotatingTodo();
+    break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);
     break;
