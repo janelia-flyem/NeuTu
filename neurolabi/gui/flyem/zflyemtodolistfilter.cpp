@@ -18,8 +18,10 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
   , m_lineRenderer(m_rendererBase)
   , m_sphereRenderer(m_rendererBase)
 {
-  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
-  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                             Qt::NoModifier, QEvent::MouseButtonPress);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                             Qt::NoModifier, QEvent::MouseButtonRelease);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                                 Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,

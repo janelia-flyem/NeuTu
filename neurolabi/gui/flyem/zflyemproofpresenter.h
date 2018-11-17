@@ -104,6 +104,7 @@ signals:
 //  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
+  void annotatingTodo();
   void mergingBody();
   void uploadingMerge();
   void goingToBodyBottom();
