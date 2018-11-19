@@ -13,9 +13,9 @@ class ZStackBinarizer
 public:
   ZStackBinarizer();
 
-  enum EMethod {
-    BM_MANUAL, BM_RC_THRESHOLD, BM_STABLE_POINT, BM_TRIANGLE, BM_LOCMAX,
-    BM_MEAN, BM_ONE_SIGMA, BM_NSIGMA
+  enum class EMethod {
+    MANUAL, RC_THRESHOLD, STABLE_POINT, TRIANGLE, LOCMAX,
+    MEAN, ONE_SIGMA, NSIGMA
   };
 
   bool binarize(Stack *stack);

@@ -13,7 +13,7 @@ class ZLocalRect : public ZDirectionalTemplate
 public:
   ZLocalRect();
   ZLocalRect(double x, double y, double z, double theta, double r);
-  ZLocalRect(const ZLocalRect &rect);
+//  ZLocalRect(const ZLocalRect &rect);
 
   virtual const std::string& className() const;
 

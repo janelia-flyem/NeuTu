@@ -15,7 +15,7 @@
 #include "tz_image_lib_defs.h"
 #include "plotsettings.h"
 #include "zinteractivecontext.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zqtbarprogressreporter.h"
 #include "dialogs/zrescaleswcdialog.h"
 #include "zdocumentable.h"

@@ -198,7 +198,7 @@ void ZJsonValue::decodeString(const char *str, json_error_t *error)
 //  json_error_t error;
   json_error_t *ownError = NULL;
   if (error == NULL) {
-    error = ownError = new json_error_t;
+    error = (ownError = new json_error_t);
   }
 
   m_data = json_loads(str, JSON_DECODE_ANY, error);

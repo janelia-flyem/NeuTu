@@ -282,7 +282,7 @@ double* Locne_Chain_Area_Array(Locne_Chain *chain, double *a, int *length)
 
 BOOL Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point)
 {
-  BOOL hit;
+  BOOL hit = FALSE;
 
   int length = Locne_Chain_Length(chain);
   coordinate_3d_t *pos = (coordinate_3d_t *)

@@ -176,12 +176,15 @@ int Graph_Mst_From_Adjmat(double **graph, Graph_Edge_t *min_span_tree, int n,
 
   not_in_tree = (int*)malloc( (n)*sizeof(int) );
   if (!not_in_tree) {
+    free(closest_existing_node);
     printf(" In spantree, memory request failed for not_in_tree matrix ! \n");
     return(2);
   }
 
   smallest_edges = (double*)malloc( (n)*sizeof(double) );
   if (!smallest_edges) {
+    free( closest_existing_node );
+    free( not_in_tree );
     printf(" In spantree, memory request failed for smallest_edges matrix ! \n");
     return(3);
   }

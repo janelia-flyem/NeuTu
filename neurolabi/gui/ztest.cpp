@@ -139,7 +139,7 @@
 #include "zswctreenodeselector.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
-#include "zstackbinarizer.h"
+#include "imgproc/zstackbinarizer.h"
 #include "zoptionparameter.h"
 #include "zdebug.h"
 #include "tz_color.h"

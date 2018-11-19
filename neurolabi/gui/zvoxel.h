@@ -36,7 +36,7 @@ public:
 
   void labelStackWithBall(Stack *stack, int label) const;
 
-  ZVoxel& operator=(const ZVoxel &voxel);
+//  ZVoxel& operator=(const ZVoxel &voxel);
 
   /*!
    * \brief Translate a voxel.
