@@ -73,9 +73,11 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 
   item.setChecked(false);
   ASSERT_TRUE(item.hasTag(mergeTag));
+  ASSERT_FALSE(item.isChecked());
 
   item.setChecked(true);
   ASSERT_FALSE(item.hasTag(mergeTag));
+  ASSERT_TRUE(item.isChecked());
 
   item.setAction(neutube::EToDoAction::TO_SPLIT);
   ASSERT_EQ(neutube::EToDoAction::TO_SPLIT, item.getAction());
