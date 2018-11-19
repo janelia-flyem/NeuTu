@@ -43,9 +43,9 @@ public:
   ZStack* run();
 
 private:
-  void init();
+  size_t init();
   void updateActiveSet(ZActiveSet* source, ZActiveSet* target);
-  inline double weight(uint8 a, uint8 b){return -std::exp(-m_alpha*(a+b)*(a+b))+std::exp(-m_beta*(a-b)*(a-b));}
+  inline double weight(uint8 a, uint8 b){return std::exp(-m_beta*(a-b)*(a-b));}
 
 private:
   ZStack* m_stack;

@@ -2,9 +2,14 @@
 
 ZStack* ZWatershedMST::run()
 {
-  init();
+  size_t processed = init();
 
-  while(!m_queue_of_edges.empty())
+  size_t total = 0;
+  for(uint i=0; i < m_stack->getVoxelNumber(); ++i)
+  {
+    if(m_stack->array8()[i])total++;
+  }
+  while(!m_queue_of_edges.empty() && processed < total)
   {
     ZEdge edge = m_queue_of_edges.top();
     uint a = edge.m_a, b = edge.m_b;
@@ -17,6 +22,10 @@ ZStack* ZWatershedMST::run()
       {
         aa->merge(ab);
         updateActiveSet(ab, aa);
+        if(aa->m_label)
+        {
+          processed += ab->m_vertices.size();
+        }
         ab->m_vertices.clear();
         delete ab;
       }
@@ -24,6 +33,10 @@ ZStack* ZWatershedMST::run()
       {
         ab->merge(aa);
         updateActiveSet(aa, ab);
+        if(ab->m_label)
+        {
+          processed += aa->m_vertices.size();
+        }
         aa->m_vertices.clear();
         delete aa;
       }
@@ -42,11 +55,12 @@ ZStack* ZWatershedMST::run()
 }
 
 
-void ZWatershedMST::init()
+size_t ZWatershedMST::init()
 {
   size_t size = m_stack->getVoxelNumber();
   m_map_of_activeset.resize(size);
 
+  size_t seed_cnt = 0;
   int width = m_stack->width();
   int height = m_stack->height();
   int depth = m_stack->depth();
@@ -62,6 +76,7 @@ void ZWatershedMST::init()
     if(pseed[i])
     {
       set->setLabel(pseed[i]);
+      seed_cnt ++;
     }
     m_map_of_activeset[i] = set;
   }
@@ -82,6 +97,7 @@ void ZWatershedMST::init()
       }
     }
   }
+  return seed_cnt;
 }
 
 

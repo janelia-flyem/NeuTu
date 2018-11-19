@@ -249,6 +249,7 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds, QString
 
   container->setAlgorithm(algorithm);
   container->setScale(estimateScale(stack_valid->getVoxelNumber()));
+
   container->setDsMethod("Min(ignore zero)");
   container->run(alpha,beta);
 
