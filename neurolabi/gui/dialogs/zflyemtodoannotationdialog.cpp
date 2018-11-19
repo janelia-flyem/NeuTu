@@ -30,13 +30,18 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
 {
   switch (item.getPriority()) {
   case 0:
-    ui->priorityComboBox->setCurrentIndex(2);
+    ui->priorityComboBox->setCurrentIndex(3);
     break;
   case 1:
+  case 2:
     ui->priorityComboBox->setCurrentIndex(0);
     break;
-  default:
+  case 3:
+  case 4:
     ui->priorityComboBox->setCurrentIndex(1);
+    break;
+  default:
+    ui->priorityComboBox->setCurrentIndex(2);
     break;
   }
 
@@ -50,9 +55,11 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
 int ZFlyEmTodoAnnotationDialog::getPriority() const
 {
   if (ui->priorityComboBox->currentText() == "Low") {
-    return 5;
+    return 6;
   } else if (ui->priorityComboBox->currentText() == "High") {
-    return 1;
+    return 2;
+  } else if (ui->priorityComboBox->currentText() == "Medium") {
+    return 4;
   }
 
   return 0;
