@@ -58,6 +58,7 @@
 #include "zarray.h"
 #include "zflyembodymanager.h"
 #include "zmesh.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1346,6 +1347,30 @@ void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
     if (!selectedSet.empty()) {
       bufferObjectModified(td);
       notifyTodoItemModified(ptArray, true);
+    }
+  }
+
+  processObjectModified();
+}
+
+void ZFlyEmProofDoc::annotateSelectedTodoItem(
+    ZFlyEmTodoAnnotationDialog *dlg, neutube::EAxis axis)
+{
+  ZFlyEmToDoList *todoList = getTodoList(axis);
+  if (todoList) {
+    const auto &selectedSet = todoList->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      ZIntPoint pos = *(selectedSet.begin());
+      ZFlyEmToDoItem item = todoList->getItem(pos, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        dlg->init(item);
+        if (dlg->exec()) {
+          dlg->annotate(&item);
+          todoList->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          bufferObjectModified(todoList);
+          notifyTodoEdited(pos);
+        }
+      }
     }
   }
 
@@ -3507,7 +3532,7 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;

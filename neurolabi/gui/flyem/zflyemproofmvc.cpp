@@ -96,6 +96,8 @@
 #include "zstack.hxx"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+#include "zflyembodystatus.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -242,7 +244,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
       std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty()) {
+      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
         statusList.append(status.c_str());
       }
     }
@@ -417,6 +419,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(checkSelectedBookmark()));
   connect(getPresenter(), SIGNAL(uncheckingBookmark()),
           this, SLOT(uncheckSelectedBookmark()));
+  connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
+          this, SLOT(showSupervoxelList()));
 
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
@@ -1137,6 +1141,25 @@ void ZFlyEmProofMvc::setProtocolRangeVisible(bool on)
 {
 
   ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(this, on);
+}
+
+void ZFlyEmProofMvc::showSupervoxelList()
+{
+  const std::set<uint64_t>& bodySet =
+      getCompleteDocument()->getSelectedBodySet(
+        neutube::EBodyLabelType::ORIGINAL);
+  QString text;
+  for (uint64_t bodyId : bodySet) {
+    text += QString("%1:").arg(bodyId);
+    const auto &svList =
+        getCompleteDocument()->getDvidReader().readSupervoxelSet(bodyId);
+    for (uint64_t svId : svList) {
+      text += QString(" %1").arg(svId);
+    }
+    text += "\n";
+  }
+  m_infoDlg->setText(text);
+  m_infoDlg->exec();
 }
 
 void ZFlyEmProofMvc::mergeCoarseBodyWindow()
@@ -1951,6 +1974,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(notifySplitTriggered()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateBody()));
+  connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
+          this, &ZFlyEmProofMvc::setExpertBodyStatus);
   connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
           this, SLOT(showBodyConnection()));
   connect(getPresenter(), SIGNAL(bodyProfileTriggered()),
@@ -2092,6 +2117,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
           this, SLOT(annotateSynapse()));
+  connect(getCompletePresenter(), SIGNAL(annotatingTodo()),
+          this, SLOT(annotateTodo()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
   connect(getCompletePresenter(), SIGNAL(uploadingMerge()),
@@ -2394,6 +2421,25 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 //  emit highlightModeEnabled(hl);
 }
 
+void ZFlyEmProofMvc::updateBodyMessage(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annot)
+{
+  ZWidgetMessage msg("", neutube::EMessageType::INFORMATION,
+                     ZWidgetMessage::TARGET_CUSTOM_AREA);
+  if (annot.isEmpty()) {
+    msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
+  } else {
+    msg.setMessage(annot.toString().c_str());
+  }
+
+  if (annot.isEmpty()) {
+    msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
+  } else {
+    msg.setMessage(annot.toString().c_str());
+  }
+  emit messageGenerated(msg);
+}
+
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
   if (!showingAnnotations()) {
@@ -2426,6 +2472,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
           }
         }
 
+        updateBodyMessage(selected.front(), finalAnnotation);
+        /*
         ZWidgetMessage msg("", neutube::EMessageType::INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
         if (finalAnnotation.isEmpty()) {
@@ -2440,6 +2488,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
           msg.setMessage(finalAnnotation.toString().c_str());
         }
         emit messageGenerated(msg);
+        */
       }
 
     }
@@ -2913,6 +2962,26 @@ void ZFlyEmProofMvc::showBodyProfile()
           ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
 }
 
+void ZFlyEmProofMvc::setExpertBodyStatus()
+{
+  std::set<uint64_t> bodyIdArray =
+      getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
+  if (bodyIdArray.size() == 1) {
+    uint64_t bodyId = *(bodyIdArray.begin());
+
+    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+    if (reader.isReady()) {
+      if (checkOutBody(bodyId, flyem::EBodySplitMode::NONE)) {
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        annotation.setStatus(ZFlyEmBodyStatus::GetExpertStatus());
+        getCompleteDocument()->annotateBody(bodyId, annotation);
+        checkInBodyWithMessage(bodyId, flyem::EBodySplitMode::NONE);
+        updateBodyMessage(bodyId, annotation);
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::annotateBody()
 {
   std::set<uint64_t> bodyIdArray =
@@ -2932,6 +3001,8 @@ void ZFlyEmProofMvc::annotateBody()
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
           getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+
+          updateBodyMessage(bodyId, dlg->getBodyAnnotation());
         }
 
         checkInBodyWithMessage(bodyId, flyem::EBodySplitMode::NONE);
@@ -4895,8 +4966,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
-      ZDvidWriter writer;
-      if (writer.open(getDvidTarget())) {
+      ZDvidWriter &writer = getCompleteDocument()->getDvidWriter();
+      if (writer.good()) {
         writer.writeBookmark(bookmark->toDvidAnnotationJson());
       }
       if (!writer.isStatusOk()) {
@@ -4914,17 +4985,12 @@ void ZFlyEmProofMvc::annotateSynapse()
 {
   ZFlyEmSynapseAnnotationDialog dlg(this);
   getCompleteDocument()->annotateSelectedSynapse(&dlg, getView()->getSliceAxis());
-/*
-  if (dlg.exec()) {
-    double c = dlg.getConfidence();
-    ZJsonObject propJson;
-    std::ostringstream stream;
-    stream << c;
-    propJson.setEntry("confidence", stream.str());
-    getCompleteDocument()->annotateSelectedSynapse(
-          propJson, getView()->getSliceAxis());
-  }
-  */
+}
+
+void ZFlyEmProofMvc::annotateTodo()
+{
+  ZFlyEmTodoAnnotationDialog dlg(this);
+  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
 }
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
@@ -4932,18 +4998,6 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
   getCompleteDocument()->selectBodyInRoi(
         getView()->getCurrentZ(), appending, true);
 }
-/*
-void ZFlyEmProofMvc::prepareBookmarkModel(
-    ZFlyEmBookmarkListModel *model, QSortFilterProxyModel *proxy)
-{
-  if (proxy != NULL) {
-    proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterKeyColumn(-1);
-    proxy->setSourceModel(model);
-  }
-}
-*/
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {

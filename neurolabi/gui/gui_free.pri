@@ -178,7 +178,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidtarget.h \
    $${PWD}/dvid/zdvidfilter.h \
    $${PWD}/zintcuboidface.h \
-   $${PWD}/zflyembodyannotation.h \
+   $${PWD}/flyem/zflyembodyannotation.h \
    $${PWD}/zintpoint.h \
    $${PWD}/zintpointarray.h \
    $${PWD}/zintarray.h \
@@ -236,7 +236,8 @@ HEADERS += $${PWD}/zstack.hxx \
     $$PWD/geometry/zplane.h \
     $$PWD/geometry/zaffineplane.h \
     $$PWD/geometry/zaffinerect.h \
-    $$PWD/zjsondef.h
+    $$PWD/zjsondef.h \
+    $$PWD/flyem/zflyembodystatus.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -401,7 +402,7 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/dvid/zdvidtarget.cpp \
    $${PWD}/dvid/zdvidfilter.cpp \
    $${PWD}/zintcuboidface.cpp \
-   $${PWD}/zflyembodyannotation.cpp \
+   $${PWD}/flyem/zflyembodyannotation.cpp \
    $${PWD}/zintpoint.cpp \
    $${PWD}/zintpointarray.cpp \
    $${PWD}/zintarray.cpp \
@@ -452,5 +453,6 @@ SOURCES += $${PWD}/zstack.cxx \
     $$PWD/geometry/zplane.cpp \
     $$PWD/geometry/zaffineplane.cpp \
     $$PWD/geometry/zaffinerect.cpp \
-    $$PWD/neutube_def.cpp
+    $$PWD/neutube_def.cpp \
+    $$PWD/flyem/zflyembodystatus.cpp
 

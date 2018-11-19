@@ -3,12 +3,14 @@
 #include <QColor>
 #include <iostream>
 
+#include "QsLog/QsLog.h"
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
 
 const char* ZFlyEmToDoItem::ACTION_KEY = "action";
+const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
 const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
 const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT = "to split supervoxel";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT = "irrelevant";
@@ -17,6 +19,14 @@ const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT_TAG = "svsplit";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT_TAG = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
 const char* ZFlyEmToDoItem::ACTION_MERGE_TAG = "merge";
+
+const std::map<std::string, neutube::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
+  {ZFlyEmToDoItem::ACTION_GENERAL, neutube::EToDoAction::TO_DO},
+  {ZFlyEmToDoItem::ACTION_MERGE, neutube::EToDoAction::TO_MERGE},
+  {ZFlyEmToDoItem::ACTION_SPLIT, neutube::EToDoAction::TO_SPLIT},
+  {ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT},
+  {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutube::EToDoAction::TO_DO_IRRELEVANT}
+};
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -116,6 +126,13 @@ neutube::EToDoAction ZFlyEmToDoItem::getAction() const
   }
 
   return action;
+}
+
+void ZFlyEmToDoItem::setAction(const std::string &action)
+{
+  if (m_actionMap.count(action) > 0) {
+    setAction(m_actionMap.at(action));
+  }
 }
 
 void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
@@ -334,6 +351,30 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   m_propertyJson.setEntry("checked", checkedStr);
 
   syncActionTag();
+}
+
+int ZFlyEmToDoItem::getPriority() const
+{
+  int p = 0;
+
+  if (m_propertyJson.hasKey("priority")) {
+    try {
+      p = std::stoi(ZJsonParser::stringValue(m_propertyJson["priority"]));
+    } catch (const std::invalid_argument &ia) {
+      LERROR() << "Invalid priority:" << ia.what();
+    }
+  }
+
+  return p;
+}
+
+void ZFlyEmToDoItem::setPriority(int p)
+{
+  if (p > 0) {
+    addProperty("priority", std::to_string(p));
+  } else {
+    removeProperty("priority");
+  }
 }
 
 

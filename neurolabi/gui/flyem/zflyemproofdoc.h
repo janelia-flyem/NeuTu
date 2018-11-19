@@ -31,6 +31,7 @@ class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
+class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 
 
@@ -313,6 +314,9 @@ public: //Todo list functions
   void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
+
+  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg,
+                                neutube::EAxis axis);
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);

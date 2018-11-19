@@ -12,7 +12,6 @@
 
 #include "tz_image_lib_defs.h"
 #include "dialogs/frameinfodialog.h"
-#include "zstackpresenter.h"
 #include "zmessagereporter.h"
 #include "dialogs/moviedialog.h"
 #include "dialogs/autosaveswclistdialog.h"
@@ -23,6 +22,7 @@
 #include "zqtbarprogressreporter.h"
 #include "zmessageprocessor.h"
 #include "zwindowfactory.h"
+#include "zinteractivecontext.h"
 
 class ZStackFrame;
 class QMdiArea;

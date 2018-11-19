@@ -2,7 +2,7 @@
 #define ZFLYEMBODYANNOTATIONTEST_H
 
 #include "ztestheader.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
 
 #ifdef _USE_GTEST_
@@ -53,6 +53,14 @@ TEST(ZFlyEmBodyAnnotation, merge)
   ASSERT_EQ("Orphan", annotation1.getStatus());
 
   annotation1.setStatus("Orphan");
+
+  annotation2.setStatus("Orphan hotknife");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Orphan hotknife", annotation1.getStatus());
+
+  annotation2.setStatus("Leaves");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Leaves", annotation1.getStatus());
 
   annotation2.setStatus("Hard to trace");
   annotation1.mergeAnnotation(annotation2);
