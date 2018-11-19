@@ -883,7 +883,7 @@ void TaskMergeReview::updateVisibility()
     uint64_t id = mesh->getLabel();
     bool toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
 
-    if (toBeVisible) {
+    if (toBeVisible && !m_majorBodyIds.empty()) {
       uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
       bool isMajor = (m_majorBodyIds.find(tarBodyId) != m_majorBodyIds.end());
       if ((isMajor && !m_showMajorCheckBox->isChecked()) ||
@@ -1197,6 +1197,11 @@ void TaskMergeReview::onLoaded()
   LINFO() << "TaskMergeReview: build version" << getBuildVersion() << ".";
 
   m_usageTimer.start();
+
+  if (m_majorBodyIds.empty()) {
+    m_showMajorCheckBox->setEnabled(false);
+    m_showMinorCheckBox->setEnabled(false);
+  }
 
   bool showingSupervoxels = m_showSupervoxelsCheckBox->isChecked();
   applyColorMode(showingSupervoxels);
