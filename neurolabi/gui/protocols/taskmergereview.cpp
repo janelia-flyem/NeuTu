@@ -9,6 +9,7 @@
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
 #include "zdvidutil.h"
+#include "znetbufferreader.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dcamerautils.h"
@@ -34,6 +35,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPixmap>
+#include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QTimer>
@@ -204,6 +206,10 @@ namespace {
     }
   }
 
+  // Used in skip() to see if the tar archives of meshes exist.
+
+  QPointer<ZNetBufferReader> s_netReader;
+
 }
 
 //
@@ -253,7 +259,7 @@ bool TaskMergeReview::skip()
   // An environment variable can override the interval for checking, with a value of
   // -1 meaning never check.
 
-  int interval = 1000;
+  int interval = 5 * 60 * 1000;
   if (const char* overrideIntervalStr = std::getenv("NEU3_MERGE_REVIEW_SKIP_TEST_INTERVAL_MS")) {
     interval = std::atoi(overrideIntervalStr);
   }
@@ -282,9 +288,10 @@ bool TaskMergeReview::skip()
     ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
     for (uint64_t id : m_bodyIds) {
       std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(id);
-      int statusCode = 0;
-      ZDvid::MakeHeadRequest(tarUrl, statusCode);
-      if (statusCode != 200) {
+      if (!s_netReader) {
+        s_netReader = new ZNetBufferReader(m_bodyDoc->getParent3DWindow());
+      }
+      if (!s_netReader->hasHead(tarUrl.c_str())) {
         m_skip = Skip::SKIPPED_MESHES;
         break;
       }
@@ -370,6 +377,13 @@ QWidget *TaskMergeReview::getTaskWidget()
 QMenu *TaskMergeReview::getTaskMenu()
 {
   return m_menu;
+}
+
+bool TaskMergeReview::usePrefetching()
+{
+  // TODO: Figure out how to use prefetching more effectively.
+
+  return false;
 }
 
 const std::set<uint64_t>& TaskMergeReview::getBodyIds() const
