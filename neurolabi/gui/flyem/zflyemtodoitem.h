@@ -1,6 +1,7 @@
 #ifndef ZFLYEMTODOITEM_H
 #define ZFLYEMTODOITEM_H
 
+#include <map>
 #include "dvid/zdvidannotation.h"
 
 class ZFlyEmToDoItem : public ZDvidAnnotation
@@ -34,13 +35,18 @@ public:
 
   bool isChecked() const;
   void setChecked(bool checked);
+  int getPriority() const;
 
   void setAction(neutube::EToDoAction action);
   neutube::EToDoAction getAction() const;
 
+  void setAction(const std::string &action);
+
   QColor getDisplayColor() const;
 
   void removeActionTag();
+
+  void setPriority(int p);
 
 private:
   void syncActionTag();
@@ -48,6 +54,7 @@ private:
 
 public:
   static const char *ACTION_KEY;
+  static const char *ACTION_GENERAL;
   static const char *ACTION_SPLIT;
   static const char *ACTION_SUPERVOXEL_SPLIT;
   static const char *ACTION_IRRELEVANT;
@@ -56,6 +63,8 @@ public:
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;
   static const char *ACTION_MERGE_TAG;
+
+  static const std::map<std::string, neutube::EToDoAction> m_actionMap;
 
 private:
   void init();

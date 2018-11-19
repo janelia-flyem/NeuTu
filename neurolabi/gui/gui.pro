@@ -906,7 +906,8 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
     core/memorystream.h \
-    imgproc/zstackmultiscalewatershed.h
+    imgproc/zstackmultiscalewatershed.h \
+    dialogs/zflyemtodoannotationdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1017,7 +1018,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
     dialogs/zflyemproofsettingdialog.ui \
-    dialogs/zneu3sliceviewdialog.ui
+    dialogs/zneu3sliceviewdialog.ui \
+    dialogs/zflyemtodoannotationdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1598,7 +1600,8 @@ SOURCES += main.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
     core/memorystream.cpp \
-    imgproc/zstackmultiscalewatershed.cpp
+    imgproc/zstackmultiscalewatershed.cpp \
+    dialogs/zflyemtodoannotationdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

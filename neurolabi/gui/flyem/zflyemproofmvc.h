@@ -224,6 +224,7 @@ public slots:
   void showBodyConnection();
   void showBodyProfile();
   void annotateSynapse();
+  void annotateTodo();
   void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
   void checkOutBody(flyem::EBodySplitMode mode);
