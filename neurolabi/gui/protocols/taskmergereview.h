@@ -37,6 +37,7 @@ public:
 
   virtual QWidget *getTaskWidget() override;
   virtual QMenu *getTaskMenu() override;
+  virtual bool usePrefetching() override;
 
   const std::set<uint64_t>& getBodyIds() const;
 
