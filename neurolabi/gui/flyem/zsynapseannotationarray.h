@@ -25,18 +25,15 @@ public:
   WeightedIntPair(int t1, int t2, double w) :
     m_first(t1), m_second(t2), m_weight(w)
   {}
-  WeightedIntPair(const WeightedIntPair &wp) :
-    m_first(wp.m_first), m_second(wp.m_second), m_weight(wp.m_weight)
-  {}
 
   inline int first() const { return m_first; }
   inline int second() const { return m_second; }
   inline double weight() const { return m_weight; }
 
 private:
-  int m_first;
-  int m_second;
-  double m_weight;
+  int m_first = 0;
+  int m_second = 0;
+  double m_weight = 0.0;
 };
 
 struct WeightedIntPairCompare {

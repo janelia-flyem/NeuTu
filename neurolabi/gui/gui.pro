@@ -834,8 +834,6 @@ HEADERS += mainwindow.h \
     protocols/taskbodyhistory.h \
     protocols/taskbodycleave.h \
     widgets/zpythonprocess.h \
-    zstackutil.h \
-    zstackptr.h \
     dialogs/zflyemproofsettingdialog.h \
     widgets/zroilistview.h \
     flyem/zflyemroiobjsmodel.h \
@@ -905,7 +903,6 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyenv.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
-    core/memorystream.h \
     imgproc/zstackmultiscalewatershed.h
 
 FORMS += dialogs/settingdialog.ui \
@@ -1529,8 +1526,6 @@ SOURCES += main.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
     widgets/zpythonprocess.cpp \
-    zstackutil.cpp \
-    zstackptr.cpp \
     dialogs/zflyemproofsettingdialog.cpp \
     widgets/zroilistview.cpp \
     flyem/zflyemroiobjsmodel.cpp \
@@ -1597,7 +1592,6 @@ SOURCES += main.cpp \
     flyem/zflyembodyenv.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
-    core/memorystream.cpp \
     imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \

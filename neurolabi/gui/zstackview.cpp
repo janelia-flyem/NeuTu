@@ -10,7 +10,7 @@
 #include "zstackdoc.h"
 #include "zstackframe.h"
 #include "zstackpresenter.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zslider.h"
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
