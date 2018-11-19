@@ -469,5 +469,10 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
       m_pressedItem = NULL;
 //    }
   }
+
+  if (e->type() == QEvent::MouseButtonDblClick) {
+    LDEBUG() << "Double click:" << m_pressedItem;
+//    if (m_pressedItem )
+  }
 }
 
