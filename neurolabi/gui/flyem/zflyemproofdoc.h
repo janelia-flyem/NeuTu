@@ -535,6 +535,7 @@ public slots:
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
   void downloadTodo(int x, int y, int z);
+  void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
