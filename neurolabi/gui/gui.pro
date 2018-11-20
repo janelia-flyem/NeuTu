@@ -93,12 +93,11 @@ CONFIG(debug, debug|release) {
 
 include(extratarget.pri)
 
-main.target = app_name
-main.depends = $$neurolabi.target
+message("Neurolabi target: $$neurolabi.target")
 
-TARGET = main
+PRE_TARGETDEPS += neurolabi
 
-#message("Target: $${TARGET}.target")
+TARGET = $$app_name
 
 unix {
   # suppress warnings from 3rd party library, works for gcc and clang

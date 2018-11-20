@@ -39,27 +39,7 @@ echo "  * Change the kit to the one just added."
 echo "  * qmake build configuration: ${green}Debug${reset}"
 echo "  * Additional arguments for qmake:" 
 echo "    ${green}CONFIG+=flyem CONDA_ENV=${CONDA_DIR}/envs/$ENV_NAME${reset}"
-echo "  * 1st make step arguments:"
-echo "    ${green}neurolabi${reset}"
-echo "  * 2nd make step: no/default argument. You can add -j to use multiple processors."
-
-if [ `uname` = 'Darwin' ]
-then
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/neutu_d.app/Contents/MacOS/config.xml${reset}"
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/neutu_d.app/Contents/MacOS/${reset}"
-else
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/config.xml${reset}"
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/${reset}"
-fi
-echo ""
-echo "============================================================="
-
+echo "  * 1st make step: no/default argument. You can add -j to use multiple processors."
+echo "  * 2nd make step arguments:"
+echo "    ${green}app_config${reset}"
  
