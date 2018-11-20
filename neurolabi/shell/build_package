@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -e
+
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+pkg=$1
+if [[ t$pkg != "tneutu" ]] && [[ t$pkg != "tneu3" ]]
+then
+  echo "Usage: build_package <neutu/neu3>"
+  exit 1
+fi
+
+echo "Building package for $pkg ..."
+
+suffix=''
+
+origin=`git config --get remote.origin.url`
+branch=`git rev-parse --abbrev-ref HEAD`
+
+if [[ $branch == develop ]]
+then
+  suffix='-develop'
+elif [[ $branch == flyem_alpha ]]
+then
+  suffix='-alpha'
+elif [[ $branch != master ]]
+then
+  echo "${red}Unsupported branch: $branch${reset}"
+  exit  1
+fi
+
+pkgname=$pkg$suffix
+
+echo "Package name: $pkgname"
+
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
+cd $scriptDir/../../
+sh conda_build.sh $pkgname
+
+channel='tingzhao'
+if [[ $origin == 'https://github.com/janelia-flyem/NeuTu.git' ]]
+then
+  channel='flyem-forge'
+fi
+ 
+echo "Upload to ===> ${green}-u $channel${reset} "

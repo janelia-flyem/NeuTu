@@ -8,6 +8,7 @@
 #include <QSurfaceFormat>
 #endif
 
+#include "neutube.h"
 #include "mainwindow.h"
 #include "neu3window.h"
 #include "zqslog.h"

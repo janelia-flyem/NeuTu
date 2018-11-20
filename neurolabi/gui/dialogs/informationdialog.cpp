@@ -13,7 +13,17 @@ InformationDialog::~InformationDialog()
   delete ui;
 }
 
+void InformationDialog::setText(const char *text)
+{
+  setText(QString(text));
+}
+
 void InformationDialog::setText(const std::string &text)
 {
-  ui->textEdit->setText(text.c_str());
+  setText(QString::fromStdString(text));
+}
+
+void InformationDialog::setText(const QString &text)
+{
+  ui->textEdit->setText(text);
 }

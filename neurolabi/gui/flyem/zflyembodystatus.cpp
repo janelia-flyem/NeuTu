@@ -15,9 +15,14 @@ bool ZFlyEmBodyStatus::isAccessible() const
 
 bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
-  if (ZString(status).lower() == "prelim roughly traced") {
+  if (ZString(status).lower() == "roughly traced") {
     return neutube::IsAdminUser();
   }
 
   return true;
+}
+
+std::string ZFlyEmBodyStatus::GetExpertStatus()
+{
+  return "Roughly traced";
 }
