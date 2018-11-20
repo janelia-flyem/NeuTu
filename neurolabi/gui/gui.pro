@@ -67,33 +67,40 @@ unix {
     message("Post link: $$QMAKE_POST_LINK")
 }
 
+app_name = neutu
+
 CONFIG(debug, debug|release) {
-    TARGET = neuTube_d
+    app_name = neuTube_d
     CONFIG(neu3) {
-        TARGET = neu3_d
+        app_name = neu3_d
     } else {
       contains(DEFINES, _FLYEM_) {
-          TARGET = neutu_d
+        app_name = neutu_d
       }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
 #    QMAKE_CXXFLAGS += -g
-    TARGET = neuTube
+    app_name = neuTube
     CONFIG(neu3) {
-      TARGET = neu3
+      app_name = neu3
     } else {
       CONFIG(flyem) {
-          TARGET = neutu
+        app_name = neutu
       }
     }
 }
 
-message("Target: $$TARGET")
+include(extratarget.pri)
+
+main.target = app_name
+main.depends = $$neurolabi.target
+
+TARGET = main
+
+#message("Target: $${TARGET}.target")
 
 unix {
-  include(extratarget.pri)
-
   # suppress warnings from 3rd party library, works for gcc and clang
   QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
@@ -1612,7 +1619,7 @@ message("[[ DEFINE ]]: $${DEFINES}")
 message("[[ QMAKE_CXXFLAGS ]]: $${QMAKE_CXXFLAGS}")
 message("[[ CONDA_ENV ]]: $${CONDA_ENV}")
 message("[[ LIBS ]]: $${LIBS}")
-message("[[ TARGET ]]: $${TARGET}")
+message("[[ TARGET ]]: $$app_name")
 message("[[ OUT_PWD ]]: $${OUT_PWD}")
 macx {
   message("[[ Mac Target ]]: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
