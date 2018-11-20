@@ -112,6 +112,7 @@ signals:
   void togglingSegmentation();
   void togglingData();
   void highlightModeChanged();
+  void showingSupervoxelList();
 
 public slots:
   void deleteSelectedSynapse();
@@ -146,6 +147,8 @@ public slots:
   void tryAddToMergeItem(const ZIntPoint &pt);
   void tryAddToSplitItem(const ZIntPoint &pt);
   void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
+
+  void showSupervoxelList();
 
   void allowBlinkingSegmentation(bool on);
 

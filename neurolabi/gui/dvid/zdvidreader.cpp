@@ -4942,8 +4942,10 @@ QList<ZJsonObject> ZDvidReader::readJsonObjectsFromKeys(const QString &dataName,
         ZJsonObject obj;
         if (!buffers[i].isEmpty()) {
             obj.decodeString(buffers[i].constData());
-            objects.append(obj);
         }
+        // note: object must be appened even if empty!  returned list elements
+        //  must correspond to input key list
+        objects.append(obj);
     }
     return objects;
 }

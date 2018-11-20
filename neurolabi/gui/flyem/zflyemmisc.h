@@ -130,6 +130,8 @@ void UploadRoi(
 void UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer);
 
+void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
+
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
 QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);
