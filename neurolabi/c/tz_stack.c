@@ -68,6 +68,7 @@ Stack *Stack_Locmax_Region(const Stack *stack, int conn)
   int i;
   int x, y, z;
   int offset = 0;
+
   Image_Array ia;
   ia.array = stack->array;
 
