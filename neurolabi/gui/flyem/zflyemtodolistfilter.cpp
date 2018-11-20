@@ -26,6 +26,8 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
                                 Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                                 Qt::ControlModifier, QEvent::MouseButtonRelease);
+  m_selectItemEvent.listenTo("annotate todo item", Qt::LeftButton, Qt::NoModifier,
+                             QEvent::MouseButtonDblClick);
   connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered,
           this, &ZFlyEmTodoListFilter::selectObject);
   addEventListener(m_selectItemEvent);
@@ -430,7 +432,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
   e->ignore();
   // Mouse button pressend
   // can not accept the event in button press, because we don't know if it is a selection or interaction
-  if (e->type() == QEvent::MouseButtonPress) {
+  if (e->type() == QEvent::MouseButtonPress || e->type() == QEvent::MouseButtonDblClick) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
@@ -446,11 +448,21 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
 
     // Check if any point was selected...
     for (std::vector<ZFlyEmToDoItem*>::iterator it=m_itemList.begin();
-         it!=m_itemList.end(); ++it)
+         it!=m_itemList.end(); ++it) {
       if (*it == obj) {
         m_pressedItem = *it;
         break;
       }
+    }
+
+    if (e->type() == QEvent::MouseButtonDblClick) {
+      LDEBUG() << "Double click:" << m_pressedItem;
+      emit annotatingObject(m_pressedItem);
+  //    if (m_pressedItem )
+    } else {
+      LDEBUG() << "Press:" << m_pressedItem;
+    }
+
     return;
   }
 
@@ -466,13 +478,13 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
           e->accept();
         }
       }
+
+      LDEBUG() << "Release:" << m_pressedItem;
+
       m_pressedItem = NULL;
 //    }
   }
 
-  if (e->type() == QEvent::MouseButtonDblClick) {
-    LDEBUG() << "Double click:" << m_pressedItem;
-//    if (m_pressedItem )
-  }
+
 }
 

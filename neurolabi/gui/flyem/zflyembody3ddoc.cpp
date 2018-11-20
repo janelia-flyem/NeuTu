@@ -49,6 +49,7 @@
 #include "zstackobjectarray.h"
 #include "zflyembodyenv.h"
 #include "zflyembodystatus.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -692,6 +693,22 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
   getDataDocument()->downloadTodo(ptArray);
 
   processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj)
+{
+  ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(obj);
+  if (item) {
+    dlg->init(*item);
+    if (dlg->exec()) {
+      dlg->annotate(item);
+      m_mainDvidWriter.writeToDoItem(*item);
+      bufferObjectModified(item);
+    }
+
+    getDataDocument()->downloadTodo(item->getPosition());
+    processObjectModified();
+  }
 }
 
 void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
