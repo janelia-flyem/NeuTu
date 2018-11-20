@@ -1370,11 +1370,10 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
           bufferObjectModified(todoList);
           notifyTodoEdited(pos);
         }
+        processObjectModified();
       }
-    }
+    } 
   }
-
-  processObjectModified();
 }
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
@@ -2682,6 +2681,11 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
   processObjectModified();
 }
 
+void ZFlyEmProofDoc::downloadTodo(const ZIntPoint &pt)
+{
+  downloadTodo(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
   ZOUT(LTRACE(), 5) << "Download synapses";
@@ -3070,11 +3074,6 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
-//    ZUndoCommand *command = new ZUndoCommand;
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *removeCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL, command);
-
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -3084,14 +3083,10 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
-//          removeCommand->addRemoving(bookmark);
         }
       }
     }
 #endif
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *addCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, NULL, command);
 
     ZJsonObject obj;
 

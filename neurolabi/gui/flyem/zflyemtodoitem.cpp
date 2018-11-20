@@ -252,12 +252,8 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
     pen.setColor(color);
     painter.setPen(pen);
-//    painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
 
-//    if (isFocused) {
-
-//    }
     if (radius > 0.0) {
       int x = center.getX();
       int y = center.getY();
@@ -266,33 +262,31 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
       painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
       painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
-//      painter.drawLine(QPointF(x - radius, y - radius),
-//                       QPointF(x + radius, y + radius));
-//      painter.drawLine(QPointF(x - radius, y + radius),
-//                       QPointF(x + radius, y - radius));
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
       QPointF ptArray[9];
       ZFlyEmMisc::MakeStar(QPointF(x, y), radius, ptArray);
       painter.drawPolyline(ptArray, 9);
-      /*
-      painter.drawEllipse(QPointF(center.getX(), center.getY()),
-                          radius, radius);
-                          */
+
+      if (getPriority() > 0) {
+        painter.save();
+        double p = double(getPriority()) / 9;
+
+//        QPen priorityPen = pen;
+//        priorityPen.setColor(
+//              QColor(int(std::round((1.0 - p) * 127)) + 128, 0, 0, color.alpha()));
+//        painter.setPen(priorityPen);
+
+        painter.drawEllipse(
+              QPointF(x, y - ((0.5 - p) * radius)), radius * 0.05, radius * 0.05);
+
+
+        painter.restore();
+
+      }
     }
 
-    /*
-    QString decorationText = "*";
-    int width = decorationText.size() * 25;
-    int height = 25;
-    QColor oldColor = painter.getPen().color();
-    painter.setPen(QColor(0, 0, 0, 128));
-    painter.drawText(center.getX() - width / 2, center.getY() - height / 2,
-                     width, height,
-                     Qt::AlignCenter, decorationText);
-    painter.setPen(oldColor);
-    */
   }
 
   bool drawingBoundBox = false;
