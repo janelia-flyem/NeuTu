@@ -15,7 +15,7 @@ class ZStackFile
 {
 public:
   ZStackFile();
-  ZStackFile(const ZStackFile &file);
+//  ZStackFile(const ZStackFile &file);
 
   enum EFileType {
     UNIDENTIFIED, SINGLE_FILE, FILE_BUNDLE, IMAGE_SERIES, FILE_LIST,

@@ -23,7 +23,7 @@ ZStackFile::ZStackFile() : m_numWidth(0), m_firstNum(0), m_lastNum(0),
   m_channel(-1), m_dimFlip(false)
 {
 }
-
+/*
 ZStackFile::ZStackFile(const ZStackFile &file)
 {
   m_type = file.m_type;
@@ -36,7 +36,7 @@ ZStackFile::ZStackFile(const ZStackFile &file)
   m_channel = file.m_channel;
   m_dimFlip = file.m_dimFlip;
 }
-
+*/
 void ZStackFile::loadStackDocument(const Stack_Document *doc)
 {
   TZ_ASSERT(doc != NULL, "Null pointer");

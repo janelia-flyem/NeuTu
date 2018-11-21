@@ -21,7 +21,7 @@
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
 #include "zdocumentable.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zlocalneuroseg.h"
 #include "zlocsegchain.h"
 #include "tz_vrml_io.h"

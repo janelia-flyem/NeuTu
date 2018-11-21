@@ -35,7 +35,7 @@ ZStroke2d::ZStroke2d() :
   setSliceAxis(neutube::EAxis::Z);
   //setEraser(m_isEraser);
 }
-
+/*
 ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
@@ -52,7 +52,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_hideStart = stroke.m_hideStart;
   m_sliceAxis = stroke.m_sliceAxis;
 }
-
+*/
 ZStroke2d::~ZStroke2d()
 {
   ZOUT(LTRACE(), 5) << "Deconstructing " << this << ": ZStroke2d " << ", "

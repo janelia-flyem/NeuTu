@@ -1363,7 +1363,7 @@ double <2t>_simscore(<1t> *d1, <1t> *d2, size_t length)
   for(j=0;j<height;j++) {
     for(i=0;i<width;i++) {
       temp = d1[offset1];
-      d1[offset1] = d1[offset1];
+      d1[offset1] = d1[offset2];
       d1[offset2] = temp;
       offset1++;
       offset2 += width;
@@ -1976,6 +1976,7 @@ double <2t>_uint8_corrcoef(const <1t> *filter, const tz_uint8 *signal,
   }
 
   if (is_constant == 1) {
+    free(dsignal);
     return 0.0;
   }
 

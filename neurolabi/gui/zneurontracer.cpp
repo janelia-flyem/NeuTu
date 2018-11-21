@@ -1,4 +1,7 @@
 #include "zneurontracer.h"
+
+#include <cstdarg>
+
 //#include "zlocsegchain.h"
 #include "swctreenode.h"
 #include "c_stack.h"
@@ -6,7 +9,7 @@
 #include "tz_math.h"
 #include "zvoxelarray.h"
 #include "tz_stack_sampling.h"
-#include "zstackbinarizer.h"
+#include "imgproc/zstackbinarizer.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_fimage_lib.h"
@@ -34,13 +37,29 @@ ZNeuronTraceSeeder::~ZNeuronTraceSeeder()
 {
 }
 
+namespace {
+
+void set_receptor_score_option(Receptor_Score_Workspace *sws, int numopt, ...)
+{
+  va_list args;
+  va_start(args, numopt);
+  sws->fs.n = numopt;
+  for (int i = 0; i < numopt; ++i) {
+    sws->fs.options[i] = va_arg(args, int);
+  }
+  va_end(args);
+}
+
+}
+
 Stack* ZNeuronTraceSeeder::sortSeed(
     Geo3d_Scalar_Field *seedPointArray, const Stack *signal, Trace_Workspace *ws)
 {
   Locseg_Fit_Workspace *fws = (Locseg_Fit_Workspace *) ws->fit_workspace;
-  fws->sws->fs.n = 2;
-  fws->sws->fs.options[0] = STACK_FIT_DOT;
-  fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
+  set_receptor_score_option(fws->sws, 2, STACK_FIT_DOT, STACK_FIT_CORRCOEF);
+//  fws->sws->fs.n = 2;
+//  fws->sws->fs.options[0] = STACK_FIT_DOT;
+//  fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
   fws->pos_adjust = 1;
 
   m_seedArray.resize(seedPointArray->size);
@@ -110,9 +129,7 @@ Stack* ZNeuronTraceSeeder::sortSeed(
 
     m_seedScoreArray[i] = fws->sws->fs.scores[1];
 
-    double min_score = ws->min_score;
-
-    if (m_seedScoreArray[i] > min_score) {
+    if (m_seedScoreArray[i] > ws->min_score) {
       Local_Neuroseg_Label_G(&(m_seedArray[i]), seed_mask, -1, 2, z_scale);
     } else {
       Local_Neuroseg_Label_G(&(m_seedArray[i]), seed_mask, -1, 1, z_scale);
@@ -154,15 +171,24 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
     Neuron_Structure *ns = Locseg_Chain_Comp_Neurostruct(
           neuronComponent, chain_number, m_signal, zscale, m_connWorkspace);
 
-    Process_Neuron_Structure(ns);
+    if (m_connWorkspace != NULL) {
+      Process_Neuron_Structure(ns);
 
-    if (m_connWorkspace->crossover_test == TRUE) {
-      Neuron_Structure_Crossover_Test(ns, zscale);
+      if (m_connWorkspace->crossover_test == TRUE) {
+        Neuron_Structure_Crossover_Test(ns, zscale);
+      }
     }
+
+#ifdef _DEBUG_
+    std::cout << "#Comp: " << NEURON_STRUCTURE_COMPONENT_NUMBER(ns) << std::endl;
+#endif
 
     /* alloc <ns2> */
     Neuron_Structure* ns2=
         Neuron_Structure_Locseg_Chain_To_Circle_S(ns, 1.0, 1.0);
+#ifdef _DEBUG_
+    std::cout << "#Comp2: " << NEURON_STRUCTURE_COMPONENT_NUMBER(ns2) << std::endl;
+#endif
 
     Neuron_Structure_To_Tree(ns2);
 
@@ -648,7 +674,7 @@ Stack* ZNeuronTracer::binarize(const Stack *stack, Stack *out)
   }
 
   ZStackBinarizer binarizer;
-  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+  binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
   binarizer.setRetryCount(3);
   if (binarizer.binarize(out) == false) {
     std::cout << "Thresholding failed" << std::endl;
@@ -675,7 +701,7 @@ Stack *ZNeuronTracer::binarize(const Stack *stack)
     //To do: need to handle large stack
     Stack_Threshold_Binarize(out, hist.getMinValue());
   } else {
-    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
     binarizer.setRetryCount(3);
     if (binarizer.binarize(out) == false) {
       std::cout << "Thresholding failed" << std::endl;
@@ -1104,7 +1130,7 @@ Stack* ZNeuronTracer::computeSeedMask(Stack *stack)
   if (mask2 != NULL) {
     std::cout << "Making mask for thin branches ..." << std::endl;
     ZStackBinarizer binarizer;
-    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
     binarizer.setRetryCount(5);
     binarizer.setMinObjectSize(27);
 
@@ -1208,7 +1234,7 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
     if (mask2 != NULL) {
       std::cout << "Making mask for thin branches ..." << std::endl;
       ZStackBinarizer binarizer;
-      binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+      binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
       binarizer.setRetryCount(5);
       binarizer.setMinObjectSize(27);
 
@@ -1323,7 +1349,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *signal, bool doResampleAfterTracing)
   if (mask2 != NULL) {
     std::cout << "Making mask for thin branches ..." << std::endl;
     ZStackBinarizer binarizer;
-    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
     binarizer.setRetryCount(5);
     binarizer.setMinObjectSize(27);
 

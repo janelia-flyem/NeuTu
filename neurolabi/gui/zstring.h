@@ -14,7 +14,6 @@ class ZString : public std::string
 {
 public:
   ZString();
-  ZString(const ZString &str);
   ZString(const std::string& str);
   ZString ( const std::string& str, size_t pos, size_t n = npos );
   ZString ( const char * s, size_t n );
@@ -26,7 +25,6 @@ public:
   template<class InputIterator> ZString (
       InputIterator begin, InputIterator end) : std::string(begin, end)
   {
-    init();
   }
   ~ZString();
 
@@ -36,8 +34,6 @@ public:
   enum ECaseSensitivity {
     CASE_SENSITIVE, CASE_INSENSITIVE
   };
-
-  inline void init() { m_workspace = NULL; }
 
   static int FirstInteger(const std::string &str);
   int firstInteger();
@@ -164,7 +160,7 @@ public:
   static std::string num2str(uint64_t n);
 
 private:
-  String_Workspace *m_workspace;
+  String_Workspace *m_workspace = nullptr;
 };
 
 #endif // ZSTRING_H
