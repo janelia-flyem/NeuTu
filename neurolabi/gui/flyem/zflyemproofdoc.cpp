@@ -1370,11 +1370,10 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
           bufferObjectModified(todoList);
           notifyTodoEdited(pos);
         }
+        processObjectModified();
       }
-    }
+    } 
   }
-
-  processObjectModified();
 }
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
@@ -2680,6 +2679,11 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
   }
 
   processObjectModified();
+}
+
+void ZFlyEmProofDoc::downloadTodo(const ZIntPoint &pt)
+{
+  downloadTodo(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
