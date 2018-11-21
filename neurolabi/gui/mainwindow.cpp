@@ -210,7 +210,11 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifndef _FLYEM_
   this->setWindowIcon(QIcon(":/images/app.png"));
 #else
-  this->setWindowIcon(QIcon(":/images/app2.png"));
+#  if defined(_NEU3_)
+  this->setWindowIcon(QIcon(":/images/neu3.png"));
+#  else
+  this->setWindowIcon(QIcon(":/images/neutu.png"));
+#  endif
 #endif
 
   mdiArea = new QMdiArea;

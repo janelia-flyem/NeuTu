@@ -212,12 +212,16 @@ unix {
             -framework ApplicationServices \
             -framework CoreFoundation
 
-        contains(DEFINES, _FLYEM_) {
-            ICON = images/app2.icns
+        CONFIG(neutu) | CONFIG(flyem) {
+            ICON += images/neutu.icns
         } else {
-          ICON = images/app.icns
+            CONFIG(neu3) {
+                ICON += images/neu3.icns
+            } else {
+                ICON = images/app.icns
+            }
         }
-        QMAKE_INFO_PLIST = images/Info.plist
+#        QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
         CONFIG(autotarget) {
