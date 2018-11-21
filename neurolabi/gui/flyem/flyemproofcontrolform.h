@@ -61,6 +61,7 @@ signals:
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
   void skeletonizingTopBody();
+  void skeletonizingBodyList();
   void updatingMeshForSelectedBody();
   void showingInfo();
   void reportingBodyCorruption();
@@ -96,6 +97,7 @@ private slots:
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void skeletonizeTopBody();
+  void skeletonizeBodyList();
   void updateMeshForSelectedBody();
   void exportGrayscale();
 

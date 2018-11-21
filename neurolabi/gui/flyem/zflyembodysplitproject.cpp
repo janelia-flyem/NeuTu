@@ -1264,6 +1264,7 @@ void ZFlyEmBodySplitProject::updateBodyDep(
       for (uint64_t bodyId : bodyArray) {
         neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
               "skeletonize", getDvidTarget(), bodyId, true);
+        task.setPriority(1);
         GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
       }
     } else if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
