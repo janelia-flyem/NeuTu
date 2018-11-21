@@ -15,5 +15,13 @@ ZDirectionalTemplate::ZDirectionalTemplate(const Trace_Record &tr)
 ZDirectionalTemplate::ZDirectionalTemplate(const ZDirectionalTemplate &dt) :
     ZStackObject(dt)
 {
+  *this = dt;
+}
+
+ZDirectionalTemplate& ZDirectionalTemplate::operator =(
+    const ZDirectionalTemplate &dt)
+{
   Trace_Record_Copy(&m_tr, &dt.m_tr);
+
+  return *this;
 }

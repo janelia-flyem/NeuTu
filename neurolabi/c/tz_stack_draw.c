@@ -781,7 +781,7 @@ void Stack_Draw_Object_C(Stack *stack, Object_3d *obj, uint8 r, uint8 g,
   for (i = 0; i < obj->size; i++) {
     if (IS_IN_OPEN_RANGE(obj->voxels[i][0], -1, Stack_Width(stack)) &&
 	IS_IN_OPEN_RANGE(obj->voxels[i][1], -1, Stack_Height(stack)) &&
-	IS_IN_OPEN_RANGE(obj->voxels[i][0], -1, Stack_Width(stack))) {
+	IS_IN_OPEN_RANGE(obj->voxels[i][2], -1, Stack_Depth(stack))) {
       offset = STACK_UTIL_OFFSET(obj->voxels[i][0], obj->voxels[i][1],
 	  obj->voxels[i][2], stack->width, area);
       array[offset][0] = r;

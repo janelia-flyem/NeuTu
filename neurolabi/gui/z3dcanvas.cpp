@@ -5,7 +5,7 @@
 #include "z3dscene.h"
 #include "zqslog.h"
 #include "zpainter.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zopenglwidget.h"
 #include <QWindow>
 #include <QPainter>

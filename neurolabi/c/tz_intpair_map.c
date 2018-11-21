@@ -235,7 +235,7 @@ void Print_Intpair_Map(const Intpair_Map *map)
 
   int i;
   for (i = 0; i < map->length; i++) {
-    if ((map->bucket[i].pair[0] >= 0) && (map->bucket[i].pair[0] >= 0)) {
+    if ((map->bucket[i].pair[0] >= 0) && (map->bucket[i].pair[1] >= 0)) {
       printf("bucket %d:\n", i);
       Print_Intpair_Map_Entry(map->bucket + i);
       Intpair_Map_Entry *entry = map->bucket[i].next;

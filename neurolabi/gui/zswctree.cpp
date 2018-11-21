@@ -1079,9 +1079,9 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
               }
               count++;
               tn = tn->next;
-              if (tn != NULL) {
+//              if (tn != NULL) {
                 tn->next = NULL;
-              }
+//              }
             }
             child = child->next_sibling;
           }
@@ -4151,7 +4151,8 @@ bool ZSwcTree::DepthFirstIterator::hasNext() const
       if (m_excludingVirtual) {
         return first->next != NULL;
       } else {
-        return first != NULL;
+        return true;
+//        return first != NULL;
       }
     }
   }

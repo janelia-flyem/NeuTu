@@ -16,7 +16,7 @@
 __BEGIN_DECLS
 
 #ifndef R2C_LENGTH
-#define R2C_LENGTH(length) (length/2+1)
+#define R2C_LENGTH(length) ((length)/2+1)
 #endif
 
 /* <1t> fftw/fftwf <2t> double/float */

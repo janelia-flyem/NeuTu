@@ -11,7 +11,7 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_math.h"
 
-ZStackBinarizer::ZStackBinarizer() : m_reference(NULL), m_method(BM_MANUAL),
+ZStackBinarizer::ZStackBinarizer() : m_reference(NULL), m_method(EMethod::MANUAL),
   m_threshold(0), m_lowerBound(-1), m_upperBound(-1), m_retryCount(0),
   m_minObjectSize(0), m_sigmaScale(1.0)
 {
@@ -41,12 +41,12 @@ bool ZStackBinarizer::binarize(Stack *stack)
   int high = m_upperBound;
 
   switch (m_method) {
-  case BM_RC_THRESHOLD:
-  case BM_STABLE_POINT:
-  case BM_TRIANGLE:
+  case EMethod::RC_THRESHOLD:
+  case EMethod::STABLE_POINT:
+  case EMethod::TRIANGLE:
     hist = Stack_Hist(refStack);
     break;
-  case BM_LOCMAX:
+  case EMethod::LOCMAX:
     hist = computeLocmaxHist(refStack);
     break;
   default:
@@ -72,16 +72,16 @@ bool ZStackBinarizer::binarize(Stack *stack)
 
   if (succ) {
     switch (m_method) {
-    case BM_RC_THRESHOLD:
+    case EMethod::RC_THRESHOLD:
       threshold = Int_Histogram_Rc_Threshold(hist, low, high);
       break;
-    case BM_STABLE_POINT:
+    case EMethod::STABLE_POINT:
       threshold = Int_Histogram_Stable_Point(hist, low, high);
       break;
-    case BM_TRIANGLE:
+    case EMethod::TRIANGLE:
       threshold = Int_Histogram_Triangle_Threshold(hist, low, high);
       break;
-    case BM_LOCMAX:
+    case EMethod::LOCMAX:
       if ((double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) <= 1e-5) {
         threshold = Stack_Common_Intensity(stack, 0, high);
       } else {
@@ -95,13 +95,13 @@ bool ZStackBinarizer::binarize(Stack *stack)
     }
     */
       break;
-    case BM_MEAN:
+    case EMethod::MEAN:
       threshold = iround(Stack_Mean(stack));
       break;
-    case BM_ONE_SIGMA:
+    case EMethod::ONE_SIGMA:
       threshold = iround(Stack_Mean(stack) + sqrt(Stack_Var(stack)));
       break;
-    case BM_NSIGMA:
+    case EMethod::NSIGMA:
       threshold =
           iround(Stack_Mean(stack) + m_sigmaScale * sqrt(Stack_Var(stack)));
       break;

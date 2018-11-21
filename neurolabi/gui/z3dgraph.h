@@ -66,7 +66,7 @@ struct Z3DGraphEdge {
 public:
   Z3DGraphEdge();
   Z3DGraphEdge(int vs, int vt);
-  Z3DGraphEdge(const Z3DGraphEdge &edge);
+//  Z3DGraphEdge(const Z3DGraphEdge &edge);
 
   inline int vs() const { return m_vs; }
   inline int vt() const { return m_vt; }
