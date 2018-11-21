@@ -13,7 +13,7 @@ CONFIG(neu3) {
   DEFINES += _NEU3_
 }
 
-CONFIG(neu3) | CONFIG(flyem) {
+CONFIG(neu3) | CONFIG(neutu) | CONFIG(flyem)  { #flyem CONFIG is an outdated option
   DEFINES *= _FLYEM_
 } else {
   DEFINES += _NEUTUBE_
@@ -22,6 +22,7 @@ CONFIG(neu3) | CONFIG(flyem) {
 DEFINES *= _ENABLE_LOWTIS_
 DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
+#This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
 message("Objs dir: $${OBJECTS_DIR}")
 
@@ -45,55 +46,67 @@ win32 {
     }
 }
 
-unix {
-    QMAKE_PATH = $(QMAKE)
-    !exists($$QMAKE_PATH) {
-        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-    }
-    message("qmake path: $$QMAKE_PATH")
-    exists($$QMAKE_PATH) {
-        macx {
-          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
-        }
+#unix {
+#    QMAKE_PATH = $(QMAKE)
+#    !exists($$QMAKE_PATH) {
+#        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
+#    }
+#    message("qmake path: $$QMAKE_PATH")
+#    exists($$QMAKE_PATH) {
+#        macx {
+#          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+#        }
 
-        unix:!macx {
-          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
-        }
-    }
-    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    #    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-    }
-    message($$DEPLOYMENT_COMMAND)
-    message("Post link: $$QMAKE_POST_LINK")
-}
+#        unix:!macx {
+#          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+#        }
+#    }
+#    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+#        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+#    }
+#    message($$DEPLOYMENT_COMMAND)
+#    message("Post link: $$QMAKE_POST_LINK")
+#}
+
+app_name = neutu
 
 CONFIG(debug, debug|release) {
-    TARGET = neuTube_d
+    app_name = neuTube_d
     CONFIG(neu3) {
-        TARGET = neu3_d
+        app_name = neu3_d
     } else {
       contains(DEFINES, _FLYEM_) {
-          TARGET = neutu_d
+        app_name = neutu_d
       }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
 #    QMAKE_CXXFLAGS += -g
-    TARGET = neuTube
+    app_name = neuTube
     CONFIG(neu3) {
-      TARGET = neu3
+      app_name = neu3
     } else {
-      CONFIG(flyem) {
-          TARGET = neutu
+      CONFIG(flyem) | CONFIG(neutu) {
+        app_name = neutu
       }
     }
 }
 
-message("Target: $$TARGET")
+include(extratarget.pri)
+
+message("Neurolabi target: $$neurolabi.target")
+
+CONFIG(force_link) {
+  PRE_TARGETDEPS += neurolabi
+}
+
+TARGET = $$app_name
+
+CONFIG(force_link) {
+  QMAKE_POST_LINK += $$quote(echo "making config"; make app_config;)
+}
 
 unix {
-  include(extratarget.pri)
-
   # suppress warnings from 3rd party library, works for gcc and clang
   QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
@@ -903,7 +916,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyenv.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
-    imgproc/zstackmultiscalewatershed.h
+    imgproc/zstackmultiscalewatershed.h \
+    dialogs/zflyemtodoannotationdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1014,7 +1028,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
     dialogs/zflyemproofsettingdialog.ui \
-    dialogs/zneu3sliceviewdialog.ui
+    dialogs/zneu3sliceviewdialog.ui \
+    dialogs/zflyemtodoannotationdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1592,7 +1607,8 @@ SOURCES += main.cpp \
     flyem/zflyembodyenv.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
-    imgproc/zstackmultiscalewatershed.cpp
+    imgproc/zstackmultiscalewatershed.cpp \
+    dialogs/zflyemtodoannotationdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
@@ -1603,7 +1619,7 @@ message("[[ DEFINE ]]: $${DEFINES}")
 message("[[ QMAKE_CXXFLAGS ]]: $${QMAKE_CXXFLAGS}")
 message("[[ CONDA_ENV ]]: $${CONDA_ENV}")
 message("[[ LIBS ]]: $${LIBS}")
-message("[[ TARGET ]]: $${TARGET}")
+message("[[ TARGET ]]: $$app_name")
 message("[[ OUT_PWD ]]: $${OUT_PWD}")
 macx {
   message("[[ Mac Target ]]: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")

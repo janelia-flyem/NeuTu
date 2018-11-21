@@ -224,6 +224,7 @@ public slots:
   void showBodyConnection();
   void showBodyProfile();
   void annotateSynapse();
+  void annotateTodo();
   void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
   void checkOutBody(flyem::EBodySplitMode mode);
@@ -426,6 +427,7 @@ protected slots:
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void skeletonizeSynapseTopBody();
+  void skeletonizeBodyList();
   void updateMeshForSelected();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -532,6 +534,8 @@ private:
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
+
+  void submitSkeletonizationTask(uint64_t bodyId);
 
 protected:
   bool m_showSegmentation;
@@ -677,6 +681,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(skeletonizeSelectedBody()));
   connect(panel, SIGNAL(skeletonizingTopBody()),
           this, SLOT(skeletonizeSynapseTopBody()));
+  connect(panel, SIGNAL(skeletonizingBodyList()),
+          this, SLOT(skeletonizeBodyList()));
   connect(panel, SIGNAL(updatingMeshForSelectedBody()),
           this, SLOT(updateMeshForSelected()));
   connect(panel, SIGNAL(reportingBodyCorruption()),

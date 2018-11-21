@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <neutube>
-  <docUrl>https://wiki.janelia.org/wiki/display/flyem/NeuTu</docUrl>
+  <docUrl>https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/manual.pdf</docUrl>
   <MainWindow>
     <tracing status="off"></tracing>
   </MainWindow>

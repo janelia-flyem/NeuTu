@@ -28632,5 +28632,48 @@ void ZTest::test(MainWindow *host)
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  QString dataName = "segmentation_annotations";
+  QStringList keyList = reader->readKeys(dataName);
+  std::cout << keyList.size() << " annotations" << std::endl;
+  int batchSize = 5000;
+
+  std::ofstream stream(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/bodylist.txt");
+
+  int currentIndex = 0;
+  while (currentIndex < keyList.size()) {
+    QList<QByteArray> values =
+          reader->readKeyValues(dataName, keyList.mid(currentIndex, batchSize));
+    currentIndex += batchSize;
+    std::cout << values.size() << " values" << std::endl;
+
+    std::set<std::string> statusSet = {
+      "anchor", "roughly traced", "prelim roughly traced"};
+
+    for (const auto &data : values) {
+      ZJsonObject obj;
+      obj.decodeString(QString(data).toStdString().c_str());
+//      obj.print();
+      ZString status = ZJsonParser::stringValue(obj["status"]);
+      status.toLower();
+      if (statusSet.count(status) > 0) {
+        int64_t bodyId = ZJsonParser::integerValue(obj["body ID"]);
+        std::cout << bodyId << " " << status << std::endl;
+        stream << bodyId << std::endl;
+      }
+    }
+  }
+//  QList<QByteArray> values =
+//      reader->readKeyValues(dataName, keyList.mid(10, 10));
+//  for (const auto &data : values) {
+//    ZJsonObject obj;
+//    obj.decodeString(QString(data).toStdString().c_str());
+//    obj.print();
+//  }
+#endif
+
+
   std::cout << "Done." << std::endl;
 }
