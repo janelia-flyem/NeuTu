@@ -97,6 +97,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zflyembodystatus.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -2116,6 +2117,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
           this, SLOT(annotateSynapse()));
+  connect(getCompletePresenter(), SIGNAL(annotatingTodo()),
+          this, SLOT(annotateTodo()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
   connect(getCompletePresenter(), SIGNAL(uploadingMerge()),
@@ -3212,6 +3215,57 @@ void ZFlyEmProofMvc::updateMeshForSelected()
   getCompleteDocument()->updateMeshForSelected();
 }
 
+void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
+{
+  if (bodyId > 0) {
+    neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+          "skeletonize", getDvidTarget(), bodyId,
+          m_skeletonUpdateDlg->isOverwriting());
+    task.setPriority(m_skeletonUpdateDlg->getPriority());
+
+    GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+  }
+}
+
+void ZFlyEmProofMvc::skeletonizeBodyList()
+{
+  ZWidgetMessage warnMsg;
+  warnMsg.setType(neutube::EMessageType::WARNING);
+
+  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+    QString bodyFile = ZDialogFactory::GetOpenFileName("Body File", "", this);
+
+    if (!bodyFile.isEmpty()) {
+      std::ifstream stream(bodyFile.toStdString());
+      if (stream.good()) {
+        m_skeletonUpdateDlg->setComputingServer(
+              GET_NETU_SERVICE.getServer().c_str());
+        m_skeletonUpdateDlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::FILE);
+        if (m_skeletonUpdateDlg->exec()) {
+          int count = 0;
+          while (stream.good()) {
+            uint64_t bodyId = 0;
+            stream >> bodyId;
+            submitSkeletonizationTask(bodyId);
+            ++count;
+          }
+          emit messageGenerated(
+                QString("%1 bodies submitted for skeletonization.").arg(count));
+        }
+      } else {
+        warnMsg.setMessage("Cannot open the file: " + bodyFile);
+      }
+    }
+  } else {
+    warnMsg.setMessage(
+          "Skeletonization failed: The skeletonization service is not available.");
+  }
+
+  if (warnMsg.hasMessage()) {
+    emit messageGenerated(warnMsg);
+  }
+}
+
 void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 {
   ZWidgetMessage warnMsg;
@@ -3233,6 +3287,7 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
                 "skeletonize", getDvidTarget(), bodyId,
                 m_skeletonUpdateDlg->isOverwriting());
+          task.setPriority(m_skeletonUpdateDlg->getPriority());
 
           GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
         }
@@ -3265,6 +3320,7 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
                 "skeletonize", getDvidTarget(), bodyId,
                 m_skeletonUpdateDlg->isOverwriting());
+          task.setPriority(m_skeletonUpdateDlg->getPriority());
 
           GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
         }
@@ -4963,8 +5019,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
-      ZDvidWriter writer;
-      if (writer.open(getDvidTarget())) {
+      ZDvidWriter &writer = getCompleteDocument()->getDvidWriter();
+      if (writer.good()) {
         writer.writeBookmark(bookmark->toDvidAnnotationJson());
       }
       if (!writer.isStatusOk()) {
@@ -4982,17 +5038,12 @@ void ZFlyEmProofMvc::annotateSynapse()
 {
   ZFlyEmSynapseAnnotationDialog dlg(this);
   getCompleteDocument()->annotateSelectedSynapse(&dlg, getView()->getSliceAxis());
-/*
-  if (dlg.exec()) {
-    double c = dlg.getConfidence();
-    ZJsonObject propJson;
-    std::ostringstream stream;
-    stream << c;
-    propJson.setEntry("confidence", stream.str());
-    getCompleteDocument()->annotateSelectedSynapse(
-          propJson, getView()->getSliceAxis());
-  }
-  */
+}
+
+void ZFlyEmProofMvc::annotateTodo()
+{
+  ZFlyEmTodoAnnotationDialog dlg(this);
+  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
 }
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
@@ -5000,18 +5051,6 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
   getCompleteDocument()->selectBodyInRoi(
         getView()->getCurrentZ(), appending, true);
 }
-/*
-void ZFlyEmProofMvc::prepareBookmarkModel(
-    ZFlyEmBookmarkListModel *model, QSortFilterProxyModel *proxy)
-{
-  if (proxy != NULL) {
-    proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proxy->setFilterKeyColumn(-1);
-    proxy->setSourceModel(model);
-  }
-}
-*/
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {

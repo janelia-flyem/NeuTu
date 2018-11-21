@@ -231,6 +231,12 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeTopBody()));
   bodyMenu->addAction(skeletonizeTopAction);
 
+  QAction *skeletonizeBodyListAction = new QAction("Skeletonize Body List", this);
+  connect(skeletonizeBodyListAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeBodyList()));
+  bodyMenu->addAction(skeletonizeBodyListAction);
+
+
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeSelectedBody()));
@@ -292,6 +298,11 @@ void FlyEmProofControlForm::skeletonizeSelectedBody()
 void FlyEmProofControlForm::skeletonizeTopBody()
 {
   emit skeletonizingTopBody();
+}
+
+void FlyEmProofControlForm::skeletonizeBodyList()
+{
+  emit skeletonizingBodyList();
 }
 
 void FlyEmProofControlForm::updateMeshForSelectedBody()

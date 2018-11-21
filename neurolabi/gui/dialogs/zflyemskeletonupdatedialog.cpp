@@ -33,6 +33,7 @@ void ZFlyEmSkeletonUpdateDialog::updateWidget()
 {
   switch(m_mode) {
   case EMode::SELECTED:
+  case EMode::FILE:
     ui->topCountLabel->hide();
     ui->topCountSpinBox->hide();
     break;
@@ -46,4 +47,9 @@ void ZFlyEmSkeletonUpdateDialog::updateWidget()
 int ZFlyEmSkeletonUpdateDialog::getTopCount() const
 {
   return ui->topCountSpinBox->value();
+}
+
+int ZFlyEmSkeletonUpdateDialog::getPriority() const
+{
+  return ui->prioritySpinBox->value();
 }
