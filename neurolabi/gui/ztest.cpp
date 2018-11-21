@@ -28380,6 +28380,53 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZIntPointArray ptArray;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/coord.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      std::vector<int> pt = line.toIntegerArray();
+      if (pt.size() == 3) {
+        ptArray.append(pt[0], pt[1], pt[2]);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const ZIntPoint &pt : ptArray) {
+    std::cout << pt.toString() << std::endl;
+  }
+
+  std::vector<std::string> uuidList;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/uuid.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      line.trim();
+      if (!line.empty()) {
+        uuidList.push_back(line);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const std::string &uuid : uuidList) {
+    std::cout << uuid << std::endl;
+    ZDvidTarget target;
+    target.set("emdata1", uuid, 8400);
+    target.setSegmentationName("segmentation");
+    ZDvidWriter writer;
+    writer.open(target);
+    for (const ZIntPoint &pt : ptArray) {
+      std::cout << pt.toString() << std::endl;
+      ZFlyEmMisc::UpdateBodyStatus(pt, "anchor", &writer);
+    }
+//    std::cout << writer.getDvidReader().readBodyIdAt(ptArray[0]) << std::endl;
+#endif
+
+#if 0
   ZDvidWriter *writer =
       ZGlobal::GetInstance().getDvidWriter("hemibran-production");
 
@@ -28593,6 +28640,14 @@ void ZTest::test(MainWindow *host)
     }
   }
 
+#endif
+
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("MB_Test");
+  std::cout << "Writer: " << writer;
+
+  ZFlyEmMisc::UpdateBodyStatus(ZIntPoint(3957, 5658, 7309), "test2", writer);
 #endif
 
 #if 0
