@@ -13,7 +13,7 @@ CONFIG(neu3) {
   DEFINES += _NEU3_
 }
 
-CONFIG(neu3) | CONFIG(flyem) {
+CONFIG(neu3) | CONFIG(neutu) | CONFIG(flyem)  { #flyem CONFIG is an outdated option
   DEFINES *= _FLYEM_
 } else {
   DEFINES += _NEUTUBE_
@@ -22,6 +22,7 @@ CONFIG(neu3) | CONFIG(flyem) {
 DEFINES *= _ENABLE_LOWTIS_
 DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
+#This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
 message("Objs dir: $${OBJECTS_DIR}")
 
@@ -45,27 +46,27 @@ win32 {
     }
 }
 
-unix {
-    QMAKE_PATH = $(QMAKE)
-    !exists($$QMAKE_PATH) {
-        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-    }
-    message("qmake path: $$QMAKE_PATH")
-    exists($$QMAKE_PATH) {
-        macx {
-          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
-        }
+#unix {
+#    QMAKE_PATH = $(QMAKE)
+#    !exists($$QMAKE_PATH) {
+#        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
+#    }
+#    message("qmake path: $$QMAKE_PATH")
+#    exists($$QMAKE_PATH) {
+#        macx {
+#          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+#        }
 
-        unix:!macx {
-          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
-        }
-    }
-    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    #    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-    }
-    message($$DEPLOYMENT_COMMAND)
-    message("Post link: $$QMAKE_POST_LINK")
-}
+#        unix:!macx {
+#          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+#        }
+#    }
+#    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+#        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+#    }
+#    message($$DEPLOYMENT_COMMAND)
+#    message("Post link: $$QMAKE_POST_LINK")
+#}
 
 app_name = neutu
 
@@ -85,7 +86,7 @@ CONFIG(debug, debug|release) {
     CONFIG(neu3) {
       app_name = neu3
     } else {
-      CONFIG(flyem) {
+      CONFIG(flyem) | CONFIG(neutu) {
         app_name = neutu
       }
     }
