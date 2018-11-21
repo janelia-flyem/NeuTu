@@ -566,7 +566,7 @@ int Show_Version(int argc, char *argv[], const char *ver)
     printf("64 bit\n");
 #endif
     printf("Author: Ting Zhao\n");
-    printf("Janelia Farm Research Campus\n"); 
+    printf("HHMI, Janelia Research Campus\n"); 
   }
 
   return show_ver;
