@@ -3248,6 +3248,12 @@ void ZFlyEmProofMvc::skeletonizeBodyList()
             stream >> bodyId;
             submitSkeletonizationTask(bodyId);
             ++count;
+
+#ifdef _DEBUG_
+            if (count % 100 == 0) {
+              std::cout << "Skeletoniztion submitted: " << count << std::endl;
+            }
+#endif
           }
           emit messageGenerated(
                 QString("%1 bodies submitted for skeletonization.").arg(count));

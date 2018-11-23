@@ -305,6 +305,7 @@ include(neutuse/neutuse.pri)
 
 # Input
 RESOURCES = gui.qrc
+
 HEADERS += mainwindow.h \
     widgets/zimagewidget.h \
     zstackview.h \

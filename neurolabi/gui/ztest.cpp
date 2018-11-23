@@ -28687,7 +28687,7 @@ void ZTest::test(MainWindow *host)
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
   QString dataName = "segmentation_annotations";
