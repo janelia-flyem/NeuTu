@@ -793,7 +793,9 @@ void ZObject3dScan::readHeader(
 #endif
   }
 
-  stream.read((char*)(stripeNumber), sizeof(int));
+  if (*version > 0) {
+    stream.read((char*)(stripeNumber), sizeof(int));
+  }
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
