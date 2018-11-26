@@ -147,10 +147,46 @@ ZNeuronConstructor::ZNeuronConstructor() : m_connWorkspace(NULL), m_signal(NULL)
 
 }
 
+ZSwcTree *ZNeuronConstructor::Reconstruct(Locseg_Chain *chain, ZSwcTree *tree)
+{
+  int n = 0;
+  Neuron_Component *ns = Locseg_Chain_To_Neuron_Component_S(
+        chain, NEUROCOMP_TYPE_GEO3D_CIRCLE, NULL, &n, 1.0, 1.0);
+  if (n > 0) {
+    if (tree == NULL) {
+      tree = new ZSwcTree;
+    }
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *parent = tree->root();
+    for (int i = 0; i < n; ++i) {
+      Geo3d_Circle *circle = reinterpret_cast<Geo3d_Circle*>(ns[i].data);
+      parent = SwcTreeNode::makePointer(
+            circle->center[0], circle->center[1], circle->center[2],
+            circle->radius, parent);
+
+    }
+  }
+
+  return tree;
+}
+
+ZSwcTree *ZNeuronConstructor::Reconstruct(std::vector<Locseg_Chain *> &chainArray)
+{
+  ZSwcTree *tree = NULL;
+  for (Locseg_Chain *chain : chainArray) {
+    tree = Reconstruct(chain, tree);
+  }
+
+  return tree;
+}
 
 ZSwcTree *ZNeuronConstructor::reconstruct(
     std::vector<Locseg_Chain*> &chainArray)
 {
+  if (m_connWorkspace == NULL) {
+    return Reconstruct(chainArray);
+  }
+
   ZSwcTree *tree = NULL;
 
   if (!chainArray.empty()) {
@@ -171,12 +207,10 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
     Neuron_Structure *ns = Locseg_Chain_Comp_Neurostruct(
           neuronComponent, chain_number, m_signal, zscale, m_connWorkspace);
 
-    if (m_connWorkspace != NULL) {
-      Process_Neuron_Structure(ns);
+    Process_Neuron_Structure(ns);
 
-      if (m_connWorkspace->crossover_test == TRUE) {
-        Neuron_Structure_Crossover_Test(ns, zscale);
-      }
+    if (m_connWorkspace->crossover_test == TRUE) {
+      Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
 #ifdef _DEBUG_
@@ -1451,7 +1485,6 @@ ZSwcTree* ZNeuronTracer::trace(Stack *signal, bool doResampleAfterTracing)
   constructor.setSignal(stack);
 
   //Create neuron structure
-
   BOOL oldSpTest = m_connWorkspace->sp_test;
   if (chainArray.size() > 500) {
     std::cout << "Too many chains: " << chainArray.size() << std::endl;
@@ -1478,6 +1511,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *signal, bool doResampleAfterTracing)
       ZSwcResampler resampler;
       resampler.optimalDownsample(tree);
     }
+
 
     ZSwcPruner pruner;
     pruner.setMinLength(0);
