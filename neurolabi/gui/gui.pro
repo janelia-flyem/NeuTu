@@ -923,7 +923,8 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
     imgproc/zstackmultiscalewatershed.h \
-    dialogs/zflyemtodoannotationdialog.h
+    dialogs/zflyemtodoannotationdialog.h \
+    main.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
