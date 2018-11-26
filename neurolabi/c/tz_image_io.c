@@ -2325,7 +2325,7 @@ void decompress_read8(FILE *file, uint8 *target, int64 size, int compatible)
 { uint8 source[IO_BUFFER+100];    //  A fixed amount of storage is needed !
 
   int64 smax;  //  # of bytes read into current image of 'source'
-  int   pv;    //  prior value placed in decoded stream
+  int   pv = 0;    //  prior value placed in decoded stream
 
   smax = fread(source,1,IO_BUFFER+100,file);
 
@@ -2354,7 +2354,7 @@ void decompress_read8(FILE *file, uint8 *target, int64 size, int compatible)
             }
           printf(" %2d\n",source[p]);
 #endif
-          target[i++] = pv = source[p++];
+          target[i++] = (pv = source[p++]);
         }
       else if (v < 128)
         { v -= 32;                         //    2-bit differences block

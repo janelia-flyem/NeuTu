@@ -1420,6 +1420,27 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
   return path;
 }
 
+void ZFlyEmMisc::UpdateBodyStatus(
+    const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
+{
+  if (writer) {
+    uint64_t bodyId = writer->getDvidReader().readBodyIdAt(pos);
+    ZFlyEmBodyAnnotation annot = writer->getDvidReader().readBodyAnnotation(bodyId);
+#ifdef _DEBUG_
+    std::cout << "Old annotation:" << std::endl;
+    annot.print();
+#endif
+    annot.setStatus(newStatus);
+    writer->writeBodyAnntation(annot);
+
+#ifdef _DEBUG_
+    ZFlyEmBodyAnnotation newAnnot = writer->getDvidReader().readBodyAnnotation(bodyId);
+    std::cout << "New annotation:" << std::endl;
+    newAnnot.print();
+#endif
+  }
+}
+
 void ZFlyEmMisc::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {

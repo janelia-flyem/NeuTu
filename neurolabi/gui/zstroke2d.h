@@ -30,7 +30,7 @@ typedef ZSharedPointer<ZStroke2d> ZStroke2dPtr;
 class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
-  ZStroke2d(const ZStroke2d &stroke);
+//  ZStroke2d(const ZStroke2d &stroke);
   virtual ~ZStroke2d();
 
   static ZStackObject::EType GetType() {

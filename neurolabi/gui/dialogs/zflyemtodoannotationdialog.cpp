@@ -34,10 +34,11 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
     break;
   case 1:
   case 2:
+  case 3:
     ui->priorityComboBox->setCurrentIndex(0);
     break;
-  case 3:
   case 4:
+  case 5:
     ui->priorityComboBox->setCurrentIndex(1);
     break;
   default:

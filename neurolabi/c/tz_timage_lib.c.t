@@ -1715,7 +1715,7 @@
     Kill_Stack(substack1);
     Kill_Stack(substack2);
 
-    <3t> max_value = <2T>_Max(corr_stack,sub);
+    max_value = <2T>_Max(corr_stack,sub);
 
 #ifdef _DEBUG_
     <2T>_Print(corr_stack);
