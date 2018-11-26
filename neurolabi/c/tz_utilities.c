@@ -566,7 +566,7 @@ int Show_Version(int argc, char *argv[], const char *ver)
     printf("64 bit\n");
 #endif
     printf("Author: Ting Zhao\n");
-    printf("Janelia Farm Research Campus\n"); 
+    printf("HHMI, Janelia Research Campus\n"); 
   }
 
   return show_ver;
@@ -809,7 +809,7 @@ BOOL eqstr(const char *str1, const char *str2)
 {
   if ((str1 == NULL) && (str2 == NULL)) {
     return TRUE;
-  } else if ((str1 == NULL) && (str2 == NULL)) {
+  } else if ((str1 == NULL) || (str2 == NULL)) {
     return FALSE;
   } else {
     if (strcmp(str1, str2) == 0) {

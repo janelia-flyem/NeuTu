@@ -115,6 +115,7 @@ inline static Neuroseg_Field_f Neuroseg_Slice_Field_Func(int option)
     break;
   case 4:
     f = Neurofield_Rpi;
+    break;
   default:
     printf("The default field is used.");
     break;

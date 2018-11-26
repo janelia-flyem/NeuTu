@@ -287,6 +287,7 @@ public slots:
   void locateSwcNodeIn2DView();
   void removeSwcTurn();
   void deleteSelected();
+  void annotateTodo(ZStackObject* obj);
 
   void convertSelectedChainToSwc();
 

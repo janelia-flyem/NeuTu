@@ -174,7 +174,6 @@ static void LoadFlyEmConfig(
         GET_FLYEM_CONFIG.setCustomTaskServer(taskServer.toStdString());
       }
     }
-//      GET_FLYEM_CONFIG.setDefaultTaskServer(taskServer.toStdString());
   }
 #endif
 }

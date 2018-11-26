@@ -139,7 +139,7 @@
 #include "zswctreenodeselector.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
-#include "zstackbinarizer.h"
+#include "imgproc/zstackbinarizer.h"
 #include "zoptionparameter.h"
 #include "zdebug.h"
 #include "tz_color.h"
@@ -28380,6 +28380,53 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZIntPointArray ptArray;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/coord.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      std::vector<int> pt = line.toIntegerArray();
+      if (pt.size() == 3) {
+        ptArray.append(pt[0], pt[1], pt[2]);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const ZIntPoint &pt : ptArray) {
+    std::cout << pt.toString() << std::endl;
+  }
+
+  std::vector<std::string> uuidList;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/uuid.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      line.trim();
+      if (!line.empty()) {
+        uuidList.push_back(line);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const std::string &uuid : uuidList) {
+    std::cout << uuid << std::endl;
+    ZDvidTarget target;
+    target.set("emdata1", uuid, 8400);
+    target.setSegmentationName("segmentation");
+    ZDvidWriter writer;
+    writer.open(target);
+    for (const ZIntPoint &pt : ptArray) {
+      std::cout << pt.toString() << std::endl;
+      ZFlyEmMisc::UpdateBodyStatus(pt, "anchor", &writer);
+    }
+//    std::cout << writer.getDvidReader().readBodyIdAt(ptArray[0]) << std::endl;
+#endif
+
+#if 0
   ZDvidWriter *writer =
       ZGlobal::GetInstance().getDvidWriter("hemibran-production");
 
@@ -28595,6 +28642,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("MB_Test");
+  std::cout << "Writer: " << writer;
+
+  ZFlyEmMisc::UpdateBodyStatus(ZIntPoint(3957, 5658, 7309), "test2", writer);
+#endif
+
 #if 0
   ZObject3dScan obj1;
   obj1.addSegment(0, 1, 0, 1);
@@ -28631,6 +28686,49 @@ void ZTest::test(MainWindow *host)
 
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  QString dataName = "segmentation_annotations";
+  QStringList keyList = reader->readKeys(dataName);
+  std::cout << keyList.size() << " annotations" << std::endl;
+  int batchSize = 5000;
+
+  std::ofstream stream(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/bodylist.txt");
+
+  int currentIndex = 0;
+  while (currentIndex < keyList.size()) {
+    QList<QByteArray> values =
+          reader->readKeyValues(dataName, keyList.mid(currentIndex, batchSize));
+    currentIndex += batchSize;
+    std::cout << values.size() << " values" << std::endl;
+
+    std::set<std::string> statusSet = {
+      "anchor", "roughly traced", "prelim roughly traced"};
+
+    for (const auto &data : values) {
+      ZJsonObject obj;
+      obj.decodeString(QString(data).toStdString().c_str());
+//      obj.print();
+      ZString status = ZJsonParser::stringValue(obj["status"]);
+      status.toLower();
+      if (statusSet.count(status) > 0) {
+        int64_t bodyId = ZJsonParser::integerValue(obj["body ID"]);
+        std::cout << bodyId << " " << status << std::endl;
+        stream << bodyId << std::endl;
+      }
+    }
+  }
+//  QList<QByteArray> values =
+//      reader->readKeyValues(dataName, keyList.mid(10, 10));
+//  for (const auto &data : values) {
+//    ZJsonObject obj;
+//    obj.decodeString(QString(data).toStdString().c_str());
+//    obj.print();
+//  }
+#endif
+
 
   std::cout << "Done." << std::endl;
 }
