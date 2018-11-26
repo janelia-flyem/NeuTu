@@ -68,7 +68,7 @@ private:
   std::set<uint64_t>::const_iterator m_bodyToSelect;
   std::size_t m_bodyToSelectIndex;
 
-  enum class Skip { NOT_SKIPPED, SKIPPED_MAPPING, SKIPPED_SIZES, SKIPPED_MESHES };
+  enum class Skip { NOT_SKIPPED, SKIPPED_MAPPING, SKIPPED_SIZES, SKIPPED_MESHES, SKIPPED_MAJOR };
   Skip m_skip = Skip::NOT_SKIPPED;
   int m_timeOfLastSkipCheck = -1;
 
@@ -95,7 +95,7 @@ private:
 
   std::set<uint64_t> m_hiddenIds;
 
-  enum class SetBodiesResult { SUCCEEDED, FAILED_MAPPING, FAILED_SIZES };
+  enum class SetBodiesResult { SUCCEEDED, FAILED_MAPPING, FAILED_SIZES, FAILED_MAJOR };
   SetBodiesResult setBodiesFromSuperVoxels();
   void buildTaskWidget();
   void updateColors();
