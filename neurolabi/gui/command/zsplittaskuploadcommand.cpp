@@ -14,7 +14,6 @@
 
 ZSplitTaskUploadCommand::ZSplitTaskUploadCommand()
 {
-
 }
 
 int ZSplitTaskUploadCommand::run(

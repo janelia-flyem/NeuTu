@@ -51,6 +51,8 @@ public:
 
   ZSwcTree *reconstruct(std::vector<Locseg_Chain*> &chainArray);
 
+  static ZSwcTree *Reconstruct(Locseg_Chain *chain, ZSwcTree *tree);
+  static ZSwcTree *Reconstruct(std::vector<Locseg_Chain*> &chainArray);
 private:
   Connection_Test_Workspace *m_connWorkspace;
   Stack *m_signal;
