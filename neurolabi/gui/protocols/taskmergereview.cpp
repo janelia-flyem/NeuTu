@@ -661,23 +661,23 @@ void TaskMergeReview::buildTaskWidget()
 {
   m_widget = new QWidget();
 
-  m_dontMergeButton = new QRadioButton("Don't Merge", m_widget);
+  m_dontMergeButton = new QRadioButton("Don't merge", m_widget);
   m_dontMergeButton->setChecked(true);
   connect(m_dontMergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   m_mergeButton = new QRadioButton("Merge", m_widget);
   connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  m_mergeMajorButton = new QRadioButton("Merge Major Only", m_widget);
+  m_mergeMajorButton = new QRadioButton("Merge major only", m_widget);
   connect(m_mergeMajorButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  m_processFurtherButton = new QRadioButton("Process Further", m_widget);
+  m_processFurtherButton = new QRadioButton("Process further", m_widget);
   connect(m_processFurtherButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   m_irrelevantButton = new QRadioButton("Irrelevant", m_widget);
   connect(m_irrelevantButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
+  m_dontKnowButton = new QRadioButton("Don't know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   // Points to the button corresonding to the result most recently saved to DVID,
@@ -697,10 +697,10 @@ void TaskMergeReview::buildTaskWidget()
   m_selectCurrentBodyButton = new QPushButton("Select", m_widget);
   connect(m_selectCurrentBodyButton, SIGNAL(clicked(bool)), this, SLOT(onSelectCurrentBody()));
 
-  m_nextBodyToSelectButton = new QPushButton("Select Next", m_widget);
+  m_nextBodyToSelectButton = new QPushButton("Select next", m_widget);
   connect(m_nextBodyToSelectButton, SIGNAL(clicked(bool)), this, SLOT(onNextBodyToSelect()));
 
-  m_prevBodyToSelectButton = new QPushButton("Select Previous", m_widget);
+  m_prevBodyToSelectButton = new QPushButton("Select previous", m_widget);
   connect(m_prevBodyToSelectButton, SIGNAL(clicked(bool)), this, SLOT(onPrevBodyToSelect()));
 
   QHBoxLayout *selectionLayout = new QHBoxLayout;
@@ -729,7 +729,7 @@ void TaskMergeReview::buildTaskWidget()
   showLayout->addLayout(showMajorMinorLayout);
   showLayout->addWidget(m_showSupervoxelsCheckBox);
 
-  QPushButton *zoomOutButton = new QPushButton("Zoom Out to Show All", m_widget);
+  QPushButton *zoomOutButton = new QPushButton("Zoom out to show all", m_widget);
   connect(zoomOutButton, SIGNAL(clicked(bool)), this, SLOT(zoomOutToShowAll()));
 
   QHBoxLayout *bottomLayout = new QHBoxLayout;
