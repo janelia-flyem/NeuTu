@@ -77,6 +77,7 @@ private:
 
   QWidget *m_widget;
   QRadioButton *m_mergeButton;
+  QRadioButton *m_mergeMajorButton;
   QRadioButton *m_dontMergeButton;
   QRadioButton *m_processFurtherButton;
   QRadioButton *m_irrelevantButton;
