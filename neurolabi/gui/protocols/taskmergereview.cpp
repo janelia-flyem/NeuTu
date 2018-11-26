@@ -59,6 +59,7 @@ namespace {
   static const QString VALUE_SKIPPED_MESHES = "meshes unavailable";
   static const QString KEY_RESULT = "result";
   static const QString VALUE_RESULT_MERGE = "merge";
+  static const QString VALUE_RESULT_MERGE_MAJOR = "mergeMajor";
   static const QString VALUE_RESULT_DONT_MERGE = "dontMerge";
   static const QString VALUE_RESULT_PROCESS_FURTHER = "processFurther";
   static const QString VALUE_RESULT_IRRELEVANT = "irrelevant";
@@ -396,8 +397,8 @@ void TaskMergeReview::onCycleAnswer()
   if (m_dontMergeButton->isChecked()) {
     m_mergeButton->setChecked(true);
   } else if (m_mergeButton->isChecked()) {
-    m_processFurtherButton->setChecked(true);
-  } else if (m_processFurtherButton->isChecked()) {
+    m_mergeMajorButton->setChecked(true);
+  } else if (m_mergeMajorButton->isChecked()) {
     m_dontMergeButton->setChecked(true);
   }
 }
@@ -667,6 +668,9 @@ void TaskMergeReview::buildTaskWidget()
   m_mergeButton = new QRadioButton("Merge", m_widget);
   connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
+  m_mergeMajorButton = new QRadioButton("Merge Major Only", m_widget);
+  connect(m_mergeMajorButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+
   m_processFurtherButton = new QRadioButton("Process Further", m_widget);
   connect(m_processFurtherButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
@@ -684,8 +688,9 @@ void TaskMergeReview::buildTaskWidget()
   QHBoxLayout *radioTopLayout = new QHBoxLayout;
   radioTopLayout->addWidget(m_dontMergeButton);
   radioTopLayout->addWidget(m_mergeButton);
-  radioTopLayout->addWidget(m_processFurtherButton);
+  radioTopLayout->addWidget(m_mergeMajorButton);
   QHBoxLayout *radioBottomLayout = new QHBoxLayout;
+  radioBottomLayout->addWidget(m_processFurtherButton);
   radioBottomLayout->addWidget(m_irrelevantButton);
   radioBottomLayout->addWidget(m_dontKnowButton);
 
@@ -777,7 +782,8 @@ void TaskMergeReview::updateColors()
 
     std::size_t index = 1;
     for (uint64_t id : m_majorBodyIds) {
-      m_bodyIdToColorIndex[id] = m_mergeButton->isChecked() ? 1 : index;
+      bool merge = m_mergeButton->isChecked() || m_mergeMajorButton->isChecked();
+      m_bodyIdToColorIndex[id] = merge ? 1 : index;
       index++;
       if (index == INDEX_COLORS.size()) {
         index = 1;
@@ -1046,6 +1052,9 @@ void TaskMergeReview::writeOutput()
       if (m_mergeButton->isChecked()) {
         json[KEY_RESULT] = QJsonValue(VALUE_RESULT_MERGE);
         m_lastSavedButton = m_mergeButton;
+      } else if (m_mergeMajorButton->isChecked()) {
+        json[KEY_RESULT] = QJsonValue(VALUE_RESULT_MERGE_MAJOR);
+        m_lastSavedButton = m_mergeMajorButton;
       } else if (m_dontMergeButton->isChecked()) {
         json[KEY_RESULT] = QJsonValue(VALUE_RESULT_DONT_MERGE);
         m_lastSavedButton = m_dontMergeButton;
@@ -1125,6 +1134,9 @@ void TaskMergeReview::restoreResult(QString result)
   if (result == VALUE_RESULT_MERGE) {
     m_mergeButton->setChecked(true);
     m_lastSavedButton = m_mergeButton;
+  } else if (result == VALUE_RESULT_MERGE_MAJOR) {
+    m_mergeMajorButton->setChecked(true);
+    m_lastSavedButton = m_mergeMajorButton;
   } else if (result == VALUE_RESULT_DONT_MERGE) {
     m_dontMergeButton->setChecked(true);
     m_lastSavedButton = m_dontMergeButton;
