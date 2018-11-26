@@ -771,12 +771,25 @@ void TaskMergeReview::updateColors()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     m_bodyIdToColorIndex.clear();
+
+    // Assign colors to the "major" bodies first, to increase the chances
+    // they will all have distinct colors.
+
     std::size_t index = 1;
-    for (uint64_t id : m_bodyIds) {
+    for (uint64_t id : m_majorBodyIds) {
       m_bodyIdToColorIndex[id] = m_mergeButton->isChecked() ? 1 : index;
       index++;
       if (index == INDEX_COLORS.size()) {
         index = 1;
+      }
+    }
+    for (uint64_t id : m_bodyIds) {
+      if (m_majorBodyIds.find(id) == m_majorBodyIds.end()) {
+        m_bodyIdToColorIndex[id] = m_mergeButton->isChecked() ? 1 : index;
+        index++;
+        if (index == INDEX_COLORS.size()) {
+          index = 1;
+        }
       }
     }
 
