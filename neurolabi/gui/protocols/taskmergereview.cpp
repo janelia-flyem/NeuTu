@@ -55,8 +55,9 @@ namespace {
   // For the result JSON.
   static const QString KEY_SKIPPED = "skipped";
   static const QString VALUE_SKIPPED_MAPPING = "mapping to bodies failed";
-  static const QString VALUE_SKIPPED_SIZES = "zero size for supervoxel";
+  static const QString VALUE_SKIPPED_MAJOR = "too few major bodies";
   static const QString VALUE_SKIPPED_MESHES = "meshes unavailable";
+  static const QString VALUE_SKIPPED_SIZES = "zero size for supervoxel";
   static const QString KEY_RESULT = "result";
   static const QString VALUE_RESULT_MERGE = "merge";
   static const QString VALUE_RESULT_MERGE_MAJOR = "mergeMajor";
@@ -277,12 +278,19 @@ bool TaskMergeReview::skip()
   QTime timer;
   timer.start();
 
-  m_skip = Skip::NOT_SKIPPED;
-
   SetBodiesResult setBodiesResult = setBodiesFromSuperVoxels();
-  if (setBodiesResult != SetBodiesResult::SUCCEEDED) {
-    m_skip = (setBodiesResult == SetBodiesResult::FAILED_MAPPING) ?
-          Skip::SKIPPED_MAPPING : Skip::SKIPPED_SIZES;
+  switch (setBodiesResult) {
+    case SetBodiesResult::FAILED_MAPPING:
+      m_skip = Skip::SKIPPED_MAPPING;
+      break;
+    case SetBodiesResult::FAILED_MAJOR:
+      m_skip = Skip::SKIPPED_MAJOR;
+      break;
+    case SetBodiesResult::FAILED_SIZES:
+      m_skip = Skip::SKIPPED_SIZES;
+      break;
+    default:
+      m_skip = Skip::NOT_SKIPPED;
   }
 
   if (m_skip == Skip::NOT_SKIPPED) {
@@ -616,6 +624,10 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
     LWARN() << "TaskMergeReview::setBodiesFromSuperVoxels() failed for" << targetString()
             << ": supervoxel ID mapping failed (DVID status" << statusCode << ")";
     return SetBodiesResult::FAILED_MAPPING;
+  }
+
+  if (m_majorBodyIds.size() < 2) {
+    return SetBodiesResult::FAILED_MAJOR;
   }
 
   // As of November, 2018, there are cases of old supervoxels that may no longer exist
@@ -1039,14 +1051,17 @@ void TaskMergeReview::writeOutput()
   json[KEY_TASK_ID] = m_taskId;
 
   switch (m_skip) {
+    case Skip::SKIPPED_MAJOR:
+      json[KEY_SKIPPED] = QJsonValue(VALUE_SKIPPED_MAJOR);
+      break;
     case Skip::SKIPPED_MAPPING:
       json[KEY_SKIPPED] = QJsonValue(VALUE_SKIPPED_MAPPING);
       break;
-    case Skip::SKIPPED_SIZES:
-      json[KEY_SKIPPED] = QJsonValue(VALUE_SKIPPED_SIZES);
-      break;
     case Skip::SKIPPED_MESHES:
       json[KEY_SKIPPED] = QJsonValue(VALUE_SKIPPED_MESHES);
+      break;
+    case Skip::SKIPPED_SIZES:
+      json[KEY_SKIPPED] = QJsonValue(VALUE_SKIPPED_SIZES);
       break;
     default:
       if (m_mergeButton->isChecked()) {
