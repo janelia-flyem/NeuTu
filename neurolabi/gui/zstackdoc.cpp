@@ -122,8 +122,6 @@
 #include "concurrent/zworkthread.h"
 #include "ztask.h"
 
-using namespace std;
-
 /* Implementation details
  *
  * ZStackDoc is designed to be the model class in a MVC framework. It hosts
@@ -148,7 +146,8 @@ using namespace std;
  *   m_stackSource: Source of the stack.
  *   m_additionalSource: Additional source, mainly used as an upper layer of the
  *     stack data.
- *   m_reader: Stack reading thread for supporting non-blocking reading.
+ *   m_reader: Stack reading thread for supporting non-blocking reading. (obsolete)
+ *   m_workThread: worker thread.
  *
  *
  */
@@ -518,7 +517,7 @@ void ZStackDoc::autoSaveSwc()
             NeutubeConfig::AUTO_SAVE);
       QDir dir(autoSaveDir.c_str());
       if (dir.exists()) {
-        ostringstream stream;
+        std::ostringstream stream;
         stream << this;
         std::string autoSavePath =
             autoSaveDir + ZString::FileSeparator;
@@ -569,9 +568,9 @@ void ZStackDoc::customNotifyObjectModified(ZStackObject::EType /*type*/)
 
 }
 
-string ZStackDoc::getSwcSource() const
+std::string ZStackDoc::getSwcSource() const
 {
-  string swcSource;
+  std::string swcSource;
   ZOUT(LTRACE(), 5) << "Get SWC source";
   const TStackObjectList &swcSet =
       getObjectList(ZStackObject::TYPE_SWC);
@@ -601,7 +600,7 @@ ZSwcTree* ZStackDoc::getMergedSwc()
   return tree;
 }
 
-bool ZStackDoc::saveSwc(const string &filePath)
+bool ZStackDoc::saveSwc(const std::string &filePath)
 {
   QList<ZSwcTree*> swcList = getSwcList();
   if (!swcList.empty()) {
@@ -673,7 +672,7 @@ bool ZStackDoc::hasObject(ZStackObject::EType type) const
   return !m_objectGroup.getObjectList(type).isEmpty();
 }
 
-bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
+bool ZStackDoc::hasObject(ZStackObject::EType type, const std::string &source) const
 {
     return m_objectGroup.findFirstSameSource(type, source) != NULL;
 }
@@ -1867,7 +1866,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
   }
 }
 
-void ZStackDoc::readSparseStack(const string &filePath)
+void ZStackDoc::readSparseStack(const std::string &filePath)
 {
   deprecate(EComponent::STACK);
   ZSparseStack *spStack = new ZSparseStack;
@@ -3836,7 +3835,7 @@ void ZStackDoc::removeObjectP(
   processObjectModified();
 }
 
-void ZStackDoc::removeObject(const string &source, bool deleteObject)
+void ZStackDoc::removeObject(const std::string &source, bool deleteObject)
 {
   TStackObjectList objList = m_objectGroup.findSameSource(source);
 
@@ -3967,7 +3966,7 @@ TStackObjectList ZStackDoc::takeObject(ZStackObject::EType type)
 }
 
 TStackObjectList ZStackDoc::takeObject(
-    ZStackObject::EType type, const string &source)
+    ZStackObject::EType type, const std::string &source)
 {
   return m_objectGroup.takeSameSource(type, source);
 }
@@ -5189,7 +5188,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 
 //  m_changingSaveState = false;
 
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
@@ -5219,12 +5218,15 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
     }
 
 //    blockSignals(true);
-    loadFile(*iter);
+    loadFile(*iter, OBJECT_MODIFIED_CACHE);
 //    blockSignals(false);
   }
 
-  endObjectModifiedMode();
-  processObjectModified();
+//  endObjectModifiedMode();
+
+  if (parent() != NULL) {
+    processObjectModified();
+  }
 
   if (networkLoaded) {
     emit swcNetworkModified();
@@ -5259,18 +5261,18 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 #endif
 }
 
-bool ZStackDoc::loadFile(const std::string filePath)
+bool ZStackDoc::loadFile(const std::string filePath, EObjectModifiedMode mode)
 {
-  return loadFile(QString(filePath.c_str()));
+  return loadFile(QString(filePath.c_str()), mode);
 }
 
-bool ZStackDoc::loadFile(const char *filePath)
+bool ZStackDoc::loadFile(const char *filePath, EObjectModifiedMode mode)
 {
-  return loadFile(QString(filePath));
+  return loadFile(QString(filePath), mode);
 }
 
 
-bool ZStackDoc::loadFile(const QString &filePath)
+bool ZStackDoc::loadFile(const QString &filePath, EObjectModifiedMode mode)
 {
   QFile file(filePath);
 
@@ -5279,6 +5281,8 @@ bool ZStackDoc::loadFile(const QString &filePath)
   }
 
   ZOUT(LTRACE(), 5) << "Load file: " << filePath;
+
+  SetObjectModifiedMode setMode(this, mode);
 
   bool succ = true;
 
@@ -5484,7 +5488,7 @@ ZStackObject* ZStackDoc::hitTest(
 
   ZOUT(LTRACE(), 5) << "Hit test";
   QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
-  sort(sortedObjList.begin(), sortedObjList.end(),
+  std::sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
@@ -5504,7 +5508,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 
   ZOUT(LTRACE(), 5) << "Hit test";
   QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
-  sort(sortedObjList.begin(), sortedObjList.end(),
+  std::sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
@@ -5528,7 +5532,7 @@ ZStackObject* ZStackDoc::hitTest(
   ZOUT(LTRACE(), 5) << "Hit test";
   QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
 
-  sort(sortedObjList.begin(), sortedObjList.end(),
+  std::sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
@@ -6257,13 +6261,13 @@ int ZStackDoc::findLoop(int minLoopSize)
     graph->setProgressReporter(m_progressReporter);
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
     for (size_t i = 0; i < cycleArray.size(); ++i) {
-      vector<int> path = cycleArray[i];
+      std::vector<int> path = cycleArray[i];
 #ifdef _DEBUG_
       cout << "Cycle size: " << path.size() << endl;
 #endif
       if ((int) path.size() >= minLoopSize) {
         ZObject3d *obj = new ZObject3d;
-        for (vector<int>::const_iterator iter = path.begin(); iter != path.end();
+        for (std::vector<int>::const_iterator iter = path.begin(); iter != path.end();
              ++iter) {
           int x, y, z;
           C_Stack::indexToCoord(compressor.uncompress(*iter), C_Stack::width(data),
@@ -6725,7 +6729,7 @@ bool ZStackDoc::executeInterpolateSwcPositionCommand()
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
-    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       if (SwcTreeNode::isContinuation(*iter)) {
         Swc_Tree_Node *upEnd = SwcTreeNode::parent(*iter);
@@ -6798,7 +6802,7 @@ bool ZStackDoc::executeInterpolateSwcCommand()
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
-    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       if (SwcTreeNode::isContinuation(*iter)) {
         Swc_Tree_Node *upEnd = SwcTreeNode::parent(*iter);
@@ -6872,7 +6876,7 @@ bool ZStackDoc::executeInterpolateSwcRadiusCommand()
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
-    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       if (SwcTreeNode::isContinuation(*iter)) {
         Swc_Tree_Node *upEnd = SwcTreeNode::parent(*iter);
@@ -7938,7 +7942,7 @@ bool ZStackDoc::executeBreakSwcConnectionCommand()
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
-    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       if (nodeSet.count(SwcTreeNode::parent(*iter)) > 0) {
         new ZStackDocCommand::SwcEdit::SetParent(
@@ -8229,7 +8233,7 @@ void ZStackDoc::addObjectUnsync(ZStackObject *obj, bool uniqueSource)
 }
 
 ZStackObject* ZStackDoc::takeObjectFromBuffer(
-    ZStackObject::EType type, const string &source)
+    ZStackObject::EType type, const std::string &source)
 {
   TStackObjectList objList = m_bufferObjectGroup.takeSameSource(type, source);
 
@@ -9166,7 +9170,7 @@ bool ZStackDoc::executeInsertSwcNode()
     ZUndoCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
-    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       Swc_Tree_Node *parent = SwcTreeNode::parent(*iter);
       if (nodeSet.count(parent) > 0) {

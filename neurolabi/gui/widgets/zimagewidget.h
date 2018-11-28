@@ -249,6 +249,7 @@ signals:
   void mouseDoubleClicked(QMouseEvent*);
   void mouseWheelRolled(QWheelEvent *event);
   void messageGenerated(const ZWidgetMessage&);
+  void widgetReady();
 
 protected:
   int getMaxZoomRatio() const;

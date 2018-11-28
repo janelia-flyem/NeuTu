@@ -780,6 +780,7 @@ void ZImageWidget::showEvent(QShowEvent *event)
   if (!m_isReady && isVisible()) {
     m_viewProj.maximizeViewPort();
     m_isReady = true;
+    emit widgetReady();
   }
 }
 

@@ -383,9 +383,9 @@ public:
    * \param filePath Path of the data file.
    * \return true iff the file is loaded successfully.
    */
-  bool loadFile(const char *filePath);
-  bool loadFile(const std::string filePath);
-  bool loadFile(const QString &filePath);
+  bool loadFile(const char *filePath, EObjectModifiedMode mode);
+  bool loadFile(const std::string filePath, EObjectModifiedMode mode);
+  bool loadFile(const QString &filePath, EObjectModifiedMode mode);
 
   virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
@@ -920,6 +920,18 @@ public:
   EObjectModifiedMode getObjectModifiedMode();
   void beginObjectModifiedMode(EObjectModifiedMode mode);
   void endObjectModifiedMode();
+
+  struct SetObjectModifiedMode {
+    SetObjectModifiedMode(ZStackDoc *doc, EObjectModifiedMode mode) : m_doc(doc) {
+      doc->beginObjectModifiedMode(mode);
+    }
+    ~SetObjectModifiedMode() {
+      m_doc->endObjectModifiedMode();
+    }
+
+  private:
+    ZStackDoc *m_doc = nullptr;
+  };
 
 //  void notifyObjectModified(bool sync = true);
   void notifyObjectModified(ZStackObject::EType type);

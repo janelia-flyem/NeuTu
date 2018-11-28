@@ -1546,7 +1546,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
       emit progressAdvanced(0.2);
 
       ZStackDocPtr doc = ZStackDocFactory::Make(tag);
-      doc->loadFile(fileName);
+      doc->loadFile(fileName, ZStackDoc::OBJECT_MODIFIED_CACHE);
 
       emit progressAdvanced(0.3);
 
@@ -1575,7 +1575,7 @@ void MainWindow::openFileFunc(const QString &fileName)
     emit progressAdvanced(0.2);
 
     ZStackDocPtr doc = ZStackDocFactory::Make(tag);
-    doc->loadFile(fileName);
+    doc->loadFile(fileName, ZStackDoc::OBJECT_MODIFIED_CACHE);
 
     emit progressAdvanced(0.3);
 
@@ -4204,7 +4204,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       ZSharedPointer<ZStackDoc> academy =
           ZSharedPointer<ZStackDoc>(new ZStackDoc);
 
-      academy->loadFile((*inputIter).c_str());
+      academy->loadFile((*inputIter).c_str(), ZStackDoc::OBJECT_MODIFIED_CACHE);
 
       double zScale = 1.125;
       Z3DWindow *stage = new Z3DWindow(academy, Z3DView::INIT_NORMAL);

@@ -84,29 +84,6 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   */
 }
 
-#if 0
-ZStackFrame::ZStackFrame(QWidget *parent, ZSharedPointer<ZStackDoc> doc) :
-  QMdiSubWindow(parent), m_parentFrame(NULL),
-  m_tile(NULL), m_traceProject(NULL), m_isClosing(false),
-  m_3dWindow(NULL)
-{
-  setAttribute(Qt::WA_DeleteOnClose, true);
-  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-  setAcceptDrops(true);
-  m_settingDlg = new SettingDialog(this);
-  m_manageObjsDlg = NULL;
-
-  m_presenter = NULL;
-  m_view = NULL;
-  constructFrame(doc);
-
-#if defined(_QT5_) && defined(Q_OS_WIN)
-  showMaximized();
-  showNormal();
-#endif
-}
-#endif
-
 ZStackFrame::~ZStackFrame()
 {
 #ifdef _DEBUG_
@@ -210,6 +187,8 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   if (doc.get() != NULL) {
     customizeWidget();
   }
+
+  m_doc->processObjectModified();
 
 #ifdef _DEBUG_2
   ZDvidGraySlice *slice = new ZDvidGraySlice;
@@ -1425,12 +1404,12 @@ void ZStackFrame::load(const QStringList &fileList)
 
 void ZStackFrame::load(const QString &filePath)
 {
-  m_doc->loadFile(filePath);
+  m_doc->loadFile(filePath, ZStackDoc::OBJECT_MODIFIED_SIGNAL);
 }
 
 void ZStackFrame::load(const std::string &filePath)
 {
-  m_doc->loadFile(filePath.c_str());
+  m_doc->loadFile(filePath.c_str(), ZStackDoc::OBJECT_MODIFIED_SIGNAL);
 }
 
 QAction* ZStackFrame::getBodySplitAction()

@@ -924,7 +924,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidblockstream.h \
     imgproc/zstackmultiscalewatershed.h \
     dialogs/zflyemtodoannotationdialog.h \
-    main.h
+    main.h \
+    widgets/utilities.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1615,7 +1616,8 @@ SOURCES += main.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
-    dialogs/zflyemtodoannotationdialog.cpp
+    dialogs/zflyemtodoannotationdialog.cpp \
+    widgets/utilities.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

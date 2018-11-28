@@ -17,6 +17,7 @@
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
 #include "flyem/zflyemproofmvc.h"
+#include "widgets/utilities.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -414,10 +415,26 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
   }
 
   if (target.usingMulitresBodylabel()) {
-    ui->smallRadioButton->hide();
-    ui->bigRadioButton->hide();
-    ui->fullRadioButton->setChecked(true);
-    ui->fullRadioButton->setDisabled(true);
+//    ui->smallRadioButton->hide();
+//    ui->bigRadioButton->hide();
+//    ui->fullRadioButton->hide();
+//    ui->segSizeLabel->hide();
+
+    zwidget::HideLayout(ui->segmentationHorizontalLayout);
+#if 0
+    QLayoutItem * item;
+    QLayout * sublayout;
+    QWidget * widget;
+    while ((item = ui->segmentationHorizontalLayout->takeAt(0))) {
+        if ((sublayout = item->layout()) != 0) {/* do the same for sublayout*/}
+        else if ((widget = item->widget()) != 0) {widget->hide(); /*delete widget;*/}
+        else {delete item;}
+    }
+#endif
+
+
+//    ui->fullRadioButton->setChecked(true);
+//    ui->fullRadioButton->setDisabled(true);
     /*
     QLayout *layout = ui->segmentationHorizontalLayout;
     for (int i = 0; i != layout->count(); ++i) {

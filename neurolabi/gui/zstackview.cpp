@@ -100,6 +100,7 @@ void ZStackView::init()
                                QSizePolicy::Expanding);
   m_imageWidget->setFocusPolicy(Qt::ClickFocus);
   m_imageWidget->setPaintBundle(&m_paintBundle);
+  connect(m_imageWidget, SIGNAL(widgetReady()), this, SLOT(paintObject()));
 
   setSliceAxis(neutube::EAxis::Z);
 
