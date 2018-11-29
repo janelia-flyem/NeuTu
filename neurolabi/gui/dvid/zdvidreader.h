@@ -702,6 +702,7 @@ protected:
 
   mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
   ZSharedPointer<libdvid::DVIDConnection> m_connection;
