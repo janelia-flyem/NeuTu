@@ -28424,6 +28424,7 @@ void ZTest::test(MainWindow *host)
       std::cout << pt.toString() << std::endl;
       ZFlyEmMisc::UpdateBodyStatus(pt, "anchor", &writer);
     }
+  }
 //    std::cout << writer.getDvidReader().readBodyIdAt(ptArray[0]) << std::endl;
 #endif
 

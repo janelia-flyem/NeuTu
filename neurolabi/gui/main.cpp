@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
       ZTest::RunUnitTest(argc, argv);
     }
 #else
-    if (unitTest) {
+    if (mainConfig.unitTest) {
       std::cout << "No unit test in the release version." << std::endl;
     }
 #endif
