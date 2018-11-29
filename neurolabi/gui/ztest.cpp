@@ -28729,5 +28729,66 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
+#if 0
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZNetBufferReader reader;
+    reader.hasHead("http://emdata1.int.janelia.org:8900");
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+          "emdata1.int.janelia.org:8900");
+    try {
+      int statusCode;
+      ZDvid::MakeRequest(
+            *conn, "", "HEAD", libdvid::BinaryDataPtr(),
+            libdvid::DEFAULT, statusCode);
+      //    std::cout << conn->make_head_request("/api/help") << std::endl;
+    } catch (exception &e) {
+      std::cout << e.what() << std::endl;
+    }
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    reader->hasKey("rois", "bL");
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 0
+  ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();
+
+  QElapsedTimer timer;
+  timer.start();
+
+  tic();
+
+  for (int i = 0; i < 1000; ++i) {
+//    ZSharedPointer<libdvid::DVIDNodeService> newService =
+//        ZDvid::MakeDvidNodeService(service.get());
+    ZSharedPointer<libdvid::DVIDNodeService> service = ZDvid::MakeDvidNodeService(target);
+    service->get_keys("neutu_config");
+  }
+  ptoc();
+#endif
+
+
   std::cout << "Done." << std::endl;
 }

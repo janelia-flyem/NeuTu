@@ -96,7 +96,7 @@ bool ZNetBufferReader::hasHead(const QString &url)
 {
   startReading();
 
-  qDebug() << url;
+//  qDebug() << url;
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
@@ -152,7 +152,7 @@ void ZNetBufferReader::endReading(neutube::EReadStatus status)
   if (m_networkReply != NULL) {
     QVariant statusCode = m_networkReply->attribute(
           QNetworkRequest::HttpStatusCodeAttribute);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     qDebug() << "Status code: " << statusCode;
 #endif
     m_statusCode = statusCode.toInt();
