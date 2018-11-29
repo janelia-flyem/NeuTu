@@ -2424,7 +2424,9 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
 
 bool ZDvidReader::hasKey(const QString &dataName, const QString &key) const
 {
-  return !readKeyValue(dataName, key).isEmpty();
+  return m_netBufferReader.isReadable(
+        ZDvidUrl(getDvidTarget()).getKeyUrl(dataName.toStdString(), key.toStdString()).c_str());
+//  return !readKeyValue(dataName, key).isEmpty();
 }
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key) const
@@ -2813,8 +2815,8 @@ bool ZDvidReader::hasData(const std::string &dataName) const
   }
 
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZNetBufferReader bufferReader;
-  return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
+//  ZNetBufferReader bufferReader;
+  return m_netBufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
 }
 
 std::string ZDvidReader::getType(const std::string &dataName) const

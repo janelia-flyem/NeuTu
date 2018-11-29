@@ -308,6 +308,7 @@
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
+#include "service/neuprintreader.h"
 
 #include "test/ztestall.h"
 
@@ -28759,18 +28760,68 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->getDvidTarget().print();
 
   QElapsedTimer timer;
   timer.start();
   for (int i = 0; i < 1000; ++i) {
-    reader->hasKey("rois", "bL");
+    std::cout << "Has key: " << reader->hasKey("rois", "bLo") << std::endl;
   }
   std::cout << timer.elapsed() << "ms" << std::endl;
 
 #endif
+
+#if 0
+  {
+  ZNetBufferReader reader;
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  reader.setHeader("Authorization", QString("Bearer ") + token.c_str());
+  reader.read("https://emdata1.int.janelia.org:11000/api/dbmeta/datasets", true);
+  std::cout << reader.getBuffer().size() << std::endl;
+  ZJsonObject dataObj;
+  dataObj.decodeString(reader.getBuffer().toStdString().c_str());
+  dataObj.print();
+  }
+#endif
+
+#if 1
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+//  reader.readDatasets();
+
+  QList<uint64_t> bodyList = reader.queryNeuron("AL", "MB (left)");
+  for (uint64_t bodyId : bodyList) {
+    std::cout << bodyId << std::endl;
+  }
+#endif
+
+#if 0
+  ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+        "https://emdata1.int.janelia.org:11000");
+
+  try {
+    int statusCode;
+    libdvid::BinaryDataPtr data = ZDvid::MakeRequest(
+          *conn, "/", "HEAD", libdvid::BinaryDataPtr(),
+          libdvid::DEFAULT, statusCode);
+    std::cout << data->length() << std::endl;
+    //    std::cout << conn->make_head_request("/api/help") << std::endl;
+  } catch (exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#endif
+
 
 #if 0
   ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();

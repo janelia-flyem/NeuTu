@@ -82,6 +82,10 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Roughly traced", annotation1.getStatus());
 
+  annotation2.setStatus("Anchor");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Roughly traced", annotation1.getStatus());
+
   annotation2.setStatus("Traced in ROI");
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Traced in ROI", annotation1.getStatus());

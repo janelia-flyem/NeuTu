@@ -47,7 +47,11 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
   startReading();
 
   resetNetworkReply();
-  m_networkReply = getNetworkAccessManager()->get(QNetworkRequest(url));
+  QNetworkRequest req = QNetworkRequest(url);
+  foreach (const auto &p, m_header) {
+    req.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
+  }
+  m_networkReply = getNetworkAccessManager()->get(req);
   connectNetworkReply();
   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBuffer()));
 
@@ -111,10 +115,17 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 {
   startReading();
   QNetworkRequest request(url);
+  foreach (const auto &p, m_header) {
+    request.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
+  }
+
   resetNetworkReply();
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
   m_networkReply = m_networkManager->post(request, data);
   connectNetworkReply();
+  connect(m_networkReply, &QNetworkReply::readyRead,
+          this, &ZNetBufferReader::readBuffer);
+
   waitForReading();
 }
 
@@ -123,9 +134,9 @@ bool ZNetBufferReader::isReadable(const QString &url)
   QTimer::singleShot(15000, this, SLOT(handleTimeout()));
 
   startReading();
-
-  qDebug() << url;
-
+#ifdef _DEBUG_
+  qDebug() << "ZNetBufferReader::isReadable: " << url;
+#endif
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->get(QNetworkRequest(url));
@@ -181,7 +192,9 @@ void ZNetBufferReader::waitForReading()
 void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 {
   if (m_networkReply != NULL) {
+#ifdef _DEBUG_
     qDebug() << m_networkReply->errorString();
+#endif
   }
   endReading(neutube::EReadStatus::FAILED);
 }
@@ -224,3 +237,7 @@ void ZNetBufferReader::clearBuffer()
   m_buffer.clear();
 }
 
+void ZNetBufferReader::setHeader(const QString &key, const QString &value)
+{
+  m_header[key] =value;
+}

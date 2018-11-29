@@ -303,6 +303,7 @@ include(sandbox/sandbox.pri)
 include(command/command.pri)
 include(trace/trace.pri)
 include(neutuse/neutuse.pri)
+include(service/service.pri)
 
 # Input
 RESOURCES = gui.qrc
