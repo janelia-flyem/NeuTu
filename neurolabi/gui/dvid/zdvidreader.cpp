@@ -59,17 +59,10 @@
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
 {
-  init();
 }
 
 ZDvidReader::~ZDvidReader()
 {
-}
-
-void ZDvidReader::init()
-{
-  m_readingTime = 0;
-  m_statusCode = 0;
 }
 
 int ZDvidReader::getStatusCode() const

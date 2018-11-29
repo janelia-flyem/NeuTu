@@ -21,6 +21,7 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+#include "znetbufferreader.h"
 
 
 #if defined(_ENABLE_LOWTIS_)
@@ -696,9 +697,10 @@ protected:
 
   std::string m_errorMsg;
 
-  mutable int m_statusCode;
-  mutable int64_t m_readingTime;
+  mutable int m_statusCode = 0;
+  mutable int64_t m_readingTime = 0;
 
+  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
