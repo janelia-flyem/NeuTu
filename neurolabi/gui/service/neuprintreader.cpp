@@ -22,18 +22,23 @@ void NeuPrintReader::readDatasets()
   dataObj.print();
 }
 
-QList<uint64_t> NeuPrintReader::queryNeuron(const QString &inputRoi, const QString &outputRoi)
+QList<uint64_t> NeuPrintReader::queryNeuron(
+    const QList<QString> &inputRoiList, const QList<QString> &outputRoiList)
 {
   QString url = m_server + "/api/npexplorer/findneurons";
 
   ZJsonObject dataObj;
   dataObj.setEntry("dataset", "hemibrain");
   ZJsonArray inputRoiJson;
-  inputRoiJson.append(inputRoi.toStdString());
+  for (const QString inputRoi : inputRoiList) {
+    inputRoiJson.append(inputRoi.toStdString());
+  }
   dataObj.setEntry("input_ROIs", inputRoiJson);
 
   ZJsonArray outputRoiJson;
-  outputRoiJson.append(outputRoi.toStdString());
+  for (const QString outputRoi : outputRoiList) {
+    outputRoiJson.append(outputRoi.toStdString());
+  }
   dataObj.setEntry("output_ROIs", outputRoiJson);
 
   dataObj.setEntry("pre_threshold", 2);
@@ -49,8 +54,11 @@ QList<uint64_t> NeuPrintReader::queryNeuron(const QString &inputRoi, const QStri
   if (resultObj.hasKey("data")) {
     ZJsonArray data(resultObj.value("data"));
     for (size_t i = 0; i < data.size(); ++i) {
-        uint64_t bodyId = ZJsonParser::integerValue(data.at(i), 0);
-        bodyList.append(bodyId);
+#ifdef _DEBUG_
+      std::cout << "Body ID: " << ZJsonParser::integerValue(data.at(i), 0) << std::endl;
+#endif
+      uint64_t bodyId = ZJsonParser::integerValue(data.at(i), 0);
+      bodyList.append(bodyId);
     }
   }
 

@@ -55,7 +55,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (obj.hasKey("bound_offset")) {
-    std::vector<int> array =
+    std::vector<int64_t> array =
         ZJsonParser::integerArray(obj["bound_offset"]);
     if (array.size() == 3) {
       m_boundBox.setFirstCorner(array[0], array[1], array[2]);
@@ -63,7 +63,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (obj.hasKey("bound_size")) {
-    std::vector<int> array =
+    std::vector<int64_t> array =
         ZJsonParser::integerArray(obj["bound_size"]);
     if (array.size() == 3) {
       m_boundBox.setSize(array[0], array[1], array[2]);

@@ -56,6 +56,7 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void queryingBody();
   void exportingSelectedBodyLevel();
   void exportingGrayscale();
   void exportingSelectedBodyStack();
@@ -93,6 +94,7 @@ private slots:
 //  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void queryBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();

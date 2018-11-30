@@ -89,7 +89,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
   }
 
   if (ZJsonParser::stringValue(jsonObj["Kind"]) == std::string("Note")) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["Pos"]);
 
     if (jsonObj.hasKey("Tags")) {
@@ -289,7 +289,7 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 
 #if 1
   if (jsonObj["location"] != NULL) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["location"]);
 
     if (coordinates.size() == 3) {

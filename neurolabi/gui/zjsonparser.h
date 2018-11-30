@@ -45,9 +45,9 @@ public:
 
   static const char* stringValue(const json_t *value, size_t index);
   static double numberValue(const json_t *value, size_t index);
-  static int integerValue(const json_t *value, size_t index);
+  static int64_t integerValue(const json_t *value, size_t index);
 
-  static std::vector<int> integerArray(const json_t *value);
+  static std::vector<int64_t> integerArray(const json_t *value);
 
   static void print(const char *key, json_t *value, int indent);
 
