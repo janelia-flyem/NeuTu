@@ -28841,6 +28841,17 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  ZDvidUrl url(reader->getDvidTarget());
+
+  ZNetBufferReader bufferReader;
+  std::cout << bufferReader.isReadable(
+                 url.getDataUrl("segmentation_skeletons").c_str()) << std::endl;
+
+#endif
 
   std::cout << "Done." << std::endl;
 }
