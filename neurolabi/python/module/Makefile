@@ -2,6 +2,18 @@ SOURCE = neutube.i $(shell ./parsedep)
 #stack_io.i stack_attribute.i zobject3dscan.i zpointarray.i
 UNAME := $(shell uname)
 SHARE_FLAG = shared
+
+ifeq ($(CONDA_ENV),)
+  $(info 'no conda env')
+else
+  $(info CONDA_ENV)
+  PREFIX=$(CONDA_ENV)
+endif
+
+ifeq ($(PREFIX),)
+  $(error 'No prefix specified. Exit')
+endif
+
 ifeq ($(UNAME), Darwin)
   SHARE_FLAG = bundle
   STDLIB_FLAG = -stdlib=libc++

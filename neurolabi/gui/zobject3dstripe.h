@@ -132,6 +132,7 @@ public:
   void fillIntArray(int *array) const;
 
   std::vector<int>& getSegmentArray() { return m_segmentArray; }
+  const std::vector<int>& getSegmentArray() const { return m_segmentArray; }
 
   ZObject3dStripe getComplement(int x0, int x1);
 
@@ -144,6 +145,12 @@ public:
 
   friend ZObject3dStripe operator - (
       const ZObject3dStripe &s1, const ZObject3dStripe &s2);
+
+  bool hasOverlap(const ZObject3dStripe &stripe) const;
+  bool isAdjacentTo(
+      const ZObject3dStripe &stripe,
+      neutube::EStackNeighborhood nbr) const;
+  bool isAdjacentOnPlaneTo(const ZObject3dStripe &stripe) const;
 
 private:
   template<typename T>

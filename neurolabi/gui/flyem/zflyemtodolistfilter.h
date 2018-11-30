@@ -33,6 +33,7 @@ public:
 
 signals:
   void objectSelected(ZStackObject*, bool append);
+  void annotatingObject(ZStackObject*);
 
 protected:
   void prepareColor();

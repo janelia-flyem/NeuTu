@@ -110,7 +110,7 @@ void ZSynapseAnnotationMetadata::loadJsonObject(json_t *object)
     } else if (strcmp(key, "version") == 0 ||
                strcmp(key, "file version") == 0) {
       m_version = json_integer_value(value);
-    } else if (strcmp(key, "source_offset")) {
+    } else if (strcmp(key, "source_offset") == 0) {
       if (json_is_array(value))  {
         if (json_array_size(value) == 3) {
           for (int i = 0; i < 3; ++i) {
@@ -118,7 +118,7 @@ void ZSynapseAnnotationMetadata::loadJsonObject(json_t *object)
           }
         }
       }
-    } else if (strcmp(key, "source_dimension")) {
+    } else if (strcmp(key, "source_dimension") == 0) {
       if (json_is_array(value))  {
         if (json_array_size(value) == 3) {
           for (int i = 0; i < 3; ++i) {

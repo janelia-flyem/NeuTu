@@ -31,6 +31,7 @@ class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
+class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 
 
@@ -314,6 +315,9 @@ public: //Todo list functions
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
+  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg,
+                                neutube::EAxis axis);
+
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
   void notifyTodoItemModified(const ZIntPoint &pt, bool emitingEdit = false);
@@ -531,6 +535,7 @@ public slots:
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
   void downloadTodo(int x, int y, int z);
+  void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();

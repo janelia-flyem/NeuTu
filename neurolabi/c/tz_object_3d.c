@@ -678,7 +678,7 @@ void Object_3d_Bounding_Cuboid(const Object_3d *obj, coordinate_3d_t *axis_vec,
 
 static int voxel_compar(const void *p1, const void *p2)
 {
-  svoxel_t *v1 = (svoxel_t*) v1;
+  svoxel_t *v1 = (svoxel_t*) p1;
   svoxel_t *v2 = (svoxel_t*) p2;
 
   if (v1[2] < v2[2]) {
