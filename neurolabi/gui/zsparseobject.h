@@ -2,7 +2,7 @@
 #define ZSPARSEOBJECT_H
 
 #include "zdocumentable.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zobject3dscan.h"
 #include "zlabelcolortable.h"
 #include "zopenvdbobject.h"

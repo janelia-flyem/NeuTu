@@ -5,8 +5,7 @@
 
 using namespace std;
 
-ZSwcDistTrunkAnalyzer::ZSwcDistTrunkAnalyzer() : m_geodesicWeight(0.2),
-  m_euclideanWeight(0.8)
+ZSwcDistTrunkAnalyzer::ZSwcDistTrunkAnalyzer() : ZSwcTrunkAnalyzer(0.2, 0.8)
 {
 }
 

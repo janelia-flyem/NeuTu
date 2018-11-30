@@ -129,10 +129,10 @@ void * loadpipe(Pipe *p)
   }
   #endif
 
+  free(tmpinterface);
+
   /*call function*/
   return funcall(fun,param);
-
-  free(tmpinterface);
 }
 
 void writepipe(Pipe *p)

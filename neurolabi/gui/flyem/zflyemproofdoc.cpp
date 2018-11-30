@@ -58,6 +58,7 @@
 #include "zarray.h"
 #include "zflyembodymanager.h"
 #include "zmesh.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1350,6 +1351,29 @@ void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
   }
 
   processObjectModified();
+}
+
+void ZFlyEmProofDoc::annotateSelectedTodoItem(
+    ZFlyEmTodoAnnotationDialog *dlg, neutube::EAxis axis)
+{
+  ZFlyEmToDoList *todoList = getTodoList(axis);
+  if (todoList) {
+    const auto &selectedSet = todoList->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      ZIntPoint pos = *(selectedSet.begin());
+      ZFlyEmToDoItem item = todoList->getItem(pos, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        dlg->init(item);
+        if (dlg->exec()) {
+          dlg->annotate(&item);
+          todoList->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          bufferObjectModified(todoList);
+          notifyTodoEdited(pos);
+        }
+        processObjectModified();
+      }
+    } 
+  }
 }
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
@@ -2657,6 +2681,11 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
   processObjectModified();
 }
 
+void ZFlyEmProofDoc::downloadTodo(const ZIntPoint &pt)
+{
+  downloadTodo(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
   ZOUT(LTRACE(), 5) << "Download synapses";
@@ -3045,11 +3074,6 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
-//    ZUndoCommand *command = new ZUndoCommand;
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *removeCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL, command);
-
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -3059,14 +3083,10 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
-//          removeCommand->addRemoving(bookmark);
         }
       }
     }
 #endif
-
-//    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *addCommand =
-//        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, NULL, command);
 
     ZJsonObject obj;
 
@@ -3507,7 +3527,7 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;

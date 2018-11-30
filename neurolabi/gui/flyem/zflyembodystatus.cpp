@@ -1,5 +1,7 @@
 #include "zflyembodystatus.h"
+#if _QT_GUI_USED_
 #include "neutube.h"
+#endif
 #include "zstring.h"
 
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
@@ -15,9 +17,16 @@ bool ZFlyEmBodyStatus::isAccessible() const
 
 bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
-  if (ZString(status).lower() == "prelim roughly traced") {
+#if _QT_GUI_USED_
+  if (ZString(status).lower() == "roughly traced") {
     return neutube::IsAdminUser();
   }
+#endif
 
   return true;
+}
+
+std::string ZFlyEmBodyStatus::GetExpertStatus()
+{
+  return "Roughly traced";
 }

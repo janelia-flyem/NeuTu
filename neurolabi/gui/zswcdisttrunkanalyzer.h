@@ -18,10 +18,6 @@ public:
     m_euclideanWeight = euclideanWeight;
     m_geodesicWeight = geodesicWeight;
   }
-
-private:
-  double m_geodesicWeight;
-  double m_euclideanWeight;
 };
 
 #endif // ZSWCDISTTRUNKANALYZER_H

@@ -529,6 +529,7 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
 
     neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
           "skeletonize", getDvidTarget(), targetId, true);
+    task.setPriority(1);
     GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
   } else {
     if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {

@@ -63,6 +63,9 @@ Stack *Stack_Mask(Stack *stack1, const Stack *stack2, Stack *out);
 Stack *Stack_Add(Stack *stack1, Stack *stack2, Stack *out);
 Stack *Stack_Sub(Stack *stack1, Stack *stack2, Stack *out);
 
+/*@brief Voxel-wise multipliation
+ *
+ */
 Stack *Stack_Mul(Stack *stack1, Stack *stack2, Stack *out);
 
 void Stack_Addc_M(Stack *stack,int value);

@@ -153,6 +153,9 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
               this, SLOT(unverifySelectedSynapse()));
       break;
+    case ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST:
+      connect(action, SIGNAL(triggered()), this, SLOT(showSupervoxelList()));
+      break;
     default:
       connected = false;
       break;
@@ -811,6 +814,11 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   }
 }
 
+void ZFlyEmProofPresenter::showSupervoxelList()
+{
+  emit showingSupervoxelList();
+}
+
 bool ZFlyEmProofPresenter::allowingBlinkingSegmentation() const
 {
   return m_blinkingSegmenationAllowed;
@@ -858,6 +866,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE:
     emit annotatingSynapse();
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_ANNOTATE:
+    emit annotatingTodo();
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);

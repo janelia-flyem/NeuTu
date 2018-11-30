@@ -90,7 +90,7 @@ typedef union _Image_Array {
  * Only GREY and GREY16 are supported.
  */
 #define MAXGREY(kind)					\
-  ((kind==GREY16)?MAXVALUE_GREY16:MAXVALUE_GREY)
+  (((kind)==GREY16)?MAXVALUE_GREY16:MAXVALUE_GREY)
 
 /**@brief Maximum pixel value of an image.
  *

@@ -2932,71 +2932,73 @@ Locseg_Chain_Comp_Neurostruct(Neuron_Component *comp, int n,
   Neuron_Structure *ns = New_Neuron_Structure();
   Neuron_Structure_Set_Component_Array(ns, comp, n);
 
-  int i, j;
+  if (ws != NULL) {
+      int i, j;
 
-  Graph_Workspace *gw = New_Graph_Workspace();
+      Graph_Workspace *gw = New_Graph_Workspace();
 
-  PROGRESS_BEGIN("Build neuron chain graph");
+      PROGRESS_BEGIN("Build neuron chain graph");
 
-  for (i = 0; i < n; i++) {
-    PROGRESS_STATUS(i * 100 / n);
+      for (i = 0; i < n; i++) {
+          PROGRESS_STATUS(i * 100 / n);
 
-    for (j = 0; j < n; j++) {
-      if (i != j) {
-	Neurocomp_Conn conn;
-	conn.mode = NEUROCOMP_CONN_HL;
-	Locseg_Chain *chain_i = NEUROCOMP_LOCSEG_CHAIN(comp+ i);
-	Locseg_Chain *chain_j = NEUROCOMP_LOCSEG_CHAIN(comp + j);
+          for (j = 0; j < n; j++) {
+              if (i != j) {
+                  Neurocomp_Conn conn;
+                  conn.mode = NEUROCOMP_CONN_HL;
+                  Locseg_Chain *chain_i = NEUROCOMP_LOCSEG_CHAIN(comp+ i);
+                  Locseg_Chain *chain_j = NEUROCOMP_LOCSEG_CHAIN(comp + j);
 
-	if (Locseg_Chain_Connection_Test(chain_i, chain_j, stack, 
-					 z_scale, &conn, (Connection_Test_Workspace*)ws) == TRUE) {
-	  Neurocomp_Conn_Translate_Mode(Locseg_Chain_Length(chain_j), 
-					&conn);
-	  BOOL conn_existed = FALSE;
-	  if (i > j) {
-	    if (ns->graph->nedge > 0) {
-	      int edge_idx = Graph_Edge_Index(j, i, gw);
-	      if (edge_idx >= 0) {
-		if (conn.mode == NEUROCOMP_CONN_LINK) {
-		  if (ns->conn[edge_idx].info[0] == conn.info[1]) {
-		    conn_existed = TRUE;
-		  }
-		} else if (ns->conn[edge_idx].mode == NEUROCOMP_CONN_LINK) {
-		  if (ns->conn[edge_idx].info[1] == conn.info[0]) {
-		    conn_existed = TRUE;
-		  }
-		}
-		if (conn_existed == TRUE) {
-		  if (ns->conn[edge_idx].cost > conn.cost) {
-		    /*
-		    ns->conn[edge_idx].mode = conn.mode;
-		    ns->conn[edge_idx].info[0] = conn.info[0];
-		    ns->conn[edge_idx].info[1] = conn.info[1];
-		    ns->conn[edge_idx].cost = conn.cost;
-		    */
-		    Neurocomp_Conn_Copy(ns->conn + edge_idx, &conn);
-		    ns->graph->edges[edge_idx][0] = i;
-		    ns->graph->edges[edge_idx][1] = j;
-		    Graph_Update_Edge_Table(ns->graph, gw);
-		  }
-		}
-	      }
-	    }
-	  }
-	  
-	  if (conn_existed == FALSE) {
-	    Neuron_Structure_Add_Conn(ns, i, j, &conn);
-	    Graph_Expand_Edge_Table(i, j, ns->graph->nedge - 1, gw);
-	  }
-	}
+                  if (Locseg_Chain_Connection_Test(chain_i, chain_j, stack,
+                                                   z_scale, &conn, (Connection_Test_Workspace*)ws) == TRUE) {
+                      Neurocomp_Conn_Translate_Mode(Locseg_Chain_Length(chain_j),
+                                                    &conn);
+                      BOOL conn_existed = FALSE;
+                      if (i > j) {
+                          if (ns->graph->nedge > 0) {
+                              int edge_idx = Graph_Edge_Index(j, i, gw);
+                              if (edge_idx >= 0) {
+                                  if (conn.mode == NEUROCOMP_CONN_LINK) {
+                                      if (ns->conn[edge_idx].info[0] == conn.info[1]) {
+                                          conn_existed = TRUE;
+                                      }
+                                  } else if (ns->conn[edge_idx].mode == NEUROCOMP_CONN_LINK) {
+                                      if (ns->conn[edge_idx].info[1] == conn.info[0]) {
+                                          conn_existed = TRUE;
+                                      }
+                                  }
+                                  if (conn_existed == TRUE) {
+                                      if (ns->conn[edge_idx].cost > conn.cost) {
+                                          /*
+                    ns->conn[edge_idx].mode = conn.mode;
+                    ns->conn[edge_idx].info[0] = conn.info[0];
+                    ns->conn[edge_idx].info[1] = conn.info[1];
+                    ns->conn[edge_idx].cost = conn.cost;
+                    */
+                                          Neurocomp_Conn_Copy(ns->conn + edge_idx, &conn);
+                                          ns->graph->edges[edge_idx][0] = i;
+                                          ns->graph->edges[edge_idx][1] = j;
+                                          Graph_Update_Edge_Table(ns->graph, gw);
+                                      }
+                                  }
+                              }
+                          }
+                      }
+
+                      if (conn_existed == FALSE) {
+                          Neuron_Structure_Add_Conn(ns, i, j, &conn);
+                          Graph_Expand_Edge_Table(i, j, ns->graph->nedge - 1, gw);
+                      }
+                  }
+              }
+          }
+          PROGRESS_REFRESH
       }
-    }
-    PROGRESS_REFRESH
+
+      PROGRESS_END("done");
+
+      Kill_Graph_Workspace(gw);
   }
-
-  PROGRESS_END("done");
-
-  Kill_Graph_Workspace(gw);
 
   return ns;  
 }
@@ -3172,7 +3174,6 @@ Locseg_Chain_To_Neuron_Component(Locseg_Chain *chain, int type,
       Kill_Locseg_Chain_Knot_Array(ka);
     }
     */
-    break;
   default:
     TZ_ERROR(ERROR_DATA_TYPE);
   }
@@ -6188,8 +6189,8 @@ Locseg_Chain* Locseg_Chain_From_Skel(int *skel, int n, double sr, double ss,
   Set_Local_Neuroseg(new_seg, sr, 0.0, 1.0, 
 		     0.0, 0.0, 0.0, 0.0, ss, 0.0, 0.0, 0.0);
   if (last_seg != NULL) {
-    new_seg->seg.r1 = new_seg->seg.r1;
-    new_seg->seg.scale = new_seg->seg.scale;
+    new_seg->seg.r1 = last_seg->seg.r1;
+    new_seg->seg.scale = last_seg->seg.scale;
   }
 
   Set_Neuroseg_Position(new_seg, start_pos, NEUROSEG_BOTTOM);

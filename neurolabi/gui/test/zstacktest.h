@@ -441,13 +441,13 @@ TEST(ZStackArray, Basic)
   ZStackArray sa;
 
   ZStack *stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
-  stack1->setDsIntv(1, 1, 1);
+  stack1->setDsIntv(1, 0, 0);
 
   ZStack *stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
-  stack1->setDsIntv(0, 1, 1);
+  stack2->setDsIntv(0, 1, 1);
 
   ZStack *stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
-  stack1->setDsIntv(1, 0, 0);
+  stack3->setDsIntv(1, 1, 1);
 
   sa.append(stack1);
   sa.append(stack2);
