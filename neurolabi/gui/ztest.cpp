@@ -28849,7 +28849,7 @@ void ZTest::test(MainWindow *host)
 
   ZNetBufferReader bufferReader;
   std::cout << bufferReader.isReadable(
-                 url.getDataUrl("segmentation_skeletons").c_str()) << std::endl;
+                 url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
 
 #endif
 
