@@ -150,14 +150,14 @@ double ZJsonParser::numberValue(const json_t *value, size_t index)
   return numberValue(arrayValue(value, index));
 }
 
-int ZJsonParser::integerValue(const json_t *value, size_t index)
+int64_t ZJsonParser::integerValue(const json_t *value, size_t index)
 {
   return integerValue(arrayValue(value, index));
 }
 
-std::vector<int> ZJsonParser::integerArray(const json_t *value)
+std::vector<int64_t> ZJsonParser::integerArray(const json_t *value)
 {
-  std::vector<int> array;
+  std::vector<int64_t> array;
   if (value != NULL) {
     if (isArray(value)) {
       int s = arraySize(value);

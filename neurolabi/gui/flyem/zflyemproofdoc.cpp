@@ -3108,7 +3108,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bodyId = ZString::FirstInteger(ZJsonParser::stringValue(idJson.getData()));
         }
 
-        std::vector<int> coordinates =
+        std::vector<int64_t> coordinates =
             ZJsonParser::integerArray(bookmarkObj["location"]);
 
         if (coordinates.size() == 3) {

@@ -1256,7 +1256,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
         QStandardItem * filterTextItem = new QStandardItem(filter);
         m_filterModel->appendRow(filterTextItem);
 
-        std::vector<int> rgba = ZJsonParser::integerArray(entry["color"]);
+        std::vector<int64_t> rgba = ZJsonParser::integerArray(entry["color"]);
         setFilterTableModelColor(QColor(rgba[0], rgba[1], rgba[2], rgba[3]), 
             m_filterModel->rowCount() - 1);
     }

@@ -28790,7 +28790,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
 
   ZJsonObject obj;

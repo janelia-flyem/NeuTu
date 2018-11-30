@@ -197,11 +197,11 @@ void FlyEmProofControlForm::createMenu()
   queryPixelAction->setShortcut(Qt::Key_F3);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
-  QAction *queryBodyAction = new QAction("Go to Body", this);
-  queryBodyAction->setShortcuts(
+  QAction *gotoBodyAction = new QAction("Go to Body", this);
+  gotoBodyAction->setShortcuts(
         QList<QKeySequence>() << Qt::Key_F1 << Qt::SHIFT + Qt::Key_G);
-  m_mainMenu->addAction(queryBodyAction);
-  connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
+  m_mainMenu->addAction(gotoBodyAction);
+  connect(gotoBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 
   QAction *selectBodyAction = new QAction("Select Body", this);
   selectBodyAction->setShortcut(Qt::Key_F2);
@@ -215,6 +215,12 @@ void FlyEmProofControlForm::createMenu()
   connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
 
   QMenu *bodyMenu = m_mainMenu->addMenu("Bodies");
+
+  QAction *queryBodyAction = new QAction("Query", this);
+  connect(queryBodyAction, SIGNAL(triggered()),
+          this, SLOT(queryBody()));
+  bodyMenu->addAction(queryBodyAction);
+
   QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
   connect(exportBodyAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBody()));
@@ -283,6 +289,11 @@ void FlyEmProofControlForm::exportSelectedBodyStack()
 void FlyEmProofControlForm::exportSelectedBody()
 {
   emit exportingSelectedBody();
+}
+
+void FlyEmProofControlForm::queryBody()
+{
+  emit queryingBody();
 }
 
 void FlyEmProofControlForm::exportSelectedBodyLevel()

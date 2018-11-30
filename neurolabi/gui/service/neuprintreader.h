@@ -13,7 +13,8 @@ public:
   void authorize(const QString &token);
 
   void readDatasets();
-  QList<uint64_t> queryNeuron(const QString &inputRoi, const QString &outputRoi);
+  QList<uint64_t> queryNeuron(
+      const QList<QString> &inputRoiList, const QList<QString> &outputRoiList);
 
 private:
   QString m_server;

@@ -98,6 +98,8 @@
 #include "neutuse/taskfactory.h"
 #include "zflyembodystatus.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "service/neuprintreader.h"
+#include "dialogs/neuprintquerydialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -3511,6 +3513,36 @@ void ZFlyEmProofMvc::exportSelectedBody()
       obj.canonize();
       obj.save(fileName.toStdString());
     }
+  }
+}
+
+void ZFlyEmProofMvc::queryBody()
+{
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+//  reader.readDatasets();
+
+  NeuPrintQueryDialog queryDlg;
+
+  if (queryDlg.exec()) {
+    QList<uint64_t> bodyList = reader.queryNeuron(
+          queryDlg.getInputRoi(), queryDlg.getOutputRoi());
+    for (uint64_t bodyId : bodyList) {
+      std::cout << bodyId << std::endl;
+    }
+
+    std::set<uint64_t> bodyIdArray;
+    bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+    getBodyQueryDlg()->setBodyList(bodyIdArray);
+    getBodyQueryDlg()->show();
+    getBodyQueryDlg()->raise();
   }
 }
 

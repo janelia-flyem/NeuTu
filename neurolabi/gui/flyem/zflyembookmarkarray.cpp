@@ -42,7 +42,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
       }
 
       if (bodyId > 0) {
-        std::vector<int> coordinates =
+        std::vector<int64_t> coordinates =
             ZJsonParser::integerArray(bookmarkObj["location"]);
 
         if (coordinates.size() == 3) {
