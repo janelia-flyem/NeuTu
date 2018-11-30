@@ -2815,8 +2815,8 @@ bool ZDvidReader::hasData(const std::string &dataName) const
   }
 
   ZDvidUrl dvidUrl(m_dvidTarget);
-//  ZNetBufferReader bufferReader;
-  return m_netBufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
+  ZNetBufferReader bufferReader;
+  return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
 }
 
 std::string ZDvidReader::getType(const std::string &dataName) const
