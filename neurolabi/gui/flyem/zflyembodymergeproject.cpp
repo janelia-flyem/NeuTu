@@ -453,6 +453,30 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 //  m_annotationCache.clear();
 }
 
+QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
+{
+  const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
+      m_annotMerger.getStatusList();
+
+  QList<QString> statusList;
+  for (const ZFlyEmBodyStatus &status : bodyStatusList) {
+    if (status.isAccessible()) {
+      statusList.append(status.getName().c_str());
+    }
+  }
+
+  return statusList;
+}
+
+int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
+{
+  if (!m_annotMerger.isEmpty()) {
+    return m_annotMerger.getStatusRank(status);
+  }
+
+  return ZFlyEmBodyAnnotation::GetStatusRank(status);
+}
+
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
@@ -463,7 +487,10 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       if (bodyId != targetId) {
         if (m_annotationCache.contains(bodyId)) {
           ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
-          annotation.mergeAnnotation(subann);
+          annotation.mergeAnnotation(
+                subann, [=](const std::string &status) {
+            return m_annotMerger.getStatusRank(status);
+          });
         }
       }
     }
@@ -1619,6 +1646,9 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
   m_writer.open(target);
+
+  ZJsonObject obj = m_writer.getDvidReader().readBodyStatusV2();
+  m_annotMerger.loadJsonObject(obj);
 }
 
 void ZFlyEmBodyMergeProject::syncWithDvid()

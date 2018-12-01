@@ -299,7 +299,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *sourceOffsetObj = bundleObject[ZFlyEmDataBundle::m_sourceOffsetKey];
     if (sourceOffsetObj != NULL) {
-      if (ZJsonParser::isArray(sourceOffsetObj)) {
+      if (ZJsonParser::IsArray(sourceOffsetObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_sourceOffset[i] = ZJsonParser::integerValue(sourceOffsetObj, i);
         }
@@ -309,7 +309,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     json_t *sourceDimensionObj =
         bundleObject[ZFlyEmDataBundle::m_sourceDimensionKey];
     if (sourceDimensionObj != NULL) {
-      if (ZJsonParser::isArray(sourceDimensionObj)) {
+      if (ZJsonParser::IsArray(sourceDimensionObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_sourceDimension[i] = ZJsonParser::integerValue(sourceDimensionObj, i);
         }
@@ -318,7 +318,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *imgResObj = bundleObject[ZFlyEmDataBundle::m_imageResolutionKey];
     if (imgResObj != NULL) {
-      if (ZJsonParser::isArray(imgResObj)) {
+      if (ZJsonParser::IsArray(imgResObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_imageResolution[i] = ZJsonParser::numberValue(imgResObj, i);
         }
@@ -341,7 +341,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *swcResObj = bundleObject[ZFlyEmDataBundle::m_swcResolutionKey];
     if (swcResObj != NULL) {
-      TZ_ASSERT(ZJsonParser::isArray(swcResObj), "Array object expected.");
+      TZ_ASSERT(ZJsonParser::IsArray(swcResObj), "Array object expected.");
       for (size_t i = 0; i < 3; ++i) {
         m_swcResolution[i] = ZJsonParser::numberValue(
               bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
