@@ -1939,6 +1939,18 @@ void ZFlyEmProofMvc::diagnose()
                          arg(se->getSource().c_str()).arg(
                            neutube::EnumValue(se->getSliceAxis()))));
   }
+
+  {
+    QList<QString> bodyStatusList = getCompleteDocument()->getBodyStatusList();
+    emit messageGenerated("Body statuses:");
+    for (const QString &status : bodyStatusList) {
+      emit messageGenerated(QString("%1: %2").
+                            arg(status).
+                            arg(getCompleteDocument()->getMergeProject()->
+                                getStatusRank(status.toStdString())));
+    }
+  }
+
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
