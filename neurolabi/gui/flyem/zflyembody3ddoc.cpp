@@ -1935,6 +1935,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
+    /*
     ZJsonArray statusJson = getMainDvidReader().readBodyStatusList();
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
@@ -1943,6 +1944,8 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
         statusList.append(status.c_str());
       }
     }
+    */
+    QList<QString> statusList = getDataDocument()->getBodyStatusList();
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {

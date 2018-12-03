@@ -59,6 +59,7 @@
 #include "zflyembodymanager.h"
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "flyem/zflyembodystatus.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -108,6 +109,55 @@ void ZFlyEmProofDoc::startTimer()
   if (m_routineCheck) {
     m_routineTimer->start();
   }
+}
+
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
+    const std::vector<uint64_t> &bodyList)
+{
+  ZFlyEmBodyAnnotation finalAnnotation;
+  if (getDvidReader().isReady()) {
+    for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZFlyEmBodyAnnotation annotation = getDvidReader().readBodyAnnotation(bodyId);
+
+      if (!annotation.isEmpty()) {
+        recordAnnotation(bodyId, annotation);
+        if (finalAnnotation.isEmpty()) {
+          finalAnnotation = annotation;
+        } else {
+          finalAnnotation.mergeAnnotation(
+                annotation,  [=](const std::string &status) {
+            return getMergeProject()->getStatusRank(status);
+          });
+        }
+      }
+    }
+  }
+
+  return finalAnnotation;
+}
+
+QList<QString> ZFlyEmProofDoc::getBodyStatusList() const
+{
+  return getMergeProject()->getBodyStatusList();
+  /*
+  ZJsonObject statusJson = getDvidReader().readBodyStatusV2();
+
+
+  ZJsonArray statusListJson(statusJson.value("status"));
+
+  QList<QString> statusList;
+  for (size_t i = 0; i < statusListJson.size(); ++i) {
+    ZFlyEmBodyStatus status;
+    status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
+    if (status.isAccessible()) {
+      statusList.append(status.getName().c_str());
+    }
+  }
+
+  return statusList;
+  */
 }
 
 void ZFlyEmProofDoc::initAutoSave()

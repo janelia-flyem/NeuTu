@@ -49,49 +49,49 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation1.setStatus("Orphan");
   annotation2.setStatus("");
 
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Orphan", annotation1.getStatus());
 
   annotation1.setStatus("Orphan");
 
   annotation2.setStatus("Orphan hotknife");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Orphan hotknife", annotation1.getStatus());
 
   annotation2.setStatus("Leaves");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Leaves", annotation1.getStatus());
 
   annotation2.setStatus("Hard to trace");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
 
   annotation1.setStatus("Not examined");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
 
   annotation2.setStatus("Partially traced");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Partially traced", annotation1.getStatus());
 
   annotation2.setStatus("Prelim Roughly traced");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Prelim Roughly traced", annotation1.getStatus());
 
   annotation2.setStatus("Roughly traced");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Roughly traced", annotation1.getStatus());
 
   annotation2.setStatus("Traced in ROI");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Traced in ROI", annotation1.getStatus());
 
   annotation2.setStatus("traced");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("traced", annotation1.getStatus());
 
   annotation2.setStatus("Finalized");
-  annotation1.mergeAnnotation(annotation2);
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Finalized", annotation1.getStatus());
 }
 
