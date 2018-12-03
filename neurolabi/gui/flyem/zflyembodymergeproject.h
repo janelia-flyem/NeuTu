@@ -16,6 +16,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
+#include "zflyembodyannotationmerger.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -126,6 +127,9 @@ public:
 
   void clearBodyMerger();
 
+  QList<QString> getBodyStatusList() const;
+  int getStatusRank(const std::string &status) const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -215,6 +219,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
+  ZFlyEmBodyAnnotationMerger m_annotMerger;
 
   bool m_isBookmarkVisible;
 

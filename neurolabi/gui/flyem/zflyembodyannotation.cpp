@@ -211,14 +211,14 @@ int ZFlyEmBodyAnnotation::CompareStatus(
 }
 #endif
 
-void ZFlyEmBodyAnnotation::mergeAnnotation(
-    const ZFlyEmBodyAnnotation &annotation)
+void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotation,
+    const std::function<int(const std::string&)>& getStatusRank)
 {
   if (m_bodyId == 0) {
     m_bodyId = annotation.getBodyId();
   }
 
-  if (GetStatusRank(m_status) > GetStatusRank(annotation.m_status)) {
+  if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
     m_status = annotation.m_status;
   }
 

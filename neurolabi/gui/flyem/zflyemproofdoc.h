@@ -145,6 +145,10 @@ public:
     return m_mergeProject;
   }
 
+  const ZFlyEmBodyMergeProject* getMergeProject() const {
+    return m_mergeProject;
+  }
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
@@ -207,6 +211,8 @@ public:
 
   void verifyBodyAnnotationMap();
 
+  ZFlyEmBodyAnnotation getFinalAnnotation(
+      const std::vector<uint64_t> &bodyList);
   /*!
    * \brief Remove unselected bodies from annotation map.
    *
@@ -236,6 +242,8 @@ public:
   const ZDvidInfo& getDvidInfo() const;
 
   void startTimer();
+
+  QList<QString> getBodyStatusList() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should

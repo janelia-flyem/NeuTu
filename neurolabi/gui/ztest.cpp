@@ -308,6 +308,10 @@
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
+#include "zjsonparser.h"
+#include "zjsonobjectparser.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationmerger.h"
 
 #include "test/ztestall.h"
 
@@ -27409,8 +27413,11 @@ void ZTest::test(MainWindow *host)
   std::vector<std::string> statusList({/*"Putative 0.5",*/
                                        "Prelim Roughly traced",
                                        "Roughly traced",
-                                       "Traced",
-                                       "Hard to trace"});
+                                       "Leaves",
+                                       "Orphan hotknife",
+                                       "Orphan"
+                                       /*"Traced",*/
+                                       /*"Hard to trace"}*/});
   writer->writeBodyStatusList(statusList);
 #endif
 
@@ -28688,6 +28695,16 @@ void ZTest::test(MainWindow *host)
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZJsonObject obj;
+  obj.decodeString(reader->readKeyValue("neutu_config", "body_status_v2").
+                   toStdString().c_str());
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+  merger.print();
+#endif
+
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
@@ -28728,6 +28745,57 @@ void ZTest::test(MainWindow *host)
 //    obj.decodeString(QString(data).toStdString().c_str());
 //    obj.print();
 //  }
+#endif
+
+#if 0
+  {
+    ZJsonParser parser;
+    std::cout << parser.getValue<int64_t>(NULL) << std::endl;
+  }
+
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", "hello");
+
+    ZJsonObjectParser parser;
+    std::cout << parser.getValue(obj, "test", "") << std::endl;
+  }
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.setEntry(ZFlyEmBodyStatus::KEY_NAME, "test");
+  obj.setEntry(ZFlyEmBodyStatus::KEY_EXPERT, true);
+  obj.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
+  ZFlyEmBodyStatus bodyStatus("");
+  bodyStatus.loadJsonObject(obj);
+  bodyStatus.toJsonObject().print();
+#endif
+
+#if 0
+  ZJsonObject obj;
+
+  ZJsonArray statusArrayObj;
+  {
+    ZFlyEmBodyStatus status("Finalized");
+    status.setPriority(0);
+    status.setFinal(true);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  {
+    ZFlyEmBodyStatus status("Traced");
+    status.setPriority(10);
+    status.setFinal(false);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  obj.setEntry("status", statusArrayObj);
+
+  obj.print();
+  obj.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
   std::cout << "Done." << std::endl;

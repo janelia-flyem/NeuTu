@@ -239,15 +239,28 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(this);
-    ZJsonArray statusJson =
-        getCompleteDocument()->getDvidReader().readBodyStatusList();
+    QList<QString> statusList = getCompleteDocument()->getBodyStatusList();
+#if 0
+    ZJsonObject statusJson =
+            getCompleteDocument()->getDvidReader().readBodyStatusV2();
+
+
+    ZJsonArray statusListJson(statusJson.value("status"));
+
     QList<QString> statusList;
-    for (size_t i = 0; i < statusJson.size(); ++i) {
-      std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
-        statusList.append(status.c_str());
+    for (size_t i = 0; i < statusListJson.size(); ++i) {
+      ZFlyEmBodyStatus status;
+      status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
+      if (status.isAccessible()) {
+        statusList.append(status.getName().c_str());
       }
+
+//      std::string status = ZJsonParser::stringValue(statusJson.at(i));
+//      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
+//        statusList.append(status.c_str());
+//      }
     }
+#endif
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
@@ -2453,6 +2466,9 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
     if (selected.size() > 0) {
+      ZFlyEmBodyAnnotation finalAnnotation =
+          getCompleteDocument()->getFinalAnnotation(selected);
+#if 0
       //Process annotations of the selected bodies
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
       if (reader.isReady()) {
@@ -2471,7 +2487,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
             }
           }
         }
-
+#endif
         updateBodyMessage(selected.front(), finalAnnotation);
         /*
         ZWidgetMessage msg("", neutube::EMessageType::INFORMATION,
@@ -2489,7 +2505,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         }
         emit messageGenerated(msg);
         */
-      }
+//      }
 
     }
 
@@ -5514,7 +5530,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
       type = "mesh";
     }
 
-    if (ZJsonParser::isArray(jsonObj["key"])) {
+    if (ZJsonParser::IsArray(jsonObj["key"])) {
       ZJsonArray arrayJson(jsonObj.value("key"));
       std::vector<std::string> keyList;
       for (size_t i = 0; i < arrayJson.size(); ++i) {

@@ -1216,7 +1216,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // look at first element and check its structure; it's an object
-    if (!ZJsonParser::isObject(colorArray.at(0))) {
+    if (!ZJsonParser::IsObject(colorArray.at(0))) {
         emit jsonLoadColorMapError("Color map json file must contain an array of objects");
         return false;
     }
