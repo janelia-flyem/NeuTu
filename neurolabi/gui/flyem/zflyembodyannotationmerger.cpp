@@ -1,6 +1,7 @@
 #include "zflyembodyannotationmerger.h"
 
 #include <iostream>
+#include <algorithm>
 
 #include "zjsonobject.h"
 #include "zjsonarray.h"
