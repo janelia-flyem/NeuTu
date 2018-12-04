@@ -1088,6 +1088,10 @@ void ZFlyEmProofDoc::prepareDvidData()
   }
 
   addDvidLabelSlice(neutube::EAxis::Z);
+
+  if (getDvidInfo().isValid()) {
+    setResolution(getDvidInfo().getVoxelResolution());
+  }
 }
 
 void ZFlyEmProofDoc::initTileData()

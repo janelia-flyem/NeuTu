@@ -752,6 +752,11 @@ void ZPainter::fillRect(const QRect &r, Qt::GlobalColor color)
   getPainter()->fillRect(r, color);
 }
 
+void ZPainter::fillRect(const QRect &r, const QBrush &brush)
+{
+  getPainter()->fillRect(r, brush);
+}
+
 void ZPainter::setOpacity(double alpha)
 {
   getPainter()->setOpacity(alpha);
