@@ -129,6 +129,14 @@ public:
 
   QList<QString> getBodyStatusList() const;
   int getStatusRank(const std::string &status) const;
+  bool isFinalStatus(const std::string &status) const;
+  QString composeStatusConflictMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
+    return m_annotMerger;
+  }
 
 signals:
   void progressAdvanced(double dp);

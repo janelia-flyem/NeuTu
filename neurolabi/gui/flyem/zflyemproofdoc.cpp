@@ -640,9 +640,9 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   cleanBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
-  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
+//  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
+//  std::vector<uint64_t> finalizedBodyArray;
 
-  std::vector<uint64_t> finalizedBodyArray;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     const ZFlyEmBodyAnnotation& anno = iter.value();
@@ -655,35 +655,56 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
       nameMap[mappedBodyId].append(anno.getName().c_str());
 //      nameMap[iter.key()] = anno.getName().c_str();
     }
-    if (anno.getStatus() == "Finalized") {
+//    if (anno.getStatus() == "Finalized") {
+    /*
+    if (getMergeProject()->isFinalStatus(anno.getStatus())) {
       finalizedBodyArray.push_back(iter.key());
-    } else if (ZString(anno.getStatus()).lower() == "roughly traced" ||
-               ZString(anno.getStatus()).lower() == "prelim roughly traced") {
-      roughlyTracedBodyArray.push_back(iter.key());
+    }
+    */
+  }
+
+//  if (!finalizedBodyArray.empty()) {
+//    QString detail = getAnnotationFinalizedWarningDetail(
+//          finalizedBodyArray, "Finalized");
+//    okToContinue = ZDialogFactory::Ask(
+//          "Merging Finalized Body",
+//          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
+//          detail,
+//          NULL);
+//  }
+
+  {
+    QString msg = getMergeProject()->composeFinalStatusMessage(m_annotationMap);
+    if (!msg.isEmpty()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Merging Body with Final Status",
+            msg + "<p>Do you want to continue?</p>",
+            NULL);
     }
   }
 
-  if (!finalizedBodyArray.empty()) {
-    QString detail = getAnnotationFinalizedWarningDetail(
-          finalizedBodyArray, "Finalized");
-    okToContinue = ZDialogFactory::Ask(
-          "Merging Finalized Body",
-          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
-          detail,
-          NULL);
+  {
+    QString msg = getMergeProject()->composeStatusConflictMessage(m_annotationMap);
+    if (!msg.isEmpty()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Body Status Conflict",
+            msg + "<p>Do you want to continue?</p>",
+            NULL);
+    }
   }
 
+  /*
   if (roughlyTracedBodyArray.size() > 1) {
     QString detail = getAnnotationFinalizedWarningDetail(
           roughlyTracedBodyArray, "Roughly traced");
     okToContinue = ZDialogFactory::Ask(
           "Merging multiple roughly-traced bodies",
-          "At least two bodies to be merged are roughly traced or prelim roughly traced. "
+          "The following bodies have conflict statuses: "
           "<font color=\"#FF0000\">You should NOT merge them unless you want to be resposible for any side effects.</font>"
           "<p>Do you want to continue?</p>" +
           detail,
           NULL);
-  }
+  }*/
 
   if (okToContinue) {
     if (nameMap.size() > 1) {

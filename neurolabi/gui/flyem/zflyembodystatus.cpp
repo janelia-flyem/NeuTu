@@ -121,3 +121,8 @@ std::string ZFlyEmBodyStatus::getStatusKey() const
 {
   return ZString(m_status).lower();
 }
+
+void ZFlyEmBodyStatus::print() const
+{
+  std::cout << toJsonObject().dumpString(0) << std::endl;
+}
