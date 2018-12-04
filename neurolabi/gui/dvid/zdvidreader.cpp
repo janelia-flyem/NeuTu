@@ -2745,6 +2745,21 @@ ZJsonObject ZDvidReader::readContrastProtocal() const
   return config;
 }
 
+ZJsonObject ZDvidReader::readBodyStatusV2() const
+{
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_NEUTU_CONFIG),
+        "body_status_v2");
+
+  ZJsonObject config;
+  if (!byteArray.isEmpty()) {
+    config.decodeString(byteArray.data());
+  }
+
+  return config;
+}
+
+/*
 ZJsonArray ZDvidReader::readBodyStatusList() const
 {
   QByteArray byteArray = readKeyValue(
@@ -2757,6 +2772,7 @@ ZJsonArray ZDvidReader::readBodyStatusList() const
 
   return config;
 }
+*/
 
 ZIntCuboid ZDvidReader::readBoundBox(int z)
 {

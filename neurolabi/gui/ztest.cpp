@@ -309,6 +309,10 @@
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
 #include "service/neuprintreader.h"
+#include "zjsonparser.h"
+#include "zjsonobjectparser.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationmerger.h"
 
 #include "test/ztestall.h"
 
@@ -12972,7 +12976,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZParameterArray paramArray;
 
   ZParameter *param = new ZIntParameter("value1", 1, 0, 255);
@@ -27410,8 +27414,11 @@ void ZTest::test(MainWindow *host)
   std::vector<std::string> statusList({/*"Putative 0.5",*/
                                        "Prelim Roughly traced",
                                        "Roughly traced",
-                                       "Traced",
-                                       "Hard to trace"});
+                                       "Leaves",
+                                       "Orphan hotknife",
+                                       "Orphan"
+                                       /*"Traced",*/
+                                       /*"Hard to trace"}*/});
   writer->writeBodyStatusList(statusList);
 #endif
 
@@ -28691,6 +28698,16 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZJsonObject obj;
+  obj.decodeString(reader->readKeyValue("neutu_config", "body_status_v2").
+                   toStdString().c_str());
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+  merger.print();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
   QString dataName = "segmentation_annotations";
   QStringList keyList = reader->readKeys(dataName);
@@ -28732,6 +28749,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
   QElapsedTimer timer;
   timer.start();
   for (int i = 0; i < 1000; ++i) {
@@ -28823,8 +28841,70 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  {
+    ZJsonParser parser;
+    std::cout << parser.getValue<int64_t>(NULL) << std::endl;
+  }
+
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", "hello");
+
+    ZJsonObjectParser parser;
+    std::cout << parser.getValue(obj, "test", "") << std::endl;
+  }
+#endif
 
 #if 0
+  ZJsonObject obj;
+  obj.setEntry(ZFlyEmBodyStatus::KEY_NAME, "test");
+  obj.setEntry(ZFlyEmBodyStatus::KEY_EXPERT, true);
+  obj.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
+  ZFlyEmBodyStatus bodyStatus("");
+  bodyStatus.loadJsonObject(obj);
+  bodyStatus.toJsonObject().print();
+#endif
+
+#if 0
+  ZJsonObject obj;
+
+  ZJsonArray statusArrayObj;
+  {
+    ZFlyEmBodyStatus status("Finalized");
+    status.setPriority(0);
+    status.setFinal(true);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  {
+    ZFlyEmBodyStatus status("Traced");
+    status.setPriority(10);
+    status.setFinal(false);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  obj.setEntry("status", statusArrayObj);
+
+  obj.print();
+  obj.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  ZFlyEmBodyAnnotationMerger annotMerger;
+  annotMerger.loadJsonObject(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/body_staus.json");
+  annotMerger.print();
+
+  annotMerger.getConflictBody(
+>>>>>>> develop
+#endif
+
+
+#if 0
+<<<<<<< HEAD
   ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();
 
   QElapsedTimer timer;
@@ -28841,7 +28921,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->getDvidTarget().print();
 
@@ -28850,6 +28930,54 @@ void ZTest::test(MainWindow *host)
   ZNetBufferReader bufferReader;
   std::cout << bufferReader.isReadable(
                  url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZFlyEmBodyMergeProject project;
+  project.setDvidTarget(reader->getDvidTarget());
+  project.getAnnotationMerger().print();
+
+  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("anchors");
+    annotMap[1] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Anchors");
+    annotMap[2] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Finalized");
+    annotMap[3] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Roughly traced");
+    annotMap[4] = annot;
+  }
+
+  std::vector<std::vector<uint64_t>> bodySet =
+      project.getAnnotationMerger().getConflictBody(annotMap);
+  for (const auto& bodyArray : bodySet) {
+    std::cout << "Conflicted:";
+    for (uint64_t body : bodyArray) {
+      std::cout << " " << body;
+    }
+    std::cout << std::endl;
+  }
+
+  QString msg = project.composeStatusConflictMessage(annotMap);
+  qDebug() << msg;
 
 #endif
 

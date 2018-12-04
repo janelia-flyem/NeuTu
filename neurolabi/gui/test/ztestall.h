@@ -71,5 +71,6 @@
 #include "test/zdviddataslicetest.h"
 #include "test/zstackviewparamtest.h"
 #include "test/zflyembodymanagertest.h"
+#include "test/zflyembodystatustest.h"
 
 #endif // ZTESTALL_H

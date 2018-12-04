@@ -1929,7 +1929,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
       for (size_t i = 0; i < neuronArray.size(); ++i) {
         uint64_t bodyId = 0;
         QString name;
-        if (ZJsonParser::isInteger(neuronArray.at(i))) {
+        if (ZJsonParser::IsInteger(neuronArray.at(i))) {
           bodyId = ZJsonParser::integerValue(neuronArray.getData(), i);
         } else {
           ZJsonObject infoJson(neuronArray.value(i));

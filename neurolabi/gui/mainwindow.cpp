@@ -3885,7 +3885,7 @@ void MainWindow::on_actionFlyEmSelect_triggered()
       idObject = jValue["id"];
       if (idObject != NULL) {
         std::vector<int> bodyId;
-        if (ZJsonParser::isInteger(idObject)) {
+        if (ZJsonParser::IsInteger(idObject)) {
           bodyId.push_back(ZJsonParser::integerValue(idObject));
         } else {
           ZJsonArray jArray;
