@@ -89,6 +89,8 @@ public:
   double getPlaneVoxelSpan(neutube::EPlane plane, EUnit unit) const;
   double getPlaneVoxelSpan(neutube::EPlane plane) const;
 
+  bool isValid() const;
+
 private:
   double m_voxelSize[3];
   char m_unit; //'p' for pixel, 'u' for um, 'n' for nm

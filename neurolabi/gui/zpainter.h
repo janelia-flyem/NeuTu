@@ -181,6 +181,7 @@ public:
   void setRenderHint(QPainter::RenderHint hint, bool on = true);
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
+  void fillRect(const QRect &r, const QBrush &brush);
   void setOpacity(double alpha);
   void setCanvasRange(const QRectF &r) { m_canvasRange = r; }
 
