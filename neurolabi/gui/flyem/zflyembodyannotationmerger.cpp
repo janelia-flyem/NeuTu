@@ -6,6 +6,8 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "zflyembodyannotation.h"
+#include "zstring.h"
 
 ZFlyEmBodyAnnotationMerger::ZFlyEmBodyAnnotationMerger()
 {
@@ -14,7 +16,7 @@ ZFlyEmBodyAnnotationMerger::ZFlyEmBodyAnnotationMerger()
 void ZFlyEmBodyAnnotationMerger::reset()
 {
   m_statusList.clear();
-  m_statusRank.clear();
+  m_statusMap.clear();
   m_conflictStatus.clear();
 }
 
@@ -33,7 +35,7 @@ void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
     ZFlyEmBodyStatus status;
     status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
     m_statusList.push_back(status);
-    m_statusRank[status.getName()] = status.getPriority();
+    m_statusMap[ZString(status.getName()).lower()] = status;
   }
 
   if (statusJson.hasKey("conflict")) {
@@ -42,7 +44,9 @@ void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
       ZJsonArray conflictJson(arrayJson.value(i));
       std::set<std::string> conflict;
       for (size_t j = 0; j < conflictJson.size(); ++j) {
-        conflict.insert(ZJsonParser().getValue<std::string>(conflictJson.at(j)));
+        conflict.insert(
+              ZString(ZJsonParser().getValue<std::string>(
+                        conflictJson.at(j))).lower());
       }
       if (!conflict.empty()) {
         m_conflictStatus.push_back(conflict);
@@ -51,11 +55,24 @@ void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
   }
 }
 
-void ZFlyEmBodyAnnotationMerger::print()
+const ZFlyEmBodyStatus& ZFlyEmBodyAnnotationMerger::getBodyStatus(
+    const std::string &name) const
+{
+  std::string nameKey = ZString(name).lower();
+
+  if (m_statusMap.count(nameKey) > 0) {
+    return m_statusMap.at(nameKey);
+  }
+
+  return m_emptyStatus;
+}
+
+void ZFlyEmBodyAnnotationMerger::print() const
 {
   std::cout << "Statuses: " << std::endl;
-  for (const auto &rank : m_statusRank) {
-    std::cout << "  " << rank.first << ": " << rank.second << std::endl;
+  for (const auto &status : m_statusList) {
+    std::cout << "  ";
+    status.print();
   }
 
   std::cout << "Conflict:" << std::endl;
@@ -77,6 +94,9 @@ int ZFlyEmBodyAnnotationMerger::getStatusRank(const std::string &status) const
     return 9999;
   }
 
+  return getBodyStatus(status).getPriority();
+
+  /*
   std::string statusLowerCase = status;
   std::transform(statusLowerCase.begin(), statusLowerCase.end(),
                  statusLowerCase.begin(), ::tolower);
@@ -86,4 +106,37 @@ int ZFlyEmBodyAnnotationMerger::getStatusRank(const std::string &status) const
   }
 
   return 999;
+  */
+}
+
+bool ZFlyEmBodyAnnotationMerger::isFinal(const std::string &status) const
+{
+  return getBodyStatus(status).isFinal();
+}
+
+std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationMerger::getConflictBody(
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+{
+  std::vector<std::vector<uint64_t>> potentialConflict(m_conflictStatus.size());
+
+  for (auto iter = annotMap.constBegin(); iter != annotMap.constEnd(); ++iter) {
+    uint64_t bodyId = iter.key();
+    const ZFlyEmBodyAnnotation &anno = iter.value();
+
+    for (size_t i = 0; i < m_conflictStatus.size(); ++i) {
+      const auto &conflictSet = m_conflictStatus[i];
+      if (conflictSet.count(ZString(anno.getStatus()).lower()) > 0) {
+        potentialConflict[i].push_back(bodyId);
+        break;
+      }
+    }
+  }
+
+  for (auto &conflict : potentialConflict) {
+    if (conflict.size() == 1) {
+      conflict.clear();
+    }
+  }
+
+  return potentialConflict;
 }

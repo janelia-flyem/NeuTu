@@ -46,6 +46,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
+#include "zstring.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -475,6 +476,107 @@ int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
   }
 
   return ZFlyEmBodyAnnotation::GetStatusRank(status);
+}
+
+bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
+{
+  if (m_annotMerger.isEmpty()) {
+    return ZString(status).lower() == "finalized";
+  }
+
+  return m_annotMerger.isFinal(status);
+}
+
+namespace {
+
+QString compose_body_status_message(
+    const std::vector<uint64_t> &bodyArray,
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap, int &itemCount)
+{
+  QString msg;
+  if (!bodyArray.empty()) {
+    msg += "<ul>";
+    for (uint64_t bodyId : bodyArray) {
+      msg += QString("<li>%1: %2</li>").
+          arg(bodyId).arg(annotMap[bodyId].getStatus().c_str());
+      ++itemCount;
+      if (itemCount >= 5) {
+        msg += "<li>...</li>";
+        break;
+      }
+    }
+    msg += "</ul>";
+    msg += "<br>";
+  }
+
+  return msg;
+}
+
+}
+
+QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+{
+  std::vector<uint64_t> bodyArray;
+  for (auto iter = annotMap.constBegin(); iter != annotMap.constEnd(); ++iter) {
+    if (isFinalStatus(iter.value().getStatus())) {
+      bodyArray.push_back(iter.key());
+    }
+  }
+
+  int itemCount = 0;
+  QString msg = compose_body_status_message(bodyArray, annotMap, itemCount);
+
+  if (!msg.isEmpty()) {
+    msg = "The following bodies have final statuses: " + msg +
+        "<font color=\"#FF0000\">You should NOT merge them "
+        "unless you want to be resposible for any side effects.</font>";
+  }
+
+  return msg;
+}
+
+QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+{
+  QString msg;
+  const std::vector<std::vector<uint64_t>> &conflictSet =
+      m_annotMerger.getConflictBody(annotMap);
+  int itemCount = 0;
+  for (const std::vector<uint64_t> &bodyArray : conflictSet) {
+    msg += compose_body_status_message(bodyArray, annotMap, itemCount);
+    if (itemCount >= 5) {
+      break;
+    }
+
+    /*
+    if (!bodyArray.empty()) {
+      msg += "<ul>";
+      for (uint64_t bodyId : bodyArray) {
+        msg += QString("<li>%1: %2</li>").
+            arg(bodyId).arg(annotMap[bodyId].getStatus().c_str());
+        ++itemCount;
+        if (itemCount >= 5) {
+          msg += "<li>...</li>";
+          break;
+        }
+      }
+      msg += "</ul>";
+      msg += "<br>";
+      if (itemCount >= 5) {
+        break;
+      }
+    }
+    */
+  }
+
+  if (!msg.isEmpty()) {
+    msg = "The following bodies have conflicting statuses: " + msg +
+        "<font color=\"#FF0000\">You should NOT merge them "
+        "unless you want to be resposible for any side effects.</font>";
+  }
+
+  return msg;
 }
 
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(

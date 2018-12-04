@@ -28695,7 +28695,7 @@ void ZTest::test(MainWindow *host)
   writer->writeSupervoxelMesh(*mesh, bodyId);
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   ZJsonObject obj;
   obj.decodeString(reader->readKeyValue("neutu_config", "body_status_v2").
@@ -28796,6 +28796,65 @@ void ZTest::test(MainWindow *host)
 
   obj.print();
   obj.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  ZFlyEmBodyAnnotationMerger annotMerger;
+  annotMerger.loadJsonObject(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/body_staus.json");
+  annotMerger.print();
+
+  annotMerger.getConflictBody(
+#endif
+
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZFlyEmBodyMergeProject project;
+  project.setDvidTarget(reader->getDvidTarget());
+  project.getAnnotationMerger().print();
+
+  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("anchors");
+    annotMap[1] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Anchors");
+    annotMap[2] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Finalized");
+    annotMap[3] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Roughly traced");
+    annotMap[4] = annot;
+  }
+
+  std::vector<std::vector<uint64_t>> bodySet =
+      project.getAnnotationMerger().getConflictBody(annotMap);
+  for (const auto& bodyArray : bodySet) {
+    std::cout << "Conflicted:";
+    for (uint64_t body : bodyArray) {
+      std::cout << " " << body;
+    }
+    std::cout << std::endl;
+  }
+
+  QString msg = project.composeStatusConflictMessage(annotMap);
+  qDebug() << msg;
+
 #endif
 
   std::cout << "Done." << std::endl;
