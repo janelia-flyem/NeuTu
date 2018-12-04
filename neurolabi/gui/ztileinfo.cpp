@@ -25,7 +25,7 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 
   if (obj.hasKey("offset")) {
     const json_t *value = obj["offset"];
-    if (ZJsonParser::isArray(value)) {
+    if (ZJsonParser::IsArray(value)) {
       if (ZJsonParser::arraySize(value)  == 3) {
         m_offset.set(ZJsonParser::numberValue(value, 0),
                      ZJsonParser::numberValue(value, 1),
@@ -43,7 +43,7 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 
   if (obj.hasKey("size")) {
     const json_t *value = obj["size"];
-    if (ZJsonParser::isArray(value)) {
+    if (ZJsonParser::IsArray(value)) {
       if (ZJsonParser::arraySize(value)  == 3) {
         for (int i = 0; i < 3; ++i) {
           m_dim[i] = ZJsonParser::integerValue(value, i);

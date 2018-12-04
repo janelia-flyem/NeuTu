@@ -47,7 +47,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   m_boundBox.reset();
 
   if (obj.hasKey("volume")) {
-    if (ZJsonParser::isInteger(obj["volume"])) {
+    if (ZJsonParser::IsInteger(obj["volume"])) {
       m_bodySize = ZJsonParser::integerValue(obj["volume"]);
     } else {
       m_bodySize = ZString(ZJsonParser::stringValue(obj["volume"])).firstUint64();

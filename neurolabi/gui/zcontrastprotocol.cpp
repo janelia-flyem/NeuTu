@@ -60,7 +60,7 @@ void ZContrastProtocol::setScale(double scale)
 void ZContrastProtocol::load(const ZJsonObject &obj)
 {
   if (obj.hasKey("nonlinear")) {
-    if (ZJsonParser::isBoolean(obj["nonlinear"])) {
+    if (ZJsonParser::IsBoolean(obj["nonlinear"])) {
       bool nonlinear = ZJsonParser::booleanValue(obj["nonlinear"]);
       if (nonlinear) {
         m_nonlinearMode = NONLINEAR_POWER;

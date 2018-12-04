@@ -15,12 +15,41 @@ class ZJsonParser
 public:
   ZJsonParser();
 
-  static bool isObject(const json_t *value);
-  static bool isArray(const json_t *value);
-  static bool isInteger(const json_t *value);
-  static bool isReal(const json_t *value);
-  static bool isNumber(const json_t *value);
-  static bool isBoolean(const json_t *value);
+public:
+  /*!
+   * \brief Decode a json string
+   *
+   * \param str A json string
+   * \return A raw json object. The user is responsible for freeing it.
+   */
+  json_t* decode(const std::string &str);
+
+  void printError() const;
+
+
+  template<typename T, typename std::enable_if<!std::is_integral<T>::value, int>::type = 0>
+  T getValue(const json_t *value) const;
+
+  template<typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+  T getValue(const json_t *value) const
+  {
+    if (value == NULL) {
+      return m_defaultIntValue;
+    }
+
+    return integerValue(value);
+  }
+
+//  template<>
+//  static std::string getValue<std::string>(const json_t *value);
+
+public:
+  static bool IsObject(const json_t *value);
+  static bool IsArray(const json_t *value);
+  static bool IsInteger(const json_t *value);
+  static bool IsReal(const json_t *value);
+  static bool IsNumber(const json_t *value);
+  static bool IsBoolean(const json_t *value);
 
   //It returns 0 if <array> is not an array
   static size_t arraySize(const json_t *array);
@@ -53,18 +82,11 @@ public:
 
   static ZIntPoint toIntPoint(const json_t *value);
 
-  /*!
-   * \brief Decode a json string
-   *
-   * \param str A json string
-   * \return A raw json object. The user is responsible for freeing it.
-   */
-  json_t* decode(const std::string &str);
-
-  void printError() const;
-
 private:
   json_error_t m_error;
+  std::string m_defaultStringValue;
+  int64_t m_defaultIntValue = 0;
+  bool m_defaultBoolValue = false;
 
   const static char m_emptyString[1];
 };
