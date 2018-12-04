@@ -23,7 +23,7 @@ ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
 
 ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
 {
-  if (ZJsonParser::isObject(data)) {
+  if (ZJsonParser::IsObject(data)) {
     set(data, option);
   }
 }
@@ -123,7 +123,7 @@ bool ZJsonObject::decode(const string &str)
   ZJsonParser parser;
   json_t *obj = parser.decode(str);
 
-  if (ZJsonParser::isObject(obj)) {
+  if (ZJsonParser::IsObject(obj)) {
     set(obj, true);
   } else {
     if (obj == NULL) {
@@ -178,7 +178,7 @@ void ZJsonObject::appendEntries(const char *key, json_t *obj,
     (*entryMap)[key] = obj;
   }
 
-  if (ZJsonParser::isObject(obj)) {
+  if (ZJsonParser::IsObject(obj)) {
     const char *subkey = NULL;
     json_t *value = NULL;
     json_object_foreach(obj, subkey, value) {
