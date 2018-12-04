@@ -4,6 +4,8 @@
 #include "ztestheader.h"
 #include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
+#include "flyem/zflyembodyannotationmerger.h"
+#include "neutubeconfig.h"
 
 #ifdef _USE_GTEST_
 
@@ -93,6 +95,64 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation2.setStatus("Finalized");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Finalized", annotation1.getStatus());
+}
+
+TEST(ZFlyEmBodyAnnotation, Merger)
+{
+  ZFlyEmBodyAnnotationMerger annotMerger;
+  ZJsonObject jsonObj;
+  jsonObj.load(GET_BENCHMARK_DIR + "/body_status.json");
+  annotMerger.loadJsonObject(jsonObj);
+
+  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("anchor");
+    annotMap[1] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Anchor");
+    annotMap[2] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Finalized");
+    annotMap[3] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Roughly traced");
+    annotMap[4] = annot;
+  }
+
+  std::vector<std::vector<uint64_t>> bodySet =
+      annotMerger.getConflictBody(annotMap);
+  ASSERT_EQ(1, int(bodySet.size()));
+
+  std::vector<uint64_t> bodyArray = bodySet[0];
+  ASSERT_EQ(3, int(bodyArray.size()));
+
+  ASSERT_EQ(1, int(bodyArray[0]));
+  ASSERT_EQ(2, int(bodyArray[1]));
+  ASSERT_EQ(4, int(bodyArray[2]));
+
+  ASSERT_EQ(9999, annotMerger.getStatusRank(""));
+  ASSERT_EQ(999, annotMerger.getStatusRank("test"));
+  ASSERT_EQ(0, annotMerger.getStatusRank("Finalized"));
+  ASSERT_EQ(10, annotMerger.getStatusRank("Traced"));
+  ASSERT_EQ(20, annotMerger.getStatusRank("Traced in roi"));
+  ASSERT_EQ(30, annotMerger.getStatusRank("roughly Traced"));
+  ASSERT_EQ(40, annotMerger.getStatusRank("Prelim Roughly traced"));
+  ASSERT_EQ(120, annotMerger.getStatusRank("ORPHAN"));
+
+  ASSERT_TRUE(annotMerger.isFinal("Finalized"));
+  ASSERT_FALSE(annotMerger.isFinal("Hard to trace"));
+
 }
 
 #endif

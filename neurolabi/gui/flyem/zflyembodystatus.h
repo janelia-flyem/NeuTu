@@ -31,6 +31,8 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void print() const;
+
   void reset();
 
 public:

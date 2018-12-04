@@ -22,17 +22,6 @@ ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 
 ZImageWidget::~ZImageWidget()
 {
-  /*
-  if (m_widgetCanvas != NULL) {
-    delete m_widgetCanvas;
-  }
-  */
-
-//  if (m_isowner == true) {
-//    if (m_image != NULL) {
-//      delete m_image;
-//    }
-//  }
 }
 
 void ZImageWidget::init()
