@@ -223,6 +223,7 @@ unix {
                 ICON = images/app.icns
             }
         }
+
 #        QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
@@ -307,6 +308,7 @@ include(neutuse/neutuse.pri)
 
 # Input
 RESOURCES = gui.qrc
+
 HEADERS += mainwindow.h \
     widgets/zimagewidget.h \
     zstackview.h \
@@ -924,7 +926,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidblockstream.h \
     imgproc/zstackmultiscalewatershed.h \
     protocols/taskmergereview.h \
-    dialogs/zflyemtodoannotationdialog.h
+    dialogs/zflyemtodoannotationdialog.h \
+    main.h \
+    flyem/zflyembodyannotationmerger.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1616,7 +1620,8 @@ SOURCES += main.cpp \
     dvid/zdvidblockstream.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
-    dialogs/zflyemtodoannotationdialog.cpp
+    dialogs/zflyemtodoannotationdialog.cpp \
+    flyem/zflyembodyannotationmerger.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
