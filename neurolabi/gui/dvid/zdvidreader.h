@@ -132,6 +132,7 @@ public:
   }
 
   std::vector<std::string> readDataInstances(const std::string &type);
+  void updateDataStatus();
 
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;

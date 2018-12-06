@@ -191,6 +191,12 @@ void TaskProtocolWindow::onPrevButton() {
         m_taskList[m_currentTaskIndex]->beforePrev();
     }
 
+    // disable the current task's UI in case finding the next one
+    // takes a noticeable amount of time, probably in the skip() calls
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
+    }
+
     // for now, just clear the body prefetch queue; see
     //  longer note in onNextButton()
     emit clearBodyQueue();
@@ -303,6 +309,12 @@ void TaskProtocolWindow::onNextButton() {
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeNext();
+    }
+
+    // disable the current task's UI in case finding the next one
+    // takes a noticeable amount of time, probably in the skip() calls
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
     }
 
     // currently the prefetching is unsophisticated--we only

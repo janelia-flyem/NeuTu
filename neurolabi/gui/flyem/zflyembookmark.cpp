@@ -145,7 +145,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
           std::cout << userName << std::endl;
 #endif
-          setUser(userName.c_str());
+          setUser(userName);
         }
 
         setComment(ZJsonParser::stringValue(propJson["comment"]));
@@ -327,7 +327,7 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
         std::cout << userName << std::endl;
 #endif
-        setUser(userName.c_str());
+        setUser(userName);
       }
 
       setComment(ZJsonParser::stringValue(jsonObj["comment"]));

@@ -238,7 +238,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
     const std::string &key = iter->first;
     bool goodKey = true;
     if (key == "annotation") {
-      if (strlen(ZJsonParser::stringValue(iter->second)) == 0) {
+      if (ZJsonParser::stringValue(iter->second).empty()) {
         m_propertyJson.removeKey("annotation");
         goodKey = false;
       }

@@ -198,6 +198,25 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   return succ;
 }
 
+void ZDvidReader::updateDataStatus()
+{
+  ZJsonObject obj = readJsonObjectFromKey("neutu_config", "data_status");
+  if (!obj.isEmpty()) {
+    if (obj.hasKey(getDvidTarget().getSynapseName().c_str())) {
+      ZJsonObject synapseObj(obj.value(getDvidTarget().getSynapseName().c_str()));
+      if (synapseObj.hasKey("role")) {
+        if (std::string(ZJsonParser::stringValue(synapseObj["role"]))
+            == "synapse") {
+          if (synapseObj.hasKey("readonly")) {
+            getDvidTarget().setSynapseReadonly(
+                  ZJsonParser::booleanValue(synapseObj["readonly"]));
+          }
+        }
+      }
+    }
+  }
+}
+
 std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
 {
   std::vector<std::string> dataList;
@@ -2535,7 +2554,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName) const
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
@@ -2564,7 +2583,7 @@ QStringList ZDvidReader::readKeys(
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
@@ -2613,7 +2632,7 @@ QStringList ZDvidReader::readKeys(
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
