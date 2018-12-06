@@ -667,6 +667,8 @@ private:
   QString getAnnotationFinalizedWarningDetail(
       const std::vector<uint64_t> &finalizedBodyArray, const std::string &title) const;
 
+  void warnSynapseReadonly();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;

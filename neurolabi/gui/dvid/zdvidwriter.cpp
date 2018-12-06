@@ -1996,7 +1996,7 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonObject &annotationJson)
 {
-  ZDvidUrl url(getDvidTarget());
+//  ZDvidUrl url(getDvidTarget());
   ZJsonArray json;
   json.append(annotationJson);
 
@@ -2007,6 +2007,10 @@ void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonArray &annotationJson)
 {
   ZDvidUrl url(getDvidTarget());
+
+#ifdef _DEBUG_
+  std::cout << annotationJson.dumpString(0) << std::endl;
+#endif
 
   writeJson(url.getAnnotationElementsUrl(dataName), annotationJson);
 }

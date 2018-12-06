@@ -142,9 +142,9 @@ void LoadFlyEmConfig(
 #endif
 
     if (GET_FLYEM_CONFIG.hasDefaultNeuTuServer() == false) {
-      QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
-      if (!neutuServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setCustomNeuTuServer(neutuServer.toStdString());
+      std::string neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
+      if (!neutuServer.empty()) {
+        GET_FLYEM_CONFIG.setCustomNeuTuServer(neutuServer);
         //        GET_FLYEM_CONFIG.setDefaultNeuTuServer(neutuServer.toStdString());
       }
     }
@@ -154,9 +154,9 @@ void LoadFlyEmConfig(
 #endif
 
     if (GET_FLYEM_CONFIG.hasDefaultTaskServer() == false) {
-      QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
-      if (!taskServer.isEmpty()) {
-        GET_FLYEM_CONFIG.setCustomTaskServer(taskServer.toStdString());
+      std::string taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+      if (!taskServer.empty()) {
+        GET_FLYEM_CONFIG.setCustomTaskServer(taskServer);
       }
     }
   }

@@ -37,13 +37,13 @@ double ZDvidSynapse::getConfidence() const
   double c = 1.0;
 
   if (m_propertyJson.hasKey("confidence")) {
-    const char *confStr =
+    std::string confStr =
         ZJsonParser::stringValue(m_propertyJson["confidence"]);
-    c = std::atof(confStr);
+    c = std::atof(confStr.c_str());
   } else if (m_propertyJson.hasKey("conf")) {
-    const char *confStr =
+    std::string confStr =
         ZJsonParser::stringValue(m_propertyJson["conf"]);
-    c = std::atof(confStr);
+    c = std::atof(confStr.c_str());
   }
 
   return c;
