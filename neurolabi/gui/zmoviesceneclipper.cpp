@@ -108,11 +108,11 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
 {
   map<string, json_t*> entryMap = obj.toEntryMap(false);
   if (entryMap.count("target") > 0 && entryMap.count("axis") > 0) {
-    if (eqstr(ZJsonParser::stringValue(entryMap["target"]), "volume")) {
+    if (ZJsonParser::stringValue(entryMap["target"]) == "volume") {
       m_target = VOLUME;
     }
 
-    if (eqstr(ZJsonParser::stringValue(entryMap["target"]), "swc")) {
+    if (ZJsonParser::stringValue(entryMap["target"]) == "swc") {
       m_target = SWC;
     }
 
@@ -131,11 +131,11 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
       }
     }
 
-    if (eqstr(ZJsonParser::stringValue(entryMap["axis"]), "x")) {
+    if (ZJsonParser::stringValue(entryMap["axis"]) == "x") {
       m_axis = X;
-    } else if (eqstr(ZJsonParser::stringValue(entryMap["axis"]), "y")) {
+    } else if (ZJsonParser::stringValue(entryMap["axis"]) == "y") {
       m_axis = Y;
-    } else if (eqstr(ZJsonParser::stringValue(entryMap["axis"]), "z")) {
+    } else if (ZJsonParser::stringValue(entryMap["axis"]) == "z") {
       m_axis = Z;
     }
 

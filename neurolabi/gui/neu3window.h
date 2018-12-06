@@ -5,6 +5,7 @@
 
 #include "zactionfactory.h"
 #include "zpoint.h"
+#include "zsharedpointer.h"
 
 namespace Ui {
 class Neu3Window;
@@ -29,6 +30,7 @@ class ZArbSliceViewParam;
 class ZNeu3SliceViewDialog;
 class ZFlyEmMessageWidget;
 class ZWidgetMessage;
+class ZFlyEmBodyColorScheme;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -160,6 +162,7 @@ private slots:
   void updateSliceBrowser();
   void updateSliceBrowserSelection();
   void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
+  void applyBrowserColorScheme();
 
 //  void hideGrayscale();
   void processCameraRotation();
@@ -249,6 +252,7 @@ private:
   int m_browseWidth = DEFAULT_BROWSE_WIDTH;
   int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
   EBrowseMode m_browseMode = BROWSE_NONE;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_browserColorScheme;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
   QTimer *m_testTimer;

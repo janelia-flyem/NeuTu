@@ -5631,8 +5631,8 @@ void MainWindow::on_actionAssign_Clustering_triggered()
           if (process.run()) {
             const ZJsonObject &output = process.getOutput();
             if (output.hasKey("label_file")) {
-              const char *outputFile = ZJsonParser::stringValue(output["label_file"]);
-              if (outputFile != NULL) {
+              std::string outputFile = ZJsonParser::stringValue(output["label_file"]);
+              if (!outputFile.empty()) {
                 frame->assignClass(outputFile);
               } else {
                 report("Error Output", "Cannot finish the task for unknown reasons.",

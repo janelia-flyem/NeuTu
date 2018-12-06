@@ -850,9 +850,11 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   LINFO() << "Setting dvid env in ZFlyEmProofDoc";
   if (m_dvidReader.open(target)) {
     std::ostringstream flowInfo;
+    flowInfo << "Update data statuses";
+    m_dvidReader.updateDataStatus();
 
-    flowInfo << "Prepare DVID readers";
-    m_dvidWriter.open(target);
+    flowInfo << "->Prepare DVID readers";
+    m_dvidWriter.openRaw(m_dvidReader.getDvidTarget());
     m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
     m_todoReader.openRaw(m_dvidReader.getDvidTarget());
     m_sparseVolReader.openRaw(m_dvidReader.getDvidTarget());
@@ -1988,49 +1990,64 @@ void ZFlyEmProofDoc::checkOutBody(flyem::EBodySplitMode mode)
   }
 }
 
+void ZFlyEmProofDoc::warnSynapseReadonly()
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("The synapse data is readonly."),
+          neutube::EMessageType::WARNING));
+}
 
 void ZFlyEmProofDoc::verifySelectedSynapse()
 {
-  const std::string &userName = neutube::GetCurrentUserName();
-  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
-  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
-  const std::set<ZIntPoint> &selected = getSelectedSynapse();
-  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
-       iter != synapseList.end(); ++iter) {
-    ZDvidSynapseEnsemble *se = *iter;
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      se->setUserName(pt, userName, scope);
-      se->setConfidence(pt, 1.0, scope);
-      emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
+  if (getDvidTarget().isSynapseEditable()) {
+    const std::string &userName = neutube::GetCurrentUserName();
+    QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+    ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+    const std::set<ZIntPoint> &selected = getSelectedSynapse();
+    for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+         iter != synapseList.end(); ++iter) {
+      ZDvidSynapseEnsemble *se = *iter;
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        const ZIntPoint &pt = *iter;
+        se->setUserName(pt, userName, scope);
+        se->setConfidence(pt, 1.0, scope);
+        emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
+      }
+      scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+      processObjectModified(se);
     }
-    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
-    processObjectModified(se);
+    processObjectModified();
+  } else {
+    warnSynapseReadonly();
   }
-  processObjectModified();
 }
 
 void ZFlyEmProofDoc::unverifySelectedSynapse()
 {
-  const std::string &userName = neutube::GetCurrentUserName();
-  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
-  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
-  const std::set<ZIntPoint> &selected = getSelectedSynapse();
-  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
-       iter != synapseList.end(); ++iter) {
-    ZDvidSynapseEnsemble *se = *iter;
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      se->setUserName(pt, "$" + userName, scope);
-      se->setConfidence(pt, 0.5, scope);
-      emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), false);
+  if (getDvidTarget().isSynapseEditable()) {
+    const std::string &userName = neutube::GetCurrentUserName();
+    QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+    ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+    const std::set<ZIntPoint> &selected = getSelectedSynapse();
+    for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+         iter != synapseList.end(); ++iter) {
+      ZDvidSynapseEnsemble *se = *iter;
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        const ZIntPoint &pt = *iter;
+        se->setUserName(pt, "$" + userName, scope);
+        se->setConfidence(pt, 0.5, scope);
+        emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), false);
+      }
+      scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+      processObjectModified(se);
     }
-    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
-    processObjectModified(se);
+    processObjectModified();
+  } else {
+    warnSynapseReadonly();
   }
-  processObjectModified();
 }
 
 void ZFlyEmProofDoc::deleteSelectedSynapse()
@@ -4187,101 +4204,109 @@ void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
 
 void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
-    std::vector<ZDvidSynapse> selectedPresyn;
-    std::vector<ZDvidSynapse> selectedPostsyn;
+  if (getDvidTarget().isSynapseEditable()) {
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+      std::vector<ZDvidSynapse> selectedPresyn;
+      std::vector<ZDvidSynapse> selectedPostsyn;
 
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      ZDvidSynapse &synapse =
-          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
-      if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
-        selectedPresyn.push_back(synapse);
-      } else if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
-        selectedPostsyn.push_back(synapse);
-      }
-    }
-
-    if (!selectedPresyn.empty()) {
-      if (!selectedPostsyn.empty()) {
-        ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
-            new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
-        pushUndoCommand(command);
-      } else {
-        ZStackDocCommand::DvidSynapseEdit::UngroupSynapse *command =
-            new ZStackDocCommand::DvidSynapseEdit::UngroupSynapse(this, NULL);
-        for (std::vector<ZDvidSynapse>::const_iterator
-             iter = selectedPresyn.begin(); iter != selectedPresyn.end();
-             ++iter) {
-          const ZDvidSynapse& presyn = *iter;
-          command->addSynapse(presyn.getPosition());
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        ZDvidSynapse &synapse =
+            se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+          selectedPresyn.push_back(synapse);
+        } else if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
+          selectedPostsyn.push_back(synapse);
         }
-        pushUndoCommand(command);
+      }
+
+      if (!selectedPresyn.empty()) {
+        if (!selectedPostsyn.empty()) {
+          ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
+              new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
+          pushUndoCommand(command);
+        } else {
+          ZStackDocCommand::DvidSynapseEdit::UngroupSynapse *command =
+              new ZStackDocCommand::DvidSynapseEdit::UngroupSynapse(this, NULL);
+          for (std::vector<ZDvidSynapse>::const_iterator
+               iter = selectedPresyn.begin(); iter != selectedPresyn.end();
+               ++iter) {
+            const ZDvidSynapse& presyn = *iter;
+            command->addSynapse(presyn.getPosition());
+          }
+          pushUndoCommand(command);
+        }
       }
     }
+  } else {
+    warnSynapseReadonly();
   }
 }
 
 void ZFlyEmProofDoc::executeLinkSynapseCommand()
 {
-  QUndoCommand *command =
-      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+  if (getDvidTarget().isSynapseEditable()) {
+    QUndoCommand *command =
+        new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    const std::set<ZIntPoint> &selected =
-        se->getSelector().getSelectedSet();
-    std::vector<ZDvidSynapse> selectedPresyn;
-    std::vector<ZDvidSynapse> selectedPostsyn;
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      const std::set<ZIntPoint> &selected =
+          se->getSelector().getSelectedSet();
+      std::vector<ZDvidSynapse> selectedPresyn;
+      std::vector<ZDvidSynapse> selectedPostsyn;
 
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      ZDvidSynapse &synapse =
-          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
-      if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
-        selectedPresyn.push_back(synapse);
-      } else if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
-        selectedPostsyn.push_back(synapse);
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        ZDvidSynapse &synapse =
+            se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+          selectedPresyn.push_back(synapse);
+        } else if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
+          selectedPostsyn.push_back(synapse);
+        }
       }
-    }
 
-    if (selectedPresyn.size() == 1) {
-      ZDvidSynapse &presyn = selectedPresyn.front();
-      ZStackDocCommand::DvidSynapseEdit::LinkSynapse *linkCommand =
+      if (selectedPresyn.size() == 1) {
+        ZDvidSynapse &presyn = selectedPresyn.front();
+        ZStackDocCommand::DvidSynapseEdit::LinkSynapse *linkCommand =
+            new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+              this, presyn.getPosition(), command);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = selectedPostsyn.begin(); iter != selectedPostsyn.end();
+             ++iter) {
+          const ZDvidSynapse& postsyn = *iter;
+          linkCommand->addRelation(
+                postsyn.getPosition(), ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_PRESYN_TO));
           new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-            this, presyn.getPosition(), command);
-      for (std::vector<ZDvidSynapse>::const_iterator
-           iter = selectedPostsyn.begin(); iter != selectedPostsyn.end();
-           ++iter) {
-        const ZDvidSynapse& postsyn = *iter;
-        linkCommand->addRelation(
-              postsyn.getPosition(), ZDvidSynapse::Relation::GetName(
-                ZDvidSynapse::Relation::RELATION_PRESYN_TO));
-        new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-              this, postsyn.getPosition(), presyn.getPosition(),
-              ZDvidSynapse::Relation::GetName(
-                ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
-              command);
+                this, postsyn.getPosition(), presyn.getPosition(),
+                ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
+                command);
+        }
+      } else {
+        ZStackDocCommand::DvidSynapseEdit::GroupSynapse *groupCommand =
+            new ZStackDocCommand::DvidSynapseEdit::GroupSynapse(
+              this, command);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = selectedPresyn.begin(); iter != selectedPresyn.end();
+             ++iter) {
+          const ZDvidSynapse& presyn = *iter;
+          groupCommand->addSynapse(presyn.getPosition());
+        }
       }
-    } else {
-      ZStackDocCommand::DvidSynapseEdit::GroupSynapse *groupCommand =
-          new ZStackDocCommand::DvidSynapseEdit::GroupSynapse(
-            this, command);
-      for (std::vector<ZDvidSynapse>::const_iterator
-           iter = selectedPresyn.begin(); iter != selectedPresyn.end();
-           ++iter) {
-        const ZDvidSynapse& presyn = *iter;
-        groupCommand->addSynapse(presyn.getPosition());
+
+      //    qDebug() << "#Commands: " << command->childCount();
+
+      if (command->childCount() > 0) {
+        pushUndoCommand(command);
       }
     }
-
-//    qDebug() << "#Commands: " << command->childCount();
-
-    if (command->childCount() > 0) {
-      pushUndoCommand(command);
-    }
+  } else {
+    warnSynapseReadonly();
   }
 }
 
@@ -4327,14 +4352,18 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofDoc::repairSelectedSynapses()
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    const std::set<ZIntPoint> &selected =
-        se->getSelector().getSelectedSet();
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      repairSynapse(*iter);
+  if (getDvidTarget().isSynapseEditable()) {
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      const std::set<ZIntPoint> &selected =
+          se->getSelector().getSelectedSet();
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        repairSynapse(*iter);
+      }
     }
+  } else {
+    warnSynapseReadonly();
   }
 }
 
@@ -4343,116 +4372,92 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 //  QUndoCommand *command =
 //      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
-
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    const std::set<ZIntPoint> &selected =
-        se->getSelector().getSelectedSet();
-    if (!selected.empty()) {
-      ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp *command =
-          new ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp(this);
-      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-           iter != selected.end(); ++iter) {
-        command->addRemoval(*iter);
-      }
-      pushUndoCommand(command);
-    }
-
-#if 0
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      ZDvidSynapse &synapse =
-          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
-      removingSet.insert(pt);
-
-      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
-        std::vector<ZIntPoint> partners = synapse.getPartners();
-        removingSet.insert(partners.begin(), partners.end());
+  if (getDvidTarget().isSynapseEditable()) {
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      const std::set<ZIntPoint> &selected =
+          se->getSelector().getSelectedSet();
+      if (!selected.empty()) {
+        ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp *command =
+            new ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp(this);
+        for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          command->addRemoval(*iter);
+        }
+        pushUndoCommand(command);
       }
     }
-
-    ZStackDocCommand::DvidSynapseEdit::RemoveSynapses *command =
-        new ZStackDocCommand::DvidSynapseEdit::RemoveSynapses(this);
-    command->setRemoval(removingSet);
-
-    pushUndoCommand(command);
-#endif
-
-#if 0
-    for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();
-         iter != removingSet.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      new ZStackDocCommand::DvidSynapseEdit::RemoveSynapse(
-            this, pt.getX(), pt.getY(), pt.getZ(), command);
-    }
-    se->getSelector().deselectAll();
-
-    if (command->childCount() > 0) {
-      pushUndoCommand(command);
-    }
-#endif
+  } else {
+    warnSynapseReadonly();
   }
 }
 
 void ZFlyEmProofDoc::executeAddSynapseCommand(
     const ZDvidSynapse &synapse, bool tryingLink)
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    ZUndoCommand *command =
-        new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
-    new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
-          this, synapse, command);
-    if (tryingLink) {
-      if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
-        const std::set<ZIntPoint> &selected =
-            se->getSelector().getSelectedSet();
-        std::vector<ZDvidSynapse> selectedPresyn;
-        for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-             iter != selected.end(); ++iter) {
-          ZDvidSynapse &synapse =
-              se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
-          if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
-            selectedPresyn.push_back(synapse);
+  if (getDvidTarget().isSynapseEditable()) {
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      ZUndoCommand *command =
+          new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+      new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
+            this, synapse, command);
+      if (tryingLink) {
+        if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
+          const std::set<ZIntPoint> &selected =
+              se->getSelector().getSelectedSet();
+          std::vector<ZDvidSynapse> selectedPresyn;
+          for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+               iter != selected.end(); ++iter) {
+            ZDvidSynapse &synapse =
+                se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+            if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+              selectedPresyn.push_back(synapse);
+            }
+            if (selectedPresyn.size() > 1) {
+              break;
+            }
           }
-          if (selectedPresyn.size() > 1) {
-            break;
+          if (selectedPresyn.size() == 1) {
+            ZDvidSynapse &presyn = selectedPresyn.front();
+            new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                  this, synapse.getPosition(), presyn.getPosition(),
+                  ZDvidSynapse::Relation::GetName(
+                    ZDvidSynapse::Relation::RELATION_POSTSYN_TO), command);
+            new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                  this, presyn.getPosition(), synapse.getPosition(),
+                  ZDvidSynapse::Relation::GetName(
+                    ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
           }
-        }
-        if (selectedPresyn.size() == 1) {
-          ZDvidSynapse &presyn = selectedPresyn.front();
-          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-                this, synapse.getPosition(), presyn.getPosition(),
-                ZDvidSynapse::Relation::GetName(
-                  ZDvidSynapse::Relation::RELATION_POSTSYN_TO), command);
-          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-                this, presyn.getPosition(), synapse.getPosition(),
-                ZDvidSynapse::Relation::GetName(
-                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
         }
       }
+      pushUndoCommand(command);
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              "Failed to add synapse. Have you specified the synapse data name?",
+              neutube::EMessageType::WARNING));
     }
-    pushUndoCommand(command);
   } else {
-    emit messageGenerated(
-          ZWidgetMessage(
-            "Failed to add synapse. Have you specified the synapse data name?",
-            neutube::EMessageType::WARNING));
+    warnSynapseReadonly();
   }
 }
 
 void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
-  if (se != NULL) {
-    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
-    if (selectedSet.size() == 1) {
-      QUndoCommand *command =
-          new ZStackDocCommand::DvidSynapseEdit::MoveSynapse(
-            this, *selectedSet.begin(), dest);
-      pushUndoCommand(command);
+  if (getDvidTarget().isSynapseEditable()) {
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    if (se != NULL) {
+      const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+      if (selectedSet.size() == 1) {
+        QUndoCommand *command =
+            new ZStackDocCommand::DvidSynapseEdit::MoveSynapse(
+              this, *selectedSet.begin(), dest);
+        pushUndoCommand(command);
+      }
     }
+  } else {
+    warnSynapseReadonly();
   }
 }
 
