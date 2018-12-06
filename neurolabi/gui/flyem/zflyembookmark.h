@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <string>
 
 #include "zintpoint.h"
 #include "tz_stdint.h"
@@ -43,9 +44,17 @@ public:
   QString getTypeString() const;
 
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
+
   inline void setComment(const QString &comment) { m_comment = comment; }
   inline void setUser(const QString &user) { m_userName = user; }
   inline void setStatus(const QString &status) { m_status = status; }
+
+  inline void setComment(const std::string &comment) {
+    setComment(QString::fromStdString(comment)); }
+  inline void setUser(const std::string &user) {
+    setUser(QString::fromStdString(user)); }
+  inline void setStatus(const std::string &status) {
+    setStatus(QString::fromStdString(status)); }
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {

@@ -231,13 +231,14 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
 
       // remove name if empty
-      if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+      if (bodyData.hasKey("name") &&
+          ZJsonParser::stringValue(bodyData["name"]).empty()) {
         bodyData.removeKey("name");
       }
 
       // remove status if empty; change status > body status
       if (bodyData.hasKey("status")) {
-        if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+        if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
           bodyData.setEntry("body status", bodyData["status"]);
         }
         // don't really need to remove this, but why not
@@ -740,7 +741,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 ZJsonObject bodyData = bodyAnnotationList[i];
 
                 // remove name if empty
-                if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+                if (bodyData.hasKey("name") &&
+                    ZJsonParser::stringValue(bodyData["name"]).empty()) {
                     bodyData.removeKey("name");
                 }
 
@@ -750,9 +752,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                   }
                 }
 
-                // remove status if empty; change status > body status
+                // remove status if empty; change status => body status
                 if (bodyData.hasKey("status")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                         bodyData.setEntry("body status", bodyData["status"]);
                     } 
                     // don't really need to remove this, but why not
@@ -888,11 +890,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("name")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
                         entry.setEntry("name", bodyData["name"]);
                         // store name for later use
                         m_bodyNames[bodyID] =
-                            QString(ZJsonParser::stringValue(bodyData["name"]));
+                            QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }
@@ -902,7 +904,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("status")) {
-                  if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                  if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                     entry.setEntry("body status", bodyData["status"]);
                   }
                 }
@@ -1022,8 +1024,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
   if (bkmk.hasKey("name")) {
-    const char* name = ZJsonParser::stringValue(bkmk["name"]);
-    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString(name));
+    std::string name = ZJsonParser::stringValue(bkmk["name"]);
+    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString::fromStdString(name));
   }
 
   if (bkmk.hasKey("body T-bars")) {
@@ -1047,8 +1049,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   // note that this routine expects "body status", not "status";
   //  historical side-effect of the original file format we read from
   if (bkmk.hasKey("body status")) {
-    const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString(status));
+    std::string status = ZJsonParser::stringValue(bkmk["body status"]);
+    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString::fromStdString(status));
     //      m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
   }
 
@@ -1252,7 +1254,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     for (size_t i=0; i<colorArray.size(); i++) {
         ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
-        QString filter(ZJsonParser::stringValue(entry["filter"]));
+        QString filter(ZJsonParser::stringValue(entry["filter"]).c_str());
         QStandardItem * filterTextItem = new QStandardItem(filter);
         m_filterModel->appendRow(filterTextItem);
 
@@ -1665,8 +1667,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
         foreach (ZJsonObject bodyData, bodyAnnotationList) {
             if (bodyData.hasKey("name")) {
-                if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
-                    m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
+                if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
+                    m_bodyNames[bodyID] =
+                        QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                 } else {
                     m_namelessBodies.insert(bodyID);
                 }
