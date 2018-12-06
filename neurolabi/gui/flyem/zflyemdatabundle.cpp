@@ -353,7 +353,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *matchThreObj = bundleObject[ZFlyEmDataBundle::m_matchThresholdKey];
     if (matchThreObj != NULL) {
-      FILE *fp = fopen(ZJsonParser::stringValue(matchThreObj), "r");
+      FILE *fp = fopen(ZJsonParser::stringValue(matchThreObj).c_str(), "r");
       if (fp != NULL) {
         ZString line;
         while (line.readLine(fp)) {

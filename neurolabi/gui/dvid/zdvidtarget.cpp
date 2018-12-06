@@ -306,6 +306,11 @@ bool ZDvidTarget::readOnly() const
   return m_readOnly || getNodeStatus() == ZDvid::NODE_LOCKED;
 }
 
+void ZDvidTarget::setSynapseReadonly(bool on)
+{
+  m_isSynpaseEditable = !on;
+}
+
 ZDvid::ENodeStatus ZDvidTarget::getNodeStatus() const
 {
   return m_nodeStatus;

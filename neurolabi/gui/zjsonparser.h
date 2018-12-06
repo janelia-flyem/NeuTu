@@ -2,6 +2,8 @@
 #define ZJSONPARSER_H
 
 #include <vector>
+#include <string>
+
 #include "neurolabi_config.h"
 #include "tz_json.h"
 #include "zjsonobject.h"
@@ -30,7 +32,7 @@ public:
   static void incref(json_t *value);
   static void decref(json_t *value);
 
-  static const char* stringValue(const json_t *value);
+  static std::string stringValue(const json_t *value);
   static double numberValue(const json_t *value);
 
   /*!
@@ -43,7 +45,7 @@ public:
   static bool booleanValue(const json_t *value);
   static bool booleanValue(const json_t *value, bool defaultValue);
 
-  static const char* stringValue(const json_t *value, size_t index);
+  static std::string stringValue(const json_t *value, size_t index);
   static double numberValue(const json_t *value, size_t index);
   static int integerValue(const json_t *value, size_t index);
 
@@ -66,7 +68,7 @@ public:
 private:
   json_error_t m_error;
 
-  const static char m_emptyString[1];
+//  const static char m_emptyString[1];
 };
 
 #endif // ZJSONPARSER_H

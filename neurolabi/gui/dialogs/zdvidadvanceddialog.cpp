@@ -139,7 +139,8 @@ void ZDvidAdvancedDialog::UpdateWidget(
 {
   if (obj.hasKey(key)) {
     UpdateWidget(
-          label, lineEdit, labelText, ZJsonParser::stringValue(obj[key]),
+          label, lineEdit, labelText,
+          ZJsonParser::stringValue(obj[key]).c_str(),
           hintWidget);
   } else {
     UpdateWidget(label, lineEdit, labelText, "", hintWidget);
