@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const char ZJsonParser::m_emptyString[] = {'\0' };
+//const char ZJsonParser::m_emptyString[] = {'\0' };
 
 ZJsonParser::ZJsonParser()
 {
@@ -99,13 +99,18 @@ void ZJsonParser::decref(json_t *value)
   json_decref(value);
 }
 
-const char* ZJsonParser::stringValue(const json_t *value)
+std::string ZJsonParser::stringValue(const json_t *value)
 {
   if (value == NULL || !json_is_string(value)) {
-    return m_emptyString;
+    return "";
   }
 
-  return json_string_value(value);
+  const char *str = json_string_value(value);
+  if (str == NULL) {
+    return "";
+  }
+
+  return str;
 }
 
 double ZJsonParser::numberValue(const json_t *value)
@@ -140,7 +145,7 @@ bool ZJsonParser::booleanValue(const json_t *value, bool defaultValue)
   return defaultValue;
 }
 
-const char* ZJsonParser::stringValue(const json_t *value, size_t index)
+string ZJsonParser::stringValue(const json_t *value, size_t index)
 {
   return stringValue(arrayValue(value, index));
 }

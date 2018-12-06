@@ -204,7 +204,7 @@ void Z3DGraphEdge::loadJsonObject(json_t *obj)
       }
       m_usingNodeColor = false;
     } else if (eqstr(key, "shape")) {
-      const char *shape = ZJsonParser::stringValue(value);
+      std::string shape = ZJsonParser::stringValue(value);
       setShape(shape);
     }
   }

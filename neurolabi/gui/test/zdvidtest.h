@@ -622,8 +622,8 @@ TEST(ZDvidTest, ZDvidNode)
   node.loadJsonObject(obj);
 
   ZJsonObject obj2 = node.toJsonObject();
-  ASSERT_STREQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["address"]));
-  ASSERT_STREQ("2a3", ZJsonParser::stringValue(obj2["uuid"]));
+  ASSERT_EQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["address"]));
+  ASSERT_EQ("2a3", ZJsonParser::stringValue(obj2["uuid"]));
   ASSERT_EQ(8800, ZJsonParser::integerValue(obj2["port"]));
 
   node.print();

@@ -121,7 +121,7 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
   std::cout << jsonObj.dumpString() << std::endl;
 #endif
   if (jsonObj.hasKey("tag")) {
-    if (eqstr(ZJsonParser::stringValue(jsonObj["tag"]), "trace configuration")) {
+    if (ZJsonParser::stringValue(jsonObj["tag"]) == "trace configuration") {
       if (jsonObj.hasKey("default")) {
         ZJsonObject defaultObj(const_cast<json_t*>(jsonObj["default"]),
             ZJsonValue::SET_INCREASE_REF_COUNT);
