@@ -15,6 +15,8 @@ public:
   explicit NeuPrintQueryDialog(QWidget *parent = 0);
   ~NeuPrintQueryDialog();
 
+  void setRoiList(const QStringList roiList);
+
   QList<QString> getInputRoi() const;
   QList<QString> getOutputRoi() const;
 

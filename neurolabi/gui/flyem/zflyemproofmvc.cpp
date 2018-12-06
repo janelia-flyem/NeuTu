@@ -237,6 +237,16 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
   return m_bodyQueryDlg;
 }
 
+NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintQueryDlg()
+{
+  if (m_neuprintQueryDlg == nullptr) {
+    m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
+    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
+  }
+
+  return m_neuprintQueryDlg;
+}
+
 ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
@@ -3554,13 +3564,10 @@ void ZFlyEmProofMvc::queryBody()
   std::cout << token << std::endl;
   reader.authorize(token.c_str());
 
-//  reader.readDatasets();
-
-  NeuPrintQueryDialog queryDlg;
-
-  if (queryDlg.exec()) {
+  if (getNeuPrintQueryDlg()->exec()) {
     QList<uint64_t> bodyList = reader.queryNeuron(
-          queryDlg.getInputRoi(), queryDlg.getOutputRoi());
+          getNeuPrintQueryDlg()->getInputRoi(),
+          getNeuPrintQueryDlg()->getOutputRoi());
     for (uint64_t bodyId : bodyList) {
       std::cout << bodyId << std::endl;
     }
@@ -5494,9 +5501,12 @@ void ZFlyEmProofMvc::loadRoi(
             meshList.push_back(submesh);
           }
         }
-        *mesh = ZMesh::Merge(meshList);
-        for (ZMesh *submesh : meshList) {
-          delete submesh;
+        if (!meshList.empty()) {
+          mesh = new ZMesh;
+          *mesh = ZMesh::Merge(meshList);
+          for (ZMesh *submesh : meshList) {
+            delete submesh;
+          }
         }
       }
     }

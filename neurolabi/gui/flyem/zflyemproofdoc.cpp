@@ -60,6 +60,7 @@
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "flyem/zflyembodystatus.h"
+#include "zflyemroimanager.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -912,6 +913,10 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    m_roiManager = new ZFlyEmRoiManager(this);
+    m_roiManager->setDvidTarget(getDvidTarget());
+    m_roiManager->loadRoiList();
+
     LDEBUG() << flowInfo.str();
     startTimer();
   } else {
@@ -1273,6 +1278,11 @@ ZFlyEmToDoList* ZFlyEmProofDoc::getTodoList(neutube::EAxis axis) const
   }
 
   return NULL;
+}
+
+QStringList ZFlyEmProofDoc::getRoiList() const
+{
+  return m_roiManager->getRoiList();
 }
 
 QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const

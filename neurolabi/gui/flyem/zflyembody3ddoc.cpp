@@ -128,6 +128,8 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
        iter != m_garbageMap.end(); ++iter) {
     delete iter.key();
   }
+
+  LDEBUG() << "ZFlyEmBody3dDoc destroyed";
 }
 
 void ZFlyEmBody3dDoc::waitForAllEvent()

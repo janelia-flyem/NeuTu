@@ -6,43 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>113</height>
+    <width>454</width>
+    <height>194</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>NeuPrint Query</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Input ROI</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="inputRoiLineEdit"/>
-       </item>
-      </layout>
+      <widget class="ZOptionListWidget" name="inputRoiWidget" native="true"/>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Output ROI</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="outputRoiLineEdit"/>
-       </item>
-      </layout>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../gui.qrc">:/images/go-next.png</pixmap>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ZOptionListWidget" name="outputRoiWidget" native="true"/>
      </item>
     </layout>
    </item>
@@ -58,7 +46,17 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>ZOptionListWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">widgets/zoptionlistwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
