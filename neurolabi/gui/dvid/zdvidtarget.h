@@ -284,6 +284,10 @@ public:
   void setReadOnly(bool readOnly) {
     m_readOnly = readOnly;
   }
+  bool isSynapseEditable() const {
+    return m_isSynpaseEditable;
+  }
+  void setSynapseReadonly(bool on);
 
   int getMaxLabelZoom() const {
     return m_maxLabelZoom;
@@ -414,6 +418,7 @@ private:
   int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
+  bool m_isSynpaseEditable = true;
   ZDvidData::EType m_segmentationType = ZDvidData::TYPE_LABELBLK;
 //  bool m_usingLabelArray = false;
 //  bool m_usingLabelMap = false;
