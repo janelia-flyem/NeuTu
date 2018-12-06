@@ -6,6 +6,8 @@ NeuPrintQueryDialog::NeuPrintQueryDialog(QWidget *parent) :
   ui(new Ui::NeuPrintQueryDialog)
 {
   ui->setupUi(this);
+  ui->inputRoiWidget->setName("Input ROIs");
+  ui->outputRoiWidget->setName("Output ROIs");
 }
 
 NeuPrintQueryDialog::~NeuPrintQueryDialog()
@@ -13,18 +15,18 @@ NeuPrintQueryDialog::~NeuPrintQueryDialog()
   delete ui;
 }
 
+void NeuPrintQueryDialog::setRoiList(const QStringList roiList)
+{
+  ui->inputRoiWidget->setOptionList(roiList);
+  ui->outputRoiWidget->setOptionList(roiList);
+}
+
 QList<QString> NeuPrintQueryDialog::getInputRoi() const
 {
-  QList<QString> inputRoiList;
-  inputRoiList.append(ui->inputRoiLineEdit->text());
-
-  return inputRoiList;
+  return ui->inputRoiWidget->getSelectedOptionList();
 }
 
 QList<QString> NeuPrintQueryDialog::getOutputRoi() const
 {
-  QList<QString> outputRoiList;
-  outputRoiList.append(ui->outputRoiLineEdit->text());
-
-  return outputRoiList;
+  return ui->outputRoiWidget->getSelectedOptionList();
 }

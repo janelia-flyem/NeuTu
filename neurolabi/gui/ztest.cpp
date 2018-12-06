@@ -313,6 +313,9 @@
 #include "zjsonobjectparser.h"
 #include "flyem/zflyembodystatus.h"
 #include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyemroimanager.h"
+#include "widgets/zoptionlistwidget.h"
+#include"dialogs/neuprintquerydialog.h"
 
 #include "test/ztestall.h"
 
@@ -12976,7 +12979,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZParameterArray paramArray;
 
   ZParameter *param = new ZIntParameter("value1", 1, 0, 255);
@@ -28978,6 +28981,58 @@ void ZTest::test(MainWindow *host)
 
   QString msg = project.composeStatusConflictMessage(annotMap);
   qDebug() << msg;
+
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("MB_Test");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+//  roiManager.updateMesh("alpha1_below_roi");
+  roiManager.updateMesh("mb_subtracted");
+  roiManager.print();
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+
+  roiManager.updateMesh("vACA");
+  roiManager.updateMesh("gL");
+
+  roiManager.print();
+
+  std::cout << roiManager.getMesh("vACA") << std::endl;
+  std::cout << roiManager.getMesh("gL") << std::endl;
+
+
+#endif
+
+#if 0
+  ZOptionListWidget *widget = new ZOptionListWidget(NULL);
+
+  widget->setName("test");
+  widget->setOptionList(QStringList({"1", "2", "3", "4", "5"}));
+  widget->show();
+#endif
+
+#if 1
+
+  NeuPrintQueryDialog *dlg = new NeuPrintQueryDialog(host);
+  dlg->setRoiList({"1", "2", "3"});
+  dlg->exec();
+
+  QStringList inputList = dlg->getInputRoi();
+  for (const QString &roi : inputList) {
+    qDebug() << roi;
+  }
 
 #endif
 

@@ -33,6 +33,7 @@ class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
 class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
+class ZFlyEmRoiManager;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -449,6 +450,8 @@ public:
 
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
 
+  QStringList getRoiList() const;
+
 
   void diagnose() const override;
 
@@ -709,6 +712,8 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+
+  ZFlyEmRoiManager *m_roiManager = nullptr;
 
   mutable ZFlyEmMB6Analyzer m_analyzer;
 

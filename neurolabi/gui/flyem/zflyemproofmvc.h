@@ -52,6 +52,7 @@ class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
 class ZROIWidget;
 class ZFlyEmBodyAnnotationDialog;
+class NeuPrintQueryDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -532,6 +533,7 @@ private:
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  NeuPrintQueryDialog* getNeuPrintQueryDlg();
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
@@ -574,6 +576,7 @@ protected:
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
   ZFlyEmProofSettingDialog *m_settingDlg;
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
