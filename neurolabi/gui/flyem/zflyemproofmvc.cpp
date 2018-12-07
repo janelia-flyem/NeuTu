@@ -3728,13 +3728,22 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
     if (reader->isReady()) {
       return reader;
     } else {
-      emit messageGenerated(
-            ZWidgetMessage("NeuPrint server is NOT set.",
-                           neutube::EMessageType::ERROR));
+      if (!reader->isAuthorized()) {
+        emit messageGenerated(
+              ZWidgetMessage("NeuTu has not been authorized to use the NeuPrint server. "
+                             "Please download your Auth Toke from NeuPrint and save it "
+                             "as " + NeutubeConfig::getInstance().getPath(
+                               NeutubeConfig::EConfigItem::NEUPRINT_AUTH),
+                             neutube::EMessageType::ERROR));
+      } else {
+        emit messageGenerated(
+              ZWidgetMessage("Cannot use the NeuPrint server.",
+                             neutube::EMessageType::ERROR));
+      }
     }
   } else {
     emit messageGenerated(
-          ZWidgetMessage("Cannot use the NeuPrint server.",
+          ZWidgetMessage("The NeuPrint server has NOT been specified.",
                          neutube::EMessageType::ERROR));
   }
 
