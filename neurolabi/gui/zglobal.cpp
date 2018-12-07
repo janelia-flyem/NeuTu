@@ -113,8 +113,7 @@ NeuPrintReader* ZGlobal::getNeuPrintReader()
       QString auth = qgetenv("NEUPRINT_AUTH");
       if (auth.isEmpty()) {
         auth = NeutubeConfig::getInstance().getPath(
-              NeutubeConfig::EConfigItem::WORKING_DIR).c_str() +
-            QString("/neuprint_auth.json");
+              NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
         LINFO() << "NeuPrint auth path:" << auth;
       }
 
