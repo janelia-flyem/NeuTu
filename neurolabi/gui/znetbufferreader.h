@@ -35,7 +35,8 @@ public:
 
   void clearBuffer();
 
-  void setHeader(const QString &key, const QString &value);
+  void setRequestHeader(const QString &key, const QString &value);
+  bool hasRequestHeader(const QString &key) const;
 
 signals:
 

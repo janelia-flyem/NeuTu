@@ -515,7 +515,7 @@ void ZStackDoc::autoSaveSwc()
     ZOUT(LTRACE(), 5) << "Auto save triggered in" << this;
     if (hasSwc()) {
       std::string autoSaveDir = NeutubeConfig::getInstance().getPath(
-            NeutubeConfig::AUTO_SAVE);
+            NeutubeConfig::EConfigItem::AUTO_SAVE);
       QDir dir(autoSaveDir.c_str());
       if (dir.exists()) {
         ostringstream stream;

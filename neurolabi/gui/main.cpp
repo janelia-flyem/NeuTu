@@ -169,8 +169,10 @@ int main(int argc, char *argv[])
 
     if (!mainConfig.runCommandLine) {
       //Sync log files
-      sync_log_dir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR),
-                 NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR));
+      sync_log_dir(NeutubeConfig::getInstance().getPath(
+                     NeutubeConfig::EConfigItem::LOG_DIR),
+                 NeutubeConfig::getInstance().getPath(
+                     NeutubeConfig::EConfigItem::LOG_DEST_DIR));
     }
 
     return result;

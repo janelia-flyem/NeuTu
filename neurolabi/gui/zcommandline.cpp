@@ -1547,10 +1547,12 @@ int ZCommandLine::run(int argc, char *argv[])
         std::cout << "More information on: " << std::endl << url << std::endl;
       } else if (m_input[0] == "info") {
         std::cout << "Working directory:"
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::WORKING_DIR)
                   << std::endl;
         std::cout << "Log path: "
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::LOG_FILE)
                   << std::endl;
       }
     }

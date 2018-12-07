@@ -16,6 +16,7 @@ class ZDvidSparseStack;
 class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
+class NeuPrintReader;
 
 class ZGlobal
 {
@@ -63,6 +64,8 @@ public:
   T* getMainWindow() const;
 
   QMainWindow* getMainWindow() const;
+
+  NeuPrintReader *getNeuPrintReader();
 
 public:
   static ZDvidReader* GetDvidReader(
