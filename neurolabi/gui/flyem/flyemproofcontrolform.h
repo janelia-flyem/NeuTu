@@ -29,6 +29,8 @@ public:
   ZFlyEmBookmarkView* getUserBookmarkView() const;
   ZFlyEmBookmarkView* getAssignedBookmarkView() const;
 
+  void setMainMenu(QMenu *menu);
+
 signals:
   void segmentVisibleChanged(bool visible);
   void mergingSelected();

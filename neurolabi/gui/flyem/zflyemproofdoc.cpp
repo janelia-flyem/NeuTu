@@ -165,7 +165,7 @@ void ZFlyEmProofDoc::initAutoSave()
 {
 //  m_isCustomBookmarkSaved = true;
   QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
-        NeutubeConfig::AUTO_SAVE).c_str());
+        NeutubeConfig::EConfigItem::AUTO_SAVE).c_str());
   QString mergeFolder = "neutu_proofread_backup";
 
   if (!autoSaveDir.exists(mergeFolder)) {

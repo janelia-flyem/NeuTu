@@ -27,6 +27,7 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
+  ZJsonValue value(const std::string &key) const;
 #ifndef SWIG
   ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
 #endif
@@ -165,6 +166,7 @@ public:
    * \return true iff \a key exists in the object (only the first level).
    */
   bool hasKey(const char *key) const;
+  bool hasKey(const std::string &key) const;
 
   /*!
    * \brief Set an entry as an array

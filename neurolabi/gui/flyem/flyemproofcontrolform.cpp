@@ -187,6 +187,11 @@ void FlyEmProofControlForm::createColorMenu()
           this, SLOT(changeColorMap(QAction*)));
 }
 
+void FlyEmProofControlForm::setMainMenu(QMenu *menu)
+{
+  ui->menuPushButton->setMenu(menu);
+}
+
 void FlyEmProofControlForm::createMenu()
 {
   m_mainMenu = new QMenu(this);

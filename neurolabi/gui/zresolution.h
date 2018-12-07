@@ -3,6 +3,7 @@
 
 #include <string>
 #include "neutube_def.h"
+#include "zpoint.h"
 
 class ZJsonObject;
 
@@ -11,7 +12,7 @@ public:
   ZResolution();
 
   inline double voxelSize() const {
-    return m_voxelSize[0] * m_voxelSize[1] * m_voxelSize[2]; }
+    return m_voxelSize.getX() * m_voxelSize.getY() * m_voxelSize.getZ(); }
   inline double voxelSizeX() const { return m_voxelSize[0]; }
   inline double voxelSizeY() const { return m_voxelSize[1]; }
   inline double voxelSizeZ() const { return m_voxelSize[2]; }
@@ -92,7 +93,7 @@ public:
   bool isValid() const;
 
 private:
-  double m_voxelSize[3];
+  ZPoint m_voxelSize;
   char m_unit; //'p' for pixel, 'u' for um, 'n' for nm
 };
 

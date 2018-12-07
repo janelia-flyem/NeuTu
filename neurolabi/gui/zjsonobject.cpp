@@ -56,6 +56,11 @@ bool ZJsonObject::hasKey(const char *key) const
   return (*this)[key] != NULL;
 }
 
+bool ZJsonObject::hasKey(const string &key) const
+{
+  return hasKey(key.c_str());
+}
+
 json_t* ZJsonObject::operator[] (const char *key)
 {
   return const_cast<json_t*>(static_cast<const ZJsonObject&>(*this)[key]);
@@ -97,6 +102,11 @@ ZJsonValue ZJsonObject::value(const char *key) const
 {
   return ZJsonValue(const_cast<json_t*>((*this)[key]),
                     ZJsonValue::SET_INCREASE_REF_COUNT);
+}
+
+ZJsonValue ZJsonObject::value(const string &key) const
+{
+  return value(key.c_str());
 }
 
 #ifndef SWIG

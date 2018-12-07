@@ -237,7 +237,12 @@ void ZNetBufferReader::clearBuffer()
   m_buffer.clear();
 }
 
-void ZNetBufferReader::setHeader(const QString &key, const QString &value)
+bool ZNetBufferReader::hasRequestHeader(const QString &key) const
+{
+  return m_header.count(key) > 0;
+}
+
+void ZNetBufferReader::setRequestHeader(const QString &key, const QString &value)
 {
   m_header[key] =value;
 }

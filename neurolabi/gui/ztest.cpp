@@ -28829,6 +28829,27 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+  QList<uint64_t> bodyList = reader.findSimilarNeuron(915520244);
+  for (uint64_t bodyId : bodyList) {
+    std::cout << "  " << bodyId << std::endl;
+  }
+#endif
+
+#if 1
+  qDebug() << qgetenv("NEUPRINT");
+  qDebug() << qgetenv("HOME");
+#endif
+
+
+#if 0
   ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
         "https://emdata1.int.janelia.org:11000");
 
@@ -29023,7 +29044,7 @@ void ZTest::test(MainWindow *host)
   widget->show();
 #endif
 
-#if 1
+#if 0
 
   NeuPrintQueryDialog *dlg = new NeuPrintQueryDialog(host);
   dlg->setRoiList({"1", "2", "3"});

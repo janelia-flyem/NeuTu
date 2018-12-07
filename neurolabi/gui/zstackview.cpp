@@ -303,37 +303,9 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
 
   QString info;
 
-  if (buddyDocument()->hasStackData()) {
-    ZPoint pt = ZPositionMapper::WidgetToRawStack(pos, getViewProj());
-    info = buddyDocument()->rawDataInfo(
-              pt.x(), pt.y(), pt.z(), getSliceAxis());
-  } else {
-    ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(
-          *buddyDocument(), getSliceAxis());
-#ifdef _DEBUG_2
-    std::cout << "Stack range: " << box.toString() << std::endl;
-#endif
-    QPointF stackPos = ZPositionMapper::WidgetToStack(
-          widgetPos.x(), widgetPos.y(), getViewProj());
-    ZPoint dataPos;
-    if (getSliceAxis() == neutube::EAxis::ARB) {
-      dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
-      info = QString("(%1, %2, %3)").
-              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-              arg(iround(dataPos.getZ()));
-    } else {
-      dataPos = ZPositionMapper::StackToData(
-            ZPositionMapper::WidgetToStack(
-              pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
-      info = QString("(%1, %2, %3); (%4, %5, %6)").
-              arg(pos.x()).arg(pos.y()).arg(z).
-              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-              arg(iround(dataPos.getZ()));
-    }
-  }
-
   if (getViewProj().getZoom() > 0.00001) {
-    if (buddyDocument()->getResolution().getUnit() == ZResolution::UNIT_NANOMETER) {
+    if (buddyDocument()->getResolution().getUnit() ==
+        ZResolution::UNIT_NANOMETER) {
       double s = iround(
             m_imageWidget->screenSize().width() / getViewProj().getZoom() *
             buddyDocument()->getResolution().voxelSizeX());
@@ -351,7 +323,39 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
       info += QString(" Screen Width: ~%1 pixels").arg(
             iround(m_imageWidget->screenSize().width() / getViewProj().getZoom()));
     }
+    info += "  ";
   }
+
+  if (buddyDocument()->hasStackData()) {
+    ZPoint pt = ZPositionMapper::WidgetToRawStack(pos, getViewProj());
+    info += buddyDocument()->rawDataInfo(
+              pt.x(), pt.y(), pt.z(), getSliceAxis());
+  } else {
+    ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(
+          *buddyDocument(), getSliceAxis());
+#ifdef _DEBUG_2
+    std::cout << "Stack range: " << box.toString() << std::endl;
+#endif
+    QPointF stackPos = ZPositionMapper::WidgetToStack(
+          widgetPos.x(), widgetPos.y(), getViewProj());
+    ZPoint dataPos;
+    if (getSliceAxis() == neutube::EAxis::ARB) {
+      dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+      info += QString("(%1, %2, %3)").
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ()));
+    } else {
+      dataPos = ZPositionMapper::StackToData(
+            ZPositionMapper::WidgetToStack(
+              pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
+      info += QString("(%1, %2, %3); (%4, %5, %6)").
+              arg(pos.x()).arg(pos.y()).arg(z).
+              arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+              arg(iround(dataPos.getZ()));
+    }
+  }
+
+
 
   setInfo(info);
 }

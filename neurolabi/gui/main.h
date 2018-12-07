@@ -168,9 +168,11 @@ void init_log()
   // init the logging mechanism
   QsLogging::Logger& logger = QsLogging::Logger::instance();
   const QString sLogPath(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
+        NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::LOG_FILE).c_str());
   const QString traceLogPath(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
+        NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::LOG_TRACE).c_str());
 
 #ifdef _FLYEM_
   int maxLogCount = 100;
@@ -347,8 +349,10 @@ void configure(MainConfig &mainConfig)
     }
 #endif
     //Sync log files
-    sync_log_dir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
-                 NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
+    sync_log_dir(NeutubeConfig::getInstance().getPath(
+                   NeutubeConfig::EConfigItem::LOG_DEST_DIR),
+                 NeutubeConfig::getInstance().getPath(
+                   NeutubeConfig::EConfigItem::LOG_DIR));
   }
 
 #ifdef _DEBUG_

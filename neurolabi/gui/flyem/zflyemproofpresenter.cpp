@@ -390,6 +390,11 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_3:
+    if (!isSplitOn()) {
+      emit togglingBodyColorMap();
+    }
+    break;
   default:
     break;
   }

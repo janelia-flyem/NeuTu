@@ -22,7 +22,7 @@ class ZJsonObject;
 class NeutubeConfig
 {
 public:
-  enum EConfigItem {
+  enum class EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
@@ -488,7 +488,7 @@ private:
 #endif
 };
 
-#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
+#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::DATA))
 #if defined(PROJECT_PATH)
 #  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
 #endif

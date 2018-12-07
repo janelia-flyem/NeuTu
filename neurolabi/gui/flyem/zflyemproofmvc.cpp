@@ -100,6 +100,8 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "service/neuprintreader.h"
 #include "dialogs/neuprintquerydialog.h"
+#include "zactionlibrary.h"
+#include "zglobal.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -114,6 +116,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
             << getDvidTarget().getAddressWithPort();
   }
 
+  delete m_actionLibrary;
   m_quitting = true;
   m_futureMap.waitForFinished();
   exitCurrentDoc();
@@ -167,6 +170,7 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
           this, SLOT(scalePlaneRoi(double,double)));
 
+  m_actionLibrary = new ZActionLibrary(this);
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
@@ -241,7 +245,11 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintQueryDlg()
 {
   if (m_neuprintQueryDlg == nullptr) {
     m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
-    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      m_neuprintQueryDlg->setRoiList(reader->getRoiList());
+    }
+//    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
   }
 
   return m_neuprintQueryDlg;
@@ -444,6 +452,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(checkSelectedBookmark()));
   connect(getPresenter(), SIGNAL(uncheckingBookmark()),
           this, SLOT(uncheckSelectedBookmark()));
+  connect(getCompletePresenter(), SIGNAL(togglingBodyColorMap()),
+          this, SLOT(toggleBodyColorMap()));
   connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
           this, SLOT(showSupervoxelList()));
 
@@ -2219,7 +2229,7 @@ void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
 {
   getCompleteDocument()->prepareNameBodyMap(bodyInfoObj);
 
-  emit nameColorMapReady(true);
+  enableNameColorMap(true);
 }
 
 void ZFlyEmProofMvc::updateProtocolRangeGlyph(
@@ -3255,6 +3265,162 @@ void ZFlyEmProofMvc::updateMeshForSelected()
   getCompleteDocument()->updateMeshForSelected();
 }
 
+QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ZActionFactory::ACTION_GO_TO_POSITION:
+    action = m_actionLibrary->getAction(item, this, SLOT(goToPosition()));
+    break;
+  case ZActionFactory::ACTION_GO_TO_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(goToBody()));
+    break;
+  case ZActionFactory::ACTION_SELECT_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(selectBody()));
+    break;
+  case ZActionFactory::ACTION_INFORMATION:
+    action = m_actionLibrary->getAction(item, this, SLOT(showInfoDialog()));
+    break;
+  case ZActionFactory::ACTION_BODY_COLOR_NORMAL:
+  case ZActionFactory::ACTION_BODY_COLOR_NAME:
+  case ZActionFactory::ACTION_BODY_COLOR_PROTOCOL:
+  case ZActionFactory::ACTION_BODY_COLOR_SEQUENCER:
+    action = m_actionLibrary->getAction(item);
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_FIND_SIMILIAR:
+    action = m_actionLibrary->getAction(item, this, SLOT(findSimilarNeuron()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBodyLevel()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_STACK:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBodyStack()));
+    break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_TOP:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeSynapseTopBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_LIST:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeBodyList()));
+    break;
+  case ZActionFactory::ACTION_BODY_UPDATE_MESH:
+    action = m_actionLibrary->getAction(item, this, SLOT(updateMeshForSelected()));
+    break;
+  case ZActionFactory::ACTION_BODY_REPORT_CORRUPUTION:
+    action = m_actionLibrary->getAction(item, this, SLOT(reportBodyCorruption()));
+    break;
+  case ZActionFactory::ACTION_CLEAR_ALL_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(clearBodyMergeStage()));
+    break;
+  default:
+    break;
+  }
+
+  return action;
+}
+
+void ZFlyEmProofMvc::addBodyColorMenu(QMenu *menu)
+{
+  QMenu *colorMenu = menu->addMenu("Color Map");
+  QActionGroup *colorActionGroup = new QActionGroup(this);
+
+  QAction *normalColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_NORMAL);
+  QAction *nameColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_NAME);
+  nameColorAction->setEnabled(false);
+
+  QAction *sequencerColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_SEQUENCER);
+  QAction *protocolColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_PROTOCOL);
+
+  colorActionGroup->addAction(normalColorAction);
+  colorActionGroup->addAction(nameColorAction);
+  colorActionGroup->addAction(sequencerColorAction);
+  colorActionGroup->addAction(protocolColorAction);
+  colorActionGroup->setExclusive(true);
+
+  normalColorAction->setChecked(true);
+  m_currentColorMapAction = normalColorAction;
+
+  colorMenu->addActions(colorActionGroup->actions());
+
+  connect(colorActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(changeColorMap(QAction*)));
+}
+
+void ZFlyEmProofMvc::enableNameColorMap(bool on)
+{
+  getAction(ZActionFactory::ACTION_BODY_COLOR_NAME)->setEnabled(on);
+}
+
+void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
+{
+  QMenu *bodyMenu = menu->addMenu("Bodies");
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_STACK));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_TOP));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_LIST));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_UPDATE_MESH));
+}
+
+QMenu* ZFlyEmProofMvc::makeControlPanelMenu()
+{
+  QMenu *menu = new QMenu(this);
+
+  menu->addAction(getAction(ZActionFactory::ACTION_GO_TO_POSITION));
+  menu->addAction(getAction(ZActionFactory::ACTION_GO_TO_BODY));
+  menu->addAction(getAction(ZActionFactory::ACTION_SELECT_BODY));
+
+  addBodyColorMenu(menu);
+
+  menu->addAction(getAction(ZActionFactory::ACTION_INFORMATION));
+
+  addBodyMenu(menu);
+
+#ifdef _DEBUG_
+  QMenu *developerMenu = menu->addMenu("Developer");
+  developerMenu->addAction(getAction(ZActionFactory::ACTION_CLEAR_ALL_MERGE));
+#endif
+
+  return menu;
+}
+
+void ZFlyEmProofMvc::goToPosition()
+{
+  bool ok;
+
+  QString defaultText;
+
+  ZIntPoint pt = ZGlobal::GetInstance().getStackPosition();
+  if (pt.isValid()) {
+    defaultText = pt.toString().c_str();
+  }
+
+  QString text = QInputDialog::getText(
+        this, tr("Go To"), tr("Coordinates:"), QLineEdit::Normal, defaultText,
+        &ok);
+
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        zoomTo(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
 {
   if (bodyId > 0) {
@@ -3554,30 +3720,77 @@ void ZFlyEmProofMvc::exportSelectedBody()
   }
 }
 
+NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return reader;
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage("NeuPrint server is NOT set.",
+                           neutube::EMessageType::ERROR));
+    }
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("Cannot use the NeuPrint server.",
+                         neutube::EMessageType::ERROR));
+  }
+
+  return nullptr;
+}
+
 void ZFlyEmProofMvc::queryBody()
 {
-  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    if (getNeuPrintQueryDlg()->exec()) {
+      QList<uint64_t> bodyList = reader->queryNeuron(
+            getNeuPrintQueryDlg()->getInputRoi(),
+            getNeuPrintQueryDlg()->getOutputRoi());
+      for (uint64_t bodyId : bodyList) {
+        std::cout << bodyId << std::endl;
+      }
 
-  ZJsonObject obj;
-  obj.load(GET_TEST_DATA_DIR + "/token.json");
-  std::string token = ZJsonParser::stringValue(obj["token"]);
-  std::cout << token << std::endl;
-  reader.authorize(token.c_str());
+      std::set<uint64_t> bodyIdArray;
+      bodyIdArray.insert(bodyList.begin(), bodyList.end());
 
-  if (getNeuPrintQueryDlg()->exec()) {
-    QList<uint64_t> bodyList = reader.queryNeuron(
-          getNeuPrintQueryDlg()->getInputRoi(),
-          getNeuPrintQueryDlg()->getOutputRoi());
-    for (uint64_t bodyId : bodyList) {
-      std::cout << bodyId << std::endl;
+      getBodyQueryDlg()->setBodyList(bodyIdArray);
+      getBodyQueryDlg()->show();
+      getBodyQueryDlg()->raise();
     }
+  }
+}
 
-    std::set<uint64_t> bodyIdArray;
-    bodyIdArray.insert(bodyList.begin(), bodyList.end());
+void ZFlyEmProofMvc::findSimilarNeuron()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
 
-    getBodyQueryDlg()->setBodyList(bodyIdArray);
-    getBodyQueryDlg()->show();
-    getBodyQueryDlg()->raise();
+    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+                                         tr("Body:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ZString str = text.toStdString();
+        std::vector<uint64_t> bodyArray = str.toUint64Array();
+        if (bodyArray.size() == 1) {
+          QList<uint64_t> bodyList = reader->findSimilarNeuron(bodyArray[0]);
+          for (uint64_t bodyId : bodyList) {
+            std::cout << bodyId << std::endl;
+          }
+
+          std::set<uint64_t> bodyIdArray;
+          bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+          getBodyQueryDlg()->setBodyList(bodyIdArray);
+          getBodyQueryDlg()->show();
+          getBodyQueryDlg()->raise();
+        }
+      }
+    }
   }
 }
 
@@ -5267,6 +5480,13 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
   }
 }
 
+void ZFlyEmProofMvc::changeColorMap(QAction *action)
+{
+  m_prevColorMapAction = m_currentColorMapAction;
+  m_currentColorMapAction = action;
+  changeColorMap(action->text());
+}
+
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {
   getCompleteDocument()->activateBodyColorMap(option);
@@ -5277,6 +5497,14 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
     getCompleteDocument()->useBodyNameMap(false);
   }
   */
+}
+
+void ZFlyEmProofMvc::toggleBodyColorMap()
+{
+  if (m_prevColorMapAction) {
+    m_prevColorMapAction->setChecked(true);
+    changeColorMap(m_prevColorMapAction);
+  }
 }
 
 void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)

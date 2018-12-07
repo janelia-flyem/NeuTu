@@ -30,7 +30,7 @@ AutosaveSwcListDialog::~AutosaveSwcListDialog()
 void AutosaveSwcListDialog::updateFile()
 {
   m_fileList.loadDir(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str(),
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::AUTO_SAVE).c_str(),
         false);
   updateCount();
 }
@@ -71,7 +71,7 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
   if (!fileName.isEmpty()) {
     fileName = "/" + fileName + ".swc";
     fileName =
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str() +
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::AUTO_SAVE).c_str() +
         fileName;
 
     ZStackDoc *doc = new ZStackDoc;
