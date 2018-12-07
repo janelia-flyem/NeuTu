@@ -1222,11 +1222,21 @@ bool TaskMergeReview::loadSpecific(QJsonObject json)
 QJsonObject TaskMergeReview::addToJson(QJsonObject taskJson)
 {
   taskJson[KEY_TASK_ID] = m_taskId;
-  QJsonArray array;
+
+  QJsonArray idsArray;
   for (uint64_t id : m_superVoxelIds) {
-    array.append(static_cast<double>(id));
+    idsArray.append(static_cast<double>(id));
   }
-  taskJson[KEY_SUPERVOXEL_IDS] = array;
+  taskJson[KEY_SUPERVOXEL_IDS] = idsArray;
+
+  if (!m_majorSuperVoxelIds.empty()) {
+    QJsonArray majorIdsArray;
+    for (uint64_t id : m_majorSuperVoxelIds) {
+      majorIdsArray.append(static_cast<double>(id));
+    }
+    taskJson[KEY_MAJOR_SUPERVOXEL_IDS] = majorIdsArray;
+  }
+
   taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
 
   return taskJson;
