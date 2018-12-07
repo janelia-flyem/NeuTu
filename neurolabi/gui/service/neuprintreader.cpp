@@ -88,6 +88,7 @@ QList<QString> NeuPrintReader::getRoiList()
 
 void NeuPrintReader::updateCurrentDataset(const QString &uuid)
 {
+  m_currentDataset.clear();
   if (isConnected()) {
     const char *key = nullptr;
     json_t *value = nullptr;

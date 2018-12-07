@@ -517,6 +517,9 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_error.txt");
 #endif
+  case EConfigItem::NEUPRINT_AUTH:
+    return NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR) + "/neuprint_auth.json";
   default:
     break;
   }
