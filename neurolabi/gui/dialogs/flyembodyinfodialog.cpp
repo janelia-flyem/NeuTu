@@ -740,10 +740,15 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 // grab the previously retrieved data and modify it:
                 ZJsonObject bodyData = bodyAnnotationList[i];
 
-                // remove name if empty
-                if (bodyData.hasKey("name") &&
-                    ZJsonParser::stringValue(bodyData["name"]).empty()) {
-                    bodyData.removeKey("name");
+                // remove name if empty; store it otherwise
+                if (bodyData.hasKey("name")) {
+                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
+                    if (name.empty()) {
+                        bodyData.removeKey("name");
+                    } else {
+                        // keyList contains body ID strings
+                        m_bodyNames[bodyID] = QString(name.c_str());
+                    }
                 }
 
                 if (namedOnly) {
