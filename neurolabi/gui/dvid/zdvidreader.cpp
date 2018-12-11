@@ -2758,7 +2758,7 @@ ZJsonObject ZDvidReader::readContrastProtocal() const
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
-    config.decodeString(byteArray.data());
+    config.decode(byteArray.data());
   }
 
   return config;
@@ -2772,7 +2772,7 @@ ZJsonObject ZDvidReader::readBodyStatusV2() const
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
-    config.decodeString(byteArray.data());
+    config.decode(byteArray.toStdString());
   }
 
   return config;

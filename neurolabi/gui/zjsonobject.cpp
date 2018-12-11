@@ -129,6 +129,12 @@ ZJsonValue ZJsonObject::value(
 bool ZJsonObject::decode(const string &str)
 {
   clear();
+  if (str.empty()) {
+#ifdef _DEBUG_
+      std::cout << "JSON decoding: Nothing to decode." << std::endl;
+#endif
+    return false;
+  }
 
   ZJsonParser parser;
   json_t *obj = parser.decode(str);
@@ -140,7 +146,9 @@ bool ZJsonObject::decode(const string &str)
       parser.printError();
     } else {
       json_decref(obj);
-      RECORD_ERROR_UNCOND("Not a json object");
+#ifdef _DEBUG_
+      std::cout << "Not a json object" << std::endl;
+#endif
     }
 
     return false;

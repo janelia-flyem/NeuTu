@@ -108,7 +108,7 @@ namespace {
 static QList<uint64_t> extract_body_list(const QByteArray &response)
 {
   ZJsonObject resultObj;
-  resultObj.decodeString(response.toStdString().c_str());
+  resultObj.decode(response.toStdString());
 
   resultObj.print();
 
@@ -145,6 +145,25 @@ QList<uint64_t> NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
   return extract_body_list(m_bufferReader.getBuffer());
+}
+
+ZJsonObject NeuPrintReader::customQuery(const QString &query)
+{
+  ZJsonObject resultObj;
+
+  if (!query.isEmpty()) {
+    QString url = m_server + "/api/custom/custom";
+    m_bufferReader.post(url, query.toStdString().c_str());
+
+    resultObj.decode(m_bufferReader.getBuffer().toStdString());
+  }
+
+  return resultObj;
+}
+
+ZJsonObject NeuPrintReader::customQuery(const ZJsonObject &json)
+{
+  return customQuery(json.dumpString(0).c_str());
 }
 
 QList<uint64_t> NeuPrintReader::queryNeuron(
