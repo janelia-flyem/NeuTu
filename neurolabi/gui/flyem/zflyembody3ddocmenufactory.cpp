@@ -90,6 +90,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     } else if (doc->getTag() == neutube::Document::ETag::FLYEM_MESH) {
 #if defined(_NEU3_)
       if (isMutable) {
+        config.append(ZActionFactory::ACTION_REMOVE_TODO_BATCH);
+
         ZMesh *mesh = doc->getMeshForSplit();
         if (mesh != NULL) {
           if (doc->isSplitActivated() &&
@@ -111,10 +113,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 #endif
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D) {
-      config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
-      config.append(ZActionFactory::ACTION_REMOVE_ALL_TODO);
-    }
+    config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
 
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {
@@ -199,6 +198,12 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     }
 
   }
+
+#if defined(_NEU3_)
+  config.appendSeparator();
+  config.append(ZActionFactory::ACTION_3DWINDOW_TOGGLE_SETTING);
+  config.append(ZActionFactory::ACTION_3DWINDOW_TOGGLE_OBJECTS);
+#endif
 
   return config;
 }

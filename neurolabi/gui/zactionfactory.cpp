@@ -452,8 +452,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setCheckable(true);
     action->setChecked(true);
     break;
-  case ACTION_REMOVE_ALL_TODO:
-    action = new QAction("Remove all todo", parent);
+  case ACTION_REMOVE_TODO_BATCH:
+    action = new QAction("Remove todo (batch)", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
@@ -623,6 +623,14 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_CLEAR_ALL_MERGE:
     action = new QAction("Clear All Merges", parent);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_SETTING:
+    action = new QAction("Settings", parent);
+    action->setCheckable(true);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_OBJECTS:
+    action = new QAction("Objects", parent);
+    action->setCheckable(true);
     break;
   default:
     break;

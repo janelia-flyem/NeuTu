@@ -69,7 +69,7 @@ class ZLineSegment;
 class ZObject3d;
 class ZWidgetMessage;
 class ZFlyEmBodyEnv;
-
+class ZFlyEmTodoFilterDialog;
 
 class Z3DWindow : public QMainWindow
 {
@@ -288,6 +288,7 @@ public slots:
   void removeSwcTurn();
   void deleteSelected();
   void annotateTodo(ZStackObject* obj);
+  void removeTodoBatch();
 
   void convertSelectedChainToSwc();
 
@@ -381,7 +382,9 @@ public slots:
   void copyPosition();
   void setNormalTodoVisible(bool visible);
   void updateTodoVisibility();
-  void removeAllTodo();
+  void toggleSetting();
+  void toggleObjects();
+//  void removeAllTodo();
 
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
@@ -624,6 +627,7 @@ private:
   HelpDialog *m_helpDlg;
   ZComboEditDialog *m_dvidDlg;
   ZFlyEmBodyComparisonDialog *m_bodyCmpDlg;
+  ZFlyEmTodoFilterDialog *m_todoDlg = nullptr;
 };
 
 #endif // Z3DWINDOW_H

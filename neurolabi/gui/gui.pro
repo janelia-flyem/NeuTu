@@ -932,7 +932,8 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     flyem/zflyembodyannotationmerger.h \
     flyem/zflyemroimanager.h \
-    widgets/zoptionlistwidget.h
+    widgets/zoptionlistwidget.h \
+    dialogs/zflyemtodofilterdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1046,7 +1047,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zneu3sliceviewdialog.ui \
     dialogs/zflyemtodoannotationdialog.ui \
     dialogs/neuprintquerydialog.ui \
-    widgets/zoptionlistwidget.ui
+    widgets/zoptionlistwidget.ui \
+    dialogs/zflyemtodofilterdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1630,7 +1632,8 @@ SOURCES += main.cpp \
     dialogs/neuprintquerydialog.cpp \
     flyem/zflyembodyannotationmerger.cpp \
     flyem/zflyemroimanager.cpp \
-    widgets/zoptionlistwidget.cpp
+    widgets/zoptionlistwidget.cpp \
+    dialogs/zflyemtodofilterdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

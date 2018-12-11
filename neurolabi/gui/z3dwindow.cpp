@@ -98,6 +98,7 @@
 #include "data3d/zstackobjectconfig.h"
 #include "flyem/zflyembodyenv.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemtodofilterdialog.h"
 
 /*
 class Sleeper : public QThread
@@ -430,6 +431,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
   switch (item) {
+  case ZActionFactory::ACTION_3DWINDOW_TOGGLE_OBJECTS:
+    action = m_toggleObjectsAction;
+    break;
+  case ZActionFactory::ACTION_3DWINDOW_TOGGLE_SETTING:
+    action =m_toggleSettingsAction;
+    break;
   case ZActionFactory::ACTION_ABOUT:
     action = m_actionLibrary->getAction(item, this, SLOT(about()));
     break;
@@ -460,9 +467,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(setNormalTodoVisible(bool)));
     break;
-  case ZActionFactory::ACTION_REMOVE_ALL_TODO:
+  case ZActionFactory::ACTION_REMOVE_TODO_BATCH:
     action = m_actionLibrary->getAction(
-          item, this, SLOT(removeAllTodo()));
+          item, this, SLOT(removeTodoBatch()));
     break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
@@ -934,13 +941,14 @@ void Z3DWindow::createContextMenu()
   m_toggleObjectsAction = new QAction("Objects", this);
   m_toggleObjectsAction->setCheckable(true);
   m_toggleObjectsAction->setChecked(
-        m_objectsDockWidget->toggleViewAction());
+        m_objectsDockWidget->toggleViewAction()->isChecked());
   connect(m_toggleObjectsAction, SIGNAL(triggered(bool)),
           m_objectsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
 
   m_toggleSettingsAction = new QAction("Settings", this);
   m_toggleSettingsAction->setCheckable(true);
-  m_toggleSettingsAction->setChecked(m_settingsDockWidget->toggleViewAction());
+  m_toggleSettingsAction->setChecked(
+        m_settingsDockWidget->toggleViewAction()->isChecked());
   connect(m_toggleSettingsAction, SIGNAL(triggered(bool)),
           m_settingsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
 
@@ -1302,6 +1310,16 @@ void Z3DWindow::syncActionToNormalMode()
   blockSignals(false);
 }
 
+void Z3DWindow::toggleObjects()
+{
+  m_settingsDockWidget->toggleViewAction()->toggle();
+}
+
+void Z3DWindow::toggleSetting()
+{
+  m_objectsDockWidget->toggleViewAction()->toggle();
+}
+
 void Z3DWindow::readSettings()
 {
   QString windowKey = neutube3d::GetWindowKeyString(getWindowType()).c_str();
@@ -1423,6 +1441,18 @@ void Z3DWindow::annotateTodo(ZStackObject *obj)
     doc->annotateTodo(&dlg, obj);
   }
 //  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
+}
+
+void Z3DWindow::removeTodoBatch()
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc != NULL) {
+    if (m_todoDlg == nullptr) {
+      m_todoDlg = new ZFlyEmTodoFilterDialog(this);
+      m_todoDlg->setWindowTitle("Remove Todo");
+    }
+    doc->removeTodo(m_todoDlg);
+  }
 }
 
 void Z3DWindow::selectedTodoChangedFrom3D(ZStackObject *p, bool append)
@@ -2147,10 +2177,11 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
   emit settingNormalTodoVisible(visible);
 }
 
+/*
 void Z3DWindow::removeAllTodo()
 {
-
 }
+*/
 
 void Z3DWindow::updateTodoVisibility()
 {
