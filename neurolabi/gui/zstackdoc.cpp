@@ -21,7 +21,7 @@
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
 #include "zdocumentable.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zlocalneuroseg.h"
 #include "zlocsegchain.h"
 #include "tz_vrml_io.h"
@@ -515,7 +515,7 @@ void ZStackDoc::autoSaveSwc()
     ZOUT(LTRACE(), 5) << "Auto save triggered in" << this;
     if (hasSwc()) {
       std::string autoSaveDir = NeutubeConfig::getInstance().getPath(
-            NeutubeConfig::AUTO_SAVE);
+            NeutubeConfig::EConfigItem::AUTO_SAVE);
       QDir dir(autoSaveDir.c_str());
       if (dir.exists()) {
         ostringstream stream;
@@ -9916,7 +9916,7 @@ void ZStackDoc::localSeededWatershed()
     container.run();
 
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScan *obj : result) {
       getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     }
@@ -10022,7 +10022,7 @@ void ZStackDoc::seededWatershed()
   container.run();
 
   ZObject3dScanArray result;
-  container.makeSplitResult(1, &result);
+  container.makeSplitResult(1, &result, NULL);
   for (ZObject3dScan *obj : result) {
     getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
   }

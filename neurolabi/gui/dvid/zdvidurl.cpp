@@ -12,7 +12,9 @@
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
+#if defined(_QT_GUI_USED_)
 #include "zdvidutil.h"
+#endif
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -1550,8 +1552,15 @@ std::string ZDvidUrl::getAnnotationUrl(
       stream << label;
       url += "/" + m_annotationLabelCommand + "/" + stream.str();
     } else {
-      //A workaround for syncing to labelmap (temporary solution)
+      //A workaround for syncing GetBodyIdTag(temporary solution)
+#if defined(_QT_GUI_USED_)
       url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
+#else
+      std::ostringstream stream;
+      stream << "body:" << label;
+      url = getAnnotationUrl(dataName, stream.str());
+#endif
+
     }
   }
 
@@ -1713,7 +1722,7 @@ std::string ZDvidUrl::getTodoListUrl() const
   return getAnnotationUrl(m_dvidTarget.getTodoListName());
 }
 
-std::string ZDvidUrl::getTodlListElementsUrl() const
+std::string ZDvidUrl::getTodoListElementsUrl() const
 {
   return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
 }

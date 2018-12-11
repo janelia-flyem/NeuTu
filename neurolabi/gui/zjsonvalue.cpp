@@ -191,19 +191,19 @@ void ZJsonValue::decodeString(const char *str)
 
 void ZJsonValue::decodeString(const char *str, json_error_t *error)
 {
-  if (m_data != NULL) {
-    json_decref(m_data);
+  clear();
+
+  if (str && strlen(str) > 0) {
+    //  json_error_t error;
+    json_error_t *ownError = NULL;
+    if (error == NULL) {
+      error = (ownError = new json_error_t);
+    }
+
+    m_data = json_loads(str, JSON_DECODE_ANY, error);
+
+    delete ownError;
   }
-
-//  json_error_t error;
-  json_error_t *ownError = NULL;
-  if (error == NULL) {
-    error = ownError = new json_error_t;
-  }
-
-  m_data = json_loads(str, JSON_DECODE_ANY, error);
-
-  delete ownError;
 }
 
 void ZJsonValue::clear()

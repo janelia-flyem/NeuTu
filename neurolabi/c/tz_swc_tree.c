@@ -663,6 +663,7 @@ void Swc_Tree_Node_Set_Root(Swc_Tree_Node *tn)
   Swc_Tree_Node *buffer1, *buffer2, *buffer3;
   buffer1 = tn;
   buffer2 = buffer1->parent;
+  buffer3 = NULL;
   Swc_Tree_Node_Detach_Parent(buffer1);
 
   weight[0] = buffer1->weight;
@@ -1169,7 +1170,7 @@ BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1,
     Swc_Tree_Node_Const_Data(tn3)->x;
   vec2[1] = Swc_Tree_Node_Const_Data(tn2)->y - 
     Swc_Tree_Node_Const_Data(tn3)->y;
-  vec2[2] = Swc_Tree_Node_Const_Data(tn3)->z - 
+  vec2[2] = Swc_Tree_Node_Const_Data(tn2)->z - 
     Swc_Tree_Node_Const_Data(tn3)->z;
 
   Coordinate_3d_Unitize(vec1);

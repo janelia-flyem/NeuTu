@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QPointF>
 #include <QWidget>
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "zuncopyable.h"

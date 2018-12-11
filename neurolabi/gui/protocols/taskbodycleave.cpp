@@ -768,20 +768,22 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   std::set<uint64_t> bodiesForIndex;
   bodiesForCleaveIndex(bodiesForIndex, chosenCleaveIndex(), true);
 
-  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
-      if (m_hiddenIds.find(mesh->getLabel()) != m_hiddenIds.end()) {
-        continue;
-      }
+  selectBodies(bodiesForIndex, false);
 
-      m_bodyDoc->setVisible(mesh, state);
-    }
-  }
+  updateVisibility();
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
+{
+  updateChosenCleaveBody(true);
+}
+
+void TaskBodyCleave::onAddToChosenCleaveBody()
+{
+  updateChosenCleaveBody(false);
+}
+
+void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
 {
   if (!uiIsEnabled()) {
     return;
@@ -817,10 +819,10 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
       countChanges[chosenCleaveIndex()] += 1;
       countChanges[itCleave->second] -= 1;
       meshIdToCleaveIndex[id] = chosenCleaveIndex();
-    } else {
+    } else if (toggle) {
 
-      // The selected mesh has been assigned to the current color, so it is being assigned no color,
-      // and the current color's count decreases by one.
+      // The selected mesh has been assigned to the current color, so if toggling, it is being assigned
+      // no color, and the current color's count decreases by one.
 
       countChanges[chosenCleaveIndex()] -= 1;
       meshIdToCleaveIndex.erase(id);
@@ -967,6 +969,12 @@ void TaskBodyCleave::onHideSelected()
     m_hiddenIds.insert(mesh->getLabel());
   }
   updateVisibility();
+
+  std::set<uint64_t> selectedBodies;
+  for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
+    selectedBodies.insert((*itSelected)->getLabel());
+  }
+  selectBodies(selectedBodies, false);
 }
 
 void TaskBodyCleave::onClearHidden()
@@ -1261,6 +1269,11 @@ void TaskBodyCleave::buildTaskWidget()
   m_menu->addAction(m_toggleInBodyAction);
   connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
 
+  m_addToBodyAction = new QAction("Add Selection to Current Body", m_widget);
+  m_addToBodyAction->setShortcut(Qt::SHIFT + Qt::Key_Space);
+  m_menu->addAction(m_addToBodyAction);
+  connect(m_addToBodyAction, SIGNAL(triggered()), this, SLOT(onAddToChosenCleaveBody()));
+
   m_toggleShowChosenCleaveBodyAction = new QAction("Toggle Visibilty of Current Body", m_widget);
   m_toggleShowChosenCleaveBodyAction->setShortcut(Qt::Key_H);
   m_menu->addAction(m_toggleShowChosenCleaveBodyAction);
@@ -1359,15 +1372,17 @@ void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
   }
 }
 
-void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
+void TaskBodyCleave::selectBodies(const std::set<uint64_t> &bodies, bool select)
 {
-  m_bodyDoc->deselectAllMesh();
+  if (select) {
+    m_bodyDoc->deselectAllMesh();
+  }
 
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
-    if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
-      m_bodyDoc->setMeshSelected(mesh, true);
+    if (bodies.find(mesh->getLabel()) != bodies.end()) {
+      m_bodyDoc->setMeshSelected(mesh, select);
     }
   }
 }
@@ -2014,6 +2029,7 @@ bool TaskBodyCleave::allowingSplit(uint64_t bodyId) const
 void TaskBodyCleave::setCleavingShortcutEnabled(bool on)
 {
   m_toggleInBodyAction->setEnabled(on);
+  m_addToBodyAction->setEnabled(on);
   m_toggleShowChosenCleaveBodyAction->setEnabled(on);
   for (const auto &actionToIndex : m_actionToComboBoxIndex) {
     actionToIndex.first->setEnabled(on);

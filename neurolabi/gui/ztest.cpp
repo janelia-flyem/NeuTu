@@ -131,7 +131,7 @@
 #include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "zfiletype.h"
 #include "tz_geometry.h"
 #include "z3dgraph.h"
@@ -139,7 +139,7 @@
 #include "zswctreenodeselector.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
-#include "zstackbinarizer.h"
+#include "imgproc/zstackbinarizer.h"
 #include "zoptionparameter.h"
 #include "zdebug.h"
 #include "tz_color.h"
@@ -308,6 +308,14 @@
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
+#include "service/neuprintreader.h"
+#include "zjsonparser.h"
+#include "zjsonobjectparser.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyemroimanager.h"
+#include "widgets/zoptionlistwidget.h"
+#include"dialogs/neuprintquerydialog.h"
 
 #include "test/ztestall.h"
 
@@ -27400,17 +27408,21 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-//  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-production");
-  ZDvidTarget target;
-  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/2884/segmenation/sparsevol");
-  ZDvidWriter writer;
-  writer.open(target);
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain_test");
+//  ZDvidTarget target;
+//  target.setFromUrl("http://emdata3.int.janelia.org:8900/api/node/d59e/segmenation/sparsevol");
+//  ZDvidWriter writer;
+//  writer.open(target);
 
   std::vector<std::string> statusList({/*"Putative 0.5",*/
+                                       "Prelim Roughly traced",
                                        "Roughly traced",
-                                       "Traced",
-                                       "Hard to trace"});
-  writer.writeBodyStatusList(statusList);
+                                       "Leaves",
+                                       "Orphan hotknife",
+                                       "Orphan"
+                                       /*"Traced",*/
+                                       /*"Hard to trace"}*/});
+  writer->writeBodyStatusList(statusList);
 #endif
 
 #if 0
@@ -28133,6 +28145,17 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
+  obj1.load(GET_TEST_DATA_DIR + "/_test.sobj");
+  obj2.load(GET_TEST_DATA_DIR + "/_test2.sobj");
+
+  ZObject3dScan diffObj = obj2 - obj1;
+  diffObj.print();
+  diffObj.save(GET_TEST_DATA_DIR + "/_test3.sobj");
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
   ZDvidUrl dvidUrl(reader->getDvidTarget());
 
@@ -28147,7 +28170,7 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan obj;
   obj.importDvidBlockBuffer(buffer.data(), buffer.size(), true);
   std::cout << obj.isCanonizedActually() << std::endl;
-  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
 #endif
 
 #if 0
@@ -28295,7 +28318,7 @@ void ZTest::test(MainWindow *host)
   offset.importTextFile("/Users/zhaot/Work/neutu/neurolabi/data/_paper/neuron_type/data/offset2/3856.offset.txt");
 #endif
 
-#if 1
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_paper/neuron_type/data";
   std::string volumeDir = dataDir + "/volume/old";
 
@@ -28365,6 +28388,673 @@ void ZTest::test(MainWindow *host)
   objArray.save(GET_TEST_DATA_DIR + "/_test.soba");
 //  ZStack *stack = ZStackFactory::MakeColorStack(objArray);
 //  stack->save(GET_TEST_DATA_DIR + "/test.v3draw");
+#endif
+
+#if 0
+  ZIntPointArray ptArray;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/coord.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      std::vector<int> pt = line.toIntegerArray();
+      if (pt.size() == 3) {
+        ptArray.append(pt[0], pt[1], pt[2]);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const ZIntPoint &pt : ptArray) {
+    std::cout << pt.toString() << std::endl;
+  }
+
+  std::vector<std::string> uuidList;
+
+  {
+    FILE *fp = fopen((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/uuid.txt").c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      line.trim();
+      if (!line.empty()) {
+        uuidList.push_back(line);
+      }
+    }
+    fclose(fp);
+  }
+
+  for (const std::string &uuid : uuidList) {
+    std::cout << uuid << std::endl;
+    ZDvidTarget target;
+    target.set("emdata1", uuid, 8400);
+    target.setSegmentationName("segmentation");
+    ZDvidWriter writer;
+    writer.open(target);
+    for (const ZIntPoint &pt : ptArray) {
+      std::cout << pt.toString() << std::endl;
+      ZFlyEmMisc::UpdateBodyStatus(pt, "anchor", &writer);
+    }
+  }
+//    std::cout << writer.getDvidReader().readBodyIdAt(ptArray[0]) << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+
+  ZFlyEmMisc::UpdateSupervoxelMesh(*writer, 5813082914);
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 2);
+  obj.addSegment(0, 1, 2, 3);
+  obj.addSegment(1, 1, 2, 3);
+  obj.addSegment(2, 1, 1, 3);
+
+  ZObject3dScan::ConstStripeIterator iter(&obj);
+  while (iter.hasNext()) {
+    iter.next().print();
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 2);
+  obj.addSegment(0, 1, 2, 3);
+  obj.addSegment(1, 1, 2, 3);
+  obj.addSegment(2, 1, 1, 3);
+  obj.addSegment(2, 2, 1, 3);
+  obj.addSegment(2, 3, 1, 3);
+  obj.addSegment(3, 1, 1, 3);
+
+  ZObject3dScan::ConstSliceIterator iter(&obj);
+  while (iter.hasNext()) {
+    iter.next().print();
+    std::cout << iter.current().isCanonized() << std::endl;
+  }
+#endif
+
+#if 0
+  ZRandomGenerator rng;
+
+  for (int t = 0; t < 100000; ++t) {
+    int v = rng.rndint(2, 1000);
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), 0, 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, 0, rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, rng.rndint(-1, 1), 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D1));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), rng.rndint(-1, 1), 0);
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), 0, rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(0, rng.rndint(-1, 1), rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
+      }
+    }
+
+    {
+      ZIntPoint pt;
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      for (int c = 0; c< v; ++c) {
+        //      std::cout << rng.rndint(3) - 2 << std::endl;
+        pt += ZIntPoint(rng.rndint(-1, 1), rng.rndint(-1, 1), rng.rndint(-1, 1));
+        if (rng.rndint(0, 1) == 0) {
+          obj1.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        } else {
+          obj2.addSegment(pt.getZ(), pt.getY(), pt.getX(), pt.getX());
+        }
+      }
+      std::cout << "Size: " << obj1.getVoxelNumber() << " " << obj2.getVoxelNumber() << std::endl;
+      if (!obj1.isEmpty() && !obj2.isEmpty()) {
+        ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D3));
+      }
+
+      {
+        std::vector<ZObject3dScan> objArray = obj1.getConnectedComponent(
+              ZObject3dScan::ACTION_NONE);
+        std::cout << objArray.size() << " components" << std::endl;
+        if (objArray.size() > 1) {
+          for (size_t i = 0; i < objArray.size() - 1; ++i) {
+            for (size_t j = i + 1; j < objArray.size(); ++j) {
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D1));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D2));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D3));
+            }
+          }
+        }
+      }
+
+      {
+        std::vector<ZObject3dScan> objArray = obj2.getConnectedComponent(
+              ZObject3dScan::ACTION_NONE);
+        std::cout << objArray.size() << " components" << std::endl;
+        if (objArray.size() > 1) {
+          for (size_t i = 0; i < objArray.size() - 1; ++i) {
+            for (size_t j = i + 1; j < objArray.size(); ++j) {
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D1));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D2));
+              ASSERT_FALSE(objArray[i].isAdjacentTo(
+                             objArray[j], neutube::EStackNeighborhood::D3));
+            }
+          }
+        }
+      }
+    }
+  }
+
+#endif
+
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("MB_Test");
+  std::cout << "Writer: " << writer;
+
+  ZFlyEmMisc::UpdateBodyStatus(ZIntPoint(3957, 5658, 7309), "test2", writer);
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 1, 0, 1);
+  obj1.addSegment(0, 3, 0, 1);
+  obj1.addSegment(0, 5, 0, 1);
+  obj1.addSegment(0, 6, 0, 1);
+  obj1.addSegment(0, 9, 0, 1);
+  obj1.addSegment(0, 10, 0, 1);
+  obj1.addSegment(0, 11, 0, 1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(0, 2, 3, 4);
+  obj2.addSegment(0, 3, 3, 4);
+  obj2.addSegment(0, 7, 3, 4);
+  obj2.addSegment(0, 8, 3, 4);
+  obj2.addSegment(0, 9, 3, 4);
+  obj2.addSegment(0, 10, 3, 4);
+  obj2.addSegment(0, 12, 1, 4);
+  obj2.addSegment(0, 13, 3, 4);
+  obj1.isAdjacentTo(obj2);
+//  ASSERT_TRUE(obj2.isAdjacentTo(obj1));
+#endif
+
+#if 0
+  uint64_t bodyId = 5813087431;
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+
+  ZObject3dScan obj;
+  writer->getDvidReader().readSupervoxel(bodyId, true, &obj);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  if (mesh != nullptr) {
+    mesh->save(GET_TEST_DATA_DIR + "/_test.drc", "drc");
+  }
+
+  writer->writeSupervoxelMesh(*mesh, bodyId);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZJsonObject obj;
+  obj.decodeString(reader->readKeyValue("neutu_config", "body_status_v2").
+                   toStdString().c_str());
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+  merger.print();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  QString dataName = "segmentation_annotations";
+  QStringList keyList = reader->readKeys(dataName);
+  std::cout << keyList.size() << " annotations" << std::endl;
+  int batchSize = 5000;
+
+  std::ofstream stream(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/fix/bodylist.txt");
+
+  int currentIndex = 0;
+  while (currentIndex < keyList.size()) {
+    QList<QByteArray> values =
+          reader->readKeyValues(dataName, keyList.mid(currentIndex, batchSize));
+    currentIndex += batchSize;
+    std::cout << values.size() << " values" << std::endl;
+
+    std::set<std::string> statusSet = {
+      "anchor", "roughly traced", "prelim roughly traced"};
+
+    for (const auto &data : values) {
+      ZJsonObject obj;
+      obj.decodeString(QString(data).toStdString().c_str());
+//      obj.print();
+      ZString status = ZJsonParser::stringValue(obj["status"]);
+      status.toLower();
+      if (statusSet.count(status) > 0) {
+        int64_t bodyId = ZJsonParser::integerValue(obj["body ID"]);
+        std::cout << bodyId << " " << status << std::endl;
+        stream << bodyId << std::endl;
+      }
+    }
+  }
+//  QList<QByteArray> values =
+//      reader->readKeyValues(dataName, keyList.mid(10, 10));
+//  for (const auto &data : values) {
+//    ZJsonObject obj;
+//    obj.decodeString(QString(data).toStdString().c_str());
+//    obj.print();
+//  }
+#endif
+
+#if 0
+<<<<<<< HEAD
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZNetBufferReader reader;
+    reader.hasHead("http://emdata1.int.janelia.org:8900");
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+          "emdata1.int.janelia.org:8900");
+    try {
+      int statusCode;
+      ZDvid::MakeRequest(
+            *conn, "", "HEAD", libdvid::BinaryDataPtr(),
+            libdvid::DEFAULT, statusCode);
+      //    std::cout << conn->make_head_request("/api/help") << std::endl;
+    } catch (exception &e) {
+      std::cout << e.what() << std::endl;
+    }
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    std::cout << "Has key: " << reader->hasKey("rois", "bLo") << std::endl;
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 0
+  {
+  ZNetBufferReader reader;
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  reader.setHeader("Authorization", QString("Bearer ") + token.c_str());
+  reader.read("https://emdata1.int.janelia.org:11000/api/dbmeta/datasets", true);
+  std::cout << reader.getBuffer().size() << std::endl;
+  ZJsonObject dataObj;
+  dataObj.decodeString(reader.getBuffer().toStdString().c_str());
+  dataObj.print();
+  }
+#endif
+
+#if 0
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+//  reader.readDatasets();
+
+  QList<uint64_t> bodyList = reader.queryNeuron("AL", "MB (left)");
+  for (uint64_t bodyId : bodyList) {
+    std::cout << bodyId << std::endl;
+  }
+#endif
+
+#if 0
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+  QList<uint64_t> bodyList = reader.findSimilarNeuron(915520244);
+  for (uint64_t bodyId : bodyList) {
+    std::cout << "  " << bodyId << std::endl;
+  }
+#endif
+
+#if 1
+  qDebug() << qgetenv("NEUPRINT");
+  qDebug() << qgetenv("HOME");
+#endif
+
+
+#if 0
+  ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+        "https://emdata1.int.janelia.org:11000");
+
+  try {
+    int statusCode;
+    libdvid::BinaryDataPtr data = ZDvid::MakeRequest(
+          *conn, "/", "HEAD", libdvid::BinaryDataPtr(),
+          libdvid::DEFAULT, statusCode);
+    std::cout << data->length() << std::endl;
+    //    std::cout << conn->make_head_request("/api/help") << std::endl;
+  } catch (exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#endif
+
+#if 0
+  {
+    ZJsonParser parser;
+    std::cout << parser.getValue<int64_t>(NULL) << std::endl;
+  }
+
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", "hello");
+
+    ZJsonObjectParser parser;
+    std::cout << parser.getValue(obj, "test", "") << std::endl;
+  }
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.setEntry(ZFlyEmBodyStatus::KEY_NAME, "test");
+  obj.setEntry(ZFlyEmBodyStatus::KEY_EXPERT, true);
+  obj.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
+  ZFlyEmBodyStatus bodyStatus("");
+  bodyStatus.loadJsonObject(obj);
+  bodyStatus.toJsonObject().print();
+#endif
+
+#if 0
+  ZJsonObject obj;
+
+  ZJsonArray statusArrayObj;
+  {
+    ZFlyEmBodyStatus status("Finalized");
+    status.setPriority(0);
+    status.setFinal(true);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  {
+    ZFlyEmBodyStatus status("Traced");
+    status.setPriority(10);
+    status.setFinal(false);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  obj.setEntry("status", statusArrayObj);
+
+  obj.print();
+  obj.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  ZFlyEmBodyAnnotationMerger annotMerger;
+  annotMerger.loadJsonObject(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/body_staus.json");
+  annotMerger.print();
+
+  annotMerger.getConflictBody(
+>>>>>>> develop
+#endif
+
+
+#if 0
+<<<<<<< HEAD
+  ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();
+
+  QElapsedTimer timer;
+  timer.start();
+
+  tic();
+
+  for (int i = 0; i < 1000; ++i) {
+//    ZSharedPointer<libdvid::DVIDNodeService> newService =
+//        ZDvid::MakeDvidNodeService(service.get());
+    ZSharedPointer<libdvid::DVIDNodeService> service = ZDvid::MakeDvidNodeService(target);
+    service->get_keys("neutu_config");
+  }
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  ZDvidUrl url(reader->getDvidTarget());
+
+  ZNetBufferReader bufferReader;
+  std::cout << bufferReader.isReadable(
+                 url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZFlyEmBodyMergeProject project;
+  project.setDvidTarget(reader->getDvidTarget());
+  project.getAnnotationMerger().print();
+
+  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("anchors");
+    annotMap[1] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Anchors");
+    annotMap[2] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Finalized");
+    annotMap[3] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Roughly traced");
+    annotMap[4] = annot;
+  }
+
+  std::vector<std::vector<uint64_t>> bodySet =
+      project.getAnnotationMerger().getConflictBody(annotMap);
+  for (const auto& bodyArray : bodySet) {
+    std::cout << "Conflicted:";
+    for (uint64_t body : bodyArray) {
+      std::cout << " " << body;
+    }
+    std::cout << std::endl;
+  }
+
+  QString msg = project.composeStatusConflictMessage(annotMap);
+  qDebug() << msg;
+
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("MB_Test");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+//  roiManager.updateMesh("alpha1_below_roi");
+  roiManager.updateMesh("mb_subtracted");
+  roiManager.print();
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+
+  roiManager.updateMesh("vACA");
+  roiManager.updateMesh("gL");
+
+  roiManager.print();
+
+  std::cout << roiManager.getMesh("vACA") << std::endl;
+  std::cout << roiManager.getMesh("gL") << std::endl;
+
+
+#endif
+
+#if 0
+  ZOptionListWidget *widget = new ZOptionListWidget(NULL);
+
+  widget->setName("test");
+  widget->setOptionList(QStringList({"1", "2", "3", "4", "5"}));
+  widget->show();
+#endif
+
+#if 0
+
+  NeuPrintQueryDialog *dlg = new NeuPrintQueryDialog(host);
+  dlg->setRoiList({"1", "2", "3"});
+  dlg->exec();
+
+  QStringList inputList = dlg->getInputRoi();
+  for (const QString &roi : inputList) {
+    qDebug() << roi;
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;

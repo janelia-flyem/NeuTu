@@ -174,6 +174,18 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
 }
 
 ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
+    const std::string &address, const std::string &user, const std::string &app)
+{
+  try {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(address, user, app));
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    return ZSharedPointer<libdvid::DVIDConnection>();
+  }
+}
+
+ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
     const std::string &address)
 {
   try {
@@ -185,6 +197,17 @@ ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
     std::cout << e.what() << std::endl;
     return ZSharedPointer<libdvid::DVIDConnection>();
   }
+}
+
+ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
+    const libdvid::DVIDConnection *conn)
+{
+  if (conn != NULL) {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(*conn));
+  }
+
+  return ZSharedPointer<libdvid::DVIDConnection>();
 }
 
 

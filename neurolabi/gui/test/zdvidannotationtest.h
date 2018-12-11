@@ -49,10 +49,10 @@ TEST(ZDvidAnnotation, Json)
 
 //  std::cout << ZJsonParser::stringValue(propJson.value("test").getData()) << std::endl;
 
-  ASSERT_STREQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
+  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
 
   ZDvidAnnotation::AddProperty(jsonObj, "test2", "true");
-  ASSERT_STREQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
+  ASSERT_EQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
 
 }
 
@@ -65,6 +65,19 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   item.setAction(neutube::EToDoAction::TO_MERGE);
 //  item.toJsonObject().print();
   ASSERT_EQ(neutube::EToDoAction::TO_MERGE, item.getAction());
+
+
+  std::string mergeTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
+      + ZFlyEmToDoItem::ACTION_MERGE_TAG;
+  ASSERT_FALSE(item.hasTag(mergeTag));
+
+  item.setChecked(false);
+  ASSERT_TRUE(item.hasTag(mergeTag));
+  ASSERT_FALSE(item.isChecked());
+
+  item.setChecked(true);
+  ASSERT_FALSE(item.hasTag(mergeTag));
+  ASSERT_TRUE(item.isChecked());
 
   item.setAction(neutube::EToDoAction::TO_SPLIT);
   ASSERT_EQ(neutube::EToDoAction::TO_SPLIT, item.getAction());
@@ -84,6 +97,9 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   ASSERT_FALSE(item.hasTag(splitTag));
 
   item.setAction(neutube::EToDoAction::TO_SPLIT);
+  ASSERT_FALSE(item.hasTag(splitTag));
+
+  item.setChecked(false);
   ASSERT_TRUE(item.hasTag(splitTag));
 
   item.setChecked(true);

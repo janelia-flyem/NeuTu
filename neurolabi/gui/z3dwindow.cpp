@@ -97,6 +97,7 @@
 #include "z3dwindowcontroller.h"
 #include "data3d/zstackobjectconfig.h"
 #include "flyem/zflyembodyenv.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
 
 /*
 class Sleeper : public QThread
@@ -297,6 +298,8 @@ void Z3DWindow::init()
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
             this, SLOT(selectedTodoChangedFrom3D(ZStackObject*,bool)));
+    connect(getTodoFilter(), SIGNAL(annotatingObject(ZStackObject*)),
+            this, SLOT(annotateTodo(ZStackObject*)));
 //    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
 //            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
@@ -1410,6 +1413,16 @@ void Z3DWindow::onSelectionChangedFrom3D(Z3DGeometryFilter *filter,
     m_doc->selectObject(p, true);
     filter->invalidate();
   }
+}
+
+void Z3DWindow::annotateTodo(ZStackObject *obj)
+{
+  ZFlyEmTodoAnnotationDialog dlg(this);
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc != NULL) {
+    doc->annotateTodo(&dlg, obj);
+  }
+//  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
 }
 
 void Z3DWindow::selectedTodoChangedFrom3D(ZStackObject *p, bool append)

@@ -3,7 +3,7 @@
 
 #include <QList>
 #include "neutube_def.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "swctreenode.h"
 #include "zstackball.h"
 #include "tz_math.h"

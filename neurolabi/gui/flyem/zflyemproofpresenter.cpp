@@ -153,6 +153,9 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
               this, SLOT(unverifySelectedSynapse()));
       break;
+    case ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST:
+      connect(action, SIGNAL(triggered()), this, SLOT(showSupervoxelList()));
+      break;
     default:
       connected = false;
       break;
@@ -385,6 +388,11 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       LINFO() << "Ctrl+D pressed: Toggling data";
       emit togglingData();
       processed = true;
+    }
+    break;
+  case Qt::Key_3:
+    if (!isSplitOn()) {
+      emit togglingBodyColorMap();
     }
     break;
   default:
@@ -797,7 +805,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
-    bookmark->setUser(neutube::GetCurrentUserName().c_str());
+    bookmark->setUser(neutube::GetCurrentUserName());
     bookmark->addUserTag();
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
@@ -809,6 +817,11 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
 
 //    emit bookmarkAdded(bookmark);
   }
+}
+
+void ZFlyEmProofPresenter::showSupervoxelList()
+{
+  emit showingSupervoxelList();
 }
 
 bool ZFlyEmProofPresenter::allowingBlinkingSegmentation() const
@@ -858,6 +871,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE:
     emit annotatingSynapse();
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_ANNOTATE:
+    emit annotatingTodo();
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);

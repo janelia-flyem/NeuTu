@@ -20,12 +20,7 @@ ZArray::ZArray(ZArray::Value_Type type, int ndims, mylib::Dimn_Type *dims)
 
 ZArray::ZArray(const ZArray &array)
 {
-  if (array.m_data == NULL) {
-    m_data = NULL;
-  } else {
-    m_data = mylib::Copy_Array(array.m_data);
-  }
-  m_startCoordinates = array.m_startCoordinates;
+  *this = array;
 }
 
 ZArray::~ZArray()
@@ -33,6 +28,18 @@ ZArray::~ZArray()
   if (m_data != NULL) {
     mylib::Kill_Array(m_data);
   }
+}
+
+ZArray& ZArray::operator = (const ZArray &array)
+{
+  if (array.m_data == NULL) {
+    m_data = NULL;
+  } else {
+    m_data = mylib::Copy_Array(array.m_data);
+  }
+  m_startCoordinates = array.m_startCoordinates;
+
+  return *this;
 }
 
 void ZArray::printInfo() const
