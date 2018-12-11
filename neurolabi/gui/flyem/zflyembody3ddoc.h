@@ -37,6 +37,7 @@ class ZFlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
+class ZFlyEmTodoFilterDialog;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -321,6 +322,7 @@ public:
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
 
+  void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
   void registerBody(uint64_t bodyId);
   void deregisterBody(uint64_t bodyId);

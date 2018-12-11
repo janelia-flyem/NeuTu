@@ -363,13 +363,15 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
-  m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
+  m_bodyViewWindow->settingsAction =
+      m_bodyViewWindow->toolBar->addAction("Control&Settings");
   connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
 
-  m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
+  m_bodyViewWindow->objectsAction =
+      m_bodyViewWindow->toolBar->addAction("Objects");
   connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(objectsPanel(bool)));
   m_bodyViewWindow->objectsAction->setCheckable(true);

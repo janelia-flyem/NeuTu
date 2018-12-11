@@ -50,6 +50,7 @@
 #include "zflyembodyenv.h"
 #include "zflyembodystatus.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemtodofilterdialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -667,10 +668,12 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
     ZFlyEmToDoItem *item = *iter;
     if (item->getAction() == neutube::EToDoAction::TO_DO) {
       item->setVisible(visible);
+      bufferObjectVisibilityChanged(item);
     }
   }
 
-  emit todoVisibleChanged();
+  processObjectModified();
+//  emit todoVisibleChanged();
 }
 
 void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
@@ -2566,6 +2569,30 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
         }
       }
       LDEBUG() << "Cannot add todo:" << bodyId << "not in" << stream.str();
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodo(ZFlyEmTodoFilterDialog *dlg)
+{
+  if (isDvidMutable()) {
+    if (dlg->exec()) {
+      ZFlyEmBody3dDocCommand::RemoveTodo *command =
+          new ZFlyEmBody3dDocCommand::RemoveTodo(this);
+
+      QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
+      for (const ZFlyEmToDoItem *item : todoList) {
+        if (dlg->passed(item)) {
+          command->addTodoItem(
+                item->getX(), item->getY(), item->getZ(), item->getBodyId());
+        }
+      }
+
+      if (command->hasValidItem()) {
+        pushUndoCommand(command);
+      } else {
+        delete command;
+      }
     }
   }
 }
