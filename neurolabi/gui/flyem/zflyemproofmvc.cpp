@@ -873,8 +873,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
-  connect(doc, SIGNAL(todoVisibleChanged()),
-          window, SLOT(updateTodoVisibility()));
+//  connect(doc, SIGNAL(todoVisibleChanged()),
+//          window, SLOT(updateTodoVisibility()));
 
 }
 
@@ -1077,6 +1077,8 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
   } else {
     m_meshWindow = window;
   }
+
+  prepareBodyWindowSignalSlot(window, doc);
 
   doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
 
