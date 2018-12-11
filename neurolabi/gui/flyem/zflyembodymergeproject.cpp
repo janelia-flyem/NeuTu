@@ -1751,6 +1751,10 @@ void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 
   ZJsonObject obj = m_writer.getDvidReader().readBodyStatusV2();
   m_annotMerger.loadJsonObject(obj);
+
+#ifdef _DEBUG_
+  m_annotMerger.print();
+#endif
 }
 
 void ZFlyEmBodyMergeProject::syncWithDvid()

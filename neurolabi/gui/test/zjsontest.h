@@ -71,6 +71,10 @@ TEST(ZJsonValue, decode)
   array.decodeString("1, 2, 3", NULL);
   json_error_t error;
   array.decodeString("1, 2, 3", &error);
+
+  ZJsonObject obj;
+  obj.decodeString("");
+  ASSERT_TRUE(obj.isEmpty());
 }
 
 TEST(ZJsonArray, basic)

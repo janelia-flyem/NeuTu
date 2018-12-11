@@ -22,6 +22,9 @@ public:
       const QList<QString> &inputRoiList, const QList<QString> &outputRoiList);
   QList<uint64_t> findSimilarNeuron(const uint64_t bodyId);
 
+  ZJsonObject customQuery(const QString &query);
+  ZJsonObject customQuery(const ZJsonObject &json);
+
   bool isReady();
   bool isConnected();
   bool isAuthorized() const;
