@@ -35,6 +35,9 @@ public:
 
   void clearBuffer();
 
+  void setRequestHeader(const QString &key, const QString &value);
+  bool hasRequestHeader(const QString &key) const;
+
 signals:
 
 public slots:
@@ -75,6 +78,7 @@ private:
   neutube::EReadStatus m_status = neutube::EReadStatus::NONE;
   int m_statusCode = 0;
   int m_maxSize = 0;
+  std::map<QString, QString> m_header;
 };
 
 #endif // ZNETBUFFERREADER_H

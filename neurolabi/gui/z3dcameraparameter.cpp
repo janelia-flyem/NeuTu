@@ -353,7 +353,8 @@ void Z3DCameraParameter::set(const ZJsonObject &cameraJson)
   }
 
   if (cameraJson.hasKey("projection")) {
-    m_projectionType.select(ZJsonParser::stringValue(cameraJson["projection"]));
+    m_projectionType.select(
+          ZJsonParser::stringValue(cameraJson["projection"]).c_str());
   }
 
   if (cameraJson.hasKey("field_of_view")) {

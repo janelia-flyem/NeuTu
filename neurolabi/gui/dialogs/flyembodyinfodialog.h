@@ -147,7 +147,6 @@ private:
     QSortFilterProxyModel* m_connectionsProxy;
     QMap<uint64_t, QString> m_bodyNames;
     QSet<uint64_t> m_namelessBodies;
-    QSet<QString> m_bodyAnnotationKeys;
     QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;

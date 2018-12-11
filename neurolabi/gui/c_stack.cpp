@@ -1590,7 +1590,7 @@ int C_Stack::digitWidth(int n)
   ostringstream stream;
 #if defined(_QT_GUI_USED_)
   const NeutubeConfig &config = NeutubeConfig::getInstance();
-  stream << config.getPath(NeutubeConfig::DATA) << "/benchmark/digit" << n
+  stream << config.getPath(NeutubeConfig::EConfigItem::DATA) << "/benchmark/digit" << n
          << ".tif";
 #else
   stream << "../data" << "/benchmark/digit" << n << ".tif";
@@ -1633,7 +1633,7 @@ int C_Stack::drawDigit(Stack *canvas, int n, int dx, int dy, int dz)
   ostringstream stream;
 #if defined(_QT_GUI_USED_)
   const NeutubeConfig &config = NeutubeConfig::getInstance();
-  stream << config.getPath(NeutubeConfig::DATA) << "/benchmark/digit" << n
+  stream << config.getPath(NeutubeConfig::EConfigItem::DATA) << "/benchmark/digit" << n
          << ".tif";
 #else
   stream << "../data" << "/benchmark/digit" << n << ".tif";

@@ -137,11 +137,13 @@ Z3DGraphEdge::Z3DGraphEdge(int vs, int vt) : m_shape(GRAPH_CYLINDER)
   set(vs, vt, 1.0, false, color, color, GRAPH_LINE);
 }
 
+/*
 Z3DGraphEdge::Z3DGraphEdge(const Z3DGraphEdge &edge)
 {
   set(edge.m_vs, edge.m_vt, edge.m_width, edge.m_usingNodeColor,
       edge.m_startColor, edge.m_endColor, edge.m_shape);
 }
+*/
 
 void Z3DGraphEdge::set(int vs, int vt, double width)
 {
@@ -202,7 +204,7 @@ void Z3DGraphEdge::loadJsonObject(json_t *obj)
       }
       m_usingNodeColor = false;
     } else if (eqstr(key, "shape")) {
-      const char *shape = ZJsonParser::stringValue(value);
+      std::string shape = ZJsonParser::stringValue(value);
       setShape(shape);
     }
   }

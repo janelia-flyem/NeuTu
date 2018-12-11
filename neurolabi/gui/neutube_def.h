@@ -113,7 +113,11 @@ enum class EReadStatus {
 };
 
 enum class EToDoAction {
-  TO_DO, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
+  TO_DO = 0, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
+};
+
+enum class EStackNeighborhood {
+  D1 = 1, D2, D3
 };
 
 namespace display {

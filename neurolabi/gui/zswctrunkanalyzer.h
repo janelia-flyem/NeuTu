@@ -10,6 +10,7 @@ class ZSwcTrunkAnalyzer
 {
 public:
   ZSwcTrunkAnalyzer();
+  ZSwcTrunkAnalyzer(double gw, double ew);
   virtual ~ZSwcTrunkAnalyzer();
 
   enum ETrafficRule {
@@ -33,8 +34,8 @@ public:
   }
 
 protected:
-  double m_geodesicWeight;
-  double m_euclideanWeight;
+  double m_geodesicWeight = 1.0;
+  double m_euclideanWeight = 15.0;
   std::set<Swc_Tree_Node*> m_blocker;
 };
 

@@ -35,7 +35,7 @@ QMAKE_EXTRA_TARGETS += neurolabi
 message($${neurolabi.commands})
 
 macx {
-  BIN_FOLDER = $${OUT_PWD}/$${TARGET}.app/Contents/MacOS
+  BIN_FOLDER = $${OUT_PWD}/$${app_name}.app/Contents/MacOS
 } else {
   BIN_FOLDER = $${OUT_PWD}
 }
@@ -83,7 +83,7 @@ QMAKE_EXTRA_TARGETS += xmlconfig jsonconfig app_config
 unix {
   OutputDir = $${OUT_PWD}
   macx {
-    OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
+    OutputDir = $${OutputDir}/$${app_name}.app/Contents/MacOS
     exists($${CONDA_ENV}) {
 #      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
     }

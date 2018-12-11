@@ -210,7 +210,11 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifndef _FLYEM_
   this->setWindowIcon(QIcon(":/images/app.png"));
 #else
-  this->setWindowIcon(QIcon(":/images/app2.png"));
+#  if defined(_NEU3_)
+  this->setWindowIcon(QIcon(":/images/neu3.png"));
+#  else
+  this->setWindowIcon(QIcon(":/images/neutu.png"));
+#  endif
 #endif
 
   mdiArea = new QMdiArea;
@@ -2120,7 +2124,8 @@ void MainWindow::createWorkDir()
 #endif
 
   QString workDirPath =
-      NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR).c_str();
+      NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::EConfigItem::WORKING_DIR).c_str();
   QDir workDir(workDirPath);
   if (!workDir.exists()) {
     StartSettingDialog dlg;
@@ -2137,10 +2142,10 @@ void MainWindow::createWorkDir()
         } else {
           if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
             if (!dir.mkpath(NeutubeConfig::getInstance().getPath(
-                         NeutubeConfig::AUTO_SAVE).c_str())) {
+                         NeutubeConfig::EConfigItem::AUTO_SAVE).c_str())) {
               warningMsg = "Faile to Create the working directory",
                   "Cannot create " + NeutubeConfig::getInstance().getPath(
-                    NeutubeConfig::AUTO_SAVE) +
+                    NeutubeConfig::EConfigItem::AUTO_SAVE) +
                   "Autosave will be disabled.";
             }
           }
@@ -2276,7 +2281,7 @@ void MainWindow::writeSettings()
                     getPath(NeutubeConfig::AUTO_SAVE).c_str()));
                     */
   getSettings().setValue("workDir", QString(NeutubeConfig::getInstance().
-                    getPath(NeutubeConfig::WORKING_DIR).c_str()));
+                    getPath(NeutubeConfig::EConfigItem::WORKING_DIR).c_str()));
 }
 
 void MainWindow::checkVersion()
@@ -3881,7 +3886,7 @@ void MainWindow::on_actionFlyEmSelect_triggered()
       idObject = jValue["id"];
       if (idObject != NULL) {
         std::vector<int> bodyId;
-        if (ZJsonParser::isInteger(idObject)) {
+        if (ZJsonParser::IsInteger(idObject)) {
           bodyId.push_back(ZJsonParser::integerValue(idObject));
         } else {
           ZJsonArray jArray;
@@ -4170,7 +4175,7 @@ void MainWindow::on_actionErrorClassifcationComputeFeatures_triggered()
 void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
 {
   const NeutubeConfig& config = NeutubeConfig::getInstance();
-  std::string dataPath = config.getPath(NeutubeConfig::DATA);
+  std::string dataPath = config.getPath(NeutubeConfig::EConfigItem::DATA);
   std::string dataDir = "flyem/skeletonization/session3/smoothed";
   //std::string dataDir = "benchmark/binary/3d/block";
   ZFileList fileList;
@@ -4255,7 +4260,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
 void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
 {
   const NeutubeConfig& config = NeutubeConfig::getInstance();
-  std::string dataPath = config.getPath(NeutubeConfig::DATA);
+  std::string dataPath = config.getPath(NeutubeConfig::EConfigItem::DATA);
   std::string sessionDir = "flyem/skeletonization/session3";
   std::string dataDir = sessionDir + "/smoothed/snapshots/contrast/selected";
   ZFileList fileList;
@@ -4620,9 +4625,9 @@ void MainWindow::on_actionMake_Movie_triggered()
   if (m_movieDlg->getScriptPath().isEmpty()) {
     const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/flyem/FIB/movie/reconstruct.json").c_str());
-    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/flyem/FIB/movie/frame").c_str());
   }
 
@@ -4634,9 +4639,9 @@ void MainWindow::on_actionMake_Movie_MB_triggered()
   if (m_movieDlg->getScriptPath().isEmpty()) {
     const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/flyem/MB/paper/movie1/script.json").c_str());
-    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/flyem/MB/paper/movie1/frame").c_str());
   }
 
@@ -5627,8 +5632,8 @@ void MainWindow::on_actionAssign_Clustering_triggered()
           if (process.run()) {
             const ZJsonObject &output = process.getOutput();
             if (output.hasKey("label_file")) {
-              const char *outputFile = ZJsonParser::stringValue(output["label_file"]);
-              if (outputFile != NULL) {
+              std::string outputFile = ZJsonParser::stringValue(output["label_file"]);
+              if (!outputFile.empty()) {
                 frame->assignClass(outputFile);
               } else {
                 report("Error Output", "Cannot finish the task for unknown reasons.",
@@ -8449,9 +8454,9 @@ void MainWindow::on_actionMake_Movie_3_triggered()
   if (m_movieDlg->getScriptPath().isEmpty()) {
     const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/_flyem/FIB/FIB19/movies/vs/script.json").c_str());
-    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::EConfigItem::DATA) +
                                "/_flyem/FIB/FIB19/movies/vs/frame").c_str());
   }
 

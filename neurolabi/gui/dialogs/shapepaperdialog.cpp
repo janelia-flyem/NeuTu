@@ -733,15 +733,15 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
           if (process.run()) {
             const ZJsonObject &output = process.getOutput();
             if (output.hasKey("cluster_file")) {
-              const char *outputFile =
+              std::string outputFile =
                   ZJsonParser::stringValue(output["cluster_file"]);
-              if (outputFile != NULL) {
+              if (!outputFile.empty()) {
                 QFile file(getPath(RESULT_CLUSTERING));
                 if (file.exists()) {
                   file.remove();
                 }
 
-                QFile::copy(outputFile, getPath(RESULT_CLUSTERING));
+                QFile::copy(outputFile.c_str(), getPath(RESULT_CLUSTERING));
                 dump(getPath(RESULT_CLUSTERING) + " saved.");
 
                 ZMatrix mat;

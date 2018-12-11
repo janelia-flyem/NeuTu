@@ -2,7 +2,7 @@
 #define ZFLYEMDVIDREADER_H
 
 #include "dvid/zdvidreader.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 
 /*!
  * \brief The class of reading flyem data from DVID

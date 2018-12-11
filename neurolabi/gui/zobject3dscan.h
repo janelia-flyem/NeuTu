@@ -439,6 +439,7 @@ public:
 
   void duplicateSlice(int depth);
 
+  bool hasSlice(int z) const;
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getMedianSlice() const;
 
@@ -642,13 +643,14 @@ public:
    *
    * 26-neighborhood.
    */
-  bool hasOverlap(ZObject3dScan &obj);
+  bool hasOverlap(ZObject3dScan &obj) const;
 
 
   /*!
    * \brief Check if an object is ajacent to another
    */
-  bool isAdjacentTo(ZObject3dScan &obj);
+  bool isAdjacentTo(const ZObject3dScan &obj,
+                    neutube::EStackNeighborhood nbr = neutube::EStackNeighborhood::D1) const;
 
 
   /*
@@ -744,6 +746,46 @@ public:
     int m_z;
   };
 
+  class ConstSliceIterator {
+  public:
+    //The iterator always starts from the position prior to the first element.
+    ConstSliceIterator(const ZObject3dScan *obj = NULL);
+    const ZObject3dScan& next(); //Go to next and return the slice
+    const ZObject3dScan& current() const;
+    bool hasNext() const;
+    void advance();
+
+  private:
+    const ZObject3dScan *m_obj = nullptr;
+  //  int m_nextZ = 0;
+  //  int m_maxZ = -1;
+    size_t m_stripeIndex = 0;
+    std::shared_ptr<ZObject3dScan> m_slice; //
+  };
+
+  class ConstStripeIterator {
+  public:
+    //The iterator always starts from the position prior to the first element.
+    ConstStripeIterator(const ZObject3dScan *obj = NULL);
+    const ZObject3dStripe& next(); //Go to next and return the elment
+    const ZObject3dStripe& peekNext() const; //Go to next and return the elment
+//    const ZObject3dStripe& begin();
+    bool hasNext() const;
+    bool hasNextNext() const;
+
+    //Advance the iterator; it should NOT destroy the value returned before.
+    void advance();
+
+    const ZObject3dStripe& operator *() const;
+    friend ConstStripeIterator& operator++(ConstStripeIterator &iter);
+    bool ended() const;
+
+  private:
+    const ZObject3dScan *m_obj = nullptr;
+    size_t m_nextStripeIndex = 0;
+    ZObject3dStripe m_emptyStripe;
+  };
+
   class ConstSegmentIterator {
   public:
     //The iterator always starts from the position prior to the first element.
@@ -798,6 +840,10 @@ private:
   void writeV2(std::ostream &stream) const;
 #endif
   void readHeader(std::istream &stream, int *version, int *stripeNumber);
+
+  void canonizeConst() const;
+
+  bool isAdjacentTo_Old(const ZObject3dScan &obj) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

@@ -34,7 +34,7 @@
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
@@ -59,17 +59,10 @@
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
 {
-  init();
 }
 
 ZDvidReader::~ZDvidReader()
 {
-}
-
-void ZDvidReader::init()
-{
-  m_readingTime = 0;
-  m_statusCode = 0;
 }
 
 int ZDvidReader::getStatusCode() const
@@ -203,6 +196,25 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   }
 
   return succ;
+}
+
+void ZDvidReader::updateDataStatus()
+{
+  ZJsonObject obj = readJsonObjectFromKey("neutu_config", "data_status");
+  if (!obj.isEmpty()) {
+    if (obj.hasKey(getDvidTarget().getSynapseName().c_str())) {
+      ZJsonObject synapseObj(obj.value(getDvidTarget().getSynapseName().c_str()));
+      if (synapseObj.hasKey("role")) {
+        if (std::string(ZJsonParser::stringValue(synapseObj["role"]))
+            == "synapse") {
+          if (synapseObj.hasKey("readonly")) {
+            getDvidTarget().setSynapseReadonly(
+                  ZJsonParser::booleanValue(synapseObj["readonly"]));
+          }
+        }
+      }
+    }
+  }
 }
 
 std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
@@ -698,6 +710,7 @@ ZObject3dScan *ZDvidReader::readBody(
       config.format = "blocks";
       config.range = box;
       config.zoom = zoom;
+      config.labelType = labelType;
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
@@ -2430,7 +2443,9 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
 
 bool ZDvidReader::hasKey(const QString &dataName, const QString &key) const
 {
-  return !readKeyValue(dataName, key).isEmpty();
+  return m_netBufferReader.isReadable(
+        ZDvidUrl(getDvidTarget()).getKeyUrl(dataName.toStdString(), key.toStdString()).c_str());
+//  return !readKeyValue(dataName, key).isEmpty();
 }
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key) const
@@ -2539,7 +2554,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName) const
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
@@ -2568,7 +2583,7 @@ QStringList ZDvidReader::readKeys(
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
@@ -2617,7 +2632,7 @@ QStringList ZDvidReader::readKeys(
     ZJsonArray obj;
     obj.decode(keyBuffer.data());
     for (size_t i = 0; i < obj.size(); ++i) {
-      keys << ZJsonParser::stringValue(obj.at(i));
+      keys << ZJsonParser::stringValue(obj.at(i)).c_str();
     }
   }
 
@@ -2743,12 +2758,27 @@ ZJsonObject ZDvidReader::readContrastProtocal() const
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
-    config.decodeString(byteArray.data());
+    config.decode(byteArray.data());
   }
 
   return config;
 }
 
+ZJsonObject ZDvidReader::readBodyStatusV2() const
+{
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_NEUTU_CONFIG),
+        "body_status_v2");
+
+  ZJsonObject config;
+  if (!byteArray.isEmpty()) {
+    config.decode(byteArray.toStdString());
+  }
+
+  return config;
+}
+
+/*
 ZJsonArray ZDvidReader::readBodyStatusList() const
 {
   QByteArray byteArray = readKeyValue(
@@ -2761,6 +2791,7 @@ ZJsonArray ZDvidReader::readBodyStatusList() const
 
   return config;
 }
+*/
 
 ZIntCuboid ZDvidReader::readBoundBox(int z)
 {
@@ -4941,8 +4972,10 @@ QList<ZJsonObject> ZDvidReader::readJsonObjectsFromKeys(const QString &dataName,
         ZJsonObject obj;
         if (!buffers[i].isEmpty()) {
             obj.decodeString(buffers[i].constData());
-            objects.append(obj);
         }
+        // note: object must be appened even if empty!  returned list elements
+        //  must correspond to input key list
+        objects.append(obj);
     }
     return objects;
 }

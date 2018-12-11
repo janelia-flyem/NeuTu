@@ -2830,11 +2830,9 @@ double Stack_Neighbor_Min(const Stack *stack, int n_nbr, int x, int y, int z)
 					     x, y, z, is_in_bound);
 
   int i;
-  double min_value;
+  double min_value = 0.0;
 
-  if (n_in_bound == 0) {
-    min_value = 0.0;
-  } else {
+  if (n_in_bound > 0) {
     int center = z * stack->height * stack->width + y * stack->width + x;
     Image_Array ima;
     ima.array = stack->array;
@@ -2898,11 +2896,9 @@ double Stack_Neighbor_Mean(const Stack *stack, int n_nbr, int x, int y, int z)
 					     x, y, z, is_in_bound);
 
   int i;
-  double mean_value;
+  double mean_value = 0.0;
 
-  if (n_in_bound == 0) {
-    mean_value = 0.0;
-  } else {
+  if (n_in_bound > 0) {
     int center = z * stack->height * stack->width + y * stack->width + x;
     Image_Array ima;
     ima.array = stack->array;

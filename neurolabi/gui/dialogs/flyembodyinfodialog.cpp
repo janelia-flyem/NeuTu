@@ -231,13 +231,14 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
 
       // remove name if empty
-      if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+      if (bodyData.hasKey("name") &&
+          ZJsonParser::stringValue(bodyData["name"]).empty()) {
         bodyData.removeKey("name");
       }
 
       // remove status if empty; change status > body status
       if (bodyData.hasKey("status")) {
-        if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+        if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
           bodyData.setEntry("body status", bodyData["status"]);
         }
         // don't really need to remove this, but why not
@@ -684,49 +685,70 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader &reader = m_sequencerReader;
     if (m_sequencerReader.isReady()) {
-         m_bodyNames.clear();
-         m_namelessBodies.clear();
+        m_bodyNames.clear();
+        m_namelessBodies.clear();
 
-        // we need to construct a json structure from scratch to
-        //  match what we'd get out of the bookmarks annotation file;
-        //  probably this should be refactored 
+        // the specific form of json we're passing around is a
+        //  historical accident; should be refactored someday
 
-        // get all the bodies that have annotations in this UUID        
+        // get all the bodies that have annotations in this UUID;
         // note that this list contains body IDs in strings, *plus*
-        //  some other nonnumeric strings (!!)
+        //  some other nonnumeric strings (!!), so we remove those
 
-//        QString bodyAnnotationName = m_currentDvidTarget.getBodyAnnotationName().c_str();
-      QString bodyAnnotationName =
-          reader.getDvidTarget().getBodyAnnotationName().c_str();
-      QStringList keyList = reader.readKeys(bodyAnnotationName);
+        QString bodyAnnotationName = reader.getDvidTarget().getBodyAnnotationName().c_str();
+        QStringList keyList = reader.readKeys(bodyAnnotationName);
+        QMutableListIterator<QString> iter(keyList);
+        bool ok;
+        while (iter.hasNext()) {
+            QString bodyIDstr = iter.next();
+            // we don't care about the result of this conversion, only that
+            //  it *can* be parsed:
+            bodyIDstr.toLongLong(&ok);
+            if (!ok) {
+                iter.remove();
+            }
+        }
 
-      //Skip for debugging
-#ifdef _DEBUG_2
-      keyList.clear();
-#endif
+        //Skip for debugging
+        #ifdef _DEBUG_2
+        keyList.clear();
+        #endif
+
+        // read all the body annotations at once
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+
+        #ifdef _DEBUG_
+            std::cout << "populating body info dialog:" << std::endl;
+            std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
+            std::cout << "    # body annotation keys = " << keyList.size() << std::endl;
+        #endif
 
         ZJsonArray bodies;
-        bool ok;
         qlonglong bodyID;
-        foreach (const QString &bodyIDstr, keyList) {
+        for (int i=0; i<keyList.size(); i++) {
             if (m_quitting || m_cancelLoading) {
-#ifdef _DEBUG_
-                std::cout << "Sequencer loading canceled." << std::endl;
-#endif
+                #ifdef _DEBUG_
+                    std::cout << "Sequencer loading canceled." << std::endl;
+                #endif
                 return;
             }
 
-            // skip the few non-numeric keys mixed in there
-            bodyID = bodyIDstr.toLongLong(&ok);
+            // remember, we've already removed the values that won't convert,
+            //  so we don't *need* to check the return...but I'll leave it in anyway
+            bodyID = keyList[i].toLongLong(&ok);
             if (ok) {
-                // get body annotations and transform to what we need
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);
-                ZJsonObject bodyData;
-                bodyData.decodeString(temp.data());
+                // grab the previously retrieved data and modify it:
+                ZJsonObject bodyData = bodyAnnotationList[i];
 
-                // remove name if empty
-                if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
-                    bodyData.removeKey("name");
+                // remove name if empty; store it otherwise
+                if (bodyData.hasKey("name")) {
+                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
+                    if (name.empty()) {
+                        bodyData.removeKey("name");
+                    } else {
+                        // keyList contains body ID strings
+                        m_bodyNames[bodyID] = QString(name.c_str());
+                    }
                 }
 
                 if (namedOnly) {
@@ -735,9 +757,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                   }
                 }
 
-                // remove status if empty; change status > body status
+                // remove status if empty; change status => body status
                 if (bodyData.hasKey("status")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                         bodyData.setEntry("body status", bodyData["status"]);
                     } 
                     // don't really need to remove this, but why not
@@ -873,11 +895,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("name")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
                         entry.setEntry("name", bodyData["name"]);
                         // store name for later use
                         m_bodyNames[bodyID] =
-                            QString(ZJsonParser::stringValue(bodyData["name"]));
+                            QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }
@@ -887,7 +909,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("status")) {
-                  if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                  if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                     entry.setEntry("body status", bodyData["status"]);
                   }
                 }
@@ -1007,8 +1029,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
   if (bkmk.hasKey("name")) {
-    const char* name = ZJsonParser::stringValue(bkmk["name"]);
-    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString(name));
+    std::string name = ZJsonParser::stringValue(bkmk["name"]);
+    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString::fromStdString(name));
   }
 
   if (bkmk.hasKey("body T-bars")) {
@@ -1032,8 +1054,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   // note that this routine expects "body status", not "status";
   //  historical side-effect of the original file format we read from
   if (bkmk.hasKey("body status")) {
-    const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString(status));
+    std::string status = ZJsonParser::stringValue(bkmk["body status"]);
+    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString::fromStdString(status));
     //      m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
   }
 
@@ -1201,7 +1223,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // look at first element and check its structure; it's an object
-    if (!ZJsonParser::isObject(colorArray.at(0))) {
+    if (!ZJsonParser::IsObject(colorArray.at(0))) {
         emit jsonLoadColorMapError("Color map json file must contain an array of objects");
         return false;
     }
@@ -1237,11 +1259,11 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     for (size_t i=0; i<colorArray.size(); i++) {
         ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
-        QString filter(ZJsonParser::stringValue(entry["filter"]));
+        QString filter(ZJsonParser::stringValue(entry["filter"]).c_str());
         QStandardItem * filterTextItem = new QStandardItem(filter);
         m_filterModel->appendRow(filterTextItem);
 
-        std::vector<int> rgba = ZJsonParser::integerArray(entry["color"]);
+        std::vector<int64_t> rgba = ZJsonParser::integerArray(entry["color"]);
         setFilterTableModelColor(QColor(rgba[0], rgba[1], rgba[2], rgba[3]), 
             m_filterModel->rowCount() - 1);
     }
@@ -1628,31 +1650,39 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         }
         // std::cout << "built qmap: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
-        // name check; if we aren't loading all bodies in the top table,
-        //  we may not have names available for all bodies that could
+        // name check; since we don't load all bodies in the top table,
+        //  we may not have names available for every body that could
         //  appear in the lower table; try to fill in the gaps
+
+        // find out which bodies we don't have names for but do have body annotations and
+        //  thus *might* have names available
         QString bodyAnnotationName = QString::fromStdString(m_currentDvidTarget.getBodyAnnotationName());
+        QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
+        QList<QString> keyList;
         for (size_t i=0; i<bodyList.size(); i++) {
-            // if body id not in name list or nameless list,
-            // try to grab it; fill in the data
             if (!m_bodyNames.contains(bodyList[i]) && !m_namelessBodies.contains(bodyList[i]) &&
-                m_bodyAnnotationKeys.contains(QString::number(bodyList[i]))) {
+                bodyAnnotationKeys.contains(QString::number(bodyList[i]))) {
+                keyList.append(QString::number(bodyList[i]));
+            }
+        }
 
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, QString::number(bodyList[i]));
-                ZJsonObject bodyData;
-                bodyData.decodeString(temp.data());
+        // grab all the possible annotations at once, then those that have names,
+        //  put in our name stash
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
 
-                if (bodyData.hasKey("name")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
-                        m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
-                    } else {
-                        m_namelessBodies.insert(bodyID);
-                    }
+        foreach (ZJsonObject bodyData, bodyAnnotationList) {
+            if (bodyData.hasKey("name")) {
+                if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
+                    m_bodyNames[bodyID] =
+                        QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                 } else {
                     m_namelessBodies.insert(bodyID);
                 }
+            } else {
+                m_namelessBodies.insert(bodyID);
             }
         }
+
         // std::cout << "got previously unknown names: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         emit ioBodiesLoaded();
     } else {

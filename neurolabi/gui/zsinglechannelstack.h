@@ -158,10 +158,10 @@ public:
   Stack *m_parent;
   //int m_stamp;
   int *m_hist; /* set to NULL if not available */
-  double m_min;
-  double m_max;
-  double m_greyScale;
-  double m_greyOffset;
+  double m_min = 0.0;
+  double m_max = 0.0;
+  double m_greyScale = 0.0;
+  double m_greyOffset = 0.0;
 };
 
 

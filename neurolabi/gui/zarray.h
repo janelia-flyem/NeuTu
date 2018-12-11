@@ -88,6 +88,8 @@ public:
   void setStartCoordinate(int index, int x);
   void setStartCoordinate(const std::vector<int> &coord);
 
+  ZArray& operator= (const ZArray &array);
+
 private:
   mylib::Array *m_data;
   std::vector<int> m_startCoordinates;

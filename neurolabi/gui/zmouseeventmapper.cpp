@@ -400,6 +400,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
     } else if (op.getHitObject()->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE) {
       op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE);
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST) {
+      op.setOperation(ZStackOperator::OP_FLYEM_TODO_ANNOTATE);
     }
   }
 

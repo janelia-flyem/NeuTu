@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>628</width>
-    <height>704</height>
+    <height>750</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -312,13 +312,6 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPushButton" name="exportConnectionsButton">
-           <property name="text">
-            <string>Export connections...</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -367,7 +360,7 @@
       <attribute name="title">
        <string>Connections</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -454,6 +447,33 @@
             </widget>
            </item>
           </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="exportConnectionsButton">
+           <property name="text">
+            <string>Export connections...</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

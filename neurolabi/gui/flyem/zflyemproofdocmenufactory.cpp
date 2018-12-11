@@ -129,22 +129,24 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
-        if (!doc->getDvidTarget().getSynapseName().empty()) {
-          config.append(ZActionFactory::ACTION_BODY_CONNECTION);
-          config.appendSeparator();
-        }
-
         if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
-            if (ZStackDocHelper::AllowingBodySplit(doc)) {
-              config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
-            }
+
             if (ZStackDocHelper::AllowingBodyAnnotation(doc)) {
+              if (neutube::IsAdminUser()) {
+                config.append(ZActionFactory::ACTION_BODY_EXPERT_STATUS);
+              }
               config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
             config.append(ZActionFactory::ACTION_BODY_PROFILE);
+
+            config.appendSeparator();
+            if (ZStackDocHelper::AllowingBodySplit(doc)) {
+              config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
+            }
           }
 
+          config.appendSeparator();
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             std::set<uint64_t> selectedMapped =
                 doc->getSelectedBodySet(neutube::EBodyLabelType::MAPPED);
@@ -164,6 +166,11 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
               config.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
             }
           }
+        }
+
+        if (!doc->getDvidTarget().getSynapseName().empty()) {
+          config.append(ZActionFactory::ACTION_BODY_CONNECTION);
+          config.appendSeparator();
         }
       }
     }
@@ -221,9 +228,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_COPY_POSITION);
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
-#ifdef _DEBUG_
-    config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
-#endif
+    if (doc->getDvidTarget().hasSupervoxel()) {
+      config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
+      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
+    }
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);

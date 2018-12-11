@@ -1187,10 +1187,15 @@ int ZCommandLine::skeletonizeDvid()
 
       if (tree == NULL) {
         ZObject3dScan obj;
-        const int blockCount = bodyReader.readBodyBlockCount(bodyId);
-        constexpr int maxBlockCount = 3000;
-        int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
-        int zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+
+        int zoom = 0;
+        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+          constexpr int maxBlockCount = 3000;
+          int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+          zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
+          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+        }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
@@ -1373,7 +1378,7 @@ int ZCommandLine::run(int argc, char *argv[])
 
   ECommand command = UNKNOWN_COMMAND;
   if (!m_configJson.isEmpty()) {
-    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]));
+    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]).c_str());
     m_input.push_back(ZJsonParser::stringValue(m_configJson["input"]));
     m_output = ZJsonParser::stringValue(m_configJson["output"]);
     if (m_configJson.hasKey("synapse")) {
@@ -1542,10 +1547,12 @@ int ZCommandLine::run(int argc, char *argv[])
         std::cout << "More information on: " << std::endl << url << std::endl;
       } else if (m_input[0] == "info") {
         std::cout << "Working directory:"
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::WORKING_DIR)
                   << std::endl;
         std::cout << "Log path: "
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::LOG_FILE)
                   << std::endl;
       }
     }
@@ -1579,7 +1586,7 @@ std::string ZCommandLine::extractIncludePath(
   ZJsonObject subJson(m_configJson.value(key.c_str()));
 
   if (subJson.hasKey("include")) {
-    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]));
+    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]).c_str());
     if (fileInfo.isRelative()) {
       filePath = configDir.absoluteFilePath(fileInfo.filePath());
     } else {
