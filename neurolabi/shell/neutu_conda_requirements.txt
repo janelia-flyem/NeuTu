@@ -16,3 +16,5 @@ glbinding
 vtk=7.1*
 draco
 libarchive
+librdkafka
+

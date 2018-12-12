@@ -56,6 +56,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
 #include "flyem/zflyembodyenv.h"
+#include "neuopentracing.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"
@@ -87,6 +88,12 @@ Neu3Window::Neu3Window(QWidget *parent) :
   connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
           Qt::QueuedConnection);
 //  initialize();
+
+  // Set up OpenTracing-style logging (via Kafka).
+
+  auto config = neuopentracing::Config();
+  auto tracer = neuopentracing::Tracer::make("neu3", config);
+  neuopentracing::Tracer::InitGlobal(tracer);
 }
 
 Neu3Window::~Neu3Window()
