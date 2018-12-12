@@ -46,6 +46,7 @@ requirements:
     - draco 1.3.4*
     - libarchive 3.3.2*
     - libiconv >=1.15
+    - librdkafka
 
   run:
     - python >=3.6
@@ -64,6 +65,7 @@ requirements:
     - draco 1.3.4*
     - libarchive 3.3.2*
     - libiconv >=1.15
+    - librdkafka
 
 about:
   home: http://github.com/janelia-flyem/NeuTu
