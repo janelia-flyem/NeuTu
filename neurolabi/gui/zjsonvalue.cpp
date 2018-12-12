@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 #include "zjsonparser.h"
 #include "c_json.h"
