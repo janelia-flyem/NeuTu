@@ -1,6 +1,12 @@
 if [ $(uname) == 'Darwin' ]; then
     CC=/usr/bin/cc
     CXX=/usr/bin/clang
+else
+    # conda is providing gcc and defining $CC,
+    # but the binary isn't named 'gcc'.
+    # Create a symlink for build scripts that expect that name.
+    cd $(dirname ${CC}) && ln -s $(basename ${CC}) gcc && cd -
+    cd $(dirname ${CXX}) && ln -s $(basename ${CXX}) g++ && cd -
 fi
 
 if [ $(uname) == 'Darwin' ]; then
@@ -58,7 +64,7 @@ then
   edition=neu3
 fi
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag -q 'LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include'
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
