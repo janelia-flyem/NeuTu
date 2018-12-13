@@ -218,9 +218,32 @@ ZDvidTargetProviderDialog* ZFlyEmProofMvc::getDvidDialog() const
   return m_dvidDlg;
 }
 
+template<typename T>
+FlyEmBodyInfoDialog* ZFlyEmProofMvc::makeBodyInfoDlg(const T &flag)
+{
+  FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, this);
+  dlg->dvidTargetChanged(getDvidTarget());
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(dlg, SIGNAL(bodyActivated(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
+  connect(dlg, SIGNAL(addBodyActivated(uint64_t)),
+          this, SLOT(addLocateBody(uint64_t)));
+  connect(dlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(selectBody(QList<uint64_t>)));
+  connect(dlg, SIGNAL(pointDisplayRequested(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
+  connect(dlg, SIGNAL(refreshing()),
+          this, SLOT(showBodyConnection()));
+
+  return dlg;
+}
+
 FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
+    m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY);
+    /*
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::QUERY, this);
     m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
@@ -236,12 +259,22 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
             this, SLOT(zoomTo(int,int,int)));
     connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             this, SLOT(showBodyConnection()));
+            */
   }
 
   return m_bodyQueryDlg;
 }
 
-NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintQueryDlg()
+FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
+{
+  if (m_neuprintBodyDlg == nullptr) {
+    m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+  }
+
+  return m_neuprintBodyDlg;
+}
+
+NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 {
   if (m_neuprintQueryDlg == nullptr) {
     m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
@@ -3294,6 +3327,12 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_BODY_QUERY:
     action = m_actionLibrary->getAction(item, this, SLOT(queryBody()));
     break;
+  case ZActionFactory::ACTION_BODY_QUERY_BY_NAME:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByName()));
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryAllNamedBody()));
+    break;
   case ZActionFactory::ACTION_BODY_FIND_SIMILIAR:
     action = m_actionLibrary->getAction(item, this, SLOT(findSimilarNeuron()));
     break;
@@ -3368,6 +3407,8 @@ void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
 {
   QMenu *bodyMenu = menu->addMenu("Bodies");
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL));
@@ -3758,20 +3799,61 @@ void ZFlyEmProofMvc::queryBody()
 {
   NeuPrintReader *reader = getNeuPrintReader();
   if (reader) {
-    if (getNeuPrintQueryDlg()->exec()) {
+    if (getNeuPrintRoiQueryDlg()->exec()) {
       QList<uint64_t> bodyList = reader->queryNeuron(
-            getNeuPrintQueryDlg()->getInputRoi(),
-            getNeuPrintQueryDlg()->getOutputRoi());
-      for (uint64_t bodyId : bodyList) {
-        std::cout << bodyId << std::endl;
-      }
+            getNeuPrintRoiQueryDlg()->getInputRoi(),
+            getNeuPrintRoiQueryDlg()->getOutputRoi());
 
       std::set<uint64_t> bodyIdArray;
       bodyIdArray.insert(bodyList.begin(), bodyList.end());
 
-      getBodyQueryDlg()->setBodyList(bodyIdArray);
-      getBodyQueryDlg()->show();
-      getBodyQueryDlg()->raise();
+      getNeuPrintBodyDlg()->setBodyList(bodyIdArray);
+      getNeuPrintBodyDlg()->show();
+      getNeuPrintBodyDlg()->raise();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::queryAllNamedBody()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    getNeuPrintBodyDlg()->show();
+    getNeuPrintBodyDlg()->raise();
+    getNeuPrintBodyDlg()->setBodyList(reader->queryAllNamedNeuron());
+  }
+}
+
+void ZFlyEmProofMvc::queryBodyByName()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        getNeuPrintBodyDlg()->show();
+        getNeuPrintBodyDlg()->raise();
+        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByName(text));
+
+//        QList<uint64_t> bodyList = reader->queryNeuronByName(text);
+//#ifdef _DEBUG_
+//        std::cout << "Bodyies with name " + text.toStdString() << std::endl;
+//        for (uint64_t bodyId : bodyList) {
+//          std::cout << bodyId << std::endl;
+//        }
+//#endif
+
+//        std::set<uint64_t> bodyIdArray;
+//        bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+//        getBodyQueryDlg()->setBodyList(bodyIdArray);
+//        getBodyQueryDlg()->show();
+//        getBodyQueryDlg()->raise();
+      }
     }
   }
 }
@@ -3790,17 +3872,14 @@ void ZFlyEmProofMvc::findSimilarNeuron()
         ZString str = text.toStdString();
         std::vector<uint64_t> bodyArray = str.toUint64Array();
         if (bodyArray.size() == 1) {
-          QList<uint64_t> bodyList = reader->findSimilarNeuron(bodyArray[0]);
-          for (uint64_t bodyId : bodyList) {
-            std::cout << bodyId << std::endl;
-          }
+//          QList<uint64_t> bodyList = reader->findSimilarNeuron(bodyArray[0]);
 
-          std::set<uint64_t> bodyIdArray;
-          bodyIdArray.insert(bodyList.begin(), bodyList.end());
+//          std::set<uint64_t> bodyIdArray;
+//          bodyIdArray.insert(bodyList.begin(), bodyList.end());
 
-          getBodyQueryDlg()->setBodyList(bodyIdArray);
-          getBodyQueryDlg()->show();
-          getBodyQueryDlg()->raise();
+          getNeuPrintBodyDlg()->show();
+          getNeuPrintBodyDlg()->raise();
+          getNeuPrintBodyDlg()->setBodyList(reader->findSimilarNeuron(bodyArray[0]));
         }
       }
     }

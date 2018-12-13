@@ -223,7 +223,6 @@ unix {
                 ICON = images/app.icns
             }
         }
-
 #        QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
