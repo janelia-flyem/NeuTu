@@ -71,6 +71,7 @@ then
   build_flag="$build_flag -q $additional_qflag"
 fi
 
+echo "Build flag: $build_flag"
 bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag 
 
 # Install to conda environment
