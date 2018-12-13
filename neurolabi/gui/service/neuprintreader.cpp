@@ -71,6 +71,16 @@ bool NeuPrintReader::isReady()
   return false;
 }
 
+QString NeuPrintReader::getNeuronLabel(char quote) const
+{
+  QString label =  m_currentDataset + "-Neuron";
+  if (quote != '\0') {
+    label = quote + label + quote;
+  }
+
+  return label;
+}
+
 QList<QString> NeuPrintReader::getRoiList()
 {
   QList<QString> roiList;
@@ -105,6 +115,39 @@ void NeuPrintReader::updateCurrentDataset(const QString &uuid)
 }
 
 namespace {
+//Assuming the following order: ID, name, status, pre, post
+ZJsonArray extract_body_info(const QByteArray &response)
+{
+  ZJsonArray bodies;
+
+  ZJsonObject resultObj;
+  resultObj.decode(response.toStdString());
+
+  if (resultObj.hasKey("data")) {
+    ZJsonArray data(resultObj.value("data"));
+    if (data.size() >= 5) {
+      for (size_t i = 0; i < data.size(); ++i) {
+        uint64_t bodyId = ZJsonParser::integerValue(data.at(i), 0);
+        ZJsonObject bodyData;
+        bodyData.setEntry("body ID", bodyId);
+        std::string name = ZJsonParser::stringValue(data.at(i), 1);
+        if (!name.empty()) {
+          bodyData.setEntry("name", name);
+        }
+        std::string status = ZJsonParser::stringValue(data.at(i), 2);
+        if (!status.empty()) {
+          bodyData.setEntry("body status", status);
+        }
+        bodyData.setEntry("body T-bars", ZJsonParser::integerValue(data.at(i), 3));
+        bodyData.setEntry("body PSDs", ZJsonParser::integerValue(data.at(i), 4));
+        bodies.append(bodyData);
+      }
+    }
+  }
+
+  return bodies;
+}
+
 static QList<uint64_t> extract_body_list(const QByteArray &response)
 {
   ZJsonObject resultObj;
@@ -128,23 +171,84 @@ static QList<uint64_t> extract_body_list(const QByteArray &response)
 }
 
 }
-QList<uint64_t> NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
+ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
 {
   QString url = m_server + "/api/custom/custom";
   ZJsonObject dataObj;
-  dataObj.setEntry("dataset", "hemibrain");
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
   dataObj.setEntry("bodyId", bodyId);
-  dataObj.setEntry("cypher", "MATCH (m:Meta{dataset:'hemibrain'}) "
+  dataObj.setEntry("cypher", "MATCH (m:Meta{dataset:'"
+                             + m_currentDataset.toStdString() +
+                             "'}) "
                              "WITH m.superLevelRois AS rois "
-                             "MATCH (n:`hemibrain-Neuron`{bodyId:"
-                             + std::to_string(bodyId) +
+                             "MATCH (n:"
+                             + getNeuronLabel('`').toStdString() +
+                             "{bodyId:" +
+                             std::to_string(bodyId) +
                              "}) "
                              "WITH n.clusterName AS cn, rois "
-                             "MATCH (n:`hemibrain-Neuron`{clusterName:cn}) "
-                             "RETURN n.bodyId");
+                             "MATCH (n:"
+                             + getNeuronLabel('`').toStdString() +
+                             "{clusterName:cn}) "
+                             "RETURN n.bodyId, n.name, n.status, n.pre, n.post");
+
+#ifdef _DEBUG_
+  dataObj.print();
+#endif
+
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
-  return extract_body_list(m_bufferReader.getBuffer());
+  return extract_body_info(m_bufferReader.getBuffer());
+}
+
+ZJsonArray NeuPrintReader::queryAllNamedNeuron()
+{
+  QString url = m_server + "/api/custom/custom";
+  ZJsonObject dataObj;
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
+  QString query = "MATCH (n:"
+      + getNeuronLabel('`') +
+      ") "
+      "WHERE exists(n.name) "
+      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
+  if (m_numberLimit > 0) {
+     query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
+  }
+  dataObj.setEntry("cypher", query.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << "Query:" << std::endl;
+  dataObj.print();
+#endif
+
+  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+
+  return extract_body_info(m_bufferReader.getBuffer());
+}
+
+ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
+{
+  QString url = m_server + "/api/custom/custom";
+  ZJsonObject dataObj;
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
+  QString query = "MATCH (n:"
+      + getNeuronLabel('`') +
+      "{name:\"" + name + "\"}) "
+//      "WHERE n.name=\"" + name + "\" "
+      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
+  if (m_numberLimit > 0) {
+     query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
+  }
+  dataObj.setEntry("cypher", query.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << "Query:" << std::endl;
+  dataObj.print();
+#endif
+
+  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+
+  return extract_body_info(m_bufferReader.getBuffer());
 }
 
 ZJsonObject NeuPrintReader::customQuery(const QString &query)
