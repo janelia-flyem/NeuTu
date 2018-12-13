@@ -1085,15 +1085,14 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_bodyModel->setRowCount(bookmarks.size());
     m_bodyModel->blockSignals(true);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-      if (i == bookmarks.size() - 1) { //A trick to avoid frequent table update
-        m_bodyModel->blockSignals(false);
-      }
-
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QList<QStandardItem*> itemList = getBodyItemList(bkmk);
         for (int j = 0; j < itemList.size(); ++j) {
           m_bodyModel->setItem(i, j, itemList[j]);
+          if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
+            m_bodyModel->blockSignals(false);
+          }
         }
 
 #if 0

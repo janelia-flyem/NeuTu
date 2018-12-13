@@ -209,7 +209,7 @@ ZJsonArray NeuPrintReader::queryAllNamedNeuron()
   QString query = "MATCH (n:"
       + getNeuronLabel('`') +
       ") "
-      "WHERE exists(n.name) "
+      "WHERE exists(n.name) AND n.name =~ '.*[^\\\\*]' "
       "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
   if (m_numberLimit > 0) {
      query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
