@@ -64,7 +64,7 @@ then
   edition=neu3
 fi
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag -q 'LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include'
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag -q 'LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include DEFINES+=_GLIBCXX_USE_CXX11_ABI=0'
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
