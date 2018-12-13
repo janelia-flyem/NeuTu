@@ -23,6 +23,7 @@ CONFIG(neu3) | CONFIG(neutu) | CONFIG(flyem)  { #flyem CONFIG is an outdated opt
 
 DEFINES *= _ENABLE_LOWTIS_
 DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
+DEFINES += _GLIBCXX_USE_CXX11_ABI=0
 
 #This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
