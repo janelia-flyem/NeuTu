@@ -10,7 +10,7 @@ AFLAGS=-D_OPTIONAL_FLAGS
 
 %.o: %.p
 	awk -f manager.awk $< > $*.c
-	gcc -g $(AFLAGS)  -c $*.c -o $@
+	$(CC) -g $(AFLAGS)  -c $*.c -o $@
 #-arch x86_64
 
 libmyers.a: $(modules)

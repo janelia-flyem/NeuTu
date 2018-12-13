@@ -10,7 +10,7 @@ AFLAGS=-D_OPTIONAL_FLAGS
 
 @PREFIX@%.o: %.p
 	awk -f manager.awk $< > $*.c
-	gcc -g $(AFLAGS) @ARCH_FLAG@ -c $*.c -o $@
+	$(CC) -g $(AFLAGS) @ARCH_FLAG@ -c $*.c -o $@
 #-arch x86_64
 
 @LIBFILE@: $(modules)
