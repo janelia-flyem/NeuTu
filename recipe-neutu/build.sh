@@ -8,6 +8,7 @@ else
     cd $(dirname ${CC}) && ln -s $(basename ${CC}) gcc && cd -
     cd $(dirname ${CXX}) && ln -s $(basename ${CXX}) g++ && cd -
     cd $(dirname ${LD}) && ln -s $(basename ${LD}) ld && cd -
+    additional_qflag='LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include'
 fi
 
 if [ $(uname) == 'Darwin' ]; then
@@ -65,7 +66,12 @@ then
   edition=neu3
 fi
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag -q 'LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include DEFINES+=_GLIBCXX_USE_CXX11_ABI=0'
+if [ ! -z $additional_qflag ]
+then
+  build_flag="$build_flag -q $additional_qflag"
+fi
+
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag 
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
