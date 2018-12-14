@@ -91,7 +91,16 @@ Neu3Window::Neu3Window(QWidget *parent) :
 
   // Set up OpenTracing-style logging (via Kafka).
 
-  auto config = neuopentracing::Config();
+  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
+  if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
+
+    // The list of brokers should be separated by commans, per this example:
+    // https://www.npmjs.com/package/node-rdkafka
+
+    kafkaBrokers = kafkaBrokersEnv;
+  }
+
+  auto config = neuopentracing::Config(kafkaBrokers);
   auto tracer = neuopentracing::Tracer::make("neu3", config);
   neuopentracing::Tracer::InitGlobal(tracer);
 }
