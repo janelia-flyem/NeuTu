@@ -3312,6 +3312,9 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_BODY_SKELETONIZE_LIST:
     action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeBodyList()));
     break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeSelectedBody()));
+    break;
   case ZActionFactory::ACTION_BODY_UPDATE_MESH:
     action = m_actionLibrary->getAction(item, this, SLOT(updateMeshForSelected()));
     break;
@@ -3372,6 +3375,7 @@ void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_STACK));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_SELECTED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_TOP));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_LIST));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_UPDATE_MESH));

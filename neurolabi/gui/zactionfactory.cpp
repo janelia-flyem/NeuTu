@@ -618,6 +618,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SKELETONIZE_LIST:
     action = new QAction("Skeletonize Body List", parent);
     break;
+  case ACTION_BODY_SKELETONIZE_SELECTED:
+    action = new QAction("Skeletonize Selected Bodies", parent);
+    break;
   case ACTION_BODY_UPDATE_MESH:
     action = new QAction("Update Meshes for Selected", parent);
     break;
