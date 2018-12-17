@@ -29053,12 +29053,26 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   reader->updateCurrentDataset("ff53");
   if (reader->isReady()) {
     reader->queryAllNamedNeuron().print();
 //    reader->queryNeuronByName("LC9").print();
+  }
+
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("GT cube chris");
+  reader->getDvidTarget().setSegmentationName("segmentation");
+
+  reader->getDvidTarget().print();
+
+  try {
+    reader->readLabels64Lowtis(0, 0, 63, 64, 64, 0, 256, 256, false);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
   }
 
 #endif
