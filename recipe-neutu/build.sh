@@ -66,13 +66,13 @@ then
   edition=neu3
 fi
 
-if [ ! -z $additional_qflag ]
-then
-  build_flag="$build_flag -q $additional_qflag"
-fi
+#if [ ! -z "$additional_qflag" ]
+#then
+#  build_flag="$build_flag -q $additional_qflag"
+#fi
 
 echo "Build flag: $build_flag"
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag 
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag -q "$additional_qflag"
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then

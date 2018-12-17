@@ -3408,14 +3408,17 @@ void ZFlyEmProofMvc::enableNameColorMap(bool on)
 
 void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
 {
+  QMenu *queryMenu = menu->addMenu("Query");
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
+
   QMenu *bodyMenu = menu->addMenu("Bodies");
-  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
-  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
-  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
-  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_STACK));
+  bodyMenu->addSeparator();
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_SELECTED));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_TOP));
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_LIST));
