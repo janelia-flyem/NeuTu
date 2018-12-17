@@ -3408,7 +3408,7 @@ void ZFlyEmProofMvc::enableNameColorMap(bool on)
 
 void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
 {
-  QMenu *queryMenu = menu->addMenu("Query");
+  QMenu *queryMenu = menu->addMenu("Body Query");
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));

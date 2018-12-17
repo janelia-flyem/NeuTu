@@ -2266,10 +2266,17 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
       ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
             viewParam.getViewPort(), viewParam.getZ());
 
-      array = m_workWriter.getDvidReader().readLabels64Lowtis(
-            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-            box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
-            zoom, centerCutX, centerCutY, usingCenterCut);
+//      ZIntCuboid dataRange = m_labelInfo.getDataRange();
+//      if (!dataRange.isEmpty()) {
+//        box.intersect(dataRange);
+//      }
+
+      if (!box.isEmpty()) {
+        array = m_workWriter.getDvidReader().readLabels64Lowtis(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              zoom, centerCutX, centerCutY, usingCenterCut);
+      }
     }
   }
 
