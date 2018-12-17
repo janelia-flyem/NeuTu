@@ -429,6 +429,8 @@ protected slots:
   void clearBodyMergeStage();
   void queryBody();
   void findSimilarNeuron();
+  void queryBodyByName();
+  void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
@@ -540,8 +542,12 @@ private:
   void endMergeProfile();
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
+  FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
-  NeuPrintQueryDialog* getNeuPrintQueryDlg();
+  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+
+  template<typename T>
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
@@ -578,6 +584,7 @@ protected:
   ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
+  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;

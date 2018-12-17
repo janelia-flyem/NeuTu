@@ -24,7 +24,7 @@ class FlyEmBodyInfoDialog : public QDialog
 
 public:
   enum class EMode {
-    SEQUENCER, QUERY
+    SEQUENCER, QUERY, NEUPRINT
   };
 
   explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
@@ -33,6 +33,7 @@ public:
   void simplify();
 
   void setBodyList(const std::set<uint64_t> &bodyList);
+  void setBodyList(const ZJsonArray &bodies);
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);

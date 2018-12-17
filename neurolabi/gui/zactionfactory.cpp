@@ -598,7 +598,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Information", parent);
     break;
   case ACTION_BODY_QUERY:
-    action = new QAction("Query", parent);
+    action = new QAction("Query by ROIs", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_NAME:
+    action = new QAction("Query by Name", parent);
+    break;
+  case ACTION_BODY_QUERY_ALL_NAMED:
+    action = new QAction("Find All Named", parent);
     break;
   case ACTION_BODY_FIND_SIMILIAR:
     action = new QAction("Find Similar Neuorns", parent);
