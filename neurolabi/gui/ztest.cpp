@@ -28921,14 +28921,10 @@ void ZTest::test(MainWindow *host)
   annotMerger.loadJsonObject(
         GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/body_staus.json");
   annotMerger.print();
-
-  annotMerger.getConflictBody(
->>>>>>> develop
 #endif
 
 
 #if 0
-<<<<<<< HEAD
   ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();
 
   QElapsedTimer timer;
@@ -29053,6 +29049,16 @@ void ZTest::test(MainWindow *host)
   QStringList inputList = dlg->getInputRoi();
   for (const QString &roi : inputList) {
     qDebug() << roi;
+  }
+
+#endif
+
+#if 1
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  reader->updateCurrentDataset("ff53");
+  if (reader->isReady()) {
+    reader->queryAllNamedNeuron().print();
+//    reader->queryNeuronByName("LC9").print();
   }
 
 #endif

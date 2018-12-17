@@ -178,22 +178,14 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 void FlyEmBodyInfoDialog::prepareWidget()
 {
 //  setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-  if (m_mode == EMode::QUERY) {
+  if (m_mode == EMode::QUERY || m_mode == EMode::NEUPRINT) {
     setWindowTitle("Body Information (Selected)");
     clearStatusLabel();
     ui->roiComboBox->hide();
     ui->maxBodiesLabel->hide();
 
-//    ui->exportBodiesButton->hide();
-//    ui->gotoBodiesButton->hide();
     ui->maxBodiesMenu->hide();
-//    ui->colorTab->hide();
-//    ui->saveColorFilterButton->hide();
-//    ui->closeButton->hide();
-//    ui->refreshButton->hide();
-//    ui->clearFilterButton->hide();
 
-  //  ui->connectionBodyLabel->hide();
     ui->roiLabel->hide();
     ui->avabilityLabel->hide();
     ui->namedCheckBox->hide();
@@ -201,15 +193,11 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->line_3->hide();
     ui->horizontalSpacer->changeSize(0, 0);
     ui->iconLabel->setText("");
-//    ui->saveColorFilterButton->hide();
-//    ui->tabWidget->removeTab(0);
-//    ui->connectionsTableLabel->hide();
-//    ui->connectionsTableView->hide();
-//    ui->regexCheckBox->setChecked(true);
-//    ui->regexCheckBox->hide();
-//    ui->bodyFilterLabel->hide();
-//    ui->bodyFilterField->hide();
-//    ui->bodyFilterLabel->setText("Body filter (regular expression supported):");
+
+    if (m_mode == EMode::NEUPRINT) {
+      setWindowTitle("Body Information (NeuPrint)");
+      ui->refreshButton->hide();
+    }
   } else {
     setWindowTitle("Body Information (Sequencer)");
     QPixmap pixmap(":/images/document.png");
@@ -217,6 +205,14 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->iconLabel->setPixmap(pixmap);
 //    ui->iconLabel->setMask(pixmap.mask());
   }
+}
+
+void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
+{
+  m_bodyNames.clear();
+  m_namelessBodies.clear();
+
+  emit dataChanged(bodies);
 }
 
 void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
@@ -1087,13 +1083,18 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
     ZJsonArray bookmarks(data);
     m_bodyModel->setRowCount(bookmarks.size());
+    m_bodyModel->blockSignals(true);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QList<QStandardItem*> itemList = getBodyItemList(bkmk);
         for (int j = 0; j < itemList.size(); ++j) {
           m_bodyModel->setItem(i, j, itemList[j]);
+          if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
+            m_bodyModel->blockSignals(false);
+          }
         }
+
 #if 0
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
@@ -1131,6 +1132,8 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         }
 #endif
     }
+    m_bodyModel->blockSignals(false);
+
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();
     ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
