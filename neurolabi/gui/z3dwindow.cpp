@@ -575,6 +575,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
+  case ZActionFactory::ACTION_COPY_3DCAMERA:
+    action = m_actionLibrary->getAction(item, this, SLOT(copyView()));
+    break;
+  case ZActionFactory::ACTION_PASTE_3DCAMERA:
+    action = m_actionLibrary->getAction(item, this, SLOT(pasteView()));
+    break;
 //  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
 //    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
 //    break;
@@ -1212,6 +1218,24 @@ void Z3DWindow::loadView()
     ZJsonObject cameraJson;
     cameraJson.load(fileName.toStdString());
     getCamera()->set(cameraJson);
+  }
+}
+
+void Z3DWindow::copyView()
+{
+  ZGlobal::GetInstance().set3DCamera(
+        getCamera()->get().toJsonObject().dumpString(0));
+}
+
+void Z3DWindow::pasteView()
+{
+  std::string config = ZGlobal::GetInstance().get3DCamera();
+  if (!config.empty()) {
+    ZJsonObject cameraJson;
+    cameraJson.decode(config);
+    if (!cameraJson.isEmpty()) {
+      getCamera()->set(cameraJson);
+    }
   }
 }
 

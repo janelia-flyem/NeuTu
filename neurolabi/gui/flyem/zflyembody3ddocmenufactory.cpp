@@ -5,6 +5,7 @@
 #include "zmenufactory.h"
 #include "zflyembodyenv.h"
 #include "zstackdocproxy.h"
+#include "zglobal.h"
 
 ZFlyEmBody3dDocMenuFactory::ZFlyEmBody3dDocMenuFactory()
 {
@@ -197,6 +198,12 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       }
     }
 
+  }
+
+  config.appendSeparator();
+  config.append(ZActionFactory::ACTION_COPY_3DCAMERA);
+  if (!ZGlobal::GetInstance().get3DCamera().empty()) {
+    config.append(ZActionFactory::ACTION_PASTE_3DCAMERA);
   }
 
 #if defined(_NEU3_)
