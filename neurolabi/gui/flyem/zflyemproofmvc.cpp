@@ -233,8 +233,12 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::makeBodyInfoDlg(const T &flag)
           this, SLOT(selectBody(QList<uint64_t>)));
   connect(dlg, SIGNAL(pointDisplayRequested(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
-  connect(dlg, SIGNAL(refreshing()),
-          this, SLOT(showBodyConnection()));
+
+  connect(dlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+          getCompleteDocument(),
+          SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+
+
 
   return dlg;
 }
@@ -243,6 +247,8 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
     m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY);
+    connect(m_bodyQueryDlg, SIGNAL(refreshing()),
+            this, SLOT(showBodyConnection()));
     /*
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::QUERY, this);
