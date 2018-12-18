@@ -736,22 +736,22 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
     const std::vector<ZParameter*>& paras = m_rendererBase.parameters();
     for (auto para : paras) {
       if (para->name() == "Coord Transform")
-        m_widgetsGroup->addChild(*para, 3);
-      else if (para->name() == "Size Scale")
-        m_widgetsGroup->addChild(*para, 3);
-      else if (para->name() == "Rendering Method")
         m_widgetsGroup->addChild(*para, 4);
-      else if (para->name() == "Opacity")
+      else if (para->name() == "Size Scale")
+        m_widgetsGroup->addChild(*para, 4);
+      else if (para->name() == "Rendering Method")
         m_widgetsGroup->addChild(*para, 5);
+      else if (para->name() == "Opacity")
+        m_widgetsGroup->addChild(*para, 3);
       else
         m_widgetsGroup->addChild(*para, 7);
     }
-    m_widgetsGroup->addChild(m_xCut, 5);
-    m_widgetsGroup->addChild(m_yCut, 5);
-    m_widgetsGroup->addChild(m_zCut, 5);
-    m_widgetsGroup->addChild(m_boundBoxMode, 5);
-    m_widgetsGroup->addChild(m_boundBoxLineWidth, 5);
-    m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
+    m_widgetsGroup->addChild(m_xCut, 3);
+    m_widgetsGroup->addChild(m_yCut, 3);
+    m_widgetsGroup->addChild(m_zCut, 3);
+    m_widgetsGroup->addChild(m_boundBoxMode, 6);
+    m_widgetsGroup->addChild(m_boundBoxLineWidth, 6);
+    m_widgetsGroup->addChild(m_boundBoxLineColor, 6);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
     //m_widgetsGroup->setBasicAdvancedCutoff(5);
