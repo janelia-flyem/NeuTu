@@ -29070,7 +29070,7 @@ void ZTest::test(MainWindow *host)
   reader->getDvidTarget().print();
 
   try {
-    reader->readLabels64Lowtis(0, 0, 63, 64, 64, 0, 256, 256, false);
+    reader->readLabels64Lowtis(0, 0, 57, 446, 443, 0, 256, 256, false);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }

@@ -70,6 +70,7 @@ void ZSwcColorScheme::setColorScheme(EColorScheme scheme)
       buildGmuTypeColorTable();
       break;
     default:
+      ZColorScheme::setColorScheme(scheme);
       break;
     }
   }
