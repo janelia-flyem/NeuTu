@@ -641,6 +641,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Objects", parent);
     action->setCheckable(true);
     break;
+  case ACTION_COPY_3DCAMERA:
+    action = new QAction("Copy View", parent);
+    break;
+  case ACTION_PASTE_3DCAMERA:
+    action = new QAction("Paste View", parent);
+    break;
   default:
     break;
   }
