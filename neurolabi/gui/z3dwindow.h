@@ -261,6 +261,8 @@ public slots:
   void diffView(); //Output difference between current view and recorded view
   void saveView(); //Save the view parameters into a file
   void loadView();
+  void copyView();
+  void pasteView();
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
