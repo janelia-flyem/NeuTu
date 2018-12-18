@@ -141,6 +141,7 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
+  void browse(int x, int y, int z, int);
 //  void browseInPlace(double x, double y, double z);
 
   // Launch a native grayscale browser with a custom color mapping.

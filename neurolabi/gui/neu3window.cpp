@@ -195,6 +195,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
+  connect(m_3dwin, SIGNAL(locating2DViewTriggered(int,int,int,int)),
+          this, SLOT(browse(int,int,int,int)));
 //  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
 //          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
@@ -708,6 +710,11 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
+}
+
+void Neu3Window::browse(int x, int y, int z, int)
+{
+  browse(double(x), double(y), double(z));
 }
 
 void Neu3Window::browse(
