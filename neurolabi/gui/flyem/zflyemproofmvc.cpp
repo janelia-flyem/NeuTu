@@ -3336,6 +3336,9 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_BODY_QUERY_BY_NAME:
     action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByName()));
     break;
+  case ZActionFactory::ACTION_BODY_QUERY_BY_STATUS:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByStatus()));
+    break;
   case ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED:
     action = m_actionLibrary->getAction(item, this, SLOT(queryAllNamedBody()));
     break;
@@ -3418,6 +3421,7 @@ void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_STATUS));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
 
   QMenu *bodyMenu = menu->addMenu("Bodies");
@@ -3843,7 +3847,7 @@ void ZFlyEmProofMvc::queryBodyByName()
   if (reader) {
     bool ok;
 
-    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
                                          tr("Body Name:"), QLineEdit::Normal,
                                          "", &ok);
     if (ok) {
@@ -3851,21 +3855,25 @@ void ZFlyEmProofMvc::queryBodyByName()
         getNeuPrintBodyDlg()->show();
         getNeuPrintBodyDlg()->raise();
         getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByName(text));
+      }
+    }
+  }
+}
 
-//        QList<uint64_t> bodyList = reader->queryNeuronByName(text);
-//#ifdef _DEBUG_
-//        std::cout << "Bodyies with name " + text.toStdString() << std::endl;
-//        for (uint64_t bodyId : bodyList) {
-//          std::cout << bodyId << std::endl;
-//        }
-//#endif
+void ZFlyEmProofMvc::queryBodyByStatus()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
 
-//        std::set<uint64_t> bodyIdArray;
-//        bodyIdArray.insert(bodyList.begin(), bodyList.end());
-
-//        getBodyQueryDlg()->setBodyList(bodyIdArray);
-//        getBodyQueryDlg()->show();
-//        getBodyQueryDlg()->raise();
+    QString text = QInputDialog::getText(this, tr("Find Bodies"),
+                                         tr("Body Status:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        getNeuPrintBodyDlg()->show();
+        getNeuPrintBodyDlg()->raise();
+        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByStatus(text));
       }
     }
   }
