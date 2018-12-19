@@ -83,6 +83,11 @@ CypherQueryBuilder& CypherQueryBuilder::match(
   return *this;
 }
 
+CypherQueryBuilder& CypherQueryBuilder::matchNode(const QString &label)
+{
+  return match("(n:" + label + ")");
+}
+
 CypherQueryBuilder& CypherQueryBuilder::where(const QString &pattern)
 {
   m_query.appendWhere(pattern);

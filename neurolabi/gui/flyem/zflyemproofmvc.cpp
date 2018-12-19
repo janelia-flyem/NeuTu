@@ -275,6 +275,8 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
 {
   if (m_neuprintBodyDlg == nullptr) {
     m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+//    connect(m_neuprintBodyDlg, &FlyEmBodyInfoDialog::loadingAllNamedBodies,
+//            this, &ZFlyEmProofMvc::queryAllNamedBody);
   }
 
   return m_neuprintBodyDlg;
@@ -284,6 +286,7 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 {
   if (m_neuprintQueryDlg == nullptr) {
     m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
+
     NeuPrintReader *reader = getNeuPrintReader();
     if (reader) {
       m_neuprintQueryDlg->setRoiList(reader->getRoiList());
@@ -3331,7 +3334,7 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(item);
     break;
   case ZActionFactory::ACTION_BODY_QUERY:
-    action = m_actionLibrary->getAction(item, this, SLOT(queryBody()));
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByRoi()));
     break;
   case ZActionFactory::ACTION_BODY_QUERY_BY_NAME:
     action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByName()));
@@ -3782,6 +3785,19 @@ void ZFlyEmProofMvc::exportSelectedBody()
   }
 }
 
+bool ZFlyEmProofMvc::hasNeuPrint() const
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 {
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
@@ -3812,7 +3828,16 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
   return nullptr;
 }
 
-void ZFlyEmProofMvc::queryBody()
+void ZFlyEmProofMvc::openNeuPrint()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    getNeuPrintBodyDlg()->show();
+    getNeuPrintBodyDlg()->raise();
+  }
+}
+
+void ZFlyEmProofMvc::queryBodyByRoi()
 {
   NeuPrintReader *reader = getNeuPrintReader();
   if (reader) {

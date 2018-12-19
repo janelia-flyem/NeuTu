@@ -72,5 +72,6 @@
 #include "test/zstackviewparamtest.h"
 #include "test/zflyembodymanagertest.h"
 #include "test/zflyembodystatustest.h"
+#include "test/cypherquerytest.h"
 
 #endif // ZTESTALL_H
