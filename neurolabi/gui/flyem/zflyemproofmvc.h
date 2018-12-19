@@ -156,6 +156,7 @@ public:
 
   void configure();
 
+  bool hasNeuPrint() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -329,6 +330,7 @@ public slots:
   void openProtocol();
   void openTodo();
   void openRoiTool();
+  void openNeuPrint();
 
   void goToNearestRoi();
   void loadRoiProject();
@@ -427,7 +429,7 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
-  void queryBody();
+  void queryBodyByRoi();
   void findSimilarNeuron();
   void queryBodyByName();
   void queryBodyByStatus();
@@ -704,7 +706,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(queryingBody()),
-          this, SLOT(queryBody()));
+          this, SLOT(queryBodyByRoi()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
   connect(panel, SIGNAL(exportingSelectedBodyLevel()),

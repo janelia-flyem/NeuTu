@@ -40,6 +40,7 @@ private:
 struct CypherQueryBuilder {
   operator CypherQuery() const;
   CypherQueryBuilder& match(const QString &pattern, const QString &where = "");
+  CypherQueryBuilder& matchNode(const QString &label);
   CypherQueryBuilder& where(const QString &pattern);
   CypherQueryBuilder& with(const QString &pattern);
   CypherQueryBuilder& with(const QString &preAs, const QString &postAs);

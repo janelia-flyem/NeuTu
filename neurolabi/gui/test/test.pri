@@ -75,7 +75,8 @@ HEADERS += \
     $$PWD/zflyembodymanagertest.h \
     $$PWD/zflyemtaskhelpertest.h \
     $$PWD/zflyembodystatustest.h \
-    $$PWD/zunittest.h
+    $$PWD/zunittest.h \
+    $$PWD/cypherquerytest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp
