@@ -74,4 +74,8 @@ HEADERS += \
     $$PWD/zstackviewparamtest.h \
     $$PWD/zflyembodymanagertest.h \
     $$PWD/zflyemtaskhelpertest.h \
-    $$PWD/zflyembodystatustest.h
+    $$PWD/zflyembodystatustest.h \
+    $$PWD/zunittest.h
+
+SOURCES += \
+    $$PWD/zunittest.cpp

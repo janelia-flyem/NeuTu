@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QPair>
+#include <QList>
 
 class CypherQuery
 {
@@ -11,21 +12,28 @@ public:
 
   QString getQueryString() const;
 
-  void setMatch(const QString &pattern, const QString &where = "");
-  void setWhere(const QString &where);
+  void appendMatch(const QString &pattern, const QString &where = "");
+  void appendWhere(const QString &where);
+  void appendWith(const QString &with);
+  void appendWith(const QString &preAs, const QString &postAs);
   void setReturn(const QString &pattern);
-
-private:
-  static void AppendQuery(
-      QString &query, const QString &keyword, const QString &pattern);
 
 public:
   static const char *KW_MATCH;
+  static const char *KW_WITH;
+  static const char *KW_AS;
   static const char *KW_WHERE;
   static const char *KW_RETURN;
 
 private:
-  QPair<QString, QString> m_match;
+  static void AppendQuery(
+      QString &query, const QString &keyword, const QString &pattern);
+  void appendQuery(const QString &keyword, const QString &pattern);
+
+  using QueryPair = QPair<QString, QString>;
+
+private:
+  QList<QueryPair> m_query;
   QString m_return;
 };
 
@@ -33,6 +41,8 @@ struct CypherQueryBuilder {
   operator CypherQuery() const;
   CypherQueryBuilder& match(const QString &pattern, const QString &where = "");
   CypherQueryBuilder& where(const QString &pattern);
+  CypherQueryBuilder& with(const QString &pattern);
+  CypherQueryBuilder& with(const QString &preAs, const QString &postAs);
   CypherQueryBuilder& ret(const QString &pattern);
 
 private:

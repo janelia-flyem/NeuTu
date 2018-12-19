@@ -9,6 +9,7 @@
 #include "zintcuboidface.h"
 #include "zsharedpointer.h"
 #include "zintcuboid.h"
+#include "zlinesegment.h"
 
 #ifdef _USE_GTEST_
 

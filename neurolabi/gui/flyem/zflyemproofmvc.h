@@ -430,6 +430,7 @@ protected slots:
   void queryBody();
   void findSimilarNeuron();
   void queryBodyByName();
+  void queryBodyByStatus();
   void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();

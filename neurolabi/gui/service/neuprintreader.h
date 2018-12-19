@@ -25,6 +25,7 @@ public:
   ZJsonArray findSimilarNeuron(const uint64_t bodyId);
   ZJsonArray queryNeuronByName(const QString &name);
   ZJsonArray queryAllNamedNeuron();
+  ZJsonArray queryNeuronByStatus(const QString &status);
 
   ZJsonObject customQuery(const QString &query);
   ZJsonObject customQuery(const ZJsonObject &json);
