@@ -26,6 +26,7 @@ public:
   ~ZGlobalData();
 
   ZIntPoint m_stackPosition;
+  std::string m_3dcamera;
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
@@ -93,6 +94,16 @@ void ZGlobal::setDataPosition(const ZPoint &pt)
 void ZGlobal::clearStackPosition()
 {
   m_data->m_stackPosition.invalidate();
+}
+
+void ZGlobal::set3DCamera(const std::string &config)
+{
+  m_data->m_3dcamera = config;
+}
+
+std::string ZGlobal::get3DCamera() const
+{
+  return m_data->m_3dcamera;
 }
 
 void ZGlobal::setMainWindow(QMainWindow *win)

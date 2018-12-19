@@ -37,9 +37,10 @@ requirements:
     - hdf5    1.8*
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.post58
+    - libdvid-cpp >=cpp-0.3.post73
     - cmake
     - ninja 1.7.2*
-    - tbb 2018_20171205
+    - tbb 2018_20171205.*
     - vtk 7.1*
     - assimp 4.0.1*
     - glbinding 2.1.3*
@@ -57,7 +58,8 @@ requirements:
     - hdf5    1.8*
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.post58
-    - tbb 2018_20171205
+    - libdvid-cpp >=cpp-0.3.post73
+    - tbb 2018_20171205.*
     - vtk 7.1*
     - assimp 4.0.1*
     - glbinding 2.1.3*

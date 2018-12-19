@@ -598,7 +598,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Information", parent);
     break;
   case ACTION_BODY_QUERY:
-    action = new QAction("Query", parent);
+    action = new QAction("Query by ROIs", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_NAME:
+    action = new QAction("Query by Name", parent);
+    break;
+  case ACTION_BODY_QUERY_ALL_NAMED:
+    action = new QAction("Find All Named", parent);
     break;
   case ACTION_BODY_FIND_SIMILIAR:
     action = new QAction("Find Similar Neuorns", parent);
@@ -618,6 +624,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SKELETONIZE_LIST:
     action = new QAction("Skeletonize Body List", parent);
     break;
+  case ACTION_BODY_SKELETONIZE_SELECTED:
+    action = new QAction("Skeletonize Selected Bodies", parent);
+    break;
   case ACTION_BODY_UPDATE_MESH:
     action = new QAction("Update Meshes for Selected", parent);
     break;
@@ -631,6 +640,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_3DWINDOW_TOGGLE_OBJECTS:
     action = new QAction("Objects", parent);
     action->setCheckable(true);
+    break;
+  case ACTION_COPY_3DCAMERA:
+    action = new QAction("Copy View", parent);
+    break;
+  case ACTION_PASTE_3DCAMERA:
+    action = new QAction("Paste View", parent);
     break;
   default:
     break;

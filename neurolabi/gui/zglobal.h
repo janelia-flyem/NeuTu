@@ -40,6 +40,9 @@ public:
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
 
+  void set3DCamera(const std::string &config);
+  std::string get3DCamera() const;
+
   //! DVID IO with shared readers and writers
   /*!
    * \brief Get DVID reader from a name
