@@ -1674,15 +1674,16 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
 
         foreach (ZJsonObject bodyData, bodyAnnotationList) {
+            uint64_t tempBodyID = ZJsonParser::integerValue(bodyData["body ID"]);
             if (bodyData.hasKey("name")) {
                 if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
-                    m_bodyNames[bodyID] =
+                    m_bodyNames[tempBodyID] =
                         QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                 } else {
-                    m_namelessBodies.insert(bodyID);
+                    m_namelessBodies.insert(tempBodyID);
                 }
             } else {
-                m_namelessBodies.insert(bodyID);
+                m_namelessBodies.insert(tempBodyID);
             }
         }
 
