@@ -181,6 +181,7 @@ int main(int argc, char *argv[])
 
 #ifndef QT_NO_DEBUG
     if (mainConfig.unitTest) {
+//      ZUnitTest(argc, argv).run();
       ZTest::RunUnitTest(argc, argv);
     }
 #else

@@ -315,9 +315,11 @@
 #include "flyem/zflyembodyannotationmerger.h"
 #include "flyem/zflyemroimanager.h"
 #include "widgets/zoptionlistwidget.h"
-#include"dialogs/neuprintquerydialog.h"
+#include "dialogs/neuprintquerydialog.h"
+#include "service/cypherquery.h"
+#include "test/zunittest.h"
 
-#include "test/ztestall.h"
+//#include "test/ztestall.h"
 
 using namespace std;
 
@@ -339,6 +341,7 @@ void ZTest::setCommandLineArg(int argc, char *argv[])
   m_argv = argv;
 }
 
+
 void ZTest::runUnitTest()
 {
   RunUnitTest(m_argc, m_argv);
@@ -346,15 +349,7 @@ void ZTest::runUnitTest()
 
 int ZTest::RunUnitTest(int argc, char *argv[])
 {
-#ifdef _USE_GTEST_
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-#else
-  UNUSED_PARAMETER(argc);
-  UNUSED_PARAMETER(argv);
-  return 0;
-#endif
+  return ZUnitTest(argc, argv).run();
 }
 
 void ZTest::CommandLineTest()
@@ -29053,17 +29048,17 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
-  reader->updateCurrentDataset("ff53");
+  reader->updateCurrentDataset("137d");
   if (reader->isReady()) {
-    reader->queryAllNamedNeuron().print();
-//    reader->queryNeuronByName("LC9").print();
+//    reader->queryAllNamedNeuron().print();
+    reader->queryNeuronByStatus("Roughly traced").print();
   }
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("GT cube chris");
   reader->getDvidTarget().setSegmentationName("segmentation");
 
@@ -29074,7 +29069,12 @@ void ZTest::test(MainWindow *host)
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
+#endif
 
+#if 0
+  CypherQuery query = CypherQueryBuilder().
+      match("(n:label)").where("exists(n.name)").ret("n.name");
+  qDebug() << query.getQueryString();
 #endif
 
   std::cout << "Done." << std::endl;

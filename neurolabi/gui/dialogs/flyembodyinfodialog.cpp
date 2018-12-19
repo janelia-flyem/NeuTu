@@ -9,6 +9,7 @@
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QElapsedTimer>
+#include <QInputDialog>
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -30,6 +31,9 @@
 #include "ui_flyembodyinfodialog.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "service/neuprintreader.h"
+#include "zglobal.h"
+#include "neuprintquerydialog.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -136,6 +140,16 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
+    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
+    connect(ui->queryNamePushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByNameButton()));
+    connect(ui->queryRoiPushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByRoiButton()));
+    connect(ui->queryStatusPushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByStatusButton()));
+    connect(ui->findSimilarPushButton, SIGNAL(clicked()),
+            this, SLOT(onFindSimilarButton()));
+
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
@@ -187,10 +201,10 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->maxBodiesMenu->hide();
 
     ui->roiLabel->hide();
-    ui->avabilityLabel->hide();
+//    ui->avabilityLabel->hide();
     ui->namedCheckBox->hide();
-    ui->line->hide();
-    ui->line_3->hide();
+//    ui->line->hide();
+//    ui->line_3->hide();
     ui->horizontalSpacer->changeSize(0, 0);
     ui->iconLabel->setText("");
 
@@ -204,6 +218,14 @@ void FlyEmBodyInfoDialog::prepareWidget()
     pixmap = pixmap.scaled(16, 16);
     ui->iconLabel->setPixmap(pixmap);
 //    ui->iconLabel->setMask(pixmap.mask());
+  }
+
+  if (m_mode != EMode::NEUPRINT) {
+    ui->queryNamePushButton->hide();
+    ui->queryStatusPushButton->hide();
+    ui->findSimilarPushButton->hide();
+    ui->queryRoiPushButton->hide();
+    ui->allNamedPushButton->hide();
   }
 }
 
@@ -267,6 +289,13 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
   }
   emit dataChanged(bodies);
 }
+
+/*
+int FlyEmBodyInfoDialog::getMaxBodies() const
+{
+  return m_currentMaxBodies;
+}
+*/
 
 void FlyEmBodyInfoDialog::simplify()
 {
@@ -338,20 +367,30 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 
 }
 
-void FlyEmBodyInfoDialog::onGotoBodies() {
-    if (ui->bodyTableView->selectionModel()->hasSelection()) {
-        QList<uint64_t> bodyIDList;
-        QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
-        foreach(QModelIndex modelIndex, indices) {
-            // if the item is in the first column (body ID), extract body ID, put in list
-            if (modelIndex.column() == BODY_ID_COLUMN) {
-                QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
-                bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
-            }
-        }
+QList<uint64_t> FlyEmBodyInfoDialog::getSelectedBodyList() const
+{
+  QList<uint64_t> bodyIDList;
 
-        emit bodiesActivated(bodyIDList);
+  if (ui->bodyTableView->selectionModel()->hasSelection()) {
+    QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
+    foreach(QModelIndex modelIndex, indices) {
+      // if the item is in the first column (body ID), extract body ID, put in list
+      if (modelIndex.column() == BODY_ID_COLUMN) {
+        QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
+        bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
+      }
     }
+  }
+
+  return bodyIDList;
+}
+
+void FlyEmBodyInfoDialog::onGotoBodies()
+{
+  QList<uint64_t> bodyIDList = getSelectedBodyList();
+  if (!bodyIDList.isEmpty()) {
+    emit bodiesActivated(bodyIDList);
+  }
 }
 
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
@@ -365,7 +404,9 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     if (target.isValid()) {
         // clear the model regardless at this point
         m_bodyModel->clear();
-        setStatusLabel("Loading...");
+        if (m_mode == EMode::SEQUENCER) {
+          setStatusLabel("Loading...");
+        }
 
         // open the reader; reuse it so we don't multiply connections on
         //  the server
@@ -377,9 +418,9 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
           m_hasBodyAnnotation = bodyAnnotationsPresent();
           // need to clear this to ensure it's repopulated exactly once
           ui->maxBodiesMenu->clear();
-          updateRoi();
 
           if (m_mode == EMode::SEQUENCER) {
+            updateRoi();
             loadData();
           }
         } else {
@@ -964,6 +1005,107 @@ void FlyEmBodyInfoDialog::onRefreshButton() {
     loadData();
   } else {
     emit refreshing();
+  }
+}
+
+void FlyEmBodyInfoDialog::onAllNamedButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    ui->bodyFilterField->clear();
+    setStatusLabel("Loading...");
+
+    setBodyList(reader->queryAllNamedNeuron());
+  }
+}
+
+
+void FlyEmBodyInfoDialog::onQueryByRoiButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    if (getNeuPrintRoiQueryDlg()->exec()) {
+      ui->bodyFilterField->clear();
+      setStatusLabel("Loading...");
+
+      QList<uint64_t> bodyList = reader->queryNeuron(
+            getNeuPrintRoiQueryDlg()->getInputRoi(),
+            getNeuPrintRoiQueryDlg()->getOutputRoi());
+
+      std::set<uint64_t> bodyIdArray;
+      bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+      setBodyList(bodyIdArray);
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onQueryByNameButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ui->bodyFilterField->clear();
+        setStatusLabel("Loading...");
+
+        setBodyList(reader->queryNeuronByName(text));
+      }
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onQueryByStatusButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Bodies"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ui->bodyFilterField->clear();
+        setStatusLabel("Loading...");
+
+        setBodyList(reader->queryNeuronByStatus(text));
+      }
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onFindSimilarButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString defaultValue;
+    QList<uint64_t> bodyIDList = getSelectedBodyList();
+    if (!bodyIDList.isEmpty()) {
+      defaultValue = QString::number(bodyIDList.front());
+    }
+    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+                                         tr("Body:"), QLineEdit::Normal,
+                                         defaultValue, &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ZString str = text.toStdString();
+        std::vector<uint64_t> bodyArray = str.toUint64Array();
+        if (bodyArray.size() == 1) {
+          ui->bodyFilterField->clear();
+          setStatusLabel("Loading...");
+
+          setBodyList(reader->findSimilarNeuron(bodyArray[0]));
+        }
+      }
+    }
   }
 }
 
@@ -1866,4 +2008,30 @@ FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
     delete ui;
 }
 
+NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(m_reader.getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return reader;
+    }
+  }
 
+  return nullptr;
+}
+
+NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()
+{
+  if (m_neuprintQueryDlg == nullptr) {
+    m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
+
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      m_neuprintQueryDlg->setRoiList(reader->getRoiList());
+    }
+//    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
+  }
+
+  return m_neuprintQueryDlg;
+}

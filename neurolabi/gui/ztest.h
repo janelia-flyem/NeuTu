@@ -42,7 +42,7 @@ public:
 
 private:
   int m_argc;
-  char **m_argv;
+  char **m_argv = nullptr;
 };
 
 template<typename T>

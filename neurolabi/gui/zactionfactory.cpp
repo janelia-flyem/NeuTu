@@ -603,6 +603,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_QUERY_BY_NAME:
     action = new QAction("Query by Name", parent);
     break;
+  case ACTION_BODY_QUERY_BY_STATUS:
+    action = new QAction("Query by Status", parent);
+    break;
   case ACTION_BODY_QUERY_ALL_NAMED:
     action = new QAction("Find All Named", parent);
     break;

@@ -3,20 +3,34 @@
 const char *CypherQuery::KW_MATCH = "MATCH";
 const char *CypherQuery::KW_WHERE = "WHERE";
 const char *CypherQuery::KW_RETURN = "RETURN";
+const char *CypherQuery::KW_WITH = "WITH";
+const char *CypherQuery::KW_AS = "AS";
 
 CypherQuery::CypherQuery()
 {
 }
 
-void CypherQuery::setMatch(const QString &pattern, const QString &where)
+void CypherQuery::appendMatch(const QString &pattern, const QString &where)
 {
-  m_match.first = pattern;
-  m_match.second = where;
+  m_query.append(QueryPair(KW_MATCH, pattern));
+  appendWhere(where);
 }
 
-void CypherQuery::setWhere(const QString &where)
+void CypherQuery::appendWhere(const QString &where)
 {
-  m_match.second = where;
+  appendQuery(KW_WHERE, where);
+}
+
+void CypherQuery::appendWith(const QString &with)
+{
+  appendQuery(KW_WITH, with);
+}
+
+void CypherQuery::appendWith(const QString &preAs, const QString &postAs)
+{
+  if (!preAs.isEmpty() && !postAs.isEmpty()) {
+    appendWith(preAs + " " + KW_AS + " " + postAs);
+  }
 }
 
 void CypherQuery::setReturn(const QString &pattern)
@@ -35,13 +49,21 @@ void CypherQuery::AppendQuery(
   }
 }
 
+void CypherQuery::appendQuery(const QString &keyword, const QString &pattern)
+{
+  if (!pattern.isEmpty()) {
+    m_query.append(QueryPair(keyword, pattern));
+  }
+}
+
 QString CypherQuery::getQueryString() const
 {
   QString query;
 
-  if (!m_match.first.isEmpty()) {
-    AppendQuery(query, KW_MATCH, m_match.first);
-    AppendQuery(query, KW_WHERE, m_match.second);
+  if (!m_query.isEmpty()) {
+    for (const auto& p : m_query) {
+      AppendQuery(query, p.first, p.second);
+    }
     AppendQuery(query, KW_RETURN, m_return);
   }
 
@@ -56,18 +78,37 @@ CypherQueryBuilder::operator CypherQuery() const
 CypherQueryBuilder& CypherQueryBuilder::match(
     const QString &pattern, const QString &where)
 {
-  m_query.setMatch(pattern, where);
+  m_query.appendMatch(pattern, where);
 
   return *this;
+}
+
+CypherQueryBuilder& CypherQueryBuilder::matchNode(const QString &label)
+{
+  return match("(n:" + label + ")");
 }
 
 CypherQueryBuilder& CypherQueryBuilder::where(const QString &pattern)
 {
-  m_query.setWhere(pattern);
+  m_query.appendWhere(pattern);
 
   return *this;
 }
 
+CypherQueryBuilder& CypherQueryBuilder::with(const QString &pattern)
+{
+  m_query.appendWith(pattern);
+
+  return *this;
+}
+
+CypherQueryBuilder& CypherQueryBuilder::with(
+    const QString &preAs, const QString &postAs)
+{
+  m_query.appendWith(preAs, postAs);
+
+  return *this;
+}
 
 CypherQueryBuilder& CypherQueryBuilder::ret(const QString &pattern)
 {
