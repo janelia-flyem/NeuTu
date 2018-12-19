@@ -10,6 +10,7 @@
 #include "zdoublevector.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
+#include "zintcuboid.h"
 #include "misc/miscutility.h"
 
 #ifdef _USE_GTEST_

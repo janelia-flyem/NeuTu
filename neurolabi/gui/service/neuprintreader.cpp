@@ -4,6 +4,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "cypherquery.h"
 
 NeuPrintReader::NeuPrintReader(const QString &server) : m_server(server)
 {
@@ -177,6 +178,22 @@ ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
   ZJsonObject dataObj;
   dataObj.setEntry("dataset", m_currentDataset.toStdString());
   dataObj.setEntry("bodyId", bodyId);
+
+  CypherQuery query = CypherQueryBuilder().
+      match("(m:Meta{dataset:'" + m_currentDataset + "'})").
+      with("m.superLevelRois", "rois").
+      match(QString("(n:%1{bodyId:%2})").arg(getNeuronLabel('`')).arg(bodyId)).
+      with("n.clusterName AS cn, rois").
+      match(QString("(n:%1{clusterName:cn})").arg(getNeuronLabel('`'))).
+      ret("n.bodyId, n.name, n.status, n.pre, n.post");
+
+#ifdef _DEBUG_2
+  std::cout << "Query: " << query.getQueryString().toStdString() << std::endl;
+#endif
+
+  dataObj.setEntry("cypher", query.getQueryString().toStdString());
+
+  /*
   dataObj.setEntry("cypher", "MATCH (m:Meta{dataset:'"
                              + m_currentDataset.toStdString() +
                              "'}) "
@@ -191,6 +208,7 @@ ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
                              + getNeuronLabel('`').toStdString() +
                              "{clusterName:cn}) "
                              "RETURN n.bodyId, n.name, n.status, n.pre, n.post");
+                             */
 
 #ifdef _DEBUG_
   dataObj.print();
@@ -240,6 +258,37 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
      query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
   }
   dataObj.setEntry("cypher", query.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << "Query:" << std::endl;
+  dataObj.print();
+#endif
+
+  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+
+  return extract_body_info(m_bufferReader.getBuffer());
+}
+
+ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
+{
+  QString url = m_server + "/api/custom/custom";
+  ZJsonObject dataObj;
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
+
+  CypherQuery query = CypherQueryBuilder().
+      match(QString("(n:%1)").arg(getNeuronLabel('`'))).
+      where(QString("LOWER(n.status) = LOWER(\"%1\")").arg(status)).
+      ret("n.bodyId, n.name, n.status, n.pre, n.post");
+  QString queryString = query.getQueryString();
+
+//  QString query = "MATCH (n:"
+//      + getNeuronLabel('`') +
+//      "{status:\"" + status + "\"}) "
+//      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
+  if (m_numberLimit > 0) {
+     queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
+  }
+  dataObj.setEntry("cypher", queryString.toStdString());
 
 #ifdef _DEBUG_
   std::cout << "Query:" << std::endl;
