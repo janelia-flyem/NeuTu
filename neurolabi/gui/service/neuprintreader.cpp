@@ -172,6 +172,35 @@ static QList<uint64_t> extract_body_list(const QByteArray &response)
 }
 
 }
+
+ZJsonArray NeuPrintReader::queryTopNeuron(int n)
+{
+  if (n > 0) {
+    QString url = m_server + "/api/custom/custom";
+    ZJsonObject dataObj;
+    dataObj.setEntry("dataset", m_currentDataset.toStdString());
+
+    CypherQuery query = CypherQueryBuilder().
+        match(QString("(n:%1)").arg(getNeuronLabel('`'))).
+        ret("n.bodyId, n.name, n.status, n.pre, n.post").
+        orderDesc("(n.pre + n.post)").limit(n);
+    QString queryString = query.getQueryString();
+
+    dataObj.setEntry("cypher", queryString.toStdString());
+
+#ifdef _DEBUG_
+    std::cout << "Query:" << std::endl;
+    dataObj.print();
+#endif
+
+    m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+
+    return extract_body_info(m_bufferReader.getBuffer());
+  }
+
+  return ZJsonArray();
+}
+
 ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
 {
   QString url = m_server + "/api/custom/custom";

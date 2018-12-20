@@ -29052,8 +29052,9 @@ void ZTest::test(MainWindow *host)
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   reader->updateCurrentDataset("137d");
   if (reader->isReady()) {
+    reader->queryTopNeuron(100000);
 //    reader->queryAllNamedNeuron().print();
-    reader->queryNeuronByStatus("Roughly traced").print();
+//    reader->queryNeuronByStatus("Roughly traced").print();
   }
 
 #endif

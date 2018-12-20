@@ -16,6 +16,8 @@ public:
   void appendWhere(const QString &where);
   void appendWith(const QString &with);
   void appendWith(const QString &preAs, const QString &postAs);
+  void appendOrderDesc(const QString &pattern);
+  void appendLimit(int n);
   void setReturn(const QString &pattern);
 
 public:
@@ -23,6 +25,9 @@ public:
   static const char *KW_WITH;
   static const char *KW_AS;
   static const char *KW_WHERE;
+  static const char *KW_ORDER_BY;
+  static const char *KW_DESC;
+  static const char *KW_LIMIT;
   static const char *KW_RETURN;
 
 private:
@@ -35,6 +40,7 @@ private:
 private:
   QList<QueryPair> m_query;
   QString m_return;
+  QString m_postProc;
 };
 
 struct CypherQueryBuilder {
@@ -44,6 +50,8 @@ struct CypherQueryBuilder {
   CypherQueryBuilder& where(const QString &pattern);
   CypherQueryBuilder& with(const QString &pattern);
   CypherQueryBuilder& with(const QString &preAs, const QString &postAs);
+  CypherQueryBuilder& orderDesc(const QString &pattern);
+  CypherQueryBuilder& limit(int n);
   CypherQueryBuilder& ret(const QString &pattern);
 
 private:

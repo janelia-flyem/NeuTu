@@ -196,9 +196,6 @@ void FlyEmBodyInfoDialog::prepareWidget()
     setWindowTitle("Body Information (Selected)");
     clearStatusLabel();
     ui->roiComboBox->hide();
-    ui->maxBodiesLabel->hide();
-
-    ui->maxBodiesMenu->hide();
 
     ui->roiLabel->hide();
 //    ui->avabilityLabel->hide();
@@ -211,6 +208,9 @@ void FlyEmBodyInfoDialog::prepareWidget()
     if (m_mode == EMode::NEUPRINT) {
       setWindowTitle("Body Information (NeuPrint)");
       ui->refreshButton->hide();
+    } else {
+      ui->maxBodiesLabel->hide();
+      ui->maxBodiesMenu->hide();
     }
   } else {
     setWindowTitle("Body Information (Sequencer)");
@@ -290,12 +290,10 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
   emit dataChanged(bodies);
 }
 
-/*
 int FlyEmBodyInfoDialog::getMaxBodies() const
 {
   return m_currentMaxBodies;
 }
-*/
 
 void FlyEmBodyInfoDialog::simplify()
 {
@@ -322,6 +320,10 @@ void FlyEmBodyInfoDialog::simplify()
 void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     // should probably generate from a list at some point
     ui->maxBodiesMenu->clear();
+    if (m_mode == EMode::NEUPRINT) {
+      ui->maxBodiesMenu->addItem("---", QVariant(0));
+    }
+
     ui->maxBodiesMenu->addItem("100", QVariant(100));
     ui->maxBodiesMenu->addItem("500", QVariant(500));
     ui->maxBodiesMenu->addItem("1000", QVariant(1000));
@@ -329,11 +331,19 @@ void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     ui->maxBodiesMenu->addItem("10000", QVariant(10000));
     ui->maxBodiesMenu->addItem("50000", QVariant(50000));
     ui->maxBodiesMenu->addItem("100000", QVariant(100000));
-    ui->maxBodiesMenu->setCurrentIndex(1);
-    m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
+
+    if (m_mode == EMode::NEUPRINT) {
+      ui->maxBodiesMenu->setCurrentIndex(0);
+    } else {
+      ui->maxBodiesMenu->setCurrentIndex(1);
+    }
+
+    m_currentMaxBodies = ui->maxBodiesMenu->itemData(
+          ui->maxBodiesMenu->currentIndex()).toInt();
 
     // connect the signal now, *after* the entries added
-    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
+    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(onMaxBodiesChanged(int)));
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
@@ -421,6 +431,8 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
           if (m_mode == EMode::SEQUENCER) {
             updateRoi();
+          }
+          if (m_mode == EMode::SEQUENCER || m_mode == EMode::NEUPRINT) {
             loadData();
           }
         } else {
@@ -439,35 +451,45 @@ void FlyEmBodyInfoDialog::loadData()
 {
     setStatusLabel("Loading...");
 
-    QString loadingThreadId = "importBodiesDvid";
-    m_cancelLoading = true;
-    m_futureMap.waitForFinished(loadingThreadId);
-//    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
-//    if (future != NULL) {
-//      future->waitForFinished();
-//    }
-    m_cancelLoading = false;
+    if (m_mode == EMode::NEUPRINT) {
+      if (getNeuPrintReader()) {
+        if (ui->maxBodiesMenu->count() == 0) {
+          setupMaxBodyMenu();
+        }
 
-    // we can load this info from different sources, depending on
-    //  what's available in DVID
-    if (m_hasBodyAnnotation) {
+        setBodyList(getNeuPrintReader()->queryTopNeuron(getMaxBodies()));
+      }
+    } else {
+      QString loadingThreadId = "importBodiesDvid";
+      m_cancelLoading = true;
+      m_futureMap.waitForFinished(loadingThreadId);
+      //    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
+      //    if (future != NULL) {
+      //      future->waitForFinished();
+      //    }
+      m_cancelLoading = false;
+
+      // we can load this info from different sources, depending on
+      //  what's available in DVID
+      if (m_hasBodyAnnotation) {
         // both of these need body annotations:
         if (m_hasLabelsz) {
-            // how about labelsz data?
-            // only set up menu on first load:
-            if (ui->maxBodiesMenu->count() == 0) {
-                setupMaxBodyMenu();
-            }
-            m_futureMap[loadingThreadId] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
+          // how about labelsz data?
+          // only set up menu on first load:
+          if (ui->maxBodiesMenu->count() == 0) {
+            setupMaxBodyMenu();
+          }
+          m_futureMap[loadingThreadId] =
+              QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
         } else {
-            // this is the fallback method; it needs body annotations only
-            m_futureMap[loadingThreadId] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
+          // this is the fallback method; it needs body annotations only
+          m_futureMap[loadingThreadId] =
+              QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
         }
-    } else {
+      } else {
         // ...but sometimes, we've got nothing
         emit loadCompleted();
+      }
     }
 
 }
@@ -624,23 +646,28 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
     return true;
 }
 
-void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
-    int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
-    if (maxBodies > 1000) {
-        QMessageBox mb;
-        mb.setText("That's a lot of bodies!");
-        mb.setInformativeText("Warning!  Loading more than 1000 bodies may take 5-10 minutes or potentially longer.\n\nContinue loading?");
-        mb.setIcon(QMessageBox::Warning);
-        mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
-        mb.setDefaultButton(QMessageBox::Cancel);
-        int ans = mb.exec();
-        if (ans != QMessageBox::Ok) {
-            ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
-            return;
-        }
+void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
+{
+  int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+  if (maxBodies > 1000) {
+    int ans = QMessageBox::Ok;
+    if (m_mode == EMode::SEQUENCER) {
+      QMessageBox mb;
+      mb.setText("That's a lot of bodies!");
+      mb.setInformativeText("Warning!  Loading more than 1000 bodies may take 5-10 minutes or potentially longer.\n\nContinue loading?");
+      mb.setIcon(QMessageBox::Warning);
+      mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+      mb.setDefaultButton(QMessageBox::Cancel);
+      ans = mb.exec();
     }
-    m_currentMaxBodies = maxBodies;
-    onRefreshButton();
+
+    if (ans != QMessageBox::Ok) {
+      ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
+      return;
+    }
+  }
+  m_currentMaxBodies = maxBodies;
+  onRefreshButton();
 }
 
 void FlyEmBodyInfoDialog::onRoiChanged(int index)
@@ -1000,7 +1027,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 }
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
-  if (m_mode == EMode::SEQUENCER) {
+  if (m_mode == EMode::SEQUENCER || m_mode == EMode::NEUPRINT) {
     ui->bodyFilterField->clear();
     loadData();
   } else {
@@ -1008,12 +1035,18 @@ void FlyEmBodyInfoDialog::onRefreshButton() {
   }
 }
 
+void FlyEmBodyInfoDialog::prepareQuery()
+{
+  ui->bodyFilterField->clear();
+  ui->maxBodiesMenu->setCurrentIndex(0);
+  setStatusLabel("Loading...");
+}
+
 void FlyEmBodyInfoDialog::onAllNamedButton()
 {
   NeuPrintReader *reader = getNeuPrintReader();
   if (reader) {
-    ui->bodyFilterField->clear();
-    setStatusLabel("Loading...");
+    prepareQuery();
 
     setBodyList(reader->queryAllNamedNeuron());
   }
@@ -1025,8 +1058,7 @@ void FlyEmBodyInfoDialog::onQueryByRoiButton()
   NeuPrintReader *reader = getNeuPrintReader();
   if (reader) {
     if (getNeuPrintRoiQueryDlg()->exec()) {
-      ui->bodyFilterField->clear();
-      setStatusLabel("Loading...");
+      prepareQuery();
 
       QList<uint64_t> bodyList = reader->queryNeuron(
             getNeuPrintRoiQueryDlg()->getInputRoi(),
@@ -1051,8 +1083,7 @@ void FlyEmBodyInfoDialog::onQueryByNameButton()
                                          "", &ok);
     if (ok) {
       if (!text.isEmpty()) {
-        ui->bodyFilterField->clear();
-        setStatusLabel("Loading...");
+        prepareQuery();
 
         setBodyList(reader->queryNeuronByName(text));
       }
@@ -1071,8 +1102,7 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
                                          "", &ok);
     if (ok) {
       if (!text.isEmpty()) {
-        ui->bodyFilterField->clear();
-        setStatusLabel("Loading...");
+        prepareQuery();
 
         setBodyList(reader->queryNeuronByStatus(text));
       }
@@ -1099,8 +1129,7 @@ void FlyEmBodyInfoDialog::onFindSimilarButton()
         ZString str = text.toStdString();
         std::vector<uint64_t> bodyArray = str.toUint64Array();
         if (bodyArray.size() == 1) {
-          ui->bodyFilterField->clear();
-          setStatusLabel("Loading...");
+          prepareQuery();
 
           setBodyList(reader->findSimilarNeuron(bodyArray[0]));
         }
