@@ -169,7 +169,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
             this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
     connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(onRoiChanged(int)));
-    connect(ui->namedCheckBox, SIGNAL(clicked(bool)), this, SLOT(onNamedOnlyToggled()));
+    connect(ui->namedCheckBox, SIGNAL(clicked(bool)),
+            this, SLOT(onNamedOnlyToggled()));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -199,7 +200,7 @@ void FlyEmBodyInfoDialog::prepareWidget()
 
     ui->roiLabel->hide();
 //    ui->avabilityLabel->hide();
-    ui->namedCheckBox->hide();
+
 //    ui->line->hide();
 //    ui->line_3->hide();
     ui->horizontalSpacer->changeSize(0, 0);
@@ -211,6 +212,7 @@ void FlyEmBodyInfoDialog::prepareWidget()
     } else {
       ui->maxBodiesLabel->hide();
       ui->maxBodiesMenu->hide();
+      ui->namedCheckBox->hide();
     }
   } else {
     setWindowTitle("Body Information (Sequencer)");
@@ -225,8 +227,8 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->queryStatusPushButton->hide();
     ui->findSimilarPushButton->hide();
     ui->queryRoiPushButton->hide();
-    ui->allNamedPushButton->hide();
   }
+  ui->allNamedPushButton->hide(); //obsolete
 }
 
 void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
@@ -453,11 +455,20 @@ void FlyEmBodyInfoDialog::loadData()
 
     if (m_mode == EMode::NEUPRINT) {
       if (getNeuPrintReader()) {
-        if (ui->maxBodiesMenu->count() == 0) {
-          setupMaxBodyMenu();
-        }
+        if (ui->namedCheckBox->isChecked()) {
+          NeuPrintReader *reader = getNeuPrintReader();
+          if (reader) {
+            ui->bodyFilterField->clear();
+            setStatusLabel("Loading...");
+            setBodyList(reader->queryAllNamedNeuron());
+          }
+        } else {
+          if (ui->maxBodiesMenu->count() == 0) {
+            setupMaxBodyMenu();
+          }
 
-        setBodyList(getNeuPrintReader()->queryTopNeuron(getMaxBodies()));
+          setBodyList(getNeuPrintReader()->queryTopNeuron(getMaxBodies()));
+        }
       }
     } else {
       QString loadingThreadId = "importBodiesDvid";
