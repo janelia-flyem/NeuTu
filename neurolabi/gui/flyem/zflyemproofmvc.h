@@ -56,6 +56,7 @@ class ZFlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class ZActionLibrary;
 class NeuPrintReader;
+class NeuprintSetupDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -548,6 +549,7 @@ private:
   FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
   NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+  NeuprintSetupDialog* getNeuPrintSetupDlg();
 
   template<typename T>
   FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
@@ -602,6 +604,7 @@ protected:
   ZFlyEmProofSettingDialog *m_settingDlg;
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;

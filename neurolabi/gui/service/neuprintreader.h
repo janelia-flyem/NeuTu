@@ -18,6 +18,7 @@ public:
 
   void authorize(const QString &token);
   void authorizeFromFile(const QString &filePath);
+  void authorizeFromJson(const QString &auth);
 
   void readDatasets();
   QList<uint64_t> queryNeuron(

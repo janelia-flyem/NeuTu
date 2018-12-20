@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QAbstractButton;
+
 namespace Ui {
 class NeuprintSetupDialog;
 }
@@ -14,6 +16,12 @@ class NeuprintSetupDialog : public QDialog
 public:
   explicit NeuprintSetupDialog(QWidget *parent = 0);
   ~NeuprintSetupDialog();
+
+  QString getAuthToken() const;
+
+private slots:
+  bool apply();
+  void processButtonClick(QAbstractButton*);
 
 private:
   Ui::NeuprintSetupDialog *ui;

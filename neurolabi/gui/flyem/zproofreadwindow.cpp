@@ -405,7 +405,7 @@ void ZProofreadWindow::createMenu()
   m_neuprintAction->setIcon(QIcon(":/images/neuprint.png"));
   connect(m_neuprintAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(openNeuPrint()));
-  m_neuprintAction->setVisible(false);
+//  m_neuprintAction->setVisible(false);
 
   // temporarily disable sequencer
   // m_toolMenu->addAction(m_openSequencerAction);
@@ -760,7 +760,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
   }
 
-  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
+//  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
 
 //  m_toolBar->hide();
 //  m_toolBar->show();
