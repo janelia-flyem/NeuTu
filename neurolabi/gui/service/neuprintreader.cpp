@@ -1,5 +1,7 @@
 #include "neuprintreader.h"
 
+#include <QFile>
+
 #include "zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -26,16 +28,28 @@ void NeuPrintReader::authorize(const QString &token)
   }
 }
 
-void NeuPrintReader::authorizeFromFile(const QString &filePath)
+void NeuPrintReader::authorizeFromJson(const QString &auth)
 {
-  if (!filePath.isEmpty()) {
+  if (!auth.isEmpty()) {
     ZJsonObject obj;
-    obj.load(filePath.toStdString());
+    obj.decode(auth.toStdString());
     std::string token = ZJsonParser::stringValue(obj["token"]);
     if (!token.empty()) {
       authorize(token.c_str());
     } else {
       LWARN() << "No NeuPrint token found.";
+    }
+  }
+}
+
+void NeuPrintReader::authorizeFromFile(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    QFile f(filePath);
+    if (f.open(QIODevice::ReadOnly)) {
+      QTextStream stream(&f);
+      qDebug() << "Auth: " << stream.readAll();
+      authorizeFromJson(stream.readAll());
     }
   }
 }

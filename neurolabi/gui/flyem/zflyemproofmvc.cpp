@@ -102,6 +102,7 @@
 #include "dialogs/neuprintquerydialog.h"
 #include "zactionlibrary.h"
 #include "zglobal.h"
+#include "dialogs/neuprintsetupdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -274,12 +275,27 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
 {
   if (m_neuprintBodyDlg == nullptr) {
-    m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+    if (!hasNeuPrint()) {
+      getNeuPrintSetupDlg()->exec();
+    }
+
+    if (hasNeuPrint()) {
+      m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+    }
 //    connect(m_neuprintBodyDlg, &FlyEmBodyInfoDialog::loadingAllNamedBodies,
 //            this, &ZFlyEmProofMvc::queryAllNamedBody);
   }
 
   return m_neuprintBodyDlg;
+}
+
+NeuprintSetupDialog* ZFlyEmProofMvc::getNeuPrintSetupDlg()
+{
+  if (m_neuprintSetupDlg == nullptr) {
+    m_neuprintSetupDlg = new NeuprintSetupDialog(this);
+  }
+
+  return m_neuprintSetupDlg;
 }
 
 NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
@@ -3828,13 +3844,26 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
   return nullptr;
 }
 
+namespace {
+void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
+{
+  if (dlg) {
+    dlg->show();
+    dlg->raise();
+  }
+}
+}
+
 void ZFlyEmProofMvc::openNeuPrint()
 {
-  NeuPrintReader *reader = getNeuPrintReader();
-  if (reader) {
-    getNeuPrintBodyDlg()->show();
-    getNeuPrintBodyDlg()->raise();
-  }
+  ShowNeuPrintBodyDlg(getNeuPrintBodyDlg());
+
+//  NeuPrintReader *reader = getNeuPrintReader();
+//  if (reader) {
+
+//    getNeuPrintBodyDlg()->show();
+//    getNeuPrintBodyDlg()->raise();
+//  }
 }
 
 void ZFlyEmProofMvc::queryBodyByRoi()
@@ -3868,18 +3897,21 @@ void ZFlyEmProofMvc::queryAllNamedBody()
 
 void ZFlyEmProofMvc::queryBodyByName()
 {
-  NeuPrintReader *reader = getNeuPrintReader();
-  if (reader) {
-    bool ok;
+  auto *dlg = getNeuPrintBodyDlg();
+  if (dlg) {
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      bool ok;
 
-    QString text = QInputDialog::getText(this, tr("Find Neurons"),
-                                         tr("Body Name:"), QLineEdit::Normal,
-                                         "", &ok);
-    if (ok) {
-      if (!text.isEmpty()) {
-        getNeuPrintBodyDlg()->show();
-        getNeuPrintBodyDlg()->raise();
-        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByName(text));
+      QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                           tr("Body Name:"), QLineEdit::Normal,
+                                           "", &ok);
+      if (ok) {
+        if (!text.isEmpty()) {
+          dlg->show();
+          dlg->raise();
+          dlg->setBodyList(reader->queryNeuronByName(text));
+        }
       }
     }
   }
