@@ -705,6 +705,11 @@ void FlyEmBodyInfoDialog::onNamedOnlyToggled()
   ui->maxBodiesMenu->setDisabled(namedOnly);
   ui->roiComboBox->setDisabled(namedOnly);
 
+//  ui->queryNamePushButton->setDisabled(namedOnly);
+//  ui->queryStatusPushButton->setDisabled(namedOnly);
+//  ui->findSimilarPushButton->setDisabled(namedOnly);
+//  ui->queryRoiPushButton->setDisabled(namedOnly);
+
   onRefreshButton();
 }
 
@@ -1050,6 +1055,13 @@ void FlyEmBodyInfoDialog::prepareQuery()
 {
   ui->bodyFilterField->clear();
   ui->maxBodiesMenu->setCurrentIndex(0);
+  /* Requires toggling signal to work, which can result in some response hickup
+  if (ui->namedCheckBox->isChecked()) {
+    ui->namedCheckBox->toggle();
+  }
+  */
+  ui->namedCheckBox->setChecked(false);
+  ui->maxBodiesMenu->setEnabled(true);
   setStatusLabel("Loading...");
 }
 
