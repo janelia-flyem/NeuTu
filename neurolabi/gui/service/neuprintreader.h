@@ -26,6 +26,7 @@ public:
   ZJsonArray queryNeuronByName(const QString &name);
   ZJsonArray queryAllNamedNeuron();
   ZJsonArray queryNeuronByStatus(const QString &status);
+  ZJsonArray queryTopNeuron(int n);
 
   ZJsonObject customQuery(const QString &query);
   ZJsonObject customQuery(const ZJsonObject &json);

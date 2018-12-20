@@ -38,7 +38,7 @@ public:
   void setBodyList(const std::set<uint64_t> &bodyList);
   void setBodyList(const ZJsonArray &bodies);
 
-//  int getMaxBodies() const;
+  int getMaxBodies() const;
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -221,6 +221,7 @@ private:
     QList<uint64_t> getSelectedBodyList() const;
     NeuPrintReader *getNeuPrintReader();
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+    void prepareQuery();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

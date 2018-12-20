@@ -5,6 +5,9 @@ const char *CypherQuery::KW_WHERE = "WHERE";
 const char *CypherQuery::KW_RETURN = "RETURN";
 const char *CypherQuery::KW_WITH = "WITH";
 const char *CypherQuery::KW_AS = "AS";
+const char *CypherQuery::KW_ORDER_BY = "ORDER BY";
+const char *CypherQuery::KW_DESC = "DESC";
+const char *CypherQuery::KW_LIMIT = "LIMIT";
 
 CypherQuery::CypherQuery()
 {
@@ -31,6 +34,16 @@ void CypherQuery::appendWith(const QString &preAs, const QString &postAs)
   if (!preAs.isEmpty() && !postAs.isEmpty()) {
     appendWith(preAs + " " + KW_AS + " " + postAs);
   }
+}
+
+void CypherQuery::appendOrderDesc(const QString &pattern)
+{
+  m_postProc +=  " " + QString(KW_ORDER_BY) + " " + pattern + " " + KW_DESC;
+}
+
+void CypherQuery::appendLimit(int n)
+{
+  m_postProc += " " + QString(KW_LIMIT) + " " + QString::number(n);
 }
 
 void CypherQuery::setReturn(const QString &pattern)
@@ -65,6 +78,9 @@ QString CypherQuery::getQueryString() const
       AppendQuery(query, p.first, p.second);
     }
     AppendQuery(query, KW_RETURN, m_return);
+    if (!m_postProc.isEmpty()) {
+      query += " " + m_postProc;
+    }
   }
 
   return query;
@@ -109,6 +125,21 @@ CypherQueryBuilder& CypherQueryBuilder::with(
 
   return *this;
 }
+
+CypherQueryBuilder& CypherQueryBuilder::orderDesc(const QString &pattern)
+{
+  m_query.appendOrderDesc(pattern);
+
+  return *this;
+}
+
+CypherQueryBuilder& CypherQueryBuilder::limit(int n)
+{
+  m_query.appendLimit(n);
+
+  return *this;
+}
+
 
 CypherQueryBuilder& CypherQueryBuilder::ret(const QString &pattern)
 {
