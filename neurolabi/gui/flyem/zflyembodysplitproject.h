@@ -202,6 +202,7 @@ signals:
   void result3dQuickViewReady();
   void rasingResultQuickView();
   void rasingBodyQuickView();
+  void splitListGenerated();
 
 public slots:
   void start();
@@ -242,6 +243,8 @@ private slots:
   void resetQuickResultWindow();
   void updateSplitQuickFunc();
   void invalidateSplitQuick();
+  void uploadSplitList();
+  void resetStatusAfterUpload();
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
@@ -261,6 +264,7 @@ private:
   void result3dQuickFunc();
   void quitResultUpdate();
   void cancelResultUpdate();
+  void uploadSplitListFunc();
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
@@ -328,6 +332,9 @@ private:
   QMutex m_splitWindowMutex;
   bool m_cancelSplitQuick = false;
   bool m_splitUpdated = false;
+
+  QList<ZObject3dScan> m_splitList;
+  QList<uint64_t> m_oldBodyIdList;
 
   ZProgressSignal *m_progressSignal;
 
