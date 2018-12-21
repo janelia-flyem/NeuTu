@@ -157,7 +157,8 @@ public:
 
   void configure();
 
-  bool hasNeuPrint() const;
+//  bool hasNeuPrint() const;
+  neutube::EServerStatus getNeuPrintStatus() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -430,11 +431,11 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
-  void queryBodyByRoi();
-  void findSimilarNeuron();
-  void queryBodyByName();
-  void queryBodyByStatus();
-  void queryAllNamedBody();
+//  void queryBodyByRoi();
+//  void findSimilarNeuron();
+//  void queryBodyByName();
+//  void queryBodyByStatus();
+//  void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
@@ -548,7 +549,7 @@ private:
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
-  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+//  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
 
   template<typename T>
@@ -563,7 +564,7 @@ private:
   QAction* getAction(ZActionFactory::EAction item);
   void addBodyColorMenu(QMenu *menu);
   void addBodyMenu(QMenu *menu);
-  NeuPrintReader *getNeuPrintReader();
+//  NeuPrintReader *getNeuPrintReader();
 
 protected:
   bool m_showSegmentation;

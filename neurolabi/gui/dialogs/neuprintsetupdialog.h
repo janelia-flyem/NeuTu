@@ -17,6 +17,7 @@ public:
   explicit NeuprintSetupDialog(QWidget *parent = 0);
   ~NeuprintSetupDialog();
 
+  void setUuid(const QString &uuid);
   QString getAuthToken() const;
 
 private slots:
@@ -25,6 +26,7 @@ private slots:
 
 private:
   Ui::NeuprintSetupDialog *ui;
+  QString m_uuid;
 };
 
 #endif // NEUPRINTSETUPDIALOG_H

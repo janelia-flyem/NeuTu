@@ -38,6 +38,11 @@ void NeuprintSetupDialog::processButtonClick(QAbstractButton *button)
   }
 }
 
+void NeuprintSetupDialog::setUuid(const QString &uuid)
+{
+  m_uuid = uuid;
+}
+
 bool NeuprintSetupDialog::apply()
 {
   QString server = ui->serverLineEdit->text();
@@ -54,15 +59,24 @@ bool NeuprintSetupDialog::apply()
               "No Authorization", "Please specify the authorization token",
               this);
       } else {
-        reader->authorize(token);
-        if (reader->isReady()) {
+        reader->authorizeFromJson(token);
+        if (reader->isAuthorized()) {
           QString authFile = NeutubeConfig::getInstance().getPath(
                 NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
           std::ofstream stream(authFile.toStdString());
           if (stream.good()) {
             stream << token.toStdString();
             stream.close();
+          }
+
+          reader->connect();
+          if (reader->hasDataset(m_uuid)) {
             return true;
+          } else {
+            ZDialogFactory::Warn(
+                  "NeuPrint Not Supported",
+                  "Cannot use NeuPrint because this dataset is not supported by the server.",
+                  this);
           }
         } else {
           ZDialogFactory::Warn(

@@ -35,13 +35,16 @@ public:
   bool isReady();
   bool isConnected();
   bool isAuthorized() const;
+  bool connect();
 
   void updateCurrentDataset(const QString &uuid);
+  bool hasDataset(const QString &uuid);
 
   QList<QString> getRoiList();
 
 private:
   QString getNeuronLabel(char quote = '\0') const;
+  QString getUuidKey(const QString &uuid);
 
 private:
   QString m_server;
