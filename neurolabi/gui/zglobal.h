@@ -74,6 +74,9 @@ public:
   QString getNeuPrintToken() const;
   QString getNeuPrintAuth() const;
 
+  NeuPrintReader* makeNeuPrintReader();
+  NeuPrintReader* makeNeuPrintReader(const QString &uuid);
+
 public:
   static ZDvidReader* GetDvidReader(
       const std::string &name, const std::string &key = "");

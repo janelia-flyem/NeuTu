@@ -30,6 +30,7 @@ public:
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
+  neutube::EServerStatus m_neuprintStatus = neutube::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()
@@ -169,22 +170,39 @@ QString ZGlobal::getNeuPrintToken() const
 NeuPrintReader* ZGlobal::getNeuPrintReader()
 {
   if (m_data->m_neuprintReader == nullptr) {
-    QString server = qgetenv("NEUPRINT");
-    if (!server.isEmpty()) {
-//      QString auth = qgetenv("NEUPRINT_AUTH");
-//      if (auth.isEmpty()) {
-//        auth = NeutubeConfig::getInstance().getPath(
-//              NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
-//        LINFO() << "NeuPrint auth path:" << auth;
-//      }
-
-      m_data->m_neuprintReader = new NeuPrintReader(server);
-      m_data->m_neuprintReader->authorize(getNeuPrintToken());
-//      m_data->m_neuprintReader->authorizeFromFile(auth);
-    }
+    m_data->m_neuprintReader = makeNeuPrintReader();
   }
 
   return m_data->m_neuprintReader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader()
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+  }
+
+  return reader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+    reader->updateCurrentDataset(uuid);
+    if (!reader->isReady()) {
+      delete reader;
+      reader = nullptr;
+    }
+  }
+
+  return reader;
 }
 
 template<typename T>

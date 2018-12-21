@@ -2060,17 +2060,23 @@ FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
     delete ui;
 }
 
+/*
+void FlyEmBodyInfoDialog::setNeuPrintReader(
+    std::unique_ptr<NeuPrintReader> reader)
+{
+  m_neuPrintReader = reader;
+}
+*/
+
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
-  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
-  if (reader) {
-    reader->updateCurrentDataset(m_reader.getDvidTarget().getUuid().c_str());
-    if (reader->isReady()) {
-      return reader;
-    }
+  if (!m_neuPrintReader) {
+    m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+          ZGlobal::GetInstance().makeNeuPrintReader(
+            m_reader.getDvidTarget().getUuid().c_str()));
   }
 
-  return nullptr;
+  return m_neuPrintReader.get();
 }
 
 NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()
