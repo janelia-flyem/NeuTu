@@ -14,6 +14,7 @@ class NeuPrintReader
 public:
   NeuPrintReader(const QString &server);
 
+  QString getServer() const;
   void setServer(const QString &server);
 
   void authorize(const QString &token);
@@ -34,7 +35,7 @@ public:
 
   bool isReady();
   bool isConnected();
-  bool isAuthorized() const;
+  bool hasAuthCode() const;
   bool connect();
 
   void updateCurrentDataset(const QString &uuid);
