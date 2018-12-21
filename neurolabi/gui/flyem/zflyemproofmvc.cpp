@@ -278,7 +278,7 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
     neutube::EServerStatus status = getNeuPrintStatus();
     switch (status) {
     case neutube::EServerStatus::NOSUPPORT:
-      ZDialogFactory::Warn(
+      ZDialogFactory::Error(
             "NeuPrint Not Supported",
             "Cannot use NeuPrint because this dataset is not supported by the server.",
             this);
@@ -2044,6 +2044,17 @@ void ZFlyEmProofMvc::diagnose()
                             arg(status).
                             arg(getCompleteDocument()->getMergeProject()->
                                 getStatusRank(status.toStdString())));
+    }
+  }
+
+  {
+    NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+    if (reader) {
+      emit messageGenerated(QString("NeuPrint: %1").arg(reader->getServer()));
+      emit messageGenerated(QString("  Status: %1").
+                            arg(neutube::EnumValue(getNeuPrintStatus())));
+      emit messageGenerated(QString("  Supported: %1").arg(
+                              reader->hasDataset(getDvidTarget().getUuid().c_str())));
     }
   }
 
@@ -3839,7 +3850,7 @@ neutube::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
 {
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   if (reader) {
-    if (!reader->isAuthorized()) {
+    if (!reader->hasAuthCode()) {
       return neutube::EServerStatus::NOAUTH;
     }
 

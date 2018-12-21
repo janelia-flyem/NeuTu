@@ -12,6 +12,11 @@ NeuPrintReader::NeuPrintReader(const QString &server) : m_server(server)
 {
 }
 
+QString NeuPrintReader::getServer() const
+{
+  return m_server;
+}
+
 void NeuPrintReader::setServer(const QString &server)
 {
   if (server != m_server) {
@@ -66,7 +71,7 @@ void NeuPrintReader::readDatasets()
   }
 }
 
-bool NeuPrintReader::isAuthorized() const
+bool NeuPrintReader::hasAuthCode() const
 {
   return m_bufferReader.hasRequestHeader("Authorization");
 }

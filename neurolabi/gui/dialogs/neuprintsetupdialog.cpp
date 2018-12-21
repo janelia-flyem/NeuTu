@@ -60,7 +60,7 @@ bool NeuprintSetupDialog::apply()
               this);
       } else {
         reader->authorizeFromJson(token);
-        if (reader->isAuthorized()) {
+        if (reader->hasAuthCode()) {
           QString authFile = NeutubeConfig::getInstance().getPath(
                 NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
           std::ofstream stream(authFile.toStdString());

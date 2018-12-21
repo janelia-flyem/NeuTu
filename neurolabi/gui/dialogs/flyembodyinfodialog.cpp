@@ -2076,6 +2076,11 @@ NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
             m_reader.getDvidTarget().getUuid().c_str()));
   }
 
+  if (!m_neuPrintReader) {
+    setStatusLabel("<font color=\"#800000\">Oops! "
+                   "Cannot connect NeuPrint!</font>");
+  }
+
   return m_neuPrintReader.get();
 }
 
