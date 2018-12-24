@@ -15,6 +15,7 @@
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
 #include "neutube_def.h"
+#include "zactionfactory.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -52,6 +53,9 @@ class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
 class ZROIWidget;
 class ZFlyEmBodyAnnotationDialog;
+class NeuPrintQueryDialog;
+class ZActionLibrary;
+class NeuPrintReader;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -152,6 +156,7 @@ public:
 
   void configure();
 
+  bool hasNeuPrint() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -325,6 +330,7 @@ public slots:
   void openProtocol();
   void openTodo();
   void openRoiTool();
+  void openNeuPrint();
 
   void goToNearestRoi();
   void loadRoiProject();
@@ -359,6 +365,7 @@ public slots:
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
   void changeColorMap(const QString &option);
+  void changeColorMap(QAction *action);
 
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
   void addLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -422,6 +429,11 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
+  void queryBodyByRoi();
+  void findSimilarNeuron();
+  void queryBodyByName();
+  void queryBodyByStatus();
+  void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
@@ -449,6 +461,9 @@ private slots:
   void roiToggled(bool on);
   void setProtocolRangeVisible(bool on);
   void showSupervoxelList();
+  void goToPosition();
+  void enableNameColorMap(bool on);
+  void toggleBodyColorMap();
 
 private:
   void init();
@@ -530,12 +545,23 @@ private:
   void endMergeProfile();
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
+  FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+
+  template<typename T>
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
 
   void submitSkeletonizationTask(uint64_t bodyId);
+
+  QMenu* makeControlPanelMenu();
+  QAction* getAction(ZActionFactory::EAction item);
+  void addBodyColorMenu(QMenu *menu);
+  void addBodyMenu(QMenu *menu);
+  NeuPrintReader *getNeuPrintReader();
 
 protected:
   bool m_showSegmentation;
@@ -556,10 +582,12 @@ protected:
 
 //  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
+  ZActionLibrary *m_actionLibrary = nullptr;
 
   ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
+  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
@@ -573,6 +601,10 @@ protected:
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
   ZFlyEmProofSettingDialog *m_settingDlg;
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+
+  QAction *m_prevColorMapAction = nullptr;
+  QAction *m_currentColorMapAction = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -616,6 +648,8 @@ protected:
 template <typename T>
 void ZFlyEmProofMvc::connectControlPanel(T *panel)
 {
+  panel->setMainMenu(makeControlPanelMenu());
+
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
@@ -667,10 +701,12 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
-  connect(this, SIGNAL(nameColorMapReady(bool)),
-          panel, SLOT(enableNameColorMap(bool)));
+//  connect(this, SIGNAL(nameColorMapReady(bool)),
+//          panel, SLOT(enableNameColorMap(bool)));
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
+  connect(panel, SIGNAL(queryingBody()),
+          this, SLOT(queryBodyByRoi()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
   connect(panel, SIGNAL(exportingSelectedBodyLevel()),

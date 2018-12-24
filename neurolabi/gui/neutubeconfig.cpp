@@ -169,7 +169,7 @@ void NeutubeConfig::SetApplicationDir(const string &str)
 void NeutubeConfig::updateLogDir()
 {
   if (m_logDir.empty()) {
-    ZString dir = getPath(WORKING_DIR);
+    ZString dir = getPath(EConfigItem::WORKING_DIR);
 #if defined(_QT_GUI_USED_) && defined(_FLYEM_)
     std::string candidateDir = dir;
 
@@ -200,7 +200,7 @@ void NeutubeConfig::updateLogDir()
 void NeutubeConfig::updateAutoSaveDir()
 {
 #if defined(_QT_GUI_USED_)
-  std::string autoSaveDir = getPath(NeutubeConfig::AUTO_SAVE);
+  std::string autoSaveDir = getPath(NeutubeConfig::EConfigItem::AUTO_SAVE);
   LINFO() << "Updating autosave directory:" << autoSaveDir;
   QDir dir(autoSaveDir.c_str());
   if (dir.exists()) {
@@ -364,9 +364,9 @@ bool NeutubeConfig::load(const std::string &filePath)
     ZLogMessageReporter *reporter =
         dynamic_cast<ZLogMessageReporter*>(m_messageReporter);
     if (reporter != NULL) {
-      reporter->setInfoFile(getPath(LOG_APPOUT));
-      reporter->setErrorFile(getPath(LOG_WARN));
-      reporter->setErrorFile(getPath(LOG_ERROR));
+      reporter->setInfoFile(getPath(EConfigItem::LOG_APPOUT));
+      reporter->setErrorFile(getPath(EConfigItem::LOG_WARN));
+      reporter->setErrorFile(getPath(EConfigItem::LOG_ERROR));
     }
 
     if (GET_APPLICATION_NAME == "General") {
@@ -401,17 +401,17 @@ void NeutubeConfig::print()
   cout << endl;
 #endif
   cout << "Application dir: " << getApplicatinDir() << endl;
-  cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
+  cout << "Autosave dir: " << getPath(EConfigItem::AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
-  cout << "Log dir: " << getPath(LOG_DIR) << endl;
-  cout << "Log dest dir: " << getPath(LOG_DEST_DIR) << endl;
+  cout << "Log dir: " << getPath(EConfigItem::LOG_DIR) << endl;
+  cout << "Log dest dir: " << getPath(EConfigItem::LOG_DEST_DIR) << endl;
   cout << endl;
 }
 
 std::string NeutubeConfig::getPath(EConfigItem item) const
 {
   switch (item) {
-  case DATA:
+  case EConfigItem::DATA:
   {
     std::string dataPath;
 #ifdef _QT_GUI_USED_
@@ -426,33 +426,33 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
     return dataPath;
   }
     break;
-  case FLYEM_BODY_CONN_CLASSIFIER:
+  case EConfigItem::FLYEM_BODY_CONN_CLASSIFIER:
     return m_segmentationClassifierPath;
-  case FLYEM_BODY_CONN_TRAIN_DATA:
+  case EConfigItem::FLYEM_BODY_CONN_TRAIN_DATA:
     return m_segmentationTrainingTestPath;
-  case FLYEM_BODY_CONN_TRAIN_TRUTH:
+  case EConfigItem::FLYEM_BODY_CONN_TRAIN_TRUTH:
     return m_segmentationTrainingTruthPath;
-  case FLYEM_BODY_CONN_EVAL_DATA:
+  case EConfigItem::FLYEM_BODY_CONN_EVAL_DATA:
     return m_segmentationEvaluationTestPath;
-  case FLYEM_BODY_CONN_EVAL_TRUTH:
+  case EConfigItem::FLYEM_BODY_CONN_EVAL_TRUTH:
     return m_segmentationEvaluationTruthPath;
-  case CONFIGURE_FILE:
+  case EConfigItem::CONFIGURE_FILE:
     return getConfigPath();
-  case SWC_REPOSOTARY:
+  case EConfigItem::SWC_REPOSOTARY:
     return m_swcRepository;
-  case AUTO_SAVE:
+  case EConfigItem::AUTO_SAVE:
 #ifdef _QT_GUI_USED_
       return
-          QDir(getPath(WORKING_DIR).c_str()).filePath("autosave").toStdString();
+          QDir(getPath(EConfigItem::WORKING_DIR).c_str()).filePath("autosave").toStdString();
 #else
       return ZString::fullPath(getPath(WORKING_DIR), "autosave");
 #endif
-  case SKELETONIZATION_CONFIG:
+  case EConfigItem::SKELETONIZATION_CONFIG:
     return getApplicatinDir() + ZString::FileSeparator + "json" +
         ZString::FileSeparator + "skeletonize_fib25_len40.json";
-  case DOCUMENT:
+  case EConfigItem::DOCUMENT:
     return m_docUrl;
-  case TMP_DATA:
+  case EConfigItem::TMP_DATA:
   {
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
@@ -470,7 +470,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
 #endif
     return tmpDir;
   }
-  case WORKING_DIR:
+  case EConfigItem::WORKING_DIR:
     if (m_workDir.empty()) {
 #ifdef _QT_GUI_USED_
       return QDir::home().filePath(".neutube.z").toStdString();
@@ -479,44 +479,47 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
 #endif
     }
     return m_workDir;
-  case LOG_DIR:
+  case EConfigItem::LOG_DIR:
     return m_logDir;
-  case LOG_DEST_DIR:
+  case EConfigItem::LOG_DEST_DIR:
     return m_logDestDir;
-  case LOG_FILE:
+  case EConfigItem::LOG_FILE:
 #ifdef _QT_GUI_USED_
   {
     QString fileName = QString((GET_SOFTWARE_NAME + "_log.txt").c_str()).toLower();
 
-    return QDir(getPath(LOG_DIR).c_str()).filePath(fileName).toStdString();
+    return QDir(getPath(EConfigItem::LOG_DIR).c_str()).filePath(fileName).toStdString();
   }
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log.txt");
 #endif
-  case LOG_APPOUT:
+  case EConfigItem::LOG_APPOUT:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_appout.txt").toStdString();
+    return QDir(getPath(EConfigItem::WORKING_DIR).c_str()).filePath("log_appout.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_appout.txt");
 #endif
-  case LOG_TRACE:
+  case EConfigItem::LOG_TRACE:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(LOG_DIR).c_str()).filePath("log_trace.txt").toStdString();
+    return QDir(getPath(EConfigItem::LOG_DIR).c_str()).filePath("log_trace.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_trace.txt");
 #endif
-  case LOG_WARN:
+  case EConfigItem::LOG_WARN:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_warn.txt").toStdString();
+    return QDir(getPath(EConfigItem::WORKING_DIR).c_str()).filePath("log_warn.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_warn.txt");
 #endif
-  case LOG_ERROR:
+  case EConfigItem::LOG_ERROR:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_error.txt").toStdString();
+    return QDir(getPath(EConfigItem::WORKING_DIR).c_str()).filePath("log_error.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_error.txt");
 #endif
+  case EConfigItem::NEUPRINT_AUTH:
+    return NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR) + "/neuprint_auth.json";
   default:
     break;
   }

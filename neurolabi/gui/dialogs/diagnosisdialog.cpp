@@ -50,7 +50,7 @@ void DiagnosisDialog::loadWarnFile()
 
 void DiagnosisDialog::loadInfoFile()
 {
-  LoadFile(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE),
+  LoadFile(NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::LOG_FILE),
            ui->infoTextBrowser);
 }
 

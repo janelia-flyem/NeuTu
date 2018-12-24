@@ -124,7 +124,7 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       m_showingAxis = ZJsonParser::integerValue(iter->second);
     } else if (isActionListTag(iter->first.c_str())) {
       ZJsonArray actionList;
-      TZ_ASSERT(ZJsonParser::isArray(iter->second), "array");
+      TZ_ASSERT(ZJsonParser::IsArray(iter->second), "array");
 
       actionList.set(iter->second, false);
       for (size_t index = 0; index < actionList.size(); ++index) {
@@ -157,11 +157,11 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
           } else if (isFadingTag(actionIter->first.c_str())) {
             action.fadingFactor = ZJsonParser::numberValue(actionIter->second);
           } else if (isTransitTag(actionIter->first.c_str())) {
-            if (ZJsonParser::isNumber(actionIter->second)) {
+            if (ZJsonParser::IsNumber(actionIter->second)) {
               action.transitFactor[0] = ZJsonParser::numberValue(actionIter->second);
               action.transitFactor[1] = action.transitFactor[0];
               action.transitFactor[2] = action.transitFactor[1];
-            } else if (ZJsonParser::isArray(actionIter->second)){
+            } else if (ZJsonParser::IsArray(actionIter->second)){
               action.transitFactor[0] = ZJsonParser::numberValue(actionIter->second, 0);
               action.transitFactor[1] = ZJsonParser::numberValue(actionIter->second, 1);
               action.transitFactor[2] = ZJsonParser::numberValue(actionIter->second, 2);

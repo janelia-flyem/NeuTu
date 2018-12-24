@@ -793,7 +793,9 @@ void ZObject3dScan::readHeader(
 #endif
   }
 
-  stream.read((char*)(stripeNumber), sizeof(int));
+  if (*version > 0) {
+    stream.read((char*)(stripeNumber), sizeof(int));
+  }
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
@@ -4748,7 +4750,7 @@ bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj, bool appending)
 
   bool succ = true;
   for (size_t i = 0; i < obj.size(); ++i) {
-    if (ZJsonParser::isArray(obj.at(i))) {
+    if (ZJsonParser::IsArray(obj.at(i))) {
       ZJsonArray subarray(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (subarray.size() != 4) {
         succ = false;

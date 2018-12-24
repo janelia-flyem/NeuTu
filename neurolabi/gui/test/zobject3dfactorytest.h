@@ -6,6 +6,7 @@
 #include "zstackfactory.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
+#include "zobject3darray.h"
 
 #ifdef _USE_GTEST_
 

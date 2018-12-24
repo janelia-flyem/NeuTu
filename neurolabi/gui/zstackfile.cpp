@@ -279,7 +279,6 @@ void ZStackFile::setType(const string &str)
 
 void ZStackFile::loadJsonObject(json_t *obj, const std::string &source)
 {
-  const char *format = NULL;
   m_type = UNIDENTIFIED;
 
   const char *stackKey = NULL;
@@ -289,7 +288,7 @@ void ZStackFile::loadJsonObject(json_t *obj, const std::string &source)
     cout << stackKey << endl;
 #endif
     if (isTypeTag(stackKey)) {
-      format = ZJsonParser::stringValue(stackValue);
+      std::string format = ZJsonParser::stringValue(stackValue);
       setType(format);
     } else if (isUrlTag(stackKey)) {
       if (m_type == FILE_LIST) {

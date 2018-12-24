@@ -1785,7 +1785,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
       if (obj.hasKey("pos")) {
         ZIntPoint pos = ZJsonParser::toIntPoint(obj["pos"]);
         uint64_t bodyId = reader.readBodyIdAt(pos);
-        QString name = ZJsonParser::stringValue(obj["name"]);
+        QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
               bodyId, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
@@ -1929,14 +1929,14 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
       for (size_t i = 0; i < neuronArray.size(); ++i) {
         uint64_t bodyId = 0;
         QString name;
-        if (ZJsonParser::isInteger(neuronArray.at(i))) {
+        if (ZJsonParser::IsInteger(neuronArray.at(i))) {
           bodyId = ZJsonParser::integerValue(neuronArray.getData(), i);
         } else {
           ZJsonObject infoJson(neuronArray.value(i));
           if (infoJson.hasKey("pos")) {
             ZIntPoint pos = ZJsonParser::toIntPoint(infoJson["pos"]);
             bodyId = reader.readBodyIdAt(pos);
-            name = ZJsonParser::stringValue(infoJson["name"]);
+            name = ZJsonParser::stringValue(infoJson["name"]).c_str();
           }
         }
 

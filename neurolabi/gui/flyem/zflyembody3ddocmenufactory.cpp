@@ -5,6 +5,7 @@
 #include "zmenufactory.h"
 #include "zflyembodyenv.h"
 #include "zstackdocproxy.h"
+#include "zglobal.h"
 
 ZFlyEmBody3dDocMenuFactory::ZFlyEmBody3dDocMenuFactory()
 {
@@ -90,6 +91,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     } else if (doc->getTag() == neutube::Document::ETag::FLYEM_MESH) {
 #if defined(_NEU3_)
       if (isMutable) {
+        config.append(ZActionFactory::ACTION_REMOVE_TODO_BATCH);
+
         ZMesh *mesh = doc->getMeshForSplit();
         if (mesh != NULL) {
           if (doc->isSplitActivated() &&
@@ -111,9 +114,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 #endif
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D) {
-      config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
-    }
+    config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
 
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {
@@ -198,6 +199,18 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     }
 
   }
+
+  config.appendSeparator();
+  config.append(ZActionFactory::ACTION_COPY_3DCAMERA);
+  if (!ZGlobal::GetInstance().get3DCamera().empty()) {
+    config.append(ZActionFactory::ACTION_PASTE_3DCAMERA);
+  }
+
+#if defined(_NEU3_)
+  config.appendSeparator();
+  config.append(ZActionFactory::ACTION_3DWINDOW_TOGGLE_SETTING);
+  config.append(ZActionFactory::ACTION_3DWINDOW_TOGGLE_OBJECTS);
+#endif
 
   return config;
 }

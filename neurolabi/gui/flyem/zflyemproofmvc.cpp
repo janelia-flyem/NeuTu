@@ -98,6 +98,10 @@
 #include "neutuse/taskfactory.h"
 #include "zflyembodystatus.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "service/neuprintreader.h"
+#include "dialogs/neuprintquerydialog.h"
+#include "zactionlibrary.h"
+#include "zglobal.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -112,6 +116,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
             << getDvidTarget().getAddressWithPort();
   }
 
+  delete m_actionLibrary;
   m_quitting = true;
   m_futureMap.waitForFinished();
   exitCurrentDoc();
@@ -165,6 +170,7 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
           this, SLOT(scalePlaneRoi(double,double)));
 
+  m_actionLibrary = new ZActionLibrary(this);
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
@@ -212,9 +218,38 @@ ZDvidTargetProviderDialog* ZFlyEmProofMvc::getDvidDialog() const
   return m_dvidDlg;
 }
 
+template<typename T>
+FlyEmBodyInfoDialog* ZFlyEmProofMvc::makeBodyInfoDlg(const T &flag)
+{
+  FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, this);
+  dlg->dvidTargetChanged(getDvidTarget());
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(dlg, SIGNAL(bodyActivated(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
+  connect(dlg, SIGNAL(addBodyActivated(uint64_t)),
+          this, SLOT(addLocateBody(uint64_t)));
+  connect(dlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(selectBody(QList<uint64_t>)));
+  connect(dlg, SIGNAL(pointDisplayRequested(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
+
+  connect(dlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+          getCompleteDocument(),
+          SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+
+
+
+  return dlg;
+}
+
 FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 {
   if (m_bodyQueryDlg == nullptr) {
+    m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY);
+    connect(m_bodyQueryDlg, SIGNAL(refreshing()),
+            this, SLOT(showBodyConnection()));
+    /*
     m_bodyQueryDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::QUERY, this);
     m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
@@ -230,24 +265,64 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
             this, SLOT(zoomTo(int,int,int)));
     connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             this, SLOT(showBodyConnection()));
+            */
   }
 
   return m_bodyQueryDlg;
+}
+
+FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
+{
+  if (m_neuprintBodyDlg == nullptr) {
+    m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+//    connect(m_neuprintBodyDlg, &FlyEmBodyInfoDialog::loadingAllNamedBodies,
+//            this, &ZFlyEmProofMvc::queryAllNamedBody);
+  }
+
+  return m_neuprintBodyDlg;
+}
+
+NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
+{
+  if (m_neuprintQueryDlg == nullptr) {
+    m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
+
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      m_neuprintQueryDlg->setRoiList(reader->getRoiList());
+    }
+//    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
+  }
+
+  return m_neuprintQueryDlg;
 }
 
 ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(this);
-    ZJsonArray statusJson =
-        getCompleteDocument()->getDvidReader().readBodyStatusList();
+    QList<QString> statusList = getCompleteDocument()->getBodyStatusList();
+#if 0
+    ZJsonObject statusJson =
+            getCompleteDocument()->getDvidReader().readBodyStatusV2();
+
+
+    ZJsonArray statusListJson(statusJson.value("status"));
+
     QList<QString> statusList;
-    for (size_t i = 0; i < statusJson.size(); ++i) {
-      std::string status = ZJsonParser::stringValue(statusJson.at(i));
-      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
-        statusList.append(status.c_str());
+    for (size_t i = 0; i < statusListJson.size(); ++i) {
+      ZFlyEmBodyStatus status;
+      status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
+      if (status.isAccessible()) {
+        statusList.append(status.getName().c_str());
       }
+
+//      std::string status = ZJsonParser::stringValue(statusJson.at(i));
+//      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
+//        statusList.append(status.c_str());
+//      }
     }
+#endif
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
@@ -330,13 +405,15 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
-  m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
+  m_bodyViewWindow->settingsAction =
+      m_bodyViewWindow->toolBar->addAction("Control&Settings");
   connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
 
-  m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
+  m_bodyViewWindow->objectsAction =
+      m_bodyViewWindow->toolBar->addAction("Objects");
   connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(objectsPanel(bool)));
   m_bodyViewWindow->objectsAction->setCheckable(true);
@@ -419,6 +496,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(checkSelectedBookmark()));
   connect(getPresenter(), SIGNAL(uncheckingBookmark()),
           this, SLOT(uncheckSelectedBookmark()));
+  connect(getCompletePresenter(), SIGNAL(togglingBodyColorMap()),
+          this, SLOT(toggleBodyColorMap()));
   connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
           this, SLOT(showSupervoxelList()));
 
@@ -836,8 +915,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
-  connect(doc, SIGNAL(todoVisibleChanged()),
-          window, SLOT(updateTodoVisibility()));
+//  connect(doc, SIGNAL(todoVisibleChanged()),
+//          window, SLOT(updateTodoVisibility()));
 
 }
 
@@ -1040,6 +1119,8 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
   } else {
     m_meshWindow = window;
   }
+
+  prepareBodyWindowSignalSlot(window, doc);
 
   doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
 
@@ -1926,6 +2007,18 @@ void ZFlyEmProofMvc::diagnose()
                          arg(se->getSource().c_str()).arg(
                            neutube::EnumValue(se->getSliceAxis()))));
   }
+
+  {
+    QList<QString> bodyStatusList = getCompleteDocument()->getBodyStatusList();
+    emit messageGenerated("Body statuses:");
+    for (const QString &status : bodyStatusList) {
+      emit messageGenerated(QString("%1: %2").
+                            arg(status).
+                            arg(getCompleteDocument()->getMergeProject()->
+                                getStatusRank(status.toStdString())));
+    }
+  }
+
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
@@ -2182,7 +2275,7 @@ void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
 {
   getCompleteDocument()->prepareNameBodyMap(bodyInfoObj);
 
-  emit nameColorMapReady(true);
+  enableNameColorMap(true);
 }
 
 void ZFlyEmProofMvc::updateProtocolRangeGlyph(
@@ -2453,6 +2546,9 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
     if (selected.size() > 0) {
+      ZFlyEmBodyAnnotation finalAnnotation =
+          getCompleteDocument()->getFinalAnnotation(selected);
+#if 0
       //Process annotations of the selected bodies
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
       if (reader.isReady()) {
@@ -2471,7 +2567,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
             }
           }
         }
-
+#endif
         updateBodyMessage(selected.front(), finalAnnotation);
         /*
         ZWidgetMessage msg("", neutube::EMessageType::INFORMATION,
@@ -2489,7 +2585,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         }
         emit messageGenerated(msg);
         */
-      }
+//      }
 
     }
 
@@ -3215,6 +3311,181 @@ void ZFlyEmProofMvc::updateMeshForSelected()
   getCompleteDocument()->updateMeshForSelected();
 }
 
+QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ZActionFactory::ACTION_GO_TO_POSITION:
+    action = m_actionLibrary->getAction(item, this, SLOT(goToPosition()));
+    break;
+  case ZActionFactory::ACTION_GO_TO_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(goToBody()));
+    break;
+  case ZActionFactory::ACTION_SELECT_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(selectBody()));
+    break;
+  case ZActionFactory::ACTION_INFORMATION:
+    action = m_actionLibrary->getAction(item, this, SLOT(showInfoDialog()));
+    break;
+  case ZActionFactory::ACTION_BODY_COLOR_NORMAL:
+  case ZActionFactory::ACTION_BODY_COLOR_NAME:
+  case ZActionFactory::ACTION_BODY_COLOR_PROTOCOL:
+  case ZActionFactory::ACTION_BODY_COLOR_SEQUENCER:
+    action = m_actionLibrary->getAction(item);
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByRoi()));
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY_BY_NAME:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByName()));
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY_BY_STATUS:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByStatus()));
+    break;
+  case ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED:
+    action = m_actionLibrary->getAction(item, this, SLOT(queryAllNamedBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_FIND_SIMILIAR:
+    action = m_actionLibrary->getAction(item, this, SLOT(findSimilarNeuron()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBodyLevel()));
+    break;
+  case ZActionFactory::ACTION_BODY_EXPORT_STACK:
+    action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBodyStack()));
+    break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_TOP:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeSynapseTopBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_LIST:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeBodyList()));
+    break;
+  case ZActionFactory::ACTION_BODY_SKELETONIZE_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(skeletonizeSelectedBody()));
+    break;
+  case ZActionFactory::ACTION_BODY_UPDATE_MESH:
+    action = m_actionLibrary->getAction(item, this, SLOT(updateMeshForSelected()));
+    break;
+  case ZActionFactory::ACTION_BODY_REPORT_CORRUPUTION:
+    action = m_actionLibrary->getAction(item, this, SLOT(reportBodyCorruption()));
+    break;
+  case ZActionFactory::ACTION_CLEAR_ALL_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(clearBodyMergeStage()));
+    break;
+  default:
+    break;
+  }
+
+  return action;
+}
+
+void ZFlyEmProofMvc::addBodyColorMenu(QMenu *menu)
+{
+  QMenu *colorMenu = menu->addMenu("Color Map");
+  QActionGroup *colorActionGroup = new QActionGroup(this);
+
+  QAction *normalColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_NORMAL);
+  QAction *nameColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_NAME);
+  nameColorAction->setEnabled(false);
+
+  QAction *sequencerColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_SEQUENCER);
+  QAction *protocolColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_PROTOCOL);
+
+  colorActionGroup->addAction(normalColorAction);
+  colorActionGroup->addAction(nameColorAction);
+  colorActionGroup->addAction(sequencerColorAction);
+  colorActionGroup->addAction(protocolColorAction);
+  colorActionGroup->setExclusive(true);
+
+  normalColorAction->setChecked(true);
+  m_currentColorMapAction = normalColorAction;
+
+  colorMenu->addActions(colorActionGroup->actions());
+
+  connect(colorActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(changeColorMap(QAction*)));
+}
+
+void ZFlyEmProofMvc::enableNameColorMap(bool on)
+{
+  getAction(ZActionFactory::ACTION_BODY_COLOR_NAME)->setEnabled(on);
+}
+
+void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
+{
+  QMenu *queryMenu = menu->addMenu("Body Query");
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_STATUS));
+  queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
+
+  QMenu *bodyMenu = menu->addMenu("Bodies");
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED_LEVEL));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_STACK));
+  bodyMenu->addSeparator();
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_SELECTED));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_TOP));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_SKELETONIZE_LIST));
+  bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_UPDATE_MESH));
+}
+
+QMenu* ZFlyEmProofMvc::makeControlPanelMenu()
+{
+  QMenu *menu = new QMenu(this);
+
+  menu->addAction(getAction(ZActionFactory::ACTION_GO_TO_POSITION));
+  menu->addAction(getAction(ZActionFactory::ACTION_GO_TO_BODY));
+  menu->addAction(getAction(ZActionFactory::ACTION_SELECT_BODY));
+
+  addBodyColorMenu(menu);
+
+  menu->addAction(getAction(ZActionFactory::ACTION_INFORMATION));
+
+  addBodyMenu(menu);
+
+#ifdef _DEBUG_
+  QMenu *developerMenu = menu->addMenu("Developer");
+  developerMenu->addAction(getAction(ZActionFactory::ACTION_CLEAR_ALL_MERGE));
+#endif
+
+  return menu;
+}
+
+void ZFlyEmProofMvc::goToPosition()
+{
+  bool ok;
+
+  QString defaultText;
+
+  ZIntPoint pt = ZGlobal::GetInstance().getStackPosition();
+  if (pt.isValid()) {
+    defaultText = pt.toString().c_str();
+  }
+
+  QString text = QInputDialog::getText(
+        this, tr("Go To"), tr("Coordinates:"), QLineEdit::Normal, defaultText,
+        &ok);
+
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        zoomTo(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
 {
   if (bodyId > 0) {
@@ -3510,6 +3781,153 @@ void ZFlyEmProofMvc::exportSelectedBody()
       }
       obj.canonize();
       obj.save(fileName.toStdString());
+    }
+  }
+}
+
+bool ZFlyEmProofMvc::hasNeuPrint() const
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return reader;
+    } else {
+      if (!reader->isAuthorized()) {
+        emit messageGenerated(
+              ZWidgetMessage("NeuTu has not been authorized to use the NeuPrint server. "
+                             "Please download your Auth Toke from NeuPrint and save it "
+                             "as " + NeutubeConfig::getInstance().getPath(
+                               NeutubeConfig::EConfigItem::NEUPRINT_AUTH),
+                             neutube::EMessageType::ERROR));
+      } else {
+        emit messageGenerated(
+              ZWidgetMessage("Cannot use the NeuPrint server.",
+                             neutube::EMessageType::ERROR));
+      }
+    }
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("The NeuPrint server has NOT been specified.",
+                         neutube::EMessageType::ERROR));
+  }
+
+  return nullptr;
+}
+
+void ZFlyEmProofMvc::openNeuPrint()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    getNeuPrintBodyDlg()->show();
+    getNeuPrintBodyDlg()->raise();
+  }
+}
+
+void ZFlyEmProofMvc::queryBodyByRoi()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    if (getNeuPrintRoiQueryDlg()->exec()) {
+      QList<uint64_t> bodyList = reader->queryNeuron(
+            getNeuPrintRoiQueryDlg()->getInputRoi(),
+            getNeuPrintRoiQueryDlg()->getOutputRoi());
+
+      std::set<uint64_t> bodyIdArray;
+      bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+      getNeuPrintBodyDlg()->setBodyList(bodyIdArray);
+      getNeuPrintBodyDlg()->show();
+      getNeuPrintBodyDlg()->raise();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::queryAllNamedBody()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    getNeuPrintBodyDlg()->show();
+    getNeuPrintBodyDlg()->raise();
+    getNeuPrintBodyDlg()->setBodyList(reader->queryAllNamedNeuron());
+  }
+}
+
+void ZFlyEmProofMvc::queryBodyByName()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        getNeuPrintBodyDlg()->show();
+        getNeuPrintBodyDlg()->raise();
+        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByName(text));
+      }
+    }
+  }
+}
+
+void ZFlyEmProofMvc::queryBodyByStatus()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Bodies"),
+                                         tr("Body Status:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        getNeuPrintBodyDlg()->show();
+        getNeuPrintBodyDlg()->raise();
+        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByStatus(text));
+      }
+    }
+  }
+}
+
+void ZFlyEmProofMvc::findSimilarNeuron()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+                                         tr("Body:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ZString str = text.toStdString();
+        std::vector<uint64_t> bodyArray = str.toUint64Array();
+        if (bodyArray.size() == 1) {
+//          QList<uint64_t> bodyList = reader->findSimilarNeuron(bodyArray[0]);
+
+//          std::set<uint64_t> bodyIdArray;
+//          bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+          getNeuPrintBodyDlg()->show();
+          getNeuPrintBodyDlg()->raise();
+          getNeuPrintBodyDlg()->setBodyList(reader->findSimilarNeuron(bodyArray[0]));
+        }
+      }
     }
   }
 }
@@ -5200,6 +5618,13 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
   }
 }
 
+void ZFlyEmProofMvc::changeColorMap(QAction *action)
+{
+  m_prevColorMapAction = m_currentColorMapAction;
+  m_currentColorMapAction = action;
+  changeColorMap(action->text());
+}
+
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {
   getCompleteDocument()->activateBodyColorMap(option);
@@ -5210,6 +5635,14 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
     getCompleteDocument()->useBodyNameMap(false);
   }
   */
+}
+
+void ZFlyEmProofMvc::toggleBodyColorMap()
+{
+  if (m_prevColorMapAction) {
+    m_prevColorMapAction->setChecked(true);
+    changeColorMap(m_prevColorMapAction);
+  }
 }
 
 void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
@@ -5434,9 +5867,12 @@ void ZFlyEmProofMvc::loadRoi(
             meshList.push_back(submesh);
           }
         }
-        *mesh = ZMesh::Merge(meshList);
-        for (ZMesh *submesh : meshList) {
-          delete submesh;
+        if (!meshList.empty()) {
+          mesh = new ZMesh;
+          *mesh = ZMesh::Merge(meshList);
+          for (ZMesh *submesh : meshList) {
+            delete submesh;
+          }
         }
       }
     }
@@ -5514,7 +5950,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
       type = "mesh";
     }
 
-    if (ZJsonParser::isArray(jsonObj["key"])) {
+    if (ZJsonParser::IsArray(jsonObj["key"])) {
       ZJsonArray arrayJson(jsonObj.value("key"));
       std::vector<std::string> keyList;
       for (size_t i = 0; i < arrayJson.size(); ++i) {

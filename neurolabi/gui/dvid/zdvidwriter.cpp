@@ -1485,13 +1485,13 @@ uint64_t ZDvidWriter::writePartition(
 //      newBodyId = 0;//debugging
       if (newBodyId == 0) {
         QString tmpPath = QString("%1/%2_Bsc.dvid").
-            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::TMP_DATA).c_str()).
             arg(oldLabel);
         LINFO() << "Saving" << tmpPath << "for debugging.";
         Bsc.exportDvidObject(tmpPath.toStdString());
 
         tmpPath = QString("%1/%2_bm.dvid").
-            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::TMP_DATA).c_str()).
             arg(oldLabel);
         LINFO() << "Saving" << tmpPath << "for debugging.";
         bm.exportDvidObject(tmpPath.toStdString());
@@ -1996,7 +1996,7 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonObject &annotationJson)
 {
-  ZDvidUrl url(getDvidTarget());
+//  ZDvidUrl url(getDvidTarget());
   ZJsonArray json;
   json.append(annotationJson);
 
@@ -2007,6 +2007,10 @@ void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonArray &annotationJson)
 {
   ZDvidUrl url(getDvidTarget());
+
+#ifdef _DEBUG_
+  std::cout << annotationJson.dumpString(0) << std::endl;
+#endif
 
   writeJson(url.getAnnotationElementsUrl(dataName), annotationJson);
 }

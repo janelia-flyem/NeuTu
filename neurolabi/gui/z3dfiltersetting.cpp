@@ -52,11 +52,11 @@ void Z3DFilterSetting::load(const ZJsonObject &obj)
   }
 
   if (obj.hasKey(SHAPE_MODE_KEY)) {
-    m_shapeMode = ZJsonParser::stringValue(obj[SHAPE_MODE_KEY]);
+    m_shapeMode = ZJsonParser::stringValue(obj[SHAPE_MODE_KEY]).c_str();
   }
 
   if (obj.hasKey(COLOR_MODE_KEY)) {
-    m_colorMode = ZJsonParser::stringValue(obj[COLOR_MODE_KEY]);
+    m_colorMode = ZJsonParser::stringValue(obj[COLOR_MODE_KEY]).c_str();
   }
 }
 

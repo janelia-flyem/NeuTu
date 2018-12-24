@@ -9,6 +9,7 @@
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QElapsedTimer>
+#include <QInputDialog>
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -30,6 +31,9 @@
 #include "ui_flyembodyinfodialog.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "service/neuprintreader.h"
+#include "zglobal.h"
+#include "neuprintquerydialog.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -136,6 +140,16 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
+    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
+    connect(ui->queryNamePushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByNameButton()));
+    connect(ui->queryRoiPushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByRoiButton()));
+    connect(ui->queryStatusPushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByStatusButton()));
+    connect(ui->findSimilarPushButton, SIGNAL(clicked()),
+            this, SLOT(onFindSimilarButton()));
+
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
@@ -155,7 +169,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
             this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
     connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(onRoiChanged(int)));
-    connect(ui->namedCheckBox, SIGNAL(clicked(bool)), this, SLOT(onNamedOnlyToggled()));
+    connect(ui->namedCheckBox, SIGNAL(clicked(bool)),
+            this, SLOT(onNamedOnlyToggled()));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -178,38 +193,27 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 void FlyEmBodyInfoDialog::prepareWidget()
 {
 //  setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-  if (m_mode == EMode::QUERY) {
+  if (m_mode == EMode::QUERY || m_mode == EMode::NEUPRINT) {
     setWindowTitle("Body Information (Selected)");
     clearStatusLabel();
     ui->roiComboBox->hide();
-    ui->maxBodiesLabel->hide();
 
-//    ui->exportBodiesButton->hide();
-//    ui->gotoBodiesButton->hide();
-    ui->maxBodiesMenu->hide();
-//    ui->colorTab->hide();
-//    ui->saveColorFilterButton->hide();
-//    ui->closeButton->hide();
-//    ui->refreshButton->hide();
-//    ui->clearFilterButton->hide();
-
-  //  ui->connectionBodyLabel->hide();
     ui->roiLabel->hide();
-    ui->avabilityLabel->hide();
-    ui->namedCheckBox->hide();
-    ui->line->hide();
-    ui->line_3->hide();
+//    ui->avabilityLabel->hide();
+
+//    ui->line->hide();
+//    ui->line_3->hide();
     ui->horizontalSpacer->changeSize(0, 0);
     ui->iconLabel->setText("");
-//    ui->saveColorFilterButton->hide();
-//    ui->tabWidget->removeTab(0);
-//    ui->connectionsTableLabel->hide();
-//    ui->connectionsTableView->hide();
-//    ui->regexCheckBox->setChecked(true);
-//    ui->regexCheckBox->hide();
-//    ui->bodyFilterLabel->hide();
-//    ui->bodyFilterField->hide();
-//    ui->bodyFilterLabel->setText("Body filter (regular expression supported):");
+
+    if (m_mode == EMode::NEUPRINT) {
+      setWindowTitle("Body Information (NeuPrint)");
+      ui->refreshButton->hide();
+    } else {
+      ui->maxBodiesLabel->hide();
+      ui->maxBodiesMenu->hide();
+      ui->namedCheckBox->hide();
+    }
   } else {
     setWindowTitle("Body Information (Sequencer)");
     QPixmap pixmap(":/images/document.png");
@@ -217,6 +221,22 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->iconLabel->setPixmap(pixmap);
 //    ui->iconLabel->setMask(pixmap.mask());
   }
+
+  if (m_mode != EMode::NEUPRINT) {
+    ui->queryNamePushButton->hide();
+    ui->queryStatusPushButton->hide();
+    ui->findSimilarPushButton->hide();
+    ui->queryRoiPushButton->hide();
+  }
+  ui->allNamedPushButton->hide(); //obsolete
+}
+
+void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
+{
+  m_bodyNames.clear();
+  m_namelessBodies.clear();
+
+  emit dataChanged(bodies);
 }
 
 void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
@@ -231,13 +251,14 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
 
       // remove name if empty
-      if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+      if (bodyData.hasKey("name") &&
+          ZJsonParser::stringValue(bodyData["name"]).empty()) {
         bodyData.removeKey("name");
       }
 
       // remove status if empty; change status > body status
       if (bodyData.hasKey("status")) {
-        if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+        if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
           bodyData.setEntry("body status", bodyData["status"]);
         }
         // don't really need to remove this, but why not
@@ -271,6 +292,11 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
   emit dataChanged(bodies);
 }
 
+int FlyEmBodyInfoDialog::getMaxBodies() const
+{
+  return m_currentMaxBodies;
+}
+
 void FlyEmBodyInfoDialog::simplify()
 {
   ui->roiComboBox->hide();
@@ -296,6 +322,10 @@ void FlyEmBodyInfoDialog::simplify()
 void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     // should probably generate from a list at some point
     ui->maxBodiesMenu->clear();
+    if (m_mode == EMode::NEUPRINT) {
+      ui->maxBodiesMenu->addItem("---", QVariant(0));
+    }
+
     ui->maxBodiesMenu->addItem("100", QVariant(100));
     ui->maxBodiesMenu->addItem("500", QVariant(500));
     ui->maxBodiesMenu->addItem("1000", QVariant(1000));
@@ -303,11 +333,19 @@ void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     ui->maxBodiesMenu->addItem("10000", QVariant(10000));
     ui->maxBodiesMenu->addItem("50000", QVariant(50000));
     ui->maxBodiesMenu->addItem("100000", QVariant(100000));
-    ui->maxBodiesMenu->setCurrentIndex(1);
-    m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
+
+    if (m_mode == EMode::NEUPRINT) {
+      ui->maxBodiesMenu->setCurrentIndex(0);
+    } else {
+      ui->maxBodiesMenu->setCurrentIndex(1);
+    }
+
+    m_currentMaxBodies = ui->maxBodiesMenu->itemData(
+          ui->maxBodiesMenu->currentIndex()).toInt();
 
     // connect the signal now, *after* the entries added
-    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
+    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(onMaxBodiesChanged(int)));
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
@@ -341,20 +379,30 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 
 }
 
-void FlyEmBodyInfoDialog::onGotoBodies() {
-    if (ui->bodyTableView->selectionModel()->hasSelection()) {
-        QList<uint64_t> bodyIDList;
-        QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
-        foreach(QModelIndex modelIndex, indices) {
-            // if the item is in the first column (body ID), extract body ID, put in list
-            if (modelIndex.column() == BODY_ID_COLUMN) {
-                QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
-                bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
-            }
-        }
+QList<uint64_t> FlyEmBodyInfoDialog::getSelectedBodyList() const
+{
+  QList<uint64_t> bodyIDList;
 
-        emit bodiesActivated(bodyIDList);
+  if (ui->bodyTableView->selectionModel()->hasSelection()) {
+    QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
+    foreach(QModelIndex modelIndex, indices) {
+      // if the item is in the first column (body ID), extract body ID, put in list
+      if (modelIndex.column() == BODY_ID_COLUMN) {
+        QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
+        bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
+      }
     }
+  }
+
+  return bodyIDList;
+}
+
+void FlyEmBodyInfoDialog::onGotoBodies()
+{
+  QList<uint64_t> bodyIDList = getSelectedBodyList();
+  if (!bodyIDList.isEmpty()) {
+    emit bodiesActivated(bodyIDList);
+  }
 }
 
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
@@ -368,7 +416,9 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     if (target.isValid()) {
         // clear the model regardless at this point
         m_bodyModel->clear();
-        setStatusLabel("Loading...");
+        if (m_mode == EMode::SEQUENCER) {
+          setStatusLabel("Loading...");
+        }
 
         // open the reader; reuse it so we don't multiply connections on
         //  the server
@@ -380,9 +430,11 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
           m_hasBodyAnnotation = bodyAnnotationsPresent();
           // need to clear this to ensure it's repopulated exactly once
           ui->maxBodiesMenu->clear();
-          updateRoi();
 
           if (m_mode == EMode::SEQUENCER) {
+            updateRoi();
+          }
+          if (m_mode == EMode::SEQUENCER || m_mode == EMode::NEUPRINT) {
             loadData();
           }
         } else {
@@ -401,35 +453,54 @@ void FlyEmBodyInfoDialog::loadData()
 {
     setStatusLabel("Loading...");
 
-    QString loadingThreadId = "importBodiesDvid";
-    m_cancelLoading = true;
-    m_futureMap.waitForFinished(loadingThreadId);
-//    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
-//    if (future != NULL) {
-//      future->waitForFinished();
-//    }
-    m_cancelLoading = false;
+    if (m_mode == EMode::NEUPRINT) {
+      if (getNeuPrintReader()) {
+        if (ui->namedCheckBox->isChecked()) {
+          NeuPrintReader *reader = getNeuPrintReader();
+          if (reader) {
+            ui->bodyFilterField->clear();
+            setStatusLabel("Loading...");
+            setBodyList(reader->queryAllNamedNeuron());
+          }
+        } else {
+          if (ui->maxBodiesMenu->count() == 0) {
+            setupMaxBodyMenu();
+          }
 
-    // we can load this info from different sources, depending on
-    //  what's available in DVID
-    if (m_hasBodyAnnotation) {
+          setBodyList(getNeuPrintReader()->queryTopNeuron(getMaxBodies()));
+        }
+      }
+    } else {
+      QString loadingThreadId = "importBodiesDvid";
+      m_cancelLoading = true;
+      m_futureMap.waitForFinished(loadingThreadId);
+      //    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
+      //    if (future != NULL) {
+      //      future->waitForFinished();
+      //    }
+      m_cancelLoading = false;
+
+      // we can load this info from different sources, depending on
+      //  what's available in DVID
+      if (m_hasBodyAnnotation) {
         // both of these need body annotations:
         if (m_hasLabelsz) {
-            // how about labelsz data?
-            // only set up menu on first load:
-            if (ui->maxBodiesMenu->count() == 0) {
-                setupMaxBodyMenu();
-            }
-            m_futureMap[loadingThreadId] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
+          // how about labelsz data?
+          // only set up menu on first load:
+          if (ui->maxBodiesMenu->count() == 0) {
+            setupMaxBodyMenu();
+          }
+          m_futureMap[loadingThreadId] =
+              QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
         } else {
-            // this is the fallback method; it needs body annotations only
-            m_futureMap[loadingThreadId] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
+          // this is the fallback method; it needs body annotations only
+          m_futureMap[loadingThreadId] =
+              QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
         }
-    } else {
+      } else {
         // ...but sometimes, we've got nothing
         emit loadCompleted();
+      }
     }
 
 }
@@ -586,23 +657,28 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
     return true;
 }
 
-void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
-    int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
-    if (maxBodies > 1000) {
-        QMessageBox mb;
-        mb.setText("That's a lot of bodies!");
-        mb.setInformativeText("Warning!  Loading more than 1000 bodies may take 5-10 minutes or potentially longer.\n\nContinue loading?");
-        mb.setIcon(QMessageBox::Warning);
-        mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
-        mb.setDefaultButton(QMessageBox::Cancel);
-        int ans = mb.exec();
-        if (ans != QMessageBox::Ok) {
-            ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
-            return;
-        }
+void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
+{
+  int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+  if (maxBodies > 1000) {
+    int ans = QMessageBox::Ok;
+    if (m_mode == EMode::SEQUENCER) {
+      QMessageBox mb;
+      mb.setText("That's a lot of bodies!");
+      mb.setInformativeText("Warning!  Loading more than 1000 bodies may take 5-10 minutes or potentially longer.\n\nContinue loading?");
+      mb.setIcon(QMessageBox::Warning);
+      mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+      mb.setDefaultButton(QMessageBox::Cancel);
+      ans = mb.exec();
     }
-    m_currentMaxBodies = maxBodies;
-    onRefreshButton();
+
+    if (ans != QMessageBox::Ok) {
+      ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
+      return;
+    }
+  }
+  m_currentMaxBodies = maxBodies;
+  onRefreshButton();
 }
 
 void FlyEmBodyInfoDialog::onRoiChanged(int index)
@@ -628,6 +704,11 @@ void FlyEmBodyInfoDialog::onNamedOnlyToggled()
   bool namedOnly = ui->namedCheckBox->isChecked();
   ui->maxBodiesMenu->setDisabled(namedOnly);
   ui->roiComboBox->setDisabled(namedOnly);
+
+//  ui->queryNamePushButton->setDisabled(namedOnly);
+//  ui->queryStatusPushButton->setDisabled(namedOnly);
+//  ui->findSimilarPushButton->setDisabled(namedOnly);
+//  ui->queryRoiPushButton->setDisabled(namedOnly);
 
   onRefreshButton();
 }
@@ -739,9 +820,15 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 // grab the previously retrieved data and modify it:
                 ZJsonObject bodyData = bodyAnnotationList[i];
 
-                // remove name if empty
-                if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
-                    bodyData.removeKey("name");
+                // remove name if empty; store it otherwise
+                if (bodyData.hasKey("name")) {
+                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
+                    if (name.empty()) {
+                        bodyData.removeKey("name");
+                    } else {
+                        // keyList contains body ID strings
+                        m_bodyNames[bodyID] = QString(name.c_str());
+                    }
                 }
 
                 if (namedOnly) {
@@ -750,9 +837,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                   }
                 }
 
-                // remove status if empty; change status > body status
+                // remove status if empty; change status => body status
                 if (bodyData.hasKey("status")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                         bodyData.setEntry("body status", bodyData["status"]);
                     } 
                     // don't really need to remove this, but why not
@@ -888,11 +975,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("name")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
+                    if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
                         entry.setEntry("name", bodyData["name"]);
                         // store name for later use
                         m_bodyNames[bodyID] =
-                            QString(ZJsonParser::stringValue(bodyData["name"]));
+                            QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }
@@ -902,7 +989,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 if (bodyData.hasKey("status")) {
-                  if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                  if (!ZJsonParser::stringValue(bodyData["status"]).empty()) {
                     entry.setEntry("body status", bodyData["status"]);
                   }
                 }
@@ -956,11 +1043,121 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 }
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
-  if (m_mode == EMode::SEQUENCER) {
+  if (m_mode == EMode::SEQUENCER || m_mode == EMode::NEUPRINT) {
     ui->bodyFilterField->clear();
     loadData();
   } else {
     emit refreshing();
+  }
+}
+
+void FlyEmBodyInfoDialog::prepareQuery()
+{
+  ui->bodyFilterField->clear();
+  ui->maxBodiesMenu->setCurrentIndex(0);
+  /* Requires toggling signal to work, which can result in some response hickup
+  if (ui->namedCheckBox->isChecked()) {
+    ui->namedCheckBox->toggle();
+  }
+  */
+  ui->namedCheckBox->setChecked(false);
+  ui->maxBodiesMenu->setEnabled(true);
+  setStatusLabel("Loading...");
+}
+
+void FlyEmBodyInfoDialog::onAllNamedButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    prepareQuery();
+
+    setBodyList(reader->queryAllNamedNeuron());
+  }
+}
+
+
+void FlyEmBodyInfoDialog::onQueryByRoiButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    if (getNeuPrintRoiQueryDlg()->exec()) {
+      prepareQuery();
+
+      QList<uint64_t> bodyList = reader->queryNeuron(
+            getNeuPrintRoiQueryDlg()->getInputRoi(),
+            getNeuPrintRoiQueryDlg()->getOutputRoi());
+
+      std::set<uint64_t> bodyIdArray;
+      bodyIdArray.insert(bodyList.begin(), bodyList.end());
+
+      setBodyList(bodyIdArray);
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onQueryByNameButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        prepareQuery();
+
+        setBodyList(reader->queryNeuronByName(text));
+      }
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onQueryByStatusButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Bodies"),
+                                         tr("Body Name:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        prepareQuery();
+
+        setBodyList(reader->queryNeuronByStatus(text));
+      }
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onFindSimilarButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString defaultValue;
+    QList<uint64_t> bodyIDList = getSelectedBodyList();
+    if (!bodyIDList.isEmpty()) {
+      defaultValue = QString::number(bodyIDList.front());
+    }
+    QString text = QInputDialog::getText(this, tr("Find Similar Neurons"),
+                                         tr("Body:"), QLineEdit::Normal,
+                                         defaultValue, &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        ZString str = text.toStdString();
+        std::vector<uint64_t> bodyArray = str.toUint64Array();
+        if (bodyArray.size() == 1) {
+          prepareQuery();
+
+          setBodyList(reader->findSimilarNeuron(bodyArray[0]));
+        }
+      }
+    }
   }
 }
 
@@ -1022,8 +1219,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
   if (bkmk.hasKey("name")) {
-    const char* name = ZJsonParser::stringValue(bkmk["name"]);
-    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString(name));
+    std::string name = ZJsonParser::stringValue(bkmk["name"]);
+    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString::fromStdString(name));
   }
 
   if (bkmk.hasKey("body T-bars")) {
@@ -1047,8 +1244,8 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   // note that this routine expects "body status", not "status";
   //  historical side-effect of the original file format we read from
   if (bkmk.hasKey("body status")) {
-    const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString(status));
+    std::string status = ZJsonParser::stringValue(bkmk["body status"]);
+    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString::fromStdString(status));
     //      m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
   }
 
@@ -1080,13 +1277,18 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
     ZJsonArray bookmarks(data);
     m_bodyModel->setRowCount(bookmarks.size());
+    m_bodyModel->blockSignals(true);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QList<QStandardItem*> itemList = getBodyItemList(bkmk);
         for (int j = 0; j < itemList.size(); ++j) {
           m_bodyModel->setItem(i, j, itemList[j]);
+          if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
+            m_bodyModel->blockSignals(false);
+          }
         }
+
 #if 0
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
@@ -1124,6 +1326,8 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         }
 #endif
     }
+    m_bodyModel->blockSignals(false);
+
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();
     ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
@@ -1216,7 +1420,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // look at first element and check its structure; it's an object
-    if (!ZJsonParser::isObject(colorArray.at(0))) {
+    if (!ZJsonParser::IsObject(colorArray.at(0))) {
         emit jsonLoadColorMapError("Color map json file must contain an array of objects");
         return false;
     }
@@ -1252,11 +1456,11 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     for (size_t i=0; i<colorArray.size(); i++) {
         ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
-        QString filter(ZJsonParser::stringValue(entry["filter"]));
+        QString filter(ZJsonParser::stringValue(entry["filter"]).c_str());
         QStandardItem * filterTextItem = new QStandardItem(filter);
         m_filterModel->appendRow(filterTextItem);
 
-        std::vector<int> rgba = ZJsonParser::integerArray(entry["color"]);
+        std::vector<int64_t> rgba = ZJsonParser::integerArray(entry["color"]);
         setFilterTableModelColor(QColor(rgba[0], rgba[1], rgba[2], rgba[3]), 
             m_filterModel->rowCount() - 1);
     }
@@ -1664,14 +1868,16 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
 
         foreach (ZJsonObject bodyData, bodyAnnotationList) {
+            uint64_t tempBodyID = ZJsonParser::integerValue(bodyData["body ID"]);
             if (bodyData.hasKey("name")) {
-                if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
-                    m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
+                if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
+                    m_bodyNames[tempBodyID] =
+                        QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
                 } else {
-                    m_namelessBodies.insert(bodyID);
+                    m_namelessBodies.insert(tempBodyID);
                 }
             } else {
-                m_namelessBodies.insert(bodyID);
+                m_namelessBodies.insert(tempBodyID);
             }
         }
 
@@ -1854,4 +2060,30 @@ FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
     delete ui;
 }
 
+NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    reader->updateCurrentDataset(m_reader.getDvidTarget().getUuid().c_str());
+    if (reader->isReady()) {
+      return reader;
+    }
+  }
 
+  return nullptr;
+}
+
+NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()
+{
+  if (m_neuprintQueryDlg == nullptr) {
+    m_neuprintQueryDlg = new NeuPrintQueryDialog(this);
+
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      m_neuprintQueryDlg->setRoiList(reader->getRoiList());
+    }
+//    m_neuprintQueryDlg->setRoiList(getCompleteDocument()->getRoiList());
+  }
+
+  return m_neuprintQueryDlg;
+}
