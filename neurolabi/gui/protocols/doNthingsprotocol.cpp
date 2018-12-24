@@ -167,13 +167,15 @@ void DoNThingsProtocol::loadDataRequested(ZJsonObject data) {
     m_pendingList = QStringList();
     ZJsonArray pending = ZJsonArray(data.value(KEY_PENDING.c_str()));
     for (size_t i=0; i<pending.size(); i++) {
-        m_pendingList << QString::fromUtf8(ZJsonParser::stringValue(pending.at(i)));
+        m_pendingList << QString::fromUtf8(
+                           ZJsonParser::stringValue(pending.at(i)).c_str());
     }
 
     m_finishedList = QStringList();
     ZJsonArray finished = ZJsonArray(data.value(KEY_FINISHED.c_str()));
     for (size_t i=0; i<finished.size(); i++) {
-        m_finishedList << QString::fromUtf8(ZJsonParser::stringValue(finished.at(i)));
+        m_finishedList << QString::fromUtf8(
+                            ZJsonParser::stringValue(finished.at(i)).c_str());
     }
 
     onFirstButton();

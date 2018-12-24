@@ -365,7 +365,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
       uuidQueue.pop();
 
       ZJsonObject uuidJson(allNodeJson.value(nextUuid.c_str()));
-      std::vector<int> versionIdArray =
+      std::vector<int64_t> versionIdArray =
           ZJsonParser::integerArray(uuidJson["Children"]);
       for (size_t i = 0; i < versionIdArray.size(); ++i) {
         int versionId = versionIdArray[i];

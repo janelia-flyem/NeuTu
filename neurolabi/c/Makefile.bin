@@ -157,10 +157,10 @@ dylib: $(DYLIB_PATH)
 
 $(DYLIB_PATH): $(LIBOBJS)
 ifeq ($(UNAME),Linux)
-	gcc -shared -Wl,-soname,$(DYLIB_FILE) -o $(DYLIB_PATH) $(LIBOBJS) #$(LIBFLAGS)
+	$(CC) -shared -Wl,-soname,$(DYLIB_FILE) -o $(DYLIB_PATH) $(LIBOBJS) #$(LIBFLAGS)
 endif
 ifeq ($(UNAME),Darwin)
-	gcc -dynamiclib -current_version 1.0.0 -o $(DYLIB_PATH) $(LIBOBJS) $(LDFLAGS) 
+	$(CC) -dynamiclib -current_version 1.0.0 -o $(DYLIB_PATH) $(LIBOBJS) $(LDFLAGS) 
 endif
 
 #build shared lib for linux
@@ -171,7 +171,7 @@ test:
 	@echo $(VPATH)
 
 df = $(DEPDIR)/$(*F)
-MAKEDEPEND = gcc -M $(CCI) $< | sed 's/.*[.]o/$(OBJDIR)\/&/' >> $(df).d 
+MAKEDEPEND = $(CC) -M $(CCI) $< | sed 's/.*[.]o/$(OBJDIR)\/&/' >> $(df).d 
 
 $(OBJDIR)/tz_tiff_image.o: ${MYERS_DIR}/tiff_image.c
 
@@ -181,7 +181,7 @@ ${MYERS_DIR}/tiff_image.c: ${MYERS_DIR}/tiff_image.p
 MYERS_MODULES = $(addprefix $(MYERS_DIR)/,$(MYERS_FILES))
 $(MYERS_DIR)/%.o: ${MYERS_DIR}/%.p
 	awk -f $(MYERS_DIR)/manager.awk $< > $(MYERS_DIR)/$*.c
-	gcc -c $(CC_FLAGS) $(MYERS_DIR)/$*.c -o $@
+	$(CC) -c $(CC_FLAGS) $(MYERS_DIR)/$*.c -o $@
 
 
 $(OBJDIR)/%.o: %.c
@@ -190,7 +190,7 @@ $(OBJDIR)/%.o: %.c
 	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	-e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P;\
 	rm -f $(df).d
-	gcc -c $(CC_FLAGS) $< -o $@
+	$(CC) -c $(CC_FLAGS) $< -o $@
 
 install: 
 	@if [ ! -d $(INSTALL_DIR)/lib ]; then mkdir -p $(INSTALL_DIR)/lib; fi

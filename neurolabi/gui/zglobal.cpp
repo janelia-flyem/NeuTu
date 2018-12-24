@@ -5,31 +5,49 @@
 #include <QClipboard>
 #include <QApplication>
 
+#include "zqslog.h"
 #include "zintpoint.h"
 #include "zpoint.h"
 #include "zstring.h"
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "zdvidutil.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
+#include "service/neuprintreader.h"
 
-#include "neutubeconfig.h"
 
 class ZGlobalData {
 
 public:
   ZGlobalData();
+  ~ZGlobalData();
 
   ZIntPoint m_stackPosition;
+  std::string m_3dcamera;
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
+  NeuPrintReader *m_neuprintReader = nullptr;
 };
 
 ZGlobalData::ZGlobalData()
 {
   m_stackPosition.invalidate();
+}
+
+ZGlobalData::~ZGlobalData()
+{
+  for (auto &obj : m_dvidReaderMap) {
+    delete obj.second;
+  }
+
+  for (auto &obj : m_dvidWriterMap) {
+    delete obj.second;
+  }
+
+  delete m_neuprintReader;
 }
 
 
@@ -78,6 +96,16 @@ void ZGlobal::clearStackPosition()
   m_data->m_stackPosition.invalidate();
 }
 
+void ZGlobal::set3DCamera(const std::string &config)
+{
+  m_data->m_3dcamera = config;
+}
+
+std::string ZGlobal::get3DCamera() const
+{
+  return m_data->m_3dcamera;
+}
+
 void ZGlobal::setMainWindow(QMainWindow *win)
 {
   m_mainWin = win;
@@ -86,6 +114,26 @@ void ZGlobal::setMainWindow(QMainWindow *win)
 QMainWindow* ZGlobal::getMainWindow() const
 {
   return m_mainWin;
+}
+
+NeuPrintReader* ZGlobal::getNeuPrintReader()
+{
+  if (m_data->m_neuprintReader == nullptr) {
+    QString server = qgetenv("NEUPRINT");
+    if (!server.isEmpty()) {
+      QString auth = qgetenv("NEUPRINT_AUTH");
+      if (auth.isEmpty()) {
+        auth = NeutubeConfig::getInstance().getPath(
+              NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+        LINFO() << "NeuPrint auth path:" << auth;
+      }
+
+      m_data->m_neuprintReader = new NeuPrintReader(server);
+      m_data->m_neuprintReader->authorizeFromFile(auth);
+    }
+  }
+
+  return m_data->m_neuprintReader;
 }
 
 template<typename T>
@@ -108,22 +156,7 @@ T* ZGlobal::getIODevice(
         }
       }
     }
-/*
-    const std::vector<ZDvidTarget> &dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
-    for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
-         iter != dvidRepo.end(); ++iter) {
-      const ZDvidTarget &target = *iter;
-      if (target.getName() == name) {
-        if (target.isValid()) {
-          io = new T;
-          if (!io->open(target)) {
-            delete io;
-            io = NULL;
-          }
-        }
-      }
-    }
-*/
+
     if (io == NULL) {
       ZDvidTarget target;
       target.setFromSourceString(name);

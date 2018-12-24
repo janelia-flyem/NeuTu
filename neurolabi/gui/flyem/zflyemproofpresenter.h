@@ -113,6 +113,7 @@ signals:
   void togglingData();
   void highlightModeChanged();
   void showingSupervoxelList();
+  void togglingBodyColorMap();
 
 public slots:
   void deleteSelectedSynapse();

@@ -139,6 +139,7 @@ private:
   QAction *m_openTodoAction = nullptr;
   QAction *m_roiToolAction = nullptr;
   QAction *m_bodyExplorerAction = nullptr;
+  QAction *m_neuprintAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

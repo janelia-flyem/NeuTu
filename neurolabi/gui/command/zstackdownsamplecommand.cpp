@@ -19,7 +19,7 @@ int ZStackDownsampleCommand::run(
 
   if (!input.empty() && !output.empty()) {
     if (config.hasKey("intv")) {
-      std::vector<int> intv = ZJsonParser::integerArray(config["intv"]);
+      std::vector<int64_t> intv = ZJsonParser::integerArray(config["intv"]);
       if (intv.size() == 3) {
         if (intv[0] >= 0 && intv[1] >= 0 && intv[2] >= 0) {
           ZStack stack;

@@ -71,6 +71,10 @@ TEST(ZJsonValue, decode)
   array.decodeString("1, 2, 3", NULL);
   json_error_t error;
   array.decodeString("1, 2, 3", &error);
+
+  ZJsonObject obj;
+  obj.decodeString("");
+  ASSERT_TRUE(obj.isEmpty());
 }
 
 TEST(ZJsonArray, basic)
@@ -121,21 +125,21 @@ TEST(ZJsonObject, basic)
   ASSERT_TRUE(obj.hasKey("key"));
 
   obj.addEntry("key3", "test");
-  ASSERT_STREQ("test", ZJsonParser::stringValue(obj["key3"]));
+  ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
 
   obj.addEntry("key3", "test2");
-  ASSERT_STREQ("test", ZJsonParser::stringValue(obj["key3"]));
+  ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
 
   obj.addEntry("key4", "test2");
-  ASSERT_STREQ("test2", ZJsonParser::stringValue(obj["key4"]));
+  ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
 
   ZJsonObject obj2;
   obj2.setEntry("key5", "test3");
   obj2.setEntry("key4", "test5");
 
   obj.addEntryFrom(obj2);
-  ASSERT_STREQ("test3", ZJsonParser::stringValue(obj["key5"]));
-  ASSERT_STREQ("test2", ZJsonParser::stringValue(obj["key4"]));
+  ASSERT_EQ("test3", ZJsonParser::stringValue(obj["key5"]));
+  ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
 }
 
 

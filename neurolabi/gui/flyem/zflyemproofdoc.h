@@ -33,6 +33,7 @@ class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
 class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
+class ZFlyEmRoiManager;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -145,6 +146,10 @@ public:
     return m_mergeProject;
   }
 
+  const ZFlyEmBodyMergeProject* getMergeProject() const {
+    return m_mergeProject;
+  }
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
@@ -207,6 +212,8 @@ public:
 
   void verifyBodyAnnotationMap();
 
+  ZFlyEmBodyAnnotation getFinalAnnotation(
+      const std::vector<uint64_t> &bodyList);
   /*!
    * \brief Remove unselected bodies from annotation map.
    *
@@ -236,6 +243,8 @@ public:
   const ZDvidInfo& getDvidInfo() const;
 
   void startTimer();
+
+  QList<QString> getBodyStatusList() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -440,6 +449,8 @@ public:
   ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
 
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
+
+  QStringList getRoiList() const;
 
 
   void diagnose() const override;
@@ -656,6 +667,8 @@ private:
   QString getAnnotationFinalizedWarningDetail(
       const std::vector<uint64_t> &finalizedBodyArray, const std::string &title) const;
 
+  void warnSynapseReadonly();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
@@ -701,6 +714,8 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+
+  ZFlyEmRoiManager *m_roiManager = nullptr;
 
   mutable ZFlyEmMB6Analyzer m_analyzer;
 

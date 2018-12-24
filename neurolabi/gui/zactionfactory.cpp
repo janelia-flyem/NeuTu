@@ -9,6 +9,7 @@
 #include "zactionactivator.h"
 #include "zstackpresenter.h"
 #include "zstackframe.h"
+#include "flyem/zflyembodycoloroption.h"
 
 ZActionFactory::ZActionFactory()
 {
@@ -23,6 +24,20 @@ bool ZActionFactory::IsRegularAction(EAction actionKey)
 {
   return actionKey != ZActionFactory::ACTION_NULL &&
       actionKey != ZActionFactory::ACTION_SEPARATOR;
+}
+
+namespace  {
+
+static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
+                                  QObject *parent)
+{
+  QAction *action =
+      new QAction(ZFlyEmBodyColorOption::GetColorMapName(option), parent);
+  action->setCheckable(true);
+
+  return action;
+}
+
 }
 
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
@@ -433,9 +448,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Set unchecked", parent);
     break;
   case ACTION_SHOW_NORMAL_TODO:
-    action = new QAction("Show Normal Todo", parent);
+    action = new QAction("Show normal todo", parent);
     action->setCheckable(true);
     action->setChecked(true);
+    break;
+  case ACTION_REMOVE_TODO_BATCH:
+    action = new QAction("Remove todo (batch)", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
@@ -546,6 +564,91 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_COMMIT_SPLIT:
     action = new QAction("Commit Split", parent);
+    break;
+  case ACTION_GO_TO_BODY:
+    action = new QAction("Go to Body", parent);
+    action->setShortcut(Qt::Key_F3);
+    break;
+  case ACTION_GO_TO_POSITION:
+    action = new QAction("Go to Position", parent);
+    action->setShortcuts(
+          QList<QKeySequence>() << Qt::Key_F1 << Qt::SHIFT + Qt::Key_G);
+    break;
+  case ACTION_SELECT_BODY:
+    action = new QAction("Select Body", parent);
+    action->setShortcut(Qt::Key_F2);
+    break;
+  case ACTION_BODY_COLOR_NORMAL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, parent);
+    break;
+  case ACTION_BODY_COLOR_NAME:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_NAME, parent);
+    break;
+  case ACTION_BODY_COLOR_SEQUENCER:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, parent);
+    break;
+  case ACTION_BODY_COLOR_PROTOCOL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, parent);
+    break;
+  case ACTION_INFORMATION:
+    action = new QAction("Information", parent);
+    break;
+  case ACTION_BODY_QUERY:
+    action = new QAction("Query by ROIs", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_NAME:
+    action = new QAction("Query by Name", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_STATUS:
+    action = new QAction("Query by Status", parent);
+    break;
+  case ACTION_BODY_QUERY_ALL_NAMED:
+    action = new QAction("Find All Named", parent);
+    break;
+  case ACTION_BODY_FIND_SIMILIAR:
+    action = new QAction("Find Similar Neuorns", parent);
+    break;
+  case ACTION_BODY_EXPORT_SELECTED:
+    action = new QAction("Export Selected Bodies", parent);
+    break;
+  case ACTION_BODY_EXPORT_SELECTED_LEVEL:
+    action = new QAction("Export Selected Bodies (leveled)", parent);
+    break;
+  case ACTION_BODY_EXPORT_STACK:
+    action = new QAction("Export Body Stack", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_TOP:
+    action = new QAction("Skeletonize Top Bodies", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_LIST:
+    action = new QAction("Skeletonize Body List", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_SELECTED:
+    action = new QAction("Skeletonize Selected Bodies", parent);
+    break;
+  case ACTION_BODY_UPDATE_MESH:
+    action = new QAction("Update Meshes for Selected", parent);
+    break;
+  case ACTION_CLEAR_ALL_MERGE:
+    action = new QAction("Clear All Merges", parent);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_SETTING:
+    action = new QAction("Settings", parent);
+    action->setCheckable(true);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_OBJECTS:
+    action = new QAction("Objects", parent);
+    action->setCheckable(true);
+    break;
+  case ACTION_COPY_3DCAMERA:
+    action = new QAction("Copy View", parent);
+    break;
+  case ACTION_PASTE_3DCAMERA:
+    action = new QAction("Paste View", parent);
     break;
   default:
     break;

@@ -308,8 +308,18 @@
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
 #include "core/memorystream.h"
+#include "service/neuprintreader.h"
+#include "zjsonparser.h"
+#include "zjsonobjectparser.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyemroimanager.h"
+#include "widgets/zoptionlistwidget.h"
+#include "dialogs/neuprintquerydialog.h"
+#include "service/cypherquery.h"
+#include "test/zunittest.h"
 
-#include "test/ztestall.h"
+//#include "test/ztestall.h"
 
 using namespace std;
 
@@ -331,6 +341,7 @@ void ZTest::setCommandLineArg(int argc, char *argv[])
   m_argv = argv;
 }
 
+
 void ZTest::runUnitTest()
 {
   RunUnitTest(m_argc, m_argv);
@@ -338,15 +349,7 @@ void ZTest::runUnitTest()
 
 int ZTest::RunUnitTest(int argc, char *argv[])
 {
-#ifdef _USE_GTEST_
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-#else
-  UNUSED_PARAMETER(argc);
-  UNUSED_PARAMETER(argv);
-  return 0;
-#endif
+  return ZUnitTest(argc, argv).run();
 }
 
 void ZTest::CommandLineTest()
@@ -27409,8 +27412,11 @@ void ZTest::test(MainWindow *host)
   std::vector<std::string> statusList({/*"Putative 0.5",*/
                                        "Prelim Roughly traced",
                                        "Roughly traced",
-                                       "Traced",
-                                       "Hard to trace"});
+                                       "Leaves",
+                                       "Orphan hotknife",
+                                       "Orphan"
+                                       /*"Traced",*/
+                                       /*"Hard to trace"}*/});
   writer->writeBodyStatusList(statusList);
 #endif
 
@@ -28423,6 +28429,7 @@ void ZTest::test(MainWindow *host)
       std::cout << pt.toString() << std::endl;
       ZFlyEmMisc::UpdateBodyStatus(pt, "anchor", &writer);
     }
+  }
 //    std::cout << writer.getDvidReader().readBodyIdAt(ptArray[0]) << std::endl;
 #endif
 
@@ -28689,6 +28696,16 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZJsonObject obj;
+  obj.decodeString(reader->readKeyValue("neutu_config", "body_status_v2").
+                   toStdString().c_str());
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+  merger.print();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
   QString dataName = "segmentation_annotations";
   QStringList keyList = reader->readKeys(dataName);
@@ -28729,6 +28746,337 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
+#if 0
+<<<<<<< HEAD
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZNetBufferReader reader;
+    reader.hasHead("http://emdata1.int.janelia.org:8900");
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+          "emdata1.int.janelia.org:8900");
+    try {
+      int statusCode;
+      ZDvid::MakeRequest(
+            *conn, "", "HEAD", libdvid::BinaryDataPtr(),
+            libdvid::DEFAULT, statusCode);
+      //    std::cout << conn->make_head_request("/api/help") << std::endl;
+    } catch (exception &e) {
+      std::cout << e.what() << std::endl;
+    }
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  QElapsedTimer timer;
+  timer.start();
+  for (int i = 0; i < 1000; ++i) {
+    std::cout << "Has key: " << reader->hasKey("rois", "bLo") << std::endl;
+  }
+  std::cout << timer.elapsed() << "ms" << std::endl;
+
+#endif
+
+#if 0
+  {
+  ZNetBufferReader reader;
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  reader.setHeader("Authorization", QString("Bearer ") + token.c_str());
+  reader.read("https://emdata1.int.janelia.org:11000/api/dbmeta/datasets", true);
+  std::cout << reader.getBuffer().size() << std::endl;
+  ZJsonObject dataObj;
+  dataObj.decodeString(reader.getBuffer().toStdString().c_str());
+  dataObj.print();
+  }
+#endif
+
+#if 0
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+//  reader.readDatasets();
+
+  QList<uint64_t> bodyList = reader.queryNeuron("AL", "MB (left)");
+  for (uint64_t bodyId : bodyList) {
+    std::cout << bodyId << std::endl;
+  }
+#endif
+
+#if 0
+  NeuPrintReader reader("https://emdata1.int.janelia.org:11000");
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/token.json");
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::cout << token << std::endl;
+  reader.authorize(token.c_str());
+
+  QList<uint64_t> bodyList = reader.findSimilarNeuron(915520244);
+  for (uint64_t bodyId : bodyList) {
+    std::cout << "  " << bodyId << std::endl;
+  }
+#endif
+
+#if 1
+  qDebug() << qgetenv("NEUPRINT");
+  qDebug() << qgetenv("HOME");
+#endif
+
+
+#if 0
+  ZSharedPointer<libdvid::DVIDConnection> conn = ZDvid::MakeDvidConnection(
+        "https://emdata1.int.janelia.org:11000");
+
+  try {
+    int statusCode;
+    libdvid::BinaryDataPtr data = ZDvid::MakeRequest(
+          *conn, "/", "HEAD", libdvid::BinaryDataPtr(),
+          libdvid::DEFAULT, statusCode);
+    std::cout << data->length() << std::endl;
+    //    std::cout << conn->make_head_request("/api/help") << std::endl;
+  } catch (exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#endif
+
+#if 0
+  {
+    ZJsonParser parser;
+    std::cout << parser.getValue<int64_t>(NULL) << std::endl;
+  }
+
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", "hello");
+
+    ZJsonObjectParser parser;
+    std::cout << parser.getValue(obj, "test", "") << std::endl;
+  }
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.setEntry(ZFlyEmBodyStatus::KEY_NAME, "test");
+  obj.setEntry(ZFlyEmBodyStatus::KEY_EXPERT, true);
+  obj.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
+  ZFlyEmBodyStatus bodyStatus("");
+  bodyStatus.loadJsonObject(obj);
+  bodyStatus.toJsonObject().print();
+#endif
+
+#if 0
+  ZJsonObject obj;
+
+  ZJsonArray statusArrayObj;
+  {
+    ZFlyEmBodyStatus status("Finalized");
+    status.setPriority(0);
+    status.setFinal(true);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  {
+    ZFlyEmBodyStatus status("Traced");
+    status.setPriority(10);
+    status.setFinal(false);
+    status.setProtectionLevel(9);
+    statusArrayObj.append(status.toJsonObject());
+  }
+
+  obj.setEntry("status", statusArrayObj);
+
+  obj.print();
+  obj.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  ZFlyEmBodyAnnotationMerger annotMerger;
+  annotMerger.loadJsonObject(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/body_staus.json");
+  annotMerger.print();
+#endif
+
+
+#if 0
+  ZDvidTarget target = ZGlobal::GetInstance().getDvidReader("MB_Test")->getDvidTarget();
+
+  QElapsedTimer timer;
+  timer.start();
+
+  tic();
+
+  for (int i = 0; i < 1000; ++i) {
+//    ZSharedPointer<libdvid::DVIDNodeService> newService =
+//        ZDvid::MakeDvidNodeService(service.get());
+    ZSharedPointer<libdvid::DVIDNodeService> service = ZDvid::MakeDvidNodeService(target);
+    service->get_keys("neutu_config");
+  }
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->getDvidTarget().print();
+
+  ZDvidUrl url(reader->getDvidTarget());
+
+  ZNetBufferReader bufferReader;
+  std::cout << bufferReader.isReadable(
+                 url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZFlyEmBodyMergeProject project;
+  project.setDvidTarget(reader->getDvidTarget());
+  project.getAnnotationMerger().print();
+
+  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("anchors");
+    annotMap[1] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Anchors");
+    annotMap[2] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Finalized");
+    annotMap[3] = annot;
+  }
+
+  {
+    ZFlyEmBodyAnnotation annot;
+    annot.setStatus("Roughly traced");
+    annotMap[4] = annot;
+  }
+
+  std::vector<std::vector<uint64_t>> bodySet =
+      project.getAnnotationMerger().getConflictBody(annotMap);
+  for (const auto& bodyArray : bodySet) {
+    std::cout << "Conflicted:";
+    for (uint64_t body : bodyArray) {
+      std::cout << " " << body;
+    }
+    std::cout << std::endl;
+  }
+
+  QString msg = project.composeStatusConflictMessage(annotMap);
+  qDebug() << msg;
+
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("MB_Test");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+//  roiManager.updateMesh("alpha1_below_roi");
+  roiManager.updateMesh("mb_subtracted");
+  roiManager.print();
+#endif
+
+#if 0
+  ZFlyEmRoiManager roiManager;
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  roiManager.setDvidTarget(reader->getDvidTarget());
+
+  roiManager.loadRoiList();
+
+  roiManager.updateMesh("vACA");
+  roiManager.updateMesh("gL");
+
+  roiManager.print();
+
+  std::cout << roiManager.getMesh("vACA") << std::endl;
+  std::cout << roiManager.getMesh("gL") << std::endl;
+
+
+#endif
+
+#if 0
+  ZOptionListWidget *widget = new ZOptionListWidget(NULL);
+
+  widget->setName("test");
+  widget->setOptionList(QStringList({"1", "2", "3", "4", "5"}));
+  widget->show();
+#endif
+
+#if 0
+
+  NeuPrintQueryDialog *dlg = new NeuPrintQueryDialog(host);
+  dlg->setRoiList({"1", "2", "3"});
+  dlg->exec();
+
+  QStringList inputList = dlg->getInputRoi();
+  for (const QString &roi : inputList) {
+    qDebug() << roi;
+  }
+
+#endif
+
+#if 1
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  reader->updateCurrentDataset("137d");
+  if (reader->isReady()) {
+    reader->queryTopNeuron(100000);
+//    reader->queryAllNamedNeuron().print();
+//    reader->queryNeuronByStatus("Roughly traced").print();
+  }
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("GT cube chris");
+  reader->getDvidTarget().setSegmentationName("segmentation");
+
+  reader->getDvidTarget().print();
+
+  try {
+    reader->readLabels64Lowtis(0, 0, 57, 446, 443, 0, 256, 256, false);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#endif
+
+#if 0
+  CypherQuery query = CypherQueryBuilder().
+      match("(n:label)").where("exists(n.name)").ret("n.name");
+  qDebug() << query.getQueryString();
+#endif
 
   std::cout << "Done." << std::endl;
 }
