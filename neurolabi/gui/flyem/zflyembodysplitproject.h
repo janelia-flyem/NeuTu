@@ -247,6 +247,7 @@ private slots:
   void resetStatusAfterUpload();
 
 private:
+  QWidget* getParentWidget() const;
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
   void loadResult3dQuick(ZStackDoc *doc);
@@ -265,6 +266,7 @@ private:
   void quitResultUpdate();
   void cancelResultUpdate();
   void uploadSplitListFunc();
+  bool splitSizeChecked() const;
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }

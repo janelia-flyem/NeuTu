@@ -52,6 +52,7 @@
 #include "zswcfactory.h"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+#include "zdialogfactory.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_RESULT_QUICK = "updateSplitQuickFunc";
 
@@ -1536,7 +1537,44 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 void ZFlyEmBodySplitProject::uploadSplitList()
 {
-  QtConcurrent::run(this, &ZFlyEmBodySplitProject::uploadSplitListFunc);
+  if (splitSizeChecked()) {
+    QtConcurrent::run(this, &ZFlyEmBodySplitProject::uploadSplitListFunc);
+  } else {
+
+    getProgressSignal()->endProgress();
+  }
+}
+
+QWidget* ZFlyEmBodySplitProject::getParentWidget() const
+{
+  return qobject_cast<QWidget*>(parent());
+}
+
+bool ZFlyEmBodySplitProject::splitSizeChecked() const
+{
+  ZObject3dScan *wholeBody = getDocument()->getSparseStackMask();
+  size_t mainBodySize = wholeBody->getVoxelNumber();
+  size_t maxSplitSize = 0;
+//  std::vector<size_t> splitSizeList(m_splitList.size(), 0);
+  for (int i = 0; i < m_splitList.size(); ++i) {
+    const ZObject3dScan &obj = m_splitList[i];
+    size_t splitSize = obj.getVoxelNumber();
+    if (maxSplitSize < splitSize) {
+      maxSplitSize = splitSize;
+    }
+//    splitSizeList[i] = obj.getVoxelNumber();
+    mainBodySize -= splitSize;
+  }
+
+  //80%
+  if (mainBodySize < (maxSplitSize / 5) * 4) {
+    return ZDialogFactory::Ask(
+          "Uploading Split",
+          "It looks like you're splitting off a big part of the body. "
+          "Do you want to continue?", getParentWidget());
+  }
+
+  return true;
 }
 
 void ZFlyEmBodySplitProject::uploadSplitListFunc()
