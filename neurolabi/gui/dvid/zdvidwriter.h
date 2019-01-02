@@ -10,7 +10,7 @@
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
 #include "zsharedpointer.h"
 #include "zdvidreader.h"

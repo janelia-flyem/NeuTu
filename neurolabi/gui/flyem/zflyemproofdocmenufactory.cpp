@@ -221,9 +221,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_COPY_POSITION);
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
-#ifdef _DEBUG_
-    config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
-#endif
+    if (doc->getDvidTarget().hasSupervoxel()) {
+      config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
+      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
+    }
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);

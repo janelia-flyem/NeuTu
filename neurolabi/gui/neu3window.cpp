@@ -648,10 +648,12 @@ void Neu3Window::updateGrayscaleWidget()
   }
 }
 
+/*
 void Neu3Window::hideGrayscale()
 {
   getBodyDocument()->hideArbGrayslice();
 }
+*/
 
 /*
 void Neu3Window::updateEmbeddedGrayscale()

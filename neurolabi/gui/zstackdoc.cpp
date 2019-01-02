@@ -9916,7 +9916,7 @@ void ZStackDoc::localSeededWatershed()
     container.run();
 
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScan *obj : result) {
       getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     }
@@ -10022,7 +10022,7 @@ void ZStackDoc::seededWatershed()
   container.run();
 
   ZObject3dScanArray result;
-  container.makeSplitResult(1, &result);
+  container.makeSplitResult(1, &result, NULL);
   for (ZObject3dScan *obj : result) {
     getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
   }

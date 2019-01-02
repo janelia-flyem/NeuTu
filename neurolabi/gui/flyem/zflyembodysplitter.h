@@ -46,6 +46,7 @@ public:
   void runFullSplit();
 
   void updateCachedMask(ZObject3dScan *obj);
+  ZSparseStack* getBodyForSplit();
 
 signals:
   void messageGenerated(const ZWidgetMessage&);
@@ -58,7 +59,6 @@ private:
 
   void invalidateCache();
   void cacheBody(ZSparseStack *body);
-  ZSparseStack* getBodyForSplit();
 
 //  void runSplit(ZFlyEmBody3dDoc *doc);
   template<typename T>
