@@ -29140,10 +29140,10 @@ void ZTest::test(MainWindow *host)
     graph.addNode(node);
   }
 
-  graph.addEdge(0, 1);
-  graph.addEdge(1, 2);
-  graph.addEdge(2, 3);
-  graph.addEdge(0, 3);
+  graph.addEdge(0, 1, 10, GRAPH_LINE);
+  graph.addEdge(1, 2, 20, GRAPH_LINE);
+  graph.addEdge(2, 3, 30, GRAPH_LINE);
+  graph.addEdge(0, 3, 40, GRAPH_LINE);
 
   graph.print();
   graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
@@ -29165,12 +29165,12 @@ void ZTest::test(MainWindow *host)
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.Edit.swc");
   tree.setColor(Qt::cyan);
-  Z3DGraph graph = Z3DGraphFactory::MakeSwcGraph(tree);
+  Z3DGraph graph = Z3DGraphFactory::MakeSwcGraph(tree, 2.0);
   graph.print();
   graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_misc/1.swc");
   ZStack stack;

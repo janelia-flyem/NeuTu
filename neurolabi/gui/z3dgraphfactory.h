@@ -40,7 +40,7 @@ public:
   void setNodeColorHint(const QColor &color) { m_nodeColorHint = color; }
   void setEdgeColorHint(const QColor &color) { m_edgeColorHint = color; }
 
-  static Z3DGraph MakeSwcGraph(const ZSwcTree &tree);
+  static Z3DGraph MakeSwcGraph(const ZSwcTree &tree, double edgeWidth);
   static Z3DGraph MakeSwcFeatureGraph(const ZSwcTree &tree);
 
 

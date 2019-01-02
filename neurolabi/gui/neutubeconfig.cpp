@@ -972,6 +972,29 @@ bool NeutubeConfig::IsAdvancedMode()
   return getInstance().isAdvancedMode();
 }
 
+void NeutubeConfig::set3DCrossWidth(double w)
+{
+  m_3dcrossWidth = w;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("3d_cross_width", w);
+#endif
+}
+
+double NeutubeConfig::get3DCrossWidth() const
+{
+  return m_3dcrossWidth;
+}
+
+void NeutubeConfig::Set3DCrossWidth(int w)
+{
+  getInstance().set3DCrossWidth(w);
+}
+
+int NeutubeConfig::Get3DCrossWidth()
+{
+  return getInstance().get3DCrossWidth();
+}
+
 void NeutubeConfig::setMeshSplitThreshold(size_t thre)
 {
   m_meshSplitThreshold = thre;
