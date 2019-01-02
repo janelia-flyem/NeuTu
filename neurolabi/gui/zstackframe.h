@@ -45,6 +45,9 @@ class QMdiArea;
 class ZMessage;
 class ZMessageManager;
 class QTimer;
+class ZAutoTraceDialog;
+class QProgressDialog;
+class ZStackFrameSettingDialog;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -194,21 +197,21 @@ public: //frame parameters
   double xReconstructScale();
   double zReconstructScale();
   char unit();
-  int traceEffort();
-  double autoTraceMinScore();
-  double manualTraceMinScore();
-  bool traceMasked();
-  double reconstructDistThre();
-  bool crossoverTest();
-  bool singleTree();
-  bool removeOvershoot();
-  int reconstructRootOption();
-  BOOL reconstructSpTest();
+//  int traceEffort();
+//  double autoTraceMinScore();
+//  double manualTraceMinScore();
+//  bool traceMasked();
+//  double reconstructDistThre();
+//  bool crossoverTest();
+//  bool singleTree();
+//  bool removeOvershoot();
+//  int reconstructRootOption();
+//  BOOL reconstructSpTest();
   void synchronizeSetting();
   void synchronizeDocument();
 
 public: //set frame parameters
-  void setResolution(const double *res);
+//  void setResolution(const double *res);
   void setBc(double greyScale, double greyOffset, int channel);
   void autoBcAdjust();
 
@@ -279,6 +282,9 @@ public slots:
   void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
   void showSetting();
+  void autoTrace();
+  void endProgress();
+  void startProgress(const QString &title);
 
 private slots:
   void updateSwcExtensionHint();
@@ -294,6 +300,7 @@ signals:
   void splitStarted();
   void keyEventEmitted(QKeyEvent *event);
   void stackBoundBoxChanged();
+  void progressDone();
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
@@ -317,38 +324,47 @@ protected:
   void updateSignalSlot(T connectAction);
 
 
-private:
-  void setView(ZStackView *view);
-  //ZMessageManager *getMessageManager();
-
 protected:
   static void BaseConstruct(ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc);
   static void BaseConstruct(ZStackFrame *frame, ZStackDoc *doc);
 
+private:
+  void setView(ZStackView *view);
+  void updateTraceConfig();
+  void autoTraceFunc();
+  QProgressDialog* getProgressDialog();
+  QProgressBar* getProgressBar();
+
+  //ZMessageManager *getMessageManager();
+
+  ZAutoTraceDialog* getAutoTraceDlg();
+
 protected:
-  SettingDialog *m_settingDlg;
-  QDialog *m_manageObjsDlg;
+  ZStackFrameSettingDialog *m_settingDlg = nullptr;
+  QDialog *m_manageObjsDlg = nullptr;
+  ZAutoTraceDialog *m_autoTraceDlg = nullptr;
+  QProgressDialog *m_progress = nullptr;
 
   ZSharedPointer<ZStackDoc> m_doc;
-  ZStackPresenter *m_presenter;
-  ZStackView *m_view;
-  ZStackFrame *m_parentFrame;
+  ZStackPresenter *m_presenter = nullptr;
+  ZStackView *m_view = nullptr;
+  ZStackFrame *m_parentFrame = nullptr;
   QList<ZStackFrame*> m_childFrameList;
-  ZTileManager* m_tile;
+  ZTileManager* m_tile = nullptr;
 
-  ZTraceProject *m_traceProject;
+  ZTraceProject *m_traceProject = nullptr;
 
   QString m_statusInfo;
   bool m_isClosing;
 
   //Z3DWindow *m_3dWindow;
 
-  QTimer *m_testTimer;
+  QTimer *m_testTimer = nullptr;
 
   bool m_isWidgetReady;
 
   ZQtBarProgressReporter m_progressReporter;
-  ZMessageManager *m_messageManager;
+  ZMessageManager *m_messageManager = nullptr;
 };
 
 #endif

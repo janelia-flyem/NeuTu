@@ -93,7 +93,7 @@ public:
     BLUE = 0, GREEN, RED, ALPHA
   };
 
-  enum EDisplayStyle {
+  enum class EDisplayStyle {
     NORMAL, SOLID, BOUNDARY, SKELETON
   };
 

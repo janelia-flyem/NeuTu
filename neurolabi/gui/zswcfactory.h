@@ -8,6 +8,7 @@
 #include "flyem/zflyemneuronaxis.h"
 #include "zvoxelarray.h"
 #include "zweightedpoint.h"
+#include "tz_locseg_chain.h"
 
 class ZSwcTree;
 class ZPointArray;
@@ -20,6 +21,7 @@ class ZObject3dScan;
 class ZStack;
 class ZClosedCurve;
 class ZDvidInfo;
+class ZLocsegChain;
 
 class ZSwcFactory
 {
@@ -80,6 +82,13 @@ public:
 
   static std::vector<ZSwcTree*> CreateDiffSurfaceSwc(
       const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+  static ZSwcTree* CreateSwc(Locseg_Chain *chain, ZSwcTree *host = nullptr);
+  static ZSwcTree* CreateSwc(const ZLocsegChain &chain, ZSwcTree *host = nullptr);
+  static ZSwcTree* CreateSwc(
+      const std::vector<Locseg_Chain*> &chainArray, ZSwcTree *host = nullptr);
+
+  //  static void Attach(const ZLocsegChain &chain, Swc_Tree_Node *parent);
+
 
 private:
   static ZSwcTree* CreateSwcByRegionSampling(const ZVoxelArray &voxelArray,

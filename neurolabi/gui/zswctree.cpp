@@ -790,22 +790,22 @@ void ZSwcTree::displayNode(
     if (visible) {
       nodeColor = getNodeColor(tn, focused);
 
-      if (style == SOLID) {
+      if (style == EDisplayStyle::SOLID) {
         QColor brushColor = nodeColor;
         brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
         painter.setBrush(brushColor);
       }
 
       switch (style) {
-      case BOUNDARY:
-      case SOLID:
+      case EDisplayStyle::BOUNDARY:
+      case EDisplayStyle::SOLID:
         circle.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                    SwcTreeNode::radius(tn));
         circle.addVisualEffect(neutube::display::Sphere::VE_OUT_FOCUS_DIM);
         circle.setColor(nodeColor);
         circle.display(painter, slice, style, axis);
         break;
-      case SKELETON:
+      case EDisplayStyle::SKELETON:
         if (SwcTreeNode::isBranchPoint(tn)) {
           painter.setPen(nodeColor);
           painter.drawPoint(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)));
@@ -840,12 +840,12 @@ void ZSwcTree::displaySelectedNode(
     selectionCircle.set(
           SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
           SwcTreeNode::radius(tn));
-    selectionCircle.display(painter, slice, BOUNDARY, axis);
+    selectionCircle.display(painter, slice, EDisplayStyle::BOUNDARY, axis);
 
     selectionBox.set(
           SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
           SwcTreeNode::radius(tn));
-    selectionBox.display(painter, slice, BOUNDARY, axis);
+    selectionBox.display(painter, slice, EDisplayStyle::BOUNDARY, axis);
   }
 }
 #endif
@@ -877,8 +877,8 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
 
-  if (style == NORMAL) {
-    style = SOLID;
+  if (style == EDisplayStyle::NORMAL) {
+    style = EDisplayStyle::SOLID;
   }
 
   QPen pen;
@@ -1423,12 +1423,12 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 
   for (int i = 0; i < 4; ++i) {
     Swc_Tree_Node *tn =
-        SwcTreeNode::makePointer(box.corner(indexArray[index++]), radius);
+        SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
     SwcTreeNode::setParent(tn, tree->root());
     parent = tn;
 
     for (int j = 0; j < 3; ++j) {
-      tn = SwcTreeNode::makePointer(box.corner(indexArray[index++]), radius);
+      tn = SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
       SwcTreeNode::setParent(tn, parent);
     }
   }

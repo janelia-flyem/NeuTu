@@ -774,7 +774,7 @@ void ZDvidSynapseEnsemble::display(
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN &&
                 hasVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT)) {
-              tmpOption = SKELETON;
+              tmpOption = EDisplayStyle::SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
           }

@@ -59,6 +59,8 @@ public:
    */
   ZPoint getInterpolation(double ds) const;
 
+  ZPoint getIntercept(double lambda) const;
+
   /*!
    * \brief Get the length of the line segment
    */
@@ -90,6 +92,8 @@ public:
    * \return
    */
   bool isValid() const;
+
+  void flip();
 
 private:
   ZPoint m_start;
