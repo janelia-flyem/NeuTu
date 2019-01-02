@@ -49,6 +49,8 @@
 #include "zstackobjectarray.h"
 #include "zflyembodyenv.h"
 #include "zflyembodystatus.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemtodofilterdialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -127,6 +129,8 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
        iter != m_garbageMap.end(); ++iter) {
     delete iter.key();
   }
+
+  LDEBUG() << "ZFlyEmBody3dDoc destroyed";
 }
 
 void ZFlyEmBody3dDoc::waitForAllEvent()
@@ -664,10 +668,12 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
     ZFlyEmToDoItem *item = *iter;
     if (item->getAction() == neutube::EToDoAction::TO_DO) {
       item->setVisible(visible);
+      bufferObjectVisibilityChanged(item);
     }
   }
 
-  emit todoVisibleChanged();
+  processObjectModified();
+//  emit todoVisibleChanged();
 }
 
 void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
@@ -692,6 +698,22 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
   getDataDocument()->downloadTodo(ptArray);
 
   processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj)
+{
+  ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(obj);
+  if (item) {
+    dlg->init(*item);
+    if (dlg->exec()) {
+      dlg->annotate(item);
+      m_mainDvidWriter.writeToDoItem(*item);
+      bufferObjectModified(item);
+    }
+
+    getDataDocument()->downloadTodo(item->getPosition());
+    processObjectModified();
+  }
 }
 
 void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
@@ -1918,6 +1940,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
+    /*
     ZJsonArray statusJson = getMainDvidReader().readBodyStatusList();
     QList<QString> statusList;
     for (size_t i = 0; i < statusJson.size(); ++i) {
@@ -1926,6 +1949,8 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
         statusList.append(status.c_str());
       }
     }
+    */
+    QList<QString> statusList = getDataDocument()->getBodyStatusList();
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
@@ -2544,6 +2569,30 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
         }
       }
       LDEBUG() << "Cannot add todo:" << bodyId << "not in" << stream.str();
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodo(ZFlyEmTodoFilterDialog *dlg)
+{
+  if (isDvidMutable()) {
+    if (dlg->exec()) {
+      ZFlyEmBody3dDocCommand::RemoveTodo *command =
+          new ZFlyEmBody3dDocCommand::RemoveTodo(this);
+
+      QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
+      for (const ZFlyEmToDoItem *item : todoList) {
+        if (dlg->passed(item)) {
+          command->addTodoItem(
+                item->getX(), item->getY(), item->getZ(), item->getBodyId());
+        }
+      }
+
+      if (command->hasValidItem()) {
+        pushUndoCommand(command);
+      } else {
+        delete command;
+      }
     }
   }
 }

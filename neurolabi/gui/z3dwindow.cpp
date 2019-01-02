@@ -97,6 +97,8 @@
 #include "z3dwindowcontroller.h"
 #include "data3d/zstackobjectconfig.h"
 #include "flyem/zflyembodyenv.h"
+#include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemtodofilterdialog.h"
 
 /*
 class Sleeper : public QThread
@@ -297,6 +299,8 @@ void Z3DWindow::init()
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
             this, SLOT(selectedTodoChangedFrom3D(ZStackObject*,bool)));
+    connect(getTodoFilter(), SIGNAL(annotatingObject(ZStackObject*)),
+            this, SLOT(annotateTodo(ZStackObject*)));
 //    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
 //            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
@@ -427,6 +431,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
   switch (item) {
+  case ZActionFactory::ACTION_3DWINDOW_TOGGLE_OBJECTS:
+    action = m_toggleObjectsAction;
+    break;
+  case ZActionFactory::ACTION_3DWINDOW_TOGGLE_SETTING:
+    action =m_toggleSettingsAction;
+    break;
   case ZActionFactory::ACTION_ABOUT:
     action = m_actionLibrary->getAction(item, this, SLOT(about()));
     break;
@@ -456,6 +466,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_SHOW_NORMAL_TODO:
     action = m_actionLibrary->getAction(
           item, this, SLOT(setNormalTodoVisible(bool)));
+    break;
+  case ZActionFactory::ACTION_REMOVE_TODO_BATCH:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(removeTodoBatch()));
     break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
@@ -560,6 +574,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
+    break;
+  case ZActionFactory::ACTION_COPY_3DCAMERA:
+    action = m_actionLibrary->getAction(item, this, SLOT(copyView()));
+    break;
+  case ZActionFactory::ACTION_PASTE_3DCAMERA:
+    action = m_actionLibrary->getAction(item, this, SLOT(pasteView()));
     break;
 //  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
 //    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
@@ -927,13 +947,14 @@ void Z3DWindow::createContextMenu()
   m_toggleObjectsAction = new QAction("Objects", this);
   m_toggleObjectsAction->setCheckable(true);
   m_toggleObjectsAction->setChecked(
-        m_objectsDockWidget->toggleViewAction());
+        m_objectsDockWidget->toggleViewAction()->isChecked());
   connect(m_toggleObjectsAction, SIGNAL(triggered(bool)),
           m_objectsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
 
   m_toggleSettingsAction = new QAction("Settings", this);
   m_toggleSettingsAction->setCheckable(true);
-  m_toggleSettingsAction->setChecked(m_settingsDockWidget->toggleViewAction());
+  m_toggleSettingsAction->setChecked(
+        m_settingsDockWidget->toggleViewAction()->isChecked());
   connect(m_toggleSettingsAction, SIGNAL(triggered(bool)),
           m_settingsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
 
@@ -1200,6 +1221,24 @@ void Z3DWindow::loadView()
   }
 }
 
+void Z3DWindow::copyView()
+{
+  ZGlobal::GetInstance().set3DCamera(
+        getCamera()->get().toJsonObject().dumpString(0));
+}
+
+void Z3DWindow::pasteView()
+{
+  std::string config = ZGlobal::GetInstance().get3DCamera();
+  if (!config.empty()) {
+    ZJsonObject cameraJson;
+    cameraJson.decode(config);
+    if (!cameraJson.isEmpty()) {
+      getCamera()->set(cameraJson);
+    }
+  }
+}
+
 void Z3DWindow::zoomToSelectedMeshes()
 {
   TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::TYPE_MESH);
@@ -1293,6 +1332,16 @@ void Z3DWindow::syncActionToNormalMode()
   setActionChecked(ZActionFactory::ACTION_ACTIVATE_LOCATE, false);
   setActionChecked(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY, false);
   blockSignals(false);
+}
+
+void Z3DWindow::toggleObjects()
+{
+  m_settingsDockWidget->toggleViewAction()->toggle();
+}
+
+void Z3DWindow::toggleSetting()
+{
+  m_objectsDockWidget->toggleViewAction()->toggle();
 }
 
 void Z3DWindow::readSettings()
@@ -1405,6 +1454,28 @@ void Z3DWindow::onSelectionChangedFrom3D(Z3DGeometryFilter *filter,
   if (p != NULL) {
     m_doc->selectObject(p, true);
     filter->invalidate();
+  }
+}
+
+void Z3DWindow::annotateTodo(ZStackObject *obj)
+{
+  ZFlyEmTodoAnnotationDialog dlg(this);
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc != NULL) {
+    doc->annotateTodo(&dlg, obj);
+  }
+//  getCompleteDocument()->annotateSelectedTodoItem(&dlg, getView()->getSliceAxis());
+}
+
+void Z3DWindow::removeTodoBatch()
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc != NULL) {
+    if (m_todoDlg == nullptr) {
+      m_todoDlg = new ZFlyEmTodoFilterDialog(this);
+      m_todoDlg->setWindowTitle("Remove Todo");
+    }
+    doc->removeTodo(m_todoDlg);
   }
 }
 
@@ -1631,7 +1702,7 @@ void Z3DWindow::removeSwcTurn()
 void Z3DWindow::startConnectingSwcNode()
 {
   notifyUser("Click on the target node to connect.");
-  getSwcFilter()->setInteractionMode(Z3DSwcFilter::ConnectSwcNode);
+  getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::ConnectSwcNode);
   getCanvas()->getInteractionContext().setSwcEditMode(
         ZInteractiveContext::SWC_EDIT_CONNECT);
   getCanvas()->updateCursor();
@@ -1644,7 +1715,7 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
     Swc_Tree_Node *target = SwcTreeNode::findClosestNode(
           getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
     getCanvas()->updateCursor();
@@ -1761,8 +1832,8 @@ bool Z3DWindow::exitEditMode()
     exitExtendingSwc();
     acted = true;
   } else if (getSwcFilter()->interactionMode() ==
-             Z3DSwcFilter::ConnectSwcNode) {
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+             Z3DSwcFilter::EInteractionMode::ConnectSwcNode) {
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
     getCanvas()->setCursor(Qt::ArrowCursor);
     acted = true;
   }
@@ -1931,7 +2002,7 @@ void Z3DWindow::traceTube()
   m_doc->executeTraceSwcBranchCommand(m_lastClickedPosInVolume[0],
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
-  getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+  getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
   getCanvas()->setCursor(Qt::ArrowCursor);
 }
 
@@ -2129,6 +2200,12 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
 {
   emit settingNormalTodoVisible(visible);
 }
+
+/*
+void Z3DWindow::removeAllTodo()
+{
+}
+*/
 
 void Z3DWindow::updateTodoVisibility()
 {
@@ -2371,13 +2448,13 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
       m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
       m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(false);
     }
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::AddSwcNode);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::AddSwcNode);
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_ADD_NODE);
     //m_canvas->setCursor(Qt::PointingHandCursor);
     notifyUser("Click to add a node");
   } else {
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
     //getCanvas()->setCursor(Qt::ArrowCursor);
@@ -2420,15 +2497,15 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
     } else {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
     }
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
     //getCanvas()->setCursor(Qt::ArrowCursor);
@@ -2659,8 +2736,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
           m_toggleSmartExtendSelectedSwcNodeAction->toggle();
         }
-        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
-            getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::EInteractionMode::ConnectSwcNode) {
+            getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
             getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleMoveSelectedObjectsAction->toggle();
@@ -2673,8 +2750,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         if (m_toggleMoveSelectedObjectsAction->isChecked()) {
           m_toggleMoveSelectedObjectsAction->toggle();
         }
-        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
-            getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::EInteractionMode::ConnectSwcNode) {
+            getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::Select);
             getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleSmartExtendSelectedSwcNodeAction->toggle();
@@ -3373,7 +3450,7 @@ void Z3DWindow::convertPunctaToSwc()
     for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
          iter != punctaSet.end(); ++iter) {
       ZPoint pos((*iter)->x(), (*iter)->y(), (*iter)->z());
-      Swc_Tree_Node *tn = SwcTreeNode::makePointer(pos, (*iter)->radius());
+      Swc_Tree_Node *tn = SwcTreeNode::MakePointer(pos, (*iter)->radius());
       tree->addRegularRoot(tn);
     }
 

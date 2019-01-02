@@ -171,7 +171,7 @@ void ZSegmentationProject::loadJsonNode(
 {
   if (nodeJson.hasKey("source")) {
     ZTreeNode<ZObject3dScan> *node = new ZTreeNode<ZObject3dScan>();
-    QString sourceFile(ZJsonParser::stringValue(nodeJson["source"]));
+    QString sourceFile(ZJsonParser::stringValue(nodeJson["source"]).c_str());
 
     QFileInfo fileInfo(sourceFile);
     if (!fileInfo.isAbsolute()) {

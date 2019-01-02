@@ -73,7 +73,7 @@ void ZHdf5Writer::createGroup(const std::string &group)
     //}
   }
 #else
-  UNUSED_PARAMETER(&group);
+  UNUSED_PARAMETER(group);
 #endif
 }
 
@@ -162,7 +162,7 @@ void ZHdf5Writer::writeArray(const std::string &path, const mylib::Array *array)
   H5Sclose(dataSpace);
   H5Dclose(dataset_id);
 #else
-  UNUSED_PARAMETER(&path);
+  UNUSED_PARAMETER(path);
   UNUSED_PARAMETER(array);
 #endif
 }

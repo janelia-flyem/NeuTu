@@ -43,6 +43,11 @@ std::string ZResolution::getUnitName() const
   return "undefined";
 }
 
+bool ZResolution::isValid() const
+{
+  return m_voxelSize[0] > 0.0 && m_voxelSize[1] > 0.0 && m_voxelSize[2] > 0.0;
+}
+
 ZResolution::EUnit ZResolution::getUnit() const
 {
   switch (m_unit) {

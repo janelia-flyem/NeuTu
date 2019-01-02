@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ZAutoTraceDialog</class>
+ <widget class="QDialog" name="ZAutoTraceDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>415</width>
+    <height>230</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Automatic Tracing</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Computational Budget</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="levelLabel">
+         <property name="text">
+          <string>(1/6)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="levelSlider">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>6</number>
+         </property>
+         <property name="pageStep">
+          <number>2</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksBelow</enum>
+         </property>
+         <property name="tickInterval">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="defaultLevelCheckBox">
+         <property name="text">
+          <string>Default</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#008000;&quot;&gt;Hint: More budget means longer computing time and sometimes &lt;br&gt;improves results. &lt;b&gt;Using Default is recommended&lt;/b&gt;.&lt;br&gt;&lt;span style=&quot; color:#808000;&quot;&gt;For curious users: Right next to the &lt;i&gt;auto-tracing&lt;/i&gt; button, &lt;br&gt;the &lt;i&gt;settings&lt;/i&gt; button can be used to change the default settings.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Channel to trace</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="channelComboBox"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="resampleCheckBox">
+       <property name="toolTip">
+        <string>The final structure will be less redundant when this option is on (recommended).</string>
+       </property>
+       <property name="text">
+        <string>Optimal Node Resampling</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="diagnosisCheckBox">
+       <property name="text">
+        <string>Diagnosis</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ZAutoTraceDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ZAutoTraceDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

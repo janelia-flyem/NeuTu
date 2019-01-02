@@ -540,7 +540,8 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     }
 
     // must get mode before synapse list is retrieved
-    m_currentMode = QString::fromUtf8(ZJsonParser::stringValue(data[KEY_MODE.c_str()]));
+    m_currentMode = QString::fromUtf8(
+          ZJsonParser::stringValue(data[KEY_MODE.c_str()]).c_str());
     ui->modeMenu->setCurrentText(m_currentMode);
 
     // variation specific loading:

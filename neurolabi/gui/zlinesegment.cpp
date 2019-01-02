@@ -84,6 +84,11 @@ ZPoint ZLineSegment::getInterpolation(double ds) const
   return m_start + getDirection() * ds;
 }
 
+ZPoint ZLineSegment::getIntercept(double lambda) const
+{
+  return m_start * (1.0 - lambda) + m_end * lambda;
+}
+
 void ZLineSegment::shiftSliceAxis(neutube::EAxis axis)
 {
   m_start.shiftSliceAxis(axis);
@@ -125,3 +130,7 @@ double ZLineSegment::getUpperZ() const
   return std::max(getStartPoint().z(), getEndPoint().z());
 }
 
+void ZLineSegment::flip()
+{
+  std::swap(m_start, m_end);
+}

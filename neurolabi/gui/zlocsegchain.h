@@ -54,7 +54,7 @@ public: // I/O functions
 public:
   //Detach data from the object
   Locseg_Chain* detachData();
-  inline Locseg_Chain *data() { return m_chain; }
+  inline Locseg_Chain *data() const { return m_chain; }
   void setId(int id) { m_id = id; }
   inline int id() const { return m_id; }
   //inline const QString source() const { return m_source; }

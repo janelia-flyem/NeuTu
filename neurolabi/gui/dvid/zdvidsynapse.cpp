@@ -37,13 +37,13 @@ double ZDvidSynapse::getConfidence() const
   double c = 1.0;
 
   if (m_propertyJson.hasKey("confidence")) {
-    const char *confStr =
+    std::string confStr =
         ZJsonParser::stringValue(m_propertyJson["confidence"]);
-    c = std::atof(confStr);
+    c = std::atof(confStr.c_str());
   } else if (m_propertyJson.hasKey("conf")) {
-    const char *confStr =
+    std::string confStr =
         ZJsonParser::stringValue(m_propertyJson["conf"]);
-    c = std::atof(confStr);
+    c = std::atof(confStr.c_str());
   }
 
   return c;
@@ -182,7 +182,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QColor color = getColor();
 
     double alpha = 1.0;
-    if (option == SKELETON) {
+    if (option == EDisplayStyle::SKELETON) {
       alpha = 0.1;
     }
 
@@ -213,7 +213,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double oldWidth = pen.widthF();
       QColor oldColor = pen.color();
       if (getKind() == EKind::KIND_POST_SYN) {
-        if (option != SKELETON) {
+        if (option != EDisplayStyle::SKELETON) {
           pen.setWidthF(oldWidth + 1.0);
         }
         if (isSelected()) {
@@ -283,18 +283,12 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.setPen(color);
       double x = center.getX();
       double y = center.getY();
-      /*
-      painter.drawLine(QPointF(x - lineWidth, y),
-                       QPointF(x + lineWidth, y));
-                       */
+
       int startAngle = 0;
       int spanAngle = iround((1.0 - conf) * 180) * 16;
       painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
                              QPointF(x + lineWidth, y + lineWidth)),
                       startAngle, spanAngle);
-//      painter.drawEllipse(QPointF(x, y), lineWidth, lineWidth);
-
-//      decorationText += QString(".%1").arg(iround(conf * 10.0));
     }
 
 #if 0
@@ -453,7 +447,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           partnerSynapse.setDefaultColor();
           partnerSynapse.setDefaultRadius();
           painter.save();
-          partnerSynapse.display(painter, slice, ZStackObject::NORMAL, sliceAxis);
+          partnerSynapse.display(
+                painter, slice, ZStackObject::EDisplayStyle::NORMAL, sliceAxis);
           painter.restore();
         }
       }

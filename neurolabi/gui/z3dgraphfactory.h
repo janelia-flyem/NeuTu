@@ -8,6 +8,7 @@
 class ZCuboid;
 class ZIntCuboid;
 class ZRect2d;
+class ZSwcTree;
 
 class Z3DGraphFactory
 {
@@ -38,6 +39,9 @@ public:
   void setEdgeWidthHint(double w) { m_edgeWidthHint = w; }
   void setNodeColorHint(const QColor &color) { m_nodeColorHint = color; }
   void setEdgeColorHint(const QColor &color) { m_edgeColorHint = color; }
+
+  static Z3DGraph MakeSwcGraph(const ZSwcTree &tree, double edgeWidth);
+  static Z3DGraph MakeSwcFeatureGraph(const ZSwcTree &tree);
 
 
 private:

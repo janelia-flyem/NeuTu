@@ -16,6 +16,7 @@ class ZDvidSparseStack;
 class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
+class NeuPrintReader;
 
 class ZGlobal
 {
@@ -38,6 +39,9 @@ public:
 
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
+
+  void set3DCamera(const std::string &config);
+  std::string get3DCamera() const;
 
   //! DVID IO with shared readers and writers
   /*!
@@ -63,6 +67,8 @@ public:
   T* getMainWindow() const;
 
   QMainWindow* getMainWindow() const;
+
+  NeuPrintReader *getNeuPrintReader();
 
 public:
   static ZDvidReader* GetDvidReader(

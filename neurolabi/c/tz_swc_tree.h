@@ -1165,6 +1165,10 @@ void Swc_Tree_Rotate(Swc_Tree *tree, double theta, double psi,
 void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale, 
     double z_scale, BOOL change_node_size);
 
+/**@brief Label a stack with an SWC tree.
+ *
+ * The parameters of labeling are specified in \a ws.
+ */
 void Swc_Tree_Label_Stack(Swc_Tree *tree, Stack *stack,
     Swc_Tree_Node_Label_Workspace *ws);
 

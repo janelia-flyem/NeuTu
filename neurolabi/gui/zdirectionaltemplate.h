@@ -46,6 +46,8 @@ public:
     virtual ZPoint center() = 0;
     virtual ZPoint top() = 0;
 
+    ZDirectionalTemplate& operator=(const ZDirectionalTemplate &dt);
+
     virtual void save(const char *) {}
     virtual bool load(const char *) { return false; }
 

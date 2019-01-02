@@ -2029,6 +2029,7 @@ bool TaskBodyCleave::allowingSplit(uint64_t bodyId) const
 void TaskBodyCleave::setCleavingShortcutEnabled(bool on)
 {
   m_toggleInBodyAction->setEnabled(on);
+  m_addToBodyAction->setEnabled(on);
   m_toggleShowChosenCleaveBodyAction->setEnabled(on);
   for (const auto &actionToIndex : m_actionToComboBoxIndex) {
     actionToIndex.first->setEnabled(on);

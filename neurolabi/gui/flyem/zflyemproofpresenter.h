@@ -104,6 +104,7 @@ signals:
 //  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
+  void annotatingTodo();
   void mergingBody();
   void uploadingMerge();
   void goingToBodyBottom();
@@ -112,6 +113,7 @@ signals:
   void togglingData();
   void highlightModeChanged();
   void showingSupervoxelList();
+  void togglingBodyColorMap();
 
 public slots:
   void deleteSelectedSynapse();

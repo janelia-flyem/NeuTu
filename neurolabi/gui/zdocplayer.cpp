@@ -441,7 +441,7 @@ ZSwcTree* ZStroke2dPlayer::getSwcDecoration() const
         double x = 0;
         double y = 0;
         stroke->getPoint(&x, &y, i);
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, radius, parent);
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, radius, parent);
         parent = tn;
       }
     }

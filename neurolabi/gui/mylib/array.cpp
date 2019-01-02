@@ -624,7 +624,7 @@ static mylib::Array *make_shape(mylib::Array_Kind kind, mylib::Value_Type type,
     a->dims[0] = kind_size[kind];
   for (i = 0; i < ndims; i++)
     a->dims[i+v] = dims[i];
-  if (o & !v)
+  if (o && !v)
     a->dims[ndims] = kind_size[kind];
   a->size = array_size(a);
   return (a);
@@ -10077,13 +10077,13 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
                     else if (i % x0 == 0)
                       fprintf(output,"\n%*s  ",indent,"");
                     else
-                      fprintf(output,", ");
-                      fprintf(output,format,v[p]);
-                    if (slice)
-                      p = Next_Slice_Index(o);
-                    else
-                      p += 1;
-                  }
+                    fprintf(output,", ");
+                  fprintf(output,format,v[p]);
+                  if (slice)
+                    p = Next_Slice_Index(o);
+                  else
+                    p += 1;
+                }
                 break;
               }
             case mylib::UINT16_TYPE:
@@ -49264,6 +49264,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint8 *) Frame_Values(o2);
+                break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49289,6 +49290,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint16 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49314,6 +49316,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49339,6 +49342,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint64  *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49364,6 +49368,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int8 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49389,6 +49394,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int16 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49414,6 +49420,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49439,6 +49446,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int64 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49464,6 +49472,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::float32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49489,6 +49498,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::float64 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];

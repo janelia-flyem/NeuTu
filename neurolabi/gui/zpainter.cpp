@@ -163,7 +163,9 @@ void ZPainter::detachPainter()
 
 void ZPainter::setPen(const QColor &color)
 {
-  getPainter()->setPen(color);
+  QPen pen = getPainter()->pen();
+  pen.setColor(color);
+  getPainter()->setPen(pen);
 }
 
 void ZPainter::setPen(const QPen &pen)
@@ -750,6 +752,11 @@ void ZPainter::setRenderHint(QPainter::RenderHint hint, bool on)
 void ZPainter::fillRect(const QRect &r, Qt::GlobalColor color)
 {
   getPainter()->fillRect(r, color);
+}
+
+void ZPainter::fillRect(const QRect &r, const QBrush &brush)
+{
+  getPainter()->fillRect(r, brush);
 }
 
 void ZPainter::setOpacity(double alpha)

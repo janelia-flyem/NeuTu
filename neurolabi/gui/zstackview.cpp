@@ -10,7 +10,7 @@
 #include "zstackdoc.h"
 #include "zstackframe.h"
 #include "zstackpresenter.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zslider.h"
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
@@ -301,10 +301,35 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
   //    QPointF pos = imageWidget()->canvasCoordinate(widgetPos);
   ZPoint pos(widgetPos.x(), widgetPos.y(), z);
 
+  QString info;
+
+  if (getViewProj().getZoom() > 0.00001) {
+    if (buddyDocument()->getResolution().getUnit() ==
+        ZResolution::UNIT_NANOMETER) {
+      double s = iround(
+            m_imageWidget->screenSize().width() / getViewProj().getZoom() *
+            buddyDocument()->getResolution().voxelSizeX());
+      QString unit = "nm";
+      if (s > 1000.0) {
+        s /= 1000.0;
+        unit = "um";
+      }
+      if (unit == "nm" || s > 10.0) {
+        info += QString(" Screen Width: ~%1").arg(iround(s)) + unit;
+      } else {
+        info += QString(" Screen Width: ~") + QString::number(s, 'g', 2) + unit;
+      }
+    } else {
+      info += QString(" Screen Width: ~%1 pixels").arg(
+            iround(m_imageWidget->screenSize().width() / getViewProj().getZoom()));
+    }
+    info += "  ";
+  }
+
   if (buddyDocument()->hasStackData()) {
     ZPoint pt = ZPositionMapper::WidgetToRawStack(pos, getViewProj());
-    setInfo(buddyDocument()->rawDataInfo(
-              pt.x(), pt.y(), pt.z(), getSliceAxis()));
+    info += buddyDocument()->rawDataInfo(
+              pt.x(), pt.y(), pt.z(), getSliceAxis());
   } else {
     ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(
           *buddyDocument(), getSliceAxis());
@@ -316,20 +341,23 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
     ZPoint dataPos;
     if (getSliceAxis() == neutube::EAxis::ARB) {
       dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
-      setInfo(QString("(%1, %2, %3)").
+      info += QString("(%1, %2, %3)").
               arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-              arg(iround(dataPos.getZ())));
+              arg(iround(dataPos.getZ()));
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
               pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
-      setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
+      info += QString("(%1, %2, %3); (%4, %5, %6)").
               arg(pos.x()).arg(pos.y()).arg(z).
               arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-              arg(iround(dataPos.getZ())));
+              arg(iround(dataPos.getZ()));
     }
-
   }
+
+
+
+  setInfo(info);
 }
 
 
@@ -735,7 +763,9 @@ void ZStackView::setZQuitely(int z)
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
+#ifdef _DEBUG_
     LDEBUG() << "Set slice index:" << slice;
+#endif
 
     recordViewParam();
 //    setDepthFrozen(true);
@@ -749,7 +779,9 @@ void ZStackView::setSliceIndex(int slice)
 void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
+#ifdef _DEBUG_2
     LDEBUG() << "Set slice index:" << slice;
+#endif
 
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
@@ -2051,7 +2083,7 @@ void ZStackView::paintMaskBuffer()
     m_imageMask->setCData(static_cast<uint8_t*>(
                             stackMask->getDataPointer(0, slice)), 100);
   }
-  if (buddyPresenter()->objectStyle() == ZStackObject::BOUNDARY) {
+  if (buddyPresenter()->objectStyle() == ZStackObject::EDisplayStyle::BOUNDARY) {
     m_imageMask->enhanceEdge();
   }
 }
@@ -2297,7 +2329,8 @@ void ZStackView::paintActiveDecorationBuffer()
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
           paintHelper.paint(
-                obj, painter, sliceIndex(), ZStackObject::NORMAL, getSliceAxis());
+                obj, painter, sliceIndex(),
+                ZStackObject::EDisplayStyle::NORMAL, getSliceAxis());
 //          obj->display(painter, sliceIndex(), ZStackObject::NORMAL, m_sliceAxis);
 //          painted = true;
         }
@@ -3171,6 +3204,7 @@ void ZStackView::customizeWidget()
             this, SLOT(requestHighresQuick3DVis()));
             */
   } else {
+    m_secondTopLayout->addStretch();
     QPushButton *vis3dButton = new QPushButton(this);
     vis3dButton->setText("3D");
     vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -3178,6 +3212,14 @@ void ZStackView::customizeWidget()
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
 
     if (buddyDocument()->getTag() == neutube::Document::ETag::NORMAL) {
+      if (GET_APPLICATION_NAME == "General") {
+        QPushButton *autoTraceButton = new QPushButton(this);
+        autoTraceButton->setIcon(QIcon(":/images/autotrace.png"));
+        autoTraceButton->setToolTip("Automatic Tracing");
+        m_secondTopLayout->addWidget(autoTraceButton);
+        connect(autoTraceButton, SIGNAL(clicked()), this, SLOT(requestAutoTracing()));
+      }
+
       QPushButton *settingButton = new QPushButton(this);
       settingButton->setText("Settings");
       settingButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -3255,6 +3297,11 @@ void ZStackView::request3DVis()
 void ZStackView::requestSetting()
 {
   emit changingSetting();
+}
+
+void ZStackView::requestAutoTracing()
+{
+  emit autoTracing();
 }
 
 void ZStackView::requestQuick3DVis()

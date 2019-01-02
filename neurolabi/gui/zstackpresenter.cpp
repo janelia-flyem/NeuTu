@@ -137,7 +137,7 @@ void ZStackPresenter::init()
   m_grayScale.resize(5, 1.0);
   m_grayOffset.resize(5, 0.0);
 
-  m_objStyle = ZStackObject::BOUNDARY;
+  m_objStyle = ZStackObject::EDisplayStyle::BOUNDARY;
   m_threshold = -1;
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
@@ -362,6 +362,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyAnnotationTriggered()));
       break;
+    case ZActionFactory::ACTION_BODY_EXPERT_STATUS:
+      connect(action, &QAction::triggered,
+              this, &ZStackPresenter::notifyExpertBodyStatus);
+      break;
     case ZActionFactory::ACTION_BODY_CONNECTION:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyConnectionTriggered()));
@@ -499,7 +503,7 @@ void ZStackPresenter::initInteractiveContext()
 
   m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
 }
-
+/*
 void ZStackPresenter::createTraceActions()
 {
   {
@@ -567,7 +571,9 @@ void ZStackPresenter::createPunctaActions()
     }
   }
 }
+*/
 
+#if 0
 //Doesn't work while connecting doc slots directly for unknown reason
 void ZStackPresenter::createDocDependentActions()
 {
@@ -598,7 +604,9 @@ void ZStackPresenter::createDocDependentActions()
           SLOT(selectAllSwcTreeNode()));
 #endif
 }
+#endif
 
+#if 0
 void ZStackPresenter::createSwcActions()
 { 
   {
@@ -680,7 +688,9 @@ void ZStackPresenter::createSwcActions()
         m_actionMap[ZActionFactory::ACTION_CONNECT_TO_SWC_NODE], true);
         */
 }
+#endif
 
+#if 0
 void ZStackPresenter::createStrokeActions()
 {
   {
@@ -712,7 +722,9 @@ void ZStackPresenter::createMiscActions()
   makeAction(ZActionFactory::ACTION_SHOW_ORTHO);
   makeAction(ZActionFactory::ACTION_SAVE_STACK);
 }
+#endif
 
+#if 0
 void ZStackPresenter::createBodyActions()
 {
   makeAction(ZActionFactory::ACTION_BODY_SPLIT_START);
@@ -793,6 +805,7 @@ void ZStackPresenter::createBodyActions()
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
 }
+#endif
 
 void ZStackPresenter::highlight(int x, int y, int z)
 {
@@ -807,6 +820,7 @@ void ZStackPresenter::createMainWindowActions()
   }
 }
 
+#if 0
 void ZStackPresenter::createActions()
 {
   {
@@ -844,6 +858,7 @@ void ZStackPresenter::createActions()
   createBodyActions();
   createMiscActions();
 }
+#endif
 
 void ZStackPresenter::createSwcNodeContextMenu()
 {
@@ -2825,6 +2840,11 @@ void ZStackPresenter::notifyBodyUnmergeTriggered()
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
+}
+
+void ZStackPresenter::notifyExpertBodyStatus()
+{
+  emit bodyExpertStatusTriggered();
 }
 
 void ZStackPresenter::notifyBodyConnectionTriggered()

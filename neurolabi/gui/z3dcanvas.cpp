@@ -5,7 +5,7 @@
 #include "z3dscene.h"
 #include "zqslog.h"
 #include "zpainter.h"
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "zopenglwidget.h"
 #include <QWindow>
 #include <QPainter>
@@ -250,7 +250,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
-    drawable->display(painter, 0, ZStackObject::NORMAL,
+    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
                       ZStackObject::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
   }
 #else

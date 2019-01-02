@@ -51,12 +51,12 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
     y = r * sin(angle) + cy;
     z = cz;
 
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, nodeRadius);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, nodeRadius);
     SwcTreeNode::setParent(tn, parent);
     parent = tn;
   }
 
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
   SwcTreeNode::copyProperty(SwcTreeNode::firstChild(tree->root()), tn);
   SwcTreeNode::setParent(tn, parent);
 
@@ -230,7 +230,7 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
 
   for (size_t i = 0; i < voxelArray.size(); ++i) {
     if (sampled[i]) {
-      Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+      Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
       SwcTreeNode::setPos(
             tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
       SwcTreeNode::setRadius(
@@ -418,7 +418,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
   for (size_t i = 0; i < stroke.getPointNumber(); ++i) {
     double x, y;
     stroke.getPoint(&x, &y, i);
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, r);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, r);
     SwcTreeNode::setParent(tn, parent);
     parent = tn;
   }
@@ -441,7 +441,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   tree->forceVirtualRoot();
   Swc_Tree_Node *parent = tree->root();
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
           obj.getX(i), obj.getY(i), obj.getZ(i), radius);
     SwcTreeNode::setId(tn, i + 1);
     SwcTreeNode::setFirstChild(parent, tn);
@@ -472,10 +472,10 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
     int z = stripe.getZ();
     for (int j = 0; j < segNumber; ++j) {
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(stripe.getSegmentStart(j), y, z, 2.0);
+          SwcTreeNode::MakePointer(stripe.getSegmentStart(j), y, z, 2.0);
       SwcTreeNode::setFirstChild(root, tn);
       Swc_Tree_Node *tn2 =
-          SwcTreeNode::makePointer(stripe.getSegmentEnd(j), y, z, 2.0);
+          SwcTreeNode::MakePointer(stripe.getSegmentEnd(j), y, z, 2.0);
       SwcTreeNode::setFirstChild(tn, tn2);
     }
   }
@@ -574,7 +574,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
 
             if (isSurface) {
               if (count++ % sparseLevel == 0) {
-                SwcTreeNode::makePointer(i + stack.getOffset().getX(),
+                SwcTreeNode::MakePointer(i + stack.getOffset().getX(),
                                          j + stack.getOffset().getY(),
                                          k + stack.getOffset().getZ(),
                                          sqrt(sparseLevel), root);
@@ -636,11 +636,11 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
     tree = new ZSwcTree();
     tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     Swc_Tree_Node *parent =
-        SwcTreeNode::makePointer(curve.getLandmark(0), radius);
+        SwcTreeNode::MakePointer(curve.getLandmark(0), radius);
     tree->addRegularRoot(parent);
     for (size_t i = 1; i < curve.getLandmarkNumber(); ++i) {
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(curve.getLandmark(i), radius);
+          SwcTreeNode::MakePointer(curve.getLandmark(i), radius);
       SwcTreeNode::setParent(tn, parent);
       parent = tn;
     }
@@ -674,9 +674,9 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   return tree;
 #else
-  UNUSED_PARAMETER(&blockObj);
+  UNUSED_PARAMETER(blockObj);
   UNUSED_PARAMETER(z);
-  UNUSED_PARAMETER(&dvidInfo);
+  UNUSED_PARAMETER(dvidInfo);
   return NULL;
 #endif
 }

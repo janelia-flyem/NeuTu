@@ -13,7 +13,7 @@ flyem::ZSynapseLocationMatcher::ZSynapseLocationMatcher() :
   m_metric(NULL), m_verbose(1)
 {
 }
-
+/*
 flyem::ZSynapseLocationMatcher::ZSynapseLocationMatcher(
     const ZSynapseLocationMatcher &matcher) :
   m_matchedPairArray(matcher.m_matchedPairArray),
@@ -26,7 +26,7 @@ flyem::ZSynapseLocationMatcher::ZSynapseLocationMatcher(
   m_verbose(matcher.m_verbose)
 {
 }
-
+*/
 void flyem::ZSynapseLocationMatcher::clearResult()
 {
   m_matchedPairArray.clear();

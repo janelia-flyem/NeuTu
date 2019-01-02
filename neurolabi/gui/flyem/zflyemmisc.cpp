@@ -788,9 +788,10 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
       node1.set(x, rect.getFirstY(), rect.getZ(), width);
       node2.set(x, rect.getLastY(), rect.getZ(), width);
 
+      double edgeWidth = NeutubeConfig::Get3DCrossWidth();
       graph->addNode(node1);
       graph->addNode(node2);
-      graph->addEdge(node1, node2, GRAPH_LINE);
+      graph->addEdge(node1, node2, edgeWidth, GRAPH_LINE);
 
       node1.setColor(QColor(255, 0, 0));
       node2.setColor(QColor(255, 0, 0));
@@ -799,7 +800,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
 
       graph->addNode(node1);
       graph->addNode(node2);
-      graph->addEdge(node1, node2, GRAPH_LINE);
+      graph->addEdge(node1, node2, edgeWidth, GRAPH_LINE);
     }
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
@@ -1420,6 +1421,27 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
   return path;
 }
 
+void ZFlyEmMisc::UpdateBodyStatus(
+    const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
+{
+  if (writer) {
+    uint64_t bodyId = writer->getDvidReader().readBodyIdAt(pos);
+    ZFlyEmBodyAnnotation annot = writer->getDvidReader().readBodyAnnotation(bodyId);
+#ifdef _DEBUG_
+    std::cout << "Old annotation:" << std::endl;
+    annot.print();
+#endif
+    annot.setStatus(newStatus);
+    writer->writeBodyAnntation(annot);
+
+#ifdef _DEBUG_
+    ZFlyEmBodyAnnotation newAnnot = writer->getDvidReader().readBodyAnnotation(bodyId);
+    std::cout << "New annotation:" << std::endl;
+    newAnnot.print();
+#endif
+  }
+}
+
 void ZFlyEmMisc::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {
@@ -1764,7 +1786,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
       if (obj.hasKey("pos")) {
         ZIntPoint pos = ZJsonParser::toIntPoint(obj["pos"]);
         uint64_t bodyId = reader.readBodyIdAt(pos);
-        QString name = ZJsonParser::stringValue(obj["name"]);
+        QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
               bodyId, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
@@ -1908,14 +1930,14 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
       for (size_t i = 0; i < neuronArray.size(); ++i) {
         uint64_t bodyId = 0;
         QString name;
-        if (ZJsonParser::isInteger(neuronArray.at(i))) {
+        if (ZJsonParser::IsInteger(neuronArray.at(i))) {
           bodyId = ZJsonParser::integerValue(neuronArray.getData(), i);
         } else {
           ZJsonObject infoJson(neuronArray.value(i));
           if (infoJson.hasKey("pos")) {
             ZIntPoint pos = ZJsonParser::toIntPoint(infoJson["pos"]);
             bodyId = reader.readBodyIdAt(pos);
-            name = ZJsonParser::stringValue(infoJson["name"]);
+            name = ZJsonParser::stringValue(infoJson["name"]).c_str();
           }
         }
 

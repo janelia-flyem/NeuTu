@@ -1137,6 +1137,10 @@ Neuron_Structure_Locseg_Chain_To_Circle_S(const Neuron_Structure *ns,
 
   int ncomp = locseg_chain_ns_circle_number(ns, start_id) * 5;
 
+#ifdef _DEBUG_
+  printf("ncomp after locseg_chain_ns_circle_number: %d\n", ncomp);
+#endif
+
   Neuron_Structure *ns_circle = Make_Neuron_Structure(ncomp);
   
   int i;
@@ -1151,6 +1155,10 @@ Neuron_Structure_Locseg_Chain_To_Circle_S(const Neuron_Structure *ns,
     //chain_length[i] = Locseg_Chain_Length(chain);
     start_id[i + 1] = start_id[i] + n;
   }
+
+#ifdef _DEBUG_
+  printf("ncomp after chain break: %d\n", ncomp);
+#endif
 
   ns_circle->graph->nvertex = ncomp;
 
@@ -1191,7 +1199,7 @@ int Neuron_Structure_Conn_Index(const Neuron_Structure *ns, int comp_index)
   int i;
   for (i = 0; i < ns->graph->nedge; i++) {
     if ((GRAPH_EDGE_NODE(ns->graph, i, 0) == comp_index) ||
-	(GRAPH_EDGE_NODE(ns->graph, i, 0) == comp_index)) {
+	(GRAPH_EDGE_NODE(ns->graph, i, 1) == comp_index)) {
       return i;
     }
   }

@@ -21,39 +21,28 @@ using namespace std;
 
 ZString::ZString() : string()
 {
-  init();
-}
-
-ZString::ZString(const ZString &str) : string(str.c_str())
-{
-  init();
 }
 
 ZString::ZString(const char *s) : string(s)
 {
-  init();
 }
 
 ZString::ZString(const char *s, size_t n) : string(s, n)
 {
-  init();
 }
 
 ZString::ZString(const std::string &str) : string(str)
 {
-  init();
 }
 
 ZString::ZString(const std::string &str, size_t pos, size_t n) :
   string(str, pos, n)
 {
-  init();
 }
 
 #if defined(_QT_GUI_USED_)
 ZString::ZString(const QString &str) : string(str.toStdString())
 {
-  init();
 }
 #endif
 
@@ -449,6 +438,14 @@ std::string ZString::upper() const
 
 void ZString::appendNumber(int num, int pad)
 {
+  std::ostringstream stream;
+  stream.fill('0');
+  stream.width(pad);
+  stream << num;
+
+  *this += stream.str();
+
+#if 0
   static const int kMaxPadSize = 100;
 
   TZ_ASSERT(pad >= 0 && pad <= kMaxPadSize, "Invalid padding");
@@ -467,6 +464,7 @@ void ZString::appendNumber(int num, int pad)
   } else {
     cerr << "Appending failed" << endl;
   }
+#endif
 }
 
 void ZString::appendNumber(uint64_t num, int pad)

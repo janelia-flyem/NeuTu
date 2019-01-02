@@ -53,7 +53,11 @@ ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const libdvid::DVIDNodeService *service);
 
 ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+    const std::string &address, const std::string &user, const std::string &app);
+ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address);
+ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+    const libdvid::DVIDConnection *conn);
 
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);

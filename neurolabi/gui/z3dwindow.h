@@ -69,7 +69,7 @@ class ZLineSegment;
 class ZObject3d;
 class ZWidgetMessage;
 class ZFlyEmBodyEnv;
-
+class ZFlyEmTodoFilterDialog;
 
 class Z3DWindow : public QMainWindow
 {
@@ -261,6 +261,8 @@ public slots:
   void diffView(); //Output difference between current view and recorded view
   void saveView(); //Save the view parameters into a file
   void loadView();
+  void copyView();
+  void pasteView();
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
@@ -287,6 +289,8 @@ public slots:
   void locateSwcNodeIn2DView();
   void removeSwcTurn();
   void deleteSelected();
+  void annotateTodo(ZStackObject* obj);
+  void removeTodoBatch();
 
   void convertSelectedChainToSwc();
 
@@ -380,6 +384,9 @@ public slots:
   void copyPosition();
   void setNormalTodoVisible(bool visible);
   void updateTodoVisibility();
+  void toggleSetting();
+  void toggleObjects();
+//  void removeAllTodo();
 
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
@@ -622,6 +629,7 @@ private:
   HelpDialog *m_helpDlg;
   ZComboEditDialog *m_dvidDlg;
   ZFlyEmBodyComparisonDialog *m_bodyCmpDlg;
+  ZFlyEmTodoFilterDialog *m_todoDlg = nullptr;
 };
 
 #endif // Z3DWINDOW_H

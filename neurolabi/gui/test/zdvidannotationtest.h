@@ -49,10 +49,10 @@ TEST(ZDvidAnnotation, Json)
 
 //  std::cout << ZJsonParser::stringValue(propJson.value("test").getData()) << std::endl;
 
-  ASSERT_STREQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
+  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
 
   ZDvidAnnotation::AddProperty(jsonObj, "test2", "true");
-  ASSERT_STREQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
+  ASSERT_EQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
 
 }
 
@@ -73,9 +73,11 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 
   item.setChecked(false);
   ASSERT_TRUE(item.hasTag(mergeTag));
+  ASSERT_FALSE(item.isChecked());
 
   item.setChecked(true);
   ASSERT_FALSE(item.hasTag(mergeTag));
+  ASSERT_TRUE(item.isChecked());
 
   item.setAction(neutube::EToDoAction::TO_SPLIT);
   ASSERT_EQ(neutube::EToDoAction::TO_SPLIT, item.getAction());

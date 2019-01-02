@@ -18,6 +18,7 @@ public:
   ZStackBall();
   ZStackBall(double x, double y, double z, double r);
   ZStackBall(const ZIntPoint &center, double r);
+  ZStackBall(const ZPoint &center, double r);
   virtual ~ZStackBall() {}
 
   void set(double x, double y, double z, double r);

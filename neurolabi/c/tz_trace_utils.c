@@ -730,7 +730,7 @@ PRIVATE void stack_adjust_zpos(const Stack *stack, int x, int y, int *z)
   double value[5];
   double points[15];
   int i;
-  for (i = 0; i <= 5; i++) {
+  for (i = 0; i < 5; i++) {
     points[i*3] = x;
     points[i*3+1] = y;
     points[i*3+2] = *z + i - 2;

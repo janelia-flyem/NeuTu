@@ -70,7 +70,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
 
     if (obj.hasKey("Tiles")) {
       json_t *value = obj["Tiles"];
-      if (ZJsonParser::isArray(value)) {
+      if (ZJsonParser::IsArray(value)) {
         ZJsonArray array(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         for (size_t i = 0; i < array.size(); ++i) {
           ZJsonObject tileObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);

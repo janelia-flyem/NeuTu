@@ -152,6 +152,27 @@ TEST(ZBiocytinFileNameParser, Basic)
             ZBiocytinFileNameParser::getRole("DH070613-1-2.Mask.tif"));
 }
 
+TEST(ZString, appendNumber)
+{
+  {
+    ZString str = "test";
+    str.appendNumber(3);
+    ASSERT_EQ(std::string("test3"), str);
+  }
+
+  {
+    ZString str = "test";
+    str.appendNumber(3, 3);
+    ASSERT_EQ(std::string("test003"), str);
+  }
+
+  {
+    ZString str = "test";
+    str.appendNumber(123, 3);
+    ASSERT_EQ(std::string("test123"), str);
+  }
+}
+
 #endif
 
 #endif // ZSTRINGTEST_H

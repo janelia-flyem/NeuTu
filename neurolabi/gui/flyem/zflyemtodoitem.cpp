@@ -3,12 +3,14 @@
 #include <QColor>
 #include <iostream>
 
+#include "QsLog/QsLog.h"
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
 
 const char* ZFlyEmToDoItem::ACTION_KEY = "action";
+const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
 const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
 const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT = "to split supervoxel";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT = "irrelevant";
@@ -17,6 +19,14 @@ const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT_TAG = "svsplit";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT_TAG = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
 const char* ZFlyEmToDoItem::ACTION_MERGE_TAG = "merge";
+
+const std::map<std::string, neutube::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
+  {ZFlyEmToDoItem::ACTION_GENERAL, neutube::EToDoAction::TO_DO},
+  {ZFlyEmToDoItem::ACTION_MERGE, neutube::EToDoAction::TO_MERGE},
+  {ZFlyEmToDoItem::ACTION_SPLIT, neutube::EToDoAction::TO_SPLIT},
+  {ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT},
+  {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutube::EToDoAction::TO_DO_IRRELEVANT}
+};
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -116,6 +126,13 @@ neutube::EToDoAction ZFlyEmToDoItem::getAction() const
   }
 
   return action;
+}
+
+void ZFlyEmToDoItem::setAction(const std::string &action)
+{
+  if (m_actionMap.count(action) > 0) {
+    setAction(m_actionMap.at(action));
+  }
 }
 
 void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
@@ -235,12 +252,8 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
     pen.setColor(color);
     painter.setPen(pen);
-//    painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
 
-//    if (isFocused) {
-
-//    }
     if (radius > 0.0) {
       int x = center.getX();
       int y = center.getY();
@@ -249,33 +262,31 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
       painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
       painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
-//      painter.drawLine(QPointF(x - radius, y - radius),
-//                       QPointF(x + radius, y + radius));
-//      painter.drawLine(QPointF(x - radius, y + radius),
-//                       QPointF(x + radius, y - radius));
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
       QPointF ptArray[9];
       ZFlyEmMisc::MakeStar(QPointF(x, y), radius, ptArray);
       painter.drawPolyline(ptArray, 9);
-      /*
-      painter.drawEllipse(QPointF(center.getX(), center.getY()),
-                          radius, radius);
-                          */
+
+      if (getPriority() > 0) {
+        painter.save();
+        double p = double(getPriority()) / 9;
+
+//        QPen priorityPen = pen;
+//        priorityPen.setColor(
+//              QColor(int(std::round((1.0 - p) * 127)) + 128, 0, 0, color.alpha()));
+//        painter.setPen(priorityPen);
+
+        painter.drawEllipse(
+              QPointF(x, y - ((0.5 - p) * radius)), radius * 0.05, radius * 0.05);
+
+
+        painter.restore();
+
+      }
     }
 
-    /*
-    QString decorationText = "*";
-    int width = decorationText.size() * 25;
-    int height = 25;
-    QColor oldColor = painter.getPen().color();
-    painter.setPen(QColor(0, 0, 0, 128));
-    painter.drawText(center.getX() - width / 2, center.getY() - height / 2,
-                     width, height,
-                     Qt::AlignCenter, decorationText);
-    painter.setPen(oldColor);
-    */
   }
 
   bool drawingBoundBox = false;
@@ -334,6 +345,30 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   m_propertyJson.setEntry("checked", checkedStr);
 
   syncActionTag();
+}
+
+int ZFlyEmToDoItem::getPriority() const
+{
+  int p = 0;
+
+  if (m_propertyJson.hasKey("priority")) {
+    try {
+      p = std::stoi(ZJsonParser::stringValue(m_propertyJson["priority"]));
+    } catch (const std::invalid_argument &ia) {
+      LERROR() << "Invalid priority:" << ia.what();
+    }
+  }
+
+  return p;
+}
+
+void ZFlyEmToDoItem::setPriority(int p)
+{
+  if (p > 0) {
+    addProperty("priority", std::to_string(p));
+  } else {
+    removeProperty("priority");
+  }
 }
 
 

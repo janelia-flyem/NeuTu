@@ -16,7 +16,7 @@ public:
   ~ZFlyEmSkeletonUpdateDialog();
 
   enum class EMode {
-    SELECTED, TOP
+    SELECTED, TOP, FILE
   };
 
   void setComputingServer(const QString &address);
@@ -24,6 +24,7 @@ public:
 
   void setMode(EMode mode);
   int getTopCount() const;
+  int getPriority() const;
 
 private:
   void updateWidget();

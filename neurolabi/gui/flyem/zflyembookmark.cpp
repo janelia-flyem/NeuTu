@@ -89,7 +89,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
   }
 
   if (ZJsonParser::stringValue(jsonObj["Kind"]) == std::string("Note")) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["Pos"]);
 
     if (jsonObj.hasKey("Tags")) {
@@ -107,7 +107,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 
       if (!propJson.isEmpty()) {
         uint64_t bodyId = 0;
-        if (ZJsonParser::isInteger(propJson["body ID"])) {
+        if (ZJsonParser::IsInteger(propJson["body ID"])) {
           bodyId = ZJsonParser::integerValue(propJson["body ID"]);
         } else {
           bodyId = ZString(ZJsonParser::stringValue(propJson["body ID"])).
@@ -145,7 +145,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
           std::cout << userName << std::endl;
 #endif
-          setUser(userName.c_str());
+          setUser(userName);
         }
 
         setComment(ZJsonParser::stringValue(propJson["comment"]));
@@ -153,7 +153,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         setUser(ZJsonParser::stringValue(propJson["user"]));
 
         if (propJson.hasKey("checked")) {
-          if (ZJsonParser::isBoolean(propJson["checked"])) {
+          if (ZJsonParser::IsBoolean(propJson["checked"])) {
             setChecked(ZJsonParser::booleanValue(propJson["checked"]));
           } else {
             std::string checked = ZJsonParser::stringValue(propJson["checked"]);
@@ -162,7 +162,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         }
 
         if (propJson.hasKey("custom")) {
-          if (ZJsonParser::isBoolean(propJson["custom"])) {
+          if (ZJsonParser::IsBoolean(propJson["custom"])) {
             setCustom(ZJsonParser::booleanValue(propJson["custom"]));
           } else {
             std::string custom = ZJsonParser::stringValue(propJson["custom"]);
@@ -289,7 +289,7 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 
 #if 1
   if (jsonObj["location"] != NULL) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["location"]);
 
     if (coordinates.size() == 3) {
@@ -327,7 +327,7 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
         std::cout << userName << std::endl;
 #endif
-        setUser(userName.c_str());
+        setUser(userName);
       }
 
       setComment(ZJsonParser::stringValue(jsonObj["comment"]));

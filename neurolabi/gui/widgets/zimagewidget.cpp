@@ -22,28 +22,17 @@ ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 
 ZImageWidget::~ZImageWidget()
 {
-  /*
-  if (m_widgetCanvas != NULL) {
-    delete m_widgetCanvas;
-  }
-  */
-
-//  if (m_isowner == true) {
-//    if (m_image != NULL) {
-//      delete m_image;
-//    }
-//  }
 }
 
 void ZImageWidget::init()
 {
-  qDebug() << "ZImageWidget initialization:" << this;
+//  qDebug() << "ZImageWidget initialization:" << this;
 
-  m_isViewHintVisible = true;
-  m_freeMoving = true;
-  m_hoverFocus = false;
-  m_smoothDisplay = false;
-  m_isReady = false;
+//  m_isViewHintVisible = true;
+//  m_freeMoving = true;
+//  m_hoverFocus = false;
+//  m_smoothDisplay = false;
+//  m_isReady = false;
 
 #if 0
   if (image != NULL) {
@@ -57,19 +46,19 @@ void ZImageWidget::init()
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   setAttribute(Qt::WA_OpaquePaintEvent);
   //setAttribute(Qt::WA_NoSystemBackground);
-  setImage(NULL);
+//  setImage(NULL);
   setCursor(Qt::CrossCursor);
   setMouseTracking(true);
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
-  m_paintBundle = NULL;
-  m_tileCanvas = NULL;
-  m_objectCanvas = NULL;
-  m_dynamicObjectCanvas = NULL;
-  m_activeDecorationCanvas = NULL;
+//  m_paintBundle = NULL;
+//  m_tileCanvas = NULL;
+//  m_objectCanvas = NULL;
+//  m_dynamicObjectCanvas = NULL;
+//  m_activeDecorationCanvas = NULL;
 //  m_widgetCanvas = NULL;
 
-  m_sliceAxis = neutube::EAxis::Z;
+//  m_sliceAxis = neutube::EAxis::Z;
 }
 
 void ZImageWidget::maximizeViewPort()
@@ -85,7 +74,9 @@ void ZImageWidget::enableOffsetAdjustment(bool on)
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+#ifdef _DEBUG_2
   LDEBUG() << "ZImageWidget::paintEvent";
+#endif
 
   QWidget::paintEvent(event);
 
@@ -113,14 +104,18 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     }
 
 
-    /* draw gray regions */
+    /* draw background */
+//    painter.save();
+    QBrush bgBrush(QColor(164,164, 164), Qt::CrossPattern);
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
                      Qt::gray);
+    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
+                     bgBrush);
+//    painter.restore();
 //    QSize size = projectSize();
 
     if (m_image != NULL) {
-      painter.drawImage(
-            m_viewProj, *m_image);
+      painter.drawImage(m_viewProj, *m_image);
 #ifdef _DEBUG_2
       m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
@@ -466,7 +461,7 @@ void ZImageWidget::paintObject()
         ZPainter rawPainter(this);
         rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
         obj->display(rawPainter, m_paintBundle->sliceIndex(),
-                     ZStackObject::NORMAL, m_sliceAxis);
+                     ZStackObject::EDisplayStyle::NORMAL, m_sliceAxis);
       } else {
         paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
                           m_paintBundle->displayStyle(), m_sliceAxis);

@@ -47,6 +47,7 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   m_colors.swap(rhs.m_colors);
   m_indices.swap(rhs.m_indices);
 
+  rhs.validateObbTree(false);
   validateObbTree(false);
 }
 
@@ -1803,14 +1804,14 @@ void ZMesh::scale(double sx, double sy, double sz)
 vtkSmartPointer<vtkOBBTree> ZMesh::getObbTree() const
 {
   if (!isObbTreeValid()) {
-    m_obbTree = vtkSmartPointer<vtkOBBTree>::New();
+    m_obbTreeData.m_obbTree = vtkSmartPointer<vtkOBBTree>::New();
     vtkSmartPointer<vtkPolyData> poly = meshToVtkPolyData(*this);
-    m_obbTree->SetDataSet(poly);
-    m_obbTree->BuildLocator();
+    m_obbTreeData.m_obbTree->SetDataSet(poly);
+    m_obbTreeData.m_obbTree->BuildLocator();
     validateObbTree(true);
   }
 
-  return m_obbTree;
+  return m_obbTreeData.m_obbTree;
 }
 std::vector<ZPoint> ZMesh::intersectLineSeg(
     const ZPoint &start, const ZPoint &end) const

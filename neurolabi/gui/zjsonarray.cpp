@@ -216,7 +216,7 @@ bool ZJsonArray::decode(const string &str)
   ZJsonParser parser;
   json_t *obj = parser.decode(str);
 
-  if (ZJsonParser::isArray(obj)) {
+  if (ZJsonParser::IsArray(obj)) {
     set(obj, true);
   } else {
     if (obj == NULL) {

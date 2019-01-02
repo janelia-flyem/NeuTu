@@ -187,6 +187,11 @@ void FlyEmProofControlForm::createColorMenu()
           this, SLOT(changeColorMap(QAction*)));
 }
 
+void FlyEmProofControlForm::setMainMenu(QMenu *menu)
+{
+  ui->menuPushButton->setMenu(menu);
+}
+
 void FlyEmProofControlForm::createMenu()
 {
   m_mainMenu = new QMenu(this);
@@ -197,11 +202,11 @@ void FlyEmProofControlForm::createMenu()
   queryPixelAction->setShortcut(Qt::Key_F3);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
-  QAction *queryBodyAction = new QAction("Go to Body", this);
-  queryBodyAction->setShortcuts(
+  QAction *gotoBodyAction = new QAction("Go to Body", this);
+  gotoBodyAction->setShortcuts(
         QList<QKeySequence>() << Qt::Key_F1 << Qt::SHIFT + Qt::Key_G);
-  m_mainMenu->addAction(queryBodyAction);
-  connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
+  m_mainMenu->addAction(gotoBodyAction);
+  connect(gotoBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 
   QAction *selectBodyAction = new QAction("Select Body", this);
   selectBodyAction->setShortcut(Qt::Key_F2);
@@ -215,6 +220,12 @@ void FlyEmProofControlForm::createMenu()
   connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
 
   QMenu *bodyMenu = m_mainMenu->addMenu("Bodies");
+
+  QAction *queryBodyAction = new QAction("Query", this);
+  connect(queryBodyAction, SIGNAL(triggered()),
+          this, SLOT(queryBody()));
+  bodyMenu->addAction(queryBodyAction);
+
   QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
   connect(exportBodyAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBody()));
@@ -230,6 +241,12 @@ void FlyEmProofControlForm::createMenu()
   connect(skeletonizeTopAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeTopBody()));
   bodyMenu->addAction(skeletonizeTopAction);
+
+  QAction *skeletonizeBodyListAction = new QAction("Skeletonize Body List", this);
+  connect(skeletonizeBodyListAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeBodyList()));
+  bodyMenu->addAction(skeletonizeBodyListAction);
+
 
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
@@ -279,6 +296,11 @@ void FlyEmProofControlForm::exportSelectedBody()
   emit exportingSelectedBody();
 }
 
+void FlyEmProofControlForm::queryBody()
+{
+  emit queryingBody();
+}
+
 void FlyEmProofControlForm::exportSelectedBodyLevel()
 {
   emit exportingSelectedBodyLevel();
@@ -292,6 +314,11 @@ void FlyEmProofControlForm::skeletonizeSelectedBody()
 void FlyEmProofControlForm::skeletonizeTopBody()
 {
   emit skeletonizingTopBody();
+}
+
+void FlyEmProofControlForm::skeletonizeBodyList()
+{
+  emit skeletonizingBodyList();
 }
 
 void FlyEmProofControlForm::updateMeshForSelectedBody()

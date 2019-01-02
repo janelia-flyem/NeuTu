@@ -309,8 +309,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         //  master branch from a key-value we used to store in some
         //  of the older repos:
         if (m_reader.hasData(INSTANCE_BRANCHES.toStdString())) {
-            if (m_reader.hasKey(INSTANCE_BRANCHES, KEY_MASTER)) {
-                const QByteArray &rawData = m_reader.readKeyValue(INSTANCE_BRANCHES, KEY_MASTER);
+            const QByteArray &rawData = m_reader.readKeyValue(INSTANCE_BRANCHES, KEY_MASTER);
+            if (!rawData.isEmpty()) {
                 QJsonArray UUIDs = QJsonDocument::fromJson(rawData).array();
                 if (UUIDs.size() > 0) {
                     QString masterUUID = UUIDs.first().toString();
