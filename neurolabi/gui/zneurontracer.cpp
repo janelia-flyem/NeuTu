@@ -19,7 +19,7 @@
 #include "swc/zswcresampler.h"
 #include "zintpoint.h"
 #include "neutubeconfig.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "zobject3darray.h"
 #include "tz_objdetect.h"
 #include "zjsonobject.h"
