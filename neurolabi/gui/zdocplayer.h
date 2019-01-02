@@ -64,7 +64,7 @@ public:
   virtual void paintStack(
       const std::vector<Stack*> &stackArray,
       const int *offset, int xIntv, int yIntv, int zIntv) const {
-    UNUSED_PARAMETER(&stackArray);
+    UNUSED_PARAMETER(stackArray);
     UNUSED_PARAMETER(offset);
     UNUSED_PARAMETER(xIntv);
     UNUSED_PARAMETER(yIntv);

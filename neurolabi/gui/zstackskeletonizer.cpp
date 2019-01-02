@@ -292,7 +292,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
@@ -669,7 +669,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);

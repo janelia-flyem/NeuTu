@@ -644,6 +644,11 @@ void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
                                       xRes, yRes, zRes);
 }
 
+void ZStackDoc::updateTraceWorkspaceResolution(double xRes, double yRes, double zRes)
+{
+  m_neuronTracer.updateTraceWorkspaceResolution(xRes, yRes, zRes);
+}
+
 void ZStackDoc::updateConnectionTestWorkspace(
     double xRes, double yRes, double zRes,
     char unit, double distThre, bool spTest, bool crossoverTest)
@@ -5304,6 +5309,15 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::FILE_SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
+  case ZFileType::FILE_3D_GRAPH:
+  {
+    Z3DGraph *graph = new Z3DGraph;
+    graph->load(filePath.toStdString());
+    if (!graph->isEmpty()) {
+      addObject(graph);
+    }
+  }
+    break;
   case ZFileType::FILE_OBJECT_SCAN_ARRAY:
   {
     succ = false;
@@ -6371,7 +6385,7 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center)
     Swc_Tree_Node *prevNode = *(nodeSet.begin());
     if (prevNode != NULL) {
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               center[0], center[1], center[2], SwcTreeNode::radius(prevNode));
         command  = new ZStackDocCommand::SwcEdit::ExtendSwcNode(this, tn, prevNode);
       }
@@ -6401,7 +6415,7 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
     Swc_Tree_Node *prevNode = *(nodeSet.begin());
     if (prevNode != NULL) {
 //      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               center[0], center[1], center[2], radius);
         command  = new ZStackDocCommand::SwcEdit::ExtendSwcNode(
               this, tn, prevNode);
@@ -8128,7 +8142,7 @@ bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius,
                                          ZStackObjectRole::TRole role)
 {
   if (radius > 0) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(center, radius);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(center, radius);
     ZStackDocCommand::SwcEdit::AddSwcNode *command = new
         ZStackDocCommand::SwcEdit::AddSwcNode(this, tn, role);
     command->setLogMessage("Add SWC node");
@@ -9170,7 +9184,7 @@ bool ZStackDoc::executeInsertSwcNode()
          iter != nodeSet.end(); ++iter) {
       Swc_Tree_Node *parent = SwcTreeNode::parent(*iter);
       if (nodeSet.count(parent) > 0) {
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
         SwcTreeNode::interpolate(*iter, parent, 0.5, tn);
         new ZStackDocCommand::SwcEdit::SetParent(
               this, tn, parent, false, command);

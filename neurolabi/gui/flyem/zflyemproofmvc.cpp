@@ -479,7 +479,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
 //  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
         NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::EAxis::Z, role);
-  mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
+  mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
 
   mvc->connectSignalSlot();
 

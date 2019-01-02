@@ -610,7 +610,7 @@ TEST(SwcTree, ExtIterator)
 
 TEST(SwcTree, Attributes)
 {
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
   SwcTreeNode::setX(tn, 1.0);
   SwcTreeNode::setY(tn, 2.0);
   SwcTreeNode::setZ(tn, 3.0);
@@ -624,13 +624,13 @@ TEST(SwcTree, Attributes)
 
 TEST(SwcTree, Distance)
 {
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer();
   SwcTreeNode::setX(tn1, 1.0);
   SwcTreeNode::setY(tn1, 2.0);
   SwcTreeNode::setZ(tn1, 3.0);
   SwcTreeNode::setRadius(tn1, 5.0);
 
-  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer();
   SwcTreeNode::setX(tn2, 1.0);
   SwcTreeNode::setY(tn2, 2.0);
   SwcTreeNode::setZ(tn2, 4.0);
@@ -654,17 +654,17 @@ TEST(SwcTree, Distance)
 TEST(SwcTree, Util)
 {
   ZSwcTree tree1;
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
   SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
   tree1.addRegularRoot(tn);
 
   ZSwcTree tree2;
 
-  tn = SwcTreeNode::makePointer();
+  tn = SwcTreeNode::MakePointer();
   SwcTreeNode::setNode(tn, 1, 1, 10, 0, 0, 5, -1);
   tree2.addRegularRoot(tn);
 
-  tn = SwcTreeNode::makePointer();
+  tn = SwcTreeNode::MakePointer();
   SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
   tree2.addRegularRoot(tn);
 

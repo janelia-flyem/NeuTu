@@ -74,7 +74,9 @@ void ZImageWidget::enableOffsetAdjustment(bool on)
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+#ifdef _DEBUG_2
   LDEBUG() << "ZImageWidget::paintEvent";
+#endif
 
   QWidget::paintEvent(event);
 
@@ -459,7 +461,7 @@ void ZImageWidget::paintObject()
         ZPainter rawPainter(this);
         rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
         obj->display(rawPainter, m_paintBundle->sliceIndex(),
-                     ZStackObject::NORMAL, m_sliceAxis);
+                     ZStackObject::EDisplayStyle::NORMAL, m_sliceAxis);
       } else {
         paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
                           m_paintBundle->displayStyle(), m_sliceAxis);

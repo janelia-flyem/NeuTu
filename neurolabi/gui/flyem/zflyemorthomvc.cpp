@@ -29,7 +29,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   ZFlyEmOrthoMvc *frame = new ZFlyEmOrthoMvc(parent);
 
   BaseConstruct(frame, doc, axis);
-  frame->getPresenter()->setObjectStyle(ZStackObject::SOLID);
+  frame->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
   frame->getView()->layout()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->hideThresholdControl();

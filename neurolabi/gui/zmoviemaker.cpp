@@ -261,7 +261,7 @@ int ZMovieMaker::make(const std::string &filePath)
 void ZMovieMaker::makeSlideShow(const string &filePath)
 {
   //under development
-  UNUSED_PARAMETER(filePath.c_str());
+  UNUSED_PARAMETER(filePath);
 }
 
 int ZMovieMaker::updateAction()

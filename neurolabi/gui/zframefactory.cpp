@@ -36,7 +36,7 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
   case neutube::Document::ETag::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
     frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
-    frame->setObjectDisplayStyle(ZStackObject::SOLID);
+    frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     break;
   default:
     frame = ZStackFrame::Make(NULL);

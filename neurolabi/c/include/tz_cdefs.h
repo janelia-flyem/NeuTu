@@ -142,7 +142,7 @@ static const double NaN = _NAN;
 static const double Infinity = _INFINITY;
 #endif
 
-#define UNUSED_PARAMETER(var) if (var) {}
+#define UNUSED_PARAMETER(var) if (&var) {}
 
 #ifdef _MSC_VER
 #define __func__ __FUNCTION__

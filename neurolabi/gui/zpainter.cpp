@@ -163,7 +163,9 @@ void ZPainter::detachPainter()
 
 void ZPainter::setPen(const QColor &color)
 {
-  getPainter()->setPen(color);
+  QPen pen = getPainter()->pen();
+  pen.setColor(color);
+  getPainter()->setPen(pen);
 }
 
 void ZPainter::setPen(const QPen &pen)

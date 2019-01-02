@@ -531,6 +531,7 @@ public slots:
   void requestHighresQuick3DVis();
   void requestMerge();
   void requestSetting();
+  void requestAutoTracing();
   void closeChildFrame();
 
 
@@ -562,6 +563,7 @@ signals:
   void sliceSliderPressed();
   void sliceSliderReleased();
   void closingChildFrame();
+  void autoTracing();
 
 private:
   void hideLayout(QLayout *layout);
