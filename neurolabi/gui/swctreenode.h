@@ -28,7 +28,7 @@ using Pair = std::pair<Swc_Tree_Node*, Swc_Tree_Node*>;
  * \brief Create a regular swc node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer();
+Swc_Tree_Node* MakePointer();
 
 /*!
  * \brief Create a pointer of Swc_Tree_Node
@@ -39,7 +39,7 @@ Swc_Tree_Node* makePointer();
  * \param parentId Parent ID of the node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(int id, int type, const ZPoint &center, double radius,
+Swc_Tree_Node* MakePointer(int id, int type, const ZPoint &center, double radius,
                            int parentId);
 
 /*!
@@ -53,7 +53,7 @@ Swc_Tree_Node* makePointer(int id, int type, const ZPoint &center, double radius
  * \param parentId Parent ID of the node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(int id, int type, double x, double y, double z,
+Swc_Tree_Node* MakePointer(int id, int type, double x, double y, double z,
                            double radius, int parentId);
 
 /*!
@@ -66,7 +66,7 @@ Swc_Tree_Node* makePointer(int id, int type, double x, double y, double z,
  *
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(double x, double y, double z, double radius,
+Swc_Tree_Node* MakePointer(double x, double y, double z, double radius,
                            Swc_Tree_Node *parent = NULL);
 
 /*!
@@ -75,7 +75,10 @@ Swc_Tree_Node* makePointer(double x, double y, double z, double radius,
  * \param radius Radius of the node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(const ZPoint &center, double radius);
+Swc_Tree_Node* MakePointer(const ZPoint &center, double radius);
+
+Swc_Tree_Node* MakePointer(
+    const ZPoint &center, double radius, Swc_Tree_Node *parent);
 
 /*!
  * \brief Make a virtual node
@@ -521,6 +524,7 @@ double estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
                       neutube::EImageBackground bg);
 bool fitSignal(Swc_Tree_Node *tn, const Stack *stack,
                neutube::EImageBackground bg, int option = 1);
+double averageIntensity(const Swc_Tree_Node *tn, const Stack *stack);
 
 //Node set
 bool connect(const std::vector<Swc_Tree_Node*> &nodeArray);

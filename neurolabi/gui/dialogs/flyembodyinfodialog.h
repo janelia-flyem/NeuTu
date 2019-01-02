@@ -14,6 +14,9 @@
 #include "flyem/zflyemsequencercolorscheme.h"
 #include "zthreadfuturemap.h"
 
+class NeuPrintReader;
+class NeuPrintQueryDialog;
+
 namespace Ui {
 class FlyEmBodyInfoDialog;
 }
@@ -24,7 +27,7 @@ class FlyEmBodyInfoDialog : public QDialog
 
 public:
   enum class EMode {
-    SEQUENCER, QUERY
+    SEQUENCER, QUERY, NEUPRINT
   };
 
   explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
@@ -33,6 +36,9 @@ public:
   void simplify();
 
   void setBodyList(const std::set<uint64_t> &bodyList);
+  void setBodyList(const ZJsonArray &bodies);
+
+  int getMaxBodies() const;
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -61,10 +67,17 @@ signals:
   void appendingData(ZJsonValue object, int state);
 
   void refreshing();
+//  void loadingAllNamedBodies();
 
 private slots:
     void onCloseButton();
     void onRefreshButton();
+    void onAllNamedButton();
+    void onQueryByNameButton();
+    void onQueryByRoiButton();
+    void onQueryByStatusButton();
+    void onFindSimilarButton();
+
     void onDoubleClickBodyTable(QModelIndex modelIndex);
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
@@ -95,7 +108,8 @@ private slots:
     void onMaxBodiesChanged(int maxBodies);
     void onRoiChanged(int index);
     void onNamedOnlyToggled();
-    void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
+    void onIOConnectionsSelectionChanged(
+        QItemSelection selected, QItemSelection deselected);
 
 private:
     enum Tabs {
@@ -147,7 +161,6 @@ private:
     QSortFilterProxyModel* m_connectionsProxy;
     QMap<uint64_t, QString> m_bodyNames;
     QSet<uint64_t> m_namelessBodies;
-    QSet<QString> m_bodyAnnotationKeys;
     QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
@@ -167,6 +180,8 @@ private:
     qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
+
+    NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
 
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
@@ -203,6 +218,10 @@ private:
     ZDvidRoi* getRoi(const QString &name);
     QList<QStandardItem*> getBodyItemList(const ZJsonObject &bkmk);
     void prepareWidget();
+    QList<uint64_t> getSelectedBodyList() const;
+    NeuPrintReader *getNeuPrintReader();
+    NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+    void prepareQuery();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

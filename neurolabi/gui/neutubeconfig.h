@@ -22,13 +22,14 @@ class ZJsonObject;
 class NeutubeConfig
 {
 public:
-  enum EConfigItem {
+  enum class EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
     WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
-    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
+    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE,
+    NEUPRINT_AUTH
   };
 
   static NeutubeConfig& getInstance() {
@@ -93,6 +94,12 @@ public:
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
+
+  void set3DCrossWidth(double w);
+  double get3DCrossWidth() const;
+
+  static void Set3DCrossWidth(int w);
+  static int Get3DCrossWidth();
 
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
@@ -479,6 +486,7 @@ private:
   int m_verboseLevel;
   bool m_advancedMode = false;
   size_t m_meshSplitThreshold = 5000000;
+  int m_3dcrossWidth = 5;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 
@@ -488,7 +496,7 @@ private:
 #endif
 };
 
-#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
+#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::DATA))
 #if defined(PROJECT_PATH)
 #  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
 #endif

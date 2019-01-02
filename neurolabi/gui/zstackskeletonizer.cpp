@@ -292,7 +292,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
@@ -669,7 +669,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
@@ -948,32 +948,32 @@ void ZStackSkeletonizer::configure(const ZJsonObject &config)
   }
 
   const json_t *value = config["minimalLength"];
-  if (ZJsonParser::isNumber(value)) {
+  if (ZJsonParser::IsNumber(value)) {
     setLengthThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["maximalDistance"];
-  if (ZJsonParser::isNumber(value)) {
+  if (ZJsonParser::IsNumber(value)) {
     setDistanceThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["keepingSingleObject"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setKeepingSingleObject(ZJsonParser::booleanValue(value));
   }
 
   value = config["rebase"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setRebase(ZJsonParser::booleanValue(value));
   }
 
   value = config["fillingHole"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setFillingHole(ZJsonParser::booleanValue(value));
   }
 
   value = config["minimalObjectSize"];
-  if (ZJsonParser::isInteger(value)) {
+  if (ZJsonParser::IsInteger(value)) {
     setMinObjSize(ZJsonParser::integerValue(value));
   }
 }

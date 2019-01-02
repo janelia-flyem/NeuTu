@@ -36,6 +36,8 @@ class ZFlyEmToDoItem;
 class ZFlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
+class ZFlyEmTodoAnnotationDialog;
+class ZFlyEmTodoFilterDialog;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -320,6 +322,7 @@ public:
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
 
+  void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
   void registerBody(uint64_t bodyId);
   void deregisterBody(uint64_t bodyId);
@@ -353,6 +356,7 @@ public slots:
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
   void setTodoItemAction(neutube::EToDoAction action);
+  void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
 

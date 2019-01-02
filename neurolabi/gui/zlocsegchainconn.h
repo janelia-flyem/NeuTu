@@ -37,7 +37,8 @@ public:
   virtual const std::string& className() const;
 
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  virtual void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0,
+                       EDisplayStyle option = EDisplayStyle::NORMAL)
   const;
 
   virtual void save(const char *filePath);

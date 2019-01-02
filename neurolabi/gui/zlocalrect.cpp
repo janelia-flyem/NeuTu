@@ -17,12 +17,12 @@ ZLocalRect::ZLocalRect(double x, double y, double z, double theta, double r)
   m_template.transform.y = y;
   m_template.base.z = z;
 }
-
+/*
 ZLocalRect::ZLocalRect(const ZLocalRect &rect) : ZDirectionalTemplate(rect)
 {
   m_template = rect.m_template;
 }
-
+*/
 void ZLocalRect::toLocalNeuroseg(Local_Neuroseg *locseg) const
 {
   Local_R2_Rect_To_Local_Neuroseg(&m_template, locseg);
@@ -188,7 +188,7 @@ ZPoint ZLocalRect::center()
 {
   ZPoint pt;
   double coord[3];
-  Local_R2_Rect_Bottom(&m_template, coord);
+  Local_R2_Rect_Center(&m_template, coord);
   pt.set(coord[0], coord[1], coord[2]);
 
   return pt;

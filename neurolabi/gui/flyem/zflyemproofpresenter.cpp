@@ -390,6 +390,11 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_3:
+    if (!isSplitOn()) {
+      emit togglingBodyColorMap();
+    }
+    break;
   default:
     break;
   }
@@ -800,7 +805,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
-    bookmark->setUser(neutube::GetCurrentUserName().c_str());
+    bookmark->setUser(neutube::GetCurrentUserName());
     bookmark->addUserTag();
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
@@ -866,6 +871,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE:
     emit annotatingSynapse();
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_ANNOTATE:
+    emit annotatingTodo();
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);

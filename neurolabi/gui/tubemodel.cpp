@@ -15,7 +15,7 @@ Swc_Tree_Node* TubeModel::createSwc(Locseg_Chain *chain, int type)
   Swc_Tree_Node *head = NULL;
   Swc_Tree_Node *parent = NULL;
   for (int i = start; i != end; i += step) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
           i, type, circles[i].center[0],
         circles[i].center[1], circles[i].center[2], circles[i].radius, i - 1);
 

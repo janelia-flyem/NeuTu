@@ -25,8 +25,13 @@ class Z3DSwcFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
 public:
-  enum InteractionMode {
+  enum class EInteractionMode {
     Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
+  };
+
+  enum class EColorMode {
+    INDIVIDUAL = 0, RANDOM, BRANCH_TYPE, TOPOLOGY, COLORMAP_BRANCH_TYPE,
+    BIOCYTIN_BRANCH_TYPE, LABEL_BRANCH_TYPE, SUBCLASS, DIRECTION, INTRINSIC
   };
 
   explicit Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
@@ -47,10 +52,10 @@ public:
   bool isNodeRendering() const
   { return m_renderingPrimitive.isSelected("Sphere"); }
 
-  void setInteractionMode(InteractionMode mode)
+  void setInteractionMode(EInteractionMode mode)
   { m_interactionMode = mode; }
 
-  inline InteractionMode interactionMode()
+  inline EInteractionMode interactionMode()
   { return m_interactionMode; }
 
   virtual bool hasOpaque(Z3DEye /*unused*/) const override
@@ -113,16 +118,24 @@ signals:
 
 protected slots:
   void prepareColor();
+  void changeColorOption();
 
 protected:
+  using TreeParamMap = std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>>;
+  struct TreeColorParam {
+    TreeParamMap m_mapper;
+    std::vector<std::shared_ptr<ZVec4Parameter>> m_paramList;
+    ZSwcColorScheme m_scheme;
+    QString m_prefix;
+  };
+
   void prepareColorForImmutable();
   void setColorScheme();
   bool isBranchTypeColor() const;
-  void prepareColorMapper(
-      const std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> &colorMapper);
+  void prepareColorMapper(const TreeParamMap &colorMapper);
   glm::vec4 getTopologyColor(const Swc_Tree_Node *tn);
 
-  void adjustWidgets();
+  void updateColorWidgets();
 
   void selectSwc(QMouseEvent* e, int w, int h);
 
@@ -185,14 +198,35 @@ private:
   void sortNodeList();
   void clearDecorateSwcList();
 
+  void updateColorMapBranchType();
+//  void updateColorWidget();
+
   void updateBiocytinWidget();
-  bool updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
-  void updateWidgetGroup();
-  bool updateColorParameter(
+//  bool updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+//  void updateWidgetGroup();
+//  bool updateColorParameter(
+//      const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+
+  bool updateTreeColorParameter(TreeColorParam &colorParam,
+      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
+
+  bool updateIndividualColorParameter(
+      const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  bool updateRandomColorParameter(
       const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
+  std::shared_ptr<ZVec4Parameter> getTreeColorParam(TreeColorParam &colorParam, int index);
   std::shared_ptr<ZVec4Parameter> getIndvidualColorParam(int index);
   std::shared_ptr<ZVec4Parameter> getRandomColorParam(int index);
+
+//  bool updateColorParameter(EColorMode mode);
+  std::map<ZSwcTree*, size_t> getSourceIndexMapper() const;
+  bool removeObsoleteColorparam(
+      TreeColorParam &param,
+      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
+  void removeTreeColorWidget();
+  void updateTreeColorWidget(TreeColorParam &param);
+  void addTreeColorWidget(TreeColorParam &param);
 
 private:
   Z3DLineRenderer m_lineRenderer;
@@ -203,11 +237,14 @@ private:
   ZStringIntOptionParameter m_renderingPrimitive;
   ZStringIntOptionParameter m_colorMode;
 
-  std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
-  std::vector<std::shared_ptr<ZVec4Parameter> > m_individualTreeColorList;
+  /*Color widget parameters*/
+  TreeColorParam m_individualColorParam;
+  TreeColorParam m_randomColorParam;
+//  TreeParamMap m_individualTreeColorMapper;
+//  std::vector<std::shared_ptr<ZVec4Parameter> > m_individualTreeColorList;
 
-  std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> m_randomTreeColorMapper;
-  std::vector<std::shared_ptr<ZVec4Parameter> > m_randomTreeColorList;
+//  TreeParamMap m_randomTreeColorMapper;
+//  std::vector<std::shared_ptr<ZVec4Parameter> > m_randomTreeColorList;
 
   std::map<int, std::unique_ptr<ZVec4Parameter>> m_biocytinColorMapper;
   std::map<int, size_t> m_subclassTypeColorMapper;
@@ -217,6 +254,7 @@ private:
   std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForLabelType;
   std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForDifferentTopology;
   ZColorMapParameter m_colorMapBranchType;
+  /**************************************/
 
 
   // swc list used for rendering, it is a subset of m_origSwcList. Some swcs are
@@ -270,10 +308,10 @@ private:
 
   std::vector<ZSwcTree*> m_origSwcList;
 
-  InteractionMode m_interactionMode = Select;
+  EInteractionMode m_interactionMode = EInteractionMode::Select;
   ZSwcColorScheme m_colorScheme;
-  ZSwcColorScheme m_individualColorScheme;
-  ZColorScheme m_randomColorScheme;
+//  ZSwcColorScheme m_individualColorScheme;
+//  ZSwcColorScheme m_randomColorScheme;
 
   bool m_enableCutting = true;
   bool m_enablePicking = true;

@@ -17,7 +17,7 @@ public:
     FILE_OBJECT_SCAN_ARRAY,
     FILE_JPG, FILE_DVID_OBJECT, FILE_HDF5,
     FILE_MC_STACK_RAW, FILE_TXT, FILE_SPARSE_STACK,
-    FILE_MESH
+    FILE_MESH, FILE_3D_GRAPH
   };
 
   static EFileType FileType(const std::string &filePath);

@@ -63,6 +63,7 @@
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/taskfalsesplitreview.h"
+#include "protocols/taskmergereview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 
@@ -182,6 +183,8 @@ void Neu3Window::initGrayscaleWidget()
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
     ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
+
+    applyBrowserColorScheme();
   }
 }
 
@@ -192,6 +195,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
+  connect(m_3dwin, SIGNAL(locating2DViewTriggered(int,int,int,int)),
+          this, SLOT(browse(int,int,int,int)));
 //  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
 //          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
@@ -430,6 +435,7 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
   factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
   factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
+  factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
   factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 
@@ -599,15 +605,21 @@ void Neu3Window::updateSliceBrowserSelection()
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 {
+  m_browserColorScheme =
+      ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyIdColorScheme(idToColor));
   if (m_sliceWidget) {
-    const ZSharedPointer<ZFlyEmBodyColorScheme>
-        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+    applyBrowserColorScheme();
+  }
+}
 
+void Neu3Window::applyBrowserColorScheme()
+{
+  if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
     ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
-    slice->setCustomColorMap(colorMap);
+    slice->setCustomColorMap(m_browserColorScheme);
 
-     updateSliceBrowserSelection();
+    updateSliceBrowserSelection();
   }
 }
 
@@ -698,6 +710,11 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
+}
+
+void Neu3Window::browse(int x, int y, int z, int)
+{
+  browse(double(x), double(y), double(z));
 }
 
 void Neu3Window::browse(

@@ -100,13 +100,14 @@ void ZVoxel::labelStackWithBall(Stack *stack, int label) const
     zArrayStart += area;
   }
 }
-
+/*
 ZVoxel& ZVoxel::operator =(const ZVoxel &voxel)
 {
   set(voxel.x(), voxel.y(), voxel.z(), voxel.value());
 
   return *this;
 }
+*/
 
 void ZVoxel::translate(int dx, int dy, int dz)
 {

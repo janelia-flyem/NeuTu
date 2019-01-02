@@ -197,7 +197,8 @@ void Z3DGraphFilter::prepareData()
   m_coneRenderer.setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
 //  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
   m_lineRenderer.setData(&m_lines);
-//  m_lineRenderer.setLineWidth(2.0);
+//  m_lineRenderer.setLineWidth(5.0);
+  m_lineRenderer.setUseSmoothLine(false);
   m_lineRenderer.setLineWidth(edgeWidth);
   m_sphereRenderer.setData(&m_pointAndRadius);
 

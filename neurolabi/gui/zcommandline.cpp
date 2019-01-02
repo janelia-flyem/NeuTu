@@ -1401,7 +1401,7 @@ int ZCommandLine::run(int argc, char *argv[])
 
   ECommand command = UNKNOWN_COMMAND;
   if (!m_configJson.isEmpty()) {
-    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]));
+    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]).c_str());
     m_input.push_back(ZJsonParser::stringValue(m_configJson["input"]));
     m_output = ZJsonParser::stringValue(m_configJson["output"]);
     if (m_configJson.hasKey("synapse")) {
@@ -1570,10 +1570,12 @@ int ZCommandLine::run(int argc, char *argv[])
         std::cout << "More information on: " << std::endl << url << std::endl;
       } else if (m_input[0] == "info") {
         std::cout << "Working directory:"
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::WORKING_DIR)
                   << std::endl;
         std::cout << "Log path: "
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::LOG_FILE)
                   << std::endl;
       }
     }
@@ -1607,7 +1609,7 @@ std::string ZCommandLine::extractIncludePath(
   ZJsonObject subJson(m_configJson.value(key.c_str()));
 
   if (subJson.hasKey("include")) {
-    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]));
+    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]).c_str());
     if (fileInfo.isRelative()) {
       filePath = configDir.absoluteFilePath(fileInfo.filePath());
     } else {

@@ -29,6 +29,13 @@ else
   install_dir=$1
 fi
 
+if [ "${install_dir:0:1}" = "/" ]
+then
+  install_dir=$install_dir
+else
+  install_dir=$PWD/$install_dir
+fi
+
 if [ $# -gt 0 ]
 then
   package=$2

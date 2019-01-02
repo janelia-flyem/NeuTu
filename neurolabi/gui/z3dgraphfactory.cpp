@@ -3,6 +3,8 @@
 #include "z3dgraph.h"
 #include "zrect2d.h"
 #include "zintcuboid.h"
+#include "zswctree.h"
+#include "znormcolormap.h"
 
 Z3DGraphFactory::Z3DGraphFactory()
 {
@@ -642,4 +644,61 @@ Z3DGraph* Z3DGraphFactory::makeBoundingBox(const ZIntCuboid &box, const std::vec
     }
 
     return graph;
+}
+
+Z3DGraph Z3DGraphFactory::MakeSwcGraph(const ZSwcTree &tree, double edgeWidth)
+{
+  Z3DGraph graph;
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  treeIter.excludeVirtual(true);
+  std::vector<Swc_Tree_Node*> nodeArray;
+  int index = 0;
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next(), ++index) {
+    nodeArray.push_back(tn);
+    tn->index = index;
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    Z3DGraphNode node(SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+    node.setColor(tree.getColor());
+    graph.addNode(node);
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    if (!SwcTreeNode::isRoot(tn)) {
+      graph.addEdge(tn->parent->index, tn->index, edgeWidth, GRAPH_LINE);
+    }
+  }
+
+  return graph;
+}
+
+Z3DGraph Z3DGraphFactory::MakeSwcFeatureGraph(const ZSwcTree &tree)
+{
+  Z3DGraph graph;
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  treeIter.excludeVirtual(true);
+  std::vector<Swc_Tree_Node*> nodeArray;
+  int index = 0;
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next(), ++index) {
+    nodeArray.push_back(tn);
+    tn->index = index;
+  }
+
+  ZNormColorMap colorMap;
+  for (Swc_Tree_Node *tn : nodeArray) {
+    Z3DGraphNode node(SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+    node.setColor(colorMap.mapColor(SwcTreeNode::feature(tn)));
+    graph.addNode(node);
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    if (!SwcTreeNode::isRoot(tn)) {
+      graph.addEdge(tn->parent->index, tn->index, GRAPH_LINE);
+    }
+  }
+
+  return graph;
 }

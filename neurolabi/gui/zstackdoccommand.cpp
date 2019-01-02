@@ -658,7 +658,7 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
     double radius = SwcTreeNode::maxRadius(nodeSet);
 
     if (coreNode == NULL) {
-      coreNode = SwcTreeNode::makePointer(center, radius);
+      coreNode = SwcTreeNode::MakePointer(center, radius);
       m_coreNode = coreNode;
     }
 
@@ -908,7 +908,7 @@ bool ZStackDocCommand::SwcEdit::MoveSwcNode::test()
 {
   std::cout << "Testing ZStackDocCommand::SwcEdit::MoveSwcNode ..." << std::endl;
   m_nodeArray.clear();
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
   setOffset(ZPoint(1, 2, 3));
   m_nodeArray.push_back(tn);
   redo();

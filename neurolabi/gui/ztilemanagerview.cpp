@@ -2,9 +2,10 @@
 #include <QScrollBar>
 #include <QDebug>
 
-#include "zstackdrawable.h"
+//#include "zstackdrawable.h"
 #include "ztilemanager.h"
 #include "zswctree.h"
+#include "zpainter.h"
 
 ZTileManagerView::ZTileManagerView(QWidget *parent) :
   QGraphicsView(parent)
@@ -52,7 +53,7 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
      QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
      foreach (ZSwcTree *swc, swcList ) {
        if (swc != NULL) {
-         swc->display(viewPainter,-1, ZStackObject::BOUNDARY, neutube::EAxis::Z);
+         swc->display(viewPainter,-1, ZStackObject::EDisplayStyle::BOUNDARY, neutube::EAxis::Z);
        }
      }
    }

@@ -14,7 +14,7 @@ class ZSynapseLocationMatcher
 {
 public:
   ZSynapseLocationMatcher();
-  ZSynapseLocationMatcher(const ZSynapseLocationMatcher &matcher);
+//  ZSynapseLocationMatcher(const ZSynapseLocationMatcher &matcher);
 
   void match(const std::vector<SynapseLocation*> &loc1,
              const std::vector<SynapseLocation*> &loc2,

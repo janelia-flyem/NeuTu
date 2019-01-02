@@ -27,19 +27,19 @@
 
 using namespace std;
 
-Swc_Tree_Node* SwcTreeNode::makePointer()
+Swc_Tree_Node* SwcTreeNode::MakePointer()
 {
-  return makePointer(0.0, 0.0, 0.0, 1.0);
+  return MakePointer(0.0, 0.0, 0.0, 1.0);
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, const ZPoint &pos,
+Swc_Tree_Node* SwcTreeNode::MakePointer(int id, int type, const ZPoint &pos,
                                         double radius, int parentId)
 {
-  return SwcTreeNode::makePointer(id, type, pos.x(), pos.y(), pos.z(), radius,
+  return SwcTreeNode::MakePointer(id, type, pos.x(), pos.y(), pos.z(), radius,
                                   parentId);
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
+Swc_Tree_Node* SwcTreeNode::MakePointer(int id, int type, double x, double y,
                                         double z, double radius, int parentId)
 {
   Swc_Tree_Node *tn = New_Swc_Tree_Node();
@@ -55,10 +55,10 @@ Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
   return tn;
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(
+Swc_Tree_Node* SwcTreeNode::MakePointer(
     double x, double y, double z, double radius, Swc_Tree_Node *parent)
 {
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer(1, 0, x, y, z, radius, -1);
 
   if (parent != NULL) {
     setFirstChild(parent, tn);
@@ -68,9 +68,15 @@ Swc_Tree_Node* SwcTreeNode::makePointer(
   return tn;
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(const ZPoint &pos, double radius)
+Swc_Tree_Node* SwcTreeNode::MakePointer(const ZPoint &pos, double radius)
 {
-  return SwcTreeNode::makePointer(1, 0, pos, radius, -1);
+  return SwcTreeNode::MakePointer(1, 0, pos, radius, -1);
+}
+
+Swc_Tree_Node* SwcTreeNode::MakePointer(
+    const ZPoint &pos, double radius, Swc_Tree_Node *parent)
+{
+  return MakePointer(pos.x(), pos.y(), pos.z(), radius, parent);
 }
 
 Swc_Tree_Node* SwcTreeNode::makeVirtualNode()
@@ -1293,7 +1299,7 @@ Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
     ZPoint center = SwcTreeNode::centroid(nodeSet);
     double radius = SwcTreeNode::maxRadius(nodeSet);
 
-    coreNode = makePointer(center, radius);
+    coreNode = MakePointer(center, radius);
 
     set<Swc_Tree_Node*> parentSet;
     //set<Swc_Tree_Node*> childSet;
@@ -2089,3 +2095,15 @@ double SwcTreeNode::maxBendingEnergy(const Swc_Tree_Node *tn)
 
   return e;
 }
+
+double SwcTreeNode::averageIntensity(const Swc_Tree_Node *tn, const Stack *stack)
+{
+  double v = 0.0;
+  if (tn && stack) {
+    return Swc_Tree_Node_Intensity_Distribution_Ec(
+          const_cast<Swc_Tree_Node*>(tn), const_cast<Stack*>(stack), NULL, 0.0);
+  }
+
+  return v;
+}
+

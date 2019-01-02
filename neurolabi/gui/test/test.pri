@@ -73,4 +73,10 @@ HEADERS += \
     $$PWD/zdviddataslicetest.h \
     $$PWD/zstackviewparamtest.h \
     $$PWD/zflyembodymanagertest.h \
-    $$PWD/zflyemtaskhelpertest.h
+    $$PWD/zflyemtaskhelpertest.h \
+    $$PWD/zflyembodystatustest.h \
+    $$PWD/zunittest.h \
+    $$PWD/cypherquerytest.h
+
+SOURCES += \
+    $$PWD/zunittest.cpp

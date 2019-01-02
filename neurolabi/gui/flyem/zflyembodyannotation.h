@@ -2,6 +2,8 @@
 #define ZFLYEMBODYANNOTATION_H
 
 #include <string>
+#include <functional>
+
 #include "tz_stdint.h"
 
 class ZJsonObject;
@@ -58,13 +60,15 @@ public:
 
   bool isEmpty() const;
 
-  void mergeAnnotation(const ZFlyEmBodyAnnotation &annotation);
+  void mergeAnnotation(
+      const ZFlyEmBodyAnnotation &annotation,
+      const std::function<int(const std::string&)> &getStatusRank);
 
   std::string toString() const;
 
   bool isFinalized() const;
 
-private:
+public:
   static int GetStatusRank(const std::string &status);
 
 private:

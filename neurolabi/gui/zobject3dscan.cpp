@@ -793,7 +793,9 @@ void ZObject3dScan::readHeader(
 #endif
   }
 
-  stream.read((char*)(stripeNumber), sizeof(int));
+  if (*version > 0) {
+    stream.read((char*)(stripeNumber), sizeof(int));
+  }
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
@@ -2248,17 +2250,17 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
 
 
   if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
-    style = ZStackObject::BOUNDARY;
+    style = ZStackObject::EDisplayStyle::BOUNDARY;
   }
 
   if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
-    style = ZStackObject::SOLID;
+    style = ZStackObject::EDisplayStyle::SOLID;
   }
 
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
   switch (style) {
-  case ZStackObject::SOLID:
+  case ZStackObject::EDisplayStyle::SOLID:
   {
     if (isSelected()) {
 //      QColor color = pen.color();
@@ -2279,7 +2281,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
     }
   }
     break;
-  case ZStackObject::BOUNDARY:
+  case ZStackObject::EDisplayStyle::BOUNDARY:
   {
     QColor color = pen.color();
     pen.setCosmetic(m_usingCosmeticPen);
@@ -4748,7 +4750,7 @@ bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj, bool appending)
 
   bool succ = true;
   for (size_t i = 0; i < obj.size(); ++i) {
-    if (ZJsonParser::isArray(obj.at(i))) {
+    if (ZJsonParser::IsArray(obj.at(i))) {
       ZJsonArray subarray(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (subarray.size() != 4) {
         succ = false;

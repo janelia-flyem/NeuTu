@@ -25,6 +25,11 @@ ZStackBall::ZStackBall(const ZIntPoint &center, double r)
   init(center.getX(), center.getY(), center.getZ(), r);
 }
 
+ZStackBall::ZStackBall(const ZPoint &center, double r)
+{
+  init(center.getX(), center.getY(), center.getZ(), r);
+}
+
 void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
