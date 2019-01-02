@@ -95,6 +95,12 @@ public:
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
 
+  void set3DCrossWidth(double w);
+  double get3DCrossWidth() const;
+
+  static void Set3DCrossWidth(int w);
+  static int Get3DCrossWidth();
+
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
 
@@ -480,6 +486,7 @@ private:
   int m_verboseLevel;
   bool m_advancedMode = false;
   size_t m_meshSplitThreshold = 5000000;
+  int m_3dcrossWidth = 5;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 

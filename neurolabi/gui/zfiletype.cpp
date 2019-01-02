@@ -171,7 +171,8 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == FILE_OBJECT_SCAN) ||
       (type == FILE_OBJECT_SCAN_ARRAY) ||
       (type == FILE_SPARSE_STACK) ||
-      (type == FILE_MESH);
+      (type == FILE_MESH) ||
+      (type == FILE_3D_GRAPH);
 }
 
 bool ZFileType::isObjectFile(const std::string &filePath)

@@ -102,6 +102,7 @@ void FlyEmSettingDialog::loadSetting()
 #endif
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
+  ui->crossWidthSpinBox->setValue(NeutubeConfig::Get3DCrossWidth());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -231,6 +232,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetNamingSynapse(namingSynapse());
   NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
+  NeutubeConfig::Set3DCrossWidth(ui->crossWidthSpinBox->value());
 }
 
 QString FlyEmSettingDialog::Shrink(const QString &str, int len)

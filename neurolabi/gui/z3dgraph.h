@@ -164,7 +164,8 @@ public:
   void addEdge(const Z3DGraphEdge &edge);
   void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
                EGraphShape shape = GRAPH_CYLINDER);
-  void addEdge(int vs, int vt, EGraphShape shape = GRAPH_CYLINDER);
+  void addEdge(int vs, int vt, double width,
+               EGraphShape shape = GRAPH_CYLINDER);
   void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
                double weight, EGraphShape shape);
   void addConnectedNode(const std::vector<Z3DGraphNode> &nodeArray,

@@ -598,13 +598,14 @@ bool Z3DGraph::isValidNodeIndex(int v) const
   return (v >= 0) &&  (v < (int) m_nodeArray.size());
 }
 
-void Z3DGraph::addEdge(int vs, int vt, EGraphShape shape)
+void Z3DGraph::addEdge(int vs, int vt, double width, EGraphShape shape)
 {
   if (isValidNodeIndex(vs) && isValidNodeIndex(vt)) {
     Z3DGraphEdge edge;
     edge.useNodeColor(true);
     edge.set(vs, vt);;
     edge.setShape(shape);
+    edge.setWidth(width);
     addEdge(edge);
   }
 }

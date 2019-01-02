@@ -788,9 +788,10 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
       node1.set(x, rect.getFirstY(), rect.getZ(), width);
       node2.set(x, rect.getLastY(), rect.getZ(), width);
 
+      double edgeWidth = NeutubeConfig::Get3DCrossWidth();
       graph->addNode(node1);
       graph->addNode(node2);
-      graph->addEdge(node1, node2, GRAPH_LINE);
+      graph->addEdge(node1, node2, edgeWidth, GRAPH_LINE);
 
       node1.setColor(QColor(255, 0, 0));
       node2.setColor(QColor(255, 0, 0));
@@ -799,7 +800,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
 
       graph->addNode(node1);
       graph->addNode(node2);
-      graph->addEdge(node1, node2, GRAPH_LINE);
+      graph->addEdge(node1, node2, edgeWidth, GRAPH_LINE);
     }
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());

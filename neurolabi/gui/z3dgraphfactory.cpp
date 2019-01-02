@@ -646,7 +646,7 @@ Z3DGraph* Z3DGraphFactory::makeBoundingBox(const ZIntCuboid &box, const std::vec
     return graph;
 }
 
-Z3DGraph Z3DGraphFactory::MakeSwcGraph(const ZSwcTree &tree)
+Z3DGraph Z3DGraphFactory::MakeSwcGraph(const ZSwcTree &tree, double edgeWidth)
 {
   Z3DGraph graph;
   ZSwcTree::DepthFirstIterator treeIter(&tree);
@@ -667,7 +667,7 @@ Z3DGraph Z3DGraphFactory::MakeSwcGraph(const ZSwcTree &tree)
 
   for (Swc_Tree_Node *tn : nodeArray) {
     if (!SwcTreeNode::isRoot(tn)) {
-      graph.addEdge(tn->parent->index, tn->index, GRAPH_LINE);
+      graph.addEdge(tn->parent->index, tn->index, edgeWidth, GRAPH_LINE);
     }
   }
 
