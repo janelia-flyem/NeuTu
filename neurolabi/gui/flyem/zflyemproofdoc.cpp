@@ -606,7 +606,8 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
     }
     if (anno.getStatus() == "Finalized") {
       finalizedBodyArray.push_back(iter.key());
-    } else if (ZString(anno.getStatus()).lower() == "roughly traced") {
+    } else if (ZString(anno.getStatus()).lower() == "roughly traced" ||
+               ZString(anno.getStatus()).lower() == "prelim roughly traced") {
       roughlyTracedBodyArray.push_back(iter.key());
     }
   }
@@ -626,7 +627,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
           roughlyTracedBodyArray, "Roughly traced");
     okToContinue = ZDialogFactory::Ask(
           "Merging multiple roughly-traced bodies",
-          "At least two bodies to be merged are roughly traced. "
+          "At least two bodies to be merged are roughly traced or prelim roughly traced. "
           "<font color=\"#FF0000\">You should NOT merge them unless you want to be resposible for any side effects.</font>"
           "<p>Do you want to continue?</p>" +
           detail,
@@ -3506,7 +3507,7 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
     ZObject3dScanArray result;
-    container.makeSplitResult(1, &result);
+    container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;

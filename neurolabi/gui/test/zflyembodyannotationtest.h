@@ -2,7 +2,7 @@
 #define ZFLYEMBODYANNOTATIONTEST_H
 
 #include "ztestheader.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
 
 #ifdef _USE_GTEST_
@@ -54,6 +54,14 @@ TEST(ZFlyEmBodyAnnotation, merge)
 
   annotation1.setStatus("Orphan");
 
+  annotation2.setStatus("Orphan hotknife");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Orphan hotknife", annotation1.getStatus());
+
+  annotation2.setStatus("Leaves");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Leaves", annotation1.getStatus());
+
   annotation2.setStatus("Hard to trace");
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
@@ -62,10 +70,17 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
 
-
   annotation2.setStatus("Partially traced");
   annotation1.mergeAnnotation(annotation2);
   ASSERT_EQ("Partially traced", annotation1.getStatus());
+
+  annotation2.setStatus("Prelim Roughly traced");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Prelim Roughly traced", annotation1.getStatus());
+
+  annotation2.setStatus("Roughly traced");
+  annotation1.mergeAnnotation(annotation2);
+  ASSERT_EQ("Roughly traced", annotation1.getStatus());
 
   annotation2.setStatus("Traced in ROI");
   annotation1.mergeAnnotation(annotation2);

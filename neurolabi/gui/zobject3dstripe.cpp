@@ -1061,3 +1061,166 @@ ZObject3dStripe operator - (
 
   return result;
 }
+
+namespace {
+inline bool HasPotentialOverlap(
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+{
+  return ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+          !s1.isEmpty() && !s2.isEmpty() &&
+          s1.getSegmentArray().back() >= s2.getSegmentArray().front() &&
+          s2.getSegmentArray().back() >= s1.getSegmentArray().front());
+}
+
+inline bool HasPotentialAdjacency(
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2,int diffYZ,
+    neutube::EStackNeighborhood nbr)
+{
+  bool goodDiffYZ = true;
+  switch (nbr) {
+  case neutube::EStackNeighborhood::D1:
+    goodDiffYZ = (diffYZ <= 1);
+    break;
+  case neutube::EStackNeighborhood::D2:
+  case neutube::EStackNeighborhood::D3:
+    goodDiffYZ = (diffYZ <= 2);
+    break;
+  }
+
+
+  return (goodDiffYZ &&
+          !s1.isEmpty() && !s2.isEmpty() &&
+          s1.getSegmentArray().back() + 1 >= s2.getSegmentArray().front() &&
+          s2.getSegmentArray().back() + 1 >= s1.getSegmentArray().front());
+}
+
+}
+
+//6-conn neighborhood
+bool ZObject3dStripe::isAdjacentTo(
+    const ZObject3dStripe &stripe, neutube::EStackNeighborhood nbr) const
+{
+  ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
+  ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
+
+  bool adjacent = false;
+
+  int diffY = std::abs(s1.getY() - s2.getY());
+  int diffZ = std::abs(s1.getZ() - s2.getZ());
+  if (diffY > 1 || diffZ > 1) {
+    return false;
+  }
+
+   int diffYZ = diffY + diffZ;
+  if (HasPotentialAdjacency(s1, s2, diffYZ, nbr)) {
+    int dg = 1;
+
+    switch (nbr) {
+    case neutube::EStackNeighborhood::D1:
+      dg = 1 - diffYZ;
+      break;
+    case neutube::EStackNeighborhood::D2:
+      if (diffYZ == 2) { //X must overlap
+        dg = 0;
+      } else { //X can be adjacent
+        dg = 1;
+      }
+      break;
+    case neutube::EStackNeighborhood::D3:
+      break;
+    }
+
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End + dg < s1Start) { //t2 - s1
+        MOVE_SECOND_SEGMENT;
+      } else if (s1End + dg < s2Start) { // t1 - t2
+        MOVE_FIRST_SEGMENT;
+      } else {
+        adjacent = true;
+        break;
+      }
+    }
+  }
+
+  return adjacent;
+}
+
+bool ZObject3dStripe::isAdjacentOnPlaneTo(const ZObject3dStripe &stripe) const
+{
+  ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
+  ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
+
+  bool adjacent = false;
+
+  if (HasPotentialOverlap(s1, s2)) {
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End + 1 < s1Start) { //t2 - s1
+        MOVE_SECOND_SEGMENT;
+      } else if (s1End + 1 < s2Start) { // t1 - t2
+        MOVE_FIRST_SEGMENT;
+      } else {
+        adjacent = true;
+        break;
+      }
+    }
+  }
+
+  return adjacent;
+}
+
+bool ZObject3dStripe::hasOverlap(const ZObject3dStripe &stripe) const
+{
+  ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
+  ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
+
+  bool overlapping = false;
+
+  if (HasPotentialOverlap(s1, s2)) {
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End < s1Start) { //t2 - s1
+        MOVE_SECOND_SEGMENT;
+      } else if (s1End < s2Start) { // t1 - t2
+        MOVE_FIRST_SEGMENT;
+      } else {
+        overlapping = true;
+        break;
+      }
+    }
+  }
+
+  return overlapping;
+}
+

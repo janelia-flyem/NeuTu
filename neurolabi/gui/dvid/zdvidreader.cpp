@@ -34,7 +34,7 @@
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
-#include "zflyembodyannotation.h"
+#include "flyem/zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
@@ -698,6 +698,7 @@ ZObject3dScan *ZDvidReader::readBody(
       config.format = "blocks";
       config.range = box;
       config.zoom = zoom;
+      config.labelType = labelType;
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
