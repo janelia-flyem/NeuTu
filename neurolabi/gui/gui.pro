@@ -933,7 +933,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyannotationmerger.h \
     flyem/zflyemroimanager.h \
     widgets/zoptionlistwidget.h \
-    dialogs/zflyemtodofilterdialog.h
+    dialogs/zflyemtodofilterdialog.h \
+    dialogs/zstackframesettingdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1048,7 +1049,9 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodoannotationdialog.ui \
     dialogs/neuprintquerydialog.ui \
     widgets/zoptionlistwidget.ui \
-    dialogs/zflyemtodofilterdialog.ui
+    dialogs/zflyemtodofilterdialog.ui \
+    dialogs/zautotracedialog.ui \
+    dialogs/zstackframesettingdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1633,7 +1636,8 @@ SOURCES += main.cpp \
     flyem/zflyembodyannotationmerger.cpp \
     flyem/zflyemroimanager.cpp \
     widgets/zoptionlistwidget.cpp \
-    dialogs/zflyemtodofilterdialog.cpp
+    dialogs/zflyemtodofilterdialog.cpp \
+    dialogs/zstackframesettingdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

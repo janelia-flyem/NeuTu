@@ -3450,7 +3450,7 @@ void Z3DWindow::convertPunctaToSwc()
     for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
          iter != punctaSet.end(); ++iter) {
       ZPoint pos((*iter)->x(), (*iter)->y(), (*iter)->z());
-      Swc_Tree_Node *tn = SwcTreeNode::makePointer(pos, (*iter)->radius());
+      Swc_Tree_Node *tn = SwcTreeNode::MakePointer(pos, (*iter)->radius());
       tree->addRegularRoot(tn);
     }
 

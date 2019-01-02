@@ -225,7 +225,7 @@ void NeutubeConfig::updateAutoSaveDir()
 
 void NeutubeConfig::operator=(const NeutubeConfig& config)
 {
-  UNUSED_PARAMETER(&config);
+  UNUSED_PARAMETER(config);
 }
 
 bool NeutubeConfig::load(const std::string &filePath)

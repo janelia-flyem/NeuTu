@@ -11,7 +11,7 @@
 
 TEST(SwcTreeNode, Attribute)
 {
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(1, 2, 3), 4);
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer(ZPoint(1, 2, 3), 4);
   EXPECT_EQ(1.0, SwcTreeNode::x(tn));
   EXPECT_EQ(2.0, SwcTreeNode::y(tn));
   EXPECT_EQ(3.0, SwcTreeNode::z(tn));
@@ -22,7 +22,7 @@ TEST(SwcTreeNode, Attribute)
 
   //EXPECT_DEATH(SwcTreeNode::kill(tn), "pointer being freed was not allocated");
 
-  tn = SwcTreeNode::makePointer(1, 2, 3, 4);
+  tn = SwcTreeNode::MakePointer(1, 2, 3, 4);
   EXPECT_EQ(1.0, SwcTreeNode::x(tn));
   EXPECT_EQ(2.0, SwcTreeNode::y(tn));
   EXPECT_EQ(3.0, SwcTreeNode::z(tn));
@@ -30,7 +30,7 @@ TEST(SwcTreeNode, Attribute)
   EXPECT_TRUE(SwcTreeNode::isParentIdConsistent(tn));
   SwcTreeNode::kill(tn);
 
-  tn = SwcTreeNode::makePointer(5, 6, 1, 2, 3, 4, 7);
+  tn = SwcTreeNode::MakePointer(5, 6, 1, 2, 3, 4, 7);
   EXPECT_EQ(1.0, SwcTreeNode::x(tn));
   EXPECT_EQ(2.0, SwcTreeNode::y(tn));
   EXPECT_EQ(3.0, SwcTreeNode::z(tn));
@@ -41,7 +41,7 @@ TEST(SwcTreeNode, Attribute)
   EXPECT_FALSE(SwcTreeNode::isParentIdConsistent(tn));
   SwcTreeNode::kill(tn);
 
-  tn = SwcTreeNode::makePointer(5, 6, ZPoint(1, 2, 3), 4, 7);
+  tn = SwcTreeNode::MakePointer(5, 6, ZPoint(1, 2, 3), 4, 7);
   EXPECT_EQ(1.0, SwcTreeNode::x(tn));
   EXPECT_EQ(2.0, SwcTreeNode::y(tn));
   EXPECT_EQ(3.0, SwcTreeNode::z(tn));
@@ -51,7 +51,7 @@ TEST(SwcTreeNode, Attribute)
   EXPECT_EQ(7, SwcTreeNode::parentId(tn));
   EXPECT_FALSE(SwcTreeNode::isParentIdConsistent(tn));
 
-  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer();
 
   SwcTreeNode::copyProperty(tn, tn2);
 
@@ -69,7 +69,7 @@ TEST(SwcTreeNode, Attribute)
   EXPECT_TRUE(SwcTreeNode::isVirtual(tn));
   SwcTreeNode::kill(tn);
 
-  tn = SwcTreeNode::makePointer(5, 6, ZPoint(1, 2, 3), 4, 7);
+  tn = SwcTreeNode::MakePointer(5, 6, ZPoint(1, 2, 3), 4, 7);
   ZCuboid box = SwcTreeNode::boundBox(tn);
   EXPECT_EQ(1, box.center().x());
   EXPECT_EQ(2, box.center().y());
@@ -99,11 +99,11 @@ TEST(SwcTreeNode, Attribute)
 
 TEST(SwcTreeNode, Structure)
 {
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(ZPoint(1, 2, 3), 4);
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(ZPoint(1, 2, 3), 4);
   EXPECT_EQ(tn1, SwcTreeNode::regularRoot(tn1));
   EXPECT_EQ(tn1, SwcTreeNode::root(tn1));
 
-  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(4, 5, 6), 1);
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer(ZPoint(4, 5, 6), 1);
   EXPECT_EQ(NULL, SwcTreeNode::commonAncestor(tn1, tn2));
 
   SwcTreeNode::setParent(tn1, tn2);
@@ -112,7 +112,7 @@ TEST(SwcTreeNode, Structure)
   EXPECT_TRUE(SwcTreeNode::isAncestor(tn2, tn1));
   EXPECT_TRUE(SwcTreeNode::isConnected(tn2, tn1));
 
-  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(ZPoint(7, 8, 9), 1);
+  Swc_Tree_Node *tn3 = SwcTreeNode::MakePointer(ZPoint(7, 8, 9), 1);
   SwcTreeNode::setParent(tn3, tn2);
   EXPECT_TRUE(SwcTreeNode::isAncestor(tn2, tn3));
   EXPECT_TRUE(SwcTreeNode::isConnected(tn2, tn3));
@@ -125,8 +125,8 @@ TEST(SwcTreeNode, Structure)
 
 TEST(SwcTreeNode, Geometry)
 {
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(0, 0, 0, 1);
-  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer(0, 0, 0, 1);
 
   double dist = SwcTreeNode::distance(tn1, tn2);
   EXPECT_DOUBLE_EQ(0.0, dist);
@@ -157,7 +157,7 @@ TEST(SwcTreeNode, Geometry)
   dist = SwcTreeNode::scaledSurfaceDistance(tn1, tn2, 1, 2, 3);
   EXPECT_DOUBLE_EQ(-2.0, dist);
 
-  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(1, 2, 3, 2);
+  Swc_Tree_Node *tn3 = SwcTreeNode::MakePointer(1, 2, 3, 2);
 
   dist = SwcTreeNode::scaledDistance(tn1, tn3, 1, 2, 3);
   EXPECT_DOUBLE_EQ(9.8994949366116654, dist);
@@ -169,14 +169,14 @@ TEST(SwcTreeNode, Geometry)
 
 TEST(SwcTreeNode, Crossover)
 {
-  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer(10, 0, 0, 1);
+  Swc_Tree_Node *center = SwcTreeNode::MakePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer(10, 0, 0, 1);
   SwcTreeNode::setParent(tn, center);
-  tn = SwcTreeNode::makePointer(-10, 0, 0, 1);
+  tn = SwcTreeNode::MakePointer(-10, 0, 0, 1);
   SwcTreeNode::setParent(tn, center);
-  tn = SwcTreeNode::makePointer(0, 10, 0, 1);
+  tn = SwcTreeNode::MakePointer(0, 10, 0, 1);
   SwcTreeNode::setParent(tn, center);
-  tn = SwcTreeNode::makePointer(0, -10, 0, 1);
+  tn = SwcTreeNode::MakePointer(0, -10, 0, 1);
   SwcTreeNode::setParent(tn, center);
 
   std::map<Swc_Tree_Node*, Swc_Tree_Node*> matched =
@@ -192,12 +192,12 @@ TEST(SwcTreeNode, Crossover)
 
 TEST(SwcTreeNode, neighbor)
 {
-  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  Swc_Tree_Node *center = SwcTreeNode::MakePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(10, 0, 0, 1);
   SwcTreeNode::setParent(center, tn1);
-  Swc_Tree_Node *tn2 =SwcTreeNode::makePointer(20, 0, 0, 1);
+  Swc_Tree_Node *tn2 =SwcTreeNode::MakePointer(20, 0, 0, 1);
   SwcTreeNode::setParent(tn1, tn2);
-  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(30, 0, 0, 1);
+  Swc_Tree_Node *tn3 = SwcTreeNode::MakePointer(30, 0, 0, 1);
   SwcTreeNode::setParent(tn2, tn3);
 
   Swc_Tree_Node *tn = SwcTreeNode::continuousAncestor(center, 25.0);
@@ -216,7 +216,7 @@ TEST(SwcTreeNode, neighbor)
   tn = SwcTreeNode::continuousAncestor(center, 35.0);
   ASSERT_TRUE(tn == NULL);
 
-  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(30, 10, 0, 1);
+  Swc_Tree_Node *tn4 = SwcTreeNode::MakePointer(30, 10, 0, 1);
   SwcTreeNode::setParent(tn4, tn3);
   tn = SwcTreeNode::continuousAncestor(center, 25.0);
   ASSERT_EQ(tn, tn3);
@@ -224,16 +224,16 @@ TEST(SwcTreeNode, neighbor)
   tn = SwcTreeNode::continuousAncestor(center, 35.0);
   ASSERT_TRUE(tn == NULL);
 
-  Swc_Tree_Node *tn5 = SwcTreeNode::makePointer(20, 10, 0, 1);
+  Swc_Tree_Node *tn5 = SwcTreeNode::MakePointer(20, 10, 0, 1);
   SwcTreeNode::setParent(tn5, tn2);
   tn = SwcTreeNode::continuousAncestor(center, 25.0);
   ASSERT_TRUE(tn == NULL);
 
-  Swc_Tree_Node *tn6 = SwcTreeNode::makePointer(0, 0, 10, 1);
-  Swc_Tree_Node *tn7 = SwcTreeNode::makePointer(0, 0, 20, 1);
-  Swc_Tree_Node *tn8 = SwcTreeNode::makePointer(0, 0, 30, 1);
-  Swc_Tree_Node *tn9 = SwcTreeNode::makePointer(0, 0, 40, 1);
-  Swc_Tree_Node *tn10 = SwcTreeNode::makePointer(0, 0, 50, 1);
+  Swc_Tree_Node *tn6 = SwcTreeNode::MakePointer(0, 0, 10, 1);
+  Swc_Tree_Node *tn7 = SwcTreeNode::MakePointer(0, 0, 20, 1);
+  Swc_Tree_Node *tn8 = SwcTreeNode::MakePointer(0, 0, 30, 1);
+  Swc_Tree_Node *tn9 = SwcTreeNode::MakePointer(0, 0, 40, 1);
+  Swc_Tree_Node *tn10 = SwcTreeNode::MakePointer(0, 0, 50, 1);
 
   SwcTreeNode::setParent(tn6, center);
   SwcTreeNode::setParent(tn7, tn6);
@@ -250,13 +250,13 @@ TEST(SwcTreeNode, neighbor)
 
 TEST(SwcTreeNode, pathLength)
 {
-  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  Swc_Tree_Node *center = SwcTreeNode::MakePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(10, 0, 0, 1);
   SwcTreeNode::setParent(tn1, center);
-  Swc_Tree_Node *tn2 =SwcTreeNode::makePointer(20, 0, 0, 1);
+  Swc_Tree_Node *tn2 =SwcTreeNode::MakePointer(20, 0, 0, 1);
   SwcTreeNode::setParent(tn2, center);
-  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(30, 0, 0, 1);
-  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(30, 0, 0, 1);
+  Swc_Tree_Node *tn3 = SwcTreeNode::MakePointer(30, 0, 0, 1);
+  Swc_Tree_Node *tn4 = SwcTreeNode::MakePointer(30, 0, 0, 1);
 
   ASSERT_DOUBLE_EQ(10.0, SwcTreeNode::pathLength(tn1, center));
   ASSERT_DOUBLE_EQ(30.0, SwcTreeNode::pathLength(tn1, tn2));
@@ -273,8 +273,8 @@ TEST(SwcTreeNode, Connection)
   std::set<Swc_Tree_Node*> nodeSet;
   ASSERT_TRUE(SwcTreeNode::isAllConnected(nodeSet));
 
-  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
-  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  Swc_Tree_Node *center = SwcTreeNode::MakePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(10, 0, 0, 1);
 
   nodeSet.insert(center);
   nodeSet.insert(tn1);
@@ -283,7 +283,7 @@ TEST(SwcTreeNode, Connection)
   SwcTreeNode::setParent(tn1, center);
   ASSERT_TRUE(SwcTreeNode::isAllConnected(nodeSet));
 
-  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer(10, 0, 0, 1);
   nodeSet.insert(tn2);
   ASSERT_FALSE(SwcTreeNode::isAllConnected(nodeSet));
 

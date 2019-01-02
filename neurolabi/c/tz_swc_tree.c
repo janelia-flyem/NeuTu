@@ -3233,7 +3233,8 @@ void Swc_Tree_Remove_Zigzag(Swc_Tree *tree)
     Swc_Tree_Node *tn = Swc_Tree_Next(tree);
     Swc_Tree_Node *next = NULL;
     while (tn != NULL) {
-      next = Swc_Tree_Next(tree);
+      next = tn->next;
+//      next = Swc_Tree_Next(tree);
 
       if (Swc_Tree_Node_Is_Turn(tn) && 
 	  Swc_Tree_Node_Is_Turn(tn->first_child)) {

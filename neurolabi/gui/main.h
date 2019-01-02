@@ -90,6 +90,7 @@ void sync_log_dir(const std::string &srcDir, const std::string &destDir)
     }
 }
 
+#ifdef _FLYEM_
 void SetFlyEmConfigpath(
     const QString &rootConfigPath, const ZJsonObject configObj)
 {
@@ -116,11 +117,12 @@ void SetFlyEmConfigpath(
   QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
   GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
 }
+#endif
 
+#ifdef _FLYEM_
 void LoadFlyEmConfig(
     const QString &configPath, NeutubeConfig &/*config*/, bool usingConfig)
 {
-#ifdef _FLYEM_
   ZJsonObject configObj;
   if (!configPath.isEmpty()) {
     configObj.load(configPath.toStdString());
@@ -160,8 +162,8 @@ void LoadFlyEmConfig(
       }
     }
   }
-#endif
 }
+#endif
 
 void init_log()
 {

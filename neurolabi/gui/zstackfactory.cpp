@@ -273,7 +273,7 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #endif
 }
 
-ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
+ZStack* ZStackFactory::MakeDensityMap(const ZPointArray &ptArray, double sigma)
 {
   ZCuboid boundBox = ptArray.getBoundBox();
   double radius = sigma * 2;
@@ -373,7 +373,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
   return stack;
 }
 
-ZStack* ZStackFactory::makeDensityMap(
+ZStack* ZStackFactory::MakeDensityMap(
     const ZWeightedPointArray &ptArray, double sigma)
 {
   ZCuboid boundBox = ptArray.getBoundBox();
@@ -483,7 +483,7 @@ ZStack* ZStackFactory::makeAlphaBlend(const ZStack &/*stack1*/, const ZStack &/*
   return NULL;
 }
 
-ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
+ZStack* ZStackFactory::MakeSeedStack(const ZWeightedPointArray &ptArray)
 {
   ZCuboid boundBox = ptArray.getBoundBox();
   ZPoint pt1 = boundBox.firstCorner();
@@ -1024,3 +1024,10 @@ ZStack* ZStackFactory::MakeLabelColorStack(
   return stack;
 }
 
+ZStack* ZStackFactory::LoadFromFile(const std::string &path)
+{
+  ZStack *stack = new ZStack;
+  stack->load(path, false);
+
+  return stack;
+}

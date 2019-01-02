@@ -763,7 +763,9 @@ void ZStackView::setZQuitely(int z)
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
+#ifdef _DEBUG_
     LDEBUG() << "Set slice index:" << slice;
+#endif
 
     recordViewParam();
 //    setDepthFrozen(true);
@@ -777,7 +779,9 @@ void ZStackView::setSliceIndex(int slice)
 void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
+#ifdef _DEBUG_2
     LDEBUG() << "Set slice index:" << slice;
+#endif
 
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
@@ -2079,7 +2083,7 @@ void ZStackView::paintMaskBuffer()
     m_imageMask->setCData(static_cast<uint8_t*>(
                             stackMask->getDataPointer(0, slice)), 100);
   }
-  if (buddyPresenter()->objectStyle() == ZStackObject::BOUNDARY) {
+  if (buddyPresenter()->objectStyle() == ZStackObject::EDisplayStyle::BOUNDARY) {
     m_imageMask->enhanceEdge();
   }
 }
@@ -2325,7 +2329,8 @@ void ZStackView::paintActiveDecorationBuffer()
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
           paintHelper.paint(
-                obj, painter, sliceIndex(), ZStackObject::NORMAL, getSliceAxis());
+                obj, painter, sliceIndex(),
+                ZStackObject::EDisplayStyle::NORMAL, getSliceAxis());
 //          obj->display(painter, sliceIndex(), ZStackObject::NORMAL, m_sliceAxis);
 //          painted = true;
         }
@@ -3199,6 +3204,7 @@ void ZStackView::customizeWidget()
             this, SLOT(requestHighresQuick3DVis()));
             */
   } else {
+    m_secondTopLayout->addStretch();
     QPushButton *vis3dButton = new QPushButton(this);
     vis3dButton->setText("3D");
     vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -3206,6 +3212,14 @@ void ZStackView::customizeWidget()
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
 
     if (buddyDocument()->getTag() == neutube::Document::ETag::NORMAL) {
+      if (GET_APPLICATION_NAME == "General") {
+        QPushButton *autoTraceButton = new QPushButton(this);
+        autoTraceButton->setIcon(QIcon(":/images/autotrace.png"));
+        autoTraceButton->setToolTip("Automatic Tracing");
+        m_secondTopLayout->addWidget(autoTraceButton);
+        connect(autoTraceButton, SIGNAL(clicked()), this, SLOT(requestAutoTracing()));
+      }
+
       QPushButton *settingButton = new QPushButton(this);
       settingButton->setText("Settings");
       settingButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -3283,6 +3297,11 @@ void ZStackView::request3DVis()
 void ZStackView::requestSetting()
 {
   emit changingSetting();
+}
+
+void ZStackView::requestAutoTracing()
+{
+  emit autoTracing();
 }
 
 void ZStackView::requestQuick3DVis()

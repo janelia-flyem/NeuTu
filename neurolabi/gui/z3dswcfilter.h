@@ -199,7 +199,7 @@ private:
   void clearDecorateSwcList();
 
   void updateColorMapBranchType();
-  void updateColorWidget();
+//  void updateColorWidget();
 
   void updateBiocytinWidget();
 //  bool updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);

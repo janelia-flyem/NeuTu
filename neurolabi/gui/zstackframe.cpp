@@ -3,13 +3,12 @@
 #include <iostream>
 #include <QTimer>
 #include <QtConcurrentRun>
+#include <QProgressDialog>
 
 #include "tz_error.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
-#include "widgets/zimagewidget.h"
-#include "dialogs/settingdialog.h"
 #include "zlocsegchain.h"
 //#include "tz_xml_utils.h"
 #include "tz_string.h"
@@ -40,11 +39,16 @@
 #include "zsparseobject.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-#include "zdialogfactory.h"
 #include "zobject3dfactory.h"
 #include "zmeshfactory.h"
 #include "z3dmeshfilter.h"
 #include "core/qthelper.h"
+
+#include "widgets/zimagewidget.h"
+
+#include "zdialogfactory.h"
+#include "dialogs/zstackframesettingdialog.h"
+#include "dialogs/zautotracedialog.h"
 
 #ifdef _DEBUG_2
 #include "dvid/zdvidgrayslicescrollstrategy.h"
@@ -65,18 +69,21 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   setAttribute(Qt::WA_DeleteOnClose, true);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
   setAcceptDrops(true);
-  m_settingDlg = new SettingDialog(this);
-  m_settingDlg->setTracingParameter();
-  m_manageObjsDlg = NULL;
+  m_settingDlg = new ZStackFrameSettingDialog(this);
+  m_settingDlg->setFromTracingConfig(ZNeuronTracerConfig::getInstance());
+//  m_settingDlg->setTracingParameter();
+//  m_manageObjsDlg = NULL;
 
   //m_presenter = new ZStackPresenter(this);
   //m_view = new ZStackView(this);
   qDebug() << m_doc.get();
-  m_presenter = NULL;
-  m_view = NULL;
+//  m_presenter = NULL;
+//  m_view = NULL;
 
   m_testTimer = new QTimer(this);
   connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+  connect(this, &ZStackFrame::progressDone,
+          this, &ZStackFrame::endProgress);
   /*
   if (preparingModel) {
     constructFrame();
@@ -272,8 +279,11 @@ void ZStackFrame::addDocData(ZStackDocReader &reader)
   if (m_doc.get() == NULL) {
     createDocument();
   }
-  m_doc->addData(reader);
 
+  m_doc->addData(reader);
+  updateTraceConfig();
+
+  /*
   m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
                               xResolution(), yResolution(), zResolution());
   m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
@@ -281,6 +291,7 @@ void ZStackFrame::addDocData(ZStackDocReader &reader)
                                        reconstructDistThre(),
                                        reconstructSpTest(),
                                        crossoverTest());
+                                       */
 
   if (m_doc->hasStackData()) {
     if (m_doc->getStack()->kind() != GREY) {
@@ -290,6 +301,17 @@ void ZStackFrame::addDocData(ZStackDocReader &reader)
   }
 
   setWindowTitle(m_doc->stackSourcePath().c_str());
+}
+
+void ZStackFrame::autoTrace()
+{
+  int channelNumber = document()->getStack()->channelNumber();
+  getAutoTraceDlg()->setChannelCount(channelNumber);
+  if (getAutoTraceDlg()->exec()) {
+//    setEnabled(false);
+    startProgress("Tracing");
+    QtConcurrent::run(this, &ZStackFrame::autoTraceFunc);
+  }
 }
 
 void ZStackFrame::consumeDocument(ZStackDoc *doc)
@@ -371,6 +393,8 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
                 m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)),
                 Qt::AutoConnection);
+  connectAction(m_view, SIGNAL(autoTracing()), this, SLOT(autoTrace()),
+                Qt::AutoConnection);
 }
 
 template <typename T>
@@ -415,7 +439,10 @@ void ZStackFrame::updateDocument()
 {
   updateSignalSlot(neutube::ConnectFunc);
 
+  updateTraceConfig();
+
   if (m_doc->hasStackData()) {
+    /*
     m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
                                 xResolution(), yResolution(), zResolution());
     m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
@@ -423,6 +450,7 @@ void ZStackFrame::updateDocument()
                                          reconstructDistThre(),
                                          reconstructSpTest(),
                                          crossoverTest());
+                                         */
 
     if (m_presenter != NULL && (m_doc->getStack()->kind() != GREY)) {
       m_presenter->optimizeStackBc();
@@ -500,6 +528,15 @@ void ZStackFrame::clear()
   }
 }
 #endif
+
+ZAutoTraceDialog* ZStackFrame::getAutoTraceDlg()
+{
+  if (m_autoTraceDlg == nullptr) {
+    m_autoTraceDlg = new ZAutoTraceDialog(this);
+  }
+
+  return m_autoTraceDlg;
+}
 
 void ZStackFrame::loadStack(Stack *stack, bool isOwner)
 {
@@ -691,6 +728,41 @@ void ZStackFrame::setView(ZStackView *view)
   setWidget(view);
 }
 
+void ZStackFrame::startProgress(const QString &title)
+{
+  getProgressDialog()->setLabelText(title);
+  getProgressDialog()->setValue(1);
+  getProgressDialog()->show();
+}
+
+void ZStackFrame::updateTraceConfig()
+{
+  m_doc->updateTraceWorkspaceResolution(
+        xResolution(), yResolution(), zResolution());
+  m_doc->updateConnectionTestWorkspace(
+        xResolution(), yResolution(), zResolution(), 'p',
+        m_settingDlg->getMaxEucDist(), m_settingDlg->getSpTest(),
+        m_settingDlg->getCrossoverTest());
+  m_settingDlg->updateTracingConfig(m_doc->getNeuronTracer().getConfigRef());
+}
+
+void ZStackFrame::autoTraceFunc()
+{
+  ZQtBarProgressReporter reporter;
+  reporter.setProgressBar(getProgressBar());
+
+  ZProgressReporter *oldReporter = document()->getProgressReporter();
+  document()->setProgressReporter(&reporter);
+
+  document()->getNeuronTracer().setDiagnosis(m_autoTraceDlg->diagnosis());
+  executeAutoTraceCommand(getAutoTraceDlg()->getTraceLevel(),
+                          getAutoTraceDlg()->resampling(),
+                          getAutoTraceDlg()->getChannel());
+  document()->getNeuronTracer().setDiagnosis(false);
+  document()->setProgressReporter(oldReporter);
+  emit progressDone();
+}
+
 void ZStackFrame::closeEvent(QCloseEvent *event)
 {
   if (m_doc->isSavingRequired()) {
@@ -768,6 +840,30 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   }
 }
 
+QProgressDialog* ZStackFrame::getProgressDialog()
+{
+  if (m_progress == NULL) {
+    m_progress = new QProgressDialog(this);
+    m_progress->setRange(0, 100);
+    m_progress->setWindowModality(Qt::WindowModal);
+    m_progress->setAutoClose(true);
+    //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
+    m_progress->setCancelButton(0);
+  }
+
+  return m_progress;
+}
+
+QProgressBar* ZStackFrame::getProgressBar()
+{
+  return getProgressDialog()->findChild<QProgressBar*>();
+}
+
+void ZStackFrame::endProgress()
+{
+  getProgressDialog()->reset();
+}
+
 void ZStackFrame::setViewInfo(const QString &info)
 {
   view()->setInfo(info);
@@ -829,17 +925,17 @@ void ZStackFrame::showManageObjsDialog()
 
 double ZStackFrame::xResolution()
 {
-  return m_settingDlg->xResolution();
+  return m_settingDlg->getXScale();
 }
 
 double ZStackFrame::yResolution()
 {
-  return m_settingDlg->yResolution();
+  return m_settingDlg->getYScale();
 }
 
 double ZStackFrame::zResolution()
 {
-  return m_settingDlg->zResolution();
+  return m_settingDlg->getZScale();
 }
 
 /*
@@ -853,6 +949,8 @@ double ZStackFrame::zReconstructScale()
   return m_settingDlg->zScale();
 }
 */
+
+#if 0
 int ZStackFrame::traceEffort()
 {
   return m_settingDlg->traceEffort();
@@ -916,6 +1014,7 @@ void ZStackFrame::setResolution(const double *res)
 {
   m_settingDlg->setResolution(res[0], res[1], res[2]);
 }
+#endif
 
 void ZStackFrame::addDecoration(ZStackObject *obj)
 {
@@ -937,30 +1036,24 @@ void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 
 void ZStackFrame::synchronizeSetting()
 {
-  m_settingDlg->setResolution(document()->getResolution());
-  m_settingDlg->setUnit(document()->getResolution().unit());
+  ZResolution res = m_doc->getResolution();
+  m_settingDlg->setScale(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ());
+//  m_settingDlg->setResolution(document()->getResolution());
+//  m_settingDlg->setUnit(document()->getResolution().unit());
   m_settingDlg->setBackground(document()->getStackBackground());
 }
 
 void ZStackFrame::synchronizeDocument()
 {
-  document()->setResolution(m_settingDlg->xResolution(),
-                            m_settingDlg->yResolution(),
-                            m_settingDlg->zResolution(),
-                            m_settingDlg->unit());
-  document()->setAutoTraceMinScore(m_settingDlg->autoTraceMinScore());
-  document()->setManualTraceMinScore(m_settingDlg->manualTraceMinScore());
-  document()->setReceptor(m_settingDlg->receptor(), m_settingDlg->useCone());
+  document()->setResolution(m_settingDlg->getXScale(),
+                            m_settingDlg->getYScale(),
+                            m_settingDlg->getZScale(),
+                            'p');
   if (hasProject()) {
     document()->setWorkdir(m_traceProject->workspacePath().toLocal8Bit().constData());
   }
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
+
+  updateTraceConfig();
   m_doc->setStackBackground(m_settingDlg->getBackground());
 }
 

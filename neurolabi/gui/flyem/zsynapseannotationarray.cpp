@@ -724,14 +724,14 @@ ZSwcTree* ZSynapseAnnotationArray::toSwcTree()
     int postType = 1;
     double baseRadius = 1.0;
     Swc_Tree_Node *preNode =
-        SwcTreeNode::makePointer(0, preType, startPos,
+        SwcTreeNode::MakePointer(0, preType, startPos,
                                  tBar->confidence() + baseRadius, -1);
     SwcTreeNode::setParent(preNode, root);
 
     for (size_t j = 0; j < partnerArray->size(); j++) {
       endPos = (*partnerArray)[j].pos();
       Swc_Tree_Node *postNode =
-          SwcTreeNode::makePointer(0, postType, endPos,
+          SwcTreeNode::MakePointer(0, postType, endPos,
                                    (*partnerArray)[j].confidence() + baseRadius,
                                    -1);
       SwcTreeNode::setParent(postNode, preNode);

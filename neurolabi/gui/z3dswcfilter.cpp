@@ -1305,6 +1305,7 @@ void Z3DSwcFilter::prepareNodePairData(
   m_lines.push_back(glm::vec3(baseAndbRadius.xyz()) + glm::vec3(axisAndtRadius.xyz()));
 }
 
+#if 0
 void Z3DSwcFilter::updateColorWidget()
 {
 #if !defined(_FLYEM_)
@@ -1328,6 +1329,7 @@ void Z3DSwcFilter::updateColorWidget()
 #endif
 #endif
 }
+#endif
 
 std::map<ZSwcTree*, size_t> Z3DSwcFilter::getSourceIndexMapper() const
 {
@@ -1439,7 +1441,7 @@ void Z3DSwcFilter::prepareDataForImmutable()
   // update widget if any type/swc added/removed
   updateBiocytinWidget();
 
-  updateColorWidget();
+//  updateColorWidget();
 
 #if 0
   std::map<ZSwcTree*, size_t> sourceIndexMapper;
@@ -2223,17 +2225,11 @@ void Z3DSwcFilter::updateColorWidgets()
   } else if (m_colorMode.isSelected("Individual")) {
     updateTreeColorWidget(m_individualColorParam);
   } else {
-    removeTreeColorWidget();
-    m_widgetsGroup->emitWidgetsGroupChangedSignal();
+    if (m_widgetsGroup) {
+      removeTreeColorWidget();
+      m_widgetsGroup->emitWidgetsGroupChangedSignal();
+    }
   }
-  /*
-  for (const auto& kv : m_randomTreeColorMapper) {
-    kv.second->setVisible(m_colorMode.isSelected("Random Tree Color"));
-  }
-  for (const auto& kv : m_individualTreeColorMapper) {
-    kv.second->setVisible(m_colorMode.isSelected("Individual"));
-  }
-    */
 
   for (const auto& kv : m_biocytinColorMapper) {
     kv.second->setVisible(m_colorMode.isSelected("Biocytin Branch Type"));

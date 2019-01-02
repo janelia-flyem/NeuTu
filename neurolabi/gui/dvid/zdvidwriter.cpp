@@ -134,7 +134,7 @@ void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
 bool ZDvidWriter::isSwcWrittable()
 {
   ZSwcTree testTree;
-  testTree.setDataFromNode(SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1));
+  testTree.setDataFromNode(SwcTreeNode::MakePointer(ZPoint(0, 0, 0), 1));
   writeSwc(0, &testTree);
 
   return getStatusCode() == 200;

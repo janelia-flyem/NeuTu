@@ -47,11 +47,12 @@ void ZLocalNeuroseg::display(
     const QColor &color) const
 { //todo
 #if defined(_QT_GUI_USED_)
-  if (option == ZStackObject::NORMAL) {
-    option = ZStackObject::SOLID;
+  if (option == ZStackObject::EDisplayStyle::NORMAL) {
+    option = ZStackObject::EDisplayStyle::SOLID;
   }
 
-  if ((option == ZStackObject::SOLID) || (option == ZStackObject::BOUNDARY)) {
+  if ((option == ZStackObject::EDisplayStyle::SOLID) ||
+      (option == ZStackObject::EDisplayStyle::BOUNDARY)) {
     if (m_locseg->seg.r1 * m_locseg->seg.scale <= 0.0) {
       return;
     }
@@ -75,8 +76,8 @@ void ZLocalNeuroseg::display(
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(option) {
-  case ZStackObject::SOLID:
-  case ZStackObject::BOUNDARY:
+  case ZStackObject::EDisplayStyle::SOLID:
+  case ZStackObject::EDisplayStyle::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -122,7 +123,7 @@ void ZLocalNeuroseg::display(
                 (m_filterStack->array[offset] > 0)) {
                 */
             if (m_filterStack->array[offset] > 0) {
-              if (option == ZStackObject::BOUNDARY) {
+              if (option == ZStackObject::EDisplayStyle::BOUNDARY) {
                 int k = sliceIndex - region_corner[2];
                 if (IS_IN_OPEN_RANGE3(i, j, k, 0, m_filterStack->width-1,
                                       0, m_filterStack->height - 1,
@@ -163,7 +164,7 @@ void ZLocalNeuroseg::display(
                 }
                 new_offset += area;
               }
-              if (option == ZStackObject::BOUNDARY) {
+              if (option == ZStackObject::EDisplayStyle::BOUNDARY) {
                 int v2;
                 int neighbor[4];
                 Stack_Neighbor_Offset(4, Stack_Width(m_filterStack),
@@ -217,7 +218,7 @@ void ZLocalNeuroseg::display(
     }
     break;
         
-  case ZStackObject::SKELETON:
+  case ZStackObject::EDisplayStyle::SKELETON:
     {
       double top_position[3];
       Local_Neuroseg_Top(m_locseg, top_position);
@@ -274,8 +275,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
     }
   }
 
-  if (style == ZStackObject::NORMAL) {
-    style = ZStackObject::SOLID;
+  if (style == ZStackObject::EDisplayStyle::NORMAL) {
+    style = ZStackObject::EDisplayStyle::SOLID;
   }
 
   int channel[3];
@@ -307,8 +308,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(style) {
-  case ZStackObject::SOLID:
-  case ZStackObject::BOUNDARY:
+  case ZStackObject::EDisplayStyle::SOLID:
+  case ZStackObject::EDisplayStyle::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -367,7 +368,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
               if ((point[0] >= 0) && (point[0] < image->width()) &&
                   (point[1] >= 0) && (point[1] < image->height()) &&
                   (/*filter[offset] > 0*/ m_filterStack->array[offset] > 0)) {
-                if (style == ZStackObject::BOUNDARY) {
+                if (style == ZStackObject::EDisplayStyle::BOUNDARY) {
                   if (Stack_Neighbor_Min(m_filterStack,
                                          6, point[0], point[1], point[2])
                     > 0.0) {
@@ -412,7 +413,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 
     }
     break;
-  case ZStackObject::SKELETON:
+  case ZStackObject::EDisplayStyle::SKELETON:
     {
       double top_position[3];
       Local_Neuroseg_Top(m_locseg, top_position);
@@ -477,6 +478,16 @@ bool ZLocalNeuroseg::load(const char *filePath)
   UNUSED_PARAMETER(filePath);
 
   return false;
+}
+
+double ZLocalNeuroseg::getFitScore(const Stack *stack)
+{
+  Stack_Fit_Score fs;
+  fs.n = 1;
+  fs.options[0] = STACK_FIT_CORRCOEF;
+  double score = Local_Neuroseg_Score(m_locseg, stack, m_zscale, &fs);
+
+  return score;
 }
 
 void ZLocalNeuroseg::updateProfile(const Stack *stack, int option)

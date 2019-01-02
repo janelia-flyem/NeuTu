@@ -163,6 +163,8 @@ void ZStackDoc3dHelper::updateTodoData(Z3DView *view)
       filter->setData(objList);
     }
   }
+#else
+  Q_UNUSED(view);
 #endif
 }
 

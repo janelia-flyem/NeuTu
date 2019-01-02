@@ -216,7 +216,7 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemservice.h"
 #include "zintset.h"
-
+#include "zstackfactory.h"
 #include "zsparseobject.h"
 
 #include "bigdata/zdvidblockgrid.h"
@@ -318,6 +318,7 @@
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
 #include "test/zunittest.h"
+#include "zstackobjectpainter.h"
 
 //#include "test/ztestall.h"
 
@@ -28838,7 +28839,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   qDebug() << qgetenv("NEUPRINT");
   qDebug() << qgetenv("HOME");
 #endif
@@ -29048,7 +29049,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   reader->updateCurrentDataset("137d");
   if (reader->isReady()) {
@@ -29076,6 +29077,111 @@ void ZTest::test(MainWindow *host)
   CypherQuery query = CypherQueryBuilder().
       match("(n:label)").where("exists(n.name)").ret("n.name");
   qDebug() << query.getQueryString();
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::LoadFromFile(
+        GET_BENCHMARK_DIR + "/rn003/cross_30_0.tif");
+
+  std::cout << stack->sourcePath() << std::endl;
+
+  ZNeuronTracer tracer;
+  tracer.setDiagnosis(true);
+  tracer.setIntensityField(stack);
+
+  tracer.test();
+
+#endif
+
+#if 0
+  ZLineSegment seg(ZPoint(1, 2, 0), ZPoint(3, 4, 5));
+  bool visible;
+  ZLineSegment seg2 = ZStackObjectPainter::GetFocusSegment(seg, visible, 1);
+  if (visible) {
+    seg2.print();
+  } else {
+    std::cout << "Not visible." << std::endl;
+  }
+#endif
+
+#if 0
+  Z3DGraph graph;
+  graph.load(GET_TEST_DATA_DIR + "/_test.g3d");
+  graph.print();
+#endif
+
+#if 0
+  Z3DGraph graph;
+  {
+    Z3DGraphNode node;
+    node.set(0, 0, 0, 5);
+    node.setColor(QColor(255, 0, 0));
+    graph.addNode(node);
+  }
+
+  {
+    Z3DGraphNode node;
+    node.set(100, 100, 10, 5);
+    node.setColor(QColor(0, 255, 0));
+    graph.addNode(node);
+  }
+
+  {
+    Z3DGraphNode node;
+    node.set(200, 100, 20, 5);
+    node.setColor(QColor(255, 255, 0));
+    graph.addNode(node);
+  }
+
+  {
+    Z3DGraphNode node;
+    node.set(200, 300, 30, 5);
+    node.setColor(QColor(0, 255, 255));
+    graph.addNode(node);
+  }
+
+  graph.addEdge(0, 1);
+  graph.addEdge(1, 2);
+  graph.addEdge(2, 3);
+  graph.addEdge(0, 3);
+
+  graph.print();
+  graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
+#endif
+
+#if 0
+  ZCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(100, 200, 30);
+  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
+  graphObj->print();
+
+  graphObj->save(GET_TEST_DATA_DIR + "/_test.g3d");
+
+//  std::cout << graphObj->toJsonObject().dumpString() << std::endl;
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.Edit.swc");
+  tree.setColor(Qt::cyan);
+  Z3DGraph graph = Z3DGraphFactory::MakeSwcGraph(tree);
+  graph.print();
+  graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/_misc/1.swc");
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_misc/1.tif");
+  ZSwcTree::DepthFirstIterator iter(&tree);
+  for (Swc_Tree_Node *tn = iter.begin(); tn != NULL; tn = iter.next()) {
+    tn->feature = SwcTreeNode::averageIntensity(tn, stack.c_stack()) / 255.0;
+  }
+  Z3DGraph graph = Z3DGraphFactory::MakeSwcFeatureGraph(tree);
+  graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
+
 #endif
 
   std::cout << "Done." << std::endl;

@@ -137,7 +137,7 @@ void ZStackPresenter::init()
   m_grayScale.resize(5, 1.0);
   m_grayOffset.resize(5, 0.0);
 
-  m_objStyle = ZStackObject::BOUNDARY;
+  m_objStyle = ZStackObject::EDisplayStyle::BOUNDARY;
   m_threshold = -1;
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;

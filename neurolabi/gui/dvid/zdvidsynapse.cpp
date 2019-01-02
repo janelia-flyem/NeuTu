@@ -182,7 +182,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QColor color = getColor();
 
     double alpha = 1.0;
-    if (option == SKELETON) {
+    if (option == EDisplayStyle::SKELETON) {
       alpha = 0.1;
     }
 
@@ -213,7 +213,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double oldWidth = pen.widthF();
       QColor oldColor = pen.color();
       if (getKind() == EKind::KIND_POST_SYN) {
-        if (option != SKELETON) {
+        if (option != EDisplayStyle::SKELETON) {
           pen.setWidthF(oldWidth + 1.0);
         }
         if (isSelected()) {
@@ -447,7 +447,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           partnerSynapse.setDefaultColor();
           partnerSynapse.setDefaultRadius();
           painter.save();
-          partnerSynapse.display(painter, slice, ZStackObject::NORMAL, sliceAxis);
+          partnerSynapse.display(
+                painter, slice, ZStackObject::EDisplayStyle::NORMAL, sliceAxis);
           painter.restore();
         }
       }
