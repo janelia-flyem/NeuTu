@@ -21,7 +21,8 @@ public:
 
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
+  void display(ZPainter &painter, int z = 0,
+               EDisplayStyle option = EDisplayStyle::NORMAL)
   const;
 
   virtual void save(const char *filePath);

@@ -1238,16 +1238,16 @@ void MainWindow::updateMenu()
           checkViewAction(NULL);
         } else {
           switch (frame->presenter()->objectStyle()) {
-          case ZStackObject::NORMAL:
+          case ZStackObject::EDisplayStyle::NORMAL:
             checkViewAction(objectViewSolidAction);
             break;
-          case ZStackObject::SOLID:
+          case ZStackObject::EDisplayStyle::SOLID:
             checkViewAction(objectViewSolidAction);
             break;
-          case ZStackObject::BOUNDARY:
+          case ZStackObject::EDisplayStyle::BOUNDARY:
             checkViewAction(objectViewSurfaceAction);
             break;
-          case ZStackObject::SKELETON:
+          case ZStackObject::EDisplayStyle::SKELETON:
             checkViewAction(objectViewSkeletonAction);
             break;
           }
@@ -1453,13 +1453,13 @@ void MainWindow::updateObjectDisplayStyle(ZStackFrame *frame, QAction *action)
 {
   if (frame != NULL) {
     if (action == objectViewNormalAction) {
-      frame->setObjectDisplayStyle(ZStackObject::NORMAL);
+      frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::NORMAL);
     } else if (action == objectViewSolidAction) {
-      frame->setObjectDisplayStyle(ZStackObject::SOLID);
+      frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     } else if (action == objectViewSurfaceAction) {
-      frame->setObjectDisplayStyle(ZStackObject::BOUNDARY);
+      frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::BOUNDARY);
     } else if (action == objectViewSkeletonAction) {
-      frame->setObjectDisplayStyle(ZStackObject::SKELETON);
+      frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::SKELETON);
     }
   }
 }
@@ -2669,8 +2669,9 @@ void MainWindow::autoTrace(ZStackFrame *frame)
   frame->document()->setProgressReporter(&reporter);
 
   frame->executeAutoTraceCommand(m_autoTraceDlg->getTraceLevel(),
-                                 m_autoTraceDlg->getDoResample(),
+                                 m_autoTraceDlg->resampling(),
                                  m_autoTraceDlg->getChannel());
+
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2701,7 +2702,7 @@ void MainWindow::on_actionAutomatic_triggered()
     }
 
     int channelNumber = frame->document()->getStack()->channelNumber();
-    m_autoTraceDlg->setChannelNumber(channelNumber);
+    m_autoTraceDlg->setChannelCount(channelNumber);
 
     if (m_autoTraceDlg->exec()) {
       m_progress->setRange(0, 100);
@@ -7513,13 +7514,13 @@ void MainWindow::on_actionSeed_Mask_triggered()
 
   if (frame != NULL) {
     int channelNumber = frame->document()->getStack()->channelNumber();
-    m_autoTraceDlg->setChannelNumber(channelNumber);
+    m_autoTraceDlg->setChannelCount(channelNumber);
 
     Stack *stackData =
         C_Stack::clone(
           frame->document()->getStack()->c_stack(m_autoTraceDlg->getChannel()));
     Stack *mask =
-        frame->document()->getNeuronTracer()->computeSeedMask(stackData);
+        frame->document()->getNeuronTracer().computeSeedMask(stackData);
     C_Stack::kill(stackData);
 
     ZStackDocReader reader;

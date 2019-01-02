@@ -2250,17 +2250,17 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
 
 
   if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
-    style = ZStackObject::BOUNDARY;
+    style = ZStackObject::EDisplayStyle::BOUNDARY;
   }
 
   if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
-    style = ZStackObject::SOLID;
+    style = ZStackObject::EDisplayStyle::SOLID;
   }
 
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
   switch (style) {
-  case ZStackObject::SOLID:
+  case ZStackObject::EDisplayStyle::SOLID:
   {
     if (isSelected()) {
 //      QColor color = pen.color();
@@ -2281,7 +2281,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
     }
   }
     break;
-  case ZStackObject::BOUNDARY:
+  case ZStackObject::EDisplayStyle::BOUNDARY:
   {
     QColor color = pen.color();
     pen.setCosmetic(m_usingCosmeticPen);

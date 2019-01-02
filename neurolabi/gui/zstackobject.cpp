@@ -9,7 +9,8 @@ double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_hitProtocal(HIT_DATA_POS), m_projectionVisible(true),
-  m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
+  m_style(EDisplayStyle::SOLID), m_target(TARGET_WIDGET),
+  m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
   m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
 {

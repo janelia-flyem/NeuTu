@@ -82,6 +82,8 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
     return FILE_MC_STACK_RAW;
   } else if (str.endsWith(".zss", ZString::CASE_INSENSITIVE)) {
     return FILE_SPARSE_STACK;
+  } else if (str.endsWith(".g3d", ZString::CASE_INSENSITIVE)) {
+    return FILE_3D_GRAPH;
   }
 #if _QT_GUI_USED_
   else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {

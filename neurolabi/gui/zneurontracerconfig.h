@@ -34,6 +34,16 @@ public:
   int getRecoverLevel() const { return m_recover; }
   double getMaxEucDist() const { return m_maxEucDist; }
 
+  void setMinAutoScore(double score) { m_minAutoScore = score; }
+  void setMinManualScore(double score) { m_minManualScore = score; }
+  void setMinSeedScore(double score) { m_seedScore = score; }
+  void setRefit(bool on) { m_refit = on; }
+  void setSpTest(bool on) { m_spTest = on; }
+  void setEnhancingMask(bool on) { m_enhanceMask = on; }
+  void setRecoverLevel(int level) { m_recover = level; }
+  void setMaxEucDist(double d) { m_maxEucDist = d; }
+  void setCrossoverTest(bool on) { m_crossoverTest = on; }
+
   ZJsonObject getLevelJson(int level) const;
 
   static const char * getLevelKey() { return m_levelKey; }

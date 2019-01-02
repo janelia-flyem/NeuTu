@@ -60,12 +60,12 @@ public:
 
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 
-  static ZStack* makeDensityMap(const ZPointArray &ptArray, double sigma);
-  static ZStack* makeDensityMap(
+  static ZStack* MakeDensityMap(const ZPointArray &ptArray, double sigma);
+  static ZStack* MakeDensityMap(
       const ZWeightedPointArray &ptArray, double sigma);
 
-  static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
-  static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
+  static ZStack* MakeSeedStack(const ZWeightedPointArray &ptArray);
+  static ZStack* MakeSeedStack(const ZObject3dScanArray &objArray);
   static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
   static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
 
@@ -99,6 +99,8 @@ public:
   static ZStack* MakeLabelBinaryStack(
       const std::vector<ZArray*> &labelArray, uint64_t v);
   static ZStack* MakeLabelColorStack(const std::vector<ZArray*> &labelArray);
+
+  static ZStack* LoadFromFile(const std::string &path);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
