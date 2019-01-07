@@ -35,7 +35,8 @@ int main(int argc, char *argv[])
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
-
+#include "zglobal.h"
+#include "zlog.h"
 
 int main(int argc, char *argv[])
 {
@@ -84,8 +85,12 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutube::GetVersionString();
+    ZGlobal::InitKafkaTracer();
+
+    KLog() << ZLog::Info()
+           << ZLog::Diagnostic("BEGIN " + GET_SOFTWARE_NAME);
+//    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+//            + " " + neutube::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -174,6 +179,9 @@ int main(int argc, char *argv[])
                  NeutubeConfig::getInstance().getPath(
                      NeutubeConfig::EConfigItem::LOG_DEST_DIR));
     }
+
+    KLog() << ZLog::Info()
+           << ZLog::Diagnostic("END " + GET_SOFTWARE_NAME);
 
     return result;
   } else {

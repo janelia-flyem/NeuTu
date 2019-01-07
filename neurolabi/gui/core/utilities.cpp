@@ -1,6 +1,7 @@
 #include "core/utilities.h"
 
 #include <cstdlib>
+#include <chrono>
 
 #include "neutube_def.h"
 
@@ -18,4 +19,10 @@ bool neutube::HasEnv(const std::string &name, const std::string &value)
 std::string neutube::GetVersionString()
 {
   return std::string(neutube::VERSION) + " (" + neutube::PKG_VERSION + ")";
+}
+
+uint64_t neutube::GetTimestamp()
+{
+  return std::chrono::duration_cast<std::chrono::seconds>
+      (std::chrono::system_clock::now().time_since_epoch()).count();
 }
