@@ -182,6 +182,7 @@ private:
     ZThreadFutureMap m_futureMap;
 
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+    std::unique_ptr<NeuPrintReader> m_neuPrintReader;
 
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
@@ -220,6 +221,7 @@ private:
     void prepareWidget();
     QList<uint64_t> getSelectedBodyList() const;
     NeuPrintReader *getNeuPrintReader();
+//    void setNeuPrintReader(std::unique_ptr<NeuPrintReader> reader);
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
     void prepareQuery();
 };

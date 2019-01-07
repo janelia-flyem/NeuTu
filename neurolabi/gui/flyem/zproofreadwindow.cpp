@@ -405,7 +405,7 @@ void ZProofreadWindow::createMenu()
   m_neuprintAction->setIcon(QIcon(":/images/neuprint.png"));
   connect(m_neuprintAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(openNeuPrint()));
-  m_neuprintAction->setVisible(false);
+//  m_neuprintAction->setVisible(false);
 
   // temporarily disable sequencer
   // m_toolMenu->addAction(m_openSequencerAction);
@@ -470,12 +470,28 @@ void ZProofreadWindow::createMenu()
 
 //  m_viewMenu->setEnabled(false);
 
-  m_viewSynapseAction->setEnabled(false);
-  m_importBookmarkAction->setEnabled(false);
-  m_viewBookmarkAction->setEnabled(false);
-  m_viewSegmentationAction->setEnabled(false);
-  m_viewRoiAction->setEnabled(false);
-  m_viewTodoAction->setEnabled(false);
+  enableTargetAction(false);
+}
+
+void ZProofreadWindow::enableTargetAction(bool on)
+{
+  m_viewSynapseAction->setEnabled(on);
+  m_importBookmarkAction->setEnabled(on);
+  m_viewBookmarkAction->setEnabled(on);
+  m_viewSegmentationAction->setEnabled(on);
+  m_viewRoiAction->setEnabled(on);
+  m_viewTodoAction->setEnabled(on);
+  if (m_openSequencerAction) {
+    m_openSequencerAction->setEnabled(on);
+  }
+  if (m_neuprintAction) {
+    m_neuprintAction->setEnabled(on);
+  }
+  m_roiToolAction->setEnabled(on);
+  m_contrastAction->setEnabled(on);
+  m_smoothAction->setEnabled(on);
+  m_openTodoAction->setEnabled(on);
+  m_openProtocolsAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -733,12 +749,8 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 
   setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
-  m_viewSynapseAction->setEnabled(target.isValid());
-  m_importBookmarkAction->setEnabled(target.isValid());
-  m_viewBookmarkAction->setEnabled(target.isValid());
-  m_viewSegmentationAction->setEnabled(target.isValid());
-  m_viewRoiAction->setEnabled(target.isValid());
-  m_viewTodoAction->setEnabled(target.isValid());
+  enableTargetAction(target.isValid());
+
 
   m_viewMenu->setEnabled(true);
 
@@ -760,7 +772,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
   }
 
-  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
+//  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
 
 //  m_toolBar->hide();
 //  m_toolBar->show();

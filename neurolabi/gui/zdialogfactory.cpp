@@ -226,6 +226,11 @@ void ZDialogFactory::Warn(
   QMessageBox::warning(parent, title, msg);
 }
 
+void ZDialogFactory::Error(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::critical(parent, title, msg);
+}
 
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {

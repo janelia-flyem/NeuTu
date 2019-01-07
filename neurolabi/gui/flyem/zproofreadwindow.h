@@ -102,6 +102,7 @@ protected:
 private:
   void init();
   void initProgress(int nticks);
+  void enableTargetAction(bool on);
 
   template <typename T>
   void connectMessagePipe(T *source);

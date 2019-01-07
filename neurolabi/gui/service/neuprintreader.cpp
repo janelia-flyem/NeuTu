@@ -1,5 +1,7 @@
 #include "neuprintreader.h"
 
+#include <QFile>
+
 #include "zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -8,6 +10,11 @@
 
 NeuPrintReader::NeuPrintReader(const QString &server) : m_server(server)
 {
+}
+
+QString NeuPrintReader::getServer() const
+{
+  return m_server;
 }
 
 void NeuPrintReader::setServer(const QString &server)
@@ -26,11 +33,11 @@ void NeuPrintReader::authorize(const QString &token)
   }
 }
 
-void NeuPrintReader::authorizeFromFile(const QString &filePath)
+void NeuPrintReader::authorizeFromJson(const QString &auth)
 {
-  if (!filePath.isEmpty()) {
+  if (!auth.isEmpty()) {
     ZJsonObject obj;
-    obj.load(filePath.toStdString());
+    obj.decode(auth.toStdString());
     std::string token = ZJsonParser::stringValue(obj["token"]);
     if (!token.empty()) {
       authorize(token.c_str());
@@ -40,16 +47,31 @@ void NeuPrintReader::authorizeFromFile(const QString &filePath)
   }
 }
 
+void NeuPrintReader::authorizeFromFile(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    QFile f(filePath);
+    if (f.open(QIODevice::ReadOnly)) {
+      QTextStream stream(&f);
+      qDebug() << "Auth: " << stream.readAll();
+      authorizeFromJson(stream.readAll());
+    }
+  }
+}
+
 void NeuPrintReader::readDatasets()
 {
+  m_dataset.clear();
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
-  m_dataset.decodeString(m_bufferReader.getBuffer().toStdString().c_str());
+  if (m_bufferReader.getStatus() == neutube::EReadStatus::OK) {
+    m_dataset.decodeString(m_bufferReader.getBuffer().toStdString().c_str());
+  }
   if (m_dataset.isEmpty()) {
     LWARN() << "No datasets retreived from NeuPrint.";
   }
 }
 
-bool NeuPrintReader::isAuthorized() const
+bool NeuPrintReader::hasAuthCode() const
 {
   return m_bufferReader.hasRequestHeader("Authorization");
 }
@@ -60,6 +82,12 @@ bool NeuPrintReader::isConnected()
     readDatasets();
   }
 
+  return !m_dataset.isEmpty();
+}
+
+bool NeuPrintReader::connect()
+{
+  readDatasets();
   return !m_dataset.isEmpty();
 }
 
@@ -97,9 +125,9 @@ QList<QString> NeuPrintReader::getRoiList()
   return roiList;
 }
 
-void NeuPrintReader::updateCurrentDataset(const QString &uuid)
+QString NeuPrintReader::getUuidKey(const QString &uuid)
 {
-  m_currentDataset.clear();
+  QString uuidKey;
   if (isConnected()) {
     const char *key = nullptr;
     json_t *value = nullptr;
@@ -108,11 +136,24 @@ void NeuPrintReader::updateCurrentDataset(const QString &uuid)
       if (dataObj.hasKey("uuid")) {
         QString fullUuid(ZJsonParser::stringValue(dataObj["uuid"]).c_str());
         if (fullUuid.startsWith(uuid)){
-          m_currentDataset = key;
+          uuidKey = key;
+          break;
         }
       }
     }
   }
+
+  return uuidKey;
+}
+
+void NeuPrintReader::updateCurrentDataset(const QString &uuid)
+{
+  m_currentDataset = getUuidKey(uuid);
+}
+
+bool NeuPrintReader::hasDataset(const QString &uuid)
+{
+  return !getUuidKey(uuid).isEmpty();
 }
 
 namespace {
