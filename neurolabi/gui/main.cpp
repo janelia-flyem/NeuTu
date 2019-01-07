@@ -87,8 +87,10 @@ int main(int argc, char *argv[])
   if (mainConfig.isGuiEnabled()) {
     ZGlobal::InitKafkaTracer();
 
-    KLog() << ZLog::Info()
-           << ZLog::Diagnostic("BEGIN " + GET_SOFTWARE_NAME);
+    uint64_t timestamp = neutube::GetTimestamp();
+    KLog() << ZLog::Info() << ZLog::Time(timestamp)
+           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
+           << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
 //    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
 //            + " " + neutube::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
@@ -181,7 +183,8 @@ int main(int argc, char *argv[])
     }
 
     KLog() << ZLog::Info()
-           << ZLog::Diagnostic("END " + GET_SOFTWARE_NAME);
+           << ZLog::Description("END " + GET_SOFTWARE_NAME)
+           << ZLog::Tag("start time", timestamp);
 
     return result;
   } else {

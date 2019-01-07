@@ -19,9 +19,6 @@ public:
   virtual void log(const std::string &key, const neuopentracing::Value &value);
   virtual void end();
 
-//  void logCategory(const std::string &value);
-//  void logDuration(int64_t t);
-
   bool isStarted() const { return m_started; }
 
   struct Tag {
@@ -44,12 +41,12 @@ public:
     Info() : Category("INFO") {}
   };
 
-  struct WARN : public Category {
-    WARN() : Category("WARN") {}
+  struct Warn : public Category {
+    Warn() : Category("WARN") {}
   };
 
-  struct ERROR : public Category {
-    ERROR() : Category("ERROR") {}
+  struct Error : public Category {
+    Error() : Category("ERROR") {}
   };
 
   struct Duration : public Tag {
@@ -61,11 +58,12 @@ public:
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("diagnostic", value) {}
+    Description(const std::string &value) : Tag("description", value) {}
   };
 
   struct Time : public Tag {
     Time();
+    Time(uint64_t);
   };
 
   ZLog& operator << (const Tag &tag);

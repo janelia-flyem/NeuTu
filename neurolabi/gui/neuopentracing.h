@@ -52,6 +52,7 @@ public:
 
   void SetTag(const std::string& key, const Value& value);
 
+  bool hasTag(const std::string &key) const;
   const std::string& operationName() const;
   const std::map<std::string, Value>& tags() const;
   std::uint64_t startTimestamp() const;

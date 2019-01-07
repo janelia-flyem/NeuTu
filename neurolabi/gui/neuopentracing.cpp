@@ -98,6 +98,11 @@ void Span::SetTag(const std::string& key, const Value& value)
   m_impl->m_tags[key] = value;
 }
 
+bool Span::hasTag(const std::string &key) const
+{
+  return m_impl->m_tags.count(key) > 0;
+}
+
 const std::string& Span::operationName() const
 {
   return m_impl->m_operationName;
