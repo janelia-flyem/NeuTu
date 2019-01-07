@@ -14,10 +14,12 @@ class NeuPrintReader
 public:
   NeuPrintReader(const QString &server);
 
+  QString getServer() const;
   void setServer(const QString &server);
 
   void authorize(const QString &token);
   void authorizeFromFile(const QString &filePath);
+  void authorizeFromJson(const QString &auth);
 
   void readDatasets();
   QList<uint64_t> queryNeuron(
@@ -33,14 +35,17 @@ public:
 
   bool isReady();
   bool isConnected();
-  bool isAuthorized() const;
+  bool hasAuthCode() const;
+  bool connect();
 
   void updateCurrentDataset(const QString &uuid);
+  bool hasDataset(const QString &uuid);
 
   QList<QString> getRoiList();
 
 private:
   QString getNeuronLabel(char quote = '\0') const;
+  QString getUuidKey(const QString &uuid);
 
 private:
   QString m_server;

@@ -66,7 +66,7 @@ std::pair<ZStack*, ZSparseStack*>
 ZBodySplitCommand::parseSignalPath(
     std::string &signalPath, const ZJsonObject &signalInfo,
     const std::string &dataDir, bool isFile,
-    const ZIntCuboid &range, ZStackGarbageCollector &gc)
+    const ZIntCuboid &/*range*/, ZStackGarbageCollector &gc)
 {
   ZSparseStack *spStack = NULL;
   ZStack *signalStack = NULL;
