@@ -1006,6 +1006,9 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
+    widgets/zbodylistwidget.ui \
+    widgets/flyembodyinfowidget.ui \
+    neu3window.ui \
     dialogs/ztestoptiondialog.ui \
     dialogs/zinfodialog.ui \
     dialogs/zswcisolationdialog.ui \
@@ -1018,9 +1021,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zcomboeditdialog.ui \
     dialogs/zflyembodycomparisondialog.ui \
     dialogs/zflyembodysplitdialog.ui \
-    widgets/zbodylistwidget.ui \
-    widgets/flyembodyinfowidget.ui \
-    neu3window.ui \
     dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \

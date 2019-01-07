@@ -112,6 +112,7 @@ private:
   void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
+  void logError(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);

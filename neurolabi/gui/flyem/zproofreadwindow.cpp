@@ -34,6 +34,7 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+#include "zlog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -630,7 +631,8 @@ void ZProofreadWindow::dump(const QString &message, bool appending,
 {
 //  qDebug() << message;
   if (logging) {
-    LINFO() << message;
+    logMessage(message);
+//    LINFO() << message;
   }
 
   m_messageWidget->dump(message, appending);
@@ -666,21 +668,22 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     break;
   }
 
+  logMessage(msg);
   //Record message in files
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+//  switch (msg.getType()) {
+//  case neutube::EMessageType::INFORMATION:
+//    LINFO() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::WARNING:
+//    LWARN() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::ERROR:
+//    LERROR() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::DEBUG:
+//    LDEBUG() << msg.toPlainString();
+//    break;
+//  }
 }
 
 void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
@@ -777,20 +780,30 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void ZProofreadWindow::logMessage(const QString &msg)
 {
-  LINFO() << msg;
+  KLog() << ZLog::Info() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
+}
+
+void ZProofreadWindow::logError(const QString &msg)
+{
+  KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
 void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
 {
+  std::string plainStr = msg.toPlainString().toStdString();
   switch (msg.getType()) {
   case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
+    KLog() << ZLog::Info() << ZLog::Description(plainStr);
     break;
   case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
+    KLog() << ZLog::Warn() << ZLog::Description(plainStr);
+//    LWARN() << msg.toPlainString();
     break;
   case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
+    KLog() << ZLog::Error() << ZLog::Description(plainStr);
+//    LERROR() << msg.toPlainString();
     break;
   case neutube::EMessageType::DEBUG:
     LDEBUG() << msg.toPlainString();

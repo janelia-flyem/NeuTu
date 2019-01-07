@@ -61,6 +61,10 @@ ZLog::Time::Time() :
 {
 }
 
+ZLog::Time::Time(uint64_t t) : Tag("time", t)
+{
+}
+
 void ZLog::End(ZLog &log)
 {
   log.end();
@@ -100,7 +104,9 @@ void KLog::start()
     m_span = neuopentracing::Tracer::Global()->StartSpan("app");
     if (m_span) {
       m_span->SetTag("user", NeutubeConfig::GetUserName());
-      m_span->SetTag("time", neutube::GetTimestamp());
+      if (!m_span->hasTag("time")) {
+        m_span->SetTag("time", neutube::GetTimestamp());
+      }
       m_span->SetTag(
             "client", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
     }
