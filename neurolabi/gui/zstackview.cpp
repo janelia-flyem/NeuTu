@@ -43,6 +43,7 @@
 #include "zstackdochelper.h"
 #include "mvc/zpositionmapper.h"
 #include "data3d/utilities.h"
+#include "zlog.h"
 
 using namespace std;
 
@@ -1151,7 +1152,10 @@ void ZStackView::redraw(EUpdateOption option)
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
+  ZOUT(KLog(), 5) << ZLog::Category("profile")
+                  << ZLog::Diagnostic("paint stack per frame")
+                  << ZLog::Duration(stackPaintTime);
+//  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
   paintMaskBuffer();
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
@@ -1172,8 +1176,11 @@ void ZStackView::redraw(EUpdateOption option)
 
   ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
-            << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
+    KLog() << ZLog::Category("warning")
+           << ZLog::Diagnostic(QString("Debugging for hiccup: "
+                                       "stack: %1; tile: %2; object: %3").
+                               arg(stackPaintTime).arg(tilePaintTime).
+                               arg(objectPaintTime).toStdString());
   }
 #endif
 }

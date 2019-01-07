@@ -55,6 +55,7 @@
 #include "zarrayfactory.h"
 #include "zobject3dfactory.h"
 #include "dvid/zdvidstackblockfactory.h"
+#include "zlog.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -353,7 +354,10 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+    ZOUT(KLog(), 5) << ZLog::Category("profile")
+                    << ZLog::Diagnostic("Body reading time")
+                    << ZLog::Duration(timer.elapsed());
+//    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
 
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -392,7 +396,10 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+    ZOUT(KLog(), 5) << ZLog::Category("profile")
+                    << ZLog::Diagnostic("Body reading time")
+                    << ZLog::Duration(timer.elapsed());
+//    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
 
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -822,7 +829,11 @@ ZObject3dScan *ZDvidReader::readBodyDs(
 
     reader.tryCompress(false);
 
-    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
+    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".reading")
+           << ZLog::Duration(timer.elapsed())
+           << ZLog::Time();
+
+//    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
 
     timer.start();
     const QByteArray &buffer = reader.getBuffer();
@@ -831,7 +842,11 @@ ZObject3dScan *ZDvidReader::readBodyDs(
       result->canonize();
     }
 
-    STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
+    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".parsing")
+           << ZLog::Duration(timer.elapsed())
+           << ZLog::Time();
+
+//    STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
 
     reader.clearBuffer();
 

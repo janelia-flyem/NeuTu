@@ -17,7 +17,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
-
+#include "neuopentracing.h"
 
 class ZGlobalData {
 
@@ -305,3 +305,32 @@ void ZGlobal::CopyToClipboard(const std::string &str)
   clipboard->setText(str.c_str());
 }
 
+void ZGlobal::InitKafkaTracer()
+{
+#if defined(_NEU3_) || defined(_FLYEM_)
+  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
+
+  std::string serviceName = "neutu";
+  std::string envName = "NEUTU_KAFKA_BROKERS";
+#if defined(_NEU3_)
+  serviceName = "neu3";
+  envName = "NEU3_KAFKA_BROKERS";
+#endif
+
+  if (const char* kafkaBrokersEnv = std::getenv(envName.c_str())) {
+    // The list of brokers should be separated by commans, per this example:
+    // https://www.npmjs.com/package/node-rdkafka
+    kafkaBrokers = kafkaBrokersEnv;
+  }
+
+  if (!kafkaBrokers.empty()) {
+    try {
+      auto config = neuopentracing::Config(kafkaBrokers);
+      auto tracer = neuopentracing::Tracer::make(serviceName, config);
+      neuopentracing::Tracer::InitGlobal(tracer);
+    } catch (std::exception &e) {
+      LWARN() << "Cannot initialize Kafka tracer:" << e.what();
+    }
+  }
+#endif
+}

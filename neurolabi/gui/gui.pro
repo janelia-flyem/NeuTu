@@ -49,28 +49,6 @@ win32 {
     }
 }
 
-#unix {
-#    QMAKE_PATH = $(QMAKE)
-#    !exists($$QMAKE_PATH) {
-#        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-#    }
-#    message("qmake path: $$QMAKE_PATH")
-#    exists($$QMAKE_PATH) {
-#        macx {
-#          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
-#        }
-
-#        unix:!macx {
-#          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
-#        }
-#    }
-#    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-#        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-#    }
-#    message($$DEPLOYMENT_COMMAND)
-#    message("Post link: $$QMAKE_POST_LINK")
-#}
-
 app_name = neutu
 
 CONFIG(debug, debug|release) {
@@ -934,7 +912,9 @@ HEADERS += mainwindow.h \
     flyem/zflyemroimanager.h \
     widgets/zoptionlistwidget.h \
     dialogs/zflyemtodofilterdialog.h \
-    dialogs/zstackframesettingdialog.h
+    dialogs/zstackframesettingdialog.h \
+    neuopentracing.h \
+    zlog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1637,7 +1617,9 @@ SOURCES += main.cpp \
     flyem/zflyemroimanager.cpp \
     widgets/zoptionlistwidget.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
-    dialogs/zstackframesettingdialog.cpp
+    dialogs/zstackframesettingdialog.cpp \
+    neuopentracing.cpp \
+    zlog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

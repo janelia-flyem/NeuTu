@@ -69,6 +69,8 @@ bool HasEnv(const std::string &name, const std::string &value);
 
 std::string GetVersionString();
 
+uint64_t GetTimestamp();
+
 }
 
 //template<>

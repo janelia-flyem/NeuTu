@@ -61,6 +61,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "flyem/zflyembodystatus.h"
 #include "zflyemroimanager.h"
+#include "zlog.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -849,6 +850,8 @@ bool ZFlyEmProofDoc::isDvidMutable() const
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   LINFO() << "Setting dvid env in ZFlyEmProofDoc";
+  QElapsedTimer timer;
+  timer.start();
   if (m_dvidReader.open(target)) {
     std::ostringstream flowInfo;
     flowInfo << "Update data statuses";
@@ -932,6 +935,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     msg.appendMessage(detail);
     emit messageGenerated(msg);
   }
+  KLog() << ZLog::Category("profile") << ZLog::Duration(timer.elapsed())
+         << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
 }
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const

@@ -319,6 +319,8 @@
 #include "service/cypherquery.h"
 #include "test/zunittest.h"
 #include "zstackobjectpainter.h"
+#include "neuopentracing.h"
+#include "zlog.h"
 
 //#include "test/ztestall.h"
 
@@ -29181,6 +29183,60 @@ void ZTest::test(MainWindow *host)
   }
   Z3DGraph graph = Z3DGraphFactory::MakeSwcFeatureGraph(tree);
   graph.save(GET_TEST_DATA_DIR + "/_test.g3d");
+
+#endif
+
+#if 1
+  tic();
+  KLog log;
+  log << ZLog::Category(std::string(__FILE__) + ".testing")
+      << ZLog::Diagnostic("testing klog functions") << ZLog::Duration(200);
+  log << ZLog::Time() << ZLog::End;
+
+  log << ZLog::Category(std::string(__FILE__) + ".testing")
+      << ZLog::Diagnostic("testing klog functions") << ZLog::Duration(300)
+      << ZLog::Time() << ZLog::End;
+
+  std::cout << "post log" << std::endl;
+//  KLog log;
+//  log.logCategory(std::string(__FUNCTION__) + ".testing");
+#endif
+
+#if 0
+  if (neuopentracing::Tracer::Global()) {
+    std::unique_ptr<neuopentracing::Span> span =
+        neuopentracing::Tracer::Global()->StartSpan("client");
+    span->SetTag("client", "NeuTu");
+    span->SetTag("category", "neutu.test");
+    span->SetTag("Test", "Test");
+  }
+#endif
+
+#if 0
+//  std::string kafkaBrokers = "localhost:2181";
+  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
+  if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
+
+    // The list of brokers should be separated by commans, per this example:
+    // https://www.npmjs.com/package/node-rdkafka
+
+    kafkaBrokers = kafkaBrokersEnv;
+  }
+
+  auto config = neuopentracing::Config(kafkaBrokers);
+  auto tracer = neuopentracing::Tracer::make("neutu", config);
+  neuopentracing::Tracer::InitGlobal(tracer);
+
+  tic();
+  for (int i = 0; i < 1000; ++i) {
+    std::unique_ptr<neuopentracing::Span> span =
+        neuopentracing::Tracer::Global()->StartSpan("client");
+    span->SetTag("client", "NeuTu");
+    span->SetTag("category", "neutu.test");
+    span->SetTag("Test", "This is a relatively long message: FlyEM (Electron Microscopic Reconstructing of the Drosophila Nervous System) aims to develop a fully detailed, cellular- and synaptic-resolution map of the central nervous system of Drosophila melanogaster.");
+//    span->Finish();
+  }
+  ptoc();
 
 #endif
 

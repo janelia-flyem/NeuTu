@@ -70,6 +70,8 @@ public:
 
   NeuPrintReader *getNeuPrintReader();
 
+  static void InitKafkaTracer();
+
 public:
   static ZDvidReader* GetDvidReader(
       const std::string &name, const std::string &key = "");
