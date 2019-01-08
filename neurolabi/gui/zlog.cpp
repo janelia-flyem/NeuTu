@@ -108,7 +108,7 @@ void KLog::start()
         m_span->SetTag("time", neutube::GetTimestamp());
       }
       m_span->SetTag(
-            "client", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
+            "version", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
     }
   }
 
