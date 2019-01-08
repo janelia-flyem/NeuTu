@@ -240,7 +240,8 @@ HEADERS += $${PWD}/zstack.hxx \
     $$PWD/geometry/zaffinerect.h \
     $$PWD/zjsondef.h \
     $$PWD/core/memorystream.h \
-    $$PWD/flyem/zflyembodystatus.h
+    $$PWD/flyem/zflyembodystatus.h \
+    $$PWD/core/userinfo.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -460,5 +461,6 @@ SOURCES += $${PWD}/zstack.cxx \
     $$PWD/geometry/zaffinerect.cpp \
     $$PWD/neutube_def.cpp \
     $$PWD/core/memorystream.cpp \
-    $$PWD/flyem/zflyembodystatus.cpp
+    $$PWD/flyem/zflyembodystatus.cpp \
+    $$PWD/core/userinfo.cpp
 

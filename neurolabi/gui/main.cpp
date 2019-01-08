@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 
     KLog() << ZLog::Info()
            << ZLog::Description("END " + GET_SOFTWARE_NAME)
-           << ZLog::Tag("start time", timestamp);
+           << ZLog::Tag("start_time", timestamp);
 
     return result;
   } else {
