@@ -28948,6 +28948,16 @@ void ZTest::test(MainWindow *host)
                  url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
 #endif
 
+#if 1
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  tic();
+  if (reader) {
+    reader->readKeyValue("roi_data", "be890b70bcd206be62e81377250e9dbe");
+  }
+  ptoc();
+#endif
+
 #if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("hemibran-production");
