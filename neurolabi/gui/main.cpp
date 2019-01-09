@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+    NeutubeConfig::UpdateUserInfo();
     ZGlobal::InitKafkaTracer();
 
     uint64_t timestamp = neutube::GetTimestamp();

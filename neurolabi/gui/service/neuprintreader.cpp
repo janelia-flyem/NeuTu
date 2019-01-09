@@ -43,7 +43,8 @@ void NeuPrintReader::authorizeFromFile(const QString &filePath)
 void NeuPrintReader::readDatasets()
 {
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
-  m_dataset.decodeString(m_bufferReader.getBuffer().toStdString().c_str());
+  m_dataset.decode(m_bufferReader.getBuffer().toStdString());
+//  m_dataset.decodeString(m_bufferReader.getBuffer().toStdString().c_str());
   if (m_dataset.isEmpty()) {
     LWARN() << "No datasets retreived from NeuPrint.";
   }

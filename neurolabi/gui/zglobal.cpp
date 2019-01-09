@@ -308,7 +308,11 @@ void ZGlobal::CopyToClipboard(const std::string &str)
 void ZGlobal::InitKafkaTracer()
 {
 #if defined(_NEU3_) || defined(_FLYEM_)
-  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
+  std::string kafkaBrokers = "";
+
+  if (!NeutubeConfig::GetUserInfo().getOrganization().empty()) {
+    kafkaBrokers = "kafka.int.janelia.org:9092";
+  }
 
   std::string serviceName = "neutu";
   std::string envName = "NEUTU_KAFKA_BROKERS";

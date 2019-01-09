@@ -14,6 +14,7 @@
 #include <QtConcurrent>
 
 #include "zqslog.h"
+#include "zlog.h"
 
 #include "zjsondef.h"
 #include "zstack.hxx"
@@ -3163,9 +3164,9 @@ ZArray* ZDvidReader::readLabels64(
   if (!target.getUuid().empty()) {
     try {
       ZDvidUrl dvidUrl(m_dvidTarget);
-      STD_COUT << dvidUrl.getLabels64Url(
-                     dataName, width, height, depth, x0, y0, z0).c_str()
-                << std::endl;
+//      STD_COUT << dvidUrl.getLabels64Url(
+//                     dataName, width, height, depth, x0, y0, z0).c_str()
+//                << std::endl;
 
       /*
       libdvid::DVIDNodeService service(
@@ -3191,7 +3192,11 @@ ZArray* ZDvidReader::readLabels64(
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
       m_readingTime = timer.elapsed();
-      LINFO() << "label reading time: " << m_readingTime;
+      KLOG << ZLog::Profile() <<
+              ZLog::Description("label reading time: " + dvidUrl.getLabels64Url(
+                                  dataName, width, height, depth, x0, y0, z0))
+           << ZLog::Duration(m_readingTime);
+//      LINFO() << "label reading time: " << m_readingTime;
 //      return array;
 
       mylib::Dimn_Type arrayDims[3];
@@ -3205,7 +3210,8 @@ ZArray* ZDvidReader::readLabels64(
       array->setStartCoordinate(2, z0);
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
-      LERROR() << e.what();
+      KLOG << ZLog::Error() << ZLog::Description(e.what());
+//      LERROR() << e.what();
       setStatusCode(e.getStatus());
     }
   }
@@ -3343,7 +3349,8 @@ void LogReadingTime(int64_t time, int64_t thre, const std::string &name)
 {
   bool logging = (NeutubeConfig::GetVerboseLevel() >= 5) || (time > thre);
   if (logging) {
-    LINFO() << name + " reading time: " << time;
+    KLOG << ZLog::Info() << ZLog::Description(name) << ZLog::Duration(time);
+//    LINFO() << name + " reading time: " << time;
   }
 }
 }

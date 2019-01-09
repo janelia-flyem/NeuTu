@@ -74,7 +74,8 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
   endWorkThread();
-  LDEBUG() << "ZFlyEmProofDoc destroyed";
+  KDEBUG << ZLog::Info << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
+//  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
 
 void ZFlyEmProofDoc::init()
@@ -922,7 +923,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_roiManager->setDvidTarget(getDvidTarget());
     m_roiManager->loadRoiList();
 
-    LDEBUG() << flowInfo.str();
+    KDEBUG << ZLog::Diagnostic(flowInfo.str());
+//    LDEBUG() << flowInfo.str();
     startTimer();
   } else {
     m_dvidReader.clear();
@@ -3402,7 +3404,10 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
       processObjectModified();
     }
   } else {
-    LDEBUG() << "Updating contrast:" << highContrast;
+    KDEBUG << ZLog::Info()
+           << ZLog::Description("Updating contrast: " +
+                                std::to_string(highContrast));
+//    LDEBUG() << "Updating contrast:" << highContrast;
     ZDvidGraySlice *slice = getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(highContrast);

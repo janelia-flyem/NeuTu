@@ -49,6 +49,10 @@ public:
     Error() : Category("ERROR") {}
   };
 
+  struct Profile : public Category {
+    Profile() : Category("profile") {}
+  };
+
   struct Duration : public Tag {
     Duration(int64_t t) : Tag("duration", t) {}
   };
@@ -95,5 +99,11 @@ private:
   std::unique_ptr<neuopentracing::Span> m_span;
 };
 
+#define KLOG KLog()
+#if defined(_DEBUG_)
+#  define KDEBUG KLog()
+#else
+#  define KDEBUG if (1) {} else KLog()
+#endif
 
 #endif // ZLOG_H
