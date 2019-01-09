@@ -101,9 +101,21 @@ KLog::~KLog()
 void KLog::start()
 {
   if (neuopentracing::Tracer::Global()) {
+#if defined(_DEBUG_)
+    m_span = neuopentracing::Tracer::Global()->StartSpan("debug");
+#else
     m_span = neuopentracing::Tracer::Global()->StartSpan("app");
+#endif
     if (m_span) {
-      m_span->SetTag("user", NeutubeConfig::GetUserName());
+      neutu::UserInfo userInfo = NeutubeConfig::GetUserInfo();
+      m_span->SetTag("user", userInfo.getUserName());
+      if (!userInfo.getOrganization().empty()) {
+        m_span->SetTag("organization", userInfo.getOrganization());
+      }
+      if (!userInfo.getLocation().empty()) {
+        m_span->SetTag("location", userInfo.getLocation());
+      }
+
       if (!m_span->hasTag("time")) {
         m_span->SetTag("time", neutube::GetTimestamp());
       }
