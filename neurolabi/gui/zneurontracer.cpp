@@ -1362,6 +1362,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);
     Stack_Csub(stack, maxValue);
+    m_diag.setInfo("background", "bright");
   }
 
   ZStackProcessor::SubtractBackground(stack, 0.5, 3);
@@ -1447,6 +1448,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   }
 
   if (minSeedSize > 0) {
+    m_diag.setInfo("original seed count", std::to_string(seedPointArray->size));
+    m_diag.setInfo("minSeedSize", std::to_string(minSeedSize));
     std::cout << "Too many seeds. Screening ..." << std::endl;
     Stack *tmpStack = C_Stack::clone(mask);
     mask = Stack_Remove_Small_Object(tmpStack, mask, minSeedSize, 26);
@@ -1530,6 +1533,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     std::cout << "Too many chains: " << chainArray.size() << std::endl;
     std::cout << "Turn off shortest path test" << std::endl;
     m_connWorkspace->sp_test = FALSE;
+    m_diag.setInfo("sp test", "off");
   }
 
   /* free <chainArray> */
@@ -1931,7 +1935,9 @@ ZNeuronTracer::Diagnosis::Diagnosis(const std::string &dir)
 
 void ZNeuronTracer::Diagnosis::reset()
 {
+  saveInfo();
   m_dir.clear();
+  m_info.clear();
 }
 
 void ZNeuronTracer::Diagnosis::setDir(const std::string &dir)
@@ -2005,4 +2011,18 @@ void ZNeuronTracer::Diagnosis::save(const Geo3d_Scalar_Field *field, const std::
     }
     save(&tree, name);
   }
+}
+
+void ZNeuronTracer::Diagnosis::saveInfo()
+{
+  if (!m_dir.empty() &&!m_info.isEmpty()) {
+    std::string path = m_dir + "/info.json";
+    m_info.dump(path);
+  }
+}
+
+void ZNeuronTracer::Diagnosis::setInfo(
+    const std::string &key, const std::string &value)
+{
+  m_info.setEntry(key, value);
 }

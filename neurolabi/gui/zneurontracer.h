@@ -239,9 +239,12 @@ private:
     void save(const std::vector<Locseg_Chain*> &chainArray,
               const std::string &name);
     void save(ZSwcTree *tree, const std::string &name);
+    void saveInfo();
+    void setInfo(const std::string &key, const std::string &value);
 
   private:
     std::string m_dir;
+    ZJsonObject m_info;
   };
 
 private:
