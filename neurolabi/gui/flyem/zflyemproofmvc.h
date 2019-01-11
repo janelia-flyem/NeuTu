@@ -56,6 +56,7 @@ class ZFlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class ZActionLibrary;
 class NeuPrintReader;
+class NeuprintSetupDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -156,7 +157,8 @@ public:
 
   void configure();
 
-  bool hasNeuPrint() const;
+//  bool hasNeuPrint() const;
+  neutube::EServerStatus getNeuPrintStatus() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -429,11 +431,11 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
-  void queryBodyByRoi();
-  void findSimilarNeuron();
-  void queryBodyByName();
-  void queryBodyByStatus();
-  void queryAllNamedBody();
+//  void queryBodyByRoi();
+//  void findSimilarNeuron();
+//  void queryBodyByName();
+//  void queryBodyByStatus();
+//  void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
@@ -547,7 +549,8 @@ private:
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
-  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+//  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+  NeuprintSetupDialog* getNeuPrintSetupDlg();
 
   template<typename T>
   FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
@@ -561,7 +564,7 @@ private:
   QAction* getAction(ZActionFactory::EAction item);
   void addBodyColorMenu(QMenu *menu);
   void addBodyMenu(QMenu *menu);
-  NeuPrintReader *getNeuPrintReader();
+//  NeuPrintReader *getNeuPrintReader();
 
 protected:
   bool m_showSegmentation;
@@ -602,6 +605,7 @@ protected:
   ZFlyEmProofSettingDialog *m_settingDlg;
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;

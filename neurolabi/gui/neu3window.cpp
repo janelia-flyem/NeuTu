@@ -56,7 +56,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
 #include "flyem/zflyembodyenv.h"
-#include "neuopentracing.h"
+#include "logging/neuopentracing.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"

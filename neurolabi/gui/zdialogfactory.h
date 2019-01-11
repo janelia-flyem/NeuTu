@@ -45,6 +45,7 @@ public:
       QWidget *parent);
   static bool Ask(const QString &title, const QString &msg, QWidget *parent);
   static void Warn(const QString &title, const QString &msg, QWidget *parent);
+  static void Error(const QString &title, const QString &msg, QWidget *parent);
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);

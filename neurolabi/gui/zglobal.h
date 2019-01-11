@@ -69,6 +69,13 @@ public:
   QMainWindow* getMainWindow() const;
 
   NeuPrintReader *getNeuPrintReader();
+  QString getNeuPrintServer() const;
+  void setNeuPrintServer(const QString &server);
+  QString getNeuPrintToken() const;
+  QString getNeuPrintAuth() const;
+
+  NeuPrintReader* makeNeuPrintReader();
+  NeuPrintReader* makeNeuPrintReader(const QString &uuid);
 
   static void InitKafkaTracer();
 

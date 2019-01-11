@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QMimeData>
 
+#include "logging/zlog.h"
 #include "zjsondef.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -102,6 +103,7 @@
 #include "dialogs/neuprintquerydialog.h"
 #include "zactionlibrary.h"
 #include "zglobal.h"
+#include "dialogs/neuprintsetupdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -112,8 +114,8 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   if (getDvidTarget().isValid()) {
-    LINFO() << "End using " << getDvidTarget().getUuid() << "@"
-            << getDvidTarget().getAddressWithPort();
+    KINFO << QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
+             arg(getDvidTarget().getAddressWithPort().c_str());
   }
 
   delete m_actionLibrary;
@@ -274,14 +276,40 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
 FlyEmBodyInfoDialog* ZFlyEmProofMvc::getNeuPrintBodyDlg()
 {
   if (m_neuprintBodyDlg == nullptr) {
-    m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
-//    connect(m_neuprintBodyDlg, &FlyEmBodyInfoDialog::loadingAllNamedBodies,
-//            this, &ZFlyEmProofMvc::queryAllNamedBody);
+    neutube::EServerStatus status = getNeuPrintStatus();
+    switch (status) {
+    case neutube::EServerStatus::NOSUPPORT:
+      ZDialogFactory::Error(
+            "NeuPrint Not Supported",
+            "Cannot use NeuPrint because this dataset is not supported by the server.",
+            this);
+      break;
+    default:
+      if (status != neutube::EServerStatus::NORMAL) {
+        getNeuPrintSetupDlg()->exec();
+      }
+
+      if (getNeuPrintStatus() == neutube::EServerStatus::NORMAL) {
+        m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+      }
+      break;
+    }
   }
 
   return m_neuprintBodyDlg;
 }
 
+NeuprintSetupDialog* ZFlyEmProofMvc::getNeuPrintSetupDlg()
+{
+  if (m_neuprintSetupDlg == nullptr) {
+    m_neuprintSetupDlg = new NeuprintSetupDialog(this);
+  }
+  m_neuprintSetupDlg->setUuid(getDvidTarget().getUuid().c_str());
+
+  return m_neuprintSetupDlg;
+}
+
+#if 0
 NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 {
   if (m_neuprintQueryDlg == nullptr) {
@@ -296,6 +324,7 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 
   return m_neuprintQueryDlg;
 }
+#endif
 
 ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
@@ -1827,11 +1856,11 @@ void ZFlyEmProofMvc::updateContrast()
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
 
-  LINFO() << "Set contrast";
+  KINFO << "Set contrast";
   ZJsonObject contrastObj =reader.readContrastProtocal();
   getPresenter()->setHighContrastProtocal(contrastObj);
 
-  LINFO() << "Init grayslice";
+  KINFO << "Init grayslice";
   ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
   ZContrastProtocol protocal;
   protocal.load(getPresenter()->getHighContrastProtocal());
@@ -2016,6 +2045,17 @@ void ZFlyEmProofMvc::diagnose()
                             arg(status).
                             arg(getCompleteDocument()->getMergeProject()->
                                 getStatusRank(status.toStdString())));
+    }
+  }
+
+  {
+    NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+    if (reader) {
+      emit messageGenerated(QString("NeuPrint: %1").arg(reader->getServer()));
+      emit messageGenerated(QString("  Status: %1").
+                            arg(neutube::EnumValue(getNeuPrintStatus())));
+      emit messageGenerated(QString("  Supported: %1").arg(
+                              reader->hasDataset(getDvidTarget().getUuid().c_str())));
     }
   }
 
@@ -3333,6 +3373,7 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_BODY_COLOR_SEQUENCER:
     action = m_actionLibrary->getAction(item);
     break;
+    /*
   case ZActionFactory::ACTION_BODY_QUERY:
     action = m_actionLibrary->getAction(item, this, SLOT(queryBodyByRoi()));
     break;
@@ -3348,6 +3389,7 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_BODY_FIND_SIMILIAR:
     action = m_actionLibrary->getAction(item, this, SLOT(findSimilarNeuron()));
     break;
+    */
   case ZActionFactory::ACTION_BODY_EXPORT_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(exportSelectedBody()));
     break;
@@ -3420,12 +3462,14 @@ void ZFlyEmProofMvc::enableNameColorMap(bool on)
 
 void ZFlyEmProofMvc::addBodyMenu(QMenu *menu)
 {
+  /*
   QMenu *queryMenu = menu->addMenu("Body Query");
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_NAME));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_ALL_NAMED));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_QUERY_BY_STATUS));
   queryMenu->addAction(getAction(ZActionFactory::ACTION_BODY_FIND_SIMILIAR));
+  */
 
   QMenu *bodyMenu = menu->addMenu("Bodies");
   bodyMenu->addAction(getAction(ZActionFactory::ACTION_BODY_EXPORT_SELECTED));
@@ -3785,8 +3829,11 @@ void ZFlyEmProofMvc::exportSelectedBody()
   }
 }
 
+#if 0
 bool ZFlyEmProofMvc::hasNeuPrint() const
 {
+  return getNeuPrintStatus() == neutube::EServerStatus::NORMAL;
+  /*
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   if (reader) {
     reader->updateCurrentDataset(getDvidTarget().getUuid().c_str());
@@ -3796,8 +3843,33 @@ bool ZFlyEmProofMvc::hasNeuPrint() const
   }
 
   return false;
+  */
+}
+#endif
+
+neutube::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
+{
+  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
+  if (reader) {
+    if (!reader->hasAuthCode()) {
+      return neutube::EServerStatus::NOAUTH;
+    }
+
+    if (!reader->isConnected()) {
+      return neutube::EServerStatus::NOAUTH;
+    }
+
+    if (!reader->hasDataset(getDvidTarget().getUuid().c_str())) {
+      return neutube::EServerStatus::NOSUPPORT;
+    }
+
+    return neutube::EServerStatus::NORMAL;
+  }
+
+  return neutube::EServerStatus::OFFLINE;
 }
 
+#if 0
 NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 {
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
@@ -3827,16 +3899,30 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 
   return nullptr;
 }
+#endif
+
+namespace {
+void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
+{
+  if (dlg) {
+    dlg->show();
+    dlg->raise();
+  }
+}
+}
 
 void ZFlyEmProofMvc::openNeuPrint()
 {
-  NeuPrintReader *reader = getNeuPrintReader();
-  if (reader) {
-    getNeuPrintBodyDlg()->show();
-    getNeuPrintBodyDlg()->raise();
-  }
-}
+  ShowNeuPrintBodyDlg(getNeuPrintBodyDlg());
 
+//  NeuPrintReader *reader = getNeuPrintReader();
+//  if (reader) {
+
+//    getNeuPrintBodyDlg()->show();
+//    getNeuPrintBodyDlg()->raise();
+//  }
+}
+#if 0
 void ZFlyEmProofMvc::queryBodyByRoi()
 {
   NeuPrintReader *reader = getNeuPrintReader();
@@ -3868,18 +3954,21 @@ void ZFlyEmProofMvc::queryAllNamedBody()
 
 void ZFlyEmProofMvc::queryBodyByName()
 {
-  NeuPrintReader *reader = getNeuPrintReader();
-  if (reader) {
-    bool ok;
+  auto *dlg = getNeuPrintBodyDlg();
+  if (dlg) {
+    NeuPrintReader *reader = getNeuPrintReader();
+    if (reader) {
+      bool ok;
 
-    QString text = QInputDialog::getText(this, tr("Find Neurons"),
-                                         tr("Body Name:"), QLineEdit::Normal,
-                                         "", &ok);
-    if (ok) {
-      if (!text.isEmpty()) {
-        getNeuPrintBodyDlg()->show();
-        getNeuPrintBodyDlg()->raise();
-        getNeuPrintBodyDlg()->setBodyList(reader->queryNeuronByName(text));
+      QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                           tr("Body Name:"), QLineEdit::Normal,
+                                           "", &ok);
+      if (ok) {
+        if (!text.isEmpty()) {
+          dlg->show();
+          dlg->raise();
+          dlg->setBodyList(reader->queryNeuronByName(text));
+        }
       }
     }
   }
@@ -3931,6 +4020,7 @@ void ZFlyEmProofMvc::findSimilarNeuron()
     }
   }
 }
+#endif
 
 void ZFlyEmProofMvc::clearBodyMergeStage()
 {

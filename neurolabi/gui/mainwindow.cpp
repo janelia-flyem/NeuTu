@@ -107,8 +107,6 @@
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "dialogs/penwidthdialog.h"
-//#include "dvid/zdvidclient.h"
-//#include "dvid/zdvidbuffer.h"
 #include "dialogs/dvidobjectdialog.h"
 #include "dialogs/resolutiondialog.h"
 #include "zswcglobalfeatureanalyzer.h"

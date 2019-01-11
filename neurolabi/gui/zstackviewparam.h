@@ -9,6 +9,7 @@
 #include "zpoint.h"
 
 class ZArbSliceViewParam;
+class ZJsonObject;
 
 /*!
  * \brief The class of stack view parameter
@@ -95,7 +96,6 @@ public:
     return m_viewProj;
   }
 
-
   ZArbSliceViewParam getSliceViewParam() const;
   void setArbSliceCenter(const ZIntPoint &pt);
   void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
@@ -103,6 +103,9 @@ public:
   void moveSlice(int step);
 
   bool onSamePlane(const ZStackViewParam &param) const;
+
+  std::string toString() const;
+  ZJsonObject toJsonObject() const;
 
 private:
   void init(neutube::ECoordinateSystem coordSys);

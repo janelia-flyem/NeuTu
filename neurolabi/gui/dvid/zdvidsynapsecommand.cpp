@@ -5,9 +5,9 @@
 #include "zdvidsynapse.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemproofdoc.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidurl.h"
+#include "zdvidsynapseensenmble.h"
+#include "zdvidreader.h"
+#include "zdvidurl.h"
 #include "zwidgetmessage.h"
 #include "neutubeconfig.h"
 

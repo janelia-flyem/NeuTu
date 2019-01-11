@@ -11,7 +11,7 @@
 
 #include "neutubeconfig.h"
 #include "zstackview.h"
-#include "dvid/zdvidreader.h"
+#include "zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"

@@ -6,6 +6,7 @@
 #include <functional>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QString>
 
 #include "neuopentracing.h"
 
@@ -26,6 +27,11 @@ public:
       m_key(key), m_value(value) {}
     Tag(const std::string &key, const int64_t &value) :
       m_key(key), m_value(value) {}
+
+    inline void set(const std::string &key, const std::string &value) {
+      m_key = key;
+      m_value = value;
+    }
 
     std::string m_key;
     neuopentracing::Value m_value;
@@ -53,6 +59,10 @@ public:
     Profile() : Category("profile") {}
   };
 
+  struct Interact : public Category {
+    Interact() : Category("interact") {}
+  };
+
   struct Duration : public Tag {
     Duration(int64_t t) : Tag("duration", t) {}
   };
@@ -63,6 +73,10 @@ public:
 
   struct Description : public Tag {
     Description(const std::string &value) : Tag("description", value) {}
+  };
+
+  struct Object : public Tag {
+    Object(void *p);
   };
 
   struct Time : public Tag {
@@ -99,7 +113,29 @@ private:
   std::unique_ptr<neuopentracing::Span> m_span;
 };
 
+class KInfo : public KLog
+{
+public:
+  KInfo();
+
+  KInfo& operator << (const char *info);
+  KInfo& operator << (const std::string &info);
+  KInfo& operator << (const QString &info);
+};
+
+class KWarn : public KLog
+{
+public:
+  KWarn();
+
+  KWarn& operator << (const char *info);
+  KWarn& operator << (const std::string &info);
+  KWarn& operator << (const QString &info);
+};
+
 #define KLOG KLog()
+#define KINFO KInfo()
+#define KWARN KWarn()
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()
 #else

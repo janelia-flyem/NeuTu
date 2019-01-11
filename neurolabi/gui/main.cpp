@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
 #include "zglobal.h"
-#include "zlog.h"
+#include "logging/zlog.h"
 
 int main(int argc, char *argv[])
 {

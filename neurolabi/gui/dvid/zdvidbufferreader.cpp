@@ -6,18 +6,20 @@
 //#include <QTimer>
 //#include <QNetworkRequest>
 #include <QDebug>
+
+#include "logging/utilities.h"
 //#include <QNetworkReply>
 //#include <QCoreApplication>
 
 #include "libdvidheader.h"
 
-#include "dvid/zdvidtarget.h"
 #include "zsleeper.h"
-#include "dvid/zdvidurl.h"
-#include "dvid/libdvidheader.h"
-#include "flyem/zflyemmisc.h"
-#include "zdvidutil.h"
 #include "znetbufferreader.h"
+
+#include "zdvidtarget.h"
+#include "zdvidurl.h"
+#include "zdvidutil.h"
+
 
 ZDvidBufferReader::ZDvidBufferReader()
 {
@@ -104,6 +106,8 @@ void ZDvidBufferReader::read(
     qDebug() << "Reading " << url;
   }
 
+  neutu::LogUrlIO("read", url);
+
   m_buffer.clear();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -162,6 +166,7 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
   if (outputingUrl) {
     qDebug() << path;
   }
+  neutu::LogUrlIO("read", path);
 
   m_buffer.clear();
 
@@ -196,6 +201,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   if (outputingUrl) {
     qDebug() << "Reading" << url;
   }
+  neutu::LogUrlIO("read", url);
 
   m_buffer.clear();
 

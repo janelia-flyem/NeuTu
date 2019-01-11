@@ -5,8 +5,8 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "zwidgetmessage.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidreader.h"
+#include "zdvidwriter.h"
 #include "neutubeconfig.h"
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
