@@ -14,6 +14,7 @@
 #include <QtConcurrent>
 
 #include "zqslog.h"
+#include "logging/zlog.h"
 
 #include "zjsondef.h"
 #include "zstack.hxx"
@@ -353,7 +354,10 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+    ZOUT(KLog(), 5) << ZLog::Category("profile")
+                    << ZLog::Diagnostic("Body reading time")
+                    << ZLog::Duration(timer.elapsed());
+//    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
 
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -392,7 +396,10 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+    ZOUT(KLog(), 5) << ZLog::Category("profile")
+                    << ZLog::Diagnostic("Body reading time")
+                    << ZLog::Duration(timer.elapsed());
+//    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
 
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -822,7 +829,11 @@ ZObject3dScan *ZDvidReader::readBodyDs(
 
     reader.tryCompress(false);
 
-    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
+    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".reading")
+           << ZLog::Duration(timer.elapsed())
+           << ZLog::Time();
+
+//    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
 
     timer.start();
     const QByteArray &buffer = reader.getBuffer();
@@ -831,7 +842,11 @@ ZObject3dScan *ZDvidReader::readBodyDs(
       result->canonize();
     }
 
-    STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
+    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".parsing")
+           << ZLog::Duration(timer.elapsed())
+           << ZLog::Time();
+
+//    STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
 
     reader.clearBuffer();
 
@@ -2096,7 +2111,8 @@ ZStack* ZDvidReader::readGrayScale(
   }
 #endif
 
-  ZOUT(LTRACE(), 5) << "Grayscale reading time: " << timer.elapsed();
+  ZOUT(KLOG, 5) << ZLog::Profile() << ZLog::Description("grayscale reading time")
+         << ZLog::Duration(m_readingTime);
 
   return stack;
 #else
@@ -3148,9 +3164,9 @@ ZArray* ZDvidReader::readLabels64(
   if (!target.getUuid().empty()) {
     try {
       ZDvidUrl dvidUrl(m_dvidTarget);
-      STD_COUT << dvidUrl.getLabels64Url(
-                     dataName, width, height, depth, x0, y0, z0).c_str()
-                << std::endl;
+//      STD_COUT << dvidUrl.getLabels64Url(
+//                     dataName, width, height, depth, x0, y0, z0).c_str()
+//                << std::endl;
 
       /*
       libdvid::DVIDNodeService service(
@@ -3176,7 +3192,11 @@ ZArray* ZDvidReader::readLabels64(
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
       m_readingTime = timer.elapsed();
-      LINFO() << "label reading time: " << m_readingTime;
+      KLOG << ZLog::Profile() <<
+              ZLog::Description("label reading time: " + dvidUrl.getLabels64Url(
+                                  dataName, width, height, depth, x0, y0, z0))
+           << ZLog::Duration(m_readingTime);
+//      LINFO() << "label reading time: " << m_readingTime;
 //      return array;
 
       mylib::Dimn_Type arrayDims[3];
@@ -3190,7 +3210,8 @@ ZArray* ZDvidReader::readLabels64(
       array->setStartCoordinate(2, z0);
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
-      LERROR() << e.what();
+      KLOG << ZLog::Error() << ZLog::Description(e.what());
+//      LERROR() << e.what();
       setStatusCode(e.getStatus());
     }
   }
@@ -3328,7 +3349,8 @@ void LogReadingTime(int64_t time, int64_t thre, const std::string &name)
 {
   bool logging = (NeutubeConfig::GetVerboseLevel() >= 5) || (time > thre);
   if (logging) {
-    LINFO() << name + " reading time: " << time;
+    KLOG << ZLog::Info() << ZLog::Description(name) << ZLog::Duration(time);
+//    LINFO() << name + " reading time: " << time;
   }
 }
 }
@@ -3431,10 +3453,12 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     m_readingTime = timer.elapsed();
     if (NeutubeConfig::GetVerboseLevel() < 5) {
       if (m_readingTime > 10) {
-        LINFO() << "grayscale reading time: " << m_readingTime;
+        KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+               << ZLog::Duration(m_readingTime);
       }
     } else {
-      LINFO() << "grayscale reading time: " << m_readingTime;
+      KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+             << ZLog::Duration(m_readingTime);
     }
   }
 
@@ -3787,7 +3811,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    LINFO() << "label reading time: " << m_readingTime;
+    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+         << ZLog::Duration(m_readingTime);
+//    LINFO() << "label reading time: " << m_readingTime;
   }
 
   return array;
@@ -3858,7 +3884,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    LINFO() << "label reading time: " << m_readingTime;
+    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+         << ZLog::Duration(m_readingTime);
+//    LINFO() << "label reading time: " << m_readingTime;
   }
 
   return array;

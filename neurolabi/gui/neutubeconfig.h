@@ -15,6 +15,7 @@
 #include <QSettings>
 #include <QString>
 #endif
+#include "core/userinfo.h"
 
 class ZXmlNode;
 class ZJsonObject;
@@ -196,9 +197,12 @@ public:
 
   std::string getUserName() const;
   static std::string GetUserName();
+  neutu::UserInfo getUserInfo() const;
+  static neutu::UserInfo GetUserInfo();
+  void updateUserInfo();
+  static void UpdateUserInfo();
 
-  void setUserName(const std::string &name);
-  static void SetUserName(const std::string &name);
+//  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -446,6 +450,7 @@ private:
   void operator=(const NeutubeConfig&);
 
   void updateLogDir();
+  void setUserName(const std::string &name);
 
 private:
   std::string m_application;
@@ -466,7 +471,8 @@ private:
 
   std::string m_dataPath;
   std::string m_developPath;
-  std::string m_userName;
+//  std::string m_userName;
+  neutu::UserInfo m_userInfo;
 
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;

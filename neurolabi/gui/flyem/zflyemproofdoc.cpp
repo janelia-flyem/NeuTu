@@ -61,6 +61,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "flyem/zflyembodystatus.h"
 #include "zflyemroimanager.h"
+#include "logging/zlog.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -73,7 +74,8 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
   endWorkThread();
-  LDEBUG() << "ZFlyEmProofDoc destroyed";
+  KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
+//  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
 
 void ZFlyEmProofDoc::init()
@@ -848,7 +850,9 @@ bool ZFlyEmProofDoc::isDvidMutable() const
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  LINFO() << "Setting dvid env in ZFlyEmProofDoc";
+  KINFO << "Setting dvid env in ZFlyEmProofDoc";
+  QElapsedTimer timer;
+  timer.start();
   if (m_dvidReader.open(target)) {
     std::ostringstream flowInfo;
     flowInfo << "Update data statuses";
@@ -919,7 +923,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_roiManager->setDvidTarget(getDvidTarget());
     m_roiManager->loadRoiList();
 
-    LDEBUG() << flowInfo.str();
+    KDEBUG << ZLog::Diagnostic(flowInfo.str());
+//    LDEBUG() << flowInfo.str();
     startTimer();
   } else {
     m_dvidReader.clear();
@@ -932,6 +937,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     msg.appendMessage(detail);
     emit messageGenerated(msg);
   }
+  KLog() << ZLog::Category("profile") << ZLog::Duration(timer.elapsed())
+         << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
 }
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
@@ -1006,7 +1013,7 @@ void ZFlyEmProofDoc::readInfo()
   updateMaxLabelZoom();
   updateMaxGrayscaleZoom();
 
-  LINFO() << startLog;
+  KINFO << startLog;
 }
 
 void ZFlyEmProofDoc::loadRoiFunc()
@@ -1146,7 +1153,7 @@ void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
   labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   labelSlice->setDvidTarget(getDvidTarget());
 
-  LINFO() << "Max label zoom:" << getDvidTarget().getMaxLabelZoom();
+  KINFO << QString("Max label zoom: %1").arg(getDvidTarget().getMaxLabelZoom());
 
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
@@ -2158,7 +2165,7 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
-  ZOUT(LINFO(), 3) << "Checking splittable:" << bodyId;
+  ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (m_dvidReader.isReady()) {
     ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
@@ -3397,7 +3404,10 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
       processObjectModified();
     }
   } else {
-    LDEBUG() << "Updating contrast:" << highContrast;
+    KDEBUG << ZLog::Info()
+           << ZLog::Description("Updating contrast: " +
+                                std::to_string(highContrast));
+//    LDEBUG() << "Updating contrast:" << highContrast;
     ZDvidGraySlice *slice = getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(highContrast);

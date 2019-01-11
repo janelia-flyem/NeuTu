@@ -13,7 +13,9 @@
 #include <QMimeData>
 
 #include "neutubeconfig.h"
-#include "dialogs/dvidoperatedialog.h"
+#include "logging/zlog.h"
+//#include "zqslog.h"
+
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
@@ -25,15 +27,17 @@
 #include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "zqslog.h"
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
-#include "dialogs/flyembodyfilterdialog.h"
 #include "zflyemdataloader.h"
+
+#include "dialogs/flyembodyfilterdialog.h"
+#include "dialogs/dvidoperatedialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -405,7 +409,7 @@ void ZProofreadWindow::createMenu()
   m_neuprintAction->setIcon(QIcon(":/images/neuprint.png"));
   connect(m_neuprintAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(openNeuPrint()));
-  m_neuprintAction->setVisible(false);
+//  m_neuprintAction->setVisible(false);
 
   // temporarily disable sequencer
   // m_toolMenu->addAction(m_openSequencerAction);
@@ -470,12 +474,28 @@ void ZProofreadWindow::createMenu()
 
 //  m_viewMenu->setEnabled(false);
 
-  m_viewSynapseAction->setEnabled(false);
-  m_importBookmarkAction->setEnabled(false);
-  m_viewBookmarkAction->setEnabled(false);
-  m_viewSegmentationAction->setEnabled(false);
-  m_viewRoiAction->setEnabled(false);
-  m_viewTodoAction->setEnabled(false);
+  enableTargetAction(false);
+}
+
+void ZProofreadWindow::enableTargetAction(bool on)
+{
+  m_viewSynapseAction->setEnabled(on);
+  m_importBookmarkAction->setEnabled(on);
+  m_viewBookmarkAction->setEnabled(on);
+  m_viewSegmentationAction->setEnabled(on);
+  m_viewRoiAction->setEnabled(on);
+  m_viewTodoAction->setEnabled(on);
+  if (m_openSequencerAction) {
+    m_openSequencerAction->setEnabled(on);
+  }
+  if (m_neuprintAction) {
+    m_neuprintAction->setEnabled(on);
+  }
+  m_roiToolAction->setEnabled(on);
+  m_contrastAction->setEnabled(on);
+  m_smoothAction->setEnabled(on);
+  m_openTodoAction->setEnabled(on);
+  m_openProtocolsAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -630,7 +650,8 @@ void ZProofreadWindow::dump(const QString &message, bool appending,
 {
 //  qDebug() << message;
   if (logging) {
-    LINFO() << message;
+    logMessage(message);
+//    LINFO() << message;
   }
 
   m_messageWidget->dump(message, appending);
@@ -666,21 +687,22 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     break;
   }
 
+  logMessage(msg);
   //Record message in files
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+//  switch (msg.getType()) {
+//  case neutube::EMessageType::INFORMATION:
+//    LINFO() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::WARNING:
+//    LWARN() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::ERROR:
+//    LERROR() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::DEBUG:
+//    LDEBUG() << msg.toPlainString();
+//    break;
+//  }
 }
 
 void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
@@ -733,12 +755,8 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 
   setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
-  m_viewSynapseAction->setEnabled(target.isValid());
-  m_importBookmarkAction->setEnabled(target.isValid());
-  m_viewBookmarkAction->setEnabled(target.isValid());
-  m_viewSegmentationAction->setEnabled(target.isValid());
-  m_viewRoiAction->setEnabled(target.isValid());
-  m_viewTodoAction->setEnabled(target.isValid());
+  enableTargetAction(target.isValid());
+
 
   m_viewMenu->setEnabled(true);
 
@@ -760,7 +778,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
   }
 
-  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
+//  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
 
 //  m_toolBar->hide();
 //  m_toolBar->show();
@@ -777,20 +795,30 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void ZProofreadWindow::logMessage(const QString &msg)
 {
-  LINFO() << msg;
+  KLog() << ZLog::Info() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
+}
+
+void ZProofreadWindow::logError(const QString &msg)
+{
+  KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
 void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
 {
+  std::string plainStr = msg.toPlainString().toStdString();
   switch (msg.getType()) {
   case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
+    KLog() << ZLog::Info() << ZLog::Description(plainStr);
     break;
   case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
+    KLog() << ZLog::Warn() << ZLog::Description(plainStr);
+//    LWARN() << msg.toPlainString();
     break;
   case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
+    KLog() << ZLog::Error() << ZLog::Description(plainStr);
+//    LERROR() << msg.toPlainString();
     break;
   case neutube::EMessageType::DEBUG:
     LDEBUG() << msg.toPlainString();

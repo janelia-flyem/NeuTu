@@ -102,6 +102,7 @@ protected:
 private:
   void init();
   void initProgress(int nticks);
+  void enableTargetAction(bool on);
 
   template <typename T>
   void connectMessagePipe(T *source);
@@ -112,6 +113,7 @@ private:
   void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
+  void logError(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);

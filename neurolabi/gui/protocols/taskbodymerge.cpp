@@ -6,6 +6,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "misc/miscutility.h"
+#include "logging/neuopentracing.h"
 #include "neutubeconfig.h"
 #include "neu3window.h"
 #include "z3dcamera.h"
@@ -166,6 +167,9 @@ namespace {
       }
       closedir(dir);
     }
+    if (result.empty()) {
+      result = "dev";
+    }
     return result;
   }
 
@@ -256,6 +260,9 @@ namespace {
   QPointer<QDockWidget> s_birdsEyeDockWidget;
   QPointer<Z3DView> s_birdsEyeView;
 
+  // The OpenTracing-style "span" used for logging the results of the current task.
+
+  std::unique_ptr<neuopentracing::Span> s_span;
 }
 
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
@@ -692,6 +699,8 @@ void TaskBodyMerge::buildTaskWidget()
 void TaskBodyMerge::onLoaded()
 {
   LINFO() << "TaskBodyMerge: build version" << getBuildVersion() << ".";
+
+  s_span = neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
 
   m_usageTimer.start();
 
@@ -1217,6 +1226,18 @@ void TaskBodyMerge::writeResult(const QString &result)
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
   writer.writeJsonString(instance, key, jsonStr);
+
+  // Populate the OpenTracing-style "span" with the results of this task, and log it
+  // (via Kafka).
+
+  s_span->SetTag("client", "neu3");
+  s_span->SetTag("version", getBuildVersion());
+  s_span->SetTag("duration", m_usageTimes.back());
+  s_span->SetTag("category", "neu3.focusedMerging.result");
+  for (auto it = json.begin(); it != json.end(); it++) {
+    s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
+  }
+  s_span->Finish();
 }
 
 QString TaskBodyMerge::readResult()

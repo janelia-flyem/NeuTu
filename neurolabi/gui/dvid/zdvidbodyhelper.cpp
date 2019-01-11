@@ -6,6 +6,7 @@
 #include "zdvidreader.h"
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
+#include "logging/zlog.h"
 
 ZDvidBodyHelper::ZDvidBodyHelper(const ZDvidReader *reader) : m_reader(reader)
 {
@@ -126,7 +127,12 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   QElapsedTimer timer;
   timer.start();
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
-  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
+  KLog() << ZLog::Category("profile")
+         << ZLog::Diagnostic(
+              "High res reading time for " +
+              std::to_string(bodyId) + "@" + std::to_string(m_zoom))
+         << ZLog::Duration(timer.elapsed());
+//  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
 
   if (highResObj != NULL) {
     result.push_back(highResObj);

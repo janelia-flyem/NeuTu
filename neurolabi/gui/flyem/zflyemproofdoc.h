@@ -5,22 +5,23 @@
 #include <QMap>
 
 #include "zstackdoc.h"
-#include "zflyembodymerger.h"
-#include "dvid/zdvidtarget.h"
 #include "zstackdoccommand.h"
 #include "zsharedpointer.h"
-//#include "zflyembodysplitproject.h"
-#include "flyem/zflyembodycolorscheme.h"
-#include "zflyembodyannotation.h"
+
+#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "flyem/zflyemtodolist.h"
-#include "flyem/zflyemmb6analyzer.h"
 #include "dvid/zdvidversiondag.h"
+
+#include "zflyembodymerger.h"
+#include "zflyembodycolorscheme.h"
+#include "zflyembodyannotation.h"
+#include "zflyemtodolist.h"
+#include "zflyemmb6analyzer.h"
 #include "zflyembodymergeproject.h"
-#include "flyem/zflyembodycoloroption.h"
+#include "zflyembodycoloroption.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;

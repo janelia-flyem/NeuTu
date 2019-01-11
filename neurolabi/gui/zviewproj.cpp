@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <cmath>
+
 #include "tz_math.h"
+#include "zjsonobject.h"
 
 ZViewProj::ZViewProj()
 {
@@ -560,4 +562,14 @@ bool ZViewProj::operator !=(const ZViewProj &viewProj) const
 void ZViewProj::print() const
 {
   std::cout << "View proj: (" << m_x0 << "," << m_y0 << ") x " << m_zoom << std::endl;
+}
+
+ZJsonObject ZViewProj::toJsonObject() const
+{
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("x0", m_x0);
+  jsonObj.setEntry("y0", m_y0);
+  jsonObj.setEntry("zoom", m_zoom);
+
+  return jsonObj;
 }

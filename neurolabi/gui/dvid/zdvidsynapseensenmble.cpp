@@ -9,7 +9,7 @@
 #include "zdvidurl.h"
 #include "zpainter.h"
 #include "tz_math.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidwriter.h"
 #include "zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "geometry/zgeometry.h"

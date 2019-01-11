@@ -43,6 +43,7 @@
 #include "zstackdochelper.h"
 #include "mvc/zpositionmapper.h"
 #include "data3d/utilities.h"
+#include "logging/zlog.h"
 
 using namespace std;
 
@@ -763,9 +764,7 @@ void ZStackView::setZQuitely(int z)
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
-#ifdef _DEBUG_
-    LDEBUG() << "Set slice index:" << slice;
-#endif
+//    KINFO << QString("Set slice index: %1").arg(slice);
 
     recordViewParam();
 //    setDepthFrozen(true);
@@ -779,9 +778,7 @@ void ZStackView::setSliceIndex(int slice)
 void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
-#ifdef _DEBUG_2
-    LDEBUG() << "Set slice index:" << slice;
-#endif
+//    KINFO << QString("Set slice index: %1").arg(slice);
 
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
@@ -1151,7 +1148,10 @@ void ZStackView::redraw(EUpdateOption option)
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
+  ZOUT(KLog(), 5) << ZLog::Category("profile")
+                  << ZLog::Diagnostic("paint stack per frame")
+                  << ZLog::Duration(stackPaintTime);
+//  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
   paintMaskBuffer();
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
@@ -1172,8 +1172,11 @@ void ZStackView::redraw(EUpdateOption option)
 
   ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
-            << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
+    KLog() << ZLog::Category("warning")
+           << ZLog::Diagnostic(QString("Debugging for hiccup: "
+                                       "stack: %1; tile: %2; object: %3").
+                               arg(stackPaintTime).arg(tilePaintTime).
+                               arg(objectPaintTime).toStdString());
   }
 #endif
 }
@@ -2725,7 +2728,7 @@ void ZStackView::updateViewParam(const ZStackViewParam &param)
       }
       setZQuitely(param.getZ());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "View param updated: z=" << getZ(neutube::ECoordinateSystem::STACK)
                 << std::endl;
 #endif
@@ -3090,9 +3093,22 @@ void ZStackView::processViewChange(bool redrawing)
   }
 }
 
+void ZStackView::logViewParam()
+{
+  ZStackViewParam param = getViewParameter();
+  std::ostringstream stream;
+  stream << this;
+  KLOG << ZLog::Info()
+       << ZLog::Description("View changed to " + param.toString())
+       << ZLog::Tag("object", stream.str())
+       << ZLog::Tag("view", param.toJsonObject().toString());
+}
+
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
   if (!isViewChangeEventBlocked() && isVisible()) {
+    logViewParam();
+
 //    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData();
 

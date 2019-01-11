@@ -4,6 +4,8 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include "logging/utilities.h"
+
 ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 {
   _init();
@@ -44,6 +46,9 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
     qDebug() << url;
   }
 
+  neutu::LogUrlIO("GET", url);
+//  KINFO << "Reading " + url;
+
   startReading();
 
   resetNetworkReply();
@@ -65,6 +70,9 @@ void ZNetBufferReader::readPartial(
     qDebug() << url;
   }
 
+  neutu::LogUrlIO("GETP", url);
+//  KINFO << "Reading partial: " + url;
+
   startReading();
 
   m_maxSize = maxSize;
@@ -84,7 +92,9 @@ void ZNetBufferReader::readHead(const QString &url)
 {
   startReading();
 
-  qDebug() << url;
+//  qDebug() << url;
+  neutu::LogUrlIO("HEAD", url);
+//  KINFO << "HEAD " + url;
 
   resetNetworkReply();
 
@@ -101,6 +111,7 @@ bool ZNetBufferReader::hasHead(const QString &url)
   startReading();
 
 //  qDebug() << url;
+  neutu::LogUrlIO("HEAD", url);
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
@@ -113,6 +124,9 @@ bool ZNetBufferReader::hasHead(const QString &url)
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 {
+//  KINFO << "POST " + url;
+  neutu::LogUrlIO("POST", url);
+
   startReading();
   QNetworkRequest request(url);
   foreach (const auto &p, m_header) {
@@ -137,6 +151,8 @@ bool ZNetBufferReader::isReadable(const QString &url)
 #ifdef _DEBUG_
   qDebug() << "ZNetBufferReader::isReadable: " << url;
 #endif
+//  KINFO << "Check readable: " + url;
+  neutu::LogUrlIO("Check readable", url);
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->get(QNetworkRequest(url));
