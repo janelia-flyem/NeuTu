@@ -155,6 +155,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
+    connect(ui->moveUpButton, SIGNAL(clicked(bool)), this, SLOT(onMoveUp()));
+    connect(ui->moveDownButton, SIGNAL(clicked(bool)), this, SLOT(onMoveDown()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
     connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
@@ -1383,6 +1385,56 @@ void FlyEmBodyInfoDialog::onExportConnections() {
     }
 }
 
+void FlyEmBodyInfoDialog::onMoveUp() {
+    // get selected row; NOTE: table can't be sorted, so we don't have to map to model indices
+    int selectedRow = -1;
+    QModelIndexList selectedIndices = ui->filterTableView->selectionModel()->selectedIndexes();
+    if (selectedIndices.size() == 0) {
+        return;
+    } else if (selectedIndices.size() == 1) {
+        selectedRow = selectedIndices[0].row();
+    } else {
+        // multiple selection should be impossible
+        return;
+    }
+
+    // if not top, remove it and insert one higher; move selection, too!
+    if (selectedRow > 0) {
+        m_filterModel->insertRow(selectedRow - 1, m_filterModel->takeRow(selectedRow));
+        QModelIndex newSelection = m_filterModel->index(selectedRow - 1, 0);
+        ui->filterTableView->selectionModel()->clearSelection();
+        ui->filterTableView->selectionModel()->select(newSelection, QItemSelectionModel::Select);
+    }
+
+    // update scheme (table should update itself)
+    updateColorScheme();
+}
+
+void FlyEmBodyInfoDialog::onMoveDown() {
+    // get selected row; NOTE: table can't be sorted, so we don't have to map to model indices
+    int selectedRow = -1;
+    QModelIndexList selectedIndices = ui->filterTableView->selectionModel()->selectedIndexes();
+    if (selectedIndices.size() == 0) {
+        return;
+    } else if (selectedIndices.size() == 1) {
+        selectedRow = selectedIndices[0].row();
+    } else {
+        // multiple selection should be impossible
+        return;
+    }
+
+    // if not bottom, remove it and insert one lower; move selection, too!
+    if (selectedRow < m_filterModel->rowCount() - 1) {
+        m_filterModel->insertRow(selectedRow + 1, m_filterModel->takeRow(selectedRow));
+        QModelIndex newSelection = m_filterModel->index(selectedRow + 1, 0);
+        ui->filterTableView->selectionModel()->clearSelection();
+        ui->filterTableView->selectionModel()->select(newSelection, QItemSelectionModel::Select);
+    }
+
+    // update scheme (table should update itself)
+    updateColorScheme();
+}
+
 void FlyEmBodyInfoDialog::onSaveColorMap() {
     QString filename = QFileDialog::getSaveFileName(this, "Save color map");
     if (!filename.isNull()) {
@@ -2060,17 +2112,28 @@ FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
     delete ui;
 }
 
+/*
+void FlyEmBodyInfoDialog::setNeuPrintReader(
+    std::unique_ptr<NeuPrintReader> reader)
+{
+  m_neuPrintReader = reader;
+}
+*/
+
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
-  NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
-  if (reader) {
-    reader->updateCurrentDataset(m_reader.getDvidTarget().getUuid().c_str());
-    if (reader->isReady()) {
-      return reader;
-    }
+  if (!m_neuPrintReader) {
+    m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+          ZGlobal::GetInstance().makeNeuPrintReader(
+            m_reader.getDvidTarget().getUuid().c_str()));
   }
 
-  return nullptr;
+  if (!m_neuPrintReader) {
+    setStatusLabel("<font color=\"#800000\">Oops! "
+                   "Cannot connect NeuPrint!</font>");
+  }
+
+  return m_neuPrintReader.get();
 }
 
 NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()

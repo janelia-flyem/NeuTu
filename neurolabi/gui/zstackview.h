@@ -585,6 +585,8 @@ private:
   ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
   void configurePainter(ZStackObjectPainter &painter);
+
+  void logViewParam();
 //  void setCentralView(int width, int height);
 
   class ViewParamRecordOnce {

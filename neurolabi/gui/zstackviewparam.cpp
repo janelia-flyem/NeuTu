@@ -1,10 +1,12 @@
 #include "zstackviewparam.h"
 
 #include <cmath>
+#include <sstream>
 
 #include "geometry/zgeometry.h"
 #include "tz_math.h"
 #include "zarbsliceviewparam.h"
+#include "zjsonobject.h"
 
 ZStackViewParam::ZStackViewParam()
 {
@@ -284,4 +286,48 @@ bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
   }
 
   return result;
+}
+
+std::string ZStackViewParam::toString() const
+{
+  std::ostringstream stream;
+  if (m_sliceAxis != neutube::EAxis::ARB) {
+    stream << "Axis=" << neutube::EnumValue(m_sliceAxis) << "; ";
+    QRect vp = getViewPort();
+    stream << "(" << vp.x() << "," << vp.y() << ")"
+           << vp.width() << "x" << vp.height() << "; z=" << getZ();
+  }
+
+  return stream.str();
+}
+
+namespace {
+template<typename T1, typename T2>
+void point_to_array(const T1 &pt, T2 *v)
+{
+  v[0] = pt.getX();
+  v[1] = pt.getY();
+  v[2] = pt.getZ();
+}
+}
+
+ZJsonObject ZStackViewParam::toJsonObject() const
+{
+  ZJsonObject jsonObj = m_viewProj.toJsonObject();
+  jsonObj.setEntry("axis", neutube::EnumValue(m_sliceAxis));
+  jsonObj.setEntry("z", m_z);
+  if (m_sliceAxis == neutube::EAxis::ARB) {
+    int center[3];
+    point_to_array(m_center, center);
+
+    double v1[3], v2[3];
+    point_to_array(m_v1, v1);
+    point_to_array(m_v2, v2);
+
+    jsonObj.setEntry("center", center, 3);
+    jsonObj.setEntry("v1", v1, 3);
+    jsonObj.setEntry("v2", v2, 3);
+  }
+
+  return jsonObj;
 }

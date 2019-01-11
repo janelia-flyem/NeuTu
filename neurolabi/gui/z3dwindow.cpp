@@ -6,6 +6,7 @@
 #include <sstream>
 #include <limits>
 #include <QToolBar>
+
 #include <QDesktopWidget>
 #include <QMenuBar>
 #include <QInputDialog>
@@ -14,6 +15,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QThread>
+#include <QApplication>
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
@@ -28,7 +30,7 @@
 #include "zpunctum.h"
 #include "zlocsegchain.h"
 #include "z3dcanvas.h"
-
+#include "logging/zlog.h"
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -63,7 +65,6 @@
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include <QApplication>
 #include "zvoxelgraphics.h"
 #include "zstroke2darray.h"
 #include "zswcgenerator.h"

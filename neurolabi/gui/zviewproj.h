@@ -3,6 +3,8 @@
 
 #include <QRect>
 
+class ZJsonObject;
+
 /*!
  * \brief The class of handling view-projection computation
  */
@@ -115,6 +117,7 @@ public:
   void recoverViewPort();
 
   void print() const;
+  ZJsonObject toJsonObject() const;
 
   bool operator ==(const ZViewProj &viewProj) const;
   bool operator !=(const ZViewProj &viewProj) const;

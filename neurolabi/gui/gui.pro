@@ -49,28 +49,6 @@ win32 {
     }
 }
 
-#unix {
-#    QMAKE_PATH = $(QMAKE)
-#    !exists($$QMAKE_PATH) {
-#        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-#    }
-#    message("qmake path: $$QMAKE_PATH")
-#    exists($$QMAKE_PATH) {
-#        macx {
-#          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
-#        }
-
-#        unix:!macx {
-#          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
-#        }
-#    }
-#    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-#        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-#    }
-#    message($$DEPLOYMENT_COMMAND)
-#    message("Post link: $$QMAKE_POST_LINK")
-#}
-
 app_name = neutu
 
 CONFIG(debug, debug|release) {
@@ -306,6 +284,7 @@ include(command/command.pri)
 include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
+include(logging/logging.pri)
 
 # Input
 RESOURCES = gui.qrc
@@ -506,11 +485,9 @@ HEADERS += mainwindow.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
     dialogs/penwidthdialog.h \
-    dvid/zdvidclient.h \
     dialogs/dvidobjectdialog.h \
     zpainter.h \
     dialogs/resolutiondialog.h \
-    dvid/zdvidbuffer.h \
     dvid/zdvidrequest.h \
     zmatlabprocess.h \
     zneuronseed.h \
@@ -934,7 +911,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemroimanager.h \
     widgets/zoptionlistwidget.h \
     dialogs/zflyemtodofilterdialog.h \
-    dialogs/zstackframesettingdialog.h
+    dialogs/zstackframesettingdialog.h \
+    dialogs/neuprintsetupdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1026,6 +1004,9 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
+    widgets/zbodylistwidget.ui \
+    widgets/flyembodyinfowidget.ui \
+    neu3window.ui \
     dialogs/ztestoptiondialog.ui \
     dialogs/zinfodialog.ui \
     dialogs/zswcisolationdialog.ui \
@@ -1038,9 +1019,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zcomboeditdialog.ui \
     dialogs/zflyembodycomparisondialog.ui \
     dialogs/zflyembodysplitdialog.ui \
-    widgets/zbodylistwidget.ui \
-    widgets/flyembodyinfowidget.ui \
-    neu3window.ui \
     dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
@@ -1051,7 +1029,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zoptionlistwidget.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
-    dialogs/zstackframesettingdialog.ui
+    dialogs/zstackframesettingdialog.ui \
+    dialogs/neuprintsetupdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1216,11 +1195,9 @@ SOURCES += main.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp \
     dialogs/penwidthdialog.cpp \
-    dvid/zdvidclient.cpp \
     dialogs/dvidobjectdialog.cpp \
     zpainter.cpp \
     dialogs/resolutiondialog.cpp \
-    dvid/zdvidbuffer.cpp \
     dvid/zdvidrequest.cpp \
     zmatlabprocess.cpp \
     zneuronseed.cpp \
@@ -1637,7 +1614,8 @@ SOURCES += main.cpp \
     flyem/zflyemroimanager.cpp \
     widgets/zoptionlistwidget.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
-    dialogs/zstackframesettingdialog.cpp
+    dialogs/zstackframesettingdialog.cpp \
+    dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -35,7 +35,8 @@ int main(int argc, char *argv[])
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
-
+#include "zglobal.h"
+#include "logging/zlog.h"
 
 int main(int argc, char *argv[])
 {
@@ -84,8 +85,15 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutube::GetVersionString();
+    NeutubeConfig::UpdateUserInfo();
+    ZGlobal::InitKafkaTracer();
+
+    uint64_t timestamp = neutube::GetTimestamp();
+    KLog() << ZLog::Info() << ZLog::Time(timestamp)
+           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
+           << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
+//    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+//            + " " + neutube::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -174,6 +182,10 @@ int main(int argc, char *argv[])
                  NeutubeConfig::getInstance().getPath(
                      NeutubeConfig::EConfigItem::LOG_DEST_DIR));
     }
+
+    KLog() << ZLog::Info()
+           << ZLog::Description("END " + GET_SOFTWARE_NAME)
+           << ZLog::Tag("start_time", timestamp);
 
     return result;
   } else {

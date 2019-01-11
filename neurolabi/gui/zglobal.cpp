@@ -17,7 +17,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
-
+#include "logging/neuopentracing.h"
 
 class ZGlobalData {
 
@@ -30,6 +30,7 @@ public:
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
+  neutube::EServerStatus m_neuprintStatus = neutube::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()
@@ -116,24 +117,92 @@ QMainWindow* ZGlobal::getMainWindow() const
   return m_mainWin;
 }
 
+QString ZGlobal::getNeuPrintServer() const
+{
+  return qgetenv("NEUPRINT");
+}
+
+void ZGlobal::setNeuPrintServer(const QString &server)
+{
+  if (getNeuPrintServer() != server) {
+    qputenv("NEUPRINT", QByteArray::fromStdString(server.toStdString()));
+    delete m_data->m_neuprintReader;
+    m_data->m_neuprintReader = nullptr;
+  }
+}
+
+QString ZGlobal::getNeuPrintAuth() const
+{
+  QString authFile = qgetenv("NEUPRINT_AUTH");
+  if (authFile.isEmpty()) {
+    authFile = NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+    LINFO() << "NeuPrint auth path:" << authFile;
+  }
+
+  QString auth;
+
+  QFile f(authFile);
+  if (f.open(QIODevice::ReadOnly)) {
+    QTextStream stream(&f);
+    auth = stream.readAll();
+  }
+
+  return auth;
+}
+
+QString ZGlobal::getNeuPrintToken() const
+{
+//  QString auth = qgetenv("NEUPRINT_AUTH");
+//  if (auth.isEmpty()) {
+//    auth = NeutubeConfig::getInstance().getPath(
+//          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+//    LINFO() << "NeuPrint auth path:" << auth;
+//  }
+
+  ZJsonObject obj;
+  obj.decode(getNeuPrintAuth().toStdString());
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+
+  return token.c_str();
+}
+
 NeuPrintReader* ZGlobal::getNeuPrintReader()
 {
   if (m_data->m_neuprintReader == nullptr) {
-    QString server = qgetenv("NEUPRINT");
-    if (!server.isEmpty()) {
-      QString auth = qgetenv("NEUPRINT_AUTH");
-      if (auth.isEmpty()) {
-        auth = NeutubeConfig::getInstance().getPath(
-              NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
-        LINFO() << "NeuPrint auth path:" << auth;
-      }
-
-      m_data->m_neuprintReader = new NeuPrintReader(server);
-      m_data->m_neuprintReader->authorizeFromFile(auth);
-    }
+    m_data->m_neuprintReader = makeNeuPrintReader();
   }
 
   return m_data->m_neuprintReader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader()
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+  }
+
+  return reader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+    reader->updateCurrentDataset(uuid);
+    if (!reader->isReady()) {
+      delete reader;
+      reader = nullptr;
+    }
+  }
+
+  return reader;
 }
 
 template<typename T>
@@ -305,3 +374,36 @@ void ZGlobal::CopyToClipboard(const std::string &str)
   clipboard->setText(str.c_str());
 }
 
+void ZGlobal::InitKafkaTracer()
+{
+#if defined(_NEU3_) || defined(_FLYEM_)
+  std::string kafkaBrokers = "";
+
+  if (!NeutubeConfig::GetUserInfo().getOrganization().empty()) {
+    kafkaBrokers = "kafka.int.janelia.org:9092";
+  }
+
+  std::string serviceName = "neutu";
+  std::string envName = "NEUTU_KAFKA_BROKERS";
+#if defined(_NEU3_)
+  serviceName = "neu3";
+  envName = "NEU3_KAFKA_BROKERS";
+#endif
+
+  if (const char* kafkaBrokersEnv = std::getenv(envName.c_str())) {
+    // The list of brokers should be separated by commans, per this example:
+    // https://www.npmjs.com/package/node-rdkafka
+    kafkaBrokers = kafkaBrokersEnv;
+  }
+
+  if (!kafkaBrokers.empty()) {
+    try {
+      auto config = neuopentracing::Config(kafkaBrokers);
+      auto tracer = neuopentracing::Tracer::make(serviceName, config);
+      neuopentracing::Tracer::InitGlobal(tracer);
+    } catch (std::exception &e) {
+      LWARN() << "Cannot initialize Kafka tracer:" << e.what();
+    }
+  }
+#endif
+}
