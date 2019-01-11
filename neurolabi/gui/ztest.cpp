@@ -319,8 +319,8 @@
 #include "service/cypherquery.h"
 #include "test/zunittest.h"
 #include "zstackobjectpainter.h"
-#include "neuopentracing.h"
-#include "zlog.h"
+#include "logging/neuopentracing.h"
+#include "logging/zlog.h"
 
 //#include "test/ztestall.h"
 
@@ -28008,6 +28008,23 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif";
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string filePath = dataDir + "/synapse_thresh_PAINT_NO3_new.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "NO3");
+#endif
+
+#if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif";
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string filePath = dataDir + "/synapse_thresh_PAINT_NO3_new.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "NO3");
+#endif
 
 #if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
@@ -29186,7 +29203,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   tic();
   KLog log;
   log << ZLog::Category(std::string(__FILE__) + ".testing")

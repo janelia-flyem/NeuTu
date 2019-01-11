@@ -4,6 +4,7 @@
 
 #include "z3dcameraparameter.h"
 #include "zqslog.h"
+#include "logging/zlog.h"
 
 Z3DInteractionHandler::Z3DInteractionHandler(const QString& name, QObject* parent)
   : QObject(parent)
@@ -36,6 +37,16 @@ void Z3DInteractionHandler::onEvent(QEvent* e, int w, int h)
   for (size_t j = 0; j < m_eventListeners.size() && !e->isAccepted(); ++j) {
     m_eventListeners[j]->sendEvent(e, w, h);
   }
+}
+
+bool Z3DInteractionHandler::isStateToggledOn(State state) const
+{
+  return (m_state == state) && (m_state != m_lastState);
+}
+
+bool Z3DInteractionHandler::isStateToggledOff(State state) const
+{
+  return (m_lastState == state) && (m_state != m_lastState);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -141,10 +152,20 @@ void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
     mousePressEvent(e, w, h);
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
+    if (isStateToggledOff(State::Rotate)) {
+      KLOG << ZLog::Interact() << ZLog::Description("Stop rotating camera")
+           << ZLog::Object(this);
+    }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
     emit cameraMoved();
     emit cameraRotated();
+    if (isStateToggledOn(State::Rotate)) {
+      KLOG << ZLog::Interact() << ZLog::Description("Start rotating camera")
+           << ZLog::Object(this);
+    }
+
+    updateLastState();
   }
 }
 

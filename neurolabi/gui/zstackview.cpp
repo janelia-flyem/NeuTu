@@ -43,7 +43,7 @@
 #include "zstackdochelper.h"
 #include "mvc/zpositionmapper.h"
 #include "data3d/utilities.h"
-#include "zlog.h"
+#include "logging/zlog.h"
 
 using namespace std;
 
@@ -764,9 +764,7 @@ void ZStackView::setZQuitely(int z)
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
-#ifdef _DEBUG_
-    LDEBUG() << "Set slice index:" << slice;
-#endif
+//    KINFO << QString("Set slice index: %1").arg(slice);
 
     recordViewParam();
 //    setDepthFrozen(true);
@@ -780,9 +778,7 @@ void ZStackView::setSliceIndex(int slice)
 void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
-#ifdef _DEBUG_2
-    LDEBUG() << "Set slice index:" << slice;
-#endif
+//    KINFO << QString("Set slice index: %1").arg(slice);
 
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
@@ -2732,7 +2728,7 @@ void ZStackView::updateViewParam(const ZStackViewParam &param)
       }
       setZQuitely(param.getZ());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "View param updated: z=" << getZ(neutube::ECoordinateSystem::STACK)
                 << std::endl;
 #endif
@@ -3097,9 +3093,22 @@ void ZStackView::processViewChange(bool redrawing)
   }
 }
 
+void ZStackView::logViewParam()
+{
+  ZStackViewParam param = getViewParameter();
+  std::ostringstream stream;
+  stream << this;
+  KLOG << ZLog::Info()
+       << ZLog::Description("View changed to " + param.toString())
+       << ZLog::Tag("object", stream.str())
+       << ZLog::Tag("view", param.toJsonObject().toString());
+}
+
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
   if (!isViewChangeEventBlocked() && isVisible()) {
+    logViewParam();
+
 //    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData();
 

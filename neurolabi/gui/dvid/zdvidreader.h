@@ -13,16 +13,14 @@
 #include <vector>
 #include <tuple>
 
-//#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zclosedcurve.h"
-#include "dvid/zdvidinfo.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidsynapse.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
+#include "zdvidinfo.h"
+#include "zdvidtarget.h"
+#include "zdvidsynapse.h"
+#include "zdvidbufferreader.h"
+#include "zdvidurl.h"
 #include "znetbufferreader.h"
-
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>

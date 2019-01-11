@@ -37,7 +37,6 @@ public:
   void onEvent(QEvent* e, int w, int h);
 
 signals:
-
   void cameraMoved();
 
   void mousePressed();
@@ -56,15 +55,23 @@ protected:
   };
 
   void setState(State state)
-  { m_state = state; }
+  { m_lastState = m_state; m_state = state; }
 
   void addEventListener(ZEventListenerParameter* eventListener)
   { m_eventListeners.emplace_back(eventListener); }
 
+  bool isStateToggledOn(State state) const;
+  bool isStateToggledOff(State state) const;
+
+  void updateLastState() {
+    m_lastState = m_state;
+  }
+
 protected:
   QString m_name;
   std::vector<std::unique_ptr<ZEventListenerParameter>> m_eventListeners;
-  State m_state;
+  State m_state = State::None;
+  State m_lastState = State::None;
 
   float m_mouseWheelMotionFactor;
 };

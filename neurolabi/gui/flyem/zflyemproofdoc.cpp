@@ -61,7 +61,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "flyem/zflyembodystatus.h"
 #include "zflyemroimanager.h"
-#include "zlog.h"
+#include "logging/zlog.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -74,7 +74,7 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
   endWorkThread();
-  KDEBUG << ZLog::Info << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
+  KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
 //  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
 
@@ -850,7 +850,7 @@ bool ZFlyEmProofDoc::isDvidMutable() const
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  LINFO() << "Setting dvid env in ZFlyEmProofDoc";
+  KINFO << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
   if (m_dvidReader.open(target)) {
@@ -1013,7 +1013,7 @@ void ZFlyEmProofDoc::readInfo()
   updateMaxLabelZoom();
   updateMaxGrayscaleZoom();
 
-  LINFO() << startLog;
+  KINFO << startLog;
 }
 
 void ZFlyEmProofDoc::loadRoiFunc()
@@ -1153,7 +1153,7 @@ void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
   labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   labelSlice->setDvidTarget(getDvidTarget());
 
-  LINFO() << "Max label zoom:" << getDvidTarget().getMaxLabelZoom();
+  KINFO << QString("Max label zoom: %1").arg(getDvidTarget().getMaxLabelZoom());
 
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
@@ -2165,7 +2165,7 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
-  ZOUT(LINFO(), 3) << "Checking splittable:" << bodyId;
+  ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (m_dvidReader.isReady()) {
     ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);

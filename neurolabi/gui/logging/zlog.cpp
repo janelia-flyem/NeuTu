@@ -1,6 +1,7 @@
 #include "zlog.h"
 
 #include <QDateTime>
+#include <sstream>
 
 #include "core/utilities.h"
 #include "neutubeconfig.h"
@@ -65,6 +66,13 @@ ZLog::Time::Time(uint64_t t) : Tag("time", t)
 {
 }
 
+ZLog::Object::Object(void *p) : Tag("", "")
+{
+  std::ostringstream stream;
+  stream << p;
+  set("object", stream.str());
+}
+
 void ZLog::End(ZLog &log)
 {
   log.end();
@@ -83,6 +91,7 @@ ZLog& ZLog::operator << (const std::function<void(ZLog&)> f)
 
   return *this;
 }
+
 
 KLog::KLog()
 {
@@ -143,7 +152,7 @@ void KLog::log(const std::string &key, const neuopentracing::Value &value)
 void KLog::endKLog()
 {
   if (isStarted()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "KLog::end() called." << std::endl;
 #endif
 
@@ -157,4 +166,54 @@ void KLog::end()
 {
   endKLog();
   ZLog::end();
+}
+
+KInfo::KInfo()
+{
+}
+
+KInfo& KInfo::operator << (const char* info)
+{
+  dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+
+  return (*this);
+}
+
+KInfo& KInfo::operator << (const std::string &info)
+{
+  (*this) << info.c_str();
+
+  return (*this);
+}
+
+KInfo& KInfo::operator << (const QString &info)
+{
+  (*this) << info.toStdString();
+
+  return (*this);
+}
+
+KWarn::KWarn()
+{
+}
+
+KWarn& KWarn::operator << (const char* info)
+{
+  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+
+  return (*this);
+}
+
+KWarn& KWarn::operator << (const std::string &info)
+{
+  (*this) << info.c_str();
+
+  return (*this);
+}
+
+KWarn& KWarn::operator << (const QString &info)
+{
+  (*this) << info.toStdString();
+
+  return (*this);
 }

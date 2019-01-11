@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidinfo.h"
-#include "dvid/zdvidbuffer.h"
+//#include "dvid/zdvidbuffer.h"
 #include "dvid/zdvidtarget.h"
 #include "dialogs/zdviddialog.h"
 #include "zstring.h"

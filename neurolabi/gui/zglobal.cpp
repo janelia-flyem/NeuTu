@@ -17,7 +17,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
-#include "neuopentracing.h"
+#include "logging/neuopentracing.h"
 
 class ZGlobalData {
 
@@ -30,6 +30,7 @@ public:
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
+  neutube::EServerStatus m_neuprintStatus = neutube::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()
@@ -116,24 +117,92 @@ QMainWindow* ZGlobal::getMainWindow() const
   return m_mainWin;
 }
 
+QString ZGlobal::getNeuPrintServer() const
+{
+  return qgetenv("NEUPRINT");
+}
+
+void ZGlobal::setNeuPrintServer(const QString &server)
+{
+  if (getNeuPrintServer() != server) {
+    qputenv("NEUPRINT", QByteArray::fromStdString(server.toStdString()));
+    delete m_data->m_neuprintReader;
+    m_data->m_neuprintReader = nullptr;
+  }
+}
+
+QString ZGlobal::getNeuPrintAuth() const
+{
+  QString authFile = qgetenv("NEUPRINT_AUTH");
+  if (authFile.isEmpty()) {
+    authFile = NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+    LINFO() << "NeuPrint auth path:" << authFile;
+  }
+
+  QString auth;
+
+  QFile f(authFile);
+  if (f.open(QIODevice::ReadOnly)) {
+    QTextStream stream(&f);
+    auth = stream.readAll();
+  }
+
+  return auth;
+}
+
+QString ZGlobal::getNeuPrintToken() const
+{
+//  QString auth = qgetenv("NEUPRINT_AUTH");
+//  if (auth.isEmpty()) {
+//    auth = NeutubeConfig::getInstance().getPath(
+//          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+//    LINFO() << "NeuPrint auth path:" << auth;
+//  }
+
+  ZJsonObject obj;
+  obj.decode(getNeuPrintAuth().toStdString());
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+
+  return token.c_str();
+}
+
 NeuPrintReader* ZGlobal::getNeuPrintReader()
 {
   if (m_data->m_neuprintReader == nullptr) {
-    QString server = qgetenv("NEUPRINT");
-    if (!server.isEmpty()) {
-      QString auth = qgetenv("NEUPRINT_AUTH");
-      if (auth.isEmpty()) {
-        auth = NeutubeConfig::getInstance().getPath(
-              NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
-        LINFO() << "NeuPrint auth path:" << auth;
-      }
-
-      m_data->m_neuprintReader = new NeuPrintReader(server);
-      m_data->m_neuprintReader->authorizeFromFile(auth);
-    }
+    m_data->m_neuprintReader = makeNeuPrintReader();
   }
 
   return m_data->m_neuprintReader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader()
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+  }
+
+  return reader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+    reader->updateCurrentDataset(uuid);
+    if (!reader->isReady()) {
+      delete reader;
+      reader = nullptr;
+    }
+  }
+
+  return reader;
 }
 
 template<typename T>

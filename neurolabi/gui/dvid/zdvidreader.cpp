@@ -14,7 +14,7 @@
 #include <QtConcurrent>
 
 #include "zqslog.h"
-#include "zlog.h"
+#include "logging/zlog.h"
 
 #include "zjsondef.h"
 #include "zstack.hxx"
@@ -56,7 +56,6 @@
 #include "zarrayfactory.h"
 #include "zobject3dfactory.h"
 #include "dvid/zdvidstackblockfactory.h"
-#include "zlog.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -2112,7 +2111,8 @@ ZStack* ZDvidReader::readGrayScale(
   }
 #endif
 
-  ZOUT(LTRACE(), 5) << "Grayscale reading time: " << timer.elapsed();
+  ZOUT(KLOG, 5) << ZLog::Profile() << ZLog::Description("grayscale reading time")
+         << ZLog::Duration(m_readingTime);
 
   return stack;
 #else
@@ -3453,10 +3453,12 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     m_readingTime = timer.elapsed();
     if (NeutubeConfig::GetVerboseLevel() < 5) {
       if (m_readingTime > 10) {
-        LINFO() << "grayscale reading time: " << m_readingTime;
+        KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+               << ZLog::Duration(m_readingTime);
       }
     } else {
-      LINFO() << "grayscale reading time: " << m_readingTime;
+      KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+             << ZLog::Duration(m_readingTime);
     }
   }
 
@@ -3809,7 +3811,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    LINFO() << "label reading time: " << m_readingTime;
+    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+         << ZLog::Duration(m_readingTime);
+//    LINFO() << "label reading time: " << m_readingTime;
   }
 
   return array;
@@ -3880,7 +3884,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    LINFO() << "label reading time: " << m_readingTime;
+    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+         << ZLog::Duration(m_readingTime);
+//    LINFO() << "label reading time: " << m_readingTime;
   }
 
   return array;

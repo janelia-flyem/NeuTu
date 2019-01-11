@@ -6,7 +6,7 @@
 #include "zdvidreader.h"
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
-#include "zlog.h"
+#include "logging/zlog.h"
 
 ZDvidBodyHelper::ZDvidBodyHelper(const ZDvidReader *reader) : m_reader(reader)
 {

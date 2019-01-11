@@ -284,6 +284,7 @@ include(command/command.pri)
 include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
+include(logging/logging.pri)
 
 # Input
 RESOURCES = gui.qrc
@@ -484,11 +485,9 @@ HEADERS += mainwindow.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
     dialogs/penwidthdialog.h \
-    dvid/zdvidclient.h \
     dialogs/dvidobjectdialog.h \
     zpainter.h \
     dialogs/resolutiondialog.h \
-    dvid/zdvidbuffer.h \
     dvid/zdvidrequest.h \
     zmatlabprocess.h \
     zneuronseed.h \
@@ -913,8 +912,7 @@ HEADERS += mainwindow.h \
     widgets/zoptionlistwidget.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    neuopentracing.h \
-    zlog.h
+    dialogs/neuprintsetupdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1031,7 +1029,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zoptionlistwidget.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
-    dialogs/zstackframesettingdialog.ui
+    dialogs/zstackframesettingdialog.ui \
+    dialogs/neuprintsetupdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1196,11 +1195,9 @@ SOURCES += main.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp \
     dialogs/penwidthdialog.cpp \
-    dvid/zdvidclient.cpp \
     dialogs/dvidobjectdialog.cpp \
     zpainter.cpp \
     dialogs/resolutiondialog.cpp \
-    dvid/zdvidbuffer.cpp \
     dvid/zdvidrequest.cpp \
     zmatlabprocess.cpp \
     zneuronseed.cpp \
@@ -1618,8 +1615,7 @@ SOURCES += main.cpp \
     widgets/zoptionlistwidget.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
-    neuopentracing.cpp \
-    zlog.cpp
+    dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

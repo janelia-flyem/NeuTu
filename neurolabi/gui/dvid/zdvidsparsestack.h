@@ -7,7 +7,7 @@
 #include "zstackobject.h"
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
-#include "dvid/zdvidreader.h"
+#include "zdvidreader.h"
 #include "zthreadfuturemap.h"
 
 class ZIntCuboid;

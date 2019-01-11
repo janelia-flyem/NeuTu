@@ -6,11 +6,12 @@
 #include <QImage>
 #include <QImageReader>
 
-#include "zerror.h"
-#include "zdvidbuffer.h"
 #include "neutubeconfig.h"
-#include "dvid/zdvidurl.h"
-#include "dvid/zdviddata.h"
+#include "zerror.h"
+
+#include "zdvidbuffer.h"
+#include "zdvidurl.h"
+#include "zdviddata.h"
 
 ZDvidClient::ZDvidClient(QObject *parent) :
   QObject(parent),

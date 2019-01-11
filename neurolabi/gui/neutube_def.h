@@ -120,6 +120,10 @@ enum class EStackNeighborhood {
   D1 = 1, D2, D3
 };
 
+enum class EServerStatus {
+  NORMAL, OFFLINE, NOAUTH, NOSUPPORT
+};
+
 namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;

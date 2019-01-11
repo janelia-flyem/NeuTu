@@ -6,7 +6,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "misc/miscutility.h"
-#include "neuopentracing.h"
+#include "logging/neuopentracing.h"
 #include "neutubeconfig.h"
 #include "neu3window.h"
 #include "z3dcamera.h"
