@@ -29257,5 +29257,12 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  std::vector<uint64_t> bodyList({1, 2, 3});
+  for (uint64_t body : bodyList) {
+
+  }
+#endif
+
   std::cout << "Done." << std::endl;
 }
