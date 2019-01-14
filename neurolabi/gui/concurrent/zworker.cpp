@@ -2,7 +2,7 @@
 
 #include <QTimer>
 
-#include "zqslog.h"
+//#include "zqslog.h"
 #include "ztask.h"
 #include "ztaskqueue.h"
 
@@ -19,19 +19,19 @@ ZWorker::ZWorker(EMode mode, QObject *parent) : QObject(parent),
 
 ZWorker::~ZWorker()
 {
-  LDEBUG() << "Worker destroyed.";
+//  LDEBUG() << "Worker destroyed.";
 }
 
 void ZWorker::quit()
 {
   addTask(NULL);
   m_quiting = true;
-  LDEBUG() << "Quit worker";
+//  LDEBUG() << "Quit worker";
 }
 
 void ZWorker::process()
 {
-  LDEBUG() << "Worker started";
+//  LDEBUG() <</* */"Worker started";
 
 
   while (1) {
@@ -47,7 +47,7 @@ void ZWorker::process()
     }
   }
 
-  LDEBUG() << "Worker finished";
+//  LDEBUG() << "Worker finished";
 
   emit finished();
 }
