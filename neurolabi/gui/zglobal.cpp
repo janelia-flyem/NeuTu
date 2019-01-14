@@ -401,6 +401,9 @@ void ZGlobal::InitKafkaTracer()
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);
       neuopentracing::Tracer::InitGlobal(tracer);
+      if (tracer) {
+        LINFO() << "Kafka connected: " + kafkaBrokers;
+      }
     } catch (std::exception &e) {
       LWARN() << "Cannot initialize Kafka tracer:" << e.what();
     }

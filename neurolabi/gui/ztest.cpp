@@ -28001,7 +28001,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZFlyEmMisc::UploadRoi(
-        (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
+        (GET_TEST_DATA_DIR + "/_flyem/roi/20190111").c_str(),
         (GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv").c_str(),
         writer);
 

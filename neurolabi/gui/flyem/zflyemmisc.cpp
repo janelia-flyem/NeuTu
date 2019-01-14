@@ -1465,9 +1465,9 @@ void ZFlyEmMisc::UploadRoi(
       }
     }
 
-    for (auto &entry : nameMap) {
-      std::cout << entry.first << ": " << entry.second << std::endl;
-    }
+//    for (auto &entry : nameMap) {
+//      std::cout << entry.first << ": " << entry.second << std::endl;
+//    }
 
     //Upload: ZDvidWriter::uploadRoiMesh
     {

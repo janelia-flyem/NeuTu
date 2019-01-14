@@ -13,7 +13,7 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 
 void ZNetBufferReader::_init()
 {
-  m_networkManager = new QNetworkAccessManager(this);
+//  m_networkManager = new QNetworkAccessManager(this);
 
   m_eventLoop = new QEventLoop(this);
   connect(this, &ZNetBufferReader::readingCanceled,
@@ -23,6 +23,15 @@ void ZNetBufferReader::_init()
   connect(this, &ZNetBufferReader::checkingStatus,
           this, &ZNetBufferReader::waitForReading);
 }
+
+QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
+{
+   if (m_networkManager == nullptr) {
+     m_networkManager = new QNetworkAccessManager(this);
+   }
+
+   return m_networkManager;
+ }
 
 void ZNetBufferReader::resetNetworkReply()
 {
@@ -135,7 +144,7 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 
   resetNetworkReply();
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-  m_networkReply = m_networkManager->post(request, data);
+  m_networkReply = getNetworkAccessManager()->post(request, data);
   connectNetworkReply();
   connect(m_networkReply, &QNetworkReply::readyRead,
           this, &ZNetBufferReader::readBuffer);

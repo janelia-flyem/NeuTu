@@ -65,9 +65,7 @@ private:
   void startReading();
   void endReading(neutube::EReadStatus status);
   bool isReadingDone() const;
-  QNetworkAccessManager* getNetworkAccessManager() {
-    return m_networkManager;
-  }
+  QNetworkAccessManager* getNetworkAccessManager();
 
 private:
   QByteArray m_buffer;

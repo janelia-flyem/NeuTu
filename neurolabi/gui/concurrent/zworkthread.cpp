@@ -1,5 +1,5 @@
 #include "zworkthread.h"
-#include "zqslog.h"
+//#include "zqslog.h"
 #include "zworker.h"
 
 ZWorkThread::ZWorkThread(ZWorker *worker, QObject *parent) : QThread(parent)
@@ -9,7 +9,7 @@ ZWorkThread::ZWorkThread(ZWorker *worker, QObject *parent) : QThread(parent)
 
 ZWorkThread::~ZWorkThread()
 {
-  LDEBUG() << "Work thread destroyed.";
+//  LDEBUG() << "Work thread destroyed.";
 }
 
 

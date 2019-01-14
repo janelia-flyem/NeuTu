@@ -2150,8 +2150,8 @@ void ZFlyEmProofMvc::customInit()
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
-  connect(getDocument().get(), SIGNAL(activeViewModified()),
-          this, SLOT(updateActiveViewData()));
+//  connect(getDocument().get(), SIGNAL(activeViewModified()),
+//          this, SLOT(updateActiveViewData()));
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           getView(), SLOT(paintObject()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
