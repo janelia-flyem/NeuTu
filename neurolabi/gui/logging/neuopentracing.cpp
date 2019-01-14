@@ -255,7 +255,6 @@ void Tracer::reportSpan(const Span &span) const
                 const_cast<char *>(jsonStr.c_str()), jsonStr.size(),
                 nullptr, 0, span.finishTimestamp(), nullptr);
     if (resp == RdKafka::ERR_NO_ERROR) {
-      std::cout << "Kafka message with topic " << topic << std::endl;
       kafkaSucceeded = true;
     } else {
       // TODO: Report RdKafka::err2str(resp)?
