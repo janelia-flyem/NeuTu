@@ -23,6 +23,7 @@ public:
   inline int getSegmentNumber() const { return getSize(); }
   size_t getVoxelNumber() const;
   bool hasVoxel() const;
+  size_t getByteCount() const;
 
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }

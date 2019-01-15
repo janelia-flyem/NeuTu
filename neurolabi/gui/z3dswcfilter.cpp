@@ -1900,15 +1900,19 @@ void Z3DSwcFilter::setColorScheme()
 void Z3DSwcFilter::prepareColorMapper(const TreeParamMap &colorMapper)
 {
   for (const auto &t : m_decomposedNodePairMap) {
-    glm::vec4 color = colorMapper.at(t.first)->get();
-    m_swcColors1.resize(m_swcColors1.size() + t.second.size(), color);
-    m_swcColors2.resize(m_swcColors2.size() + t.second.size(), color);
-    m_lineColors.resize(m_lineColors.size() + t.second.size() * 2, color);
+    if (colorMapper.count(t.first) > 0) {
+      glm::vec4 color = colorMapper.at(t.first)->get();
+      m_swcColors1.resize(m_swcColors1.size() + t.second.size(), color);
+      m_swcColors2.resize(m_swcColors2.size() + t.second.size(), color);
+      m_lineColors.resize(m_lineColors.size() + t.second.size() * 2, color);
+    }
   }
 
   for (const auto &t : m_decomposedNodeMap) {
-    glm::vec4 color = colorMapper.at(t.first)->get();
-    m_pointColors.resize(m_pointColors.size() + t.second.size(), color);
+    if (colorMapper.count(t.first) > 0) {
+      glm::vec4 color = colorMapper.at(t.first)->get();
+      m_pointColors.resize(m_pointColors.size() + t.second.size(), color);
+    }
   }
 }
 

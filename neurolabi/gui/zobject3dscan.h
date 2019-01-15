@@ -90,6 +90,13 @@ public:
    */
   size_t getVoxelNumber(int z) const;
 
+  /*!
+   * \brief Count the memory bytes used by the segments
+   *
+   * Meta information is ignored in byte counting.
+   */
+  size_t getByteCount() const;
+
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 

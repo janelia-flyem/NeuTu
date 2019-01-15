@@ -280,6 +280,18 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   return voxelNumber;
 }
 
+size_t ZObject3dScan::getByteCount() const
+{
+  size_t byteCount = 0;
+
+  size_t stripeNumber = getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    byteCount += m_stripeArray[i].getByteCount();
+  }
+
+  return byteCount;
+}
+
 const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
   if (isDeprecated(COMPONENT_SLICEWISE_VOXEL_NUMBER)) {

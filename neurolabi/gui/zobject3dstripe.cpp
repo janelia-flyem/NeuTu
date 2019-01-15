@@ -37,8 +37,17 @@ void ZObject3dStripe::addSegment(int x1, int x2, bool canonizing)
        m_segmentArray.push_back(x1);
        m_segmentArray.push_back(x2);
      } else {
-       if (x1 >= m_segmentArray[m_segmentArray.size() - 2]) {
+       int &lastStart = m_segmentArray[m_segmentArray.size() - 2];
+       if (x1 >= lastStart) {
          m_segmentArray.back() = imax2(x2, m_segmentArray.back());
+       } else if (x2 >= lastStart - 1){
+         lastStart = x1;
+         m_segmentArray.back() = imax2(x2, m_segmentArray.back());
+         if (m_segmentArray.size() > 2) {
+           if (lastStart - m_segmentArray[m_segmentArray.size() - 3] <= 1) {
+             m_isCanonized = false;
+           }
+         }
        } else {
          m_segmentArray.push_back(x1);
          m_segmentArray.push_back(x2);
@@ -68,6 +77,11 @@ size_t ZObject3dStripe::getVoxelNumber() const
   }
 
   return voxelNumber;
+}
+
+size_t ZObject3dStripe::getByteCount() const
+{
+  return sizeof(int) * (2 + m_segmentArray.size());
 }
 
 bool ZObject3dStripe::hasVoxel() const

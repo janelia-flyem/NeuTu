@@ -29257,10 +29257,28 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  std::vector<uint64_t> bodyList({1, 2, 3});
-  for (uint64_t body : bodyList) {
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
 
+//  std::vector<uint64_t> bodyList({895441451});
+  std::vector<uint64_t> bodyList = ZFlyEmMisc::LoadBodyList(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/test/body_list.txt");
+
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+//    reader->readBody(body, true, &obj);
+    reader->readBody(
+          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+
+    size_t byteCount = obj.getByteCount();
+    std::cout << body << ": #voxel=" << obj.getVoxelNumber() << "; "
+              << obj.getBoundBox().toString() << "; "
+              << "#Byte=" << byteCount << std::endl;
+    size_t v = obj.getBoundBox().getVolume();
+    ZIntCuboid box = obj.getBoundBox();
+    std::cout << box.getWidth() << "x" << box.getHeight() << "x" << box.getDepth() << std::endl;
+    std::cout << "Compression ratio: " << double(v) / byteCount << std::endl;
   }
 #endif
 
