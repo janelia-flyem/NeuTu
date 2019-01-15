@@ -592,20 +592,9 @@ void ZProofreadWindow::operateDvid()
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
-//  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
-//  m_progressSignal->advanceProgress(0.1);
-//  advanceProgress(0.1);
-  m_mainMvc->launchSplit(bodyId, mode);
 
-  /*
-  if (m_mainMvc->launchSplit(bodyId)) {
-    m_controlGroup->setCurrentIndex(1);
-    dump(QString("Body %1 loaded for split.").arg(bodyId), true);
-  } else {
-    dumpError(QString("Failed to load %1").arg(bodyId), true);
-  }
-  */
+  m_mainMvc->launchSplit(bodyId, mode);
 }
 
 void ZProofreadWindow::launchSplit()
@@ -672,7 +661,7 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
-    dump(msg.toHtmlString(), msg.isAppending(), false);
+    dump(msg.toHtmlString(), msg.isAppending(), true);
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
@@ -687,7 +676,7 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     break;
   }
 
-  logMessage(msg);
+//  logMessage(msg);
   //Record message in files
 //  switch (msg.getType()) {
 //  case neutube::EMessageType::INFORMATION:

@@ -3077,11 +3077,11 @@ void ZFlyEmProofMvc::showBodyProfile()
 {
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
-  QString msg;
-  for (uint64_t bodyId : bodyIdArray) {
-    msg = QString("Body %1:").arg(bodyId);
-    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-    if (reader.isReady()) {
+  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+  if (reader.isReady()) {
+    for (uint64_t bodyId : bodyIdArray) {
+      QString msg = QString("Body %1:").arg(bodyId);
+
       size_t bodySize = 0;
       size_t blockCount = 0;
       ZIntCuboid box;
@@ -3089,13 +3089,12 @@ void ZFlyEmProofMvc::showBodyProfile()
             bodyId, flyem::EBodyLabelType::BODY);
       msg += QString("#voxels: %1; #blocks: %2; Range: %3").arg(bodySize).
           arg(blockCount).arg(box.toString().c_str());
+      emit messageGenerated(
+            ZWidgetMessage(
+              msg, neutube::EMessageType::INFORMATION,
+              ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
     }
   }
-
-  emit messageGenerated(
-        ZWidgetMessage(
-          msg, neutube::EMessageType::INFORMATION,
-          ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
 }
 
 void ZFlyEmProofMvc::setExpertBodyStatus()

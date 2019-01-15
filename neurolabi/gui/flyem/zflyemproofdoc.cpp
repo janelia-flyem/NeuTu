@@ -322,7 +322,8 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
   if (msg.isEmpty()) {
     msg = "No body selected.";
   } else {
-    msg += " selected.";
+    msg = "Body selection: " + msg;
+//    msg += " selected.";
   }
 
   return msg;

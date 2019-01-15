@@ -29257,7 +29257,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->updateMaxLabelZoom();
 
@@ -29272,14 +29272,109 @@ void ZTest::test(MainWindow *host)
           body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
 
     size_t byteCount = obj.getByteCount();
-    std::cout << body << ": #voxel=" << obj.getVoxelNumber() << "; "
+    size_t voxelCount = obj.getVoxelNumber();
+    std::cout << body << ": #voxel=" << voxelCount << "; "
               << obj.getBoundBox().toString() << "; "
               << "#Byte=" << byteCount << std::endl;
     size_t v = obj.getBoundBox().getVolume();
     ZIntCuboid box = obj.getBoundBox();
     std::cout << box.getWidth() << "x" << box.getHeight() << "x" << box.getDepth() << std::endl;
     std::cout << "Compression ratio: " << double(v) / byteCount << std::endl;
+    std::cout << "CRV: " << double(voxelCount) / byteCount * 12 << std::endl;
+    std::cout << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  int blockCount = reader->readBodyBlockCount(799586652, 1);
+  std::cout << blockCount << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  std::vector<uint64_t> bodyList = ZFlyEmMisc::LoadBodyList(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/test/allbody.txt");
+
+  std::vector<qint64> ccaTime;
+  std::vector<size_t> bodySize;
+  std::vector<size_t> ccc;
+
+  QElapsedTimer timer;
+  timer.start();
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+    reader->readBody(
+          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+    timer.restart();
+    ccc.push_back(obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE).size());
+    ccaTime.push_back(timer.elapsed());
+    bodySize.push_back(obj.getSegmentNumber());
+//    std::cout << "CCA time: " << timer.elapsed() << " ms" << std::endl;
+//    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "Body Size:" << std::endl;
+  for (auto s : bodySize) {
+    std::cout << s << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "#CC: " << std::endl;
+  for (auto c : ccc) {
+    std::cout << c << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "CCA time: " << std::endl;
+  for (auto t : ccaTime) {
+    std::cout << t << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  QElapsedTimer timer;
+  timer.start();
+
+  std::vector<uint64_t> bodyList({5813101160});
+  std::vector<size_t> bodySize;
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+    reader->readSupervoxel(body, true, &obj);
+    bodySize.push_back(obj.getSegmentNumber());
+
+    timer.restart();
+    obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE);
+    std::cout << "CCA time: " << timer.elapsed() << " ms" << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "Body Size:" << std::endl;
+  for (auto s : bodySize) {
+    std::cout << s << std::endl;
+  }
+  std::cout << std::endl;
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "40c2", 7000);
+  reader.open(target);
+
+  ZDvidRoi roi;
+  reader.readRoi("ROI_chiasm_body2", &roi);
+  std::cout << "Volume: " << roi.getVolume() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

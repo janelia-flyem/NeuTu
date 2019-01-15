@@ -138,7 +138,6 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
               }
               config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
-            config.append(ZActionFactory::ACTION_BODY_PROFILE);
 
             config.appendSeparator();
             if (ZStackDocHelper::AllowingBodySplit(doc)) {
@@ -167,6 +166,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             }
           }
         }
+
+        config.append(ZActionFactory::ACTION_BODY_PROFILE);
 
         if (!doc->getDvidTarget().getSynapseName().empty()) {
           config.append(ZActionFactory::ACTION_BODY_CONNECTION);

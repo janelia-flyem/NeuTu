@@ -724,11 +724,11 @@ ZObject3dScan *ZDvidReader::readBody(
       timer.start();
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
       std::cout << "Reading body data with " << buffer.size() << " bytes: "
-                <<  timer.elapsed() << "ms" << std::endl;
+                <<  timer.elapsed() << " ms" << std::endl;
 
       timer.restart();
       result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-      std::cout << "Parsing body: " << timer.elapsed() << "ms" << std::endl;
+      std::cout << "Parsing body: " << timer.elapsed() << " ms" << std::endl;
     } else {
       readBodyRle(bodyId, labelType, zoom, box, canonizing, result);
     }
