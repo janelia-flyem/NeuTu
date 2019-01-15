@@ -452,6 +452,7 @@ public:
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
 
   QStringList getRoiList() const;
+  QString getBodySelectionMessage() const;
 
 
   void diagnose() const override;
@@ -624,8 +625,6 @@ private:
   void init();
   void initTimer();
   void initAutoSave();
-
-  QString getBodySelectionMessage() const;
 
   /*!
    * \brief Create essential data instance if necessary

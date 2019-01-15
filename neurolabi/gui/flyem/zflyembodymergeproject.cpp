@@ -1683,6 +1683,13 @@ void ZFlyEmBodyMergeProject::setSelection(
 QString ZFlyEmBodyMergeProject::getSelectionMessage() const
 {
   QString msg;
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    msg = doc->getBodySelectionMessage();
+  }
+  return msg;
+#if 0
+  QString msg;
 
   const std::set<uint64_t> &selected = getSelection(neutube::EBodyLabelType::MAPPED);
 
@@ -1707,10 +1714,12 @@ QString ZFlyEmBodyMergeProject::getSelectionMessage() const
   if (msg.isEmpty()) {
     msg = "No body selected.";
   } else {
-    msg += " selected.";
+    msg = "Body selection: " + msg;
+//    msg += " selected.";
   }
 
   return msg;
+#endif
 }
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)

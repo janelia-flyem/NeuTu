@@ -168,6 +168,7 @@ std::string AppendQuery(const std::string &url, const std::string query)
   return newUrl;
 }
 
+
 template<typename T>
 std::string AppendQuery(
       const std::string &url, const std::pair<std::string,T> &query)
@@ -178,6 +179,13 @@ std::string AppendQuery(
   }
 
   return url;
+}
+
+template<typename T>
+std::string AppendQuery(
+      const std::string &url, const std::string &name, const T &value)
+{
+  return AppendQuery(url, std::pair<std::string,T>(name, value));
 }
 
 std::string AppendQuery(
