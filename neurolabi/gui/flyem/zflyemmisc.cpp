@@ -1513,6 +1513,25 @@ void ZFlyEmMisc::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
   delete mesh;
 }
 
+std::vector<uint64_t> ZFlyEmMisc::LoadBodyList(const std::string &input)
+{
+  std::vector<uint64_t> bodyList;
+
+  FILE *fp = fopen(input.c_str(), "r");
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      std::copy(bodyArray.begin(), bodyArray.end(), std::back_inserter(bodyList));
+//      bodyList.insert(bodyArray.begin(), bodyArray.end());
+    }
+    fclose(fp);
+  } else {
+    std::cout << "Failed to open " << input << std::endl;
+  }
+
+  return bodyList;
+}
 
 ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 {

@@ -132,6 +132,8 @@ void UpdateBodyStatus(
 
 void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
 
+std::vector<uint64_t> LoadBodyList(const std::string &input);
+
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
 QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);
