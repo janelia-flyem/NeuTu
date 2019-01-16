@@ -92,8 +92,8 @@ int main(int argc, char *argv[])
     KLog() << ZLog::Info() << ZLog::Time(timestamp)
            << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
-//    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-//            + " " + neutube::GetVersionString();
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+            + " " + neutube::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -186,6 +186,8 @@ int main(int argc, char *argv[])
     KLog() << ZLog::Info()
            << ZLog::Description("END " + GET_SOFTWARE_NAME)
            << ZLog::Tag("start_time", timestamp);
+    LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+            + " " + neutube::GetVersionString();
 
     return result;
   } else {
