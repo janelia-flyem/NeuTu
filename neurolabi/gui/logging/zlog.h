@@ -55,6 +55,10 @@ public:
     Error() : Category("ERROR") {}
   };
 
+  struct Debug : public Category {
+    Debug() : Category("DEBUG") {}
+  };
+
   struct Profile : public Category {
     Profile() : Category("profile") {}
   };

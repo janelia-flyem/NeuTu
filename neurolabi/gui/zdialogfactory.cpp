@@ -353,7 +353,7 @@ void ZDialogFactory::About(QWidget *parent)
 
 void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
 {
-  if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
       switch (msg.getType()) {
       case neutube::EMessageType::INFORMATION:
         QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());

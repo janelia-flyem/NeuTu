@@ -257,6 +257,10 @@ void ZFlyEmOrthoWidget::resetCrosshair()
 
 void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
 {
+  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    m_controlForm->dump(message);
+  }
+  /*
   switch (message.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
@@ -265,6 +269,7 @@ void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
   default:
     break;
   }
+  */
 }
 
 void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)

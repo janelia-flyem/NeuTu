@@ -3,39 +3,103 @@
 #include <QStringList>
 #include <QDateTime>
 
-ZWidgetMessage::ZWidgetMessage(ETarget target) :
-  m_type(neutube::EMessageType::INFORMATION), m_target(target)
+ZWidgetMessage::ZWidgetMessage()
 {
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(FTargets target) : m_targets(target)
 {
-  m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const char *msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(const QString &msg)
 {
   m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const std::string &msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(const char *msg)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const std::string &msg)
+{
+  m_message.append(msg.c_str());
+}
+
+ZWidgetMessage::ZWidgetMessage(const QString &title, const QString &msg) :
+  m_title(title)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const QString &msg, neutube::EMessageType type) :
+  m_type(type)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const char *msg, neutube::EMessageType type) :
+  m_type(type)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const std::string &msg, neutube::EMessageType type) :
+  m_type(type)
 {
   m_message.append(msg.c_str());
 }
 
 ZWidgetMessage::ZWidgetMessage(
-    const QString &title, const QString &msg,
-    neutube::EMessageType type, ETarget target) :
-  m_title(title), m_type(type), m_target(target)
+    const QString &title, const QString &msg, neutube::EMessageType type) :
+  m_title(title), m_type(type)
 {
   m_message.append(msg);
 }
+
+ZWidgetMessage::ZWidgetMessage(const QString &msg, neutube::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const char *msg, neutube::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const std::string &msg, neutube::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg.c_str());
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const QString &title, const QString &msg, neutube::EMessageType type, FTargets target) :
+  m_title(title), m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+
+bool ZWidgetMessage::hasTarget(ETarget target) const
+{
+  return (m_targets & target) == target;
+}
+
+bool ZWidgetMessage::hasTarget(FTargets target) const
+{
+  return (m_targets & target) == target;
+}
+
+bool ZWidgetMessage::hasTargetOtherThan(FTargets targets) const
+{
+  return (m_targets & ~targets);
+}
+
 
 QString ZWidgetMessage::ToHtmlString(
     const QString &msg, neutube::EMessageType type)

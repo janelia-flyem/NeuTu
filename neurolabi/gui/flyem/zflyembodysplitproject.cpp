@@ -2878,7 +2878,8 @@ void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
+        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
@@ -2897,7 +2898,8 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::ERROR,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodySplitProject::update3DViewPlane()

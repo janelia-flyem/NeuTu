@@ -6,6 +6,7 @@
 #include "zqslog.h"
 
 #include "zflyembookmarklistmodel.h"
+#include "logging/zlog.h"
 
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
   QTableView(parent)
@@ -47,7 +48,7 @@ void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
-    LINFO() << bookmark->toLogString() + " is clicked";
+    KINFO << bookmark->toLogString() + " is clicked";
   }
 }
 
@@ -168,9 +169,9 @@ void ZFlyEmBookmarkView::checkBookmark(ZFlyEmBookmark *bookmark, bool checking)
   if (bookmark != NULL) {
     bookmark->setChecked(checking);
     if (checking) {
-      LINFO() << bookmark->toLogString() << "is checked";
+      KINFO << bookmark->toLogString() + " is checked";
     } else {
-      LINFO() << bookmark->toLogString() << "is unchecked";
+      KINFO << bookmark->toLogString() + " is unchecked";
     }
   }
 }

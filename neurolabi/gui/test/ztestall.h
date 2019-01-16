@@ -73,5 +73,6 @@
 #include "test/zflyembodymanagertest.h"
 #include "test/zflyembodystatustest.h"
 #include "test/cypherquerytest.h"
+#include "test/zwidgetmessagetest.h"
 
 #endif // ZTESTALL_H

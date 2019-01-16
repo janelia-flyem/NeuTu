@@ -3,8 +3,10 @@
 #include <cstring>
 #include <cmath>
 #include <QGraphicsBlurEffect>
+#include <QMouseEvent>
 
 #include "zqslog.h"
+#include "logging/zlog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
@@ -732,11 +734,19 @@ bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+  KINFO << "Mouse released in ZImageWidget";
+
   emit mouseReleased(event);
 }
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+  if (event->buttons() == Qt::LeftButton) {
+    KINFO << "Mouse (left) dragged in ZImageWidget";
+  } else if (event->buttons() == Qt::RightButton) {
+    KINFO << "Mouse (right) dragged in ZImageWidget";
+  }
+
   if (!hasFocus() && m_hoverFocus) {
     setFocus();
   }
@@ -745,16 +755,22 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void ZImageWidget::mousePressEvent(QMouseEvent *event)
 {
+  KINFO << "Mouse pressed in ZImageWidget";
+
   emit mousePressed(event);
 }
 
 void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+  KINFO << "Mouse double clicked in ZImageWidget";
+
   emit mouseDoubleClicked(event);
 }
 
 void ZImageWidget::wheelEvent(QWheelEvent *event)
 {
+  KINFO << "Mouse scrolled in ZImageWidget";
+
   emit mouseWheelRolled(event);
 }
 

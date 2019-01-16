@@ -9,6 +9,8 @@
 #include <QShortcut>
 
 #include "neutubeconfig.h"
+#include "logging/zlog.h"
+
 //#include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -253,6 +255,8 @@ void ZStackMvc::processKeyEvent(QKeyEvent *event)
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)
 {
+  KINFO << QString("Key %1 pressed in ZStackMvc").arg(event->key());
+
   processKeyEvent(event);
 }
 

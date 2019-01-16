@@ -1730,7 +1730,8 @@ void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
+        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
@@ -1741,7 +1742,8 @@ void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::ERROR,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 

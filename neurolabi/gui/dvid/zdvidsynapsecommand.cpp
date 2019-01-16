@@ -154,7 +154,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
 #endif
       QString msg = QString("Synapse removed: %1").arg(synapseString);
       ZWidgetMessage message(
-            msg, neutube::EMessageType::INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
+            msg, neutube::EMessageType::INFORMATION);
       m_doc->notify(message);
     }
   }
@@ -732,7 +732,7 @@ void ZStackDocCommand::DvidSynapseEdit::UngroupSynapse::redo()
 
       QString msg = QString("Synapse ungrouped: %1").arg(synapseString);
       ZWidgetMessage message(
-            msg, neutube::EMessageType::INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
+            msg, neutube::EMessageType::INFORMATION);
       m_doc->notify(message);
     }
   }
