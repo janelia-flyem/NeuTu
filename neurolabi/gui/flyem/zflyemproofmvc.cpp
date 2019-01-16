@@ -2219,14 +2219,6 @@ void ZFlyEmProofMvc::customInit()
 //          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
 
 
-  /*
-  connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
-          this, SIGNAL(messageGenerated(QString,bool)));
-  connect(getDocument().get(), SIGNAL(messageGenerated(QString, bool)),
-          this, SIGNAL(messageGenerated(QString, bool)));
-          */
-
-
   ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
@@ -3091,8 +3083,7 @@ void ZFlyEmProofMvc::showBodyProfile()
           arg(blockCount).arg(box.toString().c_str());
       emit messageGenerated(
             ZWidgetMessage(
-              msg, neutube::EMessageType::INFORMATION,
-              ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
+              msg, neutube::EMessageType::INFORMATION));
     }
   }
 }
@@ -4628,7 +4619,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     emit messageGenerated(
           ZWidgetMessage("Failed to save results: The split has not been updated."
                          "Please Run full split (shift+space) first.",
-                         neutube::EMessageType::ERROR, ZWidgetMessage::TARGET_TEXT_APPENDING));
+                         neutube::EMessageType::ERROR));
     return;
   }
 

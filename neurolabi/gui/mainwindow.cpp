@@ -4503,6 +4503,16 @@ void MainWindow::on_actionImportFlyEmDatabase_triggered()
 
 void MainWindow::dump(const ZWidgetMessage &msg)
 {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_STATUS_BAR)) {
+    statusBar()->showMessage(msg.toHtmlString());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+//    report(msg.getTitle().toStdString(), msg.toHtmlString().toStdString(),
+//           msg.getType());
+  }
+#if 0
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_DIALOG:
     report(msg.getTitle().toStdString(), msg.toHtmlString().toStdString(),
@@ -4519,6 +4529,7 @@ void MainWindow::dump(const ZWidgetMessage &msg)
   default:
     break;
   }
+#endif
 }
 
 void MainWindow::recordLastOpenPath(const QString &path)

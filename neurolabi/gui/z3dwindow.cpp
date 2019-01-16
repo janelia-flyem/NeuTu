@@ -4100,6 +4100,15 @@ void Z3DWindow::uncheckSelectedTodo()
 
 void Z3DWindow::processMessage(const ZWidgetMessage &msg)
 {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    m_view->dump(msg.toPlainString());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }
+
+#if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
     m_view->dump(msg.toPlainString());
   } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
@@ -4107,6 +4116,7 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
   }/* else {
     emit messageGenerated(msg);
   }*/
+#endif
 }
 
 void Z3DWindow::setMeshOpacity(double opacity)
