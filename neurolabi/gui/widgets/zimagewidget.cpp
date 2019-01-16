@@ -745,6 +745,8 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
     KINFO << "Mouse (left) dragged in ZImageWidget";
   } else if (event->buttons() == Qt::RightButton) {
     KINFO << "Mouse (right) dragged in ZImageWidget";
+  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
+    KINFO << "Mouse (right+right) dragged in ZImageWidget";
   }
 
   if (!hasFocus() && m_hoverFocus) {

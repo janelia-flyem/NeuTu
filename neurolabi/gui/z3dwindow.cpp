@@ -24,6 +24,9 @@
 
 #include "neutubeconfig.h"
 #include "zglobal.h"
+#include "qtgui/utilities.h"
+
+
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
 #include "z3dcompositor.h"
@@ -2574,6 +2577,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     emit keyPressed(event);
     return;
   }
+
+  KINFO << QString("Key %1 pressed in Z3DWindow").
+           arg(neutu::GetKeyString(event->key(), event->modifiers()));
 
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
