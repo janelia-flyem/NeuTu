@@ -1,5 +1,7 @@
 #include "z3dcanvas.h"
 
+#include "logging/zlog.h"
+
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvaseventlistener.h"
 #include "z3dscene.h"
@@ -106,6 +108,8 @@ bool Z3DCanvas::suppressingContextMenu() const
 
 void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 {
+  KINFO << "Mouse pressed in Z3DCanvas";
+
   broadcastEvent(e, width(), height());
 
   m_interaction.processMousePressEvent(e);
@@ -113,6 +117,8 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
+  KINFO << "Mouse released in Z3DCanvas";
+
 #ifdef _DEBUG_2
   std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
 #endif
@@ -124,6 +130,14 @@ void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 
 void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 {
+  if (e->buttons() == Qt::LeftButton) {
+    KINFO << "Mouse (left) dragged in Z3DCanvas";
+  } else if (e->buttons() == Qt::RightButton) {
+    KINFO << "Mouse (right) dragged in Z3DCanvas";
+  } else if (e->buttons() == (Qt::RightButton | Qt::LeftButton)) {
+    KINFO << "Mouse (right+right) dragged in Z3DCanvas";
+  }
+
   m_interaction.processMouseMoveEvent(e);
 
   if (!m_interaction.lockingMouseMoveEvent()) {
@@ -133,11 +147,15 @@ void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 
 void Z3DCanvas::mouseDoubleClickEvent(QMouseEvent* e)
 {
+  KINFO << "Mouse double clicked in Z3DCanvas";
+
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::wheelEvent(QWheelEvent* e)
 {
+  KINFO << "Mouse scrolled in Z3DCanvas";
+
   broadcastEvent(e, width(), height());
 }
 

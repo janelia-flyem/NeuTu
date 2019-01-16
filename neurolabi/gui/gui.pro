@@ -284,6 +284,7 @@ include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
 include(logging/logging.pri)
+include(qtgui/qtgui.pri)
 
 # Input
 RESOURCES = gui.qrc

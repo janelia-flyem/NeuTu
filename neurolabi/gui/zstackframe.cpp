@@ -410,14 +410,14 @@ void ZStackFrame::updateSignalSlot(T connectAction)
 
 void ZStackFrame::connectSignalSlot()
 {
-  updateSignalSlot(neutube::ConnectFunc);
+  updateSignalSlot(neutu::ConnectFunc);
 //  UPDATE_SIGNAL_SLOT(connect);
 }
 
 
 void ZStackFrame::disconnectAll()
 {
-  updateSignalSlot(neutube::DisconnectFunc);
+  updateSignalSlot(neutu::DisconnectFunc);
 //  UPDATE_SIGNAL_SLOT(disconnect);
 }
 
@@ -425,7 +425,7 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
     if (m_doc) {
-      updateSignalSlot(neutube::DisconnectFunc);
+      updateSignalSlot(neutu::DisconnectFunc);
       m_doc->removeUser(this);
 //      UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
@@ -437,7 +437,7 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
 
 void ZStackFrame::updateDocument()
 {
-  updateSignalSlot(neutube::ConnectFunc);
+  updateSignalSlot(neutu::ConnectFunc);
 
   updateTraceConfig();
 
