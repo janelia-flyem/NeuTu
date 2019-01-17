@@ -554,10 +554,10 @@ public: /* puncta related methods */
   bool meanshiftSelectedPuncta();
   bool meanshiftAllPuncta();
   inline bool hasSelectedPuncta() {
-    return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
+    return m_objectGroup.hasSelected(ZStackObject::EType::PUNCTUM);
   }
   inline bool hasSelectedMeshes() {
-    return m_objectGroup.hasSelected(ZStackObject::TYPE_MESH);
+    return m_objectGroup.hasSelected(ZStackObject::EType::MESH);
   }
 
 public:
@@ -1103,7 +1103,7 @@ public:
 
   private:
     ZSharedPointer<ZStackDoc> m_doc;
-    QSet<ZStackObject::EType> m_excludeSet;
+    std::set<ZStackObject::EType> m_excludeSet;
     QSet<ZStackObject::ETarget> m_excludeTarget;
     QSet<ZStackObject::ETarget> m_updatedTarget;
   };
@@ -1478,7 +1478,7 @@ private:
   QMutex m_playerMutex;
   mutable QMutex m_labelFieldMutex;
 
-  QSet<ZStackObject::EType> m_unsavedSet;
+  std::set<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
 
   ZWorker *m_worker = NULL;

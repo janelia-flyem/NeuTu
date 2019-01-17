@@ -1,7 +1,7 @@
 #ifndef ZSWCRADIUSESTIMATOR_H
 #define ZSWCRADIUSESTIMATOR_H
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZSwcRadiusEstimator
 {

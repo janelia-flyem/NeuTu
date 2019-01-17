@@ -21,7 +21,7 @@
 #include "zstackfile.h"
 #include "tz_image_io.h"
 #include "zresolution.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 #include "zintpoint.h"
 
 class ZPoint;

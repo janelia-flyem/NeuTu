@@ -2,7 +2,7 @@
 
 #include <QElapsedTimer>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "logging/zlog.h"
 #include "zdvidreader.h"
 #include "zobject3dscan.h"

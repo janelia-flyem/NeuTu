@@ -5,7 +5,7 @@
 #include <QGraphicsBlurEffect>
 #include <QMouseEvent>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "logging/zlog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
@@ -459,7 +459,7 @@ void ZImageWidget::paintObject()
 #ifdef _DEBUG_2
       std::cout << obj << std::endl;
 #endif
-      if (obj->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+      if (obj->getType() == ZStackObject::EType::CROSS_HAIR) {
         ZPainter rawPainter(this);
         rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
         obj->display(rawPainter, m_paintBundle->sliceIndex(),

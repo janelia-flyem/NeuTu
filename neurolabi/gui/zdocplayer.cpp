@@ -330,7 +330,7 @@ void ZDocPlayerList::printUnsync() const
   for (QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
        iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
-    std::cout << player->getData()->className() << std::endl;
+    std::cout << player->getData()->getTypeName() << std::endl;
   }
 }
 

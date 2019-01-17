@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 #include "zjsonobject.h"
@@ -392,4 +392,4 @@ ZFlyEmBookmark* ZFlyEmBookmark::clone() const
   return bookmark;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

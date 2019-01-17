@@ -5,7 +5,7 @@
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvaseventlistener.h"
 #include "z3dscene.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
 //#include "zstackdrawable.h"
 #include "zopenglwidget.h"

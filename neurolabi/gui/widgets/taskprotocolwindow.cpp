@@ -12,9 +12,9 @@
 #include <QShortcut>
 
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"

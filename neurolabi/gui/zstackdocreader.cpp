@@ -239,7 +239,7 @@ void ZStackDocReader::addPlayer(ZStackObject *obj)
     if (obj->hasRole()) {
       ZDocPlayer *player = NULL;
       switch (obj->getType()) {
-      case ZStackObject::TYPE_OBJ3D:
+      case ZStackObject::EType::OBJ3D:
         player = new ZObject3dPlayer(obj);
         break;
       default:

@@ -2,7 +2,7 @@
 
 #include "z3dtexture.h"
 #include "z3dvolume.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DImage2DRenderer::Z3DImage2DRenderer(Z3DRendererBase& rendererBase)
   : Z3DPrimitiveRenderer(rendererBase)

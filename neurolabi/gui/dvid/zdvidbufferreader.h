@@ -9,7 +9,7 @@
 #include <QString>
 //#include <QNetworkReply>
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 #include "zsharedpointer.h"
 namespace libdvid{
 class DVIDNodeService;

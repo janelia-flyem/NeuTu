@@ -213,4 +213,4 @@ void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

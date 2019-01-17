@@ -31,7 +31,7 @@ ZCircle::ZCircle(double x, double y, double z, double r) :
 void ZCircle::_init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
-  m_type = ZStackObject::TYPE_CIRCLE;
+  m_type = ZStackObject::EType::CIRCLE;
 }
 
 void ZCircle::set(double x, double y, double z, double r)
@@ -242,4 +242,4 @@ bool ZCircle::load(const char *filePath)
   return false;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCircle)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCircle)

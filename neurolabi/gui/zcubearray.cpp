@@ -501,5 +501,5 @@ void ZCubeArray::clear()
 }
 #endif
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
 

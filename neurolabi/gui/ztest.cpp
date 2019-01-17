@@ -25298,8 +25298,8 @@ void ZTest::test(MainWindow *host)
   infoSet.add(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   infoSet.add(ZStackObject::TARGET_OBJECT_CANVAS);
   infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-  infoSet.add(ZStackObject::TYPE_3D_CUBE);
-  infoSet.add(ZStackObject::TYPE_3D_CUBE, ZStackObjectInfo::STATE_ADDED);
+  infoSet.add(ZStackObject::TYPE_CUBE);
+  infoSet.add(ZStackObject::TYPE_CUBE, ZStackObjectInfo::STATE_ADDED);
   ZSwcTree tree;
   infoSet.add(tree);
   infoSet.add(tree);
@@ -27288,7 +27288,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::cout << ZStackObject::GetTypeName(ZStackObject::TYPE_SWC) << std::endl;
+  std::cout << ZStackObject::GetTypeName(ZStackObject::EType::TYPE_SWC) << std::endl;
 #endif
 
 
@@ -29366,7 +29366,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "40c2", 7000);
@@ -29375,6 +29375,10 @@ void ZTest::test(MainWindow *host)
   ZDvidRoi roi;
   reader.readRoi("ROI_chiasm_body2", &roi);
   std::cout << "Volume: " << roi.getVolume() << std::endl;
+#endif
+
+#if 1
+  std::cout << ZStackObject::GetTypeName(ZStackObject::EType::SWC) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

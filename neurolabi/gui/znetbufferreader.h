@@ -5,7 +5,7 @@
 #include <QByteArray>
 #include <QNetworkReply>
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;

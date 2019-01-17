@@ -67,7 +67,7 @@ void ZStackObjectSelector::print() const
        iter != m_selectedSet.end(); ++iter) {
     std::cout << "  ";
     const ZStackObject *obj = *iter;
-    std::cout << obj->className() << ", " << obj->getSource() << std::endl;
+    std::cout << obj->getTypeName() << ", " << obj->getSource() << std::endl;
   }
 
   std::cout << "De-Selected:" << std::endl;
@@ -75,7 +75,7 @@ void ZStackObjectSelector::print() const
        iter != m_deselectedSet.end(); ++iter) {
     std::cout << "  ";
     const ZStackObject *obj = *iter;
-    std::cout << obj->className() << ", " << obj->getSource() << std::endl;
+    std::cout << obj->getTypeName() << ", " << obj->getSource() << std::endl;
   }
 }
 

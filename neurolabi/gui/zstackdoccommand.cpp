@@ -1921,7 +1921,7 @@ ZStackDocCommand::SwcEdit::BreakForest::BreakForest(
 
   if (m_doc != NULL) {
     QList<ZSwcTree*> treeSet =
-        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
     //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
 
     if (!treeSet.empty()) {
@@ -1952,7 +1952,7 @@ ZStackDocCommand::SwcEdit::GroupSwc::GroupSwc(
   setText(QObject::tr("Group swc"));
 
   QList<ZSwcTree*> treeSet =
-      m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+      m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
   //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
 
   if (treeSet.size() > 1) {
@@ -2035,12 +2035,12 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
 
   size_t s = typeSet.size();
 
-  if (typeSet.count(ZStackObject::TYPE_PUNCTUM) > 0) {
+  if (typeSet.count(ZStackObject::EType::TYPE_PUNCTUM) > 0) {
     doc->notifyPunctumModified();
     --s;
   }
 
-  if (typeSet.count(ZStackObject::TYPE_SWC) > 0) {
+  if (typeSet.count(ZStackObject::EType::TYPE_SWC) > 0) {
     doc->notifySwcModified();
     --s;
   }
@@ -2329,7 +2329,7 @@ void ZStackDocCommand::TubeEdit::CutSegment::redo()
       m_doc->cutLocsegChain(chainList.at(i), &m_newChainList);
     }
   }
-  m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
+  m_doc->getSelected(ZStackObject::EType::LOCSEG_CHAIN).clear();
 }
 
 void ZStackDocCommand::TubeEdit::CutSegment::undo()
@@ -2379,7 +2379,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
       m_doc->breakLocsegChain(chainList.at(i), &m_newChainList);
     }
   }
-  m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
+  m_doc->getSelected(ZStackObject::EType::LOCSEG_CHAIN).clear();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
   //m_doc->selectedChains()->clear();
@@ -2474,7 +2474,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   QList<ZLocsegChain*> chainList = m_doc->getSelectedObjectList<ZLocsegChain>(
-        ZStackObject::TYPE_LOCSEG_CHAIN);
+        ZStackObject::EType::LOCSEG_CHAIN);
   for (QList<ZLocsegChain*>::iterator iter = chainList.begin();
        iter != chainList.end(); ++iter) {
     m_doc->removeObject(*iter, false);
@@ -2665,7 +2665,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   m_punctaList =
-      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::EType::PUNCTUM);
   if (!m_punctaList.empty())
     m_punctaMoved = true;
 
@@ -2674,7 +2674,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   if (!m_swcNodeList.empty())
     m_swcMoved = true;
 
-  m_swcList = m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+  m_swcList = m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
   //m_swcList = *(m_doc->selectedSwcs());
   if (!m_swcList.empty())
     m_swcMoved = true;

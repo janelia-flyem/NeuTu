@@ -296,7 +296,7 @@ void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
     window->setYZView();
     std::cout << "Estimating body bound box ..." << std::endl;
     const TStackObjectList &objList =
-        window->getDocument()->getObjectList(ZStackObject::TYPE_SWC);
+        window->getDocument()->getObjectList(ZStackObject::EType::SWC);
 
     ZCuboid boundBox;
     for (TStackObjectList::const_iterator iter = objList.begin();
@@ -625,7 +625,7 @@ bool ZFlyEmBodySplitProject::hasBookmark() const
   if (getDocument() != NULL) {
     ZOUT(LTRACE(), 5) << "Checking bookmarks";
     return !getDocument()->getObjectList(
-          ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty();
+          ZStackObject::EType::FLYEM_BOOKMARK).isEmpty();
   }
 
   return false;
@@ -636,7 +636,7 @@ int ZFlyEmBodySplitProject::getBookmarkCount() const
   if (getDocument() != NULL) {
     ZOUT(LTRACE(), 5) << "Get bookmark count";
     return getDocument()->getObjectList(
-          ZStackObject::TYPE_FLYEM_BOOKMARK).size();
+          ZStackObject::EType::FLYEM_BOOKMARK).size();
   }
 
   return 0;
@@ -674,7 +674,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   if (doc != NULL) {
     ZOUT(LTRACE(), 5) << "Get bookmark body set";
     const TStackObjectList &objList =
-        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
@@ -2134,7 +2134,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
 
     ZOUT(LTRACE(), 5) << "Swap seed label";
     TStackObjectList objList =
-        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getDocument()->getObjectList(ZStackObject::EType::OBJECT3D_SCAN);
 
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -2541,7 +2541,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
     } else {
       ZStackObject *obj =
           frame->document()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_DVID_GRAY_SLICE,
+            ZStackObject::EType::DVID_GRAY_SLICE,
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
       if (obj != NULL) {
         obj->setVisible(false);
@@ -2573,7 +2573,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       int z = currentSlice + offset.getZ();
       ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
-              ZStackObject::TYPE_DVID_GRAY_SLICE,
+              ZStackObject::EType::DVID_GRAY_SLICE,
               ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z)));
 
       if (graySlice == NULL) {

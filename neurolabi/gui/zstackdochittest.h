@@ -2,7 +2,7 @@
 #define ZSTACKDOCHITTEST_H
 
 #include "swctreenode.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZStroke2d;
 class ZStackDoc;

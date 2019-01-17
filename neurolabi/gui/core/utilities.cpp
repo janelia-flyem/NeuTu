@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <chrono>
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 bool neutube::HasEnv(const std::string &name, const std::string &value)
 {

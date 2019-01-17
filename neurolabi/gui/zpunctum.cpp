@@ -246,4 +246,4 @@ int ZPunctum::getTypeFromSource() const
   return type;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

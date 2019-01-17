@@ -311,7 +311,7 @@ void ZFlyEmBodyMergeProject::loadGrayscaleFunc(int /*z*/, bool /*lowres*/)
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
-                << m_docReader.getObjectGroup().getObjectList(ZStackObject::TYPE_SWC).size()
+                << m_docReader.getObjectGroup().getObjectList(ZStackObject::EType::TYPE_SWC).size()
                 << std::endl;
 #endif
       emit newDocReady();
@@ -333,7 +333,7 @@ void ZFlyEmBodyMergeProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
 //    TStackObjectList objList = m_dataFrame->document()->getObjectGroup().take(
-//          ZStackObject::TYPE_OBJECT3D_SCAN);
+//          ZStackObject::EType::TYPE_OBJECT3D_SCAN);
 #ifdef _DEBUG_
 //    std::cout << objList.size() << " objects taken" << std::endl;
 #endif
@@ -393,7 +393,7 @@ void ZFlyEmBodyMergeProject::mergeBody()
   if (m_dataFrame != NULL) {
     QList<uint64_t> objLabelList;
     const QList<ZObject3dScan*> &objList = m_dataFrame->getCompleteDocument()->
-        getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getSelectedObjectList<ZObject3dScan>(ZStackObject::EType::OBJECT3D_SCAN);
     for (QList<ZObject3dScan*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZObject3dScan *obj = *iter;
@@ -1410,7 +1410,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   if (m_coarseBodyWindow != NULL) {
 //    m_bodyWindow->getDocument()->removeAllObject();
     std::vector<ZStackObject*> objList =
-        selector.getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        selector.getSelectedList(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
 
@@ -1464,7 +1464,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       }
     }
 
-    objList = selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+    objList = selector.getDeselectedList(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
 #ifdef _DEBUG_
     std::cout << "Deselected: " << objList.size() << std::endl;
 #endif
@@ -1476,7 +1476,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
         uint64_t label = sparseObject->getLabel();
         ZStackObject *obj = m_coarseBodyWindow->getDocument()->getObjectGroup().
             findFirstSameSource(
-              ZStackObject::TYPE_SWC,
+              ZStackObject::EType::TYPE_SWC,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
         if (obj != NULL) {
           m_coarseBodyWindow->getDocument()->removeObject(obj, true);
@@ -1503,7 +1503,7 @@ uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
     bodyId = m_dataFrame->getCompleteDocument()->getSelectedBodyId();
     /*
     const TStackObjectSet &objSet =
-        m_dataFrame->document()->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
+        m_dataFrame->document()->getSelected(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
     if (objSet.size() == 1) {
       const ZObject3dScan* obj =
           dynamic_cast<ZObject3dScan*>(*(objSet.begin()));

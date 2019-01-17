@@ -1,7 +1,7 @@
 #ifndef ZPOSITIONMAPPER_H
 #define ZPOSITIONMAPPER_H
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 #include "geometry/zaffineplane.h"
 

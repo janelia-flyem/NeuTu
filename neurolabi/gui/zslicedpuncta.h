@@ -18,7 +18,7 @@ public:
 
   virtual ~ZSlicedPuncta();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   void clear();

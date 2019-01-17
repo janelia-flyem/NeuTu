@@ -34,7 +34,7 @@ public:
   virtual ~ZStroke2d();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_STROKE;
+    return ZStackObject::EType::STROKE;
   }
 
   enum EOperation {
@@ -71,7 +71,7 @@ public:
   void labelGrey(Stack *stack, int label) const;
   void labelGrey(Stack *stack, int label, int ignoringValue) const;
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   inline void setWidth(double width) { m_width = width; }
   void append(double x, double y);

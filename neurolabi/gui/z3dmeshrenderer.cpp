@@ -4,7 +4,7 @@
 #include "z3dgpuinfo.h"
 #include "z3dshaderprogram.h"
 #include "z3dtexture.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zmesh.h"
 #include "neutubeconfig.h"
 

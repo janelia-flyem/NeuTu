@@ -204,4 +204,4 @@ ZPoint ZLocalRect::top()
   return pt;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalRect)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalRect)

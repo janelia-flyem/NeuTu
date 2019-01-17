@@ -1,7 +1,7 @@
 #include "utilities.h"
 
 #include "zlog.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 #include "zwidgetmessage.h"
 
 namespace neutu {

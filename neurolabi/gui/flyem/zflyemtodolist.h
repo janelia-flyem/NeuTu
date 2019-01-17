@@ -35,7 +35,7 @@ public:
   };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_TODO_LIST;
+    return ZStackObject::EType::FLYEM_TODO_LIST;
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -119,7 +119,7 @@ public:
 
   void deselect(bool recursive);
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   bool hit(double x, double y, double z);
 

@@ -15,19 +15,20 @@
 
 #include "z3dnetworkevaluator.h"
 
+#include <boost/graph/topological_sort.hpp>
+#include <algorithm>
+#include <queue>
+#include <set>
+
 #include "z3dgl.h"
 #include "z3dcanvaspainter.h"
 #include "z3dfilter.h"
 #include "z3dmeshfilter.h"
 #include "z3drendertarget.h"
 #include "z3dtexture.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zrandom.h"
 #include "zutils.h"
-#include <boost/graph/topological_sort.hpp>
-#include <algorithm>
-#include <queue>
-#include <set>
 
 //#define PROFILE3DRENDERERS
 

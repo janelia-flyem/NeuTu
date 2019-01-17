@@ -21,7 +21,7 @@
 #include "dvid/zdvidnode.h"
 #include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 /*
  * this class is a drop-in replacement for ZDvidDialog; this version lets you

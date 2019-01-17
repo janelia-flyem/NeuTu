@@ -18,7 +18,7 @@ public:
   ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner = true);
   virtual ~ZLocalNeuroseg();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   static ZLocalNeuroseg& instance();

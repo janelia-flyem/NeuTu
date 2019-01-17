@@ -3,7 +3,7 @@
 #include <boost/math/constants/constants.hpp>
 
 #include "z3dcameraparameter.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "logging/zlog.h"
 
 Z3DInteractionHandler::Z3DInteractionHandler(const QString& name, QObject* parent)

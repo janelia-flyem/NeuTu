@@ -21,7 +21,7 @@
 #include <map>
 #include "misc/zvtkutil.h"
 #include "zpoint.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 ZMesh::ZMesh(GLenum type)
 {
@@ -1842,4 +1842,4 @@ std::vector<ZPoint> ZMesh::intersectLineSeg(
 }
 
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)

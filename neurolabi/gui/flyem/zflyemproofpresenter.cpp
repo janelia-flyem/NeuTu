@@ -890,7 +890,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
     ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+    docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
                                 ZStackDocSelector::SELECT_RECURSIVE);
     docSelector.deselectAll();
 //    docSelector.setSelectOption(ZStackObject);
@@ -949,7 +949,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
     ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+    docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
                                 ZStackDocSelector::SELECT_RECURSIVE);
     docSelector.deselectAll();
 

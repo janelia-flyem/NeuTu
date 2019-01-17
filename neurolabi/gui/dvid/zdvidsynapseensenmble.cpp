@@ -43,7 +43,7 @@ void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 void ZDvidSynapseEnsemble::init()
 {
   m_startZ = 0;
-  m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
+  m_type = EType::DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = neutube::EAxis::Z;
@@ -1137,7 +1137,7 @@ std::ostream& operator<< (
   return stream;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapseEnsemble)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapseEnsemble)
 
 ///////////////////Helper Classes///////////////////
 QVector<ZDvidSynapseEnsemble::SynapseSlice>

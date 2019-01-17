@@ -1,6 +1,6 @@
 #include "z3drenderport.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "z3dgl.h"
 #include "z3dgpuinfo.h"
 #include "z3drendertarget.h"

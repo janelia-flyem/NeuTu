@@ -3,7 +3,7 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZJsonArray;
 

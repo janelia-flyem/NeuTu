@@ -8,7 +8,7 @@
 #include <vtkFloatArray.h>
 
 #include "zmesh.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
 {

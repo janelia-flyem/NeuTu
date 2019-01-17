@@ -11,7 +11,7 @@ const int ZSlicedPuncta::m_visibleRange = 5.0;
 
 ZSlicedPuncta::ZSlicedPuncta()
 {
-  m_type = ZStackObject::TYPE_SLICED_PUNCTA;
+  m_type = ZStackObject::EType::SLICED_PUNCTA;
   m_zStart = 0;
 }
 
@@ -192,6 +192,6 @@ QList<ZStackBall*> ZSlicedPuncta::getPunctaOnSlice(int z)
   return QList<ZStackBall*>();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
 
 

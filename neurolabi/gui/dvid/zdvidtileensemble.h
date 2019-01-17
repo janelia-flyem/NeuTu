@@ -27,7 +27,7 @@ public:
   ~ZDvidTileEnsemble();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
+    return ZStackObject::EType::DVID_TILE_ENSEMBLE;
   }
 
   void clear();
@@ -41,7 +41,7 @@ public:
   void setDvidTarget(const ZDvidTarget &dvidTarget);
 //  void attachView(ZStackView *view);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   int getCurrentZ() const;
 

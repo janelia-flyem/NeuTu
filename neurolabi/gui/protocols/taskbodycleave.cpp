@@ -789,7 +789,7 @@ void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
     return;
   }
 
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
   // The text for each combobox item indicates the count the of seeds set for that item's color,
@@ -963,7 +963,7 @@ void TaskBodyCleave::onHideSelected()
     return;
   }
 
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     m_hiddenIds.insert(mesh->getLabel());

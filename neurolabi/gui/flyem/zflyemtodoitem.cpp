@@ -372,4 +372,4 @@ void ZFlyEmToDoItem::setPriority(int p)
 }
 
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmToDoItem)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmToDoItem)

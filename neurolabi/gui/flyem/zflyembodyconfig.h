@@ -3,7 +3,7 @@
 
 #include <QColor>
 #include "tz_stdint.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 #include "zintcuboid.h"
 
 /*!

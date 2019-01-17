@@ -1,5 +1,5 @@
 #include "zworkthread.h"
-//#include "zqslog.h"
+//#include "logging/zqslog.h"
 #include "zworker.h"
 
 ZWorkThread::ZWorkThread(ZWorker *worker, QObject *parent) : QThread(parent)

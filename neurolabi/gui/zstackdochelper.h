@@ -2,7 +2,7 @@
 #define ZSTACKDOCHELPER_H
 
 #include"zintpoint.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZStackDoc;
 class ZIntCuboid;

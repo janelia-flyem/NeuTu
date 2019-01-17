@@ -983,4 +983,4 @@ void ZDvidSparseStack::pushAttribute()
   pushMaskColor();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

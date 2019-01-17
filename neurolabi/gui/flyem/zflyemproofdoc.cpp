@@ -1058,7 +1058,7 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
 {
-  ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
+  ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
 
   return dynamic_cast<ZDvidGraySlice*>(obj);
@@ -1299,7 +1299,7 @@ QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> objList =
-      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+      getObjectList(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE);
 
   QList<ZDvidSynapseEnsemble*> teList;
   for (QList<ZStackObject*>::iterator iter = objList.begin();
@@ -2118,7 +2118,7 @@ const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_DVID_SPARSE_STACK,
+          ZStackObject::EType::DVID_SPARSE_STACK,
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
 }
 
@@ -2452,7 +2452,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   ZOUT(LTRACE(), 5) << "Update dvid label";
-  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2468,7 +2468,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
 
 void ZFlyEmProofDoc::allowDvidLabelSliceBlinking(bool on)
 {
-  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2531,7 +2531,7 @@ int ZFlyEmProofDoc::removeDvidSparsevol(neutube::EAxis axis)
   int count = 0;
 
   TStackObjectList objList =
-      getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+      getObjectList(ZStackObject::EType::DVID_SPARSEVOL_SLICE);
 
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -3142,7 +3142,7 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 {
   ZOUT(LTRACE(), 5) << "Find bookmark";
   const TStackObjectList &objList =
-      getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(*iter);
@@ -3185,9 +3185,9 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
-//    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+//    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
 #if 1
-    TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    TStackObjectList objList = getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
@@ -3357,7 +3357,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     const TStackObjectList &objList =
-        getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     ZJsonArray jsonArray;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -3384,7 +3384,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
-  case ZStackObject::TYPE_FLYEM_BOOKMARK:
+  case ZStackObject::EType::FLYEM_BOOKMARK:
 //    m_isCustomBookmarkSaved = false;
     if (!m_loadingAssignedBookmark) {
       emit userBookmarkModified();
@@ -3472,7 +3472,7 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {
   return dynamic_cast<ZIntCuboidObj*>(
       getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_INT_CUBOID,
+        ZStackObject::EType::INT_CUBOID,
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
@@ -4341,7 +4341,7 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
 void ZFlyEmProofDoc::executeRemoveBookmarkCommand()
 {
   QList<ZFlyEmBookmark*> bookmarkList =
-      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::EType::FLYEM_BOOKMARK);
   executeRemoveBookmarkCommand(bookmarkList);
 }
 

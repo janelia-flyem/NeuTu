@@ -2,7 +2,7 @@
 #define ZSTACKDOCFACTORY_H
 
 #include "zsharedpointer.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZStackDoc;
 

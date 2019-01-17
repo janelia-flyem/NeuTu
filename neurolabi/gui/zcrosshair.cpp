@@ -123,4 +123,4 @@ void ZCrossHair::setCenter(double x, double y, double z)
   m_center.set(x, y, z);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)

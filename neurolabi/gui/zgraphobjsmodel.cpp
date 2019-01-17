@@ -94,7 +94,7 @@ void ZGraphObjsModel::updateModelData()
 
   ZOUT(LTRACE(), 5) << "Update graph model";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::GRAPH_3D)));
   setupModelData(m_rootItem);
   endResetModel();
 }
@@ -111,7 +111,7 @@ void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
   int sourceParentRow = 0;
   ZOUT(LTRACE(), 5) << "Setup graph model";
   QList<ZStackObject*> graphList =
-      m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+      m_doc->getObjectList(ZStackObject::EType::GRAPH_3D);
   int numDigit = neutube::numDigits(graphList.size()+1);
   for (int i=0; i<graphList.size(); i++) {
     data.clear();
@@ -179,7 +179,7 @@ bool ZGraphObjsModel::needCheckbox(const QModelIndex &index) const
 
 void ZGraphObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  if (infoSet.contains(ZStackObject::TYPE_3D_GRAPH)) {
+  if (infoSet.contains(ZStackObject::EType::GRAPH_3D)) {
     updateModelData();
   }
 }

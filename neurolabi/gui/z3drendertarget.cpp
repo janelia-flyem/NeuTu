@@ -4,7 +4,7 @@
 #include <QImageWriter>
 
 #include "z3dtexture.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zbenchtimer.h"
 #include "z3dgpuinfo.h"
 

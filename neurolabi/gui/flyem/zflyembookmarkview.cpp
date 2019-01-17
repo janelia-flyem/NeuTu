@@ -3,7 +3,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 #include "zflyembookmarklistmodel.h"
 #include "logging/zlog.h"

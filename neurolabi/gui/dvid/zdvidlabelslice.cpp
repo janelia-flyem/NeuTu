@@ -80,7 +80,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_sliceAxis = sliceAxis;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
 
 #define ZDVIDLABELSLICE_MT 1
