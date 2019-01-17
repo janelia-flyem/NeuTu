@@ -74,7 +74,7 @@
 #include "zsvggenerator.h"
 #include "zdendrogram.h"
 #include "zcuboid.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "flyem/zneuronnetwork.h"
 #include "zswcnetwork.h"
 #include "zstackfile.h"

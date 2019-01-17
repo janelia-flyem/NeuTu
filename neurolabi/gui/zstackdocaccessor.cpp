@@ -153,7 +153,7 @@ void ZStackDocAccessor::RemoveObject(
 
 void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
 {
-  RemoveObject(doc, ZStackObject::TYPE_SWC, deleteObject);
+  RemoveObject(doc, ZStackObject::EType::SWC, deleteObject);
 }
 
 void ZStackDocAccessor::SetObjectVisible(

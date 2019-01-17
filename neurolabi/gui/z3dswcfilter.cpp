@@ -13,7 +13,7 @@
 
 #include "tz_3dgeom.h"
 #include "zrandom.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "swctreenode.h"
 #include "tz_geometry.h"
 #include "neutubeconfig.h"

@@ -574,7 +574,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
-                << m_docReader.getObjectGroup().getObjectList(ZStackObject::TYPE_SWC).size()
+                << m_docReader.getObjectGroup().getObjectList(ZStackObject::EType::TYPE_SWC).size()
                 << std::endl;
 #endif
       emit newDocReady();

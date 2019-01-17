@@ -17,7 +17,7 @@ public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        neutube::EAxis sliceAxis) const;
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   ZImage getImage(int z) const;
   ZPoint getFinalOffset() const;

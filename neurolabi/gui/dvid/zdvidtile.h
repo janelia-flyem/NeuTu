@@ -27,7 +27,7 @@ public:
   ~ZDvidTile();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_TILE;
+    return ZStackObject::EType::DVID_TILE;
   }
 
 public:
@@ -46,7 +46,7 @@ public:
 
 //  void setTileOffset(int x, int y, int z);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void printInfo() const;
 

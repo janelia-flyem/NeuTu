@@ -11,7 +11,7 @@
 #include <QLabel>
 #include <QPushButton>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 TaskTestTask::TaskTestTask(QJsonObject json)
 {

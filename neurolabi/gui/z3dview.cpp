@@ -9,7 +9,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "z3dcanvas.h"
 #include "z3dcompositor.h"
 #include "z3dcanvaspainter.h"
@@ -1029,7 +1029,7 @@ void Z3DView::surfaceDataChanged()
 void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
                                      const QList<ZStackObject*>& deselected)
 {
-  QSet<ZStackObject::EType> typeSet;
+  std::set<ZStackObject::EType> typeSet;
   for (QList<ZStackObject*>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     ZStackObject *obj = *iter;
@@ -1042,20 +1042,20 @@ void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
     typeSet.insert(obj->getType());
   }
 
-  for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
+  for (auto iter = typeSet.begin();
        iter != typeSet.end(); ++iter) {
     ZStackObject::EType  type = *iter;
     switch (type) {
-    case ZStackObject::TYPE_SWC:
+    case ZStackObject::EType::SWC:
       m_swcFilter->invalidate();
       break;
-    case ZStackObject::TYPE_PUNCTA:
+    case ZStackObject::EType::PUNCTA:
       m_punctaFilter->invalidate();
       break;
-    case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+    case ZStackObject::EType::FLYEM_TODO_ITEM:
       m_todoFilter->invalidate();
       break;
-    case ZStackObject::TYPE_MESH:
+    case ZStackObject::EType::MESH:
       m_meshFilter->invalidate();
       break;
     default:
@@ -1099,7 +1099,7 @@ void Z3DView::updateGraphData()
   m_graphFilter->addData(
         m_doc->getPlayerList(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
 
-  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_GRAPH_3D);
   for (TStackObjectList::const_iterator iter = objList.begin(); iter != objList.end(); ++iter) {
     Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
     if (graph->isVisible()) {
@@ -1169,7 +1169,7 @@ void Z3DView::updateSurfaceData()
 {
   if (m_surfaceFilter) {
     std::vector<ZCubeArray*> all;
-    TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
+    TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_CUBE);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       all.push_back(dynamic_cast<ZCubeArray*>(*iter));

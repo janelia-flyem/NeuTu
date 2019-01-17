@@ -123,4 +123,4 @@ int ZDirectionalTemplateChain::hitTest(double x, double y, double z)
   return 0;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)

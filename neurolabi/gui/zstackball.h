@@ -6,7 +6,7 @@
 #include "include/tz_stdint.h"
 #include "zpoint.h"
 #include "zstackobject.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZIntPoint;
 
@@ -45,7 +45,7 @@ public:
   inline double z() const { return getZ(); }
   inline double radius() const { return getRadius(); }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   virtual void display(ZPainter &painter, int slice,

@@ -556,4 +556,4 @@ void ZLocalNeuroseg::generateFilterStack()
 #endif
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)

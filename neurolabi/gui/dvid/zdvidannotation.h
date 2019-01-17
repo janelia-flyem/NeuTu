@@ -36,10 +36,10 @@ public:
   enum EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_ANNOTATION;
+    return ZStackObject::EType::DVID_ANNOTATION;
   }
 
-  const std::string& className() const;
+//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
 

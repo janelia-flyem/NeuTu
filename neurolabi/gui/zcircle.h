@@ -28,7 +28,7 @@ public:
   void set(const ZPoint &center, double r);
   void set(const ZIntPoint &center, double r);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   typedef uint32_t TVisualEffect;
 

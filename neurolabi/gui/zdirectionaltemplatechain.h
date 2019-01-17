@@ -20,7 +20,7 @@ public:
     ZDirectionalTemplateChain();
     ~ZDirectionalTemplateChain();
 
-    virtual const std::string& className() const;
+//    virtual const std::string& className() const;
 
 public:
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,

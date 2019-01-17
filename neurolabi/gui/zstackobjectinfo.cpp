@@ -3,7 +3,9 @@
 
 uint qHash(const ZStackObjectInfo &info)
 {
-  return qHash(info.getTarget()) ^ qHash(info.getType()) ^ qHash(info.getRole().getRole());
+  return qHash(info.getTarget()) ^
+      qHash(neutube::EnumValue(info.getType())) ^
+      qHash(info.getRole().getRole());
 }
 
 
@@ -33,7 +35,7 @@ void ZStackObjectInfo::print() const
 std::string ZStackObjectInfo::toString() const
 {
   std::ostringstream stream;
-  stream << "Object info: " << "Type " << m_type << "; Target "
+  stream << "Object info: " << ZStackObject::GetTypeName(m_type) << "; Target "
          << m_target << "; Role " << m_role.getRole();
   return stream.str();
 }
@@ -195,9 +197,9 @@ void ZStackObjectInfoSet::add(const ZStackObjectInfo &info)
   }
 }
 
-QSet<ZStackObject::EType> ZStackObjectInfoSet::getType() const
+std::set<ZStackObject::EType> ZStackObjectInfoSet::getType() const
 {
-  QSet<ZStackObject::EType> typeSet;
+  std::set<ZStackObject::EType> typeSet;
   foreach (const ZStackObjectInfo &info, keys()) {
     typeSet.insert(info.getType());
   }

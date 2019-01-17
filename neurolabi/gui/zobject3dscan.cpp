@@ -5242,4 +5242,4 @@ void ZObject3dScan::Appender::clearCache()
   m_stripeMap.clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

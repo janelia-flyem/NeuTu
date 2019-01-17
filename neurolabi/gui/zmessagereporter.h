@@ -4,7 +4,7 @@
 #include <string>
 #include <ostream>
 
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZMessageReporter
 {

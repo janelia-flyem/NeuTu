@@ -546,7 +546,7 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 void Neu3Window::removeSliceViewGraph()
 {
   ZStackDocAccessor::RemoveObject(
-        getBodyDocument(), ZStackObject::TYPE_3D_GRAPH,
+        getBodyDocument(), ZStackObject::EType::GRAPH_3D,
         ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
 }
 

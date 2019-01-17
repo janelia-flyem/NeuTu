@@ -10,6 +10,7 @@ public:
 
   static bool IsOverSize(const ZStackObject &obj);
   static void SetOverSize(ZStackObject *obj);
+  static bool IsEmptyTree(const ZStackObject *obj);
 };
 
 #endif // ZSTACKOBJECTHELPER_H

@@ -37,7 +37,7 @@ public:
 
   void setFocusColor(const QColor &color);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 private:
   void computePlaneInersection(QPointF &lineStart, QPointF &lineEnd,

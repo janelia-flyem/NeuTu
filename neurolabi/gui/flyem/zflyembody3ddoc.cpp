@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <algorithm>
 
+#include "logging/zqslog.h"
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -293,7 +294,7 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
        iter.value().setTimeStamp(0);
      } else if (force || dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
-       if (obj->getType() == ZStackObject::TYPE_SWC) {
+       if (obj->getType() == ZStackObject::EType::SWC) {
          ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj << obj->getSource();
        }
 
@@ -681,7 +682,7 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
   std::vector<ZIntPoint> ptArray;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
-        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+        ZStackObject::EType::FLYEM_TODO_ITEM);
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
@@ -723,7 +724,7 @@ void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
   std::vector<ZIntPoint> ptArray;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
-        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+        ZStackObject::EType::FLYEM_TODO_ITEM);
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
@@ -778,7 +779,7 @@ void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &select,
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(
-        ZStackObject::TYPE_FLYEM_TODO_ITEM).empty();
+        ZStackObject::EType::FLYEM_TODO_ITEM).empty();
 }
 
 void ZFlyEmBody3dDoc::deleteSplitSeed()
@@ -857,7 +858,7 @@ ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
   ZFlyEmToDoItem *item = NULL;
 
   const TStackObjectSet &objSet = getObjectGroup().getSelectedSet(
-        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+        ZStackObject::EType::FLYEM_TODO_ITEM);
   if (!objSet.empty()) {
     item = const_cast<ZFlyEmToDoItem*>(
           dynamic_cast<const ZFlyEmToDoItem*>(*(objSet.begin())));
@@ -1019,10 +1020,10 @@ int ZFlyEmBody3dDoc::getCoarseBodyZoom() const
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::EBodyType::MESH) {
-    return ZStackObject::TYPE_MESH;
+    return ZStackObject::EType::MESH;
   }
 
-  return ZStackObject::TYPE_SWC;
+  return ZStackObject::EType::SWC;
 }
 
 const ZFlyEmBodyManager& ZFlyEmBody3dDoc::getBodyManager() const
@@ -1039,7 +1040,7 @@ uint64_t ZFlyEmBody3dDoc::getSelectedSingleNormalBodyId() const
 {
   uint64_t bodyId = 0;
   auto selectedObjectList = getSelectedObjectList<ZMesh>(
-        ZStackObject::TYPE_MESH);
+        ZStackObject::EType::MESH);
   if (selectedObjectList.size() == 1) {
     ZMesh *mesh = selectedObjectList[0];
     if (!isSupervoxel(mesh)) {
@@ -1213,7 +1214,7 @@ void ZFlyEmBody3dDoc::activateSplit(
 
 void ZFlyEmBody3dDoc::activateSplitForSelected()
 {
-  TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
+  TStackObjectSet objSet = getSelected(ZStackObject::EType::MESH);
   if (objSet.size() == 1) {
     ZStackObject *obj = *(objSet.begin());
     /*
@@ -1761,7 +1762,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
 
 //  bool loaded =
 //      !(getObjectGroup().findSameClass(
-//          ZStackObject::TYPE_SWC,
+//          ZStackObject::EType::TYPE_SWC,
 //          ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
 //        isEmpty());
 
@@ -1837,7 +1838,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
       if (!loaded) {
         loaded =
           !(getObjectGroup().findSameClass(
-              ZStackObject::TYPE_MESH,
+              ZStackObject::EType::TYPE_MESH,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
             isEmpty());
       }
@@ -1911,9 +1912,9 @@ bool ZFlyEmBody3dDoc::isSupervoxel(uint64_t bodyId)
 
 uint64_t ZFlyEmBody3dDoc::getBodyId(const ZStackObject *obj) const
 {
-  if (obj->getType() == ZStackObject::TYPE_MESH ||
-      obj->getType() == ZStackObject::TYPE_SWC ||
-      obj->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
+  if (obj->getType() == ZStackObject::EType::MESH ||
+      obj->getType() == ZStackObject::EType::SWC ||
+      obj->getType() == ZStackObject::EType::OBJECT3D_SCAN) {
     return obj->getLabel();
   }
 
@@ -1977,7 +1978,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
 
 //    bool loaded =
 //        !(getObjectGroup().findSameClass(
-//            ZStackObject::TYPE_SWC,
+//            ZStackObject::EType::TYPE_SWC,
 //            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
 //          isEmpty());
 
@@ -2090,7 +2091,7 @@ bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
   return getBodyManager().isSynapseLoaded(bodyId);
   /*
   return getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_PUNCTUM,
+        ZStackObject::EType::TYPE_PUNCTUM,
         ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) != NULL;
         */
 }
@@ -2212,7 +2213,7 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
     if (getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_FLYEM_TODO_ITEM, source) == NULL) {
+          ZStackObject::EType::FLYEM_TODO_ITEM, source) == NULL) {
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
 
@@ -2603,7 +2604,7 @@ void ZFlyEmBody3dDoc::executeRemoveTodoCommand()
     ZFlyEmBody3dDocCommand::RemoveTodo *command =
         new ZFlyEmBody3dDocCommand::RemoveTodo(this);
     const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
-          ZStackObject::TYPE_FLYEM_TODO_ITEM);
+          ZStackObject::EType::FLYEM_TODO_ITEM);
     for (TStackObjectSet::const_iterator iter = objSet.begin();
          iter != objSet.end(); ++iter) {
       const ZFlyEmToDoItem *item = dynamic_cast<const ZFlyEmToDoItem*>(*iter);
@@ -2760,7 +2761,7 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
     uint64_t bodyId, int zoom, flyem::EBodyType bodyType)
 {
   ZStackObject *obj =
-      retriveBodyObject(bodyId, zoom, bodyType, ZStackObject::TYPE_SWC);
+      retriveBodyObject(bodyId, zoom, bodyType, ZStackObject::EType::SWC);
 
   ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
 
@@ -3200,7 +3201,7 @@ std::vector<ZMesh*>  ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom)
       std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
             bodyId, zoom, flyem::BODY_MESH);
       mesh = dynamic_cast<ZMesh*>(
-            takeObjectFromCache(ZStackObject::TYPE_MESH, source));
+            takeObjectFromCache(ZStackObject::EType::TYPE_MESH, source));
     }
   #endif
     if (mesh) {
@@ -3227,7 +3228,7 @@ ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
     if (zoom > getMaxDsLevel()) {
       //For zooming level beyond the range, ignore it if the mesh at any level exists.
       loaded = !(getObjectGroup().findSameClass(
-                   ZStackObject::TYPE_MESH,
+                   ZStackObject::EType::TYPE_MESH,
                    ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
                  isEmpty());
     }
@@ -3314,7 +3315,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     if (zoom > getMaxDsLevel()) {
       //For zooming level beyond the range, ignore it if the mesh at any level exists.
       loaded = !(getObjectGroup().findSameClass(
-                   ZStackObject::TYPE_MESH,
+                   ZStackObject::EType::MESH,
                    ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
                  isEmpty());
     }
@@ -3475,7 +3476,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
 
       if (!config.isHybrid()) {
         ZStackObject *obj = takeObjectFromBuffer(
-              ZStackObject::TYPE_MESH,
+              ZStackObject::EType::MESH,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
                 config.getBodyId(), 0, flyem::EBodyType::MESH));
         mesh = dynamic_cast<ZMesh*>(obj);
@@ -3571,7 +3572,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
 
     if (!config.isHybrid()) {
       ZStackObject *obj = takeObjectFromBuffer(
-            ZStackObject::TYPE_MESH,
+            ZStackObject::EType::TYPE_MESH,
             ZStackObjectSourceFactory::MakeFlyEmBodySource(id, 0, flyem::BODY_MESH));
       mesh = dynamic_cast<ZMesh*>(obj);
     }
@@ -4021,7 +4022,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     ZStackDocAccessor::AddObjectUnique(this, mainMesh);
     if (remainderId  != oldId) {
       ZStackDocAccessor::RemoveObject(
-            this, ZStackObject::TYPE_MESH,
+            this, ZStackObject::EType::MESH,
             ZStackObjectSourceFactory::MakeFlyEmBodySource(
               oldId, 0, flyem::EBodyType::MESH), true);
       deregisterBody(oldId);

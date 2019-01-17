@@ -8,7 +8,7 @@
 // or renderer behavior dynamicly.
 
 //#include "QsLog.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 #include <QObject>
 #include <QStringList>

@@ -5,7 +5,7 @@
 #include <QClipboard>
 #include <QApplication>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zintpoint.h"
 #include "zpoint.h"
 #include "zstring.h"

@@ -3221,11 +3221,13 @@ set<int> ZSwcTree::typeSet()
   return allTypes;
 }
 
+/*
 const std::string& ZSwcTree::className() const {
   static const std::string name = "ZSwcTree";
 
   return name;
 }
+*/
 
 vector<Swc_Tree_Node*> ZSwcTree::toSwcTreeNodeArray(bool includingVirtual)
 {

@@ -1,6 +1,6 @@
 #include "taskprotocoltask.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "protocoltaskconfig.h"
 
 /*

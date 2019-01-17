@@ -253,7 +253,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
     TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       QString groupName("Bookmarks");
       config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
@@ -417,7 +417,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Bookmark actions */
     QList<ZActionFactory::EAction> bookmarkActionList;
     TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getSelected(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
       bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);

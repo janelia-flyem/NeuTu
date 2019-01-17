@@ -34,7 +34,7 @@ ZDvidTile::~ZDvidTile()
   clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
 
 void ZDvidTile::clear()
 {

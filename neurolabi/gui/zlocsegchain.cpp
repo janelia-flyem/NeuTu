@@ -788,4 +788,4 @@ void ZLocsegChain::tailPosition(double pos[]) const
     m_bufferChain[m_bufferChain.size()-1].bottomPosition(pos);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)

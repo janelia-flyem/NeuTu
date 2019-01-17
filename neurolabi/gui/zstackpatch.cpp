@@ -106,4 +106,4 @@ void ZStackPatch::setFinalOffset(double dx, double dy)
   m_offset.set(dx, dy, m_offset.z());
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)

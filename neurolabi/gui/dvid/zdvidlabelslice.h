@@ -35,7 +35,7 @@ public:
   ~ZDvidLabelSlice();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_LABEL_SLICE;
+    return ZStackObject::EType::DVID_LABEL_SLICE;
   }
 
   void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
@@ -55,7 +55,7 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 

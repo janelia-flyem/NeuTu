@@ -2471,7 +2471,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
 
     ZOUT(LTRACE(), 5) << "Toggle highlight";
     TStackObjectList objList =
-        doc->getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+        doc->getObjectList(ZStackObject::EType::DVID_SPARSEVOL_SLICE);
 
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -2637,7 +2637,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector)
 {
   const std::vector<ZStackObject*>& objList =
-      selector.getSelectedList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      selector.getSelectedList(ZStackObject::EType::FLYEM_BOOKMARK);
   if (!objList.empty()) {
     const ZStackObject *obj = objList.back();
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
@@ -4123,7 +4123,7 @@ void ZFlyEmProofMvc::exitSplit()
     getDocument()->removeObject(ZStackObjectRole::ROLE_ROI);
 //    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
-    getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
+    getDocument()->setVisible(ZStackObject::EType::DVID_SPARSE_STACK, false);
 
     checkInBodyWithMessage(
           m_splitProject.getBodyId(), getCompletePresenter()->getSplitMode());
@@ -4133,7 +4133,7 @@ void ZFlyEmProofMvc::exitSplit()
 
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_DVID_SPARSE_STACK,
+            ZStackObject::EType::DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
       body->cancelFillValueSync();
@@ -4891,7 +4891,7 @@ void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_BOOKMARK, visible);
+  getCompleteDocument()->setVisible(ZStackObject::EType::FLYEM_BOOKMARK, visible);
 //  m_splitProject.setBookmarkVisible(visible);
 //  m_mergeProject.setBookmarkVisible(visible);
 }
@@ -4944,13 +4944,13 @@ void ZFlyEmProofMvc::showData(bool visible)
   for (QList<ZStackObject*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
-        obj->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE ||
-        obj->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST ||
-        obj->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+    if (obj->getType() == ZStackObject::EType::DVID_ANNOTATION ||
+        obj->getType() == ZStackObject::EType::DVID_SYNAPE_ENSEMBLE ||
+        obj->getType() == ZStackObject::EType::FLYEM_TODO_LIST ||
+        obj->getType() == ZStackObject::EType::FLYEM_BOOKMARK) {
       obj->setVisible(visible);
       getDocument()->processObjectModified(obj);
-    } else if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
+    } else if (obj->getType() == ZStackObject::EType::DVID_LABEL_SLICE) {
       if (visible) {
         obj->setVisible(m_showSegmentation);
       } else {
@@ -4970,7 +4970,7 @@ void ZFlyEmProofMvc::toggleData()
 
 void ZFlyEmProofMvc::showTodo(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);
+  getCompleteDocument()->setVisible(ZStackObject::EType::FLYEM_TODO_LIST, visible);
 }
 
 ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
@@ -5429,7 +5429,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
 {
   TStackObjectSet &selected = getCompleteDocument()->getSelected(
-        ZStackObject::TYPE_FLYEM_BOOKMARK);
+        ZStackObject::EType::FLYEM_BOOKMARK);
   bool userBookmarkUpdated = false;
   bool assignedBookmarkUpdated = false;
   for (TStackObjectSet::iterator iter = selected.begin();
@@ -5600,7 +5600,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
   model->clear();
   ZOUT(LTRACE(), 5) << "Update assgined bookmark table";
   const TStackObjectList &objList =
-      getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      getDocument()->getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);

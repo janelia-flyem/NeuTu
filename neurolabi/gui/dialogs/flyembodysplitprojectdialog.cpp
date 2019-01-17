@@ -518,7 +518,7 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
       //      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
       ZOUT(LTRACE(), 5) << "Update bookmark table";
       const TStackObjectList &objList = m_project.getDocument()->
-          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+          getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);

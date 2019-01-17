@@ -7,7 +7,7 @@
 
 ZPuncta::ZPuncta()
 {
-  m_type = ZStackObject::TYPE_PUNCTA;
+  m_type = ZStackObject::EType::PUNCTA;
   m_isSorted = false;
 }
 
@@ -172,4 +172,4 @@ void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPuncta)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPuncta)

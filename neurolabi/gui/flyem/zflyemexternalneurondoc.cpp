@@ -18,7 +18,7 @@ void ZFlyEmExternalNeuronDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
   removeAllObject(true);
 
   TStackObjectList objList = m_dataDoc->getObjectGroup().findSameClass(
-        ZStackObject::TYPE_SWC,
+        ZStackObject::EType::SWC,
         ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
 
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();

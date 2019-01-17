@@ -687,4 +687,4 @@ ZJsonObject Z3DGraph::toJsonObject() const
   return obj;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

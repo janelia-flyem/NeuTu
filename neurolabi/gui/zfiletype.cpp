@@ -83,7 +83,7 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
   } else if (str.endsWith(".zss", ZString::CASE_INSENSITIVE)) {
     return FILE_SPARSE_STACK;
   } else if (str.endsWith(".g3d", ZString::CASE_INSENSITIVE)) {
-    return FILE_3D_GRAPH;
+    return FILE_GRAPH_3D;
   }
 #if _QT_GUI_USED_
   else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {
@@ -172,7 +172,7 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == FILE_OBJECT_SCAN_ARRAY) ||
       (type == FILE_SPARSE_STACK) ||
       (type == FILE_MESH) ||
-      (type == FILE_3D_GRAPH);
+      (type == FILE_GRAPH_3D);
 }
 
 bool ZFileType::isObjectFile(const std::string &filePath)

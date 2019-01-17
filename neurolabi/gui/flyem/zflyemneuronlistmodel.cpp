@@ -6,7 +6,7 @@
 #include "zswcobjsmodel.h"
 //#include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"

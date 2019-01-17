@@ -1016,4 +1016,4 @@ ZIntPoint ZObject3d::getCentralVoxel() const
   return ZIntPoint(center[0], center[1], center[2]);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

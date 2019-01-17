@@ -1494,7 +1494,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   if (op.getHitObject() != NULL) {
-    if (op.getHitObject()->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+    if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
       op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
     }
   }
@@ -1997,7 +1997,7 @@ void ZStackPresenter::setObjectVisible(bool v)
     m_showObject = v;
     if (v) {
       ZStackDoc::ActiveViewObjectUpdater updater(getSharedBuddyDocument());
-      updater.exclude(ZStackObject::TYPE_DVID_TILE_ENSEMBLE);
+      updater.exclude(ZStackObject::EType::DVID_TILE_ENSEMBLE);
       updater.update(buddyView()->getViewParameter(neutube::ECoordinateSystem::STACK));
     }
 
@@ -2267,7 +2267,7 @@ void ZStackPresenter::deleteSelected()
 /*
 void ZStackPresenter::deleteAllPuncta()
 {
-  buddyDocument()->deleteObject(ZStackObject::TYPE_PUNCTUM);
+  buddyDocument()->deleteObject(ZStackObject::EType::TYPE_PUNCTUM);
   updateView();
 }
 */
@@ -2910,7 +2910,7 @@ void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 void ZStackPresenter::acceptRectRoi(bool appending)
 {
   ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_RECT2D,
+        ZStackObject::EType::RECT2D,
         ZStackObjectSourceFactory::MakeRectRoiSource());
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect != NULL) {
@@ -3367,12 +3367,12 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
 //    buddyDocument()->deselectAllObject(false);
-//    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
+//    buddyDocument()->deselectAllObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     if (op.getHitObject<ZStackObject>() != NULL) {
       ZStackDocSelector docSelector(getSharedBuddyDocument());
-      docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+      docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
                                   ZStackDocSelector::SELECT_RECURSIVE);
-      docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
                                   ZStackDocSelector::SELECT_RECURSIVE);
       docSelector.deselectAll();
 
@@ -3598,7 +3598,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
 //    buddyDocument()->removeObject(rect->getSource(), false);
 
     ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_RECT2D,
+          ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource());
     ZRect2d *oldRect = dynamic_cast<ZRect2d*>(obj);
     if (oldRect != NULL) {
@@ -3613,7 +3613,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_RECT_ROI_UPDATE:
   {
     ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_RECT2D,
+          ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource());
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
@@ -3807,7 +3807,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
-    if (!buddyDocument()->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty()) {
+    if (!buddyDocument()->getSelected(ZStackObject::EType::FLYEM_BOOKMARK).isEmpty()) {
       op.setOperation(ZStackOperator::OP_BOOKMARK_DELETE);
     } else {
       buddyDocument()->executeRemoveSelectedObjectCommand();

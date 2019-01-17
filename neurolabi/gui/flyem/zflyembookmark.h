@@ -27,7 +27,7 @@ public:
   */
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+    return ZStackObject::EType::FLYEM_BOOKMARK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -90,7 +90,7 @@ public:
 
   void setCustom(bool state);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void addTag(const char* tag);
   void addTag(const std::string &tag);

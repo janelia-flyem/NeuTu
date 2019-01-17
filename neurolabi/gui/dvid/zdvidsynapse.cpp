@@ -2,7 +2,7 @@
 #include <QtCore>
 #include <QPen>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -585,6 +585,6 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 
 

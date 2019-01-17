@@ -1,6 +1,6 @@
 #include "z3dboundedfilter.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zintcuboid.h"
 #include <boost/math/constants/constants.hpp>
 

@@ -5,7 +5,7 @@
 #endif
 
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zslider.h"
 
 #define USE_TOOL_BUTTON 1

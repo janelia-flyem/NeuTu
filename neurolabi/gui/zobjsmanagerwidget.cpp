@@ -37,19 +37,19 @@ ZObjsManagerWidget::~ZObjsManagerWidget()
 ZSwcObjsModel* ZObjsManagerWidget::getSwcObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZSwcObjsModel>(
-        ZStackObject::TYPE_SWC);
+        ZStackObject::EType::SWC);
 }
 
 ZPunctaObjsModel* ZObjsManagerWidget::getPunctaObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZPunctaObjsModel>(
-        ZStackObject::TYPE_PUNCTA);
+        ZStackObject::EType::PUNCTA);
 }
 
 ZMeshObjsModel* ZObjsManagerWidget::getMeshObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZMeshObjsModel>(
-        ZStackObject::TYPE_MESH);
+        ZStackObject::EType::MESH);
 }
 
 ZGraphObjsModel* ZObjsManagerWidget::getGraphObjsModel()
@@ -445,21 +445,21 @@ void ZObjsManagerWidget::createWidget()
   if (m_doc->hasSelectedPuncta()) {
     //std::set<ZPunctum*> *selectedPuncta = m_doc->selectedPuncta();
     QList<ZPunctum*> selected =
-        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::EType::PUNCTUM);
     QList<ZPunctum*> deselected;
     //std::copy(selectedPuncta->begin(), selectedPuncta->end(), std::back_inserter(selected));
     punctaSelectionChanged(selected, deselected);
   }
   if (m_doc->hasSelectedMeshes()) {
     QList<ZMesh*> selected =
-        m_doc->getSelectedObjectList<ZMesh>(ZStackObject::TYPE_PUNCTUM);
+        m_doc->getSelectedObjectList<ZMesh>(ZStackObject::EType::PUNCTUM);
     QList<ZMesh*> deselected;
     meshSelectionChanged(selected, deselected);
   }
   if (!m_doc->hasSelectedSwc()) {
     //std::set<ZSwcTree*> *selectedSwcs = m_doc->selectedSwcs();
     QList<ZSwcTree*> selected =
-        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
     QList<ZSwcTree*> deselected;
     //std::copy(selectedSwcs->begin(), selectedSwcs->end(), std::back_inserter(selected));
     swcSelectionChanged(selected, deselected);

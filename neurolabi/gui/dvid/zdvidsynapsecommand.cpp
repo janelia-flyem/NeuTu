@@ -1,6 +1,6 @@
 #include "zdvidsynapsecommand.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zintpoint.h"
 #include "zdvidsynapse.h"
 #include "zjsonobject.h"

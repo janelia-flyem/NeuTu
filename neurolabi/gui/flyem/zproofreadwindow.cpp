@@ -16,7 +16,7 @@
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 
-//#include "zqslog.h"
+//#include "logging/zqslog.h"
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"

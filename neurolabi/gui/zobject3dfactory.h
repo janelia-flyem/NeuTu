@@ -5,7 +5,7 @@
 #include <map>
 
 #include "tz_cdefs.h"
-#include "neutube_def.h"
+#include "core/neutube_def.h"
 
 class ZStack;
 class ZObject3d;

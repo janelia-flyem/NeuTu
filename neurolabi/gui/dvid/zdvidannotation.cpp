@@ -974,7 +974,7 @@ ZCuboid ZDvidAnnotation::getBoundBox() const
   return box;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
 
 ///////////////
 ZJsonObject ZDvidAnnotation::Relation::toJsonObject() const

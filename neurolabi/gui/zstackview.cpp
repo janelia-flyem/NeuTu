@@ -2153,7 +2153,7 @@ void ZStackView::paintObjectBuffer(
       for (int i = 0; i < visibleObject.size(); ++i) {
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
-          ZOUT(LTRACE(), 5) << obj->className();
+          ZOUT(LTRACE(), 5) << obj->getTypeName();
 
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
@@ -3043,7 +3043,7 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData(
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
         buddyPresenter()->interactiveContext().exploreMode() ==
         ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
-      updater.exclude(ZStackObject::TYPE_DVID_LABEL_SLICE);
+      updater.exclude(ZStackObject::EType::DVID_LABEL_SLICE);
     }
   } else {
     updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);
@@ -3064,7 +3064,7 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData()
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
         buddyPresenter()->interactiveContext().exploreMode() ==
         ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
-      updater.exclude(ZStackObject::TYPE_DVID_LABEL_SLICE);
+      updater.exclude(ZStackObject::EType::DVID_LABEL_SLICE);
     }
   } else {
     updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);

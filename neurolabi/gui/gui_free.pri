@@ -222,7 +222,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zselector.h \
    $${PWD}/zobject3dstripe.h \
    $${PWD}/jneurontracer.h \
-   $${PWD}/neutube_def.h \
+   $${PWD}/core/neutube_def.h \
    $${PWD}/flyem/zflyembodyannotationbundle.h \
    $${PWD}/zswcfactory.h \
    $${PWD}/swc/zswcradiusestimator.h \
@@ -459,7 +459,7 @@ SOURCES += $${PWD}/zstack.cxx \
     $$PWD/geometry/zplane.cpp \
     $$PWD/geometry/zaffineplane.cpp \
     $$PWD/geometry/zaffinerect.cpp \
-    $$PWD/neutube_def.cpp \
+    $$PWD/core/neutube_def.cpp \
     $$PWD/core/memorystream.cpp \
     $$PWD/flyem/zflyembodystatus.cpp \
     $$PWD/core/userinfo.cpp

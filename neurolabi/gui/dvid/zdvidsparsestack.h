@@ -19,13 +19,13 @@ public:
   ~ZDvidSparseStack();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+    return ZStackObject::EType::DVID_SPARSE_STACK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   ZStack *getSlice(int z) const;
 

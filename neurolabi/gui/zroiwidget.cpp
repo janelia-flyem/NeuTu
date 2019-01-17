@@ -347,7 +347,7 @@ void ZROIWidget::updateROIs()
 #endif
 
       ZStackObject *obj = m_window->getDocument()->getObject(
-            ZStackObject::TYPE_MESH, m_roiSourceList[i]);
+            ZStackObject::EType::MESH, m_roiSourceList[i]);
       ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
       if(it->checkState()==Qt::Checked) { //visible meshes

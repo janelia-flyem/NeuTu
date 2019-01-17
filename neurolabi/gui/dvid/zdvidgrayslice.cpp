@@ -33,7 +33,7 @@ ZDvidGraySlice::~ZDvidGraySlice()
   clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 
 void ZDvidGraySlice::clear()
 { 

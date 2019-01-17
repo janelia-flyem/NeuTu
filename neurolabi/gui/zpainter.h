@@ -3,7 +3,7 @@
 
 #include <vector>
 
-//#include "neutube_def.h"
+//#include "core/neutube_def.h"
 #include "zqtheader.h"
 
 #ifdef _QT_GUI_USED_

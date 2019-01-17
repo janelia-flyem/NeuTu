@@ -12,7 +12,7 @@ public:
   ZPuncta();
   virtual ~ZPuncta();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 
 public:

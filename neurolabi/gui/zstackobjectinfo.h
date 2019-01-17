@@ -2,7 +2,7 @@
 #define ZSTACKOBJECTINFO_H
 
 #include <QHash>
-
+#include <set>
 #include "zstackobject.h"
 
 class ZStackObject;
@@ -57,7 +57,7 @@ public:
   std::string toString() const;
 
 private:
-  ZStackObject::EType m_type = ZStackObject::TYPE_UNIDENTIFIED;
+  ZStackObject::EType m_type = ZStackObject::EType::UNIDENTIFIED;
   ZStackObject::ETarget m_target = ZStackObject::TARGET_NULL;
   ZStackObjectRole m_role;
 };
@@ -74,7 +74,7 @@ public:
   bool contains(ZStackObjectRole::TRole role) const;
   bool contains(const ZStackObjectInfo &info) const;
 
-  QSet<ZStackObject::EType> getType() const;
+  std::set<ZStackObject::EType> getType() const;
   QSet<ZStackObject::ETarget> getTarget() const;
 
   /*!

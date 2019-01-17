@@ -591,4 +591,4 @@ bool ZDvidTileEnsemble::isEmpty() const
   return m_tileGroup.empty();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)

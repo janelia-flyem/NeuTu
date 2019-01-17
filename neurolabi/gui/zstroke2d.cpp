@@ -59,7 +59,7 @@ ZStroke2d::~ZStroke2d()
             << getSource();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
 
 void ZStroke2d::save(const char * /*filePath*/)
 {

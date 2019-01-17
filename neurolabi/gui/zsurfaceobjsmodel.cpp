@@ -95,7 +95,7 @@ void ZSurfaceObjsModel::updateModelData()
 
   ZOUT(LTRACE(), 5) << "Update surface object";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::CUBE)));
   setupModelData(m_rootItem);
   endResetModel();
 }
@@ -112,7 +112,7 @@ void ZSurfaceObjsModel::setupModelData(ZObjsItem *parent)
   int sourceParentRow = 0;
   ZOUT(LTRACE(), 5) << "Setup surface model";
   QList<ZStackObject*> surfaceList =
-      m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
+      m_doc->getObjectList(ZStackObject::EType::CUBE);
   int numDigit = neutube::numDigits(surfaceList.size()+1);
   for (int i=0; i<surfaceList.size(); i++) {
     data.clear();

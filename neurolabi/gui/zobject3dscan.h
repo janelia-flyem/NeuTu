@@ -57,7 +57,7 @@ public:
   ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_OBJECT3D_SCAN;
+    return ZStackObject::EType::OBJECT3D_SCAN;
   }
 
   /*!
@@ -460,7 +460,7 @@ public:
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
       neutube::EAxis sliceAxis) const;
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void dilate();
   void dilatePlane();
