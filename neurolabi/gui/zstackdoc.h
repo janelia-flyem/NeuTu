@@ -138,8 +138,8 @@ public:
   };
 #endif
 
-  enum EObjectModifiedMode {
-    OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
+  enum class EObjectModifiedMode {
+    SLIENT, PROMPT, CACHE
   };
 
 public: //attributes
@@ -678,6 +678,9 @@ public:
 
   void selectHitSwcTreeNodeConnection(ZSwcTree *tree);
   void selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree);
+
+  template <template<class...> class Container, class T, class A>
+  void setObjectSelected(const Container<T*, A> &objList, bool select);
 
   // (de)select objects and emit signals for 3D view and 2D view to sync
   void setPunctumSelected(ZPunctum* punctum, bool select);
@@ -1495,13 +1498,32 @@ protected:
 template <typename InputIterator>
 void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (InputIterator iter = first; iter != last; ++iter) {
     ZStackObject *obj = *iter;
     addObjectFast(obj);
   }
   endObjectModifiedMode();
   processObjectModified();
+}
+
+template <template<class...> class Container, class T, class A>
+void ZStackDoc::setObjectSelected(const Container<T*, A> &objList, bool select)
+{
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
 }
 
 template <class InputIterator>

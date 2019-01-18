@@ -368,7 +368,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
   if (doc != NULL && getDocument() != NULL) {
     ZOUT(LINFO(), 3) << "Loading split results";
 
-//    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
     ZOUT(LINFO(), 3) << "Removing all SWCs";
 //    doc->removeAllSwcTree();
@@ -2465,7 +2465,7 @@ void ZFlyEmBodySplitProject::removeAllSideSeed()
     }
   }
 
-  getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
        iter != removeSet.end(); ++iter) {
     getDocument()->removeObject(*iter);
@@ -2686,14 +2686,14 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {
   return ZDvidData::GetName(
-        ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
         getDvidTarget().getBodyLabelName());
 }
 
 std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_SPLIT_LABEL,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::SPLIT_LABEL,
+                            ZDvidData::ERole::BODY_LABEL,
                             getDvidTarget().getBodyLabelName());
 }
 
@@ -2846,7 +2846,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     }
 
     std::string splitStatusName =  ZDvidData::GetName(
-          ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+          ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
       message.appendMessage(("Incomplete split database: data \"" + splitStatusName +

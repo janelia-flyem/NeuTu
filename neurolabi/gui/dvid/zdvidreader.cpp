@@ -260,9 +260,9 @@ void ZDvidReader::updateSegmentationData()
   }
 
   if (typeName == "labelarray") {
-    getDvidTarget().setSegmentationType(ZDvidData::TYPE_LABELARRAY);
+    getDvidTarget().setSegmentationType(ZDvidData::EType::LABELARRAY);
   } else if (typeName == "labelmap") {
-    getDvidTarget().setSegmentationType(ZDvidData::TYPE_LABELMAP);
+    getDvidTarget().setSegmentationType(ZDvidData::EType::LABELMAP);
   }
 
   if (getDvidTarget().getBodyLabelName().empty()) {
@@ -2453,8 +2453,8 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
 {
   QStringList annotationList = readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                           ZDvidData::ERole::BODY_LABEL,
                            getDvidTarget().getBodyLabelName()).c_str());
 
   std::set<uint64_t> bodySet;
@@ -2779,7 +2779,7 @@ ZClosedCurve* ZDvidReader::readRoiCurve(
 ZJsonObject ZDvidReader::readContrastProtocal() const
 {
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName<QString>(ZDvidData::ROLE_NEUTU_CONFIG), "contrast");
+        ZDvidData::GetName<QString>(ZDvidData::ERole::NEUTU_CONFIG), "contrast");
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
@@ -2792,7 +2792,7 @@ ZJsonObject ZDvidReader::readContrastProtocal() const
 ZJsonObject ZDvidReader::readBodyStatusV2() const
 {
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName<QString>(ZDvidData::ROLE_NEUTU_CONFIG),
+        ZDvidData::GetName<QString>(ZDvidData::ERole::NEUTU_CONFIG),
         "body_status_v2");
 
   ZJsonObject config;
@@ -2963,7 +2963,7 @@ ZJsonObject ZDvidReader::readSkeletonConfig() const
   ZJsonObject config;
 
   std::string skeletonName = ZDvidData::GetName(
-        ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
         getDvidTarget().getBodyLabelName());
 
   if (!skeletonName.empty()) {
@@ -4144,8 +4144,8 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
+                           ZDvidData::ERole::BODY_LABEL,
                            m_dvidTarget.getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {
@@ -4289,7 +4289,7 @@ uint64_t ZDvidReader::readMaxBodyId()
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName<QString>(ZDvidData::ROLE_MAX_BODY_ID),
+        ZDvidData::GetName<QString>(ZDvidData::ERole::MAX_BODY_ID),
         m_dvidTarget.getBodyLabelName().c_str());
   if (!byteArray.isEmpty()) {
     obj.decode(byteArray.constData());
@@ -5190,7 +5190,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
   if (!synapseArray.empty()) {
     if (synapseArray.size() > 1) {
       LWARN() << "Duplicated synapses at" << "(" << x << "" << y << "" << z << ")";
-      synapseArray[0].setStatus(ZDvidAnnotation::STATUS_DUPLICATED);
+      synapseArray[0].setStatus(ZDvidAnnotation::EStatus::STATUS_DUPLICATED);
     }
     return synapseArray[0];
   }
@@ -5454,7 +5454,7 @@ ZJsonObject ZDvidReader::readServiceTask(
 std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
 {
   std::map<std::string, ZJsonObject> taskMap;
-  std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY);
+  std::string dataName = ZDvidData::GetName(ZDvidData::ERole::SPLIT_TASK_KEY);
   QStringList keyList = readKeys(dataName.c_str(), "task__0", "task__z");
   foreach (const QString &key, keyList) {
     ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
@@ -5547,7 +5547,7 @@ ZJsonObject ZDvidReader::readTestTask(const std::string &key) const
 
 bool ZDvidReader::hasSplitTask(const QString &key) const
 {
-  return hasKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY).c_str(), key);
+  return hasKey(ZDvidData::GetName(ZDvidData::ERole::SPLIT_TASK_KEY).c_str(), key);
 }
 
 int ZDvidReader::checkProofreadingData() const

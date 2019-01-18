@@ -1,6 +1,6 @@
 #include "z3ddef.h"
 
-
+#include "core/neutube_def.h"
 
 static const char *VolumeName = "Volume";
 
@@ -17,23 +17,23 @@ const char* neutube3d::GetVolumeName()
 
 const char* neutube3d::GetVolumeRenderingModeName(EVolumeRenderingMode mode)
 {
-  return VolumeRenderingModeNameArray[mode];
+  return VolumeRenderingModeNameArray[neutube::EnumValue(mode)];
 }
 
 std::string neutube3d::GetWindowKeyString(neutube3d::EWindowType type)
 {
   switch (type) {
-  case neutube3d::TYPE_GENERAL:
+  case neutube3d::EWindowType::GENERAL:
     return "window3d_general";
-  case neutube3d::TYPE_COARSE_BODY:
+  case neutube3d::EWindowType::COARSE_BODY:
     return "window3d_coarse_body";
-  case neutube3d::TYPE_BODY:
+  case neutube3d::EWindowType::BODY:
     return "window3d_body";
-  case neutube3d::TYPE_SKELETON:
+  case neutube3d::EWindowType::SKELETON:
     return "window3d_skeleton";
-  case neutube3d::TYPE_NEU3:
+  case neutube3d::EWindowType::NEU3:
     return "window3d_neu3_skeleton";
-  case neutube3d::TYPE_MESH:
+  case neutube3d::EWindowType::MESH:
     return "window3d_mesh";
   }
 

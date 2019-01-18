@@ -174,7 +174,7 @@ Z3DWindow::Z3DWindow(
   m_buttonStatus[2] = false; // objects
   m_buttonStatus[3] = false; // ROIs
 
-  setWindowType(neutube3d::TYPE_GENERAL);
+  setWindowType(neutube3d::EWindowType::GENERAL);
 
   m_cuttingStackBound = false;
 
@@ -204,11 +204,11 @@ QToolBar* Z3DWindow::getToolBar() const
 
 void Z3DWindow::createToolBar()
 {
-  if (getWindowType() == neutube3d::TYPE_COARSE_BODY ||
-      getWindowType() == neutube3d::TYPE_BODY ||
-      getWindowType() == neutube3d::TYPE_SKELETON ||
-      getWindowType() == neutube3d::TYPE_MESH ||
-      getWindowType() == neutube3d::TYPE_NEU3) {
+  if (getWindowType() == neutube3d::EWindowType::COARSE_BODY ||
+      getWindowType() == neutube3d::EWindowType::BODY ||
+      getWindowType() == neutube3d::EWindowType::SKELETON ||
+      getWindowType() == neutube3d::EWindowType::MESH ||
+      getWindowType() == neutube3d::EWindowType::NEU3) {
     m_toolBar = addToolBar("View");
     QAction *viewSynapseAction = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_SHOW_SYNAPSE, this);
@@ -229,7 +229,7 @@ void Z3DWindow::createToolBar()
 
   }
 
-  if (getWindowType() == neutube3d::TYPE_NEU3) {
+  if (getWindowType() == neutube3d::EWindowType::NEU3) {
 //    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
 //    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 //    m_meshOpacitySlider->setRange(0, 255);
@@ -1325,7 +1325,7 @@ void Z3DWindow::syncAction()
 {
   QAction *action = getAction(ZActionFactory::ACTION_SHOW_TODO);
   if (action != NULL) {
-    action->setChecked(m_view->isLayerVisible(neutube3d::LAYER_TODO));
+    action->setChecked(m_view->isLayerVisible(neutube3d::ERendererLayer::TODO));
   }
 }
 
@@ -1366,7 +1366,7 @@ void Z3DWindow::readSettings()
 void Z3DWindow::writeSettings()
 {
   //ignore general window type for now
-  if (getWindowType() != neutube3d::TYPE_GENERAL) {
+  if (getWindowType() != neutube3d::EWindowType::GENERAL) {
     ZJsonObject configJson = m_view->getSettings();
 
     std::string settingString = configJson.dumpString(0);
@@ -3461,7 +3461,7 @@ void Z3DWindow::convertPunctaToSwc()
       tree->addRegularRoot(tn);
     }
 
-    m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
     m_doc->addObject(tree, false);
     m_doc->removeSelectedPuncta();
     m_doc->endObjectModifiedMode();
@@ -3537,14 +3537,14 @@ void Z3DWindow::groupSelectedSwc()
 
 void Z3DWindow::showPuncta(bool on)
 {
-  m_view->setLayerVisible(neutube3d::LAYER_PUNCTA, on);
+  m_view->setLayerVisible(neutube3d::ERendererLayer::PUNCTA, on);
 
   emit showingPuncta(on);
 }
 
 void Z3DWindow::showTodo(bool on)
 {
-  m_view->setLayerVisible(neutube3d::LAYER_TODO, on);
+  m_view->setLayerVisible(neutube3d::ERendererLayer::TODO, on);
   emit showingTodo(on);
 }
 
@@ -3915,7 +3915,7 @@ void Z3DWindow::convertSelectedChainToSwc()
   std::set<ZLocsegChain*> chainSet =
       m_doc->getSelectedObjectSet<ZLocsegChain>(ZStackObject::EType::LOCSEG_CHAIN);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (std::set<ZLocsegChain*>::iterator iter = chainSet.begin();
        iter != chainSet.end(); ++iter) {
     Swc_Tree_Node *tn = TubeModel::createSwc((*iter)->data());
@@ -4716,10 +4716,10 @@ void Z3DWindow::updateCuttingBox()
   if (m_cuttingStackBound) {
     if (getDocument()->hasStack()) {
       m_view->setCutBox(
-            neutube3d::LAYER_SWC, getDocument()->getStack()->getBoundBox());
+            neutube3d::ERendererLayer::SWC, getDocument()->getStack()->getBoundBox());
     }
   } else {
-    m_view->resetCutBox(neutube3d::LAYER_SWC);
+    m_view->resetCutBox(neutube3d::ERendererLayer::SWC);
   }
 }
 
@@ -4750,7 +4750,7 @@ void Z3DWindow::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
 
 void Z3DWindow::setOpacity(neutube3d::ERendererLayer layer, double opacity)
 {
-  if (layer == neutube3d::LAYER_MESH) {
+  if (layer == neutube3d::ERendererLayer::MESH) {
     setMeshOpacity(opacity);
   } else {
     m_view->setOpacity(layer, opacity);
@@ -4772,13 +4772,13 @@ void Z3DWindow::setColorMode(
     neutube3d::ERendererLayer layer, const std::string &mode)
 {
   switch (layer) {
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     getMeshFilter()->setColorMode(mode);
     break;
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     getSwcFilter()->setColorMode(mode);
     break;
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     getPunctaFilter()->setColorMode(mode);
     break;
   default:
@@ -4805,7 +4805,7 @@ void Z3DWindow::gotoPosition(const ZPoint &position, double radius)
 bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
 {
   QPointF screenPos = m_view->getScreenProjection(
-        pt.getX(), pt.getY(), pt.getZ(), neutube3d::LAYER_SWC);
+        pt.getX(), pt.getY(), pt.getZ(), neutube3d::ERendererLayer::SWC);
 
   return getRectRoi().contains(screenPos.x(), screenPos.y());
 }
@@ -4876,7 +4876,7 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
         if (SwcTreeNode::isRegular(tn)) {
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::LAYER_SWC);
+                neutube3d::ERendererLayer::SWC);
           if (rect.contains(pt.x(), pt.y())) {
             tree->selectNode(tn, true);
           }
@@ -4919,7 +4919,7 @@ void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
           Swc_Tree_Node *tn = dsIter.next();
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::LAYER_SWC);
+                neutube3d::ERendererLayer::SWC);
           if (!rect.contains(pt.x(), pt.y())) {
             treeInRoi = false;
             break;
@@ -4966,7 +4966,7 @@ void Z3DWindow::selectTerminalBranchInRoi(bool appending)
         while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::LAYER_SWC);
+                neutube3d::ERendererLayer::SWC);
           if (!rect.contains(pt.x(), pt.y())) {
             treeInRoi = false;
             break;

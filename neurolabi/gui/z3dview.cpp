@@ -115,26 +115,26 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(
     neutube3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::LAYER_GRAPH:
+  case neutube3d::ERendererLayer::GRAPH:
     return getWidgetsGroup(getGraphFilter());
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     return getWidgetsGroup(getMeshFilter());
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     return getWidgetsGroup(getPunctaFilter());
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     return getWidgetsGroup(getRoiFilter());
-  case neutube3d::LAYER_SURFACE:
+  case neutube3d::ERendererLayer::SURFACE:
     return getWidgetsGroup(getSurfaceFilter());
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     return getWidgetsGroup(getSwcFilter());
-  case neutube3d::LAYER_TODO:
+  case neutube3d::ERendererLayer::TODO:
     return getWidgetsGroup(getTodoFilter());
-  case neutube3d::LAYER_VOLUME:
+  case neutube3d::ERendererLayer::VOLUME:
     return getWidgetsGroup(getVolumeFilter());
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     return getWidgetsGroup(getDecorationFilter());
     break;
-  case neutube3d::LAYER_SLICE:
+  case neutube3d::ERendererLayer::SLICE:
     return getWidgetsGroup(getSliceFilter());
     break;
   }
@@ -411,25 +411,25 @@ void Z3DView::init()
     // build network
     const NeutubeConfig &config = NeutubeConfig::getInstance();
     if (config.getZ3DWindowConfig().isVolumeOn()) {
-      addFilter(neutube3d::LAYER_VOLUME);
+      addFilter(neutube3d::ERendererLayer::VOLUME);
     }
     if (config.getZ3DWindowConfig().isSwcsOn()) {
-      addFilter(neutube3d::LAYER_SWC);
+      addFilter(neutube3d::ERendererLayer::SWC);
     }
 #if !defined(_NEUTUBE_LIGHT_)
     if (config.getZ3DWindowConfig().isPunctaOn()) {
-      addFilter(neutube3d::LAYER_PUNCTA);
+      addFilter(neutube3d::ERendererLayer::PUNCTA);
     }
 #endif
 #if defined _FLYEM_
-    addFilter(neutube3d::LAYER_TODO);
-//    addFilter(neutube3d::LAYER_SURFACE);
+    addFilter(neutube3d::ERendererLayer::TODO);
+//    addFilter(neutube3d::ERendererLayer::LAYER_SURFACE);
 #endif
 
-    addFilter(neutube3d::LAYER_GRAPH);
-    addFilter(neutube3d::LAYER_MESH);
-    addFilter(neutube3d::LAYER_ROI);
-    addFilter(neutube3d::LAYER_DECORATION);
+    addFilter(neutube3d::ERendererLayer::GRAPH);
+    addFilter(neutube3d::ERendererLayer::MESH);
+    addFilter(neutube3d::ERendererLayer::ROI);
+    addFilter(neutube3d::ERendererLayer::DECORATION);
 
 //    initSurfaceFilter();
 
@@ -511,34 +511,34 @@ void Z3DView::init()
 void Z3DView::addFilter(neutube3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::LAYER_GRAPH:
+  case neutube3d::ERendererLayer::GRAPH:
     initGraphFilter();
     break;
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     initMeshFilter();
     break;
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     initPunctaFilter();
     break;
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     initRoiFilter();
     break;
-  case neutube3d::LAYER_SURFACE:
+  case neutube3d::ERendererLayer::SURFACE:
     initSurfaceFilter();
     break;
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     initSwcFilter();
     break;
-  case neutube3d::LAYER_TODO:
+  case neutube3d::ERendererLayer::TODO:
     initTodoFilter();
     break;
-  case neutube3d::LAYER_VOLUME:
+  case neutube3d::ERendererLayer::VOLUME:
     initVolumeFilter();
     break;
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     initDecorationFilter();
     break;
-  case neutube3d::LAYER_SLICE:
+  case neutube3d::ERendererLayer::SLICE:
     initSliceFilter();
     break;
   }
@@ -557,7 +557,7 @@ void Z3DView::initVolumeFilter()
           this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_volumeFilter);
   m_allFilters.push_back(m_volumeFilter.get());
-  m_layerList.append(neutube3d::LAYER_VOLUME);
+  m_layerList.append(neutube3d::ERendererLayer::VOLUME);
 }
 
 void Z3DView::initSliceFilter()
@@ -572,7 +572,7 @@ void Z3DView::initSliceFilter()
           this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_sliceFilter);
   m_allFilters.push_back(m_sliceFilter.get());
-  m_layerList.append(neutube3d::LAYER_SLICE);
+  m_layerList.append(neutube3d::ERendererLayer::SLICE);
 }
 
 void Z3DView::initPunctaFilter()
@@ -592,7 +592,7 @@ void Z3DView::initPunctaFilter()
           m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::punctumVisibleStateChanged,
           m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
-  m_layerList.append(neutube3d::LAYER_PUNCTA);
+  m_layerList.append(neutube3d::ERendererLayer::PUNCTA);
 }
 
 void Z3DView::initSwcFilter()
@@ -615,7 +615,7 @@ void Z3DView::initSwcFilter()
   connect(m_doc, QOverload<QList<Swc_Tree_Node*>,
           QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
           m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
-  m_layerList.append(neutube3d::LAYER_SWC);
+  m_layerList.append(neutube3d::ERendererLayer::SWC);
 }
 
 void Z3DView::initMeshFilter()
@@ -632,7 +632,7 @@ void Z3DView::initMeshFilter()
           m_meshFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_meshFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::LAYER_MESH);
+  m_layerList.append(neutube3d::ERendererLayer::MESH);
 
   // When the user is dragging a rectangle to select its contents, display that rectangle.
 
@@ -680,7 +680,7 @@ void Z3DView::initRoiFilter()
           m_roiFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_roiFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::LAYER_ROI);
+  m_layerList.append(neutube3d::ERendererLayer::ROI);
 }
 
 void Z3DView::initDecorationFilter()
@@ -705,7 +705,7 @@ void Z3DView::initDecorationFilter()
           m_decorationFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_decorationFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::LAYER_DECORATION);
+  m_layerList.append(neutube3d::ERendererLayer::DECORATION);
 }
 
 void Z3DView::initGraphFilter()
@@ -717,7 +717,7 @@ void Z3DView::initGraphFilter()
   connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_graphFilter);
   m_allFilters.push_back(m_graphFilter.get());
-  m_layerList.append(neutube3d::LAYER_GRAPH);
+  m_layerList.append(neutube3d::ERendererLayer::GRAPH);
 }
 
 void Z3DView::initTodoFilter()
@@ -729,7 +729,7 @@ void Z3DView::initTodoFilter()
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_todoFilter);
   m_allFilters.push_back(m_todoFilter.get());
-  m_layerList.append(neutube3d::LAYER_TODO);
+  m_layerList.append(neutube3d::ERendererLayer::TODO);
 }
 
 void Z3DView::initSurfaceFilter()
@@ -743,7 +743,7 @@ void Z3DView::initSurfaceFilter()
 
   connect(m_doc, &ZStackDoc::surfaceVisibleStateChanged,
           m_surfaceFilter.get(), &Z3DSurfaceFilter::updateSurfaceVisibleState);
-  m_layerList.append(neutube3d::LAYER_SURFACE);
+  m_layerList.append(neutube3d::ERendererLayer::SURFACE);
 
 }
 
@@ -809,7 +809,7 @@ void Z3DView::dump(const QString &message)
 void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
 {
   switch (layer) {
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     getSwcFilter()->setCutBox(box);
     break;
   default:
@@ -820,7 +820,7 @@ void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
 void Z3DView::resetCutBox(neutube3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     getSwcFilter()->resetCut();
     break;
   default:
@@ -857,21 +857,21 @@ void Z3DView::volumeDataChanged()
 Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
 {
   switch (layer) {
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     return getSwcFilter();
-  case neutube3d::LAYER_GRAPH:
+  case neutube3d::ERendererLayer::GRAPH:
     return getGraphFilter();
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     return getPunctaFilter();
-  case neutube3d::LAYER_TODO:
+  case neutube3d::ERendererLayer::TODO:
     return getTodoFilter();
-  case neutube3d::LAYER_SURFACE:
+  case neutube3d::ERendererLayer::SURFACE:
     return getSurfaceFilter();
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     return getMeshFilter();
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     return getRoiFilter();
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     return getDecorationFilter();
   default:
     break;
@@ -883,7 +883,7 @@ Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
 Z3DBoundedFilter* Z3DView::getBoundedFilter(neutube3d::ERendererLayer layer) const
 {
   switch (layer) {
-  case neutube3d::LAYER_VOLUME:
+  case neutube3d::ERendererLayer::VOLUME:
     return getVolumeFilter();
   default:
     return getFilter(layer);
@@ -971,25 +971,25 @@ void Z3DView::setScale(double sx, double sy, double sz)
 std::string Z3DView::GetLayerString(neutube3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::LAYER_GRAPH:
+  case neutube3d::ERendererLayer::GRAPH:
     return "Graph";
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     return "SWC";
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     return "Puncta";
-  case neutube3d::LAYER_SURFACE:
+  case neutube3d::ERendererLayer::SURFACE:
     return "Surface";
-  case neutube3d::LAYER_TODO:
+  case neutube3d::ERendererLayer::TODO:
     return "Todo";
-  case neutube3d::LAYER_VOLUME:
+  case neutube3d::ERendererLayer::VOLUME:
     return "Volume";
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     return "Mesh";
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     return "ROI";
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     return "Decoration";
-  case neutube3d::LAYER_SLICE:
+  case neutube3d::ERendererLayer::SLICE:
     return "Slice";
   }
 
@@ -998,7 +998,7 @@ std::string Z3DView::GetLayerString(neutube3d::ERendererLayer layer)
 
 void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
 {
-  if (layer == neutube3d::LAYER_VOLUME) {
+  if (layer == neutube3d::ERendererLayer::VOLUME) {
     updateVolumeData();
   } else {
     ZStackDoc3dHelper::UpdateViewData(this, layer);

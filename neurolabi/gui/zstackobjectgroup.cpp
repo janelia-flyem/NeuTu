@@ -744,7 +744,7 @@ ZStackObject* ZStackObjectGroup::findFirstSameSourceUnsync(
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZStackObject *checkObj = *iter;
-    if (checkObj->isSameSource(checkObj->getSource(), source)) {
+    if (checkObj->IsSameSource(checkObj->getSource(), source)) {
       return const_cast<ZStackObject*>(checkObj);
     }
   }
@@ -818,7 +818,7 @@ TStackObjectList ZStackObjectGroup::findSameSourceUnsync(
   for (TStackObjectList::const_iterator iter = fullObjList.begin();
        iter != fullObjList.end(); ++iter) {
     const ZStackObject *checkObj = *iter;
-    if (ZStackObject::isSameSource(checkObj->getSource(), source)) {
+    if (ZStackObject::IsSameSource(checkObj->getSource(), source)) {
       objList.append(const_cast<ZStackObject*>(checkObj));
     }
   }
@@ -864,7 +864,7 @@ TStackObjectList ZStackObjectGroup::findSameClassUnsync(
   for (TStackObjectList::const_iterator iter = fullObjList.begin();
        iter != fullObjList.end(); ++iter) {
     const ZStackObject *checkObj = *iter;
-    if (ZStackObject::isSameClass(checkObj->getObjectClass(), objClass)) {
+    if (ZStackObject::IsSameClass(checkObj->getObjectClass(), objClass)) {
       objList.append(const_cast<ZStackObject*>(checkObj));
     }
   }
@@ -1079,7 +1079,7 @@ TStackObjectList ZStackObjectGroup::takeSelectedUnsync()
     subset.clear();
   }
 
-  return takeUnsync(ZStackObject::isSelected);
+  return takeUnsync(ZStackObject::IsSelected);
 }
 
 TStackObjectList ZStackObjectGroup::takeSelectedUnsync(ZStackObject::EType type)

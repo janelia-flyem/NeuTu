@@ -33,7 +33,7 @@ public:
   enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
 
-  enum EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
+  enum class EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_ANNOTATION;

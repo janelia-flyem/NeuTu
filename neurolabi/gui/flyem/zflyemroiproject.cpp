@@ -82,7 +82,7 @@ void ZFlyEmRoiProject::deleteAllData()
   //Delete data from DVID server
   ZDvidWriter writer;
   if (writer.open(m_dvidTarget)) {
-    writer.deleteKey(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
+    writer.deleteKey(ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE),
                      getMinRoiKey(), getMaxRoiKey());
   }
 
@@ -133,9 +133,9 @@ bool ZFlyEmRoiProject::setDvidTarget(
   ZDvidReader reader;
   if (reader.open(target)) {
     if (m_dvidWriter.open(target)) {
-      if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE))) {
+      if (!reader.hasData(ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE))) {
         m_dvidWriter.createKeyvalue(
-              ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE));
+              ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE));
       }
       m_dvidInfo = reader.readGrayScaleInfo();
       if (downloadingData) {
@@ -153,7 +153,7 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName<QString>(ZDvidData::ERole::ROI_CURVE),
           (getName() + "_0").c_str(), (getName() + "_9").c_str());
     foreach (const QString &roiKey, roiIdArray) {
       int roiId = ZString(roiKey.toStdString()).lastInteger();

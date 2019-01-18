@@ -309,14 +309,14 @@ bool ZStackObject::hasSameId(const ZStackObject *obj1, const ZStackObject *obj2)
   return same;
 }
 
-bool ZStackObject::isSameSource(const std::string &s1, const std::string &s2)
+bool ZStackObject::IsSameSource(const std::string &s1, const std::string &s2)
 {
   return (!s1.empty() && !s2.empty() && s1 == s2);
 }
 
-bool ZStackObject::isSameClass(const std::string &s1, const std::string &s2)
+bool ZStackObject::IsSameClass(const std::string &s1, const std::string &s2)
 {
-  return (!s1.empty() && !s2.empty() && s1 == s2);
+  return IsSameSource(s1, s2);
 }
 
 /*
@@ -336,7 +336,7 @@ bool ZStackObject::isEmptyTree(const ZStackObject *obj)
 }
 */
 
-bool ZStackObject::isSelected(const ZStackObject *obj)
+bool ZStackObject::IsSelected(const ZStackObject *obj)
 {
   if (obj != NULL) {
     return obj->isSelected();

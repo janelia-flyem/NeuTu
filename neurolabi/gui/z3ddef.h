@@ -5,29 +5,28 @@
 
 namespace neutube3d {
 
-enum EVolumeRenderingMode {
+enum class EVolumeRenderingMode {
   VR_AUTO = 0, VR_ALPHA_BLENDING, VR_MIP, VR_MIP_OPAQUE, VR_LOCAL_MIP,
   VR_LOCAL_MIP_OPAQUE, VR_ISO_SURFACE, VR_XRAY
 };
 
-enum ESwcGeometryPrimitive {
+enum class ESwcGeometryPrimitive {
   SWC_NORMAL, SWC_SPHERE, SWC_LINE, SWC_CYLINDER
 };
 
-enum EWindowType {
-  TYPE_GENERAL, TYPE_COARSE_BODY, TYPE_BODY, TYPE_SKELETON, TYPE_NEU3,
-  TYPE_MESH
+enum class EWindowType {
+  GENERAL, COARSE_BODY, BODY, SKELETON, NEU3, MESH
 };
 
-enum ERendererLayer {
-  LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
-  LAYER_TODO, LAYER_MESH, LAYER_ROI, LAYER_DECORATION, LAYER_SLICE
+enum class ERendererLayer {
+  SWC, PUNCTA, GRAPH, SURFACE, VOLUME,
+  TODO, MESH, ROI, DECORATION, SLICE
 };
 
 const char* GetVolumeName();
 const char* GetVolumeRenderingModeName(EVolumeRenderingMode mode);
 
-std::string GetWindowKeyString(neutube3d::EWindowType type);
+std::string GetWindowKeyString(EWindowType type);
 
 }
 

@@ -60,7 +60,7 @@ public:
   };
 
   struct Profile : public Category {
-    Profile() : Category("profile") {}
+    Profile() : Category("PROFILE") {}
   };
 
   struct Interact : public Category {

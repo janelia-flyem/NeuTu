@@ -28,12 +28,12 @@ void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
 int ZDvidDataSliceHelper::getMaxZoom() const
 {
   switch (m_dataRole) {
-  case ZDvidData::ROLE_GRAY_SCALE:
+  case ZDvidData::ERole::GRAY_SCALE:
     return getDvidTarget().getMaxGrayscaleZoom();
-  case ZDvidData::ROLE_LABEL_BLOCK:
-  case ZDvidData::ROLE_BODY_LABEL:
+  case ZDvidData::ERole::LABEL_BLOCK:
+  case ZDvidData::ERole::BODY_LABEL:
     return getDvidTarget().getMaxLabelZoom();
-  case ZDvidData::ROLE_MULTISCALE_2D:
+  case ZDvidData::ERole::MULTISCALE_2D:
     return m_maxZoom;
   default:
     return 0;
@@ -55,10 +55,10 @@ void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
 void ZDvidDataSliceHelper::updateCenterCut()
 {
   switch (m_dataRole) {
-  case ZDvidData::ROLE_GRAY_SCALE:
+  case ZDvidData::ERole::GRAY_SCALE:
     m_reader.setGrayCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
-  case ZDvidData::ROLE_LABEL_BLOCK:
+  case ZDvidData::ERole::LABEL_BLOCK:
     m_reader.setLabelCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
   default:

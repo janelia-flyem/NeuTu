@@ -25,7 +25,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = EKind::KIND_INVALID;
   m_bodyId = 0;
-  m_status = STATUS_NORMAL;
+  m_status = EStatus::STATUS_NORMAL;
   setDefaultRadius();
   setDefaultColor();
 }

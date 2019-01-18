@@ -183,6 +183,7 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
     }
   }
   if (!coll.empty()) {
+//    m_doc->setObjectSelected(coll, false); //to be tested
     m_doc->setPunctumSelected(coll.begin(), coll.end(), false);
     coll.clear();
   }

@@ -76,7 +76,7 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
-                     neutube3d::EWindowType windowType = neutube3d::TYPE_GENERAL,
+                     neutube3d::EWindowType windowType = neutube3d::EWindowType::GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 

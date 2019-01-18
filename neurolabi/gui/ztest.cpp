@@ -12299,7 +12299,7 @@ void ZTest::test(MainWindow *host)
   factory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
 
   Z3DWindow *window = factory->make3DWindow(frame->document());
-  window->setWindowType(NeuTube3D::TYPE_SKELETON);
+  window->setWindowType(neutube3d::EWindowType::TYPE_SKELETON);
   window->readSettings();
 
   bodyViewers->addWindow(0, window, "test");
@@ -13206,7 +13206,6 @@ void ZTest::test(MainWindow *host)
   if (writer.open(target)) {
     writer.createData("labels64", "split");
   }
-
 #endif
 
 #if 0
@@ -24120,7 +24119,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   std::cout << ZDvidData::GetName(ZDvidData::ROLE_SPLIT_GROUP) << std::endl;
   qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP);
-  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY);
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ERole::ROLE_SPLIT_RESULT_KEY);
 
   qDebug() << ZDvidPath::GetResultPath("test", "data", true);
   qDebug() << ZDvidPath::GetResultKeyPath("test", "testkey");
@@ -29377,8 +29376,16 @@ void ZTest::test(MainWindow *host)
   std::cout << "Volume: " << roi.getVolume() << std::endl;
 #endif
 
-#if 1
+#if 0
   std::cout << ZStackObject::GetTypeName(ZStackObject::EType::SWC) << std::endl;
+#endif
+
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("MB_Test");
+
+  writer->createData("keyvalue", "test3");
+
+  std::cout << writer->isStatusOk() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

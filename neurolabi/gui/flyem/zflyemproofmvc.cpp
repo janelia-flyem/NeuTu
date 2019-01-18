@@ -396,7 +396,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setDeleteOnClose(true);
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
-  m_bodyWindowFactory->setVisible(neutube3d::LAYER_PUNCTA, false);
+  m_bodyWindowFactory->setVisible(neutube3d::ERendererLayer::PUNCTA, false);
 
   m_bodyViewWindow->m_stayOnTopAction =
       m_bodyViewWindow->toolBar->addAction("Pin");
@@ -954,8 +954,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::SPHERE);
   doc->useCoarseOnly();
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
-  doc->showSynapse(m_coarseBodyWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
-  doc->showTodo(m_coarseBodyWindow->isLayerVisible(neutube3d::LAYER_TODO));
+  doc->showSynapse(m_coarseBodyWindow->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
+  doc->showTodo(m_coarseBodyWindow->isLayerVisible(neutube3d::ERendererLayer::TODO));
 
 //  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
 //          doc, SLOT(showSynapse(bool)));
@@ -964,7 +964,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   setWindowSignalSlot(m_coarseBodyWindow);
   prepareBodyWindowSignalSlot(m_coarseBodyWindow, doc);
 
-  m_coarseBodyWindow->setWindowType(neutube3d::TYPE_COARSE_BODY);
+  m_coarseBodyWindow->setWindowType(neutube3d::EWindowType::COARSE_BODY);
   m_coarseBodyWindow->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
@@ -983,21 +983,21 @@ void ZFlyEmProofMvc::makeBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::SPHERE);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
-  doc->showSynapse(m_bodyWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
-  doc->showTodo(m_bodyWindow->isLayerVisible(neutube3d::LAYER_TODO));
+  doc->showSynapse(m_bodyWindow->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
+  doc->showTodo(m_bodyWindow->isLayerVisible(neutube3d::ERendererLayer::TODO));
 
 
   prepareBodyWindowSignalSlot(m_bodyWindow, doc);
 
   setWindowSignalSlot(m_bodyWindow);
 
-  m_bodyWindow->setOpacity(neutube3d::LAYER_MESH, 0.2);
-//  m_bodyWindow->setFront(neutube3d::LAYER_MESH, true);
+  m_bodyWindow->setOpacity(neutube3d::ERendererLayer::MESH, 0.2);
+//  m_bodyWindow->setFront(neutube3d::ERendererLayer::LAYER_MESH, true);
 
   m_bodyWindow->getSwcFilter()->setSwcTopologyMutable(false);
 //  m_bodyWindow->getSwcFilter()->forceNodePicking(true);
   m_bodyWindow->getMeshFilter()->setColorMode("Mesh Color");
-  m_bodyWindow->setWindowType(neutube3d::TYPE_BODY);
+  m_bodyWindow->setWindowType(neutube3d::EWindowType::BODY);
   m_bodyWindow->readSettings();
   m_bodyWindow->getMeshFilter()->setStayOnTop(true);
 
@@ -1035,11 +1035,11 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
 
   m_meshWindow = factory.make3DWindow(doc);
 
-  doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
+  doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
   setWindowSignalSlot(m_meshWindow);
   m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
   /*
-  if (windowType != neutube3d::TYPE_NEU3) {
+  if (windowType != neutube3d::EWindowType::TYPE_NEU3) {
       m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
   }
   */
@@ -1047,7 +1047,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   m_meshWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
-    if (windowType != neutube3d::TYPE_NEU3) {
+    if (windowType != neutube3d::EWindowType::NEU3) {
       ZFlyEmMisc::Decorate3dBodyWindow(
             m_meshWindow, getDvidInfo(),
             m_doc->getParentMvc()->getView()->getViewParameter(), false);
@@ -1103,14 +1103,14 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
 
 Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 {
-//  Z3DWindow *window = makeExternalSkeletonWindow(NeuTube3D::TYPE_NEU3);
-  Z3DWindow *window = makeExternalMeshWindow(neutube3d::TYPE_NEU3);
+//  Z3DWindow *window = makeExternalSkeletonWindow(neutube3d::EWindowType::TYPE_NEU3);
+  Z3DWindow *window = makeExternalMeshWindow(neutube3d::EWindowType::NEU3);
   window->getSwcFilter()->setColorMode("Label Branch Type");
   window->getSwcFilter()->setStayOnTop(false);
   window->getMeshFilter()->setStayOnTop(false);
   window->getPunctaFilter()->setStayOnTop(false);
   window->getGraphFilter()->setStayOnTop(false);
-  window->setOpacity(neutube3d::LAYER_MESH, 0.9);
+  window->setOpacity(neutube3d::ERendererLayer::MESH, 0.9);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
 
   connect(window, SIGNAL(savingSplitTask()),
@@ -1129,8 +1129,8 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 //          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
 //  window->skipKeyEvent(true);
 
-  doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
-  doc->showTodo(window->isLayerVisible(neutube3d::LAYER_TODO));
+  doc->showSynapse(window->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
+  doc->showTodo(window->isLayerVisible(neutube3d::ERendererLayer::TODO));
 
   return window;
 }
@@ -1151,14 +1151,14 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
 
   prepareBodyWindowSignalSlot(window, doc);
 
-  doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
+  doc->showSynapse(window->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
 
   connect(window->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(window);
 
   window->getMeshFilter()->setColorMode("Mesh Color");
-  window->setWindowType(neutube3d::TYPE_MESH);
+  window->setWindowType(neutube3d::EWindowType::MESH);
   window->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
@@ -1190,13 +1190,13 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
 
 
-  doc->showSynapse(m_skeletonWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
+  doc->showSynapse(m_skeletonWindow->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
 
   connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
-  m_skeletonWindow->setWindowType(neutube3d::TYPE_SKELETON);
+  m_skeletonWindow->setWindowType(neutube3d::EWindowType::SKELETON);
   m_skeletonWindow->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
@@ -1218,7 +1218,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
-  m_externalNeuronWindow->setWindowType(neutube3d::TYPE_NEU3);
+  m_externalNeuronWindow->setWindowType(neutube3d::EWindowType::NEU3);
   m_externalNeuronWindow->readSettings();
   setWindowSignalSlot(m_externalNeuronWindow);
 
@@ -1311,7 +1311,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
       doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
@@ -1332,7 +1332,7 @@ void ZFlyEmProofMvc::updateCoarseMeshWindowDeep()
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseMeshWindow->getDocument());
     if (doc != NULL){
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
       doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
@@ -1371,7 +1371,7 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
       doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
 //      doc->processEventFunc();
@@ -1419,7 +1419,7 @@ void ZFlyEmProofMvc::updateBodyWindowDeep(Z3DWindow *window)
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
     if (doc != NULL){
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
@@ -1446,7 +1446,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
     }
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
     ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
     QList<ZSwcTree*> bodyList = m_coarseBodyWindow->getDocument()->getSwcList();
@@ -1486,7 +1486,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
     }
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
     if (isDeep) {
       m_coarseBodyWindow->getDocument()->removeAllSwcTree(true);
@@ -2467,7 +2467,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
     }
 //    m_mergeProject.highlightSelectedObject(hl);
 
-    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
     ZOUT(LTRACE(), 5) << "Toggle highlight";
     TStackObjectList objList =
@@ -2712,7 +2712,7 @@ void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
     if (!isHidden()) {
-      getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
             getView()->getSliceAxis());
       if (tmpSlice != NULL) {
@@ -4279,7 +4279,7 @@ void ZFlyEmProofMvc::showRoi3dWindow()
   if (m_roiWindow == NULL) {
     ZWindowFactory factory;
     factory.setDeleteOnClose(true);
-    factory.setVisible(neutube3d::LAYER_PUNCTA, false);
+    factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_roiWindow =
         factory.make3DWindow(m_doc, Z3DView::INIT_EXCLUDE_VOLUME);
     m_roiWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
@@ -4296,7 +4296,7 @@ void ZFlyEmProofMvc::showObjectWindow()
   if (m_objectWindow == NULL) {
     ZWindowFactory factory;
     factory.setDeleteOnClose(true);
-    factory.setVisible(neutube3d::LAYER_PUNCTA, false);
+    factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_objectWindow =
         factory.make3DWindow(m_doc, Z3DView::INIT_EXCLUDE_VOLUME);
     m_objectWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
@@ -4934,7 +4934,7 @@ void ZFlyEmProofMvc::showData(bool visible)
 {
   getCompletePresenter()->showData(visible);
   getDocument()->beginObjectModifiedMode(
-        ZStackDoc::OBJECT_MODIFIED_CACHE);
+        ZStackDoc::EObjectModifiedMode::CACHE);
 
   ZOUT(LTRACE(), 5) << "Show data";
 //  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
@@ -5896,7 +5896,7 @@ void ZFlyEmProofMvc::loadRoi(
       }
     } else if (source == "mesh") {
       mesh = reader.readMesh(
-            ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
+            ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
     }
 
     loadRoiMesh(mesh, roiName);
@@ -5934,7 +5934,7 @@ void ZFlyEmProofMvc::loadRoi(
     } else if (source == "mesh") {
       if (keyList.size() == 1) {
         mesh = reader.readMesh(
-              ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), keyList[0]);
+              ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), keyList[0]);
       } else {
         std::vector<ZMesh*> meshList;
         for (const std::string &key : keyList) {
@@ -5942,7 +5942,7 @@ void ZFlyEmProofMvc::loadRoi(
             return;
           }
           ZMesh *submesh = reader.readMesh(
-                ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
+                ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
           if (submesh != NULL) {
             meshList.push_back(submesh);
           }
@@ -6021,7 +6021,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 
   //Schema: {"->": {"type": type, "key", data}}
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
-        ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str(), roiName.c_str());
+        ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
   if (roiInfo.hasKey(neutube::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutube::json::REF_KEY));
 
@@ -6067,7 +6067,7 @@ void ZFlyEmProofMvc::loadROIFunc()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList keyList = reader.readKeys(
-          ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str());
+          ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str());
     if (!keyList.isEmpty()) {
       foreach (const QString &key, keyList) {
         loadRoiFromRefData(reader, key.toStdString());

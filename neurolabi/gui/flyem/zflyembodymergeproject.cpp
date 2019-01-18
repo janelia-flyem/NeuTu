@@ -1166,7 +1166,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
 
     if (isDeep) {
@@ -1314,7 +1314,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
 
     ZFlyEmDvidReader reader;
@@ -1428,7 +1428,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -1819,7 +1819,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
     ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(!hl);
 //    doc->blockSignals(true);
-    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
     doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
     /*
     doc->getObjectGroup().removeObject(
@@ -1904,7 +1904,7 @@ void ZFlyEmBodyMergeProject::addBookmarkDecoration(
 #if 0
   if (getDocument() != NULL) {
 
-    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;

@@ -835,7 +835,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getBookmarkKeyName());
     initData("keyvalue", target.getBodyAnnotationName());
     initData("keyvalue", target.getSplitLabelName());
-    initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
+    initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
   }
 }
 
@@ -1232,7 +1232,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
     obj->setDvidTarget(getDvidTarget());
   }
   */
-//  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
   UpdateDvidTargetForObject<ZDvidSparseStack>(this);
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
@@ -1683,7 +1683,7 @@ void ZFlyEmProofDoc::addTodoItem(
 void ZFlyEmProofDoc::addSynapse(
     const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1702,7 +1702,7 @@ void ZFlyEmProofDoc::moveSynapse(
     ZDvidSynapseEnsemble::EDataScope scope)
 {
 //  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1719,7 +1719,7 @@ void ZFlyEmProofDoc::moveSynapse(
 
 void ZFlyEmProofDoc::syncSynapse(const ZIntPoint &pt)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1819,7 +1819,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
 
 void ZFlyEmProofDoc::highlightPsd(bool on)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -2130,7 +2130,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getBodyForSplit()
 
 void ZFlyEmProofDoc::updateBodyObject()
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->paintBuffer();
@@ -2450,7 +2450,7 @@ void ZFlyEmProofDoc::clearBodyMerger()
 
 void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
@@ -2585,7 +2585,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
 
 void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
   if (labelSlice != NULL) {
 //    labelSlice->clearCache();
@@ -2608,7 +2608,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
 
 void ZFlyEmProofDoc::updateDvidLabelObjectSliently()
 {
-  updateDvidLabelObject(OBJECT_MODIFIED_SLIENT);
+  updateDvidLabelObject(EObjectModifiedMode::SLIENT);
 }
 
 #if 0
@@ -2616,7 +2616,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice()
 {
   ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2674,7 +2674,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     std::string currentUserName = neutube::GetCurrentUserName();
     ZJsonArray bookmarkJson =
         m_dvidReader.readTaggedBookmark("user:" + currentUserName);
-    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     int bookmarkCount = 0;
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
@@ -2711,7 +2711,7 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZJsonArray jsonObj;
       jsonObj.decodeString(reader.getBuffer());
       if (!jsonObj.isEmpty()) {
-        beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+        beginObjectModifiedMode(EObjectModifiedMode::CACHE);
         for (size_t i = 0; i < jsonObj.size(); ++i) {
           ZJsonObject bookmarkObj =
               ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -2807,7 +2807,7 @@ void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
   ZOUT(LTRACE(), 5) << "Download synapses";
   QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
-//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
@@ -3183,7 +3183,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
   m_loadingAssignedBookmark = true;
 
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
 #if 1
@@ -3458,7 +3458,7 @@ void ZFlyEmProofDoc::updateMeshForSelected()
 void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->setAlpha(alpha);
     processObjectModified(slice->getTarget());
@@ -3742,7 +3742,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 
   ZUndoCommand *command = new ZUndoCommand("Update ROI");
 
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   /*
   ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
   if (roi == NULL) {
@@ -4043,7 +4043,7 @@ void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
@@ -4627,7 +4627,7 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
       new ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem(
             this, pt.getX(), pt.getY(), pt.getZ(), command);
     }
-    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     pushUndoCommand(command);
     endObjectModifiedMode();
     processObjectModified();
@@ -4652,7 +4652,7 @@ void ZFlyEmProofDoc::executeRotateRoiPlaneCommand(int z, double theta)
       }
     }
     if (allCommand->childCount() > 0) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
       processObjectModified();
@@ -4680,7 +4680,7 @@ void ZFlyEmProofDoc::executeScaleRoiPlaneCommand(int z, double sx, double sy)
     }
 
     if (allCommand->childCount() > 0) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
       processObjectModified();
@@ -4695,7 +4695,7 @@ void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
   ZOUT(LTRACE(), 5) << "Copy bookmarks";
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
 
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZFlyEmBookmark*>::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = *iter;

@@ -208,7 +208,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
 {
 //  doc->blockSignals(true);
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   QVector<const ZFlyEmNeuron*> neuronArray;
   QMap<std::string, QColor> colorMap;
