@@ -66,11 +66,11 @@ ZLog::Time::Time(uint64_t t) : Tag("time", t)
 {
 }
 
-ZLog::Object::Object(void *p) : Tag("", "")
+ZLog::Handle::Handle(void *p) : Tag("", "")
 {
   std::ostringstream stream;
   stream << p;
-  set("object", stream.str());
+  set("handle", stream.str());
 }
 
 void ZLog::End(ZLog &log)

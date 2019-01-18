@@ -154,7 +154,7 @@ void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
     mouseReleaseEvent(e, w, h);
     if (isStateToggledOff(State::Rotate)) {
       KLOG << ZLog::Interact() << ZLog::Description("Stop rotating camera")
-           << ZLog::Object(this);
+           << ZLog::Handle(this);
     }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
@@ -162,7 +162,7 @@ void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
     emit cameraRotated();
     if (isStateToggledOn(State::Rotate)) {
       KLOG << ZLog::Interact() << ZLog::Description("Start rotating camera")
-           << ZLog::Object(this);
+           << ZLog::Handle(this);
     }
 
     updateLastState();

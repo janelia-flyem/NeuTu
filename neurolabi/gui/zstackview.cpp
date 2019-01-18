@@ -2,6 +2,7 @@
 #include <QElapsedTimer>
 #include <QMdiArea>
 #include <QImageWriter>
+#include <QJsonObject>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -3096,12 +3097,17 @@ void ZStackView::processViewChange(bool redrawing)
 void ZStackView::logViewParam()
 {
   ZStackViewParam param = getViewParameter();
-  std::ostringstream stream;
-  stream << this;
+//  std::ostringstream stream;
+//  stream << this;
+
+  QJsonDocument jdoc = QJsonDocument::fromJson(
+        QString::fromStdString(param.toJsonObject().dumpString(0)).toUtf8());
+
   KLOG << ZLog::Info()
        << ZLog::Description("View changed to " + param.toString())
-       << ZLog::Tag("object", stream.str())
-       << ZLog::Tag("view", param.toJsonObject().toString());
+       << ZLog::Handle(this)
+       << ZLog::Object("ZStackView")
+       << ZLog::Tag("parameter", jdoc.object());
 }
 
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)

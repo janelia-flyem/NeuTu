@@ -47,6 +47,7 @@
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "zpunctum.h"
 
 #ifdef _WIN32
 #undef GetUserName

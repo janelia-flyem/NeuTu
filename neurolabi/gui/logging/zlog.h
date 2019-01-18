@@ -10,6 +10,7 @@
 
 #include "neuopentracing.h"
 
+
 class ZLog
 {
 public:
@@ -25,7 +26,11 @@ public:
   struct Tag {
     Tag(const std::string &key, const std::string &value) :
       m_key(key), m_value(value) {}
+    Tag(const std::string &key, const char *value) :
+      m_key(key), m_value(value) {}
     Tag(const std::string &key, const int64_t &value) :
+      m_key(key), m_value(value) {}
+    Tag(const std::string &key, const QJsonValue &value) :
       m_key(key), m_value(value) {}
 
     inline void set(const std::string &key, const std::string &value) {
@@ -76,11 +81,19 @@ public:
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("description", value) {}
+    Description(const std::string &value) : Tag("diagnostic", value) {}
+  };
+
+  struct Action : public Tag {
+    Action(const std::string &value) : Tag("action", value) {}
   };
 
   struct Object : public Tag {
-    Object(void *p);
+    Object(const std::string &value) : Tag("object", value) {}
+  };
+
+  struct Handle : public Tag {
+    Handle(void *p);
   };
 
   struct Time : public Tag {

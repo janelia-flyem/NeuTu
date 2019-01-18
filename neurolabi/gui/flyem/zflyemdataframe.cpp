@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <fstream>
 
 #include <QMessageBox>
 #include <QApplication>
@@ -36,7 +37,6 @@
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "mainwindow.h"
-#include <fstream>
 #include "swc/zswcterminalsurfacemetric.h"
 #include "dialogs/flyemgeosearchdialog.h"
 #include "dialogs/flyemgeofilterdialog.h"
@@ -57,6 +57,7 @@
 #include "zintset.h"
 #include "zwindowfactory.h"
 #include "flyem/zflyemqualityanalyzertask.h"
+#include "zpunctum.h"
 
 using namespace std;
 

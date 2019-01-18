@@ -5,10 +5,11 @@
 #ifndef _ZSTACKDOC_H_
 #define _ZSTACKDOC_H_
 
+#include <set>
+
 #include <QString>
 #include <QList>
 #include <QUrl>
-#include <set>
 #include <QObject>
 #include <QUndoCommand>
 #include <QMap>
@@ -21,11 +22,13 @@
 #include <QStack>
 
 #include "neutube.h"
-#include "zcurve.h"
+#include "core/utilities.h"
+
+//#include "zcurve.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-#include "zpunctum.h"
+//#include "zpunctum.h"
 #include "zprogressreporter.h"
 #include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
@@ -36,7 +39,7 @@
 #include "dialogs/resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
-#include "z3dgraph.h"
+//#include "z3dgraph.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
@@ -48,7 +51,7 @@
 //#include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
-#include "core/utilities.h"
+
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -99,6 +102,9 @@ class ZObjsModelManager;
 class ZWorker;
 class ZWorkThread;
 class ZTask;
+class Z3DGraph;
+class ZPunctum;
+class ZCurve;
 
 /*!
  * \brief The class of stack document
@@ -682,10 +688,16 @@ public:
   template <template<class...> class Container, class T, class A>
   void setObjectSelected(const Container<T*, A> &objList, bool select);
 
+  template <template<class...> class Container, class T>
+  void setObjectSelected(const Container<T*> &objList, bool select);
+
+  template <typename T>
+  void setObjectSelected(T *obj, bool select);
+
   // (de)select objects and emit signals for 3D view and 2D view to sync
   void setPunctumSelected(ZPunctum* punctum, bool select);
-  template <class InputIterator>
-  void setPunctumSelected(InputIterator first, InputIterator last, bool select);
+//  template <class InputIterator>
+//  void setPunctumSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllPuncta();
   void setMeshSelected(ZMesh* mesh, bool select);
   template <class InputIterator>
@@ -1392,6 +1404,9 @@ private:
   void updateTraceMask();
   void prepareSwc(ZSwcTree *tree);
 
+  template <class C, class T>
+  void setObjectSelectedP(const C &objList, bool select);
+
 private slots:
   void shortcutTest();
 
@@ -1507,8 +1522,29 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
   processObjectModified();
 }
 
-template <template<class...> class Container, class T, class A>
-void ZStackDoc::setObjectSelected(const Container<T*, A> &objList, bool select)
+template <typename T>
+void ZStackDoc::setObjectSelected(T *obj, bool select)
+{
+  if (obj) {
+    QList<T*> selected;
+    QList<T*> deselected;
+
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+
+    notifySelectionChanged(selected, deselected);
+  }
+}
+
+template <class C, class T>
+void ZStackDoc::setObjectSelectedP(const C &objList, bool select)
 {
   QList<T*> selected;
   QList<T*> deselected;
@@ -1526,6 +1562,52 @@ void ZStackDoc::setObjectSelected(const Container<T*, A> &objList, bool select)
   notifySelectionChanged(selected, deselected);
 }
 
+template <template<class...> class Container, class T, class A>
+void ZStackDoc::setObjectSelected(const Container<T*, A> &objList, bool select)
+{
+  setObjectSelectedP<Container<T*, A>, T>(objList, select);
+  /*
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+  */
+}
+
+template <template<class...> class Container, class T>
+void ZStackDoc::setObjectSelected(const Container<T*> &objList, bool select)
+{
+  setObjectSelectedP<Container<T*>, T>(objList, select);
+  /*
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+  */
+}
+
+
+#if 0
 template <class InputIterator>
 void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool select)
 {
@@ -1547,7 +1629,7 @@ void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool
   }
   notifySelectionChanged(selected, deselected);
 }
-
+#endif
 template <class InputIterator>
 void ZStackDoc::setSwcTreeNodeSelected(
     InputIterator first, InputIterator last, bool select)

@@ -12,6 +12,7 @@
 #include "zlabelcolortable.h"
 #include "zscalablestack.h"
 #include "zswctree.h"
+#include "zpunctum.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
