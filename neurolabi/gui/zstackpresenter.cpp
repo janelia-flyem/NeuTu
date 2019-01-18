@@ -38,6 +38,7 @@
 #include "zobject3d.h"
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
+#include "zpunctum.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)

@@ -53,6 +53,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
+#include "zpunctum.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_RESULT_QUICK = "updateSplitQuickFunc";
 

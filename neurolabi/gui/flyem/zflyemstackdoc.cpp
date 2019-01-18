@@ -2,6 +2,7 @@
 
 #include <set>
 #include "tz_error.h"
+#include "tz_math.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "zstackfile.h"
 #include "tz_stack_neighborhood.h"

@@ -3,6 +3,10 @@
 #include <map>
 #include <set>
 
+#include <QSortFilterProxyModel>
+#include <QHBoxLayout>
+#include <QKeyEvent>
+
 #include "zstackdoc.h"
 #include "zswcobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
@@ -17,10 +21,8 @@
 #include "zswctree.h"
 #include "zobjsmodelmanager.h"
 #include "zmesh.h"
+#include "zpunctum.h"
 
-#include <QSortFilterProxyModel>
-#include <QHBoxLayout>
-#include <QKeyEvent>
 
 
 ZObjsManagerWidget::ZObjsManagerWidget(ZStackDoc *doc, QWidget *parent) :
@@ -163,7 +165,8 @@ void ZObjsManagerWidget::punctaItemDoubleClicked(QModelIndex index)
   }
 }
 
-void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selected, QItemSelection deselected)
+void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(
+    QItemSelection selected, QItemSelection deselected)
 {
   QModelIndexList indexes = deselected.indexes();
   std::vector<ZPunctum*> coll;
@@ -176,15 +179,16 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
     if (p != NULL) {
       coll.push_back(p);
     } else {
-      const std::vector<ZPunctum*>* ps = model->getPuncta(m_punctaProxyModel->mapToSource(indexes[i]));
+      const std::vector<ZPunctum*>* ps = model->getPuncta(
+            m_punctaProxyModel->mapToSource(indexes[i]));
       if (ps != NULL) {
         std::copy(ps->begin(), ps->end(), std::back_inserter(coll));
       }
     }
   }
   if (!coll.empty()) {
-//    m_doc->setObjectSelected(coll, false); //to be tested
-    m_doc->setPunctumSelected(coll.begin(), coll.end(), false);
+    m_doc->setObjectSelected(coll, false); //to be tested
+//    m_doc->setPunctumSelected(coll.begin(), coll.end(), false);
     coll.clear();
   }
 
@@ -205,7 +209,8 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
     }
   }
   if (!coll.empty()) {
-    m_doc->setPunctumSelected(coll.begin(), coll.end(), true);
+    m_doc->setObjectSelected(coll, true);
+//    m_doc->setPunctumSelected(coll.begin(), coll.end(), true);
   }
 }
 

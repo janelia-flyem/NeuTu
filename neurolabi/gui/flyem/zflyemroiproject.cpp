@@ -25,6 +25,7 @@
 #include "zswctree.h"
 #include "zjsonfactory.h"
 #include "zdialogfactory.h"
+#include "zpunctum.h"
 
 const double ZFlyEmRoiProject::m_defaultSynapseRadius = 20.0;
 

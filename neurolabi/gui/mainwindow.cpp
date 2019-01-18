@@ -174,6 +174,8 @@
 #include "dialogs/ztestoptiondialog.h"
 #include "zobject3dscanarray.h"
 #include "zmeshfactory.h"
+#include "zpunctum.h"
+#include "zcurve.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"

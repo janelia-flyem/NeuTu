@@ -271,7 +271,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         return;
     }
     ZJsonObject info = m_reader.readInfo();
-    QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(info.dumpString()).toUtf8());
+    QJsonDocument doc = QJsonDocument::fromJson(
+          QString::fromStdString(info.dumpString()).toUtf8());
     QJsonObject repoJson = doc.object();
 
     // parse out actual branches and populate the model

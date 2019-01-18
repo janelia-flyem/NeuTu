@@ -21,6 +21,7 @@
 #include "zstring.h"
 #include "zfiletype.h"
 #include "zobject3d.h"
+#include "zpunctum.h"
 
 using namespace std;
 
@@ -2639,7 +2640,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   // restore selection state
   m_doc->blockSignals(true);
   m_doc->deselectAllObject();
-  m_doc->setPunctumSelected(m_punctaList.begin(), m_punctaList.end(), true);
+  m_doc->setObjectSelected(m_punctaList, true);
   m_doc->setSwcSelected(m_swcList, true);
   //  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
   m_doc->setSwcTreeNodeSelected(m_swcNodeList.begin(), m_swcNodeList.end(), true);
