@@ -77,7 +77,7 @@ void ZMovieMaker::prepareStage()
 //  window->getAxis()->setVisible(m_showingAxis);
 
 
-  window->getFilter(neutube3d::LAYER_SURFACE)->setOpacity(0.85);
+  window->getFilter(neutube3d::ERendererLayer::SURFACE)->setOpacity(0.85);
 
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);

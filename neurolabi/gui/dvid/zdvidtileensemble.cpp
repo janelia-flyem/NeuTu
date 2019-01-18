@@ -28,7 +28,7 @@ ZDvidTileEnsemble::ZDvidTileEnsemble()
 //  m_view = NULL;
   m_patch = NULL;
   m_dataFetcher = NULL;
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_MULTISCALE_2D);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::MULTISCALE_2D);
 //  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 

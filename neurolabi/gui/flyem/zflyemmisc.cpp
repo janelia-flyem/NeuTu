@@ -812,7 +812,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
     if (replaced == NULL) {
       window->getDocument()->addObject(graph, true);
     } else {
-      window->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      window->getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
       window->getDocument()->bufferObjectModified(replaced);
       window->getDocument()->bufferObjectModified(graph);
       delete replaced;
@@ -840,14 +840,14 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     }
     Z3DGraph *graph = Z3DGraphFactory::MakeBox(box, radius);
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
-//    if (window->getWindowType() == NeuTube3D::TYPE_NEU3) {
+//    if (window->getWindowType() == neutube3d::EWindowType::TYPE_NEU3) {
 //      graph->setVisible(visible);
 //    }
 
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(neutube3d::LAYER_GRAPH, 0.4);
+      window->setOpacity(neutube3d::ERendererLayer::GRAPH, 0.4);
     }
   }
 }

@@ -14,6 +14,7 @@
 
 #include "ui_mainwindow.h"
 
+#include "logging/zlog.h"
 #include "tz_darray.h"
 #include "zstackframe.h"
 #include "zstackdoc.h"
@@ -27,7 +28,7 @@
 #include "tz_math.h"
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "imgproc/zstackprocessor.h"
-#include "tz_error.h"
+//#include "tz_error.h"
 #include "dialogs/zeditswcdialog.h"
 #include "dialogs/cannyedgedialog.h"
 #include "dialogs/medianfilterdialog.h"
@@ -42,7 +43,7 @@
 #include "zstackmvc.h"
 #include "dialogs/neuroniddialog.h"
 #include "zcircle.h"
-#include "zerror.h"
+//#include "zerror.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_stat.h"
@@ -191,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
-  RECORD_INFORMATION("Creating main window ...");
+//  RECORD_INFORMATION("Creating main window ...");
 
   //createWorkDir();
 #ifdef _DEBUG_2
@@ -240,18 +241,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
   //create the rest of the window
   //std::cout << "Creating actions ..." << std::endl;
-  RECORD_INFORMATION("Creating actions ...");
+//  RECORD_INFORMATION("Creating actions ...");
   createActions();
   //std::cout << "Creating menus ......" << std::endl;
-  RECORD_INFORMATION("Creating menus ...");
+//  RECORD_INFORMATION("Creating menus ...");
   createMenus();
-  RECORD_INFORMATION("Creating context menus ...");
+//  RECORD_INFORMATION("Creating context menus ...");
   //std::cout << "Creating menus ........." << std::endl;
   createContextMenu();
 
   //std::cout << "Creating toolbars ..." << std::endl;
 #if defined(_QT_APPLICATION_)
-  RECORD_INFORMATION("Creating toolbars ...");
+//  RECORD_INFORMATION("Creating toolbars ...");
   createToolBars();
 #endif
 
@@ -261,14 +262,14 @@ MainWindow::MainWindow(QWidget *parent) :
   setCurrentFile("");
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    ZStackObject::setDefaultPenWidth(1.0);
+    ZStackObject::SetDefaultPenWidth(1.0);
   }
 
   setAcceptDrops(true);
 
   m_frameCount = 0;
 
-  RECORD_INFORMATION("Updating actions ...");
+//  RECORD_INFORMATION("Updating actions ...");
   createActionMap();
   setActionActivity();
   m_actionActivatorList.append(&m_stackActionActivator);
@@ -402,7 +403,7 @@ void MainWindow::initDialog()
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
-  m_penWidthDialog->setPenWidth(ZStackObject::getDefaultPenWidth());
+  m_penWidthDialog->setPenWidth(ZStackObject::GetDefaultPenWidth());
 
   //m_dvidObjectDlg = new DvidObjectDialog(this);
   //m_dvidObjectDlg->setAddress(m_dvidClient->getDvidTarget().getDvid);
@@ -3769,7 +3770,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
       flyem::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 //      doc->blockSignals(true);
       foreach (QString filePath, fileList) {
         std::vector<ZPunctum*> puncta;
@@ -4126,7 +4127,8 @@ void MainWindow::on_actionUpdate_Configuration_triggered()
 {
   NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.load(config.getConfigPath()) == false) {
-    RECORD_WARNING_UNCOND("Unable to load configuration: " + config.getConfigPath());
+    KWARN << "Unable to load configuration: " + config.getConfigPath();
+//    RECORD_WARNING_UNCOND("Unable to load configuration: " + config.getConfigPath());
   } else {
     customizeActions();
   }
@@ -5449,7 +5451,7 @@ void MainWindow::on_actionDendrogram_triggered()
 void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
 {
   if (m_penWidthDialog->exec()) {
-    ZStackObject::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
+    ZStackObject::SetDefaultPenWidth(m_penWidthDialog->getPenWidth());
     foreach (QMdiSubWindow *subwindow, mdiArea->subWindowList()) {
       ZStackFrame *frame = qobject_cast<ZStackFrame*>(subwindow);
       if (frame != NULL) {
@@ -7741,8 +7743,8 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
   //  m_synapseAnnotationFile = dvidTarget.getSourceString();
     QStringList annotationList = fdReader.readKeys(
-          ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                             ZDvidData::ROLE_BODY_LABEL,
+          ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                             ZDvidData::ERole::BODY_LABEL,
                              target.getBodyLabelName()).c_str());
     std::set<uint64_t> annotationSet;
     foreach (const QString &idStr, annotationList) {

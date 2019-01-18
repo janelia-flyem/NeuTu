@@ -15,53 +15,53 @@ class ZDvidData
 public:
   ZDvidData();
 
-  enum ERole {
-    ROLE_GRAY_SCALE, //Grayscale data
-    ROLE_BODY_LABEL, //Individual body data (sparsevol)
-    ROLE_LABEL_BLOCK, //Segmentation data
-    ROLE_ROI_CURVE, //ROI curve
-    ROLE_BODY_ANNOTATION, //Body Annnotation
-    ROLE_BOUND_BOX, //Bounding boxes of bodies
-    ROLE_SKELETON, //Skeleton
-    ROLE_THUMBNAIL, //Thumbnail
-    ROLE_SUPERPIXEL, //Superpixel (NOT in DVID)
-    ROLE_SP2BODY, // Superpixel mapping (NOT in DVID)
+  enum class ERole {
+    GRAY_SCALE, //Grayscale data
+    BODY_LABEL, //Individual body data (sparsevol)
+    LABEL_BLOCK, //Segmentation data
+    ROI_CURVE, //ROI curve
+    BODY_ANNOTATION, //Body Annnotation
+    BOUND_BOX, //Bounding boxes of bodies
+    SKELETON, //Skeleton
+    THUMBNAIL, //Thumbnail
+    SUPERPIXEL, //Superpixel (NOT in DVID)
+    SP2BODY, // Superpixel mapping (NOT in DVID)
     /*ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,*/
-    ROLE_SPLIT_LABEL,
-    ROLE_SPLIT_STATUS, //Obsolete
-    ROLE_BODY_INFO, //Body information, e.g. size and bounding box
-    ROLE_MERGE_TEST_BODY_LABEL, //Obsolete
-    ROLE_MAX_BODY_ID, //Maximal body ID, Obsolete
-    ROLE_MULTISCALE_2D, //Obsolete
-    ROLE_MERGE_OPERATION, //Merge operation
-    ROLE_BOOKMARK, //Bookmark
-    ROLE_BOOKMARK_KEY,
-    ROLE_BODY_SYNAPSES,
-    ROLE_LABELSZ,
-    ROLE_SYNAPSE,
-    ROLE_TODO_LIST,
-    ROLE_SPARSEVOL_SIZE,
-    ROLE_NEUTU_CONFIG,
-    ROLE_RESULT_KEY,
-    ROLE_TASK_KEY,
-    ROLE_SPLIT_GROUP,
-    ROLE_SPLIT_TASK_KEY,
-    ROLE_SPLIT_RESULT_KEY,
-    ROLE_SPLIT_TASK_PROPERTY_KEY,
-    ROLE_SPLIT_RESULT_PROPERTY_KEY,
-    ROLE_MESH,
-    ROLE_MESHES_TARS,
-    ROLE_TAR_SUPERVOXELS,
-    ROLE_ROI_KEY,
-    ROLE_ROI_DATA_KEY,
-    ROLE_TEST_TASK_KEY,
-    ROLE_TEST_RESULT_KEY
+    SPLIT_LABEL,
+    SPLIT_STATUS, //Obsolete
+    BODY_INFO, //Body information, e.g. size and bounding box
+    MERGE_TEST_BODY_LABEL, //Obsolete
+    MAX_BODY_ID, //Maximal body ID, Obsolete
+    MULTISCALE_2D, //Obsolete
+    MERGE_OPERATION, //Merge operation
+    BOOKMARK, //Bookmark
+    BOOKMARK_KEY,
+    BODY_SYNAPSES,
+    LABELSZ,
+    SYNAPSE,
+    TODO_LIST,
+    SPARSEVOL_SIZE,
+    NEUTU_CONFIG,
+    RESULT_KEY,
+    TASK_KEY,
+    SPLIT_GROUP,
+    SPLIT_TASK_KEY,
+    SPLIT_RESULT_KEY,
+    SPLIT_TASK_PROPERTY_KEY,
+    SPLIT_RESULT_PROPERTY_KEY,
+    MESH,
+    MESHES_TARS,
+    TAR_SUPERVOXELS,
+    ROI_KEY,
+    ROI_DATA_KEY,
+    TEST_TASK_KEY,
+    TEST_RESULT_KEY
   };
 
-  enum EType {
-    TYPE_LABEL_GRAPH, TYPE_ROI, TYPE_GRAYSCALE8, TYPE_RGBA8, TYPE_LABLES64,
-    TYPE_LABELBLK, TYPE_LABELARRAY, TYPE_LABELMAP, TYPE_MULTISCALE_2D,
-    TYPE_MULTCHAN16, TYPE_KEY_VALUE
+  enum class EType {
+    LABEL_GRAPH, ROI, GRAYSCALE8, RGBA8, LABLES64,
+    LABELBLK, LABELARRAY, LABELMAP, MULTISCALE_2D,
+    MULTCHAN16, KEY_VALUE
   };
 
   static std::string GetName(ERole role);

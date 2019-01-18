@@ -1746,7 +1746,7 @@ void ZStackFrame::importPointList(const QString &filePath)
 {
   QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
   if (!puncta.isEmpty()) {
-    document()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    document()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
     foreach (ZPunctum* punctum, puncta) {
       document()->addObject(punctum);
     }

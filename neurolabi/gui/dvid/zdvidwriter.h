@@ -246,7 +246,7 @@ public:
     return m_errorOutput;
   }
 
-  void writeUrl(const std::string &url, const std::string &method = "POST");
+//  void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
 
@@ -304,9 +304,9 @@ private:
 
   ZJsonValue getLocMessage(const std::string &message);
 
-  bool runCommand(const QString &command, const QStringList &argList);
-  bool runCommand(const QString &command);
-  bool runCommand(QProcess &process);
+//  bool runCommand(const QString &command, const QStringList &argList);
+//  bool runCommand(const QString &command);
+//  bool runCommand(QProcess &process);
 
   void parseStandardOutput();
   void init();
@@ -326,6 +326,7 @@ private:
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
 #endif
 };
 

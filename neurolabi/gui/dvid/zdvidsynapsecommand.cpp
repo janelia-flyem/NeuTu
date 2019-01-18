@@ -25,7 +25,7 @@ ZStackDocCommand::DvidSynapseEdit::CompositeCommand::~CompositeCommand()
 void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -38,7 +38,7 @@ void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::undo()
 {
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();

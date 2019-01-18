@@ -94,11 +94,11 @@ private:
   bool m_showControlPanel = true;
   bool m_showObjectView = true;
   bool m_showStatusBar = false;
-  neutube3d::EVolumeRenderingMode m_volumeMode = neutube3d::VR_AUTO;
+  neutube3d::EVolumeRenderingMode m_volumeMode = neutube3d::EVolumeRenderingMode::VR_AUTO;
 
   bool m_deleteOnClose = false;
 
-  neutube3d::EWindowType m_windowType = neutube3d::TYPE_GENERAL;
+  neutube3d::EWindowType m_windowType = neutube3d::EWindowType::GENERAL;
 
   QMap<neutube3d::ERendererLayer, bool> m_layerVisible;
 };

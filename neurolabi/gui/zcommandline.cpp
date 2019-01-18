@@ -1109,8 +1109,8 @@ int ZCommandLine::skeletonizeDvid()
                 << std::endl;
       std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
                    "-d '{\"dataname\": \""
-                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                      ZDvidData::ROLE_BODY_LABEL,
+                << ZDvidData::GetName(ZDvidData::ERole::SKELETON,
+                                      ZDvidData::ERole::BODY_LABEL,
                                       target.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
                 << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"

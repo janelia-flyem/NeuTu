@@ -204,11 +204,11 @@ public:
 
   bool isOpaque();
 
-  inline static void setDefaultPenWidth(double width) {
+  inline static void SetDefaultPenWidth(double width) {
       m_defaultPenWidth = width;
   }
 
-  inline static double getDefaultPenWidth() {
+  inline static double GetDefaultPenWidth() {
     return m_defaultPenWidth;
   }
 
@@ -372,9 +372,9 @@ public:
 
 public:
 //  static bool isEmptyTree(const ZStackObject *obj);
-  static bool isSameSource(const std::string &s1, const std::string &s2);
-  static bool isSameClass(const std::string &s1, const std::string &s2);
-  static bool isSelected(const ZStackObject *obj);
+  static bool IsSameSource(const std::string &s1, const std::string &s2);
+  static bool IsSameClass(const std::string &s1, const std::string &s2);
+  static bool IsSelected(const ZStackObject *obj);
   template <typename T>
   static T* CastVoidPointer(void *p);
 

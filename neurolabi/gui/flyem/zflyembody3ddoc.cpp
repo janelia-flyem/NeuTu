@@ -1522,7 +1522,7 @@ void ZFlyEmBody3dDoc::updateBody(ZFlyEmBodyConfig &config)
 
   uint64_t bodyId = config.getBodyId();
 
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   if (config.getBodyType() != flyem::EBodyType::MESH) {
     ZSwcTree *tree = getBodyModel(
           bodyId, config.getDsLevel(), config.getBodyType());
@@ -1603,7 +1603,7 @@ void ZFlyEmBody3dDoc::updateBody(
 void ZFlyEmBody3dDoc::updateBody(
     uint64_t bodyId, const QColor &color, flyem::EBodyType type)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   if (type != flyem::EBodyType::MESH) {
     ZSwcTree *tree = getBodyModel(bodyId, 0, type);
     if (tree != NULL) {
@@ -2649,7 +2649,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
 //    QMutexLocker locker(&m_garbageMutex);
-//    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//    beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 //    blockSignals(true);
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
@@ -3866,7 +3866,7 @@ void ZFlyEmBody3dDoc::constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromT
 void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshMap)
 {
   QList<ZStackObject*> decorList =
-      m_helper->getObjectList(neutube3d::LAYER_DECORATION);
+      m_helper->getObjectList(neutube3d::ERendererLayer::DECORATION);
   for (auto &obj : decorList) {
     ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
     if (mesh) {
@@ -3945,7 +3945,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
           if (m_splitter->fromTar()) {
             getBodyManager().registerBody(parentId, newBodyId);
-            m_helper->releaseObject(neutube3d::LAYER_DECORATION, mesh);
+            m_helper->releaseObject(neutube3d::ERendererLayer::DECORATION, mesh);
             ZStackDocAccessor::AddObjectUnique(this, mesh);
           }
           constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
@@ -4042,7 +4042,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     }
   }
 
- m_helper->releaseObject(neutube3d::LAYER_DECORATION, mainMesh);
+ m_helper->releaseObject(neutube3d::ERendererLayer::DECORATION, mainMesh);
 
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
@@ -4400,7 +4400,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   cancelEventThread();
 
   ZOUT(LTRACE(), 5) << "Dump puncta";
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
   for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
        iter != punctumList.end(); ++iter) {

@@ -24,7 +24,7 @@ ZDvidGraySlice::ZDvidGraySlice()
 //  m_maxWidth = 512;
 //  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_GRAY_SCALE);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
   getHelper()->useCenterCut(false);
 }
 

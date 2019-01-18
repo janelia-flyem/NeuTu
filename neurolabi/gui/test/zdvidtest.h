@@ -124,13 +124,13 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getDataUrl("test"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE,
-                               ZDvidData::ROLE_BODY_LABEL, "bodies"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
+                               ZDvidData::ERole::BODY_LABEL, "bodies"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE,
-                               ZDvidData::ROLE_BODY_LABEL, "bodies2"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
+                               ZDvidData::ERole::BODY_LABEL, "bodies2"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/info",
             dvidUrl.getInfoUrl("test"));
 
@@ -452,7 +452,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
 
 //  target.useLabelArray(true);
-  target.setSegmentationType(ZDvidData::TYPE_LABELARRAY);
+  target.setSegmentationType(ZDvidData::EType::LABELARRAY);
   dvidUrl4.setDvidTarget(target, "3456");
 //  std::cout << target.getBodyLabelName() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
@@ -519,7 +519,7 @@ TEST(ZDvidTest, ZDvidUrl)
             ZDvidUrl::ExtractSplitTaskKey(
               "http://localhost:8000/api/node/4d3e/split/key/"));
 
-  target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  target.setSegmentationType(ZDvidData::EType::LABELMAP);
   std::cout << target.getSegmentationName() << std::endl;
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",

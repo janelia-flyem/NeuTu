@@ -77,7 +77,8 @@ HEADERS += \
     $$PWD/zflyembodystatustest.h \
     $$PWD/zunittest.h \
     $$PWD/cypherquerytest.h \
-    $$PWD/zwidgetmessagetest.h
+    $$PWD/zwidgetmessagetest.h \
+    $$PWD/zstackobjecttest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

@@ -969,7 +969,7 @@ void Neu3Window::test()
 
 void Neu3Window::testBodyChange()
 {
-  m_3dwin->setColorMode(neutube3d::LAYER_MESH, "Mesh Source");
+  m_3dwin->setColorMode(neutube3d::ERendererLayer::MESH, "Mesh Source");
   static ZRandomGenerator rand;
 
   QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
