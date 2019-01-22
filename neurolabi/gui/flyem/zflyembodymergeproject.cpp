@@ -488,6 +488,11 @@ bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
   return m_annotMerger.isFinal(status);
 }
 
+bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
+{
+  return m_annotMerger.isMergable(status);
+}
+
 namespace {
 
 QString compose_body_status_message(
