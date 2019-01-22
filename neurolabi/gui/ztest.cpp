@@ -28766,7 +28766,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   QElapsedTimer timer;
   timer.start();
   for (int i = 0; i < 1000; ++i) {
@@ -29380,7 +29379,7 @@ void ZTest::test(MainWindow *host)
   std::cout << ZStackObject::GetTypeName(ZStackObject::EType::SWC) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetDvidWriter("MB_Test");
 
   writer->createData("keyvalue", "test3");

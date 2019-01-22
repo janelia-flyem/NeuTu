@@ -130,6 +130,8 @@ public:
   QList<QString> getBodyStatusList() const;
   int getStatusRank(const std::string &status) const;
   bool isFinalStatus(const std::string &status) const;
+  bool isMergableStatus(const std::string &status) const;
+
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(

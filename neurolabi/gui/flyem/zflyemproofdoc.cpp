@@ -650,6 +650,16 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!getMergeProject()->isMergableStatus(anno.getStatus())) {
+      ZDialogFactory::Warn(
+            "Cannot Merge",
+            QString("Body (%1) with status %2 cannot be merged with any other body.").
+            arg(iter.key()).arg(anno.getStatus().c_str()),
+            NULL);
+      okToContinue = false;
+      break;
+    }
+
     if (!anno.getName().empty()) {
       uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
 
@@ -659,25 +669,9 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
       nameMap[mappedBodyId].append(anno.getName().c_str());
 //      nameMap[iter.key()] = anno.getName().c_str();
     }
-//    if (anno.getStatus() == "Finalized") {
-    /*
-    if (getMergeProject()->isFinalStatus(anno.getStatus())) {
-      finalizedBodyArray.push_back(iter.key());
-    }
-    */
   }
 
-//  if (!finalizedBodyArray.empty()) {
-//    QString detail = getAnnotationFinalizedWarningDetail(
-//          finalizedBodyArray, "Finalized");
-//    okToContinue = ZDialogFactory::Ask(
-//          "Merging Finalized Body",
-//          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
-//          detail,
-//          NULL);
-//  }
-
-  {
+  if (okToContinue) {
     QString msg = getMergeProject()->composeFinalStatusMessage(m_annotationMap);
     if (!msg.isEmpty()) {
       okToContinue = ZDialogFactory::Ask(
@@ -687,7 +681,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
     }
   }
 
-  {
+  if (okToContinue) {
     QString msg = getMergeProject()->composeStatusConflictMessage(m_annotationMap);
     if (!msg.isEmpty()) {
       okToContinue = ZDialogFactory::Ask(
