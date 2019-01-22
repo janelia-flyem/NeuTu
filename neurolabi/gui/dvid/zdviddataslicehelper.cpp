@@ -1,6 +1,6 @@
 #include "zdviddataslicehelper.h"
 #include "zrect2d.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "zarbsliceviewparam.h"
 

@@ -16,9 +16,9 @@
 #include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackdocproxy.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 #include <limits>
 #include <random>

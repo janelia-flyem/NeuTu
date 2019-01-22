@@ -21,7 +21,7 @@
 #include "zstackobjectaccessor.h"
 #include "zgraphptr.h"
 #include "zstackutil.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {

@@ -15,10 +15,10 @@
 #include "zobject3darray.h"
 #include "zstack.hxx"
 #include "zpainter.h"
-#include "zcuboid.h"
-#include "zintcuboid.h"
-#include "zpoint.h"
-#include "zintpoint.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintpoint.h"
 
 using namespace std;
 

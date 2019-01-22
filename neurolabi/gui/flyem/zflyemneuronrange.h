@@ -2,7 +2,7 @@
 #define ZFLYEMNEURONRANGE_H
 
 #include <map>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZSwcTree;
 

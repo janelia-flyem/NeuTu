@@ -18,9 +18,9 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
 

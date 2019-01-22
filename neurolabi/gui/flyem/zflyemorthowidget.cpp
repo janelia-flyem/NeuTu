@@ -3,7 +3,7 @@
 #include <QGridLayout>
 #include <QKeyEvent>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthomvc.h"
 #include "dvid/zdvidtarget.h"

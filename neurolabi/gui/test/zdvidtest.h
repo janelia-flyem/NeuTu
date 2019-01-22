@@ -13,7 +13,7 @@
 #include "dvid/zdviddata.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidnode.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zobject3dscan.h"
 
 #ifdef _USE_GTEST_

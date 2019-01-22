@@ -29,8 +29,8 @@
 #endif
 #include "zstring.h"
 #include "zstackfactory.h"
-#include "zpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "core/utilities.h"
 

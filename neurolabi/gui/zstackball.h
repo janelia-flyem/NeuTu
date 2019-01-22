@@ -4,8 +4,9 @@
 #include "zqtheader.h"
 
 #include "include/tz_stdint.h"
-#include "zpoint.h"
+
 #include "zstackobject.h"
+#include "geometry/zpoint.h"
 #include "core/neutube_def.h"
 
 class ZIntPoint;

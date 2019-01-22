@@ -24,7 +24,7 @@
 #include "z3dinteractionhandler.h"
 #include "z3dshaderprogram.h"
 #include "zeventlistenerparameter.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
 //#include "z3dview.h"

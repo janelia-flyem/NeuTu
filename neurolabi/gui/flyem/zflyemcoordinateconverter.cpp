@@ -1,6 +1,6 @@
 #include "zflyemcoordinateconverter.h"
 #include "zerror.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "dvid/zdvidinfo.h"
 
 ZFlyEmCoordinateConverter::ZFlyEmCoordinateConverter() :

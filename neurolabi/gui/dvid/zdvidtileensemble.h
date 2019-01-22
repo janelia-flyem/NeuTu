@@ -10,8 +10,8 @@
 #include "zdvidtarget.h"
 #include "zdvidtile.h"
 #include "zdvidreader.h"
-#include "zsharedpointer.h"
-#include "zintcuboid.h"
+#include "core/zsharedpointer.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackView;
 class ZDvidPatchDataFetcher;

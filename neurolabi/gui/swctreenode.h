@@ -8,8 +8,8 @@
 
 #include "tz_swc_tree.h"
 #include "core/neutube_def.h"
-#include "zcuboid.h"
-#include "zpoint.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zpoint.h"
 
 class ZWeightedPointArray;
 class ZStack;

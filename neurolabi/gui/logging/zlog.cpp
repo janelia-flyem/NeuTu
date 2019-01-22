@@ -41,7 +41,7 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    LINFO() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    ZOUT(LINFO(), 5) << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
     m_tags = QJsonObject();
   }
   m_started = false;

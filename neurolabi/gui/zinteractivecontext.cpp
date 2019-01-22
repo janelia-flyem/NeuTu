@@ -1,5 +1,5 @@
 #include "zinteractivecontext.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "widgets/zimagewidget.h"
 
 ZInteractiveContext::ZInteractiveContext()

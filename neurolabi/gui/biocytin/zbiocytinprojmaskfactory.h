@@ -1,7 +1,7 @@
 #ifndef ZBIOCYTINPROJMASKFACTORY_H
 #define ZBIOCYTINPROJMASKFACTORY_H
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "core/neutube_def.h"
 
 class ZStack;

@@ -4,7 +4,7 @@
 #include "z3dboundedfilter.h"
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "zexception.h"
 #include <QString>
 

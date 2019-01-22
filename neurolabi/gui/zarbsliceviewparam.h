@@ -1,8 +1,8 @@
 #ifndef ZARBSLICEVIEWPARAM_H
 #define ZARBSLICEVIEWPARAM_H
 
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 
 class QRect;
 class ZAffinePlane;

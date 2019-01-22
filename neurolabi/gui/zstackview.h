@@ -13,11 +13,11 @@
 #include <QCheckBox>
 
 #include "zstackframe.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"

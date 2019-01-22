@@ -2,7 +2,7 @@
 #define ZCLOSEDCURVETEST_H
 
 #include "ztestheader.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 #include "zclosedcurve.h"
 
 #ifdef _USE_GTEST_

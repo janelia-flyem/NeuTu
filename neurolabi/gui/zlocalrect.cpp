@@ -1,7 +1,7 @@
 #include "zlocalrect.h"
 #include "zlocalneuroseg.h"
 #include "tz_r2_rect.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 ZLocalRect::ZLocalRect()
 {

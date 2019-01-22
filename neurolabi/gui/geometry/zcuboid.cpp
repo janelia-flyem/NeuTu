@@ -1,4 +1,4 @@
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 
 #include <math.h>
 #include <cstddef>

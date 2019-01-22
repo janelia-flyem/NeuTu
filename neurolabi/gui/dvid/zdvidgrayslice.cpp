@@ -9,7 +9,7 @@
 #include "zstackviewparam.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprocessor.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "neutubeconfig.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"

@@ -5,7 +5,8 @@
 #include <QStringList>
 #include <string>
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
+
 #include "tz_stdint.h"
 #include "zstackball.h"
 #include "zjsonobject.h"

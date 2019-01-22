@@ -2,8 +2,8 @@
 #define ZINTPOINTARRAY_H
 
 #include <vector>
+#include "core/zsharedpointer.h"
 #include "zintpoint.h"
-#include "zsharedpointer.h"
 
 class ZIntPointArray;
 

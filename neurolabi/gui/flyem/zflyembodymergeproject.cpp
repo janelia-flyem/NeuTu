@@ -5,7 +5,7 @@
 #include <QItemSelectionModel>
 #include <QDesktopWidget>
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
 #include "dvid/zdvidreader.h"
 #include "zstackframe.h"

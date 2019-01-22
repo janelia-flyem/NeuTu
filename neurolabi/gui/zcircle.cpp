@@ -6,7 +6,7 @@
 #include <math.h>
 #include "zcircle.h"
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zpainter.h"
 
 const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;

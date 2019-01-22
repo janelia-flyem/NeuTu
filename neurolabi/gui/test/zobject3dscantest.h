@@ -4,13 +4,13 @@
 #include "ztestheader.h"
 #include "zobject3dscan.h"
 #include "neutubeconfig.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 #include "tz_iarray.h"
 #include "zdebug.h"
 #include "zdoublevector.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 
 #ifdef _USE_GTEST_

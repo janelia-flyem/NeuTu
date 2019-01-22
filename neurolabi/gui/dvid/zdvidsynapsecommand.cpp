@@ -1,7 +1,7 @@
 #include "zdvidsynapsecommand.h"
 
 #include "logging/zqslog.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zdvidsynapse.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemproofdoc.h"

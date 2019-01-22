@@ -1,7 +1,7 @@
 #include "synapsereviewinputdialog.h"
 #include "ui_synapsereviewinputdialog.h"
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 SynapseReviewInputDialog::SynapseReviewInputDialog(QWidget *parent) :
     QDialog(parent),

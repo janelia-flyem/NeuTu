@@ -8,7 +8,7 @@
 #include <QMutex>
 
 #include "tz_stdint.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZDvidTarget;
 namespace libdvid {

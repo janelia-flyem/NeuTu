@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <string>
+
+#include "geometry/zpointarray.h"
+#include "geometry/zlinesegmentarray.h"
+
 #include "flyem/zhotspot.h"
 #include "ztextlinecompositer.h"
-#include "zpointarray.h"
-#include "zlinesegmentarray.h"
+
 
 namespace flyem {
 

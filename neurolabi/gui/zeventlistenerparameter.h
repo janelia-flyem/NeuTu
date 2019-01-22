@@ -1,7 +1,7 @@
 #ifndef ZEVENTLISTENERPARAMETER_H
 #define ZEVENTLISTENERPARAMETER_H
 
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include <QList>
 #include <QMouseEvent>
 #include <QKeyEvent>

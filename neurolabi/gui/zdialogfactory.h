@@ -9,7 +9,6 @@
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
-#include "zparameter.h"
 #include "dialogs/zspinboxgroupdialog.h"
 
 class QSpacerItem;

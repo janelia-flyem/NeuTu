@@ -8,7 +8,7 @@
 #include <queue>
 #include "zmatrix.h"
 #include "zrandomgenerator.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "tz_swc_tree.h"
 #include "zswcpath.h"
 

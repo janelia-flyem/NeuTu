@@ -2,7 +2,7 @@
 #define ZLINESEGMENTTEST_H
 
 #include "ztestheader.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 #ifdef _USE_GTEST_
 

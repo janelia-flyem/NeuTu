@@ -284,13 +284,14 @@ include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
 include(logging/logging.pri)
-include(qtgui/qtgui.pri)
+include(vis3d.pri)
+include(qt/qt.pri)
+include(widgets/widgets.pri)
 
 # Input
 RESOURCES = gui.qrc
 
 HEADERS += mainwindow.h \
-    widgets/zimagewidget.h \
     zstackview.h \
     zimage.h \
     zstackframe.h \
@@ -322,8 +323,6 @@ HEADERS += mainwindow.h \
     dialogs/flyemskeletonizationdialog.h \
     dialogs/parameterdialog.h \
     dialogs/pixelquerydialog.h \
-    z3dwindow.h \
-    z3dinteractionhandler.h \
     zobjsitem.h \
     zobjsmodel.h \
     zdirectionaltemplatechain.h \
@@ -331,63 +330,26 @@ HEADERS += mainwindow.h \
     zclickablelabel.h \
     zcolormapeditor.h \
     zselectfilewidget.h \
-    z3drendererbase.h \
-    z3dprimitiverenderer.h \
-    z3dsphererenderer.h \
-    z3dlinerenderer.h \
-    z3dlinewithfixedwidthcolorrenderer.h \
-    z3dconerenderer.h \
-    z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
-    z3dbackgroundrenderer.h \
     zwidgetsgroup.h \
-    z3dcanvas.h \
     zspinbox.h \
-    zparameter.h \
-    zstringparameter.h \
-    z3drenderport.h \
-    z3dnetworkevaluator.h \
-    z3dport.h \
-    zoptionparameter.h \
     zcombobox.h \
-    znumericparameter.h \
     zspinboxwithslider.h \
-    z3dcameraparameter.h \
     zeventlistenerparameter.h \
-    z3dtransferfunction.h \
-    z3dtransferfunctioneditor.h \
-    z3dtransferfunctionwidgetwitheditorwindow.h \
-    z3dvolume.h \
-    z3dpickingmanager.h \
-    z3dsdfont.h \
-    z3dfontrenderer.h \
-    z3dcanvaseventlistener.h \
     zspanslider.h \
-    zcuboid.h \
     ztest.h \
-    z3dgpuinfo.h \
-    z3dtexture.h \
-    z3dcamera.h \
-    z3dgl.h \
     zglmutils.h \
     znormcolormap.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
-    z3dshaderprogram.h \
-    z3dtexturecopyrenderer.h \
-    z3dtextureblendrenderer.h \
-    z3dtexturecoordinaterenderer.h \
-    z3dvolumeraycasterrenderer.h \
     zlocsegchain.h \
     zcurve.h \
-    z3dvolumeslicerenderer.h \
     zxmldoc.h \
     zintmap.h \
     flyem/zsegmentationanalyzer.h \
     flyem/zsegmentationbundle.h \
     flyem/zflyemstackframe.h \
     flyem/zflyemstackdoc.h \
-    z3drendertarget.h \
     z3dgraph.h \
     dialogs/swcsizedialog.h \
     dialogs/swcskeletontransformdialog.h \
@@ -401,13 +363,10 @@ HEADERS += mainwindow.h \
     zmoviemaker.h \
     zmoviephotographer.h \
     zmoviescript.h \
-    z3drotation.h \
     zpunctamovieactor.h \
     zstackmovieactor.h \
     zmoviesceneclipper.h\
-    z3darrowrenderer.h \
     zmoviecamera.h \
-    z3dimage2drenderer.h \
     flyem/zflyemdatabundle.h \
     flyem/zflyemdataframe.h \
     flyemdataform.h \
@@ -418,14 +377,6 @@ HEADERS += mainwindow.h \
     zmoviestage.h \
     dialogs/zalphadialog.h \
     flyem/flyemdataframeoptiondialog.h \
-    z3dshadergroup.h \
-    z3dcompositor.h \
-    z3dgeometryfilter.h \
-    z3dgraphfilter.h \
-    z3dpunctafilter.h \
-    z3dsurfacefilter.h \
-    z3dswcfilter.h \
-    z3dscene.h \
     zqtbarprogressreporter.h \
     zstackdoccommand.h \
     zcursorstore.h \
@@ -449,7 +400,6 @@ HEADERS += mainwindow.h \
     zpunctumio.h \
     zstatisticsutils.h \
     zswcrangeanalyzer.h \
-    zellipsoid.h \
     dialogs/informationdialog.h \
     zswcnodezrangeselector.h \
     zswcnodecompositeselector.h \
@@ -460,7 +410,6 @@ HEADERS += mainwindow.h \
     dialogs/autosaveswclistdialog.h \
     zswcfilelistmodel.h \
     flyem/zflyemqualityanalyzer.h \
-    flyem/zintcuboidcomposition.h \
     zswcglobalfeatureanalyzer.h \
     zcommandline.h \
     zswclocationanalyzer.h \
@@ -544,7 +493,6 @@ HEADERS += mainwindow.h \
     dvid/zdvidwriter.h \
     dialogs/dvidskeletonizedialog.h \
     zdialogfactory.h \
-    widgets/zdvidserverwidget.h \
     zwidgetfactory.h \
     zlabelededitwidget.h \
     zlabeledcombowidget.h \
@@ -556,7 +504,6 @@ HEADERS += mainwindow.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
     dialogs/shapepaperdialog.h \
-    zparameterarray.h \
     zframefactory.h \
     zactionbutton.h \
     dvid/zdvidbufferreader.h \
@@ -567,7 +514,6 @@ HEADERS += mainwindow.h \
     zsleeper.h \
     dvid/libdvidheader.h \
     dialogs/dvidoperatedialog.h \
-    z3dwindowfactory.h \
     zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
@@ -661,7 +607,6 @@ HEADERS += mainwindow.h \
     dialogs/flyembodyinfodialog.h \
     flyem/zflyembookmarkannotationdialog.h \
     flyem/zflyembody3ddoc.h \
-    z3ddef.h \
     flyem/zflyembookmarkptrarray.h \
     biocytin/zbiocytinprojectiondoc.h \
     dialogs/zflyemsplitcommitdialog.h \
@@ -718,7 +663,6 @@ HEADERS += mainwindow.h \
     protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
-    widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -740,10 +684,8 @@ HEADERS += mainwindow.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
     dialogs/zdvidbodypositiondialog.h \
-    widgets/z3dtabwidget.h \
     zcubearraymovieactor.h \
     dialogs/zflyemsplituploadoptiondialog.h \
-    widgets/zaxiswidget.h \
     dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
     dialogs/ztestoptiondialog.h \
@@ -755,7 +697,7 @@ HEADERS += mainwindow.h \
     dialogs/zflyemskeletonupdatedialog.h \
     dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
-    widgets/zdvidsourcewidget.h \
+    z3dwindow.h \
     z3dmainwindow.h \
     dvid/zdvidgrayscale.h \
     zscrollslicestrategy.h \
@@ -765,19 +707,15 @@ HEADERS += mainwindow.h \
     dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
     flyem/zflyemorthoviewhelper.h \
-    widgets/zcomboeditwidget.h \
     dialogs/zcomboeditdialog.h \
     dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
-    z3dfiltersetting.h \
     zglobal.h \
     flyem/zstackwatershedcontainer.h \
     dvid/zdvidresultservice.h \
     flyem/zserviceconsumer.h \
     zstackgarbagecollector.h \
     dialogs/zflyembodysplitdialog.h \
-    widgets/zbodylistwidget.h \
-    widgets/flyembodyinfowidget.h \
     neu3window.h \
     flyem/zflyembody3ddockeyprocessor.h \
     zstackdockeyprocessor.h \
@@ -786,35 +724,20 @@ HEADERS += mainwindow.h \
     zflags.h \
     zbbox.h \
     zspinboxwithscrollbar.h \
-    z3dshader.h \
-    z3dcontext.h \
     zsysteminfo.h \
-    z3dshadermanager.h \
-    z3dfilter.h \
     zvertexbufferobject.h \
     zvertexarrayobject.h \
-    z3dtransformparameter.h \
-    z3dglobalparameters.h \
-    z3dboundedfilter.h \
-    z3dcanvaspainter.h \
     zmesh.h \
     zmeshio.h \
     zmeshutils.h \
-    z3dmeshfilter.h \
-    z3dmeshrenderer.h \
     zstringutils.h \
-    z3dvolumefilter.h \
-    z3dtextureandeyecoordinaterenderer.h \
-    z3dview.h \
     ztakescreenshotwidget.h \
     zioutils.h \
     zmeshobjsmodel.h \
-    widgets/ztextedit.h \
     flyem/zflyembodylistmodel.h \
     flyem/zflyembodylistview.h \
     flyem/zflyembodylistdelegate.h \
     flyem/zflyembodyideditor.h \
-    widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
     dialogs/dvidbranchdialog.h \
@@ -832,12 +755,9 @@ HEADERS += mainwindow.h \
     flyem/zflyemmeshfactory.h \
     protocols/taskbodyhistory.h \
     protocols/taskbodycleave.h \
-    widgets/zpythonprocess.h \
     dialogs/zflyemproofsettingdialog.h \
-    widgets/zroilistview.h \
     flyem/zflyemroiobjsmodel.h \
     zstackdocptr.h \
-    z3dstackdocfilter.h \
     zstackdoc3dhelper.h \
     zstackobjectinfo.h \
     zstackobjectptr.h \
@@ -866,8 +786,6 @@ HEADERS += mainwindow.h \
     mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
-    core/utilities.h \
-    core/qthelper.h \
     flyem/zflyemtododelegate.h \
     zmenuconfig.h \
     protocols/taskbodymerge.h \
@@ -888,8 +806,6 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyconfig.h \
     flyem/zflyembodymanager.h \
     z3dwindowcontroller.h \
-    z3d2dslicerenderer.h \
-    z3d2dslicefilter.h \
     zstackblockfactory.h \
     dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
@@ -898,7 +814,6 @@ HEADERS += mainwindow.h \
     protocols/protocoltaskconfig.h \
     data3d/zstackobjectconfig.h \
     protocols/taskfalsesplitreview.h \
-    z3dcamerautils.h \
     flyem/zflyembodyenv.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
@@ -909,7 +824,6 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     flyem/zflyembodyannotationmerger.h \
     flyem/zflyemroimanager.h \
-    widgets/zoptionlistwidget.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
     dialogs/neuprintsetupdialog.h
@@ -1003,9 +917,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemroitooldialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
-    widgets/zaxiswidget.ui \
-    widgets/zbodylistwidget.ui \
-    widgets/flyembodyinfowidget.ui \
     neu3window.ui \
     dialogs/ztestoptiondialog.ui \
     dialogs/zinfodialog.ui \
@@ -1014,19 +925,16 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodyscreenshotdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
-    widgets/zdvidsourcewidget.ui \
     dialogs/zflyemgrayscaledialog.ui \
     dialogs/zcomboeditdialog.ui \
     dialogs/zflyembodycomparisondialog.ui \
     dialogs/zflyembodysplitdialog.ui \
     dialogs/dvidbranchdialog.ui \
-    widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
     dialogs/zflyemproofsettingdialog.ui \
     dialogs/zneu3sliceviewdialog.ui \
     dialogs/zflyemtodoannotationdialog.ui \
     dialogs/neuprintquerydialog.ui \
-    widgets/zoptionlistwidget.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
@@ -1035,7 +943,6 @@ FORMS += dialogs/settingdialog.ui \
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
-    widgets/zimagewidget.cpp \
     zimage.cpp \
     zstackframe.cpp \
     zstackdoc.cpp \
@@ -1067,7 +974,6 @@ SOURCES += main.cpp \
     dialogs/parameterdialog.cpp \
     dialogs/pixelquerydialog.cpp \
     z3dwindow.cpp \
-    z3dinteractionhandler.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
     zcolormap.cpp \
@@ -1077,52 +983,18 @@ SOURCES += main.cpp \
     zlocsegchain.cpp \
     zcurve.cpp \
     zselectfilewidget.cpp \
-    z3drendererbase.cpp \
-    z3dprimitiverenderer.cpp \
-    z3dsphererenderer.cpp \
-    z3dlinerenderer.cpp \
-    z3dlinewithfixedwidthcolorrenderer.cpp \
-    z3dconerenderer.cpp \
-    z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
-    z3dbackgroundrenderer.cpp \
     zwidgetsgroup.cpp \
-    z3dcanvas.cpp \
     zspinbox.cpp \
-    zparameter.cpp \
-    zstringparameter.cpp \
-    z3drenderport.cpp \
-    z3dnetworkevaluator.cpp \
-    z3dport.cpp \
     zcombobox.cpp \
-    znumericparameter.cpp \
     zspinboxwithslider.cpp \
-    z3dcameraparameter.cpp \
     zeventlistenerparameter.cpp \
-    z3dtransferfunction.cpp \
-    z3dtransferfunctioneditor.cpp \
-    z3dtransferfunctionwidgetwitheditorwindow.cpp \
-    z3dvolume.cpp \
-    z3dpickingmanager.cpp \
-    z3dsdfont.cpp \
-    z3dfontrenderer.cpp \
     zspanslider.cpp \
     ztest.cpp \
-    z3dgpuinfo.cpp \
-    z3dtexture.cpp \
-    z3dcamera.cpp \
-    z3dgl.cpp \
     znormcolormap.cpp \
     dialogs/swctypedialog.cpp \
-    z3dshaderprogram.cpp \
-    z3dtexturecopyrenderer.cpp \
-    z3dtextureblendrenderer.cpp \
-    z3dtexturecoordinaterenderer.cpp \
-    z3dvolumeraycasterrenderer.cpp \
-    z3dvolumeslicerenderer.cpp \
     flyem/zflyemstackframe.cpp \
     flyem/zflyemstackdoc.cpp \
-    z3drendertarget.cpp \
     z3dgraph.cpp \
     dialogs/swcsizedialog.cpp \
     dialogs/swcskeletontransformdialog.cpp \
@@ -1135,13 +1007,10 @@ SOURCES += main.cpp \
     zmoviemaker.cpp \
     zmoviephotographer.cpp \
     zmoviescript.cpp \
-    z3drotation.cpp \
     zpunctamovieactor.cpp \
     zstackmovieactor.cpp \
     zmoviesceneclipper.cpp \
-    z3darrowrenderer.cpp \
     zmoviecamera.cpp \
-    z3dimage2drenderer.cpp \
     flyem/zflyemdatabundle.cpp \
     flyem/zflyemdataframe.cpp \
     flyemdataform.cpp \
@@ -1152,14 +1021,6 @@ SOURCES += main.cpp \
     zmoviestage.cpp \
     dialogs/zalphadialog.cpp \
     flyem/flyemdataframeoptiondialog.cpp \
-    z3dshadergroup.cpp \
-    z3dcompositor.cpp \
-    z3dgeometryfilter.cpp \
-    z3dgraphfilter.cpp \
-    z3dpunctafilter.cpp \
-    z3dsurfacefilter.cpp \
-    z3dswcfilter.cpp \
-    z3dscene.cpp \
     zqtbarprogressreporter.cpp \
     zstackdoccommand.cpp \
     zcursorstore.cpp \
@@ -1253,7 +1114,6 @@ SOURCES += main.cpp \
     dvid/zdvidwriter.cpp \
     dialogs/dvidskeletonizedialog.cpp \
     zdialogfactory.cpp \
-    widgets/zdvidserverwidget.cpp \
     zwidgetfactory.cpp \
     zlabelededitwidget.cpp \
     zlabeledcombowidget.cpp \
@@ -1266,7 +1126,6 @@ SOURCES += main.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \
-    zparameterarray.cpp \
     zframefactory.cpp \
     zactionbutton.cpp \
     dvid/zdvidbufferreader.cpp \
@@ -1370,7 +1229,6 @@ SOURCES += main.cpp \
     dialogs/flyembodyinfodialog.cpp \
     flyem/zflyembookmarkannotationdialog.cpp \
     flyem/zflyembody3ddoc.cpp \
-    z3ddef.cpp \
     flyem/zflyembookmarkptrarray.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
     dialogs/zflyemsplitcommitdialog.cpp \
@@ -1428,7 +1286,6 @@ SOURCES += main.cpp \
     protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
-    widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
@@ -1446,10 +1303,8 @@ SOURCES += main.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
     dialogs/zdvidbodypositiondialog.cpp \
-    widgets/z3dtabwidget.cpp \
     zcubearraymovieactor.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
-    widgets/zaxiswidget.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
     dialogs/ztestoptiondialog.cpp \
@@ -1461,7 +1316,6 @@ SOURCES += main.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
-    widgets/zdvidsourcewidget.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
     zscrollslicestrategy.cpp \
@@ -1471,55 +1325,35 @@ SOURCES += main.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     flyem/zflyemorthoviewhelper.cpp \
-    widgets/zcomboeditwidget.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
-    z3dfiltersetting.cpp \
     zglobal.cpp \
     flyem/zstackwatershedcontainer.cpp \
     dvid/zdvidresultservice.cpp \
     flyem/zserviceconsumer.cpp \
     zstackgarbagecollector.cpp \
     dialogs/zflyembodysplitdialog.cpp \
-    widgets/zbodylistwidget.cpp \
-    widgets/flyembodyinfowidget.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     flyem/zflyembody3ddockeyprocessor.cpp \
     zstackdockeyprocessor.cpp \
-    zoptionparameter.cpp \
     zspinboxwithscrollbar.cpp \
-    z3dshader.cpp \
-    z3dcontext.cpp \
     zsysteminfo.cpp \
-    z3dshadermanager.cpp \
-    z3dfilter.cpp \
     zvertexbufferobject.cpp \
     zvertexarrayobject.cpp \
-    z3dtransformparameter.cpp \
-    z3dglobalparameters.cpp \
-    z3dboundedfilter.cpp \
-    z3dcanvaspainter.cpp \
     zmesh.cpp \
     zmeshio.cpp \
     zmeshutils.cpp \
-    z3dmeshfilter.cpp \
-    z3dmeshrenderer.cpp \
     zstringutils.cpp \
-    z3dvolumefilter.cpp \
-    z3dtextureandeyecoordinaterenderer.cpp \
-    z3dview.cpp \
     ztakescreenshotwidget.cpp \
     zioutils.cpp \
     zexception.cpp \
     zmeshobjsmodel.cpp \
-    widgets/ztextedit.cpp \
     flyem/zflyembodylistmodel.cpp \
     flyem/zflyembodylistview.cpp \
     flyem/zflyembodylistdelegate.cpp \
     flyem/zflyembodyideditor.cpp \
-    widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
     dialogs/dvidbranchdialog.cpp \
@@ -1539,11 +1373,8 @@ SOURCES += main.cpp \
     flyem/zflyemmeshfactory.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
-    widgets/zpythonprocess.cpp \
     dialogs/zflyemproofsettingdialog.cpp \
-    widgets/zroilistview.cpp \
     flyem/zflyemroiobjsmodel.cpp \
-    z3dstackdocfilter.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
     zstackdocproxy.cpp \
@@ -1571,8 +1402,6 @@ SOURCES += main.cpp \
     mvc/zpositionmapper.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
-    core/utilities.cpp \
-    core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
     zmenuconfig.cpp \
     protocols/taskbodymerge.cpp \
@@ -1592,8 +1421,6 @@ SOURCES += main.cpp \
     flyem/zflyembodyconfig.cpp \
     flyem/zflyembodymanager.cpp \
     z3dwindowcontroller.cpp \
-    z3d2dslicerenderer.cpp \
-    z3d2dslicefilter.cpp \
     zstackblockfactory.cpp \
     dvid/zdvidstackblockfactory.cpp \
     zstackblocksource.cpp \
@@ -1602,7 +1429,6 @@ SOURCES += main.cpp \
     protocols/protocoltaskconfig.cpp \
     data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
-    z3dcamerautils.cpp \
     flyem/zflyembodyenv.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     dvid/zdvidblockstream.cpp \
@@ -1612,7 +1438,6 @@ SOURCES += main.cpp \
     dialogs/neuprintquerydialog.cpp \
     flyem/zflyembodyannotationmerger.cpp \
     flyem/zflyemroimanager.cpp \
-    widgets/zoptionlistwidget.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
     dialogs/neuprintsetupdialog.cpp

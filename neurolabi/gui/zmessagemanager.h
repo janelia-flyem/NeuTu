@@ -2,7 +2,7 @@
 #define ZMESSAGEMANAGER_H
 
 #include <QObject>
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZMessage;
 class QWidget;

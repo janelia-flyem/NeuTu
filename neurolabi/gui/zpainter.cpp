@@ -8,7 +8,7 @@
 
 #include "QsLog.h"
 #include "neutubeconfig.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zimage.h"
 #include "tz_math.h"
 #include "zpixmap.h"

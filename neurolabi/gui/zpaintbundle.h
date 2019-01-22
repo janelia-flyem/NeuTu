@@ -7,9 +7,9 @@
 #include "swctreenode.h"
 #include "zstackball.h"
 #include "tz_math.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zswctree.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackobjectsourcefactory.h"
 
 #include <boost/iterator/iterator_facade.hpp>

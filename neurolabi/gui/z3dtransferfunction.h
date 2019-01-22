@@ -1,11 +1,12 @@
 #ifndef Z3DTRANSFERFUNCTION_H
 #define Z3DTRANSFERFUNCTION_H
 
-#include "z3dgl.h"
-#include "zcolormap.h"
-#include "zparameter.h"
 #include <QObject>
 #include <vector>
+
+#include "z3dgl.h"
+#include "zcolormap.h"
+#include "widgets/zparameter.h"
 
 class Z3DVolume;
 

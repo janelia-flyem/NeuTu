@@ -8,7 +8,7 @@
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"

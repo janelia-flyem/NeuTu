@@ -5,7 +5,7 @@
 #include "zmesh.h"
 #include "zstack.hxx"
 #include "tz_stack_neighborhood.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "tz_stack_bwmorph.h"
 #include "misc/zmarchingcube.h"

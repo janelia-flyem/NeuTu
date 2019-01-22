@@ -3,7 +3,7 @@
 
 #include <QAbstractTableModel>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "flyem/zflyemtodopresenter.h"
 
 class ZStackDoc;

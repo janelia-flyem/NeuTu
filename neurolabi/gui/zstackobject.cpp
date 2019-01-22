@@ -1,7 +1,7 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
 //#include "zswctree.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "core/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";

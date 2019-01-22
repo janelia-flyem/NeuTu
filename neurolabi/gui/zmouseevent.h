@@ -2,8 +2,8 @@
 #define ZMOUSEEVENT_H
 
 #include <qnamespace.h>
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "core/neutube_def.h"
 
 class QMouseEvent;

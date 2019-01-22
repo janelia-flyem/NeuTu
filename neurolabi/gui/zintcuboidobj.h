@@ -2,7 +2,7 @@
 #define ZINTCUBOIDOBJ_H
 
 #include "zstackobject.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZIntCuboidObj : public ZStackObject
 {

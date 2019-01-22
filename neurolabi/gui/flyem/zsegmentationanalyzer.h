@@ -9,7 +9,7 @@
 #include "zsuperpixelmaparray.h"
 #include "zintpairmap.h"
 #include "zintmap.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 #include "zsegmentationbundle.h"
 
 class ZStack;

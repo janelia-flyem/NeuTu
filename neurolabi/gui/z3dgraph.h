@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <QColor>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zpointnetwork.h"
 #include "zjsonparser.h"
 #include "zstackobject.h"

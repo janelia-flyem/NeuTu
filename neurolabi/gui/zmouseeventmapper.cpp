@@ -1,7 +1,7 @@
 #include "zmouseeventmapper.h"
 #include <QMouseEvent>
 #include "zinteractivecontext.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zstackdochelper.h"
 #include "neutube.h"

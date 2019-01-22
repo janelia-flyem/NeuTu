@@ -10,8 +10,8 @@
 #include "zstackobject.h"
 #include "c_stack.h"
 #include "zlabelcolortable.h"
-#include "zcuboid.h"
-#include "zsharedpointer.h"
+#include "geometry/zcuboid.h"
+#include "core/zsharedpointer.h"
 
 class ZStack;
 class ZObject3d;

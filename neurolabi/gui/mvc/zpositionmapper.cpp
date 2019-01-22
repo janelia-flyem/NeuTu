@@ -1,8 +1,8 @@
 #include "zpositionmapper.h"
 
 #include "zviewproj.h"
-#include "zpoint.h"
-#include "zintpoint.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintpoint.h"
 #include "geometry/zaffineplane.h"
 #include "geometry/zgeometry.h"
 

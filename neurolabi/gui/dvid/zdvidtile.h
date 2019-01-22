@@ -8,7 +8,7 @@
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
-//#include "zintpoint.h"
+//#include "geometry/zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 #include "zpixmap.h"
 #include "zjsonobject.h"

@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zstackobject.h"
 
 class ZStackDoc;

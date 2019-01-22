@@ -3,7 +3,7 @@
 
 #include <string>
 #include "core/neutube_def.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZJsonObject;
 

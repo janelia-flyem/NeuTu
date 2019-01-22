@@ -2,9 +2,9 @@
 #define ZTAKESCREENSHOTWIDGET_H
 
 #include "z3dgl.h"
-#include "znumericparameter.h"
-#include "zoptionparameter.h"
-#include "zstringparameter.h"
+#include "widgets/znumericparameter.h"
+#include "widgets/zoptionparameter.h"
+#include "widgets/zstringparameter.h"
 #include <QWidget>
 #include <QScrollArea>
 #include <QDir>

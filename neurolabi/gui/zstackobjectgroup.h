@@ -9,7 +9,7 @@
 
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "flyem/zflyemtodoitem.h"
 
 /*!

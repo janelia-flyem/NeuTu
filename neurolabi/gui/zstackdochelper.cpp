@@ -7,7 +7,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackview.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
 #include "dvid/zdvidsparsestack.h"

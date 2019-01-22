@@ -4,8 +4,8 @@
 
 #include "tz_utilities.h"
 #include "zintpoint.h"
-#include "zswcgenerator.h"
-#include "zswctree.h"
+//#include "zswcgenerator.h"
+//#include "zswctree.h"
 
 ZIntCuboidFace::ZIntCuboidFace() : m_z(0), m_normalAxis(neutube::EAxis::Z),
   m_isNormalPositive(true)
@@ -379,6 +379,7 @@ void ZIntCuboidFaceArray::print() const
   }
 }
 
+/*
 void ZIntCuboidFaceArray::exportSwc(const std::string &filePath) const
 {
   if (!empty()) {
@@ -400,6 +401,7 @@ void ZIntCuboidFaceArray::exportSwc(const std::string &filePath) const
     delete tree;
   }
 }
+*/
 
 void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
 {

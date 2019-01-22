@@ -2,7 +2,7 @@
 #define ZDVIDUTIL_H
 
 #include "dvid/libdvidheader.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "dvid/zdviddef.h"
 
 class ZJsonValue;

@@ -1,7 +1,7 @@
 #ifndef ZLINESEGMENTOBJECT_H
 #define ZLINESEGMENTOBJECT_H
 
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 #include <QPointF>
 #include <QColor>

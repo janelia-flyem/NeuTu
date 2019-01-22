@@ -7,7 +7,7 @@
 #include <QLayout>
 #include <QThread>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "core/neutube_def.h"
 //#include "zwidgetmessage.h"
 

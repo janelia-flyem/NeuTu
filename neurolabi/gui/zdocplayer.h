@@ -12,7 +12,7 @@
 #include "c_stack.h"
 #include "zuncopyable.h"
 #include "z3dgraph.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZStack;
 class ZStroke2d;

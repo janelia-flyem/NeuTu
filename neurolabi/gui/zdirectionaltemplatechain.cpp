@@ -4,7 +4,7 @@
 #include "tz_trace_utils.h"
 #include "zlocsegchain.h"
 #include "zstack.hxx"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 ZDirectionalTemplateChain::ZDirectionalTemplateChain()
 {

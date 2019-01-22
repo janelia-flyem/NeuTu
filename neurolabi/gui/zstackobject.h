@@ -5,8 +5,8 @@
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
-#include "zintpoint.h"
-#include "zsharedpointer.h"
+#include "geometry/zintpoint.h"
+#include "core/zsharedpointer.h"
 
 class ZPainter;
 class ZIntCuboid;

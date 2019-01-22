@@ -1,6 +1,6 @@
 #include "zstackgraph.h"
 
-#include "zgraph.h"
+#include "core/zgraph.h"
 #include "tz_error.h"
 #include "c_stack.h"
 #include "tz_stack_neighborhood.h"
@@ -13,7 +13,7 @@
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
 #include "tz_stack_bwmorph.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZStackGraph::ZStackGraph() : m_zMargin(-1)
 {

@@ -6,7 +6,7 @@ ZStackPtr::ZStackPtr()
 
 }
 
-ZStackPtr::ZStackPtr(ZStack *stack) : ZSharedPointer<ZStack>(stack)
+ZStackPtr::ZStackPtr(ZStack *stack) : std::shared_ptr<ZStack>(stack)
 {
 
 }

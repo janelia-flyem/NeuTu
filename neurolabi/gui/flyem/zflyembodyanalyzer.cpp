@@ -6,12 +6,12 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zstackgraph.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 #include "tz_stack_bwmorph.h"
 #include "swc/zswcresampler.h"
 #include "zgraphcompressor.h"
 #include "zobject3d.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zobject3dscan.h"
 
 using namespace std;

@@ -1,7 +1,7 @@
 #ifndef ZFLYEMSUBSTACKROI_H
 #define ZFLYEMSUBSTACKROI_H
 
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 
 class ZFlyEmSubstackRoi
 {

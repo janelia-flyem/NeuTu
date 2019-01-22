@@ -4,7 +4,7 @@
 #include "z3dtexture.h"
 #include "zglmutils.h"
 #include "zutils.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include <QColor>
 #include <limits>
 #include <vector>

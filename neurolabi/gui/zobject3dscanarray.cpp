@@ -1,7 +1,7 @@
 #include "zobject3dscanarray.h"
 #include "zfilelist.h"
 #include "zstack.hxx"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
 

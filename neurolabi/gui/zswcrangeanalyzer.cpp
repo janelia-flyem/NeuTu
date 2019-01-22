@@ -1,7 +1,7 @@
 #include "zswcrangeanalyzer.h"
 #include "swctreenode.h"
 #include "zswcnodezrangeselector.h"
-#include "zellipsoid.h"
+#include "geometry/zellipsoid.h"
 #include "zswcnodecompositeselector.h"
 #include "zswcnodeellipsoidrangeselector.h"
 

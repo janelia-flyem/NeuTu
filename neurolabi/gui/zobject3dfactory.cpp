@@ -10,7 +10,7 @@
 #include "zclosedcurve.h"
 #include "zarray.h"
 #include "zrandomgenerator.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 #include "zstackutil.h"
 #include "misc/miscutility.h"
