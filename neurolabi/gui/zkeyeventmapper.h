@@ -3,7 +3,7 @@
 
 #include <QMap>
 #include "tz_utilities.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zstackoperator.h"
 
 //class ZInteractiveContext;

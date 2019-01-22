@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 using namespace std;
 

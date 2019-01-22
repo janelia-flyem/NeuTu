@@ -5,7 +5,7 @@
 #include <map>
 #include <QObject>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZIntPoint;
 class ZPoint;

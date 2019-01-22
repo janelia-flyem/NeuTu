@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
-#include "zintpoint.h"
-#include "zintpointarray.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintpointarray.h"
 #include "zresolution.h"
 
 class ZIntCuboidArray;

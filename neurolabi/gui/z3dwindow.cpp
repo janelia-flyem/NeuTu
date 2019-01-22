@@ -24,7 +24,7 @@
 
 #include "neutubeconfig.h"
 #include "zglobal.h"
-#include "qtgui/utilities.h"
+#include "qt/gui/utilities.h"
 
 
 #include "z3dpunctafilter.h"
@@ -1154,8 +1154,6 @@ void Z3DWindow::fillDockWindows()
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
-
-//  getMeshFilter()->emitDumpParaGarbage();
 }
 
 int Z3DWindow::channelNumber()
@@ -3518,21 +3516,6 @@ void Z3DWindow::transformSelectedSwc()
 void Z3DWindow::groupSelectedSwc()
 {
   m_doc->executeGroupSwcCommand();
-  /*
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
-
-  if (treeSet->size() > 1) {
-    std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-    Swc_Tree_Node *root = (*iter)->root();
-
-    for (++iter; iter != treeSet->end(); ++iter) {
-      Swc_Tree_Node *subroot = (*iter)->firstRegularRoot();
-      SwcTreeNode::setParent(subroot, root);
-    }
-    m_doc->removeEmptySwcTree();
-    m_doc->notifySwcModified();
-  }
-  */
 }
 
 void Z3DWindow::showPuncta(bool on)

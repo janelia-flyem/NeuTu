@@ -1,6 +1,6 @@
 #include "zdirectionaltemplate.h"
 #include "tz_trace_utils.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 ZDirectionalTemplate::ZDirectionalTemplate()
 {

@@ -7,7 +7,7 @@
 
 #include "neurolabi_config.h"
 #include "tz_json.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "tz_swc_tree.h"
 #include "zjsonobject.h"
 

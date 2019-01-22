@@ -1,7 +1,7 @@
 #ifndef Z3DROTATION_H
 #define Z3DROTATION_H
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zjsonobject.h"
 
 class Z3DRotation

@@ -5,7 +5,7 @@
 #include <QPointF>
 #include <QRectF>
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 
 ZStTransform::ZStTransform() : m_sx(1.0), m_sy(1.0), m_sz(1.0),

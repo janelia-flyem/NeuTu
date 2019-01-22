@@ -4,6 +4,7 @@
 #include <QAction>
 
 #include "logging/zlog.h"
+#include "qt/gui/loghelper.h"
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
 #include "zstackdoc.h"
@@ -355,8 +356,9 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 
 bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 {
-  KINFO << QString("Key %1 pressed in ZFlyEmProofMvc").
-           arg(QKeySequence(event->key()).toString());
+  neutu::LogKeyEvent(event, "ZFlyEmProofMvc");
+//  KINFO << QString("Key %1 pressed in ZFlyEmProofMvc").
+//           arg(QKeySequence(event->key()).toString());
 
   bool processed = false;
 

@@ -12,27 +12,30 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 
+#include "tz_math.h"
+
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 
 //#include "logging/zqslog.h"
 
-#include "flyemsplitcontrolform.h"
+#include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
 #include "flyemproofcontrolform.h"
-#include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
-#include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "zstackpresenter.h"
-#include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
 #include "zflyemdataloader.h"
+#include "flyemsplitcontrolform.h"
+
+#include "flyem/zflyemmessagewidget.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemproofpresenter.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -180,7 +183,7 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(flyem::GROUP_BOX_STYLE);
+  setStyleSheet(neutu::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)

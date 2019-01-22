@@ -5,7 +5,7 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zstring.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 
 ZPointArray::ZPointArray()
 {

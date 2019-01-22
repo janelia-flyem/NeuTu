@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "zswctree.h"
-#include "zellipsoid.h"
+#include "geometry/zellipsoid.h"
 
 class ZSwcRangeAnalyzer
 {

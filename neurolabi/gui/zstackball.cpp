@@ -7,7 +7,7 @@
 
 #include <math.h>
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zpainter.h"
 
 ZStackBall::ZStackBall()

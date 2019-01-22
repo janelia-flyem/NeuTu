@@ -14,9 +14,9 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-//#include "zpoint.h"
+//#include "geometry/zpoint.h"
 #include "zswcpath.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 

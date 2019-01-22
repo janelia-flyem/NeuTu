@@ -10,8 +10,8 @@
 #endif
 #include "neutubeconfig.h"
 #include "zstring.h"
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 #if defined(_QT_GUI_USED_)
 #include "zdvidutil.h"
 #endif

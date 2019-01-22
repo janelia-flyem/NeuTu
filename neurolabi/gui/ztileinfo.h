@@ -2,7 +2,7 @@
 #define ZTILEINFO_H
 
 #include <string>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zjsonobject.h"
 #include <QString>
 

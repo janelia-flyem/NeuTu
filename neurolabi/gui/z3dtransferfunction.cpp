@@ -1,12 +1,13 @@
 #include "z3dtransferfunction.h"
 
+#include <QLabel>
+
 #include "z3dgpuinfo.h"
 #include "z3dshaderprogram.h"
 #include "z3dtransferfunctionwidgetwitheditorwindow.h"
 #include "z3dvolume.h"
 #include "z3dtexture.h"
 #include "QsLog.h"
-#include <QLabel>
 
 Z3DTransferFunction::Z3DTransferFunction(double min, double max, const glm::col4& minColor,
                                          const glm::col4& maxColor, uint32_t width, QObject* parent)

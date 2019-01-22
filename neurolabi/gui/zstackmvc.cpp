@@ -18,7 +18,7 @@
 #include "zwidgetmessage.h"
 #include "zfiletype.h"
 #include "widgets/zimagewidget.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"

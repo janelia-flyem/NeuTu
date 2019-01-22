@@ -36,10 +36,10 @@
 #include "zjsonparser.h"
 #include "zerror.h"
 #include "zclosedcurve.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zpainter.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"

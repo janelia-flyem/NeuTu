@@ -1,10 +1,10 @@
 #include "z3dboundedfilter.h"
 
 #include "logging/zqslog.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include <boost/math/constants/constants.hpp>
 
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* parent)
   : Z3DFilter(parent)

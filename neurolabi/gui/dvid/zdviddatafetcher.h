@@ -5,7 +5,7 @@
 #include <QMutex>
 #include <QVector>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zdvidtarget.h"
 #include "zdvidreader.h"
 #include "zthreadfuturemap.h"

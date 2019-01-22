@@ -6,8 +6,8 @@
 #include <QPointer>
 #include <QVector>
 #include <map>
-#include "zparameter.h"
-#include "zstringparameter.h"
+#include "widgets/zparameter.h"
+#include "widgets/zstringparameter.h"
 
 class ZFlyEmDataFrame;
 class MainWindow;

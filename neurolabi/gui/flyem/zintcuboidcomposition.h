@@ -3,7 +3,7 @@
 
 #include "tz_cuboid_i.h"
 #include <utility>
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 namespace flyem {
 class ZIntCuboidComposition

@@ -12,14 +12,14 @@
 #include "swctreenode.h"
 #include "zsynapselocationmatcher.h"
 #include "tz_error.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 #ifdef _QT_GUI_USED_
 #include "zpunctum.h"
 #include "zflyemdvidreader.h"
 #endif
 #include "zstring.h"
 #include "zweightedpointarray.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 
 using namespace flyem;
 using namespace std;

@@ -5,9 +5,12 @@
 #include <QGraphicsBlurEffect>
 #include <QMouseEvent>
 
+#include "tz_rastergeom.h"
+#include "misc/miscutility.h"
+
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
-#include "tz_rastergeom.h"
+#include "qt/gui/loghelper.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
 #include "zpaintbundle.h"
@@ -15,7 +18,7 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
-#include "misc/miscutility.h"
+
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -734,19 +737,24 @@ bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-  KINFO << "Mouse released in ZImageWidget";
+  neutu::LogMouseEvent(event, "release", "ZImageWidget");
+//  KINFO << "Mouse released in ZImageWidget";
 
   emit mouseReleased(event);
 }
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
-  if (event->buttons() == Qt::LeftButton) {
-    KINFO << "Mouse (left) dragged in ZImageWidget";
-  } else if (event->buttons() == Qt::RightButton) {
-    KINFO << "Mouse (right) dragged in ZImageWidget";
-  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
-    KINFO << "Mouse (right+right) dragged in ZImageWidget";
+//  if (event->buttons() == Qt::LeftButton) {
+//    KINFO << "Mouse (left) dragged in ZImageWidget";
+//  } else if (event->buttons() == Qt::RightButton) {
+//    KINFO << "Mouse (right) dragged in ZImageWidget";
+//  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
+//    KINFO << "Mouse (right+right) dragged in ZImageWidget";
+//  }
+
+  if (event->buttons() != Qt::NoButton) {
+    neutu::LogMouseEvent(event, "drag", "ZImageWidget");
   }
 
   if (!hasFocus() && m_hoverFocus) {
@@ -757,21 +765,25 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void ZImageWidget::mousePressEvent(QMouseEvent *event)
 {
-  KINFO << "Mouse pressed in ZImageWidget";
+//  KINFO << "Mouse pressed in ZImageWidget";
+
+  neutu::LogMouseEvent(event, "press", "ZImageWidget");
 
   emit mousePressed(event);
 }
 
 void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-  KINFO << "Mouse double clicked in ZImageWidget";
+  neutu::LogMouseEvent(event, "double click", "ZImageWidget");
+//  KINFO << "Mouse double clicked in ZImageWidget";
 
   emit mouseDoubleClicked(event);
 }
 
 void ZImageWidget::wheelEvent(QWheelEvent *event)
 {
-  KINFO << "Mouse scrolled in ZImageWidget";
+  neutu::LogMouseEvent(event, "ZImageWidget");
+//  KINFO << "Mouse scrolled in ZImageWidget";
 
   emit mouseWheelRolled(event);
 }

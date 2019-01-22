@@ -2,7 +2,7 @@
 #define ZMOVIECAMERA_H
 
 #include "z3drotation.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 //#include "zjsonobject.h"
 
 class Z3DWindow;

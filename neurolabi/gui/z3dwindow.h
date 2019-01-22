@@ -16,15 +16,15 @@
 
 #include "z3dview.h"
 //#include "zparameter.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zactionfactory.h"
 #include "z3ddef.h"
-#include "zintpointarray.h"
+#include "geometry/zintpointarray.h"
 
 class QSlider;
 class QDoubleSpinBox;
@@ -438,8 +438,6 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
-//  void paintEvent(QPaintEvent *event);
-
 
 protected:
 

@@ -4,7 +4,7 @@
 #include <math.h>
 #include <algorithm>
 #include "zstring.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zjsonobject.h"

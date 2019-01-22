@@ -5,6 +5,8 @@
 #include <QJsonObject>
 
 #include "zstackview.h"
+
+#include "qt/core/qthelper.h"
 #include "widgets/zimagewidget.h"
 #include "z3dwindow.h"
 #include "zimage.h"
@@ -3100,14 +3102,15 @@ void ZStackView::logViewParam()
 //  std::ostringstream stream;
 //  stream << this;
 
-  QJsonDocument jdoc = QJsonDocument::fromJson(
-        QString::fromStdString(param.toJsonObject().dumpString(0)).toUtf8());
+//  QJsonDocument jdoc = QJsonDocument::fromJson(
+//        QString::fromStdString(param.toJsonObject().dumpString(0)).toUtf8());
 
   KLOG << ZLog::Info()
        << ZLog::Description("View changed to " + param.toString())
        << ZLog::Handle(this)
        << ZLog::Object("ZStackView")
-       << ZLog::Tag("parameter", jdoc.object());
+       << ZLog::Tag("parameter", neutu::ToQJsonValue(param.toJsonObject()));
+//       << ZLog::Tag("parameter", QJsonValue(jdoc.object()));
 }
 
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)

@@ -6,7 +6,7 @@
 
 #include "core/neutube_def.h"
 #include "dvid/zdvidtarget.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 namespace libdvid{
 class DVIDConnection;

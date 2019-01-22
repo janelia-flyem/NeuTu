@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "tz_stack_watershed.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackptr.h"
 #include "zstackarray.h"
 

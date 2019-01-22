@@ -4,14 +4,14 @@
 #include <vector>
 #include <string>
 #include <QColor>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zpointnetwork.h"
 #include "zjsonparser.h"
 #include "zstackobject.h"
 #include "zglmutils.h"
-#include "zcuboid.h"
-#include "zintcuboid.h"
-#include "zsharedpointer.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "core/zsharedpointer.h"
 
 class ZNormColorMap;
 class ZObject3d;

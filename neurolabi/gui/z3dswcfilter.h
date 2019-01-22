@@ -2,7 +2,7 @@
 #define Z3DSWCFILTER_H
 
 #include "z3dgeometryfilter.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 
 #include <map>
 #include <QString>

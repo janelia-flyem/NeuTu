@@ -1,18 +1,19 @@
 #include "z3dcanvas.h"
 
-#include "logging/zlog.h"
-
-#include "z3dnetworkevaluator.h"
-#include "z3dcanvaseventlistener.h"
-#include "z3dscene.h"
-#include "logging/zqslog.h"
-#include "zpainter.h"
-//#include "zstackdrawable.h"
-#include "zopenglwidget.h"
 #include <QWindow>
 #include <QPainter>
 #include <QGraphicsTextItem>
 #include <algorithm>
+
+#include "logging/zlog.h"
+#include "logging/zqslog.h"
+
+#include "z3dnetworkevaluator.h"
+#include "z3dcanvaseventlistener.h"
+#include "z3dscene.h"
+#include "zpainter.h"
+//#include "zstackdrawable.h"
+#include "zopenglwidget.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
   : QGraphicsView(parent)

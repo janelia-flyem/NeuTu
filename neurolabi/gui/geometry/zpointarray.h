@@ -2,10 +2,12 @@
 #define ZPOINTARRAY_H
 
 #include <vector>
-#include <zpoint.h>
 #include <string>
-#include "zcuboid.h"
+
 #include "tz_utilities.h"
+#include "zpoint.h"
+#include "zcuboid.h"
+
 
 class ZGraph;
 

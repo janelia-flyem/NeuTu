@@ -4,8 +4,8 @@
 #include "zdownsamplefilter.h"
 #include "zstack.hxx"
 #include "zsparsestack.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
 
 ZDownsampleFilter::ZDownsampleFilter()
 {

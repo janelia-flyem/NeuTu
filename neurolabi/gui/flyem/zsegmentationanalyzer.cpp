@@ -14,7 +14,7 @@
 #include "tz_geo3d_utils.h"
 #include "c_stack.h"
 #include "tz_constant.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
 #include "zstack.hxx"

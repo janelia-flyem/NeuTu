@@ -1,7 +1,7 @@
 #ifndef ZSTACKDOCHELPER_H
 #define ZSTACKDOCHELPER_H
 
-#include"zintpoint.h"
+#include"geometry/zintpoint.h"
 #include "core/neutube_def.h"
 
 class ZStackDoc;

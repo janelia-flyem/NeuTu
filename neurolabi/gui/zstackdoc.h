@@ -46,7 +46,7 @@
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zactionfactory.h"
 //#include "zmesh.h"
 #include "zstackobjectinfo.h"

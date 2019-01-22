@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "zobjsmodel.h"
 
 class ZStackDoc;

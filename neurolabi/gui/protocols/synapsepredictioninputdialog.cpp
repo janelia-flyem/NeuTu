@@ -3,7 +3,7 @@
 
 #include <QPalette>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 /*
  * this class is the input dialog for starting the synapse_prediction protocol

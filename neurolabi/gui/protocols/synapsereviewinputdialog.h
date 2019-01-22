@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 namespace Ui {
 class SynapseReviewInputDialog;

@@ -10,7 +10,7 @@
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "c_json.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zresolution.h"
 #include "zdvidutil.h"
 

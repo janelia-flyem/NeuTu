@@ -2,7 +2,7 @@
 #define ZDVIDBODYHELPER_H
 
 #include "core/neutube_def.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZDvidReader;
 class ZObject3dScan;

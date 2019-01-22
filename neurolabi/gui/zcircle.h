@@ -8,7 +8,7 @@
 #include "zqtheader.h"
 
 #include "include/tz_stdint.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zstackobject.h"
 
 class ZIntPoint;

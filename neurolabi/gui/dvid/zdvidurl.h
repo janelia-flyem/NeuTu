@@ -7,7 +7,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZIntPoint;
 

@@ -3,7 +3,7 @@
 #include "zglmutils.h"
 #include "zcolormap.h"
 #include "z3dtransferfunction.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include <QMouseEvent>
 #include <QHelpEvent>
 #include <QToolTip>

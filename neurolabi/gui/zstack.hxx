@@ -11,7 +11,7 @@
 
 #ifdef _QT_GUI_USED_
 #include "zglmutils.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #endif
 
 #include "tz_image_lib_defs.h"
@@ -22,7 +22,7 @@
 #include "tz_image_io.h"
 #include "zresolution.h"
 #include "core/neutube_def.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 class ZPoint;
 class ZIntCuboid;

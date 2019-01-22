@@ -8,7 +8,7 @@
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zresolution.h"
 
 class ZStack;

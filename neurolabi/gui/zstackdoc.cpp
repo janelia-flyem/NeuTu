@@ -71,7 +71,7 @@
 #include "swctreenode.h"
 #include "zstackgraph.h"
 #include "zgraphcompressor.h"
-#include "zgraph.h"
+#include "core/zgraph.h"
 #include "neutubeconfig.h"
 #include "tz_stack_bwmorph.h"
 #include "zstackdoccommand.h"
@@ -7232,17 +7232,6 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     startProgress();
-
-    /*
-    ZSwcSignalFitter fitter;
-    fitter.setBackground(getStackBackground());
-
-    int channel = 0;
-    if (getStack()->channelNumber() == 3 &&
-        getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-      channel = 1;
-    }
-    */
 
     QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
     double step = 1.0 / nodeList.size();

@@ -5,7 +5,7 @@
 #include <QBrush>
 
 #include "zpainter.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 
 ZIntCuboidObj::ZIntCuboidObj()

@@ -1,7 +1,7 @@
 #ifndef ZSTACKOBJECTPTR_H
 #define ZSTACKOBJECTPTR_H
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZStackObject;
 

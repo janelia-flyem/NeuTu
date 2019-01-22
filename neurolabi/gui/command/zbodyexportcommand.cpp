@@ -1,11 +1,13 @@
 #include "zbodyexportcommand.h"
 
+#include "geometry/zintcuboid.h"
+#include "dvid/zdvidreader.h"
+
 #include "neutubeconfig.h"
+
 #include "zjsonobject.h"
 #include "zglobal.h"
-#include "dvid/zdvidreader.h"
 #include "misc/miscutility.h"
-#include "zintcuboid.h"
 #include "zstack.hxx"
 
 ZBodyExportCommand::ZBodyExportCommand()

@@ -18,7 +18,7 @@
 #include "neutubeconfig.h"
 #include "zpixmap.h"
 #include "zstring.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zarbsliceviewparam.h"
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"

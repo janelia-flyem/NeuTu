@@ -11,7 +11,7 @@
 #include <QPaintDevice>
 #endif
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zsttransform.h"
 
 class ZIntPoint;

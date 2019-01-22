@@ -2,7 +2,7 @@
 #include <QDialog>
 #include <QFrame>
 #include "zclickablelabel.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "widgets/zcolorlabel.h"
 
 ZWidgetFactory::ZWidgetFactory()

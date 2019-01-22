@@ -12,7 +12,7 @@
 #include "zstack.hxx"
 #include "zstackpresenter.h"
 #include "zstackview.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "ztiledstackframe.h"
 
 #include <QFileInfo>

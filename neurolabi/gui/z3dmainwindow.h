@@ -18,12 +18,6 @@ public:
 
     void setCurrentWidow(Z3DWindow *window);
 
-private:
-    Z3DTabWidget* getCentralTab() const;
-
-private slots:
-    void stayOnTop(bool on);
-
 public:
     QToolBar *toolBar;
 
@@ -47,6 +41,12 @@ public slots:
 
 signals:
     void closed();
+
+private:
+    Z3DTabWidget* getCentralTab() const;
+
+private slots:
+    void stayOnTop(bool on);
 };
 
 #endif // Z3DMAINWINDOW_H

@@ -3,6 +3,8 @@
 
 #include <QtCore>
 
+class ZJsonObject;
+
 namespace neutu {
 typedef bool FConnectAction(
     const QObject*, const char *,
@@ -16,5 +18,8 @@ bool DisconnectFunc(const QObject* obj1, const char *signal,
                     const QObject *obj2, const char *slot,
                     Qt::ConnectionType connetionType);
 
+QJsonObject ToQJsonObject(const ZJsonObject &obj);
+QJsonValue ToQJsonValue(const ZJsonObject &obj);
 }
+
 #endif // QTHELPER_H

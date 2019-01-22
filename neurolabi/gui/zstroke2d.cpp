@@ -5,14 +5,14 @@
 #include <QBitmap>
 #include "neutubeconfig.h"
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
 #include "tz_geometry.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "tz_geo3d_utils.h"
 
 const double ZStroke2d::m_minWidth = 1.0;

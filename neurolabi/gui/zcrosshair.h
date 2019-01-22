@@ -2,7 +2,7 @@
 #define ZCROSSHAIR_H
 
 #include "zstackobject.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 /*!
  * \brief The class of crosshair for orthogonal view

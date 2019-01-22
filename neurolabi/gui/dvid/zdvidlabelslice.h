@@ -14,7 +14,7 @@
 #include "zimage.h"
 #include "zselector.h"
 #include "zdvidreader.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 #include "flyem/zflyembodycolorscheme.h"
 #include "flyem/zflyembodymerger.h"
 

@@ -10,7 +10,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 /*
  * this is the base class for all protocols

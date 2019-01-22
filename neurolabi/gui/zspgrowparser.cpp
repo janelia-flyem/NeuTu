@@ -4,7 +4,7 @@
 
 #include "assert.h"
 #include "tz_stack_lib.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "tz_stack_utils.h"
 #include "tz_error.h"
 #include "c_stack.h"

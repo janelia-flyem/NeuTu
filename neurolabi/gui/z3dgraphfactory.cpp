@@ -1,8 +1,8 @@
 #include "z3dgraphfactory.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "z3dgraph.h"
 #include "zrect2d.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zswctree.h"
 #include "znormcolormap.h"
 

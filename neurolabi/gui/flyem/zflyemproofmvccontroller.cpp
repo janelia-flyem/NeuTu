@@ -2,7 +2,7 @@
 #include<QMainWindow>
 
 #include "zflyemproofmvc.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zflyemproofpresenter.h"
 #include "zstackdocaccessor.h"
 #include "zstackdocnullmenufactory.h"

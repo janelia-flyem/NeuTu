@@ -3,9 +3,9 @@
 
 
 #include "z3dgeometryfilter.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "zwidgetsgroup.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "z3dmeshrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zstringutils.h"

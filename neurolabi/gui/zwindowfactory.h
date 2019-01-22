@@ -5,7 +5,7 @@
 #include <QString>
 #include <QMap>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 //#include "zstackdoc.h"
 //#include "z3dwindow.h"
 #include "z3ddef.h"

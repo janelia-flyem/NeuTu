@@ -11,7 +11,7 @@
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
-#include "zparameterarray.h"
+#include "widgets/zparameterarray.h"
 #include "zstackmvc.h"
 #include "zstackdoc.h"
 #include "zflyemcontrolform.h"

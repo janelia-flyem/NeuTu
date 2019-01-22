@@ -24,16 +24,20 @@ public:
   bool isStarted() const { return m_started; }
 
   struct Tag {
-    Tag(const std::string &key, const std::string &value) :
-      m_key(key), m_value(value) {}
-    Tag(const std::string &key, const char *value) :
-      m_key(key), m_value(value) {}
-    Tag(const std::string &key, const int64_t &value) :
-      m_key(key), m_value(value) {}
-    Tag(const std::string &key, const QJsonValue &value) :
+    Tag() {}
+//    Tag(const std::string &key, const std::string &value) :
+//      m_key(key), m_value(value) {}
+//    Tag(const std::string &key, const char *value) :
+//      m_key(key), m_value(value) {}
+//    Tag(const std::string &key, const int64_t &value) :
+//      m_key(key), m_value(value) {}
+//    Tag(const std::string &key, const QJsonValue &value) :
+//      m_key(key), m_value(value) {}
+
+    Tag(const std::string &key, const neuopentracing::Value &value) :
       m_key(key), m_value(value) {}
 
-    inline void set(const std::string &key, const std::string &value) {
+    inline void set(const std::string &key, const neuopentracing::Value &value) {
       m_key = key;
       m_value = value;
     }
@@ -81,7 +85,7 @@ public:
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("diagnostic", value) {}
+    Description(const std::string &value) : Tag("description", value) {}
   };
 
   struct Action : public Tag {
@@ -89,7 +93,22 @@ public:
   };
 
   struct Object : public Tag {
-    Object(const std::string &value) : Tag("object", value) {}
+//    Object(const std::string &value)
+//    {
+//      QJsonObject obj{{"name", value.c_str()}};
+//      set("object", neuopentracing::Value(obj));
+//    }
+
+    Object(const std::string &type, const std::string &name = "",
+           const std::string &oid = "")
+    {
+      QJsonObject obj{
+        {"type", type.c_str()},
+        {"name", name.c_str()},
+        {"id", oid.c_str()}
+      };
+      set("object", neuopentracing::Value(obj));
+    }
   };
 
   struct Handle : public Tag {
@@ -99,6 +118,10 @@ public:
   struct Time : public Tag {
     Time();
     Time(uint64_t);
+  };
+
+  struct Window : public Tag {
+    Window(const std::string &value) : Tag("window", value) {}
   };
 
   ZLog& operator << (const Tag &tag);

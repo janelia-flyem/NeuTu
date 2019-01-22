@@ -5,7 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include "zstackdoc.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZTileManager;
 class ZQtBarProgressReporter;

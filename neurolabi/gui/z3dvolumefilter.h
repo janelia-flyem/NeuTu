@@ -5,7 +5,7 @@
 #include "z3dboundedfilter.h"
 
 #include "z3dcameraparameter.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "z3dvolume.h"
 #include "z3dtransformparameter.h"
 #include "zmesh.h"
@@ -18,7 +18,7 @@
 #include "zeventlistenerparameter.h"
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 class ZMesh;
 class ZStackDoc;

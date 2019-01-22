@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZDvidTileEnsemble;
 class ZDvidPatchDataFetcher;

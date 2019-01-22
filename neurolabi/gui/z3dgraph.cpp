@@ -4,9 +4,9 @@
 #include "znormcolormap.h"
 #include "zobject3d.h"
 #include "zstackball.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackobjectpainter.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 #include "zpainter.h"
 
 using namespace std;

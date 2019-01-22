@@ -1,8 +1,11 @@
 #include "zvoxelgraphics.h"
 #include "zobject3d.h"
 #include "tz_voxel_graphics.h"
-#include "zlinesegment.h"
 #include "tz_rastergeom.h"
+
+#include "geometry/zlinesegment.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 
 void ZVoxelGraphics::addLineObject(
     ZObject3d *dst, const ZIntPoint &v1, const ZIntPoint &v2)

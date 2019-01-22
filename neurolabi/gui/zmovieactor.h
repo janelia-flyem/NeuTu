@@ -1,7 +1,7 @@
 #ifndef ZMOVIEACTOR_H
 #define ZMOVIEACTOR_H
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZMovieStage;
 

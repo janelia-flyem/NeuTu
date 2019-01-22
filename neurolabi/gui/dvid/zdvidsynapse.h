@@ -6,7 +6,7 @@
 #include <QColor>
 
 #include "zstackobject.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zjsonobject.h"
 #include "zdvidannotation.h"
 

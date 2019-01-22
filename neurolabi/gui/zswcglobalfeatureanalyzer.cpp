@@ -3,7 +3,7 @@
 #include "swctreenode.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zvectorgenerator.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 #include "zeigensolver.h"
 #include "zdoublevector.h"
 

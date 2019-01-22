@@ -20,7 +20,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <map>
 #include "misc/zvtkutil.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "logging/zqslog.h"
 
 ZMesh::ZMesh(GLenum type)

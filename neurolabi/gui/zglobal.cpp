@@ -6,8 +6,8 @@
 #include <QApplication>
 
 #include "logging/zqslog.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zstring.h"
 
 #include "neutubeconfig.h"

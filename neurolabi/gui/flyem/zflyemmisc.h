@@ -9,7 +9,7 @@
 #include "zcubearray.h"
 
 #include "dvid/libdvidheader.h"
-#include "zsharedpointer.h"
+#include "core/zsharedpointer.h"
 
 class ZMatrix;
 class Z3DGraph;

@@ -1,7 +1,7 @@
 #ifndef Z3DCAMERAUTILS_H
 #define Z3DCAMERAUTILS_H
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "z3dcamera.h"
 
 namespace Z3DCameraUtils

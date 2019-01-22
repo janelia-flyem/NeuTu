@@ -42,7 +42,7 @@
 #include "zobject3dfactory.h"
 #include "zmeshfactory.h"
 #include "z3dmeshfilter.h"
-#include "core/qthelper.h"
+#include "qt/core/qthelper.h"
 
 #include "widgets/zimagewidget.h"
 

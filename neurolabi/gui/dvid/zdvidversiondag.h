@@ -6,8 +6,8 @@
 #include <map>
 #include <list>
 
-#include "zgraph.h"
-#include "zsharedpointer.h"
+#include "core/zgraph.h"
+#include "core/zsharedpointer.h"
 #include "zdvidversionnode.h"
 #include "ztree.h"
 
