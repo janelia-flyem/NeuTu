@@ -1151,7 +1151,7 @@ void ZStackView::redraw(EUpdateOption option)
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  ZOUT(KLog(), 5) << ZLog::Category("profile")
+  ZOUT(KLog(), 5) << ZLog::Profile()
                   << ZLog::Diagnostic("paint stack per frame")
                   << ZLog::Duration(stackPaintTime);
 //  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
@@ -1175,7 +1175,7 @@ void ZStackView::redraw(EUpdateOption option)
 
   ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    KLog() << ZLog::Category("warning")
+    KLog() << ZLog::Warn()
            << ZLog::Diagnostic(QString("Debugging for hiccup: "
                                        "stack: %1; tile: %2; object: %3").
                                arg(stackPaintTime).arg(tilePaintTime).
