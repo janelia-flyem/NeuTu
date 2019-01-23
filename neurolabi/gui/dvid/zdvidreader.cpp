@@ -354,7 +354,7 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(KLog(), 5) << ZLog::Category("profile")
+    ZOUT(KLog(), 5) << ZLog::Profile()
                     << ZLog::Diagnostic("Body reading time")
                     << ZLog::Duration(timer.elapsed());
 //    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
@@ -396,7 +396,7 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(KLog(), 5) << ZLog::Category("profile")
+    ZOUT(KLog(), 5) << ZLog::Profile()
                     << ZLog::Diagnostic("Body reading time")
                     << ZLog::Duration(timer.elapsed());
 //    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
@@ -836,9 +836,7 @@ ZObject3dScan *ZDvidReader::readBodyDs(
 
     reader.tryCompress(false);
 
-    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".reading")
-           << ZLog::Duration(timer.elapsed())
-           << ZLog::Time();
+    auto readingTime = timer.elapsed();
 
 //    STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
 
@@ -849,9 +847,15 @@ ZObject3dScan *ZDvidReader::readBodyDs(
       result->canonize();
     }
 
-    KLog() << ZLog::Category(std::string(__FUNCTION__) + ".parsing")
-           << ZLog::Duration(timer.elapsed())
+    auto parsingTime = timer.elapsed();
+
+    KLog() << ZLog::Profile()
+           << ZLog::Duration(readingTime + parsingTime)
+           << ZLog::Description(
+                QString("Read %1: reading time = %2 ms; parsing time = %3 ms").
+                arg(readingTime).arg(parsingTime).toStdString())
            << ZLog::Time();
+
 
 //    STD_COUT << "Body parsing time: " << timer.elapsed() << std::endl;
 

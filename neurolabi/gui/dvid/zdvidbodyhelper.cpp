@@ -128,7 +128,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   QElapsedTimer timer;
   timer.start();
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
-  KLog() << ZLog::Category("profile")
+  KLog() << ZLog::Profile()
          << ZLog::Diagnostic(
               "High res reading time for " +
               std::to_string(bodyId) + "@" + std::to_string(m_zoom))

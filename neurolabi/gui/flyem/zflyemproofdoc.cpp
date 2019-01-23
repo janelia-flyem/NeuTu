@@ -932,7 +932,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     msg.appendMessage(detail);
     emit messageGenerated(msg);
   }
-  KLog() << ZLog::Category("profile") << ZLog::Duration(timer.elapsed())
+  KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
          << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
 }
 
