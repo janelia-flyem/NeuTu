@@ -104,6 +104,7 @@
 #include "zactionlibrary.h"
 #include "zglobal.h"
 #include "dialogs/neuprintsetupdialog.h"
+#include "dialogs/zcontrastprotocaldialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -307,6 +308,22 @@ NeuprintSetupDialog* ZFlyEmProofMvc::getNeuPrintSetupDlg()
   m_neuprintSetupDlg->setUuid(getDvidTarget().getUuid().c_str());
 
   return m_neuprintSetupDlg;
+}
+
+ZContrastProtocalDialog* ZFlyEmProofMvc::getContrastDlg()
+{
+  if (m_contrastDlg == nullptr) {
+    m_contrastDlg = new ZContrastProtocalDialog(this);
+    m_contrastDlg->setContrastProtocol(getPresenter()->getHighContrastProtocal());
+    connect(m_contrastDlg, &ZContrastProtocalDialog::protocolChanged,
+            this, &ZFlyEmProofMvc::updateTmpContrast);
+    connect(m_contrastDlg, &ZContrastProtocalDialog::canceled,
+            this, &ZFlyEmProofMvc::resetContrast);
+    connect(m_contrastDlg, &ZContrastProtocalDialog::committing,
+            this, &ZFlyEmProofMvc::saveTmpContrast);
+  }
+
+  return m_contrastDlg;
 }
 
 #if 0
@@ -1852,6 +1869,29 @@ void ZFlyEmProofMvc::showSetting()
   }
 }
 
+void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
+{
+  ZContrastProtocol protocal;
+  protocal.load(protocolJson);
+
+  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+
+  if (slice != NULL) {
+    slice->setContrastProtocol(protocal);
+    slice->updateContrast(hc);
+    getCompleteDocument()->bufferObjectModified(slice);
+  }
+
+  QList<ZDvidTileEnsemble*> teList =
+      getCompleteDocument()->getDvidTileEnsembleList();
+  foreach (ZDvidTileEnsemble *te, teList) {
+    te->setContrastProtocal(protocolJson);
+    te->enhanceContrast(hc);
+    getCompleteDocument()->bufferObjectModified(te);
+  }
+  getCompleteDocument()->processObjectModified();
+}
+
 void ZFlyEmProofMvc::updateContrast()
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -1860,24 +1900,40 @@ void ZFlyEmProofMvc::updateContrast()
   ZJsonObject contrastObj =reader.readContrastProtocal();
   getPresenter()->setHighContrastProtocal(contrastObj);
 
-  KINFO << "Init grayslice";
-  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
-  ZContrastProtocol protocal;
-  protocal.load(getPresenter()->getHighContrastProtocal());
-  if (slice != NULL) {
-    slice->setContrastProtocol(protocal);
-    slice->updateContrast(getCompletePresenter()->highTileContrast());
-    getCompleteDocument()->bufferObjectModified(slice);
-  }
+  updateContrast(getPresenter()->getHighContrastProtocal(),
+                 getCompletePresenter()->highTileContrast());
+//  KINFO << "Init grayslice";
 
-  QList<ZDvidTileEnsemble*> teList =
-      getCompleteDocument()->getDvidTileEnsembleList();
-  foreach (ZDvidTileEnsemble *te, teList) {
-    te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
-    te->enhanceContrast(getCompletePresenter()->highTileContrast());
-    getCompleteDocument()->bufferObjectModified(te);
+}
+
+void ZFlyEmProofMvc::updateTmpContrast()
+{
+  updateContrast(getContrastDlg()->getContrastProtocal(), true);
+  getCompleteDocument()->enhanceTileContrast(true);
+}
+
+void ZFlyEmProofMvc::resetContrast()
+{
+  updateContrast();
+}
+
+void ZFlyEmProofMvc::saveTmpContrast()
+{
+  if (!getDvidTarget().readOnly()) {
+    ZJsonObject obj = getContrastDlg()->getContrastProtocal();
+    ZDvidWriter &writer = getCompleteDocument()->getDvidWriter();
+    if (writer.good()) {
+      if (getCompleteDocument()->getDvidReader().hasData("neutu_config")) {
+        writer.createData("keyvalue", "neutu_config", false);
+      }
+
+      writer.writeJson("neutu_config", "contrast", obj);
+    }
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("Cannot write contrast to a readonly node",
+                         neutube::EMessageType::ERROR));
   }
-  getCompleteDocument()->processObjectModified();
 }
 
 void ZFlyEmProofMvc::profile()
@@ -5495,6 +5551,12 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark * /*bookmark*/)
 {
 //  getCompleteDocument()->setCustomBookmarkSaveState(false);
+}
+
+void ZFlyEmProofMvc::tuneGrayscaleContrast()
+{
+  getContrastDlg()->show();
+  getContrastDlg()->raise();
 }
 
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)

@@ -136,6 +136,7 @@ private:
   QAction *m_openSequencerAction = nullptr;
   QAction *m_openProtocolsAction = nullptr;
   QAction *m_contrastAction = nullptr;
+  QAction *m_tuneContrastAction = nullptr;
   QAction *m_smoothAction = nullptr;
   QAction *m_openTodoAction = nullptr;
   QAction *m_roiToolAction = nullptr;

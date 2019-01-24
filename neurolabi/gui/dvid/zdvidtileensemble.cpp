@@ -106,9 +106,9 @@ void ZDvidTileEnsemble::updatePatch(
 
 void ZDvidTileEnsemble::updateContrast()
 {
-  if (m_highContrast == false) {
-    forceUpdate();
-  }
+//  if (m_highContrast == false) {
+//    forceUpdate();
+//  }
 
   for (std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> >::iterator
        iter = m_tileGroup.begin(); iter != m_tileGroup.end(); ++iter) {
@@ -117,6 +117,7 @@ void ZDvidTileEnsemble::updateContrast()
          tileMap.begin(); tileIter != tileMap.end(); ++tileIter) {
       ZDvidTile *tile = tileIter->second;
       if (tile != NULL) {
+        tile->setContrastProtocal(m_contrastProtocal);
         tile->enhanceContrast(m_highContrast, true);
 //        if (m_highContrast) {
 //          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);

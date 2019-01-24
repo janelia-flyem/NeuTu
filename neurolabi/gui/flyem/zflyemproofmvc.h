@@ -57,6 +57,7 @@ class NeuPrintQueryDialog;
 class ZActionLibrary;
 class NeuPrintReader;
 class NeuprintSetupDialog;
+class ZContrastProtocalDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -282,6 +283,7 @@ public slots:
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
 
+  void tuneGrayscaleContrast();
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
 
@@ -466,10 +468,16 @@ private slots:
   void goToPosition();
   void enableNameColorMap(bool on);
   void toggleBodyColorMap();
+  void updateTmpContrast();
+  void resetContrast();
+  void saveTmpContrast();
 
 private:
   void init();
   void initBodyWindow();
+
+  void updateContrast(const ZJsonObject &protocolJson, bool hc);
+
   void launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
@@ -551,6 +559,7 @@ private:
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 //  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
+  ZContrastProtocalDialog* getContrastDlg();
 
   template<typename T>
   FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
@@ -606,6 +615,7 @@ protected:
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
+  ZContrastProtocalDialog *m_contrastDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;
@@ -709,8 +719,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          panel, SLOT(enableNameColorMap(bool)));
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
-  connect(panel, SIGNAL(queryingBody()),
-          this, SLOT(queryBodyByRoi()));
+//  connect(panel, SIGNAL(queryingBody()),
+//          this, SLOT(queryBodyByRoi()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
   connect(panel, SIGNAL(exportingSelectedBodyLevel()),

@@ -9,6 +9,15 @@ ZContrastProtocalDialog::ZContrastProtocalDialog(QWidget *parent) :
   ui(new Ui::ZContrastProtocalDialog)
 {
   ui->setupUi(this);
+
+  connect(ui->offsetSpinBox, SIGNAL(valueChanged(double)),
+          this, SIGNAL(protocolChanged()));
+  connect(ui->scaleSpinBox, SIGNAL(valueChanged(double)),
+          this, SIGNAL(protocolChanged()));
+  connect(ui->nonlinearCheckBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(protocolChanged()));
+  connect(ui->buttonBox, SIGNAL(accepted()), this, SIGNAL(committing()));
+  connect(ui->buttonBox, SIGNAL(rejected()), this, SIGNAL(canceled()));
 }
 
 ZContrastProtocalDialog::~ZContrastProtocalDialog()
