@@ -1151,19 +1151,16 @@ void ZStackView::redraw(EUpdateOption option)
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  ZOUT(KLog(), 5) << ZLog::Profile()
-                  << ZLog::Diagnostic("paint stack per frame")
-                  << ZLog::Duration(stackPaintTime);
 //  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
   paintMaskBuffer();
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
-  ZOUT(LTRACE(), 5) << "paint tile per frame: " << tilePaintTime;
+//  ZOUT(LTRACE(), 5) << "paint tile per frame: " << tilePaintTime;
   paintActiveDecorationBuffer();
   paintDynamicObjectBuffer();
   paintObjectBuffer();
   qint64 objectPaintTime = timer.elapsed();
-  ZOUT(LTRACE(), 5) << "paint object per frame: " << objectPaintTime;
+//  ZOUT(LTRACE(), 5) << "paint object per frame: " << objectPaintTime;
 
   updateImageScreen(option);
 
@@ -1173,13 +1170,16 @@ void ZStackView::redraw(EUpdateOption option)
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
 
-  ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
+  ZOUT(KLog(), 5) << ZLog::Profile()
+                  << ZLog::Description("paint time per frame")
+                  << ZLog::Duration(stackPaintTime);
+
+//  ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    KLog() << ZLog::Warn()
-           << ZLog::Diagnostic(QString("Debugging for hiccup: "
-                                       "stack: %1; tile: %2; object: %3").
-                               arg(stackPaintTime).arg(tilePaintTime).
-                               arg(objectPaintTime).toStdString());
+    KWARN << QString("Debugging for hiccup: "
+                     "stack: %1; tile: %2; object: %3").
+             arg(stackPaintTime).arg(tilePaintTime).
+             arg(objectPaintTime).toStdString();
   }
 #endif
 }

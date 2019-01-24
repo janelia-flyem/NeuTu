@@ -870,8 +870,22 @@ void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
   }
 }
 
+void ZFlyEmProofMvc::log3DWindowEvent(
+    const std::string &windowName, const std::string &action)
+{
+  KLOG << ZLog::Info()
+       << ZLog::Window("ZFlyEmProofMvc")
+       << ZLog::Action(action)
+       << ZLog::Object("Z3DWindow", windowName);
+}
+
 void ZFlyEmProofMvc::makeOrthoWindow(int width, int height, int depth)
 {
+  KLOG << ZLog::Info()
+       << ZLog::Window("ZFlyEmProofMvc")
+       << ZLog::Action("make")
+       << ZLog::Object("ZFlyEmOrthoWindow");
+
   m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget(), width, height, depth);
   connect(m_orthoWindow, SIGNAL(destroyed()), this, SLOT(detachOrthoWindow()));
   connect(m_orthoWindow, SIGNAL(bookmarkEdited(int, int, int)),
@@ -968,6 +982,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
+  log3DWindowEvent("coarse_sphere", "make");
+
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::SPHERE);
   doc->useCoarseOnly();
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
@@ -998,6 +1014,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
+  log3DWindowEvent("highres_sphere", "make");
+
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::SPHERE);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isLayerVisible(neutube3d::ERendererLayer::PUNCTA));
@@ -1156,7 +1174,10 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::MESH);
   if (coarse) {
+    log3DWindowEvent("coarse_mesh", "make");
     doc->useCoarseOnly();
+  } else {
+    log3DWindowEvent("highres_mesh", "make");
   }
 
   Z3DWindow *window = m_bodyWindowFactory->make3DWindow(doc);
@@ -1202,6 +1223,8 @@ void ZFlyEmProofMvc::makeCoarseMeshWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
+  log3DWindowEvent("skeleton", "make");
+
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::EBodyType::SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);

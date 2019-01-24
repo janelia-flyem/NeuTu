@@ -7,12 +7,12 @@
 
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
+#include "qt/gui/loghelper.h"
 
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvaseventlistener.h"
 #include "z3dscene.h"
 #include "zpainter.h"
-//#include "zstackdrawable.h"
 #include "zopenglwidget.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
@@ -109,7 +109,8 @@ bool Z3DCanvas::suppressingContextMenu() const
 
 void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 {
-  KINFO << "Mouse pressed in Z3DCanvas";
+  neutu::LogMouseEvent(e, "press", "Z3DCanvas");
+  m_pressedButtons = e->buttons();
 
   broadcastEvent(e, width(), height());
 
@@ -118,7 +119,8 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
-  KINFO << "Mouse released in Z3DCanvas";
+  neutu::LogMouseReleaseEvent(m_pressedButtons, e->modifiers(), "Z3DCanvas");
+  m_pressedButtons = Qt::NoButton;
 
 #ifdef _DEBUG_2
   std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
@@ -131,13 +133,7 @@ void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 
 void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 {
-  if (e->buttons() == Qt::LeftButton) {
-    KINFO << "Mouse (left) dragged in Z3DCanvas";
-  } else if (e->buttons() == Qt::RightButton) {
-    KINFO << "Mouse (right) dragged in Z3DCanvas";
-  } else if (e->buttons() == (Qt::RightButton | Qt::LeftButton)) {
-    KINFO << "Mouse (right+right) dragged in Z3DCanvas";
-  }
+  neutu::LogMouseDragEvent(e, "Z3DCanvas");
 
   m_interaction.processMouseMoveEvent(e);
 
@@ -148,20 +144,24 @@ void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 
 void Z3DCanvas::mouseDoubleClickEvent(QMouseEvent* e)
 {
-  KINFO << "Mouse double clicked in Z3DCanvas";
+  neutu::LogMouseEvent(e, "double click", "Z3DCanvas");
+//  KINFO << "Mouse double clicked in Z3DCanvas";
 
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::wheelEvent(QWheelEvent* e)
 {
-  KINFO << "Mouse scrolled in Z3DCanvas";
+//  KINFO << "Mouse scrolled in Z3DCanvas";
+  neutu::LogMouseEvent(e, "Z3DCanvas");
 
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
+  neutu::LogKeyPressEvent(event, "Z3DCanvas");
+
   if (!m_interaction.processKeyPressEvent(event)) {
     broadcastEvent(event, width(), height());
   }
@@ -171,6 +171,8 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
 void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 {
+  neutu::LogKeyReleaseEvent(event, "Z3DCanvas");
+
   broadcastEvent(event, width(), height());
 }
 

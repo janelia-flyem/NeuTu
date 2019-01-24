@@ -177,6 +177,7 @@ private:
   QPixmap *m_customCanvas = NULL; //Not in use for now
 
   QString m_message;
+  Qt::MouseButtons m_pressedButtons = Qt::NoButton;
 };
 
 #endif // Z3DCANVAS_H

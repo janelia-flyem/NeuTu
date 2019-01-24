@@ -309,6 +309,8 @@ private:
   bool m_paintBlocked = false;
 //  QRect m_canvasRegion; //Whole canvas region
 
+  Qt::MouseButtons m_pressedButtons = Qt::NoButton;
+
   ZViewProj m_viewProj;
 
   neutube::EAxis m_sliceAxis = neutube::EAxis::Z;
