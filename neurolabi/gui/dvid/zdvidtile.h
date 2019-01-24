@@ -83,12 +83,16 @@ public:
   void updatePixmap();
 
 private:
-  ZImage *m_image;
+  void updateImageContrast();
+
+private:
+  ZImage *m_image = nullptr;
   ZPixmap m_pixmap;
-  int m_ix;
-  int m_iy;
-  int m_z;
-  mutable int m_latestZ;
+  ZImage *m_originalBackup = nullptr;
+  int m_ix = 0;
+  int m_iy = 0;
+  int m_z = 0;
+  mutable int m_latestZ = 0;
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;

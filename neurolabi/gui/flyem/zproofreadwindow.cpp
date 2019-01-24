@@ -435,6 +435,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_tuneContrastAction = new QAction("Tune Contrast", this);
+  connect(m_tuneContrastAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
+  m_toolMenu->addAction(m_tuneContrastAction);
+
   m_bodyExplorerAction = new QAction("Explore Bodies", this);
   m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
   connect(m_bodyExplorerAction, SIGNAL(triggered()),
@@ -501,6 +506,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_smoothAction->setEnabled(on);
   m_openTodoAction->setEnabled(on);
   m_openProtocolsAction->setEnabled(on);
+  m_tuneContrastAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
