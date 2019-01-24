@@ -513,6 +513,8 @@ private:
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
 
+  void log3DWindowEvent(const std::string &windowName, const std::string &action);
+
   void showWindow(Z3DWindow *&window, std::function<void(void)> _makeWindow,
                   int tab, const QString &title);
 

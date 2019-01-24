@@ -3798,14 +3798,14 @@ bool ZStackPresenter::process(ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_ACTIVE_STROKE_ESTIMATE_SIZE:
-  {
-    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
-    if (stroke->isVisible()) {
-      if (estimateActiveStrokeWidth()) {
-        buddyView()->paintActiveDecoration();
+    if (buddyDocument()->hasStackData()) {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
+      if (stroke->isVisible()) {
+        if (estimateActiveStrokeWidth()) {
+          buddyView()->paintActiveDecoration();
+        }
       }
     }
-  }
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
     if (!buddyDocument()->getSelected(ZStackObject::EType::FLYEM_BOOKMARK).isEmpty()) {
@@ -3814,25 +3814,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyDocument()->executeRemoveSelectedObjectCommand();
     }
     break;
-#if 0
-  case ZStackOperator::OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE:
-    buddyView()->setInfo(
-          buddyDocument()->dataInfo(
-            currentRawStackPos.x(), currentRawStackPos.y(),
-            currentRawStackPos.z()));
-    if (isStrokeOn()) {
-      m_stroke.set(currentStackPos.x(), currentStackPos.y());
-      if (m_interactiveContext.strokeEditMode() !=
-          ZInteractiveContext::STROKE_DRAW) {
-        m_stroke.setFilled(false);
-      } else {
-        m_stroke.toggleLabel(/*toggling=*/true);
-      }
-      interactionEvent.setEvent(
-            ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
-    }
-    break;
-#endif
+
   default:
     processed = false;
     break;

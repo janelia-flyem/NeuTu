@@ -736,9 +736,14 @@ bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-  neutu::LogMouseEvent(event, "release", "ZImageWidget");
+{  
+  neutu::LogMouseReleaseEvent(
+        m_pressedButtons, event->modifiers(), "ZImageWidget");
+
+//  neutu::LogMouseEvent(event, "release", "ZImageWidget");
 //  KINFO << "Mouse released in ZImageWidget";
+
+  m_pressedButtons = Qt::NoButton;
 
   emit mouseReleased(event);
 }
@@ -753,9 +758,7 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 //    KINFO << "Mouse (right+right) dragged in ZImageWidget";
 //  }
 
-  if (event->buttons() != Qt::NoButton) {
-    neutu::LogMouseEvent(event, "drag", "ZImageWidget");
-  }
+  neutu::LogMouseDragEvent(event, "ZImageWidget");
 
   if (!hasFocus() && m_hoverFocus) {
     setFocus();
@@ -768,6 +771,8 @@ void ZImageWidget::mousePressEvent(QMouseEvent *event)
 //  KINFO << "Mouse pressed in ZImageWidget";
 
   neutu::LogMouseEvent(event, "press", "ZImageWidget");
+
+  m_pressedButtons = event->buttons();
 
   emit mousePressed(event);
 }
