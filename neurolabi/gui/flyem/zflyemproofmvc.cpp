@@ -4360,7 +4360,7 @@ void ZFlyEmProofMvc::showRoi3dWindow()
     factory.setDeleteOnClose(true);
     factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_roiWindow =
-        factory.make3DWindow(m_doc, Z3DView::INIT_EXCLUDE_VOLUME);
+        factory.make3DWindow(m_doc, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
     m_roiWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     m_roiWindow->getSwcFilter()->setColorMode("Topology");
     setWindowSignalSlot(m_roiWindow);
@@ -4377,7 +4377,7 @@ void ZFlyEmProofMvc::showObjectWindow()
     factory.setDeleteOnClose(true);
     factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_objectWindow =
-        factory.make3DWindow(m_doc, Z3DView::INIT_EXCLUDE_VOLUME);
+        factory.make3DWindow(m_doc, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
     m_objectWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     setWindowSignalSlot(m_objectWindow);
   }
@@ -5349,57 +5349,6 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
   }
 }
 
-#if 0
-void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
-{
-  if (!getCompletePresenter()->isSplitWindow()) {
-//    ZDvidReader reader; //Todo: Need to use a shared reader
-    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-    if (reader.open(getDvidTarget())) {
-      QList<uint64_t> goodIdList;
-      QList<uint64_t> badIdList;
-      foreach(uint64_t bodyId, bodyIdList) {
-        if (reader.hasBody(bodyId)) {
-          goodIdList.append(bodyId);
-        } else {
-          badIdList.append(bodyId);
-        }
-      }
-
-      if (!badIdList.isEmpty()) {
-        std::ostringstream stream;
-        stream << "Cannot find body: ";
-        foreach (uint64_t badId, badIdList) {
-          stream << badId;
-        }
-
-        ZWidgetMessage(stream.str().c_str(), neutube::EMessageType::MSG_WARNING);
-      }
-
-      if (!goodIdList.isEmpty()) {
-        ZDvidLabelSlice *slice = getDvidLabelSlice();
-        if (slice != NULL) {
-          slice->recordSelection();
-          slice->clearSelection();
-          foreach(uint64_t bodyId, goodIdList) {
-            slice->addSelection(
-                  slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
-                  neutube::BODY_LABEL_MAPPED);
-          }
-          slice->processSelection();
-          processLabelSliceSelectionChange();
-        }
-        updateBodySelection();
-
-        uint64_t goodId = goodIdList.front();
-        ZIntPoint pt = reader.readBodyLocation(goodId);
-        zoomTo(pt);
-      }
-    }
-  }
-}
-#endif
-
 bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
   bool succ = true;
@@ -5428,7 +5377,7 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
                                              neutube::EMessageType::ERROR));
         if (!reader.hasBody(bodyId)) {
           emit messageGenerated(
-                ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
+                ZWidgetMessage(QString("Cannot go to body: %1, which does not exist.").
                                arg(bodyId), neutube::EMessageType::ERROR));
           succ = false;
         }

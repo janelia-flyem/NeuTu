@@ -36,7 +36,7 @@ class Z3DView : public QObject
 Q_OBJECT
 
 public:
-  enum EInitMode {
+  enum class EInitMode {
     INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 

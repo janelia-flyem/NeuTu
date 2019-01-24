@@ -179,6 +179,7 @@ public:
 
   void findLoopInStack();
   void bwthin();
+  void skeletonize();
 
 public:
   void setViewInfo(const QString &info);
