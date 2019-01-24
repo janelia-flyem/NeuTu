@@ -49,6 +49,9 @@
 #include "zdialogfactory.h"
 #include "dialogs/zstackframesettingdialog.h"
 #include "dialogs/zautotracedialog.h"
+#include "dialogs/flyemskeletonizationdialog.h"
+#include "zstackskeletonizer.h"
+#include "zwindowfactory.h"
 
 #ifdef _DEBUG_2
 #include "dvid/zdvidgrayslicescrollstrategy.h"
@@ -834,7 +837,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      ZWindowFactory::Open3DWindow(this, Z3DView::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
 //      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
@@ -1999,7 +2002,7 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK ||
           frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
-        ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         ZWindowFactory::Open3DWindow(frame);
@@ -2011,5 +2014,83 @@ void ZStackFrame::MessageProcessor::processMessage(
     break;
   default:
     break;
+  }
+}
+
+void ZStackFrame::skeletonize()
+{
+  FlyEmSkeletonizationDialog dlg;
+  if (dlg.exec() == QDialog::Accepted) {
+    ZStack *stack = document()->getStack();
+    //stack->binarize();
+
+    Stack *stackData = stack->c_stack();
+
+    //      ZStack backupStack;
+    ZObject3dScan *obj = NULL;
+    if (stackData == NULL) {
+      ZOUT(LTRACE(), 5) << "Skeletonization";
+      QList<ZSparseObject*> objList =
+          document()->getObjectList<ZSparseObject>();
+      if (!objList.isEmpty()) {
+        obj = new ZObject3dScan;
+        for (QList<ZSparseObject*>::iterator iter = objList.begin();
+             iter != objList.end(); ++iter) {
+          obj->concat(*(*iter));
+        }
+      }
+    }
+
+    ZSwcTree *wholeTree = NULL;
+    if (stackData != NULL || obj != NULL) {
+      ZStackSkeletonizer skeletonizer;
+      skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
+                                         dlg.getZInterval());
+      skeletonizer.setProgressReporter(document()->getProgressReporter());
+      skeletonizer.setRebase(true);
+      if (dlg.isExcludingSmallObj()) {
+        skeletonizer.setMinObjSize(dlg.sizeThreshold());
+      } else {
+        skeletonizer.setMinObjSize(0);
+      }
+
+      double distThre = -1.0;
+      if (!dlg.isConnectingAll()) {
+        distThre = dlg.distanceThreshold();
+      }
+      skeletonizer.setDistanceThreshold(distThre);
+
+      //skeletonizer.setResolution(1, 3);
+
+      skeletonizer.setLengthThreshold(dlg.lengthThreshold());
+      skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
+
+
+      if (dlg.isLevelChecked()) {
+        skeletonizer.setLevel(dlg.level());
+        skeletonizer.setLevelOp(dlg.getLevelOp());
+        //skeletonizer.useOriginalSignal(true);
+      }
+
+      if (stackData != NULL) {
+        wholeTree = skeletonizer.makeSkeleton(stackData);
+      } else {
+        wholeTree = skeletonizer.makeSkeleton(*obj);
+        delete obj;
+      }
+
+      wholeTree->translate(document()->getStackOffset());
+    }
+
+    if (wholeTree != NULL) {
+      wholeTree->addComment("skeleton");
+      executeAddObjectCommand(wholeTree);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+      //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+    } else {
+      ZDialogFactory::Error("Skeletonization failed", "No SWC tree generated.",
+                            this);
+    }
+
   }
 }

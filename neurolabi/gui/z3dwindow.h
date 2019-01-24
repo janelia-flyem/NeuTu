@@ -82,13 +82,13 @@ public:
 
 public: //Creators
   static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
   static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
   static Z3DWindow* Make(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
 public:
   void configure(const ZJsonObject &obj);
 
