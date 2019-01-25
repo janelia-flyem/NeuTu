@@ -1729,7 +1729,7 @@ void ZFlyEmProofMvc::setLabelAlpha(int alpha)
 {
   getView()->setDynamicObjectAlpha(alpha);
   getView()->paintDynamicObjectBuffer();
-  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 //  getCompletePresenter()->setLabelAlpha(alpha);
 //  getCompleteDocument()->setLabelSliceAlpha(alpha);
 }
@@ -2579,7 +2579,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           obj->update(getView()->getViewParameter());
           /*
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
-          obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+          obj->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
           obj->setSliceAxis(labelSlice->getSliceAxis());
           obj->setReader(doc->getSparseVolReader());
 //          obj->setDvidTarget(getDvidTarget());
@@ -3311,7 +3311,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
   ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, flyem::EBodyLabelType::BODY);
 
-  body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  body->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
   body->setSource(
         ZStackObjectSourceFactory::MakeSplitObjectSource());
@@ -4360,7 +4360,7 @@ void ZFlyEmProofMvc::showRoi3dWindow()
     factory.setDeleteOnClose(true);
     factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_roiWindow =
-        factory.make3DWindow(m_doc, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+        factory.make3DWindow(m_doc, Z3DView::EInitMode::EXCLUDE_VOLUME);
     m_roiWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     m_roiWindow->getSwcFilter()->setColorMode("Topology");
     setWindowSignalSlot(m_roiWindow);
@@ -4377,7 +4377,7 @@ void ZFlyEmProofMvc::showObjectWindow()
     factory.setDeleteOnClose(true);
     factory.setVisible(neutube3d::ERendererLayer::PUNCTA, false);
     m_objectWindow =
-        factory.make3DWindow(m_doc, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+        factory.make3DWindow(m_doc, Z3DView::EInitMode::EXCLUDE_VOLUME);
     m_objectWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     setWindowSignalSlot(m_objectWindow);
   }

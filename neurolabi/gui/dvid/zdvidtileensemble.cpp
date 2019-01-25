@@ -22,7 +22,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
 //  m_view = NULL;
@@ -99,7 +99,7 @@ void ZDvidTileEnsemble::updatePatch(
   }
 
   m_patch = new ZImage(*patch);
-  m_patch->loadHighContrastProtocal(m_contrastProtocal);
+  m_patch->loadContrastProtocal(m_contrastProtocal);
   m_patch->enhanceContrast(m_highContrast);
   m_patchRange = region;
 }

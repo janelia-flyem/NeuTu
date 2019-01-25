@@ -191,7 +191,7 @@ public:
     m_usingContrastProtocal = on;
   }
 
-  void loadHighContrastProtocal(const ZJsonObject &obj);
+  void loadContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
 //  void setContrastProtocol(double scale, double offset, bool nonlinear);
   void setContrastProtocol(const ZContrastProtocol &cp);

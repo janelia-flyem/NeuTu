@@ -1026,7 +1026,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
 #endif
         obj->setColor(0, 255, 0);
         obj->setZOrder(2);
-        obj->setTarget(ZStackObject::TARGET_WIDGET);
+        obj->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         obj->useCosmeticPen(true);
@@ -1037,7 +1037,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
         //      addObject(obj);
         m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
         m_dataBuffer->deliver();
-        //          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
+        //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
       } else {
         delete obj;
       }
@@ -2563,7 +2563,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
   ZDvidSparsevolSlice *obj = NULL;
   if (bodyId > 0) {
     obj = new ZDvidSparsevolSlice;
-    obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
     obj->setSliceAxis(labelSlice->getSliceAxis());
     obj->setReader(getSparseVolReader());
     //          obj->setDvidTarget(getDvidTarget());

@@ -2877,7 +2877,7 @@ void ZStackDoc::addStackPatchP(ZStackPatch *patch, bool uniqueSource)
   */
 
   /*
-  if (patch->getTarget() == ZStackObject::TARGET_STACK_CANVAS) {
+  if (patch->getTarget() == ZStackObject::ETarget::TARGET_STACK_CANVAS) {
     emit stackTargetModified();
   }
 
@@ -2959,7 +2959,7 @@ void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   m_objectGroup.add(obj, false);
 
   obj->setRole(ZStackObjectRole::ROLE_SEED);
@@ -2978,7 +2978,7 @@ void ZStackDoc::addStrokeP(ZStroke2d *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
 
 
   m_objectGroup.add(obj, false);
@@ -6060,7 +6060,7 @@ void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
     break;
   }
 }
-
+/*
 void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
 {
   switch (getObjectModifiedMode()) {
@@ -6076,7 +6076,8 @@ void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
     break;
   }
 }
-
+*/
+#if 0
 void ZStackDoc::processObjectModified(
     const QSet<ZStackObject::ETarget> &targetSet, bool sync)
 {
@@ -6093,6 +6094,7 @@ void ZStackDoc::processObjectModified(
     break;
   }
 }
+#endif
 
 void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
 {
@@ -9833,7 +9835,9 @@ void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
        iter != playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     player->getData()->toggleVisible();
-    processObjectModified(player->getData()->getTarget());
+    bufferObjectModified(
+          player->getData(), ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+//    processObjectModified(player->getData()->getTarget());
   }
   endObjectModifiedMode();
 
@@ -10330,7 +10334,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
       ZDocPlayer *player = *iter;
       ZStackObject *obj = player->getData();
       if ((m_excludeSet.count(obj->getType()) == 0) &&
-          !m_excludeTarget.contains(obj->getTarget()) &&
+          (m_excludeTarget.count(obj->getTarget()) == 0) &&
           obj->isVisible()) {
         LDEBUG() << "Updating " << zstackobject::ToString(obj->getTarget())
                  << ZStackObject::GetTypeName(obj->getType()) << obj->getSource();

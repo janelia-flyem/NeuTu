@@ -964,11 +964,11 @@ public:
   void processObjectModified();
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
-  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
+//  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
 //  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
 //                             bool sync = true);
-  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-                             bool sync = true);
+//  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+//                             bool sync = true);
   void processObjectModified(ZStackObject *obj, bool sync = true);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
@@ -1105,7 +1105,7 @@ public:
     void update(const ZStackViewParam &param);
 //    void update(const ZArbSliceViewParam &param);
 
-    const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {
+    const std::set<ZStackObject::ETarget>& getUpdatedTargetSet() {
       return m_updatedTarget;
     }
 
@@ -1119,8 +1119,8 @@ public:
   private:
     ZSharedPointer<ZStackDoc> m_doc;
     std::set<ZStackObject::EType> m_excludeSet;
-    QSet<ZStackObject::ETarget> m_excludeTarget;
-    QSet<ZStackObject::ETarget> m_updatedTarget;
+    std::set<ZStackObject::ETarget> m_excludeTarget;
+    std::set<ZStackObject::ETarget> m_updatedTarget;
   };
 
   void addObjectUnsync(ZStackObject *obj, bool uniqueSource = true);
@@ -1314,8 +1314,8 @@ signals:
   void cube3dModified();
   void todoModified();
   void objectModified();
-  void objectModified(ZStackObject::ETarget);
-  void objectModified(QSet<ZStackObject::ETarget>);
+//  void objectModified(ZStackObject::ETarget);
+//  void objectModified(QSet<ZStackObject::ETarget>);
   void objectModified(ZStackObjectInfoSet);
   void objectModified(ZStackObjectInfo);
 

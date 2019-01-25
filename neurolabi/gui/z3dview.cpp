@@ -438,7 +438,7 @@ void Z3DView::init()
 
     // get data from doc and add to network
     // volume
-    if (m_initMode != EInitMode::INIT_EXCLUDE_VOLUME) {
+    if (m_initMode != EInitMode::EXCLUDE_VOLUME) {
 //      updateVolumeData();
       connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
     }
@@ -1190,9 +1190,9 @@ void Z3DView::updateSliceData()
 void Z3DView::updateVolumeData()
 {
   if (m_volumeFilter) {
-    if (m_initMode == EInitMode::INIT_NORMAL) {
+    if (m_initMode == EInitMode::NORMAL) {
       m_volumeFilter->setData(m_doc);
-    } else if (m_initMode == EInitMode::INIT_FULL_RES_VOLUME) {
+    } else if (m_initMode == EInitMode::FULL_RES_VOLUME) {
       m_volumeFilter->setData(m_doc, std::numeric_limits<int>::max() / 2);
     }
   }

@@ -1409,7 +1409,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     int dataRangeY = (maxY + 1) / (dsIntv + 1);
 
     Z3DWindow *stage = new Z3DWindow(
-          academy, Z3DView::EInitMode::INIT_FULL_RES_VOLUME);
+          academy, Z3DView::EInitMode::FULL_RES_VOLUME);
     stage->getVolumeFilter()->hideBoundBox();
     stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");

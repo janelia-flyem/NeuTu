@@ -18,7 +18,7 @@
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
   m_type = GetType();
 //  m_zoom = 0;
 //  m_maxWidth = 512;

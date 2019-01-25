@@ -140,7 +140,7 @@ void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
 void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
 {
   setCrossHairCenter(x, y);
-  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const

@@ -30,14 +30,14 @@ public:
 
 
   Z3DWindow* make3DWindow(ZStackDoc *doc,
-                          Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   Z3DWindow* open3DWindow(ZStackDoc *doc,
-                          Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
 
   Z3DWindow* make3DWindow(ZSharedPointer<ZStackDoc> doc,
-                          Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   static Z3DWindow* Open3DWindow(
-      ZStackFrame *frame, Z3DView::EInitMode mode = Z3DView::EInitMode::INIT_NORMAL);
+      ZStackFrame *frame, Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
 
 
   Z3DWindow* make3DWindow(ZScalableStack *stack);

@@ -333,8 +333,8 @@ void Z3DGraphEdge::print()
 Z3DGraph::Z3DGraph()
 {
   m_type = GetType();
-  m_target = ZStackObject::TARGET_3D_ONLY;
-  setTarget(ZStackObject::TARGET_WIDGET);
+  m_target = ZStackObject::ETarget::TARGET_3D_ONLY;
+  setTarget(ZStackObject::ETarget::TARGET_WIDGET);
 }
 
 Z3DGraphPtr Z3DGraph::MakePointer()

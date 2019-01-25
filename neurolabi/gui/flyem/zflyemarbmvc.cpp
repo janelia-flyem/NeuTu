@@ -22,7 +22,7 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
   frame->getView()->setHoverFocus(true);
   ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(frame->getView());
   frame->getView()->setScrollStrategy(strategy);
-  frame->getView()->configure(ZStackView::MODE_PLAIN_IMAGE);
+  frame->getView()->configure(ZStackView::EMode::PLAIN_IMAGE);
   frame->getView()->setMaxViewPort(1600 * 1600);
 
   return frame;

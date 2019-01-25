@@ -4330,5 +4330,5 @@ Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
 ////////////////////////////////////////////////
 ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
 {
-  return ZStackObject::TARGET_WIDGET;
+  return ZStackObject::ETarget::TARGET_WIDGET;
 }

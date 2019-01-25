@@ -25289,13 +25289,13 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZStackObjectInfo objInfo;
-  objInfo.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  objInfo.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   objInfo.print();
 
   ZStackObjectInfoSet infoSet;
   infoSet.add(objInfo);
-  infoSet.add(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
-  infoSet.add(ZStackObject::TARGET_OBJECT_CANVAS);
+  infoSet.add(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
+  infoSet.add(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
   infoSet.add(ZStackObject::TYPE_CUBE);
   infoSet.add(ZStackObject::TYPE_CUBE, ZStackObjectInfo::STATE_ADDED);

@@ -89,7 +89,7 @@ public:
 
   static std::string GetTypeName(EType type);
 
-  enum Palette_Color {
+  enum class Palette_Color {
     BLUE = 0, GREEN, RED, ALPHA
   };
 
@@ -97,8 +97,8 @@ public:
     NORMAL, SOLID, BOUNDARY, SKELETON
   };
 
-  enum ETarget {
-    TARGET_NULL,
+  enum class ETarget {
+    NONE,
     TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
     TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS, TARGET_3D_CANVAS
   };
