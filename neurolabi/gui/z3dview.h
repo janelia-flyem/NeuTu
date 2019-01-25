@@ -37,7 +37,7 @@ Q_OBJECT
 
 public:
   enum class EInitMode {
-    INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
+    NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME
   };
 
   Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);

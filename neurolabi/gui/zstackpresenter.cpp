@@ -86,7 +86,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(true);
   stroke->setPenetrating(true);
   stroke->hideStart(false);
-  stroke->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  stroke->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   addActiveObject(ROLE_STROKE, stroke);
 
   stroke = new ZStroke2d;
@@ -94,7 +94,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
   addActiveObject(ROLE_SWC, stroke);
 
   stroke = new ZStroke2d;
@@ -102,7 +102,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
   addActiveObject(ROLE_SYNAPSE, stroke);
 
   stroke = new ZStroke2d;
@@ -111,7 +111,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setPenetrating(true);
   stroke->hideStart(true);
   stroke->setWidth(10.0);
-  stroke->setTarget(ZStackObject::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
   addActiveObject(ROLE_BOOKMARK, stroke);
 
   stroke = new ZStroke2d;
@@ -121,7 +121,7 @@ void ZStackPresenter::initActiveObject()
   stroke->hideStart(true);
   stroke->setWidth(10.0);
   stroke->setColor(QColor(200, 128, 200));
-  stroke->setTarget(ZStackObject::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
   addActiveObject(ROLE_TODO_ITEM, stroke);
 }
 
@@ -1378,13 +1378,13 @@ void ZStackPresenter::moveImageToMouse(
 void ZStackPresenter::moveViewPort(int dx, int dy)
 {
   buddyView()->moveViewPort(dx, dy);
-  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  buddyView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
 void ZStackPresenter::moveViewPortTo(int x, int y)
 {
   buddyView()->setViewPortOffset(x, y);
-//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+//  buddyView()->updateImageScreen(ZStackView::EUpdateOption::UPDATE_QUEUED);
 }
 
 void ZStackPresenter::increaseZoomRatio()
@@ -2375,7 +2375,7 @@ bool ZStackPresenter::enterSwcExtendMode()
 
       turnOnActiveObject(ROLE_SWC);
 //      turnOnStroke();
-//      m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+//      m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
       succ = true;
@@ -2426,7 +2426,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   turnOnActiveObject(ROLE_SWC);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
-//  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
@@ -2521,7 +2521,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   stroke->setEraser(false);
   turnOnActiveObject(ROLE_STROKE);
 //  m_stroke.setFilled(true);
-//  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -2542,7 +2542,7 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   stroke->set(x, y);
 //  m_stroke.setFilled(true);
   stroke->setEraser(true);
-//  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
   turnOnActiveObject(ROLE_STROKE);
   //buddyView()->paintActiveDecoration();
@@ -3575,7 +3575,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
     buddyView()->restoreFromBadView();
     buddyView()->processViewChange(true, false);
-    buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+    buddyView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

@@ -8,7 +8,7 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::TARGET_WIDGET);
+  setTarget(ZStackObject::ETarget::TARGET_WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);

@@ -58,7 +58,7 @@ public:
 
 private:
   ZStackObject::EType m_type = ZStackObject::EType::UNIDENTIFIED;
-  ZStackObject::ETarget m_target = ZStackObject::TARGET_NULL;
+  ZStackObject::ETarget m_target = ZStackObject::ETarget::NONE;
   ZStackObjectRole m_role;
 };
 
@@ -75,7 +75,7 @@ public:
   bool contains(const ZStackObjectInfo &info) const;
 
   std::set<ZStackObject::EType> getType() const;
-  QSet<ZStackObject::ETarget> getTarget() const;
+  std::set<ZStackObject::ETarget> getTarget() const;
 
   /*!
    * \brief Check if a certain type of object has been modified in a certain way.

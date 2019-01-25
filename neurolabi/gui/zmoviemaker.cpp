@@ -50,7 +50,7 @@ void ZMovieMaker::dismissCast()
 
 void ZMovieMaker::prepareStage()
 {
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::EInitMode::INIT_NORMAL);
+  Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::EInitMode::NORMAL);
   m_stage = new ZMovieStage(window);
 
 //  window->getDocument()->disconnectPunctaModelUpdate();

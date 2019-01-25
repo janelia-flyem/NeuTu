@@ -21,7 +21,7 @@
 
 ZDvidTile::ZDvidTile()
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   m_type = GetType();
 //  m_pixmap.fill();
 //  m_pixmap = NULL;
@@ -120,7 +120,7 @@ void ZDvidTile::updateImageContrast()
     *m_originalBackup = *m_image;
   }
 
-  m_image->loadHighContrastProtocal(m_contrastProtocal);
+  m_image->loadContrastProtocal(m_contrastProtocal);
   m_image->enhanceContrast(hc);
 
 #ifdef _DEBUG_2

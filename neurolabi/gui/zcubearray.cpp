@@ -364,7 +364,7 @@ const std::vector<bool>& Z3DCube::getFaceVisiblity() const
 ZCubeArray::ZCubeArray()
 {
     m_type = ZCubeArray::GetType();
-    m_target = ZStackObject::TARGET_3D_ONLY;
+    m_target = ZStackObject::ETarget::TARGET_3D_ONLY;
 }
 
 ZCubeArray::~ZCubeArray()

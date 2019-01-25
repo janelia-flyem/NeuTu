@@ -1034,7 +1034,7 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
         s_birdsEyeDockWidget = new QDockWidget("Bird's Eye View", window);
         window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
 
-        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::EInitMode::INIT_NORMAL, false, s_birdsEyeDockWidget);
+        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::EInitMode::NORMAL, false, s_birdsEyeDockWidget);
         s_birdsEyeView->canvas().setMinimumWidth(512);
         s_birdsEyeView->canvas().setMinimumHeight(512);
         s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());

@@ -783,7 +783,7 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   stroke->set(x, y);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
-//  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
 //  turnOnStroke();
   turnOnActiveObject(ROLE_BOOKMARK);
   //buddyView()->paintActiveDecoration();

@@ -30,7 +30,7 @@ ZDvidSparseStack::~ZDvidSparseStack()
 
 void ZDvidSparseStack::init()
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   m_type = GetType();
   m_label = 0;
   setCancelFillValue(false);

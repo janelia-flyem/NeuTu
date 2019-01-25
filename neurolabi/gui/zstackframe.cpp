@@ -837,7 +837,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::EXCLUDE_VOLUME);
 //      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
@@ -1175,7 +1175,7 @@ QStringList ZStackFrame::toStringList() const
 
 void ZStackFrame::updateView()
 {
-  m_view->redraw(ZStackView::UPDATE_QUEUED);
+  m_view->redraw(ZStackView::EUpdateOption::QUEUED);
 }
 
 void ZStackFrame::undo()
@@ -1840,7 +1840,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }
@@ -2002,7 +2002,7 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK ||
           frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
-        ZWindowFactory::Open3DWindow(frame, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::EInitMode::EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         ZWindowFactory::Open3DWindow(frame);
@@ -2085,7 +2085,7 @@ void ZStackFrame::skeletonize()
     if (wholeTree != NULL) {
       wholeTree->addComment("skeleton");
       executeAddObjectCommand(wholeTree);
-      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::EXCLUDE_VOLUME);
       //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     } else {
       ZDialogFactory::Error("Skeletonization failed", "No SWC tree generated.",
