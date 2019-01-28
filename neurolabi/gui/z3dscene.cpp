@@ -13,6 +13,10 @@ Z3DScene::Z3DScene(int width, int height, bool stereo, QObject *parent)
 
 void Z3DScene::drawBackground(QPainter* /*painter*/, const QRectF&)
 {
+#ifdef _DEBUG_2
+  std::cout << "Z3DScene::drawBackground: " << m_networkEvaluator << std::endl;
+#endif
+
   if (!m_networkEvaluator) {
     return;
   }

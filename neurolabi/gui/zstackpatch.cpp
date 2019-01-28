@@ -5,7 +5,7 @@
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
-  setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
 }
 
 ZStackPatch::~ZStackPatch()

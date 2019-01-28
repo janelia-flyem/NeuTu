@@ -19515,7 +19515,7 @@ void ZTest::test(MainWindow *host)
   bookmark.setCenter(1, 2, 3);
   bookmark.setBodyId(1);
   bookmark.setCustom(true);
-  bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+  bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_MERGE);
   bookmark.setUser("zhaot");
   bookmark.addUserTag();
 

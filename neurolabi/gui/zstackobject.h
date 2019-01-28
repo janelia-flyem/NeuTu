@@ -99,16 +99,16 @@ public:
 
   enum class ETarget {
     NONE,
-    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
-    TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS, TARGET_3D_CANVAS
+    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
+    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D
   };
 
-  enum EDisplaySliceMode {
+  enum class EDisplaySliceMode {
     DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
-  enum EHitProtocal {
+  enum class EHitProtocal {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
@@ -345,7 +345,7 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_hitProtocal != HIT_NONE && isVisible();
+    return m_hitProtocal != EHitProtocal::HIT_NONE && isVisible();
   }
 
   inline void setHitProtocal(EHitProtocal protocal) {

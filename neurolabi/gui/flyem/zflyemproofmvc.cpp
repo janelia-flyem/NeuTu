@@ -3311,12 +3311,12 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
   ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, flyem::EBodyLabelType::BODY);
 
-  body->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
+  body->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
   body->setSource(
         ZStackObjectSourceFactory::MakeSplitObjectSource());
 //  body->setHittable(false);
-  body->setHitProtocal(ZStackObject::HIT_NONE);
+  body->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
   body->setSelectable(false);
   ZOUT(LINFO(), 3) << "Adding body:" << body;
   getDocument()->addObject(body, true);
@@ -3353,7 +3353,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
-      labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
+      labelSlice->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 
       body->setColor(labelSlice->getLabelColor(
                        bodyId, neutube::EBodyLabelType::ORIGINAL));
@@ -4192,7 +4192,7 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(neutube::EAxis::Z);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
-    labelSlice->setHitProtocal(ZStackObject::HIT_DATA_POS);
+    labelSlice->setHitProtocal(ZStackObject::EHitProtocal::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();
@@ -5693,7 +5693,7 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
       const ZFlyEmBookmark *bookmark = *iter;
       if (!bookmark->isCustom()) {
         if (getCompletePresenter()->isSplitOn()) {
-          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::FALSE_MERGE) &&
               (bookmark->getBodyId() == m_splitProject.getBodyId())) {
             model->append(bookmark);
           }
@@ -5718,7 +5718,7 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       const ZFlyEmBookmark *bookmark = *iter;
       if (bookmark->isCustom()) {
         if (getCompletePresenter()->isSplitOn()) {
-          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::FALSE_MERGE) &&
               (bookmark->getBodyId() == m_splitProject.getBodyId())) {
             model->append(bookmark);
           }

@@ -80,7 +80,7 @@ ZObject3dScan::~ZObject3dScan()
 
 void ZObject3dScan::init()
 {
-  setTarget(ETarget::TARGET_OBJECT_CANVAS);
+  setTarget(ETarget::OBJECT_CANVAS);
   m_type = GetType();
 
   m_isCanonized = true;

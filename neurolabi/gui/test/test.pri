@@ -78,7 +78,8 @@ HEADERS += \
     $$PWD/zunittest.h \
     $$PWD/cypherquerytest.h \
     $$PWD/zwidgetmessagetest.h \
-    $$PWD/zstackobjecttest.h
+    $$PWD/zstackobjecttest.h \
+    $$PWD/z3dswcfiltertest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

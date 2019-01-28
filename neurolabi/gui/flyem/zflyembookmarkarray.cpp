@@ -58,11 +58,11 @@ void ZFlyEmBookmarkArray::importJsonFile(
           bookmark.setLocation(iround(x), iround(y), iround(z));
           bookmark.setBodyId(bodyId);
           if (text.startsWith("split") || text.startsWith("small split")) {
-            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else {
-            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
           }
           append(bookmark);
         }
@@ -122,7 +122,7 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 //      circle->set(bookmark.getLocation(), 5);
     circle->setColor(255, 0, 0);
     circle->setVisible(isVisible);
-    circle->setHitProtocal(ZStackObject::HIT_NONE);
+    circle->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
     punctumArray.push_back(circle);
   }
 

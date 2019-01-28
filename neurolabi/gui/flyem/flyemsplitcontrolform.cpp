@@ -315,7 +315,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
         //        if (bookmark->getBodyId() == project->getBodyId()) {
         if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
-        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_MERGE) {
           if (bookmark->getBodyId() == project->getBodyId()) {
             m_assignedBookmarkList.append(bookmark);
           }

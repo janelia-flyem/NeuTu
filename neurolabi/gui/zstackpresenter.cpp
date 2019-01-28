@@ -86,7 +86,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(true);
   stroke->setPenetrating(true);
   stroke->hideStart(false);
-  stroke->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  stroke->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   addActiveObject(ROLE_STROKE, stroke);
 
   stroke = new ZStroke2d;
@@ -94,7 +94,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::WIDGET);
   addActiveObject(ROLE_SWC, stroke);
 
   stroke = new ZStroke2d;
@@ -102,7 +102,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::WIDGET);
   addActiveObject(ROLE_SYNAPSE, stroke);
 
   stroke = new ZStroke2d;
@@ -111,7 +111,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setPenetrating(true);
   stroke->hideStart(true);
   stroke->setWidth(10.0);
-  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::WIDGET);
   addActiveObject(ROLE_BOOKMARK, stroke);
 
   stroke = new ZStroke2d;
@@ -121,7 +121,7 @@ void ZStackPresenter::initActiveObject()
   stroke->hideStart(true);
   stroke->setWidth(10.0);
   stroke->setColor(QColor(200, 128, 200));
-  stroke->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+  stroke->setTarget(ZStackObject::ETarget::WIDGET);
   addActiveObject(ROLE_TODO_ITEM, stroke);
 }
 

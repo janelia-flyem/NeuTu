@@ -8,12 +8,12 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+  setTarget(ZStackObject::ETarget::WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);
   setColor(QColor(255, 255, 255, 128));
-  setHitProtocal(HIT_WIDGET_POS);
+  setHitProtocal(EHitProtocal::HIT_WIDGET_POS);
 }
 
 

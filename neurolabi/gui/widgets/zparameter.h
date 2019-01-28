@@ -12,6 +12,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QMutex>
 #include <set>
 
 class QWidget;
@@ -70,6 +71,8 @@ public:
 
   void updateFromSender();
 
+//  void setWidgetSyncMutex(QMutex *m) { m_syncMutex = m; }
+
 signals:
 
   void nameChanged(const QString&);
@@ -127,6 +130,8 @@ protected:
   //std::set<QWidget*> m_widgets;
   bool m_isWidgetsEnabled = true;
   bool m_isWidgetsVisible = true;
+
+//  QMutex *m_syncMutex = nullptr;
 };
 
 // parameter contains a single value

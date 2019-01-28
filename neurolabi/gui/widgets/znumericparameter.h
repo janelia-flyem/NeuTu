@@ -5,6 +5,7 @@
 #include "zglmutils.h"
 #include <QList>
 #include <QString>
+#include <QMutex>
 #include <limits>
 
 template<class T>

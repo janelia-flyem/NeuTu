@@ -75,5 +75,6 @@
 #include "test/cypherquerytest.h"
 #include "test/zwidgetmessagetest.h"
 #include "test/zstackobjecttest.h"
+#include "test/z3dswcfiltertest.h"
 
 #endif // ZTESTALL_H

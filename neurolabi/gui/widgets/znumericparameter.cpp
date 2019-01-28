@@ -639,7 +639,10 @@ void ZVec4Parameter::beforeChange(glm::vec4& value)
 QWidget* ZVec4Parameter::actualCreateWidget(QWidget* parent)
 {
   if (m_style == "COLOR") {
-    return new ZClickableColorLabel(this, parent);
+    ZClickableColorLabel *widget = new ZClickableColorLabel(this, parent);
+//    widget->setSyncMutex(m_syncMutex);
+    return widget;
+//    return new ZClickableColorLabel(this, parent);
   }
 
   QWidget* w;

@@ -89,7 +89,7 @@ bool ZStackBall::display(
     slice = 0;
   }
 
-  if (sliceMode == DISPLAY_SLICE_PROJECTION) {
+  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_PROJECTION) {
     slice = -1;
   }
 

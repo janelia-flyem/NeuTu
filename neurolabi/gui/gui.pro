@@ -165,21 +165,6 @@ equals(SANITIZE_BUILD, "address") {
   QMAKE_LFLAGS += -fsanitize=address
 }
 
-win32 {
-  SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
-      $$PWD/ext/sys/VidMemViaD3D9.cpp \
-      $$PWD/ext/sys/VidMemViaDDraw.cpp \
-      $$PWD/ext/sys/VidMemViaDxDiag.cpp
-}
-
-unix {
-  macx {
-      SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
-  } else {
-      SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
-  }
-}
-
 CONFIG(static_gtest) { # gtest from ext folder
   include($$PWD/ext/gtest.pri)
 }
@@ -289,6 +274,21 @@ include(qt/qt.pri)
 include(widgets/widgets.pri)
 
 # Input
+win32 {
+  SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
+      $$PWD/ext/sys/VidMemViaD3D9.cpp \
+      $$PWD/ext/sys/VidMemViaDDraw.cpp \
+      $$PWD/ext/sys/VidMemViaDxDiag.cpp
+}
+
+unix {
+  macx {
+      SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+  } else {
+      SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+  }
+}
+
 RESOURCES = gui.qrc
 
 HEADERS += mainwindow.h \

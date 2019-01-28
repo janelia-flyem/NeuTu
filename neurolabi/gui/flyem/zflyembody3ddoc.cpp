@@ -473,7 +473,7 @@ void ZFlyEmBody3dDoc::initArbGraySlice()
 {
   ZDvidGraySlice *slice = new ZDvidGraySlice();
   slice->setSliceAxis(neutube::EAxis::ARB);
-  slice->setTarget(ZStackObject::ETarget::TARGET_3D_CANVAS);
+  slice->setTarget(ZStackObject::ETarget::CANVAS_3D);
   slice->setSource(
         ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::ARB));
   addObject(slice);

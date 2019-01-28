@@ -48,8 +48,10 @@ void ZStackDoc3dHelper::processObjectModified(
     }
   }
 
-  if (objInfo.contains(ZStackObject::ETarget::TARGET_3D_CANVAS)) {
+  if (objInfo.contains(ZStackObject::ETarget::CANVAS_3D)) {
     updateCustomCanvas(view);
+  } else {
+//    view->updateCanvas();
   }
 }
 
