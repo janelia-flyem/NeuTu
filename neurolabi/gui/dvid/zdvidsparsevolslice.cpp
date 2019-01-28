@@ -8,7 +8,7 @@
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()/*, m_currentZ(-1)*/
 {
   m_type = GetType();
-  setHitProtocal(ZStackObject::HIT_NONE);
+  setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 //  setHittable(false);
   m_externalReader = NULL;
   m_isFullView = false;

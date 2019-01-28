@@ -91,6 +91,12 @@ void Z3DNetworkEvaluator::process(bool stereo)
 
     Z3DEye eye = stereo ? Z3DEye::Left : Z3DEye::Mono;
 
+#ifdef _DEBUG_2
+    std::cout << currentFilter->className().toStdString() << ":"
+              << currentFilter->isValid(eye)
+              << " " << currentFilter->isReady(eye) << std::endl;
+#endif
+
     // execute the filter, if it needs processing and is ready
     if (!currentFilter->isValid(eye) && currentFilter->isReady(eye)) {
       // notify filter wrappers

@@ -61,7 +61,8 @@ HEADERS += \
     $$PWD/z3dvolume.h \
     $$PWD/z3dvolumefilter.h \
     $$PWD/z3dvolumeraycasterrenderer.h \
-    $$PWD/z3dvolumeslicerenderer.h
+    $$PWD/z3dvolumeslicerenderer.h \
+    $$PWD/zswccolorparam.h
 
 SOURCES += \
     $$PWD/z3d2dslicefilter.cpp \
@@ -125,4 +126,5 @@ SOURCES += \
     $$PWD/z3dvolume.cpp \
     $$PWD/z3dvolumefilter.cpp \
     $$PWD/z3dvolumeraycasterrenderer.cpp \
-    $$PWD/z3dvolumeslicerenderer.cpp
+    $$PWD/z3dvolumeslicerenderer.cpp \
+    $$PWD/zswccolorparam.cpp

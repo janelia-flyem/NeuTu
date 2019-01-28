@@ -22,7 +22,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
 //  m_view = NULL;

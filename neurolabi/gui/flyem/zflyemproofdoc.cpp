@@ -477,7 +477,7 @@ void ZFlyEmProofDoc::cleanBodyAnnotationMap()
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-      LWARN() << "Inconsistent body selection: " << bodyId;
+      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
       keysToRemove.push_back(bodyId);
     }
   }
@@ -498,7 +498,9 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
       emit messageGenerated(
             ZWidgetMessage(
               QString("Inconsistent body selection: %1").arg(bodyId),
-              neutube::EMessageType::WARNING));
+              neutube::EMessageType::WARNING,
+              ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+              ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
   }
 }
@@ -1026,14 +1028,14 @@ void ZFlyEmProofDoc::loadRoiFunc()
 #endif
         obj->setColor(0, 255, 0);
         obj->setZOrder(2);
-        obj->setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+        obj->setTarget(ZStackObject::ETarget::WIDGET);
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         obj->useCosmeticPen(true);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
-        obj->setHitProtocal(ZStackObject::HIT_NONE);
+        obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
         //      addObject(obj);
         m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
         m_dataBuffer->deliver();
@@ -2483,7 +2485,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
   foreach (ZObject3dScan *obj, objList) {
     obj->setColor(getSeedColor(obj->getLabel()));
     obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
-    obj->setHitProtocal(ZStackObject::HIT_NONE);
+    obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
     obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
@@ -2563,7 +2565,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
   ZDvidSparsevolSlice *obj = NULL;
   if (bodyId > 0) {
     obj = new ZDvidSparsevolSlice;
-    obj->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
     obj->setSliceAxis(labelSlice->getSliceAxis());
     obj->setReader(getSparseVolReader());
     //          obj->setDvidTarget(getDvidTarget());
@@ -3231,14 +3233,14 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bookmark->setBodyId(bodyId);
           bookmark->setRadius(5.0);
           bookmark->setColor(255, 0, 0);
-          bookmark->setHitProtocal(ZStackObject::HIT_NONE);
+          bookmark->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 //          bookmark->setHittable(false);
           if (text.startsWith("split") || text.startsWith("small split")) {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
           }
           if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
             bookmark->setChecked(true);

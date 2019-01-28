@@ -2959,7 +2959,7 @@ void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_objectGroup.add(obj, false);
 
   obj->setRole(ZStackObjectRole::ROLE_SEED);
@@ -2978,7 +2978,7 @@ void ZStackDoc::addStrokeP(ZStroke2d *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
 
 
   m_objectGroup.add(obj, false);
@@ -9880,7 +9880,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
           obj->setSource(
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   obj->getLabel()));
-          obj->setHitProtocal(ZStackObject::HIT_NONE);
+          obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
           obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);

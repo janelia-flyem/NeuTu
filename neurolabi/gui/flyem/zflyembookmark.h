@@ -17,8 +17,8 @@ public:
   ZFlyEmBookmark();
   ~ZFlyEmBookmark();
 
-  enum EBookmarkType {
-    TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
+  enum class EBookmarkType {
+    FALSE_MERGE, FALSE_SPLIT, LOCATION
   };
 
   /*

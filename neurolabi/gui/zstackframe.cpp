@@ -347,11 +347,11 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
 //  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
 //          m_view, SLOT(redraw()));
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+//          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
           this, SLOT(changeWindowTitle(bool)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
@@ -1840,7 +1840,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }

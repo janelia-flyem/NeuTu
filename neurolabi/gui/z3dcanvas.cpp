@@ -206,7 +206,7 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 void Z3DCanvas::updateDecoration()
 {
   m_updatingDecoration = true;
-  viewport()->update();
+  updateView();
   m_updatingDecoration = false;
 }
 
@@ -221,7 +221,7 @@ void Z3DCanvas::setCustomWidget(QWidget *widget)
 void Z3DCanvas::dump(const QString &message)
 {
   m_message = message;
-  viewport()->update();
+  updateView();
 }
 
 void Z3DCanvas::updateView()
@@ -247,11 +247,15 @@ void Z3DCanvas::paintCustomRegion(const QImage &image)
     painter.drawImage(m_customCanvas->rect(), image);
   }
 
-  viewport()->update();
+  updateView();
 }
 
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
+#ifdef _DEBUG_2
+  std::cout << "Z3DCanvas::drawBackground: " << m_updatingDecoration << std::endl;
+#endif
+
   if (!m_updatingDecoration) {
     QGraphicsView::drawBackground(painter, rect);
   }
@@ -272,7 +276,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
     drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
-                      ZStackObject::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
+                      ZStackObject::EDisplaySliceMode::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
   }
 #else
   UNUSED_PARAMETER(painter);
