@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZAxisWidget;
 class ZButtonBox;

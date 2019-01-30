@@ -12,7 +12,7 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zdvidreader.h"
 
 namespace libdvid{

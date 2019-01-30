@@ -6,7 +6,7 @@
 #include "zstackdoc.h"
 #include "zpunctum.h"
 #include "zobjsitem.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "zstackobjectinfo.h"
 

@@ -1,7 +1,7 @@
 #ifndef ZSWCSIGNALFITTER_H
 #define ZSWCSIGNALFITTER_H
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "swctreenode.h"
 
 class ZStack;

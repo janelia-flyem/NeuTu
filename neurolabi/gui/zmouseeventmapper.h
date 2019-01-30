@@ -6,7 +6,7 @@
 #include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zmouseeventrecorder.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZInteractiveContext;
 class QMouseEvent;

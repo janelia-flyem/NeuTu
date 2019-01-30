@@ -17,7 +17,7 @@
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"

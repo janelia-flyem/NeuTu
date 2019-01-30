@@ -13,7 +13,7 @@
 
 #include "zobject3d.h"
 #include "tz_error.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "tz_stack_objlabel.h"
 #include "zerror.h"
 #include "tz_constant.h"
@@ -41,7 +41,7 @@
 #include "geometry/zintcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
-#include "core/memorystream.h"
+#include "common/memorystream.h"
 
 ///////////////////////////////////////////////////
 

@@ -12,7 +12,7 @@
 #include "swctreenode.h"
 #include "zsynapselocationmatcher.h"
 #include "tz_error.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #ifdef _QT_GUI_USED_
 #include "zpunctum.h"
 #include "zflyemdvidreader.h"

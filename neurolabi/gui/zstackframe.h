@@ -23,7 +23,7 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
 

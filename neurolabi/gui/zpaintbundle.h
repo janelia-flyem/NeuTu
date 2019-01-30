@@ -2,7 +2,7 @@
 #define ZPAINTBUNDLE_H
 
 #include <QList>
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 //#include "zstackdrawable.h"
 #include "swctreenode.h"
 #include "zstackball.h"

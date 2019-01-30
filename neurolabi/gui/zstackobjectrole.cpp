@@ -1,5 +1,5 @@
 #include "zstackobjectrole.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_NONE = 0;
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_DISPLAY = BIT_FLAG(1);

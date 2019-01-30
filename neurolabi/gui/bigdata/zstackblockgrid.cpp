@@ -2,7 +2,7 @@
 #include "zstack.hxx"
 #include "geometry/zintcuboid.h"
 #include "neutubeconfig.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {

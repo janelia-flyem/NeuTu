@@ -3,7 +3,7 @@
 
 #include <QList>
 #include "zstackoperator.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZKeyOperationMap;
 

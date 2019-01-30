@@ -1,5 +1,5 @@
 #include "zswcconnector.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "tz_u8array.h"
 #include "zswctree.h"
 #include "zswcpath.h"

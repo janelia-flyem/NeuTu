@@ -5,7 +5,7 @@
 
 #include "zactionfactory.h"
 #include "geometry/zpoint.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 namespace Ui {
 class Neu3Window;

@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
 #include "tz_utilities.h"
 
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"

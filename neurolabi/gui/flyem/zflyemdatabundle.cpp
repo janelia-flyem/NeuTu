@@ -7,7 +7,7 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "tz_error.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "c_json.h"
 #include "zswctree.h"
 #include "swctreenode.h"

@@ -1,5 +1,5 @@
 #include "zgraphcompressor.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 
 using namespace std;
 

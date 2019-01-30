@@ -1,9 +1,9 @@
-#include "core/utilities.h"
+#include "utilities.h"
 
 #include <cstdlib>
 #include <chrono>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 bool neutube::HasEnv(const std::string &name, const std::string &value)
 {

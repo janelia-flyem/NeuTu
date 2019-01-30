@@ -11,7 +11,7 @@
 #include "zglmutils.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboid.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZNormColorMap;
 class ZObject3d;

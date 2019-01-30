@@ -6,7 +6,7 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zstackgraph.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "tz_stack_bwmorph.h"
 #include "swc/zswcresampler.h"
 #include "zgraphcompressor.h"

@@ -4,7 +4,7 @@
 #include <qnamespace.h>
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 class QMouseEvent;
 

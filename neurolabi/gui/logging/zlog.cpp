@@ -3,7 +3,7 @@
 #include <QDateTime>
 #include <sstream>
 
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "zqslog.h"
 

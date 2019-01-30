@@ -1,12 +1,12 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZPainter;
 class ZIntCuboid;

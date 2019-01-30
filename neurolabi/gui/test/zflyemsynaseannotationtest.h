@@ -6,7 +6,7 @@
 #include "flyem/zsynapseannotationarray.h"
 #include "geometry/zintcuboidarray.h"
 #include "flyem/zflyemdatabundle.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 
 #ifdef _USE_GTEST_
 

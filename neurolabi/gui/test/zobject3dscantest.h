@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "zobject3dscan.h"
 #include "neutubeconfig.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "tz_iarray.h"
 #include "zdebug.h"
 #include "zdoublevector.h"

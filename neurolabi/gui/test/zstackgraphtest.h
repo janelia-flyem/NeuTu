@@ -5,7 +5,7 @@
 #include "neutubeconfig.h"
 #include "zstackgraph.h"
 #include "c_stack.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "zdebug.h"
 
 #ifdef _USE_GTEST_

@@ -8,7 +8,7 @@
 #include "tz_stack_math.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_utilities.h"
 #include "zswctree.h"

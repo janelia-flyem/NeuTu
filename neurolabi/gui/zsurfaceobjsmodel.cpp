@@ -7,7 +7,7 @@
 #include "zcubearray.h"
 #include "zobjsitem.h"
 #include "neutubeconfig.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 ZSurfaceObjsModel::ZSurfaceObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)

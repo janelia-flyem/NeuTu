@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include "tz_stack_lib.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZVoxel
 {

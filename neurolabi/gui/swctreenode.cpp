@@ -8,7 +8,7 @@
 
 #include "tz_error.h"
 #include "zswctree.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "zstring.h"
 #include "tz_math.h"
 #include "tz_geo3d_utils.h"

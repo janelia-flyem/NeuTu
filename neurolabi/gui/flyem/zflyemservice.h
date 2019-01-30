@@ -1,7 +1,7 @@
 #ifndef ZFLYEMSERVICE_H
 #define ZFLYEMSERVICE_H
 
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "geometry/zintcuboidarray.h"
 #include "zintpairmap.h"
 #include "zobject3dscan.h"

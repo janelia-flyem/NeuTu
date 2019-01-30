@@ -1,7 +1,7 @@
 include($${PWD}/json.pri)
 include($${PWD}/mylib/mylib.pri)
 include($${PWD}/imgproc/imgproc.pri)
-include($${PWD}/core/core.pri)
+include($${PWD}/common/common.pri)
 include($${PWD}/geometry/geometry.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
@@ -219,7 +219,8 @@ HEADERS += $${PWD}/zstack.hxx \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
     $$PWD/zjsondef.h \
-    $$PWD/flyem/zflyembodystatus.h
+    $$PWD/flyem/zflyembodystatus.h \
+    $$PWD/zgraph.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -417,5 +418,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
    $$PWD/zswcdirectionfeatureanalyzer.cpp \
-    $$PWD/flyem/zflyembodystatus.cpp
+    $$PWD/flyem/zflyembodystatus.cpp \
+    $$PWD/zgraph.cpp
 

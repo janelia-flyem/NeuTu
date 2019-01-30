@@ -7,14 +7,14 @@
 #include <QSharedPointer>
 #include <QMap>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "zactionfactory.h"
 
 class QWidget;

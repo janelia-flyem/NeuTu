@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 namespace Ui {
 class ZAxisWidget;

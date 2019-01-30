@@ -7,7 +7,7 @@
 //#include "flyem/zintcuboidcomposition.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboidface.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "geometry/zintcuboid.h"
 #include "geometry/zlinesegment.h"
 

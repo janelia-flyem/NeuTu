@@ -12,7 +12,7 @@
 #include "znetbufferreader.h"
 #include "neutube.h"
 #else
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #endif
 
 #include "tz_cdefs.h"

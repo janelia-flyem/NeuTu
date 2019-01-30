@@ -96,7 +96,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "sandbox/zbrowseropener.h"
 #include "zwidgetmessage.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "zstackdochelper.h"
 #include "z3dwindowcontroller.h"
 #include "data3d/zstackobjectconfig.h"

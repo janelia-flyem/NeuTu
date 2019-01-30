@@ -2,7 +2,7 @@
 #include "tz_cdefs.h"
 //#include "zswctree.h"
 #include "geometry/zintcuboid.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;

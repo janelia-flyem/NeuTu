@@ -1,8 +1,8 @@
 #ifndef ZBIOCYTINPROJMASKFACTORY_H
 #define ZBIOCYTINPROJMASKFACTORY_H
 
-#include "core/zsharedpointer.h"
-#include "core/neutube_def.h"
+#include "common/zsharedpointer.h"
+#include "common/neutube_def.h"
 
 class ZStack;
 class ZObject3dScan;

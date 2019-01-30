@@ -131,7 +131,7 @@
 #include "tz_stack_math.h"
 #include "tz_stack_relation.h"
 #include "zstackdoclabelstackfactory.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zsparseobject.h"
 #include "dialogs/zflyemnewbodysplitprojectdialog.h"
 #include "dialogs/flyembodysplitprojectdialog.h"

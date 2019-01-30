@@ -21,7 +21,7 @@
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
 #include "z3ddef.h"
 #include "geometry/zintpointarray.h"
