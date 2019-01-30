@@ -69,7 +69,7 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
           mesh->setSource(source);
 
           m_doc->getDataBuffer()->addUpdate(
-                mesh, ZStackDocObjectUpdate::ACTION_ADD_BUFFER);
+                mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
         }
       }
     }

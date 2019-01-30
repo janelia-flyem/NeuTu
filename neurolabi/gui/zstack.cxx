@@ -832,7 +832,7 @@ std::string ZStack::save(const string &filepath) const
 }
 
 void* ZStack::projection(
-    ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis,
+    ZSingleChannelStack::EProjMode mode, ZSingleChannelStack::Stack_Axis axis,
     int c)
 {
   return singleChannelStack(c)->projection(mode, axis);
@@ -841,9 +841,9 @@ void* ZStack::projection(
 void* ZStack::projection(
     neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
-  ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
+  ZSingleChannelStack::EProjMode mode = ZSingleChannelStack::EProjMode::MAX_PROJ;
   if (bg == neutube::EImageBackground::BRIGHT) {
-    mode = ZSingleChannelStack::MIN_PROJ;
+    mode = ZSingleChannelStack::EProjMode::MIN_PROJ;
   }
 
   return projection(mode, axis, c);

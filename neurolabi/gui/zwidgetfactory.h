@@ -16,8 +16,8 @@ class ZWidgetFactory
 public:
   ZWidgetFactory();
 
-  enum ESpacerOption {
-    SPACER_RIGHT, SPACER_NONE
+  enum class ESpacerOption {
+    RIGHT, NONE
   };
 
   static ZLabeledEditWidget* MakeLabledEditWidget(

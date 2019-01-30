@@ -103,7 +103,7 @@ ZPoint ZMouseEventRecorder::getPositionOffsetFromLastLeftPress(
 {
   ZPoint offset(0, 0, 0);
   const ZMouseEvent &event = getMouseEvent(
-        Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
+        Qt::LeftButton, ZMouseEvent::EAction::PRESS);
   if (!event.isNull()) {
     const ZMouseEvent &currentEvent = getLatestMouseEvent();
     if (!currentEvent.isNull()) {

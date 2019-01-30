@@ -1037,7 +1037,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
 //        obj->setHittable(false);
         obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
         //      addObject(obj);
-        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
         m_dataBuffer->deliver();
         //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
       } else {
@@ -2495,7 +2495,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
   m_dataBuffer->addUpdate(
         objList.begin(), objList.end(),
-        ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
   m_dataBuffer->deliver();
 }
 
@@ -2505,7 +2505,7 @@ void ZFlyEmProofDoc::loadSplitTaskFromService()
   if (originalId > 0) {
     QList<ZStackObject*> seedList = ZServiceConsumer::ReadSplitTaskSeed(
           GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
-    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     getDataBuffer()->deliver();
   }
 }
@@ -3648,7 +3648,7 @@ void ZFlyEmProofDoc::runSplitFunc(
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
       getDataBuffer()->addUpdate(
-            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+            obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     }
     getDataBuffer()->deliver();
 
@@ -3713,7 +3713,7 @@ void ZFlyEmProofDoc::runSplitFunc(
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
       getDataBuffer()->addUpdate(
-            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+            obj, ZStackDocObjectUpdate::EAction::ACTION_ADD_NONUNIQUE);
     }
     getDataBuffer()->deliver();
 

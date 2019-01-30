@@ -179,7 +179,7 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   dlg->setLayout(layout);
 
   layout->addWidget(ZWidgetFactory::MakeLabledEditWidget(
-                      "test", ZWidgetFactory::SPACER_NONE, dlg));
+                      "test", ZWidgetFactory::ESpacerOption::NONE, dlg));
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(dlg);

@@ -713,7 +713,7 @@ void ZFlyEmProofPresenter::setTodoDelegate(
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddTodoItem(pt.toIntPoint());
 }
@@ -721,7 +721,7 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
 void ZFlyEmProofPresenter::tryAddToMergeItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToMergeItem(pt.toIntPoint());
 }
@@ -729,7 +729,7 @@ void ZFlyEmProofPresenter::tryAddToMergeItem()
 void ZFlyEmProofPresenter::tryAddToSplitItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSplitItem(pt.toIntPoint());
 }
@@ -737,7 +737,7 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSupervoxelSplitItem(pt.toIntPoint());
 }
@@ -745,7 +745,7 @@ void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
 void ZFlyEmProofPresenter::tryAddDoneItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddDoneItem(pt.toIntPoint());
 }
@@ -1144,7 +1144,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     QMenu *menu = getContextMenu();
     if (!menu->isEmpty()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
-            Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+            Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
       QPoint currentWidgetPos(event.getWidgetPosition().getX(),
                               event.getWidgetPosition().getY());
       buddyView()->showContextMenu(menu, currentWidgetPos);

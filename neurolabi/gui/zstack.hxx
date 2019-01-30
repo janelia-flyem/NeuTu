@@ -478,7 +478,7 @@ public: /* data operation */
 
 public: /* operations */
 
-  void* projection(ZSingleChannelStack::Proj_Mode mode,
+  void* projection(ZSingleChannelStack::EProjMode mode,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 

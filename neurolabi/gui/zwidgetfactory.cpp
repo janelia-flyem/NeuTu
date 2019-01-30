@@ -14,7 +14,7 @@ ZLabeledEditWidget* ZWidgetFactory::MakeLabledEditWidget(
 {
   ZLabeledEditWidget *widget = new ZLabeledEditWidget(parentWidget);
   widget->setLabel(label);
-  if (spacerOption == SPACER_RIGHT) {
+  if (spacerOption == ESpacerOption::RIGHT) {
     widget->addSpacer();
   }
 
