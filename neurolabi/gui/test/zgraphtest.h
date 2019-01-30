@@ -3,7 +3,7 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 
 #ifdef _USE_GTEST_
 

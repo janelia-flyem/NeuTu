@@ -7,7 +7,7 @@
 #include "zstackfile.h"
 #include "zsuperpixelmaparray.h"
 #include "zsegmentmaparray.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "zobject3darray.h"
 #include "zjsonparser.h"
 

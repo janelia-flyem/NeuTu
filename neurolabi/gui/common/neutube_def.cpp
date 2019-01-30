@@ -1,5 +1,6 @@
 #include "neutube_def.h"
-#include "core/utilities.h"
+
+#include "utilities.h"
 
 namespace neutube {
 

@@ -39,7 +39,7 @@
 #include "z3dmainwindow.h"
 #include "z3dcontext.h"
 #include "zstackdoc3dhelper.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent)
   : QObject(parent)

@@ -5,7 +5,7 @@
 #include "zstackdoc.h"
 #include "zsynapseannotationarray.h"
 #include "zsuperpixelmaparray.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "zsegmentationbundle.h"
 
 #include <vector>

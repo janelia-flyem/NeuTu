@@ -9,7 +9,7 @@
 
 #include "zhistogram.h"
 #include "zobject3dscan.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "geometry/zintcuboidarray.h"
 #include "geometry/zpointarray.h"
 #include "ztree.h"

@@ -7,7 +7,7 @@
 #include "zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)

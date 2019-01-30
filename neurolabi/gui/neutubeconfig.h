@@ -15,7 +15,7 @@
 #include <QSettings>
 #include <QString>
 #endif
-#include "core/userinfo.h"
+#include "common/userinfo.h"
 
 class ZXmlNode;
 class ZJsonObject;

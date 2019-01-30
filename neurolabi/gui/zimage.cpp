@@ -8,7 +8,7 @@
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "tz_math.h"
 #include "zjsonobject.h"
 

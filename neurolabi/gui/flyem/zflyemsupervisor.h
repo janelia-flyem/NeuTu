@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QString>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "dvid/zdvidtarget.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 namespace libdvid{
 class DVIDConnection;

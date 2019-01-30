@@ -6,7 +6,7 @@
 
 #include "zstackdoc.h"
 #include "zstackdoccommand.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"

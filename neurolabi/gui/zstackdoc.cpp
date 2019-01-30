@@ -71,7 +71,7 @@
 #include "swctreenode.h"
 #include "zstackgraph.h"
 #include "zgraphcompressor.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "neutubeconfig.h"
 #include "tz_stack_bwmorph.h"
 #include "zstackdoccommand.h"

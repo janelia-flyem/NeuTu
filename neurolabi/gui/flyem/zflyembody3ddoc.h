@@ -11,7 +11,7 @@
 #include <QList>
 #include <QTime>
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"

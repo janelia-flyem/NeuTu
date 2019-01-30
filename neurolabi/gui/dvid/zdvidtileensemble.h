@@ -10,7 +10,7 @@
 #include "zdvidtarget.h"
 #include "zdvidtile.h"
 #include "zdvidreader.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "geometry/zintcuboid.h"
 
 class ZStackView;

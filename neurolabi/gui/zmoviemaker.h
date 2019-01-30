@@ -4,7 +4,7 @@
 #include <QColor>
 #include <string>
 #include <vector>
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zmoviescript.h"
 #include "zmovieactor.h"
 #include "zmoviescene.h"

@@ -14,7 +14,7 @@
 #include "zneurontracer.h"
 #include "zstackdoc.h"
 #include "zswcconnector.h"
-#include "core/zgraph.h"
+#include "zgraph.h"
 #include "zdocumentable.h"
 #include "zdocplayer.h"
 #include "neutubeconfig.h"

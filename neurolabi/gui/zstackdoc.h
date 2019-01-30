@@ -22,7 +22,7 @@
 #include <QStack>
 
 #include "neutube.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 //#include "zcurve.h"
 #include "tz_local_neuroseg.h"
@@ -46,7 +46,7 @@
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
 //#include "zmesh.h"
 #include "zstackobjectinfo.h"

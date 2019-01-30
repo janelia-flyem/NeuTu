@@ -4,7 +4,7 @@
 #include <QObject>
 
 #include "tz_stdint.h"
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "dvid/zdvidreader.h"
 
 class ZStackDoc;

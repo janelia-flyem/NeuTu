@@ -12,7 +12,7 @@
 #include <QShortcut>
 
 
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "flyem/zflyemproofdoc.h"

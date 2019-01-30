@@ -32,7 +32,7 @@
 #include "geometry/zpoint.h"
 #include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 using namespace std;
 

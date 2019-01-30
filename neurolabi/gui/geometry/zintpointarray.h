@@ -2,7 +2,7 @@
 #define ZINTPOINTARRAY_H
 
 #include <vector>
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zintpoint.h"
 
 class ZIntPointArray;

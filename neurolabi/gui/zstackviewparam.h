@@ -2,7 +2,7 @@
 #define ZSTACKVIEWPARAM_H
 
 #include <QRect>
-#include "core/neutube_def.h"
+#include "common/neutube_def.h"
 
 #include "zviewproj.h"
 #include "geometry/zintpoint.h"

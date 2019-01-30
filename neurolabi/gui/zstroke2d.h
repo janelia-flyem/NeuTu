@@ -11,7 +11,7 @@
 #include "c_stack.h"
 #include "zlabelcolortable.h"
 #include "geometry/zcuboid.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZStack;
 class ZObject3d;

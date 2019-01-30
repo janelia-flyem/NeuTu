@@ -4,7 +4,7 @@
 #include <QList>
 #include "zmouseeventrecorder.h"
 #include "zmouseeventmapper.h"
-#include "core/zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "geometry/zaffineplane.h"
 
 class ZInteractiveContext;
