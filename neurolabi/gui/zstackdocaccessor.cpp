@@ -13,9 +13,9 @@ ZStackDocAccessor::ZStackDocAccessor()
 ZStackDocObjectUpdate::EAction ZStackDocAccessor::GetRemoveAction(bool deleteObject)
 {
   if (deleteObject) {
-    return ZStackDocObjectUpdate::ACTION_KILL;
+    return ZStackDocObjectUpdate::EAction::KILL;
   } else {
-    return ZStackDocObjectUpdate::ACTION_EXPEL;
+    return ZStackDocObjectUpdate::EAction::EXPEL;
   }
 }
 
@@ -177,7 +177,7 @@ void ZStackDocAccessor::AddObjectUnique(ZStackDoc *doc, ZStackObject *obj)
 {
   if (doc != NULL && obj != NULL) {
     doc->getDataBuffer()->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+          obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
     doc->getDataBuffer()->deliver();
   }
 }
@@ -187,7 +187,7 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, ZStackObject *obj)
 {
   if (doc != NULL && obj != NULL) {
     doc->getDataBuffer()->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+          obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     doc->getDataBuffer()->deliver();
   }
 }
@@ -196,7 +196,7 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
 {
   if (doc != NULL && !objList.isEmpty()) {
     doc->getDataBuffer()->addUpdate(
-          objList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+          objList, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     doc->getDataBuffer()->deliver();
   }
 }

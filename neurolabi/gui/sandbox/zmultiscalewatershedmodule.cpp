@@ -143,7 +143,7 @@ void ZWaterShedWindow::onOk()
        iter != result.end(); ++iter) {
     ZObject3dScan *obj = *iter;
     doc->getDataBuffer()->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+          obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
   doc->getDataBuffer()->deliver();
   result.shallowClear();

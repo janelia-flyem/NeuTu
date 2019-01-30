@@ -869,28 +869,28 @@ void ZStackDoc::processDataBuffer()
     ZStackDocObjectUpdate::EAction action = iter.value();
     if (obj != NULL) {
       switch (action) {
-      case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
+      case ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE:
         addObject(obj, false);
         break;
-      case ZStackDocObjectUpdate::ACTION_ADD_UNIQUE:
+      case ZStackDocObjectUpdate::EAction::ADD_UNIQUE:
         addObject(obj, true);
         break;
-      case ZStackDocObjectUpdate::ACTION_EXPEL:
+      case ZStackDocObjectUpdate::EAction::EXPEL:
         removeObject(obj, false);
         break;
-      case ZStackDocObjectUpdate::ACTION_ADD_BUFFER:
+      case ZStackDocObjectUpdate::EAction::ADD_BUFFER:
         addBufferObject(obj);
         break;
-      case ZStackDocObjectUpdate::ACTION_KILL:
+      case ZStackDocObjectUpdate::EAction::KILL:
         killObject(obj);
         break;
-      case ZStackDocObjectUpdate::ACTION_RECYCLE:
+      case ZStackDocObjectUpdate::EAction::RECYCLE:
         recycleObject(obj);
         break;
-      case ZStackDocObjectUpdate::ACTION_UPDATE:
+      case ZStackDocObjectUpdate::EAction::UPDATE:
         processObjectModified(obj);
         break;
-      case ZStackDocObjectUpdate::ACTION_SELECT:
+      case ZStackDocObjectUpdate::EAction::SELECT:
         if (hasObject(obj)) {
           if (!obj->isSelected()) {
             setSelected(obj, true);
@@ -898,7 +898,7 @@ void ZStackDoc::processDataBuffer()
           }
         }
         break;
-      case ZStackDocObjectUpdate::ACTION_DESELECT:
+      case ZStackDocObjectUpdate::EAction::DESELECT:
         if (hasObject(obj)) {
           if (obj->isSelected()) {
             setSelected(obj, false);
@@ -3793,10 +3793,10 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 
   if (deleteObject) {
     m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::ACTION_KILL);
+          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::KILL);
   } else {
     m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::ACTION_EXPEL);
+          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::EXPEL);
   }
 
   m_dataBuffer->deliver();
@@ -5812,13 +5812,13 @@ void ZStackDoc::test(QProgressBar *pb)
       ZSwcTree *tree = new ZSwcTree;
       tree->load(GET_TEST_DATA_DIR + "/_benchmark/swc/diadem_e1.swc");
 //      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
-//                        tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//                        tree, ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
 //      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
-//                        tree, ZStackDocObjectUpdate::ACTION_KILL);
+//                        tree, ZStackDocObjectUpdate::EAction::ACTION_KILL);
 
 
       addObject(tree);
-//      m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//      m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
       m_dataBuffer->deliver();
     }
     m_dataBuffer->deliver();
@@ -8228,9 +8228,9 @@ void ZStackDoc::addObjectUnsync(ZStackObject *obj, bool uniqueSource)
 {
   if (obj != NULL) {
     if (uniqueSource) {
-      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
     } else {
-      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     }
     getDataBuffer()->deliver();
   }
@@ -9888,7 +9888,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
           LINFO() << "Adding" << obj << obj->getSource();
           //              addObject(obj, true);
           m_dataBuffer->addUpdate(
-                obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+                obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
           m_dataBuffer->deliver();
         }
       } else {
@@ -9928,7 +9928,7 @@ void ZStackDoc::localSeededWatershed()
     ZObject3dScanArray result;
     container.makeSplitResult(1, &result, NULL);
     for (ZObject3dScan *obj : result) {
-      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     }
     result.shallowClear();
     getDataBuffer()->deliver();
@@ -10034,7 +10034,7 @@ void ZStackDoc::seededWatershed()
   ZObject3dScanArray result;
   container.makeSplitResult(1, &result, NULL);
   for (ZObject3dScan *obj : result) {
-    getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
   result.shallowClear();
   getDataBuffer()->deliver();

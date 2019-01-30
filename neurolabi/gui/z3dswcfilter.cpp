@@ -1239,6 +1239,22 @@ bool Z3DSwcFilter::updateColorParameter(
 }
 #endif
 
+void Z3DSwcFilter::removeTreeColorWidget(ZSwcColorParam &param)
+{
+  if (m_widgetsGroup) {
+    for (auto& kv : param.getColorParamMap()) {
+      m_widgetsGroup->removeChild(*kv.second);
+    }
+  }
+}
+
+void Z3DSwcFilter::removeTreeColorWidget()
+{
+  removeTreeColorWidget(*m_individualColorParam);
+  removeTreeColorWidget(*m_randomColorParam);
+}
+
+/*
 void Z3DSwcFilter::removeTreeColorWidget()
 {
   if (m_widgetsGroup) {
@@ -1251,6 +1267,7 @@ void Z3DSwcFilter::removeTreeColorWidget()
     }
   }
 }
+*/
 
 void Z3DSwcFilter::removeObsoleteColorParam(
     const std::vector<ZVec4Parameter *> &paramList)

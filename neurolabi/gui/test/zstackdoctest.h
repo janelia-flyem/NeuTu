@@ -174,7 +174,7 @@ TEST(ZStackDoc, Accessor)
   ZStackDocAccessor::RemoveSideSplitSeed(&doc);
 
   ASSERT_EQ(0, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   {
     ZObject3d *obj = new ZObject3d;
@@ -186,7 +186,7 @@ TEST(ZStackDoc, Accessor)
 
   ZStackDocAccessor::RemoveSideSplitSeed(&doc);
   ASSERT_EQ(1, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   {
     ZObject3d *obj = new ZObject3d;
@@ -200,7 +200,7 @@ TEST(ZStackDoc, Accessor)
 
 
   ASSERT_EQ(3, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   doc.processDataBuffer();
   ASSERT_EQ(1, doc.getObjectList(ZStackObjectRole::ROLE_SEED).size());

@@ -13,8 +13,8 @@ class ZMouseEvent
 public:
   ZMouseEvent();
 
-  enum EAction {
-    ACTION_NONE, ACTION_PRESS, ACTION_RELEASE, ACTION_MOVE, ACTION_DOUBLE_CLICK
+  enum class EAction {
+    NONE, PRESS, RELEASE, MOVE, DOUBLE_CLICK
   };
 
 //  enum ECoordinateSystem {

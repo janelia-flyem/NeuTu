@@ -603,7 +603,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
         } else {
           ZIntPoint pressPos =
-              getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
+              getPosition(Qt::LeftButton, ZMouseEvent::EAction::PRESS);
           int dx = pressPos.getX() - event.getX();
           int dy = pressPos.getY() - event.getY();
           if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
@@ -629,7 +629,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
     } else if (event.getButtons() == Qt::RightButton) {
       if (m_context->getUniqueMode() != ZInteractiveContext::INTERACT_IMAGE_MOVE) {
         ZIntPoint pressPos =
-            getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
+            getPosition(Qt::RightButton, ZMouseEvent::EAction::PRESS);
         int dx = event.getX() - pressPos.getX();
         int dy = event.getY() - pressPos.getY();
         if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {

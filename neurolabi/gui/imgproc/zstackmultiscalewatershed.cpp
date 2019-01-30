@@ -698,7 +698,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
         color.setAlpha(164);
         obj->setColor(color);
         frame->document()->getDataBuffer()->addUpdate(
-              obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+              obj,ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
         frame->document()->getDataBuffer()->deliver();
       }
     }
@@ -736,7 +736,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
         color.setAlpha(164);
         obj->setColor(color);
         frame->document()->getDataBuffer()->addUpdate(
-                obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+                obj,ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
         frame->document()->getDataBuffer()->deliver();
 
       }

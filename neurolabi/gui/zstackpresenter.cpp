@@ -1312,7 +1312,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_RELEASE, buddyView()->getViewProj(),
+        event, ZMouseEvent::EAction::RELEASE, buddyView()->getViewProj(),
         getSliceIndex());
 
   if (mouseEvent.isNull()) {
@@ -1420,7 +1420,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_MOVE, buddyView()->getViewProj(),
+        event, ZMouseEvent::EAction::MOVE, buddyView()->getViewProj(),
         getSliceIndex());
 
   if (mouseEvent.isNull()) {
@@ -1432,7 +1432,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
             << std::endl;
 #endif
 
-  //mouseEvent.set(event, ZMouseEvent::ACTION_MOVE, m_mouseMovePosition[2]);
+  //mouseEvent.set(event, ZMouseEvent::EAction::ACTION_MOVE, m_mouseMovePosition[2]);
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   process(op);
@@ -1486,7 +1486,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_PRESS, buddyView()->getViewProj(),
+        event, ZMouseEvent::EAction::PRESS, buddyView()->getViewProj(),
         getSliceIndex());
   if (mouseEvent.isNull()) {
     return;
@@ -1967,7 +1967,7 @@ bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
 {
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_DOUBLE_CLICK,  buddyView()->getViewProj(),
+        event, ZMouseEvent::EAction::DOUBLE_CLICK,  buddyView()->getViewProj(),
         getSliceIndex());
 
   if (mouseEvent.isNull()) {
@@ -2175,7 +2175,7 @@ void ZStackPresenter::traceTube()
   buddyView()->setScreenCursor(Qt::BusyCursor);
 
   ZPoint pt = getMousePositionInStack(
-        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
   ZStackDoc *doc = buddyDocument();
   if (doc->getStack()->channelNumber() == 1) {
     if (doc->isZProjection(pt.getZ())) {
@@ -2220,7 +2220,7 @@ void ZStackPresenter::fitEllipse()
 void ZStackPresenter::markPuncta()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
-        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
   ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
   buddyDocument()->markPunctum(currentStackPos.x(), currentStackPos.y(),
                                currentStackPos.z());
@@ -2753,7 +2753,7 @@ void ZStackPresenter::notifyBodySplitTriggered()
 void ZStackPresenter::notifyOrthoViewTriggered()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getStackPosition();
 
 //  ZPoint pt = getLastMousePosInStack();
@@ -2764,7 +2764,7 @@ void ZStackPresenter::notifyOrthoViewTriggered()
 void ZStackPresenter::notifyOrthoViewBigTriggered()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getStackPosition();
 
 //  ZPoint pt = getLastMousePosInStack();
@@ -2775,7 +2775,7 @@ void ZStackPresenter::notifyOrthoViewBigTriggered()
 void ZStackPresenter::copyCurrentPosition()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
 
   ZGlobal::GetInstance().setDataPosition(pt.x(), pt.y(), pt.z());
@@ -2788,7 +2788,7 @@ void ZStackPresenter::copyCurrentPosition()
 void ZStackPresenter::copyLabelId()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getLabelId(
@@ -2802,7 +2802,7 @@ void ZStackPresenter::copyLabelId()
 void ZStackPresenter::copySupervoxelId()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getSupervoxelId(
@@ -3523,7 +3523,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       grabButton = Qt::LeftButton;
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          grabButton, ZMouseEvent::ACTION_PRESS, neutube::ECoordinateSystem::STACK);
+          grabButton, ZMouseEvent::EAction::PRESS, neutube::ECoordinateSystem::STACK);
 //    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
@@ -3551,7 +3551,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   {
     m_interactiveContext.blockContextMenu();
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          Qt::RightButton, ZMouseEvent::ACTION_PRESS,
+          Qt::RightButton, ZMouseEvent::EAction::PRESS,
           neutube::ECoordinateSystem::WIDGET);
     m_interactiveContext.setExploreMode(
           ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE);
@@ -3564,7 +3564,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   {
     m_interactiveContext.blockContextMenu();
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          Qt::RightButton, ZMouseEvent::ACTION_PRESS,
+          Qt::RightButton, ZMouseEvent::EAction::PRESS,
           neutube::ECoordinateSystem::WIDGET);
     m_interactiveContext.setExploreMode(
           ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
@@ -3619,7 +3619,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-            Qt::LeftButton, ZMouseEvent::ACTION_PRESS, neutube::ECoordinateSystem::STACK);
+            Qt::LeftButton, ZMouseEvent::EAction::PRESS, neutube::ECoordinateSystem::STACK);
 //      grabPosition.shiftSliceAxis(getSliceAxis());
       ZPoint shiftedStackPos = currentStackPos;
 //      shiftedStackPos.shiftSliceAxis(getSliceAxis());

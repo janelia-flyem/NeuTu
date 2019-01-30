@@ -13,10 +13,10 @@ void ZDvidServerWidget::createWidgets()
   QVBoxLayout *topLayout = new QVBoxLayout(this);
 
   m_addressWidget = ZWidgetFactory::MakeLabledEditWidget(
-        "Address", ZWidgetFactory::SPACER_NONE, this);
+        "Address", ZWidgetFactory::ESpacerOption::NONE, this);
   topLayout->addWidget(m_addressWidget);
 
   m_portWidget = ZWidgetFactory::MakeLabledEditWidget(
-        "Port", ZWidgetFactory::SPACER_RIGHT, this);
+        "Port", ZWidgetFactory::ESpacerOption::RIGHT, this);
   topLayout->addWidget(m_portWidget);
 }
