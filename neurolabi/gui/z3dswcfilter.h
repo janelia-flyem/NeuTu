@@ -319,7 +319,7 @@ private:
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
-  int m_maxType;
+  int m_maxType = 0;
 
   std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   bool m_dataIsInvalid = false;

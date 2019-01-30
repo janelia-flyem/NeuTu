@@ -718,34 +718,10 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
     }
     m_widgetsGroup->addChild(m_colorMapBranchType, 1);
 
-    //    createColorMapperWidget(m_randomTreeColorMapper, m_randomColorWidgetGroup);
-    //    createColorMapperWidget(m_individualTreeColorMapper,
-    //                            m_individualColorWidgetGroup);
-    //    for (std::map<int, ZVec4Parameter*>::iterator it = m_biocytinColorMapper.begin();
-    //         it != m_biocytinColorMapper.end(); ++it) {
-    //      m_colorsForBiocytinTypeWidgetsGroup.push_back(
-    //            new ZWidgetsGroup(it->second, m_widgetsGroup, 1));
-    //    }
 
     updateTreeColorWidget(*m_randomColorParam);
     updateTreeColorWidget(*m_individualColorParam);
 
-    /*
-    std::set<ZParameter*, _ParameterNameComp> cps;
-    for (const auto& kv : m_randomColorParam.m_mapper) {
-      cps.insert(kv.second.get());
-    }
-    for (auto p : cps) {
-      m_widgetsGroup->addChild(*p, 2);
-    }
-    cps.clear();
-    for (const auto& kv : m_individualColorParam.m_mapper) {
-      cps.insert(kv.second.get());
-    }
-    for (auto p : cps) {
-      m_widgetsGroup->addChild(*p, 2);
-    }
-    */
 
     for (const auto& kv : m_biocytinColorMapper) {
       m_widgetsGroup->addChild(*kv.second, 2);
@@ -2372,13 +2348,21 @@ void Z3DSwcFilter::updateColorWidgets()
     kv.second->setVisible(m_colorMode.isSelected("Biocytin Branch Type"));
   }
 
-  for (size_t i = 0; i < m_colorsForDifferentType.size(); ++i) {
-    m_colorsForDifferentType[i]->setVisible(m_allNodeType.find(i) != m_allNodeType.end() &&
-        m_colorMode.isSelected("Branch Type"));
+  if (m_colorMode.isSelected("Branch Type")) {
+    for (size_t i = 0; i < m_colorsForDifferentType.size(); ++i) {
+      m_colorsForDifferentType[i]->setVisible(
+            m_allNodeType.find(i) != m_allNodeType.end());
+    }
+
+    if (m_maxType >= (int) m_colorsForDifferentType.size()) {
+      m_colorsForDifferentType.back()->setVisible(true);
+    }
+  } else {
+    for (auto &p : m_colorsForDifferentType) {
+      p->setVisible(false);
+    }
   }
-  if (m_maxType >= (int) m_colorsForDifferentType.size()) {
-    m_colorsForDifferentType.back()->setVisible(true);
-  }
+
   for (const auto& color : m_colorsForSubclassType) {
     color->setVisible(m_colorMode.isSelected("Subclass"));
   }
