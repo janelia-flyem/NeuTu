@@ -159,7 +159,7 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllBody(bool recycable);
+  void dumpAllBody(bool recycling);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
   void dumpGarbageUnsync(ZStackObject *obj, bool recycable);
@@ -542,7 +542,10 @@ private:
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
 
-   bool isRecycable(const ZStackObject *obj) const;
+  template <typename T>
+  void removeBodyObject(bool recycling);
+
+  void dumpObject(ZStackObject *obj, bool recycling);
 
 private:
   ZFlyEmBodyManager m_bodyManager;

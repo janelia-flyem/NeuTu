@@ -2623,37 +2623,45 @@ void ZFlyEmBody3dDoc::executeRemoveTodoCommand()
   }
 }
 
-bool ZFlyEmBody3dDoc::isRecycable(const ZStackObject *obj) const
+namespace {
+
+bool is_recycable(ZStackObject::EType type)
+{
+  return (type == ZStackObject::EType::MESH) ||
+      (type == ZStackObject::EType::SWC);
+}
+
+bool is_recycable(const ZStackObject *obj)
 {
   if (obj) {
-    return (obj->getType() == ZStackObject::EType::MESH) ||
-        (obj->getType() == ZStackObject::EType::SWC);
+    return is_recycable(obj->getType());
   }
 
   return false;
 }
 
+}
+
+void ZFlyEmBody3dDoc::dumpObject(ZStackObject *obj, bool recycling)
+{
+  if (removeObject(obj, false)) { //Called to first to make sure that the object exists
+    if (is_recycable(obj)) {
+      dumpGarbage(obj, recycling);
+      emit bodyRecycled(obj->getLabel());
+    } else {
+      delete obj;
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
-  if (isRecycable(obj)) {
-    if (removeObject(obj, false)) {
-      dumpGarbage(obj, true);
-      emit bodyRecycled(obj->getLabel());
-    }
-  } else {
-    killObject(obj);
-  }
+  dumpObject(obj, true);
 }
 
 void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 {
-  if (isRecycable(obj)) {
-    if (removeObject(obj, false)) {
-      dumpGarbage(obj, false);
-    }
-  } else {
-    removeObject(obj, true);
-  }
+  dumpObject(obj, false);
 }
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
@@ -4377,7 +4385,7 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 
   m_garbageJustDumped = true;
 
-  KLOG << ZLog::Profile()
+  ZOUT(KLOG, 5) << ZLog::Profile()
        << ZLog::Description(QString("Object (%1) dump time: %2 ms").
                             arg(obj->getSource().c_str()).
                             arg(timer.elapsed()).toStdString());
@@ -4422,44 +4430,48 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
   dumpGarbageUnsync(obj, recycable);
 }
 
-void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
+template <typename T>
+void ZFlyEmBody3dDoc::removeBodyObject(bool recycling)
+{
+  if (is_recycable(T::GetType()) && recycling) {
+    QList<T*> objList = getObjectList<T>();
+    for (T* p : objList) {
+      removeObject(p, false);
+      dumpGarbage(p, true);
+    }
+  } else {
+    removeObject(T::GetType(), true);
+  }
+}
+
+void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
 {
   cancelEventThread();
 
-  ZOUT(LTRACE(), 5) << "Dump puncta";
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
-  QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
-  for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
-       iter != punctumList.end(); ++iter) {
-    ZPunctum *p = *iter;
-    removeObject(p, false);
-    dumpGarbage(p, false);
-  }
+
+  ZOUT(LTRACE(), 5) << "Dump puncta";
+  removeBodyObject<ZPunctum>(recycling);
 
   ZOUT(LTRACE(), 5) << "Dump todo list";
-  QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
-  for (QList<ZFlyEmToDoItem*>::const_iterator iter = todoList.begin();
-       iter != todoList.end(); ++iter) {
-    ZFlyEmToDoItem *p = *iter;
-    removeObject(p, false);
-    dumpGarbage(p, false);
-  }
+  removeBodyObject<ZFlyEmToDoItem>(recycling);
 
 
   ZOUT(LTRACE(), 5) << "Dump swc";
-  QList<ZSwcTree*> treeList = getSwcList();
-  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter) {
-    ZSwcTree *tree = *iter;
-    removeObject(tree, false);
-    dumpGarbage(tree, recycable);
-  }
+  removeBodyObject<ZSwcTree>(recycling);
+//  QList<ZSwcTree*> treeList = getSwcList();
+//  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+//       iter != treeList.end(); ++iter) {
+//    ZSwcTree *tree = *iter;
+//    removeObject(tree, false);
+//    dumpGarbage(tree, recycling);
+//  }
 
   ZOUT(LTRACE(), 5) << "Dump meshes";
   QList<ZMesh*> meshList = ZStackDocProxy::GetNonRoiMeshList(this);
   for (ZMesh *mesh : meshList) {
     removeObject(mesh, false);
-    dumpGarbage(mesh, recycable);
+    dumpGarbage(mesh, recycling);
   }
 
   getBodyManager().clear();
