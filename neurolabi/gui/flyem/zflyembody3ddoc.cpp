@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -2622,18 +2623,36 @@ void ZFlyEmBody3dDoc::executeRemoveTodoCommand()
   }
 }
 
+bool ZFlyEmBody3dDoc::isRecycable(const ZStackObject *obj) const
+{
+  if (obj) {
+    return (obj->getType() == ZStackObject::EType::MESH) ||
+        (obj->getType() == ZStackObject::EType::SWC);
+  }
+
+  return false;
+}
+
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
-  if (removeObject(obj, false)) {
-    dumpGarbage(obj, true);
-    emit bodyRecycled(obj->getLabel());
+  if (isRecycable(obj)) {
+    if (removeObject(obj, false)) {
+      dumpGarbage(obj, true);
+      emit bodyRecycled(obj->getLabel());
+    }
+  } else {
+    killObject(obj);
   }
 }
 
 void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 {
-  if (removeObject(obj, false)) {
-    dumpGarbage(obj, false);
+  if (isRecycable(obj)) {
+    if (removeObject(obj, false)) {
+      dumpGarbage(obj, false);
+    }
+  } else {
+    removeObject(obj, true);
   }
 }
 
@@ -4324,6 +4343,8 @@ void ZFlyEmBody3dDoc::dumpGarbage(
 
 void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 {
+  QElapsedTimer timer;
+  timer.start();
   //Make old conflicted objects unrecyclable
   for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
        iter != m_garbageMap.end(); ++iter) {
@@ -4352,9 +4373,14 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
     getBodyManager().eraseSupervoxel(obj->getLabel());
   }
 
-  ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
+//  ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
 
   m_garbageJustDumped = true;
+
+  KLOG << ZLog::Profile()
+       << ZLog::Description(QString("Object (%1) dump time: %2 ms").
+                            arg(obj->getSource().c_str()).
+                            arg(timer.elapsed()).toStdString());
 }
 
 

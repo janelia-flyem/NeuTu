@@ -48,9 +48,8 @@ public:
 
   void removeAllChildren();
 
-  void removeChild(const ZParameter& para);
-
-  void removeChild(const std::shared_ptr<ZWidgetsGroup>& child);
+  bool removeChild(const ZParameter& para);
+  bool removeChild(const std::shared_ptr<ZWidgetsGroup>& child);
 
   inline int visibleLevel() const
   { return m_visibleLevel; }
@@ -91,6 +90,7 @@ private:
   QLayout* createWidgetLayout();
   QLayout* createParameterLayout();
   QLayout* createGroupLayout(bool createBasic);
+  bool eraseChild(std::vector<std::shared_ptr<ZWidgetsGroup>>::iterator iter);
 
 private:
   Type m_type;

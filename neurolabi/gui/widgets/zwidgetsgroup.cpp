@@ -102,36 +102,50 @@ void ZWidgetsGroup::removeAllChildren()
   m_childGroups.clear();
 }
 
-void ZWidgetsGroup::removeChild(const ZParameter& para)
+bool ZWidgetsGroup::eraseChild(
+    std::vector<std::shared_ptr<ZWidgetsGroup>>::iterator iter)
+{
+  if (iter != m_childGroups.end()) {
+    m_childGroups.erase(iter, m_childGroups.end());
+    return true;
+  }
+
+  return false;
+}
+
+bool ZWidgetsGroup::removeChild(const ZParameter& para)
 {
   qDebug() << "removing child:" << para.name();
 
-  m_childGroups.erase(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
-                                     [&para, this](const std::shared_ptr<ZWidgetsGroup>& child) {
-                                       if (child->m_type == Type::Parameter && child->m_parameter == &para) {
-                                         qDebug() << "Child removed:" << para.name();
-                                         child->disconnect(this);
-                                         return true;
-                                       }
-                                       return false;
-                                     }),
-                      m_childGroups.end());
+  auto pred = [&para, this](const std::shared_ptr<ZWidgetsGroup>& child) {
+    if (child->m_type == Type::Parameter && child->m_parameter == &para) {
+      qDebug() << "Child removed:" << para.name();
+      child->disconnect(this);
+      return true;
+    }
+    return false;
+  };
+
+  return eraseChild(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
+                                   pred));
+
 }
 
-void ZWidgetsGroup::removeChild(const std::shared_ptr<ZWidgetsGroup>& childIn)
+bool ZWidgetsGroup::removeChild(const std::shared_ptr<ZWidgetsGroup>& childIn)
 {
   qDebug() << "removing child:" << childIn->getGroupName();
 
-  m_childGroups.erase(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
-                                     [&childIn, this](const std::shared_ptr<ZWidgetsGroup>& child) {
-                                       if (child->m_type == Type::Group && child == childIn) {
-                                         qDebug() << "Child removed:" << child->getGroupName();
-                                         child->disconnect(this);
-                                         return true;
-                                       }
-                                       return false;
-                                     }),
-                      m_childGroups.end());
+  auto pred = [&childIn, this](const std::shared_ptr<ZWidgetsGroup>& child) {
+    if (child->m_type == Type::Group && child == childIn) {
+      qDebug() << "Child removed:" << child->getGroupName();
+      child->disconnect(this);
+      return true;
+    }
+    return false;
+  };
+
+  return eraseChild(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
+                                   pred));
 }
 
 QWidget* ZWidgetsGroup::createWidget(bool createBasic, bool scroll, QLabel* label)
