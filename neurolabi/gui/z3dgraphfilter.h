@@ -5,7 +5,7 @@
 #include "tz_geo3d_scalar_field.h"
 #include "tz_graph.h"
 #include "z3dgraph.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "z3dlinerenderer.h"
 #include "z3dconerenderer.h"
 #include "z3dsphererenderer.h"

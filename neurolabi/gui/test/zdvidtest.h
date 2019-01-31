@@ -399,7 +399,8 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("",
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("",
-            dvidUrl.getSynapseLabelszUrl(ZDvid::INDEX_ALL_SYN));
+            dvidUrl.getSynapseLabelszUrl(
+              0, ZDvid::ELabelIndexType::ALL_SYN));
 
   target.setSynapseName("synapse");
   dvidUrl.setDvidTarget(target);
@@ -416,7 +417,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1",
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
-            dvidUrl.getSynapseLabelszUrl(1, ZDvid::INDEX_ALL_SYN));
+            dvidUrl.getSynapseLabelszUrl(1, ZDvid::ELabelIndexType::ALL_SYN));
 
   target.setSegmentationName("labelstest");
   target.setMaxLabelZoom(5);

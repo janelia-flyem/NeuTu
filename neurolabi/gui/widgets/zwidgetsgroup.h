@@ -88,6 +88,9 @@ signals:
 
 private:
   void sortChildGroups();
+  QLayout* createWidgetLayout();
+  QLayout* createParameterLayout();
+  QLayout* createGroupLayout(bool createBasic);
 
 private:
   Type m_type;

@@ -6,7 +6,7 @@
 
 #include "z3dgeometryfilter.h"
 #include "widgets/zoptionparameter.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "widgets/znumericparameter.h"
 #include "z3dmeshrenderer.h"
 #include "zeventlistenerparameter.h"
