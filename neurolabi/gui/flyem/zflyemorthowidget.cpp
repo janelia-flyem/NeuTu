@@ -3,7 +3,7 @@
 #include <QGridLayout>
 #include <QKeyEvent>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthomvc.h"
 #include "dvid/zdvidtarget.h"
@@ -251,12 +251,16 @@ void ZFlyEmOrthoWidget::resetCrosshair()
   center.setZ(m_xzMvc->getViewScreenSize().height() / 2);
 
   getDocument()->setCrossHairCenter(center);
-  m_xyMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_xyMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
   syncCrossHairWith(m_xyMvc);
 }
 
 void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
 {
+  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    m_controlForm->dump(message);
+  }
+  /*
   switch (message.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
@@ -265,6 +269,7 @@ void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
   default:
     break;
   }
+  */
 }
 
 void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)
@@ -299,7 +304,7 @@ void ZFlyEmOrthoWidget::showCrosshair(bool on)
 {
   getDocument()->getCrossHair()->setVisible(on);
   foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
-    mvc->getView()->updateImageScreen(ZStackView::UPDATE_DIRECT);
+    mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::DIRECT);
   }
 }
 
@@ -327,16 +332,16 @@ void ZFlyEmOrthoWidget::toggleData()
 
 void ZFlyEmOrthoWidget::updateImageScreen()
 {
-  m_xyMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-  m_yzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-  m_xzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_xyMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  m_yzMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  m_xzMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
 void ZFlyEmOrthoWidget::syncImageScreenWith(ZFlyEmOrthoMvc *mvc)
 {
   foreach (ZFlyEmOrthoMvc *tmpMvc, m_mvcArray) {
     if (tmpMvc != mvc) {
-      tmpMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+      tmpMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
     }
   }
 }

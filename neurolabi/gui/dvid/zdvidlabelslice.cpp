@@ -18,7 +18,7 @@
 #include "neutubeconfig.h"
 #include "zpixmap.h"
 #include "zstring.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zarbsliceviewparam.h"
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"
@@ -58,14 +58,14 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAxis)
 {
-  setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = 0;
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_LABEL_BLOCK);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::LABEL_BLOCK);
   getHelper()->setMaxSize(maxWidth, maxHeight);
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;
@@ -80,7 +80,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_sliceAxis = sliceAxis;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
 
 #define ZDVIDLABELSLICE_MT 1

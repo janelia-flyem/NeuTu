@@ -7,7 +7,7 @@
 
 #include <math.h>
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zpainter.h"
 
 ZStackBall::ZStackBall()
@@ -33,7 +33,7 @@ ZStackBall::ZStackBall(const ZPoint &center, double r)
 void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
-  m_type = ZStackObject::TYPE_STACK_BALL;
+  m_type = ZStackObject::EType::STACK_BALL;
 }
 
 
@@ -89,7 +89,7 @@ bool ZStackBall::display(
     slice = 0;
   }
 
-  if (sliceMode == DISPLAY_SLICE_PROJECTION) {
+  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_PROJECTION) {
     slice = -1;
   }
 
@@ -426,4 +426,4 @@ bool ZStackBall::hit(double x, double y, neutube::EAxis axis)
 }
 
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackBall)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackBall)

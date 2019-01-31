@@ -239,7 +239,7 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
 #if defined(_NEU3_)
-      if (doc->getSelected(ZStackObject::TYPE_MESH).size() == 1) {
+      if (doc->getSelected(ZStackObject::EType::TYPE_MESH).size() == 1) {
         actionList.append(ZActionFactory::ACTION_START_SPLIT);
       }
 #endif

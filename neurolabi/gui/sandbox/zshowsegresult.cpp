@@ -51,7 +51,8 @@ void ZShowSegResultModule::execute()
           QColor color = colorScheme.getColor(colorIndex++);
           color.setAlpha(164);
           obj->setColor(color);
-          frame->document()->getDataBuffer()->addUpdate(obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+          frame->document()->getDataBuffer()->addUpdate(
+                obj,ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
           frame->document()->getDataBuffer()->deliver();
         }
       }

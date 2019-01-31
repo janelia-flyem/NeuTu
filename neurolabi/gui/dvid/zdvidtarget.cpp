@@ -6,7 +6,7 @@
 #include "zdviddata.h"
 #if _QT_APPLICATION_
 #include <QtDebug>
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"
@@ -404,7 +404,8 @@ std::string ZDvidTarget::getSynapseLabelszName() const
     return "";
   }
 
-  return ZDvidData::GetName(ZDvidData::ROLE_LABELSZ, ZDvidData::ROLE_SYNAPSE,
+  return ZDvidData::GetName(ZDvidData::ERole::LABELSZ,
+                            ZDvidData::ERole::SYNAPSE,
                             getSynapseName());
 }
 
@@ -715,7 +716,7 @@ void ZDvidTarget::setInferred(bool status)
 std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ROLE_BODY_LABEL);
+    return ZDvidData::GetName(ZDvidData::ERole::BODY_LABEL);
   } else if (ZDvidData::IsNullName(m_bodyLabelName)) {
     return "";
   }
@@ -757,7 +758,7 @@ bool ZDvidTarget::hasSegmentation() const
 bool ZDvidTarget::hasLabelMapData() const
 {
   if (hasSegmentation()) {
-    if (getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+    if (getSegmentationType() == ZDvidData::EType::LABELMAP) {
       return true;
     }
   }
@@ -780,7 +781,7 @@ bool ZDvidTarget::isSegmentationSyncable() const
   if (hasSegmentation()) {
     return true;
     /*
-    if (getSegmentationType() != ZDvidData::TYPE_LABELMAP) {
+    if (getSegmentationType() != ZDvidData::EType::TYPE_LABELMAP) {
       return true;
     }
     */
@@ -791,21 +792,21 @@ bool ZDvidTarget::isSegmentationSyncable() const
 
 bool ZDvidTarget::segmentationAsBodyLabel() const
 {
-  return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
-      getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+  return getSegmentationType() == ZDvidData::EType::LABELARRAY ||
+      getSegmentationType() == ZDvidData::EType::LABELMAP;
 }
 
 bool ZDvidTarget::hasSparsevolSizeApi() const
 {
-  return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
-      getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+  return getSegmentationType() == ZDvidData::EType::LABELARRAY ||
+      getSegmentationType() == ZDvidData::EType::LABELMAP;
 }
 
 bool ZDvidTarget::hasMultiscaleSegmentation() const
 {
   if (hasSegmentation()) {
-    return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
-        getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+    return getSegmentationType() == ZDvidData::EType::LABELARRAY ||
+        getSegmentationType() == ZDvidData::EType::LABELMAP;
   }
 
   return false;
@@ -814,7 +815,7 @@ bool ZDvidTarget::hasMultiscaleSegmentation() const
 bool ZDvidTarget::hasCoarseSplit() const
 {
   if (hasSegmentation()) {
-    return getSegmentationType() != ZDvidData::TYPE_LABELMAP;
+    return getSegmentationType() != ZDvidData::EType::LABELMAP;
   }
 
   return false;
@@ -833,7 +834,7 @@ ZDvidData::EType ZDvidTarget::getSegmentationType() const
 std::string ZDvidTarget::getSegmentationName() const
 { 
   if (m_segmentationName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ROLE_LABEL_BLOCK);
+    return ZDvidData::GetName(ZDvidData::ERole::LABEL_BLOCK);
   } else if (ZDvidData::IsNullName(m_segmentationName)) {
     return "";
   }
@@ -911,8 +912,8 @@ bool ZDvidTarget::isTileLowQuality() const
 
 std::string ZDvidTarget::getBodyInfoName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
+                            ZDvidData::ERole::BODY_LABEL,
                             getBodyLabelName());
 }
 
@@ -999,7 +1000,7 @@ void ZDvidTarget::setMultiscale2dName(const std::string &name)
 
 void ZDvidTarget::setDefaultMultiscale2dName()
 {
-  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
+  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ERole::MULTISCALE_2D);
 }
 
 void ZDvidTarget::configTile(const std::string &name, bool lowQuality)
@@ -1054,7 +1055,7 @@ void ZDvidTarget::addRoiName(const std::string &name)
 std::string ZDvidTarget::getSynapseName() const
 {
   if (m_synapseName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ROLE_SYNAPSE);
+    return ZDvidData::GetName(ZDvidData::ERole::SYNAPSE);
   }
 
   return m_synapseName;
@@ -1062,24 +1063,24 @@ std::string ZDvidTarget::getSynapseName() const
 
 std::string ZDvidTarget::getBookmarkName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK);
+  return ZDvidData::GetName(ZDvidData::ERole::BOOKMARK);
 }
 
 std::string ZDvidTarget::getBookmarkKeyName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY);
+  return ZDvidData::GetName(ZDvidData::ERole::BOOKMARK_KEY);
 }
 
 std::string ZDvidTarget::getSkeletonName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
                             getBodyLabelName());
 }
 
 std::string ZDvidTarget::getMeshName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_MESH,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::MESH,
+                            ZDvidData::ERole::BODY_LABEL,
                             getBodyLabelName());
 }
 
@@ -1096,7 +1097,7 @@ std::string ZDvidTarget::getMeshName(int zoom) const
 
 std::string ZDvidTarget::getThumbnailName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL, ZDvidData::ERole::BODY_LABEL,
                             getBodyLabelName());
 }
 
@@ -1111,8 +1112,8 @@ std::string ZDvidTarget::getTodoListName() const
     return m_todoListName;
   }
 
-  return ZDvidData::GetName(ZDvidData::ROLE_TODO_LIST,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::TODO_LIST,
+                            ZDvidData::ERole::BODY_LABEL,
                             getBodyLabelName());
 }
 
@@ -1133,8 +1134,8 @@ void ZDvidTarget::setDefaultBodyLabelFlag(bool on)
 
 std::string ZDvidTarget::getBodyAnnotationName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                            ZDvidData::ROLE_BODY_LABEL, getBodyLabelName());
+  return ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                            ZDvidData::ERole::BODY_LABEL, getBodyLabelName());
 }
 
 void ZDvidTarget::setSynapseName(const std::string &name)
@@ -1146,7 +1147,7 @@ void ZDvidTarget::setSynapseName(const std::string &name)
 std::string ZDvidTarget::getSplitLabelName() const
 {
   return ZDvidData::GetName(
-        ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::ERole::SPLIT_LABEL, ZDvidData::ERole::BODY_LABEL,
         getBodyLabelName());
 }
 /*

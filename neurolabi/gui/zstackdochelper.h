@@ -1,8 +1,8 @@
 #ifndef ZSTACKDOCHELPER_H
 #define ZSTACKDOCHELPER_H
 
-#include"zintpoint.h"
-#include "neutube_def.h"
+#include"geometry/zintpoint.h"
+#include "common/neutube_def.h"
 
 class ZStackDoc;
 class ZIntCuboid;

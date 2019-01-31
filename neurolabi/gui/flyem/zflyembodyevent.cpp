@@ -82,10 +82,10 @@ void ZFlyEmBodyEvent::mergeEvent(
   switch (direction) {
   case neutube::EBiDirection::FORWARD: //event comes first
     switch (getAction()) {
-    case ACTION_UPDATE:
+    case EAction::UPDATE:
       switch (event.getAction()) {
-      case ACTION_ADD:
-        m_action = ACTION_ADD;
+      case EAction::ADD:
+        m_action = EAction::ADD;
         setBodyColor(event.getBodyColor());
 //        m_bodyColor = event.m_bodyColor;
         m_updateFlag |= event.m_updateFlag;
@@ -94,23 +94,24 @@ void ZFlyEmBodyEvent::mergeEvent(
         }
 //        m_refreshing |= event.m_refreshing;
         break;
-      case ACTION_UPDATE:
+      case EAction::UPDATE:
         addUpdateFlag(event.getUpdateFlag());
 //        m_refreshing |= event.m_refreshing;
         break;
-      case ACTION_REMOVE:
-        m_action = ACTION_REMOVE;
+      case EAction::REMOVE:
+        m_action = EAction::REMOVE;
         break;
       default:
         break;
       }
       break;
-    case ACTION_ADD:
-      if (event.getAction() == ACTION_ADD || event.getAction() == ACTION_UPDATE) {
+    case EAction::ADD:
+      if (event.getAction() == EAction::ADD ||
+          event.getAction() == EAction::UPDATE) {
 //        m_refreshing |= event.m_refreshing;
       }
       break;
-    case ACTION_NULL:
+    case EAction::NONE:
       *this = event;
       break;
     default:
@@ -159,7 +160,7 @@ bool ZFlyEmBodyEvent::hasValidBody() const
 
 bool ZFlyEmBodyEvent::isNull() const
 {
-  return m_action == ACTION_NULL;
+  return m_action == EAction::NONE;
 }
 
 bool ZFlyEmBodyEvent::isValid() const
@@ -171,12 +172,13 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(
     const ZFlyEmBodyConfig &config, int minDsLevel) const
 {
   if (!isOneTime()) {
-    if (getAction() == ACTION_ADD || getAction() == ACTION_UPDATE) {
+    if (getAction() == EAction::ADD ||
+        getAction() == EAction::UPDATE) {
       return MakeHighResEvent(config, minDsLevel);
     }
   }
 
-  return ZFlyEmBodyEvent(ACTION_NULL, 0);
+  return ZFlyEmBodyEvent(EAction::NONE, 0);
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(int minDsLevel) const
@@ -187,14 +189,14 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(int minDsLevel) const
 ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
     const ZFlyEmBodyConfig &config, int minDsLevel)
 {
-  ZFlyEmBodyEvent event(ACTION_UPDATE, config);
+  ZFlyEmBodyEvent event(EAction::UPDATE, config);
 
   if (event.getDsLevel() > minDsLevel) {
     event.decDsLevel();
     event.addUpdateFlag(UPDATE_MULTIRES);
   } else {
     event.setBodyId(0);
-    event.setAction(ACTION_NULL); //Invalidate event
+    event.setAction(EAction::NONE); //Invalidate event
   }
 
   return event;
@@ -203,22 +205,22 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
 void ZFlyEmBodyEvent::print() const
 {
   switch (m_action) {
-  case ACTION_UPDATE:
+  case EAction::UPDATE:
     std::cout << "Update: ";
     break;
-  case ACTION_ADD:
+  case EAction::ADD:
     std::cout << "Add: ";
     break;
-  case ACTION_REMOVE:
+  case EAction::REMOVE:
     std::cout << "Remove: ";
     break;
-  case ACTION_FORCE_ADD:
+  case EAction::FORCE_ADD:
     std::cout << "Force add: ";
     break;
-  case ACTION_NULL:
+  case EAction::NONE:
     std::cout << "No action: ";
     break;
-  case ACTION_CACHE:
+  case EAction::CACHE:
     std::cout << "Cache: ";
     break;
   }

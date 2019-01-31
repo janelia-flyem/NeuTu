@@ -10,7 +10,7 @@
 #include "flyem/zflyemroiproject.h"
 #include "zqtbarprogressreporter.h"
 #include "zstackdoc.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackdocreader.h"
 
 class MainWindow;

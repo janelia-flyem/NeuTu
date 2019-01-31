@@ -9,7 +9,7 @@
 #include "dvid/zdvidtarget.h"
 #include "zjsonparser.h"
 #include "dvid/zdvidversiondag.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidreader.h"
 

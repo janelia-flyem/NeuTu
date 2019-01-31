@@ -36,10 +36,10 @@
 #include "zjsonparser.h"
 #include "zerror.h"
 #include "zclosedcurve.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zpainter.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
@@ -3221,11 +3221,13 @@ set<int> ZSwcTree::typeSet()
   return allTypes;
 }
 
+/*
 const std::string& ZSwcTree::className() const {
   static const std::string name = "ZSwcTree";
 
   return name;
 }
+*/
 
 vector<Swc_Tree_Node*> ZSwcTree::toSwcTreeNodeArray(bool includingVirtual)
 {
@@ -4328,5 +4330,5 @@ Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
 ////////////////////////////////////////////////
 ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
 {
-  return ZStackObject::TARGET_WIDGET;
+  return ZStackObject::ETarget::WIDGET;
 }

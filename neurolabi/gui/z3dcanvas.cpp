@@ -1,16 +1,19 @@
 #include "z3dcanvas.h"
 
-#include "z3dnetworkevaluator.h"
-#include "z3dcanvaseventlistener.h"
-#include "z3dscene.h"
-#include "zqslog.h"
-#include "zpainter.h"
-//#include "zstackdrawable.h"
-#include "zopenglwidget.h"
 #include <QWindow>
 #include <QPainter>
 #include <QGraphicsTextItem>
 #include <algorithm>
+
+#include "logging/zlog.h"
+#include "logging/zqslog.h"
+#include "qt/gui/loghelper.h"
+
+#include "z3dnetworkevaluator.h"
+#include "z3dcanvaseventlistener.h"
+#include "z3dscene.h"
+#include "zpainter.h"
+#include "zopenglwidget.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
   : QGraphicsView(parent)
@@ -106,6 +109,9 @@ bool Z3DCanvas::suppressingContextMenu() const
 
 void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 {
+  neutu::LogMouseEvent(e, "press", "Z3DCanvas");
+  m_pressedButtons = e->buttons();
+
   broadcastEvent(e, width(), height());
 
   m_interaction.processMousePressEvent(e);
@@ -113,6 +119,9 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
+  neutu::LogMouseReleaseEvent(m_pressedButtons, e->modifiers(), "Z3DCanvas");
+  m_pressedButtons = Qt::NoButton;
+
 #ifdef _DEBUG_2
   std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
 #endif
@@ -124,6 +133,8 @@ void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 
 void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 {
+  neutu::LogMouseDragEvent(e, "Z3DCanvas");
+
   m_interaction.processMouseMoveEvent(e);
 
   if (!m_interaction.lockingMouseMoveEvent()) {
@@ -133,16 +144,24 @@ void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 
 void Z3DCanvas::mouseDoubleClickEvent(QMouseEvent* e)
 {
+  neutu::LogMouseEvent(e, "double click", "Z3DCanvas");
+//  KINFO << "Mouse double clicked in Z3DCanvas";
+
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::wheelEvent(QWheelEvent* e)
 {
+//  KINFO << "Mouse scrolled in Z3DCanvas";
+  neutu::LogMouseEvent(e, "Z3DCanvas");
+
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
+  neutu::LogKeyPressEvent(event, "Z3DCanvas");
+
   if (!m_interaction.processKeyPressEvent(event)) {
     broadcastEvent(event, width(), height());
   }
@@ -152,6 +171,8 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
 void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 {
+  neutu::LogKeyReleaseEvent(event, "Z3DCanvas");
+
   broadcastEvent(event, width(), height());
 }
 
@@ -185,7 +206,7 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 void Z3DCanvas::updateDecoration()
 {
   m_updatingDecoration = true;
-  viewport()->update();
+  updateView();
   m_updatingDecoration = false;
 }
 
@@ -200,7 +221,7 @@ void Z3DCanvas::setCustomWidget(QWidget *widget)
 void Z3DCanvas::dump(const QString &message)
 {
   m_message = message;
-  viewport()->update();
+  updateView();
 }
 
 void Z3DCanvas::updateView()
@@ -226,11 +247,15 @@ void Z3DCanvas::paintCustomRegion(const QImage &image)
     painter.drawImage(m_customCanvas->rect(), image);
   }
 
-  viewport()->update();
+  updateView();
 }
 
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
+#ifdef _DEBUG_2
+  std::cout << "Z3DCanvas::drawBackground: " << m_updatingDecoration << std::endl;
+#endif
+
   if (!m_updatingDecoration) {
     QGraphicsView::drawBackground(painter, rect);
   }
@@ -251,7 +276,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
     drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
-                      ZStackObject::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
+                      ZStackObject::EDisplaySliceMode::DISPLAY_SLICE_SINGLE, neutube::EAxis::Z);
   }
 #else
   UNUSED_PARAMETER(painter);

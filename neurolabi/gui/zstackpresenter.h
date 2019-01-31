@@ -20,7 +20,7 @@
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zkeyoperationmap.h"
 #include "zstackball.h"
 #include "zactionfactory.h"

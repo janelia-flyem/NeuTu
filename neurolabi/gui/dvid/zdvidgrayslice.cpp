@@ -9,7 +9,7 @@
 #include "zstackviewparam.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprocessor.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "neutubeconfig.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"
@@ -18,13 +18,13 @@
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TILE_CANVAS);
   m_type = GetType();
 //  m_zoom = 0;
 //  m_maxWidth = 512;
 //  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_GRAY_SCALE);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
   getHelper()->useCenterCut(false);
 }
 
@@ -33,7 +33,7 @@ ZDvidGraySlice::~ZDvidGraySlice()
   clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 
 void ZDvidGraySlice::clear()
 { 

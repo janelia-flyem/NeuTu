@@ -2,8 +2,8 @@
 #define Z3DRENDERERBASE_H
 
 #include "z3dtransformparameter.h"
-#include "znumericparameter.h"
-#include "zoptionparameter.h"
+#include "widgets/znumericparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "z3dcamera.h"
 #include "z3dglobalparameters.h"
 #include <QObject>

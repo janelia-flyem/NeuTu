@@ -38,10 +38,10 @@
 #include "zpainter.h"
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
-#include "core/memorystream.h"
+#include "common/memorystream.h"
 
 ///////////////////////////////////////////////////
 
@@ -80,7 +80,7 @@ ZObject3dScan::~ZObject3dScan()
 
 void ZObject3dScan::init()
 {
-  setTarget(TARGET_OBJECT_CANVAS);
+  setTarget(ETarget::OBJECT_CANVAS);
   m_type = GetType();
 
   m_isCanonized = true;
@@ -278,6 +278,18 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   }
 
   return voxelNumber;
+}
+
+size_t ZObject3dScan::getByteCount() const
+{
+  size_t byteCount = 0;
+
+  size_t stripeNumber = getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    byteCount += m_stripeArray[i].getByteCount();
+  }
+
+  return byteCount;
 }
 
 const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
@@ -5230,4 +5242,4 @@ void ZObject3dScan::Appender::clearCache()
   m_stripeMap.clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

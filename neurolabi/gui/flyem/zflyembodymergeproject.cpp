@@ -5,7 +5,7 @@
 #include <QItemSelectionModel>
 #include <QDesktopWidget>
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
 #include "dvid/zdvidreader.h"
 #include "zstackframe.h"
@@ -47,6 +47,7 @@
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "zpunctum.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -311,7 +312,7 @@ void ZFlyEmBodyMergeProject::loadGrayscaleFunc(int /*z*/, bool /*lowres*/)
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
-                << m_docReader.getObjectGroup().getObjectList(ZStackObject::TYPE_SWC).size()
+                << m_docReader.getObjectGroup().getObjectList(ZStackObject::EType::TYPE_SWC).size()
                 << std::endl;
 #endif
       emit newDocReady();
@@ -333,7 +334,7 @@ void ZFlyEmBodyMergeProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
 //    TStackObjectList objList = m_dataFrame->document()->getObjectGroup().take(
-//          ZStackObject::TYPE_OBJECT3D_SCAN);
+//          ZStackObject::EType::TYPE_OBJECT3D_SCAN);
 #ifdef _DEBUG_
 //    std::cout << objList.size() << " objects taken" << std::endl;
 #endif
@@ -393,7 +394,7 @@ void ZFlyEmBodyMergeProject::mergeBody()
   if (m_dataFrame != NULL) {
     QList<uint64_t> objLabelList;
     const QList<ZObject3dScan*> &objList = m_dataFrame->getCompleteDocument()->
-        getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getSelectedObjectList<ZObject3dScan>(ZStackObject::EType::OBJECT3D_SCAN);
     for (QList<ZObject3dScan*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZObject3dScan *obj = *iter;
@@ -485,6 +486,11 @@ bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
   }
 
   return m_annotMerger.isFinal(status);
+}
+
+bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
+{
+  return m_annotMerger.isMergable(status);
 }
 
 namespace {
@@ -1166,7 +1172,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
 
     if (isDeep) {
@@ -1314,7 +1320,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
 
     ZFlyEmDvidReader reader;
@@ -1410,7 +1416,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   if (m_coarseBodyWindow != NULL) {
 //    m_bodyWindow->getDocument()->removeAllObject();
     std::vector<ZStackObject*> objList =
-        selector.getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        selector.getSelectedList(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
 
@@ -1428,7 +1434,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
+          ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -1464,7 +1470,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       }
     }
 
-    objList = selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+    objList = selector.getDeselectedList(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
 #ifdef _DEBUG_
     std::cout << "Deselected: " << objList.size() << std::endl;
 #endif
@@ -1476,7 +1482,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
         uint64_t label = sparseObject->getLabel();
         ZStackObject *obj = m_coarseBodyWindow->getDocument()->getObjectGroup().
             findFirstSameSource(
-              ZStackObject::TYPE_SWC,
+              ZStackObject::EType::TYPE_SWC,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
         if (obj != NULL) {
           m_coarseBodyWindow->getDocument()->removeObject(obj, true);
@@ -1503,7 +1509,7 @@ uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
     bodyId = m_dataFrame->getCompleteDocument()->getSelectedBodyId();
     /*
     const TStackObjectSet &objSet =
-        m_dataFrame->document()->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
+        m_dataFrame->document()->getSelected(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
     if (objSet.size() == 1) {
       const ZObject3dScan* obj =
           dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
@@ -1683,6 +1689,13 @@ void ZFlyEmBodyMergeProject::setSelection(
 QString ZFlyEmBodyMergeProject::getSelectionMessage() const
 {
   QString msg;
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    msg = doc->getBodySelectionMessage();
+  }
+  return msg;
+#if 0
+  QString msg;
 
   const std::set<uint64_t> &selected = getSelection(neutube::EBodyLabelType::MAPPED);
 
@@ -1707,10 +1720,12 @@ QString ZFlyEmBodyMergeProject::getSelectionMessage() const
   if (msg.isEmpty()) {
     msg = "No body selected.";
   } else {
-    msg += " selected.";
+    msg = "Body selection: " + msg;
+//    msg += " selected.";
   }
 
   return msg;
+#endif
 }
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
@@ -1721,7 +1736,8 @@ void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
+        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
@@ -1732,7 +1748,8 @@ void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
+        ZWidgetMessage(msg, neutube::EMessageType::ERROR,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 
@@ -1808,7 +1825,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
     ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(!hl);
 //    doc->blockSignals(true);
-    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
     doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
     /*
     doc->getObjectGroup().removeObject(
@@ -1893,7 +1910,7 @@ void ZFlyEmBodyMergeProject::addBookmarkDecoration(
 #if 0
   if (getDocument() != NULL) {
 
-    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
@@ -1924,7 +1941,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray filteredBookmarkArray;
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+      if (bookmark.getBookmarkType() != ZFlyEmBookmark::EBookmarkType::FALSE_MERGE) {
         filteredBookmarkArray.append(bookmark);
       }
     }
@@ -1947,7 +1964,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
          iter != m_bookmarkArray->end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      if (bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+      if (bookmark.getBookmarkType() == ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_SPLIT) {
         bookmarkArray.append(bookmark);
       }
     }

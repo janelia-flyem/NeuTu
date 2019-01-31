@@ -41,15 +41,17 @@ void ZStackDoc3dHelper::processObjectModified(
   const QList<neutube3d::ERendererLayer>& layerList = view->getLayerList();
   foreach (neutube3d::ERendererLayer layer, layerList) {
     if (dataUpdateRequired(layer, objInfo)) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Updating layer " << layer << std::endl;
 #endif
       view->updateDocData(layer);
     }
   }
 
-  if (objInfo.contains(ZStackObject::TARGET_3D_CANVAS)) {
+  if (objInfo.contains(ZStackObject::ETarget::CANVAS_3D)) {
     updateCustomCanvas(view);
+  } else {
+//    view->updateCanvas();
   }
 }
 
@@ -59,13 +61,13 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
   bool updating = false;
 
   switch (layer) {
-  case neutube3d::LAYER_GRAPH:
-    updating = objInfo.contains(ZStackObject::TYPE_3D_GRAPH) ||
+  case neutube3d::ERendererLayer::GRAPH:
+    updating = objInfo.contains(ZStackObject::EType::GRAPH_3D) ||
         objInfo.contains(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
     break;
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     foreach (const ZStackObjectInfo &info, objInfo.keys()) {
-      if ((info.getType() == ZStackObject::TYPE_MESH &&
+      if ((info.getType() == ZStackObject::EType::MESH &&
            !info.getRole().hasRole(ZStackObjectRole::ROLE_ROI) &&
            !info.getRole().hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR))) {
         updating = true;
@@ -73,25 +75,25 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
       }
     }
     break;
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     updating = objInfo.contains(ZStackObjectRole::ROLE_3DMESH_DECORATOR);
     break;
-  case neutube3d::LAYER_PUNCTA:
-    updating = objInfo.contains(ZStackObject::TYPE_PUNCTA) ||
-        objInfo.contains(ZStackObject::TYPE_PUNCTUM);
+  case neutube3d::ERendererLayer::PUNCTA:
+    updating = objInfo.contains(ZStackObject::EType::PUNCTA) ||
+        objInfo.contains(ZStackObject::EType::PUNCTUM);
     break;
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     updating = objInfo.contains(ZStackObjectRole::ROLE_ROI);
     break;
-  case neutube3d::LAYER_SURFACE:
-    updating = objInfo.contains(ZStackObject::TYPE_3D_CUBE);
+  case neutube3d::ERendererLayer::SURFACE:
+    updating = objInfo.contains(ZStackObject::EType::CUBE);
     break;
-  case neutube3d::LAYER_SWC:
-    updating = objInfo.contains(ZStackObject::TYPE_SWC);
+  case neutube3d::ERendererLayer::SWC:
+    updating = objInfo.contains(ZStackObject::EType::SWC);
     break;
-  case neutube3d::LAYER_TODO:
-    updating = objInfo.contains(ZStackObject::TYPE_FLYEM_TODO_ITEM) ||
-        objInfo.contains(ZStackObject::TYPE_FLYEM_TODO_LIST);
+  case neutube3d::ERendererLayer::TODO:
+    updating = objInfo.contains(ZStackObject::EType::FLYEM_TODO_ITEM) ||
+        objInfo.contains(ZStackObject::EType::FLYEM_TODO_LIST);
     break;
   default:
     break;
@@ -142,7 +144,7 @@ void ZStackDoc3dHelper::updateGraphData(Z3DView *view)
     filter->addData(
           doc->getPlayerList(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
 
-    TStackObjectList objList = doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+    TStackObjectList objList = doc->getObjectList(ZStackObject::EType::GRAPH_3D);
     for (TStackObjectList::const_iterator iter = objList.begin(); iter != objList.end(); ++iter) {
       Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
       if (graph->isVisible()) {
@@ -180,7 +182,7 @@ void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
 {
   Z3DMeshFilter *filter = view->getDecorationFilter();
   if (filter != NULL) {
-    resetObjectAdapter(neutube3d::LAYER_DECORATION);
+    resetObjectAdapter(neutube3d::ERendererLayer::DECORATION);
     QList<ZObject3dScan*> objList =
         view->getDocument()->getObjectList<ZObject3dScan>();
     QList<ZMesh*> meshList;
@@ -197,7 +199,7 @@ void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
           mesh->setVisible(obj->isVisible());
           mesh->setSelectable(false);
           mesh->setObjectId(obj->getObjectId());
-          addObject(neutube3d::LAYER_DECORATION, mesh);
+          addObject(neutube3d::ERendererLayer::DECORATION, mesh);
           meshList.append(mesh);
         }
       }
@@ -238,7 +240,7 @@ void ZStackDoc3dHelper::updateRoiData(Z3DView *view)
 //      }
 //    }
 
-    resetObjectAdapter(neutube3d::LAYER_ROI);
+    resetObjectAdapter(neutube3d::ERendererLayer::ROI);
     QList<ZObject3dScan*> objList =
         view->getDocument()->getObjectList<ZObject3dScan>();
     foreach(ZObject3dScan *obj, objList) {
@@ -248,7 +250,7 @@ void ZStackDoc3dHelper::updateRoiData(Z3DView *view)
           mesh->setColor(obj->getColor());
           mesh->pushObjectColor();
           mesh->setVisible(obj->isVisible());
-          addObject(neutube3d::LAYER_ROI, mesh);
+          addObject(neutube3d::ERendererLayer::ROI, mesh);
           filteredMeshList.append(mesh);
         }
       }
@@ -272,7 +274,7 @@ void ZStackDoc3dHelper::updateSurfaceData(Z3DView *view)
   if (filter != NULL) {
     std::vector<ZCubeArray*> all;
     TStackObjectList objList =
-        view->getDocument()->getObjectList(ZStackObject::TYPE_3D_CUBE);
+        view->getDocument()->getObjectList(ZStackObject::EType::CUBE);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       all.push_back(dynamic_cast<ZCubeArray*>(*iter));
@@ -284,31 +286,31 @@ void ZStackDoc3dHelper::updateSurfaceData(Z3DView *view)
 void ZStackDoc3dHelper::updateData(Z3DView *view, neutube3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::LAYER_GRAPH:
+  case neutube3d::ERendererLayer::GRAPH:
     updateGraphData(view);
     break;
-  case neutube3d::LAYER_SWC:
+  case neutube3d::ERendererLayer::SWC:
     updateSwcData(view);
     break;
-  case neutube3d::LAYER_PUNCTA:
+  case neutube3d::ERendererLayer::PUNCTA:
     updatePunctaData(view);
     break;
-  case neutube3d::LAYER_SURFACE:
+  case neutube3d::ERendererLayer::SURFACE:
     updateSurfaceData(view);
     break;
-  case neutube3d::LAYER_TODO:
+  case neutube3d::ERendererLayer::TODO:
     updateTodoData(view);
     break;
-  case neutube3d::LAYER_MESH:
+  case neutube3d::ERendererLayer::MESH:
     updateMeshData(view);
     break;
-  case neutube3d::LAYER_ROI:
+  case neutube3d::ERendererLayer::ROI:
     updateRoiData(view);
     break;
-  case neutube3d::LAYER_DECORATION:
+  case neutube3d::ERendererLayer::DECORATION:
     updateDecorationData(view);
     break;
-  case neutube3d::LAYER_SLICE:
+  case neutube3d::ERendererLayer::SLICE:
     updateSliceData(view);
     break;
   default:

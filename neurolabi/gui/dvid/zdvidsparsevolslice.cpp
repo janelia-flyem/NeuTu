@@ -1,14 +1,14 @@
 #include "zdvidsparsevolslice.h"
 
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()/*, m_currentZ(-1)*/
 {
   m_type = GetType();
-  setHitProtocal(ZStackObject::HIT_NONE);
+  setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 //  setHittable(false);
   m_externalReader = NULL;
   m_isFullView = false;

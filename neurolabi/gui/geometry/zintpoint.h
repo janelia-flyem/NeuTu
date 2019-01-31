@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZPoint;
 

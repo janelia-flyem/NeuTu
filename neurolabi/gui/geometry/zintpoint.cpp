@@ -8,9 +8,9 @@
 #include "zerror.h"
 #include "zpoint.h"
 #include "tz_geo3d_utils.h"
-#include "geometry/zgeometry.h"
-#include "neutube_def.h"
-#include "core/utilities.h"
+#include "zgeometry.h"
+#include "common/neutube_def.h"
+#include "common/utilities.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {

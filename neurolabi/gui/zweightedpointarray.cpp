@@ -1,5 +1,5 @@
 #include "zweightedpointarray.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 
 ZWeightedPointArray::ZWeightedPointArray()
 {

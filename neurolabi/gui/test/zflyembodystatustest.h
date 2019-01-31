@@ -24,6 +24,10 @@ TEST(ZFlyEmBodyStatus, Property)
   ASSERT_TRUE(status.isExpertStatus());
   ASSERT_TRUE(status.isFinal());
   ASSERT_EQ(1, status.getPriority());
+
+  ASSERT_TRUE(status.isMergable());
+  status.setMergable(false);
+  ASSERT_FALSE(status.isMergable());
 }
 
 TEST(ZFlyEmBodyStatus, Json)
@@ -34,17 +38,20 @@ TEST(ZFlyEmBodyStatus, Json)
   json.setEntry(ZFlyEmBodyStatus::KEY_EXPERT, true);
   json.setEntry(ZFlyEmBodyStatus::KEY_FINAL, true);
   json.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
+  json.setEntry(ZFlyEmBodyStatus::KEY_MERGABLE, false);
 
   status.loadJsonObject(json);
   ASSERT_TRUE(status.isExpertStatus());
   ASSERT_TRUE(status.isFinal());
   ASSERT_EQ(1, status.getPriority());
+  ASSERT_FALSE(status.isMergable());
 
   status.reset();
   ASSERT_FALSE(status.isExpertStatus());
   ASSERT_FALSE(status.isFinal());
   ASSERT_EQ(999, status.getPriority());
   ASSERT_EQ("", status.getName());
+  ASSERT_TRUE(status.isMergable());
 }
 
 #endif

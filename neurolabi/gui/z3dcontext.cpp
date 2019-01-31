@@ -2,7 +2,7 @@
 
 #include <QOpenGLContext>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DContext::Z3DContext()
   : m_context(QOpenGLContext::currentContext())

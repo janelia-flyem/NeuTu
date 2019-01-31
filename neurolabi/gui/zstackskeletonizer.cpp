@@ -21,7 +21,7 @@
 #include "tz_math.h"
 #include "swc/zswcresampler.h"
 #include "tz_stack_threshold.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 
 using namespace std;

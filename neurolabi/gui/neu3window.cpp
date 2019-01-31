@@ -546,7 +546,7 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 void Neu3Window::removeSliceViewGraph()
 {
   ZStackDocAccessor::RemoveObject(
-        getBodyDocument(), ZStackObject::TYPE_3D_GRAPH,
+        getBodyDocument(), ZStackObject::EType::GRAPH_3D,
         ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
 }
 
@@ -969,7 +969,7 @@ void Neu3Window::test()
 
 void Neu3Window::testBodyChange()
 {
-  m_3dwin->setColorMode(neutube3d::LAYER_MESH, "Mesh Source");
+  m_3dwin->setColorMode(neutube3d::ERendererLayer::MESH, "Mesh Source");
   static ZRandomGenerator rand;
 
   QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
@@ -1051,6 +1051,20 @@ void Neu3Window::processSwcChangeFrom3D(
 
 void Neu3Window::processMessage(const ZWidgetMessage &msg)
 {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }
+
+  if (msg.hasTargetOtherThan(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_DIALOG)) {
+    m_3dwin->processMessage(msg);
+  }
+
+#if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
     m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
@@ -1059,6 +1073,7 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
   } else {
     m_3dwin->processMessage(msg);
   }
+#endif
 }
 
 bool Neu3Window::cleaving() const

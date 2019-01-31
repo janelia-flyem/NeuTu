@@ -321,7 +321,7 @@ double ZViewProj::getValidZoom(double zoom) const
 void ZViewProj::setZoom(double zoom, EReference ref)
 {
   if (zoom > 0) {
-    if (ref == REF_CENTER) {
+    if (ref == EReference::CENTER) {
       update();
       QPoint viewCenter = getViewPort().center();
       QPointF projCenter = getProjRect().center();

@@ -6,12 +6,13 @@
 #include "zswcobjsmodel.h"
 //#include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"
 #include "zscalablestack.h"
 #include "zswctree.h"
+#include "zpunctum.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -208,7 +209,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
 {
 //  doc->blockSignals(true);
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   QVector<const ZFlyEmNeuron*> neuronArray;
   QMap<std::string, QColor> colorMap;

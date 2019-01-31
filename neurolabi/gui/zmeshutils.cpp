@@ -7,7 +7,7 @@
 #include <vtkDecimatePro.h>
 
 #include "misc/zvtkutil.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 namespace {
 

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZFlyEmTodoListModel;
 class ZStackDoc;

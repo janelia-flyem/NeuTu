@@ -13,11 +13,11 @@
 #include <QCheckBox>
 
 #include "zstackframe.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
@@ -80,16 +80,16 @@ public:
    */
   void reset(bool updatingScreen = true);
 
-  enum EMode {
-    MODE_NORMAL, MODE_IMAGE_ONLY, MODE_PLAIN_IMAGE
+  enum class EMode {
+    NORMAL, IMAGE_ONLY, PLAIN_IMAGE
   };
 
   void configure(EMode mode);
 
-  enum EUpdateOption {
-    UPDATE_NONE, //No update
-    UPDATE_QUEUED, //Put updating request in a queue
-    UPDATE_DIRECT //Update immediately
+  enum class EUpdateOption {
+    NONE, //No update
+    QUEUED, //Put updating request in a queue
+    DIRECT //Update immediately
   };
 
   /*!
@@ -450,8 +450,8 @@ protected:
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
 
-  QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
-  QSet<ZStackObject::ETarget> updateViewData();
+  std::set<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
+  std::set<ZStackObject::ETarget> updateViewData();
 
   void init();
 
@@ -477,7 +477,7 @@ public slots:
   /*!
    * \brief Redraw the whole scene.
    */
-  void redraw(EUpdateOption option = UPDATE_QUEUED);
+  void redraw(EUpdateOption option = EUpdateOption::QUEUED);
 
   /*!
    * \brief Redraw objects.
@@ -542,7 +542,7 @@ public slots:
   void updateZSpinBoxValue();
 
   void paintObject(ZStackObject::ETarget target);
-  void paintObject(const QSet<ZStackObject::ETarget> &targetSet);
+  void paintObject(const std::set<ZStackObject::ETarget> &targetSet);
 
   void dump(const QString &msg);
 

@@ -83,7 +83,7 @@ Swc_Tree_Node *ZSwcObjsModel::getSwcTreeNode(const QModelIndex &index) const
 void ZSwcObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
   if (infoSet.hasObjectModified(
-        ZStackObject::TYPE_SWC,
+        ZStackObject::EType::SWC,
         ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED |
         ZStackObjectInfo::STATE_SOURCE_CHANGED)) {
     updateModelData();
@@ -102,7 +102,7 @@ void ZSwcObjsModel::updateModelData()
   rootData << "Neuron" << "Source";
   ZOUT(LTRACE(), 5) << "Update swc model";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_SWC)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::SWC)));
   setupModelData(m_rootItem);
   endResetModel();
 }

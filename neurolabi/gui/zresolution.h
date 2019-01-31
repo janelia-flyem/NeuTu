@@ -2,8 +2,8 @@
 #define ZRESOLUTION_H
 
 #include <string>
-#include "neutube_def.h"
-#include "zpoint.h"
+#include "common/neutube_def.h"
+#include "geometry/zpoint.h"
 
 class ZJsonObject;
 

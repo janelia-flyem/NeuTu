@@ -3,6 +3,8 @@
 #include <QKeyEvent>
 #include <QAction>
 
+#include "logging/zlog.h"
+#include "qt/gui/loghelper.h"
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
 #include "zstackdoc.h"
@@ -354,6 +356,10 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 
 bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 {
+  neutu::LogKeyPressEvent(event, "ZFlyEmProofMvc");
+//  KINFO << QString("Key %1 pressed in ZFlyEmProofMvc").
+//           arg(QKeySequence(event->key()).toString());
+
   bool processed = false;
 
   switch (event->key()) {
@@ -707,7 +713,7 @@ void ZFlyEmProofPresenter::setTodoDelegate(
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddTodoItem(pt.toIntPoint());
 }
@@ -715,7 +721,7 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
 void ZFlyEmProofPresenter::tryAddToMergeItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToMergeItem(pt.toIntPoint());
 }
@@ -723,7 +729,7 @@ void ZFlyEmProofPresenter::tryAddToMergeItem()
 void ZFlyEmProofPresenter::tryAddToSplitItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSplitItem(pt.toIntPoint());
 }
@@ -731,7 +737,7 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSupervoxelSplitItem(pt.toIntPoint());
 }
@@ -739,7 +745,7 @@ void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
 void ZFlyEmProofPresenter::tryAddDoneItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddDoneItem(pt.toIntPoint());
 }
@@ -777,7 +783,7 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   stroke->set(x, y);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
-//  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
 //  turnOnStroke();
   turnOnActiveObject(ROLE_BOOKMARK);
   //buddyView()->paintActiveDecoration();
@@ -886,7 +892,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
     ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+    docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
                                 ZStackDocSelector::SELECT_RECURSIVE);
     docSelector.deselectAll();
 //    docSelector.setSelectOption(ZStackObject);
@@ -945,7 +951,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
     ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+    docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
                                 ZStackDocSelector::SELECT_RECURSIVE);
     docSelector.deselectAll();
 
@@ -1138,7 +1144,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     QMenu *menu = getContextMenu();
     if (!menu->isEmpty()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
-            Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+            Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
       QPoint currentWidgetPos(event.getWidgetPosition().getX(),
                               event.getWidgetPosition().getY());
       buddyView()->showContextMenu(menu, currentWidgetPos);

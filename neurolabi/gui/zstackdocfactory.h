@@ -1,8 +1,8 @@
 #ifndef ZSTACKDOCFACTORY_H
 #define ZSTACKDOCFACTORY_H
 
-#include "zsharedpointer.h"
-#include "neutube_def.h"
+#include "common/zsharedpointer.h"
+#include "common/neutube_def.h"
 
 class ZStackDoc;
 

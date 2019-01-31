@@ -579,7 +579,7 @@ std::ostream& operator<< (
   return stream;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmToDoList)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmToDoList)
 
 ///////////////////Helper Classes///////////////////
 QVector<ZFlyEmToDoList::ItemSlice>

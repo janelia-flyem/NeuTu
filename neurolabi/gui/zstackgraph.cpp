@@ -13,7 +13,7 @@
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
 #include "tz_stack_bwmorph.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZStackGraph::ZStackGraph() : m_zMargin(-1)
 {

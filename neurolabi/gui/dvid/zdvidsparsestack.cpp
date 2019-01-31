@@ -30,7 +30,7 @@ ZDvidSparseStack::~ZDvidSparseStack()
 
 void ZDvidSparseStack::init()
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_type = GetType();
   m_label = 0;
   setCancelFillValue(false);
@@ -983,4 +983,4 @@ void ZDvidSparseStack::pushAttribute()
   pushMaskColor();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

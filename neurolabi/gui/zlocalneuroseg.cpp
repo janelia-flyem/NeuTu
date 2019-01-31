@@ -18,7 +18,7 @@ ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
   m_profile = NULL;
   m_filterStack = NULL;
   m_isOwner = isOwner;
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
 }
 
 ZLocalNeuroseg::~ZLocalNeuroseg()
@@ -281,18 +281,18 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 
   int channel[3];
   switch (color) {
-  case RED:
+  case Palette_Color::RED:
     channel[0] = 0;
     channel[1] = 1;
     channel[2] = 2;
     break;
-  case GREEN:
+  case Palette_Color::GREEN:
     channel[0] = 2;
     channel[1] = 0;
     channel[2] = 1;
     break;
 
-  case BLUE:
+  case Palette_Color::BLUE:
     channel[0] = 1;
     channel[1] = 2;
     channel[2] = 0;
@@ -556,4 +556,4 @@ void ZLocalNeuroseg::generateFilterStack()
 #endif
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)

@@ -1,7 +1,7 @@
+#include "tz_math.h"
 #include "swcprocessor.h"
 #include "zswctree.h"
 #include "swctreenode.h"
-#include "tz_math.h"
 
 Biocytin::SwcProcessor::SwcProcessor()
 {

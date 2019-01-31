@@ -2,7 +2,7 @@
 #include <QMap>
 #include <QColor>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zobject3dscan.h"
 #include "zarray.h"
 #include "zarrayfactory.h"
@@ -86,7 +86,7 @@ QList<ZObject3dScan*> ZFlyEmBodyMergeDoc::extractAllObject()
 void ZFlyEmBodyMergeDoc::updateBodyObject()
 {
   QList<ZObject3dScan*> objList =
-      getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+      getSelectedObjectList<ZObject3dScan>(ZStackObject::EType::OBJECT3D_SCAN);
   std::set<uint64_t> selectedBodySet;
   foreach (ZObject3dScan *obj, objList) {
     selectedBodySet.insert(obj->getLabel());
@@ -111,7 +111,7 @@ void ZFlyEmBodyMergeDoc::updateBodyObject()
 void ZFlyEmBodyMergeDoc::mergeSelected()
 {
   TStackObjectSet objSet =
-      getObjectGroup().getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
+      getObjectGroup().getSelectedSet(ZStackObject::EType::OBJECT3D_SCAN);
   if (objSet.size() > 1) {
     ZFlyEmBodyMerger::TLabelSet labelSet;
     for (TStackObjectSet::const_iterator iter = objSet.begin();
@@ -140,7 +140,7 @@ uint64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
 {
   uint64_t bodyId = 0;
   const TStackObjectSet &objSet =
-      getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
+      getSelected(ZStackObject::EType::OBJECT3D_SCAN);
   if (objSet.size() == 1) {
     const ZObject3dScan* obj =
         dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
@@ -169,7 +169,7 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
   updateOriginalLabel(array);
   ZOUT(LTRACE(), 5) << "Update label";
   TStackObjectList objList =
-      getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+      getObjectList(ZStackObject::EType::OBJECT3D_SCAN);
 //  std::set<uint64_t> selectedBodySet;
   foreach (ZStackObject *plainObj, objList) {
     ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(plainObj);

@@ -28,7 +28,7 @@ public:
   ~ZDvidGraySlice();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_GRAY_SLICE;
+    return ZStackObject::EType::DVID_GRAY_SLICE;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -46,7 +46,7 @@ public:
 
 //  void loadDvidSlice(const QByteArray &buffer, int z);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void printInfo() const;
 

@@ -2,11 +2,11 @@
 #define ZSTACKVIEWPARAM_H
 
 #include <QRect>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 #include "zviewproj.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 
 class ZArbSliceViewParam;
 class ZJsonObject;

@@ -4,9 +4,9 @@
 #include "znormcolormap.h"
 #include "zobject3d.h"
 #include "zstackball.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackobjectpainter.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 #include "zpainter.h"
 
 using namespace std;
@@ -333,8 +333,8 @@ void Z3DGraphEdge::print()
 Z3DGraph::Z3DGraph()
 {
   m_type = GetType();
-  m_target = ZStackObject::TARGET_3D_ONLY;
-  setTarget(ZStackObject::TARGET_WIDGET);
+  m_target = ZStackObject::ETarget::ONLY_3D;
+  setTarget(ZStackObject::ETarget::WIDGET);
 }
 
 Z3DGraphPtr Z3DGraph::MakePointer()
@@ -687,4 +687,4 @@ ZJsonObject Z3DGraph::toJsonObject() const
   return obj;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

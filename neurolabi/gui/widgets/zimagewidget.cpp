@@ -3,9 +3,14 @@
 #include <cstring>
 #include <cmath>
 #include <QGraphicsBlurEffect>
+#include <QMouseEvent>
 
-#include "zqslog.h"
 #include "tz_rastergeom.h"
+#include "misc/miscutility.h"
+
+#include "logging/zqslog.h"
+#include "logging/zlog.h"
+#include "qt/gui/loghelper.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
 #include "zpaintbundle.h"
@@ -13,7 +18,7 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
-#include "misc/miscutility.h"
+
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -437,7 +442,7 @@ void ZImageWidget::paintObject()
 
     for (;iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
+      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
@@ -457,7 +462,7 @@ void ZImageWidget::paintObject()
 #ifdef _DEBUG_2
       std::cout << obj << std::endl;
 #endif
-      if (obj->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+      if (obj->getType() == ZStackObject::EType::CROSS_HAIR) {
         ZPainter rawPainter(this);
         rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
         obj->display(rawPainter, m_paintBundle->sliceIndex(),
@@ -474,7 +479,7 @@ void ZImageWidget::paintObject()
 
     for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
+      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
@@ -731,12 +736,30 @@ bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
-{
+{  
+  neutu::LogMouseReleaseEvent(
+        m_pressedButtons, event->modifiers(), "ZImageWidget");
+
+//  neutu::LogMouseEvent(event, "release", "ZImageWidget");
+//  KINFO << "Mouse released in ZImageWidget";
+
+  m_pressedButtons = Qt::NoButton;
+
   emit mouseReleased(event);
 }
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+//  if (event->buttons() == Qt::LeftButton) {
+//    KINFO << "Mouse (left) dragged in ZImageWidget";
+//  } else if (event->buttons() == Qt::RightButton) {
+//    KINFO << "Mouse (right) dragged in ZImageWidget";
+//  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
+//    KINFO << "Mouse (right+right) dragged in ZImageWidget";
+//  }
+
+  neutu::LogMouseDragEvent(event, "ZImageWidget");
+
   if (!hasFocus() && m_hoverFocus) {
     setFocus();
   }
@@ -745,16 +768,28 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void ZImageWidget::mousePressEvent(QMouseEvent *event)
 {
+//  KINFO << "Mouse pressed in ZImageWidget";
+
+  neutu::LogMouseEvent(event, "press", "ZImageWidget");
+
+  m_pressedButtons = event->buttons();
+
   emit mousePressed(event);
 }
 
 void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+  neutu::LogMouseEvent(event, "double click", "ZImageWidget");
+//  KINFO << "Mouse double clicked in ZImageWidget";
+
   emit mouseDoubleClicked(event);
 }
 
 void ZImageWidget::wheelEvent(QWheelEvent *event)
 {
+  neutu::LogMouseEvent(event, "ZImageWidget");
+//  KINFO << "Mouse scrolled in ZImageWidget";
+
   emit mouseWheelRolled(event);
 }
 

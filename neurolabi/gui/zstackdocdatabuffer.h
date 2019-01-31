@@ -9,10 +9,10 @@ class ZStackObject;
 
 class ZStackDocObjectUpdate {
 public:
-  enum EAction {
-    ACTION_NULL, ACTION_ADD_NONUNIQUE, ACTION_ADD_UNIQUE,
-    ACTION_UPDATE, ACTION_SELECT, ACTION_DESELECT,
-    ACTION_RECYCLE, ACTION_EXPEL, ACTION_KILL, ACTION_ADD_BUFFER
+  enum class EAction {
+    NONE, ADD_NONUNIQUE, ADD_UNIQUE,
+    UPDATE, SELECT, DESELECT,
+    RECYCLE, EXPEL, KILL, ADD_BUFFER
   };
 
   ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);

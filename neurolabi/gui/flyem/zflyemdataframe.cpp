@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <fstream>
 
 #include <QMessageBox>
 #include <QApplication>
@@ -36,7 +37,6 @@
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "mainwindow.h"
-#include <fstream>
 #include "swc/zswcterminalsurfacemetric.h"
 #include "dialogs/flyemgeosearchdialog.h"
 #include "dialogs/flyemgeofilterdialog.h"
@@ -57,6 +57,7 @@
 #include "zintset.h"
 #include "zwindowfactory.h"
 #include "flyem/zflyemqualityanalyzertask.h"
+#include "zpunctum.h"
 
 using namespace std;
 
@@ -1156,7 +1157,7 @@ void ZFlyEmDataFrame::process()
 
       ZStackDoc *doc = new ZStackDoc;
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       doc->addObject(originalTree1);
       doc->addObject(originalTree2);
       doc->addObject(matchingSwc);
@@ -1291,7 +1292,7 @@ void ZFlyEmDataFrame::showModel() const
     } else {
       ZSwcTree *model = neuron->getModel();
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 //      doc->blockSignals(true);
       if (model != NULL) {
         const QColor *color = getColor(m_sourceIdArray[i]);
@@ -1380,7 +1381,7 @@ void ZFlyEmDataFrame::showConnection() const
 
   ZStackDoc *doc = new ZStackDoc;
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
     const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
     if (neuron == NULL) {
@@ -2109,7 +2110,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
             ZSharedPointer<ZStackDoc>(new ZStackDoc);
 //        doc->blockSignals(true);
 
-        doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+        doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
         doc->addObject(tree1->clone());
 
         int index = 0;
@@ -2326,8 +2327,8 @@ void ZFlyEmDataFrame::exportThumbnail(
   if (savingToDvid) {
     ZDvidReader reader;
     reader.open(saveDir);
-    if (reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL))) {
-      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL));
+    if (reader.hasData(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL))) {
+      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL));
     }
   }
 

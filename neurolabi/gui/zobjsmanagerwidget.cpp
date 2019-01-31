@@ -3,6 +3,10 @@
 #include <map>
 #include <set>
 
+#include <QSortFilterProxyModel>
+#include <QHBoxLayout>
+#include <QKeyEvent>
+
 #include "zstackdoc.h"
 #include "zswcobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
@@ -17,10 +21,8 @@
 #include "zswctree.h"
 #include "zobjsmodelmanager.h"
 #include "zmesh.h"
+#include "zpunctum.h"
 
-#include <QSortFilterProxyModel>
-#include <QHBoxLayout>
-#include <QKeyEvent>
 
 
 ZObjsManagerWidget::ZObjsManagerWidget(ZStackDoc *doc, QWidget *parent) :
@@ -37,19 +39,19 @@ ZObjsManagerWidget::~ZObjsManagerWidget()
 ZSwcObjsModel* ZObjsManagerWidget::getSwcObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZSwcObjsModel>(
-        ZStackObject::TYPE_SWC);
+        ZStackObject::EType::SWC);
 }
 
 ZPunctaObjsModel* ZObjsManagerWidget::getPunctaObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZPunctaObjsModel>(
-        ZStackObject::TYPE_PUNCTA);
+        ZStackObject::EType::PUNCTA);
 }
 
 ZMeshObjsModel* ZObjsManagerWidget::getMeshObjsModel()
 {
   return m_doc->getModelManager()->getObjsModel<ZMeshObjsModel>(
-        ZStackObject::TYPE_MESH);
+        ZStackObject::EType::MESH);
 }
 
 ZGraphObjsModel* ZObjsManagerWidget::getGraphObjsModel()
@@ -163,7 +165,8 @@ void ZObjsManagerWidget::punctaItemDoubleClicked(QModelIndex index)
   }
 }
 
-void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selected, QItemSelection deselected)
+void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(
+    QItemSelection selected, QItemSelection deselected)
 {
   QModelIndexList indexes = deselected.indexes();
   std::vector<ZPunctum*> coll;
@@ -176,14 +179,16 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
     if (p != NULL) {
       coll.push_back(p);
     } else {
-      const std::vector<ZPunctum*>* ps = model->getPuncta(m_punctaProxyModel->mapToSource(indexes[i]));
+      const std::vector<ZPunctum*>* ps = model->getPuncta(
+            m_punctaProxyModel->mapToSource(indexes[i]));
       if (ps != NULL) {
         std::copy(ps->begin(), ps->end(), std::back_inserter(coll));
       }
     }
   }
   if (!coll.empty()) {
-    m_doc->setPunctumSelected(coll.begin(), coll.end(), false);
+    m_doc->setObjectSelected(coll, false); //to be tested
+//    m_doc->setPunctumSelected(coll.begin(), coll.end(), false);
     coll.clear();
   }
 
@@ -204,7 +209,8 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
     }
   }
   if (!coll.empty()) {
-    m_doc->setPunctumSelected(coll.begin(), coll.end(), true);
+    m_doc->setObjectSelected(coll, true);
+//    m_doc->setPunctumSelected(coll.begin(), coll.end(), true);
   }
 }
 
@@ -445,21 +451,21 @@ void ZObjsManagerWidget::createWidget()
   if (m_doc->hasSelectedPuncta()) {
     //std::set<ZPunctum*> *selectedPuncta = m_doc->selectedPuncta();
     QList<ZPunctum*> selected =
-        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::EType::PUNCTUM);
     QList<ZPunctum*> deselected;
     //std::copy(selectedPuncta->begin(), selectedPuncta->end(), std::back_inserter(selected));
     punctaSelectionChanged(selected, deselected);
   }
   if (m_doc->hasSelectedMeshes()) {
     QList<ZMesh*> selected =
-        m_doc->getSelectedObjectList<ZMesh>(ZStackObject::TYPE_PUNCTUM);
+        m_doc->getSelectedObjectList<ZMesh>(ZStackObject::EType::PUNCTUM);
     QList<ZMesh*> deselected;
     meshSelectionChanged(selected, deselected);
   }
   if (!m_doc->hasSelectedSwc()) {
     //std::set<ZSwcTree*> *selectedSwcs = m_doc->selectedSwcs();
     QList<ZSwcTree*> selected =
-        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
     QList<ZSwcTree*> deselected;
     //std::copy(selectedSwcs->begin(), selectedSwcs->end(), std::back_inserter(selected));
     swcSelectionChanged(selected, deselected);

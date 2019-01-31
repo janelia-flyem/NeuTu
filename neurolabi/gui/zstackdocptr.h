@@ -1,10 +1,10 @@
 #ifndef ZSTACKDOCPTR_H
 #define ZSTACKDOCPTR_H
 
-#include "zsharedpointer.h"
+#include <memory>
 
 class ZStackDoc;
 
-typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
+typedef std::shared_ptr<ZStackDoc> ZStackDocPtr;
 
 #endif // ZSTACKDOCPTR_H

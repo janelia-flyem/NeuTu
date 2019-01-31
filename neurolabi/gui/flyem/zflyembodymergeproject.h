@@ -8,7 +8,7 @@
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
@@ -130,6 +130,8 @@ public:
   QList<QString> getBodyStatusList() const;
   int getStatusRank(const std::string &status) const;
   bool isFinalStatus(const std::string &status) const;
+  bool isMergableStatus(const std::string &status) const;
+
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(

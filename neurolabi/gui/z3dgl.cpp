@@ -4,7 +4,7 @@
 #include <glbinding/Version.h>
 #include <glbinding/Meta.h>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 bool GLVersionGE(int majorVersion, int minorVersion)
 {

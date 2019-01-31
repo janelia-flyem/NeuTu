@@ -9,7 +9,7 @@
 #include "zcubearray.h"
 
 #include "dvid/libdvidheader.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZMatrix;
 class Z3DGraph;
@@ -131,6 +131,8 @@ void UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer);
 
 void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
+
+std::vector<uint64_t> LoadBodyList(const std::string &input);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

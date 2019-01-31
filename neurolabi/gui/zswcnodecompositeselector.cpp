@@ -3,7 +3,7 @@
 using namespace std;
 
 ZSwcNodeCompositeSelector::ZSwcNodeCompositeSelector() :
-  m_compositeMode(ZSwcNodeCompositeSelector::OR)
+  m_compositeMode(ZSwcNodeCompositeSelector::ECompositeMode::OR)
 {
 }
 
@@ -18,7 +18,7 @@ ZSwcNodeCompositeSelector::~ZSwcNodeCompositeSelector()
 bool ZSwcNodeCompositeSelector::isSelected(const Swc_Tree_Node *tn)
 {
   switch (m_compositeMode) {
-  case AND:
+  case ECompositeMode::AND:
     for (vector<ZSwcNodeSelector*>::iterator iter = m_selectorList.begin();
          iter != m_selectorList.end(); ++iter) {
       if (!(*iter)->isSelected(tn)) {
@@ -27,7 +27,7 @@ bool ZSwcNodeCompositeSelector::isSelected(const Swc_Tree_Node *tn)
     }
 
     return true;
-  case OR:
+  case ECompositeMode::OR:
     for (vector<ZSwcNodeSelector*>::iterator iter = m_selectorList.begin();
          iter != m_selectorList.end(); ++iter) {
       if ((*iter)->isSelected(tn)) {

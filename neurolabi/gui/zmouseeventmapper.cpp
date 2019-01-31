@@ -1,7 +1,7 @@
 #include "zmouseeventmapper.h"
 #include <QMouseEvent>
 #include "zinteractivecontext.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zstackdochelper.h"
 #include "neutube.h"
@@ -91,7 +91,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
     }
   } else if (op.getHitObject<ZStackObject>() != NULL) {
     switch (op.getHitObject()->getType()) {
-    case ZStackObject::TYPE_STROKE:
+    case ZStackObject::EType::STROKE:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier ||
@@ -99,7 +99,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
       }
       break;
-    case ZStackObject::TYPE_OBJ3D:
+    case ZStackObject::EType::OBJ3D:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier ||
@@ -107,7 +107,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
       }
       break;
-    case ZStackObject::TYPE_PUNCTUM:
+    case ZStackObject::EType::PUNCTUM:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier ||
@@ -115,7 +115,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
       }
       break;
-    case ZStackObject::TYPE_OBJECT3D_SCAN:
+    case ZStackObject::EType::OBJECT3D_SCAN:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
@@ -124,7 +124,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
       }
       break;
-    case ZStackObject::TYPE_DVID_LABEL_SLICE:
+    case ZStackObject::EType::DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
         if (op.getHitObject()->hasVisualEffect(
               neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
@@ -142,7 +142,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT);
       }
       break;
-    case ZStackObject::TYPE_FLYEM_BOOKMARK:
+    case ZStackObject::EType::FLYEM_BOOKMARK:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
@@ -151,7 +151,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
       }
       break;
-    case ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE:
+    case ZStackObject::EType::DVID_SYNAPE_ENSEMBLE:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
@@ -160,7 +160,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE);
       }
       break;
-    case ZStackObject::TYPE_FLYEM_TODO_LIST:
+    case ZStackObject::EType::FLYEM_TODO_LIST:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
@@ -380,27 +380,27 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   if (op.getHitObject<Swc_Tree_Node>() != NULL) {
     op.setOperation(ZStackOperator::OP_SWC_LOCATE_FOCUS);
   } else if (op.getHitObject() != NULL) {
-    if (op.getHitObject()->getType() == ZStackObject::TYPE_STROKE) {
+    if (op.getHitObject()->getType() == ZStackObject::EType::STROKE) {
       if (m_context->isObjectProjectView()) {
         op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
       }
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_OBJ3D) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::OBJ3D) {
       if (m_context->isObjectProjectView()) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS);
       }
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::OBJECT3D_SCAN) {
       if (m_context->isObjectProjectView()) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS);
       }
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_DVID_SPARSE_STACK) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::DVID_SPARSE_STACK) {
       if (m_context->isObjectProjectView()) {
         op.setOperation(ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS);
       }
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_BOOKMARK) {
       op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::DVID_SYNAPE_ENSEMBLE) {
       op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE);
-    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_TODO_LIST) {
       op.setOperation(ZStackOperator::OP_FLYEM_TODO_ANNOTATE);
     }
   }
@@ -525,7 +525,7 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
         if (m_doc->hasSelectedSwcNode()) {
           op.setOperation(ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU);
         } else if (m_doc->getTag() == neutube::Document::ETag::FLYEM_MERGE) {
-          if (m_doc->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN).size() == 1) {
+          if (m_doc->getSelected(ZStackObject::EType::OBJECT3D_SCAN).size() == 1) {
             op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
           }
         } else if (m_doc->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
@@ -603,7 +603,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
         } else {
           ZIntPoint pressPos =
-              getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
+              getPosition(Qt::LeftButton, ZMouseEvent::EAction::PRESS);
           int dx = pressPos.getX() - event.getX();
           int dy = pressPos.getY() - event.getY();
           if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
@@ -629,7 +629,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
     } else if (event.getButtons() == Qt::RightButton) {
       if (m_context->getUniqueMode() != ZInteractiveContext::INTERACT_IMAGE_MOVE) {
         ZIntPoint pressPos =
-            getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
+            getPosition(Qt::RightButton, ZMouseEvent::EAction::PRESS);
         int dx = event.getX() - pressPos.getX();
         int dy = event.getY() - pressPos.getY();
         if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {

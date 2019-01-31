@@ -15,7 +15,7 @@
 
 #include "z3dport.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DInputPortBase::Z3DInputPortBase(const QString& name, bool allowMultipleConnections, Z3DFilter* filter,
                                    Z3DFilter::State invalidationState)

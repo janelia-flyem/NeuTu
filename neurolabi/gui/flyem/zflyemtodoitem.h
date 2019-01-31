@@ -22,12 +22,12 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-  const std::string& className() const;
+//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_TODO_ITEM;
+    return ZStackObject::EType::FLYEM_TODO_ITEM;
   }
 
   friend std::ostream& operator<< (

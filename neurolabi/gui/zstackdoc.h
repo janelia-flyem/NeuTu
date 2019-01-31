@@ -5,10 +5,11 @@
 #ifndef _ZSTACKDOC_H_
 #define _ZSTACKDOC_H_
 
+#include <set>
+
 #include <QString>
 #include <QList>
 #include <QUrl>
-#include <set>
 #include <QObject>
 #include <QUndoCommand>
 #include <QMap>
@@ -21,11 +22,13 @@
 #include <QStack>
 
 #include "neutube.h"
-#include "zcurve.h"
+#include "common/utilities.h"
+
+//#include "zcurve.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-#include "zpunctum.h"
+//#include "zpunctum.h"
 #include "zprogressreporter.h"
 #include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
@@ -36,19 +39,19 @@
 #include "dialogs/resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
-#include "z3dgraph.h"
+//#include "z3dgraph.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
 //#include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
-#include "core/utilities.h"
+
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -99,6 +102,9 @@ class ZObjsModelManager;
 class ZWorker;
 class ZWorkThread;
 class ZTask;
+class Z3DGraph;
+class ZPunctum;
+class ZCurve;
 
 /*!
  * \brief The class of stack document
@@ -138,8 +144,8 @@ public:
   };
 #endif
 
-  enum EObjectModifiedMode {
-    OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
+  enum class EObjectModifiedMode {
+    SLIENT, PROMPT, CACHE
   };
 
 public: //attributes
@@ -554,10 +560,10 @@ public: /* puncta related methods */
   bool meanshiftSelectedPuncta();
   bool meanshiftAllPuncta();
   inline bool hasSelectedPuncta() {
-    return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
+    return m_objectGroup.hasSelected(ZStackObject::EType::PUNCTUM);
   }
   inline bool hasSelectedMeshes() {
-    return m_objectGroup.hasSelected(ZStackObject::TYPE_MESH);
+    return m_objectGroup.hasSelected(ZStackObject::EType::MESH);
   }
 
 public:
@@ -679,10 +685,19 @@ public:
   void selectHitSwcTreeNodeConnection(ZSwcTree *tree);
   void selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree);
 
+  template <template<class...> class Container, class T, class A>
+  void setObjectSelected(const Container<T*, A> &objList, bool select);
+
+  template <template<class...> class Container, class T>
+  void setObjectSelected(const Container<T*> &objList, bool select);
+
+  template <typename T>
+  void setObjectSelected(T *obj, bool select);
+
   // (de)select objects and emit signals for 3D view and 2D view to sync
   void setPunctumSelected(ZPunctum* punctum, bool select);
-  template <class InputIterator>
-  void setPunctumSelected(InputIterator first, InputIterator last, bool select);
+//  template <class InputIterator>
+//  void setPunctumSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllPuncta();
   void setMeshSelected(ZMesh* mesh, bool select);
   template <class InputIterator>
@@ -949,11 +964,11 @@ public:
   void processObjectModified();
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
-  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
+//  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
 //  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
 //                             bool sync = true);
-  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-                             bool sync = true);
+//  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+//                             bool sync = true);
   void processObjectModified(ZStackObject *obj, bool sync = true);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
@@ -1090,7 +1105,7 @@ public:
     void update(const ZStackViewParam &param);
 //    void update(const ZArbSliceViewParam &param);
 
-    const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {
+    const std::set<ZStackObject::ETarget>& getUpdatedTargetSet() {
       return m_updatedTarget;
     }
 
@@ -1103,9 +1118,9 @@ public:
 
   private:
     ZSharedPointer<ZStackDoc> m_doc;
-    QSet<ZStackObject::EType> m_excludeSet;
-    QSet<ZStackObject::ETarget> m_excludeTarget;
-    QSet<ZStackObject::ETarget> m_updatedTarget;
+    std::set<ZStackObject::EType> m_excludeSet;
+    std::set<ZStackObject::ETarget> m_excludeTarget;
+    std::set<ZStackObject::ETarget> m_updatedTarget;
   };
 
   void addObjectUnsync(ZStackObject *obj, bool uniqueSource = true);
@@ -1299,8 +1314,8 @@ signals:
   void cube3dModified();
   void todoModified();
   void objectModified();
-  void objectModified(ZStackObject::ETarget);
-  void objectModified(QSet<ZStackObject::ETarget>);
+//  void objectModified(ZStackObject::ETarget);
+//  void objectModified(QSet<ZStackObject::ETarget>);
   void objectModified(ZStackObjectInfoSet);
   void objectModified(ZStackObjectInfo);
 
@@ -1388,6 +1403,9 @@ private:
 
   void updateTraceMask();
   void prepareSwc(ZSwcTree *tree);
+
+  template <class C, class T>
+  void setObjectSelectedP(const C &objList, bool select);
 
 private slots:
   void shortcutTest();
@@ -1478,7 +1496,7 @@ private:
   QMutex m_playerMutex;
   mutable QMutex m_labelFieldMutex;
 
-  QSet<ZStackObject::EType> m_unsavedSet;
+  std::set<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
 
   ZWorker *m_worker = NULL;
@@ -1495,7 +1513,7 @@ protected:
 template <typename InputIterator>
 void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (InputIterator iter = first; iter != last; ++iter) {
     ZStackObject *obj = *iter;
     addObjectFast(obj);
@@ -1504,6 +1522,92 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
   processObjectModified();
 }
 
+template <typename T>
+void ZStackDoc::setObjectSelected(T *obj, bool select)
+{
+  if (obj) {
+    QList<T*> selected;
+    QList<T*> deselected;
+
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+
+    notifySelectionChanged(selected, deselected);
+  }
+}
+
+template <class C, class T>
+void ZStackDoc::setObjectSelectedP(const C &objList, bool select)
+{
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+}
+
+template <template<class...> class Container, class T, class A>
+void ZStackDoc::setObjectSelected(const Container<T*, A> &objList, bool select)
+{
+  setObjectSelectedP<Container<T*, A>, T>(objList, select);
+  /*
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+  */
+}
+
+template <template<class...> class Container, class T>
+void ZStackDoc::setObjectSelected(const Container<T*> &objList, bool select)
+{
+  setObjectSelectedP<Container<T*>, T>(objList, select);
+  /*
+  QList<T*> selected;
+  QList<T*> deselected;
+  for (T* obj : objList) {
+    if (obj->isSelected() != select) {
+      obj->setSelected(select);
+      m_objectGroup.setSelected(obj, select);
+      if (select) {
+        selected.push_back(obj);
+      } else {
+        deselected.push_back(obj);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+  */
+}
+
+
+#if 0
 template <class InputIterator>
 void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool select)
 {
@@ -1525,7 +1629,7 @@ void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool
   }
   notifySelectionChanged(selected, deselected);
 }
-
+#endif
 template <class InputIterator>
 void ZStackDoc::setSwcTreeNodeSelected(
     InputIterator first, InputIterator last, bool select)

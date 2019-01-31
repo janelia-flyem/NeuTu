@@ -18,11 +18,11 @@ QVariant ZFlyEmBookmarkPresenter::data(
     switch (index) {
     case 0:
       switch (bookmark.getBookmarkType()) {
-      case ZFlyEmBookmark::TYPE_FALSE_MERGE:
+      case ZFlyEmBookmark::EBookmarkType::FALSE_MERGE:
         return "Split";
-      case ZFlyEmBookmark::TYPE_FALSE_SPLIT:
+      case ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT:
         return "Merge";
-      case ZFlyEmBookmark::TYPE_LOCATION:
+      case ZFlyEmBookmark::EBookmarkType::LOCATION:
         return "Other";
       }
       break;

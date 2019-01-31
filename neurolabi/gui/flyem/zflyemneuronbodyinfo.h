@@ -1,8 +1,8 @@
 #ifndef ZFLYEMNEURONBODYINFO_H
 #define ZFLYEMNEURONBODYINFO_H
 
-#include "zintcuboid.h"
-#include "zintpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
 
 class ZObject3dScan;
 class ZJsonObject;

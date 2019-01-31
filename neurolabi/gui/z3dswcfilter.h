@@ -2,7 +2,7 @@
 #define Z3DSWCFILTER_H
 
 #include "z3dgeometryfilter.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 
 #include <map>
 #include <QString>
@@ -20,6 +20,9 @@
 #include "z3dsphererenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zobject3d.h"
+
+class ZSwcColorParam;
+//class QColorDialog;
 
 class Z3DSwcFilter : public Z3DGeometryFilter
 {
@@ -106,6 +109,9 @@ public:
   void changeGeometryMode()
   { m_renderingPrimitive.selectNext(); }
 
+public slots:
+  void prepareColor();
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);
@@ -117,22 +123,25 @@ signals:
   void extendSwcTreeNode(double x, double y, double z, double r);
 
 protected slots:
-  void prepareColor();
   void changeColorOption();
 
 protected:
-  using TreeParamMap = std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>>;
+//  using TreeParamMap = std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>>;
+  using TreeParamMap = std::map<void*, ZVec4Parameter*>;
+
+#if 0
   struct TreeColorParam {
     TreeParamMap m_mapper;
     std::vector<std::shared_ptr<ZVec4Parameter>> m_paramList;
     ZSwcColorScheme m_scheme;
     QString m_prefix;
   };
+#endif
 
   void prepareColorForImmutable();
   void setColorScheme();
   bool isBranchTypeColor() const;
-  void prepareColorMapper(const TreeParamMap &colorMapper);
+  void prepareColorMapper(ZSwcColorParam &colorMapper);
   glm::vec4 getTopologyColor(const Swc_Tree_Node *tn);
 
   void updateColorWidgets();
@@ -207,26 +216,33 @@ private:
 //  bool updateColorParameter(
 //      const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
-  bool updateTreeColorParameter(TreeColorParam &colorParam,
-      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
+//  void updateTreeColorWidget(ZSwcColorParam &param);
+//  bool updateTreeColorParameter(TreeColorParam &colorParam,
+//      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
 
   bool updateIndividualColorParameter(
       const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
   bool updateRandomColorParameter(
       const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
-  std::shared_ptr<ZVec4Parameter> getTreeColorParam(TreeColorParam &colorParam, int index);
-  std::shared_ptr<ZVec4Parameter> getIndvidualColorParam(int index);
-  std::shared_ptr<ZVec4Parameter> getRandomColorParam(int index);
+//  std::shared_ptr<ZVec4Parameter> getTreeColorParam(TreeColorParam &colorParam, int index);
+//  std::shared_ptr<ZVec4Parameter> getIndvidualColorParam(int index);
+//  std::shared_ptr<ZVec4Parameter> getRandomColorParam(int index);
 
 //  bool updateColorParameter(EColorMode mode);
-  std::map<ZSwcTree*, size_t> getSourceIndexMapper() const;
-  bool removeObsoleteColorparam(
-      TreeColorParam &param,
-      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
+//  std::map<ZSwcTree*, size_t> getSourceIndexMapper() const;
+//  bool removeObsoleteColorparam(
+//      TreeColorParam &param,
+//      const std::map<ZSwcTree *, size_t> &sourceIndexMapper);
+  void removeObsoleteColorParam(const std::vector<ZVec4Parameter*> &paramList);
+  void addNewColorParam(const std::vector<ZVec4Parameter*> &paramList);
+
   void removeTreeColorWidget();
-  void updateTreeColorWidget(TreeColorParam &param);
-  void addTreeColorWidget(TreeColorParam &param);
+  void removeTreeColorWidget(ZSwcColorParam &param);
+  void updateTreeColorWidget(ZSwcColorParam &param);
+  void addTreeColorWidget(ZSwcColorParam &param);
+
+  void prepareIntrinsicColor();
 
 private:
   Z3DLineRenderer m_lineRenderer;
@@ -238,8 +254,10 @@ private:
   ZStringIntOptionParameter m_colorMode;
 
   /*Color widget parameters*/
-  TreeColorParam m_individualColorParam;
-  TreeColorParam m_randomColorParam;
+  std::unique_ptr<ZSwcColorParam> m_individualColorParam;
+  std::unique_ptr<ZSwcColorParam> m_randomColorParam;
+//  TreeColorParam m_individualColorParam;
+//  TreeColorParam m_randomColorParam;
 //  TreeParamMap m_individualTreeColorMapper;
 //  std::vector<std::shared_ptr<ZVec4Parameter> > m_individualTreeColorList;
 
@@ -290,18 +308,18 @@ private:
   std::vector<glm::vec4> m_pointColors;
   std::vector<glm::vec4> m_pointPickingColors;
 
-  std::vector<std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*>>> m_decompsedNodePairs;
+  using SwcTreeNodePair = std::pair<Swc_Tree_Node*, Swc_Tree_Node*>;
+  std::vector<std::vector<SwcTreeNodePair>> m_decompsedNodePairs;
   std::vector<std::vector<Swc_Tree_Node*>> m_decomposedNodes;
 
   std::map<ZSwcTree*, std::vector<Swc_Tree_Node*>> m_decomposedNodeMap;
   std::map<ZSwcTree*, std::vector<Swc_Tree_Node*>> m_sortedNodeMap;
-  std::map<ZSwcTree*, std::vector<
-      std::pair<Swc_Tree_Node*, Swc_Tree_Node*>>> m_decomposedNodePairMap;
+  std::map<ZSwcTree*, std::vector<SwcTreeNodePair>> m_decomposedNodePairMap;
 
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
-  int m_maxType;
+  int m_maxType = 0;
 
   std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   bool m_dataIsInvalid = false;
@@ -321,8 +339,11 @@ private:
 
   QVector<QString> m_guiNameList;
 
+//  QColorDialog *m_colorDlg = nullptr;
+
   mutable QMutex m_nodeSelectionMutex;
   mutable QMutex m_dataValidMutex;
+//  mutable QMutex m_widgetsGroupMutex;
 };
 
 #endif // Z3DSWCFILTER_H

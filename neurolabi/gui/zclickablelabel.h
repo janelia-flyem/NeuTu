@@ -2,7 +2,9 @@
 #define ZCLICKABLELABEL_H
 
 #include <QLabel>
+#include <QMutex>
 
+class QColorDialog;
 class ZColorMapParameter;
 
 class Z3DTransferFunctionParameter;
@@ -20,10 +22,13 @@ class ZClickableLabel : public QWidget
 Q_OBJECT
 public:
   explicit ZClickableLabel(QWidget* parent = 0, Qt::WindowFlags f = 0);
+  ~ZClickableLabel();
+
+  void setSyncMutex(QMutex *m) { m_syncMutex = m; }
 
 signals:
-
   void clicked();
+
 
 protected:
   virtual void mousePressEvent(QMouseEvent* ev) override;
@@ -34,6 +39,8 @@ protected:
 
   // default implement is emit the signal
   virtual void labelClicked();
+
+  QMutex *m_syncMutex = nullptr;
 };
 
 class ZClickableColorLabel : public ZClickableLabel
@@ -47,6 +54,8 @@ public:
   explicit ZClickableColorLabel(ZDVec4Parameter* color, QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   explicit ZClickableColorLabel(ZDVec3Parameter* color, QWidget* parent = 0, Qt::WindowFlags f = 0);
+
+  ~ZClickableColorLabel();
 
   void setWidth(int w) { m_width = w; }
   void setHeight(int h) { m_height = h; }
@@ -65,6 +74,12 @@ protected:
   virtual bool getTip(const QPoint& p, QRect* r, QString* s) override;
 
   virtual void labelClicked() override;
+  void initColorDlg();
+
+
+protected slots:
+  void setColor(const QColor &color);
+  void updateColor();
 
 private:
   QColor toQColor();
@@ -75,6 +90,7 @@ private:
   int m_width = 50;
   int m_height = 33;
   int m_isClickable = true;
+  QColorDialog *m_colorDlg =nullptr;
 };
 
 class ZClickableColorMapLabel : public ZClickableLabel

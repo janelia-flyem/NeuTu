@@ -11,7 +11,7 @@
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
-#include "zparameterarray.h"
+#include "widgets/zparameterarray.h"
 #include "zstackmvc.h"
 #include "zstackdoc.h"
 #include "zflyemcontrolform.h"
@@ -179,7 +179,7 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   dlg->setLayout(layout);
 
   layout->addWidget(ZWidgetFactory::MakeLabledEditWidget(
-                      "test", ZWidgetFactory::SPACER_NONE, dlg));
+                      "test", ZWidgetFactory::ESpacerOption::NONE, dlg));
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(dlg);
@@ -353,7 +353,7 @@ void ZDialogFactory::About(QWidget *parent)
 
 void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
 {
-  if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
       switch (msg.getType()) {
       case neutube::EMessageType::INFORMATION:
         QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());

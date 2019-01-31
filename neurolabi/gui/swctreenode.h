@@ -7,9 +7,9 @@
 #include <map>
 
 #include "tz_swc_tree.h"
-#include "neutube_def.h"
-#include "zcuboid.h"
-#include "zpoint.h"
+#include "common/neutube_def.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zpoint.h"
 
 class ZWeightedPointArray;
 class ZStack;

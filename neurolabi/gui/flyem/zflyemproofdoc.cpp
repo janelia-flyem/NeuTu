@@ -322,7 +322,8 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
   if (msg.isEmpty()) {
     msg = "No body selected.";
   } else {
-    msg += " selected.";
+    msg = "Body selection: " + msg;
+//    msg += " selected.";
   }
 
   return msg;
@@ -476,7 +477,7 @@ void ZFlyEmProofDoc::cleanBodyAnnotationMap()
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-      LWARN() << "Inconsistent body selection: " << bodyId;
+      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
       keysToRemove.push_back(bodyId);
     }
   }
@@ -497,7 +498,9 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
       emit messageGenerated(
             ZWidgetMessage(
               QString("Inconsistent body selection: %1").arg(bodyId),
-              neutube::EMessageType::WARNING));
+              neutube::EMessageType::WARNING,
+              ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+              ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
   }
 }
@@ -649,6 +652,16 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!getMergeProject()->isMergableStatus(anno.getStatus())) {
+      ZDialogFactory::Warn(
+            "Cannot Merge",
+            QString("Body (%1) with status %2 cannot be merged with any other body.").
+            arg(iter.key()).arg(anno.getStatus().c_str()),
+            NULL);
+      okToContinue = false;
+      break;
+    }
+
     if (!anno.getName().empty()) {
       uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
 
@@ -658,25 +671,9 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
       nameMap[mappedBodyId].append(anno.getName().c_str());
 //      nameMap[iter.key()] = anno.getName().c_str();
     }
-//    if (anno.getStatus() == "Finalized") {
-    /*
-    if (getMergeProject()->isFinalStatus(anno.getStatus())) {
-      finalizedBodyArray.push_back(iter.key());
-    }
-    */
   }
 
-//  if (!finalizedBodyArray.empty()) {
-//    QString detail = getAnnotationFinalizedWarningDetail(
-//          finalizedBodyArray, "Finalized");
-//    okToContinue = ZDialogFactory::Ask(
-//          "Merging Finalized Body",
-//          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
-//          detail,
-//          NULL);
-//  }
-
-  {
+  if (okToContinue) {
     QString msg = getMergeProject()->composeFinalStatusMessage(m_annotationMap);
     if (!msg.isEmpty()) {
       okToContinue = ZDialogFactory::Ask(
@@ -686,7 +683,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
     }
   }
 
-  {
+  if (okToContinue) {
     QString msg = getMergeProject()->composeStatusConflictMessage(m_annotationMap);
     if (!msg.isEmpty()) {
       okToContinue = ZDialogFactory::Ask(
@@ -834,7 +831,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getBookmarkKeyName());
     initData("keyvalue", target.getBodyAnnotationName());
     initData("keyvalue", target.getSplitLabelName());
-    initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
+    initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
   }
 }
 
@@ -937,7 +934,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     msg.appendMessage(detail);
     emit messageGenerated(msg);
   }
-  KLog() << ZLog::Category("profile") << ZLog::Duration(timer.elapsed())
+  KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
          << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
 }
 
@@ -1031,18 +1028,18 @@ void ZFlyEmProofDoc::loadRoiFunc()
 #endif
         obj->setColor(0, 255, 0);
         obj->setZOrder(2);
-        obj->setTarget(ZStackObject::TARGET_WIDGET);
+        obj->setTarget(ZStackObject::ETarget::WIDGET);
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         obj->useCosmeticPen(true);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
-        obj->setHitProtocal(ZStackObject::HIT_NONE);
+        obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
         //      addObject(obj);
-        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
         m_dataBuffer->deliver();
-        //          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
+        //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
       } else {
         delete obj;
       }
@@ -1057,7 +1054,7 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
 {
-  ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
+  ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
 
   return dynamic_cast<ZDvidGraySlice*>(obj);
@@ -1231,7 +1228,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
     obj->setDvidTarget(getDvidTarget());
   }
   */
-//  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
   UpdateDvidTargetForObject<ZDvidSparseStack>(this);
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
@@ -1298,7 +1295,7 @@ QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> objList =
-      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+      getObjectList(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE);
 
   QList<ZDvidSynapseEnsemble*> teList;
   for (QList<ZStackObject*>::iterator iter = objList.begin();
@@ -1682,7 +1679,7 @@ void ZFlyEmProofDoc::addTodoItem(
 void ZFlyEmProofDoc::addSynapse(
     const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1701,7 +1698,7 @@ void ZFlyEmProofDoc::moveSynapse(
     ZDvidSynapseEnsemble::EDataScope scope)
 {
 //  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1718,7 +1715,7 @@ void ZFlyEmProofDoc::moveSynapse(
 
 void ZFlyEmProofDoc::syncSynapse(const ZIntPoint &pt)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -1818,7 +1815,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
 
 void ZFlyEmProofDoc::highlightPsd(bool on)
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
@@ -2117,7 +2114,7 @@ const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_DVID_SPARSE_STACK,
+          ZStackObject::EType::DVID_SPARSE_STACK,
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
 }
 
@@ -2129,7 +2126,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getBodyForSplit()
 
 void ZFlyEmProofDoc::updateBodyObject()
 {
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->paintBuffer();
@@ -2449,9 +2446,9 @@ void ZFlyEmProofDoc::clearBodyMerger()
 
 void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZOUT(LTRACE(), 5) << "Update dvid label";
-  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2467,7 +2464,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
 
 void ZFlyEmProofDoc::allowDvidLabelSliceBlinking(bool on)
 {
-  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2488,7 +2485,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
   foreach (ZObject3dScan *obj, objList) {
     obj->setColor(getSeedColor(obj->getLabel()));
     obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
-    obj->setHitProtocal(ZStackObject::HIT_NONE);
+    obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
     obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
@@ -2498,7 +2495,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
   m_dataBuffer->addUpdate(
         objList.begin(), objList.end(),
-        ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
   m_dataBuffer->deliver();
 }
 
@@ -2508,7 +2505,7 @@ void ZFlyEmProofDoc::loadSplitTaskFromService()
   if (originalId > 0) {
     QList<ZStackObject*> seedList = ZServiceConsumer::ReadSplitTaskSeed(
           GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
-    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     getDataBuffer()->deliver();
   }
 }
@@ -2530,7 +2527,7 @@ int ZFlyEmProofDoc::removeDvidSparsevol(neutube::EAxis axis)
   int count = 0;
 
   TStackObjectList objList =
-      getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+      getObjectList(ZStackObject::EType::DVID_SPARSEVOL_SLICE);
 
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -2568,7 +2565,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
   ZDvidSparsevolSlice *obj = NULL;
   if (bodyId > 0) {
     obj = new ZDvidSparsevolSlice;
-    obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
     obj->setSliceAxis(labelSlice->getSliceAxis());
     obj->setReader(getSparseVolReader());
     //          obj->setDvidTarget(getDvidTarget());
@@ -2584,7 +2581,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
 
 void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
   if (labelSlice != NULL) {
 //    labelSlice->clearCache();
@@ -2607,7 +2604,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
 
 void ZFlyEmProofDoc::updateDvidLabelObjectSliently()
 {
-  updateDvidLabelObject(OBJECT_MODIFIED_SLIENT);
+  updateDvidLabelObject(EObjectModifiedMode::SLIENT);
 }
 
 #if 0
@@ -2615,7 +2612,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice()
 {
   ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
@@ -2673,7 +2670,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     std::string currentUserName = neutube::GetCurrentUserName();
     ZJsonArray bookmarkJson =
         m_dvidReader.readTaggedBookmark("user:" + currentUserName);
-    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     int bookmarkCount = 0;
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
@@ -2710,7 +2707,7 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZJsonArray jsonObj;
       jsonObj.decodeString(reader.getBuffer());
       if (!jsonObj.isEmpty()) {
-        beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+        beginObjectModifiedMode(EObjectModifiedMode::CACHE);
         for (size_t i = 0; i < jsonObj.size(); ++i) {
           ZJsonObject bookmarkObj =
               ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -2806,7 +2803,7 @@ void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
   ZOUT(LTRACE(), 5) << "Download synapses";
   QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
-//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
@@ -3141,7 +3138,7 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 {
   ZOUT(LTRACE(), 5) << "Find bookmark";
   const TStackObjectList &objList =
-      getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(*iter);
@@ -3182,11 +3179,11 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
   m_loadingAssignedBookmark = true;
 
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   if (!filePath.empty()) {
-//    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+//    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
 #if 1
-    TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    TStackObjectList objList = getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
@@ -3236,14 +3233,14 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bookmark->setBodyId(bodyId);
           bookmark->setRadius(5.0);
           bookmark->setColor(255, 0, 0);
-          bookmark->setHitProtocal(ZStackObject::HIT_NONE);
+          bookmark->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 //          bookmark->setHittable(false);
           if (text.startsWith("split") || text.startsWith("small split")) {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else {
-            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            bookmark->setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
           }
           if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
             bookmark->setChecked(true);
@@ -3356,7 +3353,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     const TStackObjectList &objList =
-        getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     ZJsonArray jsonArray;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -3383,7 +3380,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
-  case ZStackObject::TYPE_FLYEM_BOOKMARK:
+  case ZStackObject::EType::FLYEM_BOOKMARK:
 //    m_isCustomBookmarkSaved = false;
     if (!m_loadingAssignedBookmark) {
       emit userBookmarkModified();
@@ -3457,7 +3454,7 @@ void ZFlyEmProofDoc::updateMeshForSelected()
 void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->setAlpha(alpha);
     processObjectModified(slice->getTarget());
@@ -3471,7 +3468,7 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {
   return dynamic_cast<ZIntCuboidObj*>(
       getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_INT_CUBOID,
+        ZStackObject::EType::INT_CUBOID,
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
@@ -3651,7 +3648,7 @@ void ZFlyEmProofDoc::runSplitFunc(
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
       getDataBuffer()->addUpdate(
-            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+            obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     }
     getDataBuffer()->deliver();
 
@@ -3716,7 +3713,7 @@ void ZFlyEmProofDoc::runSplitFunc(
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
       getDataBuffer()->addUpdate(
-            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+            obj, ZStackDocObjectUpdate::EAction::ACTION_ADD_NONUNIQUE);
     }
     getDataBuffer()->deliver();
 
@@ -3741,7 +3738,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 
   ZUndoCommand *command = new ZUndoCommand("Update ROI");
 
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   /*
   ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
   if (roi == NULL) {
@@ -4042,7 +4039,7 @@ void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
@@ -4340,7 +4337,7 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
 void ZFlyEmProofDoc::executeRemoveBookmarkCommand()
 {
   QList<ZFlyEmBookmark*> bookmarkList =
-      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::EType::FLYEM_BOOKMARK);
   executeRemoveBookmarkCommand(bookmarkList);
 }
 
@@ -4626,7 +4623,7 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
       new ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem(
             this, pt.getX(), pt.getY(), pt.getZ(), command);
     }
-    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     pushUndoCommand(command);
     endObjectModifiedMode();
     processObjectModified();
@@ -4651,7 +4648,7 @@ void ZFlyEmProofDoc::executeRotateRoiPlaneCommand(int z, double theta)
       }
     }
     if (allCommand->childCount() > 0) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
       processObjectModified();
@@ -4679,7 +4676,7 @@ void ZFlyEmProofDoc::executeScaleRoiPlaneCommand(int z, double sx, double sy)
     }
 
     if (allCommand->childCount() > 0) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
       processObjectModified();
@@ -4694,7 +4691,7 @@ void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
   ZOUT(LTRACE(), 5) << "Copy bookmarks";
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
 
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZFlyEmBookmark*>::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = *iter;

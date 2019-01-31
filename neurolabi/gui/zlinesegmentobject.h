@@ -1,7 +1,7 @@
 #ifndef ZLINESEGMENTOBJECT_H
 #define ZLINESEGMENTOBJECT_H
 
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 #include <QPointF>
 #include <QColor>
@@ -37,7 +37,7 @@ public:
 
   void setFocusColor(const QColor &color);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 private:
   void computePlaneInersection(QPointF &lineStart, QPointF &lineEnd,

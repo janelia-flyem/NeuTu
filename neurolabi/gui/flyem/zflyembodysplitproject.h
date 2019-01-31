@@ -11,7 +11,7 @@
 #include "flyem/zflyembookmarklistmodel.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
 

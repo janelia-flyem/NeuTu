@@ -15,7 +15,7 @@ public:
   ZLocalRect(double x, double y, double z, double theta, double r);
 //  ZLocalRect(const ZLocalRect &rect);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   void toLocalNeuroseg(Local_Neuroseg *locseg) const;

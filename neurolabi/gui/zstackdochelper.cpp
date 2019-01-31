@@ -7,7 +7,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackview.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
 #include "dvid/zdvidsparsestack.h"
@@ -63,7 +63,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
   if (doc != NULL) {
     {
       const TStackObjectList &objList =
-          doc->getObjectList(ZStackObject::TYPE_DVID_TILE_ENSEMBLE);
+          doc->getObjectList(ZStackObject::EType::DVID_TILE_ENSEMBLE);
       if (!objList.isEmpty()) {
         ZDvidTileEnsemble *obj =
             dynamic_cast<ZDvidTileEnsemble*>(objList.first());
@@ -76,7 +76,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
 
     if (!m_hasCurrentZ) {
       const TStackObjectList &objList =
-          doc->getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+          doc->getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
       if (!objList.isEmpty()) {
         ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(objList.first());
         if (obj->isVisible()) {

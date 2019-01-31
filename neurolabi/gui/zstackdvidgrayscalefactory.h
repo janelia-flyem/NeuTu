@@ -3,7 +3,7 @@
 
 #include "zstackfactory.h"
 #include "dvid/zdvidtarget.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackDvidGrayscaleFactory : public ZStackFactory
 {

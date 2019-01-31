@@ -5,7 +5,8 @@
 #include <QStringList>
 #include <string>
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
+
 #include "tz_stdint.h"
 #include "zstackball.h"
 #include "zjsonobject.h"
@@ -16,8 +17,8 @@ public:
   ZFlyEmBookmark();
   ~ZFlyEmBookmark();
 
-  enum EBookmarkType {
-    TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
+  enum class EBookmarkType {
+    FALSE_MERGE, FALSE_SPLIT, LOCATION
   };
 
   /*
@@ -27,7 +28,7 @@ public:
   */
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+    return ZStackObject::EType::FLYEM_BOOKMARK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -90,7 +91,7 @@ public:
 
   void setCustom(bool state);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void addTag(const char* tag);
   void addTag(const std::string &tag);

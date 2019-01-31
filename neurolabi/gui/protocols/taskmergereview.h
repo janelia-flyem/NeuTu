@@ -2,7 +2,7 @@
 #define TASKMERGEREVIEW_H
 
 #include "protocols/taskprotocoltask.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include <QObject>
 #include <QTime>
 #include <QVector>

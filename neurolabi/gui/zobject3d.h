@@ -38,10 +38,10 @@ public:
   virtual ~ZObject3d();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_OBJ3D;
+    return ZStackObject::EType::OBJ3D;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

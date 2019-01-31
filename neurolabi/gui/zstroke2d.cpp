@@ -5,14 +5,14 @@
 #include <QBitmap>
 #include "neutubeconfig.h"
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
 #include "tz_geometry.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "tz_geo3d_utils.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
@@ -59,7 +59,7 @@ ZStroke2d::~ZStroke2d()
             << getSource();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
 
 void ZStroke2d::save(const char * /*filePath*/)
 {
@@ -285,7 +285,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   //z -= iround(painter.getOffset().z());
 
   QColor color = m_color;
-  if (sliceMode == DISPLAY_SLICE_SINGLE && m_z != z) {
+  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_SINGLE && m_z != z) {
     if (isEraser()) {
       return painted;
     }

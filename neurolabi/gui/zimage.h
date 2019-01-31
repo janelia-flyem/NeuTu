@@ -7,7 +7,7 @@
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
 #include "zglmutils.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zsttransform.h"
 #include "neutube.h"
 #include "zcontrastprotocol.h"
@@ -191,7 +191,7 @@ public:
     m_usingContrastProtocal = on;
   }
 
-  void loadHighContrastProtocal(const ZJsonObject &obj);
+  void loadContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
 //  void setContrastProtocol(double scale, double offset, bool nonlinear);
   void setContrastProtocol(const ZContrastProtocol &cp);

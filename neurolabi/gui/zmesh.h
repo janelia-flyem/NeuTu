@@ -65,10 +65,10 @@ public:
 
   void swap(ZMesh& rhs) noexcept;
 
-  virtual const std::string& className() const override;
+//  virtual const std::string& className() const override;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_MESH;
+    return ZStackObject::EType::MESH;
   }
 
   virtual void display(

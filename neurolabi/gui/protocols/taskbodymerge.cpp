@@ -16,9 +16,9 @@
 #include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackdocproxy.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 #include <limits>
 #include <random>
@@ -262,7 +262,7 @@ namespace {
 
   // The OpenTracing-style "span" used for logging the results of the current task.
 
-  std::unique_ptr<neuopentracing::Span> s_span;
+//  std::unique_ptr<neuopentracing::Span> s_span;
 }
 
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
@@ -700,8 +700,6 @@ void TaskBodyMerge::onLoaded()
 {
   LINFO() << "TaskBodyMerge: build version" << getBuildVersion() << ".";
 
-  s_span = neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
-
   m_usageTimer.start();
 
   showBirdsEyeView(true);
@@ -1036,7 +1034,7 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
         s_birdsEyeDockWidget = new QDockWidget("Bird's Eye View", window);
         window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
 
-        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::INIT_NORMAL, false, s_birdsEyeDockWidget);
+        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::EInitMode::NORMAL, false, s_birdsEyeDockWidget);
         s_birdsEyeView->canvas().setMinimumWidth(512);
         s_birdsEyeView->canvas().setMinimumHeight(512);
         s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());
@@ -1230,9 +1228,13 @@ void TaskBodyMerge::writeResult(const QString &result)
   // Populate the OpenTracing-style "span" with the results of this task, and log it
   // (via Kafka).
 
+  std::unique_ptr<neuopentracing::Span> s_span =
+      neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
   s_span->SetTag("client", "neu3");
   s_span->SetTag("version", getBuildVersion());
-  s_span->SetTag("duration", m_usageTimes.back());
+  if (!m_usageTimes.empty()) {
+    s_span->SetTag("duration", m_usageTimes.back());
+  }
   s_span->SetTag("category", "neu3.focusedMerging.result");
   for (auto it = json.begin(); it != json.end(); it++) {
     s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));

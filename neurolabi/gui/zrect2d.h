@@ -14,7 +14,7 @@ public:
   virtual ~ZRect2d();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_RECT2D;
+    return ZStackObject::EType::RECT2D;
   }
 
   void set(int x0, int y0, int width, int height);
@@ -35,7 +35,7 @@ public:
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
                EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
   bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;

@@ -1,11 +1,11 @@
 #ifndef ZINTCUBOIDFACE_H
 #define ZINTCUBOIDFACE_H
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include <vector>
 #include "tz_cuboid_i.h"
-#include "zpoint.h"
-#include "zintpoint.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintpoint.h"
 
 class ZIntCuboidFaceArray;
 class ZGraph;
@@ -134,7 +134,7 @@ public:
 
   void print() const;
 
-  void exportSwc(const std::string &filePath) const;
+//  void exportSwc(const std::string &filePath) const;
 
 public: //Routines developed for checking face orphans
   ZGraph* getConnection() const;

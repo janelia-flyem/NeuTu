@@ -2,7 +2,7 @@
 
 #include "z3dcameraparameter.h"
 #include "z3dtransformparameter.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QScrollArea>

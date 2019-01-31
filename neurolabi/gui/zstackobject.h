@@ -1,12 +1,12 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
-#include "zintpoint.h"
-#include "zsharedpointer.h"
+#include "geometry/zintpoint.h"
+#include "common/zsharedpointer.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -49,47 +49,47 @@ public:
   ZStackObject();
   virtual ~ZStackObject();
 
-  enum EType {
-    TYPE_UNIDENTIFIED = 0, //Unidentified type
-    TYPE_SWC,
-    TYPE_PUNCTUM,
-    TYPE_MESH,
-    TYPE_OBJ3D,
-    TYPE_STROKE,
-    TYPE_LOCSEG_CHAIN,
-    TYPE_CONN,
-    TYPE_OBJECT3D_SCAN,
-    TYPE_SPARSE_OBJECT,
-    TYPE_CIRCLE,
-    TYPE_STACK_BALL,
-    TYPE_STACK_PATCH,
-    TYPE_RECT2D,
-    TYPE_DVID_TILE,
-    TYPE_DVID_GRAY_SLICE,
-    TYPE_DVID_TILE_ENSEMBLE,
-    TYPE_DVID_LABEL_SLICE,
-    TYPE_DVID_SPARSE_STACK,
-    TYPE_DVID_SPARSEVOL_SLICE,
-    TYPE_STACK,
-    TYPE_SWC_NODE,
-    TYPE_3D_GRAPH,
-    TYPE_PUNCTA,
-    TYPE_FLYEM_BOOKMARK,
-    TYPE_INT_CUBOID,
-    TYPE_LINE_SEGMENT,
-    TYPE_SLICED_PUNCTA,
-    TYPE_DVID_SYNAPSE,
-    TYPE_DVID_SYNAPE_ENSEMBLE,
-    TYPE_3D_CUBE,
-    TYPE_DVID_ANNOTATION,
-    TYPE_FLYEM_TODO_ITEM,
-    TYPE_FLYEM_TODO_LIST,
-    TYPE_CROSS_HAIR
+  enum class EType {
+    UNIDENTIFIED = 0, //Unidentified type
+    SWC,
+    PUNCTUM,
+    MESH,
+    OBJ3D,
+    STROKE,
+    LOCSEG_CHAIN,
+    CONN,
+    OBJECT3D_SCAN,
+    SPARSE_OBJECT,
+    CIRCLE,
+    STACK_BALL,
+    STACK_PATCH,
+    RECT2D,
+    DVID_TILE,
+    DVID_GRAY_SLICE,
+    DVID_TILE_ENSEMBLE,
+    DVID_LABEL_SLICE,
+    DVID_SPARSE_STACK,
+    DVID_SPARSEVOL_SLICE,
+    STACK,
+    SWC_NODE,
+    GRAPH_3D,
+    PUNCTA,
+    FLYEM_BOOKMARK,
+    INT_CUBOID,
+    LINE_SEGMENT,
+    SLICED_PUNCTA,
+    DVID_SYNAPSE,
+    DVID_SYNAPE_ENSEMBLE,
+    CUBE,
+    DVID_ANNOTATION,
+    FLYEM_TODO_ITEM,
+    FLYEM_TODO_LIST,
+    CROSS_HAIR
   };
 
   static std::string GetTypeName(EType type);
 
-  enum Palette_Color {
+  enum class Palette_Color {
     BLUE = 0, GREEN, RED, ALPHA
   };
 
@@ -97,27 +97,29 @@ public:
     NORMAL, SOLID, BOUNDARY, SKELETON
   };
 
-  enum ETarget {
-    TARGET_NULL,
-    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
-    TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS, TARGET_3D_CANVAS
+  enum class ETarget {
+    NONE,
+    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
+    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D
   };
 
-  enum EDisplaySliceMode {
+  enum class EDisplaySliceMode {
     DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
-  enum EHitProtocal {
+  enum class EHitProtocal {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
   /*!
-   * \brief Name of the class
+   * \brief Name of the type
    *
    * This function is mainly used for debugging.
    */
-  virtual const std::string& className() const = 0;
+  std::string getTypeName() const;
+
+//  virtual const std::string& className() const = 0;
 
   /*!
    * \brief Set the selection state
@@ -202,11 +204,11 @@ public:
 
   bool isOpaque();
 
-  inline static void setDefaultPenWidth(double width) {
+  inline static void SetDefaultPenWidth(double width) {
       m_defaultPenWidth = width;
   }
 
-  inline static double getDefaultPenWidth() {
+  inline static double GetDefaultPenWidth() {
     return m_defaultPenWidth;
   }
 
@@ -343,7 +345,7 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_hitProtocal != HIT_NONE && isVisible();
+    return m_hitProtocal != EHitProtocal::HIT_NONE && isVisible();
   }
 
   inline void setHitProtocal(EHitProtocal protocal) {
@@ -369,10 +371,10 @@ public:
   void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
 
 public:
-  static bool isEmptyTree(const ZStackObject *obj);
-  static bool isSameSource(const std::string &s1, const std::string &s2);
-  static bool isSameClass(const std::string &s1, const std::string &s2);
-  static bool isSelected(const ZStackObject *obj);
+//  static bool isEmptyTree(const ZStackObject *obj);
+  static bool IsSameSource(const std::string &s1, const std::string &s2);
+  static bool IsSameClass(const std::string &s1, const std::string &s2);
+  static bool IsSelected(const ZStackObject *obj);
   template <typename T>
   static T* CastVoidPointer(void *p);
 
@@ -414,11 +416,12 @@ T* ZStackObject::CastVoidPointer(void *p)
 {
   return dynamic_cast<T*>(static_cast<ZStackObject*>(p));
 }
-
+#if 0
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \
   const std::string& c::className() const {\
     static const std::string name = #c;\
     return name; \
   }
+#endif
 
 #endif // ZSTACKOBJECT_H
