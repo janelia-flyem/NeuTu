@@ -56,7 +56,7 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec4Parameter* color, QWidget* paren
   connect(m_vec4Color, &ZVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 
-  initColorDlg();
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -69,7 +69,7 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter* color, QWidget* paren
   connect(m_vec3Color, &ZVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 
-  initColorDlg();
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -82,7 +82,7 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter* color, QWidget* pare
   connect(m_dvec4Color, &ZDVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 
-  initColorDlg();
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -95,7 +95,7 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter* color, QWidget* pare
   connect(m_dvec3Color, &ZDVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 
-  initColorDlg();
+//  initColorDlg();
 }
 
 ZClickableColorLabel::~ZClickableColorLabel()
@@ -104,9 +104,20 @@ ZClickableColorLabel::~ZClickableColorLabel()
   qDebug() << "ZClickableColorLabel " << this << " distroyed";
 #endif
 
-  m_colorDlg->reject();
-  m_colorDlg->setParent(nullptr);
-  m_colorDlg->deleteLater();
+  if (m_colorDlg) {
+    m_colorDlg->reject();
+    m_colorDlg->setParent(nullptr);
+    m_colorDlg->deleteLater();
+  }
+}
+
+QColorDialog* ZClickableColorLabel::getColorDlg()
+{
+  if (m_colorDlg == nullptr) {
+    initColorDlg();
+  }
+
+  return m_colorDlg;
 }
 
 void ZClickableColorLabel::initColorDlg()
@@ -170,13 +181,16 @@ void ZClickableColorLabel::setColor(const QColor &color)
 
 void ZClickableColorLabel::updateColor()
 {
-  setColor(m_colorDlg->currentColor());
+  setColor(getColorDlg()->currentColor());
 }
 
 
 void ZClickableColorLabel::labelClicked()
 {
   if (m_isClickable) {
+    getColorDlg()->show();
+    getColorDlg()->raise();
+#if 0
     if (m_colorDlg) {
 #ifdef _DEBUG_
       qDebug() << "ZClickableColorLabel::labelClicked in " << this;
@@ -190,6 +204,7 @@ void ZClickableColorLabel::labelClicked()
         setColor(dlg.selectedColor());
       }
     }
+#endif
   }
 }
 

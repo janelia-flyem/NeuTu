@@ -9,7 +9,7 @@
 #include "z3dvolume.h"
 #include "z3dtransformparameter.h"
 #include "zmesh.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include <vector>
 #include "z3dvolumeraycasterrenderer.h"
 #include "z3dvolumeslicerenderer.h"

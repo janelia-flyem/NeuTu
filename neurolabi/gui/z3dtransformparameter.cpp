@@ -1,6 +1,6 @@
 #include "z3dtransformparameter.h"
 
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include <QWidget>
 #include <QGroupBox>
 #include <QPushButton>

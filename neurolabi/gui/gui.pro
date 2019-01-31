@@ -331,7 +331,6 @@ HEADERS += mainwindow.h \
     zcolormapeditor.h \
     zselectfilewidget.h \
     zcolormapwidgetwitheditorwindow.h \
-    zwidgetsgroup.h \
     zspinbox.h \
     zcombobox.h \
     zspinboxwithslider.h \
@@ -984,7 +983,6 @@ SOURCES += main.cpp \
     zcurve.cpp \
     zselectfilewidget.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
-    zwidgetsgroup.cpp \
     zspinbox.cpp \
     zcombobox.cpp \
     zspinboxwithslider.cpp \
