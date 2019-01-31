@@ -7,14 +7,14 @@
 #include <QSharedPointer>
 #include <QMap>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zactionfactory.h"
 
 class QWidget;
@@ -57,6 +57,7 @@ class NeuPrintQueryDialog;
 class ZActionLibrary;
 class NeuPrintReader;
 class NeuprintSetupDialog;
+class ZContrastProtocalDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -282,6 +283,7 @@ public slots:
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
 
+  void tuneGrayscaleContrast();
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
 
@@ -466,10 +468,16 @@ private slots:
   void goToPosition();
   void enableNameColorMap(bool on);
   void toggleBodyColorMap();
+  void updateTmpContrast();
+  void resetContrast();
+  void saveTmpContrast();
 
 private:
   void init();
   void initBodyWindow();
+
+  void updateContrast(const ZJsonObject &protocolJson, bool hc);
+
   void launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
@@ -504,6 +512,8 @@ private:
   void makeOrthoWindow();
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
+
+  void log3DWindowEvent(const std::string &windowName, const std::string &action);
 
   void showWindow(Z3DWindow *&window, std::function<void(void)> _makeWindow,
                   int tab, const QString &title);
@@ -551,6 +561,7 @@ private:
   ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 //  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
+  ZContrastProtocalDialog* getContrastDlg();
 
   template<typename T>
   FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
@@ -606,6 +617,7 @@ protected:
   ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
+  ZContrastProtocalDialog *m_contrastDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;
@@ -709,8 +721,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          panel, SLOT(enableNameColorMap(bool)));
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
-  connect(panel, SIGNAL(queryingBody()),
-          this, SLOT(queryBodyByRoi()));
+//  connect(panel, SIGNAL(queryingBody()),
+//          this, SLOT(queryBodyByRoi()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
   connect(panel, SIGNAL(exportingSelectedBodyLevel()),

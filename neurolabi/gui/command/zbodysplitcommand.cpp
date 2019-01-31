@@ -417,7 +417,7 @@ void ZBodySplitCommand::processResult(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
         if (!splitTaskKey.empty()) {
           QString refPath = ZDvidPath::GetResultKeyPath(
-                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+                ZDvidData::GetName<QString>(ZDvidData::ERole::SPLIT_GROUP),
                 ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
           std::cout << "Writing result summary to " << refPath.toStdString()
                     << std::endl;
@@ -446,7 +446,7 @@ void ZBodySplitCommand::processResult(
 
         if (!splitTaskKey.empty()) {
           refPath = ZDvidPath::GetResultKeyPath(
-                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+                ZDvidData::GetName<QString>(ZDvidData::ERole::SPLIT_GROUP),
                 ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
           refJson.setEntry(
                 "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
@@ -475,7 +475,7 @@ void ZBodySplitCommand::processResult(
       }
 
 //      if (!splitTaskKey.empty()) {
-//          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+//          writer->deleteKey(ZDvidData::GetName(ZDvidData::ERole::ROLE_SPLIT_TASK_KEY),
 //                            splitTaskKey);
 //      }
     } else {

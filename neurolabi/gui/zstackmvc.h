@@ -7,8 +7,8 @@
 #include <QLayout>
 #include <QThread>
 
-#include "zsharedpointer.h"
-#include "neutube_def.h"
+#include "common/zsharedpointer.h"
+#include "common/neutube_def.h"
 //#include "zwidgetmessage.h"
 
 class ZStackDoc;

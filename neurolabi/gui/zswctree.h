@@ -14,9 +14,9 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-//#include "zpoint.h"
+//#include "geometry/zpoint.h"
 #include "zswcpath.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 
@@ -128,10 +128,10 @@ public:
   ~ZSwcTree();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_SWC;
+    return ZStackObject::EType::SWC;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   friend void swap(ZSwcTree& first, ZSwcTree& second);
   ZSwcTree& operator=(const ZSwcTree &other);

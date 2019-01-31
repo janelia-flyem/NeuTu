@@ -21,6 +21,7 @@
 #include "zstring.h"
 #include "zfiletype.h"
 #include "zobject3d.h"
+#include "zpunctum.h"
 
 using namespace std;
 
@@ -285,7 +286,7 @@ void ZStackDocCommand::SwcEdit::TranslateRoot::undo()
 {
   startUndo();
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (int i = 0; i < m_doc->getSwcList().size(); i++) {
     m_doc->removeObject(m_doc->getSwcTree(i), true);
   }
@@ -348,7 +349,7 @@ void ZStackDocCommand::SwcEdit::Rescale::undo()
   startUndo();
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   m_doc->removeAllSwcTree(true);
 
 //  for (QList<ZSwcTree*>::iterator iter = m_doc->getSwcIteratorBegin();
@@ -371,7 +372,7 @@ void ZStackDocCommand::SwcEdit::Rescale::undo()
 void ZStackDocCommand::SwcEdit::Rescale::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   m_swcList.clear();
 
@@ -416,7 +417,7 @@ void ZStackDocCommand::SwcEdit::RescaleRadius::undo()
 {
   startUndo();
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   m_doc->removeAllSwcTree(true);
   m_doc->addSwcTree(m_swcList);
@@ -467,7 +468,7 @@ void ZStackDocCommand::SwcEdit::ReduceNodeNumber::undo()
 {
   startUndo();
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   m_doc->removeAllSwcTree(true);
   m_doc->addSwcTree(m_swcList);
   m_swcList.clear();
@@ -567,7 +568,7 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
 {
   startUndo();
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   m_doc->removeObject(m_tree);
   m_doc->setSwcSelected(m_tree, false);
   m_doc->deselectSwcTreeNode(m_node);
@@ -1415,7 +1416,7 @@ ZStackDocCommand::SwcEdit::CompositeCommand::~CompositeCommand()
 void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -1432,7 +1433,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
   startUndo();
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -1900,7 +1901,7 @@ void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
 {
   startUndo();
   if (m_doc != NULL) {
-    m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
     for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
          iter != m_emptyTreeSet.end(); ++iter) {
       m_doc->addObject(*iter, false);
@@ -1921,7 +1922,7 @@ ZStackDocCommand::SwcEdit::BreakForest::BreakForest(
 
   if (m_doc != NULL) {
     QList<ZSwcTree*> treeSet =
-        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
     //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
 
     if (!treeSet.empty()) {
@@ -1952,7 +1953,7 @@ ZStackDocCommand::SwcEdit::GroupSwc::GroupSwc(
   setText(QObject::tr("Group swc"));
 
   QList<ZSwcTree*> treeSet =
-      m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+      m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
   //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
 
   if (treeSet.size() > 1) {
@@ -1993,7 +1994,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 //  doc->blockSignals(true);
   //ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   for (int i = 0; i < m_selectedObject.size(); ++i) {
     doc->addObject(m_selectedObject[i], false);
@@ -2013,7 +2014,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
     const QList<ZStackObject *> &selectedObject) const
 {
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (QList<ZStackObject*>::const_iterator iter = selectedObject.begin();
        iter != selectedObject.end(); ++iter) {
     doc->processObjectModified(*iter);
@@ -2035,12 +2036,12 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
 
   size_t s = typeSet.size();
 
-  if (typeSet.count(ZStackObject::TYPE_PUNCTUM) > 0) {
+  if (typeSet.count(ZStackObject::EType::TYPE_PUNCTUM) > 0) {
     doc->notifyPunctumModified();
     --s;
   }
 
-  if (typeSet.count(ZStackObject::TYPE_SWC) > 0) {
+  if (typeSet.count(ZStackObject::EType::TYPE_SWC) > 0) {
     doc->notifySwcModified();
     --s;
   }
@@ -2329,14 +2330,14 @@ void ZStackDocCommand::TubeEdit::CutSegment::redo()
       m_doc->cutLocsegChain(chainList.at(i), &m_newChainList);
     }
   }
-  m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
+  m_doc->getSelected(ZStackObject::EType::LOCSEG_CHAIN).clear();
 }
 
 void ZStackDocCommand::TubeEdit::CutSegment::undo()
 {
   startUndo();
   // restore previous selection state
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   m_doc->deselectAllObject();
 
@@ -2379,7 +2380,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
       m_doc->breakLocsegChain(chainList.at(i), &m_newChainList);
     }
   }
-  m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
+  m_doc->getSelected(ZStackObject::EType::LOCSEG_CHAIN).clear();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
   //m_doc->selectedChains()->clear();
@@ -2388,7 +2389,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
 void ZStackDocCommand::TubeEdit::BreakChain::undo()
 {
   startUndo();
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   // restore previous selection state
   m_doc->deselectAllObject();
@@ -2424,7 +2425,7 @@ ZStackDocCommand::TubeEdit::RemoveSmall::~RemoveSmall()
 void ZStackDocCommand::TubeEdit::RemoveSmall::undo()
 {
   startUndo();
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   for (int i=0; i<m_chainList.size(); i++) {
     m_doc->addObject(m_chainList[i]);
@@ -2439,7 +2440,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::undo()
 
 void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
 {
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   QList<ZLocsegChain*> chainList = m_doc->getLocsegChainList();
   QMutableListIterator<ZLocsegChain*> chainIter(chainList);
@@ -2471,10 +2472,10 @@ ZStackDocCommand::TubeEdit::RemoveSelected::~RemoveSelected()
 
 void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
 {
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   QList<ZLocsegChain*> chainList = m_doc->getSelectedObjectList<ZLocsegChain>(
-        ZStackObject::TYPE_LOCSEG_CHAIN);
+        ZStackObject::EType::LOCSEG_CHAIN);
   for (QList<ZLocsegChain*>::iterator iter = chainList.begin();
        iter != chainList.end(); ++iter) {
     m_doc->removeObject(*iter, false);
@@ -2492,7 +2493,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
 void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
 {
   startUndo();
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   for (int i=0; i<m_chainList.size(); i++) {
     m_doc->addObject(m_chainList[i]);
@@ -2541,7 +2542,7 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
   //backup old objects
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   if (m_uniqueSource) {
     m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
@@ -2564,7 +2565,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
 void ZStackDocCommand::ObjectEdit::AddObject::undo()
 {
   startUndo();
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   m_doc->removeObject(m_obj, false);
 
@@ -2610,7 +2611,7 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
 void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
 {
   startUndo();
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   glm::vec3 pmv = m_punctaTransform * glm::vec3(m_x, m_y, m_z);
   glm::vec3 smv = m_swcTransform * glm::vec3(m_x, m_y, m_z);
@@ -2639,7 +2640,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   // restore selection state
   m_doc->blockSignals(true);
   m_doc->deselectAllObject();
-  m_doc->setPunctumSelected(m_punctaList.begin(), m_punctaList.end(), true);
+  m_doc->setObjectSelected(m_punctaList, true);
   m_doc->setSwcSelected(m_swcList, true);
   //  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
   m_doc->setSwcTreeNodeSelected(m_swcNodeList.begin(), m_swcNodeList.end(), true);
@@ -2662,10 +2663,10 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   m_swcMoved = false;
   m_punctaMoved = false;
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   m_punctaList =
-      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::EType::PUNCTUM);
   if (!m_punctaList.empty())
     m_punctaMoved = true;
 
@@ -2674,7 +2675,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   if (!m_swcNodeList.empty())
     m_swcMoved = true;
 
-  m_swcList = m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
+  m_swcList = m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC);
   //m_swcList = *(m_doc->selectedSwcs());
   if (!m_swcList.empty())
     m_swcMoved = true;
@@ -2789,7 +2790,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
 //  m_doc->blockSignals(false);
@@ -2805,7 +2806,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
   startUndo();
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();

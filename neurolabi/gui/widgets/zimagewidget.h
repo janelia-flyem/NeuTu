@@ -11,7 +11,7 @@
 #include <QVector>
 #include <QKeyEvent>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zviewproj.h"
 
 class QPaintEvent;
@@ -308,6 +308,8 @@ private:
   bool m_isViewHintVisible = true;
   bool m_paintBlocked = false;
 //  QRect m_canvasRegion; //Whole canvas region
+
+  Qt::MouseButtons m_pressedButtons = Qt::NoButton;
 
   ZViewProj m_viewProj;
 

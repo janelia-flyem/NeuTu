@@ -6,12 +6,12 @@
 #if defined(_QT_GUI_USED_)
 #include "neutube.h"
 #else
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #endif
 #include "neutubeconfig.h"
 #include "zstring.h"
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 #if defined(_QT_GUI_USED_)
 #include "zdvidutil.h"
 #endif
@@ -168,6 +168,7 @@ std::string AppendQuery(const std::string &url, const std::string query)
   return newUrl;
 }
 
+
 template<typename T>
 std::string AppendQuery(
       const std::string &url, const std::pair<std::string,T> &query)
@@ -178,6 +179,13 @@ std::string AppendQuery(
   }
 
   return url;
+}
+
+template<typename T>
+std::string AppendQuery(
+      const std::string &url, const std::string &name, const T &value)
+{
+  return AppendQuery(url, std::pair<std::string,T>(name, value));
 }
 
 std::string AppendQuery(
@@ -251,8 +259,8 @@ std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 std::string ZDvidUrl::getMeshesTarsUrl()
 {
   return getDataUrl(
-        ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
+                           ZDvidData::ERole::BODY_LABEL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -265,8 +273,8 @@ std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
 
 std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2)
 {
-  ZString dataUrl = ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
-                                       ZDvidData::ROLE_BODY_LABEL,
+  ZString dataUrl = ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
+                                       ZDvidData::ERole::BODY_LABEL,
                                        m_dvidTarget.getBodyLabelName());
   ZString key1 = GetBodyKey(bodyId1) + ".tar";
   ZString key2 = GetBodyKey(bodyId2) + ".tar";
@@ -276,8 +284,8 @@ std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId
 std::string ZDvidUrl::getTarSupervoxelsUrl()
 {
   return getDataUrl(
-        ZDvidData::GetName(ZDvidData::ROLE_TAR_SUPERVOXELS,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
+                           ZDvidData::ERole::BODY_LABEL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -315,8 +323,8 @@ std::string ZDvidUrl::getSkeletonUrl() const
 std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
-        ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::SKELETON,
+                           ZDvidData::ERole::BODY_LABEL,
                            bodyLabelName));
 }
 
@@ -521,7 +529,7 @@ std::string ZDvidUrl::getSparsevolUrl(
 
 std::string ZDvidUrl::getSparsevolLastModUrl(uint64_t bodyId)
 {
-  if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
     return GetFullUrl(
           GetFullUrl(getSegmentationUrl(), "lastmod"), std::to_string(bodyId));
   }
@@ -666,7 +674,7 @@ std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
   if (m_dvidTarget.hasSparsevolSizeApi()) {
     url = getDataUrl(m_dvidTarget.getBodyLabelName());
     if (!url.empty()) {
-      url += "/" + ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_SIZE);
+      url += "/" + ZDvidData::GetName(ZDvidData::ERole::SPARSEVOL_SIZE);
       url += "/";
       url.appendNumber(bodyId);
     }
@@ -884,8 +892,8 @@ std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId) const
 std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
-        ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL,
-                           ZDvidData::ROLE_BODY_LABEL, bodyLabelName));
+        ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
+                           ZDvidData::ERole::BODY_LABEL, bodyLabelName));
 }
 
 std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
@@ -899,8 +907,8 @@ std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLa
   ZString str;
   str.appendNumber(bodyId);
 
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL,
-                                      ZDvidData::ROLE_BODY_LABEL, bodyLabelName),
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
+                                      ZDvidData::ERole::BODY_LABEL, bodyLabelName),
                    str + "_mraw");
 //  return getThumbnailUrl(bodyLabelName) + "/" + str + ".mraw";
 }
@@ -951,7 +959,7 @@ std::string ZDvidUrl::getCommitInfoUrl() const
 
 std::string ZDvidUrl::getSp2bodyUrl() const
 {
-  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_SP2BODY));
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::SP2BODY));
 }
 
 std::string ZDvidUrl::getSp2bodyUrl(const std::string &suffix) const
@@ -1082,15 +1090,15 @@ std::string ZDvidUrl::getKeyValuesUrl(const std::string &name) const
 
 std::string ZDvidUrl::getBodyAnnotationName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                            ZDvidData::ERole::BODY_LABEL,
                             m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) const
 {
-  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                                       ZDvidData::ROLE_BODY_LABEL,
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                                       ZDvidData::ERole::BODY_LABEL,
                                        bodyLabelName));
 }
 
@@ -1111,15 +1119,15 @@ std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
 
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
 {
-  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
-                                       ZDvidData::ROLE_BODY_LABEL,
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
+                                       ZDvidData::ERole::BODY_LABEL,
                                        bodyLabelName));
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId, const std::string &bodyName) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
-                                      ZDvidData::ROLE_BODY_LABEL,
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
+                                      ZDvidData::ERole::BODY_LABEL,
                                       bodyName), ZString::num2str(bodyId));
 }
 
@@ -1130,7 +1138,7 @@ std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId) const
 
 std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
 {
-  if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
     return GetFullUrl(getDataUrl(m_dvidTarget.getSegmentationName()),
                       "size/" + std::to_string(bodyId));
   }
@@ -1145,7 +1153,7 @@ std::string ZDvidUrl::getSupervoxelSizeUrl(uint64_t bodyId) const
 
 std::string ZDvidUrl::getBoundBoxUrl() const
 {
-  return getDataUrl(ZDvidData::ROLE_BOUND_BOX);
+  return getDataUrl(ZDvidData::ERole::BOUND_BOX);
 }
 
 std::string ZDvidUrl::getBoundBoxUrl(int z) const
@@ -1249,7 +1257,7 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
   }
 
   return GetFullUrl(GetKeyCommandUrl(
-        getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))), key);
+        getDataUrl(ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION))), key);
 }
 
 std::string ZDvidUrl::getSplitUrl(
@@ -1329,7 +1337,7 @@ std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
 
 std::string ZDvidUrl::getBookmarkKeyUrl() const
 {
-  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY));
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BOOKMARK_KEY));
 }
 
 std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
@@ -1349,7 +1357,7 @@ std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
 
 std::string ZDvidUrl::getBookmarkUrl() const
 {
-  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK));
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BOOKMARK));
 }
 
 std::string ZDvidUrl::getBookmarkUrl(
@@ -1380,7 +1388,7 @@ std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
 
 std::string ZDvidUrl::getCustomBookmarkUrl(const std::string &userName) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), userName);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::BOOKMARK_KEY), userName);
 }
 
 std::string ZDvidUrl::getTileUrl(
@@ -1481,12 +1489,12 @@ std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 
 std::string ZDvidUrl::getManagedRoiUrl(const std::string &key) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), key);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::ROI_KEY), key);
 }
 
 std::string ZDvidUrl::getRoiMeshUrl(const std::string &key) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
@@ -1939,7 +1947,7 @@ std::string ZDvidUrl::getSplitResultKey(const uint64_t bodyId) const
 
 std::string ZDvidUrl::getTestTaskUrl(const std::string &key)
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_TEST_TASK_KEY), key);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::TEST_TASK_KEY), key);
 }
 
 /*

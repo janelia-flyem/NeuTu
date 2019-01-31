@@ -1,6 +1,6 @@
 #include "zdvidlabelslicehighrestask.h"
 //#include "zflyemproofmvc.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidlabelslice.h"
 

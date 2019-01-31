@@ -14,7 +14,7 @@ public:
   ~ZDvidSparsevolSlice();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SPARSEVOL_SLICE;
+    return ZStackObject::EType::DVID_SPARSEVOL_SLICE;
   }
 
   void setDvidTarget(const ZDvidTarget &target);

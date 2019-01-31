@@ -42,7 +42,7 @@ public:
   };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE;
+    return ZStackObject::EType::DVID_SYNAPE_ENSEMBLE;
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -197,7 +197,7 @@ public:
 
   void deselectUnsync(bool recursive);
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   bool hit(double x, double y, double z);
   bool hit(const ZIntPoint &pt);

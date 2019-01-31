@@ -5,7 +5,7 @@
 
 #include "zstack.hxx"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 using namespace std;
 

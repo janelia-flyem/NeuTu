@@ -2,9 +2,9 @@
 #define ZMOUSEEVENT_H
 
 #include <qnamespace.h>
-#include "zintpoint.h"
-#include "zpoint.h"
-#include "neutube_def.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
+#include "common/neutube_def.h"
 
 class QMouseEvent;
 
@@ -13,8 +13,8 @@ class ZMouseEvent
 public:
   ZMouseEvent();
 
-  enum EAction {
-    ACTION_NONE, ACTION_PRESS, ACTION_RELEASE, ACTION_MOVE, ACTION_DOUBLE_CLICK
+  enum class EAction {
+    NONE, PRESS, RELEASE, MOVE, DOUBLE_CLICK
   };
 
 //  enum ECoordinateSystem {

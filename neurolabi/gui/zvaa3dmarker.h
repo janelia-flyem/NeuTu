@@ -3,7 +3,7 @@
 
 #include <string>
 #include "tz_image_lib_defs.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "tz_swc_tree.h"
 
 //Marker field:

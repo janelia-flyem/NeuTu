@@ -23,7 +23,7 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
 
@@ -179,6 +179,7 @@ public:
 
   void findLoopInStack();
   void bwthin();
+  void skeletonize();
 
 public:
   void setViewInfo(const QString &info);

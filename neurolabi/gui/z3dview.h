@@ -36,8 +36,8 @@ class Z3DView : public QObject
 Q_OBJECT
 
 public:
-  enum EInitMode {
-    INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
+  enum class EInitMode {
+    NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME
   };
 
   Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);
@@ -74,6 +74,7 @@ public:
 
   void updateDocData(neutube3d::ERendererLayer layer);
   void updateCustomCanvas(const QImage &image);
+  void updateCanvas();
 
 public:
   inline QAction* zoomInAction()

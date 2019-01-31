@@ -327,7 +327,7 @@ void TaskFalseSplitReview::onToggleShowSupervoxels()
 
 void TaskFalseSplitReview::onHideSelected()
 {
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     m_hiddenIds.insert(mesh->getLabel());

@@ -308,14 +308,14 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       m_assignedBookmarkList.clear();
       m_userBookmarkList.clear();
       const TStackObjectList &objList = project->getDocument()->
-          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+          getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         //        if (bookmark->getBodyId() == project->getBodyId()) {
         if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
-        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_MERGE) {
           if (bookmark->getBodyId() == project->getBodyId()) {
             m_assignedBookmarkList.append(bookmark);
           }
@@ -365,7 +365,7 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
   m_userBookmarkList.clear();
   if (doc != NULL) {
     const TStackObjectList &objList =
-        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);

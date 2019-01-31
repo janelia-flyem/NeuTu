@@ -147,7 +147,7 @@ bool ZFlyEmRoiManager::hasRoi(const QString &name) const
 void ZFlyEmRoiManager::loadRoiList()
 {
   m_roiList = getDvidReader().readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str());
+        ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str());
   m_source = ESource::REF_DATA;
 
   if (m_roiList.isEmpty()) {
@@ -203,7 +203,7 @@ void ZFlyEmRoiManager::setMesh(const QString &str, ZMesh *mesh)
 void ZFlyEmRoiManager::updateMeshFromRefData(const QString &roiName)
 {
   ZJsonObject roiInfo = getDvidReader().readJsonObjectFromKey(
-        ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str(), roiName);
+        ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName);
   if (roiInfo.hasKey(neutube::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutube::json::REF_KEY));
 
@@ -259,7 +259,7 @@ void ZFlyEmRoiManager::loadRoi(
       }
     } else if (source == "mesh") {
       mesh = getDvidReader().readMesh(
-            ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY),
+            ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY),
             key.toStdString());
     }
     setMesh(roiName, mesh);
@@ -290,13 +290,13 @@ void ZFlyEmRoiManager::loadRoi(const QString &roiName, const QStringList &keyLis
     } else if (source == "mesh") {
       if (keyList.size() == 1) {
         mesh = getDvidReader().readMesh(
-              ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY),
+              ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY),
               keyList[0].toStdString());
       } else {
         std::vector<ZMesh*> meshList;
         for (const QString &key : keyList) {
           ZMesh *submesh = getDvidReader().readMesh(
-                ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY),
+                ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY),
                 key.toStdString());
           if (submesh != NULL) {
             meshList.push_back(submesh);

@@ -1,5 +1,5 @@
 #include "z3dcamerautils.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 namespace Z3DCameraUtils
 {

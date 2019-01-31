@@ -2,7 +2,7 @@
 #define ZINTCUBOIDOBJ_H
 
 #include "zstackobject.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZIntCuboidObj : public ZStackObject
 {
@@ -12,13 +12,13 @@ public:
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        neutube::EAxis sliceAxis) const;
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
   bool isOnSlice(int z, neutube::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_INT_CUBOID;
+    return ZStackObject::EType::INT_CUBOID;
   }
 
   void clear();

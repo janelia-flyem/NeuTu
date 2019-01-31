@@ -1,12 +1,13 @@
 #include "z3dpunctafilter.h"
 
+#include <algorithm>
+#include <iostream>
+
 #include "neutubeconfig.h"
 #include "zrandom.h"
 #include "zpunctumcolorscheme.h"
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
-#include <algorithm>
-#include <iostream>
 
 Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)

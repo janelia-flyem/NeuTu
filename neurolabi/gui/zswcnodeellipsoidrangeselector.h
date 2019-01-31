@@ -2,8 +2,8 @@
 #define ZSWCNODEELLIPSOIDRANGESELECTOR_H
 
 #include "zswcnodeselector.h"
-#include "zellipsoid.h"
-#include "zpoint.h"
+#include "geometry/zellipsoid.h"
+#include "geometry/zpoint.h"
 
 class ZSwcNodeEllipsoidRangeSelector : public ZSwcNodeSelector
 {

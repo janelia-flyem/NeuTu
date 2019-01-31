@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemqualityanalyzer.h"
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 #include "zswcgenerator.h"
 #include "zswctree.h"
 

@@ -2,14 +2,14 @@
 #define ZPAINTBUNDLE_H
 
 #include <QList>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 //#include "zstackdrawable.h"
 #include "swctreenode.h"
 #include "zstackball.h"
 #include "tz_math.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zswctree.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackobjectsourcefactory.h"
 
 #include <boost/iterator/iterator_facade.hpp>

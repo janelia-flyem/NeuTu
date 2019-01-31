@@ -2,10 +2,10 @@
 #define Z3DPUNCTAFILTER_H
 
 #include "z3dgeometryfilter.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "zwidgetsgroup.h"
 #include "zcolormap.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "z3dsphererenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zpunctum.h"

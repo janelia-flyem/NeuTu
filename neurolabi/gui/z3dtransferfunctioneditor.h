@@ -18,7 +18,7 @@
 
 #include <memory>
 #include "zglmutils.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 #include <QWidget>
 #include <QMenu>
 

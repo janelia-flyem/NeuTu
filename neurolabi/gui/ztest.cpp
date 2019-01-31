@@ -85,7 +85,7 @@
 #include "zdialogfactory.h"
 #include "zrandomgenerator.h"
 #include "zjsonobject.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zpixmap.h"
 #include "flyem/zfileparser.h"
 #include "zstackpatch.h"
@@ -101,14 +101,14 @@
 #include "flyem/zfileparser.h"
 #include "zdendrogram.h"
 #include "zobject3dscanarray.h"
-#include "zcuboid.h"
-#include "zstringparameter.h"
+#include "geometry/zcuboid.h"
+#include "widgets/zstringparameter.h"
 #include "zswcsizefeatureanalyzer.h"
 #include "zobject3darray.h"
 #include "zswcshollfeatureanalyzer.h"
 #include "zswcspatialfeatureanalyzer.h"
 #include "swctreenode.h"
-#include "zparameterarray.h"
+#include "widgets/zparameterarray.h"
 #include "zviewproj.h"
 #include "zswcnetwork.h"
 #include "zdoublevector.h"
@@ -140,7 +140,7 @@
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "imgproc/zstackbinarizer.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "zdebug.h"
 #include "tz_color.h"
 #include "zhdf5reader.h"
@@ -307,7 +307,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "znetbufferreader.h"
-#include "core/memorystream.h"
+#include "common/memorystream.h"
 #include "service/neuprintreader.h"
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
@@ -12300,7 +12300,7 @@ void ZTest::test(MainWindow *host)
   factory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
 
   Z3DWindow *window = factory->make3DWindow(frame->document());
-  window->setWindowType(NeuTube3D::TYPE_SKELETON);
+  window->setWindowType(neutube3d::EWindowType::TYPE_SKELETON);
   window->readSettings();
 
   bodyViewers->addWindow(0, window, "test");
@@ -13207,7 +13207,6 @@ void ZTest::test(MainWindow *host)
   if (writer.open(target)) {
     writer.createData("labels64", "split");
   }
-
 #endif
 
 #if 0
@@ -19517,7 +19516,7 @@ void ZTest::test(MainWindow *host)
   bookmark.setCenter(1, 2, 3);
   bookmark.setBodyId(1);
   bookmark.setCustom(true);
-  bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+  bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_MERGE);
   bookmark.setUser("zhaot");
   bookmark.addUserTag();
 
@@ -24121,7 +24120,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   std::cout << ZDvidData::GetName(ZDvidData::ROLE_SPLIT_GROUP) << std::endl;
   qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP);
-  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY);
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ERole::ROLE_SPLIT_RESULT_KEY);
 
   qDebug() << ZDvidPath::GetResultPath("test", "data", true);
   qDebug() << ZDvidPath::GetResultKeyPath("test", "testkey");
@@ -25291,16 +25290,16 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZStackObjectInfo objInfo;
-  objInfo.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  objInfo.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   objInfo.print();
 
   ZStackObjectInfoSet infoSet;
   infoSet.add(objInfo);
-  infoSet.add(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
-  infoSet.add(ZStackObject::TARGET_OBJECT_CANVAS);
+  infoSet.add(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
+  infoSet.add(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
   infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-  infoSet.add(ZStackObject::TYPE_3D_CUBE);
-  infoSet.add(ZStackObject::TYPE_3D_CUBE, ZStackObjectInfo::STATE_ADDED);
+  infoSet.add(ZStackObject::TYPE_CUBE);
+  infoSet.add(ZStackObject::TYPE_CUBE, ZStackObjectInfo::STATE_ADDED);
   ZSwcTree tree;
   infoSet.add(tree);
   infoSet.add(tree);
@@ -27290,7 +27289,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::cout << ZStackObject::GetTypeName(ZStackObject::TYPE_SWC) << std::endl;
+  std::cout << ZStackObject::GetTypeName(ZStackObject::EType::TYPE_SWC) << std::endl;
 #endif
 
 
@@ -28003,7 +28002,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZFlyEmMisc::UploadRoi(
-        (GET_TEST_DATA_DIR + "/_flyem/roi/allneuropils").c_str(),
+        (GET_TEST_DATA_DIR + "/_flyem/roi/20190111").c_str(),
         (GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv").c_str(),
         writer);
 
@@ -28769,7 +28768,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   QElapsedTimer timer;
   timer.start();
   for (int i = 0; i < 1000; ++i) {
@@ -29257,6 +29255,138 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+//  std::vector<uint64_t> bodyList({895441451});
+  std::vector<uint64_t> bodyList = ZFlyEmMisc::LoadBodyList(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/test/body_list.txt");
+
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+//    reader->readBody(body, true, &obj);
+    reader->readBody(
+          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+
+    size_t byteCount = obj.getByteCount();
+    size_t voxelCount = obj.getVoxelNumber();
+    std::cout << body << ": #voxel=" << voxelCount << "; "
+              << obj.getBoundBox().toString() << "; "
+              << "#Byte=" << byteCount << std::endl;
+    size_t v = obj.getBoundBox().getVolume();
+    ZIntCuboid box = obj.getBoundBox();
+    std::cout << box.getWidth() << "x" << box.getHeight() << "x" << box.getDepth() << std::endl;
+    std::cout << "Compression ratio: " << double(v) / byteCount << std::endl;
+    std::cout << "CRV: " << double(voxelCount) / byteCount * 12 << std::endl;
+    std::cout << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  int blockCount = reader->readBodyBlockCount(799586652, 1);
+  std::cout << blockCount << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  std::vector<uint64_t> bodyList = ZFlyEmMisc::LoadBodyList(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/test/allbody.txt");
+
+  std::vector<qint64> ccaTime;
+  std::vector<size_t> bodySize;
+  std::vector<size_t> ccc;
+
+  QElapsedTimer timer;
+  timer.start();
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+    reader->readBody(
+          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+    timer.restart();
+    ccc.push_back(obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE).size());
+    ccaTime.push_back(timer.elapsed());
+    bodySize.push_back(obj.getSegmentNumber());
+//    std::cout << "CCA time: " << timer.elapsed() << " ms" << std::endl;
+//    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "Body Size:" << std::endl;
+  for (auto s : bodySize) {
+    std::cout << s << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "#CC: " << std::endl;
+  for (auto c : ccc) {
+    std::cout << c << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "CCA time: " << std::endl;
+  for (auto t : ccaTime) {
+    std::cout << t << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->updateMaxLabelZoom();
+
+  QElapsedTimer timer;
+  timer.start();
+
+  std::vector<uint64_t> bodyList({5813101160});
+  std::vector<size_t> bodySize;
+  for (uint64_t body : bodyList) {
+    ZObject3dScan obj;
+    reader->readSupervoxel(body, true, &obj);
+    bodySize.push_back(obj.getSegmentNumber());
+
+    timer.restart();
+    obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE);
+    std::cout << "CCA time: " << timer.elapsed() << " ms" << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "Body Size:" << std::endl;
+  for (auto s : bodySize) {
+    std::cout << s << std::endl;
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "40c2", 7000);
+  reader.open(target);
+
+  ZDvidRoi roi;
+  reader.readRoi("ROI_chiasm_body2", &roi);
+  std::cout << "Volume: " << roi.getVolume() << std::endl;
+#endif
+
+#if 0
+  std::cout << ZStackObject::GetTypeName(ZStackObject::EType::SWC) << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("MB_Test");
+
+  writer->createData("keyvalue", "test3");
+
+  std::cout << writer->isStatusOk() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

@@ -21,7 +21,7 @@
 #include "zstackobjectaccessor.h"
 #include "zgraphptr.h"
 #include "zstackutil.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -1279,7 +1279,7 @@ void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
       obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setSource(
             ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
-      obj->setHitProtocal(ZStackObject::HIT_NONE);
+      obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
       obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);
       obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);

@@ -1,6 +1,6 @@
 #include "zstackobjectpainter.h"
 #include "zpainter.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 #include "tz_utilities.h"
 
 ZStackObjectPainter::ZStackObjectPainter()

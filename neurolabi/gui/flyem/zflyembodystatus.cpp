@@ -11,6 +11,7 @@ const char *ZFlyEmBodyStatus::KEY_PRIORITY = "priority";
 const char *ZFlyEmBodyStatus::KEY_PROTECTION = "protection";
 const char *ZFlyEmBodyStatus::KEY_EXPERT = "expert";
 const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
+const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)
@@ -25,6 +26,7 @@ void ZFlyEmBodyStatus::reset()
   m_protection = 0;
   m_isExpertStatus = false;
   m_isFinal = false;
+  m_isMergable = true;
 }
 
 int ZFlyEmBodyStatus::getPriority() const
@@ -52,6 +54,11 @@ void ZFlyEmBodyStatus::setFinal(bool on)
   m_isFinal = on;
 }
 
+void ZFlyEmBodyStatus::setMergable(bool on)
+{
+  m_isMergable = on;
+}
+
 void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
 {
   reset();
@@ -61,6 +68,7 @@ void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
   m_protection = parser.getValue<int>(obj, KEY_PROTECTION, 0);
   m_isExpertStatus = parser.getValue(obj, KEY_EXPERT, false);
   m_isFinal = parser.getValue(obj, KEY_FINAL, false);
+  m_isMergable = parser.getValue(obj, KEY_MERGABLE, true);
 }
 
 ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
@@ -71,6 +79,7 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
    obj.setEntry(KEY_PROTECTION, m_protection);
    obj.setEntry(KEY_EXPERT, m_isExpertStatus);
    obj.setEntry(KEY_FINAL, m_isFinal);
+   obj.setEntry(KEY_MERGABLE, m_isMergable);
 
    return obj;
 }
@@ -110,6 +119,11 @@ std::string ZFlyEmBodyStatus::GetExpertStatus()
 bool ZFlyEmBodyStatus::isFinal() const
 {
   return m_isFinal;
+}
+
+bool ZFlyEmBodyStatus::isMergable() const
+{
+  return m_isMergable;
 }
 
 bool ZFlyEmBodyStatus::isExpertStatus() const

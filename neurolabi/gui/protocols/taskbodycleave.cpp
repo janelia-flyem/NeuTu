@@ -789,7 +789,7 @@ void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
     return;
   }
 
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
   // The text for each combobox item indicates the count the of seeds set for that item's color,
@@ -963,7 +963,7 @@ void TaskBodyCleave::onHideSelected()
     return;
   }
 
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     m_hiddenIds.insert(mesh->getLabel());
@@ -1470,13 +1470,13 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   requestJson["segmentation-instance"] = m_bodyDoc->getDvidTarget().getBodyLabelName().c_str();
   if (m_bodyDoc->usingOldMeshesTars()) {
     requestJson["mesh-instance"] =
-        ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
+                           ZDvidData::ERole::BODY_LABEL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   } else {
     requestJson["mesh-instance"] =
-        ZDvidData::GetName(ZDvidData::ROLE_TAR_SUPERVOXELS,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
+                           ZDvidData::ERole::BODY_LABEL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 

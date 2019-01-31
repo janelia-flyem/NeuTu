@@ -45,13 +45,13 @@ void ZFlyEmBookmarkAnnotationDialog::setBodyId(uint64_t bodyId)
 void ZFlyEmBookmarkAnnotationDialog::setType(ZFlyEmBookmark::EBookmarkType type)
 {
   switch (type) {
-  case ZFlyEmBookmark::TYPE_FALSE_SPLIT:
+  case ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT:
     ui->typeComboBox->setCurrentIndex(0);
     break;
-  case ZFlyEmBookmark::TYPE_FALSE_MERGE:
+  case ZFlyEmBookmark::EBookmarkType::FALSE_MERGE:
     ui->typeComboBox->setCurrentIndex(1);
     break;
-  case ZFlyEmBookmark::TYPE_LOCATION:
+  case ZFlyEmBookmark::EBookmarkType::LOCATION:
     ui->typeComboBox->setCurrentIndex(2);
     break;
   }
@@ -61,14 +61,14 @@ ZFlyEmBookmark::EBookmarkType ZFlyEmBookmarkAnnotationDialog::getType() const
 {
   switch (ui->typeComboBox->currentIndex()) {
   case 0:
-    return ZFlyEmBookmark::TYPE_FALSE_SPLIT;
+    return ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT;
   case 1:
-    return ZFlyEmBookmark::TYPE_FALSE_MERGE;
+    return ZFlyEmBookmark::EBookmarkType::FALSE_MERGE;
   case 2:
-    return ZFlyEmBookmark::TYPE_LOCATION;
+    return ZFlyEmBookmark::EBookmarkType::LOCATION;
   default:
     break;
   }
 
-  return ZFlyEmBookmark::TYPE_LOCATION;
+  return ZFlyEmBookmark::EBookmarkType::LOCATION;
 }

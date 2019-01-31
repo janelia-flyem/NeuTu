@@ -1,7 +1,7 @@
 #ifndef ZWEIGHTEDPOINT_H
 #define ZWEIGHTEDPOINT_H
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZWeightedPoint : public ZPoint
 {

@@ -95,7 +95,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
 
-    if (m_volumeMode == neutube3d::VR_AUTO) {
+    if (m_volumeMode == neutube3d::EVolumeRenderingMode::VR_AUTO) {
       if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY ||
           doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT ||
           doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {

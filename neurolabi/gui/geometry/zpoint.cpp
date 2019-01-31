@@ -9,15 +9,15 @@
 #endif
 
 #include <stdio.h>
+#include <cstdio>
 
 #include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
 #include "tz_error.h"
-#include <cstdio>
 #include "tz_geo3d_utils.h"
 #include "zintpoint.h"
-#include "geometry/zgeometry.h"
+#include "zgeometry.h"
 
 const double ZPoint::MIN_DIST = 1e-5;
 

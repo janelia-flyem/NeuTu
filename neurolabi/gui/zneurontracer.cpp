@@ -17,7 +17,7 @@
 #include "tz_voxel_graphics.h"
 #include "zstack.hxx"
 #include "swc/zswcresampler.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "neutubeconfig.h"
 #include "imgproc/zstackprocessor.h"
 #include "zobject3darray.h"
@@ -28,7 +28,7 @@
 #include "zneurontracerconfig.h"
 #include "swc/zswcpruner.h"
 #include "tz_stack_threshold.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zweightedpoint.h"
 #include "zswcfactory.h"
 

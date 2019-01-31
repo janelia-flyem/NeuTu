@@ -5,7 +5,7 @@
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
 }
 
 ZStackPatch::~ZStackPatch()
@@ -106,4 +106,4 @@ void ZStackPatch::setFinalOffset(double dx, double dy)
   m_offset.set(dx, dy, m_offset.z());
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)

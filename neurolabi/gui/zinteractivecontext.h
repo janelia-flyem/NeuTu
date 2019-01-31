@@ -6,7 +6,7 @@
 #define ZINTERACTIVECONTEXT_H
 
 #include <QRect>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZPoint;
 class ZImageWidget;

@@ -6,9 +6,8 @@
 class ZFlyEmBodyEvent
 {
 public:
-  enum EAction {
-    ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
-    ACTION_UPDATE, ACTION_CACHE
+  enum class EAction {
+    NONE, REMOVE, ADD, FORCE_ADD, UPDATE, CACHE
   };
   typedef uint64_t TUpdateFlag;
 
@@ -96,7 +95,7 @@ public:
   static const TUpdateFlag UPDATE_SEGMENTATION;
 
 private:
-  EAction m_action = ACTION_NULL;
+  EAction m_action = EAction::NONE;
 
   ZFlyEmBodyConfig m_config;
 //    bool m_refreshing;

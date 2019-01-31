@@ -48,7 +48,7 @@ void ZMeshObjsModel::updateModelData()
   rootData << "Mesh" << "Source";
   ZOUT(LTRACE(), 5) << "Update mesh model";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_MESH)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::MESH)));
   setupModelData(m_rootItem);
   endResetModel();
 }
@@ -90,7 +90,7 @@ bool ZMeshObjsModel::needCheckbox(const QModelIndex &index) const
 
 void ZMeshObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  if (infoSet.contains(ZStackObject::TYPE_MESH)) {
+  if (infoSet.contains(ZStackObject::EType::MESH)) {
     updateModelData();
   }
 }

@@ -42,13 +42,16 @@
 #include "zobject3dfactory.h"
 #include "zmeshfactory.h"
 #include "z3dmeshfilter.h"
-#include "core/qthelper.h"
+#include "qt/core/qthelper.h"
 
 #include "widgets/zimagewidget.h"
 
 #include "zdialogfactory.h"
 #include "dialogs/zstackframesettingdialog.h"
 #include "dialogs/zautotracedialog.h"
+#include "dialogs/flyemskeletonizationdialog.h"
+#include "zstackskeletonizer.h"
+#include "zwindowfactory.h"
 
 #ifdef _DEBUG_2
 #include "dvid/zdvidgrayslicescrollstrategy.h"
@@ -344,11 +347,11 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
 //  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
 //          m_view, SLOT(redraw()));
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+//          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
           this, SLOT(changeWindowTitle(bool)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
@@ -410,14 +413,14 @@ void ZStackFrame::updateSignalSlot(T connectAction)
 
 void ZStackFrame::connectSignalSlot()
 {
-  updateSignalSlot(neutube::ConnectFunc);
+  updateSignalSlot(neutu::ConnectFunc);
 //  UPDATE_SIGNAL_SLOT(connect);
 }
 
 
 void ZStackFrame::disconnectAll()
 {
-  updateSignalSlot(neutube::DisconnectFunc);
+  updateSignalSlot(neutu::DisconnectFunc);
 //  UPDATE_SIGNAL_SLOT(disconnect);
 }
 
@@ -425,7 +428,7 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
     if (m_doc) {
-      updateSignalSlot(neutube::DisconnectFunc);
+      updateSignalSlot(neutu::DisconnectFunc);
       m_doc->removeUser(this);
 //      UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
@@ -437,7 +440,7 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
 
 void ZStackFrame::updateDocument()
 {
-  updateSignalSlot(neutube::ConnectFunc);
+  updateSignalSlot(neutu::ConnectFunc);
 
   updateTraceConfig();
 
@@ -834,7 +837,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      ZWindowFactory::Open3DWindow(this, Z3DView::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::EXCLUDE_VOLUME);
 //      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
@@ -1172,7 +1175,7 @@ QStringList ZStackFrame::toStringList() const
 
 void ZStackFrame::updateView()
 {
-  m_view->redraw(ZStackView::UPDATE_QUEUED);
+  m_view->redraw(ZStackView::EUpdateOption::QUEUED);
 }
 
 void ZStackFrame::undo()
@@ -1746,7 +1749,7 @@ void ZStackFrame::importPointList(const QString &filePath)
 {
   QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
   if (!puncta.isEmpty()) {
-    document()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    document()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
     foreach (ZPunctum* punctum, puncta) {
       document()->addObject(punctum);
     }
@@ -1837,7 +1840,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }
@@ -1999,7 +2002,7 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK ||
           frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
-        ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::EInitMode::EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         ZWindowFactory::Open3DWindow(frame);
@@ -2011,5 +2014,83 @@ void ZStackFrame::MessageProcessor::processMessage(
     break;
   default:
     break;
+  }
+}
+
+void ZStackFrame::skeletonize()
+{
+  FlyEmSkeletonizationDialog dlg;
+  if (dlg.exec() == QDialog::Accepted) {
+    ZStack *stack = document()->getStack();
+    //stack->binarize();
+
+    Stack *stackData = stack->c_stack();
+
+    //      ZStack backupStack;
+    ZObject3dScan *obj = NULL;
+    if (stackData == NULL) {
+      ZOUT(LTRACE(), 5) << "Skeletonization";
+      QList<ZSparseObject*> objList =
+          document()->getObjectList<ZSparseObject>();
+      if (!objList.isEmpty()) {
+        obj = new ZObject3dScan;
+        for (QList<ZSparseObject*>::iterator iter = objList.begin();
+             iter != objList.end(); ++iter) {
+          obj->concat(*(*iter));
+        }
+      }
+    }
+
+    ZSwcTree *wholeTree = NULL;
+    if (stackData != NULL || obj != NULL) {
+      ZStackSkeletonizer skeletonizer;
+      skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
+                                         dlg.getZInterval());
+      skeletonizer.setProgressReporter(document()->getProgressReporter());
+      skeletonizer.setRebase(true);
+      if (dlg.isExcludingSmallObj()) {
+        skeletonizer.setMinObjSize(dlg.sizeThreshold());
+      } else {
+        skeletonizer.setMinObjSize(0);
+      }
+
+      double distThre = -1.0;
+      if (!dlg.isConnectingAll()) {
+        distThre = dlg.distanceThreshold();
+      }
+      skeletonizer.setDistanceThreshold(distThre);
+
+      //skeletonizer.setResolution(1, 3);
+
+      skeletonizer.setLengthThreshold(dlg.lengthThreshold());
+      skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
+
+
+      if (dlg.isLevelChecked()) {
+        skeletonizer.setLevel(dlg.level());
+        skeletonizer.setLevelOp(dlg.getLevelOp());
+        //skeletonizer.useOriginalSignal(true);
+      }
+
+      if (stackData != NULL) {
+        wholeTree = skeletonizer.makeSkeleton(stackData);
+      } else {
+        wholeTree = skeletonizer.makeSkeleton(*obj);
+        delete obj;
+      }
+
+      wholeTree->translate(document()->getStackOffset());
+    }
+
+    if (wholeTree != NULL) {
+      wholeTree->addComment("skeleton");
+      executeAddObjectCommand(wholeTree);
+      ZWindowFactory::Open3DWindow(this, Z3DView::EInitMode::EXCLUDE_VOLUME);
+      //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+    } else {
+      ZDialogFactory::Error("Skeletonization failed", "No SWC tree generated.",
+                            this);
+    }
+
   }
 }

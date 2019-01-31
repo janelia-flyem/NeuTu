@@ -3,7 +3,7 @@
 #include <boost/math/constants/constants.hpp>
 
 #include "z3dcameraparameter.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "logging/zlog.h"
 
 Z3DInteractionHandler::Z3DInteractionHandler(const QString& name, QObject* parent)
@@ -153,16 +153,20 @@ void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
     if (isStateToggledOff(State::Rotate)) {
-      KLOG << ZLog::Interact() << ZLog::Description("Stop rotating camera")
-           << ZLog::Object(this);
+//      KLOG << ZLog::Interact() << ZLog::Description("Stop rotating camera")
+//           << ZLog::Handle(this);
+      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+           << ZLog::Action("stop rotate");
     }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
     emit cameraMoved();
     emit cameraRotated();
     if (isStateToggledOn(State::Rotate)) {
-      KLOG << ZLog::Interact() << ZLog::Description("Start rotating camera")
-           << ZLog::Object(this);
+      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+           << ZLog::Action("start rotate");
+//      KLOG << ZLog::Interact() << ZLog::Description("Start rotating camera")
+//           << ZLog::Handle(this);
     }
 
     updateLastState();
@@ -398,18 +402,26 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent* e, int /*unused*/, 
 #endif
 }
 
-void Z3DTrackballInteractionHandler::shift(const glm::ivec2& mouseStart, const glm::ivec2& mouseEnd, int w, int h)
+void Z3DTrackballInteractionHandler::shift(
+    const glm::ivec2& mouseStart, const glm::ivec2& mouseEnd, int w, int h)
 {
   glm::ivec4 viewport(0, 0, w, h);
-  float centerDepth = m_camera->get().worldToScreen(m_camera->get().center(), viewport).z;
-  glm::vec3 startInWorld = m_camera->get().screenToWorld(glm::vec3(glm::vec2(mouseStart), centerDepth), viewport);
-  glm::vec3 endInWorld = m_camera->get().screenToWorld(glm::vec3(glm::vec2(mouseEnd), centerDepth), viewport);
+  float centerDepth = m_camera->get().worldToScreen(
+        m_camera->get().center(), viewport).z;
+  glm::vec3 startInWorld = m_camera->get().screenToWorld(
+        glm::vec3(glm::vec2(mouseStart), centerDepth), viewport);
+  glm::vec3 endInWorld = m_camera->get().screenToWorld(
+        glm::vec3(glm::vec2(mouseEnd), centerDepth), viewport);
   glm::vec3 vec = endInWorld - startInWorld;
   if (m_moveObjects) {
     emit objectsMoved(vec.x, vec.y, vec.z);
+    KLOG << ZLog::Info() << ZLog::Object("object") << ZLog::Handle(this)
+         << ZLog::Action("move");
   } else {
     // camera move in opposite direction
     m_camera->setCamera(m_camera->get().eye() - vec, m_camera->get().center() - vec);
+    KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+         << ZLog::Action("pan");
   }
 }
 

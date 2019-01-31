@@ -3,7 +3,7 @@
 
 #include "zweightedpointarray.h"
 #include "tz_graph.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZCloudNetwork
 {

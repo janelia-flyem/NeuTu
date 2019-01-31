@@ -10,7 +10,7 @@
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "c_json.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zresolution.h"
 #include "zdvidutil.h"
 
@@ -25,7 +25,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = EKind::KIND_INVALID;
   m_bodyId = 0;
-  m_status = STATUS_NORMAL;
+  m_status = EStatus::STATUS_NORMAL;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -974,7 +974,7 @@ ZCuboid ZDvidAnnotation::getBoundBox() const
   return box;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
 
 ///////////////
 ZJsonObject ZDvidAnnotation::Relation::toJsonObject() const

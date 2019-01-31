@@ -1,8 +1,8 @@
 #ifndef ZDVIDBLOCKGRID_H
 #define ZDVIDBLOCKGRID_H
 
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 
 /*!
  * \brief The class of block grid

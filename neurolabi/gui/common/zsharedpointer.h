@@ -1,6 +1,8 @@
 #ifndef ZSHAREDPOINTER_H
 #define ZSHAREDPOINTER_H
 
+//Obsolete. Use std::shared_ptr instead.
+
 #include <utility>
 
 #if defined(__GLIBCXX__) && (__cplusplus < 201103L)

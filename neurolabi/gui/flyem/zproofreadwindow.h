@@ -5,7 +5,7 @@
 #include <QPalette>
 
 #include "tz_stdint.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
@@ -66,9 +66,8 @@ public slots:
   void presentSplitInterface(uint64_t bodyId);
   void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending = true, bool logging = true);
-  void dumpError(const QString &message, bool appending = true,
-                 bool logging = true);
+  void dump(const QString &message, bool appending = true);
+  void dumpError(const QString &message, bool appending = true);
   void dump(const ZWidgetMessage &msg);
 
   void startProgress();
@@ -114,7 +113,7 @@ private:
 
   void logMessage(const QString &msg);
   void logError(const QString &msg);
-  void logMessage(const ZWidgetMessage &msg);
+//  void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);
 
@@ -137,6 +136,7 @@ private:
   QAction *m_openSequencerAction = nullptr;
   QAction *m_openProtocolsAction = nullptr;
   QAction *m_contrastAction = nullptr;
+  QAction *m_tuneContrastAction = nullptr;
   QAction *m_smoothAction = nullptr;
   QAction *m_openTodoAction = nullptr;
   QAction *m_roiToolAction = nullptr;

@@ -8,7 +8,7 @@
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "tz_math.h"
 #include "zjsonobject.h"
 
@@ -1219,7 +1219,7 @@ void ZImage::updateContrast(bool usingContrast)
   enhanceContrast(m_usingContrastProtocal);
 }
 
-void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
+void ZImage::loadContrastProtocal(const ZJsonObject &obj)
 {
   m_contrastProtocol.load(obj);
 #if 0
@@ -1272,23 +1272,6 @@ void ZImage::enhanceContrast(bool highContrast)
 //        double s = m_grayScale;
         for (int i = 0; i < 256; ++i) {
           int v = m_contrastProtocol.mapGrey(i);
-#if 0
-          double v = (i + m_grayOffset) * s;
-
-          if (m_nonlinear) {
-            if (v < 0.0) {
-              v = 0.0;
-            } else {
-              v = sqrt(v / 255.0) * i;
-            }
-          }
-
-          if (v < 0.0) {
-            v = 0.0;
-          } else if (v > 255.0) {
-            v = 255.0;
-          }
-#endif
           colorTable[i] = iround(v);
         }
 
@@ -1306,20 +1289,6 @@ void ZImage::enhanceContrast(bool highContrast)
 //      double s = m_grayScale / 255.0;
       for (int i = 0; i < 256; ++i) {
         QColor color;
-#if 0
-        double v = (i + m_grayOffset) * s;
-        if (m_nonlinear) {
-          v = sqrt(v) * i / 255.0;
-        }
-//        v *= sqrt(v);
-//        v = v * 1.5;
-
-        if (v < 0.0) {
-          v = 0.0;
-        } else if (v > 1.0) {
-          v = 1.0;
-        }
-#endif
         int v = m_contrastProtocol.mapGrey(i);
 
         color.setRed(v);

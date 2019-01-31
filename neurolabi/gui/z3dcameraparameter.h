@@ -2,9 +2,9 @@
 #define ZCAMERAPARAMETER_H
 
 #include "z3dcamera.h"
-#include "znumericparameter.h"
-#include "zoptionparameter.h"
-#include "zparameter.h"
+#include "widgets/znumericparameter.h"
+#include "widgets/zoptionparameter.h"
+#include "widgets/zparameter.h"
 
 class ZJsonObject;
 

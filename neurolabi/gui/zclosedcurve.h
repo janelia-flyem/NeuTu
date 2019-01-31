@@ -1,7 +1,7 @@
 #ifndef ZCLOSEDCURVE_H
 #define ZCLOSEDCURVE_H
 
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 
 class ZJsonObject;
 class ZLineSegment;

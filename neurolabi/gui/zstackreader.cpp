@@ -1,6 +1,6 @@
 #include "zstackreader.h"
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 
 #if defined(_ENABLE_LIBDVIDCPP_)

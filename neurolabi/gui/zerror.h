@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "neutubeconfig.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 #define RECORD_ERROR(condition, msg)					\
 {                                                       \

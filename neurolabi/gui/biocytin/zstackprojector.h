@@ -7,7 +7,7 @@
 #include "zprogressable.h"
 #include "tz_fmatrix.h"
 #include "tz_image_lib_defs.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZStack;
 

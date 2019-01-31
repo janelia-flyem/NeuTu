@@ -17,7 +17,7 @@ class ZEllipse : public ZStackObject {
 public:
   ZEllipse(const QPointF &center, double rx, double ry);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]

@@ -1,14 +1,14 @@
 include($${PWD}/json.pri)
 include($${PWD}/mylib/mylib.pri)
 include($${PWD}/imgproc/imgproc.pri)
+include($${PWD}/common/common.pri)
+include($${PWD}/geometry/geometry.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
-   $${PWD}/zellipse.h \
    $${PWD}/zswctree.h \
    $${PWD}/zobject3d.h \
    $${PWD}/zcircle.h \
-   $${PWD}/zpoint.h \
    $${PWD}/zdirectionaltemplate.h \
    $${PWD}/zlocalrect.h \
    $${PWD}/zsinglechannelstack.h \
@@ -49,7 +49,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zsymmetricmatrix.h \
    $${PWD}/zsvggenerator.h \
    $${PWD}/zdendrogram.h \
-   $${PWD}/zcuboid.h \
    $${PWD}/ztest.h \
    $${PWD}/zstackptr.h \
    $${PWD}/zswcfeatureanalyzer.h \
@@ -70,7 +69,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcdisttrunkanalyzer.h \
    $${PWD}/zswcbranchingtrunkanalyzer.h \
    $${PWD}/zswctrunksizefeatureanalyzer.h \
-   $${PWD}/zpointarray.h \
    $${PWD}/flyem/zsynapselocationmatcher.h \
    $${PWD}/c_stack.h \
    $${PWD}/zfiletype.h \
@@ -80,7 +78,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/flyem/zsegmentationanalyzer.h \
    $${PWD}/flyem/zsegmentationbundle.h \
    $${PWD}/zstackblender.h \
-   $${PWD}/zgraph.h \
    $${PWD}/zarray.h \
    $${PWD}/zintpairmap.h \
    $${PWD}/zswcsizetrunkanalyzer.h \
@@ -116,15 +113,12 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zresolution.h \
    $${PWD}/zswcpositionadjuster.h \
    $${PWD}/zswcrangeanalyzer.h \
-   $${PWD}/zellipsoid.h \
    $${PWD}/zswcnodeselector.h \
    $${PWD}/zswcnodezrangeselector.h \
    $${PWD}/zswcnodecompositeselector.h \
    $${PWD}/zswcnodeellipsoidrangeselector.h \
    $${PWD}/flyem/zstitchgrid.h \
-   $${PWD}/zintcuboidarray.h \
    $${PWD}/flyem/zflyemqualityanalyzer.h \
-   $${PWD}/flyem/zintcuboidcomposition.h \
    $${PWD}/zswcglobalfeatureanalyzer.h \
    $${PWD}/zswclocationanalyzer.h \
    $${PWD}/biocytin/zbiocytinfilenameparser.h \
@@ -175,26 +169,16 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/flyem/zflyem.h \
    $${PWD}/flyem/zflyemdatainfo.h \
    $${PWD}/dvid/zdvidinfo.h \
-   $${PWD}/zlinesegment.h \
-   $${PWD}/zlinesegmentarray.h \
    $${PWD}/dvid/zdvidtarget.h \
    $${PWD}/dvid/zdvidfilter.h \
-   $${PWD}/zintcuboidface.h \
    $${PWD}/flyem/zflyembodyannotation.h \
-   $${PWD}/zintpoint.h \
-   $${PWD}/zintpointarray.h \
    $${PWD}/zintarray.h \
    $${PWD}/zintset.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
    $${PWD}/zstackarray.h \
    $${PWD}/flyem/zflyemconfig.h \
    $${PWD}/tr1_header.h \
-   $${PWD}/zsharedpointer.h \
-   $${PWD}/geometry/zgeo3dtransform.h \
-   $${PWD}/geometry/zgeometry.h \
-   $${PWD}/geometry/zgeo3dscalarfield.h \
    $${PWD}/zvoxelgraphics.h \
-   $${PWD}/zintcuboid.h \
    $${PWD}/bigdata/zdvidblockgrid.h \
    $${PWD}/bigdata/zstackblockgrid.h \
    $${PWD}/bigdata/zblockgrid.h \
@@ -222,7 +206,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zselector.h \
    $${PWD}/zobject3dstripe.h \
    $${PWD}/jneurontracer.h \
-   $${PWD}/neutube_def.h \
    $${PWD}/flyem/zflyembodyannotationbundle.h \
    $${PWD}/zswcfactory.h \
    $${PWD}/swc/zswcradiusestimator.h \
@@ -235,21 +218,15 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidnode.h \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
-    $$PWD/geometry/zplane.h \
-    $$PWD/geometry/zaffineplane.h \
-    $$PWD/geometry/zaffinerect.h \
     $$PWD/zjsondef.h \
-    $$PWD/core/memorystream.h \
     $$PWD/flyem/zflyembodystatus.h \
-    $$PWD/core/userinfo.h
+    $$PWD/zgraph.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
-   $${PWD}/zellipse.cpp \
    $${PWD}/zswctree.cpp \
    $${PWD}/zobject3d.cpp \
    $${PWD}/zcircle.cpp \
-   $${PWD}/zpoint.cpp \
    $${PWD}/zdirectionaltemplate.cpp \
    $${PWD}/zlocalrect.cpp \
    $${PWD}/zsinglechannelstack.cpp \
@@ -287,7 +264,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zsymmetricmatrix.cpp \
    $${PWD}/zsvggenerator.cpp \
    $${PWD}/zdendrogram.cpp \
-   $${PWD}/zcuboid.cpp \
    $${PWD}/zswcfeatureanalyzer.cpp \
    $${PWD}/zswcsizefeatureanalyzer.cpp \
    $${PWD}/zobject3darray.cpp \
@@ -307,7 +283,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcdisttrunkanalyzer.cpp \
    $${PWD}/zswcbranchingtrunkanalyzer.cpp \
    $${PWD}/zswctrunksizefeatureanalyzer.cpp \
-   $${PWD}/zpointarray.cpp \
    $${PWD}/flyem/zsynapselocationmatcher.cpp \
    $${PWD}/c_stack.cpp \
    $${PWD}/zfiletype.cpp \
@@ -317,7 +292,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/flyem/zsegmentationanalyzer.cpp \
    $${PWD}/flyem/zsegmentationbundle.cpp \
    $${PWD}/zstackblender.cpp \
-   $${PWD}/zgraph.cpp \
    $${PWD}/zarray.cpp \
    $${PWD}/zintpairmap.cpp \
    $${PWD}/zswcsizetrunkanalyzer.cpp \
@@ -347,15 +321,12 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zresolution.cpp \
    $${PWD}/zswcpositionadjuster.cpp \
    $${PWD}/zswcrangeanalyzer.cpp \
-   $${PWD}/zellipsoid.cpp \
    $${PWD}/zswcnodeselector.cpp \
    $${PWD}/zswcnodezrangeselector.cpp \
    $${PWD}/zswcnodecompositeselector.cpp \
    $${PWD}/zswcnodeellipsoidrangeselector.cpp \
    $${PWD}/flyem/zstitchgrid.cpp \
-   $${PWD}/zintcuboidarray.cpp \
    $${PWD}/flyem/zflyemqualityanalyzer.cpp \
-   $${PWD}/flyem/zintcuboidcomposition.cpp \
    $${PWD}/zswcglobalfeatureanalyzer.cpp \
    $${PWD}/zswclocationanalyzer.cpp \
    $${PWD}/biocytin/zbiocytinfilenameparser.cpp \
@@ -401,24 +372,15 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/flyem/zflyemcoordinateconverter.cpp \
    $${PWD}/flyem/zflyemdatainfo.cpp \
    $${PWD}/dvid/zdvidinfo.cpp \
-   $${PWD}/zlinesegment.cpp \
-   $${PWD}/zlinesegmentarray.cpp \
    $${PWD}/dvid/zdvidtarget.cpp \
    $${PWD}/dvid/zdvidfilter.cpp \
-   $${PWD}/zintcuboidface.cpp \
    $${PWD}/flyem/zflyembodyannotation.cpp \
-   $${PWD}/zintpoint.cpp \
-   $${PWD}/zintpointarray.cpp \
    $${PWD}/zintarray.cpp \
    $${PWD}/zintset.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
    $${PWD}/zstackarray.cpp \
    $${PWD}/flyem/zflyemconfig.cpp \
-   $${PWD}/geometry/zgeo3dtransform.cpp \
-   $${PWD}/geometry/zgeometry.cpp \
-   $${PWD}/geometry/zgeo3dscalarfield.cpp \
    $${PWD}/zvoxelgraphics.cpp \
-   $${PWD}/zintcuboid.cpp \
    $${PWD}/bigdata/zdvidblockgrid.cpp \
    $${PWD}/bigdata/zstackblockgrid.cpp \
    $${PWD}/bigdata/zblockgrid.cpp \
@@ -456,11 +418,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
    $$PWD/zswcdirectionfeatureanalyzer.cpp \
-    $$PWD/geometry/zplane.cpp \
-    $$PWD/geometry/zaffineplane.cpp \
-    $$PWD/geometry/zaffinerect.cpp \
-    $$PWD/neutube_def.cpp \
-    $$PWD/core/memorystream.cpp \
     $$PWD/flyem/zflyembodystatus.cpp \
-    $$PWD/core/userinfo.cpp
+    $$PWD/zgraph.cpp
 

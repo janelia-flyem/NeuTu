@@ -57,7 +57,7 @@ public:
   ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_OBJECT3D_SCAN;
+    return ZStackObject::EType::OBJECT3D_SCAN;
   }
 
   /*!
@@ -89,6 +89,13 @@ public:
    * \param z The slice position.
    */
   size_t getVoxelNumber(int z) const;
+
+  /*!
+   * \brief Count the memory bytes used by the segments
+   *
+   * Meta information is ignored in byte counting.
+   */
+  size_t getByteCount() const;
 
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
@@ -453,7 +460,7 @@ public:
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
       neutube::EAxis sliceAxis) const;
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void dilate();
   void dilatePlane();

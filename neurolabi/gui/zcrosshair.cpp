@@ -8,12 +8,12 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::TARGET_WIDGET);
+  setTarget(ZStackObject::ETarget::WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);
   setColor(QColor(255, 255, 255, 128));
-  setHitProtocal(HIT_WIDGET_POS);
+  setHitProtocal(EHitProtocal::HIT_WIDGET_POS);
 }
 
 
@@ -123,4 +123,4 @@ void ZCrossHair::setCenter(double x, double y, double z)
   m_center.set(x, y, z);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)

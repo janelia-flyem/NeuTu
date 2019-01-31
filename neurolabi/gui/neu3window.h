@@ -4,8 +4,8 @@
 #include <QMainWindow>
 
 #include "zactionfactory.h"
-#include "zpoint.h"
-#include "zsharedpointer.h"
+#include "geometry/zpoint.h"
+#include "common/zsharedpointer.h"
 
 namespace Ui {
 class Neu3Window;

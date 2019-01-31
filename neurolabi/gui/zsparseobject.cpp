@@ -7,7 +7,7 @@
 
 const ZLabelColorTable ZSparseObject::m_colorTable;
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
+//ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
 
 ZSparseObject::ZSparseObject()
 {

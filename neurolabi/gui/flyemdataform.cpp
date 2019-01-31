@@ -123,7 +123,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_swcExportDlg = new SwcExportDialog(this);
   m_3dWindowFactory.setParentWidget(this->parentWidget());
-  m_3dWindowFactory.setVolumeRenderMode(neutube3d::VR_ALPHA_BLENDING);
+  m_3dWindowFactory.setVolumeRenderMode(neutube3d::EVolumeRenderingMode::VR_ALPHA_BLENDING);
 
   connect(&m_thumbnailFutureWatcher, SIGNAL(finished()),
           this, SLOT(slotTest()));
@@ -406,7 +406,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
       //ZStackDoc *doc = frame->document().get();
 //      doc->blockSignals(true);
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       if (model != NULL) {
         doc->addObject(model->clone(), true);
       }
@@ -1409,7 +1409,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     int dataRangeY = (maxY + 1) / (dsIntv + 1);
 
     Z3DWindow *stage = new Z3DWindow(
-          academy, Z3DView::INIT_FULL_RES_VOLUME);
+          academy, Z3DView::EInitMode::FULL_RES_VOLUME);
     stage->getVolumeFilter()->hideBoundBox();
     stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");

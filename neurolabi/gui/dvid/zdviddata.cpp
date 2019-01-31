@@ -48,23 +48,23 @@ ZDvidData::ZDvidData()
 std::string ZDvidData::GetName(ERole role)
 {
   switch (role) {
-  case ROLE_GRAY_SCALE:
+  case ERole::GRAY_SCALE:
     return m_grayScaleName;
-  case ROLE_BODY_LABEL:
+  case ERole::BODY_LABEL:
     return m_bodyLabelName;
-  case ROLE_ROI_CURVE:
+  case ERole::ROI_CURVE:
     return m_roiCurveName;
-  case ROLE_BODY_ANNOTATION:
+  case ERole::BODY_ANNOTATION:
     return m_bodyAnnotationName;
-  case ROLE_BOUND_BOX:
+  case ERole::BOUND_BOX:
     return m_boundBoxName;
-  case ROLE_SKELETON:
+  case ERole::SKELETON:
     return m_skeletonName;
-  case ROLE_THUMBNAIL:
+  case ERole::THUMBNAIL:
     return m_thumbnailName;
-  case ROLE_SUPERPIXEL:
+  case ERole::SUPERPIXEL:
     return m_superpixelName;
-  case ROLE_SP2BODY:
+  case ERole::SP2BODY:
     return m_sp2bodyName;
     /*
   case ROLE_SPARSEVOL:
@@ -72,65 +72,65 @@ std::string ZDvidData::GetName(ERole role)
   case ROLE_SPARSEVOL_COARSE:
     return m_coarseSparsevolName;
     */
-  case ROLE_SPLIT_LABEL:
+  case ERole::SPLIT_LABEL:
     return m_splitLabelName;
-  case ROLE_SPLIT_STATUS:
+  case ERole::SPLIT_STATUS:
     return m_splitStatusName;
-  case ROLE_BODY_INFO:
+  case ERole::BODY_INFO:
     return m_bodyInfoName;
-  case ROLE_MERGE_TEST_BODY_LABEL:
+  case ERole::MERGE_TEST_BODY_LABEL:
     return m_mergeTestBodyLabelName;
-  case ROLE_MAX_BODY_ID:
+  case ERole::MAX_BODY_ID:
     return m_maxBodyIdName;
-  case ROLE_LABEL_BLOCK:
+  case ERole::LABEL_BLOCK:
     return m_labelBlockName;
-  case ROLE_MULTISCALE_2D:
+  case ERole::MULTISCALE_2D:
     return m_multiscale2dName;
-  case ROLE_MERGE_OPERATION:
+  case ERole::MERGE_OPERATION:
     return m_mergeOperationName;
-  case ROLE_BOOKMARK_KEY:
+  case ERole::BOOKMARK_KEY:
     return m_bookmarkKeyName;
-  case ROLE_BOOKMARK:
+  case ERole::BOOKMARK:
     return m_bookmarkAnnotationName;
-  case ROLE_BODY_SYNAPSES:
+  case ERole::BODY_SYNAPSES:
     return m_bodySynapsesName;
-  case ROLE_SYNAPSE:
+  case ERole::SYNAPSE:
     return m_synapseName;
-  case ROLE_TODO_LIST:
+  case ERole::TODO_LIST:
     return m_todoListName;
-  case ROLE_LABELSZ:
+  case ERole::LABELSZ:
     return m_labelszName;
-  case ROLE_SPARSEVOL_SIZE:
+  case ERole::SPARSEVOL_SIZE:
     return m_sparsevolSizeName;
-  case ROLE_NEUTU_CONFIG:
+  case ERole::NEUTU_CONFIG:
     return m_neutuConfigName;
-  case ROLE_RESULT_KEY:
+  case ERole::RESULT_KEY:
     return "result";
-  case ROLE_TASK_KEY:
+  case ERole::TASK_KEY:
     return "task";
-  case ROLE_SPLIT_GROUP:
+  case ERole::SPLIT_GROUP:
     return "split";
-  case ROLE_SPLIT_RESULT_KEY:
-    return GetName(ROLE_RESULT_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
-  case ROLE_SPLIT_TASK_KEY:
-    return GetName(ROLE_TASK_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
-  case ROLE_SPLIT_RESULT_PROPERTY_KEY:
-    return GetName(ROLE_SPLIT_RESULT_KEY) + "_" + "property";
-  case ROLE_SPLIT_TASK_PROPERTY_KEY:
-    return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
-  case ROLE_MESH:
+  case ERole::SPLIT_RESULT_KEY:
+    return GetName(ERole::RESULT_KEY) + "_" + GetName(ERole::SPLIT_GROUP);
+  case ERole::SPLIT_TASK_KEY:
+    return GetName(ERole::TASK_KEY) + "_" + GetName(ERole::SPLIT_GROUP);
+  case ERole::SPLIT_RESULT_PROPERTY_KEY:
+    return GetName(ERole::SPLIT_RESULT_KEY) + "_" + "property";
+  case ERole::SPLIT_TASK_PROPERTY_KEY:
+    return GetName(ERole::SPLIT_TASK_KEY) + "_" + "property";
+  case ERole::MESH:
     return m_meshName;
-  case ROLE_MESHES_TARS:
+  case ERole::MESHES_TARS:
     return m_meshesTarsName;
-  case ROLE_TAR_SUPERVOXELS:
+  case ERole::TAR_SUPERVOXELS:
     return m_tarSupervoxelsName;
-  case ROLE_ROI_KEY:
+  case ERole::ROI_KEY:
     return m_roiKeyName;
-  case ROLE_ROI_DATA_KEY:
+  case ERole::ROI_DATA_KEY:
     return m_roiDataKeyName;
-  case ROLE_TEST_TASK_KEY:
+  case ERole::TEST_TASK_KEY:
     return m_testTaskKeyName;
-  case ROLE_TEST_RESULT_KEY:
+  case ERole::TEST_RESULT_KEY:
     return m_testResultKeyName;
   }
 
@@ -182,12 +182,12 @@ std::string ZDvidData::GetName(
 
 std::string ZDvidData::GetResultName(const std::string &group)
 {
-  return GetName(ROLE_RESULT_KEY) + "_" + group;
+  return GetName(ERole::RESULT_KEY) + "_" + group;
 }
 
 std::string ZDvidData::GetTaskName(const std::string &group)
 {
-  return GetName(ROLE_TASK_KEY) + "_" + group;
+  return GetName(ERole::TASK_KEY) + "_" + group;
 }
 
 bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
@@ -196,13 +196,13 @@ bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
     return false;
   }
 
-  if (role == ZDvidData::ROLE_BODY_LABEL) { //For backfward compability
+  if (role == ZDvidData::ERole::BODY_LABEL) { //For backfward compability
     if (name == "bodies") {
       return true;
     }
   }
 
-  if (role == ZDvidData::ROLE_LABEL_BLOCK) {
+  if (role == ZDvidData::ERole::LABEL_BLOCK) {
     if (name == "labels") {
       return true;
     }

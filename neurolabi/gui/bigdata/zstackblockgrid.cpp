@@ -1,8 +1,8 @@
 #include "zstackblockgrid.h"
 #include "zstack.hxx"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "neutubeconfig.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {

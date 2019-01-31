@@ -13,7 +13,7 @@
 #include "tz_utilities.h"
 #include "zswctree.h"
 #include "zclosedcurve.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #include "zarray.h"
 

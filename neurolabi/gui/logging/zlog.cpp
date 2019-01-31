@@ -3,7 +3,7 @@
 #include <QDateTime>
 #include <sstream>
 
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "zqslog.h"
 
@@ -41,7 +41,7 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    LINFO() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    ZOUT(LINFO(), 5) << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
     m_tags = QJsonObject();
   }
   m_started = false;
@@ -66,11 +66,11 @@ ZLog::Time::Time(uint64_t t) : Tag("time", t)
 {
 }
 
-ZLog::Object::Object(void *p) : Tag("", "")
+ZLog::Handle::Handle(void *p) : Tag("", "")
 {
   std::ostringstream stream;
   stream << p;
-  set("object", stream.str());
+  set("handle", stream.str());
 }
 
 void ZLog::End(ZLog &log)

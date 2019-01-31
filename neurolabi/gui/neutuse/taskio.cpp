@@ -1,6 +1,6 @@
 #include "taskio.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zdvidutil.h"
 #include "neutubeconfig.h"
 #include "znetbufferreader.h"

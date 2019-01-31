@@ -1,11 +1,11 @@
 #ifndef ZFLYEMSERVICE_H
 #define ZFLYEMSERVICE_H
 
-#include "zintcuboidarray.h"
+#include "zgraph.h"
+#include "geometry/zintcuboidarray.h"
+#include "zintpairmap.h"
 #include "zobject3dscan.h"
 #include "dvid/zdvidtarget.h"
-#include "zgraph.h"
-#include "zintpairmap.h"
 #include "zflyem.h"
 #include "flyem/zflyemcoordinateconverter.h"
 

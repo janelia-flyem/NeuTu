@@ -13,8 +13,8 @@ class ZViewProj
 public:
   ZViewProj();
 
-  enum EReference {
-    REF_LEFTOP, REF_CENTER
+  enum class EReference {
+    LEFTOP, CENTER
   };
 
   void reset();

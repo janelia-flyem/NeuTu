@@ -2,7 +2,7 @@
 
 #include <QElapsedTimer>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackobjectsourcefactory.h"
 #include "zcrosshair.h"
@@ -149,7 +149,7 @@ ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> teList =
-      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+      getObjectList(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE);
   for (QList<ZStackObject*>::iterator iter = teList.begin();
        iter != teList.end(); ++iter) {
     ZDvidSynapseEnsemble *te = dynamic_cast<ZDvidSynapseEnsemble*>(*iter);

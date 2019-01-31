@@ -103,7 +103,7 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 //    mappedCrossCenter.shiftSliceAxisInverse(getMasterMvc);
     mvc->getView()->setZ(
           mappedCrossCenter.getSliceCoord(mvc->getView()->getSliceAxis()));
-    mvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+    mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #if 0
     NeuTube::EAxis axis = getAlignAxis(mvc);
@@ -200,7 +200,7 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
 
     mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->setViewProj(newViewProj);
-    mvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+    mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #ifdef _DEBUG_2
     getMasterMvc()->getView()->printViewParam();

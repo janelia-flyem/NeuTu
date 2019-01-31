@@ -1,6 +1,6 @@
 #include "zflyemmeshfactory.h"
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 ZFlyEmMeshFactory::ZFlyEmMeshFactory()
 {

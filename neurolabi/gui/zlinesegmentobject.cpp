@@ -8,7 +8,7 @@
 
 ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0)
 {
-  m_type = TYPE_LINE_SEGMENT;
+  m_type = EType::LINE_SEGMENT;
   m_focusColor.setAlpha(0);
 }
 
@@ -255,4 +255,4 @@ void ZLineSegmentObject::setFocusColor(const QColor &color)
   m_focusColor = color;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLineSegmentObject)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLineSegmentObject)

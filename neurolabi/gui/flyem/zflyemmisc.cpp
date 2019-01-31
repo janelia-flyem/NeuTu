@@ -19,7 +19,7 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zstring.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "dvid/zdvidinfo.h"
 #include "zstackdoc.h"
 #include "z3dgraphfactory.h"
@@ -29,7 +29,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "zstackviewparam.h"
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 #include "zobject3dfactory.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
@@ -812,7 +812,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
     if (replaced == NULL) {
       window->getDocument()->addObject(graph, true);
     } else {
-      window->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      window->getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
       window->getDocument()->bufferObjectModified(replaced);
       window->getDocument()->bufferObjectModified(graph);
       delete replaced;
@@ -840,14 +840,14 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     }
     Z3DGraph *graph = Z3DGraphFactory::MakeBox(box, radius);
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
-//    if (window->getWindowType() == NeuTube3D::TYPE_NEU3) {
+//    if (window->getWindowType() == neutube3d::EWindowType::TYPE_NEU3) {
 //      graph->setVisible(visible);
 //    }
 
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(neutube3d::LAYER_GRAPH, 0.4);
+      window->setOpacity(neutube3d::ERendererLayer::GRAPH, 0.4);
     }
   }
 }
@@ -1465,9 +1465,9 @@ void ZFlyEmMisc::UploadRoi(
       }
     }
 
-    for (auto &entry : nameMap) {
-      std::cout << entry.first << ": " << entry.second << std::endl;
-    }
+//    for (auto &entry : nameMap) {
+//      std::cout << entry.first << ": " << entry.second << std::endl;
+//    }
 
     //Upload: ZDvidWriter::uploadRoiMesh
     {
@@ -1513,6 +1513,25 @@ void ZFlyEmMisc::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
   delete mesh;
 }
 
+std::vector<uint64_t> ZFlyEmMisc::LoadBodyList(const std::string &input)
+{
+  std::vector<uint64_t> bodyList;
+
+  FILE *fp = fopen(input.c_str(), "r");
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      std::copy(bodyArray.begin(), bodyArray.end(), std::back_inserter(bodyList));
+//      bodyList.insert(bodyArray.begin(), bodyArray.end());
+    }
+    fclose(fp);
+  } else {
+    std::cout << "Failed to open " << input << std::endl;
+  }
+
+  return bodyList;
+}
 
 ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 {

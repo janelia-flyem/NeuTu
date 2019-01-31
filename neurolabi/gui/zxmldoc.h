@@ -2,7 +2,7 @@
 #define ZXMLDOC_H
 
 #include <string>
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZXmlNode;
 class QDomDocument;

@@ -18,13 +18,13 @@ public:
   ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner = true);
   virtual ~ZLocalNeuroseg();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   static ZLocalNeuroseg& instance();
 
   static void display(const Local_Neuroseg *locseg, double z_scale,
-                      QImage *image, int n = 0, Palette_Color color = RED,
+                      QImage *image, int n = 0, Palette_Color color = Palette_Color::RED,
                       EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0);
 
 public:

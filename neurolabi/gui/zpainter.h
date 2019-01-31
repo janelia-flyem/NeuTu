@@ -3,7 +3,7 @@
 
 #include <vector>
 
-//#include "neutube_def.h"
+//#include "common/neutube_def.h"
 #include "zqtheader.h"
 
 #ifdef _QT_GUI_USED_
@@ -11,7 +11,7 @@
 #include <QPaintDevice>
 #endif
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zsttransform.h"
 
 class ZIntPoint;

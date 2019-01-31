@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZIntPoint;
 

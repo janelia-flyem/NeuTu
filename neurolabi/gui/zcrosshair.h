@@ -2,7 +2,7 @@
 #define ZCROSSHAIR_H
 
 #include "zstackobject.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 /*!
  * \brief The class of crosshair for orthogonal view
@@ -15,11 +15,11 @@ class ZCrossHair : public ZStackObject
 public:
   ZCrossHair();
 
-  static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_CROSS_HAIR;
+  static constexpr ZStackObject::EType GetType() {
+    return ZStackObject::EType::CROSS_HAIR;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   virtual void display(ZPainter &painter, int slice,

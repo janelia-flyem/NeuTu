@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include "zstring.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zswctree.h"
 

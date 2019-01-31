@@ -3,7 +3,7 @@
 #include <QElapsedTimer>
 
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"

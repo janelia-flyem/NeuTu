@@ -10,8 +10,8 @@
 #include "c_stack.h"
 #include "tz_darray.h"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
-#include "zpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zpoint.h"
 
 using namespace std;
 

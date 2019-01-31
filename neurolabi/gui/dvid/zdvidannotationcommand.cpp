@@ -1,5 +1,5 @@
 #include "zdvidannotationcommand.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackdoccommand.h"
 #include "neutubeconfig.h"
@@ -18,7 +18,7 @@ ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::~CompositeCommand()
 void ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -31,7 +31,7 @@ void ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::undo()
 {
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
