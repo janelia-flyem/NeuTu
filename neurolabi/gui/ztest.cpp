@@ -20999,7 +20999,7 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
-  ZJsonArray array = reader.readSynapseLabelsz(10, ZDvid::INDEX_ALL_SYN);
+  ZJsonArray array = reader.readSynapseLabelsz(10, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
   std::cout << array.dumpString(2);
 
   /*
@@ -21019,7 +21019,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
-  ZJsonArray json = reader.readSynapseLabelsz(10, ZDvid::INDEX_PRE_SYN);
+  ZJsonArray json = reader.readSynapseLabelsz(10, ZDvid::ELabelIndexType::INDEX_PRE_SYN);
   std::cout << json.dumpString(2) << std::endl;
 #endif
 
@@ -22524,13 +22524,13 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
-  int count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_PRE_SYN);
+  int count = reader.readSynapseLabelszBody(80, ZDvid::ELabelIndexType::INDEX_PRE_SYN);
   std::cout << "Pre count: " << count << std::endl;
 
-  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_POST_SYN);
+  count = reader.readSynapseLabelszBody(80, ZDvid::ELabelIndexType::INDEX_POST_SYN);
   std::cout << "Post count: " << count << std::endl;
 
-  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
+  count = reader.readSynapseLabelszBody(80, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
   std::cout << "All count: " << count << std::endl;
 #endif
 
@@ -28298,7 +28298,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibran-production");
   reader->updateMaxLabelZoom();
   ZJsonArray thresholdData = reader->readSynapseLabelsz(
-        20000, ZDvid::INDEX_ALL_SYN);
+        20000, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
   thresholdData.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 

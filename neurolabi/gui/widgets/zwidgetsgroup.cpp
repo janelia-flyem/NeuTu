@@ -1,14 +1,15 @@
 #include "zwidgetsgroup.h"
 
-#include "z3dcameraparameter.h"
-#include "z3dtransformparameter.h"
-#include "widgets/zparameter.h"
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QScrollArea>
 #include <QPushButton>
 #include <QLabel>
 #include <QToolBox>
+
+//#include "z3dcameraparameter.h"
+//#include "z3dtransformparameter.h"
+#include "zparameter.h"
 
 namespace {
 
@@ -86,8 +87,10 @@ void ZWidgetsGroup::addChild(std::shared_ptr<ZWidgetsGroup> child, bool atEnd)
   } else {
     m_childGroups.insert(m_childGroups.begin(), child);
   }
-  connect(child.get(), &ZWidgetsGroup::widgetsGroupChanged, this, &ZWidgetsGroup::widgetsGroupChanged);
-  connect(child.get(), &ZWidgetsGroup::requestAdvancedWidget, this, &ZWidgetsGroup::requestAdvancedWidget);
+  connect(child.get(), &ZWidgetsGroup::widgetsGroupChanged,
+          this, &ZWidgetsGroup::widgetsGroupChanged);
+  connect(child.get(), &ZWidgetsGroup::requestAdvancedWidget,
+          this, &ZWidgetsGroup::requestAdvancedWidget);
   m_isSorted = false;
 }
 
@@ -160,101 +163,125 @@ QWidget* ZWidgetsGroup::createWidget(bool createBasic, bool scroll, QLabel* labe
   }
 }
 
-QLayout* ZWidgetsGroup::createLayout(bool createBasic)
+QLayout* ZWidgetsGroup::createWidgetLayout()
 {
-  switch (m_type) {
-    case Type::Widget: {
-      QHBoxLayout* hbl = new QHBoxLayout;
-      hbl->addWidget(m_widget);
-      return hbl;
-    }
-    case Type::Parameter: {
-      QHBoxLayout* hbl = new QHBoxLayout;
-      if (qobject_cast<Z3DCameraParameter*>(m_parameter) ||
-        qobject_cast<Z3DTransformParameter*>(m_parameter)) {
-        QWidget* wg = m_parameter->createWidget();
-        hbl->addWidget(wg);
-        return hbl;
-      }
-      QLabel* label = m_parameter->createNameLabel();
-      label->setTextInteractionFlags(Qt::TextSelectableByMouse);
-      label->setMinimumWidth(125);
-      label->setWordWrap(true);
-      hbl->addWidget(label);
-      QWidget* wg = m_parameter->createWidget();
-      wg->setMinimumWidth(175);
-      wg->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-      hbl->addWidget(wg);
+  QHBoxLayout* hbl = new QHBoxLayout;
+  hbl->addWidget(m_widget);
 
-      return hbl;
+  return hbl;
+}
+
+QLayout* ZWidgetsGroup::createParameterLayout()
+{
+  QHBoxLayout* hbl = new QHBoxLayout;
+//  if (qobject_cast<Z3DCameraParameter*>(m_parameter) ||
+//    qobject_cast<Z3DTransformParameter*>(m_parameter)) {
+  if (m_parameter->name().isEmpty()) {
+    QWidget* wg = m_parameter->createWidget();
+    hbl->addWidget(wg);
+  } else {
+    QLabel* label = m_parameter->createNameLabel();
+    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    label->setMinimumWidth(125);
+    label->setWordWrap(true);
+    hbl->addWidget(label);
+    QWidget* wg = m_parameter->createWidget();
+    wg->setMinimumWidth(175);
+    wg->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    hbl->addWidget(wg);
+  }
+
+  return hbl;
+}
+
+QLayout* ZWidgetsGroup::createGroupLayout(bool createBasic)
+{
+  QVBoxLayout* vbl = new QVBoxLayout;
+  if (!m_isSorted) {
+    sortChildGroups();
+  }
+
+  if (createBasic) {
+    size_t i;
+    for (i = 0; i < m_childGroups.size() &&
+                m_childGroups[i]->m_visibleLevel <= m_cutOffbetweenBasicAndAdvancedLevel; ++i) {
+      QLayout* lw = m_childGroups[i]->createLayout(true);
+      if (m_childGroups[i]->isGroup()) {
+        QGroupBox* groupBox = new QGroupBox(m_childGroups[i]->getGroupName());
+        groupBox->setLayout(lw);
+        vbl->addWidget(groupBox);
+      } else
+        vbl->addLayout(lw);
     }
-    default: /*case GROUP:*/ {
-      QVBoxLayout* vbl = new QVBoxLayout;
-      if (!m_isSorted)
-        sortChildGroups();
-      if (createBasic) {
-        size_t i;
-        for (i = 0; i < m_childGroups.size() &&
-                    m_childGroups[i]->m_visibleLevel <= m_cutOffbetweenBasicAndAdvancedLevel; ++i) {
-          QLayout* lw = m_childGroups[i]->createLayout(true);
-          if (m_childGroups[i]->isGroup()) {
-            QGroupBox* groupBox = new QGroupBox(m_childGroups[i]->getGroupName());
+    if (i < m_childGroups.size()) {
+      QPushButton* pb = new QPushButton("Advanced...");
+      pb->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      vbl->addWidget(pb, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+      connect(pb, &QPushButton::clicked, this, &ZWidgetsGroup::emitRequestAdvancedWidgetSignal);
+    }
+  } else {
+    if (m_useToolBoxStyle) {
+      QToolBox* toolBox = new QToolBox();
+      for (const auto& childGroup : m_childGroups) {
+        if (m_useToolBoxStyle) {
+          if (childGroup->isGroup()) {
+            QWidget* wg = childGroup->createWidget(false, false);
+            toolBox->addItem(wg, childGroup->getGroupName());
+            // fully expand page, no scroll bar
+            qobject_cast<QScrollArea*>(
+                  wg->parentWidget()->parentWidget())->setSizePolicy(
+                  QSizePolicy::Preferred, QSizePolicy::Fixed);
+          } else {
+            QLayout* lw = childGroup->createLayout(false);
+            vbl->addLayout(lw);
+          }
+        } else {
+          if (childGroup->isGroup()) {
+            QGroupBox* groupBox = new QGroupBox(childGroup->getGroupName());
+            QLayout* lw = childGroup->createLayout(false);
             groupBox->setLayout(lw);
             vbl->addWidget(groupBox);
-          } else
+          } else {
+            QLayout* lw = childGroup->createLayout(false);
             vbl->addLayout(lw);
-        }
-        if (i < m_childGroups.size()) {
-          QPushButton* pb = new QPushButton("Advanced...");
-          pb->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-          vbl->addWidget(pb, 0, Qt::AlignHCenter | Qt::AlignVCenter);
-          connect(pb, &QPushButton::clicked, this, &ZWidgetsGroup::emitRequestAdvancedWidgetSignal);
-        }
-      } else {
-        if (m_useToolBoxStyle) {
-          QToolBox* toolBox = new QToolBox();
-          for (const auto& childGroup : m_childGroups) {
-            if (m_useToolBoxStyle) {
-              if (childGroup->isGroup()) {
-                QWidget* wg = childGroup->createWidget(false, false);
-                toolBox->addItem(wg, childGroup->getGroupName());
-                // fully expand page, no scroll bar
-                qobject_cast<QScrollArea*>(wg->parentWidget()->parentWidget())->setSizePolicy(
-                  QSizePolicy::Preferred, QSizePolicy::Fixed);
-              } else {
-                QLayout* lw = childGroup->createLayout(false);
-                vbl->addLayout(lw);
-              }
-            } else {
-              if (childGroup->isGroup()) {
-                QGroupBox* groupBox = new QGroupBox(childGroup->getGroupName());
-                QLayout* lw = childGroup->createLayout(false);
-                groupBox->setLayout(lw);
-                vbl->addWidget(groupBox);
-              } else {
-                QLayout* lw = childGroup->createLayout(false);
-                vbl->addLayout(lw);
-              }
-            }
-          }
-          vbl->addWidget(toolBox);
-        } else {
-          for (const auto& childGroup : m_childGroups) {
-            if (childGroup->isGroup()) {
-              QGroupBox* groupBox = new QGroupBox(childGroup->getGroupName());
-              QLayout* lw = childGroup->createLayout(false);
-              groupBox->setLayout(lw);
-              vbl->addWidget(groupBox);
-            } else {
-              QLayout* lw = childGroup->createLayout(false);
-              vbl->addLayout(lw);
-            }
           }
         }
       }
-      return vbl;
+      vbl->addWidget(toolBox);
+    } else {
+      for (const auto& childGroup : m_childGroups) {
+        if (childGroup->isGroup()) {
+          QGroupBox* groupBox = new QGroupBox(childGroup->getGroupName());
+          QLayout* lw = childGroup->createLayout(false);
+          groupBox->setLayout(lw);
+          vbl->addWidget(groupBox);
+        } else {
+          QLayout* lw = childGroup->createLayout(false);
+          vbl->addLayout(lw);
+        }
+      }
     }
   }
+  return vbl;
+}
+
+
+QLayout* ZWidgetsGroup::createLayout(bool createBasic)
+{
+  QLayout *layout = nullptr;
+  switch (m_type) {
+  case Type::Widget:
+    layout = createWidgetLayout();
+    break;
+  case Type::Parameter:
+    layout = createParameterLayout();
+    break;
+  default: /*case GROUP:*/
+    layout = createGroupLayout(createBasic);
+    break;
+  }
+
+  return layout;
 }
 
 bool ZWidgetsGroup::operator<(const ZWidgetsGroup& other) const

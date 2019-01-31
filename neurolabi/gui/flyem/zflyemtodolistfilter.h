@@ -5,7 +5,7 @@
 
 #include "z3dgeometryfilter.h"
 #include "z3dgraph.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 
 class ZFlyEmToDoList;
 class Z3DLineRenderer;

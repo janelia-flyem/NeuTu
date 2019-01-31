@@ -3,7 +3,7 @@
 
 #include "z3dgeometryfilter.h"
 #include "widgets/zoptionparameter.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "zcolormap.h"
 #include "widgets/znumericparameter.h"
 #include "z3dsphererenderer.h"

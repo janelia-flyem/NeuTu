@@ -2,7 +2,7 @@
 
 #include <QWindow>
 
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "z3dcanvas.h"
 #include "z3dgpuinfo.h"
 

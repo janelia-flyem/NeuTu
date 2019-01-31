@@ -86,6 +86,8 @@ private:
 
   void fromQColor(const QColor& col);
 
+  QColorDialog* getColorDlg();
+
 private:
   int m_width = 50;
   int m_height = 33;

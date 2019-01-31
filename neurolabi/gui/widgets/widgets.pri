@@ -21,6 +21,7 @@ HEADERS += \
     $$PWD/zpythonprocess.h \
     $$PWD/zroilistview.h \
     $$PWD/ztextedit.h \
+    $$PWD/zwidgetsgroup.h \
     $$PWD/zparameter.h \
     $$PWD/zparameterarray.h \
     $$PWD/znumericparameter.h \
@@ -43,6 +44,7 @@ SOURCES += \
     $$PWD/zpythonprocess.cpp \
     $$PWD/zroilistview.cpp \
     $$PWD/ztextedit.cpp \
+    $$PWD/zwidgetsgroup.cpp \
     $$PWD/zparameterarray.cpp \
     $$PWD/zparameter.cpp \
     $$PWD/znumericparameter.cpp \

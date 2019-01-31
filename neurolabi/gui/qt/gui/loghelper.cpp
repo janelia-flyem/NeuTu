@@ -88,6 +88,7 @@ void neutu::LogMouseEvent(QWheelEvent *event, const QString &window)
   KLOG << ZLog::Info()
        << ZLog::Window(window.toStdString())
        << ZLog::Action("scroll")
+       << ZLog::Tag("value", event->delta())
        << ZLog::Object("mouse", name);
 }
 

@@ -587,7 +587,8 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
         succ = true;
       } else {
         emit messageGenerated(
-              ZWidgetMessage("Failed to create ROI data.", neutube::EMessageType::WARNING));
+              ZWidgetMessage("Failed to create ROI data.",
+                             neutube::EMessageType::WARNING));
         return false;
       }
     }
