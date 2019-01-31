@@ -33,7 +33,7 @@
 #include "zswcnetwork.h"
 
 #include "zsysteminfo.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "ztakescreenshotwidget.h"
 #include "z3dgpuinfo.h"
 #include "z3dmainwindow.h"

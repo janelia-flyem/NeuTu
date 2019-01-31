@@ -7,7 +7,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "logging/zqslog.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonarray.h"

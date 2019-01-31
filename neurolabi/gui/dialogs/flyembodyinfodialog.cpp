@@ -270,8 +270,8 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       int npre = 0;
       int npost = 0;
       if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
-        npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
-        npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
+        npre = reader.readSynapseLabelszBody(bodyId, ZDvid::ELabelIndexType::PRE_SYN);
+        npost = reader.readSynapseLabelszBody(bodyId, ZDvid::ELabelIndexType::POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
               bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
@@ -849,8 +849,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 }
 
                 if (!bodyData.isEmpty() && m_hasLabelsz) {
-                  int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
-                  int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+                  int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::PRE_SYN);
+                  int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::POST_SYN);
 
                   bodyData.setEntry("body T-bars", npre);
                   bodyData.setEntry("body PSDs", npost);
@@ -893,14 +893,14 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
     if (reader.isReady()) {
 
         // you would use this call to get all bodies with any synapses:
-        // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::INDEX_ALL_SYN);
+        // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
 
         // as it turns out, that's usually too many (and you would have to retrieve
         //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
 
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
-              m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
+              m_currentMaxBodies, ZDvid::ELabelIndexType::ALL_SYN);
         dvidTime += dvidTimer.elapsed();
         #ifdef _DEBUG_
             std::cout << "read top " << m_currentMaxBodies << " synapses from DVID in " << dvidTime << " ms" << std::endl;
@@ -1000,8 +1000,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             // synapse info
             // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
-            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
-            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::PRE_SYN);
+            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::POST_SYN);
             dvidTime += dvidTimer.elapsed();
 
             entry.setEntry("body T-bars", npre);

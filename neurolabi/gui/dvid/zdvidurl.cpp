@@ -1797,22 +1797,22 @@ std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
 {
   std::string name;
   switch (type) {
-  case ZDvid::INDEX_PRE_SYN:
+  case ZDvid::ELabelIndexType::PRE_SYN:
     name = "PreSyn";
     break;
-  case ZDvid::INDEX_POST_SYN:
+  case ZDvid::ELabelIndexType::POST_SYN:
     name = "PostSyn";
     break;
-  case ZDvid::INDEX_ALL_SYN:
+  case ZDvid::ELabelIndexType::ALL_SYN:
     name = "AllSyn";
     break;
-  case ZDvid::INDEX_GAP:
+  case ZDvid::ELabelIndexType::GAP:
     name = "Gap";
     break;
-  case ZDvid::INDEX_NOTE:
+  case ZDvid::ELabelIndexType::NOTE:
     name = "Note";
     break;
-  case ZDvid::INDEX_VOXEL:
+  case ZDvid::ELabelIndexType::VOXEL:
     name = "Voxels";
     break;
   }
