@@ -3667,7 +3667,7 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
     if (m_skeletonUpdateDlg->exec()) {
       ZJsonArray thresholdData =
           getCompleteDocument()->getDvidReader().readSynapseLabelsz(
-            m_skeletonUpdateDlg->getTopCount(), ZDvid::ELabelIndexType::ALL_SYN);
+            m_skeletonUpdateDlg->getTopCount(), dvid::ELabelIndexType::ALL_SYN);
 
       for (size_t i = 0; i < thresholdData.size(); ++i) {
         ZJsonObject labelJson(thresholdData.value(i));

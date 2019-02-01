@@ -635,7 +635,7 @@ ZSwcTree* ZCommandLine::traceDvid()
   ZDvidNeuronTracer tracer;
 
   ZDvidTarget target;
-  target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
+  target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
 
   target.setNullSegmentationName();
   tracer.setDvidTarget(target);

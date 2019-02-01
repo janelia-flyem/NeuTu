@@ -802,7 +802,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
       getProgressSignal()->startProgress(0.5);
       foreach (uint64_t targetId, m_mergeMap.keys()) {
         const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
-        auto mergeConfig = ZDvid::GetMergeConfig(
+        auto mergeConfig = dvid::GetMergeConfig(
               m_writer.getDvidReader(), targetId, merged, mergingToLargest);
         const uint64_t &newTargetId = mergeConfig.first;
         const std::vector<uint64_t> &newMerged = mergeConfig.second;

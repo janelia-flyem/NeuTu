@@ -558,7 +558,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       }
 
 //      ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
-      int intv = ZDvid::DEFAULT_ROI_BLOCK_SIZE - 1;
+      int intv = dvid::DEFAULT_ROI_BLOCK_SIZE - 1;
 
 #ifdef _DEBUG_2
       std::cout << obj.getMinZ() << std::endl;

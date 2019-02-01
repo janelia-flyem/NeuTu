@@ -278,10 +278,10 @@ bool ZDvidVersionDag::isAncester(
   while (iter.hasNext()) {
     ZTreeNode<ZDvidVersionNode> *tn = iter.nextNode();
     ZString currentUuid = tn->data().getUuid();
-    if (ZDvid::IsUuidMatched(currentUuid, uuid)) {
+    if (dvid::IsUuidMatched(currentUuid, uuid)) {
       ZTreeNode<ZDvidVersionNode> *parent = tn->parent();
       while (parent != NULL) {
-        if (ZDvid::IsUuidMatched(parent->data().getUuid(), ancester)) {
+        if (dvid::IsUuidMatched(parent->data().getUuid(), ancester)) {
           result = true;
         }
         parent = parent->parent();

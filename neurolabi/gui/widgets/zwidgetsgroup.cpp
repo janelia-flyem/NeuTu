@@ -7,8 +7,6 @@
 #include <QLabel>
 #include <QToolBox>
 
-//#include "z3dcameraparameter.h"
-//#include "z3dtransformparameter.h"
 #include "zparameter.h"
 
 namespace {
