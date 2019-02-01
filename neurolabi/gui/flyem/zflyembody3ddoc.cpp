@@ -54,6 +54,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zpunctum.h"
+#include "flyemdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1942,6 +1943,9 @@ void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
 ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
+    m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
+          getDataDocument(), getParent3DWindow());
+#if 0
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
     /*
     ZJsonArray statusJson = getMainDvidReader().readBodyStatusList();
@@ -1959,6 +1963,11 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
     } else {
       m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
     }
+
+    for (const QString &status : getDataDocument()->getAdminBodyStatusList()) {
+      m_annotationDlg->addAdminStatus(status);
+    }
+#endif
   }
 
   return m_annotationDlg;

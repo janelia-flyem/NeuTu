@@ -12,12 +12,13 @@
 #include <QMimeData>
 
 #include "logging/zlog.h"
+
 #include "zjsondef.h"
-#include "flyem/zflyemproofdoc.h"
+#include "zflyemproofdoc.h"
+#include "flyemdialogfactory.h"
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackpresenter.h"
-#include "dialogs/zdvidtargetproviderdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
@@ -27,7 +28,6 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
-#include "dialogs/zspinboxdialog.h"
 #include "zdialogfactory.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
@@ -38,9 +38,7 @@
 #include "zwidgetfactory.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyembookmarkannotationdialog.h"
-#include "dialogs/flyembodyinfodialog.h"
 #include "protocols/protocolswitcher.h"
-#include "dialogs/zflyemsplitcommitdialog.h"
 #include "flyem/zflyembodywindowfactory.h"
 #include "flyem/zflyemmisc.h"
 #include "zswcgenerator.h"
@@ -56,7 +54,6 @@
 #include "zroiwidget.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemtodolistfilter.h"
-#include "dialogs/flyemtododialog.h"
 #include "zclickablelabel.h"
 #include "znormcolormap.h"
 #include "widgets/zcolorlabel.h"
@@ -98,13 +95,21 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zflyembodystatus.h"
+
+#include "dialogs/flyemtododialog.h"
+#include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
-#include "service/neuprintreader.h"
 #include "dialogs/neuprintquerydialog.h"
-#include "zactionlibrary.h"
-#include "zglobal.h"
 #include "dialogs/neuprintsetupdialog.h"
 #include "dialogs/zcontrastprotocaldialog.h"
+#include "dialogs/zspinboxdialog.h"
+#include "dialogs/flyembodyinfodialog.h"
+#include "dialogs/zflyemsplitcommitdialog.h"
+
+#include "service/neuprintreader.h"
+#include "zactionlibrary.h"
+#include "zglobal.h"
+
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -346,6 +351,9 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
+    m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
+          getCompleteDocument(), this);
+#if 0
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(this);
     QList<QString> statusList = getCompleteDocument()->getBodyStatusList();
 #if 0
@@ -374,6 +382,11 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
     } else {
       m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
     }
+
+    for (const QString &status : getCompleteDocument()->getAdminBodyStatusList()) {
+      m_annotationDlg->addAdminStatus(status);
+    }
+#endif
   }
 
   return m_annotationDlg;

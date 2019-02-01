@@ -206,6 +206,11 @@ void ZFlyEmBodyAnnotationDialog::setDefaultStatusList(
   m_defaultStatusList = statusList;
 }
 
+void ZFlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
+{
+  m_adminSatutsList.insert(status);
+}
+
 void ZFlyEmBodyAnnotationDialog::updateStatusBox()
 {
   ui->statusComboBox->clear();
@@ -227,10 +232,13 @@ void ZFlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->addItem(status.c_str());
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
-//    if (!neutube::IsAdminUser()) {
-    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
-      ui->statusComboBox->setEnabled(false);
+    if (m_adminSatutsList.contains(status.c_str())) {
+      ui->statusComboBox->setEnabled(neutube::IsAdminUser());
     }
+//    if (!neutube::IsAdminUser()) {
+//    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
+//      ui->statusComboBox->setEnabled(false);
+//    }
   }
 }
 

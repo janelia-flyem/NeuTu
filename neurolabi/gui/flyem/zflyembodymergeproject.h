@@ -128,6 +128,7 @@ public:
   void clearBodyMerger();
 
   QList<QString> getBodyStatusList() const;
+  QList<QString> getAdminStatusList() const;
   int getStatusRank(const std::string &status) const;
   bool isFinalStatus(const std::string &status) const;
   bool isMergableStatus(const std::string &status) const;
@@ -218,6 +219,9 @@ private:
   void removeMerge(const std::vector<uint64_t> &bodyArray);
 
   void clearUndoStack();
+
+  QList<QString> getBodyStatusList(
+      std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
 
 //  uint64_t getTargetId(
 //      uint64_t targetId, const std::vector<uint64_t> &bodyId,

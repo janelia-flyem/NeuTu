@@ -455,6 +455,22 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 //  m_annotationCache.clear();
 }
 
+QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
+    std::function<bool(const ZFlyEmBodyStatus&)> pred) const
+{
+  const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
+      m_annotMerger.getStatusList();
+
+  QList<QString> statusList;
+  for (const ZFlyEmBodyStatus &status : bodyStatusList) {
+    if (pred(status)) {
+      statusList.append(status.getName().c_str());
+    }
+  }
+
+  return statusList;
+}
+
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
@@ -468,6 +484,25 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
   }
 
   return statusList;
+}
+
+QList<QString> ZFlyEmBodyMergeProject::getAdminStatusList() const
+{
+  return getBodyStatusList([](const ZFlyEmBodyStatus &status) {
+    return status.isAdminAccessible();
+  });
+
+//  const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
+//      m_annotMerger.getStatusList();
+
+//  QList<QString> statusList;
+//  for (const ZFlyEmBodyStatus &status : bodyStatusList) {
+//    if (status.isAdminAccessible()) {
+//      statusList.append(status.getName().c_str());
+//    }
+//  }
+
+//  return statusList;
 }
 
 int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
