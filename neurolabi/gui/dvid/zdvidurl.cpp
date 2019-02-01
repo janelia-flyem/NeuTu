@@ -1562,7 +1562,7 @@ std::string ZDvidUrl::getAnnotationUrl(
     } else {
       //A workaround for syncing GetBodyIdTag(temporary solution)
 #if defined(_QT_GUI_USED_)
-      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
+      url = getAnnotationUrl(dataName, dvid::GetBodyIdTag(label));
 #else
       std::ostringstream stream;
       stream << "body:" << label;
@@ -1793,26 +1793,26 @@ std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
   return url;
 }
 
-std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
+std::string ZDvidUrl::GetLabelszIndexTypeStr(dvid::ELabelIndexType type)
 {
   std::string name;
   switch (type) {
-  case ZDvid::ELabelIndexType::PRE_SYN:
+  case dvid::ELabelIndexType::PRE_SYN:
     name = "PreSyn";
     break;
-  case ZDvid::ELabelIndexType::POST_SYN:
+  case dvid::ELabelIndexType::POST_SYN:
     name = "PostSyn";
     break;
-  case ZDvid::ELabelIndexType::ALL_SYN:
+  case dvid::ELabelIndexType::ALL_SYN:
     name = "AllSyn";
     break;
-  case ZDvid::ELabelIndexType::GAP:
+  case dvid::ELabelIndexType::GAP:
     name = "Gap";
     break;
-  case ZDvid::ELabelIndexType::NOTE:
+  case dvid::ELabelIndexType::NOTE:
     name = "Note";
     break;
-  case ZDvid::ELabelIndexType::VOXEL:
+  case dvid::ELabelIndexType::VOXEL:
     name = "Voxels";
     break;
   }
@@ -1821,13 +1821,13 @@ std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
 }
 
 std::string ZDvidUrl::getSynapseLabelszUrl(
-    int n, ZDvid::ELabelIndexType indexType) const
+    int n, dvid::ELabelIndexType indexType) const
 {
   return GetFullUrl(getSynapseLabelszUrl(n), GetLabelszIndexTypeStr(indexType));
 }
 
 std::string ZDvidUrl::getSynapseLabelszBodyUrl(
-    uint64_t bodyId, ZDvid::ELabelIndexType indexType) const
+    uint64_t bodyId, dvid::ELabelIndexType indexType) const
 {
   return GetFullUrl(getSynapseLabelszBodyUrl(bodyId),
                     GetLabelszIndexTypeStr(indexType));
@@ -1847,12 +1847,12 @@ std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
 }
 
 std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
-    int threshold, ZDvid::ELabelIndexType indexType)  const {
+    int threshold, dvid::ELabelIndexType indexType)  const {
   return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
 }
 
 std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
-    int threshold, ZDvid::ELabelIndexType indexType, int offset, int number)  const {
+    int threshold, dvid::ELabelIndexType indexType, int offset, int number)  const {
     std::string url = getSynapseLabelszThresholdUrl(threshold, indexType);
     url += "/?offset=";
     url += ZString::num2str(offset);

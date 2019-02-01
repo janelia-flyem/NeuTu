@@ -21234,16 +21234,16 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   switch (reader.getNodeStatus()) {
-  case ZDvid::NODE_INVALID:
+  case ZDvid::ENodeStatus::NODE_INVALID:
     std::cout << "Invalid node";
     break;
-  case ZDvid::NODE_LOCKED:
+  case ZDvid::ENodeStatus::NODE_LOCKED:
     std::cout << "Locked node";
     break;
-  case ZDvid::NODE_NORMAL:
+  case ZDvid::ENodeStatus::NODE_NORMAL:
     std::cout << "Normal node";
     break;
-  case ZDvid::NODE_OFFLINE:
+  case ZDvid::ENodeStatus::NODE_OFFLINE:
     std::cout << "Node cannot be connected";
     break;
   }

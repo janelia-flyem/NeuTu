@@ -940,7 +940,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
 {
-  return ZDvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
+  return dvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
 }
 
 namespace {

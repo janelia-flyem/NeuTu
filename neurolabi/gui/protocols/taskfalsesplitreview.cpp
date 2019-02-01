@@ -243,7 +243,7 @@ bool TaskFalseSplitReview::skip()
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
   std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(m_bodyId);
   int statusCode = 0;
-  ZDvid::MakeHeadRequest(tarUrl, statusCode);
+  dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
 
   LINFO() << "TaskFalseSplitReview::skip() HEAD took" << timer.elapsed() << "ms to decide to"
