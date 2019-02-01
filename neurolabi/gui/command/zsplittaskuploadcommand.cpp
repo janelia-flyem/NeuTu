@@ -81,12 +81,12 @@ int ZSplitTaskUploadCommand::run(
 
       if (bodyId > 0) {
         ZJsonObject taskJson;
-        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+        flyem::SetSplitTaskSignalUrl(taskJson, bodyId, target);
         for (size_t i = 0; i < markerJson.size(); ++i) {
           ZJsonObject markerObj(markerJson.value(i));
           ZStroke2d stroke =
-              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
-          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+              flyem::SyGlassSeedToStroke(markerObj);
+          flyem::AddSplitTaskSeed(taskJson, stroke);
         }
 
         std::string location = writer->writeServiceTask("split", taskJson);

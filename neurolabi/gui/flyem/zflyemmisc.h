@@ -32,7 +32,7 @@ class ZArbSliceViewParam;
 class ZDvidWriter;
 class ZAffineRect;
 
-namespace ZFlyEmMisc {
+namespace flyem {
 void NormalizeSimmat(ZMatrix &simmat);
 
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);

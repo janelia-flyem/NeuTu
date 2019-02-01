@@ -378,7 +378,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPointF ptArray[4];
     //      double s = 5.0;
     if (z > center.getZ()) {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
+      flyem::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
@@ -388,7 +388,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                         rect.top() + rect.height() / s);
 */
     } else {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
+      flyem::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);

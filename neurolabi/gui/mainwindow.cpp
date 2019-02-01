@@ -4910,7 +4910,7 @@ void MainWindow::on_actionDiagnosis_triggered()
   QStringList info;
 
 #if defined(_FLYEM_)
-  info << "Memory usage: " + ZFlyEmMisc::GetMemoryUsage();
+  info << "Memory usage: " + flyem::GetMemoryUsage();
   info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
   info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
 #endif
@@ -6995,7 +6995,7 @@ void MainWindow::on_actionHackathonSimmat_triggered()
 
 void MainWindow::on_actionHackathonEvaluate_triggered()
 {
-  ZFlyEmMisc::HackathonEvaluator evaluator(
+  flyem::HackathonEvaluator evaluator(
         m_hackathonConfigDlg->getSourceDir().toStdString(),
         m_hackathonConfigDlg->getWorkDir().toStdString());
   evaluator.evalulate();
@@ -7775,7 +7775,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONConvCast(const std::string &movieFolder)
 {
-  QString errMsg = ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(
+  QString errMsg = flyem::MB6Paper::GenerateMBONConvCast(
         (GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder).c_str());
 
   if (!errMsg.isEmpty()) {
@@ -7785,8 +7785,8 @@ void MainWindow::generateMBONConvCast(const std::string &movieFolder)
 
 void MainWindow::generateFIB19VsCast(const std::string &movieFolder)
 {
-  QString errMsg = ZFlyEmMisc::FIB19::GenerateFIB19VsCast(
-        ZFlyEmMisc::FIB19::GetMovieDir(movieFolder.c_str()));
+  QString errMsg = flyem::FIB19::GenerateFIB19VsCast(
+        flyem::FIB19::GetMovieDir(movieFolder.c_str()));
 
   if (!errMsg.isEmpty()) {
     report("Failed to generate cast", errMsg.toStdString(), neutube::EMessageType::WARNING);
@@ -7805,18 +7805,18 @@ void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)
   QStringList kcFileList;
   kcFileList << "kc-c.txt" << "kc-p.txt" << "kc-s.txt" << "kc-any.txt";
   QSet<uint64_t> kcSet =
-      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, kcFileList);
+      flyem::MB6Paper::ReadBodyFromSequencer(mainDir, kcFileList);
 
   QSet<uint64_t> mbon11Set =
-      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-11.txt");
+      flyem::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-11.txt");
   QSet<uint64_t> mbon06Set =
-      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-06.txt");
+      flyem::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-06.txt");
   QSet<uint64_t> ppl106Set =
-      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "ppl1-06.txt");
+      flyem::MB6Paper::ReadBodyFromSequencer(mainDir, "ppl1-06.txt");
 
   std::cout << "#bodies: " << kcSet.size() << std::endl;
 
-  ZDvidTarget target = ZFlyEmMisc::MB6Paper::MakeDvidTarget();
+  ZDvidTarget target = flyem::MB6Paper::MakeDvidTarget();
   ZDvidReader reader;
   if (reader.open(target)) {
     //Produce the main neuron

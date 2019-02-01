@@ -1,5 +1,6 @@
 #include "taskbodycleave.h"
 
+#include "logging/zlog.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
@@ -586,6 +587,8 @@ void TaskBodyCleave::beforePrev()
 
 void TaskBodyCleave::beforeLoading()
 {
+  KLog::SetOperationName("body_cleaving");
+
   m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
@@ -605,6 +608,10 @@ void TaskBodyCleave::beforeLoading()
       m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
     }
   }
+
+  KLOG << ZLog::Info()
+       << ZLog::Action("start cleaving")
+       << ZLog::Object("body", "", std::to_string(m_bodyId));
 }
 
 namespace {
@@ -663,6 +670,12 @@ void TaskBodyCleave::onLoaded()
 void TaskBodyCleave::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
+
+  KLOG << ZLog::Info()
+       << ZLog::Action("end cleaving")
+       << ZLog::Object("body", "", std::to_string(m_bodyId));
+
+  KLog::ResetOperationName();
 }
 
 QWidget *TaskBodyCleave::getTaskWidget()
@@ -1680,10 +1693,12 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING,
+                         ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
-      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
+      QMessageBox msgBox(QMessageBox::Warning, title, text,
+                         QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
       QPushButton *okAndSuppress = nullptr;
       if (allowSuppression) {
         okAndSuppress = msgBox.addButton("OK, Don't Ask Again", QMessageBox::AcceptRole);

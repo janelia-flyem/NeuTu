@@ -531,7 +531,7 @@ void Neu3Window::processSliceDockVisibility(bool on)
 void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 {
   if (param.isValid()) {
-    Z3DGraph *graph = ZFlyEmMisc::MakeSliceViewGraph(param);
+    Z3DGraph *graph = flyem::MakeSliceViewGraph(param);
 
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
@@ -648,7 +648,7 @@ void Neu3Window::updateWebView()
     rotation.set(r.x, r.y, r.z);
     rotation.setWeight(r.w);
 
-    QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+    QUrl url(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, getBodyDocument()->getNormalBodySet()));
 
@@ -776,7 +776,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
 
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
-    bo->open(ZFlyEmMisc::GetNeuroglancerPath(
+    bo->open(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
   }

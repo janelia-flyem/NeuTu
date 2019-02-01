@@ -148,11 +148,15 @@ public:
   void end() override;
 //  bool isStarted() const override;
 
+  static void SetOperationName(const std::string &name);
+  static void ResetOperationName(); //reset to default
+
 private:
   void endKLog();
 
 private:
   std::unique_ptr<neuopentracing::Span> m_span;
+  static std::string m_operationName;
 };
 
 class KInfo : public KLog
