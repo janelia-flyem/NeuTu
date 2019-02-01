@@ -372,7 +372,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
-      m_annotationDlg->setDefaultStatusList(ZFlyEmMisc::GetDefaultBodyStatus());
+      m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
     }
   }
 
@@ -1001,7 +1001,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   m_coarseBodyWindow->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           m_coarseBodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
@@ -1037,7 +1037,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
   m_bodyWindow->getMeshFilter()->setStayOnTop(true);
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           m_bodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
@@ -1083,7 +1083,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
 
   if (m_doc->getParentMvc() != NULL) {
     if (windowType != neutube3d::EWindowType::NEU3) {
-      ZFlyEmMisc::Decorate3dBodyWindow(
+      flyem::Decorate3dBodyWindow(
             m_meshWindow, getDvidInfo(),
             m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
@@ -1121,7 +1121,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
   m_skeletonWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
@@ -1200,7 +1200,7 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
   window->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           window, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
@@ -1240,7 +1240,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   m_skeletonWindow->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
@@ -1267,7 +1267,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 //  doc->showTodo(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
+    flyem::Decorate3dBodyWindow(
           m_externalNeuronWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
 
@@ -1604,7 +1604,7 @@ void ZFlyEmProofMvc::updateBodyWindowPlane(
     Z3DWindow *window, const ZStackViewParam &viewParam)
 {
   if (window != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindowPlane(window, getDvidInfo(), viewParam);
+    flyem::Decorate3dBodyWindowPlane(window, getDvidInfo(), viewParam);
   }
 }
 
@@ -1975,9 +1975,9 @@ void ZFlyEmProofMvc::profile()
 
 void ZFlyEmProofMvc::startTestTask(const std::string &taskKey)
 {
-  if (ZFlyEmMisc::IsTaskOpen(QString::fromStdString(taskKey))) {
+  if (flyem::IsTaskOpen(QString::fromStdString(taskKey))) {
     m_taskKey = taskKey;
-    ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(taskKey);
+    ZJsonObject config = flyem::GetTaskReader()->readTestTask(taskKey);
     startTestTask(config);
   }
 }
@@ -2051,7 +2051,7 @@ void ZFlyEmProofMvc::endTestTask()
     array.append(bodyId);
   }
 
-  ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(m_taskKey);
+  ZJsonObject config = flyem::GetTaskReader()->readTestTask(m_taskKey);
   LINFO() << array.toString();
   config.setEntry("merge", array);
   config.setEntry("timestamp", QDateTime::currentDateTime().toString(
@@ -2059,7 +2059,7 @@ void ZFlyEmProofMvc::endTestTask()
 
   std::cout << config.dumpString(2) << std::endl;
 
-  ZFlyEmMisc::GetTaskWriter()->writeTestResult(m_taskKey, config);
+  flyem::GetTaskWriter()->writeTestResult(m_taskKey, config);
 
   m_taskKey.clear();
   emit messageGenerated(
@@ -2896,7 +2896,7 @@ void ZFlyEmProofMvc::testBodySplit()
           ZObject3dScan *mask = sparseStack->getObjectMask();
           if (mask != NULL) {
             std::vector<ZStroke2d*> seedList =
-                ZFlyEmMisc::MakeSplitSeedList(*mask);
+                flyem::MakeSplitSeedList(*mask);
             for (std::vector<ZStroke2d*>::iterator iter = seedList.begin();
                  iter != seedList.end(); ++iter) {
               getDocument()->addObject(*iter);
@@ -5841,7 +5841,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
             bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
             m_splitProject.commitCoarseSplit(bodyInRoi);
-            ZFlyEmMisc::SubtractBodyWithBlock(
+            flyem::SubtractBodyWithBlock(
                   getCompleteDocument()->getBodyForSplit()->getObjectMask(),
                   bodyInRoi, dvidInfo);
             getCompleteDocument()->processObjectModified(

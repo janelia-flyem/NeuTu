@@ -108,7 +108,7 @@ void neutu::LogMouseReleaseEvent(
 
     KLOG << ZLog::Info()
          << ZLog::Window(window.toStdString())
-         << ZLog::Action("relase")
+         << ZLog::Action("release")
          << ZLog::Object("mouse", name);
   }
 }

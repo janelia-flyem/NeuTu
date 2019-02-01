@@ -1430,7 +1430,7 @@ ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
     ZIntCuboid seedBox = GetSeedRange(m_seedArray);
     if (m_rangeOption == RANGE_SEED_ROI) {
       if (!seedBox.isEmpty()) {
-        seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
+        seedBox = flyem::EstimateSplitRoi(seedBox);
       }
     } else {
       seedBox.expand(5, 5, 5);

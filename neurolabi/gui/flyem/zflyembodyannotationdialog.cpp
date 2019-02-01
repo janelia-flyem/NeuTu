@@ -13,7 +13,7 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
+  flyem::PrepareBodyStatus(ui->statusComboBox);
 
   if (neutube::IsAdminUser()) {
     showFinalizedStatus();

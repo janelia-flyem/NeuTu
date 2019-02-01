@@ -117,7 +117,7 @@ void ZMovieMaker::recruitCast()
       obj.load(iter->second);
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
-            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+            flyem::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
         cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
@@ -134,7 +134,7 @@ void ZMovieMaker::recruitCast()
       obj.importDvidRoi(iter->second);
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
-            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+            flyem::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
         cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;

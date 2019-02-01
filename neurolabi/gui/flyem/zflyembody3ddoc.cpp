@@ -822,7 +822,7 @@ void ZFlyEmBody3dDoc::saveSplitTask()
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
-      ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+      ZJsonArray seedJson = flyem::GetSeedJson(this);
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
@@ -833,7 +833,7 @@ void ZFlyEmBody3dDoc::saveSplitTask()
         }
       } else {
         ZJsonArray roiJson;
-        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+        ZJsonObject task = flyem::MakeSplitTask(
               getDvidTarget(), bodyId, seedJson, roiJson);
 
         //          std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
@@ -1957,7 +1957,7 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
-      m_annotationDlg->setDefaultStatusList(ZFlyEmMisc::GetDefaultBodyStatus());
+      m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
     }
   }
 
@@ -2271,7 +2271,7 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
   }
 
   QList<ZStackObject*> seedList =
-      ZFlyEmMisc::LoadSplitTask(getDvidTarget(), bodyId);
+      flyem::LoadSplitTask(getDvidTarget(), bodyId);
 
   if (!seedList.isEmpty()) {
     getDataBuffer()->addUpdate(
@@ -2287,7 +2287,7 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::removeSplitTask(uint64_t bodyId)
 {
-  ZFlyEmMisc::RemoveSplitTask(getDvidTarget(), bodyId);
+  flyem::RemoveSplitTask(getDvidTarget(), bodyId);
 }
 
 void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)

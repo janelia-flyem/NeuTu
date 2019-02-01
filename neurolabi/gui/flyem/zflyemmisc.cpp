@@ -49,7 +49,7 @@
 #include "misc/miscutility.h"
 #include "zmeshfactory.h"
 
-void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
+void flyem::NormalizeSimmat(ZMatrix &simmat)
 {
   for (int j = 0; j < simmat.getColumnNumber(); ++j) {
     double maxC = simmat.getValue(j, j);
@@ -63,29 +63,29 @@ void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
   simmat.setDiag(1);
 }
 
-ZFlyEmMisc::HackathonEvaluator::HackathonEvaluator(
+flyem::HackathonEvaluator::HackathonEvaluator(
     const std::string &sourceDir, const std::string &workDir) :
   m_sourceDir(sourceDir), m_workDir(workDir), m_accuracy(0)
 {
 
 }
 
-std::string ZFlyEmMisc::HackathonEvaluator::getNeuronInfoFile() const
+std::string flyem::HackathonEvaluator::getNeuronInfoFile() const
 {
   return getSourceDir() + "/neuronsinfo.json";
 }
 
-std::string ZFlyEmMisc::HackathonEvaluator::getNeuronTypeFile() const
+std::string flyem::HackathonEvaluator::getNeuronTypeFile() const
 {
   return getWorkDir() + "/neuron_type.json";
 }
 
-std::string ZFlyEmMisc::HackathonEvaluator::getSimmatFile() const
+std::string flyem::HackathonEvaluator::getSimmatFile() const
 {
   return getWorkDir() + "/simmat.txt";
 }
 
-void ZFlyEmMisc::HackathonEvaluator::processNeuronTypeFile()
+void flyem::HackathonEvaluator::processNeuronTypeFile()
 {
   ZJsonObject jsonObject;
   jsonObject.load(getNeuronInfoFile());
@@ -132,7 +132,7 @@ void ZFlyEmMisc::HackathonEvaluator::processNeuronTypeFile()
   rootJson.dump(getNeuronTypeFile());
 }
 
-void ZFlyEmMisc::HackathonEvaluator::evalulate()
+void flyem::HackathonEvaluator::evalulate()
 {
   processNeuronTypeFile();
 
@@ -150,7 +150,7 @@ void ZFlyEmMisc::HackathonEvaluator::evalulate()
   }
 
   ZMatrix simmat = matrix.makeRowSlice(1, matrix.getRowNumber() - 1);
-  ZFlyEmMisc::NormalizeSimmat(simmat);
+  flyem::NormalizeSimmat(simmat);
   simmat.setDiag(0);
 
 #ifdef _DEBUG_
@@ -189,7 +189,7 @@ void ZFlyEmMisc::HackathonEvaluator::evalulate()
 //  report("Evaluation", information.toStdString(), neutube::EMessageType::MSG_INFORMATION);
 }
 
-Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
+Z3DGraph* flyem::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
 {
   ZCuboid box;
   box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
@@ -201,7 +201,7 @@ Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
   return graph;
 }
 
-Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
+Z3DGraph* flyem::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
 {
   Z3DGraph *graph = NULL;
   if (doc != NULL) {
@@ -227,7 +227,7 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
   return graph;
 }
 
-Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
+Z3DGraph* flyem::MakeSliceViewGraph(const ZArbSliceViewParam &param)
 {
   Z3DGraph *graph = NULL;
   if (param.isValid()) {
@@ -246,7 +246,7 @@ Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
   return graph;
 }
 
-Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
+Z3DGraph* flyem::MakeRoiGraph(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
 {
   int sampleInterval = 1;
@@ -347,7 +347,7 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
-ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+ZCubeArray* flyem::MakeRoiCube(
     const ZObject3dScan &roi, QColor color, int dsIntv)
 {
   ZCubeArray *cubeArray = new ZCubeArray;
@@ -439,7 +439,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 #endif
 }
 
-ZStack* ZFlyEmMisc::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
+ZStack* flyem::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
 {
   return MakeColorSegmentation(reader, ar, 0, 0);
 }
@@ -478,7 +478,7 @@ ZStack* LabelToColorStack(const ZArray *array)
 
 } //namespace
 
-ZStack* ZFlyEmMisc::MakeColorSegmentation(
+ZStack* flyem::MakeColorSegmentation(
     const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
 {
   ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy, true);
@@ -488,7 +488,7 @@ ZStack* ZFlyEmMisc::MakeColorSegmentation(
   return stack;
 }
 
-ZStack* ZFlyEmMisc::MakeColorSegmentation(
+ZStack* flyem::MakeColorSegmentation(
     const ZDvidReader &reader, int x0, int y0, int z0, int width, int height,
     int zoom, int ccx, int ccy)
 {
@@ -501,7 +501,7 @@ ZStack* ZFlyEmMisc::MakeColorSegmentation(
 }
 
 
-ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+ZCubeArray* flyem::MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
 {
   ZCubeArray *cubeArray = new ZCubeArray;
@@ -591,7 +591,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 #endif
 }
 
-ZMesh* ZFlyEmMisc::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv)
+ZMesh* flyem::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv)
 {
   ZObject3dScan dsRoi = roi;
 
@@ -675,7 +675,7 @@ ZMesh* ZFlyEmMisc::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsInt
   return mesh;
 }
 
-ZMesh* ZFlyEmMisc::MakeRoiMesh(
+ZMesh* flyem::MakeRoiMesh(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
 {
   ZObject3dScan dsRoi = roi;
@@ -756,7 +756,7 @@ ZMesh* ZFlyEmMisc::MakeRoiMesh(
   return mesh;
 }
 
-void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
     const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
@@ -824,7 +824,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &d
 }
 
 
-void ZFlyEmMisc::Decorate3dBodyWindow(
+void flyem::Decorate3dBodyWindow(
     Z3DWindow *window, const ZDvidInfo &dvidInfo,
     const ZStackViewParam &viewParam, bool visible)
 {
@@ -852,7 +852,7 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
   }
 }
 
-void ZFlyEmMisc::Decorate3dBodyWindowRoi(
+void flyem::Decorate3dBodyWindowRoi(
     Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
@@ -881,7 +881,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
   }
 }
 
-void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+void flyem::Decorate3dBodyWindowRoiCube(
     Z3DWindow *window, const ZDvidInfo &/*dvidInfo*/, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
@@ -975,7 +975,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
 //  }
 }
 
-void ZFlyEmMisc::SubtractBodyWithBlock(
+void flyem::SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo)
 {
@@ -998,7 +998,7 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
   }
 }
 
-void ZFlyEmMisc::MakeStar(
+void flyem::MakeStar(
     const QPointF &center, double radius, QPointF *ptArray)
 {
   const double shapeFactor = 0.25;
@@ -1019,7 +1019,7 @@ void ZFlyEmMisc::MakeStar(
   ptArray[8] = ptArray[0];
 }
 
-void ZFlyEmMisc::MakeStar(const QRectF &rect, QPointF *ptArray)
+void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
 {
   QPointF center = rect.center();
   double width= rect.width();
@@ -1038,7 +1038,7 @@ void ZFlyEmMisc::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[8] = ptArray[0];
 }
 
-void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
+void flyem::PrepareBodyStatus(QComboBox *box)
 {
   if (box != NULL) {
     box->clear();
@@ -1053,14 +1053,14 @@ void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
   }
 }
 
-QList<QString> ZFlyEmMisc::GetDefaultBodyStatus()
+QList<QString> flyem::GetDefaultBodyStatus()
 {
   return QList<QString>() << "Not examined" << "Traced" << "Traced in ROI"
                           << "Partially traced" << "Orphan" << "Hard to trace"
                           << "Finalized";
 }
 
-void ZFlyEmMisc::MakeTriangle(
+void flyem::MakeTriangle(
     const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
   switch (direction) {
@@ -1089,7 +1089,7 @@ void ZFlyEmMisc::MakeTriangle(
   ptArray[3] = ptArray[0];
 }
 
-QString ZFlyEmMisc::GetMemoryUsage()
+QString flyem::GetMemoryUsage()
 {
   QString memInfo;
 
@@ -1148,7 +1148,7 @@ QString ZFlyEmMisc::GetMemoryUsage()
   return memInfo;
 }
 
-ZStroke2d* ZFlyEmMisc::MakeSplitSeed(const ZObject3dScan &slice, int label)
+ZStroke2d* flyem::MakeSplitSeed(const ZObject3dScan &slice, int label)
 {
   ZVoxel voxel = slice.getMarker();
   ZStroke2d *stroke = new ZStroke2d;
@@ -1162,22 +1162,22 @@ ZStroke2d* ZFlyEmMisc::MakeSplitSeed(const ZObject3dScan &slice, int label)
   return stroke;
 }
 
-std::vector<ZStroke2d*> ZFlyEmMisc::MakeSplitSeedList(const ZObject3dScan &obj)
+std::vector<ZStroke2d*> flyem::MakeSplitSeedList(const ZObject3dScan &obj)
 {
   std::vector<ZStroke2d*> seedList;
 
   ZVoxel voxel = obj.getMarker();
 
   ZObject3dScan slice = obj.getSlice(voxel.z());
-  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 1));
+  seedList.push_back(flyem::MakeSplitSeed(slice, 1));
 
   slice = obj.getSlice(voxel.z() + 1);
-  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+  seedList.push_back(flyem::MakeSplitSeed(slice, 2));
 
   return seedList;
 }
 
-void ZFlyEmMisc::SetSplitTaskSignalUrl(
+void flyem::SetSplitTaskSignalUrl(
     ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target)
 {
   ZDvidUrl dvidUrl(target);
@@ -1187,7 +1187,7 @@ void ZFlyEmMisc::SetSplitTaskSignalUrl(
   }
 }
 
-ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
+ZStroke2d flyem::SyGlassSeedToStroke(const ZJsonObject &obj)
 {
   ZStroke2d stroke;
   stroke.setLabel(0);
@@ -1201,7 +1201,7 @@ ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
   return stroke;
 }
 
-ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(
+ZStroke2d flyem::SyGlassSeedToStroke(
     const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv)
 {
   ZStroke2d stroke = SyGlassSeedToStroke(obj);
@@ -1212,7 +1212,7 @@ ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(
   return stroke;
 }
 
-ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZStroke2d &stroke)
+ZJsonObject flyem::MakeSplitSeedJson(const ZStroke2d &stroke)
 {
   ZJsonObject json;
 
@@ -1224,7 +1224,7 @@ ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZStroke2d &stroke)
   return json;
 }
 
-ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZObject3d &seed)
+ZJsonObject flyem::MakeSplitSeedJson(const ZObject3d &seed)
 {
   ZJsonObject json;
 
@@ -1237,7 +1237,7 @@ ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZObject3d &seed)
 }
 
 template<typename T>
-void ZFlyEmMisc::AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj)
+void flyem::AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj)
 {
   ZJsonArray array;
 
@@ -1250,17 +1250,17 @@ void ZFlyEmMisc::AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj)
   array.append(MakeSplitSeedJson(obj));
 }
 
-void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
+void flyem::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
 {
   AddSplitTaskSeedG(taskObj, stroke);
 }
 
-void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj)
+void flyem::AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj)
 {
   AddSplitTaskSeedG(taskObj, obj);
 }
 
-ZJsonArray ZFlyEmMisc::GetSeedJson(ZStackDoc *doc)
+ZJsonArray flyem::GetSeedJson(ZStackDoc *doc)
 {
   QList<ZDocPlayer*> playerList =
       doc->getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -1275,7 +1275,7 @@ ZJsonArray ZFlyEmMisc::GetSeedJson(ZStackDoc *doc)
   return jsonArray;
 }
 
-void ZFlyEmMisc::UploadSyGlassTask(
+void flyem::UploadSyGlassTask(
     const std::string &filePath, const ZDvidTarget &target)
 {
   ZJsonArray rootObj;
@@ -1294,13 +1294,13 @@ void ZFlyEmMisc::UploadSyGlassTask(
 
       if (bodyId > 0) {
         ZJsonObject taskJson;
-        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+        flyem::SetSplitTaskSignalUrl(taskJson, bodyId, target);
 
         for (size_t i = 0; i < markerJson.size(); ++i) {
           ZJsonObject markerObj(markerJson.value(i));
           ZStroke2d stroke =
-              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
-          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+              flyem::SyGlassSeedToStroke(markerObj);
+          flyem::AddSplitTaskSeed(taskJson, stroke);
         }
         std::string location = writer->writeServiceTask("split", taskJson);
 
@@ -1313,7 +1313,7 @@ void ZFlyEmMisc::UploadSyGlassTask(
   }
 }
 
-QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
+QString flyem::ReadLastLines(const QString &filePath, int maxCount)
 {
   QString str;
 
@@ -1344,7 +1344,7 @@ QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
-ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
+ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 {
   ZIntCuboid newBox = boundBox;
 
@@ -1369,7 +1369,7 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
   return newBox;
 }
 
-QString ZFlyEmMisc::GetNeuroglancerPath(
+QString flyem::GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
     const QSet<uint64_t> &bodySet)
 {
@@ -1421,7 +1421,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
   return path;
 }
 
-void ZFlyEmMisc::UpdateBodyStatus(
+void flyem::UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
 {
   if (writer) {
@@ -1442,7 +1442,7 @@ void ZFlyEmMisc::UpdateBodyStatus(
   }
 }
 
-void ZFlyEmMisc::UploadRoi(
+void flyem::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {
   if (writer) {
@@ -1500,7 +1500,7 @@ void ZFlyEmMisc::UploadRoi(
   }
 }
 
-void ZFlyEmMisc::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
+void flyem::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
 {
   ZObject3dScan obj;
   writer.getDvidReader().readSupervoxel(svId, true, &obj);
@@ -1513,7 +1513,7 @@ void ZFlyEmMisc::UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId)
   delete mesh;
 }
 
-std::vector<uint64_t> ZFlyEmMisc::LoadBodyList(const std::string &input)
+std::vector<uint64_t> flyem::LoadBodyList(const std::string &input)
 {
   std::vector<uint64_t> bodyList;
 
@@ -1533,7 +1533,7 @@ std::vector<uint64_t> ZFlyEmMisc::LoadBodyList(const std::string &input)
   return bodyList;
 }
 
-ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
+ZStack* flyem::GenerateExampleStack(const ZJsonObject &obj)
 {
   ZDvidTarget target;
   target.loadJsonObject(ZJsonObject(obj.value("dvid")));
@@ -1562,7 +1562,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 }
 
 
-ZStack* ZFlyEmMisc::GenerateExampleStack(
+ZStack* flyem::GenerateExampleStack(
     const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range)
 {
   ZStack *stack = NULL;
@@ -1579,7 +1579,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(
   return stack;
 }
 
-QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(const ZJsonObject &taskJson)
+QList<ZStackObject*> flyem::LoadSplitTask(const ZJsonObject &taskJson)
 {
   ZJsonArray seedArrayJson(taskJson.value("seeds"));
   QList<ZStackObject*> seedList;
@@ -1618,7 +1618,7 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(const ZJsonObject &taskJson)
   return seedList;
 }
 
-QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
+QList<ZStackObject*> flyem::LoadSplitTask(
     const ZDvidTarget &target, uint64_t bodyId)
 {
   ZDvidUrl dvidUrl(target);
@@ -1646,7 +1646,7 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   return seedList;
 }
 
-void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
+void flyem::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
 {
   ZDvidUrl dvidUrl(target);
   std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
@@ -1655,7 +1655,7 @@ void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
   writer->deleteKey(ZDvidData::GetTaskName("split"), taskKey);
 }
 
-ZJsonObject ZFlyEmMisc::MakeSplitTask(
+ZJsonObject flyem::MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId,
     ZJsonArray seedJson, ZJsonArray roiJson)
 {
@@ -1684,7 +1684,7 @@ ZJsonObject ZFlyEmMisc::MakeSplitTask(
   return task;
 }
 
-ZDvidReader* ZFlyEmMisc::GetTaskReader()
+ZDvidReader* flyem::GetTaskReader()
 {
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReaderFromUrl(
@@ -1693,7 +1693,7 @@ ZDvidReader* ZFlyEmMisc::GetTaskReader()
   return reader;
 }
 
-ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
+ZDvidWriter* flyem::GetTaskWriter()
 {
   ZDvidWriter *writer =
       ZGlobal::GetInstance().getDvidWriterFromUrl(
@@ -1702,7 +1702,7 @@ ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
   return writer;
 }
 
-bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
+bool flyem::IsTaskOpen(const QString &taskKey)
 {
   ZDvidReader *reader = GetTaskReader();
   if (reader != NULL) {
@@ -1717,7 +1717,7 @@ bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
 }
 
 
-QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
+QSet<uint64_t> flyem::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
   QStringList fileList;
   fileList << filePath;
@@ -1725,7 +1725,7 @@ QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePa
   return ReadBodyFromSequencer(fileList);
 }
 
-QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+QSet<uint64_t> flyem::MB6Paper::ReadBodyFromSequencer(
     const QDir &dir, const QStringList &fileList)
 {
   QStringList fullFilePathList;
@@ -1736,13 +1736,13 @@ QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
   return ReadBodyFromSequencer(fullFilePathList);
 }
 
-QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+QSet<uint64_t> flyem::MB6Paper::ReadBodyFromSequencer(
     const QDir &dir, const QString &filePath)
 {
   return ReadBodyFromSequencer(dir.absoluteFilePath(filePath));
 }
 
-QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+QSet<uint64_t> flyem::MB6Paper::ReadBodyFromSequencer(
     const QStringList &fileList)
 {
   QSet<uint64_t> bodySet;
@@ -1766,17 +1766,17 @@ QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
   return bodySet;
 }
 
-QString ZFlyEmMisc::FIB19::GetRootDir()
+QString flyem::FIB19::GetRootDir()
 {
   return (GET_FLYEM_DATA_DIR + "/FIB/FIB19/movies").c_str();
 }
 
-QString ZFlyEmMisc::FIB19::GetMovieDir(const QString &folder)
+QString flyem::FIB19::GetMovieDir(const QString &folder)
 {
   return QDir(GetRootDir()).absoluteFilePath(folder);
 }
 
-ZDvidTarget ZFlyEmMisc::FIB19::MakeDvidTarget()
+ZDvidTarget flyem::FIB19::MakeDvidTarget()
 {
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
@@ -1785,7 +1785,7 @@ ZDvidTarget ZFlyEmMisc::FIB19::MakeDvidTarget()
   return target;
 }
 
-QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
+QString flyem::FIB19::GenerateFIB19VsSynapseCast(
     const QString &movieDir, const QString &neuronType)
 {
   QString errMsg;
@@ -1835,7 +1835,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
   return errMsg;
 }
 
-QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
+QString flyem::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
 {
   QString errMsg = GenerateFIB19VsSynapseCast(movieDir, "VS");
   errMsg += GenerateFIB19VsSynapseCast(movieDir, "VS_branch");
@@ -1844,7 +1844,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
   return errMsg;
 }
 
-QString ZFlyEmMisc::FIB19::GenerateRoiCast(
+QString flyem::FIB19::GenerateRoiCast(
     const QVector<QString> &roiList, const QString &movieDir)
 {
   QString errMsg;
@@ -1864,7 +1864,7 @@ QString ZFlyEmMisc::FIB19::GenerateRoiCast(
   return errMsg;
 }
 
-QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
+QString flyem::FIB19::GenerateFIB19VsCast(const QString &movieDir)
 {
   QString errMsg;
   QDir outDir(movieDir + "/cast");
@@ -1987,7 +1987,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
   return errMsg;
 }
 
-ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
+ZDvidTarget flyem::MB6Paper::MakeDvidTarget()
 {
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -1999,7 +1999,7 @@ ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
   return target;
 }
 
-QString ZFlyEmMisc::MB6Paper::GenerateNeuronCast(
+QString flyem::MB6Paper::GenerateNeuronCast(
     const ZDvidTarget &target, const QString &movieDir,
     QVector<uint64_t> neuronArray)
 {
@@ -2044,7 +2044,7 @@ QString ZFlyEmMisc::MB6Paper::GenerateNeuronCast(
   return errMsg;
 }
 
-std::vector<ZVaa3dMarker> ZFlyEmMisc::MB6Paper::GetLocationMarker(
+std::vector<ZVaa3dMarker> flyem::MB6Paper::GetLocationMarker(
     const ZJsonArray &json)
 {
   std::vector<ZVaa3dMarker> markerArray;
@@ -2066,7 +2066,7 @@ std::vector<ZVaa3dMarker> ZFlyEmMisc::MB6Paper::GetLocationMarker(
   return markerArray;
 }
 
-QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
+QString flyem::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 {
   ZDvidTarget target = MakeDvidTarget();
 
