@@ -33,6 +33,7 @@ public:
   int getStatusRank(const std::string &status) const;
   bool isFinal(const std::string &status) const;
   bool isMergable(const std::string &status) const;
+  bool isAdminAccessible(const std::string &status) const;
 //  bool hasConflict(const std::string &s1, const std::string &s2) const;
 
   std::vector<std::vector<uint64_t>> getConflictBody(

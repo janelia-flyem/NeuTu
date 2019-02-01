@@ -825,7 +825,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemroimanager.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h
+    dialogs/neuprintsetupdialog.h \
+    flyem/flyemdialogfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1438,7 +1439,8 @@ SOURCES += main.cpp \
     flyem/zflyemroimanager.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
-    dialogs/neuprintsetupdialog.cpp
+    dialogs/neuprintsetupdialog.cpp \
+    flyem/flyemdialogfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -246,6 +246,7 @@ public:
   void startTimer();
 
   QList<QString> getBodyStatusList() const;
+  QList<QString> getAdminBodyStatusList() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should

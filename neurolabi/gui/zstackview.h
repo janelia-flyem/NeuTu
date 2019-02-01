@@ -566,7 +566,7 @@ signals:
   void autoTracing();
 
 private:
-  void hideLayout(QLayout *layout);
+  void hideLayout(QLayout *layout, bool removing);
 
   void updateSliceFromZ(int z);
   void recordViewParam();

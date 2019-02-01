@@ -141,6 +141,11 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
   return finalAnnotation;
 }
 
+QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
+{
+  return getMergeProject()->getAdminStatusList();
+}
+
 QList<QString> ZFlyEmProofDoc::getBodyStatusList() const
 {
   return getMergeProject()->getBodyStatusList();
