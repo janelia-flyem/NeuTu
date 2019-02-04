@@ -633,7 +633,7 @@ public:
   bool importHdf5(const std::string &filePath, const std::string &key);
 
   /*!
-   * \brief Saven object to an HDF5 file.
+   * \brief Save object to an HDF5 file.
    *
    * If \a filePath exists, the function will try to write the object with the
    * appending mode; otherwise it will try to create a new HDF5 file.

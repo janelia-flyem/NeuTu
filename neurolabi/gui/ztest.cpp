@@ -21615,7 +21615,7 @@ void ZTest::test(MainWindow *host)
     std::cout << "  " << *iter << std::endl;
   }
 
-  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
   obj.print();
 
   obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
@@ -21624,7 +21624,7 @@ void ZTest::test(MainWindow *host)
   target.setUuid("e2f0");
   ZDvidReader reader2;
   reader2.open(target);
-  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
   obj.print();
 #endif
 
@@ -21635,7 +21635,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   target.loadDvidDataSetting(
-        reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT));
+        reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT));
   ZDvidReader reader2;
   reader2.open(target);
 
@@ -21658,7 +21658,7 @@ void ZTest::test(MainWindow *host)
   reader.getDvidTarget().toDvidDataSetting().print();
 
 
-  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
 
   target = reader.getDvidTarget();
   target.loadDvidDataSetting(obj);

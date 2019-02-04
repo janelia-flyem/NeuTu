@@ -114,6 +114,15 @@ void ZFlyEmProofDoc::startTimer()
   }
 }
 
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
+{
+  if (m_annotationMap.contains(bodyId)) {
+    return m_annotationMap[bodyId];
+  }
+
+  return ZFlyEmBodyAnnotation();
+}
+
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
     const std::vector<uint64_t> &bodyList)
 {
@@ -122,10 +131,11 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
     for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
-      ZFlyEmBodyAnnotation annotation = getDvidReader().readBodyAnnotation(bodyId);
+      ZFlyEmBodyAnnotation annotation =
+          getDvidReader().readBodyAnnotation(bodyId);
+      recordAnnotation(bodyId, annotation);
 
-      if (!annotation.isEmpty()) {
-        recordAnnotation(bodyId, annotation);
+      if (!annotation.isEmpty()) {  
         if (finalAnnotation.isEmpty()) {
           finalAnnotation = annotation;
         } else {
@@ -149,23 +159,11 @@ QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
 QList<QString> ZFlyEmProofDoc::getBodyStatusList() const
 {
   return getMergeProject()->getBodyStatusList();
-  /*
-  ZJsonObject statusJson = getDvidReader().readBodyStatusV2();
+}
 
-
-  ZJsonArray statusListJson(statusJson.value("status"));
-
-  QList<QString> statusList;
-  for (size_t i = 0; i < statusListJson.size(); ++i) {
-    ZFlyEmBodyStatus status;
-    status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
-    if (status.isAccessible()) {
-      statusList.append(status.getName().c_str());
-    }
-  }
-
-  return statusList;
-  */
+int ZFlyEmProofDoc::getBodyStatusRank(const std::string &status) const
+{
+  return getMergeProject()->getStatusRank(status);
 }
 
 void ZFlyEmProofDoc::initAutoSave()
