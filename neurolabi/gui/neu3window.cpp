@@ -531,7 +531,7 @@ void Neu3Window::processSliceDockVisibility(bool on)
 void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 {
   if (param.isValid()) {
-    Z3DGraph *graph = ZFlyEmMisc::MakeSliceViewGraph(param);
+    Z3DGraph *graph = flyem::MakeSliceViewGraph(param);
 
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
@@ -552,7 +552,7 @@ void Neu3Window::removeSliceViewGraph()
 
 void Neu3Window::updateBrowseSize()
 {
-  if (m_browseMode == BROWSE_NATIVE) {
+  if (m_browseMode == EBrowseMode::NATIVE) {
     if (m_sliceWidget != NULL) {
       QRect rect = m_sliceWidget->getViewPort();
       m_browseWidth = rect.width();
@@ -593,7 +593,7 @@ void Neu3Window::updateSliceWidget()
 void Neu3Window::updateSliceBrowser()
 {
   switch (m_browseMode) {
-  case BROWSE_NATIVE:
+  case EBrowseMode::NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
       LDEBUG() << "m_nativeSliceDock->show called";
@@ -601,7 +601,7 @@ void Neu3Window::updateSliceBrowser()
 //      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
-  case BROWSE_NEUROGLANCER:
+  case EBrowseMode::NEUROGLANCER:
     if (m_webSliceDock != NULL) {
       m_webSliceDock->show();
       updateWebView();
@@ -648,7 +648,7 @@ void Neu3Window::updateWebView()
     rotation.set(r.x, r.y, r.z);
     rotation.setWeight(r.w);
 
-    QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+    QUrl url(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, getBodyDocument()->getNormalBodySet()));
 
@@ -719,7 +719,7 @@ void Neu3Window::browse(double x, double y, double z)
 {
   m_browsePos.set(x, y, z);
 
-  if (m_browseMode == BROWSE_NONE) {
+  if (m_browseMode == EBrowseMode::NONE) {
     if (m_browseOptionDlg->exec()) {
       startBrowser(m_browseOptionDlg->getBrowseMode());
     }
@@ -738,8 +738,8 @@ void Neu3Window::browse(
 {
   m_browsePos.set(x, y, z);
 
-  if (m_browseMode == BROWSE_NONE) {
-    m_browseMode = BROWSE_NATIVE;
+  if (m_browseMode == EBrowseMode::NONE) {
+    m_browseMode = EBrowseMode::NATIVE;
     initNativeSliceBrowser();
   }
 
@@ -752,13 +752,13 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   m_browseMode = mode;
 
   switch (mode) {
-  case BROWSE_NATIVE:
+  case EBrowseMode::NATIVE:
   {
     initNativeSliceBrowser();
     updateSliceBrowser();
   }
     break;
-  case BROWSE_NEUROGLANCER:
+  case EBrowseMode::NEUROGLANCER:
   {
   #if defined(_USE_WEBENGINE_)
     initWebView();
@@ -766,9 +766,9 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   #endif
   }
     break;
-  case BROWSE_NEUROGLANCER_EXT:
+  case EBrowseMode::NEUROGLANCER_EXT:
   {
-    m_browseMode = BROWSE_NONE;
+    m_browseMode = EBrowseMode::NONE;
     glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
     ZWeightedPoint rotation;
     rotation.set(r.x, r.y, r.z);
@@ -776,7 +776,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
 
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
-    bo->open(ZFlyEmMisc::GetNeuroglancerPath(
+    bo->open(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
   }
@@ -788,7 +788,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
 
 void Neu3Window::endBrowse()
 {
-  m_browseMode = BROWSE_NONE;
+  m_browseMode = EBrowseMode::NONE;
   removeSliceViewGraph();
 }
 

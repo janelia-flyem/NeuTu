@@ -266,7 +266,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
       QPointF ptArray[9];
-      ZFlyEmMisc::MakeStar(QPointF(x, y), radius, ptArray);
+      flyem::MakeStar(QPointF(x, y), radius, ptArray);
       painter.drawPolyline(ptArray, 9);
 
       if (getPriority() > 0) {

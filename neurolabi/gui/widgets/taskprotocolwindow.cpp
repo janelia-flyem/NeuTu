@@ -143,13 +143,13 @@ void TaskProtocolWindow::init() {
     }
     */
 
-    ZDvid::ENodeStatus status = reader.getNodeStatus();
-    if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
+    dvid::ENodeStatus status = reader.getNodeStatus();
+    if (status == dvid::ENodeStatus::INVALID || status == dvid::ENodeStatus::OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
-    if (status == ZDvid::NODE_LOCKED) {
+    if (status == dvid::ENodeStatus::LOCKED) {
         m_nodeLocked = true;
         ui->completedCheckBox->setEnabled(false);
     } else {

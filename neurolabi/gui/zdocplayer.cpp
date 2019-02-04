@@ -397,7 +397,7 @@ ZJsonObject ZStroke2dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;
@@ -611,7 +611,7 @@ ZJsonObject ZObject3dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;

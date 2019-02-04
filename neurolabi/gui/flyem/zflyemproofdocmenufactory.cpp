@@ -133,9 +133,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           if (selectedOriginal.size() == 1) {
 
             if (ZStackDocHelper::AllowingBodyAnnotation(doc)) {
-              if (neutube::IsAdminUser()) {
-                config.append(ZActionFactory::ACTION_BODY_EXPERT_STATUS);
-              }
+//              if (neutube::IsAdminUser()) {
+//                config.append(ZActionFactory::ACTION_BODY_EXPERT_STATUS);
+//              }
               config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
 

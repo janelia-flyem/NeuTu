@@ -114,6 +114,15 @@ void ZFlyEmProofDoc::startTimer()
   }
 }
 
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
+{
+  if (m_annotationMap.contains(bodyId)) {
+    return m_annotationMap[bodyId];
+  }
+
+  return ZFlyEmBodyAnnotation();
+}
+
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
     const std::vector<uint64_t> &bodyList)
 {
@@ -122,10 +131,11 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
     for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
-      ZFlyEmBodyAnnotation annotation = getDvidReader().readBodyAnnotation(bodyId);
+      ZFlyEmBodyAnnotation annotation =
+          getDvidReader().readBodyAnnotation(bodyId);
+      recordAnnotation(bodyId, annotation);
 
-      if (!annotation.isEmpty()) {
-        recordAnnotation(bodyId, annotation);
+      if (!annotation.isEmpty()) {  
         if (finalAnnotation.isEmpty()) {
           finalAnnotation = annotation;
         } else {
@@ -141,26 +151,24 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
   return finalAnnotation;
 }
 
+QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
+{
+  return getMergeProject()->getAdminStatusList();
+}
+
 QList<QString> ZFlyEmProofDoc::getBodyStatusList() const
 {
   return getMergeProject()->getBodyStatusList();
-  /*
-  ZJsonObject statusJson = getDvidReader().readBodyStatusV2();
+}
 
+int ZFlyEmProofDoc::getBodyStatusRank(const std::string &status) const
+{
+  return getMergeProject()->getStatusRank(status);
+}
 
-  ZJsonArray statusListJson(statusJson.value("status"));
-
-  QList<QString> statusList;
-  for (size_t i = 0; i < statusListJson.size(); ++i) {
-    ZFlyEmBodyStatus status;
-    status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
-    if (status.isAccessible()) {
-      statusList.append(status.getName().c_str());
-    }
-  }
-
-  return statusList;
-  */
+bool ZFlyEmProofDoc::isExpertBodyStatus(const std::string &status) const
+{
+  return getMergeProject()->isExpertStatus(status);
 }
 
 void ZFlyEmProofDoc::initAutoSave()
@@ -940,7 +948,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
 {
-  return ZDvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
+  return dvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
 }
 
 namespace {
@@ -3820,7 +3828,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
     ZIntCuboidObj *roi = getSplitRoi();
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
-        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3840,7 +3848,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();

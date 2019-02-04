@@ -299,16 +299,16 @@ public:
   std::string getSynapseLabelszUrl(int n) const;
   std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
 
-  static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
-  std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
+  static std::string GetLabelszIndexTypeStr(dvid::ELabelIndexType type);
+  std::string getSynapseLabelszUrl(int n, dvid::ELabelIndexType indexType) const;
   std::string getSynapseLabelszBodyUrl(
-      uint64_t bodyId, ZDvid::ELabelIndexType indexType) const;
+      uint64_t bodyId, dvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
   std::string getSynapseLabelszThresholdUrl(
-      int threshold, ZDvid::ELabelIndexType indexType) const;
+      int threshold, dvid::ELabelIndexType indexType) const;
   std::string getSynapseLabelszThresholdUrl(
-      int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+      int threshold, dvid::ELabelIndexType indexType, int offset, int number) const;
 
 public:
   static std::string GetPath(const std::string &url);

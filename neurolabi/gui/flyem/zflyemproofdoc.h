@@ -210,11 +210,13 @@ public:
   template <typename InputIterator>
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
+  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
 
   void verifyBodyAnnotationMap();
 
   ZFlyEmBodyAnnotation getFinalAnnotation(
       const std::vector<uint64_t> &bodyList);
+
   /*!
    * \brief Remove unselected bodies from annotation map.
    *
@@ -246,6 +248,9 @@ public:
   void startTimer();
 
   QList<QString> getBodyStatusList() const;
+  QList<QString> getAdminBodyStatusList() const;
+  int getBodyStatusRank(const std::string &status) const;
+  bool isExpertBodyStatus(const std::string &status) const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should

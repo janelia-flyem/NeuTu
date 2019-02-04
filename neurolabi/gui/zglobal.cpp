@@ -269,7 +269,7 @@ T* ZGlobal::getIODeviceFromUrl(
   QUrl url(path.c_str());
   if (url.scheme() == "http" || url.scheme() == "dvid" ||
       url.scheme() == "mock") {
-    ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+    ZDvidTarget target = dvid::MakeTargetFromUrl(path);
     return getIODevice(target, ioMap, key);
 //    device = getIODevice(target.getSourceString(true), ioMap);
   }

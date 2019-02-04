@@ -122,7 +122,7 @@ public:
     return m_errorMsg;
   }
 
-  ZDvid::ENodeStatus getNodeStatus() const;
+  dvid::ENodeStatus getNodeStatus() const;
   void updateNodeStatus();
 
   ZDvidBufferReader& getBufferReader() const {
@@ -395,12 +395,12 @@ public:
                          */
 
   int readSynapseLabelszBody(
-      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
+      uint64_t bodyId, dvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelsz(int n, dvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(
-      int threshold, ZDvid::ELabelIndexType index) const;
+      int threshold, dvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(
-      int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
+      int threshold, dvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -567,12 +567,12 @@ public:
 
   std::string readMirror() const;
 
-  enum EReadOption {
-    READ_CURRENT, READ_TRACE_BACK
+  enum class EReadOption {
+    CURRENT, TRACE_BACK
   };
 
   ZJsonObject readDefaultDataSetting(
-      EReadOption option = ZDvidReader::READ_CURRENT) const;
+      EReadOption option = ZDvidReader::EReadOption::CURRENT) const;
 
   ZJsonObject readDataMap() const;
 

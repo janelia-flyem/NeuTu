@@ -1,13 +1,15 @@
 //#define _NEUTU_USE_REF_KEY_
 #include "zflyembody3ddoc.h"
 
-#include <archive.h>
+#include <algorithm>
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <QElapsedTimer>
-#include <algorithm>
+
+#include <archive.h>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -53,6 +55,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zpunctum.h"
+#include "dialogs/flyemdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -74,10 +77,9 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
  * serving that purpose since the introduction of thread-safe object update
  * in ZStackDoc.
  *
- * ZFlyEmBody3dDoc also supports splitting with the help of ZFlyEmBodySplitter.
- * Splitting is also run on background, but in a different thread than the event
- * processing thread. ZThreadFutureMap is used to manage the splitting thread,
- * which uses THREAD_SPLIT_KEY as its key.
+ * ZFlyEmBody3dDoc supports splitting too with the help of ZFlyEmBodySplitter.
+ * Splitting is run in its own thread managed by ZThreadFutureMap using the
+ * THREAD_SPLIT_KEY key.
  *
  * A geometrical model created ZFlyEmBody3dDoc for a body can be:
  *   > Surface spheres
@@ -821,7 +823,7 @@ void ZFlyEmBody3dDoc::saveSplitTask()
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
-      ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+      ZJsonArray seedJson = flyem::GetSeedJson(this);
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
@@ -832,7 +834,7 @@ void ZFlyEmBody3dDoc::saveSplitTask()
         }
       } else {
         ZJsonArray roiJson;
-        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+        ZJsonObject task = flyem::MakeSplitTask(
               getDvidTarget(), bodyId, seedJson, roiJson);
 
         //          std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
@@ -1941,6 +1943,9 @@ void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
 ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
+    m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
+          getDataDocument(), getParent3DWindow());
+#if 0
     m_annotationDlg = new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
     /*
     ZJsonArray statusJson = getMainDvidReader().readBodyStatusList();
@@ -1956,8 +1961,13 @@ ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
     if (!statusList.empty()) {
       m_annotationDlg->setDefaultStatusList(statusList);
     } else {
-      m_annotationDlg->setDefaultStatusList(ZFlyEmMisc::GetDefaultBodyStatus());
+      m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
     }
+
+    for (const QString &status : getDataDocument()->getAdminBodyStatusList()) {
+      m_annotationDlg->addAdminStatus(status);
+    }
+#endif
   }
 
   return m_annotationDlg;
@@ -2270,7 +2280,7 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
   }
 
   QList<ZStackObject*> seedList =
-      ZFlyEmMisc::LoadSplitTask(getDvidTarget(), bodyId);
+      flyem::LoadSplitTask(getDvidTarget(), bodyId);
 
   if (!seedList.isEmpty()) {
     getDataBuffer()->addUpdate(
@@ -2286,7 +2296,7 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::removeSplitTask(uint64_t bodyId)
 {
-  ZFlyEmMisc::RemoveSplitTask(getDvidTarget(), bodyId);
+  flyem::RemoveSplitTask(getDvidTarget(), bodyId);
 }
 
 void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
@@ -2622,19 +2632,45 @@ void ZFlyEmBody3dDoc::executeRemoveTodoCommand()
   }
 }
 
+namespace {
+
+bool is_recycable(ZStackObject::EType type)
+{
+  return (type == ZStackObject::EType::MESH) ||
+      (type == ZStackObject::EType::SWC);
+}
+
+bool is_recycable(const ZStackObject *obj)
+{
+  if (obj) {
+    return is_recycable(obj->getType());
+  }
+
+  return false;
+}
+
+}
+
+void ZFlyEmBody3dDoc::dumpObject(ZStackObject *obj, bool recycling)
+{
+  if (removeObject(obj, false)) { //Called to first to make sure that the object exists
+    if (is_recycable(obj)) {
+      dumpGarbage(obj, recycling);
+      emit bodyRecycled(obj->getLabel());
+    } else {
+      delete obj;
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
-  if (removeObject(obj, false)) {
-    dumpGarbage(obj, true);
-    emit bodyRecycled(obj->getLabel());
-  }
+  dumpObject(obj, true);
 }
 
 void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 {
-  if (removeObject(obj, false)) {
-    dumpGarbage(obj, false);
-  }
+  dumpObject(obj, false);
 }
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
@@ -4324,6 +4360,8 @@ void ZFlyEmBody3dDoc::dumpGarbage(
 
 void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 {
+  QElapsedTimer timer;
+  timer.start();
   //Make old conflicted objects unrecyclable
   for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
        iter != m_garbageMap.end(); ++iter) {
@@ -4352,9 +4390,14 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
     getBodyManager().eraseSupervoxel(obj->getLabel());
   }
 
-  ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
+//  ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
 
   m_garbageJustDumped = true;
+
+  ZOUT(KLOG, 5) << ZLog::Profile()
+       << ZLog::Description(QString("Object (%1) dump time: %2 ms").
+                            arg(obj->getSource().c_str()).
+                            arg(timer.elapsed()).toStdString());
 }
 
 
@@ -4396,44 +4439,48 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
   dumpGarbageUnsync(obj, recycable);
 }
 
-void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
+template <typename T>
+void ZFlyEmBody3dDoc::removeBodyObject(bool recycling)
+{
+  if (is_recycable(T::GetType()) && recycling) {
+    QList<T*> objList = getObjectList<T>();
+    for (T* p : objList) {
+      removeObject(p, false);
+      dumpGarbage(p, true);
+    }
+  } else {
+    removeObject(T::GetType(), true);
+  }
+}
+
+void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
 {
   cancelEventThread();
 
-  ZOUT(LTRACE(), 5) << "Dump puncta";
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
-  QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
-  for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
-       iter != punctumList.end(); ++iter) {
-    ZPunctum *p = *iter;
-    removeObject(p, false);
-    dumpGarbage(p, false);
-  }
+
+  ZOUT(LTRACE(), 5) << "Dump puncta";
+  removeBodyObject<ZPunctum>(recycling);
 
   ZOUT(LTRACE(), 5) << "Dump todo list";
-  QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
-  for (QList<ZFlyEmToDoItem*>::const_iterator iter = todoList.begin();
-       iter != todoList.end(); ++iter) {
-    ZFlyEmToDoItem *p = *iter;
-    removeObject(p, false);
-    dumpGarbage(p, false);
-  }
+  removeBodyObject<ZFlyEmToDoItem>(recycling);
 
 
   ZOUT(LTRACE(), 5) << "Dump swc";
-  QList<ZSwcTree*> treeList = getSwcList();
-  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter) {
-    ZSwcTree *tree = *iter;
-    removeObject(tree, false);
-    dumpGarbage(tree, recycable);
-  }
+  removeBodyObject<ZSwcTree>(recycling);
+//  QList<ZSwcTree*> treeList = getSwcList();
+//  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+//       iter != treeList.end(); ++iter) {
+//    ZSwcTree *tree = *iter;
+//    removeObject(tree, false);
+//    dumpGarbage(tree, recycling);
+//  }
 
   ZOUT(LTRACE(), 5) << "Dump meshes";
   QList<ZMesh*> meshList = ZStackDocProxy::GetNonRoiMeshList(this);
   for (ZMesh *mesh : meshList) {
     removeObject(mesh, false);
-    dumpGarbage(mesh, recycable);
+    dumpGarbage(mesh, recycling);
   }
 
   getBodyManager().clear();

@@ -100,8 +100,8 @@ bool ZDvidReader::startService()
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    m_service = ZDvid::MakeDvidNodeService(getDvidTarget());
-    m_connection = ZDvid::MakeDvidConnection(getDvidTarget().getAddressWithPort());
+    m_service = dvid::MakeDvidNodeService(getDvidTarget());
+    m_connection = dvid::MakeDvidConnection(getDvidTarget().getAddressWithPort());
     m_bufferReader.setService(getDvidTarget());
   } catch (std::exception &e) {
     m_service.reset();
@@ -156,7 +156,7 @@ bool ZDvidReader::openRaw(const ZDvidTarget &target)
   bool succ = startService();
 
   if (!succ) {
-    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+    m_dvidTarget.setNodeStatus(dvid::ENodeStatus::OFFLINE);
   }
 
   return succ;
@@ -192,7 +192,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
       updateSegmentationData();
       m_dvidTarget.setInferred(true);
     } else {
-      m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+      m_dvidTarget.setNodeStatus(dvid::ENodeStatus::OFFLINE);
     }
   }
 
@@ -287,26 +287,26 @@ void ZDvidReader::updateNodeStatus()
   m_dvidTarget.setNodeStatus(getNodeStatus());
 }
 
-ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
+dvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
-  ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
+  dvid::ENodeStatus status = dvid::ENodeStatus::NORMAL;
 
 #ifdef _ENABLE_LIBDVIDCPP_
   ZDvidUrl url(getDvidTarget());
   std::string repoUrl = url.getRepoUrl();
   if (repoUrl.empty()) {
-    status = ZDvid::NODE_INVALID;
+    status = dvid::ENodeStatus::INVALID;
   } else {
     int statusCode = 0;
-    ZDvid::MakeHeadRequest(repoUrl, statusCode);
+    dvid::MakeHeadRequest(repoUrl, statusCode);
     if (statusCode != 200) {
-      status = ZDvid::NODE_OFFLINE;
+      status = dvid::ENodeStatus::OFFLINE;
     } else {
       ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
       if (obj.hasKey("Locked")) {
         bool locked = ZJsonParser::booleanValue(obj["Locked"]);
         if (locked) {
-          status = ZDvid::NODE_LOCKED;
+          status = dvid::ENodeStatus::LOCKED;
         }
       }
     }
@@ -319,7 +319,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 void ZDvidReader::testApiLoad()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZDvid::MakeRequest(*m_connection, "/api/load", "GET",
+  dvid::MakeRequest(*m_connection, "/api/load", "GET",
                      libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      m_statusCode);
 #endif
@@ -2292,7 +2292,7 @@ std::string ZDvidReader::readBodyLabelName() const
         for (size_t i = 0; i < syncArray.size(); ++i) {
           std::string dataName =
               ZJsonParser::stringValue(syncArray.getData(), i);
-          if (ZDvid::GetDataType(getType(dataName)) == ZDvid::TYPE_LABELVOL) {
+          if (dvid::GetDataType(getType(dataName)) == dvid::EDataType::LABELVOL) {
             name = dataName;
             break;
           }
@@ -4183,7 +4183,7 @@ void ZDvidReader::updateMaxGrayscaleZoom(
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
-      if (ZDvid::IsDataValid(
+      if (dvid::IsDataValid(
             m_dvidTarget.getGrayScaleName(level), m_dvidTarget, infoJson, dag)) {
         maxLabelLevel = level;
       } else {
@@ -4229,7 +4229,7 @@ void ZDvidReader::updateMaxLabelZoom(
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
-      if (ZDvid::IsDataValid(
+      if (dvid::IsDataValid(
             m_dvidTarget.getSegmentationName(level), m_dvidTarget, infoJson, dag)) {
         maxLabelLevel = level;
       } else {
@@ -5107,7 +5107,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   return synapseArray;
 }
 
-ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const
+ZJsonArray ZDvidReader::readSynapseLabelsz(int n, dvid::ELabelIndexType index) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszUrl(n, index));
@@ -5116,7 +5116,7 @@ ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) 
 }
 
 int ZDvidReader::readSynapseLabelszBody(
-    uint64_t bodyId, ZDvid::ELabelIndexType index) const
+    uint64_t bodyId, dvid::ELabelIndexType index) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonObject obj = readJsonObject(dvidUrl.getSynapseLabelszBodyUrl(bodyId, index));
@@ -5130,13 +5130,13 @@ int ZDvidReader::readSynapseLabelszBody(
   return count;
 }
 
-ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const {
+ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, dvid::ELabelIndexType index) const {
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index));
     return obj;
 }
 
-ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index,
+ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, dvid::ELabelIndexType index,
     int offset, int number) const {
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index, offset, number));
@@ -5261,7 +5261,7 @@ void ZDvidReader::loadDvidDataSetting(const ZJsonObject obj)
 
 void ZDvidReader::loadDefaultDataSetting()
 {
-  ZJsonObject obj = readDefaultDataSetting(READ_CURRENT);
+  ZJsonObject obj = readDefaultDataSetting(EReadOption::CURRENT);
   loadDvidDataSetting(obj);
 }
 
@@ -5284,7 +5284,7 @@ ZJsonObject ZDvidReader::readDefaultDataSettingTraceBack() const
   int index = -1;
   for (size_t i = 0; i < uuidList.size(); ++i) {
     const std::string &uuid = uuidList[i];
-    if (ZDvid::IsUuidMatched(uuid, getDvidTarget().getUuid())) {
+    if (dvid::IsUuidMatched(uuid, getDvidTarget().getUuid())) {
       index = i;
       break;
     }
@@ -5309,10 +5309,10 @@ ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
 {
   ZJsonObject obj;
   switch (option) {
-  case READ_CURRENT:
+  case EReadOption::CURRENT:
     obj = readDefaultDataSettingCurrent();
     break;
-  case READ_TRACE_BACK:
+  case EReadOption::TRACE_BACK:
     obj = readDefaultDataSettingTraceBack();
     break;
   }

@@ -12,6 +12,7 @@ public:
 
   std::string getName() const;
   bool isAccessible() const;
+  bool isAdminAccessible() const;
   bool isExpertStatus() const;
   bool isFinal() const;
   bool isMergable() const;

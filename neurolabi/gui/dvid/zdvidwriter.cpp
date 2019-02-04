@@ -58,8 +58,8 @@ bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    m_service = ZDvid::MakeDvidNodeService(getDvidTarget());
-    m_connection = ZDvid::MakeDvidConnection(
+    m_service = dvid::MakeDvidNodeService(getDvidTarget());
+    m_connection = dvid::MakeDvidConnection(
           getDvidTarget().getAddressWithPort());
   } catch (std::exception &e) {
     m_service.reset();
@@ -588,7 +588,7 @@ void ZDvidWriter::createData(
 //  std::string url = dvidUrl.getInstanceUrl();
 
 #if 1
-  ZDvid::MakePostRequest(
+  dvid::MakePostRequest(
         *m_connection,
         "/api/repo/" + getDvidTarget().getUuid() + "/instance",
         obj, m_statusCode);
@@ -1935,7 +1935,7 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom)
     ZDvidInfo dvidInfo = reader.readLabelInfo();
 
     ZIntCuboid alignedBox =
-        ZDvid::GetAlignedBox(ZDvid::GetZoomBox(box, zoom), dvidInfo);
+        dvid::GetAlignedBox(dvid::GetZoomBox(box, zoom), dvidInfo);
     ZArray *label = reader.readLabels64(alignedBox);
 
     //Reset label
@@ -2130,8 +2130,8 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
     }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-    ZDvid::MakeRequest(
-          url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
+    dvid::MakeRequest(
+          url, "POST", dvid::MakePayload(branchJson), libdvid::JSON,
           m_statusCode);
 #endif
 //    ZFlyEmMisc::MakeRequest(url,

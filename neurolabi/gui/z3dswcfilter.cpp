@@ -1215,19 +1215,31 @@ bool Z3DSwcFilter::updateColorParameter(
 }
 #endif
 
-void Z3DSwcFilter::removeTreeColorWidget(ZSwcColorParam &param)
+bool Z3DSwcFilter::removeTreeColorWidget(ZSwcColorParam &param)
 {
+  bool removed = false;
   if (m_widgetsGroup) {
     for (auto& kv : param.getColorParamMap()) {
-      m_widgetsGroup->removeChild(*kv.second);
+      bool currentRemoved = m_widgetsGroup->removeChild(*kv.second);
+      removed = removed || currentRemoved;
     }
   }
+
+  return removed;
 }
 
-void Z3DSwcFilter::removeTreeColorWidget()
+bool Z3DSwcFilter::removeTreeColorWidget()
 {
-  removeTreeColorWidget(*m_individualColorParam);
-  removeTreeColorWidget(*m_randomColorParam);
+  bool removed = false;
+  if (removeTreeColorWidget(*m_individualColorParam)) {
+    removed = true;
+  }
+
+  if (removeTreeColorWidget(*m_randomColorParam)) {
+    removed = true;
+  }
+
+  return removed;
 }
 
 /*
@@ -2339,8 +2351,9 @@ void Z3DSwcFilter::updateColorWidgets()
     updateTreeColorWidget(*m_individualColorParam);
   } else {
     if (m_widgetsGroup) {
-      removeTreeColorWidget();
-      m_widgetsGroup->emitWidgetsGroupChangedSignal();
+      if (removeTreeColorWidget()) {
+        m_widgetsGroup->emitWidgetsGroupChangedSignal();
+      }
     }
   }
 

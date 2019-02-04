@@ -25,8 +25,8 @@ public:
     return m_server;
   }
 
-  enum EStatus {
-    STATUS_NORMAL, STATUS_DOWN
+  enum class EStatus {
+    NORMAL, DOWN
   };
 
   enum EUpdateOption {

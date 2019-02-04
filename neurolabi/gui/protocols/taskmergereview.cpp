@@ -600,7 +600,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
 
   m_bodyIds.clear();
 
-  libdvid::BinaryDataPtr response = ZDvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
+  libdvid::BinaryDataPtr response = dvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
@@ -641,7 +641,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
 
   statusCode = 0;
   std::string urlSizes = url.getNodeUrl() + "/" + instance + "/sizes?supervoxels=true";
-  response = ZDvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
+  response = dvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {

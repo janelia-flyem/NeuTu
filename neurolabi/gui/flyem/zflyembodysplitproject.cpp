@@ -561,13 +561,13 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       ZIntCuboid box(m_dvidInfo.getStartCoordinates(),
                      m_dvidInfo.getEndCoordinates());
       if (m_reader.isReady()) {
-        Z3DGraph *boxGraph = ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo);
+        Z3DGraph *boxGraph = flyem::MakeBoundBoxGraph(m_dvidInfo);
 //        boxGraph->boundBox(&box);
         ZStackDocAccessor::AddObject(
               m_quickResultDoc.get(), boxGraph);
         ZStackDocAccessor::AddObject(
               m_quickResultDoc.get(),
-              ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
+              flyem::MakePlaneGraph(getDocument(), m_dvidInfo));
         m_quickResultWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
@@ -2252,13 +2252,13 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
       if (!seedJson.isEmpty()) {
         ZJsonArray roiJson = getRoiJson();
         if (roiJson.isEmpty()) {
-          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+          ZIntCuboid range = flyem::EstimateSplitRoi(getSeedBoundBox());
           if (!range.isEmpty()) {
             roiJson = range.toJsonArray();
           }
         }
 
-        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+        ZJsonObject task = flyem::MakeSplitTask(
               getDvidTarget(), bodyId, seedJson, roiJson);
 
         location = writer->writeServiceTask("split", task);
@@ -2907,7 +2907,7 @@ void ZFlyEmBodySplitProject::update3DViewPlane()
 {
   if (m_quickResultWindow) {
     if (m_dvidInfo.isValid()) {
-      Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
+      Z3DGraph *graph = flyem::MakePlaneGraph(getDocument(), m_dvidInfo);
       m_quickResultWindow->getDocument()->addObject(graph, true);
     }
   }

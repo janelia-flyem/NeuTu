@@ -237,8 +237,8 @@ private:
   void removeObsoleteColorParam(const std::vector<ZVec4Parameter*> &paramList);
   void addNewColorParam(const std::vector<ZVec4Parameter*> &paramList);
 
-  void removeTreeColorWidget();
-  void removeTreeColorWidget(ZSwcColorParam &param);
+  bool removeTreeColorWidget();
+  bool removeTreeColorWidget(ZSwcColorParam &param);
   void updateTreeColorWidget(ZSwcColorParam &param);
   void addTreeColorWidget(ZSwcColorParam &param);
 

@@ -23,7 +23,7 @@ QByteArray ZDvidResultService::ReadData(const QString &path)
 
   QUrl url(path);
   if (url.scheme() == "http") {
-    ZDvidTarget target = ZDvid::MakeTargetFromUrl(path.toStdString());
+    ZDvidTarget target = dvid::MakeTargetFromUrl(path.toStdString());
     if (target.isValid()) {
       ZDvidReader *reader =
           ZGlobal::GetInstance().getDvidReader(target.getSourceString(true));
@@ -39,7 +39,7 @@ void ZDvidResultService::WriteData(const QString &path, const QByteArray &data)
 {
   QUrl url(path);
   if (url.scheme() == "http") {
-    ZDvidTarget target = ZDvid::MakeTargetFromUrl(path.toStdString());
+    ZDvidTarget target = dvid::MakeTargetFromUrl(path.toStdString());
     if (target.isValid()) {
       ZDvidWriter *writer =
           ZGlobal::GetInstance().getDvidWriter(target.getSourceString(true));

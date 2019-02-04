@@ -27,7 +27,7 @@ public:
    * \brief Register a body
    *
    * Nothing will be done if a body has already been registered. It can also be
-   * used to register an orphan supervoxel whhen \a id is encoded as a supervoxel.
+   * used to register an orphan supervoxel when \a id is encoded as a supervoxel.
    */
   void registerBody(uint64_t id);
 
@@ -42,7 +42,7 @@ public:
   /*!
    * \brief Register a body (usually supervoxel) with its agglomeration ID.
    *
-   * It adds \a bodyId to existing aggloID mapping or creates a new map if
+   * It adds \a bodyId to existing \a aggloID mapping or creates a new map if
    * the mapping doesn't exist.
    */
   void registerBody(uint64_t aggloId, uint64_t bodyId);
