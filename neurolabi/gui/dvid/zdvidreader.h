@@ -567,12 +567,12 @@ public:
 
   std::string readMirror() const;
 
-  enum EReadOption {
-    READ_CURRENT, READ_TRACE_BACK
+  enum class EReadOption {
+    CURRENT, TRACE_BACK
   };
 
   ZJsonObject readDefaultDataSetting(
-      EReadOption option = ZDvidReader::READ_CURRENT) const;
+      EReadOption option = ZDvidReader::EReadOption::CURRENT) const;
 
   ZJsonObject readDataMap() const;
 

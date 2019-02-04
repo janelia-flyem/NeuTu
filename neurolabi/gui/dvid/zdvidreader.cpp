@@ -5261,7 +5261,7 @@ void ZDvidReader::loadDvidDataSetting(const ZJsonObject obj)
 
 void ZDvidReader::loadDefaultDataSetting()
 {
-  ZJsonObject obj = readDefaultDataSetting(READ_CURRENT);
+  ZJsonObject obj = readDefaultDataSetting(EReadOption::CURRENT);
   loadDvidDataSetting(obj);
 }
 
@@ -5309,10 +5309,10 @@ ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
 {
   ZJsonObject obj;
   switch (option) {
-  case READ_CURRENT:
+  case EReadOption::CURRENT:
     obj = readDefaultDataSettingCurrent();
     break;
-  case READ_TRACE_BACK:
+  case EReadOption::TRACE_BACK:
     obj = readDefaultDataSettingTraceBack();
     break;
   }

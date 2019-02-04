@@ -374,6 +374,9 @@ public:
    */
   QSize getScreenSize() const;
 
+  void addToolButton(QPushButton *button);
+  void removeToolButton(QPushButton *button);
+
 
 public: //Change view parameters
   void move(const QPoint& src, const QPointF &dst);
@@ -634,6 +637,7 @@ protected:
   QHBoxLayout *m_topLayout;
   QHBoxLayout *m_secondTopLayout;
   QHBoxLayout *m_channelControlLayout;
+  QHBoxLayout *m_toolLayout = nullptr;
   QHBoxLayout *m_ctrlLayout;
   QHBoxLayout *m_zControlLayout;
   bool m_scrollEnabled;

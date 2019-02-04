@@ -15,7 +15,7 @@
 
 #include "zjsondef.h"
 #include "zflyemproofdoc.h"
-#include "flyemdialogfactory.h"
+#include "dialogs/flyemdialogfactory.h"
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackpresenter.h"
@@ -512,15 +512,17 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
     QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, neutube::EAxis axis,
     ERole role)
 {
-  ZFlyEmProofMvc *frame = new ZFlyEmProofMvc(parent);
-  frame->setRole(role);
+  ZFlyEmProofMvc *mvc = new ZFlyEmProofMvc(parent);
+  mvc->setRole(role);
 
-  BaseConstruct(frame, doc, axis);
+  BaseConstruct(mvc, doc, axis);
 
-  frame->getView()->setHoverFocus(true);
-  frame->applySettings();
+  mvc->getView()->setHoverFocus(true);
+  mvc->applySettings();
 
-  return frame;
+  mvc->initViewButton();
+
+  return mvc;
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
@@ -1890,6 +1892,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   LINFO() << "DVID Ready";
   emit dvidReady();
+
+  if (getRole() == ROLE_WIDGET) {
+    if (getDvidTarget().hasSegmentation()) {
+      getViewButton(EViewButton::GOTO_BODY)->show();
+    }
+  }
 }
 
 void ZFlyEmProofMvc::showSetting()
@@ -2198,7 +2206,7 @@ void ZFlyEmProofMvc::customInit()
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
-          this, SLOT(annotateBody()));
+          this, SLOT(annotateSelectedBody()));
   connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
           this, &ZFlyEmProofMvc::setExpertBodyStatus);
   connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
@@ -2672,45 +2680,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     if (selected.size() > 0) {
       ZFlyEmBodyAnnotation finalAnnotation =
           getCompleteDocument()->getFinalAnnotation(selected);
-#if 0
-      //Process annotations of the selected bodies
-      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-      if (reader.isReady()) {
-        ZFlyEmBodyAnnotation finalAnnotation;
-        for (std::vector<uint64_t>::const_iterator iter = selected.begin();
-             iter != selected.end(); ++iter) {
-          uint64_t bodyId = *iter;
-          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
 
-          if (!annotation.isEmpty()) {
-            getCompleteDocument()->recordAnnotation(bodyId, annotation);
-            if (finalAnnotation.isEmpty()) {
-              finalAnnotation = annotation;
-            } else {
-              finalAnnotation.mergeAnnotation(annotation);
-            }
-          }
-        }
-#endif
-        updateBodyMessage(selected.front(), finalAnnotation);
-        /*
-        ZWidgetMessage msg("", neutube::EMessageType::INFORMATION,
-                           ZWidgetMessage::TARGET_CUSTOM_AREA);
-        if (finalAnnotation.isEmpty()) {
-          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
-        } else {
-          msg.setMessage(finalAnnotation.toString().c_str());
-        }
-
-        if (finalAnnotation.isEmpty()) {
-          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
-        } else {
-          msg.setMessage(finalAnnotation.toString().c_str());
-        }
-        emit messageGenerated(msg);
-        */
-//      }
-
+      updateBodyMessage(selected.front(), finalAnnotation);
     }
 
     std::vector<uint64_t> deselected =
@@ -2718,6 +2689,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
     getCompleteDocument()->removeSelectedAnnotation(
           deselected.begin(), deselected.end());
+    updateViewButton();
   }
 
 #ifdef _DEBUG_
@@ -3180,7 +3152,7 @@ void ZFlyEmProofMvc::showBodyProfile()
   }
 }
 
-void ZFlyEmProofMvc::setExpertBodyStatus()
+void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
 {
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
@@ -3191,16 +3163,50 @@ void ZFlyEmProofMvc::setExpertBodyStatus()
     if (reader.isReady()) {
       if (checkOutBody(bodyId, flyem::EBodySplitMode::NONE)) {
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-        annotation.setStatus(ZFlyEmBodyStatus::GetExpertStatus());
-        getCompleteDocument()->annotateBody(bodyId, annotation);
+        annotation.setStatus(status);
+        annotateBody(bodyId, annotation);
         checkInBodyWithMessage(bodyId, flyem::EBodySplitMode::NONE);
-        updateBodyMessage(bodyId, annotation);
+      } else {
+        warnAbouBodyLockFail(bodyId);
       }
     }
   }
 }
 
-void ZFlyEmProofMvc::annotateBody()
+void ZFlyEmProofMvc::setExpertBodyStatus()
+{
+  setSelectedBodyStatus(ZFlyEmBodyStatus::GetExpertStatus());
+}
+
+void ZFlyEmProofMvc::annotateBody(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
+{
+  getCompleteDocument()->annotateBody(bodyId, annotation);
+  updateBodyMessage(bodyId, annotation);
+  updateViewButton();
+}
+
+void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    std::string owner = getSupervisor()->getOwner(bodyId);
+    if (owner.empty()) {
+//            owner = "unknown user";
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+              arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+              neutube::EMessageType::ERROR));
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("The body %1 cannot be annotated because it has been locked by %2").
+              arg(bodyId).arg(owner.c_str()), neutube::EMessageType::ERROR));
+    }
+  }
+}
+
+void ZFlyEmProofMvc::annotateSelectedBody()
 {
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
@@ -3218,30 +3224,13 @@ void ZFlyEmProofMvc::annotateBody()
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
-
-          updateBodyMessage(bodyId, dlg->getBodyAnnotation());
+          annotateBody(bodyId, dlg->getBodyAnnotation());
         }
 
         checkInBodyWithMessage(bodyId, flyem::EBodySplitMode::NONE);
 //        delete dlg;
       } else {
-        if (getSupervisor() != NULL) {
-          std::string owner = getSupervisor()->getOwner(bodyId);
-          if (owner.empty()) {
-//            owner = "unknown user";
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
-                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                    neutube::EMessageType::ERROR));
-          } else {
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to start annotation. %1 has been locked by %2").
-                    arg(bodyId).arg(owner.c_str()), neutube::EMessageType::ERROR));
-          }
-        }
+        warnAbouBodyLockFail(bodyId);
       }
     } else {
       ZOUT(LTRACE(), 5) << "Unexpected body ID: 0";
@@ -6219,6 +6208,92 @@ void ZFlyEmProofMvc::processSynapseMoving(
   if (m_protocolSwitcher != NULL) {
     m_protocolSwitcher->processSynapseMoving(from, to);
   }
+}
+
+void ZFlyEmProofMvc::onAnnotationRoughlyTraced()
+{
+  setSelectedBodyStatus("Roughly traced");
+//  getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
+//  getViewButton(EViewButton::ANNOTATE_TRACED)->show();
+}
+
+void ZFlyEmProofMvc::onAnnotationTraced()
+{
+  setSelectedBodyStatus("Traced");
+
+//  getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
+//  getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
+}
+
+void ZFlyEmProofMvc::initViewButton()
+{
+  makeViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
+  makeViewButton(EViewButton::ANNOTATE_TRACED);
+  makeViewButton(EViewButton::GOTO_BODY);
+  for (auto b : m_viewButtons) {
+    getView()->addToolButton(b.second);
+    b.second->hide();
+  }
+}
+
+void ZFlyEmProofMvc::updateViewButton()
+{
+  if (getCompleteDocument()->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD &&
+      !getDvidTarget().readOnly() &&
+      neutube::IsAdminUser()) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+    if (bodySet.size() == 1) {
+      uint64_t bodyId = *(bodySet.begin());
+      ZFlyEmBodyAnnotation annot =
+          getCompleteDocument()->getRecordedAnnotation(bodyId);
+      if (annot.getBodyId() == bodyId) {
+        ZString status(annot.getStatus());
+        status.toLower();
+        int rank = getCompleteDocument()->getBodyStatusRank(status);
+        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
+              rank > getCompleteDocument()->getBodyStatusRank("roughly traced"));
+        getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
+              rank > getCompleteDocument()->getBodyStatusRank("traced"));
+      }
+    } else {
+      getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
+      getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::makeViewButton(
+    EViewButton option, const QString &name, const char *slot)
+{
+  QPushButton *button = new QPushButton(name);
+  button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  connect(button, SIGNAL(clicked()), this, slot);
+  m_viewButtons[option] = button;
+}
+
+void ZFlyEmProofMvc::makeViewButton(EViewButton option)
+{
+  switch (option) {
+  case EViewButton::GOTO_BODY:
+    makeViewButton(option, "Go to Body", SLOT(goToBody()));
+    break;
+  case EViewButton::ANNOTATE_ROUGHLY_TRACED:
+    makeViewButton(option, "Roughly Traced", SLOT(onAnnotationRoughlyTraced()));
+    break;
+  case EViewButton::ANNOTATE_TRACED:
+    makeViewButton(option, "Traced", SLOT(onAnnotationTraced()));
+    break;
+  }
+}
+
+QPushButton* ZFlyEmProofMvc::getViewButton(EViewButton option)
+{
+  if (m_viewButtons.count(option) == 0) {
+    makeViewButton(option);
+  }
+
+  return m_viewButtons[option];
 }
 
 namespace {

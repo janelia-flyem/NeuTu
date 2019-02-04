@@ -32,12 +32,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zrandomgenerator.h \
    $${PWD}/zfilelock.h \
    $${PWD}/zargumentprocessor.h \
-   $${PWD}/flyem/zsynapseannotation.h \
-   $${PWD}/flyem/zsynapseannotationarray.h \
-   $${PWD}/flyem/zsynapseannotationmetadata.h \
-   $${PWD}/flyem/zsynapseannotationanalyzer.h \
-   $${PWD}/flyem/zfileparser.h \
-   $${PWD}/flyem/zneuronnetwork.h \
    $${PWD}/zvaa3dmarker.h \
    $${PWD}/zvaa3dapo.h \
    $${PWD}/zswcnode.h \
@@ -69,14 +63,10 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcdisttrunkanalyzer.h \
    $${PWD}/zswcbranchingtrunkanalyzer.h \
    $${PWD}/zswctrunksizefeatureanalyzer.h \
-   $${PWD}/flyem/zsynapselocationmatcher.h \
    $${PWD}/c_stack.h \
    $${PWD}/zfiletype.h \
-   $${PWD}/flyem/zsynapselocationmetric.h \
    $${PWD}/zstackfile.h \
    $${PWD}/zintmap.h \
-   $${PWD}/flyem/zsegmentationanalyzer.h \
-   $${PWD}/flyem/zsegmentationbundle.h \
    $${PWD}/zstackblender.h \
    $${PWD}/zarray.h \
    $${PWD}/zintpairmap.h \
@@ -91,7 +81,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zhdf5writer.h \
    $${PWD}/zstackskeletonizer.h \
    $${PWD}/zswclayerfeatureanalyzer.h \
-   $${PWD}/flyem/zflyemneuron.h \
    $${PWD}/zswctypetrunkanalyzer.h \
    $${PWD}/zobject3dscan.h \
    $${PWD}/zswclayershollfeatureanalyzer.h \
@@ -117,20 +106,15 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcnodezrangeselector.h \
    $${PWD}/zswcnodecompositeselector.h \
    $${PWD}/zswcnodeellipsoidrangeselector.h \
-   $${PWD}/flyem/zstitchgrid.h \
-   $${PWD}/flyem/zflyemqualityanalyzer.h \
    $${PWD}/zswcglobalfeatureanalyzer.h \
    $${PWD}/zswclocationanalyzer.h \
    $${PWD}/biocytin/zbiocytinfilenameparser.h \
    $${PWD}/zerror.h \
    $${PWD}/zhistogram.h \
    $${PWD}/misc/miscutility.h \
-   $${PWD}/flyem/zflyemneuronrange.h \
-   $${PWD}/flyem/zflyemneuronaxis.h \
    $${PWD}/zswcgenerator.h \
    $${PWD}/zpaintbundle.h \
    $${PWD}/zswcnodebufferfeatureanalyzer.h \
-   $${PWD}/flyem/zflyemneuronrangecompare.h \
    $${PWD}/swc/zswcresampler.h \
    $${PWD}/swc/zswcmetric.h \
    $${PWD}/swc/zswcterminalsurfacemetric.h \
@@ -140,43 +124,65 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcsubtreefeatureanalyzer.h \
    $${PWD}/swc/zswcsubtreeanalyzer.h \
    $${PWD}/zswctreenodearray.h \
-   $${PWD}/flyem/zflyembodyanalyzer.h \
    $${PWD}/swc/zswcnodedistselector.h \
    $${PWD}/imgproc/zstackbinarizer.h \
    $${PWD}/zvectorgenerator.h \
    $${PWD}/zstackfactory.h \
    $${PWD}/zeigensolver.h \
    $${PWD}/zmapgenerator.h \
+   $${PWD}/swc/zswcpruner.h \
+   $${PWD}/zneurontracer.h \
+   $${PWD}/flyem/zflyemneuronlayermatcher.h \
    $${PWD}/flyem/zflyemneuronfeatureset.h \
    $${PWD}/flyem/zflyemneuronfilter.h \
    $${PWD}/flyem/zflyemneuronfilterfactory.h \
    $${PWD}/flyem/zflyemneuronfeature.h \
    $${PWD}/flyem/zflyemneuronfeaturefactory.h \
    $${PWD}/flyem/zflyemneuronarray.h \
-   $${PWD}/swc/zswcpruner.h \
-   $${PWD}/zneurontracer.h \
-   $${PWD}/flyem/zflyemneuronlayermatcher.h \
-   $${PWD}/zdynamicprogrammer.h \
-   $${PWD}/flyem/zhotspot.h \
-   $${PWD}/ztextlinearray.h \
+   $${PWD}/flyem/zflyembodyanalyzer.h \
+   $${PWD}/flyem/zflyemneuronrangecompare.h \
+   $${PWD}/flyem/zflyemneuronrange.h \
+   $${PWD}/flyem/zflyemneuronaxis.h \
+   $${PWD}/flyem/zstitchgrid.h \
+   $${PWD}/flyem/zflyemqualityanalyzer.h \
+   $${PWD}/flyem/zflyemneuron.h \
+   $${PWD}/flyem/zsegmentationanalyzer.h \
+   $${PWD}/flyem/zsegmentationbundle.h \
+   $${PWD}/flyem/zsynapselocationmetric.h \
+   $${PWD}/flyem/zsynapselocationmatcher.h \
+   $${PWD}/flyem/zsynapseannotation.h \
+   $${PWD}/flyem/zsynapseannotationarray.h \
+   $${PWD}/flyem/zsynapseannotationmetadata.h \
+   $${PWD}/flyem/zsynapseannotationanalyzer.h \
+   $${PWD}/flyem/zfileparser.h \
+   $${PWD}/flyem/zneuronnetwork.h \
+   $${PWD}/flyem/zflyembodyannotationbundle.h \
+   $${PWD}/flyem/zflyemneurondensity.h \
+   $${PWD}/flyem/zflyemneurondensitymatcher.h \
+   $${PWD}/flyem/zflyemneuroninfo.h \
+   $${PWD}/flyem/zflyemneuronbodyinfo.h \
+   $${PWD}/flyem/zflyemconfig.h \
+   $${PWD}/flyem/zflyemsubstackroi.h \
+   $${PWD}/flyem/zflyembodyannotation.h \
+   $${PWD}/flyem/zflyemcoordinateconverter.h \
+   $${PWD}/flyem/zflyem.h \
+   $${PWD}/flyem/zflyemdatainfo.h \
    $${PWD}/flyem/zhotspotarray.h \
    $${PWD}/flyem/zhotspotfactory.h \
+   $${PWD}/flyem/zhotspot.h \
+   $${PWD}/flyem/zflyembodystatus.h \
+   $${PWD}/zdynamicprogrammer.h \
+   $${PWD}/ztextlinearray.h \
    $${PWD}/ztextlinecompositer.h \
    $${PWD}/zobject3dscanarray.h \
    $${PWD}/zstringarray.h \
    $${PWD}/zstackutil.h \
-   $${PWD}/flyem/zflyemcoordinateconverter.h \
-   $${PWD}/flyem/zflyem.h \
-   $${PWD}/flyem/zflyemdatainfo.h \
    $${PWD}/dvid/zdvidinfo.h \
    $${PWD}/dvid/zdvidtarget.h \
    $${PWD}/dvid/zdvidfilter.h \
-   $${PWD}/flyem/zflyembodyannotation.h \
    $${PWD}/zintarray.h \
    $${PWD}/zintset.h \
-   $${PWD}/flyem/zflyemsubstackroi.h \
    $${PWD}/zstackarray.h \
-   $${PWD}/flyem/zflyemconfig.h \
    $${PWD}/tr1_header.h \
    $${PWD}/zvoxelgraphics.h \
    $${PWD}/bigdata/zdvidblockgrid.h \
@@ -191,22 +197,17 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidurl.h \
    $${PWD}/zstackobjectsourcefactory.h \
    $${PWD}/dvid/zdviddata.h \
-   $${PWD}/flyem/zflyemneuronbodyinfo.h \
    $${PWD}/zstackobjectsource.h \
    $${PWD}/zstackobjectrole.h \
    $${PWD}/zarrayfactory.h \
    $${PWD}/zstackobjectselector.h \
    $${PWD}/zinthistogram.h \
-   $${PWD}/flyem/zflyemneuroninfo.h \
    $${PWD}/zqtheader_undef.h \
    $${PWD}/zscalablestack.h \
-   $${PWD}/flyem/zflyemneurondensity.h \
-   $${PWD}/flyem/zflyemneurondensitymatcher.h \
    $${PWD}/zdag.h \
    $${PWD}/zselector.h \
    $${PWD}/zobject3dstripe.h \
    $${PWD}/jneurontracer.h \
-   $${PWD}/flyem/zflyembodyannotationbundle.h \
    $${PWD}/zswcfactory.h \
    $${PWD}/swc/zswcradiusestimator.h \
    $${PWD}/zswctreenodeselector.h \
@@ -219,7 +220,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
     $$PWD/zjsondef.h \
-    $$PWD/flyem/zflyembodystatus.h \
     $$PWD/zgraph.h
 
 SOURCES += $${PWD}/zstack.cxx \

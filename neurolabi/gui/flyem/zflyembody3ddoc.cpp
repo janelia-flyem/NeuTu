@@ -1,11 +1,12 @@
 //#define _NEUTU_USE_REF_KEY_
 #include "zflyembody3ddoc.h"
 
-#include <archive.h>
+#include <algorithm>
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <QElapsedTimer>
-#include <algorithm>
+
+#include <archive.h>
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
@@ -54,7 +55,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zpunctum.h"
-#include "flyemdialogfactory.h"
+#include "dialogs/flyemdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -76,10 +77,9 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
  * serving that purpose since the introduction of thread-safe object update
  * in ZStackDoc.
  *
- * ZFlyEmBody3dDoc also supports splitting with the help of ZFlyEmBodySplitter.
- * Splitting is also run on background, but in a different thread than the event
- * processing thread. ZThreadFutureMap is used to manage the splitting thread,
- * which uses THREAD_SPLIT_KEY as its key.
+ * ZFlyEmBody3dDoc supports splitting too with the help of ZFlyEmBodySplitter.
+ * Splitting is run in its own thread managed by ZThreadFutureMap using the
+ * THREAD_SPLIT_KEY key.
  *
  * A geometrical model created ZFlyEmBody3dDoc for a body can be:
  *   > Surface spheres

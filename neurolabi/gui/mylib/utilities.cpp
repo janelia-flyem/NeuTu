@@ -105,8 +105,8 @@ typedef pthread_t pthread_id;
 
 #define pthread_tag() pthread_self()
 
-static inline int pthread_is_this(pthread_id id)
-{ return (pthread_equal(pthread_self(),id)); }
+//static inline int pthread_is_this(pthread_id id)
+//{ return (pthread_equal(pthread_self(),id)); }
 
 #endif
 

@@ -139,8 +139,10 @@ void ZStackView::init()
   m_secondTopLayout = new QHBoxLayout;
 
   m_channelControlLayout = new QHBoxLayout;
+  m_toolLayout = new QHBoxLayout;
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
+  m_secondTopLayout->addLayout(m_toolLayout);
   m_secondTopLayout->addWidget(m_stackLabel);
 //  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
@@ -202,6 +204,20 @@ void ZStackView::init()
   blockViewChangeEvent(false);
 
   m_sliceStrategy = new ZScrollSliceStrategy(this);
+}
+
+void ZStackView::addToolButton(QPushButton *button)
+{
+  if (button) {
+    m_toolLayout->addWidget(button);
+  }
+}
+
+void ZStackView::removeToolButton(QPushButton *button)
+{
+  if (button) {
+    m_toolLayout->removeWidget(button);
+  }
 }
 
 void ZStackView::enableMessageManager()

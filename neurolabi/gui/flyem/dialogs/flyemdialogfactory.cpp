@@ -1,8 +1,8 @@
 #include "flyemdialogfactory.h"
 
-#include "zflyembodyannotationdialog.h"
-#include "zflyemproofdoc.h"
-#include "zflyemmisc.h"
+#include "../zflyembodyannotationdialog.h"
+#include "../zflyemproofdoc.h"
+#include "../zflyemmisc.h"
 
 FlyEmDialogFactory::FlyEmDialogFactory()
 {
