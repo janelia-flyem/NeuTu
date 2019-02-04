@@ -250,6 +250,7 @@ public:
   QList<QString> getBodyStatusList() const;
   QList<QString> getAdminBodyStatusList() const;
   int getBodyStatusRank(const std::string &status) const;
+  bool isExpertBodyStatus(const std::string &status) const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
