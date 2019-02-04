@@ -15,7 +15,7 @@ class ZDvidReader;
 
 #define DVID_UUID_COMMON_LENGTH 4
 
-namespace ZDvid {
+namespace dvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
 libdvid::BinaryDataPtr MakeRequest(
     const std::string &address, const std::string &uuid, const std::string &method,
@@ -83,8 +83,8 @@ ZJsonObject GetDataInstances(const std::string &uuid);
 ZJsonObject GetDataInstances(const std::string &type);
 #endif
 
-ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
-ZDvid::EDataType GetDataType(const std::string &typeName);
+dvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
+dvid::EDataType GetDataType(const std::string &typeName);
 
 ZDvidTarget MakeTargetFromUrl(const std::string path);
 

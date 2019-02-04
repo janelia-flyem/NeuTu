@@ -61,7 +61,7 @@ void ZDvidTarget::init()
   m_bgValue = 255;
   m_isEditable = true;
   m_readOnly = false;
-  m_nodeStatus = ZDvid::NODE_OFFLINE;
+  m_nodeStatus = dvid::ENodeStatus::OFFLINE;
   m_maxLabelZoom = 0;
   m_maxGrayscaleZoom = 0;
   m_usingMultresBodyLabel = true;
@@ -217,7 +217,7 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 }
 
 void ZDvidTarget::setFromSourceString(
-    const std::string &sourceString, ZDvid::EDataType dataType)
+    const std::string &sourceString, dvid::EDataType dataType)
 {
   clear();
 
@@ -240,10 +240,10 @@ void ZDvidTarget::setFromSourceString(
     set(tokens[1], tokens[3], port);
     if (tokens.size() >= 5) {
       switch (dataType) {
-      case ZDvid::TYPE_LABELVOL:
+      case dvid::EDataType::LABELVOL:
         setBodyLabelName(tokens[4]);
         break;
-      case ZDvid::TYPE_UINT8BLK:
+      case dvid::EDataType::UINT8BLK:
         setGrayScaleName(tokens[4]);
         break;
       default:
@@ -256,7 +256,7 @@ void ZDvidTarget::setFromSourceString(
   }
 }
 
-void ZDvidTarget::setNodeStatus(ZDvid::ENodeStatus status)
+void ZDvidTarget::setNodeStatus(dvid::ENodeStatus status)
 {
   m_nodeStatus = status;
 }
@@ -269,7 +269,7 @@ bool ZDvidTarget::hasPort() const
 bool ZDvidTarget::isValid() const
 {
   return !getAddress().empty() && !getUuid().empty() &&
-      (m_nodeStatus != ZDvid::NODE_INVALID);
+      (m_nodeStatus != dvid::ENodeStatus::INVALID);
 }
 
 std::string ZDvidTarget::getAddressWithPort() const
@@ -303,7 +303,7 @@ void ZDvidTarget::print() const
 
 bool ZDvidTarget::readOnly() const
 {
-  return m_readOnly || getNodeStatus() == ZDvid::NODE_LOCKED;
+  return m_readOnly || getNodeStatus() == dvid::ENodeStatus::LOCKED;
 }
 
 void ZDvidTarget::setSynapseReadonly(bool on)
@@ -311,7 +311,7 @@ void ZDvidTarget::setSynapseReadonly(bool on)
   m_isSynpaseEditable = !on;
 }
 
-ZDvid::ENodeStatus ZDvidTarget::getNodeStatus() const
+dvid::ENodeStatus ZDvidTarget::getNodeStatus() const
 {
   return m_nodeStatus;
 }

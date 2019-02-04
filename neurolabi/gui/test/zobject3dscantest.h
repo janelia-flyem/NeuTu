@@ -285,13 +285,13 @@ TEST(ZObject3dStripe, TestCanonize) {
   stripe.clearSegment();
   stripe.addSegment(7, 8, false);
   stripe.addSegment(1, 2, false);
-  EXPECT_FALSE(stripe.isCanonized());
+  ASSERT_FALSE(stripe.isCanonized());
 
   stripe.clearSegment();
   stripe.addSegment(4, 5);
   stripe.addSegment(1, 7, false);
   stripe.addSegment(7, 8, false);
-  EXPECT_FALSE(stripe.isCanonized());
+  ASSERT_TRUE(stripe.isCanonized());
 
   stripe.canonize();
   ASSERT_TRUE(stripe.isCanonized());

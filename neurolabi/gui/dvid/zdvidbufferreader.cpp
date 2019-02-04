@@ -81,7 +81,7 @@ QNetworkAccessManager* ZDvidBufferReader::getNetworkAccessManager()
 
 void ZDvidBufferReader::setService(const ZDvidTarget &target)
 {
-  m_service = ZDvid::MakeDvidNodeService(target);
+  m_service = dvid::MakeDvidNodeService(target);
 }
 
 #endif
@@ -138,7 +138,7 @@ void ZDvidBufferReader::read(
               target.getAddressWithPort(), target.getUuid());
 #endif
         ZSharedPointer<libdvid::DVIDNodeService> service =
-            ZDvid::MakeDvidNodeService(target);
+            dvid::MakeDvidNodeService(target);
         data = service->custom_request(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
       }
@@ -218,7 +218,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
         ZSharedPointer<libdvid::DVIDNodeService> service =
-            ZDvid::MakeDvidNodeService(target);
+            dvid::MakeDvidNodeService(target);
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }

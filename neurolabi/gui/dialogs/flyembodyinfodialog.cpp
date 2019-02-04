@@ -270,8 +270,8 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       int npre = 0;
       int npost = 0;
       if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
-        npre = reader.readSynapseLabelszBody(bodyId, ZDvid::ELabelIndexType::PRE_SYN);
-        npost = reader.readSynapseLabelszBody(bodyId, ZDvid::ELabelIndexType::POST_SYN);
+        npre = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::PRE_SYN);
+        npost = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
               bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
@@ -849,8 +849,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 }
 
                 if (!bodyData.isEmpty() && m_hasLabelsz) {
-                  int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::PRE_SYN);
-                  int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::POST_SYN);
+                  int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
+                  int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
 
                   bodyData.setEntry("body T-bars", npre);
                   bodyData.setEntry("body PSDs", npost);
@@ -900,7 +900,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         dvidTimer.start();
 
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
-              m_currentMaxBodies, ZDvid::ELabelIndexType::ALL_SYN);
+              m_currentMaxBodies, dvid::ELabelIndexType::ALL_SYN);
         dvidTime += dvidTimer.elapsed();
         #ifdef _DEBUG_
             std::cout << "read top " << m_currentMaxBodies << " synapses from DVID in " << dvidTime << " ms" << std::endl;
@@ -1000,8 +1000,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             // synapse info
             // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
-            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::PRE_SYN);
-            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::ELabelIndexType::POST_SYN);
+            int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
+            int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
             dvidTime += dvidTimer.elapsed();
 
             entry.setEntry("body T-bars", npre);

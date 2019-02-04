@@ -21235,16 +21235,16 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   switch (reader.getNodeStatus()) {
-  case ZDvid::NODE_INVALID:
+  case ZDvid::ENodeStatus::NODE_INVALID:
     std::cout << "Invalid node";
     break;
-  case ZDvid::NODE_LOCKED:
+  case ZDvid::ENodeStatus::NODE_LOCKED:
     std::cout << "Locked node";
     break;
-  case ZDvid::NODE_NORMAL:
+  case ZDvid::ENodeStatus::NODE_NORMAL:
     std::cout << "Normal node";
     break;
-  case ZDvid::NODE_OFFLINE:
+  case ZDvid::ENodeStatus::NODE_OFFLINE:
     std::cout << "Node cannot be connected";
     break;
   }
@@ -21616,7 +21616,7 @@ void ZTest::test(MainWindow *host)
     std::cout << "  " << *iter << std::endl;
   }
 
-  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
   obj.print();
 
   obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
@@ -21625,7 +21625,7 @@ void ZTest::test(MainWindow *host)
   target.setUuid("e2f0");
   ZDvidReader reader2;
   reader2.open(target);
-  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
   obj.print();
 #endif
 
@@ -21636,7 +21636,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   target.loadDvidDataSetting(
-        reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT));
+        reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT));
   ZDvidReader reader2;
   reader2.open(target);
 
@@ -21659,7 +21659,7 @@ void ZTest::test(MainWindow *host)
   reader.getDvidTarget().toDvidDataSetting().print();
 
 
-  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::EReadOption::READ_CURRENT);
 
   target = reader.getDvidTarget();
   target.loadDvidDataSetting(obj);

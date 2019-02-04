@@ -174,3 +174,9 @@ macx {
 #  LIBS += -lGL -lGLU
 #}
 
+CONFIG(static_gtest) { # gtest from ext folder
+  include($$PWD/ext/gtest.pri)
+}
+
+include(ext/QsLog/QsLog.pri)
+include(ext/libqxt.pri)

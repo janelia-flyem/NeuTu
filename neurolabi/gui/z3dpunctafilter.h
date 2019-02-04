@@ -56,6 +56,7 @@ protected:
   void changePunctaSize();
   void selectPuncta(QMouseEvent *e, int w, int h);
   void updateData();
+  void updateColorMode();
 
   virtual void process(Z3DEye eye) override;
 
@@ -74,6 +75,8 @@ protected:
 
   virtual void addSelectionLines() override;
 
+  bool widgetGroupUpdateNeeded() const;
+
 private:
   // get visible data from origPunctaList put into punctaList
   void getVisibleData();
@@ -89,6 +92,8 @@ private:
   Z3DSphereRenderer m_sphereRenderer;
 
   ZStringIntOptionParameter m_colorMode;
+  QString m_prevColorMode;
+  QString m_currentColorMode;
   ZVec4Parameter m_singleColorForAllPuncta;
   std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
   m_sourceColorMapper;
@@ -121,6 +126,7 @@ private:
   std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   std::vector<ZWidgetsGroup*> m_colorsForDifferentSourceWidgetsGroup;
   bool m_dataIsInvalid = false;
+  bool m_widgetUpdateToDate = false;
 
   std::vector<ZPunctum*> m_origPunctaList;
 };

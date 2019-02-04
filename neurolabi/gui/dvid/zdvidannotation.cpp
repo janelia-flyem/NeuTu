@@ -455,7 +455,7 @@ void ZDvidAnnotation::addTag(const std::string &tag)
 
 void ZDvidAnnotation::addBodyIdTag()
 {
-  addTag(ZDvid::GetBodyIdTag(getBodyId()));
+  addTag(dvid::GetBodyIdTag(getBodyId()));
 }
 
 void ZDvidAnnotation::removeTag(const std::string &tag)

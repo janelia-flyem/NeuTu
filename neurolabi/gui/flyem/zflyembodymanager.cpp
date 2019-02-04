@@ -5,6 +5,14 @@
 /*
  * Impelementation details:
  *
+ * An ID number can be a raw ID, encoded normal body ID, or encoded supervoxel ID.
+ * There is no overlap between two different types of ID. When an ID is
+ * registered in the manager, it is always stored as its decoded form (raw ID).
+ * A body ID can be encoded with a level, but currently we assume that a normal
+ * body has level 0. Therefore its encoding is the same as its raw form, unless
+ * it is encoded additionally with a tar flag, which is mainly used by
+ * ZFlyEmBody3dDoc to determine how to load a body.
+ *
  * The body set mapped from key 0 in m_bodyMap is treated as a set of orphan
  * supervoxels, which are supervoxels that have unknown parents. An orphan
  * supervoxel is decoded in the manager, but always encoded when returned from an

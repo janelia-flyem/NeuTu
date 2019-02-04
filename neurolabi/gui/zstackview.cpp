@@ -139,8 +139,10 @@ void ZStackView::init()
   m_secondTopLayout = new QHBoxLayout;
 
   m_channelControlLayout = new QHBoxLayout;
+  m_toolLayout = new QHBoxLayout;
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
+  m_secondTopLayout->addLayout(m_toolLayout);
   m_secondTopLayout->addWidget(m_stackLabel);
 //  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
@@ -204,6 +206,20 @@ void ZStackView::init()
   m_sliceStrategy = new ZScrollSliceStrategy(this);
 }
 
+void ZStackView::addToolButton(QPushButton *button)
+{
+  if (button) {
+    m_toolLayout->addWidget(button);
+  }
+}
+
+void ZStackView::removeToolButton(QPushButton *button)
+{
+  if (button) {
+    m_toolLayout->removeWidget(button);
+  }
+}
+
 void ZStackView::enableMessageManager()
 {
   if (m_messageManager == NULL) {
@@ -226,7 +242,7 @@ void ZStackView::hideThresholdControl()
   }
 }
 
-void ZStackView::hideLayout(QLayout *layout)
+void ZStackView::hideLayout(QLayout *layout, bool removing)
 {
   for (int i = 0; i < layout->count(); ++i) {
     QWidget *widget = layout->itemAt(i)->widget();
@@ -235,7 +251,9 @@ void ZStackView::hideLayout(QLayout *layout)
     }
   }
 
-  m_layout->removeItem(layout);
+  if (removing) {
+    m_layout->removeItem(layout);
+  }
 }
 
 void ZStackView::setDynamicObjectAlpha(int alpha)
@@ -563,16 +581,16 @@ void ZStackView::configure(EMode mode)
 {
   switch (mode) {
   case EMode::IMAGE_ONLY:
-    hideLayout(m_topLayout);
-    hideLayout(m_secondTopLayout);
-    hideLayout(m_zControlLayout);
+    hideLayout(m_topLayout, true);
+    hideLayout(m_secondTopLayout, true);
+    hideLayout(m_zControlLayout, true);
     break;
   case EMode::PLAIN_IMAGE:
 #ifndef _DEBUG_
 //    hideLayout(m_topLayout);
 #endif
-    hideLayout(m_secondTopLayout);
-    hideLayout(m_zControlLayout);
+    hideLayout(m_secondTopLayout, true);
+    hideLayout(m_zControlLayout, true);
     m_imageWidget->hideZoomHint();
     break;
   default:

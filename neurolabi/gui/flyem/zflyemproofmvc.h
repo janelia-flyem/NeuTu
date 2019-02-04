@@ -2,6 +2,9 @@
 #define ZFLYEMPROOFMVC_H
 
 #include <vector>
+#include <unordered_map>
+#include <map>
+
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -9,10 +12,10 @@
 
 #include "common/neutube_def.h"
 #include "zstackmvc.h"
-#include "flyem/zflyembodysplitproject.h"
-#include "flyem/zflyembodymergeproject.h"
+#include "zflyembodysplitproject.h"
+#include "zflyembodymergeproject.h"
 #include "zthreadfuturemap.h"
-#include "flyem/zflyembookmark.h"
+#include "zflyembookmark.h"
 #include "zwindowfactory.h"
 #include "common/neutube_def.h"
 #include "zactionfactory.h"
@@ -227,7 +230,7 @@ public slots:
   void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
-  void annotateBody();
+  void annotateSelectedBody();
   void setExpertBodyStatus();
   void showBodyConnection();
   void showBodyProfile();
@@ -433,11 +436,6 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
-//  void queryBodyByRoi();
-//  void findSimilarNeuron();
-//  void queryBodyByName();
-//  void queryBodyByStatus();
-//  void queryAllNamedBody();
   void exportSelectedBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
@@ -471,6 +469,9 @@ private slots:
   void updateTmpContrast();
   void resetContrast();
   void saveTmpContrast();
+
+  void onAnnotationRoughlyTraced();
+  void onAnnotationTraced();
 
 private:
   void init();
@@ -566,16 +567,29 @@ private:
   template<typename T>
   FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
 
-  void updateBodyMessage(
-      uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
-
   void submitSkeletonizationTask(uint64_t bodyId);
 
   QMenu* makeControlPanelMenu();
   QAction* getAction(ZActionFactory::EAction item);
   void addBodyColorMenu(QMenu *menu);
   void addBodyMenu(QMenu *menu);
+
+  void updateBodyMessage(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
+  void setSelectedBodyStatus(const std::string &status);
+  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
+
+  enum class EViewButton {
+    GOTO_BODY, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+  };
+
+  QPushButton* getViewButton(EViewButton option);
+  void makeViewButton(EViewButton option);
+  void makeViewButton(EViewButton option, const QString &name, const char *slot);
+  void initViewButton();
+  void updateViewButton();
 
 protected:
   bool m_showSegmentation;
@@ -647,6 +661,8 @@ protected:
   std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
 //  std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
+
+  std::map<EViewButton, QPushButton*> m_viewButtons;
 
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;

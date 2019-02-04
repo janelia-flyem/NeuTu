@@ -46,7 +46,7 @@ public:
    * \param sourceString Format: http:host:port:node:<dataType>_name.
    */
   void setFromSourceString(
-      const std::string &sourceString, ZDvid::EDataType dataType);
+      const std::string &sourceString, dvid::EDataType dataType);
 
   void setFromUrl(const std::string &url);
 
@@ -131,12 +131,12 @@ public:
    *
    * The status of the node is related to the status of the database.
    */
-  ZDvid::ENodeStatus getNodeStatus() const;
+  dvid::ENodeStatus getNodeStatus() const;
 
   /*!
    * \brief Set the status of the node.
    */
-  void setNodeStatus(ZDvid::ENodeStatus status);
+  void setNodeStatus(dvid::ENodeStatus status);
 
   /*!
    * \brief Load json object
@@ -430,7 +430,7 @@ private:
 
   bool m_isEditable; //if the configuration is editable
   bool m_readOnly; //if the database is readonly
-  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
+  dvid::ENodeStatus m_nodeStatus = dvid::ENodeStatus::OFFLINE; //Status of the node
   bool m_isInferred = false;
 };
 

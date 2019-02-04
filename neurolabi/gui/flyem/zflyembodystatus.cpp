@@ -89,11 +89,16 @@ std::string ZFlyEmBodyStatus::getName() const
   return m_status;
 }
 
+bool ZFlyEmBodyStatus::isAdminAccessible() const
+{
+  return (m_protection >= 5 && m_protection < 9);
+}
+
 bool ZFlyEmBodyStatus::isAccessible() const
 {
   if (m_protection >= 9) {
     return false;
-  } else if (m_protection >= 5) {
+  } else if (isAdminAccessible()) {
     return neutube::IsAdminUser();
   }
 

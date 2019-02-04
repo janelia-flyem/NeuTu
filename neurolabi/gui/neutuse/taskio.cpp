@@ -71,7 +71,7 @@ void TaskIO::testConnection()
 void TaskIO::post(const std::string &path, const ZJsonObject &obj)
 {
   if (ready()) {
-    libdvid::BinaryDataPtr response = ZDvid::MakePostRequest(
+    libdvid::BinaryDataPtr response = dvid::MakePostRequest(
           *m_connection, path, obj, m_statusCode);
     m_response = response->get_data();
   }

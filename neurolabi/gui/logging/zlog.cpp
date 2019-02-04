@@ -92,6 +92,25 @@ ZLog& ZLog::operator << (const std::function<void(ZLog&)> f)
   return *this;
 }
 
+namespace {
+#if defined(_DEBUG_)
+const char* DEFAULT_OPERATION_NAME = "debug";
+#else
+const char* DEFAULT_OPERATION_NAME = "app";
+#endif
+}
+
+std::string KLog::m_operationName = DEFAULT_OPERATION_NAME;
+
+void KLog::SetOperationName(const std::string &name)
+{
+  m_operationName = name;
+}
+
+void KLog::ResetOperationName()
+{
+  m_operationName = DEFAULT_OPERATION_NAME;
+}
 
 KLog::KLog()
 {
@@ -110,11 +129,8 @@ KLog::~KLog()
 void KLog::start()
 {
   if (neuopentracing::Tracer::Global()) {
-#if defined(_DEBUG_)
-    m_span = neuopentracing::Tracer::Global()->StartSpan("debug");
-#else
-    m_span = neuopentracing::Tracer::Global()->StartSpan("app");
-#endif
+    m_span = neuopentracing::Tracer::Global()->StartSpan(m_operationName);
+
     if (m_span) {
       neutu::UserInfo userInfo = NeutubeConfig::GetUserInfo();
       m_span->SetTag("user", userInfo.getUserName());

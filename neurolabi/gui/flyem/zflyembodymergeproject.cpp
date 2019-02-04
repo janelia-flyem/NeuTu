@@ -455,6 +455,22 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 //  m_annotationCache.clear();
 }
 
+QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
+    std::function<bool(const ZFlyEmBodyStatus&)> pred) const
+{
+  const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
+      m_annotMerger.getStatusList();
+
+  QList<QString> statusList;
+  for (const ZFlyEmBodyStatus &status : bodyStatusList) {
+    if (pred(status)) {
+      statusList.append(status.getName().c_str());
+    }
+  }
+
+  return statusList;
+}
+
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
@@ -468,6 +484,25 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
   }
 
   return statusList;
+}
+
+QList<QString> ZFlyEmBodyMergeProject::getAdminStatusList() const
+{
+  return getBodyStatusList([](const ZFlyEmBodyStatus &status) {
+    return status.isAdminAccessible();
+  });
+
+//  const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
+//      m_annotMerger.getStatusList();
+
+//  QList<QString> statusList;
+//  for (const ZFlyEmBodyStatus &status : bodyStatusList) {
+//    if (status.isAdminAccessible()) {
+//      statusList.append(status.getName().c_str());
+//    }
+//  }
+
+//  return statusList;
 }
 
 int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
@@ -486,6 +521,11 @@ bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
   }
 
   return m_annotMerger.isFinal(status);
+}
+
+bool ZFlyEmBodyMergeProject::isExpertStatus(const std::string &status) const
+{
+  return m_annotMerger.isExpertStatus(status);
 }
 
 bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
@@ -802,7 +842,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
       getProgressSignal()->startProgress(0.5);
       foreach (uint64_t targetId, m_mergeMap.keys()) {
         const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
-        auto mergeConfig = ZDvid::GetMergeConfig(
+        auto mergeConfig = dvid::GetMergeConfig(
               m_writer.getDvidReader(), targetId, merged, mergingToLargest);
         const uint64_t &newTargetId = mergeConfig.first;
         const std::vector<uint64_t> &newMerged = mergeConfig.second;

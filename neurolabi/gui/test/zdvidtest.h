@@ -77,13 +77,13 @@ TEST(ZDvidTest, ZDvidInfo)
 
 TEST(ZDvidTest, Util)
 {
-  ASSERT_TRUE(ZDvid::IsUuidMatched("12345", "123"));
-  ASSERT_TRUE(ZDvid::IsUuidMatched("aad345", "aad"));
-  ASSERT_TRUE(ZDvid::IsUuidMatched("123", "123fwrq424q"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("", "123"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", ""));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", "12346"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("234", "12346"));
+  ASSERT_TRUE(dvid::IsUuidMatched("12345", "123"));
+  ASSERT_TRUE(dvid::IsUuidMatched("aad345", "aad"));
+  ASSERT_TRUE(dvid::IsUuidMatched("123", "123fwrq424q"));
+  ASSERT_FALSE(dvid::IsUuidMatched("", "123"));
+  ASSERT_FALSE(dvid::IsUuidMatched("12345", ""));
+  ASSERT_FALSE(dvid::IsUuidMatched("12345", "12346"));
+  ASSERT_FALSE(dvid::IsUuidMatched("234", "12346"));
 }
 
 TEST(ZDvidTest, ZDvidUrl)
@@ -400,7 +400,7 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("",
             dvidUrl.getSynapseLabelszUrl(
-              0, ZDvid::ELabelIndexType::ALL_SYN));
+              0, dvid::ELabelIndexType::ALL_SYN));
 
   target.setSynapseName("synapse");
   dvidUrl.setDvidTarget(target);
@@ -417,7 +417,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1",
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
-            dvidUrl.getSynapseLabelszUrl(1, ZDvid::ELabelIndexType::ALL_SYN));
+            dvidUrl.getSynapseLabelszUrl(1, dvid::ELabelIndexType::ALL_SYN));
 
   target.setSegmentationName("labelstest");
   target.setMaxLabelZoom(5);
@@ -815,15 +815,15 @@ TEST(ZDvidTest, ZDvidTarget)
 
 TEST(ZDvidTest, DataType)
 {
-  ASSERT_EQ(ZDvid::TYPE_LABELBLK, ZDvid::GetDataType("labelblk"));
-  ASSERT_EQ(ZDvid::TYPE_ANNOTATION, ZDvid::GetDataType("annotation"));
-  ASSERT_EQ(ZDvid::TYPE_IMAGETILE, ZDvid::GetDataType("imagetile"));
-  ASSERT_EQ(ZDvid::TYPE_KEYVALUE, ZDvid::GetDataType("keyvalue"));
-  ASSERT_EQ(ZDvid::TYPE_LABELGRAPH, ZDvid::GetDataType("labelgraph"));
-  ASSERT_EQ(ZDvid::TYPE_LABELSZ, ZDvid::GetDataType("labelsz"));
-  ASSERT_EQ(ZDvid::TYPE_LABELVOL, ZDvid::GetDataType("labelvol"));
-  ASSERT_EQ(ZDvid::TYPE_ROI, ZDvid::GetDataType("roi"));
-  ASSERT_EQ(ZDvid::TYPE_UINT8BLK, ZDvid::GetDataType("uint8blk"));
+  ASSERT_EQ(dvid::EDataType::LABELBLK, dvid::GetDataType("labelblk"));
+  ASSERT_EQ(dvid::EDataType::ANNOTATION, dvid::GetDataType("annotation"));
+  ASSERT_EQ(dvid::EDataType::IMAGETILE, dvid::GetDataType("imagetile"));
+  ASSERT_EQ(dvid::EDataType::KEYVALUE, dvid::GetDataType("keyvalue"));
+  ASSERT_EQ(dvid::EDataType::LABELGRAPH, dvid::GetDataType("labelgraph"));
+  ASSERT_EQ(dvid::EDataType::LABELSZ, dvid::GetDataType("labelsz"));
+  ASSERT_EQ(dvid::EDataType::LABELVOL, dvid::GetDataType("labelvol"));
+  ASSERT_EQ(dvid::EDataType::ROI, dvid::GetDataType("roi"));
+  ASSERT_EQ(dvid::EDataType::UINT8BLK, dvid::GetDataType("uint8blk"));
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e2f0", 7000);
