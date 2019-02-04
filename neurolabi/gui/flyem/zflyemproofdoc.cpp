@@ -166,6 +166,11 @@ int ZFlyEmProofDoc::getBodyStatusRank(const std::string &status) const
   return getMergeProject()->getStatusRank(status);
 }
 
+bool ZFlyEmProofDoc::isExpertBodyStatus(const std::string &status) const
+{
+  return getMergeProject()->isExpertStatus(status);
+}
+
 void ZFlyEmProofDoc::initAutoSave()
 {
 //  m_isCustomBookmarkSaved = true;

@@ -131,6 +131,7 @@ public:
   QList<QString> getAdminStatusList() const;
   int getStatusRank(const std::string &status) const;
   bool isFinalStatus(const std::string &status) const;
+  bool isExpertStatus(const std::string &status) const;
   bool isMergableStatus(const std::string &status) const;
 
   QString composeStatusConflictMessage(

@@ -523,6 +523,11 @@ bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
   return m_annotMerger.isFinal(status);
 }
 
+bool ZFlyEmBodyMergeProject::isExpertStatus(const std::string &status) const
+{
+  return m_annotMerger.isExpertStatus(status);
+}
+
 bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
 {
   return m_annotMerger.isMergable(status);

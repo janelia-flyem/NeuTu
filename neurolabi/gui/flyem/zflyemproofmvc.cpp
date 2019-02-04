@@ -6251,10 +6251,17 @@ void ZFlyEmProofMvc::updateViewButton()
         ZString status(annot.getStatus());
         status.toLower();
         int rank = getCompleteDocument()->getBodyStatusRank(status);
+        auto pred = [&, this](
+            const std::string &buttonStatus) {
+          ZFlyEmProofDoc *doc = this->getCompleteDocument();
+          return doc->isExpertBodyStatus(buttonStatus) &&
+              rank > doc->getBodyStatusRank(buttonStatus);
+        };
+
         getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
-              rank > getCompleteDocument()->getBodyStatusRank("roughly traced"));
+              pred("roughly traced"));
         getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
-              rank > getCompleteDocument()->getBodyStatusRank("traced"));
+              pred("traced"));
       }
     } else {
       getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
