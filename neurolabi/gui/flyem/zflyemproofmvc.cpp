@@ -4259,6 +4259,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
   }
 }
 
+#if 0
 void ZFlyEmProofMvc::processMessageSlot(const QString &message)
 {
   ZJsonObject obj;
@@ -4271,6 +4272,7 @@ void ZFlyEmProofMvc::processMessageSlot(const QString &message)
     }
   }
 }
+#endif
 
 void ZFlyEmProofMvc::processMessage(const ZWidgetMessage &/*msg*/)
 {
@@ -6238,9 +6240,11 @@ void ZFlyEmProofMvc::initViewButton()
 
 void ZFlyEmProofMvc::updateViewButton()
 {
+  std::cout << "Update view button" << std::endl;
   if (getCompleteDocument()->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD &&
       !getDvidTarget().readOnly() &&
       neutube::IsAdminUser()) {
+    std::cout << "Update view button for admin" << std::endl;
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
     if (bodySet.size() == 1) {
@@ -6254,9 +6258,17 @@ void ZFlyEmProofMvc::updateViewButton()
         auto pred = [&, this](
             const std::string &buttonStatus) {
           ZFlyEmProofDoc *doc = this->getCompleteDocument();
+          std::cout << "Body pred check" << buttonStatus << " "
+                    << doc->isExpertBodyStatus(buttonStatus) << " "
+                    << rank << " " << doc->getBodyStatusRank(buttonStatus)
+                    << std::endl;
           return doc->isExpertBodyStatus(buttonStatus) &&
               rank > doc->getBodyStatusRank(buttonStatus);
         };
+
+//        if (pred("roughly traced")) {
+//          std::cout << "Expert status" << std::endl;
+//        }
 
         getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
               pred("roughly traced"));

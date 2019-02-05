@@ -703,6 +703,8 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
   bool show = (state != Qt::Unchecked);
   enableCleavingUI(show);
   applyColorMode(show);
+
+  KINFO << QString("Show cleaving: %1").arg(show);
 }
 
 void TaskBodyCleave::onToggleShowCleaving()
@@ -711,7 +713,7 @@ void TaskBodyCleave::onToggleShowCleaving()
     return;
   }
 
-  m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked());
+  m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked()); 
 }
 
 void TaskBodyCleave::onShowSeedsOnlyChanged(int)
@@ -721,6 +723,8 @@ void TaskBodyCleave::onShowSeedsOnlyChanged(int)
   }
 
   updateColors();
+
+  KINFO << QString("Show seeds only: %1").arg(m_showSeedsOnlyCheckBox->isChecked());
 }
 
 void TaskBodyCleave::onToggleShowSeedsOnly()
@@ -1512,6 +1516,8 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
 
   m_cleaveRepliesPending++;
   m_networkManager->post(request, requestData);
+
+  KINFO << QString("Cleave posted: ") + QString(requestData);
 }
 
 bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const
