@@ -94,7 +94,7 @@ Neu3Window::Neu3Window(QWidget *parent) :
   std::string kafkaBrokers = "kafka.int.janelia.org:9092";
   if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
 
-    // The list of brokers should be separated by commans, per this example:
+    // The list of brokers should be separated by commas, per this example:
     // https://www.npmjs.com/package/node-rdkafka
 
     kafkaBrokers = kafkaBrokersEnv;

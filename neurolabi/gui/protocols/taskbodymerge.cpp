@@ -59,6 +59,8 @@ namespace {
   static const QString KEY_SOURCE = "source";
   static const QString KEY_BUILD_VERSION = "build version";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
+  // The standard for our Kafka logging is to use "duration" instead of "time to complete (ms)".
+  static const QString KEY_USAGE_TIME_KAKFA = "duration";
   static const QString KEY_RESULT_HISTORY = "result history";
   static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
   static const QString KEY_USING_HYBRID_MESHES = "using hybrid meshes";
@@ -1235,7 +1237,16 @@ void TaskBodyMerge::writeResult(const QString &result)
   s_span->SetTag("duration", m_usageTimes.back());
   s_span->SetTag("category", "neu3.focusedMerging.result");
   for (auto it = json.begin(); it != json.end(); it++) {
-    s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
+    QString key = it.key();
+    if (key == KEY_USAGE_TIME) {
+      key = KEY_USAGE_TIME_KAKFA;
+    }
+    neuopentracing::Value value(it.value());
+    if (key == KEY_TIMESTAMP) {
+      uint64_t timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+      value = neuopentracing::Value(timestamp);
+    }
+    s_span->SetTag(key.toStdString(), value);
   }
   s_span->Finish();
 }
