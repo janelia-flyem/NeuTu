@@ -29387,5 +29387,18 @@ void ZTest::test(MainWindow *host)
   std::cout << writer->isStatusOk() << std::endl;
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
+
+  ZJsonObject obj = reader->readBodyStatusV2();
+
+  obj.print();
+
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+
+  merger.print();
+#endif
+
   std::cout << "Done." << std::endl;
 }

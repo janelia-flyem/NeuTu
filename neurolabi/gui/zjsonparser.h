@@ -29,18 +29,51 @@ public:
   void printError() const;
 
 
-  template<typename T, typename std::enable_if<!std::is_integral<T>::value, int>::type = 0>
-  T getValue(const json_t *value) const;
 
-  template<typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-  T getValue(const json_t *value) const
-  {
-    if (value == NULL) {
-      return m_defaultIntValue;
+//  template<typename T, typename std::enable_if<!std::is_integral<T>::value, int>::type = 0>
+//  T getValue(const json_t *value) const;
+
+  template <typename...>
+  struct voider { using type = void; };
+
+  template <typename... T>
+  using void_t = typename voider<T...>::type;
+
+  template<typename T, typename T2 = void>
+  struct GetValueHelper {
+    static T GetValue(const json_t *value);
+  };
+
+  template<typename T>
+  struct GetValueHelper<T,
+      void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>> {
+    static T GetValue(const json_t *value) {
+      if (value == NULL) {
+        return 0;
+      }
+
+      return integerValue(value);
     }
+  };
 
-    return integerValue(value);
+//  T getValue<T,
+//  void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>>(const json_t *value) const
+//  {
+//    if (value == NULL) {
+//      return m_defaultIntValue;
+//    }
+
+//    return integerValue(value);
+//  }
+
+
+  template<typename T>
+  T getValue(const json_t *value) const {
+    return GetValueHelper<T>::GetValue(value);
   }
+
+
+
 
 //  template<>
 //  static std::string getValue<std::string>(const json_t *value);
@@ -86,11 +119,33 @@ public:
 
 private:
   json_error_t m_error;
-  std::string m_defaultStringValue;
-  int64_t m_defaultIntValue = 0;
-  bool m_defaultBoolValue = false;
+//  std::string m_defaultStringValue;
+//  int64_t m_defaultIntValue = 0;
+//  bool m_defaultBoolValue = false;
 
 //  const static char m_emptyString[1];
+};
+
+template<>
+struct ZJsonParser::GetValueHelper<std::string> {
+  static std::string GetValue(const json_t *value) {
+    if (value == NULL) {
+      return "";
+    }
+
+    return stringValue(value);
+  }
+};
+
+template<>
+struct ZJsonParser::GetValueHelper<bool> {
+  static bool GetValue(const json_t *value) {
+    if (value == NULL) {
+      return false;
+    }
+
+    return booleanValue(value);
+  }
 };
 
 #endif // ZJSONPARSER_H
