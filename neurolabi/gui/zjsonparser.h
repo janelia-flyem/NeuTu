@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include "common/neutube_def.h"
 #include "neurolabi_config.h"
 #include "tz_json.h"
 #include "zjsonobject.h"
@@ -33,11 +34,6 @@ public:
 //  template<typename T, typename std::enable_if<!std::is_integral<T>::value, int>::type = 0>
 //  T getValue(const json_t *value) const;
 
-  template <typename...>
-  struct voider { using type = void; };
-
-  template <typename... T>
-  using void_t = typename voider<T...>::type;
 
   template<typename T, typename T2 = void>
   struct GetValueHelper {
@@ -46,12 +42,8 @@ public:
 
   template<typename T>
   struct GetValueHelper<T,
-      void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>> {
+      neutube::void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>> {
     static T GetValue(const json_t *value) {
-      if (value == NULL) {
-        return 0;
-      }
-
       return integerValue(value);
     }
   };
@@ -129,10 +121,6 @@ private:
 template<>
 struct ZJsonParser::GetValueHelper<std::string> {
   static std::string GetValue(const json_t *value) {
-    if (value == NULL) {
-      return "";
-    }
-
     return stringValue(value);
   }
 };

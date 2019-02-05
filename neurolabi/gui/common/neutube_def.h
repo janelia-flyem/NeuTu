@@ -62,6 +62,12 @@ constexpr typename std::underlying_type<T>::type EnumValue(T val)
     return static_cast<typename std::underlying_type<T>::type>(val);
 }
 
+template <typename...>
+struct voider { using type = void; };
+
+template <typename... T>
+using void_t = typename voider<T...>::type;
+
 enum class EPlane {
   XY = 0, XZ, YZ
 };
