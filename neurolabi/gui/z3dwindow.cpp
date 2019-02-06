@@ -26,6 +26,8 @@
 #include "zglobal.h"
 #include "qt/gui/utilities.h"
 
+#include "logging/utilities.h"
+#include "logging/zlog.h"
 
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
@@ -33,7 +35,6 @@
 #include "zpunctum.h"
 #include "zlocsegchain.h"
 #include "z3dcanvas.h"
-#include "logging/zlog.h"
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -4097,6 +4098,10 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
     ZDialogFactory::PromptMessage(msg, this);
   }
 
+  if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
+    neutu::LogMessage(msg);
+  }
+
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
     m_view->dump(msg.toPlainString());
@@ -4596,8 +4601,6 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
 
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
-  //bool success = false;
-//  std::string source;
   ZObject3d* obj = NULL;
   if (m_doc->hasStack()) {
     obj = createPolyplaneFrom3dPaintForVolume(stroke);
@@ -4605,9 +4608,14 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     obj = createPolyplaneFrom3dPaintForMesh(stroke);
   }
 
+  KINFO << "Paint stroke in 3D";
+
   if (obj != NULL) {
     if (!obj->isEmpty()) {
       obj->setLabel(stroke->getLabel());
+
+      KINFO << QString("Add seed from 3D: %1").arg(obj->getLabel());
+
       ZLabelColorTable colorTable;
       obj->setColor(colorTable.getColor(obj->getLabel()));
       obj->setRole(ZStackObjectRole::ROLE_SEED |

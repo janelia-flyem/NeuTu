@@ -5857,7 +5857,7 @@ void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
   emit messageGenerated(
         ZWidgetMessage(
           message, neutube::EMessageType::INFORMATION,
-          ZWidgetMessage::TARGET_CUSTOM_AREA));
+          ZWidgetMessage::TARGET_CUSTOM_AREA | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZStackDoc::notifyPunctumModified()

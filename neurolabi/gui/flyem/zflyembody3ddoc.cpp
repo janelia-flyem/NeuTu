@@ -1206,7 +1206,11 @@ void ZFlyEmBody3dDoc::activateSplit(
 
       msg += QString("%1").arg(bodyId);
 
-      emit messageGenerated(ZWidgetMessage(msg));
+      emit messageGenerated(
+            ZWidgetMessage(
+              msg, neutube::EMessageType::INFORMATION,
+              ZWidgetMessage::TARGET_CUSTOM_AREA |
+              ZWidgetMessage::TARGET_KAFKA));
 
       emit interactionStateChanged();
     } else {
@@ -1272,6 +1276,8 @@ void ZFlyEmBody3dDoc::deactivateSplit()
 
 void ZFlyEmBody3dDoc::showMeshForSplitOnly(bool on)
 {
+  KINFO << QString("Toggle meshes for split: %1").arg(on);
+
   if (on) {
     hideNoSplitMesh();
   } else {
@@ -1299,8 +1305,8 @@ void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
                 this, SLOT(startBodyAnnotation()));
         break;
       case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
-        connect(action, SIGNAL(toggled(bool)),
-                this, SLOT(showMeshForSplitOnly(bool)));
+        connect(action, &QAction::toggled,
+                this, &ZFlyEmBody3dDoc::showMeshForSplitOnly);
         break;
       default:
         break;
@@ -3837,7 +3843,7 @@ void ZFlyEmBody3dDoc::runSplitFunc()
 
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
-  ZOUT(LINFO(), 5) << "Trying local split ...";
+  KINFO << "Trying local split ...";
 
   uint64_t bodyId = protectBodyForSplit();
 
@@ -3858,7 +3864,7 @@ void ZFlyEmBody3dDoc::runLocalSplit()
 
 void ZFlyEmBody3dDoc::runSplit()
 {
-  ZOUT(LINFO(), 5) << "Trying split ...";
+  KINFO << "Trying split ...";
 
   if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
@@ -3872,7 +3878,7 @@ void ZFlyEmBody3dDoc::runSplit()
 
 void ZFlyEmBody3dDoc::runFullSplit()
 {
-  ZOUT(LINFO(), 5) << "Trying split ...";
+  KINFO << "Trying full split ...";
 
   if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
