@@ -350,11 +350,11 @@ void TaskProtocolWindow::onNextButton() {
 
 void TaskProtocolWindow::onDoneButton() {
     bool allComplete = true;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (!task->completed()) {
-            allComplete = false;
-            break;
-        }
+    for (int i = 0; i < m_taskList.size(); i++) {
+      if (!m_taskList[i]->completed() && !skip(i)) {
+        allComplete = false;
+        break;
+      }
     }
     if (!allComplete) {
         QMessageBox messageBox;
