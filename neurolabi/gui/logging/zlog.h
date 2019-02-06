@@ -141,6 +141,7 @@ class KLog : public ZLog
 {
 public:
   KLog();
+  KLog(bool localLogging);
   ~KLog();
 
   void start() override;
@@ -157,6 +158,7 @@ private:
 private:
   std::unique_ptr<neuopentracing::Span> m_span;
   static std::string m_operationName;
+  bool m_localLogging = false;
 };
 
 class KInfo : public KLog
@@ -182,6 +184,12 @@ public:
 #define KLOG KLog()
 #define KINFO KInfo()
 #define KWARN KWarn()
+
+//Send to both kafka and local file
+#define LKLOG KLog(true)
+#define LKINFO KInfo(true)
+#define LKWARN KWarn(true)
+
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()
 #else

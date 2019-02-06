@@ -516,8 +516,10 @@ bool TaskBodyCleave::skip()
   dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
 
-  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
-          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+  KINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
+          arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
+//  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
+//          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
 
   // Add to the auxiliary output a mention that this task was skipped.
 
@@ -745,6 +747,8 @@ void TaskBodyCleave::onCleaveIndexShortcut()
   if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
     int i = m_actionToComboBoxIndex[action];
     m_cleaveIndexComboBox->setCurrentIndex(i);
+
+    KINFO << QString("Set cleave index to %1").arg(i);
   }
 }
 
@@ -768,6 +772,8 @@ void TaskBodyCleave::onSelectBody()
   std::set<uint64_t> toSelect;
   bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
   selectBodies(toSelect);
+
+  KINFO << QString("Select %1 bodies").arg(toSelect.size());
 }
 
 void TaskBodyCleave::onShowBodyChanged(int state)
@@ -788,6 +794,8 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   selectBodies(bodiesForIndex, false);
 
   updateVisibility();
+
+  KINFO << QString("Show body: %1").arg(state);
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -805,6 +813,8 @@ void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
   if (!uiIsEnabled()) {
     return;
   }
+
+  KINFO << QString("Toggle chosen cleave body: %1").arg(toggle);
 
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
@@ -980,6 +990,8 @@ void TaskBodyCleave::onHideSelected()
     return;
   }
 
+  KINFO << "Hide selected bodies";
+
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
@@ -1000,6 +1012,8 @@ void TaskBodyCleave::onClearHidden()
     return;
   }
 
+  KINFO << "Clear hidden bodies";
+
   selectBodies(m_hiddenIds);
   m_hiddenIds.clear();
   updateVisibility();
@@ -1018,6 +1032,8 @@ void TaskBodyCleave::onChooseCleaveMethod()
     if (ok) {
       m_cleaveMethod = text;
     }
+
+    KINFO << "Choose cleaving method: " + text;
   }
 }
 

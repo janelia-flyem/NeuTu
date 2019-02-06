@@ -15,15 +15,20 @@
 #include "common/neutube_def.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemtaskhelper.h"
+
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/tasktesttask.h"
+
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
-#include "flyem/zflyemtaskhelper.h"
+
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -396,12 +401,16 @@ void TaskProtocolWindow::onDoneButton() {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
         jsonString.toStdString());
 
-    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
-            << "," << key.toStdString();
+//    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+//            << "," << key.toStdString();
+
+    emitInfo(QString("Task protocol: saved completed protocol data to DVID: %1 , %2").
+             arg(PROTOCOL_INSTANCE).arg(key));
 
     // delete old key in either case
     m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
-    LINFO() << "Task protocol: deleted working protocol data from DVID";
+    emitInfo("Task protocol: deleted working protocol data from DVID");
+//    LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
     resetBody3dDocConfig();
@@ -1074,14 +1083,10 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
         } else {
           QString msg =
               "Task protocol: json loaded from DVID:" + instance + "," + key;
-          LINFO() << msg;
-          emit messageGenerated(ZWidgetMessage(msg));
-#if 0
-          //For testing
-          emit messageGenerated(
-              ZWidgetMessage(
-                "test", msg, neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
-#endif
+          emitInfo(msg);
+//          KINFO << msg;
+//          emit messageGenerated(ZWidgetMessage(msg));
+
           return doc.object();
         }
 }
@@ -1155,7 +1160,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
     }
 
-    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
+    emitInfo(QString("Task protocol: loaded %1").arg("tasks"));
+//    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 
 void TaskProtocolWindow::createTask(QString menuLabel)
@@ -1330,7 +1336,8 @@ void TaskProtocolWindow::showError(QString title, QString message) {
 
     emit messageGenerated(
         ZWidgetMessage(
-          title, message, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
+          title, message, neutube::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_DIALOG | ZWidgetMessage::TARGET_KAFKA));
 }
 
 /*
@@ -1344,6 +1351,24 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::emitMessage(const QString &msg, neutube::EMessageType type)
+{
+  emit messageGenerated(ZWidgetMessage(msg, type,
+                                       ZWidgetMessage::TARGET_TEXT_APPENDING |
+                                       ZWidgetMessage::TARGET_LOG_FILE |
+                                       ZWidgetMessage::TARGET_KAFKA));
+}
+
+void TaskProtocolWindow::emitInfo(const QString &msg)
+{
+  emitMessage(msg, neutube::EMessageType::INFORMATION);
+}
+
+void TaskProtocolWindow::emitWarning(const QString &msg)
+{
+  emitMessage(msg, neutube::EMessageType::WARNING);
 }
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)

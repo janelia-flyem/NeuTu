@@ -18,7 +18,7 @@
  * derived forms shaped by the ELK specification.
  *
  * KLog is derived from ZLog to serve a wrapper of neuopentracing APIs. When
- * no Kafka broker is available, KLog works like ZLog, which saves messages
+ * no Kafka broker is available, KLog works like ZLog, which tries to save messages
  * in a local log file.
  */
 
@@ -41,7 +41,7 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    ZOUT(LINFO(), 5) << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    LINFO() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
     m_tags = QJsonObject();
   }
   m_started = false;
@@ -116,6 +116,10 @@ KLog::KLog()
 {
 }
 
+KLog::KLog(bool localLogging) : m_localLogging(localLogging)
+{
+}
+
 KLog::~KLog()
 {
   endKLog();
@@ -181,7 +185,9 @@ void KLog::endKLog()
 void KLog::end()
 {
   endKLog();
-  ZLog::end();
+  if (m_localLogging) {
+    ZLog::end();
+  }
 }
 
 KInfo::KInfo()

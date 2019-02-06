@@ -1,5 +1,5 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef _LOGGING_UTILITIES_H
+#define _LOGGING_UTILITIES_H
 
 #include <QString>
 

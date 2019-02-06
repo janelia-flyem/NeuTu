@@ -11,6 +11,7 @@
 #endif
 
 #include "ui_neu3window.h"
+#include "logging/utilities.h"
 #include "z3dwindow.h"
 #include "zstackdoc.h"
 #include "zdialogfactory.h"
@@ -1063,7 +1064,6 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_DIALOG)) {
     m_3dwin->processMessage(msg);
   }
-
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
