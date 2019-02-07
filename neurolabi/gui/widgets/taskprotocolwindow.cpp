@@ -351,10 +351,10 @@ void TaskProtocolWindow::onNextButton() {
 void TaskProtocolWindow::onDoneButton() {
     bool allComplete = true;
     for (int i = 0; i < m_taskList.size(); i++) {
-      if (!m_taskList[i]->completed() && !skip(i)) {
-        allComplete = false;
-        break;
-      }
+        if (!m_taskList[i]->completed() && !skip(i)) {
+            allComplete = false;
+            break;
+        }
     }
     if (!allComplete) {
         QMessageBox messageBox;
