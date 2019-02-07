@@ -165,11 +165,11 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
                 m_view, SLOT(updateStackRange()), Qt::DirectConnection);
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
                 m_view, SLOT(processStackChange(bool)), Qt::QueuedConnection);
-  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
-                Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+//                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
+//                Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
                 m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(

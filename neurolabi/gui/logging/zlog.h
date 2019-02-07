@@ -14,7 +14,7 @@
 class ZLog
 {
 public:
-  ZLog();
+  ZLog(bool localLogging = true);
   virtual ~ZLog();
 
   virtual void start();
@@ -25,14 +25,6 @@ public:
 
   struct Tag {
     Tag() {}
-//    Tag(const std::string &key, const std::string &value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const char *value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const int64_t &value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const QJsonValue &value) :
-//      m_key(key), m_value(value) {}
 
     Tag(const std::string &key, const neuopentracing::Value &value) :
       m_key(key), m_value(value) {}
@@ -129,19 +121,24 @@ public:
   ZLog& operator << (const Tag &tag);
   ZLog& operator << (const std::function<void(ZLog&)> f);
 
+protected:
+  inline bool localLogging() {
+    return m_localLogging;
+  }
+
 private:
   void endLog();
 
 private:
   bool m_started = false;
   QJsonObject m_tags;
+  bool m_localLogging = true;
 };
 
 class KLog : public ZLog
 {
 public:
-  KLog();
-  KLog(bool localLogging);
+  KLog(bool localLogging = false);
   ~KLog();
 
   void start() override;
@@ -158,13 +155,14 @@ private:
 private:
   std::unique_ptr<neuopentracing::Span> m_span;
   static std::string m_operationName;
-  bool m_localLogging = false;
 };
 
 class KInfo : public KLog
 {
 public:
-  KInfo();
+//  KInfo();
+//  KInfo(bool localogging);
+  using KLog::KLog;
 
   KInfo& operator << (const char *info);
   KInfo& operator << (const std::string &info);
@@ -174,21 +172,34 @@ public:
 class KWarn : public KLog
 {
 public:
-  KWarn();
+  using KLog::KLog;
 
   KWarn& operator << (const char *info);
   KWarn& operator << (const std::string &info);
   KWarn& operator << (const QString &info);
 };
 
+class KError : public KLog
+{
+public:
+  using KLog::KLog;
+
+  KError& operator << (const char *info);
+  KError& operator << (const std::string &info);
+  KError& operator << (const QString &info);
+};
+
+
 #define KLOG KLog()
 #define KINFO KInfo()
 #define KWARN KWarn()
+#define KERROR KError()
 
 //Send to both kafka and local file
 #define LKLOG KLog(true)
 #define LKINFO KInfo(true)
 #define LKWARN KWarn(true)
+#define LKERROR KError(true)
 
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()

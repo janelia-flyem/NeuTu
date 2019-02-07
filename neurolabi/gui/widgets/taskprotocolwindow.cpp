@@ -1020,7 +1020,9 @@ void TaskProtocolWindow::updateLabel() {
 
     // whenever we update the label, also log the progress; this is not useful as
     //  an activity tracker, as the label gets updated not always in response to user action
-    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+//    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+    emitInfo(QString("Task protocol: progress updated: %1 / %2").
+             arg(ncomplete).arg(ntasks));
 }
 
 /*
@@ -1160,7 +1162,7 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
     }
 
-    emitInfo(QString("Task protocol: loaded %1").arg("tasks"));
+    emitInfo(QString("Task protocol: loaded %1 tasks").arg(m_taskList.size()));
 //    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 

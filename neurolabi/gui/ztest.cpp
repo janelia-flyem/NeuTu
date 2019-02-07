@@ -321,6 +321,7 @@
 #include "zstackobjectpainter.h"
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 
 //#include "test/ztestall.h"
 
@@ -29387,7 +29388,7 @@ void ZTest::test(MainWindow *host)
   std::cout << writer->isStatusOk() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
 
   ZJsonObject obj = reader->readBodyStatusV2();
@@ -29398,6 +29399,81 @@ void ZTest::test(MainWindow *host)
   merger.loadJsonObject(obj);
 
   merger.print();
+#endif
+
+#if 1
+  KINFO << "Test: to kafka only";
+  LKINFO << "Test: to both local and kafka";
+
+  KWARN << "Test: to kafka only";
+  LKWARN << "Test: to both local and kafka";
+
+  KERROR << "Test: to kafka only";
+  LKERROR << "Test: to both local and kafka";
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: no logging", neutube::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_NULL));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutube::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutube::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutube::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutube::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutube::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutube::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutube::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutube::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutube::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
 #endif
 
   std::cout << "Done." << std::endl;

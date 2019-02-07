@@ -17,8 +17,7 @@
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
-
-//#include "logging/zqslog.h"
+#include "logging/zqslog.h"
 
 #include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
@@ -668,9 +667,7 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
-  if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
-    neutu::LogMessage(msg);
-  }
+  neutu::LogMessage(msg);
 
   if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
     if (msg.getType() == neutube::EMessageType::ERROR) {
