@@ -22,7 +22,7 @@
  * in a local log file.
  */
 
-ZLog::ZLog()
+ZLog::ZLog(bool localLogging) : m_localLogging(localLogging)
 {
 }
 
@@ -41,7 +41,9 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    LINFO() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    if (m_localLogging) {
+      LINFO_NLN() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    }
     m_tags = QJsonObject();
   }
   m_started = false;
@@ -112,17 +114,13 @@ void KLog::ResetOperationName()
   m_operationName = DEFAULT_OPERATION_NAME;
 }
 
-KLog::KLog()
-{
-}
-
-KLog::KLog(bool localLogging) : m_localLogging(localLogging)
+KLog::KLog(bool localLogging) : ZLog(localLogging)
 {
 }
 
 KLog::~KLog()
 {
-  endKLog();
+  end();
 }
 
 //bool KLog::isStarted() const
@@ -164,7 +162,9 @@ void KLog::log(const std::string &key, const neuopentracing::Value &value)
 
   if (m_span) {
     m_span->SetTag(key, value);
-  } else {
+  }
+
+  if (localLogging()) {
     ZLog::log(key, value);
   }
 }
@@ -185,14 +185,17 @@ void KLog::endKLog()
 void KLog::end()
 {
   endKLog();
-  if (m_localLogging) {
-    ZLog::end();
-  }
+
+  ZLog::end();
 }
 
-KInfo::KInfo()
-{
-}
+//KInfo::KInfo()
+//{
+//}
+
+//KInfo::KInfo(bool localLogging) : ZLog(localLogging)
+//{
+//}
 
 KInfo& KInfo::operator << (const char* info)
 {
@@ -215,10 +218,6 @@ KInfo& KInfo::operator << (const QString &info)
   return (*this);
 }
 
-KWarn::KWarn()
-{
-}
-
 KWarn& KWarn::operator << (const char* info)
 {
   dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
@@ -234,6 +233,27 @@ KWarn& KWarn::operator << (const std::string &info)
 }
 
 KWarn& KWarn::operator << (const QString &info)
+{
+  (*this) << info.toStdString();
+
+  return (*this);
+}
+
+KError& KError::operator << (const char* info)
+{
+  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+
+  return (*this);
+}
+
+KError& KError::operator << (const std::string &info)
+{
+  (*this) << info.c_str();
+
+  return (*this);
+}
+
+KError& KError::operator << (const QString &info)
 {
   (*this) << info.toStdString();
 

@@ -2394,7 +2394,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  LINFO() << "Updating widgets";
+  KINFO << "Updating dock widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2435,7 +2435,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
-  LINFO() << "Widget updated";
+  KINFO << "Dock widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
@@ -4098,9 +4098,7 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
     ZDialogFactory::PromptMessage(msg, this);
   }
 
-  if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
-    neutu::LogMessage(msg);
-  }
+  neutu::LogMessage(msg);
 
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
