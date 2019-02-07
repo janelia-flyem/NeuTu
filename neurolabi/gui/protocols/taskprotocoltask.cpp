@@ -149,7 +149,7 @@ void TaskProtocolTask::beforeDone() {
  * (e.g., because when the task loaded itself it discovered that
  * it was redundant in some sense)
  */
-bool TaskProtocolTask::skip()
+bool TaskProtocolTask::skip(QString &)
 {
   return false;
 }

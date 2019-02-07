@@ -716,7 +716,20 @@ bool TaskProtocolWindow::skip(int taskIndex)
   // might later need to be skipped if it becomes redundant based on the completion of
   // another task).
 
-  if (m_taskList[taskIndex]->skip()) {
+  QString reason;
+  if (m_taskList[taskIndex]->skip(reason)) {
+      if (m_skippedTaskIndices.find(taskIndex) == m_skippedTaskIndices.end()) {
+          QString text = "Auto-skipping: \"" + m_taskList[taskIndex]->actionString() + " " +
+                         m_taskList[taskIndex]->targetString() + "\"";
+          if (!reason.isEmpty()) {
+              text += " Reason: \"" + reason + "\"";
+          }
+          text.replace("<br>", " ");
+          emit messageGenerated(ZWidgetMessage(ZWidgetMessage::appendTime(text),
+                                              neutube::EMessageType::INFORMATION,
+                                              ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING));
+      }
+
       m_skippedTaskIndices.insert(taskIndex);
       return true;
   } else {
