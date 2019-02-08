@@ -355,8 +355,8 @@ void TaskProtocolWindow::onNextButton() {
 
 void TaskProtocolWindow::onDoneButton() {
     bool allComplete = true;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (!task->completed()) {
+    for (int i = 0; i < m_taskList.size(); i++) {
+        if (!m_taskList[i]->completed() && !skip(i)) {
             allComplete = false;
             break;
         }
@@ -725,7 +725,18 @@ bool TaskProtocolWindow::skip(int taskIndex)
   // might later need to be skipped if it becomes redundant based on the completion of
   // another task).
 
-  if (m_taskList[taskIndex]->skip()) {
+  QString reason;
+  if (m_taskList[taskIndex]->skip(reason)) {
+      if (m_skippedTaskIndices.find(taskIndex) == m_skippedTaskIndices.end()) {
+          QString text = "Auto-skipping: \"" + m_taskList[taskIndex]->actionString() + " " +
+                         m_taskList[taskIndex]->targetString() + "\"";
+          if (!reason.isEmpty()) {
+              text += " Reason: \"" + reason + "\"";
+          }
+          text.replace("<br>", " ");
+          emitInfo(ZWidgetMessage::appendTime(text));
+      }
+
       m_skippedTaskIndices.insert(taskIndex);
       return true;
   } else {

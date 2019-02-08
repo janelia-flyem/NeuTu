@@ -252,7 +252,7 @@ QString TaskMergeReview::targetString()
   return "task " + m_taskId;
 }
 
-bool TaskMergeReview::skip()
+bool TaskMergeReview::skip(QString &reason)
 {
   // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
   // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
@@ -271,6 +271,7 @@ bool TaskMergeReview::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    reason = m_skipReason;
     return (m_skip != Skip::NOT_SKIPPED);
   }
   m_timeOfLastSkipCheck = now;
@@ -282,12 +283,15 @@ bool TaskMergeReview::skip()
   switch (setBodiesResult) {
     case SetBodiesResult::FAILED_MAPPING:
       m_skip = Skip::SKIPPED_MAPPING;
+      reason = "SVs mapping to bodies failed";
       break;
     case SetBodiesResult::FAILED_MAJOR:
       m_skip = Skip::SKIPPED_MAJOR;
+      reason = "too few major bodies";
       break;
     case SetBodiesResult::FAILED_SIZES:
       m_skip = Skip::SKIPPED_SIZES;
+      reason = "SVs sizes failed";
       break;
     default:
       m_skip = Skip::NOT_SKIPPED;
@@ -301,7 +305,8 @@ bool TaskMergeReview::skip()
         s_netReader = new ZNetBufferReader(m_bodyDoc->getParent3DWindow());
       }
       if (!s_netReader->hasHead(tarUrl.c_str())) {
-        m_skip = Skip::SKIPPED_MESHES;
+        m_skip = Skip::SKIPPED_MESHES; 
+        reason = "tarsupervoxels HEAD failed";
         break;
       }
     }
@@ -317,6 +322,7 @@ bool TaskMergeReview::skip()
     writeOutput();
   }
 
+  m_skipReason = reason;
   return (m_skip != Skip::NOT_SKIPPED);
 }
 
@@ -608,7 +614,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
       for (int i = 0; i < responseArray.size(); i++) {
         QJsonValue responseElem = responseArray.at(i);
         if (!responseElem.isUndefined()) {
-          uint64_t bodyId= responseElem.toDouble();
+          uint64_t bodyId = responseElem.toDouble();
           if (bodyId == 0) {
             return SetBodiesResult::FAILED_MAPPING;
           }

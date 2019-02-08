@@ -35,7 +35,7 @@ public:
   virtual QString actionString() override;
   virtual QString targetString() override;
 
-  virtual bool skip() override;
+  virtual bool skip(QString &reason) override;
   virtual void beforeNext() override;
   virtual void beforePrev() override;
   virtual void beforeDone() override;

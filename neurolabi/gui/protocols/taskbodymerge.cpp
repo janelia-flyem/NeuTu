@@ -302,7 +302,7 @@ QString TaskBodyMerge::targetString()
   return "SV " + QString::number(m_supervoxelId1) + " +<br>SV " + QString::number(m_supervoxelId2);
 }
 
-bool TaskBodyMerge::skip()
+bool TaskBodyMerge::skip(QString &reason)
 {
   if ((m_bodyId1 == 0) || (m_bodyId2 == 0)) {
 
@@ -310,6 +310,7 @@ bool TaskBodyMerge::skip()
     // map to a body (e.g., because the super voxel was split), but we still want a record
     // of these tasks in the results, so write that record here.
 
+    reason = "SV maps to no body";
     writeResult("autoSkippedNoBody");
     m_lastSavedButton = nullptr;
     return true;
@@ -317,6 +318,7 @@ bool TaskBodyMerge::skip()
 
     // Likewise for redundant tasks.
 
+    reason = "SVs map to one body";
     writeResult("autoSkippedSameBody");
     m_lastSavedButton = nullptr;
     return true;
