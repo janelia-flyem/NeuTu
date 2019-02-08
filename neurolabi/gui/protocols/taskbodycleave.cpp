@@ -1,6 +1,7 @@
 #include "taskbodycleave.h"
 
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
@@ -610,15 +611,18 @@ void TaskBodyCleave::beforeLoading()
     }
 
     if (owner == overridableOwner) {
-      LKINFO << "TaskBodyCleave overriding checkout by" << owner;
+      LKINFO << "TaskBodyCleave overriding checkout by " + owner;
       m_supervisor->checkInAdmin(m_bodyId);
       m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
     }
   }
 
+  neutu::LogBodyOperation("start cleaving", m_bodyId);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("start cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 }
 
 namespace {
@@ -678,9 +682,12 @@ void TaskBodyCleave::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
 
+  neutu::LogBodyOperation("end cleavng", m_bodyId);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("end cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 
   KLog::ResetOperationName();
 }
