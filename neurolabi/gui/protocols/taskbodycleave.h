@@ -41,7 +41,7 @@ public:
   QString taskType() const override;
   QString actionString() override;
   QString targetString() override;
-  bool skip() override;
+  bool skip(QString &reason) override;
 
   virtual void beforeNext() override;
   virtual void beforePrev() override;
