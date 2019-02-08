@@ -784,44 +784,6 @@ std::string ZDvidWriter::createBranch()
   return uuid;
 }
 
-#if 0
-bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
-{
-  QProcess process;
-  process.start(command, argList);
-
-  return runCommand(process);
-}
-
-bool ZDvidWriter::runCommand(const QString &command)
-{
-  std::cout << command.toStdString() << std::endl;
-  if (command.length() <= 200) {
-    KINFO << command;
-  } else {
-    KINFO << command.left(200) << "...";
-  }
-//  qDebug() << command;
-
-  QProcess process;
-  process.start(command);
-
-  return runCommand(process);
-}
-
-bool ZDvidWriter::runCommand(QProcess &process)
-{
-  bool succ = process.waitForFinished(-1);
-
-  m_errorOutput = process.readAllStandardError();
-  m_standardOutout = process.readAllStandardOutput();
-
-  parseStandardOutput();
-
-  return succ;
-}
-#endif
-
 #if defined(_ENABLE_LIBDVIDCPP_)
 static libdvid::BinaryDataPtr makeRequest(
     const std::string &url, const std::string &method,

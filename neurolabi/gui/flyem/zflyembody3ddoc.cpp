@@ -10,6 +10,8 @@
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -1216,6 +1218,8 @@ void ZFlyEmBody3dDoc::activateSplit(
               msg, neutu::EMessageType::INFORMATION,
               ZWidgetMessage::TARGET_CUSTOM_AREA |
               ZWidgetMessage::TARGET_KAFKA));
+
+      neutu::LogBodyOperation("start split", bodyId);
 
       emit interactionStateChanged();
     } else {
@@ -2707,7 +2711,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
          ++iter) {
 //      removeObject(*iter, false);
 //      dumpGarbageUnsync(*iter, true);
-      KINFO << "Put" << (*iter)->getSource() << " in recycle";
+      KINFO << "Put " + (*iter)->getSource() + " in recycle";
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
     }
 
@@ -2721,7 +2725,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       TStackObjectList objList = getObjectGroup().getObjectList(
             getBodyObjectType());
       for (const ZStackObject *obj : objList) {
-        KINFO << obj->getObjectClass() << obj->getSource();
+        KINFO << obj->getObjectClass() + " " + obj->getSource();
       }
 #endif
     }
@@ -3986,7 +3990,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
       }
 
       if (seg->getLabel() > 1) {
-        notifyWindowMessageUpdated(QString("Uploading %1/%2"));
+        notifyWindowMessageUpdated(
+              QString("Uploading %1").arg(seg->getLabel()));
         uint64_t newBodyId = 0;
         if (m_splitter->getLabelType() == flyem::EBodyLabelType::BODY) {
           newBodyId = m_mainDvidWriter.writeSplit(*seg, remainderId, 0);
@@ -4117,7 +4122,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     sparseStack->setObjectMask(remainObj);
   }
   */
-  LKINFO << summary;
+//  LKINFO << summary;
 
   notifyWindowMessageUpdated(summary);
 
