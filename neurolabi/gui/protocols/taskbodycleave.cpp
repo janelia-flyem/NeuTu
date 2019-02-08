@@ -480,7 +480,7 @@ QString TaskBodyCleave::targetString()
   return QString::number(m_bodyId);
 }
 
-bool TaskBodyCleave::skip()
+bool TaskBodyCleave::skip(QString &reason)
 {
   if (m_bodyDoc->usingOldMeshesTars()) {
     return false;
@@ -503,6 +503,9 @@ bool TaskBodyCleave::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    if (m_skip) {
+      reason = "tarsupervoxels HEAD failed";
+    }
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
@@ -515,6 +518,10 @@ bool TaskBodyCleave::skip()
   int statusCode = 0;
   dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
+
+  if (m_skip) {
+    reason = "tarsupervoxels HEAD failed";
+  }
 
   LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
           << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;

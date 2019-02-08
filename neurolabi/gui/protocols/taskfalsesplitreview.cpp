@@ -214,7 +214,7 @@ QString TaskFalseSplitReview::targetString()
   return QString::number(m_bodyId);
 }
 
-bool TaskFalseSplitReview::skip()
+bool TaskFalseSplitReview::skip(QString &reason)
 {
   // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
   // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
@@ -233,6 +233,9 @@ bool TaskFalseSplitReview::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    if (m_skip) {
+      reason = "tarsupervoxels HEAD failed";
+    }
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
@@ -250,6 +253,10 @@ bool TaskFalseSplitReview::skip()
           << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
 
   // Record that the task was skipped.
+
+  if (m_skip) {
+    reason = "tarsupervoxels HEAD failed";
+  }
 
   writeOutput();
 
