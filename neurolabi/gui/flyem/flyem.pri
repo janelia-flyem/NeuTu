@@ -120,7 +120,8 @@ HEADERS += \
     $$PWD/zserviceconsumer.h \
     $$PWD/zskeletonizeservice.h \
     $$PWD/zstackwatershedcontainer.h \
-    $$PWD/zswctreebatchmatcher.h
+    $$PWD/zswctreebatchmatcher.h \
+    $$PWD/logging.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -230,4 +231,5 @@ SOURCES += \
     $$PWD/zserviceconsumer.cpp \
     $$PWD/zskeletonizeservice.cpp \
     $$PWD/zstackwatershedcontainer.cpp \
-    $$PWD/zswctreebatchmatcher.cpp
+    $$PWD/zswctreebatchmatcher.cpp \
+    $$PWD/logging.cpp

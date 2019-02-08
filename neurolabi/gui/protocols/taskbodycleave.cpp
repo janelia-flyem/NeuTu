@@ -1,6 +1,7 @@
 #include "taskbodycleave.h"
 
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
@@ -386,7 +387,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 TaskBodyCleave::~TaskBodyCleave()
 {
   if (m_checkedOut) {
-    m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 }
 
@@ -549,7 +550,7 @@ bool TaskBodyCleave::skip(QString &reason)
 void TaskBodyCleave::beforeNext()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -575,7 +576,7 @@ void TaskBodyCleave::beforeNext()
 void TaskBodyCleave::beforePrev()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -596,7 +597,7 @@ void TaskBodyCleave::beforeLoading()
 {
   KLog::SetOperationName("body_cleaving");
 
-  m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
+  m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
@@ -610,15 +611,18 @@ void TaskBodyCleave::beforeLoading()
     }
 
     if (owner == overridableOwner) {
-      LKINFO << "TaskBodyCleave overriding checkout by" << owner;
+      LKINFO << "TaskBodyCleave overriding checkout by " + owner;
       m_supervisor->checkInAdmin(m_bodyId);
-      m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
+      m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
     }
   }
 
+  neutu::LogBodyOperation("start cleaving", m_bodyId);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("start cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 }
 
 namespace {
@@ -678,9 +682,12 @@ void TaskBodyCleave::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
 
+  neutu::LogBodyOperation("end cleavng", m_bodyId);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("end cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 
   KLog::ResetOperationName();
 }

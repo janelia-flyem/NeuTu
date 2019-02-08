@@ -9,6 +9,7 @@
 #include "zstackobject.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "zdviddef.h"
 
 class ZJsonObject;
 class ZCuboid;
@@ -88,7 +89,7 @@ public:
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      flyem::EDvidAnnotationLoadMode mode);
+      dvid::EAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();

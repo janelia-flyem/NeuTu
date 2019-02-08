@@ -117,12 +117,12 @@ public:
   int getActualScale() const;
   int getActualZoom() const;
 
-  flyem::EDataSliceUpdatePolicy getUpdatePolicy() const;
-  void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
+  neutu::EDataSliceUpdatePolicy getUpdatePolicy() const;
+  void setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
   void inferUpdatePolicy(neutu::EAxis axis);
 
-  void setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
-  flyem::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
+  void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
+  neutu::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
 
 private:
   /*!
@@ -155,8 +155,8 @@ public:
   bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
-  flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::EDataSliceUpdatePolicy::DIRECT;
-  flyem::EDataSliceUpdatePolicy m_preferredUpdatePolicy = flyem::EDataSliceUpdatePolicy::LOWRES;
+  neutu::EDataSliceUpdatePolicy m_updatePolicy = neutu::EDataSliceUpdatePolicy::DIRECT;
+  neutu::EDataSliceUpdatePolicy m_preferredUpdatePolicy = neutu::EDataSliceUpdatePolicy::LOWRES;
 
   ZDvidReader m_reader;
 };

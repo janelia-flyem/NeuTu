@@ -57,9 +57,9 @@ public:
 
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
   static bool HasMultipleBodySelected(
-      const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type);
+      const ZFlyEmProofDoc *doc, neutu::ELabelSource type);
   static int CountSelectedBody(
-      const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type);
+      const ZFlyEmProofDoc *doc, neutu::ELabelSource type);
   static bool HasBodySelected(const ZFlyEmProofDoc *doc);
   static void ClearBodySelection(ZFlyEmProofDoc *doc);
   static std::string SaveStack(const ZStackDoc *doc, const std::string &path);

@@ -462,7 +462,7 @@ std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
   if (!config.format.empty()) {
     url = AppendQuery(url, std::make_pair(std::string("format"), config.format));
   }
-  if (config.labelType == flyem::EBodyLabelType::SUPERVOXEL) {
+  if (config.labelType == neutu::EBodyLabelType::SUPERVOXEL) {
     url = AppendQuery(url, std::make_pair(std::string("supervoxels"), true));
   }
 

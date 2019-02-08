@@ -29,7 +29,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
-  qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
+  qRegisterMetaType<neutu::EBodySplitMode>("neutu::EBodySplitMode");
   qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
   qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");

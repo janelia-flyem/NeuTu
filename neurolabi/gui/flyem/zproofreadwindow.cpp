@@ -139,7 +139,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, neutu::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -600,7 +600,7 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
   dump("Launching split ...", false);
 
@@ -614,7 +614,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        neutu::EBodyLabelType::ORIGINAL);
+        neutu::ELabelSource::ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -625,9 +625,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE;
+        neutu::EBodySplitMode mode = neutu::EBodySplitMode::ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = flyem::EBodySplitMode::OFFLINE;
+          mode = neutu::EBodySplitMode::OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }

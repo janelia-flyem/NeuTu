@@ -438,9 +438,9 @@ signals:
   void bodyExpertStatusTriggered();
   void bodyConnectionTriggered();
   void bodyProfileTriggered();
-  void bodyCheckinTriggered(flyem::EBodySplitMode mode);
+  void bodyCheckinTriggered(neutu::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
-  void bodyCheckoutTriggered(flyem::EBodySplitMode mode);
+  void bodyCheckoutTriggered(neutu::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();

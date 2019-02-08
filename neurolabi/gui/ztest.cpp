@@ -28113,7 +28113,7 @@ void ZTest::test(MainWindow *host)
   size_t blockCount = 0;
   ZIntCuboid box;
   std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-        662776660, flyem::EBodyLabelType::BODY);
+        662776660, neutu::EBodyLabelType::BODY);
   std::cout << bodySize << " " << blockCount << std::endl;
   std::cout << box.toString() << std::endl;
 #endif
@@ -28141,7 +28141,7 @@ void ZTest::test(MainWindow *host)
     size_t blockCount = 0;
     ZIntCuboid box;
     std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-          5813050455, flyem::EBodyLabelType::BODY);
+          5813050455, neutu::EBodyLabelType::BODY);
     std::cout << blockCount << std::endl;
 
     ZObject3dScan obj;
@@ -29268,7 +29268,7 @@ void ZTest::test(MainWindow *host)
     ZObject3dScan obj;
 //    reader->readBody(body, true, &obj);
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
 
     size_t byteCount = obj.getByteCount();
     size_t voxelCount = obj.getVoxelNumber();
@@ -29309,7 +29309,7 @@ void ZTest::test(MainWindow *host)
   for (uint64_t body : bodyList) {
     ZObject3dScan obj;
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
     timer.restart();
     ccc.push_back(obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE).size());
     ccaTime.push_back(timer.elapsed());

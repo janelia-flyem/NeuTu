@@ -15,6 +15,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidversiondag.h"
 
+#include "flyemdef.h"
 #include "zflyembodymerger.h"
 #include "zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
@@ -118,20 +119,20 @@ public:
 
   bool hasBodySelected() const;
 
-  std::set<uint64_t> getSelectedBodySet(neutu::EBodyLabelType labelType) const;
-  void setSelectedBody(const std::set<uint64_t> &selected, neutu::EBodyLabelType labelType);
-  void setSelectedBody(uint64_t bodyId, neutu::EBodyLabelType labelType);
-  void toggleBodySelection(uint64_t bodyId, neutu::EBodyLabelType labelType);
+  std::set<uint64_t> getSelectedBodySet(neutu::ELabelSource labelType) const;
+  void setSelectedBody(const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
+  void setSelectedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void toggleBodySelection(uint64_t bodyId, neutu::ELabelSource labelType);
   /*!
    * \brief Deselect bodies
    *
    * Deselect bodies that have the same mapped ID as that of \a bodyId.
    */
-  void deselectMappedBody(uint64_t bodyId, neutu::EBodyLabelType labelType);
-  void deselectMappedBody(const std::set<uint64_t> &bodySet, neutu::EBodyLabelType labelType);
+  void deselectMappedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void deselectMappedBody(const std::set<uint64_t> &bodySet, neutu::ELabelSource labelType);
 
   void addSelectedBody(
-      const std::set<uint64_t> &selected, neutu::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -173,7 +174,7 @@ public:
 
 //  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
 
   ZDvidSparseStack* getDvidSparseStack() const override;
 
@@ -255,9 +256,9 @@ public:
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
-  void runSplit(flyem::EBodySplitMode mode);
-  void runFullSplit(flyem::EBodySplitMode mode);
-  void runLocalSplit(flyem::EBodySplitMode mode);
+  void runSplit(neutu::EBodySplitMode mode);
+  void runFullSplit(neutu::EBodySplitMode mode);
+  void runLocalSplit(neutu::EBodySplitMode mode);
   void exitSplit();
 
   bool isSplitRunning() const;
@@ -570,17 +571,17 @@ public slots:
   void unverifySelectedSynapse();
 
   void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
-  void checkInSelectedBody(flyem::EBodySplitMode mode);
+  void checkInSelectedBody(neutu::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody(flyem::EBodySplitMode mode);
-  bool checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode);
+  void checkOutBody(neutu::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, flyem::EBodySplitMode mode);
+      uint64_t bodyId, neutu::EBodySplitMode mode);
 
 
   bool checkBodyWithMessage(
-      uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode);
+      uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
 
   void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();
@@ -625,7 +626,7 @@ private:
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
 
-  std::set<uint64_t> getCurrentSelectedBodyId(neutu::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutu::ELabelSource type) const;
 
   void init();
   void initTimer();
@@ -649,10 +650,10 @@ private:
   template<typename T>
   ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  void runSplitFunc(flyem::EBodySplitMode mode, flyem::EBodySplitRange range);
-  void runSplitFunc(flyem::EBodySplitMode mode);
-  void localSplitFunc(flyem::EBodySplitMode mode);
-  void runFullSplitFunc(flyem::EBodySplitMode mode);
+  void runSplitFunc(neutu::EBodySplitMode mode, flyem::EBodySplitRange range);
+  void runSplitFunc(neutu::EBodySplitMode mode);
+  void localSplitFunc(neutu::EBodySplitMode mode);
+  void runFullSplitFunc(neutu::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();

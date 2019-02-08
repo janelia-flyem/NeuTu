@@ -4,6 +4,7 @@
 #include <string>
 #include "tz_stdint.h"
 #include "common/neutube_def.h"
+#include "flyem/flyemdef.h"
 
 class ZStackObjectSourceFactory
 {

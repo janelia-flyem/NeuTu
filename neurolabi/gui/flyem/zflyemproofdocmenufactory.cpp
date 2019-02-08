@@ -126,7 +126,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
       std::set<uint64_t> selectedOriginal =
-          doc->getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
+          doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
         if (!doc->getDvidTarget().readOnly()) {
@@ -148,7 +148,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           config.appendSeparator();
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             std::set<uint64_t> selectedMapped =
-                doc->getSelectedBodySet(neutu::EBodyLabelType::MAPPED);
+                doc->getSelectedBodySet(neutu::ELabelSource::MAPPED);
 
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);

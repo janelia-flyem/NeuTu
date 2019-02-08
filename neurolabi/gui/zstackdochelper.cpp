@@ -169,20 +169,20 @@ ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
 }
 
 bool ZStackDocHelper::HasMultipleBodySelected(
-    const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::ELabelSource type)
 {
   return CountSelectedBody(doc, type) > 1;
 }
 
 int ZStackDocHelper::CountSelectedBody(
-    const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::ELabelSource type)
 {
   return doc->getSelectedBodySet(type).size();
 }
 
 bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 {
-  return CountSelectedBody(doc, neutu::EBodyLabelType::ORIGINAL) > 0;
+  return CountSelectedBody(doc, neutu::ELabelSource::ORIGINAL) > 0;
 }
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
@@ -207,7 +207,7 @@ QColor ZStackDocHelper::GetBodyColor(
   QColor color;
   ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, neutu::EBodyLabelType::ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::ORIGINAL);
   }
 
   return color;

@@ -48,7 +48,7 @@ void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
 //  m_splitWindowMode = false;
-  m_splitMode = flyem::EBodySplitMode::NONE;
+  m_splitMode = neutu::EBodySplitMode::NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -553,9 +553,9 @@ bool ZFlyEmProofPresenter::isSplitOn() const
   return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
-void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
+void ZFlyEmProofPresenter::enableSplit(neutu::EBodySplitMode mode)
 {
-  if (mode == flyem::EBodySplitMode::NONE) {
+  if (mode == neutu::EBodySplitMode::NONE) {
     disableSplit();
   } else {
     setSplitMode(mode);
@@ -565,7 +565,7 @@ void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitMode(flyem::EBodySplitMode::NONE);
+  setSplitMode(neutu::EBodySplitMode::NONE);
   setSplitEnabled(false);
 }
 
@@ -1021,13 +1021,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutu::EBodyLabelType::ORIGINAL);
+          bodySet, neutu::ELabelSource::ORIGINAL);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutu::EBodyLabelType::MAPPED);
+          neutu::ELabelSource::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1041,13 +1041,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutu::EBodyLabelType::MAPPED);
+          bodySet, neutu::ELabelSource::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutu::EBodyLabelType::MAPPED);
+          neutu::ELabelSource::MAPPED);
     std::set<uint64_t> newBodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1060,13 +1060,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          newBodySet, neutu::EBodyLabelType::MAPPED);
+          newBodySet, neutu::ELabelSource::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutu::EBodyLabelType::MAPPED);
+          neutu::ELabelSource::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1076,7 +1076,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutu::EBodyLabelType::MAPPED);
+          bodySet, neutu::ELabelSource::MAPPED);
   }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:

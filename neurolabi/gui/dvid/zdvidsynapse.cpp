@@ -125,7 +125,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
@@ -567,7 +567,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+          reader.readSynapse(m_partnerHint[i], dvid::EAnnotationLoadMode::PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();

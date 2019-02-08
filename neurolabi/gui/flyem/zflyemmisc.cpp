@@ -1808,7 +1808,7 @@ QString flyem::FIB19::GenerateFIB19VsSynapseCast(
         uint64_t bodyId = reader.readBodyIdAt(pos);
         QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-              bodyId, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
