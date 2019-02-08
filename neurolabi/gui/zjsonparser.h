@@ -42,7 +42,7 @@ public:
 
   template<typename T>
   struct GetValueHelper<T,
-      neutube::void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>> {
+      neutu::void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>> {
     static T GetValue(const json_t *value) {
       return integerValue(value);
     }

@@ -64,11 +64,9 @@ public:
     Profile() : Category("PROFILE") {}
   };
 
-  /*
   struct Interact : public Category {
-    Interact() : Category("interact") {}
+    Interact() : Category("INTERACT") {}
   };
-  */
 
   struct Duration : public Tag {
     Duration(int64_t t) : Tag("duration", t) {}

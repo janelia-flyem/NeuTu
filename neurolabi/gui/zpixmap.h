@@ -40,7 +40,7 @@ public:
     m_isVisible = visible;
   }
 
-  QRectF getActiveArea(neutube::ECoordinateSystem coord) const;
+  QRectF getActiveArea(neutu::ECoordinateSystem coord) const;
   bool isFullyActive() const;
   void matchProj();
 
@@ -55,7 +55,7 @@ public:
    * \param color Source color.
    * \param maskValue Resulted value.
    */
-  ZStack* toPlainStack(neutube::EColor color, uint8_t maskValue);
+  ZStack* toPlainStack(neutu::EColor color, uint8_t maskValue);
 
 private:
   void cleanFunc(QPixmap *pixmap);

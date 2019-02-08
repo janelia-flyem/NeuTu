@@ -2,10 +2,11 @@
 
 #include <cstdlib>
 #include <chrono>
+#include <sstream>
 
 #include "common/neutube_def.h"
 
-bool neutube::HasEnv(const std::string &name, const std::string &value)
+bool neutu::HasEnv(const std::string &name, const std::string &value)
 {
   bool result = false;
 
@@ -16,13 +17,20 @@ bool neutube::HasEnv(const std::string &name, const std::string &value)
   return result;
 }
 
-std::string neutube::GetVersionString()
+std::string neutu::GetVersionString()
 {
-  return std::string(neutube::VERSION) + " (" + neutube::PKG_VERSION + ")";
+  return std::string(neutu::VERSION) + " (" + neutu::PKG_VERSION + ")";
 }
 
-uint64_t neutube::GetTimestamp()
+uint64_t neutu::GetTimestamp()
 {
   return std::chrono::duration_cast<std::chrono::seconds>
       (std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+std::string neutu::ToString(void *p)
+{
+  std::ostringstream stream;
+  stream << p;
+  return stream.str();
 }

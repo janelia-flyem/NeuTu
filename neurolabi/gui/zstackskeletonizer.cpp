@@ -26,7 +26,7 @@
 
 using namespace std;
 
-const size_t ZStackSkeletonizer::m_sizeLimit = neutube::ONEGIGA;
+const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),

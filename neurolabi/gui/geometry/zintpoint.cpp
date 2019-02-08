@@ -18,7 +18,7 @@ ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 
 bool ZIntPoint::IsNormalDimIndex(int index)
 {
-  return index >= neutube::DIM_MIN_NORMAL_INDEX;
+  return index >= neutu::DIM_MIN_NORMAL_INDEX;
 }
 
 ZIntPoint::ZIntPoint(int x, int y, int z)
@@ -357,26 +357,26 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
   return *this;
 }
 
-void ZIntPoint::shiftSliceAxis(neutube::EAxis axis)
+void ZIntPoint::shiftSliceAxis(neutu::EAxis axis)
 {
   zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
-void ZIntPoint::shiftSliceAxisInverse(neutube::EAxis axis)
+void ZIntPoint::shiftSliceAxisInverse(neutu::EAxis axis)
 {
   zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
+int ZIntPoint::getSliceCoord(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_x;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_y;
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_z;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     return m_z;
   }
 
@@ -400,16 +400,16 @@ bool ZIntPoint::isValid() const
 
 void ZIntPoint::read(std::istream &stream)
 {
-  neutube::read(stream, m_x);
-  neutube::read(stream, m_y);
-  neutube::read(stream, m_z);
+  neutu::read(stream, m_x);
+  neutu::read(stream, m_y);
+  neutu::read(stream, m_z);
 }
 
 void ZIntPoint::write(std::ostream &stream) const
 {
-  neutube::write(stream, m_x);
-  neutube::write(stream, m_y);
-  neutube::write(stream, m_z);
+  neutu::write(stream, m_x);
+  neutu::write(stream, m_y);
+  neutu::write(stream, m_z);
 }
 
 std::ostream &operator<<(std::ostream &stream, const ZIntPoint &pt)

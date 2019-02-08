@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   if (mainConfig.showingVersion) {
     std::cout << argv[0] << std::endl;
-    std::cout << neutube::GetVersionString() << std::endl;
+    std::cout << neutu::GetVersionString() << std::endl;
 
     return 0;
   }
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   //   Please instantiate the QApplication object first
   QApplication app(argc, argv, mainConfig.isGuiEnabled());
 
-  neutube::RegisterMetaType();
+  neutu::RegisterMetaType();
 
   configure(mainConfig);
 
@@ -88,12 +88,12 @@ int main(int argc, char *argv[])
     NeutubeConfig::UpdateUserInfo();
     ZGlobal::InitKafkaTracer();
 
-    uint64_t timestamp = neutube::GetTimestamp();
+    uint64_t timestamp = neutu::GetTimestamp();
     KLog() << ZLog::Info() << ZLog::Time(timestamp)
            << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutube::GetVersionString();
+            + " " + neutu::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
            << ZLog::Description("END " + GET_SOFTWARE_NAME)
            << ZLog::Tag("start_time", timestamp);
     LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutube::GetVersionString();
+            + " " + neutu::GetVersionString();
 
     return result;
   } else {

@@ -148,7 +148,7 @@ public:
    */
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutube::EAxis sliceAxis) const = 0;
+      neutu::EAxis sliceAxis) const = 0;
 
   /*!
    * For special painting when ZPainter cannot be created
@@ -158,7 +158,7 @@ public:
    */
   virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
+      EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -170,14 +170,14 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
-  virtual bool isSliceVisible(int z, neutube::EAxis axis) const;
+  virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
-                   neutube::EAxis axis);
-  virtual bool hit(double x, double y, neutube::EAxis axis);
-  virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis);
+                   neutu::EAxis axis);
+  virtual bool hit(double x, double y, neutu::EAxis axis);
+  virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
@@ -362,13 +362,13 @@ public:
     m_projectionVisible = visible;
   }
 
-  virtual void addVisualEffect(neutube::display::TVisualEffect ve);
-  virtual void removeVisualEffect(neutube::display::TVisualEffect ve);
-  virtual void setVisualEffect(neutube::display::TVisualEffect ve);
-  bool hasVisualEffect(neutube::display::TVisualEffect ve) const;
+  virtual void addVisualEffect(neutu::display::TVisualEffect ve);
+  virtual void removeVisualEffect(neutu::display::TVisualEffect ve);
+  virtual void setVisualEffect(neutu::display::TVisualEffect ve);
+  bool hasVisualEffect(neutu::display::TVisualEffect ve) const;
 
-  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
+  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 
 public:
 //  static bool isEmptyTree(const ZStackObject *obj);
@@ -402,9 +402,9 @@ protected:
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis;
 
-  neutube::display::TVisualEffect m_visualEffect;
+  neutu::display::TVisualEffect m_visualEffect;
 
   mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;

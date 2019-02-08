@@ -152,19 +152,19 @@ public:
       uint64_t bodyId, int xIntv, int yIntv, int zIntv,
       bool canonizing, ZObject3dScan *result);
 
-  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
-                          int z, neutube::EAxis axis,
+                          int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
+                          neutu::EAxis axis, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
                           int minZ, int maxZ, bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
+                          neutu::EAxis axis, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
@@ -299,9 +299,10 @@ public:
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
       const QString &dataName, const QString &key) const;
-  QList<ZJsonObject> readJsonObjectsFromKeys(const QString &dataName, const QStringList &keyList) const;
+  QList<ZJsonObject> readJsonObjectsFromKeys(
+      const QString &dataName, const QStringList &keyList) const;
 
-  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
+  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result) const;
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;

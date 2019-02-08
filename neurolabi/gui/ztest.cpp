@@ -29413,44 +29413,44 @@ void ZTest::test(MainWindow *host)
 
   neutu::LogMessage(
         ZWidgetMessage(
-          "Test ZWidgetMessage: no logging", neutube::EMessageType::INFORMATION,
+          "Test ZWidgetMessage: no logging", neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_NULL));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to local only",
-          neutube::EMessageType::INFORMATION,
+          neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_LOG_FILE));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to kafka only",
-          neutube::EMessageType::INFORMATION,
+          neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_KAFKA));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to both local and kafka",
-          neutube::EMessageType::INFORMATION,
+          neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to local only",
-          neutube::EMessageType::WARNING,
+          neutu::EMessageType::WARNING,
           ZWidgetMessage::TARGET_LOG_FILE));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to kafka only",
-          neutube::EMessageType::WARNING,
+          neutu::EMessageType::WARNING,
           ZWidgetMessage::TARGET_KAFKA));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to both local and kafka",
-          neutube::EMessageType::WARNING,
+          neutu::EMessageType::WARNING,
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
 
@@ -29458,19 +29458,19 @@ void ZTest::test(MainWindow *host)
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to local only",
-          neutube::EMessageType::ERROR,
+          neutu::EMessageType::ERROR,
           ZWidgetMessage::TARGET_LOG_FILE));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to kafka only",
-          neutube::EMessageType::ERROR,
+          neutu::EMessageType::ERROR,
           ZWidgetMessage::TARGET_KAFKA));
 
   neutu::LogMessage(
         ZWidgetMessage(
           "Test ZWidgetMessage: to both local and kafka",
-          neutube::EMessageType::ERROR,
+          neutu::EMessageType::ERROR,
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
 

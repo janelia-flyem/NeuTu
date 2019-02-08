@@ -85,7 +85,7 @@ public:
 
   void print() const;
 
-  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxis(neutu::EAxis axis);
 
   /*!
    * \brief A valid line segment has different start and end.

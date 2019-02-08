@@ -990,7 +990,7 @@ void TaskMergeReview::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -1106,7 +1106,7 @@ void TaskMergeReview::writeOutput()
   for (uint64_t id : m_bodyIds) {
     std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(id);
     allTodoCount += std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-      return a + (b->getAction() == neutube::EToDoAction::TO_SPLIT);
+      return a + (b->getAction() == neutu::EToDoAction::TO_SPLIT);
     });
   }
   json[KEY_TODO_COUNT] = QJsonValue(allTodoCount);
@@ -1304,7 +1304,7 @@ ProtocolTaskConfig TaskMergeReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
 
   return config;
 }

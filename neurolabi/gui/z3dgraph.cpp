@@ -540,11 +540,11 @@ void Z3DGraph::clear()
 
 void Z3DGraph::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   ZStackObjectPainter p;
   p.setRestoringPainter(false);
-  if (sliceAxis == neutube::EAxis::Z) {
+  if (sliceAxis == neutu::EAxis::Z) {
     if (option != EDisplayStyle::SKELETON) {
       //Draw nodes
       for (const Z3DGraphNode &node : m_nodeArray) {

@@ -53,7 +53,7 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
      QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
      foreach (ZSwcTree *swc, swcList ) {
        if (swc != NULL) {
-         swc->display(viewPainter,-1, ZStackObject::EDisplayStyle::BOUNDARY, neutube::EAxis::Z);
+         swc->display(viewPainter,-1, ZStackObject::EDisplayStyle::BOUNDARY, neutu::EAxis::Z);
        }
      }
    }

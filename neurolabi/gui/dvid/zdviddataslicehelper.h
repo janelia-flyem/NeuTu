@@ -119,7 +119,7 @@ public:
 
   flyem::EDataSliceUpdatePolicy getUpdatePolicy() const;
   void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
-  void inferUpdatePolicy(neutube::EAxis axis);
+  void inferUpdatePolicy(neutu::EAxis axis);
 
   void setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
   flyem::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;

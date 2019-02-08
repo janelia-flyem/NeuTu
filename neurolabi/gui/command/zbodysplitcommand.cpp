@@ -41,10 +41,10 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
     inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(neutube::json::REF_KEY)) {
+    if (inputJson.hasKey(neutu::json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[neutube::json::REF_KEY]));
+            ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
@@ -433,7 +433,7 @@ void ZBodySplitCommand::processResult(
               writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry(neutube::json::REF_KEY, endPoint);
+          regionJson.setEntry(neutu::json::REF_KEY, endPoint);
           resultArray.append(regionJson);
 #ifdef _DEBUG_2
           obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -460,7 +460,7 @@ void ZBodySplitCommand::processResult(
           std::cout << "Result endpoint: " << endPoint << std::endl;
 
           if (!splitTaskKey.empty()) {
-            refJson.setEntry(neutube::json::REF_KEY, endPoint);
+            refJson.setEntry(neutu::json::REF_KEY, endPoint);
           }
         } else {
           if (!splitTaskKey.empty()) {

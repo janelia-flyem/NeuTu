@@ -34,7 +34,7 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
   }
 
   ZStack *stack = NULL;
-  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
@@ -102,7 +102,7 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
       const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
       if (cdoc != NULL) {
         box = cdoc->getSplitRoi()->getCuboid();
@@ -117,7 +117,7 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 }
 
 ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc *doc, neutube::EAxis sliceAxis)
+    const ZStackDoc *doc, neutu::EAxis sliceAxis)
 {
   ZIntCuboid box;
   if (doc != NULL) {
@@ -128,13 +128,13 @@ ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
 }
 
 ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc &doc, neutube::EAxis sliceAxis)
+    const ZStackDoc &doc, neutu::EAxis sliceAxis)
 {
   ZIntCuboid box;
 
   if (doc.hasStack()) {
     box = doc.getStack()->getBoundBox();
-    if (sliceAxis == neutube::EAxis::ARB) {
+    if (sliceAxis == neutu::EAxis::ARB) {
       ZIntPoint center = box.getCenter();
       int length = iround(box.getDiagonalLength());
       box.setSize(length, length, length);
@@ -169,20 +169,20 @@ ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
 }
 
 bool ZStackDocHelper::HasMultipleBodySelected(
-    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type)
 {
   return CountSelectedBody(doc, type) > 1;
 }
 
 int ZStackDocHelper::CountSelectedBody(
-    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::EBodyLabelType type)
 {
   return doc->getSelectedBodySet(type).size();
 }
 
 bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 {
-  return CountSelectedBody(doc, neutube::EBodyLabelType::ORIGINAL) > 0;
+  return CountSelectedBody(doc, neutu::EBodyLabelType::ORIGINAL) > 0;
 }
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
@@ -205,9 +205,9 @@ QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
   QColor color;
-  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::EAxis::Z);
+  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, neutube::EBodyLabelType::ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutu::EBodyLabelType::ORIGINAL);
   }
 
   return color;
@@ -226,23 +226,23 @@ std::string ZStackDocHelper::SaveStack(
 
 bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD;
 }
 
 bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }

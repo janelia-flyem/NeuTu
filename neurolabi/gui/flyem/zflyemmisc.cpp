@@ -48,6 +48,7 @@
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
 #include "zmeshfactory.h"
+#include "zflyembodyannotation.h"
 
 void flyem::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -1061,25 +1062,25 @@ QList<QString> flyem::GetDefaultBodyStatus()
 }
 
 void flyem::MakeTriangle(
-    const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
+    const QRectF &rect, QPointF *ptArray, neutu::ECardinalDirection direction)
 {
   switch (direction) {
-  case neutube::ECardinalDirection::EAST:
+  case neutu::ECardinalDirection::EAST:
     ptArray[0] = QPointF(rect.right(), rect.center().y());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.bottomLeft();
     break;
-  case neutube::ECardinalDirection::WEST:
+  case neutu::ECardinalDirection::WEST:
     ptArray[0] = QPointF(rect.left(), rect.center().y());
     ptArray[1] = rect.topRight();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::ECardinalDirection::NORTH:
+  case neutu::ECardinalDirection::NORTH:
     ptArray[0] = QPointF(rect.center().x(), rect.top());
     ptArray[1] = rect.bottomLeft();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::ECardinalDirection::SOUTH:
+  case neutu::ECardinalDirection::SOUTH:
     ptArray[0] = QPointF(rect.center().x(), rect.bottom());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.topRight();
@@ -1305,7 +1306,7 @@ void flyem::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::json::REF_KEY, location);
+        entryJson.setEntry(neutu::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }
@@ -1631,10 +1632,10 @@ QList<ZStackObject*> flyem::LoadSplitTask(
     ZJsonObject taskJson =
         reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
                                       taskKey.c_str());
-    if (taskJson.hasKey(neutube::json::REF_KEY)) {
+    if (taskJson.hasKey(neutu::json::REF_KEY)) {
       taskJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+            ZJsonParser::stringValue(taskJson[neutu::json::REF_KEY]));
     }
 
     seedList = LoadSplitTask(taskJson);

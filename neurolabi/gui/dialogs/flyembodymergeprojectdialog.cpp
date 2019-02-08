@@ -26,7 +26,7 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   ui->verionTreeView->setExpandsOnDoubleClick(false);
   //ui->infoWidget->hide();
   m_project = new ZFlyEmBodyMergeProject(this);
-  m_docTag = neutube::Document::ETag::FLYEM_MERGE;
+  m_docTag = neutu::Document::ETag::FLYEM_MERGE;
 
   setupProgress();
 

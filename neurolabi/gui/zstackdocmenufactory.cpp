@@ -166,14 +166,14 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
   }
 
   switch (presenter->buddyDocument()->getTag()) {
-  case neutube::Document::ETag::FLYEM_SPLIT:
-  case neutube::Document::ETag::SEGMENTATION_TARGET:
+  case neutu::Document::ETag::FLYEM_SPLIT:
+  case neutu::Document::ETag::SEGMENTATION_TARGET:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_SPLIT_DATA));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_ADD_SPLIT_SEED));
     break;
-  case neutube::Document::ETag::NORMAL:
-  case neutube::Document::ETag::BIOCYTIN_STACK:
+  case neutu::Document::ETag::NORMAL:
+  case neutu::Document::ETag::BIOCYTIN_STACK:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_ADD_SWC_NODE));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_TOGGLE_SWC_SKELETON));

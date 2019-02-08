@@ -134,7 +134,7 @@ public:
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
 
-  void setSliceAxis(neutube::EAxis axis);
+  void setSliceAxis(neutu::EAxis axis);
 
   bool paintingRoi() const {
     return m_paintingRoi;
@@ -241,7 +241,7 @@ public:
 
   void setZoomRatio(double ratio);
 
-  neutube::EAxis getSliceAxis() const;
+  neutu::EAxis getSliceAxis() const;
 
   ZStackFrame* getParentFrame() const;
   ZStackMvc* getParentMvc() const;

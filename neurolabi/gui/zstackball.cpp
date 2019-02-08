@@ -79,7 +79,7 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 
 bool ZStackBall::display(
     QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   ZPainter zp;
   zp.attachPainter(painter);
@@ -102,7 +102,7 @@ bool ZStackBall::display(
 
 void ZStackBall::display(ZPainter &painter, int slice,
                          ZStackObject::EDisplayStyle style,
-                         neutube::EAxis sliceAxis) const
+                         neutu::EAxis sliceAxis) const
 {
   if (!isVisible()) {
     return;
@@ -129,7 +129,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
   QPen pen(m_color, getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
 
-  if (hasVisualEffect(neutube::display::Sphere::VE_DASH_PATTERN)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
 
@@ -141,7 +141,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
   }
 #endif
 
-  if (hasVisualEffect(neutube::display::Sphere::VE_GRADIENT_FILL)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL)) {
     QRadialGradient gradient(50, 50, 50, 50, 50);
     gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
     gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
@@ -155,7 +155,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
     painter.setBrush(m_color);
     painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
   } else {
-    if (hasVisualEffect(neutube::display::Sphere::VE_NO_FILL)) {
+    if (hasVisualEffect(neutu::display::Sphere::VE_NO_FILL)) {
       painter.setBrush(Qt::NoBrush);
     }
   }
@@ -183,14 +183,14 @@ bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
 }
 
 bool ZStackBall::isCuttingPlane(
-    double n, double zScale, neutube::EAxis sliceAxis) const
+    double n, double zScale, neutu::EAxis sliceAxis) const
 {
   double z = m_center.getSliceCoord(sliceAxis);
 
   return isCuttingPlane(z, m_r, n, zScale);
 }
 
-bool ZStackBall::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZStackBall::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
   if (isVisible()) {
     if (isCuttingPlane(z, m_zScale, sliceAxis) || isSelected()) {
@@ -213,7 +213,7 @@ double ZStackBall::getAdjustedRadius(double r) const
 
 void ZStackBall::displayHelper(
     ZPainter *painter, int slice, EDisplayStyle style,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
@@ -231,7 +231,7 @@ void ZStackBall::displayHelper(
   QPen pen;
   pen.setWidthF(getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
-  if (hasVisualEffect(neutube::display::Sphere::VE_DASH_PATTERN)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
   double alpha = oldPen.color().alphaF();
@@ -259,7 +259,7 @@ void ZStackBall::displayHelper(
         adjustedRadius = getAdjustedRadius(r);
         visible = true;
       }
-      if (hasVisualEffect(neutube::display::Sphere::VE_OUT_FOCUS_DIM)) {
+      if (hasVisualEffect(neutu::display::Sphere::VE_OUT_FOCUS_DIM)) {
         if (!isFocused) {
           alpha *= r * r / m_r / m_r * 0.5 + 0.1;
         }
@@ -274,18 +274,18 @@ void ZStackBall::displayHelper(
     pen.setColor(color);
     painter->setPen(pen);
 
-    if ((!hasVisualEffect(neutube::display::Sphere::VE_NO_FILL)) &&
-        hasVisualEffect(neutube::display::Sphere::VE_FORCE_FILL)) {
+    if ((!hasVisualEffect(neutu::display::Sphere::VE_NO_FILL)) &&
+        hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
       QBrush brush(color);
       painter->setBrush(brush);
     }
 
-    if (!hasVisualEffect(neutube::display::Sphere::VE_NO_CIRCLE) &&
-        !hasVisualEffect(neutube::display::Sphere::VE_RECTANGLE_SHAPE)) {
+    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_CIRCLE) &&
+        !hasVisualEffect(neutu::display::Sphere::VE_RECTANGLE_SHAPE)) {
       //qDebug() << painter->brush().color();
       painter->drawEllipse(QPointF(shiftedCenter.x(), shiftedCenter.y()),
                            adjustedRadius, adjustedRadius);
-    } else if (hasVisualEffect(neutube::display::Sphere::VE_RECTANGLE_SHAPE)) {
+    } else if (hasVisualEffect(neutu::display::Sphere::VE_RECTANGLE_SHAPE)) {
       double rectWidth = adjustedRadius * 2.0;
       QRectF rect;
       rect.setSize(QSize(rectWidth, rectWidth));
@@ -293,11 +293,11 @@ void ZStackBall::displayHelper(
       painter->drawRect(rect);
     }
 
-    if (isFocused && hasVisualEffect(neutube::display::Sphere::VE_DOT_CENTER)) {
+    if (isFocused && hasVisualEffect(neutu::display::Sphere::VE_DOT_CENTER)) {
       painter->drawPoint(QPointF(shiftedCenter.x(), shiftedCenter.y()));
     }
 
-    if (isFocused && hasVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER))
+    if (isFocused && hasVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER))
     {
       painter->drawLine(QPointF(shiftedCenter.x() - 1, shiftedCenter.y()),
                         QPointF(shiftedCenter.x() + 1, shiftedCenter.y()));
@@ -323,7 +323,7 @@ void ZStackBall::displayHelper(
         pen.setWidthF(pen.widthF() + 1.0);
       }
     }
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen = oldPen;
     QColor color = oldPen.color();
@@ -412,7 +412,7 @@ bool ZStackBall::hit(double x, double y, double z)
   return m_center.distanceTo(x, y, z) <= m_r;
 }
 
-bool ZStackBall::hit(double x, double y, neutube::EAxis axis)
+bool ZStackBall::hit(double x, double y, neutu::EAxis axis)
 {
   ZPoint shiftedCenter = m_center;
   shiftedCenter.shiftSliceAxis(axis);

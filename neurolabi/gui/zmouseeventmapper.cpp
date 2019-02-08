@@ -127,7 +127,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
     case ZStackObject::EType::DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
         if (op.getHitObject()->hasVisualEffect(
-              neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+              neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
           op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT);
         } else {
           op.setOperation(
@@ -223,8 +223,8 @@ void ZMouseEventLeftButtonReleaseMapper::setOperation(
 void ZMouseEventLeftButtonReleaseMapper::hitTest(
     ZStackOperator &op, const ZMouseEvent &event) const
 {
-  ZPoint stackPosition = event.getPosition(neutube::ECoordinateSystem::STACK);
-  ZPoint dataPosition = event.getPosition(neutube::ECoordinateSystem::ORGDATA);
+  ZPoint stackPosition = event.getPosition(neutu::ECoordinateSystem::STACK);
+  ZPoint dataPosition = event.getPosition(neutu::ECoordinateSystem::ORGDATA);
 
   ZStackDocHitTest hitManager;
   hitManager.setSliceAxis(event.getSliceAxis());
@@ -297,7 +297,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::SWC_EDIT_OFF:
         if (event.getModifiers() == Qt::NoModifier) {
           if (!getDocument()->hasObjectSelected()) {
-            if (getDocument()->getTag() == neutube::Document::ETag::NORMAL) {
+            if (getDocument()->getTag() == neutu::Document::ETag::NORMAL) {
               op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
             }
           } else {
@@ -357,7 +357,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   ZStackOperator op = initOperation();
 
   ZPoint stackPosition = event.getStackPosition();
-  ZPoint dataPosition = event.getPosition(neutube::ECoordinateSystem::ORGDATA);
+  ZPoint dataPosition = event.getPosition(neutu::ECoordinateSystem::ORGDATA);
 
 //  if (event.getRawStackPosition().z() >= 0) {
 //    op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
@@ -414,7 +414,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
           op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
         }
       } else {
-        if (getDocument()->getTag() != neutube::Document::ETag::FLYEM_PROOFREAD &&
+        if (getDocument()->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
           if (event.getModifiers() == Qt::ShiftModifier) {
             op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
@@ -452,7 +452,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     ZStackDocHitTest hitManager;
     hitManager.setSliceAxis(event.getSliceAxis());
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                       event.getPosition(neutube::ECoordinateSystem::ORGDATA),
+                       event.getPosition(neutu::ECoordinateSystem::ORGDATA),
                        event.getWidgetPosition());
     op.setHitObject(hitManager.getHitObject<ZStackObject>());
   }
@@ -524,16 +524,16 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
       if (m_context->isContextMenuActivated()) {
         if (m_doc->hasSelectedSwcNode()) {
           op.setOperation(ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU);
-        } else if (m_doc->getTag() == neutube::Document::ETag::FLYEM_MERGE) {
+        } else if (m_doc->getTag() == neutu::Document::ETag::FLYEM_MERGE) {
           if (m_doc->getSelected(ZStackObject::EType::OBJECT3D_SCAN).size() == 1) {
             op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
           }
-        } else if (m_doc->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+        } else if (m_doc->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         }
 
-        if (m_doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-            m_doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO) {
+        if (m_doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+            m_doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
           op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
 #if 0
           ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc.get());

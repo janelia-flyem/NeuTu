@@ -139,22 +139,22 @@ double ZResolution::getUnitVoxelSize(EUnit unit) const
   return v;
 }
 
-double ZResolution::getVoxelSize(neutube::EAxis axis, EUnit unit) const
+double ZResolution::getVoxelSize(neutu::EAxis axis, EUnit unit) const
 {
-  return m_voxelSize[neutube::EnumValue(axis)] * getUnitVoxelSize(unit);
+  return m_voxelSize[neutu::EnumValue(axis)] * getUnitVoxelSize(unit);
 }
 
-double ZResolution::getPlaneVoxelSize(neutube::EPlane plane) const
+double ZResolution::getPlaneVoxelSize(neutu::EPlane plane) const
 {
   double v = 1.0;
   switch (plane) {
-  case neutube::EPlane::XY:
+  case neutu::EPlane::XY:
     v = voxelSizeX() * voxelSizeY();
     break;
-  case neutube::EPlane::YZ:
+  case neutu::EPlane::YZ:
     v = voxelSizeY() * voxelSizeZ();
     break;
-  case neutube::EPlane::XZ:
+  case neutu::EPlane::XZ:
     v = voxelSizeX() * voxelSizeZ();
     break;
   }
@@ -162,20 +162,20 @@ double ZResolution::getPlaneVoxelSize(neutube::EPlane plane) const
   return v;
 }
 
-double ZResolution::getPlaneVoxelSpan(neutube::EPlane plane) const
+double ZResolution::getPlaneVoxelSpan(neutu::EPlane plane) const
 {
   double v1 = 1.0;
   double v2 = 1.0;
   switch (plane) {
-  case neutube::EPlane::XY:
+  case neutu::EPlane::XY:
     v1 = voxelSizeX();
     v2 = voxelSizeY();
     break;
-  case neutube::EPlane::YZ:
+  case neutu::EPlane::YZ:
     v1 = voxelSizeY();
     v2 = voxelSizeZ();
     break;
-  case neutube::EPlane::XZ:
+  case neutu::EPlane::XZ:
     v1 = voxelSizeX();
     v2 = voxelSizeZ();
     break;
@@ -191,25 +191,25 @@ double ZResolution::getPlaneVoxelSpan(neutube::EPlane plane) const
   return v;
 }
 
-double ZResolution::getPlaneVoxelSize(neutube::EPlane plane, EUnit unit) const
+double ZResolution::getPlaneVoxelSize(neutu::EPlane plane, EUnit unit) const
 {
   double v = 1.0;
   switch (plane) {
-  case neutube::EPlane::XY:
-    v = getVoxelSize(neutube::EAxis::X, unit) * getVoxelSize(neutube::EAxis::Y, unit);
+  case neutu::EPlane::XY:
+    v = getVoxelSize(neutu::EAxis::X, unit) * getVoxelSize(neutu::EAxis::Y, unit);
     break;
-  case neutube::EPlane::YZ:
-    v = getVoxelSize(neutube::EAxis::Y, unit) * getVoxelSize(neutube::EAxis::Z, unit);
+  case neutu::EPlane::YZ:
+    v = getVoxelSize(neutu::EAxis::Y, unit) * getVoxelSize(neutu::EAxis::Z, unit);
     break;
-  case neutube::EPlane::XZ:
-    v = getVoxelSize(neutube::EAxis::X, unit) * getVoxelSize(neutube::EAxis::Z, unit);
+  case neutu::EPlane::XZ:
+    v = getVoxelSize(neutu::EAxis::X, unit) * getVoxelSize(neutu::EAxis::Z, unit);
     break;
   }
 
   return v;
 }
 
-double ZResolution::getPlaneVoxelSpan(neutube::EPlane plane, EUnit unit) const
+double ZResolution::getPlaneVoxelSpan(neutu::EPlane plane, EUnit unit) const
 {
   return getPlaneVoxelSpan(plane) * getUnitVoxelSize(unit);
 }

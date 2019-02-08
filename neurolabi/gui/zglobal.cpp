@@ -30,7 +30,7 @@ public:
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
-  neutube::EServerStatus m_neuprintStatus = neutube::EServerStatus::OFFLINE;
+  neutu::EServerStatus m_neuprintStatus = neutu::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()

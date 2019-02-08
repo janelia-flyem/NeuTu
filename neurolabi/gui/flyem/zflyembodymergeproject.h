@@ -98,7 +98,7 @@ public:
   void updateSelection();
 #endif
 
-  std::set<uint64_t> getSelection(neutube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelection(neutu::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 

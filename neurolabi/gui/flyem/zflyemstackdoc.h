@@ -28,7 +28,7 @@ public:
   void setSuperpixelMap(const ZSuperpixelMapArray &superpixelMap);
   void appendBodyNeighbor(std::vector<std::vector<double> > *selected);
 
-  QString rawDataInfo(double x, double y, int z, neutube::EAxis axis) const;
+  QString rawDataInfo(double x, double y, int z, neutu::EAxis axis) const;
 //  using ZStackDoc::rawDataInfo; // fix warning -Woverloaded-virtual
 
   //void setSegmentation(ZStack *seg);

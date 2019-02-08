@@ -32,7 +32,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);

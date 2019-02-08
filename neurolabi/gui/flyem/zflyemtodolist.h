@@ -58,7 +58,7 @@ public:
   public:
     ItemSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addItem(const ZFlyEmToDoItem &item, neutube::EAxis sliceAxis);
+    void addItem(const ZFlyEmToDoItem &item, neutu::EAxis sliceAxis);
     const ItemMap& getMap(int y) const;
     ItemMap& getMap(int y);
     ItemMap& getMap(int y, EAdjustment adjust);
@@ -89,7 +89,7 @@ public:
   bool isReady() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   bool removeItem(const ZIntPoint &pt, EDataScope scope);
   bool removeItem(int x, int y, int z, EDataScope scope);

@@ -157,7 +157,7 @@ public:
   void clear();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 //  const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);

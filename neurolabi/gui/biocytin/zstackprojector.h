@@ -16,10 +16,10 @@ class ZStackProjector : public ZProgressable {
 public:
   ZStackProjector();
 
-  ZStack* project(const ZStack *stack, neutube::EImageBackground bg,
+  ZStack* project(const ZStack *stack, neutu::EImageBackground bg,
                   bool includingDepth, int slabIndex);
   ZStack* project(
-      const ZStack *stack, neutube::EImageBackground bg);
+      const ZStack *stack, neutu::EImageBackground bg);
 
   inline void setAdjustingContrast(bool adj) {
     m_adjustingConstrast = adj;

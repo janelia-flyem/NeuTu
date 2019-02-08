@@ -210,7 +210,7 @@ ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZFlyEmProofDocMenuFactory);
-    m_menuFactory->setAdminState(neutube::IsAdminUser());
+    m_menuFactory->setAdminState(neutu::IsAdminUser());
   }
 
   return m_menuFactory.get();
@@ -610,20 +610,20 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
-  synapse.setUserName(neutube::GetCurrentUserName());
+  synapse.setUserName(neutu::GetCurrentUserName());
   getCompleteDocument()->executeAddSynapseCommand(synapse, tryingLink);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem(
-    const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+    const ZIntPoint &pt, bool checked, neutu::EToDoAction action,
     uint64_t bodyId)
 {
   tryAddTodoItem(pt.getX(), pt.getY(), pt.getZ(), checked, action, bodyId);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem(
-    int x, int y, int z, bool checked, neutube::EToDoAction action,
+    int x, int y, int z, bool checked, neutu::EToDoAction action,
     uint64_t bodyId)
 {
   if (m_todoDelegate) {
@@ -635,37 +635,37 @@ void ZFlyEmProofPresenter::tryAddTodoItem(
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem(
-    const ZIntPoint &pt, bool checked, neutube::EToDoAction action)
+    const ZIntPoint &pt, bool checked, neutu::EToDoAction action)
 {
   tryAddTodoItem(pt, checked, action, 0);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_DO);
+  tryAddTodoItem(pt, false, neutu::EToDoAction::TO_DO);
 //  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
 }
 
 void ZFlyEmProofPresenter::tryAddToMergeItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_MERGE);
+  tryAddTodoItem(pt, false, neutu::EToDoAction::TO_MERGE);
 //  getCompleteDocument()->executeAddToMergeItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_SPLIT);
+  tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SPLIT);
 //  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, false, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT);
+  tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
-  tryAddTodoItem(pt, true, neutube::EToDoAction::TO_DO);
+  tryAddTodoItem(pt, true, neutu::EToDoAction::TO_DO);
 //  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
 }
 
@@ -696,12 +696,12 @@ void ZFlyEmProofPresenter::setTodoItemIrrelevant()
 
 void ZFlyEmProofPresenter::setTodoItemToMerge()
 {
-  getCompleteDocument()->setTodoItemAction(neutube::EToDoAction::TO_MERGE);
+  getCompleteDocument()->setTodoItemAction(neutu::EToDoAction::TO_MERGE);
 }
 
 void ZFlyEmProofPresenter::setTodoItemToSplit()
 {
-  getCompleteDocument()->setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
+  getCompleteDocument()->setTodoItemAction(neutu::EToDoAction::TO_SPLIT);
 }
 
 void ZFlyEmProofPresenter::setTodoDelegate(
@@ -806,12 +806,12 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    ZIntPoint pos(x, y, buddyView()->getZ(neutube::ECoordinateSystem::STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(neutu::ECoordinateSystem::STACK));
     pos.shiftSliceAxisInverse(getSliceAxis());
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
-    bookmark->setUser(neutube::GetCurrentUserName());
+    bookmark->setUser(neutu::GetCurrentUserName());
     bookmark->addUserTag();
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
@@ -845,7 +845,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
+  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
 
   bool processed = true;
 
@@ -853,7 +853,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
+      ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
       ZIntPoint pos = currentStackPos.toIntPoint();
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -1021,13 +1021,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::EBodyLabelType::ORIGINAL);
+          bodySet, neutu::EBodyLabelType::ORIGINAL);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::EBodyLabelType::MAPPED);
+          neutu::EBodyLabelType::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1041,13 +1041,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::EBodyLabelType::MAPPED);
+          bodySet, neutu::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::EBodyLabelType::MAPPED);
+          neutu::EBodyLabelType::MAPPED);
     std::set<uint64_t> newBodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1060,13 +1060,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          newBodySet, neutube::EBodyLabelType::MAPPED);
+          newBodySet, neutu::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          neutube::EBodyLabelType::MAPPED);
+          neutu::EBodyLabelType::MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -1076,7 +1076,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, neutube::EBodyLabelType::MAPPED);
+          bodySet, neutu::EBodyLabelType::MAPPED);
   }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
@@ -1156,7 +1156,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
+  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
   return updateActiveObjectForSynapseMove(currentStackPos);
 }
 
@@ -1195,7 +1195,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutube::ECoordinateSystem::STACK);
+  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
   updateActiveObjectForSynapseAdd(currentStackPos);
 }
 

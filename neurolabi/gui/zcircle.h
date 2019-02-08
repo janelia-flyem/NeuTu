@@ -43,7 +43,7 @@ public:
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   virtual void display(ZPainter &painter, int z,
-                       EDisplayStyle option, neutube::EAxis sliceAxis) const;
+                       EDisplayStyle option, neutu::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

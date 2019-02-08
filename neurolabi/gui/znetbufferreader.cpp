@@ -128,7 +128,7 @@ bool ZNetBufferReader::hasHead(const QString &url)
 
   waitForReading();
 
-  return m_status == neutube::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK;
 }
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
@@ -170,17 +170,17 @@ bool ZNetBufferReader::isReadable(const QString &url)
 
   waitForReading();
 
-  return m_status == neutube::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK;
 }
 
 void ZNetBufferReader::startReading()
 {
   m_isReadingDone = false;
   m_buffer.clear();
-  m_status = neutube::EReadStatus::OK;
+  m_status = neutu::EReadStatus::OK;
 }
 
-void ZNetBufferReader::endReading(neutube::EReadStatus status)
+void ZNetBufferReader::endReading(neutu::EReadStatus status)
 {
   m_status = status;
   m_isReadingDone = true;
@@ -193,7 +193,7 @@ void ZNetBufferReader::endReading(neutube::EReadStatus status)
 #endif
     m_statusCode = statusCode.toInt();
     if (m_statusCode != 200) {
-      m_status = neutube::EReadStatus::BAD_RESPONSE;
+      m_status = neutu::EReadStatus::BAD_RESPONSE;
     }
     m_networkReply->deleteLater();
     m_networkReply = NULL;
@@ -221,7 +221,7 @@ void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
     qDebug() << m_networkReply->errorString();
 #endif
   }
-  endReading(neutube::EReadStatus::FAILED);
+  endReading(neutu::EReadStatus::FAILED);
 }
 
 void ZNetBufferReader::readBuffer()
@@ -244,15 +244,15 @@ void ZNetBufferReader::finishReading()
 
 void ZNetBufferReader::handleTimeout()
 {
-  endReading(neutube::EReadStatus::TIMEOUT);
+  endReading(neutu::EReadStatus::TIMEOUT);
 }
 
 void ZNetBufferReader::cancelReading()
 {
-  endReading(neutube::EReadStatus::CANCELED);
+  endReading(neutu::EReadStatus::CANCELED);
 }
 
-neutube::EReadStatus ZNetBufferReader::getStatus() const
+neutu::EReadStatus ZNetBufferReader::getStatus() const
 {
   return m_status;
 }

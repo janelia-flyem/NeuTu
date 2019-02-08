@@ -598,8 +598,8 @@ void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
 void ZFlyEmRoiDialog::newDataFrame()
 {
   ZStackFrame *frame = getMainWindow()->createStackFrame(
-        m_docReader, neutube::Document::ETag::FLYEM_ROI);
-  frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        m_docReader, neutu::Document::ETag::FLYEM_ROI);
+  frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
   setDataFrame(frame);
 
   getMainWindow()->addStackFrame(frame);

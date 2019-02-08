@@ -20,7 +20,7 @@ public:
   void addPunctum(ZPunctum *p, bool ignoreNull = true);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   bool load(const std::string &filePath, double radius = 3.0);
   bool load(const ZJsonObject &obj, double radius = 3.0);
@@ -32,7 +32,7 @@ public:
 
   void pushCosmeticPen(bool state);
   void pushColor(const QColor &color);
-  void pushVisualEffect(neutube::display::TVisualEffect effect);
+  void pushVisualEffect(neutu::display::TVisualEffect effect);
 
 private:
   void setSorted(bool state) const;

@@ -2,7 +2,7 @@
 
 #include "utilities.h"
 
-namespace neutube {
+namespace neutu {
 
 const char *VERSION = "1.1";
 

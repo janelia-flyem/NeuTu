@@ -64,7 +64,7 @@ void NeuPrintReader::readDatasets()
   m_dataset.clear();
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
 
-  if (m_bufferReader.getStatus() == neutube::EReadStatus::OK) {
+  if (m_bufferReader.getStatus() == neutu::EReadStatus::OK) {
     m_dataset.decode(m_bufferReader.getBuffer().toStdString());
   }
 
