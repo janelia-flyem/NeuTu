@@ -50,9 +50,9 @@ public:
   virtual bool load(const char *filePath);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
+               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -142,7 +142,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
@@ -155,11 +155,11 @@ public:
     m_hideStart = s;
   }
 
-  bool hitTest(double x, double y, neutube::EAxis axis) const;
+  bool hitTest(double x, double y, neutu::EAxis axis) const;
   bool hitTest(double x, double y, double z) const;
 
 //  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   void boundBox(ZIntCuboid *box) const;

@@ -1232,7 +1232,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*
@@ -1338,7 +1338,7 @@ void TaskProtocolWindow::showError(QString title, QString message) {
 
     emit messageGenerated(
         ZWidgetMessage(
-          title, message, neutube::EMessageType::WARNING,
+          title, message, neutu::EMessageType::WARNING,
           ZWidgetMessage::TARGET_DIALOG | ZWidgetMessage::TARGET_KAFKA));
 }
 
@@ -1355,7 +1355,7 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.exec();
 }
 
-void TaskProtocolWindow::emitMessage(const QString &msg, neutube::EMessageType type)
+void TaskProtocolWindow::emitMessage(const QString &msg, neutu::EMessageType type)
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -1365,12 +1365,12 @@ void TaskProtocolWindow::emitMessage(const QString &msg, neutube::EMessageType t
 
 void TaskProtocolWindow::emitInfo(const QString &msg)
 {
-  emitMessage(msg, neutube::EMessageType::INFORMATION);
+  emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
 void TaskProtocolWindow::emitWarning(const QString &msg)
 {
-  emitMessage(msg, neutube::EMessageType::WARNING);
+  emitMessage(msg, neutu::EMessageType::WARNING);
 }
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
@@ -1428,7 +1428,7 @@ TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
 void TaskProtocolWindow::resetBody3dDocConfig()
 {
   ProtocolTaskConfig config;
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
   config.setTaskType("");
   m_body3dDoc->configure(config);
 }

@@ -168,9 +168,9 @@ public:
   int computeBlockDistance(const ZIntCuboid &box);
   double computeDistance(const ZIntCuboid &box);
 
-  void shiftSliceAxis(neutube::EAxis axis);
-  void shiftSliceAxisInverse(neutube::EAxis axis);
-  int getDim(neutube::EAxis axis) const;
+  void shiftSliceAxis(neutu::EAxis axis);
+  void shiftSliceAxisInverse(neutu::EAxis axis);
+  int getDim(neutu::EAxis axis) const;
 
   ZIntPoint getCenter() const;
   void setCenter(const ZIntPoint &center);

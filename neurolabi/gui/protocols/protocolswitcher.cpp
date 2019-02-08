@@ -98,7 +98,7 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
         // PROTOCOL_INACTIVE: show the protocol chooser; tell it
         //  to display saved keys for this user
         emit requestDisplaySavedProtocols(
-            getUserProtocolKeys(QString::fromStdString(neutube::GetCurrentUserName()), false));
+            getUserProtocolKeys(QString::fromStdString(neutu::GetCurrentUserName()), false));
 
         m_chooser->show();
         m_chooser->raise();
@@ -512,7 +512,7 @@ std::string ProtocolSwitcher::generateKey(QString protocolName) {
     if (identifier.empty()) {
         return "";
     } else {
-        return neutube::GetCurrentUserName() + "-" + protocolName.toStdString() + "-" + identifier;
+        return neutu::GetCurrentUserName() + "-" + protocolName.toStdString() + "-" + identifier;
     }
 }
 

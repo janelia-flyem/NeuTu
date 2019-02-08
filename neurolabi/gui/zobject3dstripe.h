@@ -47,7 +47,7 @@ public:
   void addStackValue(Stack *stack, int v, const int *offset = NULL) const;
 
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
-  void drawStack(Stack *stack, int v, neutube::EAxis axis,
+  void drawStack(Stack *stack, int v, neutu::EAxis axis,
                  const int *offset = NULL) const;
 
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
@@ -150,7 +150,7 @@ public:
   bool hasOverlap(const ZObject3dStripe &stripe) const;
   bool isAdjacentTo(
       const ZObject3dStripe &stripe,
-      neutube::EStackNeighborhood nbr) const;
+      neutu::EStackNeighborhood nbr) const;
   bool isAdjacentOnPlaneTo(const ZObject3dStripe &stripe) const;
 
 private:

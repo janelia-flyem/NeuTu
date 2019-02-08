@@ -174,7 +174,7 @@ void ZFlyEmRoiToolDialog::dump(const ZWidgetMessage &msg)
 
 void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
-  dump(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION));
+  dump(ZWidgetMessage(msg, neutu::EMessageType::INFORMATION));
 }
 
 void ZFlyEmRoiToolDialog::processMessage(const ZWidgetMessage &msg)

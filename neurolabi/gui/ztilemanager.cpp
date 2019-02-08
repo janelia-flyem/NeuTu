@@ -178,7 +178,7 @@ void ZTileManager::updateTileStack()
       frame->document()->setResolution(m_resolution);
 
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi(true);
 

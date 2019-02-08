@@ -155,13 +155,13 @@ public slots:
 
 protected:
   virtual void tryAddTodoItem(
-      int x, int y, int z, bool checked, neutube::EToDoAction action,
+      int x, int y, int z, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action);
 
 private:
 //  void connectAction();

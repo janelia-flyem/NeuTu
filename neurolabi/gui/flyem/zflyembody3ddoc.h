@@ -252,7 +252,7 @@ public:
 
 public:
   void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   void executeAddTodoCommand(
       int x, int y, int z, bool checked, uint64_t bodyId);
@@ -351,7 +351,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(neutube::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action);
   void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);

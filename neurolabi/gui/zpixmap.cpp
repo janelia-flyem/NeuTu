@@ -162,17 +162,17 @@ void ZPixmap::clean(const QRect &rect)
   */
 }
 
-QRectF ZPixmap::getActiveArea(neutube::ECoordinateSystem coord) const
+QRectF ZPixmap::getActiveArea(neutu::ECoordinateSystem coord) const
 {
   switch (coord) {
-  case neutube::ECoordinateSystem::WORLD_2D:
+  case neutu::ECoordinateSystem::WORLD_2D:
     if (m_activeArea.isEmpty()) {
       return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
     } else {
       return m_activeArea;
     }
-  case neutube::ECoordinateSystem::CANVAS:
+  case neutu::ECoordinateSystem::CANVAS:
     if (m_activeArea.isEmpty()) {
       return QRectF(0, 0, width(), height());
     } else {
@@ -194,7 +194,7 @@ bool ZPixmap::isFullyActive() const
         QRectF(0, 0, width(), height()));
 }
 
-ZStack* ZPixmap::toPlainStack(neutube::EColor color, uint8_t maskValue)
+ZStack* ZPixmap::toPlainStack(neutu::EColor color, uint8_t maskValue)
 {
   ZStack *stack = new ZStack(GREY, width(), height(), 1, 1);
   size_t offset = 0;
@@ -205,17 +205,17 @@ ZStack* ZPixmap::toPlainStack(neutube::EColor color, uint8_t maskValue)
       QRgb rgb = image.pixel(x, y);
       bool isForeground = false;
       switch (color) {
-      case neutube::EColor::RED:
+      case neutu::EColor::RED:
         if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
           isForeground = true;
         }
         break;
-      case neutube::EColor::GREEN:
+      case neutu::EColor::GREEN:
         if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
           isForeground = true;
         }
         break;
-      case neutube::EColor::BLUE:
+      case neutu::EColor::BLUE:
         if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
           isForeground = true;
         }

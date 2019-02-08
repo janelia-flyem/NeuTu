@@ -256,7 +256,7 @@ void Neu3Window::updateBodyState()
 #ifdef _DEBUG_
   std::cout << "Update state: "
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
-                 neutube::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
+                 neutu::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
 #if 0
@@ -304,7 +304,7 @@ bool Neu3Window::loadDvidTarget()
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
   if (dlg->exec()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
@@ -633,7 +633,7 @@ void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutu::EAxis::ARB);
     slice->setCustomColorMap(m_browserColorScheme);
 
     updateSliceBrowserSelection();
@@ -1147,7 +1147,7 @@ void Neu3Window::syncBodyListModel()
   }
   LDEBUG() << "Syncing" << bodyStr;
 #endif
-  dataDoc->setSelectedBody(selected, neutube::EBodyLabelType::MAPPED);
+  dataDoc->setSelectedBody(selected, neutu::EBodyLabelType::MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;

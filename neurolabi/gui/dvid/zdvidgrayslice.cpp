@@ -93,7 +93,7 @@ int ZDvidGraySlice::getZoom() const
 
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -407,7 +407,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
 
   ZStack *stack = NULL;
 
-  if (getSliceAxis() == neutube::EAxis::Z) {
+  if (getSliceAxis() == neutu::EAxis::Z) {
     int zoom = getZoom();
     if (hasLowresRegion()) {
       ++zoom;
@@ -496,17 +496,17 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  if (m_sliceAxis != neutube::EAxis::Z && m_sliceAxis != neutube::EAxis::ARB) {
+  if (m_sliceAxis != neutu::EAxis::Z && m_sliceAxis != neutu::EAxis::ARB) {
     return;
   }
 
   if (isVisible()) {
     setZoom(viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom()));
 //    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
-    if (m_sliceAxis == neutube::EAxis::Z) {
+    if (m_sliceAxis == neutu::EAxis::Z) {
       QRect viewPort = viewParam.getViewPort();
       forceUpdate(viewPort, viewParam.getZ());
-    } else if (m_sliceAxis == neutube::EAxis::ARB) {
+    } else if (m_sliceAxis == neutu::EAxis::ARB) {
 //      setZoom(0); //Temporary fix for the crashing problem in grayscale retrieval
       forceUpdate(viewParam.getSliceViewParam());
       //Align the image with the view port, which is used by the painter
@@ -523,7 +523,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
 {
-  if (m_sliceAxis != neutube::EAxis::ARB || !viewParam.isValid()) {
+  if (m_sliceAxis != neutu::EAxis::ARB || !viewParam.isValid()) {
     return;
   }
 

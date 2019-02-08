@@ -153,7 +153,7 @@ ZMesh* ZMeshFactory::MakeMesh(
 
   if (dsIntv == 0) {
     ZIntCuboid box = dsObj.getBoundBox();
-    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutube::ONEGIGA / 2, true);
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutu::ONEGIGA / 2, true);
   }
 
   if (dsIntv > 0) {
@@ -185,7 +185,7 @@ ZMesh* ZMeshFactory::MakeFaceMesh(const ZObject3dScan &obj, int dsIntv)
 
   if (dsIntv == 0) {
     ZIntCuboid box = dsObj.getBoundBox();
-    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutube::ONEGIGA / 2, true);
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutu::ONEGIGA / 2, true);
   }
 
   if (dsIntv > 0) {

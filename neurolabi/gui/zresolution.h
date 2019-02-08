@@ -59,7 +59,7 @@ public:
    *
    * \return Voxel size based on the unit.
    */
-  double getVoxelSize(neutube::EAxis axis, EUnit unit) const;
+  double getVoxelSize(neutu::EAxis axis, EUnit unit) const;
 
   /*!
    * \brief Get the unit voxel size after unit conversion
@@ -80,15 +80,15 @@ public:
    *
    * \return area of a voxel on the plane.
    */
-  double getPlaneVoxelSize(neutube::EPlane plane, EUnit unit) const;
+  double getPlaneVoxelSize(neutu::EPlane plane, EUnit unit) const;
 
-  double getPlaneVoxelSize(neutube::EPlane plane) const;
+  double getPlaneVoxelSize(neutu::EPlane plane) const;
 
   /*!
    * \brief Get sqrt(voxel area)
    */
-  double getPlaneVoxelSpan(neutube::EPlane plane, EUnit unit) const;
-  double getPlaneVoxelSpan(neutube::EPlane plane) const;
+  double getPlaneVoxelSpan(neutu::EPlane plane, EUnit unit) const;
+  double getPlaneVoxelSpan(neutu::EPlane plane) const;
 
   bool isValid() const;
 

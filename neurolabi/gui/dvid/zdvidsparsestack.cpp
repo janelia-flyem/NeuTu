@@ -143,12 +143,12 @@ void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
 }
 
 void ZDvidSparseStack::display(
-    ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
+    ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
           getLabel(), getLabelType(), painter.getZ(slice),
-          neutube::EAxis::Z, true, NULL);
+          neutu::EAxis::Z, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -902,7 +902,7 @@ bool ZDvidSparseStack::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSparseStack::hit(double x, double y, neutube::EAxis axis)
+bool ZDvidSparseStack::hit(double x, double y, neutu::EAxis axis)
 {
   ZObject3dScan *objectMask = getObjectMask();
   if (objectMask != NULL) {

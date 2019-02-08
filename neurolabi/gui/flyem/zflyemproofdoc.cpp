@@ -80,7 +80,7 @@ ZFlyEmProofDoc::~ZFlyEmProofDoc()
 
 void ZFlyEmProofDoc::init()
 {
-  setTag(neutube::Document::ETag::FLYEM_PROOFREAD);
+  setTag(neutu::Document::ETag::FLYEM_PROOFREAD);
 
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_synapseReader);
@@ -183,7 +183,7 @@ void ZFlyEmProofDoc::initAutoSave()
       emit messageGenerated(
             ZWidgetMessage("Failed to create autosave folder for merging. "
                            "Backup disabled for merge operations.",
-                           neutube::EMessageType::ERROR));
+                           neutu::EMessageType::ERROR));
     }
   }
 
@@ -307,7 +307,7 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
   QString msg;
 
   const std::set<uint64_t> &selected =
-      getSelectedBodySet(neutube::EBodyLabelType::MAPPED);
+      getSelectedBodySet(neutu::EBodyLabelType::MAPPED);
 
   for (std::set<uint64_t>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
@@ -338,7 +338,7 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
 }
 
 void ZFlyEmProofDoc::addSelectedBody(
-    const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType)
+    const std::set<uint64_t> &selected, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
   currentSelected.insert(selected.begin(), selected.end());
@@ -346,7 +346,7 @@ void ZFlyEmProofDoc::addSelectedBody(
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
-    const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType)
+    const std::set<uint64_t> &selected, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
 
@@ -367,7 +367,7 @@ void ZFlyEmProofDoc::setSelectedBody(
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> selected;
   selected.insert(bodyId);
@@ -375,7 +375,7 @@ void ZFlyEmProofDoc::setSelectedBody(
 }
 
 void ZFlyEmProofDoc::toggleBodySelection(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
   if (currentSelected.count(bodyId) > 0) {
@@ -387,13 +387,13 @@ void ZFlyEmProofDoc::toggleBodySelection(
 }
 
 void ZFlyEmProofDoc::deselectMappedBody(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected =
-      getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+      getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
   std::set<uint64_t> newSelected;
   uint64_t mappedBodyId = bodyId;
-  if (labelType == neutube::EBodyLabelType::ORIGINAL) {
+  if (labelType == neutu::EBodyLabelType::ORIGINAL) {
     mappedBodyId = getBodyMerger()->getFinalLabel(bodyId);
   }
   for (std::set<uint64_t>::const_iterator iter = currentSelected.begin();
@@ -403,17 +403,17 @@ void ZFlyEmProofDoc::deselectMappedBody(
     }
   }
 
-  setSelectedBody(newSelected, neutube::EBodyLabelType::ORIGINAL);
+  setSelectedBody(newSelected, neutu::EBodyLabelType::ORIGINAL);
 }
 
 void ZFlyEmProofDoc::deselectMappedBody(
-    const std::set<uint64_t> &bodySet, neutube::EBodyLabelType labelType)
+    const std::set<uint64_t> &bodySet, neutu::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected =
-      getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+      getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
   std::set<uint64_t> newSelected;
   std::set<uint64_t> mappedBodySet = bodySet;
-  if (labelType == neutube::EBodyLabelType::ORIGINAL) {
+  if (labelType == neutu::EBodyLabelType::ORIGINAL) {
     mappedBodySet = getBodyMerger()->getFinalLabel(bodySet);
   }
   for (std::set<uint64_t>::const_iterator iter = currentSelected.begin();
@@ -423,7 +423,7 @@ void ZFlyEmProofDoc::deselectMappedBody(
     }
   }
 
-  setSelectedBody(newSelected, neutube::EBodyLabelType::ORIGINAL);
+  setSelectedBody(newSelected, neutu::EBodyLabelType::ORIGINAL);
 }
 
 bool ZFlyEmProofDoc::hasBodySelected() const
@@ -443,7 +443,7 @@ bool ZFlyEmProofDoc::hasBodySelected() const
 }
 
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
-    neutube::EBodyLabelType labelType) const
+    neutu::EBodyLabelType labelType) const
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
 
@@ -456,9 +456,9 @@ std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
   }
 
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::EBodyLabelType::ORIGINAL:
     break;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::EBodyLabelType::MAPPED:
     finalSet = getBodyMerger()->getFinalLabel(finalSet);
     break;
   }
@@ -479,7 +479,7 @@ void ZFlyEmProofDoc::recordAnnotation(
 
 void ZFlyEmProofDoc::cleanBodyAnnotationMap()
 {
-  std::set<uint64_t> selected = getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+  std::set<uint64_t> selected = getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
   std::vector<uint64_t> keysToRemove;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
@@ -498,7 +498,7 @@ void ZFlyEmProofDoc::cleanBodyAnnotationMap()
 
 void ZFlyEmProofDoc::verifyBodyAnnotationMap()
 {
-  std::set<uint64_t> selected = getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+  std::set<uint64_t> selected = getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
@@ -506,7 +506,7 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
       emit messageGenerated(
             ZWidgetMessage(
               QString("Inconsistent body selection: %1").arg(bodyId),
-              neutube::EMessageType::WARNING,
+              neutu::EMessageType::WARNING,
               ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
               ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
@@ -575,12 +575,12 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
                       ZWidgetMessage(
                         QString("Failed to merge. Is the librarian sever (%1) ready?").
                         arg(getDvidTarget().getSupervisor().c_str()),
-                        neutube::EMessageType::ERROR));
+                        neutu::EMessageType::ERROR));
               } else {
                 emit messageGenerated(
                       ZWidgetMessage(
                         QString("Failed to merge. %1 has been locked by %2").
-                        arg(*iter).arg(owner.c_str()), neutube::EMessageType::ERROR));
+                        arg(*iter).arg(owner.c_str()), neutu::EMessageType::ERROR));
               }
               break;
             }
@@ -749,12 +749,12 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
                       ZWidgetMessage(
                         QString("Failed to merge. Is the librarian sever (%1) ready?").
                         arg(getDvidTarget().getSupervisor().c_str()),
-                        neutube::EMessageType::ERROR));
+                        neutu::EMessageType::ERROR));
               } else {
                 emit messageGenerated(
                       ZWidgetMessage(
                         QString("Failed to merge. %1 has been locked by %2").
-                        arg(*iter).arg(owner.c_str()), neutube::EMessageType::ERROR));
+                        arg(*iter).arg(owner.c_str()), neutu::EMessageType::ERROR));
               }
               break;
             }
@@ -802,7 +802,7 @@ void ZFlyEmProofDoc::annotateBody(
     processObjectModified();
   }
   if (writer.getStatusCode() == 200) {
-    if (getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL).count(bodyId) > 0) {
+    if (getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL).count(bodyId) > 0) {
       m_annotationMap[bodyId] = annotation;
     }
     emit messageGenerated(
@@ -810,7 +810,7 @@ void ZFlyEmProofDoc::annotateBody(
   } else {
     ZOUT(LTRACE(), 5) << writer.getStandardOutput();
     emit messageGenerated(
-          ZWidgetMessage("Cannot save annotation.", neutube::EMessageType::ERROR));
+          ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
   }
 }
 
@@ -823,7 +823,7 @@ void ZFlyEmProofDoc::initData(
       if (!m_dvidWriter.isStatusOk()) {
         emit messageGenerated(
               ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
-                             neutube::EMessageType::ERROR));
+                             neutu::EMessageType::ERROR));
       }
     }
   }
@@ -887,7 +887,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
                           "Please do NOT proofread segmentation "
                           "until you fix the problem.").
                   arg(getSupervisor()->getMainUrl().c_str()),
-                  neutube::EMessageType::WARNING));
+                  neutu::EMessageType::WARNING));
         }
       }
     }
@@ -920,7 +920,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
                         "the database. "
                         "Please do NOT proofread segmentation "
                         "until you fix the problem."),
-                neutube::EMessageType::WARNING));
+                neutu::EMessageType::WARNING));
       }
     }
 
@@ -934,7 +934,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   } else {
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
-    ZWidgetMessage msg("Failed to open the node.", neutube::EMessageType::ERROR);
+    ZWidgetMessage msg("Failed to open the node.", neutu::EMessageType::ERROR);
     QString detail = "Detail: ";
     if (!m_dvidReader.getErrorMsg().empty()) {
       detail += m_dvidReader.getErrorMsg().c_str();
@@ -1041,7 +1041,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         obj->useCosmeticPen(true);
         //          obj->setDsIntv(31, 31, 31);
-        obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
+        obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
         obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
         //      addObject(obj);
@@ -1057,10 +1057,10 @@ void ZFlyEmProofDoc::loadRoiFunc()
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
-  return getDvidGraySlice(neutube::EAxis::Z);
+  return getDvidGraySlice(neutu::EAxis::Z);
 }
 
-ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 {
   ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
@@ -1106,7 +1106,7 @@ void ZFlyEmProofDoc::prepareDvidData()
     initGrayscaleSlice();
   }
 
-  addDvidLabelSlice(neutube::EAxis::Z);
+  addDvidLabelSlice(neutu::EAxis::Z);
 
   if (getDvidInfo().isValid()) {
     setResolution(getDvidInfo().getVoxelResolution());
@@ -1130,7 +1130,7 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
     ZDvidGraySlice *slice = new ZDvidGraySlice;
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     slice->setSource(
-          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
+          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::Z));
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
     prepareGraySlice(slice);
     addObject(slice, true);
@@ -1151,7 +1151,7 @@ void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
   prepareLabelSlice();
 }
 
-void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
+void ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
   labelSlice->setSliceAxis(axis);
@@ -1248,7 +1248,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
 }
 
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutube::EAxis axis) const
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutu::EAxis axis) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
   std::string source = ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis);
@@ -1264,7 +1264,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutube::EAxis axis) const
 }
 
 ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
-    neutube::EAxis axis) const
+    neutu::EAxis axis) const
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZDvidSynapseEnsemble*> teList = getObjectList<ZDvidSynapseEnsemble>();
@@ -1280,7 +1280,7 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
   return NULL;
 }
 
-ZFlyEmToDoList* ZFlyEmProofDoc::getTodoList(neutube::EAxis axis) const
+ZFlyEmToDoList* ZFlyEmProofDoc::getTodoList(neutu::EAxis axis) const
 {
   ZOUT(LTRACE(), 5) << "Get todo list";
   QList<ZFlyEmToDoList*> teList = getObjectList<ZFlyEmToDoList>();
@@ -1321,9 +1321,9 @@ bool ZFlyEmProofDoc::hasDvidSynapse() const
 
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
-  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
   if (se != NULL) {
-    return getDvidSynapseEnsemble(neutube::EAxis::Z)->hasSelected();
+    return getDvidSynapseEnsemble(neutu::EAxis::Z)->hasSelected();
   }
 
   return false;
@@ -1422,7 +1422,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   processObjectModified();
 }
 
-void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
+void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 { //Duplicated code with checkTodoItem
   ZOUT(LTRACE(), 5) << "Set action of to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
@@ -1453,7 +1453,7 @@ void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
 }
 
 void ZFlyEmProofDoc::annotateSelectedTodoItem(
-    ZFlyEmTodoAnnotationDialog *dlg, neutube::EAxis axis)
+    ZFlyEmTodoAnnotationDialog *dlg, neutu::EAxis axis)
 {
   ZFlyEmToDoList *todoList = getTodoList(axis);
   if (todoList) {
@@ -1477,26 +1477,26 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
 {
-  setTodoItemAction(neutube::EToDoAction::TO_DO);
+  setTodoItemAction(neutu::EToDoAction::TO_DO);
 }
 
 void ZFlyEmProofDoc::setTodoItemIrrelevant()
 {
-  setTodoItemAction(neutube::EToDoAction::TO_DO_IRRELEVANT);
+  setTodoItemAction(neutu::EToDoAction::TO_DO_IRRELEVANT);
 }
 
 void ZFlyEmProofDoc::setTodoItemToMerge()
 {
-  setTodoItemAction(neutube::EToDoAction::TO_MERGE);
+  setTodoItemAction(neutu::EToDoAction::TO_MERGE);
 }
 
 void ZFlyEmProofDoc::setTodoItemToSplit()
 {
-  setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
+  setTodoItemAction(neutu::EToDoAction::TO_SPLIT);
 }
 
 void ZFlyEmProofDoc::tryMoveSelectedSynapse(
-    const ZIntPoint &dest, neutube::EAxis axis)
+    const ZIntPoint &dest, neutu::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
@@ -1523,7 +1523,7 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(
 }
 
 void ZFlyEmProofDoc::annotateSelectedSynapse(
-    ZFlyEmSynapseAnnotationDialog *dlg, neutube::EAxis axis)
+    ZFlyEmSynapseAnnotationDialog *dlg, neutu::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
@@ -1565,7 +1565,7 @@ void ZFlyEmProofDoc::setRoutineCheck(bool on)
 }
 
 void ZFlyEmProofDoc::annotateSynapse(
-    const ZIntPoint &pt, ZJsonObject propJson, neutube::EAxis axis)
+    const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
@@ -1590,7 +1590,7 @@ void ZFlyEmProofDoc::annotateSynapse(
 }
 
 void ZFlyEmProofDoc::annotateSelectedSynapse(
-    ZJsonObject propJson, neutube::EAxis axis)
+    ZJsonObject propJson, neutu::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
@@ -1610,7 +1610,7 @@ void ZFlyEmProofDoc::addSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
-  synapse.setUserName(neutube::GetCurrentUserName());
+  synapse.setUserName(neutu::GetCurrentUserName());
 
 //  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
   QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
@@ -1661,7 +1661,7 @@ void ZFlyEmProofDoc::removeTodoItem(
 void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
 {
   ZFlyEmToDoItem item(pos);
-  item.setUserName(neutube::GetCurrentUserName());
+  item.setUserName(neutu::GetCurrentUserName());
 
   addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
 }
@@ -1829,9 +1829,9 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     if (on) {
-      se->addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
+      se->addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
     } else {
-      se->removeVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
+      se->removeVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
     }
     processObjectModified(se);
   }
@@ -1877,7 +1877,7 @@ bool ZFlyEmProofDoc::checkInBodyWithMessage(
         emit messageGenerated(
               ZWidgetMessage(
                 QString("Failed to unlock body %1.").arg(bodyId),
-                neutube::EMessageType::ERROR));
+                neutu::EMessageType::ERROR));
       }
     }
   }
@@ -1896,9 +1896,9 @@ bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode)
 
 
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
-    neutube::EBodyLabelType type) const
+    neutu::EBodyLabelType type) const
 {
-  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(neutube::EAxis::Z);
+  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL) {
     return labelSlice->getSelected(type);
   }
@@ -1909,7 +1909,7 @@ std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
 void ZFlyEmProofDoc::deselectMappedBodyWithOriginalId(
     const std::set<uint64_t> &bodySet)
 {
-  deselectMappedBody(bodySet, neutube::EBodyLabelType::ORIGINAL);
+  deselectMappedBody(bodySet, neutu::EBodyLabelType::ORIGINAL);
 }
 
 /*
@@ -1931,7 +1931,7 @@ void ZFlyEmProofDoc::checkInSelectedBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
+        getCurrentSelectedBodyId(neutu::EBodyLabelType::ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -1942,7 +1942,7 @@ void ZFlyEmProofDoc::checkInSelectedBody(flyem::EBodySplitMode mode)
           emit messageGenerated(
                 ZWidgetMessage(
                   QString("Failed to unlock body %1.").arg(bodyId),
-                  neutube::EMessageType::ERROR));
+                  neutu::EMessageType::ERROR));
         }
       }
     }
@@ -1955,7 +1955,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
+        getCurrentSelectedBodyId(neutu::EBodyLabelType::ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -1967,7 +1967,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
             emit messageGenerated(
                   ZWidgetMessage(
                     QString("Failed to unlock body %1.").arg(bodyId),
-                    neutube::EMessageType::ERROR));
+                    neutu::EMessageType::ERROR));
           }
         } else {
           emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
@@ -1983,7 +1983,7 @@ void ZFlyEmProofDoc::checkOutBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(neutube::EBodyLabelType::ORIGINAL);
+        getCurrentSelectedBodyId(neutu::EBodyLabelType::ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -1997,12 +1997,12 @@ void ZFlyEmProofDoc::checkOutBody(flyem::EBodySplitMode mode)
                   ZWidgetMessage(
                     QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
                     arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                    neutube::EMessageType::ERROR));
+                    neutu::EMessageType::ERROR));
           } else {
             emit messageGenerated(
                   ZWidgetMessage(
                     QString("Failed to lock body %1 because it has been locked by %2").
-                    arg(bodyId).arg(owner.c_str()), neutube::EMessageType::ERROR));
+                    arg(bodyId).arg(owner.c_str()), neutu::EMessageType::ERROR));
           }
         }
       }
@@ -2017,13 +2017,13 @@ void ZFlyEmProofDoc::warnSynapseReadonly()
   emit messageGenerated(
         ZWidgetMessage(
           QString("The synapse data is readonly."),
-          neutube::EMessageType::WARNING));
+          neutu::EMessageType::WARNING));
 }
 
 void ZFlyEmProofDoc::verifySelectedSynapse()
 {
   if (getDvidTarget().isSynapseEditable()) {
-    const std::string &userName = neutube::GetCurrentUserName();
+    const std::string &userName = neutu::GetCurrentUserName();
     QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
     ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
     const std::set<ZIntPoint> &selected = getSelectedSynapse();
@@ -2049,7 +2049,7 @@ void ZFlyEmProofDoc::verifySelectedSynapse()
 void ZFlyEmProofDoc::unverifySelectedSynapse()
 {
   if (getDvidTarget().isSynapseEditable()) {
-    const std::string &userName = neutube::GetCurrentUserName();
+    const std::string &userName = neutu::GetCurrentUserName();
     QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
     ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
     const std::set<ZIntPoint> &selected = getSelectedSynapse();
@@ -2147,8 +2147,8 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice(neutube::EAxis::Z)->getLabelColor(
-                      slice->getLabel(), neutube::EBodyLabelType::ORIGINAL));
+    slice->setColor(getDvidLabelSlice(neutu::EAxis::Z)->getLabelColor(
+                      slice->getLabel(), neutu::EBodyLabelType::ORIGINAL));
     processObjectModified(slice);
     //slice->updateSelection();
   }
@@ -2238,7 +2238,7 @@ void ZFlyEmProofDoc::saveMergeOperation()
     } else {
       emit messageGenerated(
             ZWidgetMessage("Cannot save the merge operation",
-                           neutube::EMessageType::ERROR));
+                           neutu::EMessageType::ERROR));
     }
   }
 }
@@ -2268,7 +2268,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   ZArray *array = NULL;
 
   if (m_workWriter.good()) {
-    if (viewParam.getSliceAxis() == neutube::EAxis::ARB) {
+    if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
       array = m_workWriter.getDvidReader().readLabels64Lowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
@@ -2309,7 +2309,7 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
   ZStack *array = NULL;
 
   if (m_grayscaleWorkReader.good()) {
-    if (viewParam.getSliceAxis() == neutube::EAxis::ARB) {
+    if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
       array = m_grayscaleWorkReader.readGrayScaleLowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
@@ -2353,11 +2353,11 @@ ZWidgetMessage ZFlyEmProofDoc::getAnnotationFailureMessage(uint64_t bodyId) cons
        msg = ZWidgetMessage(
               QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
               arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-              neutube::EMessageType::ERROR);
+              neutu::EMessageType::ERROR);
     } else {
       msg = ZWidgetMessage(
               QString("Failed to start annotation. %1 has been locked by %2").
-              arg(bodyId).arg(owner.c_str()), neutube::EMessageType::ERROR);
+              arg(bodyId).arg(owner.c_str()), neutu::EMessageType::ERROR);
     }
   }
 
@@ -2452,7 +2452,7 @@ void ZFlyEmProofDoc::clearBodyMerger()
   undoStack()->clear();
 }
 
-void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
+void ZFlyEmProofDoc::updateDvidLabelSlice(neutu::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZOUT(LTRACE(), 5) << "Update dvid label";
@@ -2494,7 +2494,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
     obj->setColor(getSeedColor(obj->getLabel()));
     obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
     obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
-    obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
+    obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
     obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -2530,7 +2530,7 @@ void ZFlyEmProofDoc::commitSplitFromService()
   }
 }
 
-int ZFlyEmProofDoc::removeDvidSparsevol(neutube::EAxis axis)
+int ZFlyEmProofDoc::removeDvidSparsevol(neutu::EAxis axis)
 {
   int count = 0;
 
@@ -2580,14 +2580,14 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
     obj->setLabel(bodyId);
     obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     obj->setColor(labelSlice->getLabelColor(
-                    bodyId, neutube::EBodyLabelType::ORIGINAL));
+                    bodyId, neutu::EBodyLabelType::ORIGINAL));
     obj->setVisible(!labelSlice->isVisible());
   }
 
   return obj;
 }
 
-void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
+void ZFlyEmProofDoc::updateDvidLabelObject(neutu::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
@@ -2637,9 +2637,9 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
 {
   beginObjectModifiedMode(updateMode);
 
-  updateDvidLabelObject(neutube::EAxis::X);
-  updateDvidLabelObject(neutube::EAxis::Y);
-  updateDvidLabelObject(neutube::EAxis::Z);
+  updateDvidLabelObject(neutu::EAxis::X);
+  updateDvidLabelObject(neutu::EAxis::Y);
+  updateDvidLabelObject(neutu::EAxis::Z);
 
   endObjectModifiedMode();
   processObjectModified();
@@ -2675,7 +2675,7 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
 void ZFlyEmProofDoc::downloadBookmark()
 {
   if (m_dvidReader.isReady()) {
-    std::string currentUserName = neutube::GetCurrentUserName();
+    std::string currentUserName = neutu::GetCurrentUserName();
     ZJsonArray bookmarkJson =
         m_dvidReader.readTaggedBookmark("user:" + currentUserName);
     beginObjectModifiedMode(EObjectModifiedMode::CACHE);
@@ -2711,7 +2711,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     if (bookmarkCount == 0) {
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
-      reader.read(url.getCustomBookmarkUrl(neutube::GetCurrentUserName()).c_str());
+      reader.read(url.getCustomBookmarkUrl(neutu::GetCurrentUserName()).c_str());
       ZJsonArray jsonObj;
       jsonObj.decodeString(reader.getBuffer());
       if (!jsonObj.isEmpty()) {
@@ -2865,8 +2865,8 @@ void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
-  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
-                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER |
+                           neutu::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
@@ -2874,8 +2874,8 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 0, 255));
-  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
-                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER |
+                           neutu::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
@@ -2883,8 +2883,8 @@ void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
-  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
-                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER |
+                           neutu::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
@@ -2892,8 +2892,8 @@ void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 0, 255));
-  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
-                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER |
+                           neutu::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
@@ -3440,7 +3440,7 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
     if (!slice->refreshReaderBuffer()) {
-      notify(ZWidgetMessage("Failed to refresh labels.", neutube::EMessageType::WARNING));
+      notify(ZWidgetMessage("Failed to refresh labels.", neutu::EMessageType::WARNING));
     }
   }
 }
@@ -3448,7 +3448,7 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
 void ZFlyEmProofDoc::updateMeshForSelected()
 {
   const std::set<uint64_t> &bodySet =
-      getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+      getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
   for (uint64_t bodyId : bodySet) {
     ZObject3dScan obj;
     getDvidReader().readBody(bodyId, true, &obj);
@@ -3505,7 +3505,7 @@ void ZFlyEmProofDoc::runSplit(flyem::EBodySplitMode mode)
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(neutube::EMessageType::WARNING);
+    message.setType(neutu::EMessageType::WARNING);
 
     emit messageGenerated(message);
     return;
@@ -3534,7 +3534,7 @@ void ZFlyEmProofDoc::runFullSplit(flyem::EBodySplitMode mode)
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(neutube::EMessageType::WARNING);
+    message.setType(neutu::EMessageType::WARNING);
 
     emit messageGenerated(message);
     return;
@@ -4083,7 +4083,7 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
          iter != sliceList.end(); ++iter) {
       ZDvidLabelSlice *slice = *iter;
-      slice->addSelection(bodyId, neutube::EBodyLabelType::MAPPED);
+      slice->addSelection(bodyId, neutu::EBodyLabelType::MAPPED);
     }
 
     return true;
@@ -4098,7 +4098,7 @@ void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
-    slice->removeSelection(bodyId, neutube::EBodyLabelType::MAPPED);
+    slice->removeSelection(bodyId, neutu::EBodyLabelType::MAPPED);
   }
 }
 
@@ -4113,9 +4113,9 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
             rect.getFirstX(), rect.getFirstY(), z,
             rect.getWidth(), rect.getHeight(), 1);
       if (appending) {
-        addSelectedBody(bodySet, neutube::EBodyLabelType::ORIGINAL);
+        addSelectedBody(bodySet, neutu::EBodyLabelType::ORIGINAL);
       } else {
-        setSelectedBody(bodySet, neutube::EBodyLabelType::ORIGINAL);
+        setSelectedBody(bodySet, neutu::EBodyLabelType::ORIGINAL);
       }
     }
     if (removingRoi) {
@@ -4136,10 +4136,10 @@ void ZFlyEmProofDoc::rewriteSegmentation()
   ZIntCuboid box = getCuboidRoi();
   if (box.getDepth() > 1) {
     getDvidWriter().refreshLabel(
-          box, getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL));
+          box, getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL));
     if (getDvidWriter().getStatusCode() != 200) {
       emit messageGenerated(
-            ZWidgetMessage("Failed to rewite segmentations.", neutube::EMessageType::ERROR));
+            ZWidgetMessage("Failed to rewite segmentations.", neutu::EMessageType::ERROR));
     }
   }
 }
@@ -4205,7 +4205,7 @@ bool ZFlyEmProofDoc::isActive(ZFlyEmBodyColorOption::EColorOption type)
 
 void ZFlyEmProofDoc::recordBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::EAxis::Z);
+  ZDvidLabelSlice *slice = getDvidLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     slice->recordSelection();
   }
@@ -4213,7 +4213,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 
 void ZFlyEmProofDoc::processBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::EAxis::Z);
+  ZDvidLabelSlice *slice = getDvidLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     slice->processSelection();
   }
@@ -4229,7 +4229,7 @@ void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
     if (buddySlice != labelSlice) {
       const std::set<uint64_t> &selectedSet =
           labelSlice->getSelectedOriginal();
-      buddySlice->setSelection(selectedSet, neutube::EBodyLabelType::ORIGINAL);
+      buddySlice->setSelection(selectedSet, neutu::EBodyLabelType::ORIGINAL);
     }
   }
 }
@@ -4237,7 +4237,7 @@ void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
 void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
 {
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
       std::vector<ZDvidSynapse> selectedPresyn;
@@ -4283,7 +4283,7 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
     QUndoCommand *command =
         new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       const std::set<ZIntPoint> &selected =
           se->getSelector().getSelectedSet();
@@ -4385,7 +4385,7 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofDoc::repairSelectedSynapses()
 {
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       const std::set<ZIntPoint> &selected =
           se->getSelector().getSelectedSet();
@@ -4405,7 +4405,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 //      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       const std::set<ZIntPoint> &selected =
           se->getSelector().getSelectedSet();
@@ -4428,7 +4428,7 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
     const ZDvidSynapse &synapse, bool tryingLink)
 {
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       ZUndoCommand *command =
           new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
@@ -4468,7 +4468,7 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
       emit messageGenerated(
             ZWidgetMessage(
               "Failed to add synapse. Have you specified the synapse data name?",
-              neutube::EMessageType::WARNING));
+              neutu::EMessageType::WARNING));
     }
   } else {
     warnSynapseReadonly();
@@ -4478,7 +4478,7 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
 void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
 {
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
       if (selectedSet.size() == 1) {
@@ -4516,14 +4516,14 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
 }
 
 void ZFlyEmProofDoc::executeAddTodoCommand(
-    int x, int y, int z, bool checked, neutube::EToDoAction action,
+    int x, int y, int z, bool checked, neutu::EToDoAction action,
     uint64_t bodyId)
 {
   ZIntPoint position = getDvidReader().readPosition(bodyId, x, y, z);
 
   if (position.isValid()) {
     ZFlyEmToDoItem item(position);
-    item.setUserName(neutube::GetCurrentUserName());
+    item.setUserName(neutu::GetCurrentUserName());
     item.setAction(action);
     item.setChecked(checked);
 
@@ -4544,7 +4544,7 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(
 
   if (position.isValid()) {
     ZFlyEmToDoItem item(position);
-    item.setUserName(neutube::GetCurrentUserName());
+    item.setUserName(neutu::GetCurrentUserName());
     if (checked) {
       item.setChecked(checked);
     }
@@ -4554,14 +4554,14 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
-    int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId)
+    int x, int y, int z, neutu::EToDoAction action, uint64_t bodyId)
 {
   executeAddTodoCommand(x, y, z, false, action, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, neutube::EToDoAction::TO_MERGE, bodyId);
+  executeAddTodoItemCommand(x, y, z, neutu::EToDoAction::TO_MERGE, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId)
@@ -4571,7 +4571,7 @@ void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t 
 
 void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, neutube::EToDoAction::TO_SPLIT, bodyId);
+  executeAddTodoItemCommand(x, y, z, neutu::EToDoAction::TO_SPLIT, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId)
@@ -4582,7 +4582,7 @@ void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t 
 void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
     int x, int y, int z, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT, bodyId);
+  executeAddTodoItemCommand(x, y, z, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
@@ -4817,6 +4817,6 @@ void ZFlyEmProofDoc::diagnose() const
   ZStackDoc::diagnose();
 
   LDEBUG() << "#Selected bodies (unmapped):"
-           << getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL).size();
+           << getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL).size();
 }
 

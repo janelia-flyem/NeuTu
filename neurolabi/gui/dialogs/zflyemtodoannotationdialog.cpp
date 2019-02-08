@@ -48,7 +48,7 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
 
   ui->checkedCheckBox->setChecked(item.isChecked());
 
-  int index = neutube::EnumValue(item.getAction());
+  int index = neutu::EnumValue(item.getAction());
   Q_ASSERT(index < ui->actionComboBox->maxCount());
   ui->actionComboBox->setCurrentIndex(index);
 }

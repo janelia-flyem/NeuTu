@@ -13,7 +13,7 @@
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)
 {
-  m_userName = neutube::GetCurrentUserName();
+  m_userName = neutu::GetCurrentUserName();
 //  m_server = "emdata2.int.janelia.org:9100";
 }
 

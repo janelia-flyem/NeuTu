@@ -73,7 +73,7 @@ public:
 
   virtual void display(
       ZPainter &, int , EDisplayStyle ,
-      neutube::EAxis ) const override
+      neutu::EAxis ) const override
   {}
 
 //  void setLabel(uint64_t label) override;

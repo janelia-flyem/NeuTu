@@ -20,16 +20,16 @@ void LogLocalMessage(const ZWidgetMessage &msg)
   if (msg.hasTarget(ZWidgetMessage::TARGET_LOG_FILE)) {
     QString plainStr = msg.toPlainString();
     switch (msg.getType()) {
-    case neutube::EMessageType::INFORMATION:
+    case neutu::EMessageType::INFORMATION:
       LINFO_NLN() << plainStr;
       break;
-    case neutube::EMessageType::WARNING:
+    case neutu::EMessageType::WARNING:
       LWARN_NLN() << plainStr;
       break;
-    case neutube::EMessageType::ERROR:
+    case neutu::EMessageType::ERROR:
       LERROR_NLN() << plainStr;
       break;
-    case neutube::EMessageType::DEBUG:
+    case neutu::EMessageType::DEBUG:
       LDEBUG_NLN() << plainStr;
       break;
     }
@@ -41,16 +41,16 @@ void LogKafkaMessage(const ZWidgetMessage &msg)
   if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
     std::string plainStr = msg.toPlainString().toStdString();
     switch (msg.getType()) {
-    case neutube::EMessageType::INFORMATION:
+    case neutu::EMessageType::INFORMATION:
       KINFO << plainStr;
       break;
-    case neutube::EMessageType::WARNING:
+    case neutu::EMessageType::WARNING:
       KWARN << plainStr;
       break;
-    case neutube::EMessageType::ERROR:
+    case neutu::EMessageType::ERROR:
       KERROR << plainStr;
       break;
-    case neutube::EMessageType::DEBUG:
+    case neutu::EMessageType::DEBUG:
       KDEBUG << ZLog::Debug() << ZLog::Description(plainStr);
       break;
     }

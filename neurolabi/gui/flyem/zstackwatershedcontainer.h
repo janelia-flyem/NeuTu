@@ -285,7 +285,7 @@ private:
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;
-  size_t m_maxStackVolume = neutube::HALFGIGA;
+  size_t m_maxStackVolume = neutu::HALFGIGA;
   QString m_algorithm;
   QString m_dsMethod;
 };

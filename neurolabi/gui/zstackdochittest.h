@@ -16,8 +16,8 @@ class ZStackDocHitTest
 public:
   ZStackDocHitTest();
 
-  void setSliceAxis(neutube::EAxis axis);
-  neutube::EAxis getSliceAxis() const;
+  void setSliceAxis(neutu::EAxis axis);
+  neutu::EAxis getSliceAxis() const;
 
   bool hitTest(ZStackDoc *doc, double x, double y, double z);
   bool hitTest(ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition);
@@ -34,7 +34,7 @@ public:
 
 private:
   ZStackObject *m_hitObject;
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis;
 
  // Swc_Tree_Node *m_hitSwcNode;
 //  ZStroke2d *m_hitStroke;

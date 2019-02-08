@@ -72,7 +72,7 @@ void ZFlyEmProofDocCommand::UnmergeBody::redo()
   if (doc != NULL) {
     m_oldMapList = doc->getBodyMerger()->getMapList();
     std::set<uint64_t> bodySet =
-        doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+        doc->getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
          iter != bodySet.end(); ++iter) {
       uint64_t bodyId = *iter;

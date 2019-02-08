@@ -62,7 +62,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
 }
 
 void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
   if (m_stackGrid.isEmpty() || z < 0) {
     ZObject3dScan::display(painter, z, option, sliceAxis);

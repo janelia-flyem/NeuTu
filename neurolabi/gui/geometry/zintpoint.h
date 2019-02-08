@@ -121,9 +121,9 @@ public:
 
   double distanceTo(double x, double y, double z) const;
 
-  void shiftSliceAxis(neutube::EAxis axis);
-  void shiftSliceAxisInverse(neutube::EAxis axis);
-  int getSliceCoord(neutube::EAxis axis) const;
+  void shiftSliceAxis(neutu::EAxis axis);
+  void shiftSliceAxisInverse(neutu::EAxis axis);
+  int getSliceCoord(neutu::EAxis axis) const;
 
   void invalidate();
   bool isValid() const;

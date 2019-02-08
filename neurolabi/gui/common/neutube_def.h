@@ -8,7 +8,7 @@
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
 
-namespace neutube {
+namespace neutu {
 
 static constexpr uint64_t ONEGIGA = 1073741824;
 static constexpr uint64_t HALFGIGA = 536870912;

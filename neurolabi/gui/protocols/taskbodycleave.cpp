@@ -1715,7 +1715,7 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING,
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING,
                          ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
@@ -2049,7 +2049,7 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SUPERVOXEL_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
 
   return config;
 }

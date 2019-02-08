@@ -343,7 +343,7 @@ bool Z3DView::takeFixedSizeSeriesScreenShot(const QDir& dir, const QString& name
     else
       camera().rotate(-rAngle, camera().get().vectorEyeToWorld(axis), camera().get().center());
     //resetCameraClippingRange();
-    int fieldWidth = neutube::numDigits(numFrame);
+    int fieldWidth = neutu::numDigits(numFrame);
     QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
     QString filepath = dir.filePath(filename);
     if (!takeFixedSizeScreenShot(filepath, width, height, sst)) {
@@ -380,7 +380,7 @@ bool Z3DView::takeSeriesScreenShot(const QDir& dir, const QString& namePrefix, c
     else
       camera().rotate(-rAngle, camera().get().vectorEyeToWorld(axis), camera().get().center());
     //resetCameraClippingRange();
-    int fieldWidth = neutube::numDigits(numFrame);
+    int fieldWidth = neutu::numDigits(numFrame);
     QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
     QString filepath = dir.filePath(filename);
     if (!takeScreenShot(filepath, sst)) {

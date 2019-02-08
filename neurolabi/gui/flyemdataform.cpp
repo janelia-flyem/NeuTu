@@ -961,9 +961,9 @@ void FlyEmDataForm::generateThumbnailItem(
         currentItemList.append(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(neutube::EAxis::Z);
+            getMasterData()->getSourceDimension(neutu::EAxis::Z);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(neutube::EAxis::Y);
+            getSourceDimension(neutu::EAxis::Y);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
@@ -999,9 +999,9 @@ void FlyEmDataForm::generateThumbnailItem(
 //            m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Z);
+                getMasterData()->getSourceOffset(neutu::EAxis::Z);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Y);
+                getMasterData()->getSourceOffset(neutu::EAxis::Y);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,
@@ -1300,9 +1300,9 @@ void FlyEmDataForm::updateThumbnail(
         m_thumbnailScene->addItem(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(neutube::EAxis::Z);
+            getMasterData()->getSourceDimension(neutu::EAxis::Z);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(neutube::EAxis::Y);
+            getSourceDimension(neutu::EAxis::Y);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
@@ -1336,9 +1336,9 @@ void FlyEmDataForm::updateThumbnail(
             m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Z);
+                getMasterData()->getSourceOffset(neutu::EAxis::Z);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Y);
+                getMasterData()->getSourceOffset(neutu::EAxis::Y);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,

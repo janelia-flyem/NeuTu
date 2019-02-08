@@ -76,18 +76,18 @@ public:
   /*!
    * \brief Get image resolution along a certain axis
    */
-  double getImageResolution(neutube::EAxis axis);
+  double getImageResolution(neutu::EAxis axis);
 
   /*!
    * \brief Get SWC resolution along a certain axis
    */
-  double getSwcResolution(neutube::EAxis axis);
+  double getSwcResolution(neutu::EAxis axis);
 
   /*!
    * \brief Get source dimension.
    */
-  int getSourceDimension(neutube::EAxis axis) const;
-  int getSourceOffset(neutube::EAxis axis) const;
+  int getSourceDimension(neutu::EAxis axis) const;
+  int getSourceOffset(neutu::EAxis axis) const;
 
   /*!
    * \brief Export the bundle into a json file

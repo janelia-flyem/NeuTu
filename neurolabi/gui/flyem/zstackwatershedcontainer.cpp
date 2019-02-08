@@ -1280,7 +1280,7 @@ void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
       obj->setSource(
             ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
       obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
-      obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
+      obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);
       obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
       obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);

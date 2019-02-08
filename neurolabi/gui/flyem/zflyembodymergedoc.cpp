@@ -13,7 +13,7 @@
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(QObject *parent) :
   ZStackDoc(parent), m_originalLabel(NULL)
 {
-  setTag(neutube::Document::ETag::FLYEM_MERGE);
+  setTag(neutu::Document::ETag::FLYEM_MERGE);
 }
 
 ZFlyEmBodyMergeDoc::~ZFlyEmBodyMergeDoc()

@@ -74,10 +74,10 @@ public:
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
-      neutube::EAxis axis = neutube::EAxis::Z, ERole role = ROLE_WIDGET);
+      neutu::EAxis axis = neutu::EAxis::Z, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
-      const ZDvidTarget &target, ERole role = ROLE_WIDGET);
-  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
+      const ZDvidTarget &target, ERole role = ERole::ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -162,7 +162,7 @@ public:
   void configure();
 
 //  bool hasNeuPrint() const;
-  neutube::EServerStatus getNeuPrintStatus() const;
+  neutu::EServerStatus getNeuPrintStatus() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -481,7 +481,7 @@ private:
 
   void launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
-  std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutu::EBodyLabelType type) const;
   void runSplitFunc();
   void runFullSplitFunc();
   void runLocalSplitFunc();

@@ -99,7 +99,7 @@ bool ZFlyEmBodyStatus::isAccessible() const
   if (m_protection >= 9) {
     return false;
   } else if (isAdminAccessible()) {
-    return neutube::IsAdminUser();
+    return neutu::IsAdminUser();
   }
 
   return true;
@@ -109,7 +109,7 @@ bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
 #if _QT_GUI_USED_
   if (ZString(status).lower() == "roughly traced") {
-    return neutube::IsAdminUser();
+    return neutu::IsAdminUser();
   }
 #endif
 

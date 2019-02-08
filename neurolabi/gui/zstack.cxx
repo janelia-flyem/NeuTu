@@ -662,9 +662,9 @@ void ZStack::read(std::istream &stream)
   clear();
 
   int kind = GREY;
-  neutube::read(stream, kind);
+  neutu::read(stream, kind);
   int channel = 0;
-  neutube::read(stream, channel);
+  neutu::read(stream, channel);
 
   m_offset.read(stream);
   ZIntPoint dim;
@@ -676,8 +676,8 @@ void ZStack::read(std::istream &stream)
 
 void ZStack::write(std::ostream &stream) const
 {
-  neutube::write(stream, m_stack->kind);
-  neutube::write(stream, m_stack->nchannel);
+  neutu::write(stream, m_stack->kind);
+  neutu::write(stream, m_stack->nchannel);
   m_offset.write(stream);
   ZIntPoint dim(width(), height(), depth());
   dim.write(stream);
@@ -839,10 +839,10 @@ void* ZStack::projection(
 }
 
 void* ZStack::projection(
-    neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+    neutu::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
   ZSingleChannelStack::EProjMode mode = ZSingleChannelStack::EProjMode::MAX_PROJ;
-  if (bg == neutube::EImageBackground::BRIGHT) {
+  if (bg == neutu::EImageBackground::BRIGHT) {
     mode = ZSingleChannelStack::EProjMode::MIN_PROJ;
   }
 

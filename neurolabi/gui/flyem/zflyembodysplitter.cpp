@@ -238,6 +238,6 @@ void ZFlyEmBodySplitter::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::EMessageType::INFORMATION,
+          message, neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }

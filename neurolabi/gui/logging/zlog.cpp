@@ -60,7 +60,7 @@ void ZLog::log(const std::string &key, const neuopentracing::Value &value)
 }
 
 ZLog::Time::Time() :
-  Tag("time", neutube::GetTimestamp())
+  Tag("time", neutu::GetTimestamp())
 {
 }
 
@@ -144,10 +144,10 @@ void KLog::start()
       }
 
       if (!m_span->hasTag("time")) {
-        m_span->SetTag("time", neutube::GetTimestamp());
+        m_span->SetTag("time", neutu::GetTimestamp());
       }
       m_span->SetTag(
-            "version", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
+            "version", GET_SOFTWARE_NAME + " " + neutu::GetVersionString());
     }
   }
 

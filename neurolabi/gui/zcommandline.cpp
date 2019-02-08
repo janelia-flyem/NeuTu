@@ -44,6 +44,7 @@
 #include "misc/miscutility.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyemutilities.h"
+#include "flyem/zflyembodyannotation.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -1265,7 +1266,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
     return 1;
   }
 
@@ -1291,7 +1292,7 @@ int ZCommandLine::skeletonizeFile()
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        neutube::EMessageType::ERROR);
+                        neutu::EMessageType::ERROR);
       return 1;
     }
     ZStack stack;
@@ -1313,7 +1314,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 

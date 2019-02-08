@@ -36,7 +36,7 @@ void ZDvidAnnotation::setRadius(double r)
 }
 
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -98,7 +98,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -143,10 +143,10 @@ double ZDvidAnnotation::GetDefaultRadius(
   double r = GetDefaultRadius(kind);
 
   if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
-    r *= sqrt(resolution.getPlaneVoxelSize(neutube::EPlane::XY));
+    r *= sqrt(resolution.getPlaneVoxelSize(neutu::EPlane::XY));
   } else {
     r *= sqrt(resolution.getPlaneVoxelSize(
-                neutube::EPlane::XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+                neutu::EPlane::XY, ZResolution::UNIT_NANOMETER)) / 8.0;
   }
 
   return r;
@@ -199,13 +199,13 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
-  if (isSliceVisible(z, neutube::EAxis::Z)) {
+  if (isSliceVisible(z, neutu::EAxis::Z)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z, neutube::EAxis::Z);
+    double radius = getRadius(z, neutu::EAxis::Z);
 
     return d2 <= radius * radius;
   }
@@ -213,7 +213,7 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidAnnotation::hit(double x, double y, neutube::EAxis axis)
+bool ZDvidAnnotation::hit(double x, double y, neutu::EAxis axis)
 {
   ZIntPoint shiftedCenter = m_position;
   shiftedCenter.shiftSliceAxis(axis);
@@ -508,22 +508,22 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   return obj;
 }
 
-bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZDvidAnnotation::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return false;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }
@@ -531,22 +531,22 @@ bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
   return dz < iround(getRadius());
 }
 
-double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
+double ZDvidAnnotation::getRadius(int z, neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return 0.0;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }

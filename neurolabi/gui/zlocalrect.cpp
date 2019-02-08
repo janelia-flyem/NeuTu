@@ -37,9 +37,9 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
 }
 
 void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
-                         neutube::EAxis sliceAxis) const
+                         neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 

@@ -404,7 +404,7 @@ ProtocolTaskConfig TaskFalseSplitReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_MERGE);
+  config.setDefaultTodo(neutu::EToDoAction::TO_MERGE);
 
   return config;
 }
@@ -550,7 +550,7 @@ void TaskFalseSplitReview::displayWarning(const QString &title, const QString &t
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -615,7 +615,7 @@ void TaskFalseSplitReview::writeOutput()
 
   std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(m_bodyId);
   int count = std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-    return a + (b->getAction() == neutube::EToDoAction::TO_MERGE);
+    return a + (b->getAction() == neutu::EToDoAction::TO_MERGE);
   });
   json[KEY_TODO_COUNT] = QJsonValue(count);
 

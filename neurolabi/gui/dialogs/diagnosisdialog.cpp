@@ -40,12 +40,12 @@ void DiagnosisDialog::LoadFile(
 
 void DiagnosisDialog::loadErrorFile()
 {
-  LoadFile(neutube::getErrorFile(), ui->errorTextBrowser);
+  LoadFile(neutu::getErrorFile(), ui->errorTextBrowser);
 }
 
 void DiagnosisDialog::loadWarnFile()
 {
-  LoadFile(neutube::getWarnFile(), ui->warnTextBrowser);
+  LoadFile(neutu::getWarnFile(), ui->warnTextBrowser);
 }
 
 void DiagnosisDialog::loadInfoFile()

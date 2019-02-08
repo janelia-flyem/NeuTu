@@ -50,7 +50,7 @@ bool ZRect2d::isValid() const
   return m_width > 0 && m_height > 0;
 }
 
-bool ZRect2d::isSliceVisible(int z, neutube::EAxis /*sliceAxis*/) const
+bool ZRect2d::isSliceVisible(int z, neutu::EAxis /*sliceAxis*/) const
 {
   bool visible = isValid();
 
@@ -77,7 +77,7 @@ void ZRect2d::preparePen(QPen &pen) const
 }
 
 void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                      neutube::EAxis sliceAxis) const
+                      neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != m_sliceAxis) {
     return;
@@ -107,7 +107,7 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
 }
 
 bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
-             EDisplaySliceMode /*sliceMode*/, neutube::EAxis sliceAxis) const
+             EDisplaySliceMode /*sliceMode*/, neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != m_sliceAxis) {
     return false;
@@ -210,7 +210,7 @@ bool ZRect2d::contains(double x, double y) const
        x < m_x0 + m_width && y < m_y0 + m_height));
 }
 
-bool ZRect2d::hit(double x, double y, neutube::EAxis axis)
+bool ZRect2d::hit(double x, double y, neutu::EAxis axis)
 {
   if (m_sliceAxis != axis) {
     return false;

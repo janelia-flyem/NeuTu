@@ -1505,7 +1505,7 @@ void SwcTreeNode::interpolate(
 }
 
 double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
-                                   neutube::EImageBackground bg)
+                                   neutu::EImageBackground bg)
 {
 
   //Extract image slice
@@ -1524,7 +1524,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   //Seed grow
   Stack_Threshold_Binarize(slice, thre);
 
-  if (bg == neutube::EImageBackground::BRIGHT) {
+  if (bg == neutu::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
@@ -1542,7 +1542,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 }
 
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-                            neutube::EImageBackground bg, int option)
+                            neutu::EImageBackground bg, int option)
 {
   if (tn == NULL || stack == NULL) {
     return false;
@@ -1600,7 +1600,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   y1 += 3;
   */
 
-  if (bg == neutube::EImageBackground::BRIGHT) {
+  if (bg == neutu::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
