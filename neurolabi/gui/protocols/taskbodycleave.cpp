@@ -480,7 +480,7 @@ QString TaskBodyCleave::targetString()
   return QString::number(m_bodyId);
 }
 
-bool TaskBodyCleave::skip()
+bool TaskBodyCleave::skip(QString &reason)
 {
   if (m_bodyDoc->usingOldMeshesTars()) {
     return false;
@@ -503,6 +503,9 @@ bool TaskBodyCleave::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    if (m_skip) {
+      reason = "tarsupervoxels HEAD failed";
+    }
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
@@ -516,23 +519,25 @@ bool TaskBodyCleave::skip()
   dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
 
-  KINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
-          arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
-//  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
-//          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+  if (m_skip) {
+    reason = "tarsupervoxels HEAD failed";
+  }
+
+  LKINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
+            arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
 
   // Add to the auxiliary output a mention that this task was skipped.
 
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyCleave::skip() could not open DVID target for reading";
+    LKERROR << "TaskBodyCleave::skip() could not open DVID target for reading";
     return m_skip;
   }
 
   ZDvidWriter writer;
   if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyCleave::skip() could not open DVID target for writing";
+    LKERROR << "TaskBodyCleave::skip() could not open DVID target for writing";
     return m_skip;
   }
 
@@ -605,7 +610,7 @@ void TaskBodyCleave::beforeLoading()
     }
 
     if (owner == overridableOwner) {
-      LINFO() << "TaskBodyCleave overriding checkout by" << owner;
+      LKINFO << "TaskBodyCleave overriding checkout by" << owner;
       m_supervisor->checkInAdmin(m_bodyId);
       m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
     }
