@@ -336,7 +336,7 @@ void ZDvidAnnotation::updatePartner()
 
 void ZDvidAnnotation::loadJsonObject(
     const ZJsonObject &obj,
-    flyem::EDvidAnnotationLoadMode mode)
+    dvid::EAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -358,14 +358,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != flyem::EDvidAnnotationLoadMode::NO_PARTNER) {
+    if (mode != dvid::EAnnotationLoadMode::NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON:
+        case dvid::EAnnotationLoadMode::PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION:
+        case dvid::EAnnotationLoadMode::PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0

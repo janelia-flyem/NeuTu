@@ -66,7 +66,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
-  m_splitMode = flyem::EBodySplitMode::ONLINE;
+  m_splitMode = neutu::EBodySplitMode::ONLINE;
 
 //  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
 //  connect(this, SIGNAL(result3dQuickViewReady()),
@@ -2314,7 +2314,7 @@ void ZFlyEmBodySplitProject::updateBodyId()
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     std::set<uint64_t> bodySet =
-        doc->getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
+        doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     if (bodySet.size() == 1) {
       m_bodyId = *(bodySet.begin());
     }

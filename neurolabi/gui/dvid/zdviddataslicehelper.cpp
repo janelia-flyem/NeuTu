@@ -42,12 +42,12 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   return 0;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
 {
   return m_updatePolicy;
 }
 
-void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+void ZDvidDataSliceHelper::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 {
   m_updatePolicy = policy;
 }
@@ -442,12 +442,12 @@ void ZDvidDataSliceHelper::syncActualQuality()
 }
 
 void ZDvidDataSliceHelper::setPreferredUpdatePolicy(
-    flyem::EDataSliceUpdatePolicy policy)
+    neutu::EDataSliceUpdatePolicy policy)
 {
   m_preferredUpdatePolicy = policy;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
 {
   return m_preferredUpdatePolicy;
 }
@@ -456,15 +456,15 @@ void ZDvidDataSliceHelper::inferUpdatePolicy(neutu::EAxis axis)
 {
   if (getMaxZoom() == 0) {
     if (axis == neutu::EAxis::ARB) {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::HIDDEN);
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::SMALL);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::SMALL);
     }
   } else {
     if (axis == neutu::EAxis::ARB) {
       setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::LOWRES);
     }
   }
 }

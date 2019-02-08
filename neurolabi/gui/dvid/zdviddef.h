@@ -15,6 +15,10 @@ enum class EDataType {
   LABELVOL, UINT8BLK, LABELGRAPH, ROI, IMAGETILE
 };
 
+enum class EAnnotationLoadMode {
+  NO_PARTNER, PARTNER_LOCATION, PARTNER_RELJSON
+};
+
 static const int DEFAULT_ROI_BLOCK_SIZE = 32;
 
 }

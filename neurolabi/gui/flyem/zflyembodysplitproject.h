@@ -139,11 +139,11 @@ public:
     m_showingBodyMask = state;
   }
 
-  void setSplitMode(flyem::EBodySplitMode mode) {
+  void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
-  flyem::EBodySplitMode getSplitMode() const {
+  neutu::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
@@ -319,7 +319,7 @@ private:
   size_t m_minObjSize;
   bool m_keepingMainSeed;
   bool m_runningCca;
-  flyem::EBodySplitMode m_splitMode;
+  neutu::EBodySplitMode m_splitMode;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

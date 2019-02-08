@@ -137,7 +137,7 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
   return v;
 }
 
-void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
+void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }
@@ -239,7 +239,7 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  flyem::EBodyLabelType labelType = getLabelType();
+  neutu::EBodyLabelType labelType = getLabelType();
 #ifdef _DEBUG_2
   std::cout << "Label type: " << m_labelType << std::endl;
   std::cout << "Label type: " << getLabelType() << std::endl;
@@ -806,7 +806,7 @@ uint64_t ZDvidSparseStack::getLabel() const
   return m_label;
 }
 
-flyem::EBodyLabelType ZDvidSparseStack::getLabelType() const
+neutu::EBodyLabelType ZDvidSparseStack::getLabelType() const
 {
   return m_labelType;
 }

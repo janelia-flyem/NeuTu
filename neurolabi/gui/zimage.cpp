@@ -843,7 +843,7 @@ void ZImage::drawLabelField(
         uint64_t v = *data++;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;
@@ -870,7 +870,7 @@ void ZImage::drawLabelFieldTranspose(
         dataLine += h;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;

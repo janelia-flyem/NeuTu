@@ -292,7 +292,7 @@ public:
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
   ZDvidSparseStack* loadDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType type);
+      uint64_t bodyId, neutu::EBodyLabelType type);
   ZDvidSparseStack* loadDvidSparseStackForSplit();
 
   /* Disabled for simplifying the splitting workflow. Might be used again in
@@ -300,11 +300,11 @@ public:
   uint64_t protectBodyForSplit();
 
   bool protectBody(uint64_t bodyId);
-  void releaseBody(uint64_t bodyId, flyem::EBodyLabelType labelType);
+  void releaseBody(uint64_t bodyId, neutu::EBodyLabelType labelType);
   bool isBodyProtected(uint64_t bodyId) const;
 
   void activateSplit(uint64_t bodyId);
-  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
+  void activateSplit(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar);
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
@@ -481,7 +481,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
 
   static bool IsOverSize(const ZStackObject *obj);
 
@@ -532,7 +532,7 @@ private:
   bool isSupervoxel(const ZStackObject *obj) const;
   uint64_t getBodyId(const ZStackObject *obj) const;
 
-  flyem::EBodyLabelType getLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getLabelType(uint64_t bodyId) const;
 
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);

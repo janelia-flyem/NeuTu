@@ -731,7 +731,7 @@ void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySe
   QList<ZDvidLabelSlice*> labelList =
       getDocument()->getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, labelList) {
-    slice->setSelection(newBodySet, neutu::EBodyLabelType::ORIGINAL);
+    slice->setSelection(newBodySet, neutu::ELabelSource::ORIGINAL);
 //            slice->mapSelection();
   }
 
@@ -758,7 +758,7 @@ void ZFlyEmBodyMergeProject::unlockBody(const std::set<uint64_t> &bodySet)
 {
   for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter) {
-    emit checkingInBody(*iter, flyem::EBodySplitMode::NONE);
+    emit checkingInBody(*iter, neutu::EBodySplitMode::NONE);
   }
 }
 
@@ -771,7 +771,7 @@ void ZFlyEmBodyMergeProject::unlockBody(const std::vector<uint64_t> &bodyArray)
 
 void ZFlyEmBodyMergeProject::unlockBody(uint64_t bodyId)
 {
-  emit checkingInBody(bodyId, flyem::EBodySplitMode::NONE);
+  emit checkingInBody(bodyId, neutu::EBodySplitMode::NONE);
 }
 
 void ZFlyEmBodyMergeProject::removeMerge(uint64_t bodyId)
@@ -836,7 +836,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
       getProgressSignal()->advanceProgress(0.1);
 
 //      std::set<uint64_t> bodySet = getSelection(neutube::BODY_LABEL_ORIGINAL);
-      auto oldSelection = getSelection(neutu::EBodyLabelType::ORIGINAL);
+      auto oldSelection = getSelection(neutu::ELabelSource::ORIGINAL);
 
       std::set<uint64_t> newBodySet;
       getProgressSignal()->startProgress(0.5);
@@ -1024,7 +1024,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
-          emit checkingInBody(*iter, flyem::EBodySplitMode::NONE);
+          emit checkingInBody(*iter, neutu::EBodySplitMode::NONE);
         }
 
         getProgressSignal()->advanceProgress(0.1);
@@ -1628,7 +1628,7 @@ void ZFlyEmBodyMergeProject::setSelectionFromOriginal(const std::set<uint64_t> &
 */
 
 std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
-    neutu::EBodyLabelType labelType) const
+    neutu::ELabelSource labelType) const
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {

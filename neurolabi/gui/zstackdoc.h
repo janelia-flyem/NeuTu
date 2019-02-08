@@ -292,7 +292,7 @@ public: //attributes
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree

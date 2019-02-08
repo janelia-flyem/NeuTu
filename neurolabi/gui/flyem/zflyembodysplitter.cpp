@@ -2,6 +2,7 @@
 
 #include <QElapsedTimer>
 
+#include "logging/zlog.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "zstackdoc.h"
@@ -36,21 +37,21 @@ void ZFlyEmBodySplitter::setBodyId(uint64_t bodyId)
 {
   if (m_bodyId != bodyId) {
     m_bodyId = bodyId;
-    m_state = STATE_NO_SPLIT;
+    m_state = EState::STATE_NO_SPLIT;
   }
 }
 
-void ZFlyEmBodySplitter::setBody(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar)
+void ZFlyEmBodySplitter::setBody(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar)
 {
   if (m_bodyId != bodyId || m_labelType != type) {
     m_bodyId = bodyId;
     m_labelType = type;
-    m_state = STATE_NO_SPLIT;
+    m_state = EState::STATE_NO_SPLIT;
     m_fromTar = fromTar;
   }
 }
 
-flyem::EBodyLabelType ZFlyEmBodySplitter::getLabelType() const
+neutu::EBodyLabelType ZFlyEmBodySplitter::getLabelType() const
 {
   return m_labelType;
 }
@@ -123,7 +124,7 @@ void ZFlyEmBodySplitter::runSplit(
         ZSparseStack *sparseStack = getBodyForSplit();
 //        ZDvidSparseStack *sparseStack =
 //            doc->getDataDocument()->getDvidSparseStack(
-//              dataRange, flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
+//              dataRange, neutu::EBodySplitMode::BODY_SPLIT_ONLINE);
         if (sparseStack != NULL) {
           container.setData(NULL, sparseStack);
 //                NULL, sparseStack->getSparseStack(container.getRange()));
@@ -158,7 +159,10 @@ void ZFlyEmBodySplitter::runSplit(
     doc->releaseBody(getBodyId(), getLabelType());
   }
 
-  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
+  LKINFO << QString("Splitting time for %1 (T%2) with range %3: %4ms")
+            .arg(getBodyId()).arg(neutu::EnumValue(getLabelType()))
+            .arg(neutu::EnumValue(rangeOption)).arg(timer.elapsed());
+//  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
 }
 
 ZFlyEmBodySplitter::EState ZFlyEmBodySplitter::getState() const
@@ -180,20 +184,20 @@ void ZFlyEmBodySplitter::updateSplitState(flyem::EBodySplitRange rangeOption)
 {
   switch (rangeOption) {
   case flyem::EBodySplitRange::FULL:
-    m_state = STATE_FULL_SPLIT;
+    m_state = EState::STATE_FULL_SPLIT;
     break;
   case flyem::EBodySplitRange::SEED:
-    m_state = STATE_SPLIT;
+    m_state = EState::STATE_SPLIT;
     break;
   case flyem::EBodySplitRange::LOCAL:
-    m_state = STATE_LOCAL_SPLIT;
+    m_state = EState::STATE_LOCAL_SPLIT;
     break;
   }
 }
 
 void ZFlyEmBodySplitter::resetSplitState()
 {
-  m_state = STATE_NO_SPLIT;
+  m_state = EState::STATE_NO_SPLIT;
 }
 
 void ZFlyEmBodySplitter::invalidateCache()
@@ -201,7 +205,7 @@ void ZFlyEmBodySplitter::invalidateCache()
   delete m_cachedObject;
   m_cachedObject = nullptr;
   m_cachedBodyId = 0;
-  m_cachedLabelType = flyem::EBodyLabelType::BODY;
+  m_cachedLabelType = neutu::EBodyLabelType::BODY;
 }
 
 void ZFlyEmBodySplitter::cacheBody(ZSparseStack *body)

@@ -31,7 +31,7 @@ public:
 
   ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
 
-  void setLabelType(flyem::EBodyLabelType type);
+  void setLabelType(neutu::EBodyLabelType type);
 
   /*!
    * \brief Set the mask of the sparse stack
@@ -97,7 +97,7 @@ public:
       bool canonizing = false);
 
   uint64_t getLabel() const;
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
@@ -170,7 +170,7 @@ private:
 //  bool m_isValueFilled;
   bool m_prefectching = false;
   uint64_t m_label;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;

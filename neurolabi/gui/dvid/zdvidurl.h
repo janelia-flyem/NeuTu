@@ -95,7 +95,7 @@ public:
     ZIntCuboid range;
     int zoom = 0;
     std::string format;
-    flyem::EBodyLabelType labelType;
+    neutu::EBodyLabelType labelType;
   };
 
   std::string getSparsevolUrl(const std::string &dataName) const;
