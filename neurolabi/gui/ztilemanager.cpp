@@ -12,7 +12,7 @@
 #include "zstack.hxx"
 #include "zstackpresenter.h"
 #include "zstackview.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "ztiledstackframe.h"
 
 #include <QFileInfo>
@@ -178,7 +178,7 @@ void ZTileManager::updateTileStack()
       frame->document()->setResolution(m_resolution);
 
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi(true);
 

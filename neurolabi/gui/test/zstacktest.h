@@ -7,7 +7,7 @@
 #include "c_stack.h"
 #include "zstack.hxx"
 #include "zdebug.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackfactory.h"
 #include "zstackutil.h"
 #include "zstackarray.h"

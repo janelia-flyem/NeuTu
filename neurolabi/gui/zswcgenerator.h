@@ -1,7 +1,7 @@
 #ifndef ZSWCGENERATOR_H
 #define ZSWCGENERATOR_H
 
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuronaxis.h"
 #include "zvoxelarray.h"

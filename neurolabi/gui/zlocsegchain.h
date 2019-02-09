@@ -32,14 +32,14 @@ public:
   virtual ~ZLocsegChain();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_LOCSEG_CHAIN;
+    return ZStackObject::EType::LOCSEG_CHAIN;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const;
 
 public: // I/O functions
   virtual void save(const char *filePath);

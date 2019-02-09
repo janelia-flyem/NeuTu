@@ -148,7 +148,7 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 exists($${CONDA_ENV}) {
   VTK_VER = 7.1
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
-  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive
+  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
 } else {
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
@@ -174,3 +174,9 @@ macx {
 #  LIBS += -lGL -lGLU
 #}
 
+CONFIG(static_gtest) { # gtest from ext folder
+  include($$PWD/ext/gtest.pri)
+}
+
+include(ext/QsLog/QsLog.pri)
+include(ext/libqxt.pri)

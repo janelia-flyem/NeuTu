@@ -8,7 +8,7 @@
 
 ZSwcPositionAdjuster::ZSwcPositionAdjuster() :
   m_signal(NULL), m_mask(NULL), m_workspace(NULL),
-  m_background(neutube::EImageBackground::DARK)
+  m_background(neutu::EImageBackground::DARK)
 {
 }
 
@@ -52,7 +52,7 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
     mask->array[targetIndex] = 2;
     stackGraph.setGroupMaskAcrossZ(mask, C_Stack::depth(m_signal));
 
-    if (m_background == neutube::EImageBackground::BRIGHT) {
+    if (m_background == neutu::EImageBackground::BRIGHT) {
       stackGraph.setWeightFunction(Stack_Voxel_Weight);
     } else {
       stackGraph.setWeightFunction(Stack_Voxel_Weight_R);

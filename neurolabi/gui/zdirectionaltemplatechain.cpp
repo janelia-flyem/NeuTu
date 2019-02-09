@@ -4,7 +4,7 @@
 #include "tz_trace_utils.h"
 #include "zlocsegchain.h"
 #include "zstack.hxx"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 ZDirectionalTemplateChain::ZDirectionalTemplateChain()
 {
@@ -17,7 +17,7 @@ ZDirectionalTemplateChain::~ZDirectionalTemplateChain()
 }
 
 void ZDirectionalTemplateChain::display(
-    ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
+    ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
   for (int i = 0; i < m_chain.size(); i++) {
     m_chain.at(i)->display(painter, slice, option, sliceAxis);
@@ -123,4 +123,4 @@ int ZDirectionalTemplateChain::hitTest(double x, double y, double z)
   return 0;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)

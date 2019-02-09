@@ -56,6 +56,11 @@ signals:
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 //    void taskUpdated(const QString &type);
 
+protected:
+    void emitInfo(const QString &msg);
+    void emitWarning(const QString &msg);
+    void emitMessage(const QString &msg, neutu::EMessageType type);
+
 private slots:
     void onNextButton();
     void onPrevButton();

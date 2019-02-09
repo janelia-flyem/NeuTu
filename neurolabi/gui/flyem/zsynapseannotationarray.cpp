@@ -19,7 +19,7 @@
 #endif
 #include "zstring.h"
 #include "zweightedpointarray.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 
 using namespace flyem;
 using namespace std;

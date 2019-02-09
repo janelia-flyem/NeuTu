@@ -5,9 +5,9 @@
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
 #include "zdoublevector.h"
-#include "zpointarray.h"
-#include "zlinesegmentarray.h"
-#include "zintcuboidface.h"
+#include "geometry/zpointarray.h"
+#include "geometry/zlinesegmentarray.h"
+#include "geometry/zintcuboidface.h"
 #if _QT_GUI_USED_
 #include "zstroke2d.h"
 #endif
@@ -20,7 +20,7 @@
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zlocsegchain.h"
 
 ZSwcFactory::ZSwcFactory()

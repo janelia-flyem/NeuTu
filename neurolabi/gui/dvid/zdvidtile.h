@@ -8,7 +8,7 @@
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
-//#include "zintpoint.h"
+//#include "geometry/zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 #include "zpixmap.h"
 #include "zjsonobject.h"
@@ -27,12 +27,12 @@ public:
   ~ZDvidTile();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_TILE;
+    return ZStackObject::EType::DVID_TILE;
   }
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
@@ -46,7 +46,7 @@ public:
 
 //  void setTileOffset(int x, int y, int z);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void printInfo() const;
 
@@ -83,12 +83,16 @@ public:
   void updatePixmap();
 
 private:
-  ZImage *m_image;
+  void updateImageContrast();
+
+private:
+  ZImage *m_image = nullptr;
   ZPixmap m_pixmap;
-  int m_ix;
-  int m_iy;
-  int m_z;
-  mutable int m_latestZ;
+  ZImage *m_originalBackup = nullptr;
+  int m_ix = 0;
+  int m_iy = 0;
+  int m_z = 0;
+  mutable int m_latestZ = 0;
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;

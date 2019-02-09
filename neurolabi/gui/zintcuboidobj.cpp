@@ -5,7 +5,7 @@
 #include <QBrush>
 
 #include "zpainter.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 
 ZIntCuboidObj::ZIntCuboidObj()
@@ -14,7 +14,7 @@ ZIntCuboidObj::ZIntCuboidObj()
   useCosmeticPen(true);
 }
 
-bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutube::EAxis /*sliceAxis*/) const
+bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutu::EAxis /*sliceAxis*/) const
 {
   return true;
 }
@@ -64,7 +64,7 @@ int ZIntCuboidObj::getDepth() const
   return m_cuboid.getDepth();
 }
 
-bool ZIntCuboidObj::isOnSlice(int z, neutube::EAxis sliceAxis) const
+bool ZIntCuboidObj::isOnSlice(int z, neutu::EAxis sliceAxis) const
 {
   return z >= getFirstCorner().getSliceCoord(sliceAxis) &&
       z <= getLastCorner().getSliceCoord(sliceAxis);
@@ -88,7 +88,7 @@ void NextMark(int &x, int intv, int &remain)
 
 void ZIntCuboidObj::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (m_cuboid.isEmpty()) {
     return;
@@ -136,7 +136,7 @@ void ZIntCuboidObj::display(
 //  pen.setWidthF(getDefaultPenWidth());
 //  painter.setPen(pen);
 
-  if (hasVisualEffect(neutube::display::Box::VE_GRID)) {
+  if (hasVisualEffect(neutu::display::Box::VE_GRID)) {
     const int gridIntervalHint = m_gridIntv;
 
     int x1 = firstCorner.getX();
@@ -168,7 +168,7 @@ void ZIntCuboidObj::display(
   }
 }
 
-bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
+bool ZIntCuboidObj::hit(double x, double y, neutu::EAxis axis)
 {
   ZIntPoint firstCorner = getFirstCorner();
   ZIntPoint lastCorner = getLastCorner();
@@ -184,8 +184,8 @@ bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
 
 bool ZIntCuboidObj::hit(double x, double y, double z)
 {
-  if (isOnSlice(z, neutube::EAxis::Z)) {
-    return hit(x, y, neutube::EAxis::Z);
+  if (isOnSlice(z, neutu::EAxis::Z)) {
+    return hit(x, y, neutu::EAxis::Z);
   }
 
   return false;
@@ -213,4 +213,4 @@ void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

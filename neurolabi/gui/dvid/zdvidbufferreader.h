@@ -9,8 +9,8 @@
 #include <QString>
 //#include <QNetworkReply>
 
-#include "neutube_def.h"
-#include "zsharedpointer.h"
+#include "common/neutube_def.h"
+#include "common/zsharedpointer.h"
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -45,7 +45,7 @@ public:
 //  bool isReadable(const QString &url);
 //  bool hasHead(const QString &url);
 
-  neutube::EReadStatus getStatus() const;
+  neutu::EReadStatus getStatus() const;
   int getStatusCode() const {
     return m_statusCode;
   }
@@ -95,7 +95,7 @@ private:
   void _init();
 
   void startReading();
-  void endReading(neutube::EReadStatus status);
+  void endReading(neutu::EReadStatus status);
 
 
   bool isReadingDone() const;
@@ -107,7 +107,7 @@ private:
 //  QNetworkReply *m_networkReply;
 //  QEventLoop *m_eventLoop;
   bool m_isReadingDone;
-  neutube::EReadStatus m_status;
+  neutu::EReadStatus m_status;
   int m_statusCode;
   bool m_tryingCompress;
   int m_maxSize;

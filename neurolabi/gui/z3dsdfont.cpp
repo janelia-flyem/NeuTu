@@ -4,7 +4,7 @@
 #include <QTextStream>
 #include <QStringList>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DSDFont::Z3DSDFont(const QString& imageFileName, const QString& txtFileName)
   : m_imageFileName(imageFileName)

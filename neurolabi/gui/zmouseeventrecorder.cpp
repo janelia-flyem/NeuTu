@@ -87,7 +87,7 @@ int ZMouseEventRecorder::getEventCount() const
 }
 
 ZPoint ZMouseEventRecorder::getPositionOffset(
-    neutube::ECoordinateSystem cs) const
+    neutu::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
   if (getEventCount() > 1) {
@@ -99,11 +99,11 @@ ZPoint ZMouseEventRecorder::getPositionOffset(
 }
 
 ZPoint ZMouseEventRecorder::getPositionOffsetFromLastLeftPress(
-    neutube::ECoordinateSystem cs) const
+    neutu::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
   const ZMouseEvent &event = getMouseEvent(
-        Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
+        Qt::LeftButton, ZMouseEvent::EAction::PRESS);
   if (!event.isNull()) {
     const ZMouseEvent &currentEvent = getLatestMouseEvent();
     if (!currentEvent.isNull()) {
@@ -116,7 +116,7 @@ ZPoint ZMouseEventRecorder::getPositionOffsetFromLastLeftPress(
 
 ZPoint ZMouseEventRecorder::getPosition(
     Qt::MouseButtons buttons, ZMouseEvent::EAction action,
-    neutube::ECoordinateSystem cs) const
+    neutu::ECoordinateSystem cs) const
 {
   ZPoint pt(0, 0, 0);
 

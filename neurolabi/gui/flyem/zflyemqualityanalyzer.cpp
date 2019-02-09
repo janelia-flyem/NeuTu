@@ -3,7 +3,7 @@
 #include "zswctree.h"
 #include "tz_math.h"
 #include "swctreenode.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 #include "flyem/zhotspotfactory.h"
 #include "swc/zswcdeepanglemetric.h"
 #include "misc/miscutility.h"

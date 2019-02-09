@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 namespace Ui {
 class ZAxisWidget;
@@ -17,7 +17,7 @@ public:
   explicit ZAxisWidget(QWidget *parent = 0);
   ~ZAxisWidget();
 
-  neutube::EAxis getAxis() const;
+  neutu::EAxis getAxis() const;
 
 private:
   Ui::ZAxisWidget *ui;

@@ -15,19 +15,20 @@
 
 #include "z3dnetworkevaluator.h"
 
+#include <boost/graph/topological_sort.hpp>
+#include <algorithm>
+#include <queue>
+#include <set>
+
 #include "z3dgl.h"
 #include "z3dcanvaspainter.h"
 #include "z3dfilter.h"
 #include "z3dmeshfilter.h"
 #include "z3drendertarget.h"
 #include "z3dtexture.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zrandom.h"
 #include "zutils.h"
-#include <boost/graph/topological_sort.hpp>
-#include <algorithm>
-#include <queue>
-#include <set>
 
 //#define PROFILE3DRENDERERS
 
@@ -89,6 +90,12 @@ void Z3DNetworkEvaluator::process(bool stereo)
     Z3DFilter* currentFilter = m_renderingOrder[i];
 
     Z3DEye eye = stereo ? Z3DEye::Left : Z3DEye::Mono;
+
+#ifdef _DEBUG_2
+    std::cout << currentFilter->className().toStdString() << ":"
+              << currentFilter->isValid(eye)
+              << " " << currentFilter->isReady(eye) << std::endl;
+#endif
 
     // execute the filter, if it needs processing and is ready
     if (!currentFilter->isValid(eye) && currentFilter->isReady(eye)) {

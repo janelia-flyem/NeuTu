@@ -13,11 +13,11 @@
 #include <QCheckBox>
 
 #include "zstackframe.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
@@ -80,16 +80,16 @@ public:
    */
   void reset(bool updatingScreen = true);
 
-  enum EMode {
-    MODE_NORMAL, MODE_IMAGE_ONLY, MODE_PLAIN_IMAGE
+  enum class EMode {
+    NORMAL, IMAGE_ONLY, PLAIN_IMAGE
   };
 
   void configure(EMode mode);
 
-  enum EUpdateOption {
-    UPDATE_NONE, //No update
-    UPDATE_QUEUED, //Put updating request in a queue
-    UPDATE_DIRECT //Update immediately
+  enum class EUpdateOption {
+    NONE, //No update
+    QUEUED, //Put updating request in a queue
+    DIRECT //Update immediately
   };
 
   /*!
@@ -175,8 +175,8 @@ public:
 
   //int threshold();
 
-  void setSliceAxis(neutube::EAxis axis);
-  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutu::EAxis axis);
+  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
   ZAffinePlane getAffinePlane() const;
 
   /*!
@@ -240,13 +240,13 @@ public:
 
 
   ZStack* getStrokeMask(uint8_t maskValue);
-  ZStack* getStrokeMask(neutube::EColor color);
+  ZStack* getStrokeMask(neutu::EColor color);
 
 
   void exportObjectMask(const std::string &filePath);
-  void exportObjectMask(neutube::EColor color, const std::string &filePath);
+  void exportObjectMask(neutu::EColor color, const std::string &filePath);
 
-  inline void setSizeHintOption(neutube::ESizeHintOption option) {
+  inline void setSizeHintOption(neutu::ESizeHintOption option) {
     m_sizeHintOption = option;
   }
 
@@ -311,15 +311,15 @@ public:
   void setInfo();
   bool isImageMovable() const;
 
-  int getZ(neutube::ECoordinateSystem coordSys) const;
+  int getZ(neutu::ECoordinateSystem coordSys) const;
   ZIntPoint getCenter(
-      neutube::ECoordinateSystem coordSys = neutube::ECoordinateSystem::STACK) const;
+      neutu::ECoordinateSystem coordSys = neutu::ECoordinateSystem::STACK) const;
 
-  QRect getViewPort(neutube::ECoordinateSystem coordSys) const;
+  QRect getViewPort(neutu::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter() const;
   ZStackViewParam getViewParameter(
-      neutube::ECoordinateSystem coordSys,
-      neutube::View::EExploreAction action = neutube::View::EExploreAction::EXPLORE_UNKNOWN) const;
+      neutu::ECoordinateSystem coordSys,
+      neutu::View::EExploreAction action = neutu::View::EExploreAction::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
   ZViewProj getViewProj() const;
@@ -335,8 +335,8 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
-  void setViewPortCenter(int x, int y, int z, neutube::EAxisSystem system);
-  void setViewPortCenter(const ZIntPoint &center, neutube::EAxisSystem system);
+  void setViewPortCenter(int x, int y, int z, neutu::EAxisSystem system);
+  void setViewPortCenter(const ZIntPoint &center, neutu::EAxisSystem system);
 
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
@@ -373,6 +373,9 @@ public:
    * pixel.
    */
   QSize getScreenSize() const;
+
+  void addToolButton(QPushButton *button);
+  void removeToolButton(QPushButton *button);
 
 
 public: //Change view parameters
@@ -450,8 +453,8 @@ protected:
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
 
-  QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
-  QSet<ZStackObject::ETarget> updateViewData();
+  std::set<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
+  std::set<ZStackObject::ETarget> updateViewData();
 
   void init();
 
@@ -477,7 +480,7 @@ public slots:
   /*!
    * \brief Redraw the whole scene.
    */
-  void redraw(EUpdateOption option = UPDATE_QUEUED);
+  void redraw(EUpdateOption option = EUpdateOption::QUEUED);
 
   /*!
    * \brief Redraw objects.
@@ -542,7 +545,7 @@ public slots:
   void updateZSpinBoxValue();
 
   void paintObject(ZStackObject::ETarget target);
-  void paintObject(const QSet<ZStackObject::ETarget> &targetSet);
+  void paintObject(const std::set<ZStackObject::ETarget> &targetSet);
 
   void dump(const QString &msg);
 
@@ -566,7 +569,7 @@ signals:
   void autoTracing();
 
 private:
-  void hideLayout(QLayout *layout);
+  void hideLayout(QLayout *layout, bool removing);
 
   void updateSliceFromZ(int z);
   void recordViewParam();
@@ -582,9 +585,11 @@ private:
   /*!
    * \brief Get object mask of a certain color
    */
-  ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
+  ZStack* getObjectMask(neutu::EColor color, uint8_t maskValue);
 
   void configurePainter(ZStackObjectPainter &painter);
+
+  void logViewParam();
 //  void setCentralView(int width, int height);
 
   class ViewParamRecordOnce {
@@ -619,7 +624,7 @@ protected:
   ZPixmap *m_objectCanvas = NULL;
   ZPainter m_objectCanvasPainter;
 
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas = NULL;
@@ -632,6 +637,7 @@ protected:
   QHBoxLayout *m_topLayout;
   QHBoxLayout *m_secondTopLayout;
   QHBoxLayout *m_channelControlLayout;
+  QHBoxLayout *m_toolLayout = nullptr;
   QHBoxLayout *m_ctrlLayout;
   QHBoxLayout *m_zControlLayout;
   bool m_scrollEnabled;
@@ -645,7 +651,7 @@ protected:
   // used to turn on or off each channel
   std::vector<ZBoolParameter*> m_chVisibleState;
 
-  neutube::ESizeHintOption m_sizeHintOption;
+  neutu::ESizeHintOption m_sizeHintOption;
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;

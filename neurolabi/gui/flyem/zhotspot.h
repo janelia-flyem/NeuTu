@@ -2,11 +2,14 @@
 #define ZHOTSPOT_H
 
 #include "zuncopyable.h"
-#include "zpoint.h"
+
+#include "geometry/zpoint.h"
+#include "geometry/zpointarray.h"
+#include "geometry/zlinesegmentarray.h"
+
 #include "ztextlinecompositer.h"
 #include "zjsonobject.h"
-#include "zpointarray.h"
-#include "zlinesegmentarray.h"
+
 
 namespace flyem {
 

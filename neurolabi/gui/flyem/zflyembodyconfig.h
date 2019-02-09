@@ -3,8 +3,8 @@
 
 #include <QColor>
 #include "tz_stdint.h"
-#include "neutube_def.h"
-#include "zintcuboid.h"
+#include "common/neutube_def.h"
+#include "geometry/zintcuboid.h"
 
 /*!
  * \brief The class of configuring a body, mainly for visualization.

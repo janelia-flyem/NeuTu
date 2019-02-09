@@ -23,7 +23,7 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
 
@@ -62,7 +62,7 @@ public:
 
 public:
   static ZStackFrame* Make(QMdiArea *parent);
-  static ZStackFrame* Make(QMdiArea *parent, neutube::Document::ETag docTag);
+  static ZStackFrame* Make(QMdiArea *parent, neutu::Document::ETag docTag);
   static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
 
   // A frame has three parts: view, document and presenter
@@ -124,11 +124,11 @@ public:
   //void exportChainConnection(const QString &filePath);
   //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
-  void exportObjectMask(neutube::EColor color, const QString &filePath);
+  void exportObjectMask(neutu::EColor color, const QString &filePath);
 //  ZStack* getObjectMask();
 //  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
-  ZStack* getStrokeMask(neutube::EColor color);
+  ZStack* getStrokeMask(neutu::EColor color);
   ZTileManager* getTileManager() {return m_tile;}
   void setTileManager(ZTileManager *p) {m_tile = p; }
 
@@ -179,6 +179,7 @@ public:
 
   void findLoopInStack();
   void bwthin();
+  void skeletonize();
 
 public:
   void setViewInfo(const QString &info);
@@ -246,7 +247,7 @@ public:
   void setParentFrame(ZStackFrame *frame);
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
-  void setSizeHintOption(neutube::ESizeHintOption option);
+  void setSizeHintOption(neutu::ESizeHintOption option);
   /*!
    * Remove all existing decorations if isExclusive is true.
    */

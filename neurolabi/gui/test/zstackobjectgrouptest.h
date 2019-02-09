@@ -192,7 +192,7 @@ TEST(ZStackObjectGroup, take) {
   ASSERT_EQ(2, objectGroup.size());
 
   TStackObjectList objList =
-      objectGroup.takeSameSource(ZObject3d::TYPE_OBJ3D, "test");
+      objectGroup.takeSameSource(ZObject3d::EType::OBJ3D, "test");
   ASSERT_EQ(1, objList.size());
   ASSERT_EQ(obj2, objList.front());
   ASSERT_EQ(1, objectGroup.size());
@@ -202,7 +202,7 @@ TEST(ZStackObjectGroup, take) {
   objectGroup.removeObject(obj, false);
   ASSERT_EQ(1, objectGroup.size());
 
-  objectGroup.setSelected(ZObject3d::TYPE_OBJ3D, true);
+  objectGroup.setSelected(ZObject3d::EType::OBJ3D, true);
   objectGroup.removeSelected(true);
   ASSERT_TRUE(objectGroup.isEmpty());
 
@@ -355,7 +355,7 @@ TEST(ZStackObjectGroup, take) {
 
   ASSERT_TRUE(objectGroup.hasObject(obj->getType()));
   ASSERT_TRUE(objectGroup.hasObject(obj->getTarget()));
-  ASSERT_FALSE(objectGroup.hasObject(ZStackObject::TYPE_CIRCLE));
+  ASSERT_FALSE(objectGroup.hasObject(ZStackObject::EType::CIRCLE));
   ASSERT_TRUE(objectGroup.hasSelected());
   ASSERT_TRUE(objectGroup.hasSelected(ZSwcTree::GetType()));
   ASSERT_FALSE(objectGroup.hasSelected(ZObject3d::GetType()));
@@ -421,7 +421,7 @@ TEST(ZStackObjectGroup, Selection) {
   objectGroup.setSelected(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR, true);
   ASSERT_EQ(true, obj3->isSelected());
 
-  ASSERT_EQ(1, objectGroup.getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN).size());
+  ASSERT_EQ(1, objectGroup.getSelectedSet(ZStackObject::EType::OBJECT3D_SCAN).size());
 
   objectGroup.resetSelector();
   objectGroup.getSelector()->print();

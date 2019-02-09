@@ -214,7 +214,7 @@ QString TaskFalseSplitReview::targetString()
   return QString::number(m_bodyId);
 }
 
-bool TaskFalseSplitReview::skip()
+bool TaskFalseSplitReview::skip(QString &reason)
 {
   // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
   // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
@@ -233,6 +233,9 @@ bool TaskFalseSplitReview::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    if (m_skip) {
+      reason = "tarsupervoxels HEAD failed";
+    }
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
@@ -243,13 +246,17 @@ bool TaskFalseSplitReview::skip()
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
   std::string tarUrl = dvidUrl.getTarSupervoxelsUrl(m_bodyId);
   int statusCode = 0;
-  ZDvid::MakeHeadRequest(tarUrl, statusCode);
+  dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
 
   LINFO() << "TaskFalseSplitReview::skip() HEAD took" << timer.elapsed() << "ms to decide to"
           << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
 
   // Record that the task was skipped.
+
+  if (m_skip) {
+    reason = "tarsupervoxels HEAD failed";
+  }
 
   writeOutput();
 
@@ -327,7 +334,7 @@ void TaskFalseSplitReview::onToggleShowSupervoxels()
 
 void TaskFalseSplitReview::onHideSelected()
 {
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     m_hiddenIds.insert(mesh->getLabel());
@@ -404,7 +411,7 @@ ProtocolTaskConfig TaskFalseSplitReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_MERGE);
+  config.setDefaultTodo(neutu::EToDoAction::TO_MERGE);
 
   return config;
 }
@@ -550,7 +557,7 @@ void TaskFalseSplitReview::displayWarning(const QString &title, const QString &t
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -615,7 +622,7 @@ void TaskFalseSplitReview::writeOutput()
 
   std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(m_bodyId);
   int count = std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-    return a + (b->getAction() == neutube::EToDoAction::TO_MERGE);
+    return a + (b->getAction() == neutu::EToDoAction::TO_MERGE);
   });
   json[KEY_TODO_COUNT] = QJsonValue(count);
 

@@ -2,7 +2,7 @@
 #define ZDVIDTILEINFO_H
 
 #include <vector>
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 class ZJsonObject;
 class QRect;

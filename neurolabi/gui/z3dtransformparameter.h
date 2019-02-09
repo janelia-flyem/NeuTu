@@ -2,8 +2,8 @@
 #define Z3DTRANSFORMPARAMETER_H
 
 #include "zglmutils.h"
-#include "znumericparameter.h"
-#include "zparameter.h"
+#include "widgets/znumericparameter.h"
+#include "widgets/zparameter.h"
 
 class Z3DTransformParameter : public ZSingleValueParameter<glm::mat4>
 {

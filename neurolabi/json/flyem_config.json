@@ -318,6 +318,7 @@
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
       "label_block": "labels",
+      "synapse": "mb6_synapses",
       "roi": "mb_subtracted",
       "user_name": "zhaot"
     },

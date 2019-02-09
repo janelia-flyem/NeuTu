@@ -8,7 +8,7 @@
 #include "zqtheader.h"
 
 #include "include/tz_stdint.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zstackobject.h"
 
 class ZIntPoint;
@@ -28,7 +28,7 @@ public:
   void set(const ZPoint &center, double r);
   void set(const ZIntPoint &center, double r);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   typedef uint32_t TVisualEffect;
 
@@ -43,7 +43,7 @@ public:
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   virtual void display(ZPainter &painter, int z,
-                       EDisplayStyle option, neutube::EAxis sliceAxis) const;
+                       EDisplayStyle option, neutu::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

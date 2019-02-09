@@ -4,7 +4,7 @@
 #include <string>
 #include <ostream>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZMessageReporter
 {
@@ -19,11 +19,11 @@ public:
   */
 
   virtual void report(const std::string &title, const std::string &message,
-                      neutube::EMessageType msgType);
+                      neutu::EMessageType msgType);
 
   static void report(std::ostream &stream,
                      const std::string &title, const std::string &message,
-                     neutube::EMessageType msgType);
+                     neutu::EMessageType msgType);
 
 private:
   static int m_count;

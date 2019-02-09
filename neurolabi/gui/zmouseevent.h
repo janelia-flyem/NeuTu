@@ -2,9 +2,9 @@
 #define ZMOUSEEVENT_H
 
 #include <qnamespace.h>
-#include "zintpoint.h"
-#include "zpoint.h"
-#include "neutube_def.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
+#include "common/neutube_def.h"
 
 class QMouseEvent;
 
@@ -13,8 +13,8 @@ class ZMouseEvent
 public:
   ZMouseEvent();
 
-  enum EAction {
-    ACTION_NONE, ACTION_PRESS, ACTION_RELEASE, ACTION_MOVE, ACTION_DOUBLE_CLICK
+  enum class EAction {
+    NONE, PRESS, RELEASE, MOVE, DOUBLE_CLICK
   };
 
 //  enum ECoordinateSystem {
@@ -25,8 +25,8 @@ public:
 
   void set(QMouseEvent *event, int z);
   void set(QMouseEvent *event, EAction action, int z);
-  void setSliceAxis(neutube::EAxis axis);
-  neutube::EAxis getSliceAxis() const;
+  void setSliceAxis(neutu::EAxis axis);
+  neutu::EAxis getSliceAxis() const;
 
   //void setStackPosition(const ZPoint &pt);
   //void setStackPosition(double x, double y, double z);
@@ -70,7 +70,7 @@ public:
     m_modifiers &= ~modifier;
   }
 
-  ZPoint getPosition(neutube::ECoordinateSystem cs) const;
+  ZPoint getPosition(neutu::ECoordinateSystem cs) const;
 
   inline const ZIntPoint& getWidgetPosition() const {
     return m_widgetPosition;
@@ -121,7 +121,7 @@ private:
   ZPoint m_stackPosition;
   ZPoint m_dataPosition;
   bool m_isInStack;
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis;
 };
 
 #endif // ZMOUSEEVENT_H

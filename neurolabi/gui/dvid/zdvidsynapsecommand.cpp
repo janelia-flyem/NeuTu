@@ -1,13 +1,13 @@
 #include "zdvidsynapsecommand.h"
 
-#include "zqslog.h"
-#include "zintpoint.h"
+#include "logging/zqslog.h"
+#include "geometry/zintpoint.h"
 #include "zdvidsynapse.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemproofdoc.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidurl.h"
+#include "zdvidsynapseensenmble.h"
+#include "zdvidreader.h"
+#include "zdvidurl.h"
 #include "zwidgetmessage.h"
 #include "neutubeconfig.h"
 
@@ -25,7 +25,7 @@ ZStackDocCommand::DvidSynapseEdit::CompositeCommand::~CompositeCommand()
 void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -38,7 +38,7 @@ void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::undo()
 {
 //  m_doc->blockSignals(true);
 
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -154,7 +154,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
 #endif
       QString msg = QString("Synapse removed: %1").arg(synapseString);
       ZWidgetMessage message(
-            msg, neutube::EMessageType::INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
+            msg, neutu::EMessageType::INFORMATION);
       m_doc->notify(message);
     }
   }
@@ -222,7 +222,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
         arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
     m_doc->notify(msg);
   } else {
-    m_doc->notify(ZWidgetMessage("Invalid DVID reader", neutube::EMessageType::ERROR));
+    m_doc->notify(ZWidgetMessage("Invalid DVID reader", neutu::EMessageType::ERROR));
   }
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
@@ -260,7 +260,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         m_doc->notify(msg);
       }
     } else {
-      m_doc->notify(ZWidgetMessage("Invalid DVID writer", neutube::EMessageType::ERROR));
+      m_doc->notify(ZWidgetMessage("Invalid DVID writer", neutu::EMessageType::ERROR));
     }
   }
   /*
@@ -347,7 +347,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::redo()
       m_doc->notify(msg);
     }
   } else {
-    m_doc->notify(ZWidgetMessage("Invalid DVID reader", neutube::EMessageType::ERROR));
+    m_doc->notify(ZWidgetMessage("Invalid DVID reader", neutu::EMessageType::ERROR));
   }
 }
 
@@ -383,7 +383,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::undo()
       }
     }
   } else {
-    m_doc->notify(ZWidgetMessage("Invalid DVID writer", neutube::EMessageType::ERROR));
+    m_doc->notify(ZWidgetMessage("Invalid DVID writer", neutu::EMessageType::ERROR));
   }
 }
 
@@ -461,7 +461,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 
   if (!synapseJson.isEmpty()) {
     ZDvidSynapse::AddProperty(
-          synapseJson, "user", neutube::GetCurrentUserName());
+          synapseJson, "user", neutu::GetCurrentUserName());
     ZDvidSynapse::SetConfidence(synapseJson, 1.0);
     writer.writeSynapse(synapseJson);
     m_doc->syncSynapse(m_to);
@@ -732,7 +732,7 @@ void ZStackDocCommand::DvidSynapseEdit::UngroupSynapse::redo()
 
       QString msg = QString("Synapse ungrouped: %1").arg(synapseString);
       ZWidgetMessage message(
-            msg, neutube::EMessageType::INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
+            msg, neutu::EMessageType::INFORMATION);
       m_doc->notify(message);
     }
   }
@@ -818,7 +818,7 @@ void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::undo()
 {
   if (!m_synapseBackup.isEmpty()) {
-    ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble(neutube::EAxis::Z);
+    ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble(neutu::EAxis::Z);
     if (se != NULL) {
       ZDvidWriter writer;
       if (writer.open(m_doc->getDvidTarget())) {

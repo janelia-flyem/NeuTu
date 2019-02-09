@@ -10,8 +10,8 @@
 #include "z3dtextureblendrenderer.h"
 #include "z3dtexturecopyrenderer.h"
 #include "z3dfontrenderer.h"
-#include "z3dinteractionhandler.h"
-#include "zwidgetsgroup.h"
+//#include "z3dinteractionhandler.h"
+#include "widgets/zwidgetsgroup.h"
 #include "z3dshaderprogram.h"
 
 class Z3DCompositor : public Z3DBoundedFilter

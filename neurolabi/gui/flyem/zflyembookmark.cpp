@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 #include "zjsonobject.h"
@@ -33,13 +33,13 @@ void ZFlyEmBookmark::init()
   m_type = GetType();
 
   m_bodyId = 0;
-  m_bookmarkType = TYPE_LOCATION;
+  m_bookmarkType = EBookmarkType::LOCATION;
   m_isChecked = false;
   setCustom(false);
 //  m_bookmarkRole = ROLE_ASSIGNED;
   m_isInTable = true;
 
-  m_visualEffect = neutube::display::Sphere::VE_DOT_CENTER;
+  m_visualEffect = neutu::display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
 //  setHittable(false);
@@ -49,7 +49,7 @@ void ZFlyEmBookmark::init()
 void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
-  m_bookmarkType = TYPE_LOCATION;
+  m_bookmarkType = EBookmarkType::LOCATION;
   m_isChecked = false;
   setCustom(false);
 //  m_bookmarkRole = ROLE_USER;
@@ -122,17 +122,17 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         ZString type = ZJsonParser::stringValue(propJson["type"]);
         if (!type.empty()) {
           if (type == "Merge") {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else if (type == "Split") {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           }
         } else {
           if (text.startsWith("split") || text.startsWith("small split")) {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else {
-            setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
           }
         }
 
@@ -178,10 +178,10 @@ QString ZFlyEmBookmark::getTypeString() const
 {
   QString text;
   switch (m_bookmarkType) {
-  case TYPE_FALSE_MERGE:
+  case EBookmarkType::FALSE_MERGE:
     text = "Split";
     break;
-  case TYPE_FALSE_SPLIT:
+  case EBookmarkType::FALSE_SPLIT:
     text = "Merge";
     break;
   default:
@@ -247,15 +247,15 @@ void ZFlyEmBookmark::setCustom(bool state)
   */
   m_isCustom = state;
   if (state == true) {
-    setHitProtocal(ZStackObject::HIT_DATA_POS);
+    setHitProtocal(ZStackObject::EHitProtocal::HIT_DATA_POS);
   } else {
-    setHitProtocal(ZStackObject::HIT_NONE);
+    setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
   }
 }
 
 void ZFlyEmBookmark::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   ZStackBall::display(painter, slice, option, sliceAxis);
 
@@ -304,17 +304,17 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       ZString type = ZJsonParser::stringValue(jsonObj["type"]);
       if (!type.empty()) {
         if (type == "Merge") {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
         } else if (type == "Split") {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
         }
       } else {
         if (text.startsWith("split") || text.startsWith("small split")) {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
         } else if (text.startsWith("merge")) {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
         } else {
-          setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
         }
       }
 
@@ -392,4 +392,4 @@ ZFlyEmBookmark* ZFlyEmBookmark::clone() const
   return bookmark;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

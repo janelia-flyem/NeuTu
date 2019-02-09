@@ -1,7 +1,7 @@
 #include "zflyemsupervisor.h"
 #include "neutube.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "dvid/libdvidheader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
@@ -13,7 +13,7 @@
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)
 {
-  m_userName = neutube::GetCurrentUserName();
+  m_userName = neutu::GetCurrentUserName();
 //  m_server = "emdata2.int.janelia.org:9100";
 }
 
@@ -36,7 +36,7 @@ int ZFlyEmSupervisor::testServer()
 #if defined(_ENABLE_LIBDVIDCPP_)
   if (!m_server.empty()) {
     if (m_connection.get() != NULL) {
-      ZDvid::MakeRequest(*m_connection, "/", "HEAD",
+      dvid::MakeRequest(*m_connection, "/", "HEAD",
                          libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                          statusCode);
     }
@@ -234,6 +234,6 @@ void ZFlyEmSupervisor::setSever(const std::string &server)
 {
   m_server = server;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  m_connection = ZDvid::MakeDvidConnection(server);
+  m_connection = dvid::MakeDvidConnection(server);
 #endif
 }

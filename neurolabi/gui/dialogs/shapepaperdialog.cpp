@@ -8,7 +8,7 @@
 #include "ui_shapepaperdialog.h"
 #include "zdialogfactory.h"
 #include "neutubeconfig.h"
-#include "zparameterarray.h"
+#include "widgets/zparameterarray.h"
 #include "zfilelist.h"
 #include "zstack.hxx"
 #include "zdoublevector.h"

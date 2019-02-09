@@ -1,7 +1,7 @@
 #ifndef ZFLYEMQUALITYANALYZER_H
 #define ZFLYEMQUALITYANALYZER_H
 
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 #include "zobject3dscan.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuron.h"

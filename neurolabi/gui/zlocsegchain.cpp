@@ -53,7 +53,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -116,9 +116,9 @@ void ZLocsegChain::updateBufferChain()
 }
 
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -788,4 +788,4 @@ void ZLocsegChain::tailPosition(double pos[]) const
     m_bufferChain[m_bufferChain.size()-1].bottomPosition(pos);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)

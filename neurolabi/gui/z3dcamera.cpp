@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"

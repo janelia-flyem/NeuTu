@@ -31,11 +31,12 @@ int main(int argc, char *argv[])
 
 #include "tz_utilities.h"
 
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
-
+#include "zglobal.h"
+#include "logging/zlog.h"
 
 int main(int argc, char *argv[])
 {
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 
   if (mainConfig.showingVersion) {
     std::cout << argv[0] << std::endl;
-    std::cout << neutube::GetVersionString() << std::endl;
+    std::cout << neutu::GetVersionString() << std::endl;
 
     return 0;
   }
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
   //   Please instantiate the QApplication object first
   QApplication app(argc, argv, mainConfig.isGuiEnabled());
 
-  neutube::RegisterMetaType();
+  neutu::RegisterMetaType();
 
   configure(mainConfig);
 
@@ -84,8 +85,15 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+    NeutubeConfig::UpdateUserInfo();
+    ZGlobal::InitKafkaTracer();
+
+    uint64_t timestamp = neutu::GetTimestamp();
+    KLog() << ZLog::Info() << ZLog::Time(timestamp)
+           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
+           << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutube::GetVersionString();
+            + " " + neutu::GetVersionString();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -174,6 +182,12 @@ int main(int argc, char *argv[])
                  NeutubeConfig::getInstance().getPath(
                      NeutubeConfig::EConfigItem::LOG_DEST_DIR));
     }
+
+    KLog() << ZLog::Info()
+           << ZLog::Description("END " + GET_SOFTWARE_NAME)
+           << ZLog::Tag("start_time", timestamp);
+    LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
+            + " " + neutu::GetVersionString();
 
     return result;
   } else {

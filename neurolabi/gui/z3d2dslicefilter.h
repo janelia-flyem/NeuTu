@@ -5,11 +5,11 @@
 #include "z3dboundedfilter.h"
 
 #include "z3dcameraparameter.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "z3dvolume.h"
 #include "z3dtransformparameter.h"
 #include "zmesh.h"
-#include "zwidgetsgroup.h"
+#include "widgets/zwidgetsgroup.h"
 #include <vector>
 #include "z3d2dslicerenderer.h"
 #include "z3dtexturecopyrenderer.h"

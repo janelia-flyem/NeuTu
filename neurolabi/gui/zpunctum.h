@@ -11,7 +11,7 @@
 #include "zstackball.h"
 #include "tz_swc_cell.h"
 #include "tz_math.h"
-//#include "zpoint.h"
+//#include "geometry/zpoint.h"
 #include "zvaa3dmarker.h"
 
 class ZJsonObject;
@@ -32,10 +32,10 @@ public:
   virtual ~ZPunctum();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_PUNCTUM;
+    return ZStackObject::EType::PUNCTUM;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
 

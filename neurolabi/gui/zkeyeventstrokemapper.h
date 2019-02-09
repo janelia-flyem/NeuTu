@@ -10,10 +10,10 @@ class QKeyEvent;
 class ZKeyEventStrokeMapper
 {
 public:
-  ZKeyEventStrokeMapper(neutube::Document::ETag tag);
+  ZKeyEventStrokeMapper(neutu::Document::ETag tag);
 
   ZStroke2d::EOperation getOperation(QKeyEvent *event);
-  void setTag(neutube::Document::ETag tag);
+  void setTag(neutu::Document::ETag tag);
 
 private:
   void initKeyMap();
@@ -25,7 +25,7 @@ private:
   QMap<int, ZStroke2d::EOperation> m_altKeyMap;
   QMap<int, ZStroke2d::EOperation> m_shiftKeyMap;
 
-  neutube::Document::ETag m_docTag;
+  neutu::Document::ETag m_docTag;
 
 };
 

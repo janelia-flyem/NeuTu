@@ -25,6 +25,7 @@
 #include "zswctree.h"
 #include "zjsonfactory.h"
 #include "zdialogfactory.h"
+#include "zpunctum.h"
 
 const double ZFlyEmRoiProject::m_defaultSynapseRadius = 20.0;
 
@@ -82,7 +83,7 @@ void ZFlyEmRoiProject::deleteAllData()
   //Delete data from DVID server
   ZDvidWriter writer;
   if (writer.open(m_dvidTarget)) {
-    writer.deleteKey(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
+    writer.deleteKey(ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE),
                      getMinRoiKey(), getMaxRoiKey());
   }
 
@@ -133,9 +134,9 @@ bool ZFlyEmRoiProject::setDvidTarget(
   ZDvidReader reader;
   if (reader.open(target)) {
     if (m_dvidWriter.open(target)) {
-      if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE))) {
+      if (!reader.hasData(ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE))) {
         m_dvidWriter.createKeyvalue(
-              ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE));
+              ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE));
       }
       m_dvidInfo = reader.readGrayScaleInfo();
       if (downloadingData) {
@@ -147,13 +148,23 @@ bool ZFlyEmRoiProject::setDvidTarget(
   return succ;
 }
 
+ZDvidWriter& ZFlyEmRoiProject::getDvidWriter()
+{
+  return m_dvidWriter;
+}
+
+const ZDvidReader &ZFlyEmRoiProject::getDvidReader() const
+{
+  return m_dvidWriter.getDvidReader();
+}
+
 void ZFlyEmRoiProject::downloadAllRoi()
 {
   //Download All ROIs
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
     QStringList roiIdArray = reader.readKeys(
-          ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName<QString>(ZDvidData::ERole::ROI_CURVE),
           (getName() + "_0").c_str(), (getName() + "_9").c_str());
     foreach (const QString &roiKey, roiIdArray) {
       int roiId = ZString(roiKey.toStdString()).lastInteger();
@@ -332,7 +343,7 @@ bool ZFlyEmRoiProject::isRoiSaved() const
 void ZFlyEmRoiProject::setRoiSaved(bool state)
 {
   if (m_dataFrame != NULL) {
-    m_dataFrame->document()->setSaved(ZStackObject::TYPE_SWC, state);
+    m_dataFrame->document()->setSaved(ZStackObject::EType::SWC, state);
   }
 }
 
@@ -517,8 +528,8 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
   bool succ = false;
 
   if (!roiName.empty()) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+    const ZDvidReader &reader = getDvidReader();
+    if (reader.isReady()) {
       if (reader.hasData(roiName)) {
         std::string type = reader.getType(roiName);
         if (type != "roi") {
@@ -542,7 +553,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
                                   arg(roiName.c_str())));
         } else {
           emit messageGenerated(
-                ZWidgetMessage("Failed to create ROI data.", neutube::EMessageType::WARNING));
+                ZWidgetMessage("Failed to create ROI data.", neutu::EMessageType::WARNING));
           return false;
         }
       }
@@ -552,12 +563,12 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       if (obj.isEmpty()) {
         emit messageGenerated(
               ZWidgetMessage("Failed to create ROI data. The ROI is empty.",
-                             neutube::EMessageType::WARNING));
+                             neutu::EMessageType::WARNING));
         return false;
       }
 
 //      ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
-      int intv = ZDvid::DEFAULT_ROI_BLOCK_SIZE - 1;
+      int intv = dvid::DEFAULT_ROI_BLOCK_SIZE - 1;
 
 #ifdef _DEBUG_2
       std::cout << obj.getMinZ() << std::endl;
@@ -586,7 +597,8 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
         succ = true;
       } else {
         emit messageGenerated(
-              ZWidgetMessage("Failed to create ROI data.", neutube::EMessageType::WARNING));
+              ZWidgetMessage("Failed to create ROI data.",
+                             neutu::EMessageType::WARNING));
         return false;
       }
     }
@@ -624,8 +636,8 @@ void ZFlyEmRoiProject::downloadRoi(const std::string &key)
 */
 void ZFlyEmRoiProject::downloadRoi(int z)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
     ZClosedCurve *curve = reader.readRoiCurve(getRoiKey(z), NULL);
     if (curve != NULL) {
       if (curve->isEmpty()) {

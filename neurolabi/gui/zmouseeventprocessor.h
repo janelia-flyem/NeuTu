@@ -4,7 +4,7 @@
 #include <QList>
 #include "zmouseeventrecorder.h"
 #include "zmouseeventmapper.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "geometry/zaffineplane.h"
 
 class ZInteractiveContext;
@@ -20,11 +20,11 @@ public:
 
   void setInteractiveContext(ZInteractiveContext *context);
 //  void setImageWidget(ZImageWidget *widget);
-  void setSliceAxis(neutube::EAxis axis);
+  void setSliceAxis(neutu::EAxis axis);
   void setArbSlice(const ZAffinePlane &ap);
   void setDocument(ZSharedPointer<ZStackDoc> doc);
 
-  neutube::EAxis getSliceAxis() const;
+  neutu::EAxis getSliceAxis() const;
 
   const ZMouseEvent&
   process(QMouseEvent *event, ZMouseEvent::EAction action,
@@ -73,7 +73,7 @@ private:
   ZMouseEventRecorder m_recorder;
   ZInteractiveContext *m_context;
 //  ZImageWidget *m_imageWidget;
-  neutube::EAxis m_sliceAxis = neutube::EAxis::Z;
+  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
   ZAffinePlane m_arbSlice; //Only valid for A_AXIS
 
   ZSharedPointer<ZStackDoc> m_doc;

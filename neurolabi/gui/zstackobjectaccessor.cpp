@@ -3,7 +3,7 @@
 #include <QSet>
 
 #include "zstackobject.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zswctree.h"
 
 ZStackObjectAccessor::ZStackObjectAccessor()

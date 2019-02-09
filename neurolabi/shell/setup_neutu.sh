@@ -77,7 +77,7 @@ cd $scriptDir
 condarc=$condaDir/.condarc
 echo 'channels:' > $condarc
 echo '  - flyem-forge' >> $condarc
-echo '  - conda-forge' >> $condarc
+echo '  - conda-forge/label/cf201901' >> $condarc
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
 
@@ -87,17 +87,22 @@ then
   channel_arg="-c $channel"
 fi
 
+if [ -z $package ]
+then
+  package = neutu
+fi
+
 envName='neutu-env'
 source $condaDir/bin/activate root
 conda create -n $envName python=3.6 -y
 source $condaDir/bin/activate $envName
-conda install neutu -y $channel_arg
+conda install $package -y $channel_arg
 
 updateFile=$bindir/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
-echo "conda update neutu -y $channel_arg" >> $updateFile
+echo "conda update $package -y $channel_arg" >> $updateFile
 chmod u+x $updateFile
 
 if [ `uname` = 'Darwin' ]

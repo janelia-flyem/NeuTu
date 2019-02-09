@@ -44,6 +44,7 @@
 #include "misc/miscutility.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyemutilities.h"
+#include "flyem/zflyembodyannotation.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -635,7 +636,7 @@ ZSwcTree* ZCommandLine::traceDvid()
   ZDvidNeuronTracer tracer;
 
   ZDvidTarget target;
-  target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
+  target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
 
   target.setNullSegmentationName();
   tracer.setDvidTarget(target);
@@ -1109,8 +1110,8 @@ int ZCommandLine::skeletonizeDvid()
                 << std::endl;
       std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
                    "-d '{\"dataname\": \""
-                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                      ZDvidData::ROLE_BODY_LABEL,
+                << ZDvidData::GetName(ZDvidData::ERole::SKELETON,
+                                      ZDvidData::ERole::BODY_LABEL,
                                       target.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
                 << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
@@ -1265,7 +1266,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
     return 1;
   }
 
@@ -1291,7 +1292,7 @@ int ZCommandLine::skeletonizeFile()
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        neutube::EMessageType::ERROR);
+                        neutu::EMessageType::ERROR);
       return 1;
     }
     ZStack stack;
@@ -1313,7 +1314,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 

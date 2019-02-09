@@ -17,7 +17,7 @@
 #include "tz_voxel_graphics.h"
 #include "zstack.hxx"
 #include "swc/zswcresampler.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "neutubeconfig.h"
 #include "imgproc/zstackprocessor.h"
 #include "zobject3darray.h"
@@ -28,7 +28,7 @@
 #include "zneurontracerconfig.h"
 #include "swc/zswcpruner.h"
 #include "tz_stack_threshold.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zweightedpoint.h"
 #include "zswcfactory.h"
 
@@ -196,7 +196,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
-  m_backgroundType(neutube::EImageBackground::DARK),
+  m_backgroundType(neutu::EImageBackground::DARK),
   m_vertexOption(ZStackGraph::VO_ALL)
 {
   init();
@@ -552,7 +552,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     if (m_usingEdgePath) {
       stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
     } else {
-      if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
+      if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
         stackGraph.setWeightFunction(Stack_Voxel_Weight_Sr);
       } else {
         stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
@@ -1265,7 +1265,7 @@ Stack* ZNeuronTracer::computeSeedMask()
 
 Stack* ZNeuronTracer::computeSeedMask(Stack *stack)
 {
-  if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
+  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);
     Stack_Csub(stack, maxValue);
   }
@@ -1359,7 +1359,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   ZSwcTree *tree = NULL;
 
-  if (m_backgroundType == neutube::EImageBackground::BRIGHT) {
+  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);
     Stack_Csub(stack, maxValue);
     m_diag.setInfo("background", "bright");

@@ -53,6 +53,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
+#include "zpunctum.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_RESULT_QUICK = "updateSplitQuickFunc";
 
@@ -226,7 +227,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 
       ZWindowFactory factory;
       //factory.setParentWidget(parent);
-      window = factory.make3DWindow(getSharedDocument(), Z3DView::INIT_NORMAL);
+      window = factory.make3DWindow(getSharedDocument(), Z3DView::EInitMode::NORMAL);
       window->setWindowTitle(getDocument()->getTitle());
 
       //getDocument()->registerUser(window);
@@ -296,7 +297,7 @@ void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
     window->setYZView();
     std::cout << "Estimating body bound box ..." << std::endl;
     const TStackObjectList &objList =
-        window->getDocument()->getObjectList(ZStackObject::TYPE_SWC);
+        window->getDocument()->getObjectList(ZStackObject::EType::SWC);
 
     ZCuboid boundBox;
     for (TStackObjectList::const_iterator iter = objList.begin();
@@ -368,7 +369,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
   if (doc != NULL && getDocument() != NULL) {
     ZOUT(LINFO(), 3) << "Loading split results";
 
-//    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
 
     ZOUT(LINFO(), 3) << "Removing all SWCs";
 //    doc->removeAllSwcTree();
@@ -530,7 +531,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 
 //      ZStackDoc *doc = new ZStackDoc;
       m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
-      m_quickResultDoc->setTag(neutube::Document::ETag::FLYEM_BODY_DISPLAY);
+      m_quickResultDoc->setTag(neutu::Document::ETag::FLYEM_BODY_DISPLAY);
 //      m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
@@ -560,13 +561,13 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       ZIntCuboid box(m_dvidInfo.getStartCoordinates(),
                      m_dvidInfo.getEndCoordinates());
       if (m_reader.isReady()) {
-        Z3DGraph *boxGraph = ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo);
+        Z3DGraph *boxGraph = flyem::MakeBoundBoxGraph(m_dvidInfo);
 //        boxGraph->boundBox(&box);
         ZStackDocAccessor::AddObject(
               m_quickResultDoc.get(), boxGraph);
         ZStackDocAccessor::AddObject(
               m_quickResultDoc.get(),
-              ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
+              flyem::MakePlaneGraph(getDocument(), m_dvidInfo));
         m_quickResultWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
@@ -625,7 +626,7 @@ bool ZFlyEmBodySplitProject::hasBookmark() const
   if (getDocument() != NULL) {
     ZOUT(LTRACE(), 5) << "Checking bookmarks";
     return !getDocument()->getObjectList(
-          ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty();
+          ZStackObject::EType::FLYEM_BOOKMARK).isEmpty();
   }
 
   return false;
@@ -636,7 +637,7 @@ int ZFlyEmBodySplitProject::getBookmarkCount() const
   if (getDocument() != NULL) {
     ZOUT(LTRACE(), 5) << "Get bookmark count";
     return getDocument()->getObjectList(
-          ZStackObject::TYPE_FLYEM_BOOKMARK).size();
+          ZStackObject::EType::FLYEM_BOOKMARK).size();
   }
 
   return 0;
@@ -674,7 +675,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   if (doc != NULL) {
     ZOUT(LTRACE(), 5) << "Get bookmark body set";
     const TStackObjectList &objList =
-        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
@@ -694,17 +695,17 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 void ZFlyEmBodySplitProject::chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(x, neutube::EAxis::X, dlg);
+  chopBody(x, neutu::EAxis::X, dlg);
 }
 
 void ZFlyEmBodySplitProject::chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg)
 {
-  chopBody(y, neutube::EAxis::Y, dlg);
+  chopBody(y, neutu::EAxis::Y, dlg);
 }
 
 
 void ZFlyEmBodySplitProject::chopBody(
-    int v, neutube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg)
+    int v, neutu::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg)
 {
 #ifdef _FLYEM_
   ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
@@ -1154,7 +1155,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
       emit messageGenerated(
             ZWidgetMessage(QString("Split %1 failed.").
                            arg(getBodyId()),
-                           neutube::EMessageType::ERROR));
+                           neutu::EMessageType::ERROR));
     } else {
       updateBodyDep(getBodyId(), bodyId);
 #if defined(_FLYEM_2)
@@ -2134,7 +2135,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
 
     ZOUT(LTRACE(), 5) << "Swap seed label";
     TStackObjectList objList =
-        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getDocument()->getObjectList(ZStackObject::EType::OBJECT3D_SCAN);
 
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -2251,18 +2252,18 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
       if (!seedJson.isEmpty()) {
         ZJsonArray roiJson = getRoiJson();
         if (roiJson.isEmpty()) {
-          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+          ZIntCuboid range = flyem::EstimateSplitRoi(getSeedBoundBox());
           if (!range.isEmpty()) {
             roiJson = range.toJsonArray();
           }
         }
 
-        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+        ZJsonObject task = flyem::MakeSplitTask(
               getDvidTarget(), bodyId, seedJson, roiJson);
 
         location = writer->writeServiceTask("split", task);
         ZJsonObject taskJson;
-        taskJson.setEntry(neutube::json::REF_KEY, location);
+        taskJson.setEntry(neutu::json::REF_KEY, location);
   //      QUrl url(bodyUrl.c_str());
         ZDvidUrl dvidUrl(getDvidTarget());
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
@@ -2313,7 +2314,7 @@ void ZFlyEmBodySplitProject::updateBodyId()
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     std::set<uint64_t> bodySet =
-        doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+        doc->getSelectedBodySet(neutu::EBodyLabelType::ORIGINAL);
     if (bodySet.size() == 1) {
       m_bodyId = *(bodySet.begin());
     }
@@ -2406,7 +2407,7 @@ void ZFlyEmBodySplitProject::importSeed(const QString &fileName)
             ZWidgetMessage(
               QString("Invalid seed file: %1. Seeds remain unchanged").
               arg(fileName),
-              neutube::EMessageType::ERROR));
+              neutu::EMessageType::ERROR));
     }
   }
 }
@@ -2465,7 +2466,7 @@ void ZFlyEmBodySplitProject::removeAllSideSeed()
     }
   }
 
-  getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  getDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
        iter != removeSet.end(); ++iter) {
     getDocument()->removeObject(*iter);
@@ -2541,8 +2542,8 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
     } else {
       ZStackObject *obj =
           frame->document()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
+            ZStackObject::EType::DVID_GRAY_SLICE,
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::Z));
       if (obj != NULL) {
         obj->setVisible(false);
         frame->updateView();
@@ -2559,7 +2560,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
 
-      QRect rect = frame->view()->getViewPort(neutube::ECoordinateSystem::STACK);
+      QRect rect = frame->view()->getViewPort(neutu::ECoordinateSystem::STACK);
       ZRect2d rectRoi;
       rectRoi.set(rect.x(), rect.y(), rect.width(), rect.height());
 //      ZRect2d rectRoi = frame->document()->getRect2dRoi();
@@ -2573,14 +2574,14 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       int z = currentSlice + offset.getZ();
       ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
-              ZStackObject::TYPE_DVID_GRAY_SLICE,
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z)));
+              ZStackObject::EType::DVID_GRAY_SLICE,
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::Z)));
 
       if (graySlice == NULL) {
         graySlice = new ZDvidGraySlice();
         graySlice->setDvidTarget(getDvidTarget());
         graySlice->setSource(
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::Z));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::Z));
         frame->document()->addObject(graySlice, false);
       }
 
@@ -2686,14 +2687,14 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {
   return ZDvidData::GetName(
-        ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
         getDvidTarget().getBodyLabelName());
 }
 
 std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 {
-  return ZDvidData::GetName(ZDvidData::ROLE_SPLIT_LABEL,
-                            ZDvidData::ROLE_BODY_LABEL,
+  return ZDvidData::GetName(ZDvidData::ERole::SPLIT_LABEL,
+                            ZDvidData::ERole::BODY_LABEL,
                             getDvidTarget().getBodyLabelName());
 }
 
@@ -2846,7 +2847,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     }
 
     std::string splitStatusName =  ZDvidData::GetName(
-          ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+          ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
       message.appendMessage(("Incomplete split database: data \"" + splitStatusName +
@@ -2860,7 +2861,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     succ = false;
   }
 
-  message.setType(neutube::EMessageType::ERROR);
+  message.setType(neutu::EMessageType::ERROR);
 
   emit messageGenerated(message.toHtmlString(), true);
 //  emit messageGenerated(message);
@@ -2878,12 +2879,13 @@ void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::INFORMATION, target));
+        ZWidgetMessage(msg, neutu::EMessageType::INFORMATION,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
 {
-  ZWidgetMessage message(msg, neutube::EMessageType::INFORMATION);
+  ZWidgetMessage message(msg, neutu::EMessageType::INFORMATION);
   message.setTarget(ZWidgetMessage::TARGET_DIALOG);
   emit messageGenerated(message);
 }
@@ -2897,14 +2899,15 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, neutube::EMessageType::ERROR, target));
+        ZWidgetMessage(msg, neutu::EMessageType::ERROR,
+                       target | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZFlyEmBodySplitProject::update3DViewPlane()
 {
   if (m_quickResultWindow) {
     if (m_dvidInfo.isValid()) {
-      Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
+      Z3DGraph *graph = flyem::MakePlaneGraph(getDocument(), m_dvidInfo);
       m_quickResultWindow->getDocument()->addObject(graph, true);
     }
   }

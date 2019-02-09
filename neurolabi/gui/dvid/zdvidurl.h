@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 class ZIntPoint;
 
@@ -82,9 +82,9 @@ public:
   std::string getSupervoxelUrl(const std::string &dataName) const;
   std::string getSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSupervoxelUrl(uint64_t bodyId) const;
-  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutu::EAxis axis) const;
   std::string getSupervoxelUrl(
-      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+      uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const;
   std::string getSupervoxelUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getSupervoxelUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
   std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
@@ -101,9 +101,9 @@ public:
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
-  std::string getSparsevolUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z, neutu::EAxis axis) const;
   std::string getSparsevolUrl(
-      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+      uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getSparsevolUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
@@ -299,16 +299,16 @@ public:
   std::string getSynapseLabelszUrl(int n) const;
   std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
 
-  static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
-  std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
+  static std::string GetLabelszIndexTypeStr(dvid::ELabelIndexType type);
+  std::string getSynapseLabelszUrl(int n, dvid::ELabelIndexType indexType) const;
   std::string getSynapseLabelszBodyUrl(
-      uint64_t bodyId, ZDvid::ELabelIndexType indexType) const;
+      uint64_t bodyId, dvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
   std::string getSynapseLabelszThresholdUrl(
-      int threshold, ZDvid::ELabelIndexType indexType) const;
+      int threshold, dvid::ELabelIndexType indexType) const;
   std::string getSynapseLabelszThresholdUrl(
-      int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+      int threshold, dvid::ELabelIndexType indexType, int offset, int number) const;
 
 public:
   static std::string GetPath(const std::string &url);
@@ -339,7 +339,7 @@ public:
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
   static std::string AppendRangeQuery(
-      const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact);
+      const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact);
 
 private:
   std::string getSplitUrl(

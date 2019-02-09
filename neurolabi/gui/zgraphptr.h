@@ -1,7 +1,7 @@
 #ifndef ZGRAPHPTR_H
 #define ZGRAPHPTR_H
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zgraph.h"
 
 class ZGraphPtr : public ZSharedPointer<ZGraph>

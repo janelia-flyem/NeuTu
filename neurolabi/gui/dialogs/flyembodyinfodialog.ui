@@ -269,7 +269,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Color filters</string>
+          <string>Color filters (lower filters override higher filters)</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -321,6 +321,20 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveUpButton">
+           <property name="text">
+            <string>Move Up</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveDownButton">
+           <property name="text">
+            <string>Move Down</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="toBodyListButton">

@@ -3,8 +3,8 @@
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvc.h"
 #include "zstackview.h"
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 
 ZFlyEmGrayscaleDialog::ZFlyEmGrayscaleDialog(QWidget *parent) :
   QDialog(parent),

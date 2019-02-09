@@ -35,7 +35,7 @@ public:
   };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_TODO_LIST;
+    return ZStackObject::EType::FLYEM_TODO_LIST;
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -58,7 +58,7 @@ public:
   public:
     ItemSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addItem(const ZFlyEmToDoItem &item, neutube::EAxis sliceAxis);
+    void addItem(const ZFlyEmToDoItem &item, neutu::EAxis sliceAxis);
     const ItemMap& getMap(int y) const;
     ItemMap& getMap(int y);
     ItemMap& getMap(int y, EAdjustment adjust);
@@ -89,7 +89,7 @@ public:
   bool isReady() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   bool removeItem(const ZIntPoint &pt, EDataScope scope);
   bool removeItem(int x, int y, int z, EDataScope scope);
@@ -119,7 +119,7 @@ public:
 
   void deselect(bool recursive);
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   bool hit(double x, double y, double z);
 

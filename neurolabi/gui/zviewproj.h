@@ -3,6 +3,8 @@
 
 #include <QRect>
 
+class ZJsonObject;
+
 /*!
  * \brief The class of handling view-projection computation
  */
@@ -11,8 +13,8 @@ class ZViewProj
 public:
   ZViewProj();
 
-  enum EReference {
-    REF_LEFTOP, REF_CENTER
+  enum class EReference {
+    LEFTOP, CENTER
   };
 
   void reset();
@@ -115,6 +117,7 @@ public:
   void recoverViewPort();
 
   void print() const;
+  ZJsonObject toJsonObject() const;
 
   bool operator ==(const ZViewProj &viewProj) const;
   bool operator !=(const ZViewProj &viewProj) const;

@@ -12,7 +12,7 @@ public:
 
   void addSelector(ZSwcNodeSelector *selector);
 
-  enum ECompositeMode {
+  enum class ECompositeMode {
     AND, OR
   };
 

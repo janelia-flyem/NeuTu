@@ -52,6 +52,12 @@ std::string ZDvidRoi::getName() const
   return m_name;
 }
 
+size_t ZDvidRoi::getVolume() const
+{
+  return m_roi.getVoxelNumber() * m_blockSize.getX() * m_blockSize.getY()
+      * m_blockSize.getZ();
+}
+
 bool ZDvidRoi::contains(const ZIntPoint &pt) const
 {
   return contains(pt.getX(), pt.getY(), pt.getZ());

@@ -42,7 +42,7 @@ public:
   };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE;
+    return ZStackObject::EType::DVID_SYNAPE_ENSEMBLE;
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -68,7 +68,7 @@ public:
   public:
     SynapseSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addSynapse(const ZDvidSynapse &synapse, neutube::EAxis sliceAxis);
+    void addSynapse(const ZDvidSynapse &synapse, neutu::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
@@ -99,7 +99,7 @@ public:
   void setRange(const ZIntCuboid &dataRange);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
@@ -197,7 +197,7 @@ public:
 
   void deselectUnsync(bool recursive);
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   bool hit(double x, double y, double z);
   bool hit(const ZIntPoint &pt);

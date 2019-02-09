@@ -4,6 +4,8 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include "logging/utilities.h"
+
 ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 {
   _init();
@@ -11,7 +13,7 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 
 void ZNetBufferReader::_init()
 {
-  m_networkManager = new QNetworkAccessManager(this);
+//  m_networkManager = new QNetworkAccessManager(this);
 
   m_eventLoop = new QEventLoop(this);
   connect(this, &ZNetBufferReader::readingCanceled,
@@ -21,6 +23,15 @@ void ZNetBufferReader::_init()
   connect(this, &ZNetBufferReader::checkingStatus,
           this, &ZNetBufferReader::waitForReading);
 }
+
+QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
+{
+   if (m_networkManager == nullptr) {
+     m_networkManager = new QNetworkAccessManager(this);
+   }
+
+   return m_networkManager;
+ }
 
 void ZNetBufferReader::resetNetworkReply()
 {
@@ -44,6 +55,9 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
     qDebug() << url;
   }
 
+  neutu::LogUrlIO("GET", url);
+//  KINFO << "Reading " + url;
+
   startReading();
 
   resetNetworkReply();
@@ -65,6 +79,9 @@ void ZNetBufferReader::readPartial(
     qDebug() << url;
   }
 
+  neutu::LogUrlIO("GETP", url);
+//  KINFO << "Reading partial: " + url;
+
   startReading();
 
   m_maxSize = maxSize;
@@ -84,7 +101,9 @@ void ZNetBufferReader::readHead(const QString &url)
 {
   startReading();
 
-  qDebug() << url;
+//  qDebug() << url;
+  neutu::LogUrlIO("HEAD", url);
+//  KINFO << "HEAD " + url;
 
   resetNetworkReply();
 
@@ -101,6 +120,7 @@ bool ZNetBufferReader::hasHead(const QString &url)
   startReading();
 
 //  qDebug() << url;
+  neutu::LogUrlIO("HEAD", url);
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
@@ -108,11 +128,14 @@ bool ZNetBufferReader::hasHead(const QString &url)
 
   waitForReading();
 
-  return m_status == neutube::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK;
 }
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 {
+//  KINFO << "POST " + url;
+  neutu::LogUrlIO("POST", url);
+
   startReading();
   QNetworkRequest request(url);
   foreach (const auto &p, m_header) {
@@ -121,7 +144,7 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 
   resetNetworkReply();
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-  m_networkReply = m_networkManager->post(request, data);
+  m_networkReply = getNetworkAccessManager()->post(request, data);
   connectNetworkReply();
   connect(m_networkReply, &QNetworkReply::readyRead,
           this, &ZNetBufferReader::readBuffer);
@@ -137,6 +160,8 @@ bool ZNetBufferReader::isReadable(const QString &url)
 #ifdef _DEBUG_
   qDebug() << "ZNetBufferReader::isReadable: " << url;
 #endif
+//  KINFO << "Check readable: " + url;
+  neutu::LogUrlIO("Check readable", url);
 
   resetNetworkReply();
   m_networkReply = getNetworkAccessManager()->get(QNetworkRequest(url));
@@ -145,17 +170,17 @@ bool ZNetBufferReader::isReadable(const QString &url)
 
   waitForReading();
 
-  return m_status == neutube::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK;
 }
 
 void ZNetBufferReader::startReading()
 {
   m_isReadingDone = false;
   m_buffer.clear();
-  m_status = neutube::EReadStatus::OK;
+  m_status = neutu::EReadStatus::OK;
 }
 
-void ZNetBufferReader::endReading(neutube::EReadStatus status)
+void ZNetBufferReader::endReading(neutu::EReadStatus status)
 {
   m_status = status;
   m_isReadingDone = true;
@@ -168,7 +193,7 @@ void ZNetBufferReader::endReading(neutube::EReadStatus status)
 #endif
     m_statusCode = statusCode.toInt();
     if (m_statusCode != 200) {
-      m_status = neutube::EReadStatus::BAD_RESPONSE;
+      m_status = neutu::EReadStatus::BAD_RESPONSE;
     }
     m_networkReply->deleteLater();
     m_networkReply = NULL;
@@ -196,7 +221,7 @@ void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
     qDebug() << m_networkReply->errorString();
 #endif
   }
-  endReading(neutube::EReadStatus::FAILED);
+  endReading(neutu::EReadStatus::FAILED);
 }
 
 void ZNetBufferReader::readBuffer()
@@ -219,15 +244,15 @@ void ZNetBufferReader::finishReading()
 
 void ZNetBufferReader::handleTimeout()
 {
-  endReading(neutube::EReadStatus::TIMEOUT);
+  endReading(neutu::EReadStatus::TIMEOUT);
 }
 
 void ZNetBufferReader::cancelReading()
 {
-  endReading(neutube::EReadStatus::CANCELED);
+  endReading(neutu::EReadStatus::CANCELED);
 }
 
-neutube::EReadStatus ZNetBufferReader::getStatus() const
+neutu::EReadStatus ZNetBufferReader::getStatus() const
 {
   return m_status;
 }

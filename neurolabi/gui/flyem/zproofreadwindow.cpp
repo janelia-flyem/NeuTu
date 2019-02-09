@@ -12,28 +12,36 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 
+#include "tz_math.h"
+
 #include "neutubeconfig.h"
-#include "dialogs/dvidoperatedialog.h"
-#include "flyemsplitcontrolform.h"
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+#include "logging/zqslog.h"
+
+#include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
 #include "flyemproofcontrolform.h"
-#include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
-#include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "zqslog.h"
 #include "zstackpresenter.h"
-#include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
-#include "dialogs/flyembodyfilterdialog.h"
 #include "zflyemdataloader.h"
+#include "flyemsplitcontrolform.h"
+
+#include "flyem/zflyemmessagewidget.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemproofpresenter.h"
+
+#include "dialogs/flyembodyfilterdialog.h"
+#include "dialogs/dvidoperatedialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -63,10 +71,10 @@ void ZProofreadWindow::init()
   layout->setMargin(1);
   widget->setLayout(layout);
 
-  ZDvidTarget target;
+//  ZDvidTarget target;
 //  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 
-  m_mainMvc = ZFlyEmProofMvc::Make(target);
+  m_mainMvc = ZFlyEmProofMvc::Make(/*target*/);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
@@ -174,7 +182,7 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(flyem::GROUP_BOX_STYLE);
+  setStyleSheet(neutu::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -426,6 +434,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_tuneContrastAction = new QAction("Tune Contrast", this);
+  connect(m_tuneContrastAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
+  m_toolMenu->addAction(m_tuneContrastAction);
+
   m_bodyExplorerAction = new QAction("Explore Bodies", this);
   m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
   connect(m_bodyExplorerAction, SIGNAL(triggered()),
@@ -492,6 +505,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_smoothAction->setEnabled(on);
   m_openTodoAction->setEnabled(on);
   m_openProtocolsAction->setEnabled(on);
+  m_tuneContrastAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -576,8 +590,8 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         neutube::EMessageType::INFORMATION,
-         ZWidgetMessage::TARGET_TEXT));
+         neutu::EMessageType::INFORMATION,
+         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZProofreadWindow::operateDvid()
@@ -588,20 +602,9 @@ void ZProofreadWindow::operateDvid()
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
-//  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
-//  m_progressSignal->advanceProgress(0.1);
-//  advanceProgress(0.1);
-  m_mainMvc->launchSplit(bodyId, mode);
 
-  /*
-  if (m_mainMvc->launchSplit(bodyId)) {
-    m_controlGroup->setCurrentIndex(1);
-    dump(QString("Body %1 loaded for split.").arg(bodyId), true);
-  } else {
-    dumpError(QString("Failed to load %1").arg(bodyId), true);
-  }
-  */
+  m_mainMvc->launchSplit(bodyId, mode);
 }
 
 void ZProofreadWindow::launchSplit()
@@ -611,7 +614,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        neutube::EBodyLabelType::ORIGINAL);
+        neutu::EBodyLabelType::ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -637,37 +640,60 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from splitting mode.", neutube::EMessageType::INFORMATION,
-         ZWidgetMessage::TARGET_TEXT));
+         "Back from body splitting mode.", neutu::EMessageType::INFORMATION,
+         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
-void ZProofreadWindow::dump(const QString &message, bool appending,
-                            bool logging)
+void ZProofreadWindow::dump(const QString &message, bool appending)
 {
-//  qDebug() << message;
-  if (logging) {
-    LINFO() << message;
+  ZWidgetMessage msg(message);
+  if (!appending) {
+    msg.setTarget(ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA);
   }
-
-  m_messageWidget->dump(message, appending);
+  dump(msg);
+//  dump(ZWidgetMessage(message, ))
+//  m_messageWidget->dump(message, appending);
 }
 
-void ZProofreadWindow::dumpError(
-    const QString &message, bool appending, bool logging)
+void ZProofreadWindow::dumpError(const QString &message, bool appending)
 {
-  if (logging) {
-    LERROR() << message;
+  ZWidgetMessage msg(message, neutu::EMessageType::ERROR);
+  if (!appending) {
+    msg.setTarget(ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA);
   }
-
-  m_messageWidget->dumpError(message, appending);
+  dump(msg);
+//  m_messageWidget->dumpError(message, appending);
 }
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
+  neutu::LogMessage(msg);
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    if (msg.getType() == neutu::EMessageType::ERROR) {
+      m_messageWidget->dumpError(msg.toHtmlString(), msg.isAppending());
+    } else {
+      m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
+    }
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_STATUS_BAR)) {
+    statusBar()->showMessage(msg.toHtmlString());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    m_mainMvc->dump(msg.toHtmlString());
+  }
+
+#if 0
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
-    dump(msg.toHtmlString(), msg.isAppending(), false);
+    dump(msg.toHtmlString(), msg.isAppending(), true);
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
@@ -681,22 +707,25 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   default:
     break;
   }
+#endif
 
+
+//  logMessage(msg);
   //Record message in files
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+//  switch (msg.getType()) {
+//  case neutube::EMessageType::INFORMATION:
+//    LINFO() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::WARNING:
+//    LWARN() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::ERROR:
+//    LERROR() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::DEBUG:
+//    LDEBUG() << msg.toPlainString();
+//    break;
+//  }
 }
 
 void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
@@ -789,25 +818,14 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void ZProofreadWindow::logMessage(const QString &msg)
 {
-  LINFO() << msg;
+  KLog() << ZLog::Info() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
-void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
+void ZProofreadWindow::logError(const QString &msg)
 {
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+  KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
 void ZProofreadWindow::changeEvent(QEvent *event)

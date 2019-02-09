@@ -29,10 +29,10 @@
 #endif
 #include "zstring.h"
 #include "zstackfactory.h"
-#include "zpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 using namespace std;
 
@@ -662,9 +662,9 @@ void ZStack::read(std::istream &stream)
   clear();
 
   int kind = GREY;
-  neutube::read(stream, kind);
+  neutu::read(stream, kind);
   int channel = 0;
-  neutube::read(stream, channel);
+  neutu::read(stream, channel);
 
   m_offset.read(stream);
   ZIntPoint dim;
@@ -676,8 +676,8 @@ void ZStack::read(std::istream &stream)
 
 void ZStack::write(std::ostream &stream) const
 {
-  neutube::write(stream, m_stack->kind);
-  neutube::write(stream, m_stack->nchannel);
+  neutu::write(stream, m_stack->kind);
+  neutu::write(stream, m_stack->nchannel);
   m_offset.write(stream);
   ZIntPoint dim(width(), height(), depth());
   dim.write(stream);
@@ -832,18 +832,18 @@ std::string ZStack::save(const string &filepath) const
 }
 
 void* ZStack::projection(
-    ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis,
+    ZSingleChannelStack::EProjMode mode, ZSingleChannelStack::Stack_Axis axis,
     int c)
 {
   return singleChannelStack(c)->projection(mode, axis);
 }
 
 void* ZStack::projection(
-    neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+    neutu::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
-  ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
-  if (bg == neutube::EImageBackground::BRIGHT) {
-    mode = ZSingleChannelStack::MIN_PROJ;
+  ZSingleChannelStack::EProjMode mode = ZSingleChannelStack::EProjMode::MAX_PROJ;
+  if (bg == neutu::EImageBackground::BRIGHT) {
+    mode = ZSingleChannelStack::EProjMode::MIN_PROJ;
   }
 
   return projection(mode, axis, c);

@@ -6,7 +6,7 @@
 #include <QColor>
 
 #include "zstackobject.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zjsonobject.h"
 #include "zdvidannotation.h"
 
@@ -21,14 +21,14 @@ public:
   ZDvidSynapse();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPSE;
+    return ZStackObject::EType::DVID_SYNAPSE;
   }
 
 //  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
-  const std::string& className() const;
+//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   double getConfidence() const;
   void setConfidence(double c);

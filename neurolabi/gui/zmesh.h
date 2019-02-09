@@ -65,15 +65,15 @@ public:
 
   void swap(ZMesh& rhs) noexcept;
 
-  virtual const std::string& className() const override;
+//  virtual const std::string& className() const override;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_MESH;
+    return ZStackObject::EType::MESH;
   }
 
   virtual void display(
       ZPainter &, int , EDisplayStyle ,
-      neutube::EAxis ) const override
+      neutu::EAxis ) const override
   {}
 
 //  void setLabel(uint64_t label) override;

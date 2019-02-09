@@ -9,9 +9,10 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 #include <QString>
+#include "znetbufferreader.h"
 #include "neutube.h"
 #else
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #endif
 
 #include "tz_cdefs.h"
@@ -143,22 +144,60 @@ void NeutubeConfig::setWorkDir(const string str)
 
 void NeutubeConfig::setUserName(const string &name)
 {
-  m_userName = name;
+  m_userInfo.setUserName(name);
+//  m_userName = name;
 }
 
+void NeutubeConfig::UpdateUserInfo()
+{
+  getInstance().updateUserInfo();
+}
+
+void NeutubeConfig::updateUserInfo()
+{
+#ifdef _QT_GUI_USED_
+#  if defined(_FLYEM_) || defined(_NEU3_)
+  ZNetBufferReader reader;
+  reader.read(
+        ("http://config.int.janelia.org/config/workday/" + getUserName()).c_str(),
+        true);
+  ZJsonObject obj;
+  obj.decode(reader.getBuffer().toStdString());
+  if (obj.hasKey("config")) {
+    ZJsonObject configObj(obj.value("config"));
+    m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));
+    m_userInfo.setLocation(ZJsonParser::stringValue(configObj["location"]));
+  }
+#  endif
+#endif
+}
+
+/*
 void NeutubeConfig::SetUserName(const string &name)
 {
   getInstance().setUserName(name);
 }
+*/
 
 std::string NeutubeConfig::getUserName() const
 {
-  return m_userName;
+  return m_userInfo.getUserName();
+//  return m_userName;
 }
 
 std::string NeutubeConfig::GetUserName()
 {
   return getInstance().getUserName();
+}
+
+neutu::UserInfo NeutubeConfig::getUserInfo() const
+{
+  return m_userInfo;
+}
+
+neutu::UserInfo NeutubeConfig::GetUserInfo()
+{
+  return getInstance().getUserInfo();
 }
 
 void NeutubeConfig::SetApplicationDir(const string &str)

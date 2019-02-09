@@ -105,8 +105,8 @@ typedef pthread_t pthread_id;
 
 #define pthread_tag() pthread_self()
 
-static inline int pthread_is_this(pthread_id id)
-{ return (pthread_equal(pthread_self(),id)); }
+//static inline int pthread_is_this(pthread_id id)
+//{ return (pthread_equal(pthread_self(),id)); }
 
 #endif
 
@@ -285,10 +285,10 @@ static inline int allocate_array_dims(mylib::Array *array, int nsize, char *rout
   return (0);
 }
 
-static inline int sizeof_array_dims(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->nsize);
-}
+//static inline int sizeof_array_dims(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->nsize);
+//}
 
 static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
                                       const char *routine)
@@ -302,10 +302,10 @@ static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
   return (0);
 }
 
-static inline mylib::int64  sizeof_array_data(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->dsize);
-}
+//static inline mylib::int64  sizeof_array_data(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->dsize);
+//}
 
 static inline int allocate_array_text(mylib::Array *array, int tsize, char *routine)
 { _Array *object = (_Array *) (((char *) array) - Array_Offset);
@@ -318,10 +318,10 @@ static inline int allocate_array_text(mylib::Array *array, int tsize, char *rout
   return (0);
 }
 
-static inline int sizeof_array_text(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->tsize);
-}
+//static inline int sizeof_array_text(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->tsize);
+//}
 
 static inline void kill_array(mylib::Array *array);
 
@@ -1351,10 +1351,10 @@ static inline int allocate_slicer_dnc(Slicer *slicer, int dsize, char *routine)
   return (0);
 }
 
-static inline int sizeof_slicer_dnc(Slicer *slicer)
-{ _Slicer *object = (_Slicer *) (((char *) slicer) - Slicer_Offset);
-  return (object->dsize);
-}
+//static inline int sizeof_slicer_dnc(Slicer *slicer)
+//{ _Slicer *object = (_Slicer *) (((char *) slicer) - Slicer_Offset);
+//  return (object->dsize);
+//}
 
 static inline void kill_slicer(Slicer *slicer);
 
@@ -2029,10 +2029,10 @@ static inline int allocate_framer_offs(Framer *framer, mylib::int64  osize, char
   return (0);
 }
 
-static inline mylib::int64  sizeof_framer_offs(Framer *framer)
-{ _Framer *object = (_Framer *) (((char *) framer) - Framer_Offset);
-  return (object->osize);
-}
+//static inline mylib::int64  sizeof_framer_offs(Framer *framer)
+//{ _Framer *object = (_Framer *) (((char *) framer) - Framer_Offset);
+//  return (object->osize);
+//}
 
 static inline void kill_framer(Framer *framer);
 

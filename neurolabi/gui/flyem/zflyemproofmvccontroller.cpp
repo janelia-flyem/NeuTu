@@ -2,7 +2,7 @@
 #include<QMainWindow>
 
 #include "zflyemproofmvc.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zflyemproofpresenter.h"
 #include "zstackdocaccessor.h"
 #include "zstackdocnullmenufactory.h"
@@ -85,12 +85,12 @@ void ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
 
   if (range.isEmpty()) {
     ZStackDocAccessor::RemoveObject(
-          mvc->getDocument().get(), ZStackObject::TYPE_INT_CUBOID, source, true);
+          mvc->getDocument().get(), ZStackObject::EType::INT_CUBOID, source, true);
   } else {
     ZIntCuboidObj *obj = new ZIntCuboidObj;
     obj->setColor(QColor(255, 255, 255, 164));
     obj->setGridInterval(64);
-    obj->addVisualEffect(neutube::display::Box::VE_GRID);
+    obj->addVisualEffect(neutu::display::Box::VE_GRID);
     obj->setSelectable(false);
     obj->setCuboid(range);
     obj->setSource(source);
@@ -104,7 +104,7 @@ void ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(
   std::string source = ZStackObjectSourceFactory::MakeProtocolRangeSource();
 
   ZStackDocAccessor::SetObjectVisible(
-        mvc->getDocument().get(), ZStackObject::TYPE_INT_CUBOID, source, visible);
+        mvc->getDocument().get(), ZStackObject::EType::INT_CUBOID, source, visible);
 }
 
 

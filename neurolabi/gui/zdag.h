@@ -2,7 +2,7 @@
 #define ZDAG_H
 
 #include <vector>
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 //class
 template <typename T>

@@ -152,13 +152,13 @@ bool ZStackFrameSettingDialog::getCrossoverTest() const
   return ui->crossoverCheckBox->isChecked();
 }
 
-neutube::EImageBackground ZStackFrameSettingDialog::getBackground() const
+neutu::EImageBackground ZStackFrameSettingDialog::getBackground() const
 {
   if (ui->darkRadioButton->isChecked()) {
-    return neutube::EImageBackground::DARK;
+    return neutu::EImageBackground::DARK;
   }
 
-  return neutube::EImageBackground::BRIGHT;
+  return neutu::EImageBackground::BRIGHT;
 }
 
 void ZStackFrameSettingDialog::setScale(double x, double y, double z)
@@ -168,9 +168,9 @@ void ZStackFrameSettingDialog::setScale(double x, double y, double z)
   ui->zDoubleSpinBox->setValue(z);
 }
 
-void ZStackFrameSettingDialog::setBackground(neutube::EImageBackground bg)
+void ZStackFrameSettingDialog::setBackground(neutu::EImageBackground bg)
 {
-  if (bg == neutube::EImageBackground::DARK) {
+  if (bg == neutu::EImageBackground::DARK) {
     ui->darkRadioButton->setChecked(true);
   }
 }

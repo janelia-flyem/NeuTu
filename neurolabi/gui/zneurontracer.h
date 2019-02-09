@@ -7,11 +7,11 @@
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zneurontracerconfig.h"
 
 class ZStack;
@@ -84,7 +84,7 @@ public:
 
   void clear();
 
-  inline void setBackgroundType(neutube::EImageBackground bg) {
+  inline void setBackgroundType(neutu::EImageBackground bg) {
     m_backgroundType = bg;
   }
 
@@ -252,7 +252,7 @@ private:
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
-  neutube::EImageBackground m_backgroundType;
+  neutu::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
 //  double m_stackOffset[3];

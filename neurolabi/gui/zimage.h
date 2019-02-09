@@ -7,7 +7,7 @@
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
 #include "zglmutils.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zsttransform.h"
 #include "neutube.h"
 #include "zcontrastprotocol.h"
@@ -61,11 +61,11 @@ public:
 
   void setData(
       const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
-      int slice, neutube::EAxis sliceAxis);
+      int slice, neutu::EAxis sliceAxis);
 
   void setData(
       const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
-      int slice, double scale, double offset, neutube::EAxis sliceAxis);
+      int slice, double scale, double offset, neutu::EAxis sliceAxis);
 
   void setData(const ZStack *stack, int z, bool ignoringZero = false,
                bool offsetAdjust = true);
@@ -191,7 +191,7 @@ public:
     m_usingContrastProtocal = on;
   }
 
-  void loadHighContrastProtocal(const ZJsonObject &obj);
+  void loadContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
 //  void setContrastProtocol(double scale, double offset, bool nonlinear);
   void setContrastProtocol(const ZContrastProtocol &cp);

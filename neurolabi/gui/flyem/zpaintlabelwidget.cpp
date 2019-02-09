@@ -1,8 +1,8 @@
 #include "zpaintlabelwidget.h"
 #include "zclickablelabel.h"
 #include "zlabelcolortable.h"
-#include "znumericparameter.h"
-#include "zflyem.h"
+#include "widgets/znumericparameter.h"
+#include "widgets/widgets_def.h"
 
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -33,7 +33,7 @@ void ZPaintLabelWidget::init(int maxLabel)
     layout->addWidget(labelWidget);
   }
   m_groupBox->setLayout(layout);
-  setStyleSheet(flyem::GROUP_BOX_STYLE);
+  setStyleSheet(neutu::GROUP_BOX_STYLE);
 }
 
 ZClickableColorLabel* ZPaintLabelWidget::makeColorWidget(

@@ -41,7 +41,7 @@ ZFlyEmConfig::~ZFlyEmConfig()
 void ZFlyEmConfig::init()
 {
 #ifdef _QT_GUI_USED_
-  m_userName = neutube::GetCurrentUserName();
+  m_userName = neutu::GetCurrentUserName();
 #endif
 //  m_neutuService.setServer("http://zhaot-ws1:8080");
 //  m_neutuService.updateStatus();
@@ -162,7 +162,7 @@ void ZFlyEmConfig::loadConfig()
           target.loadJsonObject(dvidObj);
           if (target.getGrayScaleName().empty()) {
             //Use default name for back compatibility
-            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE));
+            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ERole::GRAY_SCALE));
           }
 //          std::string mapped = getDvidRootNode(target.getUuid());
 //          if (!mapped.empty()) {

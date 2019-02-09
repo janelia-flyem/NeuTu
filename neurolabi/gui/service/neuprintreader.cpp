@@ -2,7 +2,7 @@
 
 #include <QFile>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -63,9 +63,11 @@ void NeuPrintReader::readDatasets()
 {
   m_dataset.clear();
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
-  if (m_bufferReader.getStatus() == neutube::EReadStatus::OK) {
-    m_dataset.decodeString(m_bufferReader.getBuffer().toStdString().c_str());
+
+  if (m_bufferReader.getStatus() == neutu::EReadStatus::OK) {
+    m_dataset.decode(m_bufferReader.getBuffer().toStdString());
   }
+
   if (m_dataset.isEmpty()) {
     LWARN() << "No datasets retreived from NeuPrint.";
   }

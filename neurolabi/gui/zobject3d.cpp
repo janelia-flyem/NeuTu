@@ -15,10 +15,10 @@
 #include "zobject3darray.h"
 #include "zstack.hxx"
 #include "zpainter.h"
-#include "zcuboid.h"
-#include "zintcuboid.h"
-#include "zpoint.h"
-#include "zintpoint.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintpoint.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_hitVoxelIndex(-1)
     }
   }
 
-  setTarget(TARGET_OBJECT_CANVAS);
+  setTarget(ETarget::OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -47,7 +47,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
     set(i, *iter, width, height, dx, dy, dz);
   }
 
-  setTarget(TARGET_OBJECT_CANVAS);
+  setTarget(ETarget::OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -169,11 +169,11 @@ bool ZObject3d::load(const char *filePath)
 
 void ZObject3d::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
 
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return;
   }
 
@@ -192,7 +192,7 @@ void ZObject3d::display(
   std::vector<QPoint> pointArray;
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
@@ -205,8 +205,8 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
@@ -223,7 +223,7 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
@@ -1016,4 +1016,4 @@ ZIntPoint ZObject3d::getCentralVoxel() const
   return ZIntPoint(center[0], center[1], center[2]);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

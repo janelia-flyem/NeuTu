@@ -8,7 +8,7 @@
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
@@ -98,7 +98,7 @@ public:
   void updateSelection();
 #endif
 
-  std::set<uint64_t> getSelection(neutube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelection(neutu::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
@@ -128,8 +128,12 @@ public:
   void clearBodyMerger();
 
   QList<QString> getBodyStatusList() const;
+  QList<QString> getAdminStatusList() const;
   int getStatusRank(const std::string &status) const;
   bool isFinalStatus(const std::string &status) const;
+  bool isExpertStatus(const std::string &status) const;
+  bool isMergableStatus(const std::string &status) const;
+
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(
@@ -216,6 +220,9 @@ private:
   void removeMerge(const std::vector<uint64_t> &bodyArray);
 
   void clearUndoStack();
+
+  QList<QString> getBodyStatusList(
+      std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
 
 //  uint64_t getTargetId(
 //      uint64_t targetId, const std::vector<uint64_t> &bodyId,

@@ -5,7 +5,7 @@
 #include <QString>
 #include <QMap>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 //#include "zstackdoc.h"
 //#include "z3dwindow.h"
 #include "z3ddef.h"
@@ -30,14 +30,14 @@ public:
 
 
   Z3DWindow* make3DWindow(ZStackDoc *doc,
-                          Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   Z3DWindow* open3DWindow(ZStackDoc *doc,
-                          Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
 
   Z3DWindow* make3DWindow(ZSharedPointer<ZStackDoc> doc,
-                          Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                          Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   static Z3DWindow* Open3DWindow(
-      ZStackFrame *frame, Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+      ZStackFrame *frame, Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
 
 
   Z3DWindow* make3DWindow(ZScalableStack *stack);
@@ -94,11 +94,11 @@ private:
   bool m_showControlPanel = true;
   bool m_showObjectView = true;
   bool m_showStatusBar = false;
-  neutube3d::EVolumeRenderingMode m_volumeMode = neutube3d::VR_AUTO;
+  neutube3d::EVolumeRenderingMode m_volumeMode = neutube3d::EVolumeRenderingMode::VR_AUTO;
 
   bool m_deleteOnClose = false;
 
-  neutube3d::EWindowType m_windowType = neutube3d::TYPE_GENERAL;
+  neutube3d::EWindowType m_windowType = neutube3d::EWindowType::GENERAL;
 
   QMap<neutube3d::ERendererLayer, bool> m_layerVisible;
 };

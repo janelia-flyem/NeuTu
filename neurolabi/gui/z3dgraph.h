@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <QColor>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zpointnetwork.h"
 #include "zjsonparser.h"
 #include "zstackobject.h"
@@ -123,7 +123,7 @@ public:
   bool isEmpty() const;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_3D_GRAPH;
+    return ZStackObject::EType::GRAPH_3D;
   }
 
   inline size_t getNodeNumber() const { return m_nodeArray.size(); }
@@ -157,8 +157,8 @@ public:
   void clear();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
-  const std::string& className() const;
+               neutu::EAxis sliceAxis) const;
+//  const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);
   void addEdge(const Z3DGraphEdge &edge);

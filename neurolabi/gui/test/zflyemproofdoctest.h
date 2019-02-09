@@ -21,11 +21,11 @@ TEST(ZFlyEmProofDoc, DVID)
     ASSERT_TRUE(doc.getDvidReader().good());
     ASSERT_TRUE(doc.getDvidWriter().good());
 
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutube::EAxis::X));
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutube::EAxis::Y));
-    ASSERT_TRUE(doc.getDvidLabelSlice(neutube::EAxis::Z) != NULL);
+    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::X));
+    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::Y));
+    ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::Z) != NULL);
 
-    ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutube::EAxis::Z);
+    ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutu::EAxis::Z);
     ZStackViewParam param;
     param.setViewPort(3565, 5292, 4260, 5853);
     param.setZ(7313);
@@ -50,17 +50,17 @@ TEST(ZFlyEmProofDoc, DVID)
         doc.getDvidSparsevolSliceList();
     ASSERT_EQ(1, sparsevolList2.size());
 
-    doc.removeDvidSparsevol(neutube::EAxis::Z);
+    doc.removeDvidSparsevol(neutu::EAxis::Z);
     sparsevolList2 = doc.getDvidSparsevolSliceList();
     ASSERT_EQ(0, sparsevolList2.size());
 
-    doc.updateDvidLabelObject(neutube::EAxis::Z);
+    doc.updateDvidLabelObject(neutu::EAxis::Z);
     sparsevolList2 = doc.getDvidSparsevolSliceList();
     ASSERT_EQ(1, sparsevolList2.size());
     sparsevol = sparsevolList2[0];
     ASSERT_EQ(sparsevol->getLabel(), bodyId);
 
-    doc.updateDvidLabelObject(neutube::EAxis::Z);
+    doc.updateDvidLabelObject(neutu::EAxis::Z);
     sparsevolList2 = doc.getDvidSparsevolSliceList();
     ASSERT_EQ(1, sparsevolList2.size());
     ASSERT_EQ(sparsevol->getLabel(), bodyId);

@@ -7,7 +7,7 @@
 #include <list>
 
 #include "zgraph.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zdvidversionnode.h"
 #include "ztree.h"
 

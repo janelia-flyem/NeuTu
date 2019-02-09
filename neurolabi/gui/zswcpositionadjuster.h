@@ -5,7 +5,7 @@
 #include "zswctree.h"
 #include "zswcpath.h"
 #include "tz_sp_grow.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "zprogressable.h"
 
 class ZSwcPositionAdjuster : public ZProgressable
@@ -17,7 +17,7 @@ public:
 public:
   inline void setSignal(
       Stack *signal,
-      neutube::EImageBackground background = neutube::EImageBackground::DARK)
+      neutu::EImageBackground background = neutu::EImageBackground::DARK)
   {
     C_Stack::kill(m_mask);
     Kill_Sp_Grow_Workspace(m_workspace);
@@ -34,7 +34,7 @@ private:
   Stack *m_signal;
   Stack *m_mask;
   Sp_Grow_Workspace *m_workspace;
-  neutube::EImageBackground m_background;
+  neutu::EImageBackground m_background;
 };
 
 #endif // ZSWCPOSITIONADJUSTER_H

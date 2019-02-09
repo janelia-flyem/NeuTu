@@ -17,7 +17,7 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
   if (doc != NULL) {
     switch (dataType) {
     case ZStackDoc::DATA_SWC:
-      objList = doc->getObjectList(ZStackObject::TYPE_SWC);
+      objList = doc->getObjectList(ZStackObject::EType::TYPE_SWC);
       break;
     case ZStackDoc::DATA_TODO:
       objList = doc->getObjectList(ZStackObject::TYPE_FLYEM_TODO_LIST);

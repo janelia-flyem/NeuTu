@@ -11,11 +11,11 @@
 #include "zobject3darray.h"
 #include "zstackfactory.h"
 #include "zswcforest.h"
-#include "zintcuboid.h"
-#include "zcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zswctree.h"
 #include "zobject3d.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "widgets/zpythonprocess.h"
 #include "zstackframe.h"
 #include "sandbox/zsandbox.h"
@@ -698,7 +698,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
         color.setAlpha(164);
         obj->setColor(color);
         frame->document()->getDataBuffer()->addUpdate(
-              obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+              obj,ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
         frame->document()->getDataBuffer()->deliver();
       }
     }
@@ -736,7 +736,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
         color.setAlpha(164);
         obj->setColor(color);
         frame->document()->getDataBuffer()->addUpdate(
-                obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+                obj,ZStackDocObjectUpdate::EAction::ACTION_ADD_UNIQUE);
         frame->document()->getDataBuffer()->deliver();
 
       }

@@ -14,7 +14,7 @@
 #if _QT_GUI_USED_
 #include "zstroke2d.h"
 #endif
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 #include "tz_stack.h"
 #include "zweightedpointarray.h"
 #include "math.h"
@@ -22,7 +22,7 @@
 #include "zobject3dscanarray.h"
 #include "tz_stack_bwmorph.h"
 #include "c_stack.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zswctree.h"
 #include "zstackarray.h"
 #include "zarray.h"

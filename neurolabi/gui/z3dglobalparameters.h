@@ -1,10 +1,10 @@
 #ifndef Z3DGLOBALPARAMETERS_H
 #define Z3DGLOBALPARAMETERS_H
 
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "z3dcameraparameter.h"
 #include "z3dpickingmanager.h"
-#include "zoptionparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "z3dinteractionhandler.h"
 #include <vector>
 

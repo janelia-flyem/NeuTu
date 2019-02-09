@@ -2,7 +2,7 @@
 #define ZSVGGENERATOR_H
 
 #include <string>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZSvgGenerator
 {

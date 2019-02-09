@@ -8,7 +8,7 @@
 TEST(ZStackViewParam, Basic)
 {
   ZStackViewParam param;
-  ASSERT_EQ(neutube::EAxis::Z, param.getSliceAxis());
+  ASSERT_EQ(neutu::EAxis::Z, param.getSliceAxis());
   ASSERT_FALSE(param.isValid());
 
   param.setWidgetRect(QRect(0, 0, 100, 200));
@@ -34,7 +34,7 @@ TEST(ZStackViewParam, Basic)
   ASSERT_FALSE(param.contains(param2));
   ASSERT_TRUE(param.containsViewport(param2));
 
-  param.setSliceAxis(neutube::EAxis::X);
+  param.setSliceAxis(neutu::EAxis::X);
   param2.setZ(param.getZ());
   ASSERT_FALSE(param.contains(param2));
   param2.setSliceAxis(param.getSliceAxis());

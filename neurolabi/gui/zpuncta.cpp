@@ -7,7 +7,7 @@
 
 ZPuncta::ZPuncta()
 {
-  m_type = ZStackObject::TYPE_PUNCTA;
+  m_type = ZStackObject::EType::PUNCTA;
   m_isSorted = false;
 }
 
@@ -37,9 +37,9 @@ void ZPuncta::sort() const
 }
 
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                      neutube::EAxis sliceAxis) const
+                      neutu::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::EAxis::Z) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutu::display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
@@ -172,4 +172,4 @@ void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPuncta)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPuncta)

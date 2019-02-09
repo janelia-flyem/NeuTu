@@ -19,7 +19,7 @@ public:
 
   void setSizePolicy(
       ESizePolicy xPolicy, ESizePolicy yPolicy, ESizePolicy zPolicy);
-  void setSizePolicy(neutube::EAxis axis, ESizePolicy policy);
+  void setSizePolicy(neutu::EAxis axis, ESizePolicy policy);
 
   void setDownsampleInterval(int dx, int dy, int dz);
 
@@ -30,7 +30,7 @@ public:
 
   Stack* createSurfaceImage(const ZObject3dScan &obj) const;
 
-  int getSourceDimension(neutube::EAxis axis) const;
+  int getSourceDimension(neutu::EAxis axis) const;
 
 private:
   ESizePolicy m_sizePolicy[3];

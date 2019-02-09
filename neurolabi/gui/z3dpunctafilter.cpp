@@ -1,12 +1,13 @@
 #include "z3dpunctafilter.h"
 
+#include <algorithm>
+#include <iostream>
+
 #include "neutubeconfig.h"
 #include "zrandom.h"
 #include "zpunctumcolorscheme.h"
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
-#include <algorithm>
-#include <iostream>
 
 Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)
@@ -43,19 +44,28 @@ Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* pare
   //m_textureCopyRenderer.setDiscardTransparent(true);
 
   m_singleColorForAllPuncta.setStyle("COLOR");
-  connect(&m_singleColorForAllPuncta, &ZVec4Parameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
-  connect(&m_colorMapScore, &ZColorMapParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
-  connect(&m_colorMapMeanIntensity, &ZColorMapParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
-  connect(&m_colorMapMaxIntensity, &ZColorMapParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
+  connect(&m_singleColorForAllPuncta, &ZVec4Parameter::valueChanged,
+          this, &Z3DPunctaFilter::prepareColor);
+  connect(&m_colorMapScore, &ZColorMapParameter::valueChanged, this,
+          &Z3DPunctaFilter::prepareColor);
+  connect(&m_colorMapMeanIntensity, &ZColorMapParameter::valueChanged,
+          this, &Z3DPunctaFilter::prepareColor);
+  connect(&m_colorMapMaxIntensity, &ZColorMapParameter::valueChanged,
+          this, &Z3DPunctaFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOptions("Single Color", "Random Color", "Point Source", "Original Point Color", "Colormap Score");
+  m_colorMode.addOptions("Single Color", "Random Color", "Point Source",
+                         "Original Point Color", "Colormap Score");
   m_colorMode.select("Point Source");
+  m_currentColorMode = m_colorMode.get();
 
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DPunctaFilter::adjustWidgets);
+//  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+//          this, &Z3DPunctaFilter::prepareColor);
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+          this, &Z3DPunctaFilter::updateColorMode);
 
-  connect(&m_useSameSizeForAllPuncta, &ZBoolParameter::valueChanged, this, &Z3DPunctaFilter::changePunctaSize);
+  connect(&m_useSameSizeForAllPuncta, &ZBoolParameter::valueChanged,
+          this, &Z3DPunctaFilter::changePunctaSize);
 
   addParameter(m_colorMode);
 
@@ -337,7 +347,8 @@ void Z3DPunctaFilter::prepareData()
       for (const auto& kv : m_sourceColorMapper) {
         m_widgetsGroup->addChild(*kv.second, 2);
       }
-      m_widgetsGroup->emitWidgetsGroupChangedSignal();
+      m_widgetUpdateToDate = false;
+//      m_widgetsGroup->emitWidgetsGroupChangedSignal();
     }
   }
 
@@ -431,8 +442,39 @@ void Z3DPunctaFilter::prepareColor()
   m_sphereRenderer.setDataColors(&m_pointColors);
 }
 
+void Z3DPunctaFilter::updateColorMode()
+{
+  prepareColor();
+
+  m_prevColorMode = m_currentColorMode;
+  m_currentColorMode = m_colorMode.get();
+  adjustWidgets();
+}
+
+bool Z3DPunctaFilter::widgetGroupUpdateNeeded() const
+{
+  if (m_widgetsGroup) {
+    if (m_widgetUpdateToDate == false) {
+      if (((m_prevColorMode == "Point Source" ||
+            m_currentColorMode == "Point Source") &&
+           m_prevColorMode != m_currentColorMode) ||
+          m_prevColorMode.isEmpty()) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 void Z3DPunctaFilter::adjustWidgets()
 {
+  if (widgetGroupUpdateNeeded()) {
+    m_widgetsGroup->emitWidgetsGroupChangedSignal();
+    m_prevColorMode = m_currentColorMode;
+    m_widgetUpdateToDate = true;
+  }
+
   m_singleColorForAllPuncta.setVisible(m_colorMode.isSelected("Single Color"));
   m_colorMapScore.setVisible(m_colorMode.isSelected("Colormap Score"));
   m_colorMapMeanIntensity.setVisible(m_colorMode.isSelected("Colormap Mean Intensity"));

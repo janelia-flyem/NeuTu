@@ -10,7 +10,7 @@
 #include "zclosedcurve.h"
 #include "zarray.h"
 #include "zrandomgenerator.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 #include "zstackutil.h"
 #include "misc/miscutility.h"
@@ -301,7 +301,7 @@ std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject
   std::map<uint64_t, ZObject3dScan*> *bodySet =
       ZObject3dScan::extractAllForegroundObject(
         stack.array8(), stack.width(), stack.height(), stack.depth(),
-        neutube::EAxis::Z);
+        neutu::EAxis::Z);
   if (bodySet != NULL) {
     for (auto &bodyIter : *bodySet) {
       ZObject3dScan *body = bodyIter.second;
@@ -386,7 +386,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZStack &stack, neutube::EAxis sliceAxis)
+    const ZStack &stack, neutu::EAxis sliceAxis)
 {
   ZObject3dScanArray *objArray = NULL;
 
@@ -493,7 +493,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZStack &stack, neutube::EAxis axis, bool foreground,
+    const ZStack &stack, neutu::EAxis axis, bool foreground,
     ZObject3dScanArray *out)
 {
   if (stack.kind() != GREY && stack.kind() != GREY16) {
@@ -566,7 +566,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZArray &array, neutube::EAxis axis, bool foreground,
+    const ZArray &array, neutu::EAxis axis, bool foreground,
     ZObject3dScanArray *out)
 {
   if (out == NULL) {

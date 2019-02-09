@@ -72,11 +72,13 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
 
 void ZStackDocLoader::processChanged(ZStackDoc *doc)
 {
-  QSet<ZStackObject::EType> changedTypeSet;
-  changedTypeSet.fromList(m_typeRemoved);
-  changedTypeSet += m_typeAdded.toSet();
+  std::set<ZStackObject::EType> changedTypeSet;
+  changedTypeSet.insert(m_typeRemoved.begin(), m_typeRemoved.end());
+  changedTypeSet.insert(m_typeAdded.begin(), m_typeAdded.end());
+//  changedTypeSet.fromList(m_typeRemoved);
+//  changedTypeSet += m_typeAdded.toSet();
 
-  for (QSet<ZStackObject::EType>::const_iterator iter = changedTypeSet.begin();
+  for (auto iter = changedTypeSet.begin();
        iter != changedTypeSet.end(); ++iter) {
     processObjectChanged(doc, *iter);
   }
@@ -91,19 +93,19 @@ void ZStackDocLoader::processObjectChanged(
     ZStackDoc *doc, ZStackObject::EType type)
 {
   switch (type) {
-  case ZStackObject::TYPE_SWC:
+  case ZStackObject::EType::SWC:
     doc->notifySwcModified();
     break;
-  case ZStackObject::TYPE_LOCSEG_CHAIN:
+  case ZStackObject::EType::LOCSEG_CHAIN:
     doc->notifyChainModified();
     break;
-  case ZStackObject::TYPE_PUNCTUM:
+  case ZStackObject::EType::PUNCTUM:
     doc->notifyPunctumModified();
     break;
-  case ZStackObject::TYPE_MESH:
+  case ZStackObject::EType::MESH:
     doc->notifyMeshModified();
     break;
-  case ZStackObject::TYPE_SPARSE_OBJECT:
+  case ZStackObject::EType::SPARSE_OBJECT:
     doc->notifySparseObjectModified();
     break;
   default:

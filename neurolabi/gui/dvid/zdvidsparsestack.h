@@ -7,7 +7,7 @@
 #include "zstackobject.h"
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
-#include "dvid/zdvidreader.h"
+#include "zdvidreader.h"
 #include "zthreadfuturemap.h"
 
 class ZIntCuboid;
@@ -19,13 +19,13 @@ public:
   ~ZDvidSparseStack();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+    return ZStackObject::EType::DVID_SPARSE_STACK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   ZStack *getSlice(int z) const;
 
@@ -111,7 +111,7 @@ public:
 //  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
 
   bool isEmpty() const;
 

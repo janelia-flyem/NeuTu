@@ -3,13 +3,13 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
-#include "zintcuboidarray.h"
-#include "flyem/zintcuboidcomposition.h"
-#include "zcuboid.h"
-#include "zintcuboidface.h"
-#include "zsharedpointer.h"
-#include "zintcuboid.h"
-#include "zlinesegment.h"
+#include "geometry/zintcuboidarray.h"
+//#include "flyem/zintcuboidcomposition.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboidface.h"
+#include "common/zsharedpointer.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zlinesegment.h"
 
 #ifdef _USE_GTEST_
 
@@ -199,7 +199,7 @@ TEST(ZIntCuboidArray, face)
   face2 = blockArray.getInnerFace();
   EXPECT_EQ(6, (int) face2.size());
 }
-
+#if 0
 TEST(ZIntCuboidComposition, hitTest)
 {
   flyem::ZIntCuboidComposition cuboid;
@@ -238,6 +238,7 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_FALSE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 }
+#endif
 
 TEST(ZCuboid, distance) {
   ZCuboid box1;
@@ -316,7 +317,7 @@ TEST(ZIntCuboidFace, dist)
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(0, 10, 10));
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(50, 90, -10));
 
-  face.setNormal(neutube::EAxis::X);
+  face.setNormal(neutu::EAxis::X);
   ASSERT_DOUBLE_EQ(0.0, face.computeDistance(0, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 10, 10));

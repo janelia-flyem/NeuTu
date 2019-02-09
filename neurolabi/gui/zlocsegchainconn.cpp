@@ -41,7 +41,7 @@ void ZLocsegChainConn::_init(int hook, int loop, int hookSpot, int loopSpot,
   m_mode = mode;
   m_hookChain = hookChain;
   m_loopChain = loopChain;
-  m_type = ZStackObject::TYPE_CONN;
+  m_type = ZStackObject::EType::CONN;
 }
 
 ZLocsegChainConn::~ZLocsegChainConn()
@@ -217,4 +217,4 @@ void ZLocsegChainConn::translateMode()
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)

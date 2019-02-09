@@ -3,12 +3,12 @@
 
 #include <QFileDialog>
 #include <string>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZMessageReporter;
 class ZLogMessageReporter;
 
-namespace neutube {
+namespace neutu {
 
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();

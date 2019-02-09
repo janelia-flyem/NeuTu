@@ -10,7 +10,7 @@
 #include "zdoublevector.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 
 #ifdef _USE_GTEST_
@@ -65,6 +65,7 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
     ASSERT_EQ((int) stripe.getVoxelNumber(), 5);
+    ASSERT_EQ(24, (int) stripe.getByteCount());
 
     createStripe2(&stripe);
     ASSERT_EQ(stripe.getSegmentNumber(), 2);
@@ -72,6 +73,7 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
     ASSERT_EQ((int) stripe.getVoxelNumber(), 7);
+    ASSERT_EQ(24, (int) stripe.getByteCount());
 
     stripe.canonize();
     ASSERT_EQ(stripe.getMinX(), 0);
@@ -81,6 +83,7 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
     ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    ASSERT_EQ(16, (int) stripe.getByteCount());
 
     createStripe3(&stripe);
     ASSERT_EQ(stripe.getMinX(), 0);
@@ -90,12 +93,14 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
     ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    ASSERT_EQ(16, (int) stripe.getByteCount());
 
     createStripe4(&stripe);
-    ASSERT_EQ(stripe.getSegmentNumber(), 3);
-    ASSERT_EQ((int) stripe.getSize(), 3);
+    ASSERT_EQ(stripe.getSegmentNumber(), 2);
+    ASSERT_EQ((int) stripe.getSize(), 2);
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
+    ASSERT_EQ(24, (int) stripe.getByteCount());
 
     stripe.canonize();
     ASSERT_EQ(stripe.getMinX(), 0);
@@ -105,6 +110,7 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
     ASSERT_EQ((int) stripe.getVoxelNumber(), 6);
+    ASSERT_EQ(16, (int) stripe.getByteCount());
   }
 
   {
@@ -279,13 +285,13 @@ TEST(ZObject3dStripe, TestCanonize) {
   stripe.clearSegment();
   stripe.addSegment(7, 8, false);
   stripe.addSegment(1, 2, false);
-  EXPECT_FALSE(stripe.isCanonized());
+  ASSERT_FALSE(stripe.isCanonized());
 
   stripe.clearSegment();
   stripe.addSegment(4, 5);
   stripe.addSegment(1, 7, false);
   stripe.addSegment(7, 8, false);
-  EXPECT_FALSE(stripe.isCanonized());
+  ASSERT_TRUE(stripe.isCanonized());
 
   stripe.canonize();
   ASSERT_TRUE(stripe.isCanonized());
@@ -316,12 +322,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -338,12 +344,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -360,12 +366,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -382,12 +388,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -404,12 +410,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -426,12 +432,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_FALSE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_FALSE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_FALSE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_FALSE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -448,12 +454,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -470,12 +476,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_TRUE(s1.hasOverlap(s2));
     ASSERT_TRUE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -492,12 +498,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_TRUE(s1.hasOverlap(s2));
     ASSERT_TRUE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -514,12 +520,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -536,12 +542,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -558,12 +564,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_TRUE(s1.hasOverlap(s2));
     ASSERT_TRUE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -580,12 +586,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -602,12 +608,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -626,12 +632,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_TRUE(s1.hasOverlap(s2));
     ASSERT_TRUE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -650,12 +656,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -674,12 +680,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -700,12 +706,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_TRUE(s1.hasOverlap(s2));
     ASSERT_TRUE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 
   {
@@ -726,12 +732,12 @@ TEST(ZObject3dStripe, Relation)
 
     ASSERT_FALSE(s1.hasOverlap(s2));
     ASSERT_FALSE(s2.hasOverlap(s1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D1));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D2));
-    ASSERT_TRUE(s1.isAdjacentTo(s2, neutube::EStackNeighborhood::D3));
-    ASSERT_TRUE(s2.isAdjacentTo(s1, neutube::EStackNeighborhood::D3));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D1));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D2));
+    ASSERT_TRUE(s1.isAdjacentTo(s2, neutu::EStackNeighborhood::D3));
+    ASSERT_TRUE(s2.isAdjacentTo(s1, neutu::EStackNeighborhood::D3));
   }
 }
 
@@ -779,7 +785,7 @@ static void createObject3(ZObject3dScan *obj)
 TEST(ZObject3dScan, TestGetProperty) {
   ZObject3dScan obj;
   createObject(&obj);
-  obj.print();
+//  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   ZIntCuboid box = obj.getBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
@@ -791,6 +797,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
+  ASSERT_EQ(64, (int) obj.getByteCount());
 
   obj.canonize();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
@@ -804,8 +811,10 @@ TEST(ZObject3dScan, TestGetProperty) {
   ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
+  ASSERT_EQ(64, (int) obj.getByteCount());
 
   createObject2(&obj);
+//  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
@@ -817,8 +826,8 @@ TEST(ZObject3dScan, TestGetProperty) {
   ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
+  ASSERT_EQ(48, (int) obj.getByteCount());
 
-  obj.print();
 //  obj.isEmpty();
   obj.canonize();
   obj.print();
@@ -833,6 +842,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
+  ASSERT_EQ(48, (int) obj.getByteCount());
 
   createObject3(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
@@ -846,6 +856,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
+  ASSERT_EQ(48, (int) obj.getByteCount());
 
 //  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 //  size_t area = obj.getSurfaceArea();
@@ -892,6 +903,14 @@ TEST(ZObject3dScan, TestAddSegment) {
   obj.addSegment(7, 8, false);
   obj.addSegment(3, 6, false);
   obj.print();
+  ASSERT_TRUE(obj.isCanonized());
+
+  obj.clear();
+  obj.addStripe(1, 0);
+  obj.addSegment(1, 2, false);
+  obj.addSegment(7, 8, false);
+  obj.addSegment(3, 6, false);
+  obj.print();
   ASSERT_FALSE(obj.isCanonized());
 
   obj.clear();
@@ -905,6 +924,18 @@ TEST(ZObject3dScan, TestAddSegment) {
   obj.addSegment(1, 0, 5, 6, false);
   obj.addSegment(1, 0, 7, 8, false);
   obj.addSegment(1, 0, 3, 6, false);
+  ASSERT_TRUE(obj.isCanonized());
+
+  obj.clear();
+  obj.addSegment(1, 0, 5, 6, false);
+  obj.addSegment(1, 0, 7, 8, false);
+  obj.addSegment(1, 0, 3, 4, false);
+  ASSERT_TRUE(obj.isCanonized());
+
+  obj.clear();
+  obj.addSegment(1, 0, 5, 6, false);
+  obj.addSegment(1, 0, 7, 8, false);
+  obj.addSegment(1, 0, 3, 3, false);
   ASSERT_FALSE(obj.isCanonized());
 
   obj.clear();
@@ -1275,7 +1306,7 @@ TEST(ZObject3dScan, TestGetConnectedComponent)
     for (size_t i = 0; i < objArray.size() - 1; ++i) {
       for (size_t j = i + 1; j < objArray.size(); ++j) {
         ASSERT_FALSE(objArray[i].isAdjacentTo(
-                       objArray[j], neutube::EStackNeighborhood::D3));
+                       objArray[j], neutu::EStackNeighborhood::D3));
       }
     }
 
@@ -1303,11 +1334,11 @@ TEST(ZObject3dScan, TestGetConnectedComponent)
         }
         */
         ASSERT_FALSE(objArray[i].isAdjacentTo(
-                       objArray[j], neutube::EStackNeighborhood::D1));
+                       objArray[j], neutu::EStackNeighborhood::D1));
         ASSERT_FALSE(objArray[i].isAdjacentTo(
-                       objArray[j], neutube::EStackNeighborhood::D2));
+                       objArray[j], neutu::EStackNeighborhood::D2));
         ASSERT_FALSE(objArray[i].isAdjacentTo(
-                       objArray[j], neutube::EStackNeighborhood::D3));
+                       objArray[j], neutu::EStackNeighborhood::D3));
       }
     }
   }
@@ -1888,10 +1919,10 @@ TEST(ZObject3dScan, Relation)
 
   ASSERT_FALSE(obj1.isAdjacentTo(obj2));
   ASSERT_FALSE(obj2.isAdjacentTo(obj1));
-  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
-  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutube::EStackNeighborhood::D2));
-  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D3));
-  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutube::EStackNeighborhood::D3));
+  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutu::EStackNeighborhood::D2));
+  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutu::EStackNeighborhood::D2));
+  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutu::EStackNeighborhood::D3));
+  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutu::EStackNeighborhood::D3));
 
   obj1.clear();
   obj2.clear();
@@ -1914,10 +1945,10 @@ TEST(ZObject3dScan, Relation)
 
   ASSERT_TRUE(obj1.isAdjacentTo(obj2));
   ASSERT_TRUE(obj2.isAdjacentTo(obj1));
-  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D2));
-  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutube::EStackNeighborhood::D2));
-  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutube::EStackNeighborhood::D3));
-  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutube::EStackNeighborhood::D3));
+  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutu::EStackNeighborhood::D2));
+  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutu::EStackNeighborhood::D2));
+  ASSERT_TRUE(obj1.isAdjacentTo(obj2, neutu::EStackNeighborhood::D3));
+  ASSERT_TRUE(obj2.isAdjacentTo(obj1, neutu::EStackNeighborhood::D3));
 }
 
 TEST(ZObject3dScan, upSample)

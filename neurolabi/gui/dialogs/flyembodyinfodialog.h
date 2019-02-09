@@ -97,6 +97,8 @@ private slots:
     void onExportConnections();
     void onSaveColorMap();
     void onLoadColorMap();
+    void onMoveUp();
+    void onMoveDown();
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
     void onGotoBodies();    
