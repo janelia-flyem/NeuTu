@@ -155,6 +155,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
+    connect(ui->moveUpButton, SIGNAL(clicked(bool)), this, SLOT(onMoveUp()));
+    connect(ui->moveDownButton, SIGNAL(clicked(bool)), this, SLOT(onMoveDown()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
     connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
@@ -268,8 +270,8 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
       int npre = 0;
       int npost = 0;
       if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
-        npre = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_PRE_SYN);
-        npost = reader.readSynapseLabelszBody(bodyId, ZDvid::INDEX_POST_SYN);
+        npre = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::PRE_SYN);
+        npost = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
               bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
@@ -847,8 +849,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 }
 
                 if (!bodyData.isEmpty() && m_hasLabelsz) {
-                  int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
-                  int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+                  int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
+                  int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
 
                   bodyData.setEntry("body T-bars", npre);
                   bodyData.setEntry("body PSDs", npost);
@@ -891,14 +893,14 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
     if (reader.isReady()) {
 
         // you would use this call to get all bodies with any synapses:
-        // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::INDEX_ALL_SYN);
+        // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
 
         // as it turns out, that's usually too many (and you would have to retrieve
         //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
 
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
-              m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
+              m_currentMaxBodies, dvid::ELabelIndexType::ALL_SYN);
         dvidTime += dvidTimer.elapsed();
         #ifdef _DEBUG_
             std::cout << "read top " << m_currentMaxBodies << " synapses from DVID in " << dvidTime << " ms" << std::endl;
@@ -998,8 +1000,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             // synapse info
             // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
-            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
-            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+            int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
+            int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
             dvidTime += dvidTimer.elapsed();
 
             entry.setEntry("body T-bars", npre);
@@ -1381,6 +1383,56 @@ void FlyEmBodyInfoDialog::onExportConnections() {
             exportConnections(filename);
         }
     }
+}
+
+void FlyEmBodyInfoDialog::onMoveUp() {
+    // get selected row; NOTE: table can't be sorted, so we don't have to map to model indices
+    int selectedRow = -1;
+    QModelIndexList selectedIndices = ui->filterTableView->selectionModel()->selectedIndexes();
+    if (selectedIndices.size() == 0) {
+        return;
+    } else if (selectedIndices.size() == 1) {
+        selectedRow = selectedIndices[0].row();
+    } else {
+        // multiple selection should be impossible
+        return;
+    }
+
+    // if not top, remove it and insert one higher; move selection, too!
+    if (selectedRow > 0) {
+        m_filterModel->insertRow(selectedRow - 1, m_filterModel->takeRow(selectedRow));
+        QModelIndex newSelection = m_filterModel->index(selectedRow - 1, 0);
+        ui->filterTableView->selectionModel()->clearSelection();
+        ui->filterTableView->selectionModel()->select(newSelection, QItemSelectionModel::Select);
+    }
+
+    // update scheme (table should update itself)
+    updateColorScheme();
+}
+
+void FlyEmBodyInfoDialog::onMoveDown() {
+    // get selected row; NOTE: table can't be sorted, so we don't have to map to model indices
+    int selectedRow = -1;
+    QModelIndexList selectedIndices = ui->filterTableView->selectionModel()->selectedIndexes();
+    if (selectedIndices.size() == 0) {
+        return;
+    } else if (selectedIndices.size() == 1) {
+        selectedRow = selectedIndices[0].row();
+    } else {
+        // multiple selection should be impossible
+        return;
+    }
+
+    // if not bottom, remove it and insert one lower; move selection, too!
+    if (selectedRow < m_filterModel->rowCount() - 1) {
+        m_filterModel->insertRow(selectedRow + 1, m_filterModel->takeRow(selectedRow));
+        QModelIndex newSelection = m_filterModel->index(selectedRow + 1, 0);
+        ui->filterTableView->selectionModel()->clearSelection();
+        ui->filterTableView->selectionModel()->select(newSelection, QItemSelectionModel::Select);
+    }
+
+    // update scheme (table should update itself)
+    updateColorScheme();
 }
 
 void FlyEmBodyInfoDialog::onSaveColorMap() {

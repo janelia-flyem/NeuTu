@@ -14,13 +14,13 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
 

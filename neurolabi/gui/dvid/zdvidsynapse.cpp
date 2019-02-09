@@ -2,7 +2,7 @@
 #include <QtCore>
 #include <QPen>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -157,7 +157,7 @@ QColor ZDvidSynapse::GetArrowColor(bool verified)
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -204,7 +204,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
 
-      if (getStatus() == STATUS_DUPLICATED) {
+      if (getStatus() == EStatus::STATUS_DUPLICATED) {
         painter.drawEllipse(
               QPointF(center.getX(), center.getY()), 1, 1);
       }
@@ -339,7 +339,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -378,7 +378,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPointF ptArray[4];
     //      double s = 5.0;
     if (z > center.getZ()) {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::NORTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
@@ -388,7 +388,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                         rect.top() + rect.height() / s);
 */
     } else {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::SOUTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);
@@ -471,7 +471,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         line.setFocusColor(QColor(255, 0, 255));
       }
 
-      line.setVisualEffect(neutube::display::Line::VE_LINE_PROJ);
+      line.setVisualEffect(neutu::display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option, sliceAxis);
 
       /*
@@ -562,7 +562,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
   m_partnerKind.resize(m_partnerHint.size(), EKind::KIND_UNKNOWN);
-  m_partnerStatus.resize(m_partnerHint.size(), STATUS_NORMAL);
+  m_partnerStatus.resize(m_partnerHint.size(), EStatus::STATUS_NORMAL);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
@@ -585,6 +585,6 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 
 

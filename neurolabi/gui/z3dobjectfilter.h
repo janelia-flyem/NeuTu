@@ -23,8 +23,8 @@ public:
 protected:
   void prepareData();
   void prepareColor();
-  virtual void process(Z3DEye eye) override;
   std::vector<double> boundBox();
+  virtual void process(Z3DEye eye) override;
   virtual void updateNotTransformedBoundBoxImpl() override;
 
 private:

@@ -1,6 +1,6 @@
 #include "zstackobjectpainter.h"
 #include "zpainter.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 #include "tz_utilities.h"
 
 ZStackObjectPainter::ZStackObjectPainter()
@@ -12,14 +12,14 @@ void ZStackObjectPainter::setDisplayStyle(ZStackObject::EDisplayStyle style)
   m_style = style;
 }
 
-void ZStackObjectPainter::setSliceAxis(neutube::EAxis sliceAxis)
+void ZStackObjectPainter::setSliceAxis(neutu::EAxis sliceAxis)
 {
   m_axis = sliceAxis;
 }
 
 void ZStackObjectPainter::paint(
     const ZStackObject *obj, ZPainter &painter, int slice,
-    ZStackObject::EDisplayStyle option, neutube::EAxis sliceAxis) const
+    ZStackObject::EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
   if (obj != NULL) {
     if (m_painterConst) {

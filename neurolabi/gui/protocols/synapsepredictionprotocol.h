@@ -8,8 +8,8 @@
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
 
 #include "protocoldialog.h"
 

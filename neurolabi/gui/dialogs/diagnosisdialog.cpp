@@ -32,7 +32,7 @@ void DiagnosisDialog::LoadFile(
   if (!filePath.empty()) {
     QFile file(filePath.c_str());
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      browser->setPlainText(ZFlyEmMisc::ReadLastLines(filePath.c_str(), 1000));
+      browser->setPlainText(flyem::ReadLastLines(filePath.c_str(), 1000));
       file.close();
     }
   }
@@ -40,12 +40,12 @@ void DiagnosisDialog::LoadFile(
 
 void DiagnosisDialog::loadErrorFile()
 {
-  LoadFile(neutube::getErrorFile(), ui->errorTextBrowser);
+  LoadFile(neutu::getErrorFile(), ui->errorTextBrowser);
 }
 
 void DiagnosisDialog::loadWarnFile()
 {
-  LoadFile(neutube::getWarnFile(), ui->warnTextBrowser);
+  LoadFile(neutu::getWarnFile(), ui->warnTextBrowser);
 }
 
 void DiagnosisDialog::loadInfoFile()

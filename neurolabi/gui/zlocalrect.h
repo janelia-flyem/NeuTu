@@ -15,7 +15,7 @@ public:
   ZLocalRect(double x, double y, double z, double theta, double r);
 //  ZLocalRect(const ZLocalRect &rect);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   void toLocalNeuroseg(Local_Neuroseg *locseg) const;
@@ -23,7 +23,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);

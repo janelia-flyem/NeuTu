@@ -17,7 +17,7 @@
 #include "zmesh.h"
 #include "zioutils.h"
 #include "zexception.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 namespace {
 

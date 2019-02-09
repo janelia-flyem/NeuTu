@@ -12,8 +12,9 @@ ZStackDocObjectUpdate::ZStackDocObjectUpdate(ZStackObject *obj, EAction action)
 
 ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
 {
-  if (m_action == ACTION_ADD_NONUNIQUE || m_action == ACTION_ADD_UNIQUE ||
-      m_action == ACTION_ADD_BUFFER) {
+  if (m_action == EAction::ADD_NONUNIQUE ||
+      m_action == EAction::ADD_UNIQUE ||
+      m_action == EAction::ADD_BUFFER) {
     delete m_obj;
   }
 }
@@ -21,40 +22,40 @@ ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
 void ZStackDocObjectUpdate::reset()
 {
   m_obj = NULL;
-  m_action = ACTION_NULL;
+  m_action = EAction::NONE;
 }
 
 void ZStackDocObjectUpdate::print() const
 {
   switch (m_action) {
-  case ACTION_ADD_NONUNIQUE:
+  case EAction::ADD_NONUNIQUE:
     std::cout << "Add nonunique";
     break;
-  case ACTION_ADD_UNIQUE:
+  case EAction::ADD_UNIQUE:
     std::cout << "Add unique";
     break;
-  case ACTION_EXPEL:
+  case EAction::EXPEL:
     std::cout << "Expel";
     break;
-  case ACTION_KILL:
+  case EAction::KILL:
     std::cout << "Kill";
     break;
-  case ACTION_NULL:
+  case EAction::NONE:
     std::cout << "No action on";
     break;
-  case ACTION_RECYCLE:
+  case EAction::RECYCLE:
     std::cout << "Recycle";
     break;
-  case ACTION_UPDATE:
+  case EAction::UPDATE:
     std::cout << "Update";
     break;
-  case ACTION_SELECT:
+  case EAction::SELECT:
     std::cout << "Select";
     break;
-  case ACTION_DESELECT:
+  case EAction::DESELECT:
     std::cout << "Deselect";
     break;
-  case ACTION_ADD_BUFFER:
+  case EAction::ADD_BUFFER:
     std::cout << "Add to buffer";
     break;
   default:
@@ -62,8 +63,8 @@ void ZStackDocObjectUpdate::print() const
     break;
   }
 
-  std::cout << " " << m_obj->getType() << " " << m_obj->getSource() << " "
-            << m_obj << std::endl;
+  std::cout << " " << ZStackObject::GetTypeName(m_obj->getType()) << " "
+            << m_obj->getSource() << " " << m_obj << std::endl;
 }
 
 ZStackDocDataBuffer::ZStackDocDataBuffer(QObject *parent) : QObject(parent)
@@ -163,10 +164,11 @@ ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
       actionMap[u->getObject()] = u->getAction();
     } else {
       ZStackDocObjectUpdate::EAction laterAction = actionMap[u->getObject()];
-      if (laterAction == ACTION_RECYCLE || laterAction == ACTION_EXPEL ||
-          laterAction == ACTION_KILL) {
+      if (laterAction == EAction::RECYCLE ||
+          laterAction == EAction::EXPEL ||
+          laterAction == EAction::KILL) {
         if (laterAction > u->getAction()) {
-          u->setAction(ACTION_NULL);
+          u->setAction(EAction::NONE);
         }
       }
     }

@@ -16,15 +16,15 @@
 
 #include "z3dview.h"
 //#include "zparameter.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
 #include "z3ddef.h"
-#include "zintpointarray.h"
+#include "geometry/zintpointarray.h"
 
 class QSlider;
 class QDoubleSpinBox;
@@ -76,19 +76,19 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
-                     neutube3d::EWindowType windowType = neutube3d::TYPE_GENERAL,
+                     neutube3d::EWindowType windowType = neutube3d::EWindowType::GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
 public: //Creators
   static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   static Z3DWindow* Make(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::EInitMode::NORMAL);
 public:
   void configure(const ZJsonObject &obj);
 
@@ -438,8 +438,6 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
-//  void paintEvent(QPaintEvent *event);
-
 
 protected:
 

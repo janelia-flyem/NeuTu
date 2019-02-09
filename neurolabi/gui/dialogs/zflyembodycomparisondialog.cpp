@@ -1,6 +1,6 @@
 #include "zflyembodycomparisondialog.h"
 #include "ui_zflyembodycomparisondialog.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zglobal.h"
 #include "zstring.h"
 

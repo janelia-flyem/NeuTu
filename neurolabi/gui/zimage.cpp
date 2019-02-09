@@ -8,7 +8,7 @@
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "tz_math.h"
 #include "zjsonobject.h"
 
@@ -50,7 +50,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = neutube::DIM_INVALID_INDEX;
+  m_z = neutu::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -348,15 +348,15 @@ void ZImage::setData(const uint8 *data, int threshold)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, neutube::EAxis sliceAxis)
+    int slice, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
   int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -368,7 +368,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -395,7 +395,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 
@@ -443,7 +443,7 @@ void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, double scale, double offset, neutube::EAxis sliceAxis)
+    int slice, double scale, double offset, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
@@ -457,8 +457,8 @@ void ZImage::setData(
   }
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -468,7 +468,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -496,7 +496,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;
@@ -1219,7 +1219,7 @@ void ZImage::updateContrast(bool usingContrast)
   enhanceContrast(m_usingContrastProtocal);
 }
 
-void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
+void ZImage::loadContrastProtocal(const ZJsonObject &obj)
 {
   m_contrastProtocol.load(obj);
 #if 0
@@ -1272,23 +1272,6 @@ void ZImage::enhanceContrast(bool highContrast)
 //        double s = m_grayScale;
         for (int i = 0; i < 256; ++i) {
           int v = m_contrastProtocol.mapGrey(i);
-#if 0
-          double v = (i + m_grayOffset) * s;
-
-          if (m_nonlinear) {
-            if (v < 0.0) {
-              v = 0.0;
-            } else {
-              v = sqrt(v / 255.0) * i;
-            }
-          }
-
-          if (v < 0.0) {
-            v = 0.0;
-          } else if (v > 255.0) {
-            v = 255.0;
-          }
-#endif
           colorTable[i] = iround(v);
         }
 
@@ -1306,20 +1289,6 @@ void ZImage::enhanceContrast(bool highContrast)
 //      double s = m_grayScale / 255.0;
       for (int i = 0; i < 256; ++i) {
         QColor color;
-#if 0
-        double v = (i + m_grayOffset) * s;
-        if (m_nonlinear) {
-          v = sqrt(v) * i / 255.0;
-        }
-//        v *= sqrt(v);
-//        v = v * 1.5;
-
-        if (v < 0.0) {
-          v = 0.0;
-        } else if (v > 1.0) {
-          v = 1.0;
-        }
-#endif
         int v = m_contrastProtocol.mapGrey(i);
 
         color.setRed(v);

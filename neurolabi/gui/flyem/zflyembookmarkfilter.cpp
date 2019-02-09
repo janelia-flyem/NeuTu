@@ -19,7 +19,7 @@ ZFlyEmBookmarkFilter::ZFlyEmBookmarkFilter(QWidget *parent) :
     connect(ui->filterEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
 }
 
-void ZFlyEmBookmarkFilter::onTabChanged(int index) {
+void ZFlyEmBookmarkFilter::onTabChanged(int /*index*/) {
     // update filter when tab changes (because you're filtering a different list)
     filterUpdated(ui->filterEdit->text());
 }

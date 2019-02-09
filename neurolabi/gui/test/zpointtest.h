@@ -2,8 +2,8 @@
 #define ZPOINTTEST_H
 
 #include "ztestheader.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 
 #ifdef _USE_GTEST_
 

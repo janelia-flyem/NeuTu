@@ -3,7 +3,7 @@
 
 #include "zstackobject.h"
 #include "zimage.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZStack;
 
@@ -15,9 +15,9 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const;
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   ZImage getImage(int z) const;
   ZPoint getFinalOffset() const;

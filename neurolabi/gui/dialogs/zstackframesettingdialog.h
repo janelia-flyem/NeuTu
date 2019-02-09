@@ -2,7 +2,7 @@
 #define ZSTACKFRAMESETTINGDIALOG_H
 
 #include <QDialog>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 namespace Ui {
 class ZStackFrameSettingDialog;
@@ -31,7 +31,7 @@ public:
   void setRecoverLevel(int level);
   void setMaxEucDist(double d);
   void setScale(double x, double y, double z);
-  void setBackground(neutube::EImageBackground bg);
+  void setBackground(neutu::EImageBackground bg);
 
   double getMinAutoScore() const;
   double getMinManualScore() const;
@@ -49,7 +49,7 @@ public:
   /*!
    * \brief Get backgound setting.
    */
-  neutube::EImageBackground getBackground() const;
+  neutu::EImageBackground getBackground() const;
 
 private:
   Ui::ZStackFrameSettingDialog *ui;

@@ -16,12 +16,15 @@ public:
 
   ZIntPoint getBlockSize() const;
   std::string getName() const;
+  size_t getVolume() const;
 
   void clear();
   void setName(const std::string &name);
   void setBlockSize(int s);
   void setBlockSize(int w, int h, int d);
   void setBlockSize(const ZIntPoint &blockSize);
+
+
 
   bool isEmpty() const;
 

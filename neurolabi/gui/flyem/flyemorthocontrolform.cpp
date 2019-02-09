@@ -1,5 +1,7 @@
 #include "flyemorthocontrolform.h"
 #include "ui_flyemorthocontrolform.h"
+
+#include "logging/utilities.h"
 #include "zwidgetmessage.h"
 
 FlyEmOrthoControlForm::FlyEmOrthoControlForm(QWidget *parent) :
@@ -71,5 +73,8 @@ ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const
 
 void FlyEmOrthoControlForm::dump(const ZWidgetMessage &message)
 {
-  ui->messageWidget->dump(message.toHtmlString(), message.isAppending());
+  neutu::LogMessage(message);
+  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    ui->messageWidget->dump(message.toHtmlString(), message.isAppending());
+  }
 }

@@ -7,7 +7,7 @@
 
 ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
 {
-  setTag(neutube::Document::ETag::FLYEM_ARBSLICE);
+  setTag(neutu::Document::ETag::FLYEM_ARBSLICE);
 }
 
 void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
@@ -25,7 +25,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
     emit messageGenerated(
-          ZWidgetMessage("Failed to open the node.", neutube::EMessageType::ERROR));
+          ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
   }
 }
 
@@ -53,10 +53,10 @@ void ZFlyEmArbDoc::prepareDvidData()
 
     if (getDvidTarget().hasGrayScaleData()) {
       ZDvidGraySlice *slice = new ZDvidGraySlice;
-      slice->setSliceAxis(neutube::EAxis::ARB);
+      slice->setSliceAxis(neutu::EAxis::ARB);
       slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
       slice->setSource(
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::EAxis::ARB));
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::ARB));
       slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
       prepareGraySlice(slice);
       addObject(slice, true);
@@ -64,10 +64,10 @@ void ZFlyEmArbDoc::prepareDvidData()
 
     if (getDvidTarget().hasSegmentation()) {
       ZDvidLabelSlice *slice = new ZDvidLabelSlice;
-      slice->setSliceAxis(neutube::EAxis::ARB);
+      slice->setSliceAxis(neutu::EAxis::ARB);
       slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
       slice->setSource(
-            ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutube::EAxis::ARB));
+            ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutu::EAxis::ARB));
       slice->setDvidTarget(getDvidTarget());
 //      prepareGraySlice(slice);
       addObject(slice, true);

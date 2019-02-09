@@ -21,7 +21,7 @@
 #include "dvid/zdvidnode.h"
 #include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 /*
  * this class is a drop-in replacement for ZDvidDialog; this version lets you
@@ -271,7 +271,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         return;
     }
     ZJsonObject info = m_reader.readInfo();
-    QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(info.dumpString()).toUtf8());
+    QJsonDocument doc = QJsonDocument::fromJson(
+          QString::fromStdString(info.dumpString()).toUtf8());
     QJsonObject repoJson = doc.object();
 
     // parse out actual branches and populate the model

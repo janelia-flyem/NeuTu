@@ -3,8 +3,8 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 
 #ifdef _QT_GUI_USED_
 #include <QString>

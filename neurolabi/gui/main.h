@@ -9,7 +9,7 @@
 
 #include "neutube.h"
 #include "zneurontracer.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 #include "zjsonparser.h"
 #include "zcommandline.h"
@@ -60,7 +60,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #endif    // qt version > 5.0.0
 #endif
 
-namespace neutube {
+namespace neutu {
 static std::string UserName;
 }
 

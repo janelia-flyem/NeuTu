@@ -21,7 +21,7 @@ void ZFlyEmSynapseDataUpdater::updateData(ZFlyEmSynapseDataFetcher *fetcher)
 {
   fetcher->addSynapse(m_se);
   m_doc->getDataBuffer()->addUpdate(
-        m_se, ZStackDocObjectUpdate::ACTION_UPDATE);
+        m_se, ZStackDocObjectUpdate::EAction::UPDATE);
   m_doc->getDataBuffer()->deliver();
 //  m_doc->processObjectModified(m_se);
 //  m_doc->notifyObjectModified();

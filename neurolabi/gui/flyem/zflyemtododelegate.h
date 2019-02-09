@@ -1,7 +1,7 @@
 #ifndef ZFLYEMTODODELEGATE_H
 #define ZFLYEMTODODELEGATE_H
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZStackDoc;
 
@@ -12,7 +12,7 @@ public:
   ~ZFlyEmToDoDelegate() = default;
 
 public:
-  void add(int x, int y, int z, bool checked, neutube::EToDoAction action,
+  void add(int x, int y, int z, bool checked, neutu::EToDoAction action,
            uint64_t bodyId);
 
 private:

@@ -1,7 +1,7 @@
 #include "zflyemroiobjsmodel.h"
 
 #include "zstackdoc.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 #include "zobjsitem.h"
 

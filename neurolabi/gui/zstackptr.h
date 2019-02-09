@@ -1,11 +1,11 @@
 #ifndef ZSTACKPTR_H
 #define ZSTACKPTR_H
 
-#include "zsharedpointer.h"
+#include <memory>
 
 class ZStack;
 
-class ZStackPtr : public ZSharedPointer<ZStack>
+class ZStackPtr : public std::shared_ptr<ZStack>
 {
 public:
   ZStackPtr();

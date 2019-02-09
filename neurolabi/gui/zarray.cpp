@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZArray::ZArray() : m_data(NULL)
 {

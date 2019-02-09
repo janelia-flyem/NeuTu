@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidinfo.h"
-#include "dvid/zdvidbuffer.h"
+//#include "dvid/zdvidbuffer.h"
 #include "dvid/zdvidtarget.h"
 #include "dialogs/zdviddialog.h"
 #include "zstring.h"
@@ -13,7 +13,7 @@
 #include "dvid/zdviddata.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidnode.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zobject3dscan.h"
 
 #ifdef _USE_GTEST_
@@ -77,13 +77,13 @@ TEST(ZDvidTest, ZDvidInfo)
 
 TEST(ZDvidTest, Util)
 {
-  ASSERT_TRUE(ZDvid::IsUuidMatched("12345", "123"));
-  ASSERT_TRUE(ZDvid::IsUuidMatched("aad345", "aad"));
-  ASSERT_TRUE(ZDvid::IsUuidMatched("123", "123fwrq424q"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("", "123"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", ""));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", "12346"));
-  ASSERT_FALSE(ZDvid::IsUuidMatched("234", "12346"));
+  ASSERT_TRUE(dvid::IsUuidMatched("12345", "123"));
+  ASSERT_TRUE(dvid::IsUuidMatched("aad345", "aad"));
+  ASSERT_TRUE(dvid::IsUuidMatched("123", "123fwrq424q"));
+  ASSERT_FALSE(dvid::IsUuidMatched("", "123"));
+  ASSERT_FALSE(dvid::IsUuidMatched("12345", ""));
+  ASSERT_FALSE(dvid::IsUuidMatched("12345", "12346"));
+  ASSERT_FALSE(dvid::IsUuidMatched("234", "12346"));
 }
 
 TEST(ZDvidTest, ZDvidUrl)
@@ -124,13 +124,13 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getDataUrl("test"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE,
-                               ZDvidData::ROLE_BODY_LABEL, "bodies"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
+                               ZDvidData::ERole::BODY_LABEL, "bodies"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ROLE_GRAY_SCALE,
-                               ZDvidData::ROLE_BODY_LABEL, "bodies2"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
+                               ZDvidData::ERole::BODY_LABEL, "bodies2"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/info",
             dvidUrl.getInfoUrl("test"));
 
@@ -399,7 +399,8 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("",
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("",
-            dvidUrl.getSynapseLabelszUrl(ZDvid::INDEX_ALL_SYN));
+            dvidUrl.getSynapseLabelszUrl(
+              0, dvid::ELabelIndexType::ALL_SYN));
 
   target.setSynapseName("synapse");
   dvidUrl.setDvidTarget(target);
@@ -416,7 +417,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1",
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
-            dvidUrl.getSynapseLabelszUrl(1, ZDvid::INDEX_ALL_SYN));
+            dvidUrl.getSynapseLabelszUrl(1, dvid::ELabelIndexType::ALL_SYN));
 
   target.setSegmentationName("labelstest");
   target.setMaxLabelZoom(5);
@@ -452,7 +453,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
 
 //  target.useLabelArray(true);
-  target.setSegmentationType(ZDvidData::TYPE_LABELARRAY);
+  target.setSegmentationType(ZDvidData::EType::LABELARRAY);
   dvidUrl4.setDvidTarget(target, "3456");
 //  std::cout << target.getBodyLabelName() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
@@ -462,22 +463,22 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSparsevolUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?minx=2&maxx=2&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, neutube::EAxis::X));
+            dvidUrl4.getSparsevolUrl(1, 2, neutu::EAxis::X));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?miny=2&maxy=2&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, neutube::EAxis::Y));
+            dvidUrl4.getSparsevolUrl(1, 2, neutu::EAxis::Y));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?minz=2&maxz=2&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, neutube::EAxis::Z));
+            dvidUrl4.getSparsevolUrl(1, 2, neutu::EAxis::Z));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?minx=2&maxx=3&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::EAxis::X));
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutu::EAxis::X));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?miny=2&maxy=3&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::EAxis::Y));
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutu::EAxis::Y));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?minz=2&maxz=3&exact=true",
-            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::EAxis::Z));
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutu::EAxis::Z));
   ZIntCuboid box(10, 20, 30, 40, 50, 60);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?minx=10&maxx=40&miny=20&maxy=50&minz=30&maxz=60",
@@ -492,7 +493,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true",
             dvidUrl4.getSupervoxelUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&minz=2&maxz=3&exact=true",
-            dvidUrl4.getSupervoxelUrl(1, 2, 3, neutube::EAxis::Z));
+            dvidUrl4.getSupervoxelUrl(1, 2, 3, neutu::EAxis::Z));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
             dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
 
@@ -519,7 +520,7 @@ TEST(ZDvidTest, ZDvidUrl)
             ZDvidUrl::ExtractSplitTaskKey(
               "http://localhost:8000/api/node/4d3e/split/key/"));
 
-  target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  target.setSegmentationType(ZDvidData::EType::LABELMAP);
   std::cout << target.getSegmentationName() << std::endl;
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
@@ -814,15 +815,15 @@ TEST(ZDvidTest, ZDvidTarget)
 
 TEST(ZDvidTest, DataType)
 {
-  ASSERT_EQ(ZDvid::TYPE_LABELBLK, ZDvid::GetDataType("labelblk"));
-  ASSERT_EQ(ZDvid::TYPE_ANNOTATION, ZDvid::GetDataType("annotation"));
-  ASSERT_EQ(ZDvid::TYPE_IMAGETILE, ZDvid::GetDataType("imagetile"));
-  ASSERT_EQ(ZDvid::TYPE_KEYVALUE, ZDvid::GetDataType("keyvalue"));
-  ASSERT_EQ(ZDvid::TYPE_LABELGRAPH, ZDvid::GetDataType("labelgraph"));
-  ASSERT_EQ(ZDvid::TYPE_LABELSZ, ZDvid::GetDataType("labelsz"));
-  ASSERT_EQ(ZDvid::TYPE_LABELVOL, ZDvid::GetDataType("labelvol"));
-  ASSERT_EQ(ZDvid::TYPE_ROI, ZDvid::GetDataType("roi"));
-  ASSERT_EQ(ZDvid::TYPE_UINT8BLK, ZDvid::GetDataType("uint8blk"));
+  ASSERT_EQ(dvid::EDataType::LABELBLK, dvid::GetDataType("labelblk"));
+  ASSERT_EQ(dvid::EDataType::ANNOTATION, dvid::GetDataType("annotation"));
+  ASSERT_EQ(dvid::EDataType::IMAGETILE, dvid::GetDataType("imagetile"));
+  ASSERT_EQ(dvid::EDataType::KEYVALUE, dvid::GetDataType("keyvalue"));
+  ASSERT_EQ(dvid::EDataType::LABELGRAPH, dvid::GetDataType("labelgraph"));
+  ASSERT_EQ(dvid::EDataType::LABELSZ, dvid::GetDataType("labelsz"));
+  ASSERT_EQ(dvid::EDataType::LABELVOL, dvid::GetDataType("labelvol"));
+  ASSERT_EQ(dvid::EDataType::ROI, dvid::GetDataType("roi"));
+  ASSERT_EQ(dvid::EDataType::UINT8BLK, dvid::GetDataType("uint8blk"));
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e2f0", 7000);

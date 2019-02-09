@@ -1,6 +1,6 @@
 #include "zstackblockfactory.h"
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 ZStackBlockFactory::ZStackBlockFactory()
 {

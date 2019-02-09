@@ -20,6 +20,11 @@ public:
   ZJsonObject getContrastProtocal() const;
   void setContrastProtocol(const ZJsonObject &protocolJson);
 
+signals:
+  void protocolChanged();
+  void canceled();
+  void committing();
+
 private:
   Ui::ZContrastProtocalDialog *ui;
 };

@@ -57,7 +57,7 @@ public:
   ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_OBJECT3D_SCAN;
+    return ZStackObject::EType::OBJECT3D_SCAN;
   }
 
   /*!
@@ -89,6 +89,13 @@ public:
    * \param z The slice position.
    */
   size_t getVoxelNumber(int z) const;
+
+  /*!
+   * \brief Count the memory bytes used by the segments
+   *
+   * Meta information is ignored in byte counting.
+   */
+  size_t getByteCount() const;
 
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
@@ -147,7 +154,7 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
@@ -214,7 +221,7 @@ public:
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width, int dim,
-                int start, neutube::EAxis axis);
+                int start, neutu::EAxis axis);
 
   template<class T>
   int scanArrayShift(
@@ -327,7 +334,7 @@ public:
   ZObject3dScan *chopY(int y, ZObject3dScan *remain, ZObject3dScan *result) const;
 
   ZObject3dScan* chop(
-      int v, neutube::EAxis axis, ZObject3dScan *remain,
+      int v, neutu::EAxis axis, ZObject3dScan *remain,
       ZObject3dScan *result) const;
 
   /*!
@@ -380,11 +387,11 @@ public:
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
@@ -452,8 +459,8 @@ public:
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutube::EAxis sliceAxis) const;
-  virtual const std::string& className() const;
+      neutu::EAxis sliceAxis) const;
+//  virtual const std::string& className() const;
 
   void dilate();
   void dilatePlane();
@@ -626,7 +633,7 @@ public:
   bool importHdf5(const std::string &filePath, const std::string &key);
 
   /*!
-   * \brief Saven object to an HDF5 file.
+   * \brief Save object to an HDF5 file.
    *
    * If \a filePath exists, the function will try to write the object with the
    * appending mode; otherwise it will try to create a new HDF5 file.
@@ -650,7 +657,7 @@ public:
    * \brief Check if an object is ajacent to another
    */
   bool isAdjacentTo(const ZObject3dScan &obj,
-                    neutube::EStackNeighborhood nbr = neutube::EStackNeighborhood::D1) const;
+                    neutu::EStackNeighborhood nbr = neutu::EStackNeighborhood::D1) const;
 
 
   /*

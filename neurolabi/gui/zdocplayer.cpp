@@ -330,7 +330,7 @@ void ZDocPlayerList::printUnsync() const
   for (QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
        iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
-    std::cout << player->getData()->className() << std::endl;
+    std::cout << player->getData()->getTypeName() << std::endl;
   }
 }
 
@@ -397,7 +397,7 @@ ZJsonObject ZStroke2dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;
@@ -611,7 +611,7 @@ ZJsonObject ZObject3dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;

@@ -9,9 +9,9 @@
 
 #include "zhistogram.h"
 #include "zobject3dscan.h"
-#include "neutube_def.h"
-#include "zintcuboidarray.h"
-#include "zpointarray.h"
+#include "common/neutube_def.h"
+#include "geometry/zintcuboidarray.h"
+#include "geometry/zpointarray.h"
 #include "ztree.h"
 #include "zarray.h"
 
@@ -33,7 +33,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 /*!
  * \brief Y normal of a binary stack
  */
-Stack* computeNormal(const Stack *stack, neutube::EAxis axis);
+Stack* computeNormal(const Stack *stack, neutu::EAxis axis);
 
 int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 

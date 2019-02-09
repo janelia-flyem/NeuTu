@@ -12,7 +12,7 @@
 #include "z3dgpuinfo.h"
 #include "z3dtexture.h"
 #include "zexception.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DCanvasPainter::Z3DCanvasPainter(Z3DGlobalParameters& globalParas, Z3DCanvas& canvas, QObject* parent)
   : Z3DBoundedFilter(globalParas, parent)

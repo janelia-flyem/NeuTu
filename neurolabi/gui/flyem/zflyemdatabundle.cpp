@@ -18,7 +18,7 @@
 #include "dvid/zdvidfilter.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
@@ -161,8 +161,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
 //  m_synapseAnnotationFile = dvidTarget.getSourceString();
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                           ZDvidData::ERole::BODY_LABEL,
                            dvidTarget.getBodyLabelName()).c_str());
   std::set<uint64_t> annotationSet;
   foreach (const QString &idStr, annotationList) {
@@ -691,64 +691,64 @@ double ComputeOverallResultion(const double *res)
 }
 }
 
-double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
+double ZFlyEmDataBundle::getImageResolution(neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_imageResolution[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_imageResolution[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_imageResolution[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     return ComputeOverallResultion(m_imageResolution);
   }
 
   return 1.0;
 }
 
-double ZFlyEmDataBundle::getSwcResolution(neutube::EAxis axis)
+double ZFlyEmDataBundle::getSwcResolution(neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_swcResolution[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_swcResolution[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_swcResolution[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     return ComputeOverallResultion(m_swcResolution);
   }
 
   return 1.0;
 }
 
-int ZFlyEmDataBundle::getSourceDimension(neutube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceDimension(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_sourceDimension[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_sourceDimension[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_sourceDimension[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
   return 0;
 }
 
-int ZFlyEmDataBundle::getSourceOffset(neutube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceOffset(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_sourceOffset[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_sourceOffset[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_sourceOffset[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

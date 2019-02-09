@@ -132,7 +132,7 @@ public: /* File and message dialogs */
   QString getDirectory(const QString &caption);
 
   void report(const std::string &title, const std::string &msg,
-              neutube::EMessageType msgType);
+              neutu::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
   QMenu* getSandboxMenu() const;
@@ -194,17 +194,17 @@ public slots:
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      ZStack *stack,neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      Stack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      Stack *stack,neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
-      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL);
+      neutu::Document::ETag tag = neutu::Document::ETag::NORMAL);
 
   ZStackFrame* showStackDoc(ZStackDocPtr doc);
   ZStackFrame* showStackDoc(ZStackDoc *doc);
@@ -255,7 +255,6 @@ private slots:
   void on_actionSave_As_triggered();
   //void on_actionFrom_SWC_triggered();
   void on_actionAdd_Reference_triggered();
-  void on_actionLoad_triggered();
   void on_actionSave_triggered();
   void on_actionManual_triggered();
   void on_actionAbout_iTube_triggered();
@@ -352,7 +351,6 @@ private slots:
   void on_actionShortest_Path_Flow_triggered();
   void on_actionExpand_Region_triggered();
   void on_actionDilate_triggered();
-  void on_actionExtract_Neuron_triggered();
   void on_actionSkeletonization_triggered();
   void on_actionPixel_triggered();
 
@@ -434,8 +432,6 @@ private slots:
   void on_actionBody_Split_Project_triggered();
 
   void on_actionSplit_Body_triggered();
-
-  void on_actionUpdate_Skeletons_triggered();
 
   void on_actionCreate_Databundle_triggered();
 

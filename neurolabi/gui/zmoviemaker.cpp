@@ -50,7 +50,7 @@ void ZMovieMaker::dismissCast()
 
 void ZMovieMaker::prepareStage()
 {
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::INIT_NORMAL);
+  Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::EInitMode::NORMAL);
   m_stage = new ZMovieStage(window);
 
 //  window->getDocument()->disconnectPunctaModelUpdate();
@@ -77,7 +77,7 @@ void ZMovieMaker::prepareStage()
 //  window->getAxis()->setVisible(m_showingAxis);
 
 
-  window->getFilter(neutube3d::LAYER_SURFACE)->setOpacity(0.85);
+  window->getFilter(neutube3d::ERendererLayer::SURFACE)->setOpacity(0.85);
 
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
@@ -117,7 +117,7 @@ void ZMovieMaker::recruitCast()
       obj.load(iter->second);
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
-            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+            flyem::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
         cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
@@ -134,7 +134,7 @@ void ZMovieMaker::recruitCast()
       obj.importDvidRoi(iter->second);
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
-            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+            flyem::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
         cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;

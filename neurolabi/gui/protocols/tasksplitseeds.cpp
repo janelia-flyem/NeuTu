@@ -11,7 +11,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "flyem/zflyembody3ddoc.h"
 
 TaskSplitSeeds::TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)

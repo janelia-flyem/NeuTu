@@ -3,10 +3,10 @@
 
 #include <stdlib.h>
 #include <map>
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zmouseeventrecorder.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZInteractiveContext;
 class QMouseEvent;

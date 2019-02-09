@@ -46,7 +46,7 @@ void ZPunctum::init(double x, double y, double z, double r)
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
-  setVisualEffect(neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  setVisualEffect(neutu::display::Sphere::VE_OUT_FOCUS_DIM);
   m_type = GetType();
   m_score = 1.0;
 }
@@ -246,4 +246,4 @@ int ZPunctum::getTypeFromSource() const
   return type;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

@@ -5,8 +5,8 @@
 
 class ZStackDoc;
 class QWidget;
-class ZActionActivator;
-class ZStackPresenter;
+//class ZActionActivator;
+//class ZStackPresenter;
 class QUndoStack;
 
 /*!

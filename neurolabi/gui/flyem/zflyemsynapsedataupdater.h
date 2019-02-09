@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZDvidSynapseEnsemble;
 class ZFlyEmSynapseDataFetcher;

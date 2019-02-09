@@ -2,8 +2,9 @@
 
 #include <QElapsedTimer>
 
+#include "logging/zlog.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"
@@ -158,7 +159,10 @@ void ZFlyEmBodySplitter::runSplit(
     doc->releaseBody(getBodyId(), getLabelType());
   }
 
-  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
+  LKINFO << QString("Splitting time for %1 (T%2) with range %3: %4ms")
+            .arg(getBodyId()).arg(neutu::EnumValue(getLabelType()))
+            .arg(neutu::EnumValue(rangeOption)).arg(timer.elapsed());
+//  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
 }
 
 ZFlyEmBodySplitter::EState ZFlyEmBodySplitter::getState() const
@@ -238,6 +242,6 @@ void ZFlyEmBodySplitter::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::EMessageType::INFORMATION,
+          message, neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }

@@ -21,12 +21,12 @@
 #include "tz_math.h"
 #include "swc/zswcresampler.h"
 #include "tz_stack_threshold.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 
 using namespace std;
 
-const size_t ZStackSkeletonizer::m_sizeLimit = neutube::ONEGIGA;
+const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),

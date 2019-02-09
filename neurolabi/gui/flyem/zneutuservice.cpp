@@ -103,7 +103,7 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
 
       int statusCode;
       QMutexLocker locker(&m_connectionMutex);
-      ZDvid::MakePostRequest(*m_connection, GetBodyUpdatePath(),  obj, statusCode);
+      dvid::MakePostRequest(*m_connection, GetBodyUpdatePath(),  obj, statusCode);
 
       if (statusCode != 200) {
         status = REQUEST_FAILED;
@@ -136,22 +136,22 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
 void ZNeutuService::reset()
 {
   m_server.clear();
-  m_status = STATUS_DOWN;
+  m_status = EStatus::DOWN;
   m_connection.reset();
 }
 
 void ZNeutuService::updateStatus()
 {
-  m_status = STATUS_DOWN;
+  m_status = EStatus::DOWN;
 #if defined(_FLYEM_)
   if (!m_server.empty()) {
     int statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
     if (m_connection) {
       QMutexLocker locker(&m_connectionMutex);
-      if (ZDvid::MakeGetRequest(*m_connection, GetHomePath(), statusCode)) {
+      if (dvid::MakeGetRequest(*m_connection, GetHomePath(), statusCode)) {
         if (statusCode == 200) {
-          m_status = STATUS_NORMAL;
+          m_status = EStatus::NORMAL;
         }
       }
     }
@@ -162,5 +162,5 @@ void ZNeutuService::updateStatus()
 
 bool ZNeutuService::isNormal() const
 {
-  return getStatus() == STATUS_NORMAL;
+  return getStatus() == EStatus::NORMAL;
 }

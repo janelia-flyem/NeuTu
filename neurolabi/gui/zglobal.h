@@ -5,7 +5,7 @@
 #include <map>
 #include <QObject>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZIntPoint;
 class ZPoint;
@@ -76,6 +76,8 @@ public:
 
   NeuPrintReader* makeNeuPrintReader();
   NeuPrintReader* makeNeuPrintReader(const QString &uuid);
+
+  static void InitKafkaTracer();
 
 public:
   static ZDvidReader* GetDvidReader(

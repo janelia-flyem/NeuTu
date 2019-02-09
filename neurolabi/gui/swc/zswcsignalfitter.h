@@ -1,7 +1,7 @@
 #ifndef ZSWCSIGNALFITTER_H
 #define ZSWCSIGNALFITTER_H
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "swctreenode.h"
 
 class ZStack;
@@ -12,7 +12,7 @@ class ZSwcSignalFitter
 public:
   ZSwcSignalFitter();
 
-  void setBackground(neutube::EImageBackground bg) {
+  void setBackground(neutu::EImageBackground bg) {
     m_background = bg;
   }
 
@@ -20,7 +20,7 @@ public:
     m_fixingTerminal = on;
   }
 
-  neutube::EImageBackground getBackground() const {
+  neutu::EImageBackground getBackground() const {
     return m_background;
   }
 
@@ -32,7 +32,7 @@ private:
   void init();
 
 private:
-  neutube::EImageBackground m_background;
+  neutu::EImageBackground m_background;
   bool m_fixingTerminal;
 
 };

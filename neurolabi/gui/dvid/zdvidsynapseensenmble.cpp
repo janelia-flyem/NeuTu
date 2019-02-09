@@ -9,7 +9,7 @@
 #include "zdvidurl.h"
 #include "zpainter.h"
 #include "tz_math.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidwriter.h"
 #include "zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "geometry/zgeometry.h"
@@ -43,11 +43,11 @@ void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 void ZDvidSynapseEnsemble::init()
 {
   m_startZ = 0;
-  m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
+  m_type = EType::DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::EAxis::Z;
-  addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
+  m_sliceAxis = neutu::EAxis::Z;
+  addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
 }
@@ -698,7 +698,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
 
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   QMutexLocker locker(&m_dataMutex);
 
@@ -734,7 +734,7 @@ void ZDvidSynapseEnsemble::display(
 
           if (!ready && m_view != NULL) {
             ready = synapseSlice.isReady(
-                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
+                  m_view->getViewPort(neutu::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -773,7 +773,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN &&
-                hasVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT)) {
+                hasVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = EDisplayStyle::SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -1137,7 +1137,7 @@ std::ostream& operator<< (
   return stream;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapseEnsemble)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapseEnsemble)
 
 ///////////////////Helper Classes///////////////////
 QVector<ZDvidSynapseEnsemble::SynapseSlice>
@@ -1327,7 +1327,7 @@ ZDvidSynapseEnsemble::SynapseSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZDvidSynapseEnsemble::SynapseSlice::addSynapse(
-    const ZDvidSynapse &synapse, neutube::EAxis sliceAxis)
+    const ZDvidSynapse &synapse, neutu::EAxis sliceAxis)
 {
   ZIntPoint center = synapse.getPosition();
   center.shiftSliceAxis(sliceAxis);

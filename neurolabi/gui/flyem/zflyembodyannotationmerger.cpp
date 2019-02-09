@@ -114,6 +114,21 @@ bool ZFlyEmBodyAnnotationMerger::isFinal(const std::string &status) const
   return getBodyStatus(status).isFinal();
 }
 
+bool ZFlyEmBodyAnnotationMerger::isMergable(const std::string &status) const
+{
+  return getBodyStatus(status).isMergable();
+}
+
+bool ZFlyEmBodyAnnotationMerger::isAdminAccessible(const std::string &status) const
+{
+  return getBodyStatus(status).isAdminAccessible();
+}
+
+bool ZFlyEmBodyAnnotationMerger::isExpertStatus(const std::string &status) const
+{
+  return getBodyStatus(status).isExpertStatus();
+}
+
 std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationMerger::getConflictBody(
     const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
 {

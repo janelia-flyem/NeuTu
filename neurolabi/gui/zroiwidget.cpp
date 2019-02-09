@@ -137,7 +137,7 @@ void ZROIWidget::makeGUI()
     m_selectAll->setChecked(false);
 
     //
-    double alpha = m_window->getFilter(neutube3d::LAYER_ROI)->opacity();
+    double alpha = m_window->getFilter(neutube3d::ERendererLayer::ROI)->opacity();
  //   double alpha = m_window->getSurfaceFilter()->getOpacity();
     m_opacityLabel = new QLabel(tr(" Opacity: %1").arg(alpha));
     m_opacitySlider = new QSlider(Qt::Horizontal);
@@ -230,7 +230,7 @@ void ZROIWidget::makeGUI()
             this, SLOT(updateROISelections(QModelIndex)));
     connect(m_selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
     connect(m_opacitySlider,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
-    connect(m_window->getFilter(neutube3d::LAYER_ROI), SIGNAL(opacityChanged(double)),
+    connect(m_window->getFilter(neutube3d::ERendererLayer::ROI), SIGNAL(opacityChanged(double)),
             this,SLOT(updateOpacity(double)));
 }
 
@@ -347,7 +347,7 @@ void ZROIWidget::updateROIs()
 #endif
 
       ZStackObject *obj = m_window->getDocument()->getObject(
-            ZStackObject::TYPE_MESH, m_roiSourceList[i]);
+            ZStackObject::EType::MESH, m_roiSourceList[i]);
       ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
       if(it->checkState()==Qt::Checked) { //visible meshes
@@ -468,7 +468,7 @@ void ZROIWidget::updateSlider(int v)
 
     if(m_window)
     {
-      m_window->setOpacityQuietly(neutube3d::LAYER_ROI, alpha);
+      m_window->setOpacityQuietly(neutube3d::ERendererLayer::ROI, alpha);
 //        m_window->get()->setOpacity(alpha);
     }
 }

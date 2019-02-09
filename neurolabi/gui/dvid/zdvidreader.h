@@ -13,16 +13,14 @@
 #include <vector>
 #include <tuple>
 
-//#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zclosedcurve.h"
-#include "dvid/zdvidinfo.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidsynapse.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
+#include "zdvidinfo.h"
+#include "zdvidtarget.h"
+#include "zdvidsynapse.h"
+#include "zdvidbufferreader.h"
+#include "zdvidurl.h"
 #include "znetbufferreader.h"
-
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
@@ -124,7 +122,7 @@ public:
     return m_errorMsg;
   }
 
-  ZDvid::ENodeStatus getNodeStatus() const;
+  dvid::ENodeStatus getNodeStatus() const;
   void updateNodeStatus();
 
   ZDvidBufferReader& getBufferReader() const {
@@ -154,19 +152,19 @@ public:
       uint64_t bodyId, int xIntv, int yIntv, int zIntv,
       bool canonizing, ZObject3dScan *result);
 
-  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
-                          int z, neutube::EAxis axis,
+                          int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
+                          neutu::EAxis axis, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
                           int minZ, int maxZ, bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
+                          neutu::EAxis axis, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
@@ -301,9 +299,10 @@ public:
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
       const QString &dataName, const QString &key) const;
-  QList<ZJsonObject> readJsonObjectsFromKeys(const QString &dataName, const QStringList &keyList) const;
+  QList<ZJsonObject> readJsonObjectsFromKeys(
+      const QString &dataName, const QStringList &keyList) const;
 
-  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
+  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result) const;
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
@@ -397,12 +396,12 @@ public:
                          */
 
   int readSynapseLabelszBody(
-      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
+      uint64_t bodyId, dvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelsz(int n, dvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(
-      int threshold, ZDvid::ELabelIndexType index) const;
+      int threshold, dvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(
-      int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
+      int threshold, dvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -569,12 +568,12 @@ public:
 
   std::string readMirror() const;
 
-  enum EReadOption {
-    READ_CURRENT, READ_TRACE_BACK
+  enum class EReadOption {
+    CURRENT, TRACE_BACK
   };
 
   ZJsonObject readDefaultDataSetting(
-      EReadOption option = ZDvidReader::READ_CURRENT) const;
+      EReadOption option = ZDvidReader::EReadOption::CURRENT) const;
 
   ZJsonObject readDataMap() const;
 

@@ -6,7 +6,7 @@
 #include "zstackdoc.h"
 #include "zpunctum.h"
 #include "zobjsitem.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "zstackobjectinfo.h"
 
@@ -86,8 +86,8 @@ const std::vector<ZPunctum *> *ZPunctaObjsModel::getPuncta(const QModelIndex &in
 
 void ZPunctaObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  if (infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTA) ||
-      infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTUM)) {
+  if (infoSet.hasObjectModified(ZStackObject::EType::PUNCTA) ||
+      infoSet.hasObjectModified(ZStackObject::EType::PUNCTUM)) {
     updateModelData();
   }
 }
@@ -124,7 +124,7 @@ void ZPunctaObjsModel::updateModelData()
 
   ZOUT(LTRACE(), 5) << "Update puncta model";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::PUNCTUM)));
   setupModelData(m_rootItem);
   endResetModel();
 
@@ -142,7 +142,7 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
   m_punctaSeparatedByFile.clear();
   int sourceParentRow = 0;
   QList<ZPunctum*> punctaList = m_doc->getPunctumList();
-  int numDigit = neutube::numDigits(punctaList.size()+1);
+  int numDigit = neutu::numDigits(punctaList.size()+1);
   for (int i=0; i<punctaList.size(); i++) {
     data.clear();
     ZPunctum *p = punctaList.at(i);

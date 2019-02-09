@@ -2,13 +2,14 @@
 #define ZSTACKVIEWPARAM_H
 
 #include <QRect>
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 #include "zviewproj.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 
 class ZArbSliceViewParam;
+class ZJsonObject;
 
 /*!
  * \brief The class of stack view parameter
@@ -17,9 +18,9 @@ class ZStackViewParam
 {
 public:
   ZStackViewParam();
-  ZStackViewParam(neutube::ECoordinateSystem coordSys);
+  ZStackViewParam(neutu::ECoordinateSystem coordSys);
 
-  inline neutube::ECoordinateSystem getCoordinateSystem() const {
+  inline neutu::ECoordinateSystem getCoordinateSystem() const {
     return m_coordSys;
   }
 
@@ -35,7 +36,7 @@ public:
   QRect getViewPort() const;
   QRectF getProjRect() const;
 
-  inline neutube::View::EExploreAction getExploreAction() const {
+  inline neutu::View::EExploreAction getExploreAction() const {
     return m_action;
   }
 
@@ -63,9 +64,9 @@ public:
   void closeViewPort();
   void openViewPort();
 
-  void setExploreAction(neutube::View::EExploreAction action);
-  void setSliceAxis(neutube::EAxis sliceAxis);
-  neutube::EAxis getSliceAxis() const;
+  void setExploreAction(neutu::View::EExploreAction action);
+  void setSliceAxis(neutu::EAxis sliceAxis);
+  neutu::EAxis getSliceAxis() const;
 
   bool operator ==(const ZStackViewParam &param) const;
   bool operator !=(const ZStackViewParam &param) const;
@@ -95,7 +96,6 @@ public:
     return m_viewProj;
   }
 
-
   ZArbSliceViewParam getSliceViewParam() const;
   void setArbSliceCenter(const ZIntPoint &pt);
   void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
@@ -104,16 +104,19 @@ public:
 
   bool onSamePlane(const ZStackViewParam &param) const;
 
+  std::string toString() const;
+  ZJsonObject toJsonObject() const;
+
 private:
-  void init(neutube::ECoordinateSystem coordSys);
+  void init(neutu::ECoordinateSystem coordSys);
 
 private:
   int m_z;
   ZViewProj m_viewProj;
   int m_z0 = 0;
-  neutube::ECoordinateSystem m_coordSys;
-  neutube::View::EExploreAction m_action;
-  neutube::EAxis m_sliceAxis;
+  neutu::ECoordinateSystem m_coordSys;
+  neutu::View::EExploreAction m_action;
+  neutu::EAxis m_sliceAxis;
   bool m_fixingZ;
 
   //For arb slice (m_sliceAxis is neutube::A_AXIS)

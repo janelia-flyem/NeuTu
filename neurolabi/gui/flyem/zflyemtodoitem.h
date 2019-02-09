@@ -22,12 +22,12 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-  const std::string& className() const;
+//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_TODO_ITEM;
+    return ZStackObject::EType::FLYEM_TODO_ITEM;
   }
 
   friend std::ostream& operator<< (
@@ -37,8 +37,8 @@ public:
   void setChecked(bool checked);
   int getPriority() const;
 
-  void setAction(neutube::EToDoAction action);
-  neutube::EToDoAction getAction() const;
+  void setAction(neutu::EToDoAction action);
+  neutu::EToDoAction getAction() const;
 
   void setAction(const std::string &action);
 
@@ -50,7 +50,7 @@ public:
 
 private:
   void syncActionTag();
-  static std::string GetActionTag(neutube::EToDoAction action);
+  static std::string GetActionTag(neutu::EToDoAction action);
 
 public:
   static const char *ACTION_KEY;
@@ -64,7 +64,7 @@ public:
   static const char *ACTION_IRRELEVANT_TAG;
   static const char *ACTION_MERGE_TAG;
 
-  static const std::map<std::string, neutube::EToDoAction> m_actionMap;
+  static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 
 private:
   void init();

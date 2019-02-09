@@ -2,7 +2,7 @@
 #define ZSTTRANSFORM_H
 
 
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 
 class ZPoint;
 class QPointF;
@@ -69,8 +69,8 @@ public:
     return z * m_sz + m_dz;
   }
 
-  double getScale(neutube::EAxis axis) const;
-  double getOffset(neutube::EAxis axis) const;
+  double getScale(neutu::EAxis axis) const;
+  double getOffset(neutu::EAxis axis) const;
   ZPoint getOffset() const;
 
   bool isIntTransform() const;
@@ -104,7 +104,7 @@ public:
 
   void estimate(
       double source0, double source1, double target0, double target1,
-      neutube::EAxis axis);
+      neutu::EAxis axis);
 
 private:
   double m_sx;

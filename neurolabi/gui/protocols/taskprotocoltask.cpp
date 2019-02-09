@@ -1,6 +1,6 @@
 #include "taskprotocoltask.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "protocoltaskconfig.h"
 
 /*
@@ -149,7 +149,7 @@ void TaskProtocolTask::beforeDone() {
  * (e.g., because when the task loaded itself it discovered that
  * it was redundant in some sense)
  */
-bool TaskProtocolTask::skip()
+bool TaskProtocolTask::skip(QString &)
 {
   return false;
 }
@@ -356,7 +356,7 @@ ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
 
   return config;
 }

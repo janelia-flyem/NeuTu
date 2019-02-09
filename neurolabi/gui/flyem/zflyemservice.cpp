@@ -1,15 +1,15 @@
 #include "zflyemservice.h"
-#include "dvid/zdvidreader.h"
-#include "zintpairmap.h"
 #include "tz_math.h"
 #include "tz_error.h"
+#include "zstring.h"
+#include "geometry/zintcuboid.h"
+#include "zintpairmap.h"
+#include "zstack.hxx"
 #include "neutube.h"
 #include "neutubeconfig.h"
-#include "zstring.h"
+#include "dvid/zdvidreader.h"
 #include "flyem/zsynapseannotation.h"
 #include "flyem/zsynapseannotationarray.h"
-#include "zintcuboid.h"
-#include "zstack.hxx"
 
 flyem::Service::FaceOrphanOverlap::FaceIndex::FaceIndex() :
   m_cuboidIndex(-1), m_faceIndex(-1)

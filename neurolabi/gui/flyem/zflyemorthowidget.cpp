@@ -3,7 +3,7 @@
 #include <QGridLayout>
 #include <QKeyEvent>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthomvc.h"
 #include "dvid/zdvidtarget.h"
@@ -41,16 +41,16 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target,
       ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc(width, height, depth));
   sharedDoc->setDvidTarget(target);
 
-  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Z);
+  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::Z);
   m_xyMvc->setDvidLabelSliceSize(width, height);
 //  xyWidget->setDvidTarget(target);
 //  m_xyMvc->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
 
-  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::X);
+  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::X);
   m_yzMvc->setDvidLabelSliceSize(depth, height);
 //  yzWidget->setDvidTarget(target);
 
-  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Y);
+  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::Y);
   m_xzMvc->setDvidLabelSliceSize(width, depth);
 //  xzWidget->setDvidTarget(target);
 
@@ -251,12 +251,16 @@ void ZFlyEmOrthoWidget::resetCrosshair()
   center.setZ(m_xzMvc->getViewScreenSize().height() / 2);
 
   getDocument()->setCrossHairCenter(center);
-  m_xyMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_xyMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
   syncCrossHairWith(m_xyMvc);
 }
 
 void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
 {
+  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    m_controlForm->dump(message);
+  }
+  /*
   switch (message.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
@@ -265,6 +269,7 @@ void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
   default:
     break;
   }
+  */
 }
 
 void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)
@@ -299,7 +304,7 @@ void ZFlyEmOrthoWidget::showCrosshair(bool on)
 {
   getDocument()->getCrossHair()->setVisible(on);
   foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
-    mvc->getView()->updateImageScreen(ZStackView::UPDATE_DIRECT);
+    mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::DIRECT);
   }
 }
 
@@ -327,16 +332,16 @@ void ZFlyEmOrthoWidget::toggleData()
 
 void ZFlyEmOrthoWidget::updateImageScreen()
 {
-  m_xyMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-  m_yzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-  m_xzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_xyMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  m_yzMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  m_xzMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
 void ZFlyEmOrthoWidget::syncImageScreenWith(ZFlyEmOrthoMvc *mvc)
 {
   foreach (ZFlyEmOrthoMvc *tmpMvc, m_mvcArray) {
     if (tmpMvc != mvc) {
-      tmpMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+      tmpMvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
     }
   }
 }
@@ -395,7 +400,7 @@ void ZFlyEmOrthoWidget::endCrossHairSync()
 
 void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
+  if (mvc->getView()->getSliceAxis() == neutu::EAxis::ARB) {
     return;
   }
 
@@ -405,19 +410,19 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     helper.syncCrossHair(m_yzMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
@@ -426,7 +431,7 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
+  if (mvc->getView()->getSliceAxis() == neutu::EAxis::ARB) {
     return;
   }
 
@@ -436,26 +441,26 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     helper.syncViewPort(m_yzMvc);
     helper.syncViewPort(m_xzMvc);
 
 //    m_yzMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(mvc->getView());
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_xzMvc);
 //    m_xyMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());
 //    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

@@ -90,15 +90,15 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getCompositor()->setShowBackground(false);
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT) {
       window->getSwcFilter()->setRenderingPrimitive("Sphere");
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
 
-    if (m_volumeMode == neutube3d::VR_AUTO) {
-      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY ||
-          doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT ||
-          doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (m_volumeMode == neutube3d::EVolumeRenderingMode::VR_AUTO) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
         window->getVolumeFilter()->setCompositeMode(
               "Direct Volume Rendering");
       } else {
@@ -109,9 +109,9 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getVolumeFilter()->setCompositeMode(
             neutube3d::GetVolumeRenderingModeName(m_volumeMode));
     }
-    if (doc->getTag() != neutube::Document::ETag::FLYEM_SPLIT &&
-        doc->getTag() != neutube::Document::ETag::SEGMENTATION_TARGET &&
-        doc->getTag() != neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() != neutu::Document::ETag::FLYEM_SPLIT &&
+        doc->getTag() != neutu::Document::ETag::SEGMENTATION_TARGET &&
+        doc->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD) {
 //      window->getCanvas()->disableKeyEvent();
     }
 
@@ -164,7 +164,7 @@ Z3DWindow* ZWindowFactory::Open3DWindow(
   }
 
   ZSharedPointer<ZStackDoc> doc = frame->document();
-  if (doc->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+  if (doc->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
     doc = doc->getParentDoc();
   }
 

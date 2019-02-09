@@ -1,7 +1,7 @@
 #include "zobject3dscanarray.h"
 #include "zfilelist.h"
 #include "zstack.hxx"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
 
@@ -106,7 +106,7 @@ ZStack* ZObject3dScanArray::toLabelField() const
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
 
-    int dsIntv = misc::getIsoDsIntvFor3DVolume(cuboid, neutube::ONEGIGA, false);
+    int dsIntv = misc::getIsoDsIntvFor3DVolume(cuboid, neutu::ONEGIGA, false);
 
     if (dsIntv == 0) {
       stack = ZStackFactory::MakeZeroStack(GREY, cuboid);

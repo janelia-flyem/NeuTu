@@ -20,11 +20,11 @@ public:
     ZDirectionalTemplateChain();
     ~ZDirectionalTemplateChain();
 
-    virtual const std::string& className() const;
+//    virtual const std::string& className() const;
 
 public:
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                         neutube::EAxis sliceAxis) const;
+                         neutu::EAxis sliceAxis) const;
     void trace(const ZStack *stack, Trace_Workspace *tws);
     void append(ZDirectionalTemplate* dt);
     void prepend(ZDirectionalTemplate* dt);

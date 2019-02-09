@@ -11,7 +11,7 @@
 #include "flyem/zflyembookmarklistmodel.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
 
@@ -123,7 +123,7 @@ public:
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
   void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
-  void chopBody(int v, neutube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBody(int v, neutu::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);

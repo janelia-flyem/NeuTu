@@ -38,11 +38,11 @@ const ZMouseEvent& ZMouseEventProcessor::process(
     int z)
 {
   switch (action) {
-  case ZMouseEvent::ACTION_PRESS:
+  case ZMouseEvent::EAction::PRESS:
     m_context->blockContextMenu(false);
     break;
-  case ZMouseEvent::ACTION_RELEASE:
-    if (getLatestMouseEvent().getAction() == ZMouseEvent::ACTION_DOUBLE_CLICK) {
+  case ZMouseEvent::EAction::RELEASE:
+    if (getLatestMouseEvent().getAction() == ZMouseEvent::EAction::DOUBLE_CLICK) {
       return m_emptyEvent;
     }
     break;
@@ -78,11 +78,11 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZPoint dataPos = stackPosition;
   switch (getSliceAxis()) {
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     dataPos = ZPositionMapper::StackToData(stackPosition, m_arbSlice);
     break;
   default:
@@ -106,7 +106,7 @@ void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
   }
 }
 
-void ZMouseEventProcessor::setSliceAxis(neutube::EAxis axis)
+void ZMouseEventProcessor::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
 }
@@ -116,7 +116,7 @@ void ZMouseEventProcessor::setArbSlice(const ZAffinePlane &ap)
   m_arbSlice = ap;
 }
 
-neutube::EAxis ZMouseEventProcessor::getSliceAxis() const
+neutu::EAxis ZMouseEventProcessor::getSliceAxis() const
 {
   return m_sliceAxis;
 }
@@ -146,16 +146,16 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
     const ZMouseEvent &event) const
 {
   switch (event.getAction()) {
-  case ZMouseEvent::ACTION_MOVE:
+  case ZMouseEvent::EAction::MOVE:
     return m_moveMapper;
-  case ZMouseEvent::ACTION_RELEASE:
+  case ZMouseEvent::EAction::RELEASE:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonReleaseMapper;
     } else if (event.getButtons() == Qt::RightButton) {
       return m_rightButtonReleaseMapper;
     }
     break;
-  case ZMouseEvent::ACTION_PRESS:
+  case ZMouseEvent::EAction::PRESS:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonPressMapper;
     } else if (event.getButtons() == Qt::RightButton) {
@@ -164,7 +164,7 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
       return m_bothButtonPressMapper;
     }
     break;
-  case ZMouseEvent::ACTION_DOUBLE_CLICK:
+  case ZMouseEvent::EAction::DOUBLE_CLICK:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonDoubleClickMapper;
     }

@@ -26,7 +26,7 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   ui->verionTreeView->setExpandsOnDoubleClick(false);
   //ui->infoWidget->hide();
   m_project = new ZFlyEmBodyMergeProject(this);
-  m_docTag = neutube::Document::ETag::FLYEM_MERGE;
+  m_docTag = neutu::Document::ETag::FLYEM_MERGE;
 
   setupProgress();
 
@@ -320,12 +320,12 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
 {
   if (!selector.isEmpty()) {
 //    std::set<ZStackObject*> newSelectedSet =
-//        selector->getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
+//        selector->getSelectedSet(ZStackObject::EType::TYPE_OBJECT3D_SCAN);
     QString info;
 
     TStackObjectSet objSet =
         m_project->getDataFrame()->document()->getObjectGroup().
-        getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getSelectedSet(ZStackObject::EType::OBJECT3D_SCAN);
     for (TStackObjectSet::const_iterator iter = objSet.begin();
          iter != objSet.end(); ++iter) {
       const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);
@@ -352,7 +352,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
 //    }
 
     std::vector<ZStackObject*>objList =
-        selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        selector.getDeselectedList(ZStackObject::EType::OBJECT3D_SCAN);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);

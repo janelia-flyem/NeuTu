@@ -11,47 +11,73 @@ class ZWidgetMessage
 {
 public:
   enum ETarget {
-    TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG, TARGET_STATUS_BAR,
-    TARGET_CUSTOM_AREA, TARGET_LOG_FILE
+    TARGET_NULL = 0,
+    TARGET_TEXT = BIT_FLAG(1),
+    TARGET_TEXT_APPENDING = 0x3,
+    TARGET_DIALOG = BIT_FLAG(3),
+    TARGET_STATUS_BAR = BIT_FLAG(4),
+    TARGET_CUSTOM_AREA = BIT_FLAG(5),
+    TARGET_LOG_FILE = BIT_FLAG(6),
+    TARGET_KAFKA = BIT_FLAG(7)
   };
 
   Q_DECLARE_FLAGS(FTargets, ETarget)
 
-  ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
-  explicit ZWidgetMessage(const std::string &msg,
-                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
-                 ETarget target = TARGET_TEXT_APPENDING);
-  explicit ZWidgetMessage(const char *msg,
-                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
-                 ETarget target = TARGET_TEXT_APPENDING);
-  explicit ZWidgetMessage(const QString &msg,
-                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
-                 ETarget target = TARGET_TEXT_APPENDING);
+  ZWidgetMessage();
+
+  explicit ZWidgetMessage(FTargets target);
+
+  explicit ZWidgetMessage(const std::string &msg);
+  explicit ZWidgetMessage(const char *msg);
+  explicit ZWidgetMessage(const QString &msg);
+  explicit ZWidgetMessage(const QString &title, const QString &msg);
+
+  explicit ZWidgetMessage(
+      const std::string &msg, neutu::EMessageType type);
+  explicit ZWidgetMessage(const char *msg, neutu::EMessageType type);
+  explicit ZWidgetMessage(const QString &msg, neutu::EMessageType type);
   explicit ZWidgetMessage(const QString &title, const QString &msg,
-                 neutube::EMessageType type = neutube::EMessageType::INFORMATION,
-                 ETarget target = TARGET_TEXT_APPENDING);
+                          neutu::EMessageType type);
+
+  explicit ZWidgetMessage(
+      const std::string &msg, neutu::EMessageType type, FTargets target);
+  explicit ZWidgetMessage(
+      const char *msg, neutu::EMessageType type, FTargets target);
+  explicit ZWidgetMessage(
+      const QString &msg, neutu::EMessageType type, FTargets target);
+  explicit ZWidgetMessage(const QString &title, const QString &msg,
+                          neutu::EMessageType type, FTargets target);
+
 
   QString toHtmlString() const;
-  static QString ToHtmlString(const QString &msg, neutube::EMessageType type);
+  static QString ToHtmlString(const QString &msg, neutu::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
-                              neutube::EMessageType type);
+                              neutu::EMessageType type);
   QString toPlainString() const;
 
-  inline bool isAppending() const { return m_target == TARGET_TEXT_APPENDING; }
+  inline bool isAppending() const { return hasTarget(TARGET_TEXT_APPENDING); }
 
-  inline ETarget getTarget() const {
-    return m_target;
-  }
+//  inline ETarget getTarget() const {
+//    return m_target;
+//  }
 
-  inline neutube::EMessageType getType() const {
+  bool hasTarget(ETarget target) const;
+  bool hasTarget(FTargets targets) const;
+  bool hasTargetOtherThan(FTargets targets) const;
+
+  inline neutu::EMessageType getType() const {
     return m_type;
   }
 
   inline void setTarget(ETarget target) {
-    m_target = target;
+    m_targets = target;
   }
 
-  inline void setType(neutube::EMessageType type) {
+  inline void setTarget(FTargets target) {
+    m_targets = target;
+  }
+
+  inline void setType(neutu::EMessageType type) {
     m_type = type;
   }
 
@@ -81,10 +107,13 @@ public:
 private:
   QString m_title;
   QStringList m_message;
-  neutube::EMessageType m_type;
+  neutu::EMessageType m_type = neutu::EMessageType::INFORMATION;
 //  bool m_appending;
-  ETarget m_target;
+//  ETarget m_target;
+  FTargets m_targets = QFlags<ZWidgetMessage::ETarget>(TARGET_TEXT_APPENDING | TARGET_KAFKA);
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ZWidgetMessage::FTargets)
 
 template <typename T1, typename T2>
 void ZWidgetMessage::ConnectMessagePipe(
@@ -121,7 +150,7 @@ struct ZWidgetMessageFactory
   static ZWidgetMessageFactory Make(const char *msg);
 
   ZWidgetMessageFactory& to(ZWidgetMessage::ETarget target);
-  ZWidgetMessageFactory& as(neutube::EMessageType type);
+  ZWidgetMessageFactory& as(neutu::EMessageType type);
   ZWidgetMessageFactory& title(const char *title);
 
 private:

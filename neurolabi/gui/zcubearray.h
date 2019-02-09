@@ -4,14 +4,14 @@
 #include <vector>
 #include <string>
 #include <QColor>
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zpointnetwork.h"
 #include "zjsonparser.h"
 #include "zstackobject.h"
 #include "zglmutils.h"
-#include "zcuboid.h"
-#include "zintcuboid.h"
-#include "zsharedpointer.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "common/zsharedpointer.h"
 
 class ZNormColorMap;
 class ZObject3d;
@@ -176,16 +176,16 @@ public:
   ~ZCubeArray();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_3D_CUBE;
+    return ZStackObject::EType::CUBE;
   }
 
 public:
   bool isEmpty() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const override;
+               neutu::EAxis sliceAxis) const override;
 
-  const std::string& className() const override;
+//  const std::string& className() const override;
 
   size_t size();
   void setMesh(ZMesh *mesh);
@@ -198,43 +198,6 @@ public:
 private:
   ZSharedPointer<ZMesh> m_mesh;
 };
-
-#if 0
-//
-class ZCubeArray : public ZStackObject
-{
-public:
-  ZCubeArray();
-  ~ZCubeArray();
-
-  static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_3D_CUBE;
-  }
-
-public:
-  bool isEmpty() const;
-  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
-                    const std::vector<int> &faceArray);
-  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
-                    const std::vector<bool> &fv);
-  void append(Z3DCube cube);
-  const std::vector<Z3DCube>& getCubeArray() const;
-
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
-
-  const std::string& className() const;
-
-  size_t size();
-  void setCubeArray(std::vector<Z3DCube> cubeArray);
-
-  void clear();
-
-private:
-  std::vector<Z3DCube> m_cubeArray;
-
-};
-#endif
 
 
 #endif // ZCUBEARRAY_H

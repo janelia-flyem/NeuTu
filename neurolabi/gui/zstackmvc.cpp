@@ -9,6 +9,8 @@
 #include <QShortcut>
 
 #include "neutubeconfig.h"
+#include "logging/zlog.h"
+
 //#include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -16,7 +18,7 @@
 #include "zwidgetmessage.h"
 #include "zfiletype.h"
 #include "widgets/zimagewidget.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
@@ -34,7 +36,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 //  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 
   m_testTimer = new QTimer(this);
-  m_role = ROLE_WIDGET;
+  m_role = ERole::ROLE_WIDGET;
 
 #ifdef _DEBUG_2
   QShortcut *shortcut = new QShortcut(this);
@@ -55,13 +57,13 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
-  BaseConstruct(frame, doc, neutube::EAxis::Z);
+  BaseConstruct(frame, doc, neutu::EAxis::Z);
 
   return frame;
 }
 
 ZStackMvc* ZStackMvc::Make(
-    QWidget *parent, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -72,7 +74,7 @@ ZStackMvc* ZStackMvc::Make(
   return frame;
 }
 
-void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
+void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
 {
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
@@ -93,17 +95,17 @@ void ZStackMvc::customInit()
 }
 
 void ZStackMvc::BaseConstruct(
-    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
+    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
 {
   frame->construct(doc, axis);
 }
 
 void ZStackMvc::createView()
 {
-  createView(neutube::EAxis::Z);
+  createView(neutu::EAxis::Z);
 }
 
-void ZStackMvc::createView(neutube::EAxis axis)
+void ZStackMvc::createView(neutu::EAxis axis)
 {
   if (m_doc.get() != NULL) {
     m_view = new ZStackView(qobject_cast<QWidget*>(this));
@@ -119,7 +121,7 @@ void ZStackMvc::createPresenter()
   }
 }
 
-void ZStackMvc::createPresenter(neutube::EAxis axis)
+void ZStackMvc::createPresenter(neutu::EAxis axis)
 {
   createPresenter();
   if (m_presenter != NULL) {
@@ -163,11 +165,11 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
                 m_view, SLOT(updateStackRange()), Qt::DirectConnection);
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
                 m_view, SLOT(processStackChange(bool)), Qt::QueuedConnection);
-  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
-                Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+//                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
+//                Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
                 m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
@@ -253,6 +255,8 @@ void ZStackMvc::processKeyEvent(QKeyEvent *event)
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)
 {
+  KINFO << QString("Key %1 pressed in ZStackMvc").arg(event->key());
+
   processKeyEvent(event);
 }
 
@@ -272,7 +276,7 @@ bool ZStackMvc::event(QEvent *event)
 
 void ZStackMvc::processViewChange()
 {
-  processViewChange(getView()->getViewParameter(neutube::ECoordinateSystem::STACK));
+  processViewChange(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
 }
 
 /*
@@ -414,7 +418,7 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(neutube::GetFilePath(url).toStdString())) {
+    if (ZFileType::isImageFile(neutu::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -593,7 +597,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
   getPresenter()->blockSignals(false);
 
   getView()->blockSignals(true);
-  getView()->setViewPortCenter(pt, neutube::EAxisSystem::NORMAL);
+  getView()->setViewPortCenter(pt, neutu::EAxisSystem::NORMAL);
   getView()->blockSignals(false);
 
   getView()->processViewChange(true, depthChanged);
@@ -682,7 +686,7 @@ void ZStackMvc::setDefaultViewPort(const QRect &rect)
 
 QRect ZStackMvc::getViewPort() const
 {
-  return getView()->getViewPort(neutube::ECoordinateSystem::STACK);
+  return getView()->getViewPort(neutu::ECoordinateSystem::STACK);
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

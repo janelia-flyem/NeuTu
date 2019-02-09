@@ -6,7 +6,7 @@
 
 #include "dvid/zdvidsynapse.h"
 #include "zjsonobject.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "protocoldialog.h"
 
 

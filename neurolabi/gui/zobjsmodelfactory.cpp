@@ -16,8 +16,8 @@ ZObjsModelFactory::ZObjsModelFactory()
 
 ZStackObject::EType ZObjsModelFactory::GetCanonicalType(ZStackObject::EType type)
 {
-  if (type == ZStackObject::TYPE_PUNCTUM) {
-    type = ZStackObject::TYPE_PUNCTA;
+  if (type == ZStackObject::EType::PUNCTUM) {
+    type = ZStackObject::EType::PUNCTA;
   }
 
   return type;
@@ -27,13 +27,13 @@ ZObjsModel* ZObjsModelFactory::Make(
     ZStackObject::EType type, ZStackDoc *doc, QObject *parent)
 {
   switch (GetCanonicalType(type)) {
-  case ZStackObject::TYPE_SWC:
+  case ZStackObject::EType::SWC:
     return new ZSwcObjsModel(doc, parent);
-  case ZStackObject::TYPE_PUNCTA:
+  case ZStackObject::EType::PUNCTA:
     return new ZPunctaObjsModel(doc, parent);
-  case ZStackObject::TYPE_3D_GRAPH:
+  case ZStackObject::EType::GRAPH_3D:
     return new ZGraphObjsModel(doc, parent);
-  case ZStackObject::TYPE_MESH:
+  case ZStackObject::EType::MESH:
     return new ZMeshObjsModel(doc, parent);
   default:
     return NULL;

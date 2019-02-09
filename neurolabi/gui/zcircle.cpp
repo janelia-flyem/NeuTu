@@ -6,7 +6,7 @@
 #include <math.h>
 #include "zcircle.h"
 #include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zpainter.h"
 
 const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;
@@ -31,7 +31,7 @@ ZCircle::ZCircle(double x, double y, double z, double r) :
 void ZCircle::_init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
-  m_type = ZStackObject::TYPE_CIRCLE;
+  m_type = ZStackObject::EType::CIRCLE;
 }
 
 void ZCircle::set(double x, double y, double z, double r)
@@ -61,9 +61,9 @@ void ZCircle::set(const ZPoint &center, double r)
 
 void ZCircle::display(
     ZPainter &painter, int n,
-    ZStackObject::EDisplayStyle style, neutube::EAxis sliceAxis) const
+    ZStackObject::EDisplayStyle style, neutu::EAxis sliceAxis) const
 {
-  if (!isVisible() || sliceAxis != neutube::EAxis::Z) {
+  if (!isVisible() || sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -242,4 +242,4 @@ bool ZCircle::load(const char *filePath)
   return false;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCircle)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCircle)

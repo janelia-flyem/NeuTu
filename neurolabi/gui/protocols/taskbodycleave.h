@@ -3,7 +3,7 @@
 
 #include "protocols/taskprotocoltask.h"
 #include "zjsonarray.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include <QObject>
 #include <QTime>
 #include <QVector>
@@ -41,7 +41,7 @@ public:
   QString taskType() const override;
   QString actionString() override;
   QString targetString() override;
-  bool skip() override;
+  bool skip(QString &reason) override;
 
   virtual void beforeNext() override;
   virtual void beforePrev() override;

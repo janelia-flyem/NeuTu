@@ -4,8 +4,8 @@
 #include <QMainWindow>
 
 #include "zactionfactory.h"
-#include "zpoint.h"
-#include "zsharedpointer.h"
+#include "geometry/zpoint.h"
+#include "common/zsharedpointer.h"
 
 namespace Ui {
 class Neu3Window;
@@ -57,8 +57,8 @@ public:
   static void enableZoomToLoadedBody(bool enable = true);
   static bool zoomToLoadedBodyEnabled();
 
-  enum EBrowseMode {
-    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER, BROWSE_NEUROGLANCER_EXT
+  enum class EBrowseMode {
+    NONE, NATIVE, NEUROGLANCER, NEUROGLANCER_EXT
   };
 
   QProgressDialog* getProgressDialog();
@@ -252,7 +252,7 @@ private:
   constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
   int m_browseWidth = DEFAULT_BROWSE_WIDTH;
   int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
-  EBrowseMode m_browseMode = BROWSE_NONE;
+  EBrowseMode m_browseMode = EBrowseMode::NONE;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_browserColorScheme;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;

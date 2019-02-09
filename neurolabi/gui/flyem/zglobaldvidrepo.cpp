@@ -22,7 +22,7 @@ void ZGlobalDvidRepo::init()
 {
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 
-  std::string userName = neutube::GetCurrentUserName();
+  std::string userName = neutu::GetCurrentUserName();
 
   for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
            iter != dvidRepo.end(); ++iter) {

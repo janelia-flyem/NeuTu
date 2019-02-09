@@ -1,21 +1,21 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
-#include "zswctree.h"
-#include "zintcuboid.h"
-#include "core/utilities.h"
+//#include "zswctree.h"
+#include "geometry/zintcuboid.h"
+#include "common/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_hitProtocal(HIT_DATA_POS), m_projectionVisible(true),
-  m_style(EDisplayStyle::SOLID), m_target(TARGET_WIDGET),
+  m_isVisible(true), m_hitProtocal(EHitProtocal::HIT_DATA_POS), m_projectionVisible(true),
+  m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
   m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutu::display::VE_NONE), m_prevDisplaySlice(-1)
 {
-  m_type = TYPE_UNIDENTIFIED;
-  setSliceAxis(neutube::EAxis::Z);
+  m_type = EType::UNIDENTIFIED;
+  setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
   m_timeStamp = 0;
 }
@@ -29,54 +29,59 @@ ZStackObject::~ZStackObject()
 }
 
 #define GET_TYPE_NAME(v, t) \
-  if (v == t) { \
+  if (v == EType::t) { \
     return NT_STR(t); \
   }
 
 std::string ZStackObject::GetTypeName(EType type)
 {
-  GET_TYPE_NAME(type, TYPE_UNIDENTIFIED);
-  GET_TYPE_NAME(type, TYPE_SWC);
-  GET_TYPE_NAME(type, TYPE_PUNCTUM);
-  GET_TYPE_NAME(type, TYPE_MESH);
-  GET_TYPE_NAME(type, TYPE_OBJ3D);
-  GET_TYPE_NAME(type, TYPE_STROKE);
-  GET_TYPE_NAME(type, TYPE_LOCSEG_CHAIN);
-  GET_TYPE_NAME(type, TYPE_CONN);
-  GET_TYPE_NAME(type, TYPE_OBJECT3D_SCAN);
-  GET_TYPE_NAME(type, TYPE_SPARSE_OBJECT);
-  GET_TYPE_NAME(type, TYPE_CIRCLE);
-  GET_TYPE_NAME(type, TYPE_STACK_BALL);
-  GET_TYPE_NAME(type, TYPE_STACK_PATCH);
-  GET_TYPE_NAME(type, TYPE_RECT2D);
-  GET_TYPE_NAME(type, TYPE_DVID_TILE);
-  GET_TYPE_NAME(type, TYPE_DVID_GRAY_SLICE);
-  GET_TYPE_NAME(type, TYPE_DVID_TILE_ENSEMBLE);
-  GET_TYPE_NAME(type, TYPE_DVID_LABEL_SLICE);
-  GET_TYPE_NAME(type, TYPE_DVID_SPARSE_STACK);
-  GET_TYPE_NAME(type, TYPE_DVID_SPARSEVOL_SLICE);
-  GET_TYPE_NAME(type, TYPE_STACK);
-  GET_TYPE_NAME(type, TYPE_SWC_NODE);
-  GET_TYPE_NAME(type, TYPE_3D_GRAPH);
-  GET_TYPE_NAME(type, TYPE_PUNCTA);
-  GET_TYPE_NAME(type, TYPE_FLYEM_BOOKMARK);
-  GET_TYPE_NAME(type, TYPE_INT_CUBOID);
-  GET_TYPE_NAME(type, TYPE_LINE_SEGMENT);
-  GET_TYPE_NAME(type, TYPE_SLICED_PUNCTA);
-  GET_TYPE_NAME(type, TYPE_DVID_SYNAPSE);
-  GET_TYPE_NAME(type, TYPE_DVID_SYNAPE_ENSEMBLE);
-  GET_TYPE_NAME(type, TYPE_3D_CUBE);
-  GET_TYPE_NAME(type, TYPE_DVID_ANNOTATION);
-  GET_TYPE_NAME(type, TYPE_FLYEM_TODO_ITEM);
-  GET_TYPE_NAME(type, TYPE_FLYEM_TODO_LIST);
-  GET_TYPE_NAME(type, TYPE_CROSS_HAIR);
+  GET_TYPE_NAME(type, UNIDENTIFIED);
+  GET_TYPE_NAME(type, SWC);
+  GET_TYPE_NAME(type, PUNCTUM);
+  GET_TYPE_NAME(type, MESH);
+  GET_TYPE_NAME(type, OBJ3D);
+  GET_TYPE_NAME(type, STROKE);
+  GET_TYPE_NAME(type, LOCSEG_CHAIN);
+  GET_TYPE_NAME(type, CONN);
+  GET_TYPE_NAME(type, OBJECT3D_SCAN);
+  GET_TYPE_NAME(type, SPARSE_OBJECT);
+  GET_TYPE_NAME(type, CIRCLE);
+  GET_TYPE_NAME(type, STACK_BALL);
+  GET_TYPE_NAME(type, STACK_PATCH);
+  GET_TYPE_NAME(type, RECT2D);
+  GET_TYPE_NAME(type, DVID_TILE);
+  GET_TYPE_NAME(type, DVID_GRAY_SLICE);
+  GET_TYPE_NAME(type, DVID_TILE_ENSEMBLE);
+  GET_TYPE_NAME(type, DVID_LABEL_SLICE);
+  GET_TYPE_NAME(type, DVID_SPARSE_STACK);
+  GET_TYPE_NAME(type, DVID_SPARSEVOL_SLICE);
+  GET_TYPE_NAME(type, STACK);
+  GET_TYPE_NAME(type, SWC_NODE);
+  GET_TYPE_NAME(type, GRAPH_3D);
+  GET_TYPE_NAME(type, PUNCTA);
+  GET_TYPE_NAME(type, FLYEM_BOOKMARK);
+  GET_TYPE_NAME(type, INT_CUBOID);
+  GET_TYPE_NAME(type, LINE_SEGMENT);
+  GET_TYPE_NAME(type, SLICED_PUNCTA);
+  GET_TYPE_NAME(type, DVID_SYNAPSE);
+  GET_TYPE_NAME(type, DVID_SYNAPE_ENSEMBLE);
+  GET_TYPE_NAME(type, CUBE);
+  GET_TYPE_NAME(type, DVID_ANNOTATION);
+  GET_TYPE_NAME(type, FLYEM_TODO_ITEM);
+  GET_TYPE_NAME(type, FLYEM_TODO_LIST);
+  GET_TYPE_NAME(type, CROSS_HAIR);
 
-  return std::to_string(type);
+  return std::to_string(neutu::EnumValue(type));
+}
+
+std::string ZStackObject::getTypeName() const
+{
+  return GetTypeName(getType());
 }
 
 bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
-                           neutube::EAxis /*sliceAxis*/) const
+                           neutu::EAxis /*sliceAxis*/) const
 {
   return false;
 }
@@ -208,12 +213,12 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/, neutube::EAxis /*axis*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/, neutube::EAxis /*axis*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
 {
   return false;
 }
@@ -229,12 +234,12 @@ bool ZStackObject::hit(const ZIntPoint &pt)
 }
 
 bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
-                       neutube::EAxis axis)
+                       neutu::EAxis axis)
 {
   switch (m_hitProtocal) {
-  case HIT_DATA_POS:
+  case EHitProtocal::HIT_DATA_POS:
     return hit(dataPos);
-  case HIT_WIDGET_POS:
+  case EHitProtocal::HIT_WIDGET_POS:
     return hitWidgetPos(widgetPos, axis);
   default:
     break;
@@ -244,7 +249,7 @@ bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
 }
 
 bool ZStackObject::hitWidgetPos(
-    const ZIntPoint &/*widgetPos*/, neutube::EAxis /*axis*/)
+    const ZIntPoint &/*widgetPos*/, neutu::EAxis /*axis*/)
 {
   return false;
 }
@@ -304,21 +309,22 @@ bool ZStackObject::hasSameId(const ZStackObject *obj1, const ZStackObject *obj2)
   return same;
 }
 
-bool ZStackObject::isSameSource(const std::string &s1, const std::string &s2)
+bool ZStackObject::IsSameSource(const std::string &s1, const std::string &s2)
 {
   return (!s1.empty() && !s2.empty() && s1 == s2);
 }
 
-bool ZStackObject::isSameClass(const std::string &s1, const std::string &s2)
+bool ZStackObject::IsSameClass(const std::string &s1, const std::string &s2)
 {
-  return (!s1.empty() && !s2.empty() && s1 == s2);
+  return IsSameSource(s1, s2);
 }
 
+/*
 bool ZStackObject::isEmptyTree(const ZStackObject *obj)
 {
   bool passed = false;
   if (obj != NULL) {
-    if (obj->getType() == ZStackObject::TYPE_SWC) {
+    if (obj->getType() == EType::SWC) {
       const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
       if (tree != NULL) {
         passed = tree->isEmpty();
@@ -328,8 +334,9 @@ bool ZStackObject::isEmptyTree(const ZStackObject *obj)
 
   return passed;
 }
+*/
 
-bool ZStackObject::isSelected(const ZStackObject *obj)
+bool ZStackObject::IsSelected(const ZStackObject *obj)
 {
   if (obj != NULL) {
     return obj->isSelected();
@@ -350,22 +357,22 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   }
 }
 
-void ZStackObject::addVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::addVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
 }
 
-void ZStackObject::removeVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::removeVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
 
-void ZStackObject::setVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::setVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect = ve;
 }
 
-bool ZStackObject::hasVisualEffect(neutube::display::TVisualEffect ve) const
+bool ZStackObject::hasVisualEffect(neutu::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }

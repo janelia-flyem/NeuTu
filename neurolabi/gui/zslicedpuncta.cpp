@@ -11,7 +11,7 @@ const int ZSlicedPuncta::m_visibleRange = 5.0;
 
 ZSlicedPuncta::ZSlicedPuncta()
 {
-  m_type = ZStackObject::TYPE_SLICED_PUNCTA;
+  m_type = ZStackObject::EType::SLICED_PUNCTA;
   m_zStart = 0;
 }
 
@@ -43,9 +43,9 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 }
 
 void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -169,7 +169,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutu::display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
@@ -192,6 +192,6 @@ QList<ZStackBall*> ZSlicedPuncta::getPunctaOnSlice(int z)
   return QList<ZStackBall*>();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
 
 

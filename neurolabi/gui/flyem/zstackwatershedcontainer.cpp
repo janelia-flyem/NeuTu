@@ -21,7 +21,7 @@
 #include "zstackobjectaccessor.h"
 #include "zgraphptr.h"
 #include "zstackutil.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -1279,8 +1279,8 @@ void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
       obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setSource(
             ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
-      obj->setHitProtocal(ZStackObject::HIT_NONE);
-      obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
+      obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+      obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);
       obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
       obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -1430,7 +1430,7 @@ ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
     ZIntCuboid seedBox = GetSeedRange(m_seedArray);
     if (m_rangeOption == RANGE_SEED_ROI) {
       if (!seedBox.isEmpty()) {
-        seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
+        seedBox = flyem::EstimateSplitRoi(seedBox);
       }
     } else {
       seedBox.expand(5, 5, 5);

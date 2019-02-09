@@ -1,14 +1,14 @@
 #include "zdvidsparsevolslice.h"
 
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()/*, m_currentZ(-1)*/
 {
   m_type = GetType();
-  setHitProtocal(ZStackObject::HIT_NONE);
+  setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
 //  setHittable(false);
   m_externalReader = NULL;
   m_isFullView = false;
@@ -40,7 +40,7 @@ void ZDvidSparsevolSlice::setReader(ZDvidReader *reader)
   m_externalReader = reader;
 }
 
-bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, neutube::EAxis axis) const
+bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, neutu::EAxis axis) const
 {
   if (m_sliceAxis != axis) {
     return false;
@@ -155,7 +155,7 @@ void ZDvidSparsevolSlice::forceUpdate(
 
 void ZDvidSparsevolSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (slice >= 0) {
 //    const_cast<ZDvidSparsevolSlice&>(*this).update(painter.getZOffset() + slice);

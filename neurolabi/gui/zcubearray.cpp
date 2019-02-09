@@ -364,7 +364,7 @@ const std::vector<bool>& Z3DCube::getFaceVisiblity() const
 ZCubeArray::ZCubeArray()
 {
     m_type = ZCubeArray::GetType();
-    m_target = ZStackObject::TARGET_3D_ONLY;
+    m_target = ZStackObject::ETarget::ONLY_3D;
 }
 
 ZCubeArray::~ZCubeArray()
@@ -374,7 +374,7 @@ ZCubeArray::~ZCubeArray()
 
 void ZCubeArray::display(
     ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    neutube::EAxis /*sliceAxis*/) const
+    neutu::EAxis /*sliceAxis*/) const
 {
 }
 
@@ -501,5 +501,5 @@ void ZCubeArray::clear()
 }
 #endif
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
 

@@ -4,12 +4,13 @@
 #include <vector>
 #include <utility>
 
-#include "zintpoint.h"
-#include "zpoint.h"
-#include "zintpointarray.h"
+#include "geometry/zintpointarray.h"
 
 class ZObject3d;
 class ZLineSegment;
+class ZIntPoint;
+class ZPoint;
+class ZIntPointArray;
 
 namespace ZVoxelGraphics
 {

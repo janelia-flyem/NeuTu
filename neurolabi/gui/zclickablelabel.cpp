@@ -3,7 +3,7 @@
 #include "zglmutils.h"
 #include "zcolormap.h"
 #include "z3dtransferfunction.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include <QMouseEvent>
 #include <QHelpEvent>
 #include <QToolTip>
@@ -15,10 +15,14 @@ ZClickableLabel::ZClickableLabel(QWidget* parent, Qt::WindowFlags f)
 {
 }
 
+ZClickableLabel::~ZClickableLabel()
+{}
+
 void ZClickableLabel::mousePressEvent(QMouseEvent* ev)
 {
-  if (ev->button() == Qt::LeftButton)
+  if (ev->button() == Qt::LeftButton) {
     labelClicked();
+  }
 }
 
 bool ZClickableLabel::event(QEvent* event)
@@ -51,6 +55,8 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec4Parameter* color, QWidget* paren
 #else
   connect(m_vec4Color, &ZVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
+
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -62,6 +68,8 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter* color, QWidget* paren
 #else
   connect(m_vec3Color, &ZVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
+
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -73,6 +81,8 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter* color, QWidget* pare
 #else
   connect(m_dvec4Color, &ZDVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
+
+//  initColorDlg();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -84,6 +94,39 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter* color, QWidget* pare
 #else
   connect(m_dvec3Color, &ZDVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
+
+//  initColorDlg();
+}
+
+ZClickableColorLabel::~ZClickableColorLabel()
+{
+#ifdef _DEBUG_2
+  qDebug() << "ZClickableColorLabel " << this << " distroyed";
+#endif
+
+  if (m_colorDlg) {
+    m_colorDlg->reject();
+    m_colorDlg->setParent(nullptr);
+    m_colorDlg->deleteLater();
+  }
+}
+
+QColorDialog* ZClickableColorLabel::getColorDlg()
+{
+  if (m_colorDlg == nullptr) {
+    initColorDlg();
+  }
+
+  return m_colorDlg;
+}
+
+void ZClickableColorLabel::initColorDlg()
+{
+  m_colorDlg = new QColorDialog(this);
+  connect(m_colorDlg, SIGNAL(accepted()), this, SLOT(updateColor()));
+//  m_colorDlg->setOption(QColorDialog::NoButtons);
+//  connect(m_colorDlg, SIGNAL(currentColorChanged(QColor)),
+//          this, SLOT(setColor(QColor)), Qt::QueuedConnection);
 }
 
 void ZClickableColorLabel::paintEvent(QPaintEvent* e)
@@ -128,13 +171,40 @@ bool ZClickableColorLabel::getTip(const QPoint& p, QRect* r, QString* s)
   return false;
 }
 
+void ZClickableColorLabel::setColor(const QColor &color)
+{
+  QMutexLocker lock(m_syncMutex);
+  if (color.isValid()) {
+    fromQColor(color);
+  }
+}
+
+void ZClickableColorLabel::updateColor()
+{
+  setColor(getColorDlg()->currentColor());
+}
+
+
 void ZClickableColorLabel::labelClicked()
 {
   if (m_isClickable) {
-    QColor newColor = QColorDialog::getColor(toQColor());
-    if (newColor.isValid()) {
-      fromQColor(newColor);
+    getColorDlg()->show();
+    getColorDlg()->raise();
+#if 0
+    if (m_colorDlg) {
+#ifdef _DEBUG_
+      qDebug() << "ZClickableColorLabel::labelClicked in " << this;
+#endif
+//      m_colorDlg->exec();
+      m_colorDlg->show();
+      m_colorDlg->raise();
+    } else {
+      QColorDialog dlg(toQColor());
+      if (dlg.exec()) {
+        setColor(dlg.selectedColor());
+      }
     }
+#endif
   }
 }
 
@@ -180,7 +250,8 @@ ZClickableColorMapLabel::ZClickableColorMapLabel(ZColorMapParameter* colorMap, Q
 #if __cplusplus > 201103L
   connect(m_colorMap, &ZColorMapParameter::valueChanged, this, qOverload<>(&ZClickableColorMapLabel::update));
 #else
-  connect(m_colorMap, &ZColorMapParameter::valueChanged, this, QOverload<>::of(&ZClickableColorMapLabel::update));
+  connect(m_colorMap, &ZColorMapParameter::valueChanged,
+          this, QOverload<>::of(&ZClickableColorMapLabel::update));
 #endif
 }
 

@@ -6,13 +6,13 @@
 #include <string>
 #include <vector>
 
-#include "flyem/zflyem.h"
+//#include "flyem/zflyem.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
-#include "flyem/zflyembodyannotation.h"
+//#include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "zdvidreader.h"
 
 namespace libdvid{
@@ -30,6 +30,7 @@ class ZFlyEmToDoItem;
 class ZArray;
 class ZStack;
 class ZObject3dScan;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidWriter /*: public QObject*/
 {
@@ -246,7 +247,7 @@ public:
     return m_errorOutput;
   }
 
-  void writeUrl(const std::string &url, const std::string &method = "POST");
+//  void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
 
@@ -304,9 +305,9 @@ private:
 
   ZJsonValue getLocMessage(const std::string &message);
 
-  bool runCommand(const QString &command, const QStringList &argList);
-  bool runCommand(const QString &command);
-  bool runCommand(QProcess &process);
+//  bool runCommand(const QString &command, const QStringList &argList);
+//  bool runCommand(const QString &command);
+//  bool runCommand(QProcess &process);
 
   void parseStandardOutput();
   void init();
@@ -326,6 +327,7 @@ private:
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
 #endif
 };
 

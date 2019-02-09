@@ -16,12 +16,12 @@ public:
 public:
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_SPARSE_OBJECT;
+    return ZStackObject::EType::SPARSE_OBJECT;
   }
 
   //void save(const char *filePath);
   //void load(const char *filePath);
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   /*!
    * \brief Label a stack with the internal label value.
@@ -31,7 +31,7 @@ public:
   void setLabel(uint64_t label);
 
   void display(ZPainter &painter, int z, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   void append(const ZObject3dScan &obj);
 

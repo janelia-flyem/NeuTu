@@ -11,11 +11,7 @@
 #include <QList>
 #include <QTime>
 
-#ifdef _DEBUG_
-#include "zqslog.h"
-#endif
-
-#include "neutube_def.h"
+#include "common/neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -163,7 +159,7 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllBody(bool recycable);
+  void dumpAllBody(bool recycling);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
   void dumpGarbageUnsync(ZStackObject *obj, bool recycable);
@@ -256,7 +252,7 @@ public:
 
 public:
   void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   void executeAddTodoCommand(
       int x, int y, int z, bool checked, uint64_t bodyId);
@@ -355,7 +351,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(neutube::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action);
   void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
@@ -545,6 +541,11 @@ private:
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
+
+  template <typename T>
+  void removeBodyObject(bool recycling);
+
+  void dumpObject(ZStackObject *obj, bool recycling);
 
 private:
   ZFlyEmBodyManager m_bodyManager;

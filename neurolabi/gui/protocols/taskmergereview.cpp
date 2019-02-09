@@ -252,7 +252,7 @@ QString TaskMergeReview::targetString()
   return "task " + m_taskId;
 }
 
-bool TaskMergeReview::skip()
+bool TaskMergeReview::skip(QString &reason)
 {
   // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
   // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
@@ -271,6 +271,7 @@ bool TaskMergeReview::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    reason = m_skipReason;
     return (m_skip != Skip::NOT_SKIPPED);
   }
   m_timeOfLastSkipCheck = now;
@@ -282,12 +283,15 @@ bool TaskMergeReview::skip()
   switch (setBodiesResult) {
     case SetBodiesResult::FAILED_MAPPING:
       m_skip = Skip::SKIPPED_MAPPING;
+      reason = "SVs mapping to bodies failed";
       break;
     case SetBodiesResult::FAILED_MAJOR:
       m_skip = Skip::SKIPPED_MAJOR;
+      reason = "too few major bodies";
       break;
     case SetBodiesResult::FAILED_SIZES:
       m_skip = Skip::SKIPPED_SIZES;
+      reason = "SVs sizes failed";
       break;
     default:
       m_skip = Skip::NOT_SKIPPED;
@@ -301,7 +305,8 @@ bool TaskMergeReview::skip()
         s_netReader = new ZNetBufferReader(m_bodyDoc->getParent3DWindow());
       }
       if (!s_netReader->hasHead(tarUrl.c_str())) {
-        m_skip = Skip::SKIPPED_MESHES;
+        m_skip = Skip::SKIPPED_MESHES; 
+        reason = "tarsupervoxels HEAD failed";
         break;
       }
     }
@@ -317,6 +322,7 @@ bool TaskMergeReview::skip()
     writeOutput();
   }
 
+  m_skipReason = reason;
   return (m_skip != Skip::NOT_SKIPPED);
 }
 
@@ -523,7 +529,7 @@ void TaskMergeReview::zoomOutToShowAll()
 
 void TaskMergeReview::onHideSelected()
 {
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     m_hiddenIds.insert(mesh->getLabel());
@@ -549,7 +555,7 @@ void TaskMergeReview::onToggleIsolation()
   m_hiddenIds.clear();
 
   bool isolate = false;
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
+  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   if (!selectedMeshes.isEmpty()) {
     QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
     for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
@@ -600,7 +606,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
 
   m_bodyIds.clear();
 
-  libdvid::BinaryDataPtr response = ZDvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
+  libdvid::BinaryDataPtr response = dvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
@@ -608,7 +614,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
       for (int i = 0; i < responseArray.size(); i++) {
         QJsonValue responseElem = responseArray.at(i);
         if (!responseElem.isUndefined()) {
-          uint64_t bodyId= responseElem.toDouble();
+          uint64_t bodyId = responseElem.toDouble();
           if (bodyId == 0) {
             return SetBodiesResult::FAILED_MAPPING;
           }
@@ -641,7 +647,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
 
   statusCode = 0;
   std::string urlSizes = url.getNodeUrl() + "/" + instance + "/sizes?supervoxels=true";
-  response = ZDvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
+  response = dvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
@@ -990,7 +996,7 @@ void TaskMergeReview::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -1106,7 +1112,7 @@ void TaskMergeReview::writeOutput()
   for (uint64_t id : m_bodyIds) {
     std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(id);
     allTodoCount += std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-      return a + (b->getAction() == neutube::EToDoAction::TO_SPLIT);
+      return a + (b->getAction() == neutu::EToDoAction::TO_SPLIT);
     });
   }
   json[KEY_TODO_COUNT] = QJsonValue(allTodoCount);
@@ -1304,7 +1310,7 @@ ProtocolTaskConfig TaskMergeReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
 
   return config;
 }

@@ -1,7 +1,7 @@
 #ifndef ZDVIDANNOTATION_HPP
 #define ZDVIDANNOTATION_HPP
 
-#include "dvid/zdvidannotation.h"
+#include "zdvidannotation.h"
 #include "zjsonparser.h"
 
 template <typename InputIterator>

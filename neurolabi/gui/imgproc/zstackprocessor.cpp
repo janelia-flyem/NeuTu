@@ -9,15 +9,15 @@
 #include "tz_utilities.h"
 #include "tz_math.h"
 #if _QS_LOG_AVAILABLE_
-#  include "zqslog.h"
+#  include "logging/zqslog.h"
 #endif
 #include "tz_stack.h"
 #include "tz_stack_math.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_objdetect.h"
 #include "tz_int_histogram.h"
-#include "zintcuboid.h"
-#include "zpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zpoint.h"
 #include "zstackfactory.h"
 
 ZStackProcessor::ZStackProcessor()

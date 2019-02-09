@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <cmath>
+
 #include "tz_math.h"
+#include "zjsonobject.h"
 
 ZViewProj::ZViewProj()
 {
@@ -319,7 +321,7 @@ double ZViewProj::getValidZoom(double zoom) const
 void ZViewProj::setZoom(double zoom, EReference ref)
 {
   if (zoom > 0) {
-    if (ref == REF_CENTER) {
+    if (ref == EReference::CENTER) {
       update();
       QPoint viewCenter = getViewPort().center();
       QPointF projCenter = getProjRect().center();
@@ -560,4 +562,14 @@ bool ZViewProj::operator !=(const ZViewProj &viewProj) const
 void ZViewProj::print() const
 {
   std::cout << "View proj: (" << m_x0 << "," << m_y0 << ") x " << m_zoom << std::endl;
+}
+
+ZJsonObject ZViewProj::toJsonObject() const
+{
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("x0", m_x0);
+  jsonObj.setEntry("y0", m_y0);
+  jsonObj.setEntry("zoom", m_zoom);
+
+  return jsonObj;
 }

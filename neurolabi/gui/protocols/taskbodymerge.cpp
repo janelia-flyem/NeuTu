@@ -6,6 +6,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "misc/miscutility.h"
+#include "logging/neuopentracing.h"
 #include "neutubeconfig.h"
 #include "neu3window.h"
 #include "z3dcamera.h"
@@ -15,9 +16,9 @@
 #include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackdocproxy.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 #include <limits>
 #include <random>
@@ -166,6 +167,9 @@ namespace {
       }
       closedir(dir);
     }
+    if (result.empty()) {
+      result = "dev";
+    }
     return result;
   }
 
@@ -256,6 +260,9 @@ namespace {
   QPointer<QDockWidget> s_birdsEyeDockWidget;
   QPointer<Z3DView> s_birdsEyeView;
 
+  // The OpenTracing-style "span" used for logging the results of the current task.
+
+//  std::unique_ptr<neuopentracing::Span> s_span;
 }
 
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
@@ -295,7 +302,7 @@ QString TaskBodyMerge::targetString()
   return "SV " + QString::number(m_supervoxelId1) + " +<br>SV " + QString::number(m_supervoxelId2);
 }
 
-bool TaskBodyMerge::skip()
+bool TaskBodyMerge::skip(QString &reason)
 {
   if ((m_bodyId1 == 0) || (m_bodyId2 == 0)) {
 
@@ -303,6 +310,7 @@ bool TaskBodyMerge::skip()
     // map to a body (e.g., because the super voxel was split), but we still want a record
     // of these tasks in the results, so write that record here.
 
+    reason = "SV maps to no body";
     writeResult("autoSkippedNoBody");
     m_lastSavedButton = nullptr;
     return true;
@@ -310,6 +318,7 @@ bool TaskBodyMerge::skip()
 
     // Likewise for redundant tasks.
 
+    reason = "SVs map to one body";
     writeResult("autoSkippedSameBody");
     m_lastSavedButton = nullptr;
     return true;
@@ -544,7 +553,7 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
       libdvid::BinaryData::create_binary_data(payloadStr.c_str(), payloadStr.size());
   int statusCode;
 
-  libdvid::BinaryDataPtr response = ZDvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
+  libdvid::BinaryDataPtr response = dvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
@@ -580,7 +589,7 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
 
   statusCode = 0;
   std::string urlSizes = url.getNodeUrl() + "/" + instance + "/sizes?supervoxels=true";
-  response = ZDvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
+  response = dvid::MakeRequest(urlSizes, "GET", payload, libdvid::DEFAULT, statusCode);
   if (statusCode == 200) {
     QJsonDocument responseDoc = QJsonDocument::fromJson(response->get_data().c_str());
     if (responseDoc.isArray())  {
@@ -1027,7 +1036,7 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
         s_birdsEyeDockWidget = new QDockWidget("Bird's Eye View", window);
         window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
 
-        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::INIT_NORMAL, false, s_birdsEyeDockWidget);
+        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::EInitMode::NORMAL, false, s_birdsEyeDockWidget);
         s_birdsEyeView->canvas().setMinimumWidth(512);
         s_birdsEyeView->canvas().setMinimumHeight(512);
         s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());
@@ -1217,6 +1226,22 @@ void TaskBodyMerge::writeResult(const QString &result)
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
   writer.writeJsonString(instance, key, jsonStr);
+
+  // Populate the OpenTracing-style "span" with the results of this task, and log it
+  // (via Kafka).
+
+  std::unique_ptr<neuopentracing::Span> s_span =
+      neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
+  s_span->SetTag("client", "neu3");
+  s_span->SetTag("version", getBuildVersion());
+  if (!m_usageTimes.empty()) {
+    s_span->SetTag("duration", m_usageTimes.back());
+  }
+  s_span->SetTag("category", "neu3.focusedMerging.result");
+  for (auto it = json.begin(); it != json.end(); it++) {
+    s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
+  }
+  s_span->Finish();
 }
 
 QString TaskBodyMerge::readResult()

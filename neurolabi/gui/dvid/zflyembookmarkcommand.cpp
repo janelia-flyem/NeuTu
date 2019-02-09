@@ -5,8 +5,8 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "zwidgetmessage.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidreader.h"
+#include "zdvidwriter.h"
 #include "neutubeconfig.h"
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
@@ -23,7 +23,7 @@ ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::~CompositeCommand()
 void ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::redo()
 {
 //  m_doc->blockSignals(true);
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -33,7 +33,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::redo()
 
 void ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::undo()
 {
-  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  m_doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
   m_doc->processObjectModified();
@@ -139,7 +139,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::undo()
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to undo bookmark deletion",
-                                     neutube::EMessageType::WARNING));
+                                     neutu::EMessageType::WARNING));
       }
     }
   }
@@ -187,7 +187,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     neutube::EMessageType::WARNING));
+                                     neutu::EMessageType::WARNING));
       }
     }
   }
@@ -248,7 +248,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
         m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     neutube::EMessageType::WARNING));
+                                     neutu::EMessageType::WARNING));
       }
     }
   }
@@ -266,7 +266,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::undo()
         m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     neutube::EMessageType::WARNING));
+                                     neutu::EMessageType::WARNING));
       }
     }
   }
