@@ -3,6 +3,7 @@
 
 #include <map>
 #include <iostream>
+#include <functional>
 
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
@@ -175,6 +176,10 @@ public:
 
   void setDiagnosis(bool on) { m_diagnosis = on; }
 
+  void setLogger(std::function<void(const std::string&)> f) {
+    m_log = f;
+  }
+
 public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
@@ -222,7 +227,10 @@ private:
 
   void init();
 
+  int getMinSeedObjSize(double seedDensity) const;
+
   std::string getDiagnosisDir() const;
+  void log(const std::string &str);
 
   class Diagnosis {
   public:
@@ -239,9 +247,12 @@ private:
     void save(const std::vector<Locseg_Chain*> &chainArray,
               const std::string &name);
     void save(ZSwcTree *tree, const std::string &name);
+    void saveInfo();
+    void setInfo(const std::string &key, const std::string &value);
 
   private:
     std::string m_dir;
+    ZJsonObject m_info;
   };
 
 private:
@@ -279,6 +290,8 @@ private:
 
   ZNeuronTracerConfig m_config; //default configuration
   Diagnosis m_diag;
+  std::function<void(const std::string)> m_log =
+      [](const std::string &str) { std::cout << str << std::endl; };
   /*
   static const char *m_levelKey;
   static const char *m_minimalScoreKey;

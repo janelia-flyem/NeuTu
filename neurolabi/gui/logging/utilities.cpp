@@ -13,12 +13,13 @@ void LogUrlIO(const QString &action, const QString &url)
        << ZLog::Tag("url", url.toStdString());
 }
 
-void LogBodyOperation(const QString &action, uint64_t bodyId)
-{
-  KLOG << ZLog::Info()
-       << ZLog::Action(action.toStdString())
-       << ZLog::Object("body", "", std::to_string(bodyId));
-}
+//void LogBodyOperation(
+//    const QString &action, uint64_t bodyId, EBodyLabelType labelType)
+//{
+//  KLOG << ZLog::Info()
+//       << ZLog::Action(action.toStdString())
+//       << ZLog::Object(neutu::ToString(labelType), "", std::to_string(bodyId));
+//}
 
 namespace {
 

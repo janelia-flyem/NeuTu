@@ -702,7 +702,7 @@ public:
   void setMeshSelected(ZMesh* mesh, bool select);
   template <class InputIterator>
   void setMeshSelected(InputIterator first, InputIterator last, bool select);
-  void deselectAllMesh();
+  int deselectAllMesh();
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
@@ -961,14 +961,25 @@ public:
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
 
+  /*!
+   * \brief Process object modfication
+   *
+   * When the current mode is prompt, the modified information will be emitted
+   * with a signal to notifier its receivers, and the modification buffer will
+   * be cleared afterwards. Nothing will be done in any other mode.
+   */
   void processObjectModified();
+
+
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
-//  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
-//                             bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-//                             bool sync = true);
+
+  /*!
+   * \brief Process object modfication
+   *
+   * It emits a object-modified signal with the information of \a obj in the
+   * PROMPT mode, or buffers the inforation in the BUFFER mode.
+   */
   void processObjectModified(ZStackObject *obj, bool sync = true);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
@@ -1410,6 +1421,8 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
+
+  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
 private slots:
   void shortcutTest();

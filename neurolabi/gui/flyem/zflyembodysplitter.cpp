@@ -2,6 +2,7 @@
 
 #include <QElapsedTimer>
 
+#include "common/neutube_def.h"
 #include "logging/zlog.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
@@ -159,8 +160,8 @@ void ZFlyEmBodySplitter::runSplit(
     doc->releaseBody(getBodyId(), getLabelType());
   }
 
-  LKINFO << QString("Splitting time for %1 (T%2) with range %3: %4ms")
-            .arg(getBodyId()).arg(neutu::EnumValue(getLabelType()))
+  LKINFO << QString("Splitting time for %1 (%2) with range %3: %4ms")
+            .arg(getBodyId()).arg(neutu::ToString(getLabelType()).c_str())
             .arg(neutu::EnumValue(rangeOption)).arg(timer.elapsed());
 //  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
 }

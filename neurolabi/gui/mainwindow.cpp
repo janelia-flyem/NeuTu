@@ -2783,6 +2783,7 @@ void MainWindow::on_actionLoad_from_a_file_triggered()
 #endif
 }
 
+/*
 void MainWindow::on_actionAutoMerge_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -2791,6 +2792,7 @@ void MainWindow::on_actionAutoMerge_triggered()
     frame->updateView();
   }
 }
+*/
 
 void MainWindow::on_actionExtract_Channel_triggered()
 {

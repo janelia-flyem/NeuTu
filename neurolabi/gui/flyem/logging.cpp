@@ -3,9 +3,9 @@
 #include "logging/zlog.h"
 
 void flyem::LogBodyOperation(
-    const QString &action, uint64_t bodyId, neutu::EBodyLabelType)
+    const QString &action, uint64_t bodyId, neutu::EBodyLabelType labelType)
 {
   KLOG << ZLog::Info()
        << ZLog::Action(action.toStdString())
-       << ZLog::Object("body", "", std::to_string(bodyId));
+       << ZLog::Object(neutu::ToString(labelType), "", std::to_string(bodyId));
 }

@@ -12,6 +12,7 @@
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 
+#include "logging.h"
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -1219,7 +1220,7 @@ void ZFlyEmBody3dDoc::activateSplit(
               ZWidgetMessage::TARGET_CUSTOM_AREA |
               ZWidgetMessage::TARGET_KAFKA));
 
-      neutu::LogBodyOperation("start split", bodyId);
+      flyem::LogBodyOperation("start split", bodyId, type);
 
       emit interactionStateChanged();
     } else {
@@ -1265,10 +1266,13 @@ void ZFlyEmBody3dDoc::deactivateSplit()
     uint64_t parentId = m_splitter->getBodyId();
 
     emitInfo(QString("Exit split for %1").arg(parentId));
+    flyem::LogBodyOperation("exit split", parentId, m_splitter->getLabelType());
 
     if (m_splitter->getLabelType() == neutu::EBodyLabelType::SUPERVOXEL) {
       parentId = getMainDvidReader().readParentBodyId(m_splitter->getBodyId());
     }
+
+    flyem::LogBodyOperation("unlock", parentId, neutu::EBodyLabelType::BODY);
     getDataDocument()->checkInBodyWithMessage(
           parentId, neutu::EBodySplitMode::ONLINE);
 
@@ -3724,9 +3728,9 @@ QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
     if (labelSlice != NULL) {
 
       if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
-        color = labelSlice->getLabelColor(bodyId, neutu::EBodyLabelType::MAPPED);
+        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
       } else {
-        color = labelSlice->getLabelColor(bodyId, neutu::EBodyLabelType::ORIGINAL);
+        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::ORIGINAL);
       }
       color.setAlpha(255);
     }

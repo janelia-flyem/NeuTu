@@ -28,7 +28,7 @@ uint64_t neutu::GetTimestamp()
       (std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-std::string neutu::ToString(void *p)
+std::string neutu::ToString(const void *p)
 {
   std::ostringstream stream;
   stream << p;

@@ -47,6 +47,7 @@ protected:
   enum class State
   {
     None,
+    PreRotate,
     Rotate,
     Roll,
     Dolly,

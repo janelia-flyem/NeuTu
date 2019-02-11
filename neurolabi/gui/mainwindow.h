@@ -250,7 +250,7 @@ private slots:
   void on_actionWatershed_triggered();
   void on_actionSave_Stack_triggered();
   void on_actionExtract_Channel_triggered();
-  void on_actionAutoMerge_triggered();
+//  void on_actionAutoMerge_triggered();
   void on_actionLoad_from_a_file_triggered();
   void on_actionSave_As_triggered();
   //void on_actionFrom_SWC_triggered();
