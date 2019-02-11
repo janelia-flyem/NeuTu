@@ -3,7 +3,7 @@
 #include "zmeshio.h"
 #include "zmeshutils.h"
 #include "zbbox.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include "zcubearray.h"
 #include <vtkPolyData.h>
 #include <vtkPointData.h>

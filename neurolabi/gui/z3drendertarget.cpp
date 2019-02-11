@@ -5,7 +5,7 @@
 
 #include "z3dtexture.h"
 #include "logging/zqslog.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "z3dgpuinfo.h"
 
 
