@@ -318,7 +318,6 @@ HEADERS += mainwindow.h \
     dialogs/pixelquerydialog.h \
     dialogs/zrescaleswcdialog.h \
     zsinglechannelstack.h \
-    zbenchtimer.h \
     zrandom.h \
     zlocsegchainconn.h \
     zobjsitem.h \
@@ -634,7 +633,6 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodysplitdialog.h \
     neu3window.h \
     zstackdockeyprocessor.h \
-    zexception.h \
     zutils.h \
     zflags.h \
     zbbox.h \
@@ -839,7 +837,6 @@ SOURCES += main.cpp \
     dialogs/diffusiondialog.cpp \
     dialogs/connectedthresholddialog.cpp \
     dialogs/zrescaleswcdialog.cpp \
-    zbenchtimer.cpp \
     zrandom.cpp \
     dialogs/distancemapdialog.cpp \
     dialogs/regionexpanddialog.cpp \
@@ -1145,7 +1142,6 @@ SOURCES += main.cpp \
     zstringutils.cpp \
     ztakescreenshotwidget.cpp \
     zioutils.cpp \
-    zexception.cpp \
     zmeshobjsmodel.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \

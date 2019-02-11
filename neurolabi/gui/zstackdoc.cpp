@@ -333,6 +333,10 @@ void ZStackDoc::clearData()
 
 void ZStackDoc::initNeuronTracer()
 {
+  m_neuronTracer.setLogger([](const std::string &str) {
+    LINFO_NLN() << str;
+  });
+
   m_neuronTracer.initTraceWorkspace(getStack());
   m_neuronTracer.initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;

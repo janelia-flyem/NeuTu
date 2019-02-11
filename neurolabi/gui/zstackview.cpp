@@ -37,7 +37,7 @@
 #include "zstackmvc.h"
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"

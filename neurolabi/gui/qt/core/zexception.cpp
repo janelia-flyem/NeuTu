@@ -1,3 +1,3 @@
-#include "zexception.h"
+#include "qt/core/zexception.h"
 
 ZException::~ZException() noexcept = default;
