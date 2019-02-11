@@ -1,7 +1,7 @@
 #ifndef ZUTILS_H
 #define ZUTILS_H
 
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>

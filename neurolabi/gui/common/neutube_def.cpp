@@ -12,4 +12,16 @@ const char *PKG_VERSION = ""
 #endif
 ;
 
+std::string ToString(EBodyLabelType type)
+{
+  switch (type) {
+  case EBodyLabelType::BODY:
+    return "body";
+  case EBodyLabelType::SUPERVOXEL:
+    return "supervoxel";
+  }
+
+  return "";
+}
+
 }

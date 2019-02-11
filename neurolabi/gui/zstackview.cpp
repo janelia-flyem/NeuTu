@@ -37,7 +37,7 @@
 #include "zstackmvc.h"
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
@@ -1185,7 +1185,7 @@ void ZStackView::redraw(EUpdateOption option)
 //  timer.stop();
 //  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
-#if defined(_FLYEM_)
+
   qint64 paintTime = timer.elapsed();
 
   ZOUT(KLog(), 5) << ZLog::Profile()
@@ -1199,7 +1199,6 @@ void ZStackView::redraw(EUpdateOption option)
              arg(stackPaintTime).arg(tilePaintTime).
              arg(objectPaintTime).toStdString();
   }
-#endif
 }
 
 

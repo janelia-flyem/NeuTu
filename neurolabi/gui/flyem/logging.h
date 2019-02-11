@@ -7,7 +7,8 @@
 
 namespace flyem {
 
-void LogBodyOperation(const QString &action, uint64_t bodyId, neutu::EBodyLabelType);
+void LogBodyOperation(
+    const QString &action, uint64_t bodyId, neutu::EBodyLabelType labelType);
 
 }
 

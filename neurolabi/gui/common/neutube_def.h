@@ -3,6 +3,8 @@
 
 #include <limits>
 #include <functional>
+#include <string>
+
 
 #include "tz_stdint.h"
 
@@ -108,6 +110,8 @@ enum class ELabelSource {
 enum class EBodyLabelType {
   BODY, SUPERVOXEL
 };
+
+std::string ToString(EBodyLabelType type);
 
 enum class EBodySplitMode {
   NONE, ONLINE, OFFLINE

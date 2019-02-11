@@ -71,7 +71,7 @@ std::string GetVersionString();
 
 uint64_t GetTimestamp();
 
-std::string ToString(void *p);
+std::string ToString(const void *p);
 
 }
 

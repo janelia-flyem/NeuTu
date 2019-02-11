@@ -11,7 +11,7 @@
 #include "z3dcompositor.h"
 #include "z3dgpuinfo.h"
 #include "z3dtexture.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include "logging/zqslog.h"
 
 Z3DCanvasPainter::Z3DCanvasPainter(Z3DGlobalParameters& globalParas, Z3DCanvas& canvas, QObject* parent)

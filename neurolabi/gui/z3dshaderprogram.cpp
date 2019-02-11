@@ -6,7 +6,7 @@
 #include "zsysteminfo.h"
 #include "logging/zqslog.h"
 #include "z3dshadermanager.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 
 
 Z3DShaderProgram::Z3DShaderProgram()

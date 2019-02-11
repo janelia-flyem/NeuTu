@@ -8,6 +8,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemsupervisor.h"
+#include "flyem/logging.h"
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
@@ -617,7 +618,7 @@ void TaskBodyCleave::beforeLoading()
     }
   }
 
-  neutu::LogBodyOperation("start cleaving", m_bodyId);
+  flyem::LogBodyOperation("start cleaving", m_bodyId, neutu::EBodyLabelType::BODY);
   /*
   KLOG << ZLog::Info()
        << ZLog::Action("start cleaving")
@@ -682,7 +683,7 @@ void TaskBodyCleave::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
 
-  neutu::LogBodyOperation("end cleavng", m_bodyId);
+  flyem::LogBodyOperation("end cleavng", m_bodyId, neutu::EBodyLabelType::BODY);
   /*
   KLOG << ZLog::Info()
        << ZLog::Action("end cleaving")

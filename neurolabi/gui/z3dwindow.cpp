@@ -1567,8 +1567,9 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
 {
   if (p == NULL) {
     if (!append) {
-      m_doc->deselectAllMesh();
-      m_doc->notifyWindowMessageUpdated("");
+      if (m_doc->deselectAllMesh() > 0) {
+        m_doc->notifyWindowMessageUpdated("No mesh is selected.");
+      }
     }
     return;
   }
