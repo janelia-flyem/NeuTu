@@ -29412,12 +29412,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  KINFO << "Test:" << " to kafka only";
-  LKINFO << "Test:" <<  " to both local and kafka" << " " << 0;
-
-#endif
-
-#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
 
@@ -29489,6 +29483,19 @@ void ZTest::test(MainWindow *host)
           neutu::EMessageType::ERROR,
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
+
+  KINFO << "Test:" << " to kafka only";
+  LKINFO << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KWARN << "Test:" << " to kafka only";
+  LKWARN << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KERROR << "Test:" << " to kafka only";
+  LKERROR << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KLOG << ZLog::Info() << ZLog::Info() << ZLog::Description("test");
+  KLOG << ZLog::Info() << ZLog::Warn() << ZLog::Description("test")
+       << ZLog::Description("warn");
 
 #endif
 

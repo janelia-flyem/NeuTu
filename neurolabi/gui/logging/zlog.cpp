@@ -54,10 +54,12 @@ void ZLog::end()
   endLog();
 }
 
-void ZLog::log(const std::string &key, const neuopentracing::Value &value)
+void ZLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
 {
-  if (m_tags.contains(key.c_str())) {
-    m_tags[key.c_str()] = neuopentracing::ToString(m_tags.value(key.c_str())) +
+  if (appending && m_tags.contains(key.c_str())) {
+    m_tags[key.c_str()] = neuopentracing::ToString(m_tags.value(key.c_str()))
+        + " " +
         neuopentracing::ToString(value);
   } else {
     m_tags[key.c_str()] = value.toJson();
@@ -87,7 +89,12 @@ void ZLog::End(ZLog &log)
 
 ZLog& ZLog::operator << (const ZLog::Tag &tag)
 {
-  log(tag.m_key, tag.m_value);
+  bool appending = (
+        tag.m_key == Description::KEY &&
+        tag.m_key == Diagnostic::KEY
+      );
+
+  log(tag.m_key, tag.m_value, appending);
 
   return *this;
 }
@@ -106,6 +113,12 @@ const char* DEFAULT_OPERATION_NAME = "debug";
 const char* DEFAULT_OPERATION_NAME = "app";
 #endif
 }
+
+const char* ZLog::Category::KEY = "category";
+const char* ZLog::Description::KEY = "description";
+const char* ZLog::Duration::KEY = "duration";
+const char* ZLog::Time::KEY = "time";
+const char* ZLog::Diagnostic::KEY = "diagnostic";
 
 std::string KLog::m_operationName = DEFAULT_OPERATION_NAME;
 
@@ -159,19 +172,24 @@ void KLog::start()
   ZLog::start();
 }
 
-void KLog::log(const std::string &key, const neuopentracing::Value &value)
+void KLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
 {
   if (!isStarted()) {
     start();
   }
 
   if (m_span) {
-    m_span->appendTag(key, value);
+    if (appending) {
+      m_span->appendTag(key, value);
+    } else {
+      m_span->SetTag(key, value);
+    }
 //    m_span->SetTag(key, value);
   }
 
   if (localLogging()) {
-    ZLog::log(key, value);
+    ZLog::log(key, value, appending);
   }
 }
 
@@ -202,8 +220,6 @@ void KLog::end()
 //KInfo::KInfo(bool localLogging) : ZLog(localLogging)
 //{
 //}
-
-const char* ZLog::Description::KEY = "description";
 
 KInfo& KInfo::operator << (const char* info)
 {

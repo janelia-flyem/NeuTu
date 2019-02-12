@@ -127,8 +127,9 @@ void Span::SetTag(const std::string& key, const Value& value)
 void Span::appendTag(const std::string &key, const Value &value)
 {
   if (hasTag(key)) {
-    m_impl->m_tags[key] = Value(neuopentracing::ToString(m_impl->m_tags.at(key)) +
-        neuopentracing::ToString(value));
+    m_impl->m_tags[key] = Value(neuopentracing::ToString(m_impl->m_tags.at(key))
+                                + " " +
+                                neuopentracing::ToString(value));
   } else {
     SetTag(key, value);
   }
