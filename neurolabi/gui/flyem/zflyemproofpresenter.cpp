@@ -1171,7 +1171,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
     if (selectedSet.size() == 1) {
       const ZIntPoint &pt = *(selectedSet.begin());
       ZDvidSynapse synapse = se->getSynapse(
-            pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+            pt, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       if (synapse.isValid()) {
         ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
         stroke->setColor(synapse.getColor());

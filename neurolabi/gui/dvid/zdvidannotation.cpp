@@ -986,13 +986,13 @@ std::string ZDvidAnnotation::Relation::GetName(
     ZDvidAnnotation::Relation::ERelation rel)
 {
   switch (rel) {
-  case RELATION_POSTSYN_TO:
+  case ERelation::POSTSYN_TO:
     return "PostSynTo";
-  case RELATION_PRESYN_TO:
+  case ERelation::PRESYN_TO:
     return "PreSynTo";
-  case RELATION_CONVERGENT_TO:
+  case ERelation::CONVERGENT_TO:
     return "ConvergentTo";
-  case RELATION_GROUPED_WITH:
+  case ERelation::GROUPED_WITH:
     return "GroupedWith";
   default:
     break;

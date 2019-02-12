@@ -15,7 +15,7 @@
 #include "geometry/zgeometry.h"
 
 ZDvidSynapseEnsemble::SynapseSlice
-ZDvidSynapseEnsemble::m_emptySlice(ZDvidSynapseEnsemble::STATUS_NULL);
+ZDvidSynapseEnsemble::m_emptySlice(ZDvidSynapseEnsemble::EDataStatus::NONE);
 ZDvidSynapse ZDvidSynapseEnsemble::m_emptySynapse;
 
 ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
@@ -78,7 +78,7 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
         synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
-        addSynapseUnsync(synapse, DATA_LOCAL);
+        addSynapseUnsync(synapse, EDataScope::LOCAL);
       }
     }
   }
@@ -102,9 +102,9 @@ void ZDvidSynapseEnsemble::updateUnsync(int x, int y, int z)
 {
   ZDvidSynapse synapse = m_reader.readSynapse(x, y, z);
   if (synapse.isValid()) {
-    addSynapseUnsync(synapse, DATA_LOCAL);
+    addSynapseUnsync(synapse, EDataScope::LOCAL);
   } else {
-    removeSynapseUnsync(x, y, z, DATA_LOCAL);
+    removeSynapseUnsync(x, y, z, EDataScope::LOCAL);
   }
 }
 
@@ -144,12 +144,12 @@ void ZDvidSynapseEnsemble::syncedFetch(
   for (int cz = startZ; cz <= endZ; ++cz) {
     SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
     if (isFull && m_dataRange.isEmpty()) {
-      slice.setStatus(STATUS_READY);
+      slice.setStatus(EDataStatus::READY);
     } else {
       slice.setDataRect(
             QRect(dataBox.getFirstCorner().getX(), dataBox.getFirstCorner().getY(),
                   dataBox.getWidth(), box.getHeight()));
-      slice.setStatus(STATUS_PARTIAL_READY);
+      slice.setStatus(EDataStatus::PARTIAL_READY);
     }
   }
 }
@@ -304,7 +304,7 @@ void ZDvidSynapseEnsemble::setReadyUnsync(const ZIntCuboid &box)
           QRect(shiftedBox.getFirstCorner().getX(),
                 shiftedBox.getFirstCorner().getY(),
                 shiftedBox.getWidth(), shiftedBox.getHeight()));
-    slice.setStatus(STATUS_PARTIAL_READY);
+    slice.setStatus(EDataStatus::PARTIAL_READY);
   }
 }
 
@@ -335,7 +335,7 @@ void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
     ZDvidSynapse synapse;
     synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
     if (synapse.isValid()) {
-      addSynapse(synapse, DATA_LOCAL);
+      addSynapse(synapse, EDataScope::LOCAL);
     }
 #if 0
     if (synapseJson.hasKey("Pos")) {
@@ -482,7 +482,7 @@ bool ZDvidSynapseEnsemble::removeSynapse(int x, int y, int z, EDataScope scope)
 
 bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope scope)
 {
-  if (scope == ZDvidSynapseEnsemble::DATA_LOCAL) {
+  if (scope == ZDvidSynapseEnsemble::EDataScope::LOCAL) {
     if (hasLocalSynapseUnsync(x, y, z)) {
       int sx = x;
       int sy = y;
@@ -500,7 +500,7 @@ bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope s
     }
 
     if (writer.isStatusOk()) {
-      return removeSynapseUnsync(x, y, z, DATA_LOCAL);
+      return removeSynapseUnsync(x, y, z, EDataScope::LOCAL);
     }
   }
 
@@ -537,7 +537,7 @@ void ZDvidSynapseEnsemble::addSynapse(const ZDvidSynapse &synapse, EDataScope sc
 void ZDvidSynapseEnsemble::addSynapseUnsync(
     const ZDvidSynapse &synapse, EDataScope scope)
 {
-  if (scope == DATA_LOCAL) {
+  if (scope == EDataScope::LOCAL) {
     ZIntPoint center = synapse.getPosition();
     center.shiftSliceAxis(m_sliceAxis);
     SynapseMap &synapseMap =
@@ -561,7 +561,7 @@ void ZDvidSynapseEnsemble::addSynapseUnsync(
     if (writer.good()) {
       writer.writeSynapse(synapse);
       if (writer.isStatusOk()) {
-        addSynapseUnsync(synapse, DATA_LOCAL);
+        addSynapseUnsync(synapse, EDataScope::LOCAL);
       }
     }
   }
@@ -584,13 +584,13 @@ void ZDvidSynapseEnsemble::setUserName(
 void ZDvidSynapseEnsemble::setUserNameUnsync(
     int x, int y, int z, const std::string &userName, EDataScope scope)
 {
-  if (scope == DATA_GLOBAL) {
-    scope = DATA_SYNC;
+  if (scope == EDataScope::GLOBAL) {
+    scope = EDataScope::SYNC;
   }
   ZDvidSynapse &synapse = getSynapseUnsync(x, y, z, scope);
   if (synapse.isValid()) {
     synapse.setUserName(userName);
-    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+    if (scope == EDataScope::GLOBAL || scope == EDataScope::SYNC) {
       ZDvidWriter &writer = m_writer;
       if (writer.good()) {
         writer.writeSynapse(synapse);
@@ -617,13 +617,13 @@ void ZDvidSynapseEnsemble::setConfidenceUnsync(
     int x, int y, int z, const double c, EDataScope scope)
 {
     // copied mostly from setUserName()
-    if (scope == DATA_GLOBAL) {
-      scope = DATA_SYNC;
+    if (scope == EDataScope::GLOBAL) {
+      scope = EDataScope::SYNC;
     }
     ZDvidSynapse &synapse = getSynapseUnsync(x, y, z, scope);
     if (synapse.isValid()) {
       synapse.setConfidence(c);
-      if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+      if (scope == EDataScope::GLOBAL || scope == EDataScope::SYNC) {
         ZDvidWriter &writer = m_writer;
         if (writer.good()) {
           writer.writeSynapse(synapse);
@@ -652,13 +652,13 @@ void ZDvidSynapseEnsemble::annotateSynapse(
 void ZDvidSynapseEnsemble::annotateSynapseUnsync(
     int x, int y, int z, const ZJsonObject &propJson, EDataScope scope)
 {
-  if (scope == DATA_GLOBAL) {
-    scope = DATA_SYNC;
+  if (scope == EDataScope::GLOBAL) {
+    scope = EDataScope::SYNC;
   }
   ZDvidSynapse &synapse = getSynapseUnsync(x, y, z, scope);
   if (synapse.isValid()) {
     synapse.setProperty(propJson);
-    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+    if (scope == EDataScope::GLOBAL || scope == EDataScope::SYNC) {
       ZDvidWriter &writer = m_writer;
       if (writer.good()) {
         writer.writeSynapse(synapse);
@@ -787,7 +787,8 @@ void ZDvidSynapseEnsemble::display(
     for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
       ZDvidSynapse &synapse =
-          const_cast<ZDvidSynapseEnsemble&>(*this).getSynapseUnsync(*iter, DATA_LOCAL);
+          const_cast<ZDvidSynapseEnsemble&>(*this).getSynapseUnsync(
+            *iter, EDataScope::LOCAL);
       synapse.display(painter, slice, option, sliceAxis);
     }
   }
@@ -827,25 +828,25 @@ void ZDvidSynapseEnsemble::moveSynapseUnsync(
 {
   if (from != to) {
     switch (scope) {
-    case DATA_GLOBAL:
-    case DATA_SYNC:
+    case EDataScope::GLOBAL:
+    case EDataScope::SYNC:
     {
       ZDvidWriter &writer = m_writer;
       if (writer.good()) {
         writer.moveSynapse(from, to);
         if (writer.isStatusOk()) {
-          moveSynapseUnsync(from, to, DATA_LOCAL);
+          moveSynapseUnsync(from, to, EDataScope::LOCAL);
         }
       }
     }
     break;
-    case DATA_LOCAL:
+    case EDataScope::LOCAL:
     {
-      ZDvidSynapse &synapse = getSynapseUnsync(from, DATA_LOCAL);
+      ZDvidSynapse &synapse = getSynapseUnsync(from, EDataScope::LOCAL);
       if (synapse.isValid()) {
         synapse.setPosition(to);
-        addSynapseUnsync(synapse, DATA_LOCAL);
-        removeSynapseUnsync(from, DATA_LOCAL);
+        addSynapseUnsync(synapse, EDataScope::LOCAL);
+        removeSynapseUnsync(from, EDataScope::LOCAL);
       } else {
         updateUnsync(to);
       }
@@ -866,7 +867,7 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapse(
 ZDvidSynapse& ZDvidSynapseEnsemble::getSynapseUnsync(
     int x, int y, int z, EDataScope scope)
 {
-  if (scope == DATA_SYNC) {
+  if (scope == EDataScope::SYNC) {
     updateUnsync(x, y, z);
   }
 
@@ -878,14 +879,14 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapseUnsync(
 
     return getSliceUnsync(sz).getMap(sy)[sx];
   } else {
-    if (scope == DATA_LOCAL) {
+    if (scope == EDataScope::LOCAL) {
       return m_emptySynapse;
-    } else if (scope == DATA_GLOBAL) {
+    } else if (scope == EDataScope::GLOBAL) {
       updateUnsync(x, y, z);
     }
   }
 
-  return getSynapseUnsync(x, y, z, DATA_LOCAL);
+  return getSynapseUnsync(x, y, z, EDataScope::LOCAL);
 }
 
 ZDvidSynapse& ZDvidSynapseEnsemble::getSynapse(
@@ -917,7 +918,7 @@ bool ZDvidSynapseEnsemble::toggleHitSelectUnsync()
     }
   }
 
-  ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, DATA_LOCAL);
+  ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, EDataScope::LOCAL);
   synapse.setSelected(selecting);
   m_selector.setSelection(m_hitPoint, selecting);
 
@@ -935,7 +936,7 @@ void ZDvidSynapseEnsemble::selectElementUnsync(const ZIntPoint &pt, bool appendi
     deselectSubUnsync();
   }
   m_selector.selectObject(pt);
-  ZDvidSynapse &synapse = getSynapseUnsync(pt, DATA_LOCAL);
+  ZDvidSynapse &synapse = getSynapseUnsync(pt, EDataScope::LOCAL);
   if (synapse.isValid()) {
     synapse.setSelected(true);
   }
@@ -944,7 +945,7 @@ void ZDvidSynapseEnsemble::selectElementUnsync(const ZIntPoint &pt, bool appendi
 void ZDvidSynapseEnsemble::toggleHitSelectWithPartnerUnsync()
 {
   if (toggleHitSelectUnsync()) {
-    ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, DATA_LOCAL);
+    ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, EDataScope::LOCAL);
     updatePartner(synapse);
   }
 }
@@ -954,14 +955,14 @@ void ZDvidSynapseEnsemble::toggleHitSelectWithPartner()
   QMutexLocker locker(&m_dataMutex);
 
   if (toggleHitSelectUnsync()) {
-    ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, DATA_LOCAL);
+    ZDvidSynapse &synapse = getSynapseUnsync(m_hitPoint, EDataScope::LOCAL);
     updatePartner(synapse);
   }
 }
 
 void ZDvidSynapseEnsemble::updatePartnerUnsync(const ZIntPoint &pt)
 {
-  ZDvidSynapse &synapse = getSynapseUnsync(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+  ZDvidSynapse &synapse = getSynapseUnsync(pt, ZDvidSynapseEnsemble::EDataScope::LOCAL);
   if (synapse.isValid()) {
     updatePartner(synapse);
   }
@@ -1017,7 +1018,7 @@ void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
 void ZDvidSynapseEnsemble::selectHitWithPartnerUnsync(bool appending)
 {
   selectHitUnsync(appending);
-  ZDvidSynapse &selectedSynapse = getSynapseUnsync(m_hitPoint, DATA_LOCAL);
+  ZDvidSynapse &selectedSynapse = getSynapseUnsync(m_hitPoint, EDataScope::LOCAL);
   if (!selectedSynapse.isValid()) {
     return;
   }
@@ -1037,7 +1038,7 @@ void ZDvidSynapseEnsemble::selectWithPartnerUnsync(
     const ZIntPoint &pt, bool appending)
 {
   selectElementUnsync(pt, appending);
-  ZDvidSynapse &selectedSynapse = getSynapseUnsync(pt, DATA_LOCAL);
+  ZDvidSynapse &selectedSynapse = getSynapseUnsync(pt, EDataScope::LOCAL);
   if (!selectedSynapse.isValid()) {
     return;
   }
@@ -1083,7 +1084,7 @@ void ZDvidSynapseEnsemble::deselectSubUnsync()
   for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
        iter != selectedList.end(); ++iter) {
     const ZIntPoint &pt = *iter;
-    ZDvidSynapse &synapse = getSynapseUnsync(pt, DATA_LOCAL);
+    ZDvidSynapse &synapse = getSynapseUnsync(pt, EDataScope::LOCAL);
     if (synapse.isValid()) {
       synapse.setSelected(false);
     }
@@ -1215,7 +1216,7 @@ ZDvidSynapseEnsemble::SynapseMap::SynapseMap(EDataStatus status)
 
 ///////////////////////////////////////////
 ZDvidSynapseEnsemble::SynapseMap ZDvidSynapseEnsemble::SynapseSlice::m_emptyMap(
-    ZDvidSynapseEnsemble::STATUS_NULL);
+    ZDvidSynapseEnsemble::EDataStatus::NONE);
 
 ZDvidSynapseEnsemble::SynapseSlice::SynapseSlice(EDataStatus status)
 {
@@ -1236,11 +1237,11 @@ bool ZDvidSynapseEnsemble::SynapseSlice::contains(int x, int y) const
 bool ZDvidSynapseEnsemble::SynapseSlice::isReady(
     const QRect &rect, const QRect &range) const
 {
-  if (m_status == STATUS_READY) {
+  if (m_status == EDataStatus::READY) {
     return true;
   }
 
-  if (m_status == STATUS_PARTIAL_READY) {
+  if (m_status == EDataStatus::PARTIAL_READY) {
 //    qDebug() << "Data rect: " << m_dataRect;
 //    qDebug() << "New rect: " << rect;
 

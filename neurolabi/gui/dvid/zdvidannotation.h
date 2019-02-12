@@ -120,9 +120,9 @@ public:
 
   class Relation {
   public:
-    enum ERelation {
-      RELATION_UNKNOWN, RELATION_POSTSYN_TO, RELATION_PRESYN_TO,
-      RELATION_CONVERGENT_TO, RELATION_GROUPED_WITH
+    enum class ERelation {
+      UNKNOWN, POSTSYN_TO, PRESYN_TO,
+      CONVERGENT_TO, GROUPED_WITH
     };
 
     Relation(const ZIntPoint &to, ERelation relation) :

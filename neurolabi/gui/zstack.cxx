@@ -713,10 +713,10 @@ int ZStack::getChannelNumber(const string &filepath)
   int nchannel = 0;
   ZFileType::EFileType type = ZFileType::FileType(filepath);
 
-  if (type == ZFileType::FILE_TIFF ||
-      type == ZFileType::FILE_LSM) {
+  if (type == ZFileType::EFileType::TIFF ||
+      type == ZFileType::EFileType::LSM) {
     Tiff_Reader *reader;
-    if (type == ZFileType::FILE_TIFF) {
+    if (type == ZFileType::EFileType::TIFF) {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 0);
     } else {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 1);
@@ -761,7 +761,7 @@ int ZStack::getChannelNumber(const string &filepath)
     nchannel = image->number_channels;
     Kill_Tiff_Image(image);
     Free_Tiff_Reader(reader);
-  } else if (type == ZFileType::FILE_V3D_RAW) {
+  } else if (type == ZFileType::EFileType::V3D_RAW) {
     FILE *fp = Guarded_Fopen(filepath.c_str(), "rb", "Read_Raw_Stack_C");
 
     char formatkey[] = "raw_image_stack_by_hpeng";
@@ -798,7 +798,7 @@ int ZStack::getChannelNumber(const string &filepath)
 
     nchannel = sz[3];
     fclose(fp);
-  } else if (type == ZFileType::FILE_PNG) {
+  } else if (type == ZFileType::EFileType::PNG) {
     //No support for multi-channel png yet
     return 1;
   }
@@ -814,8 +814,8 @@ std::string ZStack::save(const string &filepath) const
     resultFilePath = filepath;
     if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
         (getVoxelNumber() > 2147483648)) { //save as raw
-      if (ZFileType::FileType(filepath) != ZFileType::FILE_V3D_RAW ||
-          ZFileType::FileType(filepath) != ZFileType::FILE_MC_STACK_RAW) {
+      if (ZFileType::FileType(filepath) != ZFileType::EFileType::V3D_RAW ||
+          ZFileType::FileType(filepath) != ZFileType::EFileType::MC_STACK_RAW) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
         resultFilePath += ".raw";
         std::cout << resultFilePath << " saved instead." << endl;
@@ -1296,7 +1296,7 @@ bool ZStack::isTracable()
 bool ZStack::isSwc()
 {
   if (isVirtual()) {
-    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::FILE_SWC;
+    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::EFileType::SWC;
     /*
     if (m_source != NULL) {
       if (m_source->type == STACK_DOC_SWC_FILE) {

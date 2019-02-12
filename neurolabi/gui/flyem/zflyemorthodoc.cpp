@@ -130,7 +130,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
         for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
              iter != seList.end(); ++iter) {
           ZDvidSynapseEnsemble *se = *iter;
-          se->addSynapseUnsync(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+          se->addSynapseUnsync(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
         }
       }
     }

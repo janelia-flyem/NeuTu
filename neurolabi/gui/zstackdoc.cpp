@@ -5175,24 +5175,24 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
     switch (ZFileType::FileType(iter->toStdString())) {
-    case ZFileType::FILE_SWC:
-    case ZFileType::FILE_SYNAPSE_ANNOTATON:
+    case ZFileType::EFileType::SWC:
+    case ZFileType::EFileType::SYNAPSE_ANNOTATON:
 //      swcLoaded = true;
       break;
-    case ZFileType::FILE_SWC_NETWORK:
-    case ZFileType::FILE_FLYEM_NETWORK:
+    case ZFileType::EFileType::SWC_NETWORK:
+    case ZFileType::EFileType::FLYEM_NETWORK:
 //      swcLoaded = true;
       networkLoaded = true;
       break;
-    case ZFileType::FILE_LOCSEG_CHAIN:
+    case ZFileType::EFileType::LOCSEG_CHAIN:
 //      chainLoaded = true;
       break;
-    case ZFileType::FILE_V3D_APO:
-    case ZFileType::FILE_V3D_MARKER:
-    case ZFileType::FILE_RAVELER_BOOKMARK:
+    case ZFileType::EFileType::V3D_APO:
+    case ZFileType::EFileType::V3D_MARKER:
+    case ZFileType::EFileType::RAVELER_BOOKMARK:
 //      punctaLoaded = true;
       break;
-    case ZFileType::FILE_OBJECT_SCAN:
+    case ZFileType::EFileType::OBJECT_SCAN:
 //      obj3dScanLoaded = true;
       break;
     default:
@@ -5268,7 +5268,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   std::string filePathStr = filePath.toStdString();
 //  const char *filePathStr = filePath.toLocal8Bit().constData();
   switch (ZFileType::FileType(filePathStr)) {
-  case ZFileType::FILE_SWC:
+  case ZFileType::EFileType::SWC:
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
@@ -5279,13 +5279,13 @@ bool ZStackDoc::loadFile(const QString &filePath)
   }
 //    loadSwc(filePath);
     break;
-  case ZFileType::FILE_LOCSEG_CHAIN:
+  case ZFileType::EFileType::LOCSEG_CHAIN:
     loadLocsegChain(filePath);
     break;
-  case ZFileType::FILE_SWC_NETWORK:
+  case ZFileType::EFileType::SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
-  case ZFileType::FILE_GRAPH_3D:
+  case ZFileType::EFileType::GRAPH_3D:
   {
     Z3DGraph *graph = new Z3DGraph;
     graph->load(filePath.toStdString());
@@ -5294,7 +5294,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     }
   }
     break;
-  case ZFileType::FILE_OBJECT_SCAN_ARRAY:
+  case ZFileType::EFileType::OBJECT_SCAN_ARRAY:
   {
     succ = false;
     ZObject3dScanArray objArray;
@@ -5321,7 +5321,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     objArray.shallowClear();
   }
     break;
-  case ZFileType::FILE_OBJECT_SCAN:
+  case ZFileType::EFileType::OBJECT_SCAN:
     setTag(neutu::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
@@ -5348,7 +5348,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
       }
     }
     break; //experimenting _DEBUG_
-  case ZFileType::FILE_DVID_OBJECT:
+  case ZFileType::EFileType::DVID_OBJECT:
     setTag(neutu::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
@@ -5377,33 +5377,33 @@ bool ZStackDoc::loadFile(const QString &filePath)
       }
     }
     break;
-  case ZFileType::FILE_TIFF:
-  case ZFileType::FILE_LSM:
-  case ZFileType::FILE_V3D_RAW:
-  case ZFileType::FILE_PNG:
-  case ZFileType::FILE_V3D_PBD:
+  case ZFileType::EFileType::TIFF:
+  case ZFileType::EFileType::LSM:
+  case ZFileType::EFileType::V3D_RAW:
+  case ZFileType::EFileType::PNG:
+  case ZFileType::EFileType::V3D_PBD:
     readStack(filePathStr.c_str(), false);
     break;
-  case ZFileType::FILE_SPARSE_STACK:
+  case ZFileType::EFileType::SPARSE_STACK:
     readSparseStack(filePathStr);
     break;
-  case ZFileType::FILE_FLYEM_NETWORK:
+  case ZFileType::EFileType::FLYEM_NETWORK:
     importFlyEmNetwork(filePathStr.c_str());
     break;
-  case ZFileType::FILE_JSON:
-  case ZFileType::FILE_SYNAPSE_ANNOTATON:
+  case ZFileType::EFileType::JSON:
+  case ZFileType::EFileType::SYNAPSE_ANNOTATON:
     if (!importSynapseAnnotation(filePathStr)) {
       succ = false;
     }
     break;
-  case ZFileType::FILE_V3D_APO:
-  case ZFileType::FILE_V3D_MARKER:
-  case ZFileType::FILE_RAVELER_BOOKMARK:
+  case ZFileType::EFileType::V3D_APO:
+  case ZFileType::EFileType::V3D_MARKER:
+  case ZFileType::EFileType::RAVELER_BOOKMARK:
     if (!importPuncta(filePathStr.c_str())) {
       succ = false;
     }
     break;
-  case ZFileType::FILE_MESH:
+  case ZFileType::EFileType::MESH:
     if (!importMesh(filePath)) {
       succ = false;
     }
@@ -7754,7 +7754,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
 
   if (tree1 != tree2) {
     //Check source
-    if (ZFileType::FileType(tree2->getSource()) == ZFileType::FILE_SWC) {
+    if (ZFileType::FileType(tree2->getSource()) == ZFileType::EFileType::SWC) {
       upNode = tn2;
       downNode = tn1;
     }

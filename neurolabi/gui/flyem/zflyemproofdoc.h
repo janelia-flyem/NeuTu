@@ -313,7 +313,7 @@ public: //Synapse functions
       const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
   void moveSynapse(
       const ZIntPoint &from, const ZIntPoint &to,
-      ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
+      ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
   void highlightPsd(bool on);

@@ -28,6 +28,7 @@ public:
   Value(uint64_t value);
   Value(int64_t value);
   Value(int value);
+  Value(bool value);
   Value(const std::vector<double>& value);
   Value(const std::string& value);
   Value(const char* value);
@@ -38,6 +39,8 @@ public:
 private:
   QJsonValue m_value;
 };
+
+QString ToString(const Value &v);
 
 class Tracer;
 
@@ -52,6 +55,7 @@ public:
 
   void SetTag(const std::string& key, const Value& value);
 
+  void appendTag(const std::string& key, const Value& value);
   bool hasTag(const std::string &key) const;
   const std::string& operationName() const;
   const std::map<std::string, Value>& tags() const;

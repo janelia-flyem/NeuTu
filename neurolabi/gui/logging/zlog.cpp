@@ -56,7 +56,12 @@ void ZLog::end()
 
 void ZLog::log(const std::string &key, const neuopentracing::Value &value)
 {
-  m_tags[key.c_str()] = value.toJson();
+  if (m_tags.contains(key.c_str())) {
+    m_tags[key.c_str()] = neuopentracing::ToString(m_tags.value(key.c_str())) +
+        neuopentracing::ToString(value);
+  } else {
+    m_tags[key.c_str()] = value.toJson();
+  }
 }
 
 ZLog::Time::Time() :
@@ -161,7 +166,8 @@ void KLog::log(const std::string &key, const neuopentracing::Value &value)
   }
 
   if (m_span) {
-    m_span->SetTag(key, value);
+    m_span->appendTag(key, value);
+//    m_span->SetTag(key, value);
   }
 
   if (localLogging()) {
@@ -197,9 +203,17 @@ void KLog::end()
 //{
 //}
 
+const char* ZLog::Description::KEY = "description";
+
 KInfo& KInfo::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+    }
+  }
 
   return (*this);
 }
@@ -220,7 +234,14 @@ KInfo& KInfo::operator << (const QString &info)
 
 KWarn& KWarn::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
 
   return (*this);
 }
@@ -241,7 +262,14 @@ KWarn& KWarn::operator << (const QString &info)
 
 KError& KError::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
 
   return (*this);
 }
