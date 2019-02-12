@@ -589,7 +589,7 @@ int ZStackFrame::readStack(const char *filePath)
   Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_SWC:
+  case ZFileType::EFileType::SWC:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
       return ERROR_IO_READ;
@@ -600,15 +600,15 @@ int ZStackFrame::readStack(const char *filePath)
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_V3D_APO:
-  case ZFileType::FILE_V3D_MARKER:
+  case ZFileType::EFileType::V3D_APO:
+  case ZFileType::EFileType::V3D_MARKER:
     m_doc->importPuncta(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_LOCSEG_CHAIN: {
+  case ZFileType::EFileType::LOCSEG_CHAIN: {
     QStringList files;
     files.push_back(filePath);
     m_doc->importLocsegChain(files);
@@ -618,14 +618,14 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   }
-  case ZFileType::FILE_SWC_NETWORK:
+  case ZFileType::EFileType::SWC_NETWORK:
     m_doc->loadSwcNetwork(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
     if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
@@ -1672,7 +1672,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_PNG) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::PNG) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);

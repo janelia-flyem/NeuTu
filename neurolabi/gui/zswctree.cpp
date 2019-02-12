@@ -312,7 +312,7 @@ void ZSwcTree::parseComment(istream &stream)
   }
 
   ZJsonObject jsonObj;
-  if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
+  if (ZFileType::FileType(styleFilePath) == ZFileType::EFileType::JSON) {
     if (!styleFilePath.isAbsolutePath()) {
       styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
     }
@@ -448,7 +448,7 @@ bool ZSwcTree::load(const char *filePath)
     }
 
     ZJsonObject jsonObj;
-    if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(styleFilePath) == ZFileType::EFileType::FILE_JSON) {
       if (!styleFilePath.isAbsolutePath()) {
         styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
       }
@@ -3416,7 +3416,7 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
 
 bool ZSwcTree::hasGoodSourceName()
 {
-  if (ZFileType::FileType(getSource()) == ZFileType::FILE_SWC) {
+  if (ZFileType::FileType(getSource()) == ZFileType::EFileType::SWC) {
     return true;
   }
 

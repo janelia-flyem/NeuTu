@@ -77,7 +77,8 @@ public:
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("description", value) {}
+    static const char *KEY;
+    Description(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Action : public Tag {
@@ -127,7 +128,7 @@ protected:
 private:
   void endLog();
 
-private:
+protected:
   bool m_started = false;
   QJsonObject m_tags;
   bool m_localLogging = true;
@@ -150,7 +151,7 @@ public:
 private:
   void endKLog();
 
-private:
+protected:
   std::unique_ptr<neuopentracing::Span> m_span;
   static std::string m_operationName;
 };

@@ -53,7 +53,7 @@ std::set<uint64_t> ZDvidFilter::loadBodySet() const
   std::set<uint64_t> bodySet;
 
 
-  if (!(ZFileType::FileType(m_bodyListFile) == ZFileType::FILE_JSON)) {
+  if (!(ZFileType::FileType(m_bodyListFile) == ZFileType::EFileType::JSON)) {
     FILE *fp = fopen(m_bodyListFile.c_str(), "r");
     if (fp != NULL) {
       ZString str;

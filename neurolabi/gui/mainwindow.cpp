@@ -4873,12 +4873,12 @@ void MainWindow::expandCurrentFrame()
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
         switch (ZFileType::FileType(filePath.toStdString())) {
-        case ZFileType::FILE_SWC:
+        case ZFileType::EFileType::SWC:
           frame->importSwc(filePath);
           swcLoaded = true;
           break;
-        case ZFileType::FILE_TIFF:
-        case ZFileType::FILE_PNG:
+        case ZFileType::EFileType::TIFF:
+        case ZFileType::EFileType::PNG:
           frame->importMask(filePath);
           break;
         default:
@@ -4986,14 +4986,14 @@ void MainWindow::on_actionSparse_objects_triggered()
     } else {
       foreach (QString file, fileList) {
         if (ZFileType::FileType(file.toStdString()) ==
-            ZFileType::FILE_OBJECT_SCAN) {
+            ZFileType::EFileType::OBJECT_SCAN) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
           if (ZFileType::FileType(file.toStdString()) ==
-              ZFileType::FILE_TIFF) {
+              ZFileType::EFileType::TIFF) {
             ZStack stack;
             stack.load(file.toStdString());
             ZObjectColorScheme colorScheme;
@@ -5545,10 +5545,10 @@ void MainWindow::showStackFrame(
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
-      if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_TIFF) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::EFileType::TIFF) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_SWC) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::EFileType::SWC) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }

@@ -1745,7 +1745,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
         //Check source
         if (ZFileType::FileType(swcMap[downNode]->getSource()) ==
-            ZFileType::FILE_SWC) {
+            ZFileType::EFileType::SWC) {
           upNode = nodeArray[e2];
           downNode = nodeArray[e1];
         }

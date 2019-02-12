@@ -18204,18 +18204,18 @@ void ZTest::test(MainWindow *host)
     int z = rand.rndint(0, 1000);
 
     synapse.setPosition(x, y, z);
-    se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+    se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
     x = rand.rndint(0, 100);
     y = rand.rndint(0, 100);
     z = rand.rndint(0, 1000);
-    se.removeSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+    se.removeSynapse(x, y, z, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
     x = rand.rndint(0, 100);
     y = rand.rndint(0, 100);
     z = rand.rndint(0, 1000);
     ZDvidSynapse &synapse2 =
-        se.getSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+        se.getSynapse(x, y, z, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
     synapse2.getX();
   }
 #endif
@@ -19469,23 +19469,23 @@ void ZTest::test(MainWindow *host)
 
 
   ZDvidSynapseEnsemble se;
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 30);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 28, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(-1, -2, -3);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   std::cout << se << std::endl;
 
@@ -19498,15 +19498,15 @@ void ZTest::test(MainWindow *host)
   }
 
 
-  std::cout << se.getSynapse(0, 0, 0, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(0, 0, 0, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
-  std::cout << se.getSynapse(-1, -2, -3, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(-1, -2, -3, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
-  std::cout << se.getSynapse(31, 28, 29, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(31, 28, 29, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
-  std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
 #endif
@@ -28966,7 +28966,7 @@ void ZTest::test(MainWindow *host)
                  url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("hemibran-production");
   tic();
@@ -29412,6 +29412,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  KINFO << "Test:" << " to kafka only";
+  LKINFO << "Test:" <<  " to both local and kafka" << " " << 0;
+
+#endif
+
+#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
 
@@ -29483,6 +29489,13 @@ void ZTest::test(MainWindow *host)
           neutu::EMessageType::ERROR,
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
+
+#endif
+
+#if 0
+  qDebug() << neuopentracing::ToString(neuopentracing::Value(1));
+  qDebug() << neuopentracing::ToString(neuopentracing::Value(true));
+  qDebug() << neuopentracing::ToString(neuopentracing::Value("test"));
 
 #endif
 

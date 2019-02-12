@@ -4946,7 +4946,7 @@ void ZFlyEmProofMvc::goToTBar()
     if (selected.size() == 1) {
       const ZIntPoint &pt = *(selected.begin());
       ZDvidSynapse synapse =
-          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+          se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
         const std::vector<ZIntPoint> &partners = synapse.getPartners();
         if (!partners.empty()) {
@@ -5871,7 +5871,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
     QString filePath = neutu::GetFilePath(url);
-    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::JSON) {
       processed = true; //todo
     }
   }
@@ -5879,7 +5879,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (!processed) {
     foreach (const QUrl &url, urls) {
       QString filePath = neutu::GetFilePath(url);
-      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_SWC) {
+      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::SWC) {
         ZSwcTree *tree = new ZSwcTree;
         tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());

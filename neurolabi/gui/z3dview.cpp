@@ -1086,7 +1086,7 @@ void Z3DView::updateGraphData()
     ZPointNetwork *network = m_doc->swcNetwork()->toPointNetwork();
     m_graphFilter->setData(*network, NULL);
     delete network;
-  } else if (ZFileType::FileType(m_doc->additionalSource()) == ZFileType::FILE_JSON) {
+  } else if (ZFileType::FileType(m_doc->additionalSource()) == ZFileType::EFileType::FILE_JSON) {
     Z3DGraph graph;
     graph.importJsonFile(m_doc->additionalSource());
     m_graphFilter->addData(graph);
