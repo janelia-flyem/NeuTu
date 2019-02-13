@@ -510,7 +510,7 @@ signals:
 private slots:
 //  void updateBody();
   void processEvent();
-  void processEvent(const ZFlyEmBodyEvent &event);
+//  void processEvent(const ZFlyEmBodyEvent &event);
 
 private:
   void processEventFunc(const ZFlyEmBodyEvent &event);

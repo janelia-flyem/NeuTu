@@ -248,6 +248,8 @@ void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
 
 void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
 {
+  logInfo(QString("Set a list %1 bodies").arg(bodyList.size()));
+
   ZJsonArray bodies;
   ZDvidReader &reader = m_sequencerReader;
   if (reader.isReady()) {
@@ -696,6 +698,9 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
 void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
 {
   int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+
+  logInfo(QString("Update bodies triggered by max body number change: ").arg(maxBodies));
+
   if (maxBodies > 1000) {
     int ans = QMessageBox::Ok;
     if (m_mode == EMode::SEQUENCER) {

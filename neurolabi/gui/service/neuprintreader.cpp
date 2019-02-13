@@ -3,6 +3,8 @@
 #include <QFile>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"

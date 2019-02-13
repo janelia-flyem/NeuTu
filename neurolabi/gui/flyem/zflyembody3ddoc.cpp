@@ -624,6 +624,7 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
   }
 }
 
+/*
 void ZFlyEmBody3dDoc::processEvent(const ZFlyEmBodyEvent &event)
 {
   switch (event.getAction()) {
@@ -648,7 +649,7 @@ void ZFlyEmBody3dDoc::processEvent(const ZFlyEmBodyEvent &event)
     break;
   }
 }
-
+*/
 void ZFlyEmBody3dDoc::setTodoItemSelected(
     ZFlyEmToDoItem *item, bool select)
 {
@@ -1529,7 +1530,7 @@ void ZFlyEmBody3dDoc::addBody(const ZFlyEmBodyConfig &config)
   uint64_t bodyId = config.getBodyId();
   if (!getBodyManager().contains(bodyId)) {
     getBodyManager().registerBody(bodyId);
-    ZFlyEmBodyConfig newConfig;
+    ZFlyEmBodyConfig newConfig = config;
 
     if (getBodyType() == flyem::EBodyType::SKELETON) {
       newConfig.setDsLevel(-1);

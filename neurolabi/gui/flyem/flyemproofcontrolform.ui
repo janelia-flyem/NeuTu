@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>547</width>
-    <height>721</height>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -206,6 +206,12 @@
       <bool>false</bool>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
       <item>
        <widget class="QGroupBox" name="groupBox_5">
         <property name="toolTip">
@@ -225,7 +231,7 @@
           <number>5</number>
          </property>
          <property name="topMargin">
-          <number>12</number>
+          <number>5</number>
          </property>
          <property name="rightMargin">
           <number>5</number>
@@ -275,7 +281,7 @@
           <number>5</number>
          </property>
          <property name="topMargin">
-          <number>12</number>
+          <number>5</number>
          </property>
          <property name="rightMargin">
           <number>5</number>
@@ -376,7 +382,13 @@
         <property name="leftMargin">
          <number>5</number>
         </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
         <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="bottomMargin">
          <number>5</number>
         </property>
         <item>
@@ -452,7 +464,13 @@
         <property name="leftMargin">
          <number>5</number>
         </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
         <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="bottomMargin">
          <number>5</number>
         </property>
         <item>
@@ -521,9 +539,6 @@
   <zorder></zorder>
   <zorder>groupBox_3</zorder>
   <zorder></zorder>
-  <zorder>groupBox_4</zorder>
-  <zorder>meshPushButton</zorder>
-  <zorder>coarseMeshPushButton</zorder>
  </widget>
  <customwidgets>
   <customwidget>
