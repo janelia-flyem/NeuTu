@@ -26,6 +26,7 @@ public:
   void updateDvidTargetFromDoc();
 
   void updateStack(const ZIntPoint &center);
+  void updateStackFromCrossHair();
 
 //  void syncView(const ZIntPoint &center, double zoomRatio);
 

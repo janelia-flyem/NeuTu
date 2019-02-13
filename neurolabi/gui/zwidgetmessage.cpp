@@ -58,13 +58,15 @@ ZWidgetMessage::ZWidgetMessage(
   m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, neutu::EMessageType type, FTargets target) :
+ZWidgetMessage::ZWidgetMessage(
+    const QString &msg, neutu::EMessageType type, FTargets target) :
   m_type(type), m_targets(target)
 {
   m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const char *msg, neutu::EMessageType type, FTargets target) :
+ZWidgetMessage::ZWidgetMessage(
+    const char *msg, neutu::EMessageType type, FTargets target) :
   m_type(type), m_targets(target)
 {
   m_message.append(msg);

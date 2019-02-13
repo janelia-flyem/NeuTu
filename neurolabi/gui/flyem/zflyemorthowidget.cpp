@@ -4,19 +4,25 @@
 #include <QKeyEvent>
 
 #include "common/zsharedpointer.h"
-#include "flyem/zflyemorthodoc.h"
-#include "flyem/zflyemorthomvc.h"
-#include "dvid/zdvidtarget.h"
-#include "flyem/flyemorthocontrolform.h"
+#include "logging/zlog.h"
+
+#include "neutubeconfig.h"
+#include "zstackdochelper.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
+#include "zcrosshair.h"
+
+#include "dvid/zdvidtarget.h"
+
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
-#include "zcrosshair.h"
+
+#include "zflyemorthodoc.h"
+#include "zflyemorthomvc.h"
+#include "flyemorthocontrolform.h"
+#include "zflyemorthoviewhelper.h"
 #include "zflyemproofpresenter.h"
-#include "neutubeconfig.h"
-#include "flyem/zflyemorthoviewhelper.h"
-#include "zstackdochelper.h"
+
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -115,8 +121,10 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_controlForm, SIGNAL(movingRight()), this, SLOT(moveRight()));
   connect(m_controlForm, SIGNAL(locatingMain()),
           this, SLOT(locateMainWindow()));
-  connect(m_controlForm, SIGNAL(resettingCrosshair()),
-          this, SLOT(resetCrosshair()));
+  connect(m_controlForm, &FlyEmOrthoControlForm::resettingCrosshair,
+          this, &ZFlyEmOrthoWidget::resetCrosshair);
+  connect(m_controlForm, &FlyEmOrthoControlForm::reloading,
+          this, &ZFlyEmOrthoWidget::reloadStack);
   connect(m_controlForm, SIGNAL(showingSeg(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(m_controlForm, SIGNAL(showingData(bool)),
@@ -241,6 +249,16 @@ void ZFlyEmOrthoWidget::locateMainWindow()
 {
   ZIntPoint center = m_xyMvc->getViewCenter();
   emit zoomingTo(center.getX(), center.getY(), center.getZ());
+}
+
+void ZFlyEmOrthoWidget::reloadStack()
+{
+  KLOG << ZLog::Info()
+       << ZLog::Description("orthogonal view: reload stack from crosshair")
+       << ZLog::Window("ZFlyEmOrthoWidget");
+
+  m_xyMvc->updateStackFromCrossHair();
+  resetCrosshair();
 }
 
 void ZFlyEmOrthoWidget::resetCrosshair()

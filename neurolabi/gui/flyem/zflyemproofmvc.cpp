@@ -4118,6 +4118,7 @@ void ZFlyEmProofMvc::presentBodySplit(
 
   updateAssignedBookmarkTable();
   updateUserBookmarkTable();
+  updateViewButton();
 
 //  emit bookmarkUpdated(&m_splitProject);
   getView()->redrawObject();
@@ -4231,6 +4232,7 @@ void ZFlyEmProofMvc::exitSplit()
 
     updateAssignedBookmarkTable();
     updateUserBookmarkTable();
+    updateViewButton();
   }
 }
 
@@ -6243,44 +6245,47 @@ void ZFlyEmProofMvc::initViewButton()
 void ZFlyEmProofMvc::updateViewButton()
 {
   std::cout << "Update view button" << std::endl;
-  if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD &&
-      !getDvidTarget().readOnly() &&
-      neutu::IsAdminUser()) {
-    std::cout << "Update view button for admin" << std::endl;
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
-    if (bodySet.size() == 1) {
-      uint64_t bodyId = *(bodySet.begin());
-      ZFlyEmBodyAnnotation annot =
-          getCompleteDocument()->getRecordedAnnotation(bodyId);
-      if (annot.getBodyId() == bodyId) {
-        ZString status(annot.getStatus());
-        status.toLower();
-        int rank = getCompleteDocument()->getBodyStatusRank(status);
-        auto pred = [&, this](
-            const std::string &buttonStatus) {
-          ZFlyEmProofDoc *doc = this->getCompleteDocument();
-          std::cout << "Body pred check" << buttonStatus << " "
-                    << doc->isExpertBodyStatus(buttonStatus) << " "
-                    << rank << " " << doc->getBodyStatusRank(buttonStatus)
-                    << std::endl;
-          return doc->isExpertBodyStatus(buttonStatus) &&
-              rank > doc->getBodyStatusRank(buttonStatus);
-        };
+  if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+    if (!getDvidTarget().readOnly() && neutu::IsAdminUser()) {
+      std::cout << "Update view button for admin" << std::endl;
+      std::set<uint64_t> bodySet =
+          getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+      if (bodySet.size() == 1) {
+        uint64_t bodyId = *(bodySet.begin());
+        ZFlyEmBodyAnnotation annot =
+            getCompleteDocument()->getRecordedAnnotation(bodyId);
+        if (annot.getBodyId() == bodyId) {
+          ZString status(annot.getStatus());
+          status.toLower();
+          int rank = getCompleteDocument()->getBodyStatusRank(status);
+          auto pred = [&, this](
+              const std::string &buttonStatus) {
+            ZFlyEmProofDoc *doc = this->getCompleteDocument();
+            std::cout << "Body pred check" << buttonStatus << " "
+                      << doc->isExpertBodyStatus(buttonStatus) << " "
+                      << rank << " " << doc->getBodyStatusRank(buttonStatus)
+                      << std::endl;
+            return doc->isExpertBodyStatus(buttonStatus) &&
+                rank > doc->getBodyStatusRank(buttonStatus);
+          };
 
-//        if (pred("roughly traced")) {
-//          std::cout << "Expert status" << std::endl;
-//        }
+          //        if (pred("roughly traced")) {
+          //          std::cout << "Expert status" << std::endl;
+          //        }
 
-        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
-              pred("roughly traced"));
-        getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
-              pred("traced"));
+          getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
+                pred("roughly traced"));
+          getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
+                pred("traced"));
+        }
+      } else {
+        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
+        getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
       }
-    } else {
-      getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
-      getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
     }
+
+    getViewButton(EViewButton::GOTO_BODY)->setVisible(
+          !getCompletePresenter()->isSplitOn());
   }
 }
 

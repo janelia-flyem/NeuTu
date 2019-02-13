@@ -1,5 +1,9 @@
 #include "utilities.h"
 
+#include <QTextDocument>
+#include <QPixmap>
+#include <QPainter>
+
 QString neutu::GetKeyString(int key, const Qt::KeyboardModifiers &modifier)
 {
   QString str;
@@ -21,4 +25,17 @@ QString neutu::GetKeyString(int key, const Qt::KeyboardModifiers &modifier)
   }
 
   return str;
+}
+
+void neutu::SetHtmlIcon(QPushButton *button, const QString &text)
+{
+  QTextDocument doc;
+  doc.setHtml(text);
+
+  QPixmap pixmap(doc.size().toSize());
+  pixmap.fill(Qt::transparent);
+  QPainter painter(&pixmap);
+  doc.drawContents(&painter, pixmap.rect());
+
+  button->setIcon(QIcon(pixmap));
 }

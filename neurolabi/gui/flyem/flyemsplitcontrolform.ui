@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>473</width>
-    <height>637</height>
+    <height>643</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
@@ -242,43 +242,28 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="toolTip">
-         <string>A body is rendered as a set of balls resembling its surface</string>
-        </property>
-        <property name="title">
-         <string>Ball Surface</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Quality:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="coarseBodyViewPushButton">
-           <property name="toolTip">
-            <string>3D body visualization (low resolution)</string>
-           </property>
-           <property name="text">
-            <string>LowRes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="quickViewPushButton">
-           <property name="toolTip">
-            <string>3D body visualization (high resolution)</string>
-           </property>
-           <property name="text">
-            <string>HighRes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QPushButton" name="quickViewPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (high resolution)</string>
+          </property>
+          <property name="text">
+           <string>HighRes</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="coarseBodyViewPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (low resolution)</string>
+          </property>
+          <property name="text">
+           <string>LowRes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QPushButton" name="meshPushButton">

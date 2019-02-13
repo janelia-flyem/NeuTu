@@ -16,25 +16,17 @@
 #include "logging/zlog.h"
 #include "mvc/logging.h"
 
-#include "dialogs/informationdialog.h"
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"
 #include "tz_stack_lib.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "zdocumentable.h"
-//#include "zstackdrawable.h"
-#include "zlocalneuroseg.h"
-#include "zlocsegchain.h"
 #include "tz_vrml_io.h"
 #include "tz_vrml_material.h"
 #include "tz_color.h"
-#include "zstackframe.h"
-#include "zellipse.h"
 #include "tz_workspace.h"
 #include "tz_string.h"
-#include "zlocsegchainconn.h"
 #include "tz_stack.h"
 #include "tz_stack_objlabel.h"
 #include "tz_stack_attribute.h"
@@ -49,16 +41,23 @@
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
 #include "tz_local_rpi_neuroseg.h"
-#include "zlocalrect.h"
 #include "tz_geo3d_ball.h"
 #include "tz_workspace.h"
-#include "zdirectionaltemplatechain.h"
 #include "tz_r2_ellipse.h"
-#include "zstack.hxx"
 #include "tz_stack_stat.h"
+#include "tz_error.h"
+
+#include "zlocsegchainconn.h"
+#include "zstackframe.h"
+#include "zlocalneuroseg.h"
+#include "zlocsegchain.h"
+#include "zellipse.h"
+#include "zlocalrect.h"
+#include "zdirectionaltemplatechain.h"
+#include "zstack.hxx"
+
 #include "mainwindow.h"
 #include "zerror.h"
-#include "tz_error.h"
 #include "zswcnetwork.h"
 #include "zstring.h"
 #include "zcolormap.h"
@@ -84,8 +83,6 @@
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include "dialogs/swcskeletontransformdialog.h"
-#include "dialogs/swcsizedialog.h"
 #include "tz_stack_watershed.h"
 #include "imgproc/zstackwatershed.h"
 #include "zstackarray.h"
@@ -127,6 +124,12 @@
 #include "data3d/zstackobjecthelper.h"
 #include "z3dgraph.h"
 #include "zcurve.h"
+
+#include "dialogs/swcskeletontransformdialog.h"
+#include "dialogs/swcsizedialog.h"
+#include "dialogs/resolutiondialog.h"
+#include "dialogs/zrescaleswcdialog.h"
+#include "dialogs/informationdialog.h"
 
 //using namespace std;
 
@@ -4515,58 +4518,6 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
 
   notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
                          m_objectGroup.getSelector()->getDeselectedSet());
-
-#if 0
-  switch (type) {
-  case ZStackObject::EType::TYPE_SWC_NODE:
-    deselectAllSwcTreeNodes();
-    break;
-  case ZStackObject::TYPE_DVID_LABEL_SLICE:
-  {
-    QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
-    foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
-      if (labelSlice->isHittable()) {
-        labelSlice->deselectAll();
-      }
-    }
-  }
-    break;
-  default:
-  {
-    TStackObjectList objList = getObjectList(type);
-    m_objectGroup.getSelector()->reset();
-
-    for (TStackObjectList::iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      ZStackObject *obj = *iter;
-      if (obj->isSelected()) {
-        m_objectGroup.setSelected(obj, false);
-      }
-    }
-    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedObjectSet(type),
-                           m_objectGroup.getSelector()->getDeselectedObjectSet(type));
-  }
-    break;
-  }
-
-  //m_selectedSwcTreeNodes.clear();
-
-
-  if (type == ZStackObject::EType::TYPE_SWC) {
-    notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::EType::TYPE_SWC));
-  }
-
-  if (type == ZStackObject::EType::TYPE_PUNCTUM) {
-    notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::EType::TYPE_PUNCTUM));
-  }
-
-  if (type == ZStackObject::EType::TYPE_LOCSEG_CHAIN) {
-    notifyDeselected(getSelectedObjectList<ZLocsegChain>(
-                       ZStackObject::EType::TYPE_LOCSEG_CHAIN));
-  }
-#endif
-
-//  m_objectGroup.setSelected(false);
 }
 
 void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)
@@ -4679,14 +4630,7 @@ ZCurve ZStackDoc::locsegProfileCurve(int option) const
   return curve;
 }
 
-/*
-void ZStackDoc::addObject(ZStackObject *obj)
-{
-  m_objectGroup.add(obj);
-//  m_objectList.append(obj);
-  notifyObjectModified();
-}
-*/
+
 void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
 {
   if (m_swcNetwork == NULL) {
