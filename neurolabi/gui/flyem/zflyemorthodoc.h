@@ -4,6 +4,7 @@
 #include "flyem/zflyemproofdoc.h"
 
 class ZCrossHair;
+class ZIntPoint;
 
 class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
 {
@@ -18,6 +19,7 @@ public:
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
 
   ZCrossHair* getCrossHair() const;
+  ZPoint getCrossHairCenter();
 
   void setCrossHairCenter(double x, double y, neutu::EAxis axis);
   void setCrossHairCenter(const ZIntPoint &center);

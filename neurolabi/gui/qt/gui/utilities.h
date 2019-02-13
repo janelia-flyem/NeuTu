@@ -4,9 +4,12 @@
 #include <QKeySequence>
 #include <QString>
 
+#include <QPushButton>
+
 namespace neutu {
 
 QString GetKeyString(int key, const Qt::KeyboardModifiers &modifier);
+void SetHtmlIcon(QPushButton *button, const QString &text);
 
 }
 

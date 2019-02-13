@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>547</width>
-    <height>748</height>
+    <height>721</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -521,6 +521,9 @@
   <zorder></zorder>
   <zorder>groupBox_3</zorder>
   <zorder></zorder>
+  <zorder>groupBox_4</zorder>
+  <zorder>meshPushButton</zorder>
+  <zorder>coarseMeshPushButton</zorder>
  </widget>
  <customwidgets>
   <customwidget>

@@ -23,35 +23,30 @@
 
 #include "neutube.h"
 #include "common/utilities.h"
+#include "common/zsharedpointer.h"
 
-//#include "zcurve.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-//#include "zpunctum.h"
+#include "tz_error.h"
+
 #include "zprogressreporter.h"
-#include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
 #include "biocytin/zstackprojector.h"
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
-#include "dialogs/resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
-//#include "z3dgraph.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
-#include "tz_error.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
-#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
-//#include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
-
+//#include "mvc/mvcdef.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -105,6 +100,8 @@ class ZTask;
 class Z3DGraph;
 class ZPunctum;
 class ZCurve;
+class ResolutionDialog;
+struct ZRescaleSwcSetting;
 
 /*!
  * \brief The class of stack document

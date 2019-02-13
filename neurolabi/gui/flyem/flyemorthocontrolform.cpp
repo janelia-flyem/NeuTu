@@ -20,20 +20,12 @@ FlyEmOrthoControlForm::~FlyEmOrthoControlForm()
 
 void FlyEmOrthoControlForm::connectSignalSlot()
 {
-  /*
-  connect(ui->upPushButton, SIGNAL(clicked()),
-          this, SIGNAL(movingUp()));
-  connect(ui->downPushButton, SIGNAL(clicked()),
-          this, SIGNAL(movingDown()));
-  connect(ui->leftPushButton, SIGNAL(clicked()),
-          this, SIGNAL(movingLeft()));
-  connect(ui->rightPushButton, SIGNAL(clicked()),
-          this, SIGNAL(movingRight()));
-          */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
   connect(ui->resetCrosshairPushButton, SIGNAL(clicked()),
           this, SIGNAL(resettingCrosshair()));
+  connect(ui->reloadPushButton, SIGNAL(clicked()),
+          this, SIGNAL(reloading()));
   connect(ui->showSegCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(showingSeg(bool)));
   connect(ui->dataCheckBox, SIGNAL(toggled(bool)),

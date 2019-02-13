@@ -98,6 +98,11 @@ void ZFlyEmOrthoDoc::initTodoList()
   initTodoList(neutu::EAxis::Z);
 }
 
+ZPoint ZFlyEmOrthoDoc::getCrossHairCenter()
+{
+  return getCrossHair()->getCenter();
+}
+
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
   if (m_grayscaleReader.isReady()) {

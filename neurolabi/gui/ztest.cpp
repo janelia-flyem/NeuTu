@@ -29411,7 +29411,14 @@ void ZTest::test(MainWindow *host)
   merger.print();
 #endif
 
-#if 1
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+  ZObject3dScan obj;
+  reader->readSupervoxel(1104125131, true, &obj);
+  std::cout << "Segment number: " << obj.getSegmentNumber() << std::endl;
+#endif
+
+#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
 
