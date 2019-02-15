@@ -4,11 +4,12 @@
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
 echo "Build args: $*"
+config_options="debug|force_debug_info|release|sanitize"
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|debug_info|release|sanitize]"
-  echo "Usage: sh build.sh <qt_dir> [-d cxx_define] [-e edition] [-c debug|debug_info|release|sanitize]"
+  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c $config_options]"
+  echo "Usage: sh build.sh <qt_dir> [-d cxx_define] [-e edition] [-c $config_options]"
   echo "Example: "
   echo 'sh build.sh $HOME/local/lib/Trolltech/Qt-4.8.5/bin/qmake $HOME/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++'
   exit 1
@@ -22,7 +23,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize] [-q qmake_flags] [-m make_flags]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c $config_options] [-q qmake_flags] [-m make_flags]"
     exit 1
   fi
   QMAKE_SPEC=$1
