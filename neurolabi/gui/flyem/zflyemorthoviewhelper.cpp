@@ -2,7 +2,7 @@
 #include "zcrosshair.h"
 #include "zflyemorthomvc.h"
 #include "zflyemorthodoc.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 
 ZFlyEmOrthoViewHelper::ZFlyEmOrthoViewHelper()
 {

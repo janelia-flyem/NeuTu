@@ -10,7 +10,7 @@
 #endif
 
 #include "neutubeconfig.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"

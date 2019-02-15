@@ -3,10 +3,12 @@
 
 #include "logging/zlog.h"
 #include "mvc/utilities.h"
-#include "zstackpresenter.h"
-#include "zflyemsupervisor.h"
-#include "zstackview.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackview.h"
+
 #include "zwidgetmessage.h"
+
+#include "zflyemsupervisor.h"
 #include "zflyemproofpresenter.h"
 #include "zflyemtodolist.h"
 

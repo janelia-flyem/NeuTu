@@ -6,7 +6,7 @@
 #include <QString>
 #include <QMessageBox>
 #include "zsandboxmodule.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "imgproc/zstackgradient.h"
 
 

@@ -1,6 +1,6 @@
 #include "zarbslicescrollstrategy.h"
 #include "zstackviewparam.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 
 ZArbSliceScrollStrategy::ZArbSliceScrollStrategy(ZStackView *view) :
   ZScrollSliceStrategy(view)

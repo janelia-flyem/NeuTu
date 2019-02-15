@@ -3,7 +3,7 @@
 #include <QFileInfo>
 
 #include "QsLog.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zcubearray.h"
 #include "zobjsitem.h"
 #include "neutubeconfig.h"

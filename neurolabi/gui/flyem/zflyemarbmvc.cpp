@@ -1,7 +1,7 @@
 #include "zflyemarbmvc.h"
 #include "zflyemarbdoc.h"
 #include "zflyemarbpresenter.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "zarbslicescrollstrategy.h"
 
 ZFlyEmArbMvc::ZFlyEmArbMvc(QWidget *parent) : ZFlyEmProofMvc(parent)

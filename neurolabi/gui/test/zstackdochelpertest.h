@@ -2,8 +2,8 @@
 #define ZSTACKDOCHELPERTEST_H
 
 #include "ztestheader.h"
-#include "zstackdoc.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackdochelper.h"
 
 #ifdef _USE_GTEST_
 

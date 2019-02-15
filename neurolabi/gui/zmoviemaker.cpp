@@ -7,7 +7,7 @@
 #include "zfiletype.h"
 #include "zswcmovieactor.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "z3dinteractionhandler.h"
 #include "tz_error.h"
 #include "z3dswcfilter.h"

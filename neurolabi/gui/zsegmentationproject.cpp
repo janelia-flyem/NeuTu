@@ -5,12 +5,12 @@
 
 #include "zstack.hxx"
 #include "zstackdocreader.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
 #include "zfiletype.h"
 #include "zlabelcolortable.h"
-#include "zstackview.h"
 #include "zobject3dscanarray.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
 
 ZSegmentationProject::ZSegmentationProject(QObject *parent) :
   QObject(parent), m_stack(NULL), m_dataFrame(NULL)

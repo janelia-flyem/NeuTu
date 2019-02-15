@@ -4,8 +4,8 @@
 #include <QWidget>
 
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackpresenter.h"
 #include "zactionfactory.h"
 #include "z3dwindow.h"
 #include "zmenuconfig.h"

@@ -45,7 +45,6 @@ class ZStackPresenter : public QObject {
   Q_OBJECT
 
 protected:
-//  explicit ZStackPresenter(ZStackFrame *parent = 0);
   explicit ZStackPresenter(QWidget *parent = 0);
 
 public:

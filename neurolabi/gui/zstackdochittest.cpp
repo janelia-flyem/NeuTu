@@ -1,5 +1,5 @@
 #include "zstackdochittest.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstroke2d.h"
 #include "geometry/zpoint.h"
 #include "zobject3d.h"

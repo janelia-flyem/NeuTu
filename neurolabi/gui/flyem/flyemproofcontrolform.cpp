@@ -9,7 +9,7 @@
 #include "zstring.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyembodymergeproject.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"

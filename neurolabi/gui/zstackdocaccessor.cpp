@@ -1,7 +1,7 @@
 #include "zstackdocaccessor.h"
 
 #include <QsLog.h>
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zobject3dscanarray.h"
 #include "neutubeconfig.h"

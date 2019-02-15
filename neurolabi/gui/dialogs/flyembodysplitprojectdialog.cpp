@@ -9,9 +9,9 @@
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
-#include "zstackframe.h"
-#include "zstackview.h"
-#include "zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackdoc.h"
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackskeletonizer.h"

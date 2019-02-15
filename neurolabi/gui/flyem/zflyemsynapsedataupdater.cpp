@@ -1,6 +1,7 @@
 #include "zflyemsynapsedataupdater.h"
+
 #include "zflyemsynapsedatafetcher.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackdocdatabuffer.h"
 

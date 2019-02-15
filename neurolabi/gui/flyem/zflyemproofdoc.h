@@ -4,7 +4,7 @@
 #include <QString>
 #include <QMap>
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdoccommand.h"
 #include "common/zsharedpointer.h"
 

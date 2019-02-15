@@ -1,7 +1,7 @@
 #ifndef ZFLYEMBODYMERGEFRAME_H
 #define ZFLYEMBODYMERGEFRAME_H
 
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 class ZFlyEmBodyMergeDoc;
 class ZDvidTarget;

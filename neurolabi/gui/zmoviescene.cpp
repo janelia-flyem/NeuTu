@@ -2,10 +2,10 @@
 
 #include <map>
 
-#include "zstackdoc.h"
+//#include "tz_error.h"
+#include "mvc/zstackdoc.h"
 #include "z3dwindow.h"
 #include "zjsonparser.h"
-#include "tz_error.h"
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
 #include "zjsonobject.h"

@@ -1,6 +1,6 @@
 #include "zdvidsynapseensenmble.h"
 
-#include<QRect>
+#include <QRect>
 #include <QMutexLocker>
 #include <QElapsedTimer>
 #include <QSet>
@@ -10,7 +10,7 @@
 #include "zpainter.h"
 #include "tz_math.h"
 #include "zdvidwriter.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "geometry/zgeometry.h"
 

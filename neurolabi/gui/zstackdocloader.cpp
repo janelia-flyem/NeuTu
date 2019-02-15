@@ -1,6 +1,6 @@
 #include "zstackdocloader.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdocreader.h"
 #include "zstackobjectgroup.h"
 

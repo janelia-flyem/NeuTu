@@ -3,8 +3,8 @@
 #include <iostream>
 #include "ui_autosaveswclistdialog.h"
 #include "neutubeconfig.h"
-#include "zstackframe.h"
-#include "tz_error.h"
+#include "mvc/zstackframe.h"
+//#include "tz_error.h"
 #include "zwindowfactory.h"
 #include "z3dwindow.h"
 #include "zswctree.h"

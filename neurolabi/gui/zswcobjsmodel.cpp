@@ -1,6 +1,6 @@
 #include "zswcobjsmodel.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zswctree.h"
 #include "tz_swc_tree.h"
