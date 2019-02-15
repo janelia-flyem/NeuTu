@@ -255,7 +255,7 @@
            <string>3D body visualization (high resolution ball surface)</string>
           </property>
           <property name="text">
-           <string>Ball Surface (H)</string>
+           <string>Ball Cloud (H)</string>
           </property>
          </widget>
         </item>
@@ -265,7 +265,7 @@
            <string>3D body visualization (low resolution ball surface)</string>
           </property>
           <property name="text">
-           <string>Ball Surface (L)</string>
+           <string>Ball Cloud (L)</string>
           </property>
          </widget>
         </item>
