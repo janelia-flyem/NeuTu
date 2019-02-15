@@ -1230,18 +1230,22 @@ void TaskBodyMerge::writeResult(const QString &result)
   // Populate the OpenTracing-style "span" with the results of this task, and log it
   // (via Kafka).
 
-  std::unique_ptr<neuopentracing::Span> s_span =
-      neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
-  s_span->SetTag("client", "neu3");
-  s_span->SetTag("version", getBuildVersion());
-  if (!m_usageTimes.empty()) {
-    s_span->SetTag("duration", m_usageTimes.back());
+  if (neuopentracing::Tracer::Global()) {
+    std::unique_ptr<neuopentracing::Span> s_span =
+        neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
+    if (s_span) {
+      s_span->SetTag("client", "neu3");
+      s_span->SetTag("version", getBuildVersion());
+      if (!m_usageTimes.empty()) {
+        s_span->SetTag("duration", m_usageTimes.back());
+      }
+      s_span->SetTag("category", "neu3.focusedMerging.result");
+      for (auto it = json.begin(); it != json.end(); it++) {
+        s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
+      }
+      s_span->Finish();
+    }
   }
-  s_span->SetTag("category", "neu3.focusedMerging.result");
-  for (auto it = json.begin(); it != json.end(); it++) {
-    s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
-  }
-  s_span->Finish();
 }
 
 QString TaskBodyMerge::readResult()
