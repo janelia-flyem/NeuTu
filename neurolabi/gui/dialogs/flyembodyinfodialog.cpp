@@ -635,6 +635,8 @@ void FlyEmBodyInfoDialog::updateStatusLabel() {
         arg(nPre).arg(m_totalPre).arg(nPost).arg(m_totalPost);
     setStatusLabel(label);
 
+    logInfo(label);
+
     // have I mentioned how much I despise C++ strings?
 
 //    std::ostringstream outputStream;
