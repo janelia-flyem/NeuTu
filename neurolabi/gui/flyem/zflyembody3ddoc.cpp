@@ -287,8 +287,10 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
 
   QMutexLocker locker(&m_garbageMutex);
 
-  ZOUT(LKINFO, 5) << QString("Clear garbage objects: %1 ...").
-                     arg(m_garbageMap.size());
+  if (!m_garbageMap.isEmpty()) {
+    ZOUT(LKINFO, 5) << QString("Clear garbage objects: %1 ...").
+                       arg(m_garbageMap.size());
+  }
 
   int count = 0;
   int currentTime = m_objectTime.elapsed();
@@ -321,9 +323,11 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
      }
    }
 
-   ZOUT(LKINFO, 5) << QString("Garbage update: %1 removed; %2 left")
-                      .arg(count)
-                      .arg(m_garbageMap.size());
+   if (count > 0) {
+     ZOUT(LKINFO, 5) << QString("Garbage update: %1 removed; %2 left")
+                        .arg(count)
+                        .arg(m_garbageMap.size());
+   }
 
 #if 0
   if (!m_garbageJustDumped) {
@@ -2019,11 +2023,11 @@ void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
     if (isCoarseLevel(config.getDsLevel())) { //Coarse body
       notifyBodyUpdate(bodyId, getMaxDsLevel());
       tree = getBodyQuickly(bodyId);
-      notifyBodyUpdated(bodyId, getMaxDsLevel());
+      config.setDsLevel(getMaxDsLevel());
+//      notifyBodyUpdated(bodyId, getMaxDsLevel());
     } else {
       notifyBodyUpdate(bodyId, config.getDsLevel());
       tree = makeBodyModel(bodyId, config.getDsLevel(), bodyType);
-      notifyBodyUpdated(bodyId, config.getDsLevel());
     }
 
 //    int resLevel = config.getDsLevel();
@@ -2035,6 +2039,12 @@ void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
               tree->getSource());
         config.setDsLevel(resLevel);
       }
+      notifyBodyUpdated(bodyId, config.getDsLevel());
+    } else {
+      notifyWindowMessageUpdated(
+            QString("Failed to generate 3D model for %1 (scale=%2)")
+            .arg(bodyId)
+            .arg(config.getDsLevel()));
     }
 
 #if 0
@@ -3108,7 +3118,8 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
             tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
           }
         } else {
-          tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
+          tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody, 3);
+          zoom = 0;
         }
       }
 

@@ -218,7 +218,7 @@
          <string>A body is rendered as a set of balls resembling its surface</string>
         </property>
         <property name="title">
-         <string>Ball Surface</string>
+         <string>Ball Cloud</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
