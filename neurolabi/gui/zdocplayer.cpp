@@ -433,6 +433,7 @@ ZSwcTree* ZStroke2dPlayer::getSwcDecoration() const
   ZStroke2d *stroke = getCompleteData();
   if (stroke != NULL) {
     if (!stroke->isEmpty()) {
+      tree = new ZSwcTree;
       tree->forceVirtualRoot();
       Swc_Tree_Node *parent = tree->root();
       double z = stroke->getZ();

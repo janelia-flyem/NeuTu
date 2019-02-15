@@ -923,7 +923,6 @@ void FlyEmDataForm::generateThumbnailItem(
   bool thumbnailReady = false;
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
@@ -945,6 +944,7 @@ void FlyEmDataForm::generateThumbnailItem(
       }
 
       if (thumbnailReady) {
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
@@ -1212,7 +1212,6 @@ void FlyEmDataForm::updateThumbnail(
   bool thumbnailReady = false;
   if (neuron != NULL && !isWaiting) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
@@ -1284,6 +1283,7 @@ void FlyEmDataForm::updateThumbnail(
       if (thumbnailReady) {
         m_thumbnailFutureWatcher.cancel();
 //        m_thumbnailFutureWatcher.setFuture(QFuture<uint64_t>());
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
