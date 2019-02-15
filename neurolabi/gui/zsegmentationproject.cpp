@@ -128,24 +128,25 @@ void ZSegmentationProject::loadSegmentationTarget(
         docReader.setStack(m_stack->clone());
       }
     }
-  }
 
-  //Add child objects
-  ZTreeNode<ZObject3dScan> *child = node->firstChild();
-  ZLabelColorTable colorTable;
-  while (child != NULL) {
-    ZObject3dScan *obj = new ZObject3dScan;
-    *obj = child->data();
-    QColor color = colorTable.getColor(obj->getLabel());
-    color.setAlpha(32);
-    obj->setColor(color);
-    obj->setZOrder(100);
-    docReader.addObject(obj);
-    child = child->nextSibling();
-  }
 
-  if (docReader.hasData()) {
-    setDocData(docReader);
+    //Add child objects
+    ZTreeNode<ZObject3dScan> *child = node->firstChild();
+    ZLabelColorTable colorTable;
+    while (child != NULL) {
+      ZObject3dScan *obj = new ZObject3dScan;
+      *obj = child->data();
+      QColor color = colorTable.getColor(obj->getLabel());
+      color.setAlpha(32);
+      obj->setColor(color);
+      obj->setZOrder(100);
+      docReader.addObject(obj);
+      child = child->nextSibling();
+    }
+
+    if (docReader.hasData()) {
+      setDocData(docReader);
+    }
   }
 }
 

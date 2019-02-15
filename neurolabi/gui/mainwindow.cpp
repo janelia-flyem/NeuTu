@@ -5544,8 +5544,8 @@ void MainWindow::showStackFrame(
 
     //ZStackFrame *frame = new ZStackFrame;
     ZStackFrame *frame = ZStackFrame::Make(NULL);
-    bool hasImageFile;
-    bool hasSwcFile;
+    bool hasImageFile = false;
+    bool hasSwcFile = false;
     foreach (QString file, fileList) {
       if (ZFileType::FileType(file.toStdString()) == ZFileType::EFileType::TIFF) {
         hasImageFile = true;

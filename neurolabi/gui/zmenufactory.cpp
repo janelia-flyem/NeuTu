@@ -208,12 +208,14 @@ QMenu* ZMenuFactory::makeSynapseContextMenu(
 
 void ZMenuFactory::AddAction(QMenu *menu, ZActionFactory::EAction actionKey)
 {
-  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
-    menu->addSeparator();
-  } else {
-    QAction *action = ZActionFactory::MakeAction(actionKey, menu);
-    if (action != NULL) {
-      menu->addAction(action);
+  if (menu) {
+    if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      QAction *action = ZActionFactory::MakeAction(actionKey, menu);
+      if (action != NULL) {
+        menu->addAction(action);
+      }
     }
   }
 }
@@ -221,11 +223,13 @@ void ZMenuFactory::AddAction(QMenu *menu, ZActionFactory::EAction actionKey)
 void ZMenuFactory::AddAction(
     QMenu *menu, QAction *action, ZActionFactory::EAction actionKey)
 {
-  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
-    menu->addSeparator();
-  } else {
-    if (action != NULL) {
-      menu->addAction(action);
+  if (menu) {
+    if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      if (action != NULL) {
+        menu->addAction(action);
+      }
     }
   }
 }

@@ -583,10 +583,9 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
   ui->sideViewLabel->setText("Side view: generating ...");
   //m_sideViewScene->clear();
 
-
-  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
   QPixmap pixmap;
   bool thumbnailReady = false;
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
 
   Stack *stack = NULL;
   ZDvidReader reader;
@@ -698,6 +697,8 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
     m_sideViewScene->addItem(thumbnailItem);
     ui->sideViewLabel->setText(QString("Side view: %1").arg(bodyId));
     emit sideViewReady();
+  } else {
+    delete thumbnailItem;
   }
 }
 
