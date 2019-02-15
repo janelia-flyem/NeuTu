@@ -12,7 +12,7 @@
 
 #include "common/neutube_def.h"
 #include "flyemdef.h"
-#include "zstackmvc.h"
+#include "mvc/zstackmvc.h"
 #include "zflyembodysplitproject.h"
 #include "zflyembodymergeproject.h"
 #include "zthreadfuturemap.h"

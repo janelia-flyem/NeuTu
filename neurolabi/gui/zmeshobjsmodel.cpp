@@ -1,6 +1,6 @@
 #include "zmeshobjsmodel.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zmesh.h"
 #include "QsLog.h"

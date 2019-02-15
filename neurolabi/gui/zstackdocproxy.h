@@ -1,7 +1,7 @@
 #ifndef ZSTACKDOCPROXY_H
 #define ZSTACKDOCPROXY_H
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 class ZStackDocProxy
 {

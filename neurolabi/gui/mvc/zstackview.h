@@ -22,6 +22,7 @@
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
 #include "zarbsliceviewparam.h"
+#include "mvc/mvcdef.h"
 
 //#include "zstackdoc.h"
 
@@ -91,6 +92,20 @@ public:
     QUEUED, //Put updating request in a queue
     DIRECT //Update immediately
   };
+
+//  enum class ViewInfoFlag {
+//    NONE = 0,
+//    RAW_STACK_COORD = BIT_FLAG(1),
+//    DATA_COORD = BIT_FLAG(2),
+//    WINDOW_SCALE = BIT_FLAG(3),
+//    IMAGE_VALUE = BIT_FLAG(4)
+//  };
+
+//   Q_DECLARE_FLAGS(ViewInfoFlags, ViewInfoFlag)
+
+  bool viewingInfo(neutu::mvc::ViewInfoFlags f) const;
+  void setViewInfoFlag(neutu::mvc::ViewInfoFlags f);
+  neutu::mvc::ViewInfoFlags getViewInfoFlag() const;
 
   /*!
    * \brief Update image screen
@@ -531,7 +546,7 @@ public slots:
   void displayActiveDecoration(bool display = true);
   void request3DVis();
   void requestQuick3DVis();
-  void requestHighresQuick3DVis();
+//  void requestHighresQuick3DVis();
   void requestMerge();
   void requestSetting();
   void requestAutoTracing();
@@ -672,6 +687,12 @@ protected:
   bool m_viewParamRecordOnce = false;
   ZArbSliceViewParam m_sliceViewParam;
   int m_maxViewPort = 0;
+
+  neutu::mvc::ViewInfoFlags m_viewFlags =
+      neutu::mvc::ViewInfoFlags(neutu::mvc::ViewInfoFlag::RAW_STACK_COORD) |
+      neutu::mvc::ViewInfoFlag::DATA_COORD |
+      neutu::mvc::ViewInfoFlag::WINDOW_SCALE |
+      neutu::mvc::ViewInfoFlag::IMAGE_VALUE;
 
   ZIntCuboid m_currentStackRange;
 };

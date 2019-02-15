@@ -3,15 +3,19 @@
 #include <QMenu>
 
 #include "neutubeconfig.h"
-#include "zstackpresenter.h"
-#include "zactionfactory.h"
-#include "flyem/zflyemproofpresenter.h"
-#include "flyem/zflyemproofdoc.h"
-#include "z3dwindow.h"
+
 #include "zintcuboidobj.h"
+
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackdochelper.h"
+
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
-#include "zstackdochelper.h"
+#include "zactionfactory.h"
+#include "zflyemproofpresenter.h"
+#include "zflyemproofdoc.h"
+#include "z3dwindow.h"
+
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {

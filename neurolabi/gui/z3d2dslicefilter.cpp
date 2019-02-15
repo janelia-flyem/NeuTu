@@ -8,7 +8,7 @@
 #include "logging/zqslog.h"
 #include "logging/zbenchtimer.h"
 #include "zmeshutils.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 Z3D2DSliceFilter::Z3D2DSliceFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DBoundedFilter(globalParas, parent)

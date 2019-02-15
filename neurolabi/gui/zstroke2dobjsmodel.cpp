@@ -1,5 +1,5 @@
 #include "zstroke2dobjsmodel.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zstroke2d.h"
 

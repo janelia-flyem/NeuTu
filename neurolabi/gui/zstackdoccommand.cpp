@@ -12,7 +12,7 @@
 #include "zstack.hxx"
 #include "zstroke2d.h"
 #include "zneurontracer.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zswcconnector.h"
 #include "zgraph.h"
 #include "zdocumentable.h"
@@ -1745,7 +1745,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
         //Check source
         if (ZFileType::FileType(swcMap[downNode]->getSource()) ==
-            ZFileType::FILE_SWC) {
+            ZFileType::EFileType::SWC) {
           upNode = nodeArray[e2];
           downNode = nodeArray[e1];
         }

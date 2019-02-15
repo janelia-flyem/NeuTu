@@ -16,16 +16,19 @@
 
 #include "logging/zlog.h"
 #include "tz_darray.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
+#include "tz_math.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackmvc.h"
+
 #include "dialogs/settingdialog.h"
-#include "zstackview.h"
-#include "widgets/zimagewidget.h"
 #include "zinteractivecontext.h"
 #include "dialogs/traceoutputdialog.h"
 #include "dialogs/bcadjustdialog.h"
 #include "dialogs/channeldialog.h"
-#include "tz_math.h"
+
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "imgproc/zstackprocessor.h"
 //#include "tz_error.h"
@@ -34,13 +37,11 @@
 #include "dialogs/medianfilterdialog.h"
 #include "dialogs/diffusiondialog.h"
 #include "dialogs/connectedthresholddialog.h"
-#include "zstackpresenter.h"
 #include "zstack.hxx"
 #include "dialogs/zrescaleswcdialog.h"
 #include "tz_image_io.h"
 #include "dialogs/distancemapdialog.h"
 #include "dialogs/regionexpanddialog.h"
-#include "zstackmvc.h"
 #include "dialogs/neuroniddialog.h"
 #include "zcircle.h"
 //#include "zerror.h"
@@ -176,6 +177,7 @@
 #include "zmeshfactory.h"
 #include "zpunctum.h"
 #include "zcurve.h"
+#include "widgets/zimagewidget.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
@@ -4873,12 +4875,12 @@ void MainWindow::expandCurrentFrame()
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
         switch (ZFileType::FileType(filePath.toStdString())) {
-        case ZFileType::FILE_SWC:
+        case ZFileType::EFileType::SWC:
           frame->importSwc(filePath);
           swcLoaded = true;
           break;
-        case ZFileType::FILE_TIFF:
-        case ZFileType::FILE_PNG:
+        case ZFileType::EFileType::TIFF:
+        case ZFileType::EFileType::PNG:
           frame->importMask(filePath);
           break;
         default:
@@ -4986,14 +4988,14 @@ void MainWindow::on_actionSparse_objects_triggered()
     } else {
       foreach (QString file, fileList) {
         if (ZFileType::FileType(file.toStdString()) ==
-            ZFileType::FILE_OBJECT_SCAN) {
+            ZFileType::EFileType::OBJECT_SCAN) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
           if (ZFileType::FileType(file.toStdString()) ==
-              ZFileType::FILE_TIFF) {
+              ZFileType::EFileType::TIFF) {
             ZStack stack;
             stack.load(file.toStdString());
             ZObjectColorScheme colorScheme;
@@ -5542,13 +5544,13 @@ void MainWindow::showStackFrame(
 
     //ZStackFrame *frame = new ZStackFrame;
     ZStackFrame *frame = ZStackFrame::Make(NULL);
-    bool hasImageFile;
-    bool hasSwcFile;
+    bool hasImageFile = false;
+    bool hasSwcFile = false;
     foreach (QString file, fileList) {
-      if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_TIFF) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::EFileType::TIFF) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_SWC) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::EFileType::SWC) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }

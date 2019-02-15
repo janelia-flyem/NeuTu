@@ -10,7 +10,7 @@
 #endif
 
 #include "neutubeconfig.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
@@ -324,9 +324,9 @@ bool ZDvidTileEnsemble::update(
         if (tile != NULL) {
           libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
 
-          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
-          task->setZ(z);
           if (dataPtr.get() != NULL) {
+            ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+            task->setZ(z);
             task->setData(dataPtr->get_raw(), dataPtr->length());
             task->setHighContrast(m_highContrast);
             taskList.append(task);

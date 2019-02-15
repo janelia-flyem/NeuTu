@@ -10,10 +10,11 @@
 #include "tz_rastergeom.h"
 #include "zlocalneuroseg.h"
 #include "zlocsegchain.h"
-#include "widgets/zimagewidget.h"
 #include "zstack.hxx"
 #include "zstackdoc.h"
 #include "swctreenode.h"
+
+#include "widgets/zimagewidget.h"
 #include "dialogs/channeldialog.h"
 #include "neutubeconfig.h"
 #include "zcursorstore.h"
@@ -39,13 +40,6 @@
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
 #include "zpunctum.h"
-
-/*
-ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
-{
-  init();
-}
-*/
 
 ZStackPresenter::ZStackPresenter(QWidget *parent) : QObject(parent)
 {
@@ -169,9 +163,6 @@ void ZStackPresenter::init()
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
   m_bodyContextMenu = NULL;
-//    m_contextMenu = NULL;
-
-//  createActions();
 
   //m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
   //m_moveMapper.setContext(&m_interactiveContext);

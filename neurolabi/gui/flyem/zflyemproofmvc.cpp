@@ -15,10 +15,13 @@
 
 #include "zjsondef.h"
 #include "zflyemproofdoc.h"
-#include "dialogs/flyemdialogfactory.h"
-#include "zstackview.h"
+
+#include "mvc/zstackview.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackpresenter.h"
+
 #include "dvid/zdvidtileensemble.h"
-#include "zstackpresenter.h"
+
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
@@ -26,10 +29,10 @@
 #include "zstackviewlocator.h"
 #include "widgets/zimagewidget.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemproofpresenter.h"
+#include "zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
 #include "zdialogfactory.h"
-#include "flyem/zflyembodyannotationdialog.h"
+#include "zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
 #include "flyem/zflyemsupervisor.h"
 #include "dvid/zdvidwriter.h"
@@ -65,12 +68,9 @@
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
 #include "zflyembookmarkview.h"
+#include "widgets/z3dtabwidget.h"
 #include "dvid/zdvidpatchdatafetcher.h"
 #include "dvid/zdvidpatchdataupdater.h"
-#include "widgets/z3dtabwidget.h"
-#include "dialogs/zflyemsplituploadoptiondialog.h"
-#include "dialogs/zflyembodychopdialog.h"
-#include "dialogs/zinfodialog.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
 #include "dialogs/zstresstestoptiondialog.h"
@@ -90,7 +90,6 @@
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
-#include "zstackdochelper.h"
 #include "zstack.hxx"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
@@ -105,6 +104,10 @@
 #include "dialogs/zspinboxdialog.h"
 #include "dialogs/flyembodyinfodialog.h"
 #include "dialogs/zflyemsplitcommitdialog.h"
+#include "dialogs/zflyemsplituploadoptiondialog.h"
+#include "dialogs/zflyembodychopdialog.h"
+#include "dialogs/zinfodialog.h"
+#include "dialogs/flyemdialogfactory.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -4118,6 +4121,7 @@ void ZFlyEmProofMvc::presentBodySplit(
 
   updateAssignedBookmarkTable();
   updateUserBookmarkTable();
+  updateViewButton();
 
 //  emit bookmarkUpdated(&m_splitProject);
   getView()->redrawObject();
@@ -4231,6 +4235,7 @@ void ZFlyEmProofMvc::exitSplit()
 
     updateAssignedBookmarkTable();
     updateUserBookmarkTable();
+    updateViewButton();
   }
 }
 
@@ -4946,7 +4951,7 @@ void ZFlyEmProofMvc::goToTBar()
     if (selected.size() == 1) {
       const ZIntPoint &pt = *(selected.begin());
       ZDvidSynapse synapse =
-          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+          se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
         const std::vector<ZIntPoint> &partners = synapse.getPartners();
         if (!partners.empty()) {
@@ -5871,7 +5876,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
     QString filePath = neutu::GetFilePath(url);
-    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::JSON) {
       processed = true; //todo
     }
   }
@@ -5879,7 +5884,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (!processed) {
     foreach (const QUrl &url, urls) {
       QString filePath = neutu::GetFilePath(url);
-      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_SWC) {
+      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::SWC) {
         ZSwcTree *tree = new ZSwcTree;
         tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
@@ -6243,44 +6248,47 @@ void ZFlyEmProofMvc::initViewButton()
 void ZFlyEmProofMvc::updateViewButton()
 {
   std::cout << "Update view button" << std::endl;
-  if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD &&
-      !getDvidTarget().readOnly() &&
-      neutu::IsAdminUser()) {
-    std::cout << "Update view button for admin" << std::endl;
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
-    if (bodySet.size() == 1) {
-      uint64_t bodyId = *(bodySet.begin());
-      ZFlyEmBodyAnnotation annot =
-          getCompleteDocument()->getRecordedAnnotation(bodyId);
-      if (annot.getBodyId() == bodyId) {
-        ZString status(annot.getStatus());
-        status.toLower();
-        int rank = getCompleteDocument()->getBodyStatusRank(status);
-        auto pred = [&, this](
-            const std::string &buttonStatus) {
-          ZFlyEmProofDoc *doc = this->getCompleteDocument();
-          std::cout << "Body pred check" << buttonStatus << " "
-                    << doc->isExpertBodyStatus(buttonStatus) << " "
-                    << rank << " " << doc->getBodyStatusRank(buttonStatus)
-                    << std::endl;
-          return doc->isExpertBodyStatus(buttonStatus) &&
-              rank > doc->getBodyStatusRank(buttonStatus);
-        };
+  if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+    if (!getDvidTarget().readOnly() && neutu::IsAdminUser()) {
+      std::cout << "Update view button for admin" << std::endl;
+      std::set<uint64_t> bodySet =
+          getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+      if (bodySet.size() == 1) {
+        uint64_t bodyId = *(bodySet.begin());
+        ZFlyEmBodyAnnotation annot =
+            getCompleteDocument()->getRecordedAnnotation(bodyId);
+        if (annot.getBodyId() == bodyId) {
+          ZString status(annot.getStatus());
+          status.toLower();
+          int rank = getCompleteDocument()->getBodyStatusRank(status);
+          auto pred = [&, this](
+              const std::string &buttonStatus) {
+            ZFlyEmProofDoc *doc = this->getCompleteDocument();
+            std::cout << "Body pred check" << buttonStatus << " "
+                      << doc->isExpertBodyStatus(buttonStatus) << " "
+                      << rank << " " << doc->getBodyStatusRank(buttonStatus)
+                      << std::endl;
+            return doc->isExpertBodyStatus(buttonStatus) &&
+                rank > doc->getBodyStatusRank(buttonStatus);
+          };
 
-//        if (pred("roughly traced")) {
-//          std::cout << "Expert status" << std::endl;
-//        }
+          //        if (pred("roughly traced")) {
+          //          std::cout << "Expert status" << std::endl;
+          //        }
 
-        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
-              pred("roughly traced"));
-        getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
-              pred("traced"));
+          getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
+                pred("roughly traced"));
+          getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
+                pred("traced"));
+        }
+      } else {
+        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
+        getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
       }
-    } else {
-      getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
-      getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
     }
+
+    getViewButton(EViewButton::GOTO_BODY)->setVisible(
+          !getCompletePresenter()->isSplitOn());
   }
 }
 

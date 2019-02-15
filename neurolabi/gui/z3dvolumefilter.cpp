@@ -11,8 +11,8 @@
 #include "zmeshutils.h"
 #include "zlabelcolortable.h"
 #include "zsparseobject.h"
-#include "zstackdochelper.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 #include "misc/miscutility.h"
 
 const size_t Z3DVolumeFilter::m_maxNumOfFullResolutionVolumeSlice = 6;

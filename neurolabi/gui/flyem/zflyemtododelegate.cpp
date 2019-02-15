@@ -1,6 +1,6 @@
 #include "zflyemtododelegate.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZFlyEmToDoDelegate::ZFlyEmToDoDelegate(ZStackDoc *doc) : m_doc(doc)
 {

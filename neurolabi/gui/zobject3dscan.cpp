@@ -679,13 +679,13 @@ bool ZObject3dScan::load(const std::string &filePath)
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
-      if (ZFileType::FileType(strArray[0]) == ZFileType::FILE_HDF5) {
+      if (ZFileType::FileType(strArray[0]) == ZFileType::EFileType::HDF5) {
         succ = importHdf5(strArray[0], strArray[1]);
       }
     }
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_DVID_OBJECT) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::DVID_OBJECT) {
     succ = importDvidObject(filePath);
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_OBJECT_SCAN) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::OBJECT_SCAN) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
       int stripeNumber = 0;
@@ -716,7 +716,7 @@ bool ZObject3dScan::load(const std::string &filePath)
 
       succ = true;
     }
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_SPARSE_STACK) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::SPARSE_STACK) {
     std::ifstream stream(filePath.c_str(), std::ios_base::binary);
     if (stream.good()) {
       read(stream);

@@ -18,7 +18,8 @@ public:
   virtual ~ZLog();
 
   virtual void start();
-  virtual void log(const std::string &key, const neuopentracing::Value &value);
+  virtual void log(
+      const std::string &key, const neuopentracing::Value &value, bool appending);
   virtual void end();
 
   bool isStarted() const { return m_started; }
@@ -41,7 +42,8 @@ public:
   static void End(ZLog &log);
 
   struct Category : public Tag {
-    Category(const std::string &value) : Tag("category", value) {}
+    static const char *KEY;
+    Category(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Info : public Category {
@@ -69,15 +71,18 @@ public:
   };
 
   struct Duration : public Tag {
-    Duration(int64_t t) : Tag("duration", t) {}
+    static const char *KEY;
+    Duration(int64_t t) : Tag(KEY, t) {}
   };
 
   struct Diagnostic : public Tag {
-    Diagnostic(const std::string &value) : Tag("diagnostic", value) {}
+    static const char *KEY;
+    Diagnostic(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("description", value) {}
+    static const char *KEY;
+    Description(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Action : public Tag {
@@ -108,6 +113,7 @@ public:
   };
 
   struct Time : public Tag {
+    static const char *KEY;
     Time();
     Time(uint64_t);
   };
@@ -127,7 +133,7 @@ protected:
 private:
   void endLog();
 
-private:
+protected:
   bool m_started = false;
   QJsonObject m_tags;
   bool m_localLogging = true;
@@ -140,7 +146,8 @@ public:
   ~KLog();
 
   void start() override;
-  void log(const std::string &key, const neuopentracing::Value &value) override;
+  void log(const std::string &key, const neuopentracing::Value &value,
+           bool appending) override;
   void end() override;
 //  bool isStarted() const override;
 
@@ -150,7 +157,7 @@ public:
 private:
   void endKLog();
 
-private:
+protected:
   std::unique_ptr<neuopentracing::Span> m_span;
   static std::string m_operationName;
 };

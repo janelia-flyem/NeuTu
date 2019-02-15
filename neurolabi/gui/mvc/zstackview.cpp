@@ -1,19 +1,21 @@
+#include "zstackview.h"
+
 #include <iostream>
 #include <QElapsedTimer>
 #include <QMdiArea>
 #include <QImageWriter>
 #include <QJsonObject>
 
-#include "zstackview.h"
-
+#include "logging/zlog.h"
+#include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
+
 #include "widgets/zimagewidget.h"
 #include "z3dwindow.h"
 #include "zimage.h"
 #include "zstackdoc.h"
 #include "zstackframe.h"
 #include "zstackpresenter.h"
-//#include "zstackdrawable.h"
 #include "zslider.h"
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
@@ -21,7 +23,6 @@
 #include "tz_error.h"
 #include "zstackball.h"
 #include "swctreenode.h"
-#include "QsLog.h"
 #include "zstroke2d.h"
 #include "tz_rastergeom.h"
 #include "neutubeconfig.h"
@@ -37,7 +38,6 @@
 #include "zstackmvc.h"
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
-#include "logging/zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
@@ -45,8 +45,8 @@
 #include "zarbsliceviewparam.h"
 #include "zstackdochelper.h"
 #include "mvc/zpositionmapper.h"
+#include "mvc/utilities.h"
 #include "data3d/utilities.h"
-#include "logging/zlog.h"
 
 using namespace std;
 
@@ -275,6 +275,21 @@ void ZStackView::resetViewProj()
         box.getWidth(), box.getHeight(), m_defaultViewPort);
 }
 
+bool ZStackView::viewingInfo(neutu::mvc::ViewInfoFlags f) const
+{
+  return (m_viewFlags & f) == f;
+}
+
+neutu::mvc::ViewInfoFlags ZStackView::getViewInfoFlag() const
+{
+  return m_viewFlags;
+}
+
+void ZStackView::setViewInfoFlag(neutu::mvc::ViewInfoFlags f)
+{
+  m_viewFlags = f;
+}
+
 void ZStackView::setInfo(const QString &info)
 {
   if (m_infoLabel != NULL) {
@@ -311,6 +326,8 @@ void ZStackView::setCentralView(int width, int height)
 
 void ZStackView::updateDataInfo(const QPoint &widgetPos)
 {
+  setInfo(neutu::mvc::ComposeViewInfo(this, widgetPos));
+#if 0
   int z = sliceIndex();
   if (buddyPresenter()->interactiveContext().isProjectView()) {
     z = -1;
@@ -380,6 +397,7 @@ void ZStackView::updateDataInfo(const QPoint &widgetPos)
 
 
   setInfo(info);
+#endif
 }
 
 
@@ -3357,6 +3375,7 @@ void ZStackView::requestQuick3DVis()
   }
 }
 
+/*
 void ZStackView::requestHighresQuick3DVis()
 {
   if (m_messageManager != NULL) {
@@ -3367,6 +3386,7 @@ void ZStackView::requestHighresQuick3DVis()
     m_messageManager->processMessage(&message, true);
   }
 }
+*/
 
 void ZStackView::requestMerge()
 {

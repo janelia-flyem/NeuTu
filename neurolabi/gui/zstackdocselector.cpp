@@ -1,6 +1,6 @@
 #include "zstackdocselector.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZStackDocSelector::ZStackDocSelector(const ZSharedPointer<ZStackDoc> &doc)
 {

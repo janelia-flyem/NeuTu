@@ -2,7 +2,7 @@
 #include "ui_zflyemgrayscaledialog.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvc.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zintcuboid.h"
 

@@ -1,7 +1,7 @@
 #ifndef ZMULTISCALEWATERSHEDCOMMAND_H
 #define ZMULTISCALEWATERSHEDCOMMAND_H
 #include "zcommandmodule.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 class ZMultiscaleWatershedCommand : public ZCommandModule
 {

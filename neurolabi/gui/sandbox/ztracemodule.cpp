@@ -3,7 +3,7 @@
 #include <QMenu>
 
 #include "zsandbox.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zneurontracer.h"
 #include "zswcfactory.h"
 #include "zswctree.h"

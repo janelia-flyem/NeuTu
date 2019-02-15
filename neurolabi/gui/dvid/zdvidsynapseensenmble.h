@@ -29,12 +29,12 @@ public:
   ZDvidSynapseEnsemble();
   virtual ~ZDvidSynapseEnsemble() {}
 
-  enum EDataScope {
-    DATA_GLOBAL, DATA_LOCAL, DATA_SYNC
+  enum class EDataScope {
+    GLOBAL, LOCAL, SYNC
   };
 
-  enum EDataStatus {
-    STATUS_NORMAL, STATUS_NULL, STATUS_PARTIAL_READY, STATUS_READY
+  enum class EDataStatus {
+    NORMAL, NONE, PARTIAL_READY, READY
   };
 
   enum EAdjustment {
@@ -57,8 +57,8 @@ public:
 
   class SynapseMap : public QMap<int, ZDvidSynapse> {
   public:
-    SynapseMap(EDataStatus status = STATUS_NORMAL);
-    bool isValid() const { return m_status != STATUS_NULL; }
+    SynapseMap(EDataStatus status = EDataStatus::NORMAL);
+    bool isValid() const { return m_status != EDataStatus::NONE; }
 
   private:
     EDataStatus m_status;
@@ -66,15 +66,15 @@ public:
 
   class SynapseSlice : public QVector<SynapseMap> {
   public:
-    SynapseSlice(EDataStatus status = STATUS_NORMAL);
+    SynapseSlice(EDataStatus status = EDataStatus::NORMAL);
 
     void addSynapse(const ZDvidSynapse &synapse, neutu::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
 
-    bool isValid() const { return m_status != STATUS_NULL; }
-    bool isReady() const { return m_status == STATUS_READY; }
+    bool isValid() const { return m_status != EDataStatus::NONE; }
+    bool isReady() const { return m_status == EDataStatus::READY; }
     bool isReady(const QRect &rect) const;
     bool isReady(const QRect &rect, const QRect &range) const;
 

@@ -1,6 +1,6 @@
 #include "zobjsmodelmanager.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsmodelfactory.h"
 #include "zobjsmodel.h"
 

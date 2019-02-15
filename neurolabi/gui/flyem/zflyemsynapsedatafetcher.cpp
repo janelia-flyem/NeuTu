@@ -132,7 +132,7 @@ void ZFlyEmSynapseDataFetcher::addSynapse(ZDvidSynapseEnsemble *se)
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
         synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
-        se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        se->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       }
     }
 

@@ -1,15 +1,20 @@
 #include "zmouseeventmapper.h"
 #include <QMouseEvent>
+
+#include "common/neutube_def.h"
+
 #include "zinteractivecontext.h"
 #include "geometry/zintpoint.h"
 #include "zmouseevent.h"
-#include "zstackdochelper.h"
-#include "neutube.h"
 #include "zstackoperator.h"
 #include "zstack.hxx"
 #include "zstackdochittest.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemproofdoc.h"
+
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
+
+//#include "flyem/zflyemproofdoc.h"
 
 ZMouseEventMapper::ZMouseEventMapper(
     ZInteractiveContext *context, ZStackDoc *doc) :

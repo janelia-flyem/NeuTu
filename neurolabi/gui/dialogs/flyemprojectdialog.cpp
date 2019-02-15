@@ -5,7 +5,7 @@
 #include "mainwindow.h"
 #include "zdvidtargetproviderdialog.h"
 #include "zdialogfactory.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zframefactory.h"
 #include "zprogressreporter.h"
 #include "zdialogfactory.h"

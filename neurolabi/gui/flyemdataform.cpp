@@ -16,7 +16,7 @@
 #include "neutubeconfig.h"
 #include "tz_error.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
@@ -892,7 +892,7 @@ Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
 {
   Stack *stack = NULL;
   if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-      ZFileType::FILE_TIFF) {
+      ZFileType::EFileType::TIFF) {
     stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
   } else {
     ZString str(neuron->getThumbnailPath());
@@ -923,7 +923,6 @@ void FlyEmDataForm::generateThumbnailItem(
   bool thumbnailReady = false;
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
@@ -945,6 +944,7 @@ void FlyEmDataForm::generateThumbnailItem(
       }
 
       if (thumbnailReady) {
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
@@ -1212,14 +1212,13 @@ void FlyEmDataForm::updateThumbnail(
   bool thumbnailReady = false;
   if (neuron != NULL && !isWaiting) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
       } else {
         Stack *stack = NULL;
         if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-            ZFileType::FILE_TIFF) {
+            ZFileType::EFileType::TIFF) {
           stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
         } else {
           ZString str(neuron->getThumbnailPath());
@@ -1284,6 +1283,7 @@ void FlyEmDataForm::updateThumbnail(
       if (thumbnailReady) {
         m_thumbnailFutureWatcher.cancel();
 //        m_thumbnailFutureWatcher.setFuture(QFuture<uint64_t>());
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 

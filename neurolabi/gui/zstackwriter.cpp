@@ -88,7 +88,7 @@ void ZStackWriter::write(const std::string &filePath, const Mc_Stack *stack)
   ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
-  case ZFileType::FILE_MC_STACK_RAW:
+  case ZFileType::EFileType::MC_STACK_RAW:
     writeRaw(filePath, stack);
     break;
   default:
@@ -110,8 +110,8 @@ void ZStackWriter::write(const std::string &filePath, const ZStack *stack)
   std::string resultFilePath = filePath;
   if ((stack->channelNumber() > 1 && stack->kind() != GREY && stack->kind() != GREY16) ||
       (stack->getVoxelNumber() - 1 > (size_t) MAX_INT32)) { //save as raw
-    if (ZFileType::FileType(filePath) != ZFileType::FILE_V3D_RAW ||
-        ZFileType::FileType(filePath) != ZFileType::FILE_MC_STACK_RAW) {
+    if (ZFileType::FileType(filePath) != ZFileType::EFileType::V3D_RAW ||
+        ZFileType::FileType(filePath) != ZFileType::EFileType::MC_STACK_RAW) {
       std::cout << "Unsupported data format for " << resultFilePath << std::endl;
       resultFilePath += ".raw";
       std::cout << resultFilePath << " saved instead." << std::endl;

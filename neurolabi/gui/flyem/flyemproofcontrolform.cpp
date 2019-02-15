@@ -5,24 +5,34 @@
 #include <QSortFilterProxyModel>
 
 #include "ui_flyemproofcontrolform.h"
+
+#include "qt/gui/utilities.h"
 #include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
-#include "flyem/zflyembodymergeproject.h"
-#include "zstackdoc.h"
+#include "flyemdef.h"
+#include "zflyembodymergeproject.h"
+#include "mvc/zstackdoc.h"
 #include "zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
-#include "flyem/zflyemproofmvc.h"
+#include "zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::FlyEmProofControlForm)
 {
   ui->setupUi(this);
+
+  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->bodyViewPushButton, flyem::FINE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->coarseMeshPushButton, flyem::COARSE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->skeletonViewPushButton, "<font color=blue>Y</font>");
+
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
   m_latencyWidget =

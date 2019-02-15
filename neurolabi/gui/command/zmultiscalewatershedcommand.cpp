@@ -2,7 +2,7 @@
 #include <strstream>
 #include "zmultiscalewatershedcommand.h"
 #include"flyem/zstackwatershedcontainer.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zjsonvalue.h"
