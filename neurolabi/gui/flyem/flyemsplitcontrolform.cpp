@@ -4,10 +4,12 @@
 #include <QInputDialog>
 #include <iostream>
 
-#include "qt/gui/utilities.h"
-#include "flyem/zflyembookmarkwidget.h"
-#include "flyem/zflyembookmarkview.h"
 #include "ui_flyemsplitcontrolform.h"
+
+#include "qt/gui/utilities.h"
+#include "flyemdef.h"
+#include "zflyembookmarkwidget.h"
+#include "zflyembookmarkview.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
@@ -20,9 +22,9 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, "<font color=red><b>&#9711;</b></font>");
-  neutu::SetHtmlIcon(ui->quickViewPushButton, "<font color=red><b>&#9711;&#9711;&#9711;</b></font>");
-  neutu::SetHtmlIcon(ui->meshPushButton, "<font color=green>&#9650;&#9650;</font>");
+  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
   neutu::SetHtmlIcon(ui->viewResultQuickPushButton,
                      "<font color=red>&#9700;</font><font color=green>&#9701;</font>");
 
