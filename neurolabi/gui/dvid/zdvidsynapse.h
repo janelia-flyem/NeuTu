@@ -28,7 +28,7 @@ public:
 
 //  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   double getConfidence() const;
   void setConfidence(double c);

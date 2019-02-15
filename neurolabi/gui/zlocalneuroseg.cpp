@@ -463,7 +463,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 
 void ZLocalNeuroseg::display(
     ZPainter &painter, int z, EDisplayStyle option,
-    neutube::EAxis /*axis*/) const
+    neutu::EAxis /*axis*/) const
 {
   display(painter, z, option, getColor());
 }

@@ -18,7 +18,7 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
 {
   ZFlyEmArbMvc *frame = new ZFlyEmArbMvc(parent);
 
-  BaseConstruct(frame, doc, neutube::EAxis::ARB);
+  BaseConstruct(frame, doc, neutu::EAxis::ARB);
   frame->getView()->setHoverFocus(true);
   ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(frame->getView());
   frame->getView()->setScrollStrategy(strategy);

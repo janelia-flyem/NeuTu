@@ -435,7 +435,7 @@ void ZDvidTileEnsemble::forceUpdate()
 
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   /*
   if (m_view == NULL) {

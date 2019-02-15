@@ -89,7 +89,7 @@ ZPoint ZLineSegment::getIntercept(double lambda) const
   return m_start * (1.0 - lambda) + m_end * lambda;
 }
 
-void ZLineSegment::shiftSliceAxis(neutube::EAxis axis)
+void ZLineSegment::shiftSliceAxis(neutu::EAxis axis)
 {
   m_start.shiftSliceAxis(axis);
   m_end.shiftSliceAxis(axis);

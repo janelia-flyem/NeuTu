@@ -202,7 +202,7 @@ void ZFlyEmTodoListModel::update()
 
   if (getDocument() != NULL) {
     std::set<uint64_t> bodySet =
-        getDocument()->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+        getDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
          iter != bodySet.end(); ++iter) {
       uint64_t bodyId = *iter;

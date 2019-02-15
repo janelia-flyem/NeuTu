@@ -18,81 +18,81 @@ TEST(ZResolution, Basic)
   ASSERT_EQ(ZResolution::UNIT_PIXEL, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_PIXEL));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_MICRON));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_MICRON));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_MICRON));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_NANOMETER));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_NANOMETER));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
 
   resolution.setUnit(ZResolution::UNIT_MICRON);
   ASSERT_EQ(ZResolution::UNIT_MICRON, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_PIXEL));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_MICRON));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_MICRON));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_MICRON));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1000.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_NANOMETER));
+        1000.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2000.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        2000.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3000.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_NANOMETER));
+        3000.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
 
   resolution.setUnit(ZResolution::UNIT_NANOMETER);
   ASSERT_EQ(ZResolution::UNIT_NANOMETER, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_PIXEL));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        0.001, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_MICRON));
+        0.001, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        0.002, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_MICRON));
+        0.002, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        0.003, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_MICRON));
+        0.003, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::EAxis::X, ZResolution::UNIT_NANOMETER));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::EAxis::Z, ZResolution::UNIT_NANOMETER));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
 
 
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getPlaneVoxelSize(neutube::EPlane::XY, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getPlaneVoxelSize(neutu::EPlane::XY, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getPlaneVoxelSize(neutube::EPlane::XZ, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getPlaneVoxelSize(neutu::EPlane::XZ, ZResolution::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        6.0, resolution.getPlaneVoxelSize(neutube::EPlane::YZ, ZResolution::UNIT_PIXEL));
+        6.0, resolution.getPlaneVoxelSize(neutu::EPlane::YZ, ZResolution::UNIT_PIXEL));
   /*
   ASSERT_DOUBLE_EQ(
         0.001, resolution.getVoxelSize(neutube::X_AXIS, ZResolution::UNIT_MICRON));

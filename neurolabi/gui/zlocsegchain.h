@@ -39,7 +39,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const;
 
 public: // I/O functions
   virtual void save(const char *filePath);

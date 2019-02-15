@@ -274,7 +274,7 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
         npost = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
-              bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+              bodyId, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         for (size_t i=0; i<synapses.size(); i++) {
           if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
@@ -1822,9 +1822,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
                 bodyID, *getRoi(ui->roiComboBox->currentText()),
-                flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+                dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else {
-          synapses = reader.readSynapse(bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+          synapses = reader.readSynapse(bodyID, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         }
 
         // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;

@@ -40,20 +40,20 @@ TEST(ZWidgetMessage, target)
   }
 
   {
-    ZWidgetMessage msg("", neutube::EMessageType::DEBUG);
-    ASSERT_EQ(neutube::EMessageType::DEBUG, msg.getType());
+    ZWidgetMessage msg("", neutu::EMessageType::DEBUG);
+    ASSERT_EQ(neutu::EMessageType::DEBUG, msg.getType());
   }
 
   {
-    ZWidgetMessage msg("test", "", neutube::EMessageType::DEBUG);
-    ASSERT_EQ(neutube::EMessageType::DEBUG, msg.getType());
+    ZWidgetMessage msg("test", "", neutu::EMessageType::DEBUG);
+    ASSERT_EQ(neutu::EMessageType::DEBUG, msg.getType());
     ASSERT_EQ("test", msg.getTitle());
   }
 
   {
-    ZWidgetMessage msg("test", "", neutube::EMessageType::DEBUG,
+    ZWidgetMessage msg("test", "", neutu::EMessageType::DEBUG,
                        ZWidgetMessage::TARGET_DIALOG);
-    ASSERT_EQ(neutube::EMessageType::DEBUG, msg.getType());
+    ASSERT_EQ(neutu::EMessageType::DEBUG, msg.getType());
     ASSERT_EQ("test", msg.getTitle());
     ASSERT_TRUE(msg.hasTarget(ZWidgetMessage::TARGET_DIALOG));
     ASSERT_FALSE(msg.hasTarget(ZWidgetMessage::TARGET_TEXT_APPENDING));

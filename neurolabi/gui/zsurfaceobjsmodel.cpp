@@ -113,7 +113,7 @@ void ZSurfaceObjsModel::setupModelData(ZObjsItem *parent)
   ZOUT(LTRACE(), 5) << "Setup surface model";
   QList<ZStackObject*> surfaceList =
       m_doc->getObjectList(ZStackObject::EType::CUBE);
-  int numDigit = neutube::numDigits(surfaceList.size()+1);
+  int numDigit = neutu::numDigits(surfaceList.size()+1);
   for (int i=0; i<surfaceList.size(); i++) {
     data.clear();
     ZCubeArray *p = dynamic_cast<ZCubeArray*>(surfaceList.at(i));

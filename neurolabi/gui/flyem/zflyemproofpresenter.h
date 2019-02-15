@@ -37,7 +37,7 @@ public:
   void showData(bool on);
   bool showingData() const;
 
-  void enableSplit(flyem::EBodySplitMode mode);
+  void enableSplit(neutu::EBodySplitMode mode);
   void disableSplit();
   void setSplitEnabled(bool s);
 
@@ -45,16 +45,16 @@ public:
   bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
-  flyem::EBodySplitMode getSplitMode() const {
+  neutu::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
   inline bool isSplitWindow() const {
-    return m_splitMode != flyem::EBodySplitMode::NONE;
+    return m_splitMode != neutu::EBodySplitMode::NONE;
 //    return m_splitWindowMode;
   }
 
-  void setSplitMode(flyem::EBodySplitMode mode) {
+  void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
@@ -155,13 +155,13 @@ public slots:
 
 protected:
   virtual void tryAddTodoItem(
-      int x, int y, int z, bool checked, neutube::EToDoAction action,
+      int x, int y, int z, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action);
 
 private:
 //  void connectAction();
@@ -182,7 +182,7 @@ private:
 
 private:
   bool m_isHightlightMode;
-  flyem::EBodySplitMode m_splitMode;
+  neutu::EBodySplitMode m_splitMode;
 //  bool m_splitWindowMode;
   bool m_highTileContrast;
   bool m_smoothTransform;

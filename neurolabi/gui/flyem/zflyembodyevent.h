@@ -34,7 +34,7 @@ public:
   void setBodyColor(const QColor &color);
   void setRange(const ZIntCuboid &range);
 
-  void mergeEvent(const ZFlyEmBodyEvent &event, neutube::EBiDirection direction);
+  void mergeEvent(const ZFlyEmBodyEvent &event, neutu::EBiDirection direction);
 
 //    void syncBodySelection();
 

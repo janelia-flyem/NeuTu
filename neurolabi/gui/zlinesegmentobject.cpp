@@ -54,7 +54,7 @@ QPointF ZLineSegmentObject::getEndXY() const
 
 void ZLineSegmentObject::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   /*
   if (sliceAxis != NeuTube::Z_AXIS) {
@@ -85,8 +85,8 @@ void ZLineSegmentObject::display(
     double dz2 = segment.getUpperZ() - z;
 
     bool fullLinePainting =
-        (hasVisualEffect(neutube::display::Line::VE_LINE_PROJ) ||
-         hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ) ||
+        (hasVisualEffect(neutu::display::Line::VE_LINE_PROJ) ||
+         hasVisualEffect(neutu::display::Line::VE_LINE_FADING_PROJ) ||
          isProj || (dz1 * dz2 <= 0));
     bool intersectPainting = !isProj && (dz1 * dz2 <= 0);
     if (intersectPainting) {
@@ -103,7 +103,7 @@ void ZLineSegmentObject::display(
                           lineColor.valueF(), lineColor.alphaF() * 0.5);
         //Whole line is out of focus
         if (dz1 * dz2 > 0) {
-          if (hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ)) {
+          if (hasVisualEffect(neutu::display::Line::VE_LINE_FADING_PROJ)) {
             double deltaZ = std::min(fabs(dz1), fabs(dz2));
             double alphaRatio = 1.0 / deltaZ;
             if (alphaRatio >= 0.1) {
@@ -121,7 +121,7 @@ void ZLineSegmentObject::display(
         pen.setColor(lineColor);
         if (lineColor.alpha() > 0) {
           if (!intersectPainting &&
-              hasVisualEffect(neutube::display::Line::VE_LINE_PROJ)) {
+              hasVisualEffect(neutu::display::Line::VE_LINE_PROJ)) {
             pen.setStyle(Qt::DotLine);
           }
         }
@@ -152,26 +152,26 @@ void ZLineSegmentObject::display(
   }
 }
 
-bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZLineSegmentObject::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
-  if (getSliceAxis() == neutube::EAxis::ARB) {
+  if (getSliceAxis() == neutu::EAxis::ARB) {
     return false;
   }
 
   if (isVisible()) {
-    if (hasVisualEffect(neutube::display::Line::VE_LINE_PROJ) ||
-        hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ)) {
+    if (hasVisualEffect(neutu::display::Line::VE_LINE_PROJ) ||
+        hasVisualEffect(neutu::display::Line::VE_LINE_FADING_PROJ)) {
       return true;
     }
 
     switch (sliceAxis) {
-    case neutube::EAxis::X:
+    case neutu::EAxis::X:
       return getLowerX() <= z && getUpperX() >= z;
-    case neutube::EAxis::Y:
+    case neutu::EAxis::Y:
       return getLowerY() <= z && getUpperY() >= z;
-    case neutube::EAxis::Z:
+    case neutu::EAxis::Z:
       return getLowerZ() <= z && getUpperZ() >= z;
-    case neutube::EAxis::ARB:
+    case neutu::EAxis::ARB:
       break;
     }
   }
@@ -181,7 +181,7 @@ bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 
 void ZLineSegmentObject::computePlaneInersection(
     QPointF &lineStart, QPointF &lineEnd, bool &visible, int dataFocus,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   double upperZ = dataFocus + 0.5;
   double lowerZ = dataFocus - 0.5;

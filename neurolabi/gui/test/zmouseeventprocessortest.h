@@ -17,7 +17,7 @@ TEST(ZMouseEventProcessor, MapPoint)
 
   ZStackDoc doc;
   doc.loadStack(ZStackFactory::MakeVirtualStack(100, 200, 300));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::EAxis::Z);
+  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),

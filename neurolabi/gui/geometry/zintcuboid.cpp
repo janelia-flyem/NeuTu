@@ -442,28 +442,28 @@ double ZIntCuboid::computeDistance(const ZIntCuboid &box)
   return sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 }
 
-void ZIntCuboid::shiftSliceAxis(neutube::EAxis axis)
+void ZIntCuboid::shiftSliceAxis(neutu::EAxis axis)
 {
   m_firstCorner.shiftSliceAxis(axis);
   m_lastCorner.shiftSliceAxis(axis);
 }
 
-void ZIntCuboid::shiftSliceAxisInverse(neutube::EAxis axis)
+void ZIntCuboid::shiftSliceAxisInverse(neutu::EAxis axis)
 {
   m_firstCorner.shiftSliceAxisInverse(axis);
   m_lastCorner.shiftSliceAxisInverse(axis);
 }
 
-int ZIntCuboid::getDim(neutube::EAxis axis) const
+int ZIntCuboid::getDim(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return getWidth();
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return getHeight();
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return getDepth();
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

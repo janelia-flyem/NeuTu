@@ -11,6 +11,7 @@
 #endif
 
 #include "ui_neu3window.h"
+#include "logging/utilities.h"
 #include "z3dwindow.h"
 #include "zstackdoc.h"
 #include "zdialogfactory.h"
@@ -255,13 +256,13 @@ void Neu3Window::updateBodyState()
 #ifdef _DEBUG_
   std::cout << "Update state: "
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
-                 neutube::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
+                 neutu::ELabelSource::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
 #if 0
   if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
         neutube::BODY_LABEL_ORIGINAL).size() == 1) {
-    m_dataContainer->enableSplit(flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
+    m_dataContainer->enableSplit(neutu::EBodySplitMode::BODY_SPLIT_ONLINE);
   } else {
     m_dataContainer->disableSplit();
   }
@@ -303,7 +304,7 @@ bool Neu3Window::loadDvidTarget()
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
   if (dlg->exec()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
@@ -632,7 +633,7 @@ void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutu::EAxis::ARB);
     slice->setCustomColorMap(m_browserColorScheme);
 
     updateSliceBrowserSelection();
@@ -1063,7 +1064,6 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_DIALOG)) {
     m_3dwin->processMessage(msg);
   }
-
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
@@ -1147,7 +1147,7 @@ void Neu3Window::syncBodyListModel()
   }
   LDEBUG() << "Syncing" << bodyStr;
 #endif
-  dataDoc->setSelectedBody(selected, neutube::EBodyLabelType::MAPPED);
+  dataDoc->setSelectedBody(selected, neutu::ELabelSource::MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;

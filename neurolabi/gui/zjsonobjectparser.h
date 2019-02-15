@@ -26,11 +26,6 @@ public:
              const T &defaultValue) const;
 
 
-//  template<typename T>
-//  std::enable_if<std::is_integral<T>::value>::type
-//  ZJsonParser::getValue(const ZJsonObject &obj, const std::string &key,
-//                        const T &defaultValue) const;
-
   std::string getValue(const ZJsonObject &obj, const char *key,
                        const char *defaultValue);
   std::string getValue(const ZJsonObject &obj, const std::string &key,

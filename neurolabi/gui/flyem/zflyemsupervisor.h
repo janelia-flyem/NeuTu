@@ -17,8 +17,8 @@ class ZFlyEmSupervisor : public QObject
   Q_OBJECT
 public:
   explicit ZFlyEmSupervisor(QObject *parent = 0);
-  bool checkIn(uint64_t bodyId, flyem::EBodySplitMode mode);
-  bool checkOut(uint64_t bodyId, flyem::EBodySplitMode mode);
+  bool checkIn(uint64_t bodyId, neutu::EBodySplitMode mode);
+  bool checkOut(uint64_t bodyId, neutu::EBodySplitMode mode);
 
   bool checkInAdmin(uint64_t bodyId);
 
@@ -74,15 +74,15 @@ public:
   std::string getCheckoutUrl(const std::string &uuid) const;
 
   std::string getCheckinUrl(
-      const std::string &uuid, uint64_t bodyId, flyem::EBodySplitMode mode) const;
+      const std::string &uuid, uint64_t bodyId, neutu::EBodySplitMode mode) const;
   std::string getCheckoutUrl(
-      const std::string &uuid, uint64_t bodyId, flyem::EBodySplitMode mode) const;
+      const std::string &uuid, uint64_t bodyId, neutu::EBodySplitMode mode) const;
 
   std::string getCheckinUrl(const std::string &uuid, uint64_t bodyId,
                             const std::string &userName) const;
 
-  std::string getCheckinUrl(uint64_t bodyId, flyem::EBodySplitMode mode) const;
-  std::string getCheckoutUrl(uint64_t bodyId, flyem::EBodySplitMode mode) const;
+  std::string getCheckinUrl(uint64_t bodyId, neutu::EBodySplitMode mode) const;
+  std::string getCheckoutUrl(uint64_t bodyId, neutu::EBodySplitMode mode) const;
 
 signals:
 
@@ -90,8 +90,8 @@ public slots:
 
 private:
   static std::string GetUserName(
-      const std::string &userName, flyem::EBodySplitMode mode);
-  std::string getUserName(flyem::EBodySplitMode mode) const;
+      const std::string &userName, neutu::EBodySplitMode mode);
+  std::string getUserName(neutu::EBodySplitMode mode) const;
 
 private:
   std::string m_userName;

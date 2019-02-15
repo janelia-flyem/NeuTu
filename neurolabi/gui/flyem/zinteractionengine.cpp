@@ -22,7 +22,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
   m_exploreMarker.useCosmeticPen(true);
-  m_exploreMarker.addVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER);
+  m_exploreMarker.addVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER);
   m_exploreMarker.setColor(Qt::red);
 
   m_namedDecorationList.append(&m_stroke);
@@ -437,7 +437,7 @@ void ZInteractionEngine::enterLocateMode()
   m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_LOCAL);
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
   m_exploreMarker.setColor(Qt::red);
-  m_exploreMarker.setVisualEffect(neutube::display::Sphere::VE_DOT_CENTER);
+  m_exploreMarker.setVisualEffect(neutu::display::Sphere::VE_DOT_CENTER);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }
@@ -454,8 +454,8 @@ void ZInteractionEngine::enterBrowseMode()
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
   m_exploreMarker.setColor(Qt::blue);
   m_exploreMarker.setVisualEffect(
-        neutube::display::Sphere::VE_RECTANGLE_SHAPE |
-        neutube::display::Sphere::VE_CROSS_CENTER);
+        neutu::display::Sphere::VE_RECTANGLE_SHAPE |
+        neutu::display::Sphere::VE_CROSS_CENTER);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }

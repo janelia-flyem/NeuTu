@@ -3,8 +3,8 @@
 
 uint qHash(const ZStackObjectInfo &info)
 {
-  return qHash(neutube::EnumValue(info.getTarget())) ^
-      qHash(neutube::EnumValue(info.getType())) ^
+  return qHash(neutu::EnumValue(info.getTarget())) ^
+      qHash(neutu::EnumValue(info.getType())) ^
       qHash(info.getRole().getRole());
 }
 
@@ -36,7 +36,7 @@ std::string ZStackObjectInfo::toString() const
 {
   std::ostringstream stream;
   stream << "Object info: " << ZStackObject::GetTypeName(m_type) << "; Target "
-         << neutube::EnumValue(m_target) << "; Role " << m_role.getRole();
+         << neutu::EnumValue(m_target) << "; Role " << m_role.getRole();
   return stream.str();
 }
 

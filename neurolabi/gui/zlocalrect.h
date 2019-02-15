@@ -23,7 +23,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);

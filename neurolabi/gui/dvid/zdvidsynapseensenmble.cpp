@@ -46,8 +46,8 @@ void ZDvidSynapseEnsemble::init()
   m_type = EType::DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::EAxis::Z;
-  addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
+  m_sliceAxis = neutu::EAxis::Z;
+  addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
 }
@@ -77,7 +77,7 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
         addSynapseUnsync(synapse, DATA_LOCAL);
       }
     }
@@ -333,7 +333,7 @@ void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+    synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }
@@ -698,7 +698,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
 
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   QMutexLocker locker(&m_dataMutex);
 
@@ -734,7 +734,7 @@ void ZDvidSynapseEnsemble::display(
 
           if (!ready && m_view != NULL) {
             ready = synapseSlice.isReady(
-                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
+                  m_view->getViewPort(neutu::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -773,7 +773,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN &&
-                hasVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT)) {
+                hasVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = EDisplayStyle::SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -985,7 +985,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
-      synapse.loadJsonObject(obj, flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON);
+      synapse.loadJsonObject(obj, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
 #if 0
@@ -1327,7 +1327,7 @@ ZDvidSynapseEnsemble::SynapseSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZDvidSynapseEnsemble::SynapseSlice::addSynapse(
-    const ZDvidSynapse &synapse, neutube::EAxis sliceAxis)
+    const ZDvidSynapse &synapse, neutu::EAxis sliceAxis)
 {
   ZIntPoint center = synapse.getPosition();
   center.shiftSliceAxis(sliceAxis);

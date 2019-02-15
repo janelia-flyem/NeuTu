@@ -17,7 +17,7 @@ const char* neutube3d::GetVolumeName()
 
 const char* neutube3d::GetVolumeRenderingModeName(EVolumeRenderingMode mode)
 {
-  return VolumeRenderingModeNameArray[neutube::EnumValue(mode)];
+  return VolumeRenderingModeNameArray[neutu::EnumValue(mode)];
 }
 
 std::string neutube3d::GetWindowKeyString(neutube3d::EWindowType type)

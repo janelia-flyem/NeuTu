@@ -125,7 +125,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
@@ -157,7 +157,7 @@ QColor ZDvidSynapse::GetArrowColor(bool verified)
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -339,7 +339,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -378,7 +378,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPointF ptArray[4];
     //      double s = 5.0;
     if (z > center.getZ()) {
-      flyem::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::NORTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
@@ -388,7 +388,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                         rect.top() + rect.height() / s);
 */
     } else {
-      flyem::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::SOUTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);
@@ -471,7 +471,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         line.setFocusColor(QColor(255, 0, 255));
       }
 
-      line.setVisualEffect(neutube::display::Line::VE_LINE_PROJ);
+      line.setVisualEffect(neutu::display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option, sliceAxis);
 
       /*
@@ -567,7 +567,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+          reader.readSynapse(m_partnerHint[i], dvid::EAnnotationLoadMode::PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();

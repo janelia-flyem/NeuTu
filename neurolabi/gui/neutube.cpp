@@ -18,7 +18,7 @@
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
 
-void neutube::RegisterMetaType()
+void neutu::RegisterMetaType()
 {
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
@@ -29,7 +29,7 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
-  qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
+  qRegisterMetaType<neutu::EBodySplitMode>("neutu::EBodySplitMode");
   qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
   qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
@@ -37,18 +37,18 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<ZIntPoint>("ZIntPoint");
 }
 
-ZMessageReporter* neutube::getMessageReporter()
+ZMessageReporter* neutu::getMessageReporter()
 {
   return NeutubeConfig::getInstance().getMessageReporter();
 }
 
-ZLogMessageReporter* neutube::getLogMessageReporter()
+ZLogMessageReporter* neutu::getLogMessageReporter()
 {
   return dynamic_cast<ZLogMessageReporter*>(getMessageReporter());
 }
 
 
-std::string neutube::getErrorFile()
+std::string neutu::getErrorFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getErrorFile();
@@ -57,7 +57,7 @@ std::string neutube::getErrorFile()
   return "";
 }
 
-std::string neutube::getWarnFile()
+std::string neutu::getWarnFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getWarnFile();
@@ -66,7 +66,7 @@ std::string neutube::getWarnFile()
   return "";
 }
 
-std::string neutube::getInfoFile()
+std::string neutu::getInfoFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getInfoFile();
@@ -75,7 +75,7 @@ std::string neutube::getInfoFile()
   return "";
 }
 
-std::string neutube::GetCurrentUserName()
+std::string neutu::GetCurrentUserName()
 {
 //  if (NeutubeConfig::GetUserName().empty()) {
 //    NeutubeConfig::SetUserName(qgetenv("USER").toStdString());
@@ -88,20 +88,20 @@ std::string neutube::GetCurrentUserName()
   return NeutubeConfig::GetUserName();
 }
 
-bool neutube::IsAdminUser()
+bool neutu::IsAdminUser()
 {
 #if defined(_FLYEM_)
-  if (neutube::GetCurrentUserName() == "takemuras" ||
-      neutube::GetCurrentUserName() == "shinomiyak" ||
-      neutube::GetCurrentUserName() == "jah") {
+  if (neutu::GetCurrentUserName() == "takemuras" ||
+      neutu::GetCurrentUserName() == "shinomiyak" ||
+      neutu::GetCurrentUserName() == "jah") {
     return true;
   }
 #endif
 
-  return neutube::GetCurrentUserName() == "zhaot";
+  return neutu::GetCurrentUserName() == "zhaot";
 }
 
-QFileDialog::Options neutube::GetFileDialogOption()
+QFileDialog::Options neutu::GetFileDialogOption()
 {
   if (!NeutubeConfig::getInstance().usingNativeDialog()) {
     return QFileDialog::DontUseNativeDialog;
@@ -110,12 +110,12 @@ QFileDialog::Options neutube::GetFileDialogOption()
   return 0;
 }
 
-QString neutube::GetLastFilePath()
+QString neutu::GetLastFilePath()
 {
   return NeutubeConfig::GetSettings().value("lastPath").toString();
 }
 
-QString neutube::GetFilePath(const QUrl &url)
+QString neutu::GetFilePath(const QUrl &url)
 {
   QString filePath;
 

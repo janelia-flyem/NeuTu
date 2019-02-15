@@ -321,6 +321,7 @@
 #include "zstackobjectpainter.h"
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 
 //#include "test/ztestall.h"
 
@@ -28114,7 +28115,7 @@ void ZTest::test(MainWindow *host)
   size_t blockCount = 0;
   ZIntCuboid box;
   std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-        662776660, flyem::EBodyLabelType::BODY);
+        662776660, neutu::EBodyLabelType::BODY);
   std::cout << bodySize << " " << blockCount << std::endl;
   std::cout << box.toString() << std::endl;
 #endif
@@ -28142,7 +28143,7 @@ void ZTest::test(MainWindow *host)
     size_t blockCount = 0;
     ZIntCuboid box;
     std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-          5813050455, flyem::EBodyLabelType::BODY);
+          5813050455, neutu::EBodyLabelType::BODY);
     std::cout << blockCount << std::endl;
 
     ZObject3dScan obj;
@@ -28967,6 +28968,16 @@ void ZTest::test(MainWindow *host)
                  url.getInfoUrl("segmentation_skeletons").c_str()) << std::endl;
 #endif
 
+#if 1
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  tic();
+  if (reader) {
+    reader->readKeyValue("roi_data", "be890b70bcd206be62e81377250e9dbe");
+  }
+  ptoc();
+#endif
+
 #if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("hemibran-production");
@@ -29269,7 +29280,7 @@ void ZTest::test(MainWindow *host)
     ZObject3dScan obj;
 //    reader->readBody(body, true, &obj);
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
 
     size_t byteCount = obj.getByteCount();
     size_t voxelCount = obj.getVoxelNumber();
@@ -29310,7 +29321,7 @@ void ZTest::test(MainWindow *host)
   for (uint64_t body : bodyList) {
     ZObject3dScan obj;
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
     timer.restart();
     ccc.push_back(obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE).size());
     ccaTime.push_back(timer.elapsed());
@@ -29387,6 +29398,94 @@ void ZTest::test(MainWindow *host)
   writer->createData("keyvalue", "test3");
 
   std::cout << writer->isStatusOk() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
+
+  ZJsonObject obj = reader->readBodyStatusV2();
+
+  obj.print();
+
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+
+  merger.print();
+#endif
+
+#if 1
+  KINFO << "Test: to kafka only";
+  LKINFO << "Test: to both local and kafka";
+
+  KWARN << "Test: to kafka only";
+  LKWARN << "Test: to both local and kafka";
+
+  KERROR << "Test: to kafka only";
+  LKERROR << "Test: to both local and kafka";
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: no logging", neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_NULL));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
 #endif
 
   std::cout << "Done." << std::endl;

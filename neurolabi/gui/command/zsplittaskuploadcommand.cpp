@@ -91,7 +91,7 @@ int ZSplitTaskUploadCommand::run(
 
         std::string location = writer->writeServiceTask("split", taskJson);
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::json::REF_KEY, location);
+        entryJson.setEntry(neutu::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
         std::cout << "*    Task for " << bodyId << " is saved @ "

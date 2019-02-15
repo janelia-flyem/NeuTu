@@ -32,7 +32,7 @@ ZStroke2d::ZStroke2d() :
 {
   setLabel(1);
   m_type = GetType();
-  setSliceAxis(neutube::EAxis::Z);
+  setSliceAxis(neutu::EAxis::Z);
   //setEraser(m_isEraser);
 }
 /*
@@ -150,7 +150,7 @@ void ZStroke2d::setEraser(bool enabled)
 }
 
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
-                        neutube::EAxis sliceAxis) const
+                        neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -261,7 +261,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 }
 
 bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-                        EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const
+                        EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return false;
@@ -881,7 +881,7 @@ double ZStroke2d::pointLinesegDistance(
   return Geo3d_Point_Lineseg_Dist(point, lineStart, lineEnd, NULL);
 }
 
-bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZStroke2d::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
   if (isVisible() && !isEmpty() && (sliceAxis == getSliceAxis())) {
     if (m_isPenetrating || (std::fabs(m_z - z) < m_zFadeSpan)) {
@@ -892,7 +892,7 @@ bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
   return false;
 }
 
-bool ZStroke2d::hitTest(double x, double y, neutube::EAxis axis) const
+bool ZStroke2d::hitTest(double x, double y, neutu::EAxis axis) const
 {
   if (axis != getSliceAxis()) {
     return false;
@@ -969,7 +969,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
   return hit;
 }
 
-bool ZStroke2d::hit(double x, double y, neutube::EAxis axis)
+bool ZStroke2d::hit(double x, double y, neutu::EAxis axis)
 {
   return hitTest(x, y, axis);
 }

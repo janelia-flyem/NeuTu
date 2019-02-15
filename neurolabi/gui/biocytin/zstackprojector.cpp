@@ -78,7 +78,7 @@ double Biocytin::ZStackProjector::colorToValueH(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, neutube::EImageBackground bg,
+    const ZStack *stack, neutu::EImageBackground bg,
     bool includingDepth, int slabIndex)
 {
 #ifdef _DEBUG_
@@ -111,7 +111,7 @@ ZStack* Biocytin::ZStackProjector::project(
                           stack->channelNumber());
         for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
           Image *projBuffer = NULL;
-          if (bg == neutube::EImageBackground::BRIGHT) {
+          if (bg == neutu::EImageBackground::BRIGHT) {
             projBuffer = C_Stack::makeMinProjZ(
                   stack->c_stack(channel), range.first, range.second);
           } else {
@@ -199,7 +199,7 @@ ZStack* Biocytin::ZStackProjector::project(
 
                 double v = colorToValueH(
                       red, green, blue, regularizer);
-                if (bg == neutube::EImageBackground::BRIGHT) {
+                if (bg == neutu::EImageBackground::BRIGHT) {
                   if (projMat->array[projIndex] > v) {
                     projMat->array[projIndex] = v;
                     m_depthArray[projIndex] = z;
@@ -411,7 +411,7 @@ std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, neutube::EImageBackground bg)
+    const ZStack *stack, neutu::EImageBackground bg)
 {
   if (stack == NULL) {
     return NULL;

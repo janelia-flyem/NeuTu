@@ -23,7 +23,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
 //  const std::string& className() const;
 
@@ -31,7 +31,7 @@ public:
 
   ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
 
-  void setLabelType(flyem::EBodyLabelType type);
+  void setLabelType(neutu::EBodyLabelType type);
 
   /*!
    * \brief Set the mask of the sparse stack
@@ -97,7 +97,7 @@ public:
       bool canonizing = false);
 
   uint64_t getLabel() const;
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
@@ -111,7 +111,7 @@ public:
 //  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
 
   bool isEmpty() const;
 
@@ -170,7 +170,7 @@ private:
 //  bool m_isValueFilled;
   bool m_prefectching = false;
   uint64_t m_label;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;

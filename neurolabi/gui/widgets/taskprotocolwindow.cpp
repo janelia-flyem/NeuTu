@@ -15,15 +15,20 @@
 #include "common/neutube_def.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemtaskhelper.h"
+
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/tasktesttask.h"
+
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
-#include "flyem/zflyemtaskhelper.h"
+
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -350,8 +355,8 @@ void TaskProtocolWindow::onNextButton() {
 
 void TaskProtocolWindow::onDoneButton() {
     bool allComplete = true;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (!task->completed()) {
+    for (int i = 0; i < m_taskList.size(); i++) {
+        if (!m_taskList[i]->completed() && !skip(i)) {
             allComplete = false;
             break;
         }
@@ -396,12 +401,16 @@ void TaskProtocolWindow::onDoneButton() {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
         jsonString.toStdString());
 
-    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
-            << "," << key.toStdString();
+//    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+//            << "," << key.toStdString();
+
+    emitInfo(QString("Task protocol: saved completed protocol data to DVID: %1 , %2").
+             arg(PROTOCOL_INSTANCE).arg(key));
 
     // delete old key in either case
     m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
-    LINFO() << "Task protocol: deleted working protocol data from DVID";
+    emitInfo("Task protocol: deleted working protocol data from DVID");
+//    LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
     resetBody3dDocConfig();
@@ -716,7 +725,18 @@ bool TaskProtocolWindow::skip(int taskIndex)
   // might later need to be skipped if it becomes redundant based on the completion of
   // another task).
 
-  if (m_taskList[taskIndex]->skip()) {
+  QString reason;
+  if (m_taskList[taskIndex]->skip(reason)) {
+      if (m_skippedTaskIndices.find(taskIndex) == m_skippedTaskIndices.end()) {
+          QString text = "Auto-skipping: \"" + m_taskList[taskIndex]->actionString() + " " +
+                         m_taskList[taskIndex]->targetString() + "\"";
+          if (!reason.isEmpty()) {
+              text += " Reason: \"" + reason + "\"";
+          }
+          text.replace("<br>", " ");
+          emitInfo(ZWidgetMessage::appendTime(text));
+      }
+
       m_skippedTaskIndices.insert(taskIndex);
       return true;
   } else {
@@ -1011,7 +1031,9 @@ void TaskProtocolWindow::updateLabel() {
 
     // whenever we update the label, also log the progress; this is not useful as
     //  an activity tracker, as the label gets updated not always in response to user action
-    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+//    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+    emitInfo(QString("Task protocol: progress updated: %1 / %2").
+             arg(ncomplete).arg(ntasks));
 }
 
 /*
@@ -1074,14 +1096,10 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
         } else {
           QString msg =
               "Task protocol: json loaded from DVID:" + instance + "," + key;
-          LINFO() << msg;
-          emit messageGenerated(ZWidgetMessage(msg));
-#if 0
-          //For testing
-          emit messageGenerated(
-              ZWidgetMessage(
-                "test", msg, neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
-#endif
+          emitInfo(msg);
+//          KINFO << msg;
+//          emit messageGenerated(ZWidgetMessage(msg));
+
           return doc.object();
         }
 }
@@ -1155,7 +1173,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
     }
 
-    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
+    emitInfo(QString("Task protocol: loaded %1 tasks").arg(m_taskList.size()));
+//    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 
 void TaskProtocolWindow::createTask(QString menuLabel)
@@ -1224,7 +1243,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*
@@ -1330,7 +1349,8 @@ void TaskProtocolWindow::showError(QString title, QString message) {
 
     emit messageGenerated(
         ZWidgetMessage(
-          title, message, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
+          title, message, neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_DIALOG | ZWidgetMessage::TARGET_KAFKA));
 }
 
 /*
@@ -1344,6 +1364,24 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::emitMessage(const QString &msg, neutu::EMessageType type)
+{
+  emit messageGenerated(ZWidgetMessage(msg, type,
+                                       ZWidgetMessage::TARGET_TEXT_APPENDING |
+                                       ZWidgetMessage::TARGET_LOG_FILE |
+                                       ZWidgetMessage::TARGET_KAFKA));
+}
+
+void TaskProtocolWindow::emitInfo(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::INFORMATION);
+}
+
+void TaskProtocolWindow::emitWarning(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::WARNING);
 }
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
@@ -1401,7 +1439,7 @@ TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
 void TaskProtocolWindow::resetBody3dDocConfig()
 {
   ProtocolTaskConfig config;
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
   config.setTaskType("");
   m_body3dDoc->configure(config);
 }

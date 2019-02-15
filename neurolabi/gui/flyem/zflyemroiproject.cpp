@@ -148,11 +148,21 @@ bool ZFlyEmRoiProject::setDvidTarget(
   return succ;
 }
 
+ZDvidWriter& ZFlyEmRoiProject::getDvidWriter()
+{
+  return m_dvidWriter;
+}
+
+const ZDvidReader &ZFlyEmRoiProject::getDvidReader() const
+{
+  return m_dvidWriter.getDvidReader();
+}
+
 void ZFlyEmRoiProject::downloadAllRoi()
 {
   //Download All ROIs
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
     QStringList roiIdArray = reader.readKeys(
           ZDvidData::GetName<QString>(ZDvidData::ERole::ROI_CURVE),
           (getName() + "_0").c_str(), (getName() + "_9").c_str());
@@ -518,8 +528,8 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
   bool succ = false;
 
   if (!roiName.empty()) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+    const ZDvidReader &reader = getDvidReader();
+    if (reader.isReady()) {
       if (reader.hasData(roiName)) {
         std::string type = reader.getType(roiName);
         if (type != "roi") {
@@ -543,7 +553,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
                                   arg(roiName.c_str())));
         } else {
           emit messageGenerated(
-                ZWidgetMessage("Failed to create ROI data.", neutube::EMessageType::WARNING));
+                ZWidgetMessage("Failed to create ROI data.", neutu::EMessageType::WARNING));
           return false;
         }
       }
@@ -553,7 +563,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       if (obj.isEmpty()) {
         emit messageGenerated(
               ZWidgetMessage("Failed to create ROI data. The ROI is empty.",
-                             neutube::EMessageType::WARNING));
+                             neutu::EMessageType::WARNING));
         return false;
       }
 
@@ -588,7 +598,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       } else {
         emit messageGenerated(
               ZWidgetMessage("Failed to create ROI data.",
-                             neutube::EMessageType::WARNING));
+                             neutu::EMessageType::WARNING));
         return false;
       }
     }
@@ -626,8 +636,8 @@ void ZFlyEmRoiProject::downloadRoi(const std::string &key)
 */
 void ZFlyEmRoiProject::downloadRoi(int z)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
     ZClosedCurve *curve = reader.readRoiCurve(getRoiKey(z), NULL);
     if (curve != NULL) {
       if (curve->isEmpty()) {

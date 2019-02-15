@@ -147,7 +147,7 @@ public:
 
   bool isNull() const;
 
-  ZPoint getMouseOffset(neutube::ECoordinateSystem cs) const;
+  ZPoint getMouseOffset(neutu::ECoordinateSystem cs) const;
   inline const ZMouseEventRecorder* getMouseEventRecorder() const {
     return m_mouseEventRecorder;
   }

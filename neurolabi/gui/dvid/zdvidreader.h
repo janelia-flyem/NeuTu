@@ -142,7 +142,7 @@ public:
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
   ZObject3dScan* readBody(
-      uint64_t bodyId, flyem::EBodyLabelType labelType,
+      uint64_t bodyId, neutu::EBodyLabelType labelType,
       bool canonizing, ZObject3dScan *result) const;
 
   ZObject3dScan* readBodyDs(
@@ -152,38 +152,38 @@ public:
       uint64_t bodyId, int xIntv, int yIntv, int zIntv,
       bool canonizing, ZObject3dScan *result);
 
-  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
-  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
-                          int z, neutube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, neutu::EBodyLabelType labelType,
+                          int z, neutu::EAxis axis,
                           bool canonizing, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
-  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          neutu::EAxis axis, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, neutu::EBodyLabelType labelType,
                           int minZ, int maxZ, bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
+                          neutu::EAxis axis, ZObject3dScan *result) const;
 
 
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
-  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+  ZObject3dScan* readBody(uint64_t bodyId, neutu::EBodyLabelType labelType,
                           const ZIntCuboid &box, bool canonizing,
                           ZObject3dScan *result) const;
 
-  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+  ZObject3dScan* readBody(uint64_t bodyId, neutu::EBodyLabelType labelType,
                           int zoom, const ZIntCuboid &box, bool canonizing,
                           ZObject3dScan *result) const;
 
-  ZObject3dScan* readBodyRle(uint64_t bodyId, flyem::EBodyLabelType labelType,
+  ZObject3dScan* readBodyRle(uint64_t bodyId, neutu::EBodyLabelType labelType,
                              int zoom, const ZIntCuboid &box, bool canonizing,
                              ZObject3dScan *result) const;
 
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readBodyWithPartition(
-      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
+      uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *result) const;
 
   /*!
    * \brief Read a body at a given scale
@@ -241,14 +241,14 @@ public:
   ZSparseStack* readSparseStack(uint64_t bodyId, int zoom) const;
 
   ZSparseStack* readSparseStackOnDemand(
-      uint64_t bodyId, flyem::EBodyLabelType type, ZSparseStack *out) const;
+      uint64_t bodyId, neutu::EBodyLabelType type, ZSparseStack *out) const;
 
   ZDvidSparseStack* readDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+      uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
-      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+      uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -299,9 +299,10 @@ public:
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
       const QString &dataName, const QString &key) const;
-  QList<ZJsonObject> readJsonObjectsFromKeys(const QString &dataName, const QStringList &keyList) const;
+  QList<ZJsonObject> readJsonObjectsFromKeys(
+      const QString &dataName, const QStringList &keyList) const;
 
-  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
+  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result) const;
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
@@ -406,12 +407,12 @@ public:
   bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
-  bool hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const;
+  bool hasBody(uint64_t bodyId, neutu::EBodyLabelType type) const;
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
-  size_t readBodySize(uint64_t bodyId, flyem::EBodyLabelType type) const;
+  size_t readBodySize(uint64_t bodyId, neutu::EBodyLabelType type) const;
   std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
-      uint64_t bodyId, flyem::EBodyLabelType type) const;
+      uint64_t bodyId, neutu::EBodyLabelType type) const;
 
   int64_t readBodyMutationId(uint64_t bodyId) const;
 
@@ -466,13 +467,13 @@ public:
 
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
   ZObject3dScan readCoarseBody(
-      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+      uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
   ZObject3dScan* readCoarseBody(
-      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
+      uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *obj) const;
   ZObject3dScan* readCoarseBody(
-      uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
+      uint64_t bodyId, neutu::EBodyLabelType labelType, const ZIntCuboid &box,
       ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
@@ -517,20 +518,20 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label, const ZDvidRoi &roi,
-      flyem::EDvidAnnotationLoadMode mode) const;
+      dvid::EAnnotationLoadMode mode) const;
 
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      flyem::EDvidAnnotationLoadMode mode = flyem::EDvidAnnotationLoadMode::NO_PARTNER) const;
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

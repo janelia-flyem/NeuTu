@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "flyem/zflyem.h"
+//#include "flyem/zflyem.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
-#include "flyem/zflyembodyannotation.h"
+//#include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
 #include "common/zsharedpointer.h"
 #include "zdvidreader.h"
@@ -30,6 +30,7 @@ class ZFlyEmToDoItem;
 class ZArray;
 class ZStack;
 class ZObject3dScan;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidWriter /*: public QObject*/
 {

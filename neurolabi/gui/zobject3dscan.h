@@ -154,7 +154,7 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
@@ -221,7 +221,7 @@ public:
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width, int dim,
-                int start, neutube::EAxis axis);
+                int start, neutu::EAxis axis);
 
   template<class T>
   int scanArrayShift(
@@ -334,7 +334,7 @@ public:
   ZObject3dScan *chopY(int y, ZObject3dScan *remain, ZObject3dScan *result) const;
 
   ZObject3dScan* chop(
-      int v, neutube::EAxis axis, ZObject3dScan *remain,
+      int v, neutu::EAxis axis, ZObject3dScan *remain,
       ZObject3dScan *result) const;
 
   /*!
@@ -387,11 +387,11 @@ public:
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
@@ -459,7 +459,7 @@ public:
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutube::EAxis sliceAxis) const;
+      neutu::EAxis sliceAxis) const;
 //  virtual const std::string& className() const;
 
   void dilate();
@@ -657,7 +657,7 @@ public:
    * \brief Check if an object is ajacent to another
    */
   bool isAdjacentTo(const ZObject3dScan &obj,
-                    neutube::EStackNeighborhood nbr = neutube::EStackNeighborhood::D1) const;
+                    neutu::EStackNeighborhood nbr = neutu::EStackNeighborhood::D1) const;
 
 
   /*
