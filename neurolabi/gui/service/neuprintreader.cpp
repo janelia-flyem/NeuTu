@@ -333,6 +333,8 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
   }
   dataObj.setEntry("cypher", query.toStdString());
 
+  KINFO << query;
+
 #ifdef _DEBUG_
   std::cout << "Query:" << std::endl;
   dataObj.print();
@@ -363,6 +365,8 @@ ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
      queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
   }
   dataObj.setEntry("cypher", queryString.toStdString());
+
+  KINFO << queryString;
 
 #ifdef _DEBUG_
   std::cout << "Query:" << std::endl;
@@ -414,7 +418,10 @@ QList<uint64_t> NeuPrintReader::queryNeuron(
 
   dataObj.setEntry("pre_threshold", 2);
 
-  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+  std::string queryStr = dataObj.dumpString(0);
+  m_bufferReader.post(url, queryStr.c_str());
+
+  KINFO << queryStr;
 
   return extract_body_list(m_bufferReader.getBuffer());
 }
