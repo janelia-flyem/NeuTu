@@ -517,8 +517,6 @@ bool ZDvidSparseStack::fillValue(
     zoom = reader.getDvidTarget().getMaxGrayscaleZoom();
   }
 
-
-
   //  bool changed = false;
   int blockCount = 0;
   ZOUT(LTRACE(), 5) << "Getting object mask";
@@ -610,7 +608,8 @@ bool ZDvidSparseStack::fillValue(
     //          m_cancelingValueFill = false;
               setCancelFillValue(false);
               ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
-              return blockCount > 0;
+              delete grid;
+              return false;
             }
 
 #ifdef _DEBUG_

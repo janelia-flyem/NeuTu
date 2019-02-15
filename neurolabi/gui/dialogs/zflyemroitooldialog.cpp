@@ -9,7 +9,7 @@
 #include "flyem/zflyemroiproject.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zwidgetmessage.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdochelper.h"
 #include "zswctree.h"
 
 ZFlyEmRoiToolDialog::ZFlyEmRoiToolDialog(QWidget *parent) :

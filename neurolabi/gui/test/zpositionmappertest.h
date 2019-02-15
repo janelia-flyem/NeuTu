@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "mvc/zpositionmapper.h"
 #include "zviewproj.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "geometry/zaffineplane.h"
 
 #ifdef _USE_GTEST_

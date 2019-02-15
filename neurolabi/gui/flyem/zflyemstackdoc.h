@@ -1,16 +1,17 @@
 #ifndef ZFLYEMSTACKDOC_H
 #define ZFLYEMSTACKDOC_H
 
-#include "tz_graph.h"
-#include "zstackdoc.h"
-#include "zsynapseannotationarray.h"
-#include "zsuperpixelmaparray.h"
-#include "zgraph.h"
-#include "zsegmentationbundle.h"
-
 #include <vector>
 #include <string>
 #include <map>
+
+//#include "tz_graph.h"
+#include "mvc/zstackdoc.h"
+#include "zsynapseannotationarray.h"
+#include "zsuperpixelmaparray.h"
+#include "zsegmentationbundle.h"
+
+class ZGraph;
 
 class ZFlyEmStackDoc : public ZStackDoc
 {

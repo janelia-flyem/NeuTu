@@ -1,6 +1,6 @@
 #include "zstackdocloader.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdocreader.h"
 #include "zstackobjectgroup.h"
 
@@ -19,7 +19,7 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
     for (QList<ZStackObject::EType>::const_iterator iter = typeList.begin();
          iter != typeList.end(); ++iter) {
       ZStackObject::EType type = *iter;
-      if (getLoadMode(type) == LOAD_OVERWRITE) {
+      if (getLoadMode(type) == ELoadMode::OVERWRITE) {
 //        doc->getObjectGroup().remove(type);
         m_typeRemoved.append(type);
       }
@@ -29,7 +29,7 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
     for (QList<ZStackObject*>::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      if (getLoadMode(obj->getType()) == LOAD_OVERWRITE) {
+      if (getLoadMode(obj->getType()) == ELoadMode::OVERWRITE) {
         m_roleRemoved.addRole(obj->getRole().getRole());
         doc->getObjectGroup().removeObject(obj);
       }
@@ -120,5 +120,5 @@ ZStackDocLoader::ELoadMode ZStackDocLoader::getLoadMode(
     return m_loadType[type];
   }
 
-  return LOAD_OVERWRITE;
+  return ELoadMode::OVERWRITE;
 }

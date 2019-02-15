@@ -1,7 +1,9 @@
 #include "zwindowfactory.h"
+
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QMessageBox>
+
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
@@ -10,8 +12,8 @@
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
-#include "zstackdoc.h"
-#include "zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
 #include "zdialogfactory.h"
 #include "mainwindow.h"
 #include "zsysteminfo.h"

@@ -54,9 +54,16 @@ void ZLog::end()
   endLog();
 }
 
-void ZLog::log(const std::string &key, const neuopentracing::Value &value)
+void ZLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
 {
-  m_tags[key.c_str()] = value.toJson();
+  if (appending && m_tags.contains(key.c_str())) {
+    m_tags[key.c_str()] = neuopentracing::ToString(m_tags.value(key.c_str()))
+        + " " +
+        neuopentracing::ToString(value);
+  } else {
+    m_tags[key.c_str()] = value.toJson();
+  }
 }
 
 ZLog::Time::Time() :
@@ -82,7 +89,12 @@ void ZLog::End(ZLog &log)
 
 ZLog& ZLog::operator << (const ZLog::Tag &tag)
 {
-  log(tag.m_key, tag.m_value);
+  bool appending = (
+        tag.m_key == Description::KEY &&
+        tag.m_key == Diagnostic::KEY
+      );
+
+  log(tag.m_key, tag.m_value, appending);
 
   return *this;
 }
@@ -101,6 +113,12 @@ const char* DEFAULT_OPERATION_NAME = "debug";
 const char* DEFAULT_OPERATION_NAME = "app";
 #endif
 }
+
+const char* ZLog::Category::KEY = "category";
+const char* ZLog::Description::KEY = "description";
+const char* ZLog::Duration::KEY = "duration";
+const char* ZLog::Time::KEY = "time";
+const char* ZLog::Diagnostic::KEY = "diagnostic";
 
 std::string KLog::m_operationName = DEFAULT_OPERATION_NAME;
 
@@ -154,18 +172,24 @@ void KLog::start()
   ZLog::start();
 }
 
-void KLog::log(const std::string &key, const neuopentracing::Value &value)
+void KLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
 {
   if (!isStarted()) {
     start();
   }
 
   if (m_span) {
-    m_span->SetTag(key, value);
+    if (appending) {
+      m_span->appendTag(key, value);
+    } else {
+      m_span->SetTag(key, value);
+    }
+//    m_span->SetTag(key, value);
   }
 
   if (localLogging()) {
-    ZLog::log(key, value);
+    ZLog::log(key, value, appending);
   }
 }
 
@@ -199,7 +223,13 @@ void KLog::end()
 
 KInfo& KInfo::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+    }
+  }
 
   return (*this);
 }
@@ -220,7 +250,14 @@ KInfo& KInfo::operator << (const QString &info)
 
 KWarn& KWarn::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
 
   return (*this);
 }
@@ -241,7 +278,14 @@ KWarn& KWarn::operator << (const QString &info)
 
 KError& KError::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+  if (info) {
+    if (m_tags.contains(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
 
   return (*this);
 }

@@ -1,10 +1,10 @@
 #ifndef ZFLYEMBODYMERGEDOC_H
 #define ZFLYEMBODYMERGEDOC_H
 
-#include "zstackdoc.h"
 #include <QList>
 #include <QSet>
 
+#include "mvc/zstackdoc.h"
 #include "flyem/zflyembodymerger.h"
 #include "zstackdoccommand.h"
 #include "dvid/zdvidtarget.h"

@@ -6,7 +6,7 @@
 #include "logging/zlog.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"
 #include "zstackwatershedcontainer.h"

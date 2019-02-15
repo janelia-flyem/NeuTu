@@ -9,40 +9,44 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
+#include "tz_math.h"
+#include "tz_utilities.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
+
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "zmatrix.h"
-#include "tz_math.h"
-#include "tz_utilities.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "geometry/zcuboid.h"
-#include "dvid/zdvidinfo.h"
-#include "zstackdoc.h"
+#include "geometry/zaffinerect.h"
+#include "geometry/zintcuboidarray.h"
+
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackdochelper.h"
 #include "z3dgraphfactory.h"
 #include "zstackobjectsourcefactory.h"
-#include "zstackdochelper.h"
 #include "z3dwindow.h"
+
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
-#include "zstackviewparam.h"
-#include "geometry/zintcuboidarray.h"
-#include "zobject3dfactory.h"
-#include "tz_stack_bwmorph.h"
-#include "tz_stack_neighborhood.h"
-#include "zstroke2d.h"
+#include "dvid/zdvidinfo.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+
+#include "zstackviewparam.h"
+#include "zobject3dfactory.h"
+#include "zstroke2d.h"
 #include "zfileparser.h"
 #include "zjsonfactory.h"
-#include "dvid/zdvidwriter.h"
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
-#include "flyem/zmainwindowcontroller.h"
+#include "zmainwindowcontroller.h"
 #include "zswctree.h"
-#include "geometry/zaffinerect.h"
 #include "zarray.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
@@ -1352,7 +1356,8 @@ ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
   newBox.expandZ(10);
   size_t v = newBox.getVolume();
 
-  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+//  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  double s = Cube_Root(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
   if (s > 1) {
     double ds = s - 1.0;
     int dw = iround(newBox.getWidth() * ds);

@@ -1,7 +1,7 @@
 #ifndef ZTILEDSTACKFRAME_H
 #define ZTILEDSTACKFRAME_H
 
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 class ZTileManager;
 

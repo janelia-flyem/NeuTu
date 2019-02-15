@@ -3,13 +3,17 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <iostream>
-#include "flyem/zflyembookmarkwidget.h"
-#include "flyem/zflyembookmarkview.h"
+
 #include "ui_flyemsplitcontrolform.h"
+
+#include "qt/gui/utilities.h"
+#include "flyemdef.h"
+#include "zflyembookmarkwidget.h"
+#include "zflyembookmarkview.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
@@ -18,11 +22,12 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-//  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
-//  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->viewResultQuickPushButton,
+                     "<font color=red>&#9700;</font><font color=green>&#9701;</font>");
 
-//  ui->bookmarkView->setModel(&m_bookmarkList);
-//  ui->bookmarkView->resizeColumnsToContents();
   setupWidgetBehavior();
 }
 

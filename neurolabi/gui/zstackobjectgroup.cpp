@@ -343,16 +343,18 @@ TStackObjectList ZStackObjectGroup::takeUnsync(
 
   TStackObjectList objSet;
 
-  TStackObjectList &objList = getObjectListUnsync(type);
-  for (TStackObjectList::iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    ZStackObject *obj = *iter;
-    if (testFunc(obj)) {
-      objSet.append(obj);
+  if (testFunc) {
+    TStackObjectList &objList = getObjectListUnsync(type);
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      if (testFunc(obj)) {
+        objSet.append(obj);
+      }
     }
-  }
 
-  removeObjectUnsync(objSet.begin(), objSet.end(), false);
+    removeObjectUnsync(objSet.begin(), objSet.end(), false);
+  }
 
   return objSet;
 }

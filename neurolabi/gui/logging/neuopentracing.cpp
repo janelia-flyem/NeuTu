@@ -1,10 +1,14 @@
 #include "neuopentracing.h"
-#include <librdkafka/rdkafkacpp.h>
+
+#include <chrono>
+#include <iostream>
+
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <chrono>
-#include <iostream>
+#include <QVariant>
+
+#include <librdkafka/rdkafkacpp.h>
 
 namespace neuopentracing {
 
@@ -24,6 +28,11 @@ Value::Value(int64_t value)
 
 Value::Value(int value)
   : m_value(qint64(value))
+{
+}
+
+Value::Value(bool value)
+  : m_value(value)
 {
 }
 
@@ -54,6 +63,23 @@ Value::Value(QJsonValue value)
 QJsonValue Value::toJson() const
 {
   return m_value;
+}
+
+QString ToString(const Value &v)
+{
+  if (v.toJson().isBool()) {
+    if (v.toJson().toBool()) {
+      return "true";
+    } else {
+      return "false";
+    }
+  } else if (v.toJson().isDouble()) {
+    return QString::number(v.toJson().toInt());
+  } else if (v.toJson().isString()) {
+    return v.toJson().toString();
+  }
+
+  return "";
 }
 
 //
@@ -96,6 +122,17 @@ Span::~Span()
 void Span::SetTag(const std::string& key, const Value& value)
 {
   m_impl->m_tags[key] = value;
+}
+
+void Span::appendTag(const std::string &key, const Value &value)
+{
+  if (hasTag(key)) {
+    m_impl->m_tags[key] = Value(neuopentracing::ToString(m_impl->m_tags.at(key))
+                                + " " +
+                                neuopentracing::ToString(value));
+  } else {
+    SetTag(key, value);
+  }
 }
 
 bool Span::hasTag(const std::string &key) const

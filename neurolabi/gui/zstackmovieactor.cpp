@@ -6,7 +6,7 @@
 #include "zmoviestage.h"
 #include "z3dwindow.h"
 #include "z3dvolumefilter.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 using namespace std;
 

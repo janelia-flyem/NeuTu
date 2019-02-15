@@ -1,12 +1,14 @@
 #include "zmouseeventprocessor.h"
 #include "widgets/zimagewidget.h"
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
+
 #include "zinteractivecontext.h"
 #include "zstackoperator.h"
 #include "zstack.hxx"
+
 #include "mvc/zpositionmapper.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
   m_context(NULL)

@@ -464,7 +464,7 @@ Stack* ZStackWatershedContainer::getSeedMask()
             GREY, m_range.getWidth(), m_range.getHeight(), m_range.getDepth());
       C_Stack::setZero(ws->mask);
       if (getSource() != NULL) {
-        prepareSeedMask(getSource(), mask);
+        prepareSeedMask(getSource(), ws->mask);
       }
     }
     mask = ws->mask;

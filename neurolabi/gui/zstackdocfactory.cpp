@@ -1,11 +1,13 @@
 #include "zstackdocfactory.h"
-#include "zstackdoc.h"
-#include "flyem/zflyemproofdoc.h"
+
+#include "mvc/zstackdoc.h"
+
 #include "biocytin/zbiocytinprojectiondoc.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodymergedoc.h"
 #include "flyem/zflyemstackdoc.h"
-
+#include "flyem/zflyemproofdoc.h"
 
 ZStackDocFactory::ZStackDocFactory()
 {

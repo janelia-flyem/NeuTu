@@ -1,9 +1,10 @@
 #include "zframefactory.h"
-#include "flyem/zflyemdataframe.h"
+
 #include "zstackdocreader.h"
-#include "zstackframe.h"
-#include "zstackdocreader.h"
+#include "mvc/zstackframe.h"
+
 #include "flyem/zflyembodymergeframe.h"
+#include "flyem/zflyemdataframe.h"
 
 ZFrameFactory::ZFrameFactory()
 {

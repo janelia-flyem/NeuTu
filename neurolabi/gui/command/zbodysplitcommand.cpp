@@ -50,7 +50,7 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    if (ZFileType::FileType(inputPath) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(inputPath) == ZFileType::EFileType::JSON) {
       inputJson.load(inputPath);
     }
   }
@@ -113,7 +113,7 @@ ZBodySplitCommand::parseSignalPath(
       signalPath = ZString(signalPath).absolutePath(dataDir);
     }
 
-    if (ZFileType::FileType(signalPath) == ZFileType::FILE_SPARSE_STACK) {
+    if (ZFileType::FileType(signalPath) == ZFileType::EFileType::SPARSE_STACK) {
       spStack = new ZSparseStack;
       spStack->load(signalPath);
       gc.registerObject(spStack);

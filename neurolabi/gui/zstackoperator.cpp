@@ -2,7 +2,7 @@
 #include "zmouseeventrecorder.h"
 #include "zstroke2d.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZStackOperator::ZStackOperator() :
   m_op(OP_NULL),

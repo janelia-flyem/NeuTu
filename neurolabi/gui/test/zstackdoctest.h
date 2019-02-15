@@ -2,7 +2,7 @@
 #define ZSTACKDOCTEST_H
 
 #include "ztestheader.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zobject3d.h"
 #include "zstackdocaccessor.h"

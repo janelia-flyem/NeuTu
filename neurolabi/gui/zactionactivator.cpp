@@ -1,7 +1,7 @@
 #include "zactionactivator.h"
-#include "zstackdoc.h"
-#include "zstackframe.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackpresenter.h"
 #include "z3dwindow.h"
 
 ZActionActivator::ZActionActivator()

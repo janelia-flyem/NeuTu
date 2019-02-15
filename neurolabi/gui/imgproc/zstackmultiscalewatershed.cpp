@@ -5,24 +5,28 @@
 #include <QCoreApplication>
 #endif
 
+#include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
+
+#include "neutubeconfig.h"
+
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackfactory.h"
 #include "zswcforest.h"
-#include "geometry/zintcuboid.h"
-#include "geometry/zcuboid.h"
 #include "zswctree.h"
 #include "zobject3d.h"
-#include "geometry/zintcuboid.h"
+#include "zstackdocdatabuffer.h"
+#include "zdownsamplefilter.h"
+
 #include "widgets/zpythonprocess.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "sandbox/zsandbox.h"
 #include "mainwindow.h"
-#include "zstackdocdatabuffer.h"
-#include "neutubeconfig.h"
-#include "zdownsamplefilter.h"
+
 #undef ASCII
 #undef BOOL
 #undef TRUE

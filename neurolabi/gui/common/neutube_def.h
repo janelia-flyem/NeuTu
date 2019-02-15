@@ -205,6 +205,7 @@ static const uint64_t LABEL_ID_SELECTION =
 
 static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
 static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
+static const size_t BIG_STACK_VOLUME_HINT = 923741823;
 }
 
 

@@ -124,7 +124,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
       for (std::set<ZIntPoint>::const_iterator iter = m_synapseSet.begin();
            iter != m_synapseSet.end(); ++iter) {
         const ZIntPoint &pt = *iter;
-        m_doc->removeSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        m_doc->removeSynapse(pt, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
         m_doc->notifySynapseEdited(pt);
         synapseString.append(pt.toString().c_str());
       }
@@ -148,7 +148,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
           }
           m_doc->updateSynapsePartner(currentPos);
         } else { //host synapses
-          m_doc->removeSynapse(currentPos, ZDvidSynapseEnsemble::DATA_GLOBAL);
+          m_doc->removeSynapse(currentPos, ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL);
         }
       }
 #endif
@@ -173,7 +173,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::undo()
         m_doc->updateSynapsePartner(ZDvidAnnotation::GetPosition(synapseJson));
       } else {
         m_doc->addSynapse(currentPos, ZDvidAnnotation::GetKind(synapseJson),
-                          ZDvidSynapseEnsemble::DATA_LOCAL);
+                          ZDvidSynapseEnsemble::EDataScope::LOCAL);
       }
       m_doc->notifySynapseEdited(currentPos);
     }
@@ -216,7 +216,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
 {
   if (m_doc->getDvidReader().good()) {
     backup();
-    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
     m_doc->notifySynapseEdited(m_synapse);
     QString msg = QString("Synapse removed at (%1, %2, %3)").
         arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
@@ -230,7 +230,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
     ZDvidReader reader;
     if (reader.open(m_doc->getDvidTarget())) {
       m_synapseBackup = reader.readSynapseJson(m_synapse);
-      se->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      se->removeSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL);
 
     }
   }
@@ -253,7 +253,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         ZDvidSynapse synapse;
         synapse.loadJsonObject(
               m_synapseBackup, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
-        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
         m_doc->notifySynapseEdited(synapse);
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").
             arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
@@ -273,7 +273,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         if (writer.isStatusOk()) {
           ZDvidSynapse synapse;
           synapse.loadJsonObject(m_synapseBackup);
-          se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+          se->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
           m_doc->processObjectModified(se);
           m_doc->processObjectModified();
         }
@@ -340,7 +340,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::redo()
     for (std::set<ZIntPoint>::const_iterator iter = m_synapse.begin();
          iter != m_synapse.end(); ++iter) {
       const ZIntPoint &synapse = *iter;
-      m_doc->removeSynapse(synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      m_doc->removeSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
       m_doc->notifySynapseEdited(synapse);
       QString msg = QString("Synapse removed at (%1, %2, %3)").
           arg(synapse.getX()).arg(synapse.getY()).arg(synapse.getZ());
@@ -374,7 +374,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::undo()
            ++iter) {
         synapse.loadJsonObject(
               *iter, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
-        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
         m_doc->notifySynapseEdited(synapse);
 
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").
@@ -402,7 +402,7 @@ ZStackDocCommand::DvidSynapseEdit::AddSynapse::~AddSynapse()
 
 void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
 {
-  m_doc->addSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+  m_doc->addSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   m_doc->notifySynapseEdited(m_synapse);
   QString msg = QString("Synapse added at (%1, %2, %3)").
       arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
@@ -410,7 +410,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
-    se->addSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    se->addSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL);
     m_doc->processObjectModified(se);
     m_doc->processObjectModified();
   }
@@ -420,7 +420,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::AddSynapse::undo()
 {
   m_doc->removeSynapse(
-        m_synapse.getPosition(), ZDvidSynapseEnsemble::DATA_GLOBAL);
+        m_synapse.getPosition(), ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   m_doc->notifySynapseEdited(m_synapse);
   QString msg = QString("New synapse removed by undo at (%1, %2, %3)").
       arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
@@ -429,7 +429,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::undo()
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
     se->removeSynapse(
-          m_synapse.getPosition(), ZDvidSynapseEnsemble::DATA_GLOBAL);
+          m_synapse.getPosition(), ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL);
     m_doc->processObjectModified(se);
     m_doc->processObjectModified();
   }
@@ -901,7 +901,7 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::redo()
                  iter != m_synapseSet.end(); ++iter) {
               const ZIntPoint &pt = *iter;
               se->updatePartner(
-                    se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL));
+                    se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL));
             }
           }
         }
@@ -940,7 +940,7 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::undo()
              iter != m_synapseSet.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           se->updatePartner(
-                se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL));
+                se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL));
         }
 
         m_doc->processObjectModified(se);

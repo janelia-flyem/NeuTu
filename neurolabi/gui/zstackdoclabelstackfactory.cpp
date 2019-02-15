@@ -1,5 +1,5 @@
 #include "zstackdoclabelstackfactory.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZStackDocLabelStackFactory::ZStackDocLabelStackFactory() : m_doc(NULL)
 {

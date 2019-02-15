@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     ZGlobal::InitKafkaTracer();
 
     uint64_t timestamp = neutu::GetTimestamp();
-    KLog() << ZLog::Info() << ZLog::Time(timestamp)
+    KLog() << ZLog::Info() //<< ZLog::Time(timestamp)
            << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME

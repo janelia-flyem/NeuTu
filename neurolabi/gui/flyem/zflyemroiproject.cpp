@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "neutubeconfig.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswcgenerator.h"
 #include "zflyemutilities.h"
 #include "zstack.hxx"
@@ -1273,13 +1273,13 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
   m_puncta.clear();
   const double radius = m_defaultSynapseRadius;
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
   {
     m_synapseArray.loadJson(filePath);
     m_puncta = m_synapseArray.toTBarPuncta(radius);
   }
     break;
-  case ZFileType::FILE_TXT:
+  case ZFileType::EFileType::TXT:
   {
     FILE *fp = fopen(filePath.c_str(), "r");
     ZString line;

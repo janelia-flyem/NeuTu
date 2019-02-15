@@ -2,6 +2,8 @@
 
 #include <QStatusBar>
 
+#include "logging/zlog.h"
+
 #include "flyem/zflyemorthowidget.h"
 #include "flyem/zflyemorthodoc.h"
 

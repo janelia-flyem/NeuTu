@@ -10,9 +10,9 @@ ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(neutu::Document::ETag tag) :
 
 void ZKeyEventStrokeMapper::initKeyMap()
 {
-  m_plainKeyMap[Qt::Key_Backspace] = ZStroke2d::OPERATION_DELETE;
-  m_plainKeyMap[Qt::Key_Delete] = ZStroke2d::OPERATION_DELETE;
-  m_plainKeyMap[Qt::Key_X] = ZStroke2d::OPERATION_DELETE;
+  m_plainKeyMap[Qt::Key_Backspace] = ZStroke2d::EOperation::DELETE;
+  m_plainKeyMap[Qt::Key_Delete] = ZStroke2d::EOperation::DELETE;
+  m_plainKeyMap[Qt::Key_X] = ZStroke2d::EOperation::DELETE;
 
   /*
   m_plainKeyMap[Qt::Key_W] = ZSwcTree::OPERATION_MOVE_NODE_UP;
@@ -48,7 +48,7 @@ void ZKeyEventStrokeMapper::initKeyMap()
 
 ZStroke2d::EOperation ZKeyEventStrokeMapper::getOperation(QKeyEvent *event)
 {
-  ZStroke2d::EOperation operation = ZStroke2d::OPERATION_NULL;
+  ZStroke2d::EOperation operation = ZStroke2d::EOperation::NONE;
 
   if (event->modifiers() == Qt::NoModifier) {
     if (m_plainKeyMap.contains(event->key())) {

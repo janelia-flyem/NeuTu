@@ -4,12 +4,12 @@
 
 #include "ztilemanager.h"
 #include "ztilegraphicsitem.h"
-#include "zstackdoc.h"
-#include "zstackpresenter.h"
-#include "zstackview.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackview.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dgraphfactory.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdochelper.h"
 
 ZTiledStackFrame::ZTiledStackFrame(QWidget *parent) :
   ZStackFrame(parent)

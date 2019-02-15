@@ -27,14 +27,14 @@
 #include "zdialogfactory.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackpresenter.h"
+
 #include "zflyembookmarkview.h"
 #include "zflyemdataloader.h"
 #include "flyemsplitcontrolform.h"
-
-#include "flyem/zflyemmessagewidget.h"
-#include "flyem/zflyemproofdoc.h"
-#include "flyem/zflyemproofpresenter.h"
+#include "zflyemmessagewidget.h"
+#include "zflyemproofdoc.h"
+#include "zflyemproofpresenter.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
