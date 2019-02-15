@@ -18,11 +18,11 @@
  * derived forms shaped by the ELK specification.
  *
  * KLog is derived from ZLog to serve a wrapper of neuopentracing APIs. When
- * no Kafka broker is available, KLog works like ZLog, which saves messages
+ * no Kafka broker is available, KLog works like ZLog, which tries to save messages
  * in a local log file.
  */
 
-ZLog::ZLog()
+ZLog::ZLog(bool localLogging) : m_localLogging(localLogging)
 {
 }
 
@@ -41,7 +41,9 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    ZOUT(LINFO(), 5) << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    if (m_localLogging) {
+      LINFO_NLN() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    }
     m_tags = QJsonObject();
   }
   m_started = false;
@@ -58,7 +60,7 @@ void ZLog::log(const std::string &key, const neuopentracing::Value &value)
 }
 
 ZLog::Time::Time() :
-  Tag("time", neutube::GetTimestamp())
+  Tag("time", neutu::GetTimestamp())
 {
 }
 
@@ -112,13 +114,13 @@ void KLog::ResetOperationName()
   m_operationName = DEFAULT_OPERATION_NAME;
 }
 
-KLog::KLog()
+KLog::KLog(bool localLogging) : ZLog(localLogging)
 {
 }
 
 KLog::~KLog()
 {
-  endKLog();
+  end();
 }
 
 //bool KLog::isStarted() const
@@ -142,10 +144,10 @@ void KLog::start()
       }
 
       if (!m_span->hasTag("time")) {
-        m_span->SetTag("time", neutube::GetTimestamp());
+        m_span->SetTag("time", neutu::GetTimestamp());
       }
       m_span->SetTag(
-            "version", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
+            "version", GET_SOFTWARE_NAME + " " + neutu::GetVersionString());
     }
   }
 
@@ -160,7 +162,9 @@ void KLog::log(const std::string &key, const neuopentracing::Value &value)
 
   if (m_span) {
     m_span->SetTag(key, value);
-  } else {
+  }
+
+  if (localLogging()) {
     ZLog::log(key, value);
   }
 }
@@ -181,12 +185,17 @@ void KLog::endKLog()
 void KLog::end()
 {
   endKLog();
+
   ZLog::end();
 }
 
-KInfo::KInfo()
-{
-}
+//KInfo::KInfo()
+//{
+//}
+
+//KInfo::KInfo(bool localLogging) : ZLog(localLogging)
+//{
+//}
 
 KInfo& KInfo::operator << (const char* info)
 {
@@ -209,10 +218,6 @@ KInfo& KInfo::operator << (const QString &info)
   return (*this);
 }
 
-KWarn::KWarn()
-{
-}
-
 KWarn& KWarn::operator << (const char* info)
 {
   dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
@@ -228,6 +233,27 @@ KWarn& KWarn::operator << (const std::string &info)
 }
 
 KWarn& KWarn::operator << (const QString &info)
+{
+  (*this) << info.toStdString();
+
+  return (*this);
+}
+
+KError& KError::operator << (const char* info)
+{
+  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+
+  return (*this);
+}
+
+KError& KError::operator << (const std::string &info)
+{
+  (*this) << info.c_str();
+
+  return (*this);
+}
+
+KError& KError::operator << (const QString &info)
 {
   (*this) << info.toStdString();
 

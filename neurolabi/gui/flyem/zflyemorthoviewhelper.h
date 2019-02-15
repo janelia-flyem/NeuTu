@@ -23,8 +23,8 @@ public:
   ZStackView* getMasterView() const;
 
 private:
-  neutube::EAxis getAlignAxis(neutube::EAxis a1, neutube::EAxis a2);
-  neutube::EAxis getAlignAxis(const ZFlyEmOrthoMvc *mvc);
+  neutu::EAxis getAlignAxis(neutu::EAxis a1, neutu::EAxis a2);
+  neutu::EAxis getAlignAxis(const ZFlyEmOrthoMvc *mvc);
   ZPoint getCrossCenter() const;
 
 private:

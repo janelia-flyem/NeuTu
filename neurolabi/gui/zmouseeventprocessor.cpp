@@ -78,11 +78,11 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZPoint dataPos = stackPosition;
   switch (getSliceAxis()) {
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     dataPos = ZPositionMapper::StackToData(stackPosition, m_arbSlice);
     break;
   default:
@@ -106,7 +106,7 @@ void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
   }
 }
 
-void ZMouseEventProcessor::setSliceAxis(neutube::EAxis axis)
+void ZMouseEventProcessor::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
 }
@@ -116,7 +116,7 @@ void ZMouseEventProcessor::setArbSlice(const ZAffinePlane &ap)
   m_arbSlice = ap;
 }
 
-neutube::EAxis ZMouseEventProcessor::getSliceAxis() const
+neutu::EAxis ZMouseEventProcessor::getSliceAxis() const
 {
   return m_sliceAxis;
 }

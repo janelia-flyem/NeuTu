@@ -54,6 +54,9 @@ public:
    */
   bool setDvidTarget(const ZDvidTarget &target, bool downloadingData);
 
+  const ZDvidReader& getDvidReader() const;
+  ZDvidWriter& getDvidWriter();
+
   void showDataFrame() const;
   void closeDataFrame();
   bool hasDataFrame() const;

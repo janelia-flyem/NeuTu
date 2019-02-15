@@ -9,6 +9,7 @@
 #include "zstackobject.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "zdviddef.h"
 
 class ZJsonObject;
 class ZCuboid;
@@ -41,7 +42,7 @@ public:
 
 //  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -83,12 +84,12 @@ public:
   int getZ() const;
 
   using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      flyem::EDvidAnnotationLoadMode mode);
+      dvid::EAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();
@@ -212,8 +213,8 @@ public: //Json APIs
   static EKind GetKind(const ZJsonObject &json);
 
 protected:
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
-  double getRadius(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  double getRadius(int z, neutu::EAxis sliceAxis) const;
 
 private:
   void init();

@@ -12,7 +12,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zdirectionaltemplate.h \
    $${PWD}/zlocalrect.h \
    $${PWD}/zsinglechannelstack.h \
-   $${PWD}/zbenchtimer.h \
    $${PWD}/zspgrowparser.h \
    $${PWD}/zvoxel.h \
    $${PWD}/zvoxelarray.h \
@@ -30,7 +29,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zstring.h \
    $${PWD}/zfilelist.h \
    $${PWD}/zrandomgenerator.h \
-   $${PWD}/zfilelock.h \
    $${PWD}/zargumentprocessor.h \
    $${PWD}/zvaa3dmarker.h \
    $${PWD}/zvaa3dapo.h \
@@ -246,7 +244,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zstring.cpp \
    $${PWD}/zfilelist.cpp \
    $${PWD}/zrandomgenerator.cpp \
-   $${PWD}/zfilelock.cpp \
    $${PWD}/zargumentprocessor.cpp \
    $${PWD}/flyem/zsynapseannotation.cpp \
    $${PWD}/flyem/zsynapseannotationarray.cpp \

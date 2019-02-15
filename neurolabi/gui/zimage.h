@@ -61,11 +61,11 @@ public:
 
   void setData(
       const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
-      int slice, neutube::EAxis sliceAxis);
+      int slice, neutu::EAxis sliceAxis);
 
   void setData(
       const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
-      int slice, double scale, double offset, neutube::EAxis sliceAxis);
+      int slice, double scale, double offset, neutu::EAxis sliceAxis);
 
   void setData(const ZStack *stack, int z, bool ignoringZero = false,
                bool offsetAdjust = true);

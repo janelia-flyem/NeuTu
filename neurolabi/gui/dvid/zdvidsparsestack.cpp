@@ -137,18 +137,18 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
   return v;
 }
 
-void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
+void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }
 
 void ZDvidSparseStack::display(
-    ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
+    ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
           getLabel(), getLabelType(), painter.getZ(slice),
-          neutube::EAxis::Z, true, NULL);
+          neutu::EAxis::Z, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -239,7 +239,7 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  flyem::EBodyLabelType labelType = getLabelType();
+  neutu::EBodyLabelType labelType = getLabelType();
 #ifdef _DEBUG_2
   std::cout << "Label type: " << m_labelType << std::endl;
   std::cout << "Label type: " << getLabelType() << std::endl;
@@ -806,7 +806,7 @@ uint64_t ZDvidSparseStack::getLabel() const
   return m_label;
 }
 
-flyem::EBodyLabelType ZDvidSparseStack::getLabelType() const
+neutu::EBodyLabelType ZDvidSparseStack::getLabelType() const
 {
   return m_labelType;
 }
@@ -902,7 +902,7 @@ bool ZDvidSparseStack::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSparseStack::hit(double x, double y, neutube::EAxis axis)
+bool ZDvidSparseStack::hit(double x, double y, neutu::EAxis axis)
 {
   ZObject3dScan *objectMask = getObjectMask();
   if (objectMask != NULL) {

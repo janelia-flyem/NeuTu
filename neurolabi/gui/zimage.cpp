@@ -50,7 +50,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = neutube::DIM_INVALID_INDEX;
+  m_z = neutu::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -348,15 +348,15 @@ void ZImage::setData(const uint8 *data, int threshold)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, neutube::EAxis sliceAxis)
+    int slice, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
   int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -368,7 +368,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -395,7 +395,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 
@@ -443,7 +443,7 @@ void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, double scale, double offset, neutube::EAxis sliceAxis)
+    int slice, double scale, double offset, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
@@ -457,8 +457,8 @@ void ZImage::setData(
   }
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -468,7 +468,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -496,7 +496,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;
@@ -843,7 +843,7 @@ void ZImage::drawLabelField(
         uint64_t v = *data++;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;
@@ -870,7 +870,7 @@ void ZImage::drawLabelFieldTranspose(
         dataLine += h;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;

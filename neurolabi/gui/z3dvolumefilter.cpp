@@ -7,7 +7,7 @@
 #include "zeventlistenerparameter.h"
 #include "zmesh.h"
 #include "QsLog.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "zmeshutils.h"
 #include "zlabelcolortable.h"
 #include "zsparseobject.h"

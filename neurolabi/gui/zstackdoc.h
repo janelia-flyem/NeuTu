@@ -229,7 +229,7 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZIntPoint getStackOffset() const;
-  int getStackOffset(neutube::EAxis axis) const;
+  int getStackOffset(neutu::EAxis axis) const;
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
@@ -292,7 +292,7 @@ public: //attributes
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree
@@ -482,7 +482,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(double cx, double cy, int z, neutube::EAxis axis) const;
+  virtual QString rawDataInfo(double cx, double cy, int z, neutu::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -654,11 +654,11 @@ public:
   ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
   ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y, neutube::EAxis sliceAxis);
+  ZStackObject *hitTest(double x, double y, neutu::EAxis sliceAxis);
 //  ZStackObject *hitTestWidget(int x, int y);
 
   ZStackObject *hitTest(
-      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis);
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutu::EAxis axis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -702,7 +702,7 @@ public:
   void setMeshSelected(ZMesh* mesh, bool select);
   template <class InputIterator>
   void setMeshSelected(InputIterator first, InputIterator last, bool select);
-  void deselectAllMesh();
+  int deselectAllMesh();
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
@@ -823,7 +823,7 @@ public:
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
   void selectObject(ZStackObject *obj, bool appending);
-  void selectObject(ZStackObject *obj, neutube::ESelectOption option);
+  void selectObject(ZStackObject *obj, neutu::ESelectOption option);
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
@@ -859,10 +859,10 @@ public:
   void selectNoisyTrees();
 
 public:
-  inline neutube::Document::ETag getTag() const { return m_tag; }
-  inline void setTag(neutube::Document::ETag tag) { m_tag = tag; }
-  void setStackBackground(neutube::EImageBackground bg);
-  inline neutube::EImageBackground getStackBackground() const {
+  inline neutu::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(neutu::Document::ETag tag) { m_tag = tag; }
+  void setStackBackground(neutu::EImageBackground bg);
+  inline neutu::EImageBackground getStackBackground() const {
     return m_stackBackground;
   }
 
@@ -961,14 +961,25 @@ public:
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
 
+  /*!
+   * \brief Process object modfication
+   *
+   * When the current mode is prompt, the modified information will be emitted
+   * with a signal to notifier its receivers, and the modification buffer will
+   * be cleared afterwards. Nothing will be done in any other mode.
+   */
   void processObjectModified();
+
+
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
-//  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
-//                             bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-//                             bool sync = true);
+
+  /*!
+   * \brief Process object modfication
+   *
+   * It emits a object-modified signal with the information of \a obj in the
+   * PROMPT mode, or buffers the inforation in the BUFFER mode.
+   */
   void processObjectModified(ZStackObject *obj, bool sync = true);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
@@ -1224,7 +1235,7 @@ public slots: //undoable commands
       QList<Swc_Tree_Node*> &nodeList, int type);
 
   virtual void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t id);
   virtual void executeRemoveTodoCommand();
 
@@ -1381,6 +1392,10 @@ protected:
   void endWorkThread();
   void startWorkThread();
 
+  void emitInfo(const QString &msg);
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
+
 private:
   void init();
 
@@ -1406,6 +1421,8 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
+
+  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
 private slots:
   void shortcutTest();
@@ -1458,8 +1475,8 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
-  neutube::Document::ETag m_tag;
-  neutube::EImageBackground m_stackBackground;
+  neutu::Document::ETag m_tag;
+  neutu::EImageBackground m_stackBackground;
 
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;

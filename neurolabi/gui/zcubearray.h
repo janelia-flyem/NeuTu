@@ -183,7 +183,7 @@ public:
   bool isEmpty() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const override;
+               neutu::EAxis sliceAxis) const override;
 
 //  const std::string& className() const override;
 

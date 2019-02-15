@@ -5,7 +5,7 @@
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
 #include "widgets/znumericparameter.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include <QString>
 
 class Z3DTexture;

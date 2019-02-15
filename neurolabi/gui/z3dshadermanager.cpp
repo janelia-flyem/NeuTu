@@ -4,7 +4,7 @@
 #include <QFile>
 
 #include "zsysteminfo.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include "logging/zqslog.h"
 #include "z3dshader.h"
 #include "zutils.h"

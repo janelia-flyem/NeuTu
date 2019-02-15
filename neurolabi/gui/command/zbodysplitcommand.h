@@ -44,7 +44,7 @@ private:
 
 private:
   uint64_t m_bodyId = 0;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
 };
 
 #endif // ZBODYSPLITCOMMAND_H

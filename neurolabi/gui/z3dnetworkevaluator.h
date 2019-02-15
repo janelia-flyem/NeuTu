@@ -17,7 +17,7 @@
 #define Z3DNETWORKEVALUATOR_H
 
 #include "z3dcanvas.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include <QObject>
 #ifndef Q_MOC_RUN
 #include <boost/graph/adjacency_list.hpp>

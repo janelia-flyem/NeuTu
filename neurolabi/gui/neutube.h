@@ -8,7 +8,7 @@
 class ZMessageReporter;
 class ZLogMessageReporter;
 
-namespace neutube {
+namespace neutu {
 
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();

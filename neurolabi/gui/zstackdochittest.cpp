@@ -7,15 +7,15 @@
 
 ZStackDocHitTest::ZStackDocHitTest() : m_hitObject(NULL)
 {
-  m_sliceAxis = neutube::EAxis::Z;
+  m_sliceAxis = neutu::EAxis::Z;
 }
 
-neutube::EAxis ZStackDocHitTest::getSliceAxis() const
+neutu::EAxis ZStackDocHitTest::getSliceAxis() const
 {
   return m_sliceAxis;
 }
 
-void ZStackDocHitTest::setSliceAxis(neutube::EAxis axis)
+void ZStackDocHitTest::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
 }

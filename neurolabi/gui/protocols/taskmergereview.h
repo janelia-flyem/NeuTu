@@ -30,7 +30,7 @@ public:
   virtual QString actionString() override;
   virtual QString targetString() override;
 
-  virtual bool skip() override;
+  virtual bool skip(QString &reason) override;
   virtual void beforeNext() override;
   virtual void beforePrev() override;
   virtual void beforeDone() override;
@@ -70,6 +70,7 @@ private:
 
   enum class Skip { NOT_SKIPPED, SKIPPED_MAPPING, SKIPPED_SIZES, SKIPPED_MESHES, SKIPPED_MAJOR };
   Skip m_skip = Skip::NOT_SKIPPED;
+  QString m_skipReason;
   int m_timeOfLastSkipCheck = -1;
 
   QTime m_usageTimer;

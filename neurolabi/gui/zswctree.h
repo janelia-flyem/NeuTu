@@ -218,7 +218,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis axis) const;
+                       neutu::EAxis axis) const;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -416,7 +416,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y, neutube::EAxis axis);
+  Swc_Tree_Node* hitTest(double x, double y, neutu::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -431,7 +431,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!
@@ -850,8 +850,8 @@ private:
   void displaySkeleton(
       ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
   void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
-      ZStackObject::EDisplayStyle style, neutube::EAxis axis) const;
-  void displaySelectedNode(ZPainter &painter, int slice, neutube::EAxis axis)
+      ZStackObject::EDisplayStyle style, neutu::EAxis axis) const;
+  void displaySelectedNode(ZPainter &painter, int slice, neutu::EAxis axis)
   const;
 #endif
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,

@@ -33,7 +33,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 /*!
  * \brief Y normal of a binary stack
  */
-Stack* computeNormal(const Stack *stack, neutube::EAxis axis);
+Stack* computeNormal(const Stack *stack, neutu::EAxis axis);
 
 int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 

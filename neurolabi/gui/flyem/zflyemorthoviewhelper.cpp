@@ -37,34 +37,34 @@ ZStackView* ZFlyEmOrthoViewHelper::getMasterView() const
   return NULL;
 }
 
-neutube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
-    neutube::EAxis a1, neutube::EAxis a2)
+neutu::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
+    neutu::EAxis a1, neutu::EAxis a2)
 {
   if (a1 > a2) {
     return getAlignAxis(a2, a1);
   }
 
   switch (a1) {
-  case neutube::EAxis::X:
-    if (a2 == neutube::EAxis::Y) {
-      return neutube::EAxis::Z;
-    } else if (a2 == neutube::EAxis::Z) {
-      return neutube::EAxis::X;
+  case neutu::EAxis::X:
+    if (a2 == neutu::EAxis::Y) {
+      return neutu::EAxis::Z;
+    } else if (a2 == neutu::EAxis::Z) {
+      return neutu::EAxis::X;
     }
     break;
-  case neutube::EAxis::Y:
-    if (a2 == neutube::EAxis::Z) {
-      return neutube::EAxis::Y;
+  case neutu::EAxis::Y:
+    if (a2 == neutu::EAxis::Z) {
+      return neutu::EAxis::Y;
     }
     break;
   default:
     break;
   }
 
-  return neutube::EAxis::X;
+  return neutu::EAxis::X;
 }
 
-neutube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(const ZFlyEmOrthoMvc *mvc)
+neutu::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(const ZFlyEmOrthoMvc *mvc)
 {
   return getAlignAxis(mvc->getView()->getSliceAxis(),
                       getMasterMvc()->getView()->getSliceAxis());
@@ -94,8 +94,8 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 {
   if (getMasterMvc() != NULL) {
 #ifdef _DEBUG_
-    std::cout << "Sync crosshair from " << neutube::EnumValue(getMasterView()->getSliceAxis())
-              << " to " << neutube::EnumValue(mvc->getView()->getSliceAxis()) << std::endl;
+    std::cout << "Sync crosshair from " << neutu::EnumValue(getMasterView()->getSliceAxis())
+              << " to " << neutu::EnumValue(mvc->getView()->getSliceAxis()) << std::endl;
 #endif
 //    ZCrossHair *crossHair = mvc->getCompleteDocument()->getCrossHair();
 //    ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
@@ -146,9 +146,9 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     ZViewProj viewProj = getMasterView()->getViewProj();
     ZViewProj newViewProj = mvc->getView()->getViewProj();
     ZPoint mappedCrossCenter = getCrossCenter();
-    neutube::EAxis slaveAxis = mvc->getView()->getSliceAxis();
+    neutu::EAxis slaveAxis = mvc->getView()->getSliceAxis();
 
-    if (slaveAxis == neutube::EAxis::ARB) {
+    if (slaveAxis == neutu::EAxis::ARB) {
       return;
     }
 
@@ -160,38 +160,38 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     QPointF refCrossPos = QPointF(refCenter.getX(), refCenter.getY());
 
     switch (slaveAxis) {
-    case neutube::EAxis::Z:
+    case neutu::EAxis::Z:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getY()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getZ());
       break;
-    case neutube::EAxis::X:
+    case neutu::EAxis::X:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getX());
       break;
-    case neutube::EAxis::Y:
+    case neutu::EAxis::Y:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getY());
       break;
-    case neutube::EAxis::ARB:
+    case neutu::EAxis::ARB:
       break;
     }
 
     //To avoid misalignment caused by rounding error
-    neutube::EAxis axis = getAlignAxis(mvc);
+    neutu::EAxis axis = getAlignAxis(mvc);
     switch (axis) {
-    case neutube::EAxis::Y:
+    case neutu::EAxis::Y:
       newViewProj.setX0(viewProj.getX0());
       break;
-    case neutube::EAxis::X:
+    case neutu::EAxis::X:
       newViewProj.setY0(viewProj.getY0());
       break;
     default:

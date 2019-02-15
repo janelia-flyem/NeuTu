@@ -16,7 +16,6 @@ const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)
 {
-
 }
 
 void ZFlyEmBodyStatus::reset()
@@ -62,6 +61,7 @@ void ZFlyEmBodyStatus::setMergable(bool on)
 void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
 {
   reset();
+
   ZJsonObjectParser parser;
   m_status = parser.getValue(obj, KEY_NAME, "");
   m_priority = parser.getValue(obj, KEY_PRIORITY, 999);
@@ -99,7 +99,7 @@ bool ZFlyEmBodyStatus::isAccessible() const
   if (m_protection >= 9) {
     return false;
   } else if (isAdminAccessible()) {
-    return neutube::IsAdminUser();
+    return neutu::IsAdminUser();
   }
 
   return true;
@@ -109,7 +109,7 @@ bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
 #if _QT_GUI_USED_
   if (ZString(status).lower() == "roughly traced") {
-    return neutube::IsAdminUser();
+    return neutu::IsAdminUser();
   }
 #endif
 

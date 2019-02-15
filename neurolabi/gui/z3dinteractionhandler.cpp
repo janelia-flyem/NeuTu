@@ -148,7 +148,7 @@ Z3DTrackballInteractionHandler::Z3DTrackballInteractionHandler(const QString& na
 void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
 {
   if (e->type() == QEvent::MouseButtonPress) {
-    setState(State::Rotate);
+    setState(State::PreRotate);
     mousePressEvent(e, w, h);
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
@@ -198,8 +198,16 @@ void Z3DTrackballInteractionHandler::shiftEvent(QMouseEvent* e, int w, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     setState(State::Shift);
     mousePressEvent(e, w, h);
+    if (isStateToggledOn(State::Shift)) {
+      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+           << ZLog::Action("start pan");
+    }
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
+    if (isStateToggledOff(State::Shift)) {
+      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+           << ZLog::Action("stop pan");
+    }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
     emit cameraMoved();
@@ -326,6 +334,35 @@ void Z3DTrackballInteractionHandler::mouseMoveEvent(QMouseEvent* e, int w, int h
 
   glm::ivec2 newMouse(e->x(), h - e->y());
 
+  switch (m_state) {
+  case State::PreRotate:
+    setState(State::Rotate);
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Rotate:
+    rotate(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Shift:
+    shift(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Roll:
+    roll(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Dolly:
+    dolly(m_lastMousePosition, newMouse, w, h, m_lastCenterDistance);
+    e->accept();
+    break;
+  default:
+    break;
+  }
+
+  /*
   if (m_state == State::Rotate) {
     rotate(m_lastMousePosition, newMouse, w, h);
     e->accept();
@@ -342,6 +379,7 @@ void Z3DTrackballInteractionHandler::mouseMoveEvent(QMouseEvent* e, int w, int h
     dolly(m_lastMousePosition, newMouse, w, h, m_lastCenterDistance);
     e->accept();
   }
+  */
 }
 
 void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent* e, int /*unused*/, int /*unused*/)
@@ -420,8 +458,8 @@ void Z3DTrackballInteractionHandler::shift(
   } else {
     // camera move in opposite direction
     m_camera->setCamera(m_camera->get().eye() - vec, m_camera->get().center() - vec);
-    KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
-         << ZLog::Action("pan");
+//    KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//         << ZLog::Action("pan");
   }
 }
 

@@ -5,10 +5,10 @@
 #include <QString>
 #include <QUndoStack>
 
-#include "zstackdoc.h"
-#include "zactionactivator.h"
-#include "zstackpresenter.h"
-#include "zstackframe.h"
+//#include "zstackdoc.h"
+//#include "zactionactivator.h"
+//#include "zstackpresenter.h"
+//#include "zstackframe.h"
 #include "flyem/zflyembodycoloroption.h"
 
 ZActionFactory::ZActionFactory()

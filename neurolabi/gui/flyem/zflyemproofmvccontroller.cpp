@@ -90,7 +90,7 @@ void ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
     ZIntCuboidObj *obj = new ZIntCuboidObj;
     obj->setColor(QColor(255, 255, 255, 164));
     obj->setGridInterval(64);
-    obj->addVisualEffect(neutube::display::Box::VE_GRID);
+    obj->addVisualEffect(neutu::display::Box::VE_GRID);
     obj->setSelectable(false);
     obj->setCuboid(range);
     obj->setSource(source);

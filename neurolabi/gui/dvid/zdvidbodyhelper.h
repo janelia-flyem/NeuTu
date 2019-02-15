@@ -16,7 +16,7 @@ public:
   const ZDvidReader* getDvidReader() const;
 
   void setCanonizing(bool on);
-  void setLabelType(flyem::EBodyLabelType type);
+  void setLabelType(neutu::EBodyLabelType type);
   void setRange(const ZIntCuboid &box);
   void setCoarse(bool on);
   void setZoom(int zoom);
@@ -33,7 +33,7 @@ private:
 private:
   const ZDvidReader *m_reader = nullptr;
   bool m_canonizing = true;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
   ZIntCuboid m_range;
   bool m_coarseVol = false;
   int m_zoom = 0;

@@ -4,6 +4,7 @@
 #include <QColor>
 #include "tz_stdint.h"
 #include "common/neutube_def.h"
+#include "flyemdef.h"
 #include "geometry/zintcuboid.h"
 
 /*!
@@ -64,7 +65,7 @@ public:
   bool isSupervoxelTar() const;
   int getBodyEncodeLevel() const;
 
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
 
 //  void setMaxDsLevel(int level);
 //  void setMinDsLevel(int level);
@@ -75,7 +76,7 @@ private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::EBodyType::DEFAULT;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;

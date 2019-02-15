@@ -1,5 +1,5 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef QT_GUI_UTILITIES_H
+#define QT_GUI_UTILITIES_H
 
 #include <QKeySequence>
 #include <QString>

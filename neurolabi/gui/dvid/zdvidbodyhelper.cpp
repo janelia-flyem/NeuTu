@@ -23,7 +23,7 @@ void ZDvidBodyHelper::setCanonizing(bool on)
   m_canonizing = on;
 }
 
-void ZDvidBodyHelper::setLabelType(flyem::EBodyLabelType type)
+void ZDvidBodyHelper::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }

@@ -15,7 +15,7 @@ class ZIntCuboidFace
 {
 public:
   ZIntCuboidFace();
-  ZIntCuboidFace(neutube::EAxis axis, bool positive) {
+  ZIntCuboidFace(neutu::EAxis axis, bool positive) {
     m_normalAxis = axis;
     m_isNormalPositive = positive;
     m_z = 0;
@@ -79,8 +79,8 @@ public:
 
   void set(const Corner &firstCorner, const Corner &lastCorner);
   void set(int x0, int y0, int x1, int y1);
-  void setNormal(neutube::EAxis axis);
-  void setNormal(neutube::EAxis axis, bool isPositive);
+  void setNormal(neutu::EAxis axis);
+  void setNormal(neutu::EAxis axis, bool isPositive);
   void setZ(int z);
 
   void flip();
@@ -93,7 +93,7 @@ public:
   bool contains(Corner pt) const;
   bool isWithin(const ZIntCuboidFace &face) const;
 
-  inline neutube::EAxis getAxis() const { return m_normalAxis; }
+  inline neutu::EAxis getAxis() const { return m_normalAxis; }
 
   inline bool isNormalPositive() const { return m_isNormalPositive; }
 
@@ -113,7 +113,7 @@ private:
   Corner m_firstCorner;
   Corner m_lastCorner;
   int m_z;
-  neutube::EAxis m_normalAxis;
+  neutu::EAxis m_normalAxis;
   bool m_isNormalPositive;
 };
 

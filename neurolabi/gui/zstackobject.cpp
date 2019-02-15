@@ -12,10 +12,10 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
   m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutu::display::VE_NONE), m_prevDisplaySlice(-1)
 {
   m_type = EType::UNIDENTIFIED;
-  setSliceAxis(neutube::EAxis::Z);
+  setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
   m_timeStamp = 0;
 }
@@ -71,7 +71,7 @@ std::string ZStackObject::GetTypeName(EType type)
   GET_TYPE_NAME(type, FLYEM_TODO_LIST);
   GET_TYPE_NAME(type, CROSS_HAIR);
 
-  return std::to_string(neutube::EnumValue(type));
+  return std::to_string(neutu::EnumValue(type));
 }
 
 std::string ZStackObject::getTypeName() const
@@ -81,7 +81,7 @@ std::string ZStackObject::getTypeName() const
 
 bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
-                           neutube::EAxis /*sliceAxis*/) const
+                           neutu::EAxis /*sliceAxis*/) const
 {
   return false;
 }
@@ -213,12 +213,12 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/, neutube::EAxis /*axis*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/, neutube::EAxis /*axis*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
 {
   return false;
 }
@@ -234,7 +234,7 @@ bool ZStackObject::hit(const ZIntPoint &pt)
 }
 
 bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
-                       neutube::EAxis axis)
+                       neutu::EAxis axis)
 {
   switch (m_hitProtocal) {
   case EHitProtocal::HIT_DATA_POS:
@@ -249,7 +249,7 @@ bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
 }
 
 bool ZStackObject::hitWidgetPos(
-    const ZIntPoint &/*widgetPos*/, neutube::EAxis /*axis*/)
+    const ZIntPoint &/*widgetPos*/, neutu::EAxis /*axis*/)
 {
   return false;
 }
@@ -357,22 +357,22 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   }
 }
 
-void ZStackObject::addVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::addVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
 }
 
-void ZStackObject::removeVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::removeVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
 
-void ZStackObject::setVisualEffect(neutube::display::TVisualEffect ve)
+void ZStackObject::setVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect = ve;
 }
 
-bool ZStackObject::hasVisualEffect(neutube::display::TVisualEffect ve) const
+bool ZStackObject::hasVisualEffect(neutu::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }

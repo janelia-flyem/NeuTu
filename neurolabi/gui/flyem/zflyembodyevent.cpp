@@ -73,14 +73,14 @@ void ZFlyEmBodyEvent::setMinDsLevel(int level)
 */
 
 void ZFlyEmBodyEvent::mergeEvent(
-    const ZFlyEmBodyEvent &event, neutube::EBiDirection direction)
+    const ZFlyEmBodyEvent &event, neutu::EBiDirection direction)
 {
   if (getBodyId() != event.getBodyId())  {
     return;
   }
 
   switch (direction) {
-  case neutube::EBiDirection::FORWARD: //event comes first
+  case neutu::EBiDirection::FORWARD: //event comes first
     switch (getAction()) {
     case EAction::UPDATE:
       switch (event.getAction()) {
@@ -118,10 +118,10 @@ void ZFlyEmBodyEvent::mergeEvent(
       break;
     }
     break;
-  case neutube::EBiDirection::BACKWARD:
+  case neutu::EBiDirection::BACKWARD:
   {
     ZFlyEmBodyEvent tmpEvent = event;
-    tmpEvent.mergeEvent(*this, neutube::EBiDirection::FORWARD);
+    tmpEvent.mergeEvent(*this, neutu::EBiDirection::FORWARD);
     *this = tmpEvent;
   }
     break;

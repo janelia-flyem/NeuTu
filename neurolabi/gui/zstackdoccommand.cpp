@@ -91,10 +91,10 @@ void ZUndoCommand::startUndo()
   logUndoCommand();
 }
 
-void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
+void ZUndoCommand::setSaved(neutu::EDocumentableType type, bool state)
 {
   switch (type) {
-  case neutube::EDocumentableType::SWC:
+  case neutu::EDocumentableType::SWC:
     m_isSwcSaved = state;
     break;
   default:
@@ -102,10 +102,10 @@ void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
   }
 }
 
-bool ZUndoCommand::isSaved(neutube::EDocumentableType type) const
+bool ZUndoCommand::isSaved(neutu::EDocumentableType type) const
 {
   switch (type) {
-  case neutube::EDocumentableType::SWC:
+  case neutu::EDocumentableType::SWC:
     return m_isSwcSaved;
   default:
     return false;
@@ -542,11 +542,11 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
   if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+    m_tree->removeVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
-  } else if (m_doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+  } else if (m_doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     m_tree->useCosmeticPen(true);
-    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+    m_tree->removeVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
   }
 
   m_tree->setDataFromNode(m_node);

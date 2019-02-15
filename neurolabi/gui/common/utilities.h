@@ -8,7 +8,7 @@
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
 
-namespace neutube
+namespace neutu
 {
 template<typename T>
 void read(std::istream &stream, T &v)
@@ -71,13 +71,15 @@ std::string GetVersionString();
 
 uint64_t GetTimestamp();
 
+std::string ToString(const void *p);
+
 }
 
 //template<>
 //int numDigits(int32_t x);
 
 template<typename T>
-std::set<T> neutube::intersect(const std::set<T> &s1, const std::set<T> &s2)
+std::set<T> neutu::intersect(const std::set<T> &s1, const std::set<T> &s2)
 {
   std::set<T> result;
   std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
@@ -86,7 +88,7 @@ std::set<T> neutube::intersect(const std::set<T> &s1, const std::set<T> &s2)
 }
 
 template<typename T>
-std::set<T> neutube::setdiff(const std::set<T> &s1, const std::set<T> &s2)
+std::set<T> neutu::setdiff(const std::set<T> &s1, const std::set<T> &s2)
 {
   std::set<T> result;
   std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
@@ -95,7 +97,7 @@ std::set<T> neutube::setdiff(const std::set<T> &s1, const std::set<T> &s2)
 }
 
 template<typename T>
-void neutube::assign(T *out, const T &v)
+void neutu::assign(T *out, const T &v)
 {
   if (out != NULL) {
     *out = v;

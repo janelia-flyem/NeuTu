@@ -26,6 +26,8 @@
 #include "zglobal.h"
 #include "qt/gui/utilities.h"
 
+#include "logging/utilities.h"
+#include "logging/zlog.h"
 
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
@@ -33,7 +35,6 @@
 #include "zpunctum.h"
 #include "zlocsegchain.h"
 #include "z3dcanvas.h"
-#include "logging/zlog.h"
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -1566,8 +1567,9 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
 {
   if (p == NULL) {
     if (!append) {
-      m_doc->deselectAllMesh();
-      m_doc->notifyWindowMessageUpdated("");
+      if (m_doc->deselectAllMesh() > 0) {
+        m_doc->notifyWindowMessageUpdated("No mesh is selected.");
+      }
     }
     return;
   }
@@ -1860,7 +1862,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON) {
+  if (getDocument()->getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
     return;
   }
 
@@ -2162,7 +2164,7 @@ void Z3DWindow::emitAddToSupervoxelSplitMarker(
 }
 
 static void AddTodoMarker(
-    Z3DWindow *window, neutube::EToDoAction action, bool checked)
+    Z3DWindow *window, neutu::EToDoAction action, bool checked)
 {
   QList<Swc_Tree_Node*> swcNodeList =
       window->getDocument()->getSelectedSwcNodeList();
@@ -2178,19 +2180,19 @@ static void AddTodoMarker(
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
-      case neutube::EToDoAction::TO_DO:
+      case neutu::EToDoAction::TO_DO:
         window->emitAddTodoMarker(pt, checked, bodyId);
         break;
-      case neutube::EToDoAction::TO_MERGE:
+      case neutu::EToDoAction::TO_MERGE:
         window->emitAddToMergeMarker(pt, bodyId);
         break;
-      case neutube::EToDoAction::TO_SPLIT:
+      case neutu::EToDoAction::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
-      case neutube::EToDoAction::TO_DO_IRRELEVANT: //todo
+      case neutu::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
         break;
-      case neutube::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
+      case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
         LWARN() << "TO_SUPERVOXEL_SPLIT not available";
         break;
       }
@@ -2216,34 +2218,34 @@ void Z3DWindow::updateTodoVisibility()
 
 void Z3DWindow::addTodoMarker()
 {
-  AddTodoMarker(this, neutube::EToDoAction::TO_DO, false);
+  AddTodoMarker(this, neutu::EToDoAction::TO_DO, false);
 }
 
 void Z3DWindow::addToMergeMarker()
 {
-  AddTodoMarker(this, neutube::EToDoAction::TO_MERGE, false);
+  AddTodoMarker(this, neutu::EToDoAction::TO_MERGE, false);
 }
 
 void Z3DWindow::addToSplitMarker()
 {
-  AddTodoMarker(this, neutube::EToDoAction::TO_SPLIT, false);
+  AddTodoMarker(this, neutu::EToDoAction::TO_SPLIT, false);
 }
 
 void Z3DWindow::addToSupervoxelSplitMarker()
 {
-  AddTodoMarker(this, neutube::EToDoAction::TO_SUPERVOXEL_SPLIT, false);
+  AddTodoMarker(this, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  AddTodoMarker(this, neutube::EToDoAction::TO_DO, true);
+  AddTodoMarker(this, neutu::EToDoAction::TO_DO, true);
 }
 
 void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::EToDoAction::TO_SPLIT);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_SPLIT);
   }
 }
 
@@ -2251,7 +2253,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::EToDoAction::TO_DO);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_DO);
   }
 }
 
@@ -2259,7 +2261,7 @@ void Z3DWindow::setTodoItemIrrelevant()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutube::EToDoAction::TO_DO_IRRELEVANT);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_DO_IRRELEVANT);
   }
 }
 
@@ -2393,7 +2395,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  LINFO() << "Updating widgets";
+  KINFO << "Updating dock widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2434,7 +2436,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
-  LINFO() << "Widget updated";
+  KINFO << "Dock widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
@@ -2595,8 +2597,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D_COARSE &&
-      getDocument()->getTag() != neutube::Document::ETag::FLYEM_BODY_3D){
+  if (getDocument()->getTag() != neutu::Document::ETag::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != neutu::Document::ETag::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -2636,9 +2638,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     } else if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->getTag() == neutube::Document::ETag::NORMAL ||
-          getDocument()->getTag() == neutube::Document::ETag::FLYEM_SKELETON ||
-          getDocument()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
+      if (getDocument()->getTag() == neutu::Document::ETag::NORMAL ||
+          getDocument()->getTag() == neutu::Document::ETag::FLYEM_SKELETON ||
+          getDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_STACK) {
         keyMode = ZInteractionEngine::KM_SWC_SELECTION;
       }
     }
@@ -2906,7 +2908,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
-    if (m_doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
+    if (m_doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT) {
       m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     }
   }
@@ -3688,7 +3690,7 @@ void Z3DWindow::startBodySplit()
         doc->notify(
               ZWidgetMessageFactory(
                 "WARNING: You will not be able to undo previous cleaving after splitting.").
-              as(neutube::EMessageType::WARNING));
+              as(neutu::EMessageType::WARNING));
       }
     }
 
@@ -4097,6 +4099,8 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
     ZDialogFactory::PromptMessage(msg, this);
   }
 
+  neutu::LogMessage(msg);
+
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
     m_view->dump(msg.toPlainString());
@@ -4319,7 +4323,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   std::vector<ZPoint> intersection;
   ZStackDoc *doc = getDocument();
 
-  neutube::assign<uint64_t>(id, 0);
+  neutu::assign<uint64_t>(id, 0);
 
   if (doc != NULL) {
     bool hit = false;
@@ -4328,7 +4332,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       if (mesh != NULL) {
         intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
-          neutube::assign(id, mesh->getLabel());
+          neutu::assign(id, mesh->getLabel());
           hit = true;
         }
       }
@@ -4343,7 +4347,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
         if (tn != NULL) {
           ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
           if (tree != NULL) {
-            neutube::assign(id, tree->getLabel());
+            neutu::assign(id, tree->getLabel());
             glm::dvec3 v1,v2;
             int w = getCanvas()->width();
             int h = getCanvas()->height();
@@ -4596,8 +4600,6 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
 
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
-  //bool success = false;
-//  std::string source;
   ZObject3d* obj = NULL;
   if (m_doc->hasStack()) {
     obj = createPolyplaneFrom3dPaintForVolume(stroke);
@@ -4605,9 +4607,14 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     obj = createPolyplaneFrom3dPaintForMesh(stroke);
   }
 
+  KINFO << "Paint stroke in 3D";
+
   if (obj != NULL) {
     if (!obj->isEmpty()) {
       obj->setLabel(stroke->getLabel());
+
+      KINFO << QString("Add seed from 3D: %1").arg(obj->getLabel());
+
       ZLabelColorTable colorTable;
       obj->setColor(colorTable.getColor(obj->getLabel()));
       obj->setRole(ZStackObjectRole::ROLE_SEED |
@@ -4821,7 +4828,7 @@ void Z3DWindow::cropSwcInRoi()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     if (doc->isDvidMutable()) {
-      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY_3D &&
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY_3D &&
           doc->showingCoarseOnly()) {
         //    m_doc->executeDeleteSwcNodeCommand();
         if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
