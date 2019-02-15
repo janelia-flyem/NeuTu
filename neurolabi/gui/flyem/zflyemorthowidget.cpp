@@ -7,9 +7,9 @@
 #include "logging/zlog.h"
 
 #include "neutubeconfig.h"
-#include "zstackdochelper.h"
-#include "zstackview.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackpresenter.h"
 #include "zcrosshair.h"
 
 #include "dvid/zdvidtarget.h"

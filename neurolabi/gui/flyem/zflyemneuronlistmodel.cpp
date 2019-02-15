@@ -1,7 +1,7 @@
 #include "zflyemneuronlistmodel.h"
 #include <QModelIndex>
 #include "zflyemneuron.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcobjsmodel.h"
 //#include "zpunctaobjsmodel.h"

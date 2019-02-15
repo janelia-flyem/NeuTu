@@ -1,8 +1,6 @@
 #ifndef ZFLYEMBODY3DDOC_H
 #define ZFLYEMBODY3DDOC_H
 
-#include "zstackdoc.h"
-
 #include <QSet>
 #include <QTimer>
 #include <QQueue>
@@ -16,6 +14,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
+#include "mvc/zstackdoc.h"
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"

@@ -1,9 +1,11 @@
 #include "zbiocytinprojmaskfactory.h"
-#include "zstackview.h"
-#include "zstackdoc.h"
+
 #include "zstroke2d.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+
+#include "mvc/zstackview.h"
+#include "mvc/zstackdoc.h"
 
 ZBiocytinProjMaskFactory::ZBiocytinProjMaskFactory()
 {

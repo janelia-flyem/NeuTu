@@ -30,7 +30,7 @@ then
   app_name=neu3_d
 fi
 
-for x in neutu-develop neutu-alpha neutu-beta neutu
+for x in neutu-develop neutu-alpha neutu-beta neutu neutu-di
 do
   if [ ${NEUTU_TARGET} == "$x" ]
   then
@@ -39,7 +39,7 @@ do
   fi
 done
 
-for x in neu3-develop neu3-alpha neu3-beta neu3
+for x in neu3-develop neu3-alpha neu3-beta neu3 neu3-di
 do
   if [ ${NEUTU_TARGET} == "$x" ]
   then
@@ -58,6 +58,11 @@ then
   build_flag='-c debug'
   build_dir=neurolabi/build_debug
   cd ../../
+fi
+
+if [ ${NEUTU_TARGET} == 'neutu-di' ] || [ ${NEUTU_TARGET} == 'neu3-di' ]
+then
+  build_flag='-c debug_info'
 fi
 
 edition=flyem

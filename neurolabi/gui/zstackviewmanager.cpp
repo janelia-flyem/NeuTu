@@ -1,8 +1,11 @@
 #include "zstackviewmanager.h"
+
 #include <iostream>
-#include "zstackframe.h"
+
+#include "mvc/zstackview.h"
+#include "mvc/zstackframe.h"
+
 #include "z3dwindow.h"
-#include "zstackview.h"
 
 ZStackViewManager::ZStackViewManager(QObject *parent) :
   QObject(parent)

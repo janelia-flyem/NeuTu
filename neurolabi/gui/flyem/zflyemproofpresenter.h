@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "zstackpresenter.h"
+#include "mvc/zstackpresenter.h"
 #include "dvid/zdvidsynapse.h"
 
 class QKeyEvent;

@@ -3,12 +3,13 @@
 
 #include "ztestheader.h"
 #include "zmouseeventprocessor.h"
-#include "zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zmouseevent.h"
 #include "zviewproj.h"
-#include "zstackdochelper.h"
 #include "zstackfactory.h"
+
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 
 #ifdef _USE_GTEST_
 TEST(ZMouseEventProcessor, MapPoint)

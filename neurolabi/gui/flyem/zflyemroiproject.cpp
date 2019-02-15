@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "neutubeconfig.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswcgenerator.h"
 #include "zflyemutilities.h"
 #include "zstack.hxx"

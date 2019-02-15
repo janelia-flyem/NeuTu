@@ -3,10 +3,10 @@
 #include <QsLog.h>
 #include <QFileInfo>
 
-#include "zstackdoc.h"
+#include "common/utilities.h"
 #include "zpunctum.h"
 #include "zobjsitem.h"
-#include "common/utilities.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zstackobjectinfo.h"
 

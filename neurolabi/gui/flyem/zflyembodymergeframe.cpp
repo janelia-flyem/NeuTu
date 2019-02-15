@@ -1,10 +1,10 @@
 #include "zflyembodymergeframe.h"
 #include <QMdiArea>
 
-#include "flyem/zflyembodymergedoc.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
+#include "zflyembodymergedoc.h"
 
 ZFlyEmBodyMergeFrame::ZFlyEmBodyMergeFrame(QWidget *parent) : ZStackFrame(parent)
 {

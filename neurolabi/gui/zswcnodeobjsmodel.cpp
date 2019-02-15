@@ -1,10 +1,10 @@
 #include "zswcnodeobjsmodel.h"
 
-#include "zstackdoc.h"
+#include "logging/zqslog.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zswctree.h"
 #include "tz_swc_tree.h"
-#include "QsLog.h"
 
 ZSwcNodeObjsModel::ZSwcNodeObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)

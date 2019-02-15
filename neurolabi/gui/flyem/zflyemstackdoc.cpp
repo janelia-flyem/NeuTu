@@ -10,6 +10,7 @@
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "geometry/zgeometry.h"
+#include "zgraph.h"
 
 using namespace std;
 

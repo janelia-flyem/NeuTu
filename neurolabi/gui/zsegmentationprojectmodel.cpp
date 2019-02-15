@@ -1,6 +1,6 @@
 #include "zsegmentationprojectmodel.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
 #include "zobject3dscanarray.h"
 #include "zobject3dfactory.h"
 

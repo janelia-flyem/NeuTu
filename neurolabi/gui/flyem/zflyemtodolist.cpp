@@ -1,11 +1,11 @@
 #include "zflyemtodolist.h"
 
-#include "dvid/zdvidurl.h"
-#include "zpainter.h"
 #include "tz_math.h"
-#include "dvid/zdvidwriter.h"
-#include "zstackview.h"
+#include "zpainter.h"
 #include "geometry/zgeometry.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "mvc/zstackview.h"
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);

@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "zframefactory.h"
 #include "zstackdocreader.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
   QDialog(parent),

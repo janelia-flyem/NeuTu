@@ -1,6 +1,6 @@
 #include "zroiobjsmodel.h"
 #include "zstackobject.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zstackobjectinfo.h"
 

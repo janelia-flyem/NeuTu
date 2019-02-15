@@ -4,7 +4,7 @@
 
 #include "neutubeconfig.h"
 #include "QsLog.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
 #include "common/utilities.h"

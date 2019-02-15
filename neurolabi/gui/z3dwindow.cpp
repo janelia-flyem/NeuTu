@@ -18,9 +18,9 @@
 #include <QApplication>
 
 #include "zstack.hxx"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdocproxy.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 #include "neutubeconfig.h"
 #include "zglobal.h"
@@ -98,7 +98,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "zwidgetmessage.h"
 #include "common/utilities.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdochelper.h"
 #include "z3dwindowcontroller.h"
 #include "data3d/zstackobjectconfig.h"
 #include "flyem/zflyembodyenv.h"

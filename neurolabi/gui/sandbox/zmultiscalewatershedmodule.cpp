@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "zmultiscalewatershedmodule.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zsandbox.h"
 #include "mainwindow.h"
 #include "neutubeconfig.h"
@@ -18,7 +18,7 @@
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackdocdatabuffer.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zcolorscheme.h"
 #include "zobject3dscanarray.h"
 #include "zsparsestack.h"

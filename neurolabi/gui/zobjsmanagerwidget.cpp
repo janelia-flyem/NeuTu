@@ -7,7 +7,7 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zswcobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
 #include "zpunctaobjsmodel.h"

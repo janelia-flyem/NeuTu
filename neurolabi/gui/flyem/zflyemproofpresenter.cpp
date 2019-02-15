@@ -7,19 +7,20 @@
 #include "qt/gui/loghelper.h"
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
+
 #include "zflyembookmark.h"
-#include "zstackview.h"
 #include "zflyemproofdoc.h"
 #include "zkeyoperationconfig.h"
-#include "flyem/zflyemkeyoperationconfig.h"
-#include "flyem/zflyemproofdocmenufactory.h"
+#include "zflyemkeyoperationconfig.h"
+#include "zflyemproofdocmenufactory.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemtododelegate.h"
+#include "zflyemtododelegate.h"
 
 #ifdef _WIN32
 #undef GetUserName

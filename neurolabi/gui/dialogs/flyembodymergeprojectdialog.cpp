@@ -8,7 +8,7 @@
 #include "mainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyembodymergeframe.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "dvid/zdvidversionmodel.h"
 #include "dvid/zdvidreader.h"
 #include "zdialogfactory.h"

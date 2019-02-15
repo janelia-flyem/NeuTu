@@ -1,5 +1,5 @@
 #include "zdocplayerobjsmodel.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 
 ZDocPlayerObjsModel::ZDocPlayerObjsModel(

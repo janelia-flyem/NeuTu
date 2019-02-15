@@ -17,7 +17,7 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "mainwindow.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswcgenerator.h"
 #include "zjsonfactory.h"
 #include "geometry/zcuboid.h"
