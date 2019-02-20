@@ -19,6 +19,15 @@ TEST(ZStackDoc, Basic)
 
 }
 
+TEST(ZStackDoc, removeObject)
+{
+  ZStackDoc doc;
+  ZObject3d *obj = new ZObject3d();
+  doc.addObject(obj);
+  ASSERT_TRUE(doc.removeObject(obj, true));
+  ASSERT_FALSE(doc.removeObject(obj, true));
+}
+
 TEST(ZStackDoc, Swc)
 {
   ZStackDoc doc;

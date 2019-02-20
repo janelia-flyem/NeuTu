@@ -31,7 +31,7 @@ TaskProtocolTask::TaskProtocolTask()
 
 }
 
-namespace {
+namespace { //Make it a private member?
 static QString s_jsonSource;
 }
 
