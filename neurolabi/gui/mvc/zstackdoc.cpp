@@ -3736,6 +3736,7 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
     if (taken != NULL) { //note obj can be invalid unless it resides in the doc
       assert(taken == obj);
       removeTakenObject(obj, deleteObject);
+      removed = true;
       processObjectModified();
 
       /*
@@ -4576,9 +4577,8 @@ void ZStackDoc::setMeshVisible(ZMesh* mesh, bool visible)
 {
   if (mesh->isVisible() != visible) {
     mesh->setVisible(visible);
-    bufferObjectModified(mesh);
+    bufferObjectVisibilityChanged(mesh);
     processObjectModified();
-//    emit meshVisibleStateChanged();
   }
 }
 
@@ -10722,7 +10722,8 @@ void ZStackDoc::setVisible(ZStackObject *obj, bool visible)
 {
   if (obj->isVisible() != visible) {
     obj->setVisible(visible);
-    bufferObjectModified(obj);
+    bufferObjectVisibilityChanged(obj);
+//    bufferObjectModified(obj);
     processObjectModified(obj);
   }
 }

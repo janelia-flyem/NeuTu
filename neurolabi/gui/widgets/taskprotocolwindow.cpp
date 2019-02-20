@@ -64,14 +64,19 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     // UI connections
-    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()),
+            this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
-    connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
-    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
-    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
-    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
+    connect(ui->loadTasksButton, SIGNAL(clicked(bool)),
+            this, SLOT(onLoadTasksButton()));
+    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onReviewStateChanged(int)));
+    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onShowCompletedStateChanged(int)));
 
     QMenu *createTasksMenu = new QMenu(ui->loadTasksButton);
     for (QString menuLabel : TaskProtocolTaskFactory::getInstance().registeredGuiMenuLabels()) {
@@ -778,10 +783,10 @@ void TaskProtocolWindow::prefetch(uint64_t bodyID) {
 /*
  * updates the task label for current index
  */
-void TaskProtocolWindow::updateCurrentTaskLabel() {
+void TaskProtocolWindow::updateCurrentTaskLabel() { //#Review-TZ: It seems it's doing more than updating a label.
     // if there is a current task widget, remove it from the layout:
     if (m_currentTaskWidget != NULL) {
-        ui->verticalLayout_3->removeWidget(m_currentTaskWidget);
+        ui->verticalLayout_3->removeWidget(m_currentTaskWidget); //#Review-TZ: a better name for this layout?
         // ui->horizontalLayout->removeWidget(m_currentTaskWidget);
         m_currentTaskWidget->setVisible(false);
     }
@@ -1015,7 +1020,7 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 /*
  * updates any progress labels
  */
-void TaskProtocolWindow::updateLabel() {
+void TaskProtocolWindow::updateLabel() { //#Review-TZ: Change the name to updateProgressLabel()?
     int ncomplete = 0;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
         if (task->completed()) {
@@ -1079,7 +1084,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
 QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
     QJsonObject emptyResult;
     ZDvidReader reader;
-    if (!reader.open(m_proofDoc->getDvidTarget())) {
+    if (!reader.open(m_proofDoc->getDvidTarget())) { //#Review-TZ: Consider using a shared reader
         return emptyResult;
     }
     if (!reader.hasKey(instance, key)) {
