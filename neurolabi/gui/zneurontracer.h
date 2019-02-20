@@ -180,6 +180,10 @@ public:
     m_log = f;
   }
 
+  void enableTraceMask(bool on);
+  void setOverTrace(bool on);
+  void setSeedScreening(bool on);
+
 public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
@@ -249,6 +253,7 @@ private:
     void save(ZSwcTree *tree, const std::string &name);
     void saveInfo();
     void setInfo(const std::string &key, const std::string &value);
+    void setInfo(const std::string &key, int value);
 
   private:
     std::string m_dir;
@@ -286,7 +291,9 @@ private:
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
+  bool m_maskTracing;
   bool m_diagnosis = false;
+  bool m_screeningSeed = true;
 
   ZNeuronTracerConfig m_config; //default configuration
   Diagnosis m_diag;

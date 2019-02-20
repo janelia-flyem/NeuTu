@@ -6,6 +6,7 @@
 #define _ZSTACKDOC_H_
 
 #include <set>
+#include <memory>
 
 #include <QString>
 #include <QList>
@@ -36,7 +37,7 @@
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
-#include "zneurontracer.h"
+//#include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
@@ -101,6 +102,7 @@ class Z3DGraph;
 class ZPunctum;
 class ZCurve;
 class ResolutionDialog;
+class ZNeuronTracer;
 struct ZRescaleSwcSetting;
 
 /*!
@@ -269,7 +271,7 @@ public: //attributes
   virtual void setParentDoc(ZSharedPointer<ZStackDoc> parentDoc);
 
   // Prefix for tracing project.
-  const char *tubePrefix() const;
+  const char *tubePrefix();
 
   inline QList<ZStackObject*> *drawableList() {
     return &(m_objectGroup.getObjectList());
@@ -625,7 +627,7 @@ public:
 
   bool importMesh(const QString& filePath);
 
-  int pickLocsegChainId(int x, int y, int z) const;
+//  int pickLocsegChainId(int x, int y, int z) const;
   void holdClosestSeg(int id, int x, int y, int z);
   int selectLocsegChain(int id, int x = -1, int y = -1, int z = -1,
   		bool showProfile = false);
@@ -898,9 +900,7 @@ public:
   }
 
 public:
-  ZNeuronTracer& getNeuronTracer() {
-    return m_neuronTracer;
-  }
+  ZNeuronTracer& getNeuronTracer();
 
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
@@ -910,13 +910,10 @@ public:
                                      char unit, double distThre, bool spTest,
                                      bool crossoverTest);
 
-  inline Trace_Workspace* getTraceWorkspace() const {
-    return m_neuronTracer.getTraceWorkspace();
-  }
+  Trace_Workspace* getTraceWorkspace();
 
-  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
-    return m_neuronTracer.getConnectionTestWorkspace();
-  }
+  Connection_Test_Workspace* getConnectionTestWorkspace();
+  Stack *computeSeedMask(Stack *stack);
 
 //  void disconnectSwcNodeModelUpdate();
 //  void disconnectPunctaModelUpdate();
@@ -1452,7 +1449,7 @@ private:
 
   /* workspaces */
   bool m_isTraceMaskObsolete;
-  ZNeuronTracer m_neuronTracer;
+  std::shared_ptr<ZNeuronTracer> m_neuronTracer;
 
   //Meta information
   ZStackFile m_stackSource;

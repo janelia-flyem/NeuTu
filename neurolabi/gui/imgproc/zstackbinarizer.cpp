@@ -17,6 +17,11 @@ ZStackBinarizer::ZStackBinarizer() : m_reference(NULL), m_method(EMethod::MANUAL
 {
 }
 
+int ZStackBinarizer::getActualThreshold() const
+{
+  return m_actualThreshold;
+}
+
 #define BINARIZE_CLEAN \
   if (refStack != stack) { \
     C_Stack::kill(refStack); \
@@ -114,8 +119,10 @@ bool ZStackBinarizer::binarize(Stack *stack)
 #endif
 
     Stack_Threshold_Binarize(stack, threshold);
+    m_actualThreshold = threshold;
   } else {
     Stack_Binarize(stack);
+    m_actualThreshold = 0;
   }
 
   BINARIZE_CLEAN
@@ -149,7 +156,7 @@ int* ZStackBinarizer::computeLocmaxHist(const Stack *stack)
 int ZStackBinarizer::refineLocmaxThreshold(
     const Stack *stack, int thre, int *hist, int upperBound)
 {
-  const double ratio_low_thre = 0.01;
+  const double ratio_low_thre = 0.015; //Heuristic parameters to be improved
   const double ratio_thre = 0.05;
   int thre2;
 

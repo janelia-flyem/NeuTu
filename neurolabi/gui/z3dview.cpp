@@ -410,9 +410,6 @@ void Z3DView::init()
 
     // build network
     const NeutubeConfig &config = NeutubeConfig::getInstance();
-    if (config.getZ3DWindowConfig().isVolumeOn()) {
-      addFilter(neutube3d::ERendererLayer::VOLUME);
-    }
     if (config.getZ3DWindowConfig().isSwcsOn()) {
       addFilter(neutube3d::ERendererLayer::SWC);
     }
@@ -430,6 +427,12 @@ void Z3DView::init()
     addFilter(neutube3d::ERendererLayer::MESH);
     addFilter(neutube3d::ERendererLayer::ROI);
     addFilter(neutube3d::ERendererLayer::DECORATION);
+
+    //Add volume filter later than other filters to allow them process mouse
+    //events first.
+    if (config.getZ3DWindowConfig().isVolumeOn()) {
+      addFilter(neutube3d::ERendererLayer::VOLUME);
+    }
 
 //    initSurfaceFilter();
 
