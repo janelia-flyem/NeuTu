@@ -4,7 +4,7 @@
 #include "protocoltaskconfig.h"
 
 /*
- * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your
+ * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; you
  * create a new task by subclassing this class
  *
  * pure virtual methods you must implement:
