@@ -3736,6 +3736,7 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
     if (taken != NULL) { //note obj can be invalid unless it resides in the doc
       assert(taken == obj);
       removeTakenObject(obj, deleteObject);
+      removed = true;
       processObjectModified();
 
       /*
