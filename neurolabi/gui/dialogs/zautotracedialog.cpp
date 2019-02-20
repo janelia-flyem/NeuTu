@@ -15,6 +15,12 @@ ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent) :
           this, SLOT(updateWidget()));
   connect(ui->levelSlider, SIGNAL(valueChanged(int)),
           this, SLOT(updateWidget()));
+
+#ifndef _ADVANCED_
+  ui->diagnosisCheckBox->hide();
+  ui->overTraceCheckBox->hide();
+  ui->seedScreenCheckBox->hide();
+#endif
 }
 
 ZAutoTraceDialog::~ZAutoTraceDialog()
@@ -52,6 +58,16 @@ bool ZAutoTraceDialog::resampling() const
 bool ZAutoTraceDialog::diagnosis() const
 {
   return ui->diagnosisCheckBox->isChecked();
+}
+
+bool ZAutoTraceDialog::overTracing() const
+{
+  return ui->overTraceCheckBox->isChecked();
+}
+
+bool ZAutoTraceDialog::screenSeed() const
+{
+  return ui->seedScreenCheckBox->isChecked();
 }
 
 int ZAutoTraceDialog::getTraceLevel() const

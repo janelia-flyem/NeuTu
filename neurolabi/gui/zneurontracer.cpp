@@ -700,6 +700,7 @@ Stack *ZNeuronTracer::binarize(const Stack *stack, Stack *out)
              (int) C_Stack::voxelNumber(stack)) { //Only two values
     //To do: need to handle large stack
     Stack_Threshold_Binarize(out, hist.getMinValue());
+    m_diag.setInfo("threshold", hist.getMinValue());
   } else {
     binarizer.setMethod(ZStackBinarizer::EMethod::LOCMAX);
     binarizer.setRetryCount(3);
@@ -708,6 +709,8 @@ Stack *ZNeuronTracer::binarize(const Stack *stack, Stack *out)
 //      std::cout << "Thresholding failed" << std::endl;
       C_Stack::kill(out);
       out = NULL;
+    } else {
+      m_diag.setInfo("threshold", binarizer.getActualThreshold());
     }
   }
 
@@ -999,6 +1002,24 @@ std::vector<Locseg_Chain*> ZNeuronTracer::trace(const Stack *stack,
   free(chain);
 
   return chainArray;
+}
+
+void ZNeuronTracer::enableTraceMask(bool on)
+{
+  m_maskTracing = on;
+  if (m_traceWorkspace) {
+    m_traceWorkspace->trace_mask_updating = on;
+  }
+}
+
+void ZNeuronTracer::setOverTrace(bool on)
+{
+  enableTraceMask(!on);
+}
+
+void ZNeuronTracer::setSeedScreening(bool on)
+{
+  m_screeningSeed = on;
 }
 
 void ZNeuronTracer::clearBuffer()
@@ -1361,10 +1382,12 @@ int ZNeuronTracer::getMinSeedObjSize(double seedDensity) const
 {
   int s = 0;
 
-  if (seedDensity > 0.00015) {
-    s = 125;
-  } else if (seedDensity > 0.00005) {
-    s = 64;
+  if (m_screeningSeed) {
+    if (seedDensity > 0.00015) {
+      s = 125;
+    } else if (seedDensity > 0.00005) {
+      s = 64;
+    }
   }
 
   return s;
@@ -1386,7 +1409,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     m_diag.setInfo("background", "bright");
   }
 
-  ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+  int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+  m_diag.setInfo("bgsub", bgsub);
 
   m_diag.save(stack, "bgsub");
 #ifdef _DEBUG_2
@@ -1564,31 +1588,38 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   }
 
   /* free <chainArray> */
-  tree = constructor.reconstruct(chainArray);
-  m_diag.save(tree, "recon1");
+  if (m_maskTracing) {
+    tree = constructor.reconstruct(chainArray);
+    m_diag.save(tree, "recon1");
 
-  m_connWorkspace->sp_test = oldSpTest;
-
-  advanceProgress(0.1);
-
-  //Post process
-  if (tree != NULL) {
-    Swc_Tree_Remove_Zigzag(tree->data());
-    Swc_Tree_Tune_Branch(tree->data());
-    Swc_Tree_Remove_Spur(tree->data());
-    Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
-    Swc_Tree_Remove_Overshoot(tree->data());
-
-    if (doResampleAfterTracing) {
-      ZSwcResampler resampler;
-      resampler.optimalDownsample(tree);
-    }
-
-    ZSwcPruner pruner;
-    pruner.setMinLength(0);
-    pruner.removeOrphanBlob(tree);
+    m_connWorkspace->sp_test = oldSpTest;
 
     advanceProgress(0.1);
+
+    //Post process
+    if (tree != NULL) {
+      Swc_Tree_Remove_Zigzag(tree->data());
+      Swc_Tree_Tune_Branch(tree->data());
+      Swc_Tree_Remove_Spur(tree->data());
+      Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
+      Swc_Tree_Remove_Overshoot(tree->data());
+
+      if (doResampleAfterTracing) {
+        ZSwcResampler resampler;
+        resampler.optimalDownsample(tree);
+      }
+
+      ZSwcPruner pruner;
+      pruner.setMinLength(0);
+      pruner.removeOrphanBlob(tree);
+
+      advanceProgress(0.1);
+    }
+  } else {
+    tree = ZSwcFactory::CreateSwc(chainArray, NULL);
+    for (Locseg_Chain *chain : chainArray) {
+      Kill_Locseg_Chain(chain);
+    }
   }
 
   log("Tracing done!");
@@ -1696,7 +1727,7 @@ void ZNeuronTracer::initTraceWorkspace(Stack *stack)
   //m_traceWorkspace->min_score = 0.35;
   m_traceWorkspace->tune_end = m_config.tuningEnd();
   m_traceWorkspace->add_hit = TRUE;
-
+  m_traceWorkspace->trace_mask_updating = m_maskTracing;
 
   if (stack != NULL) {
     if (C_Stack::depth(stack) == 1) {
@@ -2055,6 +2086,11 @@ void ZNeuronTracer::Diagnosis::saveInfo()
 
 void ZNeuronTracer::Diagnosis::setInfo(
     const std::string &key, const std::string &value)
+{
+  m_info.setEntry(key, value);
+}
+
+void ZNeuronTracer::Diagnosis::setInfo(const std::string &key, int value)
 {
   m_info.setEntry(key, value);
 }

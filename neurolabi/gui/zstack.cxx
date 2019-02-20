@@ -307,7 +307,7 @@ void ZStack::shiftLocation(int *offset, int c, int width, int height, int depth)
   singleChannelStack(c)->shiftLocation(offset, width, height, depth);
 }
 
-Mc_Stack *ZStack::makeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3)
+Mc_Stack *ZStack::MakeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3)
 {
   Mc_Stack *out = NULL;
 

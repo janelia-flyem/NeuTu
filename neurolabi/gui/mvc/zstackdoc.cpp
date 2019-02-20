@@ -124,6 +124,7 @@
 #include "data3d/zstackobjecthelper.h"
 #include "z3dgraph.h"
 #include "zcurve.h"
+#include "zneurontracer.h"
 
 #include "dialogs/swcskeletontransformdialog.h"
 #include "dialogs/swcsizedialog.h"
@@ -295,6 +296,28 @@ void ZStackDoc::init()
 //  startWorkThread();
 }
 
+ZNeuronTracer& ZStackDoc::getNeuronTracer()
+{
+  if (!m_neuronTracer) {
+    m_neuronTracer = std::make_shared<ZNeuronTracer>();
+  }
+  return *m_neuronTracer;
+}
+
+Trace_Workspace* ZStackDoc::getTraceWorkspace()
+{
+  return getNeuronTracer().getTraceWorkspace();
+}
+
+Connection_Test_Workspace* ZStackDoc::getConnectionTestWorkspace() {
+  return getNeuronTracer().getConnectionTestWorkspace();
+}
+
+Stack* ZStackDoc::computeSeedMask(Stack *stack)
+{
+  return getNeuronTracer().computeSeedMask(stack);
+}
+
 void ZStackDoc::shortcutTest()
 {
   std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
@@ -317,7 +340,7 @@ void ZStackDoc::clearData()
 
   /* workspaces */
   m_isTraceMaskObsolete = true;
-  m_neuronTracer.clear();
+  m_neuronTracer.reset();
 
   //Meta information
   m_stackSource.clear();
@@ -338,31 +361,35 @@ void ZStackDoc::clearData()
 
 void ZStackDoc::initNeuronTracer()
 {
-  m_neuronTracer.setLogger([](const std::string &str) {
+  getNeuronTracer().setLogger([](const std::string &str) {
     LINFO_NLN() << str;
   });
 
-  m_neuronTracer.initTraceWorkspace(getStack());
-  m_neuronTracer.initConnectionTestWorkspace();
+  getNeuronTracer().initTraceWorkspace(getStack());
+  getNeuronTracer().initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
     if (getTag() == neutu::Document::ETag::BIOCYTIN_STACK &&
         getStack()->channelNumber() > 1) {
-      m_neuronTracer.setSignalChannel(1);
+      getNeuronTracer().setSignalChannel(1);
 //      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
     } else {
 //      m_neuronTracer.setIntensityField(getStack()->c_stack());
     }
-    m_neuronTracer.setIntensityField(getStack());
+    getNeuronTracer().setIntensityField(getStack());
   }
-  m_neuronTracer.setBackgroundType(getStackBackground());
+  getNeuronTracer().setBackgroundType(getStackBackground());
   if (getTag() == neutu::Document::ETag::FLYEM_BODY) {
-    m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
+    getNeuronTracer().setVertexOption(ZStackGraph::VO_SURFACE);
   }
 
-  m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+  getNeuronTracer().setResolution(getResolution().voxelSizeX(),
                                getResolution().voxelSizeY(),
                                getResolution().voxelSizeZ());
+
+#ifdef _DEBUG_
+  getNeuronTracer().enableTraceMask(false);
+#endif
 }
 
 
@@ -388,7 +415,7 @@ ZIntCuboid ZStackDoc::getDataRange() const
 void ZStackDoc::setStackBackground(neutu::EImageBackground bg)
 {
     m_stackBackground = bg;
-    m_neuronTracer.setBackgroundType(bg);
+    getNeuronTracer().setBackgroundType(bg);
 }
 
 void ZStackDoc::emptySlot()
@@ -614,20 +641,20 @@ bool ZStackDoc::saveSwc(const std::string &filePath)
 void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
                                      double xRes, double yRes, double zRes)
 {
-  m_neuronTracer.updateTraceWorkspace(traceEffort, traceMasked,
+  getNeuronTracer().updateTraceWorkspace(traceEffort, traceMasked,
                                       xRes, yRes, zRes);
 }
 
 void ZStackDoc::updateTraceWorkspaceResolution(double xRes, double yRes, double zRes)
 {
-  m_neuronTracer.updateTraceWorkspaceResolution(xRes, yRes, zRes);
+  getNeuronTracer().updateTraceWorkspaceResolution(xRes, yRes, zRes);
 }
 
 void ZStackDoc::updateConnectionTestWorkspace(
     double xRes, double yRes, double zRes,
     char unit, double distThre, bool spTest, bool crossoverTest)
 {
-  m_neuronTracer.updateConnectionTestWorkspace(
+  getNeuronTracer().updateConnectionTestWorkspace(
         xRes, yRes, zRes, unit, distThre, spTest, crossoverTest);
 }
 
@@ -3349,7 +3376,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
 //  blockSignals(false);
 //  emit punctaModified();
 }
-
+#if 0
 int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 {
   if (getTraceWorkspace() == NULL) {
@@ -3373,6 +3400,7 @@ int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 
   return id;
 }
+#endif
 
 #if 0
 int ZStackDoc::pickPunctaIndex(int x, int y, int z) const
@@ -4667,14 +4695,14 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
 
 void ZStackDoc::setAutoTraceMinScore(double score)
 {
-  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_AUTO);
-  m_neuronTracer.setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
+  getNeuronTracer().setMinScore(score, ZNeuronTracer::TRACING_AUTO);
+  getNeuronTracer().setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
 //  m_neuronTracer.setAutoTraceMinScore(score);
 }
 
 void ZStackDoc::setManualTraceMinScore(double score)
 {
-  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
+  getNeuronTracer().setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
 
 //  m_neuronTracer.setManualTraceMinScore(score);
 //  m_neuronTracer.setAutoTraceMinScore(score);
@@ -5004,7 +5032,7 @@ bool ZStackDoc::invert()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::invert(mainStack);
+    ZStackProcessor::Invert(mainStack);
     notifyStackModified(false);
     return true;
   }
@@ -5380,7 +5408,7 @@ void ZStackDoc::deprecate(EComponent component)
   case EComponent::STACK:
     delete stackRef();
     stackRef() = NULL;
-    m_neuronTracer.clear();
+    m_neuronTracer.reset();
     break;
   case EComponent::SPARSE_STACK:
     delete m_sparseStack;
@@ -5743,7 +5771,7 @@ void ZStackDoc::test(QProgressBar *pb)
   }
 }
 
-const char* ZStackDoc::tubePrefix() const
+const char* ZStackDoc::tubePrefix()
 {
   if (getTraceWorkspace() != NULL) {
     return getTraceWorkspace()->save_prefix;
@@ -6375,11 +6403,11 @@ void ZStackDoc::setStackBc(double factor, double offset, int channel)
 {
   if (channel == 0) {
     if (factor != 1.0 || offset != 0.0) {
-      m_neuronTracer.setBcAdjust(true);
-      m_neuronTracer.setGreyFactor(factor);
-      m_neuronTracer.setGrayOffset(offset);
+      getNeuronTracer().setBcAdjust(true);
+      getNeuronTracer().setGreyFactor(factor);
+      getNeuronTracer().setGrayOffset(offset);
     } else {
-      m_neuronTracer.setBcAdjust(false);
+      getNeuronTracer().setBcAdjust(false);
     }
   }
 }
@@ -6449,7 +6477,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
           m_neuronTracer.setResolution(1, 1, 10);
         }
         */
-        m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+        getNeuronTracer().setResolution(getResolution().voxelSizeX(),
                                      getResolution().voxelSizeY(),
                                      getResolution().voxelSizeZ());
 
@@ -6460,10 +6488,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //        }
 
         if (getTag() == neutu::Document::ETag::FLYEM_ROI) {
-          m_neuronTracer.setEstimatingRadius(false);
+          getNeuronTracer().setEstimatingRadius(false);
         }
 
-        Swc_Tree *branch = m_neuronTracer.trace(
+        Swc_Tree *branch = getNeuronTracer().trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
               SwcTreeNode::z(prevNode), SwcTreeNode::radius(prevNode),
               center.x(), center.y(), center.z(), radius);
@@ -7766,7 +7794,7 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
                       getStack()->depth());
   }
 
-  Swc_Tree *branch = m_neuronTracer.trace(
+  Swc_Tree *branch = getNeuronTracer().trace(
         SwcTreeNode::x(tn1), SwcTreeNode::y(tn1),
         SwcTreeNode::z(tn1), SwcTreeNode::radius(tn1),
         SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
@@ -8484,13 +8512,13 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
   */
 
   //ZNeuronTracer tracer;
-  m_neuronTracer.setIntensityField(getStack());
+  getNeuronTracer().setIntensityField(getStack());
   //tracer.setTraceWorkspace(getTraceWorkspace());
   //tracer.setStackOffset(getStackOffset().x(), getStackOffset().y(),
   //                      getStackOffset().z());
 
   refreshTraceMask();
-  ZSwcPath branch = m_neuronTracer.trace(x, y, z);
+  ZSwcPath branch = getNeuronTracer().trace(x, y, z);
 
   if (branch.size() > 1) {
     ZSwcConnector swcConnector;
@@ -8638,7 +8666,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
 
 void ZStackDoc::updateTraceMask()
 {
-  m_neuronTracer.initTraceMask(true);
+  getNeuronTracer().initTraceMask(true);
 
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -8660,27 +8688,27 @@ void ZStackDoc::updateTraceMask()
 
 bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-  m_neuronTracer.setProgressReporter(getProgressReporter());
+  getNeuronTracer().setProgressReporter(getProgressReporter());
 
   startProgress(0.9);
-  m_neuronTracer.setTraceLevel(traceLevel);
-  m_neuronTracer.setBackgroundType(m_stackBackground);
+  getNeuronTracer().setTraceLevel(traceLevel);
+  getNeuronTracer().setBackgroundType(m_stackBackground);
 
-  int recover = m_neuronTracer.getRecoverLevel();
+  int recover = getNeuronTracer().getRecoverLevel();
 
   if (hasSwcData()) {
-    m_neuronTracer.setRecoverLevel(0);
+    getNeuronTracer().setRecoverLevel(0);
   }
 
-  m_neuronTracer.setSignalChannel(c);
+  getNeuronTracer().setSignalChannel(c);
 
-  m_neuronTracer.setTraceRange(getStack()->getBoundBox());
+  getNeuronTracer().setTraceRange(getStack()->getBoundBox());
 
   updateTraceMask();
 
-  ZSwcTree *tree = m_neuronTracer.trace(getStack(), doResample);
+  ZSwcTree *tree = getNeuronTracer().trace(getStack(), doResample);
 
-  m_neuronTracer.setRecoverLevel(recover);
+  getNeuronTracer().setRecoverLevel(recover);
 
   endProgress(0.9);
 

@@ -2402,7 +2402,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     return;
 
   e->ignore();
-  // Mouse button presend
+  // Mouse button pressed
   // can not accept the event in button press, because we don't know if it is a selection or interaction
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
@@ -2445,6 +2445,9 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
             (Swc_Tree_Node*) obj);
       if (it != m_sortedNodeList.end()) {
         m_pressedSwcTreeNode = *it;
+#ifdef _DEBUG_
+        std::cout << "SWC node pressed: " << m_pressedSwcTreeNode << std::endl;
+#endif
       }
       /*
       std::set<Swc_Tree_Node*>::iterator it = m_allNodesSet.find((Swc_Tree_Node*)obj);

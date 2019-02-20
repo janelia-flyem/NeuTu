@@ -7104,7 +7104,7 @@ void MainWindow::on_actionSeed_Mask_triggered()
         C_Stack::clone(
           frame->document()->getStack()->c_stack(m_autoTraceDlg->getChannel()));
     Stack *mask =
-        frame->document()->getNeuronTracer().computeSeedMask(stackData);
+        frame->document()->computeSeedMask(stackData);
     C_Stack::kill(stackData);
 
     ZStackDocReader reader;
