@@ -28,7 +28,7 @@ Once the installation is done, you can launch the program by running
     
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
+    conda config --add channels conda-forge/label/cf201901
     conda config --add channels flyem-forge
     conda create -n <NAME> -c flyem-forge neutu
     
@@ -45,7 +45,7 @@ After successful installation, you should be able to lauch the application neutu
     #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
+    conda config --add channels conda-forge/label/cf201901
     conda config --add channels flyem-forge
     conda create -n <NAME> -c flyem-forge neutu
     
