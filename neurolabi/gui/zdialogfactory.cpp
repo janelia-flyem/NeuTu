@@ -50,7 +50,8 @@ ZDialogFactory::~ZDialogFactory()
 
 }
 
-ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
+ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(
+    QWidget *parent, ZDvidDialogType dialogType)
 {
   ZDvidTargetProviderDialog *dlg;
 
