@@ -455,7 +455,7 @@ protected slots:
 protected:
   void customInit();
   void createPresenter();
-  virtual void dropEvent(QDropEvent *event);
+//  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 

@@ -31,6 +31,7 @@
 #include "z3dgraphfactory.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dwindow.h"
+#include "zcubearray.h"
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
@@ -1425,6 +1426,56 @@ QString flyem::GetNeuroglancerPath(
       arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
 
   return path;
+}
+
+#if 0
+namespace {
+
+ZIntPoint load_point_from_json_zyx(const ZJsonArray &v)
+{
+  ZIntPoint pt;
+
+  pt.setX(ZJsonParser::integerValue(v, 0));
+  pt.setX(ZJsonParser::integerValue(v, 1));
+  pt.setX(ZJsonParser::integerValue(v, 2));
+
+  return pt;
+}
+
+}
+#endif
+
+ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
+{
+  ZObject3dScan *sobj = nullptr;
+
+  ZJsonObject obj;
+  obj.load(filePath);
+  if (ZJsonParser::stringValue(obj["type"]) == "points" && obj.hasKey("roi")
+      && ZJsonParser::stringValue(obj["order"]) == "zyx") {
+    if (obj.hasKey("resolution")) {
+      int res = ZJsonParser::integerValue(obj["resolution"]);
+      if (res > 0) {
+        sobj = new ZObject3dScan;
+        sobj->setSource(filePath);
+        sobj->setDsIntv(res - 1);
+        ZJsonArray roiJson(obj.value("roi"));
+        ZObject3dScan::Appender appender(sobj);
+        for (size_t i = 0; i < roiJson.size(); ++i) {
+          ZJsonArray v(roiJson.value(i));
+          if (v.size() == 3) {
+//            ZIntPoint pt = load_point_from_json_zyx(v);
+            int z = ZJsonParser::integerValue(v.at(0));
+            int y = ZJsonParser::integerValue(v.at(1));
+            int x = ZJsonParser::integerValue(v.at(2));
+            appender.addSegment(z, y, x, x);
+          }
+        }
+      }
+    }
+  }
+
+  return sobj;
 }
 
 void flyem::UpdateBodyStatus(

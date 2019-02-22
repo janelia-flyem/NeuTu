@@ -5134,83 +5134,14 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
 
 void ZStackDoc::loadFileList(const QStringList &fileList)
 {
-//  bool swcLoaded = false;
-//  bool chainLoaded = false;
-  bool networkLoaded = false;
-//  bool punctaLoaded = false;
-//  bool obj3dScanLoaded = false;
-  //bool apoLoaded = false;
-
-//  m_changingSaveState = false;
-
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
-    switch (ZFileType::FileType(iter->toStdString())) {
-    case ZFileType::EFileType::SWC:
-    case ZFileType::EFileType::SYNAPSE_ANNOTATON:
-//      swcLoaded = true;
-      break;
-    case ZFileType::EFileType::SWC_NETWORK:
-    case ZFileType::EFileType::FLYEM_NETWORK:
-//      swcLoaded = true;
-      networkLoaded = true;
-      break;
-    case ZFileType::EFileType::LOCSEG_CHAIN:
-//      chainLoaded = true;
-      break;
-    case ZFileType::EFileType::V3D_APO:
-    case ZFileType::EFileType::V3D_MARKER:
-    case ZFileType::EFileType::RAVELER_BOOKMARK:
-//      punctaLoaded = true;
-      break;
-    case ZFileType::EFileType::OBJECT_SCAN:
-//      obj3dScanLoaded = true;
-      break;
-    default:
-      break;
-    }
-
-//    blockSignals(true);
     loadFile(*iter);
-//    blockSignals(false);
   }
-
   endObjectModifiedMode();
   processObjectModified();
-
-  if (networkLoaded) {
-    emit swcNetworkModified();
-  }
-
-//  m_changingSaveState = true;
-
-  /*
-  if (swcLoaded) {
-    emit swcModified();
-  }
-
-  if (chainLoaded) {
-    emit chainModified();
-  }
-
-  if (networkLoaded) {
-    emit swcNetworkModified();
-  }
-
-  if (punctaLoaded) {
-    emit punctaModified();
-  }
-
-  if (obj3dScanLoaded) {
-    notifyObject3dScanModified();
-  }
-  */
-
-#ifdef _FLYEM_2
-  emit punctaModified();
-#endif
 }
 
 bool ZStackDoc::loadFile(const std::string filePath)
@@ -5223,8 +5154,12 @@ bool ZStackDoc::loadFile(const char *filePath)
   return loadFile(QString(filePath));
 }
 
-
 bool ZStackDoc::loadFile(const QString &filePath)
+{
+  return _loadFile(filePath);
+}
+
+bool ZStackDoc::_loadFile(const QString &filePath)
 {
   QFile file(filePath);
 
