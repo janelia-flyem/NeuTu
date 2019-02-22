@@ -529,15 +529,6 @@ public: //Image processing
   void runSeededWatershed();
   void runLocalSeededWatershed();
 
-private:
-  void localSeededWatershed();
-  void seededWatershed();
-  template <class InputIterator>
-  void removeObjectP(InputIterator first, InputIterator last, bool deleting);
-
-  void updateSwc();
-  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
-
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
   ZLocsegChain* fitRpiseg(int x, int y, int z, double r = 3.0);
@@ -1389,6 +1380,17 @@ protected:
   void emitInfo(const QString &msg);
   void emitWarning(const QString &msg);
   void emitMessage(const QString &msg, neutu::EMessageType type);
+
+  virtual bool _loadFile(const QString &filePath);
+
+private:
+  void localSeededWatershed();
+  void seededWatershed();
+  template <class InputIterator>
+  void removeObjectP(InputIterator first, InputIterator last, bool deleting);
+
+  void updateSwc();
+  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
 
 private:
   void init();

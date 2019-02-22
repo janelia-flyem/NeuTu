@@ -29513,5 +29513,11 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZObject3dScan *obj = flyem::LoadRoiFromJson(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
   std::cout << "Done." << std::endl;
 }

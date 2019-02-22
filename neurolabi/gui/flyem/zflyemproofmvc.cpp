@@ -5869,6 +5869,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
   }
 }
 
+#if 0
 void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();
@@ -5893,24 +5894,9 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
       }
     }
   }
-
-#if 0
-  //Filter out tiff files
-  QList<QUrl> imageUrls;
-  QList<QUrl> nonImageUrls;
-
-  foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(url.path().toStdString())) {
-      imageUrls.append(url);
-    } else {
-      nonImageUrls.append(url);
-    }
-  }
-  if (!nonImageUrls.isEmpty()) {
-    getDocument()->loadFileList(nonImageUrls);
-  }
-#endif
 }
+#endif
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 void ZFlyEmProofMvc::loadRoi(
