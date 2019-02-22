@@ -24,6 +24,7 @@
 #include "zwidgetmessage.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zstring.h"
+#include "zfiletype.h"
 #include "neutubeconfig.h"
 #include "z3dwindow.h"
 #include "zstackdocdatabuffer.h"
@@ -4460,6 +4461,28 @@ void ZFlyEmBody3dDoc::diagnose() const
 ZStackDoc3dHelper* ZFlyEmBody3dDoc::getHelper() const
 {
   return m_helper.get();
+}
+
+bool ZFlyEmBody3dDoc::_loadFile(const QString &filePath)
+{
+  bool succ = false;
+
+  switch (ZFileType::FileType(filePath.toStdString())) {
+  case ZFileType::EFileType::JSON: {
+    ZObject3dScan *obj = flyem::LoadRoiFromJson(filePath.toStdString());
+    ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+    mesh->setSource(obj->getSource());
+//    mesh->addRole(ZStackObjectRole::ROLE_ROI);
+    getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+    getDataBuffer()->deliver();
+    delete obj;
+  }
+    break;
+  default:
+    break;
+  }
+
+  return succ;
 }
 
 /*
