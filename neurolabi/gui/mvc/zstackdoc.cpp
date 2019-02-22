@@ -4577,7 +4577,7 @@ void ZStackDoc::setMeshVisible(ZMesh* mesh, bool visible)
 {
   if (mesh->isVisible() != visible) {
     mesh->setVisible(visible);
-    bufferObjectModified(mesh);
+    bufferObjectModified(mesh, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, true);
     processObjectModified();
 //    emit meshVisibleStateChanged();
   }

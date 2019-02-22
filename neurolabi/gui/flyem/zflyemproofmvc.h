@@ -592,6 +592,8 @@ private:
   void initViewButton();
   void updateViewButton();
 
+  void updateRoiWidget(Z3DWindow *win) const;
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;

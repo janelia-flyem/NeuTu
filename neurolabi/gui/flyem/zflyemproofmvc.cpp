@@ -6120,8 +6120,23 @@ void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
   widget->loadROIs(win, m_roiList, m_loadedROIs, m_roiSourceList);
 }
 
+void ZFlyEmProofMvc::updateRoiWidget(Z3DWindow *win) const
+{
+  if (win) {
+    win->getROIsDockWidget()->loadROIs(
+          win, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+}
+
 void ZFlyEmProofMvc::updateRoiWidget()
 {
+  updateRoiWidget(m_coarseBodyWindow);
+  updateRoiWidget(m_bodyWindow);
+  updateRoiWidget(m_externalNeuronWindow);
+  updateRoiWidget(m_skeletonWindow);
+  updateRoiWidget(m_meshWindow);
+  updateRoiWidget(m_coarseMeshWindow);
+#if 0
   //
   if(m_coarseBodyWindow)
   {
@@ -6162,6 +6177,7 @@ void ZFlyEmProofMvc::updateRoiWidget()
           m_coarseMeshWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
+#endif
 }
 
 void ZFlyEmProofMvc::showInfoDialog()
