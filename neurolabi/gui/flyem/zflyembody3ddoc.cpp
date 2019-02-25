@@ -4471,6 +4471,8 @@ bool ZFlyEmBody3dDoc::_loadFile(const QString &filePath)
   case ZFileType::EFileType::JSON: {
     ZObject3dScan *obj = flyem::LoadRoiFromJson(filePath.toStdString());
     ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+    mesh->setColor(128, 128, 128);
+    mesh->pushObjectColor();
     mesh->setSource(obj->getSource());
 //    mesh->addRole(ZStackObjectRole::ROLE_ROI);
     getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
