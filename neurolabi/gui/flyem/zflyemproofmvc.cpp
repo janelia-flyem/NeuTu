@@ -5869,6 +5869,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
   }
 }
 
+#if 0
 void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();
@@ -5893,24 +5894,9 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
       }
     }
   }
-
-#if 0
-  //Filter out tiff files
-  QList<QUrl> imageUrls;
-  QList<QUrl> nonImageUrls;
-
-  foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(url.path().toStdString())) {
-      imageUrls.append(url);
-    } else {
-      nonImageUrls.append(url);
-    }
-  }
-  if (!nonImageUrls.isEmpty()) {
-    getDocument()->loadFileList(nonImageUrls);
-  }
-#endif
 }
+#endif
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 void ZFlyEmProofMvc::loadRoi(
@@ -6134,8 +6120,23 @@ void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
   widget->loadROIs(win, m_roiList, m_loadedROIs, m_roiSourceList);
 }
 
+void ZFlyEmProofMvc::updateRoiWidget(Z3DWindow *win) const
+{
+  if (win) {
+    win->getROIsDockWidget()->loadROIs(
+          win, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+}
+
 void ZFlyEmProofMvc::updateRoiWidget()
 {
+  updateRoiWidget(m_coarseBodyWindow);
+  updateRoiWidget(m_bodyWindow);
+  updateRoiWidget(m_externalNeuronWindow);
+  updateRoiWidget(m_skeletonWindow);
+  updateRoiWidget(m_meshWindow);
+  updateRoiWidget(m_coarseMeshWindow);
+#if 0
   //
   if(m_coarseBodyWindow)
   {
@@ -6176,6 +6177,7 @@ void ZFlyEmProofMvc::updateRoiWidget()
           m_coarseMeshWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
+#endif
 }
 
 void ZFlyEmProofMvc::showInfoDialog()

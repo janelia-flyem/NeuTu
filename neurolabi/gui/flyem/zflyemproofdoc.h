@@ -616,6 +616,8 @@ protected:
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
 
+  bool _loadFile(const QString &filePath) override;
+
 private:
   void connectSignalSlot();
 
@@ -625,6 +627,7 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
+  void addRoiMask(ZObject3dScan *obj);
 
   std::set<uint64_t> getCurrentSelectedBodyId(neutu::ELabelSource type) const;
 

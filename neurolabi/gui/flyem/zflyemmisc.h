@@ -5,9 +5,11 @@
 #include <vector>
 #include <QList>
 #include <QSet>
+#include <QColor>
+#include <QRectF>
+#include <QVector>
 
-#include "zcubearray.h"
-
+#include "common/neutube_def.h"
 #include "dvid/libdvidheader.h"
 #include "common/zsharedpointer.h"
 
@@ -31,6 +33,13 @@ class ZMesh;
 class ZArbSliceViewParam;
 class ZDvidWriter;
 class ZAffineRect;
+class ZCubeArray;
+class ZIntCuboid;
+class ZJsonObject;
+class ZJsonArray;
+class ZWeightedPoint;
+class ZIntPoint;
+class ZStackObject;
 
 namespace flyem {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -133,6 +142,8 @@ void UpdateBodyStatus(
 void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
 
 std::vector<uint64_t> LoadBodyList(const std::string &input);
+
+ZObject3dScan* LoadRoiFromJson(const std::string &filePath);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
