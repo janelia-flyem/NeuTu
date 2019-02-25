@@ -62,6 +62,7 @@
 #include "flyem/zflyembodystatus.h"
 #include "zflyemroimanager.h"
 #include "logging/zlog.h"
+#include "zfiletype.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1021,6 +1022,40 @@ void ZFlyEmProofDoc::readInfo()
   KINFO << startLog;
 }
 
+void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
+{
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+      std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
+#endif
+      obj->setColor(0, 255, 0);
+      obj->setZOrder(2);
+      obj->setTarget(ZStackObject::ETarget::WIDGET);
+      obj->useCosmeticPen(true);
+      obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+      obj->useCosmeticPen(true);
+      //          obj->setDsIntv(31, 31, 31);
+      obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
+//        obj->setHittable(false);
+      obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+      //      addObject(obj);
+      m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+      m_dataBuffer->deliver();
+
+
+      ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+      mesh->setSource(obj->getSource());
+      m_dataBuffer->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+      m_dataBuffer->deliver();
+
+      //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
+    } else {
+      delete obj;
+    }
+  }
+}
+
 void ZFlyEmProofDoc::loadRoiFunc()
 {
   if (!getDvidTarget().getRoiName().empty()) {
@@ -1029,29 +1064,8 @@ void ZFlyEmProofDoc::loadRoiFunc()
     }
     ZObject3dScan *obj =
         m_roiReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
-    if (obj != NULL) {
-      if (!obj->isEmpty()) {
-#ifdef _DEBUG_
-        std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
-#endif
-        obj->setColor(0, 255, 0);
-        obj->setZOrder(2);
-        obj->setTarget(ZStackObject::ETarget::WIDGET);
-        obj->useCosmeticPen(true);
-        obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
-        obj->useCosmeticPen(true);
-        //          obj->setDsIntv(31, 31, 31);
-        obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
-//        obj->setHittable(false);
-        obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
-        //      addObject(obj);
-        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
-        m_dataBuffer->deliver();
-        //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
-      } else {
-        delete obj;
-      }
-    }
+
+    addRoiMask(obj);
   }
 }
 
@@ -4810,6 +4824,33 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   }
 
   return bookmark;
+}
+
+bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
+{
+  switch (ZFileType::FileType(filePath.toStdString())) {
+  case ZFileType::EFileType::SWC: {
+    std::unique_ptr<ZSwcTree> tree = std::make_unique<ZSwcTree>();
+    tree->load(filePath.toStdString());
+    if (!tree->isEmpty()) {
+      tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
+      tree->setColor(QColor(255, 0, 0));
+      addObject(tree.release());
+
+      return true;
+    }
+  }
+    break;
+  case ZFileType::EFileType::JSON: {
+    ZObject3dScan *obj = flyem::LoadRoiFromJson(filePath.toStdString());
+    addRoiMask(obj);
+  }
+    break;
+  default:
+    break;
+  }
+
+  return false;
 }
 
 void ZFlyEmProofDoc::diagnose() const
