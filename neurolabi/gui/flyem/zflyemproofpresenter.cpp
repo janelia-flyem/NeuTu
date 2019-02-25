@@ -1043,6 +1043,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     }
     getCompleteDocument()->setSelectedBody(
           bodySet, neutu::ELabelSource::MAPPED);
+//    e->setEvent(
+//          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
@@ -1062,6 +1064,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     }
     getCompleteDocument()->setSelectedBody(
           newBodySet, neutu::ELabelSource::MAPPED);
+//    e->setEvent(
+//          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
@@ -1078,6 +1082,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     }
     getCompleteDocument()->setSelectedBody(
           bodySet, neutu::ELabelSource::MAPPED);
+//    e->setEvent(
+//          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
