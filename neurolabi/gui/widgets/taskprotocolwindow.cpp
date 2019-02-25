@@ -560,6 +560,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         }
     }
 
+    m_skippedTaskIndices.clear();
+
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
     if (save && (m_currentTaskIndex >= 0)) {
@@ -1017,16 +1019,20 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
  */
 void TaskProtocolWindow::updateLabel() {
     int ncomplete = 0;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (task->completed()) {
+    int ntasks = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_taskList[i]->completed()) {
+            // always count a completed task, even if subsequently it is designated as skipped
+            // (so proofreaders do not worry that their completed total is being decreased)
             ncomplete++;
+            ntasks++;
+        } else if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            // uncompleted tasks contribute to the total count only if not skipped
+            ntasks++;
         }
     }
 
-    // the total task count should not include tasks known to be skipped
-    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
-
-    float percent = (100.0 * ncomplete) / ntasks;
+    float percent = (ntasks > 0) ? (100.0 * ncomplete) / ntasks : 100.0;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
     // whenever we update the label, also log the progress; this is not useful as
