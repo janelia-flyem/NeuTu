@@ -401,6 +401,7 @@ signals:
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  bool _loadFile(const QString &filePath) override;
 
 private:
   ZStackObject* retriveBodyObject(

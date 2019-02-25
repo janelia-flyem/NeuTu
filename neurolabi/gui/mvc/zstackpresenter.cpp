@@ -3815,7 +3815,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
   processed = processCustomOperator(op, &interactionEvent) || processed;
 //  }
 
-  processEvent(interactionEvent);
+  if (interactionEvent.getEvent() != ZInteractionEvent::EVENT_NULL) {
+    processEvent(interactionEvent);
+  }
 
   return processed;
 }

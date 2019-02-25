@@ -455,7 +455,7 @@ protected slots:
 protected:
   void customInit();
   void createPresenter();
-  virtual void dropEvent(QDropEvent *event);
+//  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
@@ -591,6 +591,8 @@ private:
   void makeViewButton(EViewButton option, const QString &name, const char *slot);
   void initViewButton();
   void updateViewButton();
+
+  void updateRoiWidget(Z3DWindow *win) const;
 
 protected:
   bool m_showSegmentation;
