@@ -3,6 +3,7 @@ include($${PWD}/mylib/mylib.pri)
 include($${PWD}/imgproc/imgproc.pri)
 include($${PWD}/common/common.pri)
 include($${PWD}/geometry/geometry.pri)
+include($${PWD}/swc/swc.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
@@ -92,7 +93,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zmessagereporter.h \
    $${PWD}/zreportable.h \
    $${PWD}/zstackstatistics.h \
-   $${PWD}/zswcconnector.h \
    $${PWD}/zprogressable.h \
    $${PWD}/zuncopyable.h \
    $${PWD}/biocytin/zstackprojector.h \
@@ -113,22 +113,14 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcgenerator.h \
    $${PWD}/zpaintbundle.h \
    $${PWD}/zswcnodebufferfeatureanalyzer.h \
-   $${PWD}/swc/zswcresampler.h \
-   $${PWD}/swc/zswcmetric.h \
-   $${PWD}/swc/zswcterminalsurfacemetric.h \
    $${PWD}/zapclustering.h \
-   $${PWD}/swc/zswcterminalanglemetric.h \
-   $${PWD}/swc/zswcdeepanglemetric.h \
    $${PWD}/zswcsubtreefeatureanalyzer.h \
-   $${PWD}/swc/zswcsubtreeanalyzer.h \
    $${PWD}/zswctreenodearray.h \
-   $${PWD}/swc/zswcnodedistselector.h \
    $${PWD}/imgproc/zstackbinarizer.h \
    $${PWD}/zvectorgenerator.h \
    $${PWD}/zstackfactory.h \
    $${PWD}/zeigensolver.h \
    $${PWD}/zmapgenerator.h \
-   $${PWD}/swc/zswcpruner.h \
    $${PWD}/zneurontracer.h \
    $${PWD}/flyem/zflyemneuronlayermatcher.h \
    $${PWD}/flyem/zflyemneuronfeatureset.h \
@@ -207,9 +199,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zobject3dstripe.h \
    $${PWD}/jneurontracer.h \
    $${PWD}/zswcfactory.h \
-   $${PWD}/swc/zswcradiusestimator.h \
    $${PWD}/zswctreenodeselector.h \
-   $${PWD}/swc/zswcsignalfitter.h \
    $${PWD}/zneurontracerconfig.h \
    $${PWD}/zobject3dscan.hpp \
    $${PWD}/dvid/zdviddef.h \
@@ -311,7 +301,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zmessagereporter.cpp \
    $${PWD}/zreportable.cpp \
    $${PWD}/zstackstatistics.cpp \
-   $${PWD}/zswcconnector.cpp \
    $${PWD}/zprogressable.cpp \
    $${PWD}/biocytin/zstackprojector.cpp \
    $${PWD}/biocytin/swcprocessor.cpp \
@@ -334,17 +323,10 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcgenerator.cpp \
    $${PWD}/zswcnodebufferfeatureanalyzer.cpp \
    $${PWD}/flyem/zflyemneuronrangecompare.cpp \
-   $${PWD}/swc/zswcresampler.cpp \
-   $${PWD}/swc/zswcmetric.cpp \
-   $${PWD}/swc/zswcterminalsurfacemetric.cpp \
    $${PWD}/zapclustering.cpp \
-   $${PWD}/swc/zswcterminalanglemetric.cpp \
-   $${PWD}/swc/zswcdeepanglemetric.cpp \
    $${PWD}/zswcsubtreefeatureanalyzer.cpp \
-   $${PWD}/swc/zswcsubtreeanalyzer.cpp \
    $${PWD}/zswctreenodearray.cpp \
    $${PWD}/flyem/zflyembodyanalyzer.cpp \
-   $${PWD}/swc/zswcnodedistselector.cpp \
    $${PWD}/imgproc/zstackbinarizer.cpp \
    $${PWD}/zvectorgenerator.cpp \
    $${PWD}/zstackfactory.cpp \
@@ -356,7 +338,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/flyem/zflyemneuronfeature.cpp \
    $${PWD}/flyem/zflyemneuronfeaturefactory.cpp \
    $${PWD}/flyem/zflyemneuronarray.cpp \
-   $${PWD}/swc/zswcpruner.cpp \
    $${PWD}/flyem/zflyemneuronlayermatcher.cpp \
    $${PWD}/zdynamicprogrammer.cpp \
    $${PWD}/flyem/zhotspot.cpp \
@@ -407,9 +388,7 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/jneurontracer.cpp \
    $${PWD}/flyem/zflyembodyannotationbundle.cpp \
    $${PWD}/zswcfactory.cpp \
-   $${PWD}/swc/zswcradiusestimator.cpp \
    $${PWD}/zswctreenodeselector.cpp \
-   $${PWD}/swc/zswcsignalfitter.cpp \
    $${PWD}/zneurontracerconfig.cpp \
    $${PWD}/zswcutil.cpp \
    $${PWD}/dvid/zdvidnode.cpp \

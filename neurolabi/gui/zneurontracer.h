@@ -12,7 +12,7 @@
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
-#include "geometry/zintpoint.h"
+//#include "geometry/zintpoint.h"
 #include "zneurontracerconfig.h"
 
 class ZStack;
@@ -20,7 +20,7 @@ class ZSwcTree;
 class ZSwcConnector;
 class ZJsonObject;
 class ZWeightedPoint;
-//class ZIntPoint;
+class ZIntPoint;
 
 class ZNeuronTraceSeeder {
 public:
@@ -285,7 +285,7 @@ private:
   std::vector<Locseg_Chain*> m_chainArray;
   Stack *m_mask;
   Stack *m_baseMask;
-  ZIntPoint m_seedDsIntv;
+//  ZIntPoint m_seedDsIntv;
 
   bool m_bcAdjust;
   double m_greyFactor;
