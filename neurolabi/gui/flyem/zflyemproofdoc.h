@@ -36,7 +36,7 @@ class ZFlyEmSynapseAnnotationDialog;
 class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 class ZFlyEmRoiManager;
-
+class ZStackBlockGrid;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {

@@ -122,7 +122,8 @@ HEADERS += \
     $$PWD/zstackwatershedcontainer.h \
     $$PWD/zswctreebatchmatcher.h \
     $$PWD/logging.h \
-    $$PWD/flyemmvcdialogmanager.h
+    $$PWD/flyemmvcdialogmanager.h \
+    $$PWD/flyemdataconfig.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -234,4 +235,5 @@ SOURCES += \
     $$PWD/zstackwatershedcontainer.cpp \
     $$PWD/zswctreebatchmatcher.cpp \
     $$PWD/logging.cpp \
-    $$PWD/flyemmvcdialogmanager.cpp
+    $$PWD/flyemmvcdialogmanager.cpp \
+    $$PWD/flyemdataconfig.cpp

@@ -7,11 +7,15 @@
 
 #include "geometry/zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
-#include "dvid/zdvidreader.h"
+
+#include "zflyemproofdoc.h"
 #include "mvc/zstackframe.h"
 #include "mvc/zstackdoc.h"
-#include "flyem/zflyembodymergeframe.h"
-#include "flyem/zflyembodymergedoc.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackmvc.h"
+
+#include "zflyembodymergeframe.h"
+#include "zflyembodymergedoc.h"
 #include "neutubeconfig.h"
 #include "zstackdocreader.h"
 #include "zarrayfactory.h"
@@ -23,13 +27,14 @@
 #include "zwindowfactory.h"
 #include "z3dswcfilter.h"
 #include "zstackobjectsourcefactory.h"
-#include "mvc/zstackpresenter.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
-#include "zflyemproofdoc.h"
-#include "mvc/zstackmvc.h"
+
+
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidurl.h"
+
 #include "zwidgetmessage.h"
 #include "z3dgraphfactory.h"
 #include "mvc/zstackdochelper.h"
@@ -371,7 +376,7 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
 
   connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
           this, SLOT(update3DBodyView(ZStackObjectSelector)));
-  connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
+//  connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
   //connect(this, SIGNAL())
 }
 

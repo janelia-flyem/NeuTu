@@ -6,10 +6,10 @@
 #include <QMutex>
 
 #include <set>
-#include "dvid/zdvidreader.h"
+
 #include "dvid/zdvidwriter.h"
-#include "flyem/zflyembookmarklistmodel.h"
-#include "flyem/zflyembookmarkarray.h"
+//#include "flyem/zflyembookmarklistmodel.h"
+
 #include "zthreadfuturemap.h"
 #include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
@@ -26,6 +26,7 @@ class ZStackDoc;
 class ZStackViewParam;
 class ZWidgetMessage;
 class ZFlyEmSplitUploadOptionDialog;
+class ZFlyEmBookmarkArray;
 
 class ZFlyEmBodySplitProject : public QObject
 {

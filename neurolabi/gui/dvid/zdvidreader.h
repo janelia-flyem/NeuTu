@@ -13,13 +13,13 @@
 #include <vector>
 #include <tuple>
 
-#include "flyem/zflyem.h"
+//#include "flyem/zflyem.h"
 #include "zclosedcurve.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
 #include "zdvidsynapse.h"
 #include "zdvidbufferreader.h"
-#include "zdvidurl.h"
+//#include "zdvidurl.h"
 #include "znetbufferreader.h"
 
 #if defined(_ENABLE_LOWTIS_)
@@ -45,6 +45,7 @@ class ZObject3dScanArray;
 class ZMesh;
 class ZStack;
 class ZAffineRect;
+class ZDvidUrl;
 
 struct archive;
 
@@ -692,6 +693,8 @@ private:
   template<typename T>
   void configureLowtis(T *config, const std::string &dataName) const;
 
+  std::vector<uint64_t> readBodyIdAt(const ZJsonArray &queryObj) const;
+
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
@@ -740,11 +743,10 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (first != last) {
-    ZDvidBufferReader &bufferReader = m_bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
+//    ZDvidBufferReader &bufferReader = m_bufferReader;
+#if defined(_ENABLE_LIBDVIDCPP_2)
     bufferReader.setService(m_service);
 #endif
-    ZDvidUrl dvidUrl(m_dvidTarget);
 
     ZJsonArray queryObj;
 
@@ -758,26 +760,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
       queryObj.append(coordObj);
     }
 
-    QString queryForm = queryObj.dumpString(0).c_str();
-
-#ifdef _DEBUG_
-    std::cout << "Payload: " << queryForm.toStdString() << std::endl;
-#endif
-
-    QByteArray payload;
-    payload.append(queryForm);
-
-    bufferReader.read(
-          dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
-    setStatusCode(bufferReader.getStatusCode());
-
-    ZJsonArray infoJson;
-    infoJson.decodeString(bufferReader.getBuffer().data());
-
-    for (size_t i = 0; i < infoJson.size(); ++i) {
-      uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
-      bodyArray.push_back(bodyId);
-    }
+    bodyArray = readBodyIdAt(queryObj);
   }
 
   return bodyArray;

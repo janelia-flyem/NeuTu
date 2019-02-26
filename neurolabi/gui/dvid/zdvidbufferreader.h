@@ -10,7 +10,7 @@
 //#include <QNetworkReply>
 
 #include "common/neutube_def.h"
-#include "common/zsharedpointer.h"
+//#include "common/zsharedpointer.h"
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -69,7 +69,7 @@ public:
   }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
+  void setService(const std::shared_ptr<libdvid::DVIDNodeService> &service);
   void setService(const ZDvidTarget &target);
 #endif
 
@@ -112,7 +112,7 @@ private:
   bool m_tryingCompress;
   int m_maxSize;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
 #endif
 //  QTimer *m_timer;
 };

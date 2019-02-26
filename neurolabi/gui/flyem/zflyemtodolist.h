@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QRect>
 
+#include "geometry/zintcuboid.h"
 #include "dvid/zdvidtarget.h"
 #include "zstackobject.h"
 #include "dvid/zdvidreader.h"

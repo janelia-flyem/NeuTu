@@ -5,16 +5,15 @@
 #include <QList>
 #include <QMap>
 
-#include "dvid/zdvidtarget.h"
+#include "neutube.h"
+#include "common/zsharedpointer.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
-#include "common/zsharedpointer.h"
-#include "zstackviewparam.h"
-#include "neutube.h"
-#include "dvid/zdvidinfo.h"
-#include "zflyembookmarkarray.h"
-#include "dvid/zdvidreader.h"
+//#include "zstackviewparam.h"
+
 #include "dvid/zdvidwriter.h"
+
+#include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
 #include "zflyembodyannotationmerger.h"
 
@@ -36,6 +35,7 @@ class ZFlyEmBodyMerger;
 class ZWidgetMessage;
 //class ZDvidInfo;
 class ZProgressSignal;
+
 //class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject

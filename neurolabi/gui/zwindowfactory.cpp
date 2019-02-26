@@ -97,7 +97,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
 
-    if (m_volumeMode == neutube3d::EVolumeRenderingMode::VR_AUTO) {
+    if (m_volumeMode == neutu3d::EVolumeRenderingMode::VR_AUTO) {
       if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY ||
           doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT ||
           doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
@@ -109,7 +109,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       }
     } else {
       window->getVolumeFilter()->setCompositeMode(
-            neutube3d::GetVolumeRenderingModeName(m_volumeMode));
+            neutu3d::GetVolumeRenderingModeName(m_volumeMode));
     }
     if (doc->getTag() != neutu::Document::ETag::FLYEM_SPLIT &&
         doc->getTag() != neutu::Document::ETag::SEGMENTATION_TARGET &&
@@ -132,7 +132,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->setGeometry(m_windowGeometry);
     }
 
-    for (QMap<neutube3d::ERendererLayer, bool>::const_iterator
+    for (QMap<neutu3d::ERendererLayer, bool>::const_iterator
          iter = m_layerVisible.begin(); iter != m_layerVisible.end(); ++iter) {
       window->setLayerVisible(iter.key(), iter.value());
     }
@@ -246,7 +246,7 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
   m_windowGeometry = rect;
 }
 
-void ZWindowFactory::setWindowType(neutube3d::EWindowType type)
+void ZWindowFactory::setWindowType(neutu3d::EWindowType type)
 {
   m_windowType = type;
 }
@@ -257,7 +257,7 @@ void ZWindowFactory::configure(Z3DWindow * /*window*/)
 
 }
 
-void ZWindowFactory::setVisible(neutube3d::ERendererLayer layer, bool visible)
+void ZWindowFactory::setVisible(neutu3d::ERendererLayer layer, bool visible)
 {
   m_layerVisible[layer] = visible;
 }
