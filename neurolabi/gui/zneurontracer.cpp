@@ -3,34 +3,44 @@
 #include <fstream>
 #include <sys/stat.h>
 
-//#include "zlocsegchain.h"
-#include "swctreenode.h"
-#include "c_stack.h"
-#include "zswcconnector.h"
 #include "tz_math.h"
-#include "zvoxelarray.h"
-#include "tz_stack_sampling.h"
-#include "imgproc/zstackbinarizer.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_fimage_lib.h"
 #include "tz_voxel_graphics.h"
-#include "zstack.hxx"
-#include "swc/zswcresampler.h"
-#include "geometry/zintpoint.h"
+#include "tz_stack_sampling.h"
+
+#include "c_stack.h"
+
+#include "zvoxelarray.h"
+
+#include "swctreenode.h"
+
+
 #include "neutubeconfig.h"
+#include "zneurontracerconfig.h"
+
+#include "imgproc/zstackbinarizer.h"
 #include "imgproc/zstackprocessor.h"
+
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
+
+#include "zstack.hxx"
+
 #include "zobject3darray.h"
 #include "tz_objdetect.h"
 #include "zjsonobject.h"
 #include "zswctree.h"
-#include "swc/zswcsignalfitter.h"
-#include "zneurontracerconfig.h"
-#include "swc/zswcpruner.h"
 #include "tz_stack_threshold.h"
-#include "geometry/zintcuboid.h"
+
 #include "zweightedpoint.h"
 #include "zswcfactory.h"
+
+#include "swc/zswcsignalfitter.h"
+#include "swc/zswcpruner.h"
+#include "swc/zswcresampler.h"
+#include "swc/zswcconnector.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -1034,7 +1044,7 @@ void ZNeuronTracer::clearBuffer()
     m_baseMask = NULL;
   }
 
-  m_seedDsIntv.set(0, 0, 0);
+//  m_seedDsIntv.set(0, 0, 0);
 }
 
 #if 0
