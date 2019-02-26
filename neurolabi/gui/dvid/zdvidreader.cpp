@@ -22,10 +22,10 @@
 #include "zstackfactory.h"
 #include "zswctree.h"
 #include "zdvidinfo.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidfilter.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
+//#include "dvid/zdvidtarget.h"
+#include "zdvidfilter.h"
+//#include "dvid/zdvidbufferreader.h"
+#include "zdvidurl.h"
 #include "zarray.h"
 #include "zstring.h"
 #include "flyem/zflyemneuronbodyinfo.h"
@@ -3409,7 +3409,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
 //      m_lowtisConfigGray.enableprefetch = NeutubeConfig::LowtisPrefetching();
 
-      m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
+      m_lowtisServiceGray = std::shared_ptr<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
 
     } catch (libdvid::DVIDException &e) {
@@ -3584,8 +3584,37 @@ ZIntCuboid ZDvidReader::GetStackBoxAtCenter(
   return box;
 }
 
+std::vector<uint64_t> ZDvidReader::readBodyIdAt(const ZJsonArray &queryObj) const
+{
+  std::vector<uint64_t> bodyArray;
+
+  QString queryForm = queryObj.dumpString(0).c_str();
+
+#ifdef _DEBUG_
+  std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+  QByteArray payload;
+  payload.append(queryForm);
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  m_bufferReader.read(
+        dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
+  setStatusCode(m_bufferReader.getStatusCode());
+
+  ZJsonArray infoJson;
+  infoJson.decodeString(m_bufferReader.getBuffer().data());
+
+  for (size_t i = 0; i < infoJson.size(); ++i) {
+    uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
+    bodyArray.push_back(bodyId);
+  }
+
+  return bodyArray;
+}
+
 void ZDvidReader::prepareLowtisService(
-    ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+    std::shared_ptr<lowtis::ImageService> &service, const std::string &dataName,
     lowtis::DVIDConfig &config, int cx, int cy) const
 {
   if (service.get() == NULL) {

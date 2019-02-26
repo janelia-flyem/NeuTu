@@ -36,6 +36,8 @@ public:
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }
 
+  int getValue(neutu::EAxis axis) const;
+
   const int& operator[] (int index) const;
   int& operator[] (int index);
 

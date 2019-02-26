@@ -13,6 +13,7 @@
 #include "neutubeconfig.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
 #include "zdvidutil.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"

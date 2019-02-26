@@ -1,20 +1,5 @@
 #include "taskbodycleave.h"
 
-#include "logging/zlog.h"
-#include "logging/utilities.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
-#include "flyem/zflyembody3ddoc.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemsupervisor.h"
-#include "flyem/logging.h"
-#include "zdvidutil.h"
-#include "zstackdocproxy.h"
-#include "zwidgetmessage.h"
-#include "z3dmeshfilter.h"
-#include "z3dwindow.h"
-
 #include <iostream>
 
 #include <QCheckBox>
@@ -38,6 +23,20 @@
 #include <QUndoCommand>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemsupervisor.h"
+#include "flyem/logging.h"
+#include "zdvidutil.h"
+#include "zstackdocproxy.h"
+#include "zwidgetmessage.h"
+#include "z3dmeshfilter.h"
+#include "z3dwindow.h"
 
 namespace {
 

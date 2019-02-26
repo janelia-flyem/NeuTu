@@ -13,9 +13,11 @@
 
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
-#include "dvid/zdvidreader.h"
+
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidurl.h"
 #include "dvid/zdvidwriter.h"
+
 #include "mainwindow.h"
 #include "mvc/zstackframe.h"
 #include "zswcgenerator.h"

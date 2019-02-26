@@ -123,7 +123,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_swcExportDlg = new SwcExportDialog(this);
   m_3dWindowFactory.setParentWidget(this->parentWidget());
-  m_3dWindowFactory.setVolumeRenderMode(neutube3d::EVolumeRenderingMode::VR_ALPHA_BLENDING);
+  m_3dWindowFactory.setVolumeRenderMode(neutu3d::EVolumeRenderingMode::VR_ALPHA_BLENDING);
 
   connect(&m_thumbnailFutureWatcher, SIGNAL(finished()),
           this, SLOT(slotTest()));

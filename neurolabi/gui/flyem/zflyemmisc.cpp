@@ -38,6 +38,7 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
 
 #include "zstackviewparam.h"
 #include "zobject3dfactory.h"
@@ -853,7 +854,7 @@ void flyem::Decorate3dBodyWindow(
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(neutube3d::ERendererLayer::GRAPH, 0.4);
+      window->setOpacity(neutu3d::ERendererLayer::GRAPH, 0.4);
     }
   }
 }

@@ -9,7 +9,10 @@
 #include <QMutexLocker>
 
 #include "zjsondef.h"
+
 #include "mvc/zstackframe.h"
+#include "mvc/zstackview.h"
+
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
 #include "zstackobject.h"
@@ -17,28 +20,24 @@
 #include "zsparsestack.h"
 #include "zswctree.h"
 #include "zwindowfactory.h"
-#include "dvid/zdvidreader.h"
-#include "zwindowfactory.h"
+
 #include "zstackskeletonizer.h"
 #include "neutubeconfig.h"
 #include "zswcgenerator.h"
 #include "z3dswcfilter.h"
 #include "zobject3dscan.h"
 #include "zstroke2d.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdviddata.h"
 #include "zstring.h"
 #include "zflyemcoordinateconverter.h"
 #include "zflyemneuron.h"
-#include "mvc/zstackview.h"
+
 #include "zstackpatch.h"
 #include "zstackobjectsource.h"
 #include "neutubeconfig.h"
 #include "zarray.h"
-#include "dvid/zdvidgrayslice.h"
+
 #include "zstackobjectsourcefactory.h"
 #include "zflyemproofdoc.h"
-#include "dvid/zdvidsparsestack.h"
 #include "zwidgetmessage.h"
 #include "zflyemmisc.h"
 #include "mvc/zstackdochelper.h"
@@ -54,6 +53,13 @@
 #include "neutuse/taskfactory.h"
 #include "zdialogfactory.h"
 #include "zpunctum.h"
+#include "zflyembookmarkarray.h"
+
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdviddata.h"
+#include "dvid/zdvidurl.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_RESULT_QUICK = "updateSplitQuickFunc";
 

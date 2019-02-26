@@ -35,7 +35,7 @@ public:
   FlyEmBodyInfoDialog* getBodyInfoDlg();
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   FlyEmBodyInfoDialog* getNeuprintBodyDlg();
-  ZFlyEmSplitCommitDialog getSplitCommitDlg();
+  ZFlyEmSplitCommitDialog* getSplitCommitDlg();
   FlyEmTodoDialog* getTodoDlg();
   ZFlyEmRoiToolDialog* getRoiDlg();
   ZFlyEmSplitUploadOptionDialog* getSplitUploadDlg();
@@ -52,6 +52,21 @@ public:
   ZContrastProtocalDialog* getContrastDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
+  bool isDvidDlgReady() const;
+  bool isRoiDlgReady() const;
+  bool isBodyInfoDlgReady() const;
+  bool isSplitUploadDlgReady() const;
+
+private:
+  inline bool isNull(void *dlg) const {
+    return (dlg == nullptr);
+  }
+
+//  bool creationRequired(void *dlg) const;
+
+private:
+  template<typename T>
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
 
 private:
   ZFlyEmProofMvc *m_parent = nullptr;

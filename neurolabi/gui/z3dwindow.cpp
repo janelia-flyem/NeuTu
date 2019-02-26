@@ -117,7 +117,7 @@ public:
 
 Z3DWindow::Z3DWindow(
     ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
-    neutube3d::EWindowType windowType,
+    neutu3d::EWindowType windowType,
     bool stereoView, QWidget *parent)
   : QMainWindow(parent)
   , m_windowType(windowType)
@@ -175,7 +175,7 @@ Z3DWindow::Z3DWindow(
   m_buttonStatus[2] = false; // objects
   m_buttonStatus[3] = false; // ROIs
 
-  setWindowType(neutube3d::EWindowType::GENERAL);
+  setWindowType(neutu3d::EWindowType::GENERAL);
 
   m_cuttingStackBound = false;
 
@@ -205,11 +205,11 @@ QToolBar* Z3DWindow::getToolBar() const
 
 void Z3DWindow::createToolBar()
 {
-  if (getWindowType() == neutube3d::EWindowType::COARSE_BODY ||
-      getWindowType() == neutube3d::EWindowType::BODY ||
-      getWindowType() == neutube3d::EWindowType::SKELETON ||
-      getWindowType() == neutube3d::EWindowType::MESH ||
-      getWindowType() == neutube3d::EWindowType::NEU3) {
+  if (getWindowType() == neutu3d::EWindowType::COARSE_BODY ||
+      getWindowType() == neutu3d::EWindowType::BODY ||
+      getWindowType() == neutu3d::EWindowType::SKELETON ||
+      getWindowType() == neutu3d::EWindowType::MESH ||
+      getWindowType() == neutu3d::EWindowType::NEU3) {
     m_toolBar = addToolBar("View");
     QAction *viewSynapseAction = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_SHOW_SYNAPSE, this);
@@ -230,7 +230,7 @@ void Z3DWindow::createToolBar()
 
   }
 
-  if (getWindowType() == neutube3d::EWindowType::NEU3) {
+  if (getWindowType() == neutu3d::EWindowType::NEU3) {
 //    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
 //    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 //    m_meshOpacitySlider->setRange(0, 255);
@@ -1095,8 +1095,8 @@ void Z3DWindow::fillDockWindows()
 
   m_widgetsGroup->addChild(m_view->captureWidgetsGroup());
 
-  const QList<neutube3d::ERendererLayer>& layerList = m_view->getLayerList();
-  foreach (neutube3d::ERendererLayer layer, layerList) {
+  const QList<neutu3d::ERendererLayer>& layerList = m_view->getLayerList();
+  foreach (neutu3d::ERendererLayer layer, layerList) {
     m_widgetsGroup->addChild(m_view->getWidgetsGroup(layer));
   }
 #if 0
@@ -1303,7 +1303,7 @@ void Z3DWindow::selectAllMeshes()
   }
 }
 
-void Z3DWindow::configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj)
+void Z3DWindow::configureLayer(neutu3d::ERendererLayer layer, const ZJsonObject &obj)
 {
   m_view->configureLayer(layer, obj);
 }
@@ -1324,7 +1324,7 @@ void Z3DWindow::syncAction()
 {
   QAction *action = getAction(ZActionFactory::ACTION_SHOW_TODO);
   if (action != NULL) {
-    action->setChecked(m_view->isLayerVisible(neutube3d::ERendererLayer::TODO));
+    action->setChecked(m_view->isLayerVisible(neutu3d::ERendererLayer::TODO));
   }
 }
 
@@ -1349,7 +1349,7 @@ void Z3DWindow::toggleSetting()
 
 void Z3DWindow::readSettings()
 {
-  QString windowKey = neutube3d::GetWindowKeyString(getWindowType()).c_str();
+  QString windowKey = neutu3d::GetWindowKeyString(getWindowType()).c_str();
   QString settingString = NeutubeConfig::GetSettings().value(windowKey).
       toString();
 
@@ -1365,7 +1365,7 @@ void Z3DWindow::readSettings()
 void Z3DWindow::writeSettings()
 {
   //ignore general window type for now
-  if (getWindowType() != neutube3d::EWindowType::GENERAL) {
+  if (getWindowType() != neutu3d::EWindowType::GENERAL) {
     ZJsonObject configJson = m_view->getSettings();
 
     std::string settingString = configJson.dumpString(0);
@@ -1374,7 +1374,7 @@ void Z3DWindow::writeSettings()
     std::cout << settingString << std::endl;
 #endif
     NeutubeConfig::GetSettings().setValue(
-          neutube3d::GetWindowKeyString(getWindowType()).c_str(),
+          neutu3d::GetWindowKeyString(getWindowType()).c_str(),
           settingString.c_str());
   }
 }
@@ -3522,14 +3522,14 @@ void Z3DWindow::groupSelectedSwc()
 
 void Z3DWindow::showPuncta(bool on)
 {
-  m_view->setLayerVisible(neutube3d::ERendererLayer::PUNCTA, on);
+  m_view->setLayerVisible(neutu3d::ERendererLayer::PUNCTA, on);
 
   emit showingPuncta(on);
 }
 
 void Z3DWindow::showTodo(bool on)
 {
-  m_view->setLayerVisible(neutube3d::ERendererLayer::TODO, on);
+  m_view->setLayerVisible(neutu3d::ERendererLayer::TODO, on);
   emit showingTodo(on);
 }
 
@@ -4691,12 +4691,12 @@ Z3DWindow* Z3DWindow::Open(
 }
 
 
-Z3DGeometryFilter* Z3DWindow::getFilter(neutube3d::ERendererLayer layer) const
+Z3DGeometryFilter* Z3DWindow::getFilter(neutu3d::ERendererLayer layer) const
 {
   return m_view->getFilter(layer);
 }
 
-Z3DBoundedFilter* Z3DWindow::getBoundedFilter(neutube3d::ERendererLayer layer) const
+Z3DBoundedFilter* Z3DWindow::getBoundedFilter(neutu3d::ERendererLayer layer) const
 {
   return m_view->getBoundedFilter(layer);
 }
@@ -4706,19 +4706,19 @@ void Z3DWindow::updateCuttingBox()
   if (m_cuttingStackBound) {
     if (getDocument()->hasStack()) {
       m_view->setCutBox(
-            neutube3d::ERendererLayer::SWC, getDocument()->getStack()->getBoundBox());
+            neutu3d::ERendererLayer::SWC, getDocument()->getStack()->getBoundBox());
     }
   } else {
-    m_view->resetCutBox(neutube3d::ERendererLayer::SWC);
+    m_view->resetCutBox(neutu3d::ERendererLayer::SWC);
   }
 }
 
-void Z3DWindow::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
+void Z3DWindow::setCutBox(neutu3d::ERendererLayer layer, const ZIntCuboid &box)
 {
   m_view->setCutBox(layer, box);
 }
 
-void Z3DWindow::resetCutBox(neutube3d::ERendererLayer layer)
+void Z3DWindow::resetCutBox(neutu3d::ERendererLayer layer)
 {
   m_view->resetCutBox(layer);
 }
@@ -4728,19 +4728,19 @@ void Z3DWindow::setZScale(double s)
   m_view->setZScale(s);
 }
 
-bool Z3DWindow::isLayerVisible(neutube3d::ERendererLayer layer) const
+bool Z3DWindow::isLayerVisible(neutu3d::ERendererLayer layer) const
 {
   return m_view->isLayerVisible(layer);
 }
 
-void Z3DWindow::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
+void Z3DWindow::setLayerVisible(neutu3d::ERendererLayer layer, bool visible)
 {
   m_view->setLayerVisible(layer, visible);
 }
 
-void Z3DWindow::setOpacity(neutube3d::ERendererLayer layer, double opacity)
+void Z3DWindow::setOpacity(neutu3d::ERendererLayer layer, double opacity)
 {
-  if (layer == neutube3d::ERendererLayer::MESH) {
+  if (layer == neutu3d::ERendererLayer::MESH) {
     setMeshOpacity(opacity);
   } else {
     m_view->setOpacity(layer, opacity);
@@ -4748,27 +4748,27 @@ void Z3DWindow::setOpacity(neutube3d::ERendererLayer layer, double opacity)
 }
 
 void Z3DWindow::setOpacityQuietly(
-    neutube3d::ERendererLayer layer, double opacity)
+    neutu3d::ERendererLayer layer, double opacity)
 {
   m_view->setOpacityQuietly(layer, opacity);
 }
 
-void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
+void Z3DWindow::setFront(neutu3d::ERendererLayer layer, bool on)
 {
   m_view->setFront(layer, on);
 }
 
 void Z3DWindow::setColorMode(
-    neutube3d::ERendererLayer layer, const std::string &mode)
+    neutu3d::ERendererLayer layer, const std::string &mode)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::MESH:
+  case neutu3d::ERendererLayer::MESH:
     getMeshFilter()->setColorMode(mode);
     break;
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     getSwcFilter()->setColorMode(mode);
     break;
-  case neutube3d::ERendererLayer::PUNCTA:
+  case neutu3d::ERendererLayer::PUNCTA:
     getPunctaFilter()->setColorMode(mode);
     break;
   default:
@@ -4795,7 +4795,7 @@ void Z3DWindow::gotoPosition(const ZPoint &position, double radius)
 bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
 {
   QPointF screenPos = m_view->getScreenProjection(
-        pt.getX(), pt.getY(), pt.getZ(), neutube3d::ERendererLayer::SWC);
+        pt.getX(), pt.getY(), pt.getZ(), neutu3d::ERendererLayer::SWC);
 
   return getRectRoi().contains(screenPos.x(), screenPos.y());
 }
@@ -4866,7 +4866,7 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
         if (SwcTreeNode::isRegular(tn)) {
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::ERendererLayer::SWC);
+                neutu3d::ERendererLayer::SWC);
           if (rect.contains(pt.x(), pt.y())) {
             tree->selectNode(tn, true);
           }
@@ -4909,7 +4909,7 @@ void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
           Swc_Tree_Node *tn = dsIter.next();
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::ERendererLayer::SWC);
+                neutu3d::ERendererLayer::SWC);
           if (!rect.contains(pt.x(), pt.y())) {
             treeInRoi = false;
             break;
@@ -4956,7 +4956,7 @@ void Z3DWindow::selectTerminalBranchInRoi(bool appending)
         while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
           const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                neutube3d::ERendererLayer::SWC);
+                neutu3d::ERendererLayer::SWC);
           if (!rect.contains(pt.x(), pt.y())) {
             treeInRoi = false;
             break;
