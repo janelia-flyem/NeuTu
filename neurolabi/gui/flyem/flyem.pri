@@ -123,7 +123,8 @@ HEADERS += \
     $$PWD/zswctreebatchmatcher.h \
     $$PWD/logging.h \
     $$PWD/flyemmvcdialogmanager.h \
-    $$PWD/flyemdataconfig.h
+    $$PWD/flyemdataconfig.h \
+    $$PWD/zflyemproofdochelper.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -236,4 +237,5 @@ SOURCES += \
     $$PWD/zswctreebatchmatcher.cpp \
     $$PWD/logging.cpp \
     $$PWD/flyemmvcdialogmanager.cpp \
-    $$PWD/flyemdataconfig.cpp
+    $$PWD/flyemdataconfig.cpp \
+    $$PWD/zflyemproofdochelper.cpp
