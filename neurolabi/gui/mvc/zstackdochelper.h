@@ -37,7 +37,7 @@ public:
   int getCurrentZ() const;
   bool hasCurrentZ() const;
 
-  ZStack *getSparseStack(const ZStackDoc *doc);
+  virtual ZStack *getSparseStack(const ZStackDoc *doc);
   ZIntPoint getSparseStackDsIntv() const {
     return m_sparseStackDsIntv;
   }

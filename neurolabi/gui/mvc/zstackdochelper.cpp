@@ -4,13 +4,16 @@
 #include <QColor>
 
 #include "zstackdoc.h"
+#include "zstackview.h"
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
-#include "zstackview.h"
+#include "dvid/zdvidsparsestack.h"
+
 #include "geometry/zintcuboid.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
-#include "dvid/zdvidsparsestack.h"
+
 #include "zstack.hxx"
 
 ZStackDocHelper::ZStackDocHelper()
@@ -33,6 +36,19 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     m_sparseStackDsIntv.set(0, 0, 0);
   }
 
+  const ZSparseStack *spStack = doc->getSparseStack();
+
+  const ZStack* stack = nullptr;
+
+  if (spStack) {
+    stack = spStack->getStack();
+  }
+
+  if (stack) {
+    m_sparseStackDsIntv = stack->getDsIntv();
+  }
+
+  /*
   ZStack *stack = NULL;
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
@@ -53,8 +69,9 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     }
     m_sparseStackDsIntv = spStack->getDenseDsIntv();
   }
+  */
 
-  return stack;
+  return const_cast<ZStack*>(stack);
 }
 
 void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
