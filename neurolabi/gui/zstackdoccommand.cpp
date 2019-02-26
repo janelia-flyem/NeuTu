@@ -13,7 +13,7 @@
 #include "zstroke2d.h"
 #include "zneurontracer.h"
 #include "mvc/zstackdoc.h"
-#include "zswcconnector.h"
+#include "swc/zswcconnector.h"
 #include "zgraph.h"
 #include "zdocumentable.h"
 #include "zdocplayer.h"

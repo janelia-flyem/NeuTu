@@ -56,7 +56,7 @@
 #include "zdirectionaltemplatechain.h"
 #include "zstack.hxx"
 
-#include "mainwindow.h"
+//#include "mainwindow.h"
 #include "zerror.h"
 #include "zswcnetwork.h"
 #include "zstring.h"
@@ -79,7 +79,7 @@
 #include "zstackdoccommand.h"
 #include "zstroke2d.h"
 #include "zqtmessagereporter.h"
-#include "zswcconnector.h"
+#include "swc/zswcconnector.h"
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
