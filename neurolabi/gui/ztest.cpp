@@ -29418,7 +29418,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Segment number: " << obj.getSegmentNumber() << std::endl;
 #endif
 
-#if 0
+#if 1
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
 
@@ -29513,7 +29513,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan *obj = flyem::LoadRoiFromJson(
         GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");

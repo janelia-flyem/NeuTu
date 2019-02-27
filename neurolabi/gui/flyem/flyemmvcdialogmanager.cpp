@@ -1,5 +1,7 @@
 #include "flyemmvcdialogmanager.h"
 
+#include <typeinfo>
+
 #include "common/utilities.h"
 #include "logging/zlog.h"
 
@@ -23,10 +25,27 @@
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "dialogs/zflyemroitooldialog.h"
 #include "dialogs/zflyemgrayscaledialog.h"
+#include "dialogs/flyembodyiddialog.h"
+#include "dialogs/zflyemmergeuploaddialog.h"
+#include "dialogs/flyemdialogfactory.h"
+#include "dialogs/zflyemproofsettingdialog.h"
 
 FlyEmMvcDialogManager::FlyEmMvcDialogManager(ZFlyEmProofMvc *parent) :
   m_parent(parent)
 {
+}
+
+template <typename T>
+bool FlyEmMvcDialogManager::createIfNecessary(T* &dlg)
+{
+  if (isNull(dlg)) {
+    KINFO << "Creating" << typeid(T).name(); //Not necessary works (compiler dependent), but seems good enough for debugging
+    dlg = new T(m_parent);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -73,8 +92,8 @@ bool FlyEmMvcDialogManager::isSplitUploadDlgReady() const
 
 ZContrastProtocalDialog* FlyEmMvcDialogManager::getContrastDlg()
 {
-  if (isNull(m_contrastDlg)) {
-    KINFO << "Creating ZContrastProtocalDialog";
+  if (createIfNecessary(m_contrastDlg)) {
+//    KINFO << "ZContrastProtocalDialog created";
     m_contrastDlg = new ZContrastProtocalDialog(m_parent);
     m_parent->configureContrastDlg(m_contrastDlg);
     //    m_contrastDlg->setContrastProtocol(getPresenter()->getHighContrastProtocal());
@@ -91,19 +110,14 @@ ZContrastProtocalDialog* FlyEmMvcDialogManager::getContrastDlg()
 
 ZFlyEmSplitCommitDialog* FlyEmMvcDialogManager::getSplitCommitDlg()
 {
-  if (isNull(m_splitCommitDlg)) {
-    KINFO << "Creating ZFlyEmSplitCommitDialog";
-    m_splitCommitDlg = new ZFlyEmSplitCommitDialog(m_parent);
-  }
+  createIfNecessary(m_splitCommitDlg);
 
   return m_splitCommitDlg;
 }
 
 FlyEmTodoDialog* FlyEmMvcDialogManager::getTodoDlg()
 {
-  if (isNull(m_todoDlg)) {
-    KINFO << "Creating FlyEmTodoDialog";
-    m_todoDlg = new FlyEmTodoDialog(m_parent);
+  if (createIfNecessary(m_todoDlg)) {
     m_parent->configureTodoDlg(m_todoDlg);
   }
 
@@ -112,10 +126,7 @@ FlyEmTodoDialog* FlyEmMvcDialogManager::getTodoDlg()
 
 ZFlyEmRoiToolDialog* FlyEmMvcDialogManager::getRoiDlg()
 {
-  if (isNull(m_roiDlg)) {
-    KINFO << "Creating ZFlyEmRoiToolDialog";
-    m_roiDlg = new ZFlyEmRoiToolDialog(m_parent);
-
+  if (createIfNecessary(m_roiDlg)) {
     QObject::connect(m_roiDlg, SIGNAL(projectActivited()),
                      m_parent, SLOT(loadRoiProject()));
     QObject::connect(m_roiDlg, SIGNAL(projectClosed()),
@@ -146,9 +157,7 @@ ZFlyEmRoiToolDialog* FlyEmMvcDialogManager::getRoiDlg()
 
 ZFlyEmSplitUploadOptionDialog* FlyEmMvcDialogManager::getSplitUploadDlg()
 {
-  if (isNull(m_splitUploadDlg)) {
-    KINFO << "Creating ZFlyEmSplitUploadOptionDialog";
-    m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(m_parent);
+  if (createIfNecessary(m_splitUploadDlg)) {
     m_parent->configureSplitUploadDlg(m_splitUploadDlg);
   }
 
@@ -157,41 +166,62 @@ ZFlyEmSplitUploadOptionDialog* FlyEmMvcDialogManager::getSplitUploadDlg()
 
 ZFlyEmBodyChopDialog* FlyEmMvcDialogManager::getBodyChopDlg()
 {
-  if (isNull(m_bodyChopDlg)) {
-    KINFO << "Creating ZFlyEmBodyChopDialog";
-    m_bodyChopDlg = new ZFlyEmBodyChopDialog(m_parent);
-  }
+  createIfNecessary(m_bodyChopDlg);
 
   return m_bodyChopDlg;
 }
 
 ZInfoDialog* FlyEmMvcDialogManager::getInfoDlg()
 {
-  if (isNull(m_bodyInfoDlg)) {
-    KINFO << "Creating ZInfoDialog";
-    m_infoDlg = new ZInfoDialog(m_parent);
-  }
+  createIfNecessary(m_infoDlg);
 
   return m_infoDlg;
 }
 
 ZFlyEmSkeletonUpdateDialog* FlyEmMvcDialogManager::getSkeletonUpdateDlg()
 {
-  if (isNull(m_skeletonUpdateDlg)) {
-     KINFO << "Creating ZFlyEmSkeletonUpdateDialog";
-    m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(m_parent);
-  }
+  createIfNecessary(m_skeletonUpdateDlg);
 
   return m_skeletonUpdateDlg;
 }
 
 ZFlyEmGrayscaleDialog* FlyEmMvcDialogManager::getGrayscaleDlg()
 {
-  if (isNull(m_grayscaleDlg)) {
-    m_grayscaleDlg = new ZFlyEmGrayscaleDialog(m_parent);
-  }
+  createIfNecessary(m_grayscaleDlg);
 
   return m_grayscaleDlg;
+}
+
+FlyEmBodyIdDialog* FlyEmMvcDialogManager::getBodyIdDialog()
+{
+  createIfNecessary(m_bodyIdDialog);
+
+  return m_bodyIdDialog;
+}
+
+ZFlyEmMergeUploadDialog* FlyEmMvcDialogManager::getMergeUploadDlg()
+{
+  createIfNecessary(m_mergeUploadDlg);
+
+  return m_mergeUploadDlg;
+}
+
+ZFlyEmProofSettingDialog* FlyEmMvcDialogManager::getSettingDlg()
+{
+  createIfNecessary(m_settingDlg);
+
+  return m_settingDlg;
+}
+
+ZFlyEmBodyAnnotationDialog* FlyEmMvcDialogManager::getAnnotationDlg()
+{
+  if (isNull(m_annotationDlg)) {
+    KINFO << "Creating ZFlyEmBodyAnnotationDialog";
+    m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
+          m_parent->getCompleteDocument(), m_parent);
+  }
+
+  return m_annotationDlg;
 }
 
 template<typename T>
@@ -284,10 +314,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
 
 NeuprintSetupDialog* FlyEmMvcDialogManager::getNeuprintSetupDlg()
 {
-  if (isNull(m_neuprintSetupDlg)) {
-    KINFO << "Creating NeuprintSetupDialog";
-    m_neuprintSetupDlg = new NeuprintSetupDialog(m_parent);
-  }
+  createIfNecessary(m_neuprintSetupDlg);
   m_neuprintSetupDlg->setUuid(m_parent->getDvidTargetUuid().c_str());
 
   return m_neuprintSetupDlg;

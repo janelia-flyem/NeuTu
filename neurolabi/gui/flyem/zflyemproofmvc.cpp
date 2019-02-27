@@ -167,13 +167,13 @@ void ZFlyEmProofMvc::init()
 //  m_todoDlg = new FlyEmTodoDialog(this);
 //  m_roiDlg = new ZFlyEmRoiToolDialog(this);
 //  m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
-  m_mergeUploadDlg = new ZFlyEmMergeUploadDialog(this);
+//  m_mergeUploadDlg = new ZFlyEmMergeUploadDialog(this);
 //  m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
 //  m_infoDlg = new ZInfoDialog(this);
 //  m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
 //  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
-  m_bodyIdDialog = new FlyEmBodyIdDialog(this);
-  m_settingDlg = new ZFlyEmProofSettingDialog(this);
+//  m_bodyIdDialog = new FlyEmBodyIdDialog(this);
+//  m_settingDlg = new ZFlyEmProofSettingDialog(this);
 
 
   /*
@@ -407,46 +407,12 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 
 ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
+  return m_dlgManager->getAnnotationDlg();
+  /*
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
           getCompleteDocument(), this);
-#if 0
-    m_annotationDlg = new ZFlyEmBodyAnnotationDialog(this);
-    QList<QString> statusList = getCompleteDocument()->getBodyStatusList();
-#if 0
-    ZJsonObject statusJson =
-            getCompleteDocument()->getDvidReader().readBodyStatusV2();
-
-
-    ZJsonArray statusListJson(statusJson.value("status"));
-
-    QList<QString> statusList;
-    for (size_t i = 0; i < statusListJson.size(); ++i) {
-      ZFlyEmBodyStatus status;
-      status.loadJsonObject(ZJsonObject(statusListJson.value(i)));
-      if (status.isAccessible()) {
-        statusList.append(status.getName().c_str());
-      }
-
-//      std::string status = ZJsonParser::stringValue(statusJson.at(i));
-//      if (!status.empty() && ZFlyEmBodyStatus::IsAccessible(status)) {
-//        statusList.append(status.c_str());
-//      }
-    }
-#endif
-    if (!statusList.empty()) {
-      m_annotationDlg->setDefaultStatusList(statusList);
-    } else {
-      m_annotationDlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
-    }
-
-    for (const QString &status : getCompleteDocument()->getAdminBodyStatusList()) {
-      m_annotationDlg->addAdminStatus(status);
-    }
-#endif
-  }
-
-  return m_annotationDlg;
+          */
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -636,7 +602,7 @@ void ZFlyEmProofMvc::connectSignalSlot()
 
 void ZFlyEmProofMvc::applySettings()
 {
-  m_settingDlg->applySettings(getCompleteDocument());
+  m_dlgManager->getSettingDlg()->applySettings(getCompleteDocument());
 }
 
 void ZFlyEmProofMvc::detachOrthoWindow()
@@ -1966,8 +1932,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 void ZFlyEmProofMvc::showSetting()
 {
-  if (m_settingDlg->exec()) {
-    m_settingDlg->applySettings(getCompleteDocument());
+  ZFlyEmProofSettingDialog *dlg = m_dlgManager->getSettingDlg();
+  if (dlg->exec()) {
+    dlg->applySettings(getCompleteDocument());
     /*
     getCompleteDocument()->setGraySliceCenterCut(
           m_settingDlg->getGrayscaleCenterCutWidth(),
@@ -3839,8 +3806,9 @@ void ZFlyEmProofMvc::exportBodyStack()
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
   if (reader.isReady()) {
-    if (m_bodyIdDialog->exec()) {
-      std::vector<uint64_t> bodyIdArray = m_bodyIdDialog->getBodyIdArray();
+    FlyEmBodyIdDialog *dlg = m_dlgManager->getBodyIdDialog();
+    if (dlg->exec()) {
+      std::vector<uint64_t> bodyIdArray = dlg->getBodyIdArray();
       if (!bodyIdArray.empty()) {
         QString dirName = ZDialogFactory::GetDirectory("Export Bodies", "", this);
         for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
@@ -4698,12 +4666,13 @@ void ZFlyEmProofMvc::commitMerge()
                      "It cannot be undone. ";
 
 
-  m_mergeUploadDlg->setMessage(message);
+  ZFlyEmMergeUploadDialog *dlg = m_dlgManager->getMergeUploadDlg();
+  dlg->setMessage(message);
 
-  if (m_mergeUploadDlg->exec()) {
+  if (dlg->exec()) {
     mergeCoarseBodyWindow();
     getCompleteDocument()->getMergeProject()->uploadResult(
-          m_mergeUploadDlg->mergingToLargest());
+          dlg->mergingToLargest());
 //    m_mergeProject.uploadResult();
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {

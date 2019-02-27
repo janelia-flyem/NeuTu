@@ -54,6 +54,11 @@ void ZLog::end()
   endLog();
 }
 
+bool ZLog::hasTag(const std::string &key) const
+{
+  return m_tags.contains(key.c_str());
+}
+
 void ZLog::log(
     const std::string &key, const neuopentracing::Value &value, bool appending)
 {
@@ -90,7 +95,7 @@ void ZLog::End(ZLog &log)
 ZLog& ZLog::operator << (const ZLog::Tag &tag)
 {
   bool appending = (
-        tag.m_key == Description::KEY &&
+        tag.m_key == Description::KEY ||
         tag.m_key == Diagnostic::KEY
       );
 
@@ -213,6 +218,15 @@ void KLog::end()
   ZLog::end();
 }
 
+bool KLog::hasTag(const std::string &key) const
+{
+  if (m_span) {
+    return m_span->hasTag(key);
+  }
+
+  return ZLog::hasTag(key);
+}
+
 //KInfo::KInfo()
 //{
 //}
@@ -224,7 +238,7 @@ void KLog::end()
 KInfo& KInfo::operator << (const char* info)
 {
   if (info) {
-    if (m_tags.contains(ZLog::Description::KEY)) {
+    if (hasTag(ZLog::Description::KEY)) {
       dynamic_cast<KLog&>(*this) << ZLog::Description(info);
     } else {
       dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
@@ -251,7 +265,7 @@ KInfo& KInfo::operator << (const QString &info)
 KWarn& KWarn::operator << (const char* info)
 {
   if (info) {
-    if (m_tags.contains(ZLog::Description::KEY)) {
+    if (hasTag(ZLog::Description::KEY)) {
       dynamic_cast<KLog&>(*this) << ZLog::Description(info);
     } else {
       dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
@@ -279,7 +293,7 @@ KWarn& KWarn::operator << (const QString &info)
 KError& KError::operator << (const char* info)
 {
   if (info) {
-    if (m_tags.contains(ZLog::Description::KEY)) {
+    if (hasTag(ZLog::Description::KEY)) {
       dynamic_cast<KLog&>(*this) << ZLog::Description(info);
     } else {
       dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);

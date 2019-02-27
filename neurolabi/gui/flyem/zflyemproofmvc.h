@@ -644,10 +644,10 @@ protected:
 //  ZInfoDialog *m_infoDlg;
 //  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
 //  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
-  FlyEmBodyIdDialog *m_bodyIdDialog;
-  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
-  ZFlyEmProofSettingDialog *m_settingDlg;
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+//  FlyEmBodyIdDialog *m_bodyIdDialog;
+//  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
+//  ZFlyEmProofSettingDialog *m_settingDlg;
+//  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
 //  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
 //  ZContrastProtocalDialog *m_contrastDlg = nullptr;
