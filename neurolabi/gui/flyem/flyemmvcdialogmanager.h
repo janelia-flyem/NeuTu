@@ -62,6 +62,8 @@ private:
     return (dlg == nullptr);
   }
 
+  template <typename T>
+  bool createIfNecessary(T* &dlg);
 //  bool creationRequired(void *dlg) const;
 
 private:
