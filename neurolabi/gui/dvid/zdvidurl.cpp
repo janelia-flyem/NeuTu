@@ -932,9 +932,14 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
-std::string ZDvidUrl::getMasterUrl() const
+std::string ZDvidUrl::getOldMasterUrl() const
 {
   return getKeyUrl("branches", "master");
+}
+
+std::string ZDvidUrl::getMasterUrl() const
+{
+  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const

@@ -146,6 +146,14 @@ void dvid::MakeHeadRequest(const std::string &url, int &statusCode)
               statusCode);
 }
 
+bool dvid::HasHead(const std::string &url)
+{
+  int statusCode = 0;
+  MakeHeadRequest(url, statusCode);
+
+  return (statusCode == 200);
+}
+
 ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
