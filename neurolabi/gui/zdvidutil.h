@@ -44,6 +44,7 @@ libdvid::BinaryDataPtr MakePostRequest(
     const ZJsonObject &obj, int &statusCode);
 
 void MakeHeadRequest(const std::string &url, int &statusCode);
+bool HasHead(const std::string &url);
 
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
