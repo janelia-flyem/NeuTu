@@ -1,9 +1,11 @@
-#include <QElapsedTimer>
+#include "zimagewidget.h"
 
 #include <cstring>
 #include <cmath>
+
 #include <QGraphicsBlurEffect>
 #include <QMouseEvent>
+#include <QElapsedTimer>
 
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
@@ -11,7 +13,7 @@
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 #include "qt/gui/loghelper.h"
-#include "widgets/zimagewidget.h"
+
 #include "zpainter.h"
 #include "zpaintbundle.h"
 #include "neutubeconfig.h"

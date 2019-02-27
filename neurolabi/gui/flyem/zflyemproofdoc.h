@@ -8,8 +8,6 @@
 #include "zstackdoccommand.h"
 #include "common/zsharedpointer.h"
 
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -23,6 +21,7 @@
 #include "zflyemmb6analyzer.h"
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
+#include "flyemdataconfig.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -704,6 +703,8 @@ protected:
   ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
   ZJsonObject m_infoJson;
+
+  FlyEmDataConfig m_dataConfig;
 
   QTimer *m_routineTimer;
 

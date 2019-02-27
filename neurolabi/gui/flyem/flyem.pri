@@ -124,7 +124,9 @@ HEADERS += \
     $$PWD/logging.h \
     $$PWD/flyemmvcdialogmanager.h \
     $$PWD/flyemdataconfig.h \
-    $$PWD/zflyemproofdochelper.h
+    $$PWD/zflyemproofdochelper.h \
+    $$PWD/flyembodystatusprotocol.h \
+    $$PWD/flyemdatareader.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -238,4 +240,6 @@ SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/flyemmvcdialogmanager.cpp \
     $$PWD/flyemdataconfig.cpp \
-    $$PWD/zflyemproofdochelper.cpp
+    $$PWD/zflyemproofdochelper.cpp \
+    $$PWD/flyembodystatusprotocol.cpp \
+    $$PWD/flyemdatareader.cpp

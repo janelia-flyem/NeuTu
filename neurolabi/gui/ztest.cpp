@@ -29419,6 +29419,10 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
+#endif
+
+#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
 
