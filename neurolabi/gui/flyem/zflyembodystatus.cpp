@@ -13,6 +13,14 @@ const char *ZFlyEmBodyStatus::KEY_EXPERT = "expert";
 const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
 const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 
+/** Implementation details
+ *
+ * Protection level:
+ * 0: add and change (isAccessible)
+ * >=9: change only (
+ * [5, 9): add and change by admin only (isAdminAccessible)
+ * 4: add by admin only, change by every one (annotateByAdminOnly())
+ */
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)
 {
@@ -94,17 +102,23 @@ bool ZFlyEmBodyStatus::isAdminAccessible() const
   return (m_protection >= 5 && m_protection < 9);
 }
 
+bool ZFlyEmBodyStatus::annotateByAdminOnly() const
+{
+  return (m_protection == 4);
+}
+
 bool ZFlyEmBodyStatus::isAccessible() const
 {
   if (m_protection >= 9) {
     return false;
-  } else if (isAdminAccessible()) {
+  } else if (isAdminAccessible() || annotateByAdminOnly()) {
     return neutu::IsAdminUser();
   }
 
   return true;
 }
 
+#if 0
 bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
 #if _QT_GUI_USED_
@@ -115,6 +129,7 @@ bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 
   return true;
 }
+#endif
 
 std::string ZFlyEmBodyStatus::GetExpertStatus()
 {
