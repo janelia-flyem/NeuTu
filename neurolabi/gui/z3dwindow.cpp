@@ -20,6 +20,7 @@
 #include "zstack.hxx"
 #include "mvc/zstackdoc.h"
 #include "zstackdocproxy.h"
+#include "flyem/zflyembody3ddochelper.h"
 #include "mvc/zstackframe.h"
 
 #include "neutubeconfig.h"
@@ -4414,7 +4415,7 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
 //    QList<ZMesh*> meshList = m_doc->getMeshList();
 //    ZMesh *mesh = meshList.front();
 
-    ZMesh *mesh = ZStackDocProxy::GetMeshForSplit(m_doc.get());
+    ZMesh *mesh = ZFlyEmBody3dDocHelper::GetMeshForSplit(m_doc.get());
 
     if (mesh != NULL) {
 #if defined(_NEU3_)

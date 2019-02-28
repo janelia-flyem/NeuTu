@@ -127,7 +127,8 @@ HEADERS += \
     $$PWD/zflyemproofdochelper.h \
     $$PWD/flyembodystatusprotocol.h \
     $$PWD/flyemdatareader.h \
-    $$PWD/flyemdatawriter.h
+    $$PWD/flyemdatawriter.h \
+    $$PWD/zflyembody3ddochelper.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -244,4 +245,5 @@ SOURCES += \
     $$PWD/flyembodystatusprotocol.cpp \
     $$PWD/logging.cpp \
     $$PWD/flyemdatareader.cpp \
-    $$PWD/flyemdatawriter.cpp
+    $$PWD/flyemdatawriter.cpp \
+    $$PWD/zflyembody3ddochelper.cpp
