@@ -13,8 +13,6 @@ class ZDvidInfo;
 class ZIntCuboid;
 class ZDvidReader;
 
-#define DVID_UUID_COMMON_LENGTH 4
-
 namespace dvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
 libdvid::BinaryDataPtr MakeRequest(

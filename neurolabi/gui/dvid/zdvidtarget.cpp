@@ -73,9 +73,9 @@ void ZDvidTarget::init()
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 
-std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
+std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) const
 {
-  std::string source = m_node.getSourceString(withHttpPrefix);
+  std::string source = m_node.getSourceString(withHttpPrefix, uuidBrief);
 /*
   if (!getAddress().empty()) {
     source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
