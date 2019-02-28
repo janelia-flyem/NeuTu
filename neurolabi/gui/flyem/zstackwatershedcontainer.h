@@ -3,6 +3,8 @@
 
 #include <utility>
 #include <vector>
+#include <functional>
+#include <iostream>
 
 #include "tz_stack_watershed.h"
 #include "geometry/zintcuboid.h"
@@ -288,6 +290,10 @@ private:
   size_t m_maxStackVolume = neutu::HALFGIGA;
   QString m_algorithm;
   QString m_dsMethod;
+
+  std::function<void(int64_t, const std::string)> m_profiler =
+      [](int64_t duration, const std::string &info) {
+    std::cout << info << ": " << duration << "ms" << std::endl; };
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H
