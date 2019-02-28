@@ -46,12 +46,17 @@ bool ZDvidNode::isMock() const
   return m_isMocked;
 }
 
-std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
+std::string ZDvidNode::getSourceString(bool withHttpPrefix, int uuidBrief) const
 {
   std::string source;
 
   if (!getAddress().empty()) {
-    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
+    std::string uuid = getUuid();
+    if (uuidBrief > 0 && uuid.size() > uuidBrief) {
+      uuid = uuid.substr(0, uuidBrief);
+    }
+
+    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;
     if (withHttpPrefix) {
       if (isMock()) {
         source = "mock:" + source;

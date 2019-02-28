@@ -16357,8 +16357,8 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+#if 1
+  ZDvidTarget target("emdata4.int.janelia.org", "a21a", 8900);
   ZDvidReader reader;
   reader.open(target);
 
@@ -29513,7 +29513,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan *obj = flyem::LoadRoiFromJson(
         GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
