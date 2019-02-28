@@ -9,7 +9,7 @@
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
 #include "zstring.h"
-
+#include "zjsonparser.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"

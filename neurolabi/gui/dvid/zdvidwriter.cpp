@@ -28,6 +28,7 @@
 #include "zdvidpath.h"
 #include "zmesh.h"
 #include "zobject3dscan.h"
+#include "zdvidsynapse.h"
 
 #include "flyem/zflyemneuron.h"
 #include "flyem/zflyemneuronbodyinfo.h"
@@ -1205,7 +1206,7 @@ uint64_t ZDvidWriter::writeSplit(
   return writeSplit(
         getDvidTarget().getBodyLabelName(), obj, oldLabel, label, newBodyId);
 }
-
+#if 0
 uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
 {
   uint64_t newBodyId = 0;
@@ -1232,6 +1233,7 @@ uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
 
   return newBodyId;
 }
+#endif
 
 std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
     const ZObject3dScan &obj, uint64_t oldLabel)

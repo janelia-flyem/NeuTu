@@ -9,6 +9,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 #include "zdvidutil.h"
+#include "zjsonparser.h"
 
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)

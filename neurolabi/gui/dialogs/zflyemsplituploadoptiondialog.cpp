@@ -9,6 +9,7 @@
 #include "zwidgetfactory.h"
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyemmisc.h"
+#include "flyem/flyemdatareader.h"
 
 ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
   QDialog(parent),
@@ -56,7 +57,7 @@ ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
   ZFlyEmBodyAnnotation annot;
   if (passingAnnotation()) {
     if (m_dvidReader.isReady()) {
-      annot = m_dvidReader.readBodyAnnotation(bodyId);
+      annot = FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
     }
   }
 

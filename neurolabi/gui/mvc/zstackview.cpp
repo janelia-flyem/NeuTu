@@ -11,7 +11,7 @@
 #include "qt/core/qthelper.h"
 
 #include "widgets/zimagewidget.h"
-#include "z3dwindow.h"
+//#include "z3dwindow.h"
 #include "zimage.h"
 #include "zstackdoc.h"
 #include "zstackframe.h"

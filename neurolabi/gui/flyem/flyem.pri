@@ -126,7 +126,8 @@ HEADERS += \
     $$PWD/flyemdataconfig.h \
     $$PWD/zflyemproofdochelper.h \
     $$PWD/flyembodystatusprotocol.h \
-    $$PWD/flyemdatareader.h
+    $$PWD/flyemdatareader.h \
+    $$PWD/flyemdatawriter.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -237,9 +238,10 @@ SOURCES += \
     $$PWD/zskeletonizeservice.cpp \
     $$PWD/zstackwatershedcontainer.cpp \
     $$PWD/zswctreebatchmatcher.cpp \
-    $$PWD/logging.cpp \
     $$PWD/flyemmvcdialogmanager.cpp \
     $$PWD/flyemdataconfig.cpp \
     $$PWD/zflyemproofdochelper.cpp \
     $$PWD/flyembodystatusprotocol.cpp \
-    $$PWD/flyemdatareader.cpp
+    $$PWD/logging.cpp \
+    $$PWD/flyemdatareader.cpp \
+    $$PWD/flyemdatawriter.cpp

@@ -123,6 +123,7 @@
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidsynapse.h"
 #include "dialogs/flyembodyfilterdialog.h"
 #include "tz_stack_math.h"
 #include "tz_stack_relation.h"
