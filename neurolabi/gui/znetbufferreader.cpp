@@ -5,6 +5,7 @@
 #include <QTimer>
 
 #include "logging/utilities.h"
+#include "logging/zlog.h"
 
 ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 {
@@ -138,8 +139,13 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 
   startReading();
   QNetworkRequest request(url);
+  QString headInfo;
   foreach (const auto &p, m_header) {
     request.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
+    headInfo += p.first + ":" + p.second.left(10) + "; ";
+  }
+  if (!headInfo.isEmpty()) {
+    KINFO << "HEADER:" << headInfo;
   }
 
   resetNetworkReply();
@@ -157,9 +163,9 @@ bool ZNetBufferReader::isReadable(const QString &url)
   QTimer::singleShot(15000, this, SLOT(handleTimeout()));
 
   startReading();
-#ifdef _DEBUG_
-  qDebug() << "ZNetBufferReader::isReadable: " << url;
-#endif
+
+  KINFO << "ZNetBufferReader::isReadable:" << url;
+
 //  KINFO << "Check readable: " + url;
   neutu::LogUrlIO("Check readable", url);
 
@@ -188,11 +194,10 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
   if (m_networkReply != NULL) {
     QVariant statusCode = m_networkReply->attribute(
           QNetworkRequest::HttpStatusCodeAttribute);
-#ifdef _DEBUG_2
-    qDebug() << "Status code: " << statusCode;
-#endif
+
     m_statusCode = statusCode.toInt();
     if (m_statusCode != 200) {
+      KWARN << QString("Status code: %1").arg(m_statusCode);
       m_status = neutu::EReadStatus::BAD_RESPONSE;
     }
     m_networkReply->deleteLater();
@@ -217,9 +222,7 @@ void ZNetBufferReader::waitForReading()
 void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 {
   if (m_networkReply != NULL) {
-#ifdef _DEBUG_
-    qDebug() << m_networkReply->errorString();
-#endif
+    KWARN << m_networkReply->errorString();
   }
   endReading(neutu::EReadStatus::FAILED);
 }

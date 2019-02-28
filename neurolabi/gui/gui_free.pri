@@ -3,6 +3,7 @@ include($${PWD}/mylib/mylib.pri)
 include($${PWD}/imgproc/imgproc.pri)
 include($${PWD}/common/common.pri)
 include($${PWD}/geometry/geometry.pri)
+include($${PWD}/interface/interface.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
