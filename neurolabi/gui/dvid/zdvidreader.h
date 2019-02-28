@@ -17,7 +17,7 @@
 #include "zclosedcurve.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
-#include "zdvidsynapse.h"
+//#include "zdvidsynapse.h"
 #include "zdvidbufferreader.h"
 //#include "zdvidurl.h"
 #include "znetbufferreader.h"
@@ -26,6 +26,7 @@
 #include <lowtis/LowtisConfig.h>
 #endif
 
+class ZStackObject;
 class ZDvidFilter;
 class ZArray;
 class ZJsonObject;
@@ -46,6 +47,7 @@ class ZMesh;
 class ZStack;
 class ZAffineRect;
 class ZDvidUrl;
+class ZDvidSynapse;
 
 struct archive;
 
@@ -423,7 +425,7 @@ public:
 
   bool hasCoarseSparseVolume(uint64_t bodyId) const;
 
-  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
+//  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -485,7 +487,7 @@ public:
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
   ZJsonArray readRoiJson(const std::string &dataName);
 
-  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
+//  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
 
   bool hasBodyAnnotation() const;
@@ -517,6 +519,7 @@ public:
       const std::string &dataName, int x, int y, int z) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
+#if 1
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
       dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
@@ -533,6 +536,8 @@ public:
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
       dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
+#endif
+
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

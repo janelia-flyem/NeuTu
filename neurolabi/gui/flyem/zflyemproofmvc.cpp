@@ -95,6 +95,7 @@
 #include "zflyembodystatus.h"
 #include "flyemmvcdialogmanager.h"
 #include "zflyembookmarklistmodel.h"
+#include "flyemdatareader.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -3220,7 +3221,8 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
     ZDvidReader &reader = getCompleteDocument()->getDvidReader();
     if (reader.isReady()) {
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
         annotation.setStatus(status);
         annotateBody(bodyId, annotation);
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
@@ -3277,7 +3279,8 @@ void ZFlyEmProofMvc::annotateSelectedBody()
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         if (reader.isReady()) {
-          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+          ZFlyEmBodyAnnotation annotation =
+              FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
           dlg->loadBodyAnnotation(annotation);
         }
 

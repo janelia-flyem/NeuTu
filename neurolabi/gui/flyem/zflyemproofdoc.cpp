@@ -63,6 +63,7 @@
 #include "zflyemroimanager.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
+#include "flyemdatareader.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -133,7 +134,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
-          getDvidReader().readBodyAnnotation(bodyId);
+          FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
       recordAnnotation(bodyId, annotation);
 
       if (!annotation.isEmpty()) {  
@@ -2187,7 +2188,8 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
   ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (m_dvidReader.isReady()) {
-    ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
+    ZFlyEmBodyAnnotation annotation =
+        FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
     if (annotation.isFinalized()) {
       return false;
     }

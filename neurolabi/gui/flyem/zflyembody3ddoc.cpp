@@ -63,6 +63,7 @@
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zpunctum.h"
 #include "dialogs/flyemdialogfactory.h"
+#include "flyemdatareader.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -4172,7 +4173,8 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
       dlg->setBodyId(bodyId);
       const ZDvidReader &reader = getMainDvidReader();
       if (reader.isReady()) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
 
         if (!annotation.isEmpty()) {
           dlg->loadBodyAnnotation(annotation);

@@ -136,8 +136,8 @@ QString GetNeuroglancerPath(
 void UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer);
 
-void UpdateBodyStatus(
-    const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer);
+//void UpdateBodyStatus(
+//    const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer);
 
 void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
 

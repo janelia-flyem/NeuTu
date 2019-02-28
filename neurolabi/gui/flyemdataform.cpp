@@ -36,6 +36,7 @@
 #include "z3ddef.h"
 #include "z3dwindow.h"
 #include "zobject3dscan.h"
+#include "flyem/flyemdatareader.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -970,7 +971,7 @@ void FlyEmDataForm::generateThumbnailItem(
         ZDvidReader reader;
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
-              reader.readBodyInfo(neuron->getId());
+              FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
           int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
           int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();
@@ -1309,7 +1310,7 @@ void FlyEmDataForm::updateThumbnail(
         ZDvidReader reader;
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
-              reader.readBodyInfo(neuron->getId());
+              FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
           int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
           int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();

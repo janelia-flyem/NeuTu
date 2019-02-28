@@ -33,12 +33,12 @@
 #include "z3dwindow.h"
 #include "zcubearray.h"
 
-#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidsynapse.h"
 
 #include "zstackviewparam.h"
 #include "zobject3dfactory.h"
@@ -1479,6 +1479,7 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
   return sobj;
 }
 
+/*
 void flyem::UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
 {
@@ -1499,7 +1500,7 @@ void flyem::UpdateBodyStatus(
 #endif
   }
 }
-
+*/
 void flyem::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {
@@ -1866,6 +1867,8 @@ QString flyem::FIB19::GenerateFIB19VsSynapseCast(
         QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
               bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
+//            reader.readSynapse(
+//              bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();

@@ -53,6 +53,7 @@
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zpunctum.h"
+#include "flyemdatareader.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -690,7 +691,8 @@ void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
       idArray.push_back(targetId);
       for (uint64_t bodyId : idArray) {
         if (!m_annotationCache.contains(bodyId)) {
-          m_annotationCache[bodyId] = reader.readBodyAnnotation(bodyId);
+          m_annotationCache[bodyId] =
+              FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
         }
       }
     }

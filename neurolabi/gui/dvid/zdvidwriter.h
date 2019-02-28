@@ -140,7 +140,7 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
-  uint64_t rewriteBody(uint64_t label);
+//  uint64_t rewriteBody(uint64_t label);
 
   //Returns (remainderId, newBodyId)
   std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
