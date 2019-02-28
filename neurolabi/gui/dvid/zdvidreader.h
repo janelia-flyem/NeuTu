@@ -675,6 +675,8 @@ private:
 
   bool reportMissingData(const std::string dataName) const;
 
+  static std::string GetMasterUrl(const ZDvidUrl &dvidUrl);
+
   static ZIntCuboid GetStackBox(
       int x0, int y0, int z0, int width, int height, int zoom);
   static ZIntCuboid GetStackBoxAtCenter(

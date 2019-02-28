@@ -5252,14 +5252,24 @@ std::string ZDvidReader::readMirror() const
   return mirror;
 }
 
+std::string ZDvidReader::GetMasterUrl(const ZDvidUrl &dvidUrl)
+{
+  std::string url = dvidUrl.getMasterUrl();
+  if (!dvid::HasHead(url)) {
+    url = dvidUrl.getOldMasterUrl();
+  }
+  LKINFO << "Master url: " + url;
+
+  return url;
+}
+
 std::string ZDvidReader::readMasterNode() const
 {
   std::string master;
 
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     m_bufferReader.read(url.c_str());
     master = GetMasterNodeFromBuffer(m_bufferReader);
   }
@@ -5273,8 +5283,7 @@ std::vector<std::string> ZDvidReader::readMasterList() const
 
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     m_bufferReader.read(url.c_str());
     masterList = GetMasterListFromBuffer(m_bufferReader);
   }
@@ -5375,8 +5384,7 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     reader.read(url.c_str());
     master = GetMasterNodeFromBuffer(reader);
   }
@@ -5396,8 +5404,7 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     reader.read(url.c_str());
     masterList = GetMasterListFromBuffer(reader);
   }

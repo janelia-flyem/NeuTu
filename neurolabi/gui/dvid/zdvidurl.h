@@ -37,6 +37,7 @@ public:
   std::string getApiUrl() const;
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
+  std::string getOldMasterUrl() const;
   std::string getMasterUrl() const;
   std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
