@@ -16357,8 +16357,8 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+#if 1
+  ZDvidTarget target("emdata4.int.janelia.org", "a21a", 8900);
   ZDvidReader reader;
   reader.open(target);
 

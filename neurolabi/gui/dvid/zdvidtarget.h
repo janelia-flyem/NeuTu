@@ -104,11 +104,14 @@ public:
    * \brief Get a single string to represent the target
    *
    * \a withHttpPrefix specifies whether the source string contains the "http:"
-   * prefix or not.
+   * prefix or not. \a uuidBrief specifies the max number of characters of the
+   * uuid used in the source string, except when its no greater than 0, the
+   * intrinsic uuid will be used.
    *
    * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
-  std::string getSourceString(bool withHttpPrefix = true) const;
+  std::string getSourceString(
+      bool withHttpPrefix = true, int uuidBrief = 0) const;
 
   /*!
    * \brief getBodyPath
