@@ -21,8 +21,6 @@
 
 #include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
-#include "zflyemproofmvc.h"
-#include "flyemproofcontrolform.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
 #include "zprogresssignal.h"
@@ -32,6 +30,8 @@
 #include "zflyembookmarkview.h"
 #include "zflyemdataloader.h"
 #include "flyemsplitcontrolform.h"
+#include "zflyemproofmvc.h"
+#include "flyemproofcontrolform.h"
 #include "zflyemmessagewidget.h"
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
@@ -776,7 +776,8 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
 //  removeToolBar(m_toolBar);
 
-  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
+  setWindowTitle(
+        (target.getName() + " @ " + target.getSourceString(false, 5)).c_str());
 
   enableTargetAction(target.isValid());
 
