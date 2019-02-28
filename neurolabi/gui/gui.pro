@@ -596,18 +596,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
-    dialogs/zdvidbodypositiondialog.h \
     zcubearraymovieactor.h \
-    dialogs/zflyemsplituploadoptiondialog.h \
-    dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
-    dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h \
-    dialogs/zswcisolationdialog.h \
-    dialogs/zstresstestoptiondialog.h \
-    dialogs/zflyembodyscreenshotdialog.h\
-    dialogs/zflyemskeletonupdatedialog.h \
-    dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
@@ -698,6 +688,16 @@ HEADERS += mainwindow.h \
     protocols/taskmergereview.h \
     dialogs/zflyemtodoannotationdialog.h \
     main.h \
+    dialogs/zflyemsplituploadoptiondialog.h \
+    dialogs/zflyembodychopdialog.h \
+    dialogs/ztestoptiondialog.h \
+    dialogs/zinfodialog.h \
+    dialogs/zswcisolationdialog.h \
+    dialogs/zstresstestoptiondialog.h \
+    dialogs/zflyembodyscreenshotdialog.h\
+    dialogs/zflyemskeletonupdatedialog.h \
+    dialogs/zdvidadvanceddialog.h \
+    dialogs/zdvidbodypositiondialog.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
