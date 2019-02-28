@@ -59,7 +59,7 @@ class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
 class SynapseImportDialog;
-class FlyEmBodyMergeProjectDialog;
+//class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
 class ZFlyEmProjectManager;
@@ -747,7 +747,7 @@ private:
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
-  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
+//  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
   ZAutoTraceDialog *m_autoTraceDlg;
   ProjectionDialog *m_projDlg;

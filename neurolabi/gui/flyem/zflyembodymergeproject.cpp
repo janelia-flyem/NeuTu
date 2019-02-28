@@ -465,7 +465,7 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
     std::function<bool(const ZFlyEmBodyStatus&)> pred) const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
-      m_annotMerger.getStatusList();
+      m_bodyStatusProtocol.getStatusList();
 
   QList<QString> statusList;
   for (const ZFlyEmBodyStatus &status : bodyStatusList) {
@@ -480,7 +480,7 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
-      m_annotMerger.getStatusList();
+      m_bodyStatusProtocol.getStatusList();
 
   QList<QString> statusList;
   for (const ZFlyEmBodyStatus &status : bodyStatusList) {
@@ -513,8 +513,8 @@ QList<QString> ZFlyEmBodyMergeProject::getAdminStatusList() const
 
 int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
 {
-  if (!m_annotMerger.isEmpty()) {
-    return m_annotMerger.getStatusRank(status);
+  if (!m_bodyStatusProtocol.isEmpty()) {
+    return m_bodyStatusProtocol.getStatusRank(status);
   }
 
   return ZFlyEmBodyAnnotation::GetStatusRank(status);
@@ -522,21 +522,21 @@ int ZFlyEmBodyMergeProject::getStatusRank(const std::string &status) const
 
 bool ZFlyEmBodyMergeProject::isFinalStatus(const std::string &status) const
 {
-  if (m_annotMerger.isEmpty()) {
+  if (m_bodyStatusProtocol.isEmpty()) {
     return ZString(status).lower() == "finalized";
   }
 
-  return m_annotMerger.isFinal(status);
+  return m_bodyStatusProtocol.isFinal(status);
 }
 
 bool ZFlyEmBodyMergeProject::isExpertStatus(const std::string &status) const
 {
-  return m_annotMerger.isExpertStatus(status);
+  return m_bodyStatusProtocol.isExpertStatus(status);
 }
 
 bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
 {
-  return m_annotMerger.isMergable(status);
+  return m_bodyStatusProtocol.isMergable(status);
 }
 
 namespace {
@@ -593,7 +593,7 @@ QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
 {
   QString msg;
   const std::vector<std::vector<uint64_t>> &conflictSet =
-      m_annotMerger.getConflictBody(annotMap);
+      m_bodyStatusProtocol.getConflictBody(annotMap);
   int itemCount = 0;
   for (const std::vector<uint64_t> &bodyArray : conflictSet) {
     msg += compose_body_status_message(bodyArray, annotMap, itemCount);
@@ -643,7 +643,7 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
           ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
           annotation.mergeAnnotation(
                 subann, [=](const std::string &status) {
-            return m_annotMerger.getStatusRank(status);
+            return m_bodyStatusProtocol.getStatusRank(status);
           });
         }
       }
@@ -1549,6 +1549,12 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 }
 #endif
 
+void ZFlyEmBodyMergeProject::setBodyStatusProtocol(
+    const ZFlyEmBodyAnnotationMerger &protocol)
+{
+  m_bodyStatusProtocol = protocol;
+}
+
 uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
   uint64_t bodyId = 0;
@@ -1813,11 +1819,13 @@ void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
   m_writer.open(target);
 
+#if 0
   ZJsonObject obj = m_writer.getDvidReader().readBodyStatusV2();
-  m_annotMerger.loadJsonObject(obj);
+  m_bodyStatusProtocol.loadJsonObject(obj);
 
 #ifdef _DEBUG_
-  m_annotMerger.print();
+  m_bodyStatusProtocol.print();
+#endif
 #endif
 }
 

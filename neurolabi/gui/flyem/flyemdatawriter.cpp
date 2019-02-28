@@ -2,9 +2,16 @@
 
 #include "geometry/zintpoint.h"
 #include "zobject3dscan.h"
+#include "zjsonobject.h"
+
+#include "neutubeconfig.h"
+
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
 #include "zflyembodyannotation.h"
 #include "flyemdatareader.h"
+#include "flyemdataconfig.h"
 
 FlyEmDataWriter::FlyEmDataWriter()
 {
@@ -56,4 +63,15 @@ void FlyEmDataWriter::RewriteBody(ZDvidWriter &writer, uint64_t bodyId)
       }
     }
   }
+}
+
+void FlyEmDataWriter::UploadUserDataConfig(
+    ZDvidWriter &writer, const FlyEmDataConfig &config)
+{
+  ZJsonObject obj;
+  ZJsonObject contrastProtocol = config.getContrastProtocol().toJsonObject();
+  obj.setEntry(FlyEmDataConfig::KEY_CONTRAST, contrastProtocol);
+  std::string userName = NeutubeConfig::GetUserName();
+  writer.writeJson(ZDvidData::GetName(ZDvidData::ERole::NEUTU_CONFIG),
+                   "user_" + userName, obj);
 }

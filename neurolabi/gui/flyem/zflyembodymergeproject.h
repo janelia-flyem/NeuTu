@@ -73,6 +73,8 @@ public:
     return m_dataFrame;
   }
 
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationMerger &protocol);
+
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
   void addSelected(uint64_t label);
@@ -139,7 +141,7 @@ public:
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
-    return m_annotMerger;
+    return m_bodyStatusProtocol;
   }
 
 signals:
@@ -234,7 +236,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationMerger m_annotMerger;
+  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
 

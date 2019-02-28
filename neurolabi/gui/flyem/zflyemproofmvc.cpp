@@ -1970,6 +1970,14 @@ void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
 
 void ZFlyEmProofMvc::updateContrast()
 {
+  KINFO << "Set contrast";
+
+  getPresenter()->setHighContrastProtocal(
+        getCompleteDocument()->getContrastProtocol().toJsonObject());
+
+  updateContrast(getPresenter()->getHighContrastProtocal(),
+                 getCompletePresenter()->highTileContrast());
+  /*
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
 
   if (reader.isReady()) {
@@ -1980,6 +1988,7 @@ void ZFlyEmProofMvc::updateContrast()
     updateContrast(getPresenter()->getHighContrastProtocal(),
                    getCompletePresenter()->highTileContrast());
   }
+  */
 //  KINFO << "Init grayslice";
 
 }
@@ -1992,6 +2001,7 @@ void ZFlyEmProofMvc::updateTmpContrast()
 
 void ZFlyEmProofMvc::resetContrast()
 {
+//  getCompleteDocument()->updateDataConfig();
   updateContrast();
 }
 

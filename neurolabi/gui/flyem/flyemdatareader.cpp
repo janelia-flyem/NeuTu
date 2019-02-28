@@ -6,6 +6,7 @@
 //#include "geometry/zintcuboid.h"
 
 #include "zstring.h"
+#include "neutubeconfig.h"
 
 #include "zjsonparser.h"
 #include "zjsonarray.h"
@@ -29,9 +30,20 @@ FlyEmDataReader::FlyEmDataReader()
 
 FlyEmDataConfig FlyEmDataReader::ReadDataConfig(const ZDvidReader &reader)
 {
+  std::string userName = NeutubeConfig::GetUserName();
+  ZJsonObject obj = reader.readJsonObject(
+        ZDvidUrl(reader.getDvidTarget()).getDataConfigUrl(userName));
+
+  if (!obj.hasKey(FlyEmDataConfig::KEY_CONTRAST)) {
+    ZJsonObject contrastJson = reader.readContrastProtocal();
+    obj.setEntry(FlyEmDataConfig::KEY_CONTRAST, contrastJson);
+  }
+
+  ZJsonObject bodyStatusJson = reader.readBodyStatusV2();
+  obj.setEntry(FlyEmDataConfig::KEY_BODY_STATUS, bodyStatusJson);
+
   FlyEmDataConfig config;
-  config.loadContrastProtocol(reader.readContrastProtocal());
-  config.loadBodyStatusProtocol(reader.readBodyStatusV2());
+  config.loadJsonObject(obj);
 
   return config;
 }
