@@ -13,6 +13,7 @@ public:
   std::string getName() const;
   bool isAccessible() const;
   bool isAdminAccessible() const;
+  bool annotateByAdminOnly() const;
   bool isExpertStatus() const;
   bool isFinal() const;
   bool isMergable() const;
@@ -27,7 +28,7 @@ public:
 
   std::string getStatusKey() const;
 
-  static bool IsAccessible(const std::string &status);
+//  static bool IsAccessible(const std::string &status);
 
   static std::string GetExpertStatus();
 
