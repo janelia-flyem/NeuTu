@@ -361,9 +361,11 @@ MainWindow::~MainWindow()
     m_roiDlg->clear();
   }
 
+  /*
   if (m_mergeBodyDlg != NULL) {
     m_mergeBodyDlg->clear();
   }
+  */
 
   delete m_ui;
   delete m_reporter;
@@ -468,11 +470,11 @@ void MainWindow::initDialog()
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
   //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
-  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
+//  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
   //m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
 
-  m_mergeBodyDlg->restoreGeometry(
-        getSettings().value("BodyMergeProjectGeometry").toByteArray());
+//  m_mergeBodyDlg->restoreGeometry(
+//        getSettings().value("BodyMergeProjectGeometry").toByteArray());
   m_bodySplitProjectDialog->restoreGeometry(
           getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
@@ -2158,8 +2160,8 @@ void MainWindow::writeSettings()
   getSettings().setValue(
         "SegmentationProjectGeometry", m_segmentationDlg->saveGeometry());
 #if defined(_FLYEM_)
-  getSettings().setValue(
-        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
+//  getSettings().setValue(
+//        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
   getSettings().setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
@@ -6945,8 +6947,8 @@ void MainWindow::on_actionUpload_Annotations_triggered()
 
 void MainWindow::on_actionMerge_Body_Project_triggered()
 {
-  m_mergeBodyDlg->show();
-  m_mergeBodyDlg->raise();
+//  m_mergeBodyDlg->show();
+//  m_mergeBodyDlg->raise();
 }
 
 void MainWindow::on_actionHierarchical_Split_triggered()

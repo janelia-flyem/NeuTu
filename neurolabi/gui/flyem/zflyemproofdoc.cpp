@@ -64,6 +64,7 @@
 #include "logging/zlog.h"
 #include "zfiletype.h"
 #include "flyemdatareader.h"
+#include "flyemdatawriter.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -894,6 +895,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    updateDataConfig();
+
     flowInfo << "->Read DVID Info";
     readInfo();
 
@@ -975,6 +978,32 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
   emit bodySelectionChanged();
 }
 
+void ZFlyEmProofDoc::updateDataConfig()
+{
+  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
+  m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
+}
+
+const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
+{
+  return m_dataConfig.getContrastProtocol();
+}
+
+void ZFlyEmProofDoc::setContrastProtocol(const ZJsonObject &obj)
+{
+  m_dataConfig.loadContrastProtocol(obj);
+}
+
+void ZFlyEmProofDoc::uploadUserDataConfig()
+{
+  FlyEmDataWriter::UploadUserDataConfig(getDvidWriter(), m_dataConfig);
+}
+
+const ZFlyEmBodyAnnotationMerger& ZFlyEmProofDoc::getBodyStatusProtocol() const
+{
+  return m_dataConfig.getBodyStatusProtocol();
+}
+
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
   m_dvidReader.updateMaxLabelZoom();
@@ -1019,8 +1048,6 @@ void ZFlyEmProofDoc::readInfo()
 
   updateMaxLabelZoom();
   updateMaxGrayscaleZoom();
-
-  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
 
   KINFO << startLog;
 }
@@ -1136,8 +1163,9 @@ void ZFlyEmProofDoc::initTileData()
   ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
   ensemble->setDvidTarget(getDvidTarget().getTileTarget());
-  ZJsonObject obj = m_dvidReader.readContrastProtocal();
-  ensemble->setContrastProtocal(obj);
+  ensemble->setContrastProtocal(m_dataConfig.getContrastProtocol().toJsonObject());
+//  ZJsonObject obj = m_dvidReader.readContrastProtocal();
+//  ensemble->setContrastProtocal(obj);
   addObject(ensemble, true);
 }
 

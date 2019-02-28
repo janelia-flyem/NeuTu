@@ -459,8 +459,13 @@ public:
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;
 
-
   void diagnose() const override;
+
+  const ZContrastProtocol& getContrastProtocol() const;
+  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  void updateDataConfig();
+  void setContrastProtocol(const ZJsonObject &obj);
+  void uploadUserDataConfig();
 
 public:
   virtual void executeAddTodoCommand(

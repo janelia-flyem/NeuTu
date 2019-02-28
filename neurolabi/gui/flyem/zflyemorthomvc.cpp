@@ -121,8 +121,9 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
   if (doc != NULL) {
     ZDvidReader &reader = doc->getDvidReader();
     if (reader.isReady()) {
-      ZJsonObject contrastObj = reader.readContrastProtocal();
-      getPresenter()->setHighContrastProtocal(contrastObj);
+//      ZJsonObject contrastObj = reader.readContrastProtocal();
+      getPresenter()->setHighContrastProtocal(
+            doc->getContrastProtocol().toJsonObject());
 //      enableSynapseFetcher();
     }
 
