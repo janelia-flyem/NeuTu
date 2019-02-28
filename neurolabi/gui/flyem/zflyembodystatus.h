@@ -28,8 +28,6 @@ public:
 
   std::string getStatusKey() const;
 
-//  static bool IsAccessible(const std::string &status);
-
   static std::string GetExpertStatus();
 
   void loadJsonObject(const ZJsonObject &obj);
@@ -46,6 +44,7 @@ public:
   static const char *KEY_EXPERT;
   static const char *KEY_FINAL;
   static const char *KEY_MERGABLE;
+  static const char *KEY_ADMIN_LEVEL;
 
 private:
   std::string m_status;
@@ -54,6 +53,7 @@ private:
   bool m_isExpertStatus = false;
   bool m_isFinal = false;
   bool m_isMergable = true;
+  int m_adminLevel = 0;
 };
 
 #endif // ZFLYEMBODYSTATUS_H
