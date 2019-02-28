@@ -1020,6 +1020,8 @@ void ZFlyEmProofDoc::readInfo()
   updateMaxLabelZoom();
   updateMaxGrayscaleZoom();
 
+  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
+
   KINFO << startLog;
 }
 
