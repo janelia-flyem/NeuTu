@@ -123,8 +123,8 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
-  container.setDsMethod(ds_method->currentText());
-  container.setAlgorithm(algorithms->currentText());
+  container.setDsMethod(ds_method->currentText().toStdString());
+  container.setAlgorithm(algorithms->currentText().toStdString());
 
   QTime time;
   time.start();

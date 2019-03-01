@@ -3421,12 +3421,13 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         QElapsedTimer timer;
         timer.start();
         mesh = mf.makeMesh(objArray);
-        KLOG << ZLog::Profile() << ZLog::Duration(timer.elapsed())
-             << ZLog::Description(
-                  QString(
-                    "Mesh generating time for %1 with zoom %2~%3").
-                  arg(config.getBodyId()).arg(config.getDsLevel()).
-                  arg(config.getLocalDsLevel()).toStdString());
+
+        neutu::LogProfileInfo(
+              timer.elapsed(),
+              QString("Mesh generating time for %1 with zoom %2~%3").
+              arg(config.getBodyId()).arg(config.getDsLevel()).
+              arg(config.getLocalDsLevel()).toStdString());
+
 //        LINFO() << "Mesh generating time:" << timer.elapsed() << "ms";
 //        reader.readMultiscaleBody(config, zoom, true, &obj);
       }
@@ -3964,6 +3965,9 @@ void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshM
 
 void ZFlyEmBody3dDoc::commitSplitResult()
 {
+  QElapsedTimer timer;
+  timer.start();
+
   QAction *action = getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
   if (action != NULL) {
     action->setVisible(false);
@@ -4144,6 +4148,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   notifyWindowMessageUpdated(summary);
 
   undoStack()->clear();
+
+  neutu::LogProfileInfo(timer.elapsed(), "commit split");
 }
 
 void ZFlyEmBody3dDoc::waitForSplitToBeDone()
