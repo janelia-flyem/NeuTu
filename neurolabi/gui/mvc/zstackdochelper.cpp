@@ -8,13 +8,14 @@
 
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
-#include "dvid/zdvidsparsestack.h"
+//#include "dvid/zdvidsparsestack.h"
 
 #include "geometry/zintcuboid.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
 
 #include "zstack.hxx"
+#include "zsparsestack.h"
 
 ZStackDocHelper::ZStackDocHelper()
 {
@@ -133,57 +134,6 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
   return box;
 }
 
-ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc *doc, neutu::EAxis sliceAxis)
-{
-  ZIntCuboid box;
-  if (doc != NULL) {
-    box = GetStackSpaceRange(*doc, sliceAxis);
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc &doc, neutu::EAxis sliceAxis)
-{
-  ZIntCuboid box;
-
-  if (doc.hasStack()) {
-    box = doc.getStack()->getBoundBox();
-    if (sliceAxis == neutu::EAxis::ARB) {
-      ZIntPoint center = box.getCenter();
-      int length = iround(box.getDiagonalLength());
-      box.setSize(length, length, length);
-      box.setCenter(center);
-    } else {
-      box.shiftSliceAxis(sliceAxis);
-    }
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
-{
-  ZIntCuboid box;
-  if (doc != NULL) {
-    box = GetDataSpaceRange(*doc);
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
-{
-  ZIntCuboid box;
-
-  if (doc.hasStack()) {
-    box = doc.getStack()->getBoundBox();
-  }
-
-  return box;
-}
 
 bool ZStackDocHelper::HasMultipleBodySelected(
     const ZFlyEmProofDoc *doc, neutu::ELabelSource type)
@@ -230,16 +180,6 @@ QColor ZStackDocHelper::GetBodyColor(
   return color;
 }
 
-std::string ZStackDocHelper::SaveStack(
-    const ZStackDoc *doc, const std::string &path)
-{
-  std::string  resultPath;
-  if (doc->hasStackData()) {
-    resultPath = doc->getStack()->save(path);
-  }
-
-  return resultPath;
-}
 
 bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 {

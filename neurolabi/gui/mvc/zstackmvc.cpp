@@ -22,7 +22,8 @@
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
-#include "zstackdochelper.h"
+//#include "zstackdochelper.h"
+#include "zstackdocutil.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -436,7 +437,7 @@ void ZStackMvc::saveStack()
         ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
     if (!filePath.isEmpty()) {
       std::string resultPath =
-          ZStackDocHelper::SaveStack(getDocument().get(), filePath.toStdString());
+          ZStackDocUtil::SaveStack(getDocument().get(), filePath.toStdString());
       if (!resultPath.empty()) {
         LINFO() << "Stack saved at" << resultPath;
       }

@@ -7,7 +7,7 @@
 #include "logging/zlog.h"
 
 #include "neutubeconfig.h"
-#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 #include "mvc/zstackview.h"
 #include "mvc/zstackpresenter.h"
 #include "zcrosshair.h"
@@ -208,7 +208,7 @@ void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 void ZFlyEmOrthoWidget::moveUp()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() - currentBox.getHeight() / 2);
 
@@ -218,7 +218,7 @@ void ZFlyEmOrthoWidget::moveUp()
 void ZFlyEmOrthoWidget::moveDown()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() + currentBox.getHeight() / 2);
 
@@ -228,7 +228,7 @@ void ZFlyEmOrthoWidget::moveDown()
 void ZFlyEmOrthoWidget::moveLeft()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() - currentBox.getWidth() / 2);
 
@@ -238,7 +238,7 @@ void ZFlyEmOrthoWidget::moveLeft()
 void ZFlyEmOrthoWidget::moveRight()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() + currentBox.getWidth() / 2);
 

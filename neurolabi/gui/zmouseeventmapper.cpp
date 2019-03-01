@@ -11,7 +11,7 @@
 #include "zstackdochittest.h"
 #include "dvid/zdvidlabelslice.h"
 
-#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 #include "mvc/zstackdoc.h"
 
 //#include "flyem/zflyemproofdoc.h"
@@ -270,7 +270,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     if (op.isNull()) {
 //      ZPoint rawStackPosition = event.get();
       ZPoint dataPos = event.getDataPosition();
-      ZIntCuboid dataBox = ZStackDocHelper::GetDataSpaceRange(*m_doc);
+      ZIntCuboid dataBox = ZStackDocUtil::GetDataSpaceRange(*m_doc);
       if (dataBox.contains(dataPos.toIntPoint())) {
         //        if (m_doc->getStack()->containsRaw(rawStackPosition)) {
         bool hitTestOn =

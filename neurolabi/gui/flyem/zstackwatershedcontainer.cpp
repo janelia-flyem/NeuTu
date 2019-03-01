@@ -800,7 +800,9 @@ void ZStackWatershedContainer::run()
     }
   }
 
-  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
+  m_profiler(timer.elapsed(), "watershed computation");
+
+//  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
 }
 
 bool ZStackWatershedContainer::computationDowsampled()
