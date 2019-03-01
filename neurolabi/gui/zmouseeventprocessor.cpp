@@ -7,7 +7,7 @@
 #include "zstack.hxx"
 
 #include "mvc/zpositionmapper.h"
-#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 #include "mvc/zstackdoc.h"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
@@ -65,7 +65,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
     }
   }
 
-  int z0 = ZStackDocHelper::GetStackSpaceRange(
+  int z0 = ZStackDocUtil::GetStackSpaceRange(
         *m_doc, getSliceAxis()).getFirstCorner().getZ();
   ZPoint stackPosition = ZPositionMapper::WidgetToStack(
         pt, viewProj, z0);

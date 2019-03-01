@@ -43,7 +43,7 @@
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
 #include "zarbsliceviewparam.h"
-#include "zstackdochelper.h"
+#include "zstackdocutil.h"
 #include "mvc/zpositionmapper.h"
 #include "mvc/utilities.h"
 #include "data3d/utilities.h"
@@ -503,7 +503,7 @@ ZIntCuboid ZStackView::getCurrentStackRange() const
 
 ZIntCuboid ZStackView::getViewBoundBox() const
 {
-  return ZStackDocHelper::GetStackSpaceRange(*buddyDocument(), getSliceAxis());
+  return ZStackDocUtil::GetStackSpaceRange(*buddyDocument(), getSliceAxis());
   /*
   ZStack *stack = stackData();
   ZIntCuboid box;
@@ -779,7 +779,7 @@ int ZStackView::getZ0() const
 
 ZIntPoint ZStackView::getStackOffset() const
 {
-  return ZStackDocHelper::GetStackSpaceRange(
+  return ZStackDocUtil::GetStackSpaceRange(
         *buddyDocument(), getSliceAxis()).getFirstCorner();
 }
 
