@@ -73,4 +73,10 @@ void LogMessage(const ZWidgetMessage &msg)
   LogKafkaMessage(msg);
 }
 
+void LogProfileInfo(int64_t duration, const std::string &info)
+{
+  KLOG << ZLog::Profile() << ZLog::Duration(duration)
+       << ZLog::Description(info);
+}
+
 }

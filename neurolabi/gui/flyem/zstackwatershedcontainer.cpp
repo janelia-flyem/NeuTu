@@ -2,6 +2,8 @@
 
 #include <QElapsedTimer>
 
+#include "common/utilities.h"
+
 #include "imgproc/zstackwatershed.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
@@ -602,13 +604,16 @@ ZStack* ZStackWatershedContainer::getSourceStack()
   if (m_source == NULL) {
     if (m_spStack != NULL) {
       if (m_scale > 1) {
-        ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod.toStdString());
+        ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
         filter->setDsFactor(m_scale,m_scale,m_scale);
         m_source = filter->filterStack(*m_spStack);
         m_source->pushDsIntv(m_spStack->getDsIntv());
         delete filter;
       } else {
+        QElapsedTimer timer;
+        timer.start();
         m_source = m_spStack->makeStack(range, m_maxStackVolume, m_preservingGap);
+        logProfile(timer.elapsed(), "produce dense stack for watershed");
       }
     } else if (m_stack != NULL){
       if (range.equals(m_stack->getBoundBox())) {
@@ -659,6 +664,13 @@ bool ZStackWatershedContainer::isEmpty() const
   return (m_stack == NULL) && (m_spStack ==NULL);
 }
 
+void ZStackWatershedContainer::logProfile(
+    int64_t duration, const std::string &info)
+{
+  m_profileLogger(
+        duration, getName().empty() ? info : (info + " (" + getName() + ")"));
+}
+
 void ZStackWatershedContainer::refineBorder()
 {
   if (!m_result.empty()) {
@@ -699,12 +711,15 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
   boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
   //For each component
+  int index = 1;
   for (const ZObject3dScan &subbound : boundaryArray) {
     //  Compute split
     ZStackWatershedContainer container(m_stack, m_spStack);
+    container.setProfileLogger(m_profileLogger);
 //          container.useSeedRange(true);
     container.setRangeHint(RANGE_SEED_BOUND);
     container.setRefiningBorder(false);
+    container.setName(getName() + "_refiner" + std::to_string(index++));
 
     std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
           *stack, *boundaryStack, subbound.getBoundBox());
@@ -762,8 +777,9 @@ void ZStackWatershedContainer::run()
   //Todo: unified processing for dense and sparse stacks
   if(m_stack && m_stack->hasData() && m_scale > 1){//for normal stack
     ZStackMultiScaleWatershed watershed;
-    ZStackPtr stack(watershed.run(getSourceStack(),
-                                  m_seedArray,m_scale,m_algorithm,m_dsMethod));
+    ZStackPtr stack(watershed.run(
+                      getSourceStack(),
+                      m_seedArray,m_scale,m_algorithm.c_str(),m_dsMethod.c_str()));
     stack->setOffset(getSourceOffset());
     m_result.push_back(stack);
   } else {
@@ -800,9 +816,15 @@ void ZStackWatershedContainer::run()
     }
   }
 
-  m_profiler(timer.elapsed(), "watershed computation");
+  logProfile(timer.elapsed(), "watershed computation");
 
 //  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
+}
+
+void ZStackWatershedContainer::setProfileLogger(
+    std::function<void (int64_t, const std::string &)> logger)
+{
+  m_profileLogger = logger;
 }
 
 bool ZStackWatershedContainer::computationDowsampled()
@@ -1301,6 +1323,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     return result;
   }
 
+  QElapsedTimer timer;
+  timer.start();
   //Extract labeled regions
   //m_result will be sorted from low res to high res
   ZObject3dScanArray *objArray =
@@ -1384,7 +1408,10 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
     if (ccaPost()) {
 //      mainBody.upSample(dsIntv);
+      QElapsedTimer ccaTimer;
+      ccaTimer.start();
       assignComponent(*remainBody, mainBody, result);
+      logProfile(ccaTimer.elapsed(), "connected component analysis");
     }
     delete objArray;
   } else {
@@ -1397,6 +1424,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
   }
 
   configureResult(result);
+
+  logProfile(timer.elapsed(), "compose splitting result");
 
 #ifdef _DEBUG_2
   ZStack *labelStack = result->toColorField();
@@ -1487,6 +1516,8 @@ ZStackWatershedContainer* ZStackWatershedContainer::makeSubContainer(
   out->setCcaPost(false);
   out->setRangeHint(RANGE_SEED_BOUND);
 
+  out->setProfileLogger(m_profileLogger);
+
   return out;
 }
 
@@ -1494,6 +1525,16 @@ void ZStackWatershedContainer::addResult(const ZStackArray &result)
 {
   m_result.append(result);
   deprecateDependent(COMP_RESULT);
+}
+
+std::string ZStackWatershedContainer::getName() const
+{
+  return m_name.empty() ? neutu::ToString(this) : m_name;
+}
+
+void ZStackWatershedContainer::setName(const std::string &name)
+{
+  m_name = name;
 }
 
 std::vector<ZStackWatershedContainer*>
@@ -1508,11 +1549,13 @@ ZStackWatershedContainer::makeLocalSeedContainer(double maxDist)
 #endif
 
   const std::vector<ZGraph*> &graphList = seedGraph->getConnectedSubgraph();
+  int index = 1;
   for (const ZGraph *graph : graphList) {
     std::set<int> vertexSet = graph->getConnectedVertexSet();
     std::vector<size_t> seedIndices;
     seedIndices.insert(seedIndices.end(), vertexSet.begin(), vertexSet.end());
     ZStackWatershedContainer *container = makeSubContainer(seedIndices, NULL);
+    container->setName(getName() + "_s" + std::to_string(index++));
     result.push_back(container);
   }
 

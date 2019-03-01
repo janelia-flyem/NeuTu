@@ -1,22 +1,29 @@
 #include "zstackdoc3dhelper.h"
+
+#include <QElapsedTimer>
+
 #include "zstackobject.h"
 #include "zstackobjectinfo.h"
-#include "z3dview.h"
+#include "zfiletype.h"
+#include "zswcnetwork.h"
+#include "zmeshfactory.h"
+#include "zstackdocproxy.h"
+#include "zobject3dscan.h"
 
+#include "logging/utilities.h"
+
+#include "z3dview.h"
 #include "z3dvolumefilter.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
 #include "z3dmeshfilter.h"
 #include "z3dgraphfilter.h"
 #include "z3dsurfacefilter.h"
-#include "flyem/zflyemtodolistfilter.h"
-#include "zfiletype.h"
-#include "zswcnetwork.h"
-#include "flyem/zflyembody3ddoc.h"
-#include "zmeshfactory.h"
-#include "zstackdocproxy.h"
+
 #include "dvid/zdvidgrayslice.h"
-#include "zobject3dscan.h"
+
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemtodolistfilter.h"
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {
@@ -188,7 +195,11 @@ void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
     QList<ZMesh*> meshList;
     foreach(ZObject3dScan *obj, objList) {
       if (obj->hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR)) {
+        QElapsedTimer timer;
+        timer.start();
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+        neutu::LogProfileInfo(timer.elapsed(), "extracting mesh decoration");
+
         if (mesh != NULL) {
           mesh->setLabel(obj->getLabel());
           if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
