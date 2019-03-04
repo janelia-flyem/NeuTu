@@ -54,6 +54,7 @@
 #include "zdialogfactory.h"
 #include "zpunctum.h"
 #include "zflyembookmarkarray.h"
+#include "misc/miscutility.h"
 
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidgrayslice.h"
@@ -2258,7 +2259,7 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
       if (!seedJson.isEmpty()) {
         ZJsonArray roiJson = getRoiJson();
         if (roiJson.isEmpty()) {
-          ZIntCuboid range = flyem::EstimateSplitRoi(getSeedBoundBox());
+          ZIntCuboid range = misc::EstimateSplitRoi(getSeedBoundBox());
           if (!range.isEmpty()) {
             roiJson = range.toJsonArray();
           }
