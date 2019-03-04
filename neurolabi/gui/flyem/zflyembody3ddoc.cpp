@@ -3963,6 +3963,14 @@ void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshM
   }
 }
 
+#define FLYEM_ADD_PROFILE_TIME(call, time) \
+{\
+  QElapsedTimer timer;\
+  timer.start();\
+  call;\
+  time += timer.elapsed();\
+}
+
 void ZFlyEmBody3dDoc::commitSplitResult()
 {
   QElapsedTimer timer;
@@ -3999,6 +4007,11 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   bool uploadingMesh =
       (m_splitter->getLabelType() == neutu::EBodyLabelType::SUPERVOXEL);
 
+  int64_t uploadingTime = 0;
+  int64_t subtractingTime = 0;
+  int64_t meshProcessingTime = 0;
+  int64_t meshUploadingTime = 0;
+
   for (ZStackObject *obj : objList) {
     ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
     if (seg != NULL) {
@@ -4006,7 +4019,11 @@ void ZFlyEmBody3dDoc::commitSplitResult()
       if (meshMap.contains(obj->getObjectId())) {
         mesh = meshMap[obj->getObjectId()];
       } else if (uploadingMesh) {
+        QElapsedTimer timer;
+        timer.start();
         mesh = ZMeshFactory::MakeMesh(*seg);
+        meshProcessingTime += timer.elapsed();
+//        FLYEM_ADD_PROFILE_TIME(ZMeshFactory::MakeMesh(*seg), meshProcessingTime);
         objToDelete.push_back(mesh);
       }
 
@@ -4015,7 +4032,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
               QString("Uploading %1").arg(seg->getLabel()));
         uint64_t newBodyId = 0;
         if (m_splitter->getLabelType() == neutu::EBodyLabelType::BODY) {
+          QElapsedTimer timer;
+          timer.start();
           newBodyId = m_mainDvidWriter.writeSplit(*seg, remainderId, 0);
+          uploadingTime += timer.elapsed();
         } else {
           std::pair<uint64_t, uint64_t> idPair =
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
@@ -4025,7 +4045,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
           notifyWindowMessageUpdated(QString("Updating mesh ..."));
 
           if (mesh != nullptr) {
+//            FLYEM_ADD_PROFILE_TIME(
+//                  m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId),
+//                  meshUploadingTime);
+            QElapsedTimer timer;
+            timer.start();
             m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId);
+            meshUploadingTime += timer.elapsed();
           }
 
           if (m_splitter->fromTar()) {
@@ -4046,7 +4072,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
 
+        QElapsedTimer timer;
+        timer.start();
         remainObj->subtractSliently(*seg);
+        subtractingTime += timer.elapsed();
       }/* else {
         remainObj->unify(*seg);
         if (mesh) {
@@ -4081,7 +4110,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   }
 
   if (mainMesh == nullptr) {
+    QElapsedTimer timer;
+    timer.start();
     mainMesh = ZMeshFactory::MakeMesh(*remainObj);
+    meshProcessingTime += timer.elapsed();
   }
 
 #ifdef _DEBUG_
@@ -4090,9 +4122,15 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   if (uploadingMesh) {
     if (m_splitter->getLabelType() == neutu::EBodyLabelType::SUPERVOXEL) {
+      QElapsedTimer timer;
+      timer.start();
       m_mainDvidWriter.writeSupervoxelMesh(*mainMesh, decode(remainderId));
+      meshUploadingTime += timer.elapsed();
     } else {
+      QElapsedTimer timer;
+      timer.start();
       m_mainDvidWriter.writeMesh(*mainMesh, remainderId, 0);
+      meshUploadingTime += timer.elapsed();
     }
   }
 
@@ -4149,7 +4187,12 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   undoStack()->clear();
 
-  neutu::LogProfileInfo(timer.elapsed(), "commit split");
+  neutu::LogProfileInfo(
+        timer.elapsed(),
+        QString("commit split (uploading: %1ms; subtraction: %2ms; "
+                "mesh processing: %3ms; mesh uploading: %4.ms)")
+        .arg(uploadingTime).arg(subtractingTime).arg(meshProcessingTime)
+        .arg(meshUploadingTime).toStdString());
 }
 
 void ZFlyEmBody3dDoc::waitForSplitToBeDone()

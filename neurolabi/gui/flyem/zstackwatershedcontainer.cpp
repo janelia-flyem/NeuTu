@@ -1323,6 +1323,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     return result;
   }
 
+  int64_t ccaTime = 0;
+
   QElapsedTimer timer;
   timer.start();
   //Extract labeled regions
@@ -1411,7 +1413,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       QElapsedTimer ccaTimer;
       ccaTimer.start();
       assignComponent(*remainBody, mainBody, result);
-      logProfile(ccaTimer.elapsed(), "connected component analysis");
+      ccaTime = ccaTimer.elapsed();
+//      logProfile(ccaTimer.elapsed(), "connected component analysis");
     }
     delete objArray;
   } else {
@@ -1425,7 +1428,9 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
   configureResult(result);
 
-  logProfile(timer.elapsed(), "compose splitting result");
+  logProfile(timer.elapsed(),
+             QString("compose splitting result (cca: %1ms)").arg(ccaTime)
+             .toStdString());
 
 #ifdef _DEBUG_2
   ZStack *labelStack = result->toColorField();
