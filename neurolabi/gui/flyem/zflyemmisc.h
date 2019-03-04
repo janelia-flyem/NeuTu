@@ -90,7 +90,7 @@ ZStack* GenerateExampleStack(const ZJsonObject &obj);
 ZStack* GenerateExampleStack(
     const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range);
 
-ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
+//ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 
 void SetSplitTaskSignalUrl(
     ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target);

@@ -65,6 +65,7 @@
 #include "zfiletype.h"
 #include "flyemdatareader.h"
 #include "flyemdatawriter.h"
+#include "misc/miscutility.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -3874,7 +3875,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
     ZIntCuboidObj *roi = getSplitRoi();
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3894,7 +3895,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();

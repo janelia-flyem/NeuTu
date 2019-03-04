@@ -1351,6 +1351,7 @@ QString flyem::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
+#if 0
 ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 {
   ZIntCuboid newBox = boundBox;
@@ -1376,6 +1377,7 @@ ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 
   return newBox;
 }
+#endif
 
 QString flyem::GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
