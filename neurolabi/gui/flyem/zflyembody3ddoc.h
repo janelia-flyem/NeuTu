@@ -135,7 +135,7 @@ public:
 //  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return getMainDvidReader().getDvidTarget();
   }
 
   const ZDvidReader& getMainDvidReader() const;
@@ -571,7 +571,7 @@ private:
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_workDvidReader;
   ZDvidWriter m_mainDvidWriter;
   ZDvidReader m_bodyReader;

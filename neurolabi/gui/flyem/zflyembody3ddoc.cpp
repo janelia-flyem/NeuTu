@@ -3683,10 +3683,14 @@ const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
 
 void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+//  m_dvidTarget = target;
   m_workDvidReader.clear();
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
+
+  m_mainDvidWriter.open(target);
+  m_workDvidReader.open(getDvidTarget());
+
   updateDvidInfo();
 
   m_splitter->setDvidTarget(target);
@@ -3710,11 +3714,6 @@ const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
 void ZFlyEmBody3dDoc::updateDvidInfo()
 {
   m_dvidInfo.clear();
-
-  if (!m_workDvidReader.isReady()) {
-    m_workDvidReader.open(getDvidTarget());
-    m_mainDvidWriter.open(m_workDvidReader.getDvidTarget());
-  }
 
   if (getMainDvidReader().isReady()) {
     m_dvidInfo = getMainDvidReader().readLabelInfo();
