@@ -4190,7 +4190,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   neutu::LogProfileInfo(
         timer.elapsed(),
         QString("commit split (uploading: %1ms; subtraction: %2ms; "
-                "mesh processing: %3ms; mesh uploading: %4.ms)")
+                "mesh processing: %3ms; mesh uploading: %4ms.)")
         .arg(uploadingTime).arg(subtractingTime).arg(meshProcessingTime)
         .arg(meshUploadingTime).toStdString());
 }
