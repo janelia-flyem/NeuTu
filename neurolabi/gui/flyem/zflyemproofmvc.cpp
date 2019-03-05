@@ -2230,12 +2230,12 @@ void ZFlyEmProofMvc::setDvidTarget()
 
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
-  if (m_dlgManager->isDvidDlgReady()) {
-    return getCompleteDocument()->getDvidTarget();
+//  if (m_dlgManager->isDvidDlgReady()) {
+  return getCompleteDocument()->getDvidTarget();
 //    return m_dvidDlg->getDvidTarget();
-  }
+//  }
 
-  return ZDvidTarget();
+//  return ZDvidTarget();
 }
 
 std::string ZFlyEmProofMvc::getDvidTargetUuid() const
