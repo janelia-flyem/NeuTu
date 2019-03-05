@@ -4037,8 +4037,12 @@ void ZFlyEmBody3dDoc::commitSplitResult()
           newBodyId = m_mainDvidWriter.writeSplit(*seg, remainderId, 0);
           uploadingTime += timer.elapsed();
         } else {
+          QElapsedTimer timer;
+          timer.start();
           std::pair<uint64_t, uint64_t> idPair =
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
+          uploadingTime += timer.elapsed();
+
           remainderId = idPair.first;
           newBodyId = idPair.second;
 
