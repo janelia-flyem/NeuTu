@@ -168,6 +168,7 @@ ZIntCuboid ZSegmentationScan::getStackForegroundBoundBox(ZStack *stack)
   }
 
   uint8_t *p = stack->array8();
+
   int width = stack->width();
   int height = stack->height();
   int depth = stack->depth();
