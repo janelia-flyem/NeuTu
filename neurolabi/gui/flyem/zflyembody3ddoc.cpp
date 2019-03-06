@@ -4656,6 +4656,16 @@ void ZFlyEmBody3dDoc::configure(const ProtocolTaskConfig &config)
   m_taskConfig = config;
 }
 
+/** Update bodies
+ *
+ * Currently there are three types of body IDs: normal body ID, tar body ID
+ * and supervoxel ID. Any added ID will be stored in the document as its decoded
+ * format, and the only way to tell its type is through how its mapped in the
+ * body manager. One limitation in the body manager is that it can not store both
+ * the normal form and the tar form of a body ID. Storing a supervoxel and a body
+ * with the same decoded ID can also cause some confusion. So do NOT add different
+ * encodings of the same ID together.
+ */
 template <typename InputIterator>
 void ZFlyEmBody3dDoc::addBodyChangeEvent(
     const InputIterator &first, const InputIterator &last)
@@ -4671,6 +4681,7 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
 
   QSet<uint64_t> newBodySet;
   QSet<uint64_t> tarSet;
+  QSet<uint64_t> decodedTarSet;
   QSet<uint64_t> supervoxelSet;
 //  QMap<uint64_t, uint64_t> bodyEncodeMap;
 
@@ -4686,16 +4697,19 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
     uint64_t bodyId = *iter;
     if (ZFlyEmBodyManager::encodesTar(bodyId)) {
       tarSet.insert(bodyId);
+      uint64_t decodedId = decode(bodyId);
+      decodedTarSet.insert(decodedId);
+//      newBodySet.insert(decodedId);
     } else if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
       supervoxelSet.insert(bodyId);
     } else {
-      newBodySet.insert(decode(bodyId));
+      newBodySet.insert(decode(bodyId)); //The ID is always decoded while being added
     }
 //    bodyEncodeMap[decode(bodyId)] = bodyId;
   }
 
   QSet<uint64_t> addedBodySet = newBodySet - oldBodySet;
-  QSet<uint64_t> removedBodySet = oldBodySet - newBodySet;
+  QSet<uint64_t> removedBodySet = oldBodySet - newBodySet - decodedTarSet;
   QSet<uint64_t> commonBodySet = newBodySet.intersect(oldBodySet);
 
   //Remove bodies not in the current set
@@ -4713,23 +4727,17 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
     }
   }
 
-  /*
-  for (QMap<uint64_t, ZFlyEmBodyEvent>::iterator
-       iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
-    uint64_t bodyId = iter.key();
-    if (newBodySet.contains(bodyId)) {
-      if (iter.value().getAction() != ZFlyEmBodyEvent::EAction::ACTION_REMOVE) {
-        //In the new body set had the bodyID and not remove, add event
-        addEvent(iter.value());
-      }
-    }
-  }
-  */
-
-  //Add new bodies
+  //Add new normal bodies
   foreach (uint64_t bodyId, addedBodySet) {
     if (!getBodyManager().isSupervoxel(bodyId)) {
       addEvent(ZFlyEmBodyEvent::EAction::ADD, bodyId, 0, NULL);
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Adding a normal body ID that exists as a supervoxel: %1").arg(bodyId),
+              neutu::EMessageType::WARNING,
+              ZWidgetMessage::TARGET_TEXT_APPENDING |
+              ZWidgetMessage::TARGET_KAFKA));
     }
   }
 
