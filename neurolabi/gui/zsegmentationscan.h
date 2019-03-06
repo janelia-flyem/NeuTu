@@ -8,6 +8,7 @@
 class ZStack;
 class ZObject3dScan;
 
+
 class ZSegmentationScan
 {
 public:

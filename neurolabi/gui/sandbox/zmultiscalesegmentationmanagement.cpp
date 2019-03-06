@@ -412,7 +412,7 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   QPushButton* clear = new QPushButton("Clear");
   QPushButton* export_node = new QPushButton("Export");
   QPushButton* segment = new QPushButton("Segment");
-  QPushButton* auto_segment = new QPushButton("AutoSegment");
+  //QPushButton* auto_segment = new QPushButton("AutoSegment");
   QPushButton* merge = new QPushButton("Merge");
   /*QPushButton* flood = new QPushButton("Flood");*/
   QPushButton* promote = new QPushButton("Promote");
@@ -442,10 +442,10 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   lay->addWidget(clear,9,5,1,5);
   lay->addWidget(export_node,9,10,1,5);
   lay->addWidget(segment,10,0,1,4);
-  lay->addWidget(auto_segment,10,4,1,4);
-  lay->addWidget(merge,10,8,1,4);
+  //lay->addWidget(auto_segment,10,4,1,4);
+  lay->addWidget(merge,10,4,1,4);
   //lay->addWidget(flood,10,12,1,3);
-  lay->addWidget(promote,10,12,1,3);
+  lay->addWidget(promote,10,8,1,4);
 
 
 
@@ -455,7 +455,7 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   connect(clear,SIGNAL(clicked()),this,SLOT(onClear()));
   connect(export_node,SIGNAL(clicked()),this,SLOT(onExport()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
-  connect(auto_segment,SIGNAL(clicked()),this,SLOT(onAutoSegment()));
+  //connect(auto_segment,SIGNAL(clicked()),this,SLOT(onAutoSegment()));
   connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
   //connect(flood,SIGNAL(clicked()),this,SLOT(onFlood()));
   connect(promote,SIGNAL(clicked()),this,SLOT(onPromote()));
@@ -618,6 +618,7 @@ void ZMultiscaleSegmentationWindow::onSegment()
 }
 
 
+/*
 void ZMultiscaleSegmentationWindow::onAutoSegment()
 {
   if(!m_frame || !m_stack)
@@ -654,7 +655,7 @@ void ZMultiscaleSegmentationWindow::onAutoSegment()
   {
     delete seed;
   }
-}
+}*/
 
 
 void ZMultiscaleSegmentationWindow::onOpenStack()
@@ -894,6 +895,7 @@ void ZMultiscaleSegmentationWindow::removeSeeds()
 }
 
 
+/*
 std::vector<ZStack*> ZMultiscaleSegmentationWindow::seedsFromMaximum(ZStack *stack)
 {
   std::vector<ZStack*> rv;
@@ -959,7 +961,8 @@ std::vector<ZStack*> ZMultiscaleSegmentationWindow::seedsFromMaximum(ZStack *sta
 
   rv.push_back(seeds);
   return rv;
-}
+}*/
+
 
 
 std::vector<ZStackObject*> ZMultiscaleSegmentationWindow::getSeeds()

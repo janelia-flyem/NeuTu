@@ -103,7 +103,7 @@ public:
 private slots:
   void onOpenStack();
   void onSegment();
-  void onAutoSegment();
+  /*void onAutoSegment();*/
   void onClear();
   void onExport();
   void onSelectNode(QModelIndex index);
