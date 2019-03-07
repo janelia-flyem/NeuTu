@@ -956,10 +956,19 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
     if (usingTars) {
         m_bodyMeshLoadedExpected = 0;
+
+        // Bodies reused from the previous task will not generate bodyMeshesAdded
+        // signals, which needs to be considered when counting these signals.
+
+        QSet<uint64_t> bodies = m_body3dDoc->getNormalBodySet();
+        for (uint64_t bodyId : bodies) {
+            uint64_t id = ZFlyEmBodyManager::encode(bodyId);
+            m_bodiesReused += (visible.contains(id) || selected.contains(id));
+        }
     } else {
         m_bodyMeshLoadedExpected = (visible + selected).size();
 
-        // Bodies reused from the previous task may not generate onBodyRecycled amd
+        // Bodies reused from the previous task may not generate onBodyRecycled and
         // onBodyMeshLoaded signals, which needs to be considered when counting
         // these signals.
 
@@ -990,11 +999,13 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
   LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
            << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+           << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
+           << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
            << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
            << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
            << "m_bodiesReused =" << m_bodiesReused;
     if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
-        (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+        (m_bodyMeshesAddedExpected - m_bodiesReused == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
