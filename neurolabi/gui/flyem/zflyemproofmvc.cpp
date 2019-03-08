@@ -1995,6 +1995,10 @@ void ZFlyEmProofMvc::updateContrast()
 
 void ZFlyEmProofMvc::updateTmpContrast()
 {
+#ifdef _DEBUG_
+  std::cout << "Updating tmp contrast" << std::endl;
+  getContrastDlg()->getContrastProtocal().print();
+#endif
   updateContrast(getContrastDlg()->getContrastProtocal(), true);
   getCompleteDocument()->enhanceTileContrast(true);
 }
@@ -2009,13 +2013,19 @@ void ZFlyEmProofMvc::saveTmpContrast()
 {
   if (!getDvidTarget().readOnly()) {
     ZJsonObject obj = getContrastDlg()->getContrastProtocal();
+    getCompleteDocument()->setContrastProtocol(obj);
     ZDvidWriter &writer = getCompleteDocument()->getDvidWriter();
     if (writer.good()) {
-      if (getCompleteDocument()->getDvidReader().hasData("neutu_config")) {
+      if (!getCompleteDocument()->getDvidReader().hasData("neutu_config")) {
         writer.createData("keyvalue", "neutu_config", false);
       }
 
-      writer.writeJson("neutu_config", "contrast", obj);
+      ZJsonObject jsonObj;
+      jsonObj.setEntry(FlyEmDataConfig::KEY_CONTRAST, obj);
+      std::string userName = NeutubeConfig::GetUserName();
+      writer.writeJson(
+            ZDvidUrl(getDvidTarget()).getDataConfigUrl(userName), jsonObj);
+//      writer.writeJson("neutu_config", "contrast", obj);
     }
   } else {
     emit messageGenerated(

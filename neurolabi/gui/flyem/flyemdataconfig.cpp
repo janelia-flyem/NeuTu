@@ -33,3 +33,19 @@ void FlyEmDataConfig::loadBodyStatusProtocol(const ZJsonObject &obj)
 {
   m_bodyStatusProtocol.loadJsonObject(obj);
 }
+
+void FlyEmDataConfig::print() const
+{
+  ZJsonObject obj;
+  {
+    ZJsonObject subobj = m_contrastProtocol.toJsonObject();
+    obj.setEntry(KEY_CONTRAST, subobj);
+  }
+
+  {
+    ZJsonObject subobj = m_bodyStatusProtocol.toJsonObject();
+    obj.setEntry(KEY_BODY_STATUS, subobj);
+  }
+
+  std::cout << obj.dumpString(2) << std::endl;
+}

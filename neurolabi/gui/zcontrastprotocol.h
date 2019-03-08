@@ -11,8 +11,8 @@ class ZJsonObject;
 class ZContrastProtocol
 {
 public:
-  enum ENonlinearMode {
-    NONLINEAR_NONE, NONLINEAR_POWER, NONLINEAR_SIGMOID
+  enum class ENonlinearMode {
+    NONE, POWER, SIGMOID
   };
 
   ZContrastProtocol();
@@ -25,7 +25,7 @@ public:
   double getOffset() const;
   double getScale() const;
   bool isNonlinear() const;
-
+  ENonlinearMode getNonlinearMode() const;
 
   uint8_t mapGrey(uint8_t v);
 //  int mapInt(int v);
@@ -44,7 +44,7 @@ public:
 
   inline bool hasNoEffect() const {
     return (m_offset == 0.0) && (m_scale == 1.0) &&
-        (m_nonlinearMode == NONLINEAR_NONE);
+        (m_nonlinearMode == ENonlinearMode::NONE);
   }
 
   void setDefaultNonLinear();

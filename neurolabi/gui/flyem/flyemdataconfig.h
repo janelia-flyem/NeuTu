@@ -26,6 +26,8 @@ public:
     return m_bodyStatusProtocol;
   }
 
+  void print() const;
+
 public:
   static const char* KEY_CONTRAST;
   static const char* KEY_BODY_STATUS;
