@@ -223,6 +223,7 @@
 
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "flyem/flyemdatareader.h"
 
 //#include "zcircle.h"
 
@@ -16357,7 +16358,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata4.int.janelia.org", "a21a", 8900);
   ZDvidReader reader;
   reader.open(target);
@@ -29521,6 +29522,13 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan *obj = flyem::LoadRoiFromJson(
         GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
+  config.print();
+
 #endif
 
   std::cout << "Done." << std::endl;

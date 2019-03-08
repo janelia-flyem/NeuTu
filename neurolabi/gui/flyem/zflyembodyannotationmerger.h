@@ -18,6 +18,7 @@ public:
   ZFlyEmBodyAnnotationMerger();
 
   void loadJsonObject(const ZJsonObject &obj);
+  ZJsonObject toJsonObject() const;
 
   bool isEmpty() const;
 //  int getStatusRank() const;
@@ -39,6 +40,10 @@ public:
 
   std::vector<std::vector<uint64_t>> getConflictBody(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+
+public:
+  static const char* KEY_STATUS;
+  static const char* KEY_CONFILICT;
 
 private:
   std::vector<ZFlyEmBodyStatus> m_statusList;

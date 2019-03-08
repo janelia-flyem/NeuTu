@@ -1267,7 +1267,7 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 
 std::string ZDvidUrl::getDataConfigUrl(const std::string &userName) const
 {
-  return GetFullUrl(getConfigUrl(), "user_" + userName);
+  return getKeyUrl("neutu_config", "user_" + userName);
 }
 
 std::string ZDvidUrl::getSplitUrl(
