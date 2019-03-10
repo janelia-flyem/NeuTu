@@ -27,6 +27,18 @@ void ZSegmentationScan::clearData()
 }
 
 
+double ZSegmentationScan::memUsage(){
+  double rv = m_data.size()*4;
+  for(const std::vector<std::vector<int>>& slice:m_data){
+    rv += slice.size()*4;
+    for(const std::vector<int>& strip:slice){
+      rv += strip.size()*4;
+    }
+  }
+  return rv/(1024*1024);//MB
+}
+
+
 void ZSegmentationScan::unify(ZSegmentationScan *obj)
 {
 

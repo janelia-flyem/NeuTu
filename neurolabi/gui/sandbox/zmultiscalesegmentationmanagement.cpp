@@ -6,6 +6,7 @@
 #include <QLayout>
 #include <QCheckBox>
 #include <QSpinBox>
+#include "time.h"
 #include "zmultiscalesegmentationmanagement.h"
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
@@ -18,6 +19,7 @@
 #include "mainwindow.h"
 
 
+/*
 //implementation for ZSegmentationNode
 int ZSegmentationNode::s_id = 0;
 
@@ -244,6 +246,7 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds, QString
     delete mask;
   }
 
+
   ZStackWatershedContainer* container = new ZStackWatershedContainer(stack_valid);
   addSeed(*container, seeds);
 
@@ -252,6 +255,13 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds, QString
 
   container->setDsMethod("Min(ignore zero)");
   container->run(alpha,beta);
+
+  //ZStackPtr presult = container->getResultStack();
+
+  //ZSegmentationRepre<ZSegmentationEncodingRLX> segment;
+  //segment.consume(presult.get());
+  //segment.labelStack(stack);
+
 
   std::vector<ZSegmentationScan*> scan_array;
 
@@ -263,6 +273,8 @@ void ZSegmentationNode::splitNode(ZStack *stack, std::vector<T*> &seeds, QString
     ZObject3dScan* obj = *it;
     ZSegmentationScan * scan = new ZSegmentationScan();
     scan->fromObject3DScan(obj);
+    std::cout<<"Mem Usage: "<<scan->memUsage()<<"MB"<<" "<<"Voxels:"<<scan->getBoundBox().getVolume()<<endl;
+
     scan_array.push_back(scan);
   }
 
@@ -307,9 +319,9 @@ void ZSegmentationNode::display(QStandardItem* tree)
     ZSegmentationNode* child = *it;
     child->display(current);
   }
-}
+}*/
 
-
+/*
 //implementation for ZTreeView
 void ZTreeView::dropEvent(QDropEvent *event)
 {
@@ -360,10 +372,11 @@ QStandardItem* ZTreeView::deepCopy(QStandardItem *item)
     rv->insertRow(i, deepCopy(item->child(i)));
   }
   return rv;
-}
+}*/
 
 
 //implementation for ZMultiscaleSegmentationWindow
+
 ZMultiscaleSegmentationWindow* ZMultiscaleSegmentationWindow::s_window = nullptr;
 
 
@@ -378,17 +391,17 @@ void ZMultiscaleSegmentationWindow::init()
 
   m_frame = NULL;
   m_stack = NULL;
-  m_root = NULL;
+  //m_root = NULL;
   initWidgets();
 }
 
 
 ZMultiscaleSegmentationWindow::~ZMultiscaleSegmentationWindow()
 {
-  if(m_root)
+  /*if(m_root)
   {
     delete m_root;
-  }
+  }*/
 }
 
 
@@ -400,65 +413,66 @@ void ZMultiscaleSegmentationWindow::initWidgets()
   this->setWindowFlags(flags);
 
   //create widgets
+  /*
   m_tree = new QStandardItemModel(this);
   m_tree_view = new ZTreeView(this);
   m_tree_view->setModel(m_tree);
   m_tree_view->setDragEnabled(true);
   m_tree_view->setAcceptDrops(true);
   m_tree->setHorizontalHeaderLabels(QStringList()<<"Multiscale Segmentations:");
-  m_tree->invisibleRootItem()->setText("0");
+  m_tree->invisibleRootItem()->setText("0");*/
 
   QPushButton* open_stack = new QPushButton("Open");
-  QPushButton* clear = new QPushButton("Clear");
-  QPushButton* export_node = new QPushButton("Export");
+  //QPushButton* clear = new QPushButton("Clear");
+  //QPushButton* export_node = new QPushButton("Export");
   QPushButton* segment = new QPushButton("Segment");
   //QPushButton* auto_segment = new QPushButton("AutoSegment");
-  QPushButton* merge = new QPushButton("Merge");
+  //QPushButton* merge = new QPushButton("Merge");
   /*QPushButton* flood = new QPushButton("Flood");*/
-  QPushButton* promote = new QPushButton("Promote");
+  //QPushButton* promote = new QPushButton("Promote");
 
-  m_show_leaf = new QCheckBox("Show Leaf");
-  m_show_leaf->setChecked(true);
+  //m_show_leaf = new QCheckBox("Show Leaf");
+  //m_show_leaf->setChecked(true);
 
-  m_leaky_boundary = new QCheckBox("Boudary Leak");
-  m_leaky_boundary->setChecked(false);
+  //m_leaky_boundary = new QCheckBox("Boudary Leak");
+  //m_leaky_boundary->setChecked(false);
 
-  m_alpha = new QSpinBox();
-  m_alpha->setRange(-5,5);
+  //m_alpha = new QSpinBox();
+  //m_alpha->setRange(-5,5);
 
-  m_beta = new QSpinBox();
-  m_beta->setRange(-5,5);
+  //m_beta = new QSpinBox();
+  //m_beta->setRange(-5,5);
 
   //setup layout
   QGridLayout* lay=new QGridLayout(this);
-  lay->addWidget(m_tree_view,0,0,8,15);
+  /*lay->addWidget(m_tree_view,0,0,8,15);
   lay->addWidget(m_show_leaf,8,0,1,3);
   lay->addWidget(m_leaky_boundary,8,3,1,3);
   lay->addWidget(new QLabel("alpha:"),8,6,1,2);
   lay->addWidget(m_alpha,8,8,1,3);
   lay->addWidget(new QLabel("beta:"),8,11,1,2);
-  lay->addWidget(m_beta,8,13,1,3);
+  lay->addWidget(m_beta,8,13,1,3);*/
   lay->addWidget(open_stack,9,0,1,5);
-  lay->addWidget(clear,9,5,1,5);
-  lay->addWidget(export_node,9,10,1,5);
+  //lay->addWidget(clear,9,5,1,5);
+  //lay->addWidget(export_node,9,10,1,5);
   lay->addWidget(segment,10,0,1,4);
   //lay->addWidget(auto_segment,10,4,1,4);
-  lay->addWidget(merge,10,4,1,4);
+  //lay->addWidget(merge,10,4,1,4);
   //lay->addWidget(flood,10,12,1,3);
-  lay->addWidget(promote,10,8,1,4);
+  //lay->addWidget(promote,10,8,1,4);
 
 
 
   //events
-  connect(m_tree_view,SIGNAL(clicked(QModelIndex)),this,SLOT(onSelectNode(QModelIndex)));
+  //connect(m_tree_view,SIGNAL(clicked(QModelIndex)),this,SLOT(onSelectNode(QModelIndex)));
   connect(open_stack,SIGNAL(clicked()),this,SLOT(onOpenStack()));
-  connect(clear,SIGNAL(clicked()),this,SLOT(onClear()));
-  connect(export_node,SIGNAL(clicked()),this,SLOT(onExport()));
+  //connect(clear,SIGNAL(clicked()),this,SLOT(onClear()));
+  //connect(export_node,SIGNAL(clicked()),this,SLOT(onExport()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
   //connect(auto_segment,SIGNAL(clicked()),this,SLOT(onAutoSegment()));
-  connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
+  //connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
   //connect(flood,SIGNAL(clicked()),this,SLOT(onFlood()));
-  connect(promote,SIGNAL(clicked()),this,SLOT(onPromote()));
+  //connect(promote,SIGNAL(clicked()),this,SLOT(onPromote()));
 
   this->setLayout(lay);
   this->setMinimumSize(400,600);
@@ -506,7 +520,7 @@ void ZMultiscaleSegmentationWindow::onFlood()
 }
 */
 
-
+/*
 void ZMultiscaleSegmentationWindow::onPromote()
 {
   QStandardItem* item =  getSelectedNodeItem();
@@ -572,27 +586,83 @@ void ZMultiscaleSegmentationWindow::onSelectNode(QModelIndex index)
   ZSegmentationNode* node = m_root->find(m_tree->itemFromIndex(index)->text().toInt());
   highLight(node);
 }
-
+*/
 
 void ZMultiscaleSegmentationWindow::onSegment()
 {
+
   if(!m_frame || !m_stack)
   {
     return;
   }
 
-  QStandardItem* selected_item = getSelectedNodeItem();
-  QString text = selected_item->text();
-  ZSegmentationNode* selected_node = m_root->find(text.toInt());
 
-  if(!selected_node)
-  {
-    return ;
-  }
+  //QStandardItem* selected_item = getSelectedNodeItem();
+  //QString text = selected_item->text();
+  //ZSegmentationNode* selected_node = m_root->find(text.toInt());
+
+  //if(!selected_node)
+  //{
+  //  return ;
+  //}
 
   std::vector<ZStackObject*> seeds = getSeeds();
 
-  if(m_leaky_boundary->isChecked())
+  ZStackWatershedContainer container(m_stack);
+  //addSeed(*container, seeds);
+
+  //container->setAlgorithm("");
+  //container->setScale(1);
+
+  container.setDsMethod("Min(ignore zero)");
+
+  for(ZStackObject* seed:seeds){
+    container.addSeed(seed);
+  }
+
+  container.run();
+
+  ZStackPtr presult = container.getResultStack();
+
+  //ZSegmentationRepre<ZSegmentationEncodingRLX> segment;
+  m_segmentation.consume(presult.get());
+
+  clock_t start = std::clock();
+  m_segmentation.mergeLabels(1,2);
+  clock_t end = std::clock();
+  std::cout<<(end-start)<<" "<<std::endl;
+
+  //std::cout<<m_segmentation.memUsage()/1024/1024<<" "<<m_stack->getVoxelNumber()<<std::endl;
+  vector<int> labels = m_segmentation.getLabels();
+  ZColorScheme scheme;
+  scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  int i = 1;
+  m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
+  for(int label: labels){
+
+    ZStack tmp(GREY,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->channelNumber());
+    tmp.setOffset(m_stack->getOffset());
+    m_segmentation.labelStack(tmp,label);
+    ZObject3dScan* mask = new ZObject3dScan();
+
+    mask->loadStack(tmp);
+    mask->setLabel(label);
+    mask->setColor(scheme.getColor(i++));
+
+
+    mask->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+    mask->setSelectable(true);
+    m_frame->document()->getDataBuffer()->addUpdate(mask, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    //mask->addCallBackOnSelection(onSelectMask);
+    //mask->addCallBackOnDeselection(onDeselectMask);
+  }
+
+
+
+
+
+  //m_segmentation.labelStack(m_stack);*/
+  /*if(m_leaky_boundary->isChecked())
   {
     double alpha = std::pow(10.0,m_alpha->value());
     double beta = std::pow(10.0,m_beta->value());
@@ -601,20 +671,20 @@ void ZMultiscaleSegmentationWindow::onSegment()
   else
   {
     selected_node->splitNode<ZStackObject>(m_stack, seeds,"watershed");
-  }
+  }*/
 
   //display tree in UI
-  clearTreeView();
-  m_root->display(m_tree->invisibleRootItem());
-  m_tree_view->expandAll();
-  highLight(m_root);
+  //clearTreeView();
+  //m_root->display(m_tree->invisibleRootItem());
+  //m_tree_view->expandAll();
+  //highLight(m_root);
 
-  QStandardItem* item = findItemById(m_tree->invisibleRootItem(),text.toInt());
+  /*QStandardItem* item = findItemById(m_tree->invisibleRootItem(),text.toInt());
   if(item && item->index().isValid())
   {
     m_tree_view->setCurrentIndex(item->index());
-  }
-  removeSeeds();
+  }*/
+  //removeSeeds();
 }
 
 
@@ -668,11 +738,11 @@ void ZMultiscaleSegmentationWindow::onOpenStack()
       m_frame->close();
       m_frame = NULL;
     }
-    if(m_root)
+    /*if(m_root)
     {
       delete m_root;
       m_root = NULL;
-    }
+    }*/
 
     m_stack = new ZStack();
     m_stack->load(file_name.toStdString());
@@ -680,16 +750,16 @@ void ZMultiscaleSegmentationWindow::onOpenStack()
     ZSandbox::GetMainWindow()->addStackFrame(m_frame);
     ZSandbox::GetMainWindow()->presentStackFrame(m_frame);
 
-    ZSegmentationNode::s_id = 0;
-    m_root = new ZSegmentationNode();
-    m_root->setParent(NULL);
-    ZSegmentationScan* data = new ZSegmentationScan();
-    data->fromStack(m_stack);
-    m_root->setData(data);
+    //ZSegmentationNode::s_id = 0;
+    //m_root = new ZSegmentationNode();
+    //m_root->setParent(NULL);
+    //ZSegmentationScan* data = new ZSegmentationScan();
+    //data->fromStack(m_stack);
+    //m_root->setData(data);
   }
 }
 
-
+/*
 void ZMultiscaleSegmentationWindow::onExport()
 {
   if(!m_root || !m_stack)
@@ -763,10 +833,10 @@ void ZMultiscaleSegmentationWindow::selectNode(int id)
     std::cout<< id <<" is selected"<<std::endl;
   }
 }
+*/
 
-
-void ZMultiscaleSegmentationWindow::deselectNode(int /*id*/)
-{
+//void ZMultiscaleSegmentationWindow::deselectNode(int /*id*/)
+//{
 /*
   QStandardItem* item = findItemById(m_tree->invisibleRootItem(),id);
   {
@@ -774,9 +844,10 @@ void ZMultiscaleSegmentationWindow::deselectNode(int /*id*/)
     std::cout<< id <<" is deselected"<<std::endl;
   }
   */
-}
+//}
 
 
+/*
 void ZMultiscaleSegmentationWindow::highLight(ZSegmentationNode *node)
 {
   if(!node)
@@ -881,7 +952,7 @@ void ZMultiscaleSegmentationWindow::clearTreeView()
   }
 }
 
-
+*/
 void ZMultiscaleSegmentationWindow::removeSeeds()
 {
   if(!m_frame)

@@ -694,7 +694,6 @@ private:
   void pushDsIntv(int xintv, int yintv, int zintv);
   void popDsIntv(int xintv, int yintv, int zintv);
 
-
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   bool m_isCanonized;
