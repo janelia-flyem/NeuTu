@@ -20,6 +20,8 @@ public:
 void fromStack(ZStack* stack);
 void fromObject3DScan(ZObject3dScan* obj);
 
+double memUsage();
+
 ZObject3dScan* toObject3dScan();
 ZStack* toStack();
 
