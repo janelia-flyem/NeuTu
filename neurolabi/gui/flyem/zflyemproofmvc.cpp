@@ -2199,6 +2199,10 @@ void ZFlyEmProofMvc::diagnose()
                             arg(status).
                             arg(getCompleteDocument()->getMergeProject()->
                                 getStatusRank(status.toStdString())));
+      if (!getCompleteDocument()->getMergeProject()->isMergableStatus(
+            status.toStdString())) {
+        emit messageGenerated("  not mergable");
+      }
     }
   }
 
