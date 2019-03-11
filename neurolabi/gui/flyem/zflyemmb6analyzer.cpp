@@ -3,7 +3,11 @@
 #include <QString>
 
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidsynapse.h"
+
 #include "zflyembodyannotation.h"
+#include "flyemdatareader.h"
+
 
 ZFlyEmMB6Analyzer::ZFlyEmMB6Analyzer()
 {
@@ -28,7 +32,8 @@ void ZFlyEmMB6Analyzer::setDvidReader(ZDvidReader *reader)
 void ZFlyEmMB6Analyzer::updateBodyName(uint64_t bodyId)
 {
   if (!m_bodyNameMap.contains(bodyId)) {
-    ZFlyEmBodyAnnotation annotation = m_reader->readBodyAnnotation(bodyId);
+    ZFlyEmBodyAnnotation annotation =
+        FlyEmDataReader::ReadBodyAnnotation(*m_reader, bodyId);
     m_bodyNameMap[bodyId] = annotation.getName().c_str();
   }
 }

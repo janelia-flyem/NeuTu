@@ -76,7 +76,7 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
-                     neutube3d::EWindowType windowType = neutube3d::EWindowType::GENERAL,
+                     neutu3d::EWindowType windowType = neutu3d::EWindowType::GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
@@ -92,27 +92,27 @@ public: //Creators
 public:
   void configure(const ZJsonObject &obj);
 
-  neutube3d::EWindowType getWindowType() const {
+  neutu3d::EWindowType getWindowType() const {
     return m_windowType;
   }
 
-  void setWindowType(neutube3d::EWindowType type) {
+  void setWindowType(neutu3d::EWindowType type) {
     m_windowType = type;
   }
 
   void writeSettings();
   void readSettings();
-  void setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box);
-  void resetCutBox(neutube3d::ERendererLayer layer);
+  void setCutBox(neutu3d::ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(neutu3d::ERendererLayer layer);
 
-  bool isLayerVisible(neutube3d::ERendererLayer layer) const;
+  bool isLayerVisible(neutu3d::ERendererLayer layer) const;
 
   void setZScale(double s);
-  void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
-  void setOpacity(neutube3d::ERendererLayer layer, double opacity);
-  void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
-  void setFront(neutube3d::ERendererLayer layer, bool on);
-  void setColorMode(neutube3d::ERendererLayer layer, const std::string &mode);
+  void setLayerVisible(neutu3d::ERendererLayer layer, bool visible);
+  void setOpacity(neutu3d::ERendererLayer layer, double opacity);
+  void setOpacityQuietly(neutu3d::ERendererLayer layer, double opacity);
+  void setFront(neutu3d::ERendererLayer layer, bool on);
+  void setColorMode(neutu3d::ERendererLayer layer, const std::string &mode);
 
   void configureMenuForNeu3();
 
@@ -133,8 +133,8 @@ public: //Components
   inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
   inline const Z3DCanvas* getCanvas() const { return &m_view->canvas(); }
 
-  Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
-  Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
+  Z3DGeometryFilter* getFilter(neutu3d::ERendererLayer layer) const;
+  Z3DBoundedFilter* getBoundedFilter(neutu3d::ERendererLayer layer) const;
 
   inline Z3DGraphFilter* getGraphFilter() const { return m_view->getGraphFilter(); }
   inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_view->getSurfaceFilter(); }
@@ -189,7 +189,7 @@ public: //controls
   ZROIWidget * getROIsDockWidget();
 
   //Configuration
-  void configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj);
+  void configureLayer(neutu3d::ERendererLayer layer, const ZJsonObject &obj);
 //  ZJsonObject getConfigJson(neutube3d::ERendererLayer layer) const;
 
   void skipKeyEvent(bool on);
@@ -517,7 +517,7 @@ private slots:
   void startBodySplit();
 
 private:
-  neutube3d::EWindowType m_windowType;
+  neutu3d::EWindowType m_windowType;
 
   // menu
   std::map<QString, QMenu*> m_contextMenuGroup;

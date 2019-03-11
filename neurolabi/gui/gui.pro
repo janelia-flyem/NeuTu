@@ -316,6 +316,8 @@ HEADERS += mainwindow.h \
     dialogs/zrescaleswcdialog.h \
     dialogs/swcsizedialog.h \
     dialogs/swcskeletontransformdialog.h \
+    dialogs/swctypedialog.h \
+    dialogs/mexicanhatdialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \
@@ -335,8 +337,6 @@ HEADERS += mainwindow.h \
     ztest.h \
     zglmutils.h \
     znormcolormap.h \
-    dialogs/swctypedialog.h \
-    dialogs/mexicanhatdialog.h \
     zlocsegchain.h \
     zcurve.h \
     zxmldoc.h \
@@ -373,7 +373,6 @@ HEADERS += mainwindow.h \
     dialogs/helpdialog.h \
     zswcnodeobjsmodel.h \
     zstackstatistics.h \
-    zswcconnector.h \
     biocytin/biocytin.h \
     biocytin/zstackprojector.h \
     dialogs/projectiondialog.h \

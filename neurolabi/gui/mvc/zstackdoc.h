@@ -789,6 +789,8 @@ public:
   virtual ZSparseStack* getSparseStack();
   virtual ZObject3dScan* getSparseStackMask() const;
 
+//  virtual ZStack* getDenseFormOfSparseStack() const;
+
 //  QSet<ZStackObject::ETarget>
 //  updateActiveViewObject(const ZStackViewParam &param);
 

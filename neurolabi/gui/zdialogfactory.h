@@ -34,7 +34,7 @@ public:
 
   static ZDvidTargetProviderDialog* makeDvidDialog(QWidget *parent = 0, ZDvidDialogType type = DEFAULT);
   static QDialog* makeTestDialog(QWidget *parent = 0);
-  static QDialog* makeStackDialog(QWidget *parent = 0);
+//  static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidTargetProviderDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);

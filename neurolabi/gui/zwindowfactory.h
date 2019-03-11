@@ -45,9 +45,9 @@ public:
   void setWindowTitle(const QString &title);
   void setParentWidget(QWidget *parentWidget);
   void setWindowGeometry(const QRect &rect);
-  void setWindowType(neutube3d::EWindowType type);
+  void setWindowType(neutu3d::EWindowType type);
 
-  void setVisible(neutube3d::ERendererLayer layer, bool visible);
+  void setVisible(neutu3d::ERendererLayer layer, bool visible);
 
   inline void setControlPanelVisible(bool visible) {
     m_showControlPanel = visible;
@@ -73,7 +73,7 @@ public:
     return m_showStatusBar;
   }
 
-  inline void setVolumeRenderMode(neutube3d::EVolumeRenderingMode mode) {
+  inline void setVolumeRenderMode(neutu3d::EVolumeRenderingMode mode) {
     m_volumeMode = mode;
   }
 
@@ -94,13 +94,13 @@ private:
   bool m_showControlPanel = true;
   bool m_showObjectView = true;
   bool m_showStatusBar = false;
-  neutube3d::EVolumeRenderingMode m_volumeMode = neutube3d::EVolumeRenderingMode::VR_AUTO;
+  neutu3d::EVolumeRenderingMode m_volumeMode = neutu3d::EVolumeRenderingMode::VR_AUTO;
 
   bool m_deleteOnClose = false;
 
-  neutube3d::EWindowType m_windowType = neutube3d::EWindowType::GENERAL;
+  neutu3d::EWindowType m_windowType = neutu3d::EWindowType::GENERAL;
 
-  QMap<neutube3d::ERendererLayer, bool> m_layerVisible;
+  QMap<neutu3d::ERendererLayer, bool> m_layerVisible;
 };
 
 #endif // ZWINDOWFACTORY_H
