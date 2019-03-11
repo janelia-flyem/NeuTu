@@ -20,6 +20,7 @@
 #include "zstackfactory.h"
 #include "zstring.h"
 #include "dvid/zdviddata.h"
+#include "dvid/zdvidurl.h"
 #include "zfiletype.h"
 #include "zswcforest.h"
 #include "zswctree.h"

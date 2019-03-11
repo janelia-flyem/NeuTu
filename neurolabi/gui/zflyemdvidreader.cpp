@@ -2,6 +2,7 @@
 #include <QStringList>
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+#include "zjsonparser.h"
 
 ZFlyEmBodyAnnotation ZFlyEmDvidReader::readAnnotation(int bodyId)
 {

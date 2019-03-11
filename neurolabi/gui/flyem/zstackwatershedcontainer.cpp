@@ -14,7 +14,7 @@
 #include "neutubeconfig.h"
 #include "zswctree.h"
 #include "tz_math.h"
-#include "flyem/zflyemmisc.h"
+//#include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "zstackfactory.h"
@@ -1467,7 +1467,7 @@ ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
     ZIntCuboid seedBox = GetSeedRange(m_seedArray);
     if (m_rangeOption == RANGE_SEED_ROI) {
       if (!seedBox.isEmpty()) {
-        seedBox = flyem::EstimateSplitRoi(seedBox);
+        seedBox = misc::EstimateSplitRoi(seedBox);
       }
     } else {
       seedBox.expand(5, 5, 5);

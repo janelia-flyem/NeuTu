@@ -63,6 +63,9 @@
 #include "zflyemroimanager.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
+#include "flyemdatareader.h"
+#include "flyemdatawriter.h"
+#include "misc/miscutility.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -133,7 +136,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
-          getDvidReader().readBodyAnnotation(bodyId);
+          FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
       recordAnnotation(bodyId, annotation);
 
       if (!annotation.isEmpty()) {  
@@ -893,6 +896,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    updateDataConfig();
+
     flowInfo << "->Read DVID Info";
     readInfo();
 
@@ -972,6 +977,32 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
     emit messageGenerated(ZWidgetMessage(getBodySelectionMessage()));
   }
   emit bodySelectionChanged();
+}
+
+void ZFlyEmProofDoc::updateDataConfig()
+{
+  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
+  m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
+}
+
+const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
+{
+  return m_dataConfig.getContrastProtocol();
+}
+
+void ZFlyEmProofDoc::setContrastProtocol(const ZJsonObject &obj)
+{
+  m_dataConfig.loadContrastProtocol(obj);
+}
+
+void ZFlyEmProofDoc::uploadUserDataConfig()
+{
+  FlyEmDataWriter::UploadUserDataConfig(getDvidWriter(), m_dataConfig);
+}
+
+const ZFlyEmBodyAnnotationMerger& ZFlyEmProofDoc::getBodyStatusProtocol() const
+{
+  return m_dataConfig.getBodyStatusProtocol();
 }
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
@@ -1133,8 +1164,9 @@ void ZFlyEmProofDoc::initTileData()
   ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
   ensemble->setDvidTarget(getDvidTarget().getTileTarget());
-  ZJsonObject obj = m_dvidReader.readContrastProtocal();
-  ensemble->setContrastProtocal(obj);
+  ensemble->setContrastProtocal(m_dataConfig.getContrastProtocol().toJsonObject());
+//  ZJsonObject obj = m_dvidReader.readContrastProtocal();
+//  ensemble->setContrastProtocal(obj);
   addObject(ensemble, true);
 }
 
@@ -2187,7 +2219,8 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
   ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (m_dvidReader.isReady()) {
-    ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
+    ZFlyEmBodyAnnotation annotation =
+        FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
     if (annotation.isFinalized()) {
       return false;
     }
@@ -3842,7 +3875,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
     ZIntCuboidObj *roi = getSplitRoi();
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3862,7 +3895,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();

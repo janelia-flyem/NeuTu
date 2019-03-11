@@ -5,12 +5,14 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
 #include "zstroke2d.h"
-#include "flyem/zflyemmisc.h"
 #include "zglobal.h"
 #include "zstring.h"
+
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
+#include "flyem/zflyemmisc.h"
 
 ZSplitTaskUploadCommand::ZSplitTaskUploadCommand()
 {

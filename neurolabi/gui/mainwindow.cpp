@@ -5,6 +5,12 @@
 #include <QtConcurrentRun>
 #include <QTimer>
 #include <QDirIterator>
+#include <QMdiArea>
+#include <QUndoGroup>
+#include <QProgressDialog>
+#include <QUndoView>
+#include <QInputDialog>
+#include <QMimeData>
 
 #include <iostream>
 #include <ostream>
@@ -23,26 +29,16 @@
 #include "mvc/zstackpresenter.h"
 #include "mvc/zstackmvc.h"
 
-#include "dialogs/settingdialog.h"
 #include "zinteractivecontext.h"
-#include "dialogs/traceoutputdialog.h"
-#include "dialogs/bcadjustdialog.h"
-#include "dialogs/channeldialog.h"
 
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "imgproc/zstackprocessor.h"
 //#include "tz_error.h"
-#include "dialogs/zeditswcdialog.h"
-#include "dialogs/cannyedgedialog.h"
-#include "dialogs/medianfilterdialog.h"
-#include "dialogs/diffusiondialog.h"
-#include "dialogs/connectedthresholddialog.h"
+
 #include "zstack.hxx"
-#include "dialogs/zrescaleswcdialog.h"
+
 #include "tz_image_io.h"
-#include "dialogs/distancemapdialog.h"
-#include "dialogs/regionexpanddialog.h"
-#include "dialogs/neuroniddialog.h"
+
 #include "zcircle.h"
 //#include "zerror.h"
 #include "tz_sp_grow.h"
@@ -121,13 +117,13 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
-#include "dialogs/flyembodyiddialog.h"
-#include "dialogs/flyemhotspotdialog.h"
+
 #include "dvid/zdvidinfo.h"
 #include "zswctreenodearray.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidsynapse.h"
 #include "dialogs/flyembodyfilterdialog.h"
 #include "tz_stack_math.h"
 #include "tz_stack_relation.h"
@@ -142,12 +138,29 @@
 #include "dialogs/zflyemroidialog.h"
 #include "dialogs/shapepaperdialog.h"
 #include "zsleeper.h"
+
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/synapseimportdialog.h"
 #include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/zsegmentationprojectdialog.h"
 #include "dialogs/zsubtractswcsdialog.h"
 #include "dialogs/zautotracedialog.h"
+#include "dialogs/zeditswcdialog.h"
+#include "dialogs/cannyedgedialog.h"
+#include "dialogs/medianfilterdialog.h"
+#include "dialogs/diffusiondialog.h"
+#include "dialogs/connectedthresholddialog.h"
+#include "dialogs/zrescaleswcdialog.h"
+#include "dialogs/distancemapdialog.h"
+#include "dialogs/regionexpanddialog.h"
+#include "dialogs/neuroniddialog.h"
+#include "dialogs/flyembodyiddialog.h"
+#include "dialogs/flyemhotspotdialog.h"
+#include "dialogs/traceoutputdialog.h"
+#include "dialogs/bcadjustdialog.h"
+#include "dialogs/channeldialog.h"
+#include "dialogs/settingdialog.h"
+
 #include "zstackviewmanager.h"
 #include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
@@ -182,13 +195,6 @@
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
 #include "dvid/libdvidheader.h"
-
-#include <QMdiArea>
-#include <QUndoGroup>
-#include <QProgressDialog>
-#include <QUndoView>
-#include <QInputDialog>
-#include <QMimeData>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -355,9 +361,11 @@ MainWindow::~MainWindow()
     m_roiDlg->clear();
   }
 
+  /*
   if (m_mergeBodyDlg != NULL) {
     m_mergeBodyDlg->clear();
   }
+  */
 
   delete m_ui;
   delete m_reporter;
@@ -462,11 +470,11 @@ void MainWindow::initDialog()
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
   //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
-  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
+//  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
   //m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
 
-  m_mergeBodyDlg->restoreGeometry(
-        getSettings().value("BodyMergeProjectGeometry").toByteArray());
+//  m_mergeBodyDlg->restoreGeometry(
+//        getSettings().value("BodyMergeProjectGeometry").toByteArray());
   m_bodySplitProjectDialog->restoreGeometry(
           getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
@@ -2152,8 +2160,8 @@ void MainWindow::writeSettings()
   getSettings().setValue(
         "SegmentationProjectGeometry", m_segmentationDlg->saveGeometry());
 #if defined(_FLYEM_)
-  getSettings().setValue(
-        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
+//  getSettings().setValue(
+//        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
   getSettings().setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
@@ -6939,8 +6947,8 @@ void MainWindow::on_actionUpload_Annotations_triggered()
 
 void MainWindow::on_actionMerge_Body_Project_triggered()
 {
-  m_mergeBodyDlg->show();
-  m_mergeBodyDlg->raise();
+//  m_mergeBodyDlg->show();
+//  m_mergeBodyDlg->raise();
 }
 
 void MainWindow::on_actionHierarchical_Split_triggered()

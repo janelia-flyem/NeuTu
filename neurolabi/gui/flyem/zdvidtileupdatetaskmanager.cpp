@@ -1,5 +1,6 @@
 #include "zdvidtileupdatetaskmanager.h"
 #include "dvid/zdvidtile.h"
+#include "dvid/zdvidurl.h"
 
 #if 0
 ZDvidTileUpdateTask::ZDvidTileUpdateTask(QObject *parent, ZDvidTile *tile) :

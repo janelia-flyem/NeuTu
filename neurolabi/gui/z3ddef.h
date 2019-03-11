@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace neutube3d {
+namespace neutu3d {
 
 enum class EVolumeRenderingMode {
   VR_AUTO = 0, VR_ALPHA_BLENDING, VR_MIP, VR_MIP_OPAQUE, VR_LOCAL_MIP,
@@ -21,6 +21,10 @@ enum class EWindowType {
 enum class ERendererLayer {
   SWC, PUNCTA, GRAPH, SURFACE, VOLUME,
   TODO, MESH, ROI, DECORATION, SLICE
+};
+
+enum class EViewMode {
+  NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME
 };
 
 const char* GetVolumeName();

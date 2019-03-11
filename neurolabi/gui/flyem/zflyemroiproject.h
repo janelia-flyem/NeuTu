@@ -9,6 +9,7 @@
 #include "flyem/zsynapseannotationarray.h"
 #include "dvid/zdvidwriter.h"
 #include "zwidgetmessage.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackFrame;
 class ZSwcTree;

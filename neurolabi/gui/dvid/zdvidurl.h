@@ -42,6 +42,7 @@ public:
   std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
   std::string getDataMapUrl() const;
+  std::string getDataConfigUrl(const std::string &userName) const;
 
   std::string getCommitInfoUrl() const;
 

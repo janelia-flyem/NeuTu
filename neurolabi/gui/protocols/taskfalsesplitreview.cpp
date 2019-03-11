@@ -1,8 +1,8 @@
 #include "taskfalsesplitreview.h"
 
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"

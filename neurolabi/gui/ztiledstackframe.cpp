@@ -9,7 +9,7 @@
 #include "mvc/zstackview.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dgraphfactory.h"
-#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 
 ZTiledStackFrame::ZTiledStackFrame(QWidget *parent) :
   ZStackFrame(parent)
@@ -61,7 +61,7 @@ void ZTiledStackFrame::updateStackBoundBox()
 {
 //  ZIntCuboid box = document()->getStack()->getBoundBox();
 
-  ZIntCuboid box = ZStackDocHelper::GetDataSpaceRange(document().get());
+  ZIntCuboid box = ZStackDocUtil::GetDataSpaceRange(document().get());
 
   Z3DGraphFactory factory;
   factory.setShapeHint(GRAPH_LINE);

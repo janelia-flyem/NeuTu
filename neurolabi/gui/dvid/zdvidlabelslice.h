@@ -13,7 +13,7 @@
 #include "neutube.h"
 #include "zimage.h"
 #include "zselector.h"
-#include "zdvidreader.h"
+//#include "zdvidreader.h"
 #include "common/zsharedpointer.h"
 #include "flyem/zflyembodycolorscheme.h"
 #include "flyem/zflyembodymerger.h"

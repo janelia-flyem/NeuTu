@@ -14,15 +14,18 @@
 
 #include "logging.h"
 #include "zjsondef.h"
-#include "dvid/zdvidreader.h"
+
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidlabelslice.h"
+
 #include "zswcfactory.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dgraphfactory.h"
 #include "zflyemproofdoc.h"
-#include "dvid/zdvidlabelslice.h"
 #include "zwidgetmessage.h"
-#include "dvid/zdvidsparsestack.h"
+
 #include "zstring.h"
 #include "zfiletype.h"
 #include "neutubeconfig.h"
@@ -60,6 +63,7 @@
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zpunctum.h"
 #include "dialogs/flyemdialogfactory.h"
+#include "flyemdatareader.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -3679,10 +3683,14 @@ const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
 
 void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+//  m_dvidTarget = target;
   m_workDvidReader.clear();
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
+
+  m_mainDvidWriter.open(target);
+  m_workDvidReader.open(getDvidTarget());
+
   updateDvidInfo();
 
   m_splitter->setDvidTarget(target);
@@ -3706,11 +3714,6 @@ const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
 void ZFlyEmBody3dDoc::updateDvidInfo()
 {
   m_dvidInfo.clear();
-
-  if (!m_workDvidReader.isReady()) {
-    m_workDvidReader.open(getDvidTarget());
-    m_mainDvidWriter.open(m_workDvidReader.getDvidTarget());
-  }
 
   if (getMainDvidReader().isReady()) {
     m_dvidInfo = getMainDvidReader().readLabelInfo();
@@ -3946,7 +3949,7 @@ void ZFlyEmBody3dDoc::constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromT
 void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshMap)
 {
   QList<ZStackObject*> decorList =
-      m_helper->getObjectList(neutube3d::ERendererLayer::DECORATION);
+      m_helper->getObjectList(neutu3d::ERendererLayer::DECORATION);
   for (auto &obj : decorList) {
     ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
     if (mesh) {
@@ -4060,7 +4063,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
           if (m_splitter->fromTar()) {
             getBodyManager().registerBody(parentId, newBodyId);
-            m_helper->releaseObject(neutube3d::ERendererLayer::DECORATION, mesh);
+            m_helper->releaseObject(neutu3d::ERendererLayer::DECORATION, mesh);
             ZStackDocAccessor::AddObjectUnique(this, mesh);
           }
           constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
@@ -4169,7 +4172,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     }
   }
 
- m_helper->releaseObject(neutube3d::ERendererLayer::DECORATION, mainMesh);
+ m_helper->releaseObject(neutu3d::ERendererLayer::DECORATION, mainMesh);
 
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
@@ -4222,7 +4225,8 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
       dlg->setBodyId(bodyId);
       const ZDvidReader &reader = getMainDvidReader();
       if (reader.isReady()) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
 
         if (!annotation.isEmpty()) {
           dlg->loadBodyAnnotation(annotation);

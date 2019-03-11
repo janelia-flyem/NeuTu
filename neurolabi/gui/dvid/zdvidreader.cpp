@@ -22,20 +22,20 @@
 #include "zstackfactory.h"
 #include "zswctree.h"
 #include "zdvidinfo.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidfilter.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
+//#include "dvid/zdvidtarget.h"
+#include "zdvidfilter.h"
+//#include "dvid/zdvidbufferreader.h"
+#include "zdvidurl.h"
 #include "zarray.h"
 #include "zstring.h"
-#include "flyem/zflyemneuronbodyinfo.h"
+//#include "flyem/zflyemneuronbodyinfo.h"
 #include "dvid/zdvidtile.h"
 #include "zdvidtileinfo.h"
 #include "zobject3dscan.h"
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
-#include "flyem/zflyembodyannotation.h"
+//#include "flyem/zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
@@ -45,7 +45,7 @@
 #include "zflyemutilities.h"
 #include "zobject3dscanarray.h"
 #include "zdvidpath.h"
-#include "flyem/zserviceconsumer.h"
+//#include "flyem/zserviceconsumer.h"
 #include "zmeshio.h"
 #include "zmesh.h"
 #include "zstackobjectsourcefactory.h"
@@ -55,7 +55,8 @@
 #include "geometry/zaffinerect.h"
 #include "zarrayfactory.h"
 #include "zobject3dfactory.h"
-#include "dvid/zdvidstackblockfactory.h"
+#include "zdvidstackblockfactory.h"
+#include "zdvidsynapse.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -3409,7 +3410,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
 //      m_lowtisConfigGray.enableprefetch = NeutubeConfig::LowtisPrefetching();
 
-      m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
+      m_lowtisServiceGray = std::shared_ptr<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
 
     } catch (libdvid::DVIDException &e) {
@@ -3584,8 +3585,37 @@ ZIntCuboid ZDvidReader::GetStackBoxAtCenter(
   return box;
 }
 
+std::vector<uint64_t> ZDvidReader::readBodyIdAt(const ZJsonArray &queryObj) const
+{
+  std::vector<uint64_t> bodyArray;
+
+  QString queryForm = queryObj.dumpString(0).c_str();
+
+#ifdef _DEBUG_
+  std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+  QByteArray payload;
+  payload.append(queryForm);
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  m_bufferReader.read(
+        dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
+  setStatusCode(m_bufferReader.getStatusCode());
+
+  ZJsonArray infoJson;
+  infoJson.decodeString(m_bufferReader.getBuffer().data());
+
+  for (size_t i = 0; i < infoJson.size(); ++i) {
+    uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
+    bodyArray.push_back(bodyId);
+  }
+
+  return bodyArray;
+}
+
 void ZDvidReader::prepareLowtisService(
-    ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+    std::shared_ptr<lowtis::ImageService> &service, const std::string &dataName,
     lowtis::DVIDConfig &config, int cx, int cy) const
 {
   if (service.get() == NULL) {
@@ -4142,7 +4172,7 @@ bool ZDvidReader::hasBodyInfo(uint64_t bodyId) const
   return  bufferReader.isReadable(
         dvidUrl.getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 }
-
+/*
 ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 {
   ZJsonObject obj;
@@ -4161,6 +4191,7 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 
   return bodyInfo;
 }
+*/
 
 int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
 {
@@ -4941,6 +4972,7 @@ ZDvidRoi* ZDvidReader::readRoi(const std::string &dataName, ZDvidRoi *roi)
   return roi;
 }
 
+/*
 ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 {
   ZFlyEmBodyAnnotation annotation;
@@ -4956,7 +4988,7 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 
   return annotation;
 }
-
+*/
 bool ZDvidReader::hasBodyAnnotation() const
 {
   return hasData(getDvidTarget().getBodyAnnotationName());
@@ -5091,22 +5123,6 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
   return synapseJson;
 }
 
-std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box, dvid::EAnnotationLoadMode mode) const
-{
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
-
-  std::vector<ZDvidSynapse> synapseArray(obj.size());
-
-  for (size_t i = 0; i < obj.size(); ++i) {
-    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    synapseArray[i].loadJsonObject(synapseJson, mode);
-  }
-
-  return synapseArray;
-}
-
 ZJsonArray ZDvidReader::readSynapseLabelsz(int n, dvid::ELabelIndexType index) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -5141,6 +5157,23 @@ ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, dvid::ELabelI
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index, offset, number));
     return obj;
+}
+
+#if 1
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    const ZIntCuboid &box, dvid::EAnnotationLoadMode mode) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
+
+  std::vector<ZDvidSynapse> synapseArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
+  }
+
+  return synapseArray;
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
@@ -5207,6 +5240,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
 {
   return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
 }
+#endif
 
 std::string ZDvidReader::readMirror() const
 {

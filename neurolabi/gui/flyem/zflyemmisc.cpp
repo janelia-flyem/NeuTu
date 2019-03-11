@@ -33,11 +33,12 @@
 #include "z3dwindow.h"
 #include "zcubearray.h"
 
-#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidsynapse.h"
 
 #include "zstackviewparam.h"
 #include "zobject3dfactory.h"
@@ -853,7 +854,7 @@ void flyem::Decorate3dBodyWindow(
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(neutube3d::ERendererLayer::GRAPH, 0.4);
+      window->setOpacity(neutu3d::ERendererLayer::GRAPH, 0.4);
     }
   }
 }
@@ -1350,6 +1351,7 @@ QString flyem::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
+#if 0
 ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 {
   ZIntCuboid newBox = boundBox;
@@ -1375,6 +1377,7 @@ ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 
   return newBox;
 }
+#endif
 
 QString flyem::GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
@@ -1478,6 +1481,7 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
   return sobj;
 }
 
+/*
 void flyem::UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
 {
@@ -1498,7 +1502,7 @@ void flyem::UpdateBodyStatus(
 #endif
   }
 }
-
+*/
 void flyem::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {
@@ -1865,6 +1869,8 @@ QString flyem::FIB19::GenerateFIB19VsSynapseCast(
         QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
               bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
+//            reader.readSynapse(
+//              bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();

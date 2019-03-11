@@ -8,6 +8,7 @@
 #include "zcrosshair.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidurl.h"
 
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
