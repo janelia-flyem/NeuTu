@@ -367,10 +367,9 @@ QWidget *TaskMergeReview::getTaskWidget()
     setBodiesFromSuperVoxels();
   }
 
-  if (m_visibleBodies.isEmpty()) {
-    for (uint64_t id : m_bodyIds) {
-      m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
-    }
+  m_visibleBodies.clear();
+  for (uint64_t id : m_bodyIds) {
+    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
   }
 
   if (!m_lastSavedButton) {
