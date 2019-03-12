@@ -9,21 +9,35 @@
 #include <QElapsedTimer>
 #include <sstream>
 
+#include "common/utilities.h"
+
 #include "neutubeconfig.h"
-#include "dvid/zdvidlabelslice.h"
-#include "dvid/zdvidreader.h"
+
 #include "zstackobjectsourcefactory.h"
-#include "dvid/zdvidtileensemble.h"
-#include "dvid/zdvidlabelslice.h"
 #include "zstackfactory.h"
-#include "dvid/zdvidsparsestack.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidsparsevolslice.h"
+
 #include "zwidgetmessage.h"
 #include "flyem/zflyemsupervisor.h"
 #include "zpuncta.h"
+#include "zstackdocaccessor.h"
+
+#include "dvid/zdviddataslicehelper.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsynapsecommand.h"
+#include "dvid/zflyembookmarkcommand.h"
+#include "dvid/zdvidannotation.h"
+#include "dvid/zdvidannotationcommand.h"
+#include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidreader.h"
+
 //#include "zflyemproofmvc.h"
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
@@ -33,12 +47,6 @@
 #include "zdialogfactory.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidsynapsecommand.h"
-#include "dvid/zflyembookmarkcommand.h"
-#include "dvid/zdvidannotation.h"
-#include "dvid/zdvidannotationcommand.h"
-#include "dvid/zdvidgrayslice.h"
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
@@ -54,7 +62,6 @@
 #include "zmeshfactory.h"
 #include "zswctree.h"
 #include "zflyemroutinechecktask.h"
-#include "dvid/zdviddataslicehelper.h"
 #include "zarray.h"
 #include "zflyembodymanager.h"
 #include "zmesh.h"
@@ -857,6 +864,16 @@ const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
 bool ZFlyEmProofDoc::isDvidMutable() const
 {
   return (getDvidTarget().readOnly() == false);
+}
+
+ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
+{
+  if (!m_bookmarkReader.isReady()) {
+    KINFO << "Open bookmark reader";
+    m_bookmarkReader.openRaw(getDvidReader().getDvidTarget());
+  }
+
+  return m_bookmarkReader;
 }
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
@@ -3273,19 +3290,18 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
-  ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
+  KINFO << "Importing flyem bookmarks";
 
   QList<ZFlyEmBookmark*> bookmarkList;
 
   m_loadingAssignedBookmark = true;
 
-  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+//  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   if (!filePath.empty()) {
-//    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
-#if 1
+    //    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
-    ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
-    std::vector<ZStackObject*> removed;
+    KINFO << QString("%1 bookmarks").arg(objList.size());
+//    std::vector<ZStackObject*> removed;
 
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -3293,23 +3309,69 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-          ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
-          removeObject(*iter, false);
-          removed.push_back(*iter);
+//          ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
+//          removeObject(*iter, false);
+          ZStackDocAccessor::RemoveObject(this, obj, true);
+//          removed.push_back(obj);
         }
       }
     }
-#endif
 
-    ZJsonObject obj;
+    ZJsonObject jsonObj;
 
-    obj.load(filePath);
+    jsonObj.load(filePath);
 
-    ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    QList<ZStackObject*> addedList;
+
+    ZJsonArray bookmarkArrayObj(jsonObj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     QList<ZFlyEmBookmark*> nullIdBookmarkList;
     for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
       ZJsonObject bookmarkObj(bookmarkArrayObj.at(i),
                               ZJsonValue::SET_INCREASE_REF_COUNT);
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      if (bookmark->loadJsonObject(bookmarkObj)) {
+        if (getBookmarkReader().isBookmarkChecked(
+              bookmark->getCenter().toIntPoint())) {
+          bookmark->setChecked(true);
+        }
+        bookmark->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+        bookmark->setCustom(false);
+        //            addCommand->addBookmark(bookmark);
+//        KINFO << "Adding bookmark:" << neutu::ToString(bookmark);
+        bookmarkList.append(bookmark);
+        if (bookmark->getBodyId() <= 0) {
+          nullIdBookmarkList.append(bookmark);
+        }
+        addedList.append(bookmark);
+//        addObject(bookmark);
+      }
+    }
+
+    readBookmarkBodyId(nullIdBookmarkList);
+
+    ZStackDocAccessor::AddObject(this, addedList);
+  }
+
+    //    pushUndoCommand(command);
+
+  /*
+  for (std::vector<ZStackObject*>::iterator iter = removed.begin();
+       iter != removed.end(); ++iter) {
+    ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
+    delete *iter;
+  }
+  */
+//  endObjectModifiedMode();
+
+//  processObjectModified();
+
+  m_loadingAssignedBookmark = false;
+
+  KINFO << "Bookmark imported";
+
+  return bookmarkList;
+
+#if 0
       ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
       text.toLower();
       if (bookmarkObj["location"] != NULL) {
@@ -3356,26 +3418,8 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
       }
     }
+#endif
 
-    readBookmarkBodyId(nullIdBookmarkList);
-
-//    pushUndoCommand(command);
-
-    for (std::vector<ZStackObject*>::iterator iter = removed.begin();
-         iter != removed.end(); ++iter) {
-      ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
-      delete *iter;
-    }
-  }
-  endObjectModifiedMode();
-
-  processObjectModified();
-
-  m_loadingAssignedBookmark = false;
-
-  ZOUT(LINFO(), 3) << "Bookmark imported";
-
-  return bookmarkList;
 }
 
 QString ZFlyEmProofDoc::getInfo() const

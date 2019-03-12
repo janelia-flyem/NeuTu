@@ -80,7 +80,7 @@ public:
   QString getDvidKey() const;
 
   ZJsonObject toJsonObject(bool ignoringComment = false) const;
-  void loadJsonObject(const ZJsonObject &jsonObj);
+  bool loadJsonObject(const ZJsonObject &jsonObj);
 
   //For the new annotation API
   ZJsonObject toDvidAnnotationJson() const;
