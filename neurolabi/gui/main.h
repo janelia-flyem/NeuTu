@@ -238,6 +238,10 @@ MainConfig get_program_config(int argc, char *argv[])
     config.userName = qgetenv("USER").toStdString();
   }
 
+  if (qgetenv("NEUTU_ADVANCED").toInt() == 1) {
+    config.advanced = true;
+  }
+
   if (argc > 1) {
     if ((strcmp(argv[1], "-v") == 0) || (strcmp(argv[1], "--version") == 0)) {
       config.showingVersion = true;

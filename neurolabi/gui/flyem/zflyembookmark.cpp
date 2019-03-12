@@ -283,8 +283,10 @@ void ZFlyEmBookmark::display(
 
 
 
-void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
+bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 {
+  bool loaded = false;
+
   clear();
 
 #if 1
@@ -340,10 +342,13 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       if (jsonObj.hasKey("custom")) {
         setCustom(ZJsonParser::booleanValue(jsonObj["custom"]));
       }
+
+      loaded = true;
     }
   }
 #endif
 
+  return loaded;
 }
 
 std::string ZFlyEmBookmark::toLogString() const
