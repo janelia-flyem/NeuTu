@@ -239,7 +239,7 @@ lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
-
+  config.supervoxelview = target.isSupervoxelView();
 
   return new lowtis::ImageService(config);
 }

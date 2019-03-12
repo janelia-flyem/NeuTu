@@ -19,7 +19,6 @@ HEADERS += \
     $$PWD/flyemsplitcontrolform.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
-    $$PWD/zdviddataslicetask.h \
     $$PWD/zdvidgrayslicehighrestask.h \
     $$PWD/zdvidlabelslicehighrestask.h \
     $$PWD/zdvidtileupdatetaskmanager.h \
@@ -128,7 +127,9 @@ HEADERS += \
     $$PWD/flyembodystatusprotocol.h \
     $$PWD/flyemdatareader.h \
     $$PWD/flyemdatawriter.h \
-    $$PWD/zflyembody3ddochelper.h
+    $$PWD/zflyembody3ddochelper.h \
+    $$PWD/zflyemproofdocutil.h \
+    $$PWD/zdvidlabelslicehighrestaskfactory.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -137,7 +138,6 @@ SOURCES += \
     $$PWD/flyemsplitcontrolform.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \
-    $$PWD/zdviddataslicetask.cpp \
     $$PWD/zdvidgrayslicehighrestask.cpp \
     $$PWD/zdvidlabelslicehighrestask.cpp \
     $$PWD/zdvidtileupdatetaskmanager.cpp \
@@ -246,4 +246,6 @@ SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/flyemdatareader.cpp \
     $$PWD/flyemdatawriter.cpp \
-    $$PWD/zflyembody3ddochelper.cpp
+    $$PWD/zflyembody3ddochelper.cpp \
+    $$PWD/zflyemproofdocutil.cpp \
+    $$PWD/zdvidlabelslicehighrestaskfactory.cpp

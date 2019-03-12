@@ -333,52 +333,6 @@ vector<ZObject3d*> ZFlyEmStackDoc::getNeighborBodyObject(int id)
 ZObject3d* ZFlyEmStackDoc::getBodyObjectBorder(int id1, int id2)
 {
   return m_segmentationBundle.getBodyBorderObject(id1, id2);
-  /*
-  ZObject3d *obj1 = getBodyObject(id1);
-  ZObject3d *obj2 = getBodyObject(id2);
-
-  ZObject3d *mobj = obj1;
-  ZObject3d *sobj = obj2;
-  int sid = id2;
-  if (obj1->size() > obj2->size()) {
-    mobj = obj2;
-    sobj = obj1;
-    sid = id1;
-  }
-
-  int nnbr = 26;
-  int neighborOffset[26];
-  int isInBound[26];
-  Stack_Neighbor_Offset(nnbr, stack()->width(), stack()->height(),
-                        neighborOffset);
-
-  vector<size_t> voxelIndexArray = mobj->toIndexArray(
-        stack()->width(), stack()->height(), stack()->depth(), 0, 0, 0);
-
-  ZStack *bodyStack = getSegmentation();
-
-  TZ_ASSERT(bodyStack != NULL, "Null segmentation");
-
-  ZObject3d *border = new ZObject3d;
-  for (size_t i = 0; i < voxelIndexArray.size(); ++i) {
-    size_t voxelIndex = voxelIndexArray[i];
-
-    Stack_Neighbor_Bound_Test_I(nnbr, stack()->width(), stack()->height(),
-                                stack()->depth(), voxelIndex, isInBound);
-    for (int neighborIndex = 0; neighborIndex < nnbr; ++neighborIndex) {
-      if (isInBound[neighborIndex]) {
-        size_t neighborVoxelIndex = voxelIndex + neighborOffset[neighborIndex];
-        if (FlyEm::ZSegmentationAnalyzer::
-            channelCodeToId(bodyStack->color(neighborVoxelIndex)) == sid) {
-          border->append(mobj->x(i), mobj->y(i), mobj->z(i));
-          break;
-        }
-      }
-    }
-  }
-
-  return border;
-  */
 }
 
 bool ZFlyEmStackDoc::importAxonExport(const string &filePath)

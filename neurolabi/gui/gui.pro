@@ -415,6 +415,8 @@ HEADERS += mainwindow.h \
     zpainter.h \
     dialogs/resolutiondialog.h \
     dvid/zdvidrequest.h \
+    dvid/zdviddataslicetaskfactory.h \
+    dvid/zdviddataslicetask.h \
     zmatlabprocess.h \
     zneuronseed.h \
     dialogs/dvidimagedialog.h \
@@ -1172,6 +1174,8 @@ SOURCES += main.cpp \
     concurrent/zworker.cpp \
     concurrent/ztaskqueue.cpp \
     dvid/zdvidbodyhelper.cpp \
+    dvid/zdviddataslicetaskfactory.cpp \
+    dvid/zdviddataslicetask.cpp \
     z3dwindowcontroller.cpp \
     zstackblockfactory.cpp \
     dvid/zdvidstackblockfactory.cpp \

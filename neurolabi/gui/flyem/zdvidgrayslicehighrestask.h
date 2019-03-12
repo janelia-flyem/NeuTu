@@ -1,7 +1,7 @@
 #ifndef ZDVIDGRAYSLICEHIGHRESTASK_H
 #define ZDVIDGRAYSLICEHIGHRESTASK_H
 
-#include "zdviddataslicetask.h"
+#include "dvid/zdviddataslicetask.h"
 #include "zstackviewparam.h"
 
 class ZStackDoc;

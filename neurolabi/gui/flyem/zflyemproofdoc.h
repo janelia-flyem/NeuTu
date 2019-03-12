@@ -52,6 +52,8 @@ public:
     return m_versionDag;
   }
 
+  friend class ZFlyEmProofDocUtil;
+
   virtual void setDvidTarget(const ZDvidTarget &target);
 
 //  virtual void updateTileData();
@@ -72,7 +74,12 @@ public:
   void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
+  ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+
+  bool isSupervoxelMode() const;
+  void setSupervoxelMode(bool on);
+
   ZDvidGraySlice* getDvidGraySlice() const;
   ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
@@ -610,7 +617,7 @@ protected:
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
-  void addDvidLabelSlice(neutu::EAxis axis);
+  void addDvidLabelSlice(neutu::EAxis axis, bool sv);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
   void setRoutineCheck(bool on);
@@ -716,6 +723,7 @@ protected:
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
+  bool m_supervoxelMode = false;
 
   //Data settings
   int m_graySliceCenterCutWidth = 256;

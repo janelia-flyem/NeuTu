@@ -31,6 +31,7 @@
 #include "flyem/zflyembodylistmodel.h"
 #include "flyem/zflyemmisc.h"
 #include "flyem/zflyemdoc3dbodystateaccessor.h"
+#include "flyem/zflyemproofdocutil.h"
 
 #include "dialogs/zdviddialog.h"
 #include "z3dpunctafilter.h"
@@ -637,10 +638,12 @@ void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutu::EAxis::ARB);
-    slice->setCustomColorMap(m_browserColorScheme);
-
-    updateSliceBrowserSelection();
+    ZDvidLabelSlice* slice =
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(doc, neutu::EAxis::ARB);
+    if (slice) {
+      slice->setCustomColorMap(m_browserColorScheme);
+      updateSliceBrowserSelection();
+    }
   }
 }
 

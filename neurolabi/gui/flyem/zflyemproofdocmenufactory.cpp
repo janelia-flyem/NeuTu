@@ -12,8 +12,11 @@
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
 #include "zactionfactory.h"
+
 #include "zflyemproofpresenter.h"
 #include "zflyemproofdoc.h"
+#include "zflyemproofdocutil.h"
+
 #include "z3dwindow.h"
 
 
@@ -227,6 +230,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
       if (NeutubeConfig::IsAdvancedMode()) {
         config.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
+      }
+
+      if (ZFlyEmProofDocUtil::HasSupervoxel(doc)) {
+        config.append(ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
       }
     }
 
