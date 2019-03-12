@@ -3,14 +3,19 @@
 
 #include <QKeySequence>
 #include <QString>
-
+#include <QStringList>
+#include <QPainter>
+#include <QPoint>
 #include <QPushButton>
 
 namespace neutu {
 
 QString GetKeyString(int key, const Qt::KeyboardModifiers &modifier);
 void SetHtmlIcon(QPushButton *button, const QString &text);
-
+void DrawText(QPainter &painter, const QPoint &pos, const QStringList &text);
+void DrawText(QPainter &painter, const QPoint &pos, const QString &text);
+void DrawText(QPainter &painter, const QSize &windowSize, int cornerIndex,
+              const QString &text);
 }
 
 #endif // UTILITIES_H
