@@ -689,6 +689,8 @@ private:
 
   void warnSynapseReadonly();
 
+  ZDvidReader& getBookmarkReader();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
@@ -699,6 +701,7 @@ protected:
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
   ZDvidReader m_grayscaleReader;
+  ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
