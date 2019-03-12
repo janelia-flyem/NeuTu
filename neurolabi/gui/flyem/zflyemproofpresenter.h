@@ -152,6 +152,7 @@ public slots:
   void showSupervoxelList();
 
   void allowBlinkingSegmentation(bool on);
+  void toggleSupervoxelView(bool on);
 
 protected:
   virtual void tryAddTodoItem(

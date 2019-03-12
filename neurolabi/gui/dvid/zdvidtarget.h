@@ -292,6 +292,9 @@ public:
   }
   void setSynapseReadonly(bool on);
 
+  bool isSupervoxelView() const;
+  void setSupervoxelView(bool on);
+
   int getMaxLabelZoom() const {
     return m_maxLabelZoom;
   }
@@ -426,6 +429,7 @@ private:
 //  bool m_usingLabelArray = false;
 //  bool m_usingLabelMap = false;
   bool m_isDefaultBodyLabel = false;
+  bool m_supervoxelView = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 

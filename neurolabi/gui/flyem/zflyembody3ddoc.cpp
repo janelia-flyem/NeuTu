@@ -64,6 +64,7 @@
 #include "zpunctum.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "flyemdatareader.h"
+#include "zflyemproofdocutil.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -3740,10 +3741,9 @@ QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
 #ifndef _NEU3_
   if (getDataDocument() != NULL) {
     ZDvidLabelSlice *labelSlice =
-        getDataDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(getDataDocument(), neutu::EAxis::Z);
 
     if (labelSlice != NULL) {
-
       if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
         color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
       } else {

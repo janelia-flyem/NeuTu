@@ -96,6 +96,7 @@
 #include "flyemmvcdialogmanager.h"
 #include "zflyembookmarklistmodel.h"
 #include "flyemdatareader.h"
+#include "zflyemproofdocutil.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -2719,7 +2720,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
   ZFlyEmProofDoc *doc = getCompleteDocument();
   neutu::EAxis axis = getView()->getSliceAxis();
 
-  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(axis);
+  ZDvidLabelSlice *labelSlice = doc->getActiveLabelSlice(axis);
 
   highlightSelectedObject(labelSlice, hl);
 
@@ -2745,6 +2746,14 @@ void ZFlyEmProofMvc::updateBodyMessage(
   emit messageGenerated(msg);
 }
 
+void ZFlyEmProofMvc::updateSupervoxelMessge(uint64_t bodyId)
+{
+  emit messageGenerated(
+        ZWidgetMessage(QString("Supervoxel: %1").arg(bodyId),
+                       neutu::EMessageType::INFORMATION,
+                       ZWidgetMessage::TARGET_CUSTOM_AREA));
+}
+
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
   if (!showingAnnotations()) {
@@ -2753,22 +2762,31 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
   }
 
   ZDvidLabelSlice *labelSlice =
-      getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL){
-    std::vector<uint64_t> selected =
-        labelSlice->getSelector().getSelectedList();
-    if (selected.size() > 0) {
-      ZFlyEmBodyAnnotation finalAnnotation =
-          getCompleteDocument()->getFinalAnnotation(selected);
+    if (labelSlice->isSupervoxel()) {
+      std::vector<uint64_t> selected =
+          labelSlice->getSelector().getSelectedList();
+      if (selected.size() > 0) {
+        updateSupervoxelMessge(selected.front());
+      }
+    } else {
+      std::vector<uint64_t> selected =
+          labelSlice->getSelector().getSelectedList();
+      if (selected.size() > 0) {
+        ZFlyEmBodyAnnotation finalAnnotation =
+            getCompleteDocument()->getFinalAnnotation(selected);
 
-      updateBodyMessage(selected.front(), finalAnnotation);
+        updateBodyMessage(selected.front(), finalAnnotation);
+      }
+
+      std::vector<uint64_t> deselected =
+          labelSlice->getSelector().getDeselectedList();
+
+      getCompleteDocument()->removeSelectedAnnotation(
+            deselected.begin(), deselected.end());
     }
 
-    std::vector<uint64_t> deselected =
-        labelSlice->getSelector().getDeselectedList();
-
-    getCompleteDocument()->removeSelectedAnnotation(
-          deselected.begin(), deselected.end());
     updateViewButton();
   }
 
@@ -2857,7 +2875,7 @@ void ZFlyEmProofMvc::updateBodySelection()
   if (getCompleteDocument() != NULL) {
     if (!isHidden()) {
       getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
-      ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
+      ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getActiveLabelSlice(
             getView()->getSliceAxis());
       if (tmpSlice != NULL) {
         if (getCompletePresenter()->isHighlight()) {
@@ -3436,7 +3454,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
       m_splitProject.setBodyId(bodyId);
 
       ZDvidLabelSlice *labelSlice =
-          getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+          getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
@@ -3864,6 +3882,10 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
   if (dlg->exec()) {
     QString fileName =
         ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
+    ZFlyEmProofDocUtil::ExportSelectedBodyStack(
+          getCompleteDocument(), dlg->isSparse(), dlg->isFullRange(),
+          dlg->getBoundBox(), fileName);
+#if 0
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
           getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
@@ -3916,6 +3938,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         delete sparseStack;
       }
     }
+#endif
   }
 }
 
@@ -3925,6 +3948,10 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
   dlg->makeBodyFieldExportAppearance();
   if (dlg->exec()) {
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+
+    ZFlyEmProofDocUtil::ExportSelecteBodyLevel(
+          getCompleteDocument(), dlg->getRange(), fileName);
+#if 0
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
           getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
@@ -3960,12 +3987,15 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
         }
       }
     }
+#endif
   }
 }
 
 void ZFlyEmProofMvc::exportSelectedBody()
 {
   QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+  ZFlyEmProofDocUtil::ExportSelectedBody(getCompleteDocument(), fileName);
+#if 0
   if (!fileName.isEmpty()) {
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
@@ -3987,6 +4017,7 @@ void ZFlyEmProofMvc::exportSelectedBody()
       obj.save(fileName.toStdString());
     }
   }
+#endif
 }
 
 #if 0
@@ -4281,7 +4312,7 @@ void ZFlyEmProofMvc::exitSplit()
 
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
-        getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+        getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
     labelSlice->setHitProtocal(ZStackObject::EHitProtocal::HIT_DATA_POS);
@@ -4656,7 +4687,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
+        getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
 //      slice->disableFullView();
       slice->setMaxSize(getView()->getViewParameter(), width, height);
@@ -4669,7 +4700,7 @@ void ZFlyEmProofMvc::showFullSegmentation()
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
+        getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
       slice->updateFullView(getView()->getViewParameter());
       getView()->paintObject();
@@ -5088,7 +5119,7 @@ void ZFlyEmProofMvc::showRoiMask(bool visible)
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     slice->setVisible(visible);
     if (visible) {
@@ -5102,7 +5133,7 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
 void ZFlyEmProofMvc::toggleSegmentation()
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z);
+      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     showSegmentation(!slice->isVisible());
   }
@@ -5157,10 +5188,12 @@ void ZFlyEmProofMvc::showTodo(bool visible)
   getCompleteDocument()->setVisible(ZStackObject::EType::FLYEM_TODO_LIST, visible);
 }
 
+/*
 ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
 {
   return getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
 }
+*/
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
 {
@@ -5403,12 +5436,16 @@ uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)
 std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
     neutu::ELabelSource type) const
 {
+  return ZFlyEmProofDocUtil::GetSelectedBodyId(
+        getCompleteDocument(), getView()->getSliceAxis(), type);
+  /*
   const ZDvidLabelSlice *labelSlice = getDvidLabelSlice();
   if (labelSlice != NULL) {
     return labelSlice->getSelected(type);
   }
 
   return std::set<uint64_t>();
+  */
 //  return m_mergeProject.getSelection(type);
 #if 0
   std::set<uint64_t> idSet;
@@ -5437,7 +5474,8 @@ void ZFlyEmProofMvc::notifyBodyMergeEdited()
 void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
-    ZDvidLabelSlice *slice = getDvidLabelSlice();
+    ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
+          getCompleteDocument(), neutu::EAxis::Z);
     if (slice != NULL) {
       slice->recordSelection();
       slice->clearSelection();
@@ -5462,7 +5500,9 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
     if (reader.isReady()) {
       ZIntPoint pt = reader.readBodyLocation(bodyId);
       if (pt.isValid()) {
-        ZDvidLabelSlice *slice = getDvidLabelSlice();
+//        ZDvidLabelSlice *slice = getDvidLabelSlice();
+        ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
+              getCompleteDocument());
         if (slice != NULL) {
           slice->recordSelection();
           if (!appending) {

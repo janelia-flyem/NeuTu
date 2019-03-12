@@ -14,7 +14,8 @@ void ZDvidLabelSliceHighresTask::execute()
   ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc);
   if (doc != NULL) {
 
-    ZDvidLabelSlice *slice = doc->getDvidLabelSlice(m_viewParam.getSliceAxis());
+    ZDvidLabelSlice *slice = doc->getDvidLabelSlice(
+          m_viewParam.getSliceAxis(), m_supervoxel);
     if (slice != NULL) {
       if (slice->containedIn(
             m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight,

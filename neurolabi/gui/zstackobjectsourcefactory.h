@@ -40,7 +40,7 @@ public:
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
-  static std::string MakeDvidLabelSliceSource(neutu::EAxis axis);
+  static std::string MakeDvidLabelSliceSource(neutu::EAxis axis, bool sv);
   static std::string MakeDvidGraySliceSource(neutu::EAxis axis);
   static std::string MakeSplitObjectSource();
   static std::string MakeSplitResultSource();

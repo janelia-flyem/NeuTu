@@ -311,6 +311,16 @@ void ZDvidTarget::setSynapseReadonly(bool on)
   m_isSynpaseEditable = !on;
 }
 
+bool ZDvidTarget::isSupervoxelView() const
+{
+  return m_supervoxelView;
+}
+
+void ZDvidTarget::setSupervoxelView(bool on)
+{
+  m_supervoxelView = on;
+}
+
 dvid::ENodeStatus ZDvidTarget::getNodeStatus() const
 {
   return m_nodeStatus;

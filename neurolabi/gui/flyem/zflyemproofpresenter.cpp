@@ -159,6 +159,10 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST:
       connect(action, SIGNAL(triggered()), this, SLOT(showSupervoxelList()));
       break;
+    case ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::toggleSupervoxelView);
+      break;
     default:
       connected = false;
       break;
@@ -820,9 +824,6 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     }
 
     getCompleteDocument()->executeAddBookmarkCommand(bookmark);
-//    buddyDocument()->executeAddObjectCommand(bookmark);
-
-//    emit bookmarkAdded(bookmark);
   }
 }
 
@@ -840,6 +841,11 @@ void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
 {
   m_blinkingSegmenationAllowed = on;
   getCompleteDocument()->allowDvidLabelSliceBlinking(on);
+}
+
+void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
+{
+  getCompleteDocument()->setSupervoxelMode(on);
 }
 
 bool ZFlyEmProofPresenter::processCustomOperator(
