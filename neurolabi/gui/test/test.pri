@@ -66,7 +66,7 @@ HEADERS += \
     test/ztestall.h \
     test/zstackobjectinfotest.h \
     test/zglobaltest.h \
-    test/zmouseeventprocessortest.h \
+    $$PWD/zmouseeventprocessortest.h \
     $$PWD/zpositionmappertest.h \
     $$PWD/zstackdochelpertest.h \
     $$PWD/zgeometrytest.h \
@@ -79,7 +79,8 @@ HEADERS += \
     $$PWD/cypherquerytest.h \
     $$PWD/zwidgetmessagetest.h \
     $$PWD/zstackobjecttest.h \
-    $$PWD/z3dswcfiltertest.h
+    $$PWD/z3dswcfiltertest.h \
+    $$PWD/flyembodyselectionmanagertest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp
