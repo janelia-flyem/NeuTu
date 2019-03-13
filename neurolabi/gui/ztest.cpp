@@ -29421,7 +29421,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Segment number: " << obj.getSegmentNumber() << std::endl;
 #endif
 
-#if 1
+#if 0
   std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
 #endif
 

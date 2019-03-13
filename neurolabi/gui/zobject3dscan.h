@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 #include <fstream>
+#include <memory>
 
 #ifdef _QT_GUI_USED_
 #include <QByteArray>
