@@ -37,23 +37,13 @@ public:
   int getCurrentZ() const;
   bool hasCurrentZ() const;
 
-  ZStack *getSparseStack(const ZStackDoc *doc);
+  virtual ZStack *getSparseStack(const ZStackDoc *doc);
   ZIntPoint getSparseStackDsIntv() const {
     return m_sparseStackDsIntv;
   }
 
   static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
 
-  /*!
-   * \brief Get the range of the current axis-shifted stack space.
-   */
-  static ZIntCuboid GetStackSpaceRange(
-      const ZStackDoc *doc, neutu::EAxis sliceAxis);
-  static ZIntCuboid GetStackSpaceRange(
-      const ZStackDoc &doc, neutu::EAxis sliceAxis);
-
-  static ZIntCuboid GetDataSpaceRange(const ZStackDoc &doc);
-  static ZIntCuboid GetDataSpaceRange(const ZStackDoc *doc);
 
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
   static bool HasMultipleBodySelected(
@@ -62,7 +52,6 @@ public:
       const ZFlyEmProofDoc *doc, neutu::ELabelSource type);
   static bool HasBodySelected(const ZFlyEmProofDoc *doc);
   static void ClearBodySelection(ZFlyEmProofDoc *doc);
-  static std::string SaveStack(const ZStackDoc *doc, const std::string &path);
 
   static bool AllowingBodySplit(const ZStackDoc *doc);
   static bool AllowingBodyAnnotation(const ZStackDoc *doc);

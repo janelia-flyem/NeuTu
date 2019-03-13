@@ -43,6 +43,7 @@
 #include "zmeshfactory.h"
 #include "z3dmeshfilter.h"
 #include "qt/core/qthelper.h"
+#include "zneurontracer.h"
 
 #include "widgets/zimagewidget.h"
 
@@ -758,6 +759,8 @@ void ZStackFrame::autoTraceFunc()
   document()->setProgressReporter(&reporter);
 
   document()->getNeuronTracer().setDiagnosis(m_autoTraceDlg->diagnosis());
+  document()->getNeuronTracer().setOverTrace(m_autoTraceDlg->overTracing());
+  document()->getNeuronTracer().setSeedScreening(m_autoTraceDlg->screenSeed());
   executeAutoTraceCommand(getAutoTraceDlg()->getTraceLevel(),
                           getAutoTraceDlg()->resampling(),
                           getAutoTraceDlg()->getChannel());

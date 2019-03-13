@@ -12,7 +12,7 @@
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
-#include "geometry/zintpoint.h"
+//#include "geometry/zintpoint.h"
 #include "zneurontracerconfig.h"
 
 class ZStack;
@@ -20,7 +20,7 @@ class ZSwcTree;
 class ZSwcConnector;
 class ZJsonObject;
 class ZWeightedPoint;
-//class ZIntPoint;
+class ZIntPoint;
 
 class ZNeuronTraceSeeder {
 public:
@@ -180,6 +180,10 @@ public:
     m_log = f;
   }
 
+  void enableTraceMask(bool on);
+  void setOverTrace(bool on);
+  void setSeedScreening(bool on);
+
 public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
@@ -249,6 +253,7 @@ private:
     void save(ZSwcTree *tree, const std::string &name);
     void saveInfo();
     void setInfo(const std::string &key, const std::string &value);
+    void setInfo(const std::string &key, int value);
 
   private:
     std::string m_dir;
@@ -280,13 +285,15 @@ private:
   std::vector<Locseg_Chain*> m_chainArray;
   Stack *m_mask;
   Stack *m_baseMask;
-  ZIntPoint m_seedDsIntv;
+//  ZIntPoint m_seedDsIntv;
 
   bool m_bcAdjust;
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
+  bool m_maskTracing;
   bool m_diagnosis = false;
+  bool m_screeningSeed = true;
 
   ZNeuronTracerConfig m_config; //default configuration
   Diagnosis m_diag;

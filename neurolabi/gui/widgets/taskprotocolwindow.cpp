@@ -64,14 +64,19 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     // UI connections
-    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()),
+            this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
-    connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
-    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
-    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
-    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
+    connect(ui->loadTasksButton, SIGNAL(clicked(bool)),
+            this, SLOT(onLoadTasksButton()));
+    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onReviewStateChanged(int)));
+    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onShowCompletedStateChanged(int)));
 
     QMenu *createTasksMenu = new QMenu(ui->loadTasksButton);
     for (QString menuLabel : TaskProtocolTaskFactory::getInstance().registeredGuiMenuLabels()) {
@@ -560,6 +565,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         }
     }
 
+    m_skippedTaskIndices.clear();
+
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
     if (save && (m_currentTaskIndex >= 0)) {
@@ -778,10 +785,10 @@ void TaskProtocolWindow::prefetch(uint64_t bodyID) {
 /*
  * updates the task label for current index
  */
-void TaskProtocolWindow::updateCurrentTaskLabel() {
+void TaskProtocolWindow::updateCurrentTaskLabel() { //#Review-TZ: It seems it's doing more than updating a label.
     // if there is a current task widget, remove it from the layout:
     if (m_currentTaskWidget != NULL) {
-        ui->verticalLayout_3->removeWidget(m_currentTaskWidget);
+        ui->verticalLayout_3->removeWidget(m_currentTaskWidget); //#Review-TZ: a better name for this layout?
         // ui->horizontalLayout->removeWidget(m_currentTaskWidget);
         m_currentTaskWidget->setVisible(false);
     }
@@ -949,10 +956,19 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
     if (usingTars) {
         m_bodyMeshLoadedExpected = 0;
+
+        // Bodies reused from the previous task will not generate bodyMeshesAdded
+        // signals, which needs to be considered when counting these signals.
+
+        QSet<uint64_t> bodies = m_body3dDoc->getNormalBodySet();
+        for (uint64_t bodyId : bodies) {
+            uint64_t id = ZFlyEmBodyManager::encode(bodyId);
+            m_bodiesReused += (visible.contains(id) || selected.contains(id));
+        }
     } else {
         m_bodyMeshLoadedExpected = (visible + selected).size();
 
-        // Bodies reused from the previous task may not generate onBodyRecycled amd
+        // Bodies reused from the previous task may not generate onBodyRecycled and
         // onBodyMeshLoaded signals, which needs to be considered when counting
         // these signals.
 
@@ -983,11 +999,13 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
   LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
            << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+           << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
+           << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
            << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
            << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
            << "m_bodiesReused =" << m_bodiesReused;
     if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
-        (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+        (m_bodyMeshesAddedExpected - m_bodiesReused == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
@@ -1015,18 +1033,22 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 /*
  * updates any progress labels
  */
-void TaskProtocolWindow::updateLabel() {
+void TaskProtocolWindow::updateLabel() { //#Review-TZ: Change the name to updateProgressLabel()?
     int ncomplete = 0;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (task->completed()) {
+    int ntasks = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_taskList[i]->completed()) {
+            // always count a completed task, even if subsequently it is designated as skipped
+            // (so proofreaders do not worry that their completed total is being decreased)
             ncomplete++;
+            ntasks++;
+        } else if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            // uncompleted tasks contribute to the total count only if not skipped
+            ntasks++;
         }
     }
 
-    // the total task count should not include tasks known to be skipped
-    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
-
-    float percent = (100.0 * ncomplete) / ntasks;
+    float percent = (ntasks > 0) ? (100.0 * ncomplete) / ntasks : 100.0;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
     // whenever we update the label, also log the progress; this is not useful as
@@ -1079,7 +1101,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
 QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
     QJsonObject emptyResult;
     ZDvidReader reader;
-    if (!reader.open(m_proofDoc->getDvidTarget())) {
+    if (!reader.open(m_proofDoc->getDvidTarget())) { //#Review-TZ: Consider using a shared reader
         return emptyResult;
     }
     if (!reader.hasKey(instance, key)) {

@@ -1,8 +1,9 @@
 #include "taskmergereview.h"
 
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidtarget.h"
+
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
@@ -367,10 +368,9 @@ QWidget *TaskMergeReview::getTaskWidget()
     setBodiesFromSuperVoxels();
   }
 
-  if (m_visibleBodies.isEmpty()) {
-    for (uint64_t id : m_bodyIds) {
-      m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
-    }
+  m_visibleBodies.clear();
+  for (uint64_t id : m_bodyIds) {
+    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
   }
 
   if (!m_lastSavedButton) {

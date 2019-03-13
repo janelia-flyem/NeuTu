@@ -17,17 +17,17 @@
 #include "mvc/zstackview.h"
 #include "mvc/zstackpresenter.h"
 
-#include "zflyemcontrolform.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+//#include "zflyemcontrolform.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidtile.h"
 #include "dvid/zdvidtileensemble.h"
-#include "flyem/zflyembodymergedoc.h"
+//#include "flyem/zflyembodymergedoc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/flyemproofcontrolform.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
+//#include "flyem/flyemproofcontrolform.h"
+//#include "flyem/zflyemproofmvc.h"
+//#include "flyem/zflyemproofdoc.h"
 #include "zsysteminfo.h"
 #include "zwidgetmessage.h"
 
@@ -50,7 +50,8 @@ ZDialogFactory::~ZDialogFactory()
 
 }
 
-ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
+ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(
+    QWidget *parent, ZDvidDialogType dialogType)
 {
   ZDvidTargetProviderDialog *dlg;
 
@@ -91,7 +92,7 @@ ZSpinBoxDialog* ZDialogFactory::makeSpinBoxDialog(QWidget *parent)
   ZSpinBoxDialog *dlg = new ZSpinBoxDialog(parent);
   return dlg;
 }
-
+#if 0
 QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
@@ -171,7 +172,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
   return dlg;
 }
-
+#endif
 
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {

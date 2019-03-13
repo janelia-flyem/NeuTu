@@ -28,6 +28,7 @@
 #include "zmessagemanager.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+#include "flyem/flyemdatareader.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -655,7 +656,7 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
       int sourceYDim = dvidInfo.getStackSize()[1];
 
       ZFlyEmNeuronBodyInfo bodyInfo =
-          reader.readBodyInfo(bodyId);
+          FlyEmDataReader::ReadBodyInfo(reader, bodyId);
       int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
       int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
       int bodyHeight = bodyInfo.getBoundBox().getDepth();

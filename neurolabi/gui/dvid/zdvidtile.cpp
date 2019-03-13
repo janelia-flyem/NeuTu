@@ -227,7 +227,7 @@ void ZDvidTile::display(
 //    tic();
 //    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
-    LDEBUG() << "Painting tile:" << m_pixmap.size();
+//    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;

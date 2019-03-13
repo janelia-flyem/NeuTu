@@ -102,7 +102,7 @@ TEST(ZStack, Basic)
   Stack *s1 = C_Stack::make(GREY16, 3, 4, 5);
   Stack *s2 = C_Stack::make(GREY16, 3, 4, 5);
   Stack *s3 = C_Stack::make(GREY16, 3, 4, 5);
-  Mc_Stack *s4 = ZStack::makeMcStack(s1, s2, s3);
+  Mc_Stack *s4 = ZStack::MakeMcStack(s1, s2, s3);
 
   C_Stack::kill(s1);
   C_Stack::kill(s2);

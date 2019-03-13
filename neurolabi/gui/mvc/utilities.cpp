@@ -6,7 +6,8 @@
 #include "zviewproj.h"
 #include "widgets/zimagewidget.h"
 #include "zpositionmapper.h"
-#include "zstackdochelper.h"
+//#include "zstackdochelper.h"
+#include "zstackdocutil.h"
 #include "zstack.hxx"
 #include "geometry/zgeometry.h"
 
@@ -159,7 +160,7 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     info += ComposeStackDataInfo(
           doc, pt.x(), pt.y(), pt.z(), axis, view->getViewInfoFlag());
   } else {
-    ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(*doc, axis);
+    ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(*doc, axis);
 
     QPointF stackPos = ZPositionMapper::WidgetToStack(
           widgetPos.x(), widgetPos.y(), vp);
@@ -199,7 +200,7 @@ ZPoint neutu::mvc::MapWidgetPosToData(
   ZViewProj vp = view->getViewProj();
 
   ZStackDoc *doc = view->buddyDocument().get();
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(*doc, axis);
+  ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(*doc, axis);
   int z0 = box.getFirstCorner().getZ();
   ZPoint stackPos = ZPositionMapper::WidgetToStack(widgetPos, vp, z0);
 

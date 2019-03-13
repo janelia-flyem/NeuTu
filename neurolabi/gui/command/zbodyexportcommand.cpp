@@ -4,11 +4,11 @@
 #include "dvid/zdvidreader.h"
 
 #include "neutubeconfig.h"
-
+#include "zstack.hxx"
 #include "zjsonobject.h"
 #include "zglobal.h"
 #include "misc/miscutility.h"
-#include "zstack.hxx"
+#include "dvid/zdvidurl.h"
 
 ZBodyExportCommand::ZBodyExportCommand()
 {

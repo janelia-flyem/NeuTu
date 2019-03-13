@@ -307,7 +307,7 @@ public: /* attributes */
 
 
   // make mc_stack
-  static Mc_Stack* makeMcStack(
+  static Mc_Stack* MakeMcStack(
       const Stack *stack1, const Stack *stack2, const Stack *stack3);
 
   //Source of the stack. Usually it is the file where the image is originally

@@ -45,6 +45,7 @@
 #include "dvid/zdvidversiondag.h"
 #include "zflyemutilities.h"
 #include "flyem/zflyembodyannotation.h"
+#include "flyem/flyemdatareader.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -1022,7 +1023,8 @@ std::vector<uint64_t> ZCommandLine::getSkeletonBodyList(ZDvidReader &reader) con
          iter != bodyIdSet.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (m_namedOnly) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
         if (!annotation.getName().empty()) {
           bodyIdArray.push_back(bodyId);
         }

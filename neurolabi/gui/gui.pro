@@ -316,6 +316,8 @@ HEADERS += mainwindow.h \
     dialogs/zrescaleswcdialog.h \
     dialogs/swcsizedialog.h \
     dialogs/swcskeletontransformdialog.h \
+    dialogs/swctypedialog.h \
+    dialogs/mexicanhatdialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \
@@ -335,8 +337,6 @@ HEADERS += mainwindow.h \
     ztest.h \
     zglmutils.h \
     znormcolormap.h \
-    dialogs/swctypedialog.h \
-    dialogs/mexicanhatdialog.h \
     zlocsegchain.h \
     zcurve.h \
     zxmldoc.h \
@@ -373,7 +373,6 @@ HEADERS += mainwindow.h \
     dialogs/helpdialog.h \
     zswcnodeobjsmodel.h \
     zstackstatistics.h \
-    zswcconnector.h \
     biocytin/biocytin.h \
     biocytin/zstackprojector.h \
     dialogs/projectiondialog.h \
@@ -596,18 +595,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
-    dialogs/zdvidbodypositiondialog.h \
     zcubearraymovieactor.h \
-    dialogs/zflyemsplituploadoptiondialog.h \
-    dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
-    dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h \
-    dialogs/zswcisolationdialog.h \
-    dialogs/zstresstestoptiondialog.h \
-    dialogs/zflyembodyscreenshotdialog.h\
-    dialogs/zflyemskeletonupdatedialog.h \
-    dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
@@ -698,6 +687,16 @@ HEADERS += mainwindow.h \
     protocols/taskmergereview.h \
     dialogs/zflyemtodoannotationdialog.h \
     main.h \
+    dialogs/zflyemsplituploadoptiondialog.h \
+    dialogs/zflyembodychopdialog.h \
+    dialogs/ztestoptiondialog.h \
+    dialogs/zinfodialog.h \
+    dialogs/zswcisolationdialog.h \
+    dialogs/zstresstestoptiondialog.h \
+    dialogs/zflyembodyscreenshotdialog.h\
+    dialogs/zflyemskeletonupdatedialog.h \
+    dialogs/zdvidadvanceddialog.h \
+    dialogs/zdvidbodypositiondialog.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \

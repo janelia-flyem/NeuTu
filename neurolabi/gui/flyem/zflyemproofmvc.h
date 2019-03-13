@@ -11,57 +11,60 @@
 #include <QMap>
 
 #include "common/neutube_def.h"
-#include "flyemdef.h"
+#include "zthreadfuturemap.h"
+#include "zwindowfactory.h"
+#include "zactionfactory.h"
+#include "zstackviewparam.h"
 #include "mvc/zstackmvc.h"
+#include "flyemdef.h"
 #include "zflyembodysplitproject.h"
 #include "zflyembodymergeproject.h"
-#include "zthreadfuturemap.h"
-#include "zflyembookmark.h"
-#include "zwindowfactory.h"
-#include "common/neutube_def.h"
-#include "zactionfactory.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
-class ZDvidTargetProviderDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
-class FlyEmBodyInfoDialog;
 class ProtocolSwitcher;
-class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
-class FlyEmTodoDialog;
 class ZClickableColorLabel;
 class ZColorLabel;
 class ZFlyEmSynapseDataFetcher;
 class ZFlyEmSynapseDataUpdater;
 class ZDvidPatchDataFetcher;
 class ZDvidPatchDataUpdater;
-class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
-class ZFlyEmSplitUploadOptionDialog;
-class ZFlyEmBodyChopDialog;
-class ZInfoDialog;
 class ZRandomGenerator;
-class ZFlyEmSkeletonUpdateDialog;
 class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
-class ZFlyEmGrayscaleDialog;
-class FlyEmBodyIdDialog;
-class ZFlyEmMergeUploadDialog;
-class ZFlyEmProofSettingDialog;
 class ZROIWidget;
-class ZFlyEmBodyAnnotationDialog;
-class NeuPrintQueryDialog;
 class ZActionLibrary;
 class NeuPrintReader;
 class NeuprintSetupDialog;
 class ZContrastProtocalDialog;
+class ZFlyEmRoiToolDialog;
+class ZFlyEmSplitUploadOptionDialog;
+class ZFlyEmBodyChopDialog;
+class ZInfoDialog;
+class ZFlyEmGrayscaleDialog;
+class FlyEmBodyIdDialog;
+class ZFlyEmMergeUploadDialog;
+class ZFlyEmProofSettingDialog;
+class ZFlyEmSkeletonUpdateDialog;
+class FlyEmTodoDialog;
+class ZDvidTargetProviderDialog;
+class FlyEmBodyInfoDialog;
+class ZFlyEmSplitCommitDialog;
+class ZFlyEmBodyAnnotationDialog;
+class NeuPrintQueryDialog;
+class FlyEmMvcDialogManager;
+class ZFlyEmSequencerColorScheme;
+class ZFlyEmBookmark;
+class ZFlyEmBookmarkListModel;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -112,6 +115,7 @@ public:
   bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
   virtual ZDvidTarget getDvidTarget() const;
+  std::string getDvidTargetUuid() const;
 
   void setDvidDialog(ZDvidTargetProviderDialog *dlg);
   ZDvidTargetProviderDialog* getDvidDialog() const;
@@ -130,8 +134,8 @@ public:
     m_quitting = exiting;
   }
 
-  Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
-  Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
+  Z3DWindow* makeExternalSkeletonWindow(neutu3d::EWindowType windowType);
+  Z3DWindow* makeExternalMeshWindow(neutu3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
 
 
@@ -142,9 +146,7 @@ public:
 
   uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
 
-  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
-    return m_bodyInfoDlg;
-  }
+  FlyEmBodyInfoDialog *getBodyInfoDlg();
 
   bool is3DEnabled() const {
     return m_3dEnabled;
@@ -154,7 +156,7 @@ public:
     m_3dEnabled = false;
   }
 
-  bool hasSequencer() const;
+  bool hasSequencer();
 
   void disableSequencer();
 
@@ -267,6 +269,7 @@ public slots:
   void notifyBodyMergeEdited();
   void updateProtocolRangeGlyph(
       const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
+  void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
 
   void showBody3d();
   void showSplit3d();
@@ -455,7 +458,7 @@ protected slots:
 protected:
   void customInit();
   void createPresenter();
-  virtual void dropEvent(QDropEvent *event);
+//  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
@@ -525,7 +528,7 @@ private:
   void updateBodyWindow(Z3DWindow *window);
   void updateBodyWindowDeep(Z3DWindow *window);
 
-  ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
+  ZWindowFactory makeExternalWindowFactory(neutu3d::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
 
@@ -564,9 +567,16 @@ private:
 //  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
+  void configureContrastDlg(ZContrastProtocalDialog *dlg);
+  ZFlyEmSplitCommitDialog* getSplitCommitDlg();
+  FlyEmTodoDialog* getTodoDlg();
+  void configureTodoDlg(FlyEmTodoDialog *dlg);
+  void configureSplitUploadDlg(ZFlyEmSplitUploadOptionDialog *dlg);
 
-  template<typename T>
-  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
+  bool hasWidgetRole() const;
+
+//  template<typename T>
+//  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
 
   void submitSkeletonizationTask(uint64_t bodyId);
 
@@ -592,6 +602,8 @@ private:
   void initViewButton();
   void updateViewButton();
 
+  void updateRoiWidget(Z3DWindow *win) const;
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -613,26 +625,32 @@ protected:
   ZPaintLabelWidget *m_paintLabelWidget;
   ZActionLibrary *m_actionLibrary = nullptr;
 
-  ZDvidTargetProviderDialog *m_dvidDlg;
-  FlyEmBodyInfoDialog *m_bodyInfoDlg;
-  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
-  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
-  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
-  FlyEmTodoDialog *m_todoDlg;
-  ZFlyEmRoiToolDialog *m_roiDlg;
-  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
-  ZFlyEmBodyChopDialog *m_bodyChopDlg;
-  ZInfoDialog *m_infoDlg;
-  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
-  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
-  FlyEmBodyIdDialog *m_bodyIdDialog;
-  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
-  ZFlyEmProofSettingDialog *m_settingDlg;
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
-  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
-  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
-  ZContrastProtocalDialog *m_contrastDlg = nullptr;
+
+//  std::unique_ptr<FlyEmMvcDialogManager> m_dlgManager; //unique ptr doesn't work well with Qt Creator
+  friend class FlyEmMvcDialogManager;
+
+  FlyEmMvcDialogManager *m_dlgManager = nullptr; //Using raw pointer is fine because it's not exposed anyway
+
+//  ZDvidTargetProviderDialog *m_dvidDlg;
+//  FlyEmBodyInfoDialog *m_bodyInfoDlg;
+//  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
+//  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
+//  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+//  FlyEmTodoDialog *m_todoDlg;
+//  ZFlyEmRoiToolDialog *m_roiDlg;
+//  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
+//  ZFlyEmBodyChopDialog *m_bodyChopDlg;
+//  ZInfoDialog *m_infoDlg;
+//  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
+//  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
+//  FlyEmBodyIdDialog *m_bodyIdDialog;
+//  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
+//  ZFlyEmProofSettingDialog *m_settingDlg;
+//  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+//  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+//  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
+//  ZContrastProtocalDialog *m_contrastDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;
@@ -646,7 +664,7 @@ protected:
   Z3DWindow *m_coarseMeshWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
-  Z3DWindow *m_objectWindow;
+  Z3DWindow *m_objectWindow = nullptr;
   Z3DWindow *m_roiWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
 //  ZFlyEmDataFrame *m_queryWindow;

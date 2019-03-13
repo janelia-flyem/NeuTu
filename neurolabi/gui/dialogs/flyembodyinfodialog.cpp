@@ -701,7 +701,7 @@ void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
 {
   int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
 
-  logInfo(QString("Update bodies triggered by max body number change: ").arg(maxBodies));
+  logInfo(QString("Update bodies triggered by max body number change: %1").arg(maxBodies));
 
   if (maxBodies > 1000) {
     int ans = QMessageBox::Ok;

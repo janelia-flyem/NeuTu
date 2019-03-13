@@ -13,19 +13,20 @@
 #include <vector>
 #include <tuple>
 
-#include "flyem/zflyem.h"
+//#include "flyem/zflyem.h"
 #include "zclosedcurve.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
-#include "zdvidsynapse.h"
+//#include "zdvidsynapse.h"
 #include "zdvidbufferreader.h"
-#include "zdvidurl.h"
+//#include "zdvidurl.h"
 #include "znetbufferreader.h"
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
 #endif
 
+class ZStackObject;
 class ZDvidFilter;
 class ZArray;
 class ZJsonObject;
@@ -45,6 +46,8 @@ class ZObject3dScanArray;
 class ZMesh;
 class ZStack;
 class ZAffineRect;
+class ZDvidUrl;
+class ZDvidSynapse;
 
 struct archive;
 
@@ -422,7 +425,7 @@ public:
 
   bool hasCoarseSparseVolume(uint64_t bodyId) const;
 
-  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
+//  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -484,7 +487,7 @@ public:
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
   ZJsonArray readRoiJson(const std::string &dataName);
 
-  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
+//  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
 
   bool hasBodyAnnotation() const;
@@ -516,6 +519,7 @@ public:
       const std::string &dataName, int x, int y, int z) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
+#if 1
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
       dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
@@ -532,6 +536,8 @@ public:
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
       dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER) const;
+#endif
+
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>
@@ -674,6 +680,8 @@ private:
 
   bool reportMissingData(const std::string dataName) const;
 
+  static std::string GetMasterUrl(const ZDvidUrl &dvidUrl);
+
   static ZIntCuboid GetStackBox(
       int x0, int y0, int z0, int width, int height, int zoom);
   static ZIntCuboid GetStackBoxAtCenter(
@@ -691,6 +699,8 @@ private:
 
   template<typename T>
   void configureLowtis(T *config, const std::string &dataName) const;
+
+  std::vector<uint64_t> readBodyIdAt(const ZJsonArray &queryObj) const;
 
 protected:
   ZDvidTarget m_dvidTarget;
@@ -740,11 +750,10 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (first != last) {
-    ZDvidBufferReader &bufferReader = m_bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
+//    ZDvidBufferReader &bufferReader = m_bufferReader;
+#if defined(_ENABLE_LIBDVIDCPP_2)
     bufferReader.setService(m_service);
 #endif
-    ZDvidUrl dvidUrl(m_dvidTarget);
 
     ZJsonArray queryObj;
 
@@ -758,26 +767,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
       queryObj.append(coordObj);
     }
 
-    QString queryForm = queryObj.dumpString(0).c_str();
-
-#ifdef _DEBUG_
-    std::cout << "Payload: " << queryForm.toStdString() << std::endl;
-#endif
-
-    QByteArray payload;
-    payload.append(queryForm);
-
-    bufferReader.read(
-          dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
-    setStatusCode(bufferReader.getStatusCode());
-
-    ZJsonArray infoJson;
-    infoJson.decodeString(bufferReader.getBuffer().data());
-
-    for (size_t i = 0; i < infoJson.size(); ++i) {
-      uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
-      bodyArray.push_back(bodyId);
-    }
+    bodyArray = readBodyIdAt(queryObj);
   }
 
   return bodyArray;

@@ -205,7 +205,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
       }
     }
   }
-  //LOG(INFO) << img << vols.size();
+  LOG(INFO) << img << vols.size();
   setData(vols, img);
 }
 

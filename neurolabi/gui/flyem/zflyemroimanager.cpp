@@ -12,6 +12,7 @@
 #include "zmeshfactory.h"
 #include "zjsonobject.h"
 #include "zjsondef.h"
+#include "zjsonparser.h"
 
 namespace {
 

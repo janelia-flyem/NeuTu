@@ -11,13 +11,13 @@
 
 #include "zdvidtarget.h"
 #include "zstackobject.h"
-#include "zdvidreader.h"
 #include "zdvidinfo.h"
 #include "zdvidsynapse.h"
 #include "zselector.h"
 #include "zjsonarray.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidwriter.h"
 #include "zresolution.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackView;
 class ZIntCuboid;

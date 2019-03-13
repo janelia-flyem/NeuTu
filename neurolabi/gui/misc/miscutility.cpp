@@ -6,7 +6,7 @@
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
-#include "flyem/zflyemqualityanalyzer.h"
+//#include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
@@ -16,6 +16,7 @@
 #include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #include "zarray.h"
+#include "zstring.h"
 
 using namespace std;
 
@@ -788,4 +789,30 @@ size_t misc::CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan
   obj.dilatePlane();
 
   return CountOverlap(obj, obj2);
+}
+
+ZIntCuboid misc::EstimateSplitRoi(const ZIntCuboid &boundBox)
+{
+  ZIntCuboid newBox = boundBox;
+
+  newBox.expandZ(10);
+  size_t v = newBox.getVolume();
+
+//  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  double s = Cube_Root(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
+  if (s > 1) {
+    double ds = s - 1.0;
+    int dw = iround(newBox.getWidth() * ds);
+    int dh = iround(newBox.getHeight() * ds);
+    int dd = iround(newBox.getDepth() * ds);
+
+    const int xMargin = dw / 2;
+    const int yMargin = dh / 2;
+    const int zMargin = dd / 2;
+    newBox.expandX(xMargin);
+    newBox.expandY(yMargin);
+    newBox.expandZ(zMargin);
+  }
+
+  return newBox;
 }

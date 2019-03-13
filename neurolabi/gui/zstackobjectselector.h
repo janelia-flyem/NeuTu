@@ -4,8 +4,10 @@
 #include <set>
 #include <vector>
 
-#include "zstackobject.h"
 #include "zselector.h"
+#include "zstackobject.h"
+
+class ZStackObject;
 
 /*!
  * \brief The class of managing object selection

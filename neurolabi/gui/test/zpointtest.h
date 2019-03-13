@@ -14,6 +14,12 @@ TEST(ZIntPoint, Basic)
 
   pt.invalidate();
   ASSERT_FALSE(pt.isValid());
+
+  pt.set(1, 2, 3);
+  ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
+  ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
+  ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
+  ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
 }
 
 TEST(ZPoint, Basic)

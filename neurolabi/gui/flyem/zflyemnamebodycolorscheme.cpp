@@ -2,6 +2,8 @@
 
 #include "zflyembodyannotation.h"
 #include "zstring.h"
+#include "zjsonparser.h"
+#include "flyemdatareader.h"
 
 ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
 {
@@ -118,7 +120,8 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap()
                                m_reader.getDvidTarget().getBodyLabelName()).c_str());
       foreach (const QString &idStr, annotationList) {
         uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
-        ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(m_reader, bodyId);
         updateNameMap(bodyId, annotation.getName().c_str());
       }
     }

@@ -5,16 +5,15 @@
 #include <QList>
 #include <QMap>
 
-#include "dvid/zdvidtarget.h"
+#include "neutube.h"
+#include "common/zsharedpointer.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
-#include "common/zsharedpointer.h"
-#include "zstackviewparam.h"
-#include "neutube.h"
-#include "dvid/zdvidinfo.h"
-#include "zflyembookmarkarray.h"
-#include "dvid/zdvidreader.h"
+//#include "zstackviewparam.h"
+
 #include "dvid/zdvidwriter.h"
+
+#include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
 #include "zflyembodyannotationmerger.h"
 
@@ -36,6 +35,7 @@ class ZFlyEmBodyMerger;
 class ZWidgetMessage;
 //class ZDvidInfo;
 class ZProgressSignal;
+
 //class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject
@@ -72,6 +72,8 @@ public:
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
   }
+
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationMerger &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -139,7 +141,7 @@ public:
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
-    return m_annotMerger;
+    return m_bodyStatusProtocol;
   }
 
 signals:
@@ -234,7 +236,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationMerger m_annotMerger;
+  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
 

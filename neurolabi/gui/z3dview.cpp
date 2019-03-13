@@ -112,29 +112,29 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(T *filter)
 }
 
 std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(
-    neutube3d::ERendererLayer layer)
+    neutu3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::GRAPH:
+  case neutu3d::ERendererLayer::GRAPH:
     return getWidgetsGroup(getGraphFilter());
-  case neutube3d::ERendererLayer::MESH:
+  case neutu3d::ERendererLayer::MESH:
     return getWidgetsGroup(getMeshFilter());
-  case neutube3d::ERendererLayer::PUNCTA:
+  case neutu3d::ERendererLayer::PUNCTA:
     return getWidgetsGroup(getPunctaFilter());
-  case neutube3d::ERendererLayer::ROI:
+  case neutu3d::ERendererLayer::ROI:
     return getWidgetsGroup(getRoiFilter());
-  case neutube3d::ERendererLayer::SURFACE:
+  case neutu3d::ERendererLayer::SURFACE:
     return getWidgetsGroup(getSurfaceFilter());
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     return getWidgetsGroup(getSwcFilter());
-  case neutube3d::ERendererLayer::TODO:
+  case neutu3d::ERendererLayer::TODO:
     return getWidgetsGroup(getTodoFilter());
-  case neutube3d::ERendererLayer::VOLUME:
+  case neutu3d::ERendererLayer::VOLUME:
     return getWidgetsGroup(getVolumeFilter());
-  case neutube3d::ERendererLayer::DECORATION:
+  case neutu3d::ERendererLayer::DECORATION:
     return getWidgetsGroup(getDecorationFilter());
     break;
-  case neutube3d::ERendererLayer::SLICE:
+  case neutu3d::ERendererLayer::SLICE:
     return getWidgetsGroup(getSliceFilter());
     break;
   }
@@ -410,26 +410,29 @@ void Z3DView::init()
 
     // build network
     const NeutubeConfig &config = NeutubeConfig::getInstance();
-    if (config.getZ3DWindowConfig().isVolumeOn()) {
-      addFilter(neutube3d::ERendererLayer::VOLUME);
-    }
     if (config.getZ3DWindowConfig().isSwcsOn()) {
-      addFilter(neutube3d::ERendererLayer::SWC);
+      addFilter(neutu3d::ERendererLayer::SWC);
     }
 #if !defined(_NEUTUBE_LIGHT_)
     if (config.getZ3DWindowConfig().isPunctaOn()) {
-      addFilter(neutube3d::ERendererLayer::PUNCTA);
+      addFilter(neutu3d::ERendererLayer::PUNCTA);
     }
 #endif
 #if defined _FLYEM_
-    addFilter(neutube3d::ERendererLayer::TODO);
+    addFilter(neutu3d::ERendererLayer::TODO);
 //    addFilter(neutube3d::ERendererLayer::LAYER_SURFACE);
 #endif
 
-    addFilter(neutube3d::ERendererLayer::GRAPH);
-    addFilter(neutube3d::ERendererLayer::MESH);
-    addFilter(neutube3d::ERendererLayer::ROI);
-    addFilter(neutube3d::ERendererLayer::DECORATION);
+    addFilter(neutu3d::ERendererLayer::GRAPH);
+    addFilter(neutu3d::ERendererLayer::MESH);
+    addFilter(neutu3d::ERendererLayer::ROI);
+    addFilter(neutu3d::ERendererLayer::DECORATION);
+
+    //Add volume filter later than other filters to allow them process mouse
+    //events first.
+    if (config.getZ3DWindowConfig().isVolumeOn()) {
+      addFilter(neutu3d::ERendererLayer::VOLUME);
+    }
 
 //    initSurfaceFilter();
 
@@ -443,7 +446,7 @@ void Z3DView::init()
       connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
     }
 
-    foreach (neutube3d::ERendererLayer layer, m_layerList) {
+    foreach (neutu3d::ERendererLayer layer, m_layerList) {
       updateDocData(layer);
     }
 
@@ -508,37 +511,37 @@ void Z3DView::init()
   }
 }
 
-void Z3DView::addFilter(neutube3d::ERendererLayer layer)
+void Z3DView::addFilter(neutu3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::GRAPH:
+  case neutu3d::ERendererLayer::GRAPH:
     initGraphFilter();
     break;
-  case neutube3d::ERendererLayer::MESH:
+  case neutu3d::ERendererLayer::MESH:
     initMeshFilter();
     break;
-  case neutube3d::ERendererLayer::PUNCTA:
+  case neutu3d::ERendererLayer::PUNCTA:
     initPunctaFilter();
     break;
-  case neutube3d::ERendererLayer::ROI:
+  case neutu3d::ERendererLayer::ROI:
     initRoiFilter();
     break;
-  case neutube3d::ERendererLayer::SURFACE:
+  case neutu3d::ERendererLayer::SURFACE:
     initSurfaceFilter();
     break;
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     initSwcFilter();
     break;
-  case neutube3d::ERendererLayer::TODO:
+  case neutu3d::ERendererLayer::TODO:
     initTodoFilter();
     break;
-  case neutube3d::ERendererLayer::VOLUME:
+  case neutu3d::ERendererLayer::VOLUME:
     initVolumeFilter();
     break;
-  case neutube3d::ERendererLayer::DECORATION:
+  case neutu3d::ERendererLayer::DECORATION:
     initDecorationFilter();
     break;
-  case neutube3d::ERendererLayer::SLICE:
+  case neutu3d::ERendererLayer::SLICE:
     initSliceFilter();
     break;
   }
@@ -557,7 +560,7 @@ void Z3DView::initVolumeFilter()
           this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_volumeFilter);
   m_allFilters.push_back(m_volumeFilter.get());
-  m_layerList.append(neutube3d::ERendererLayer::VOLUME);
+  m_layerList.append(neutu3d::ERendererLayer::VOLUME);
 }
 
 void Z3DView::initSliceFilter()
@@ -572,7 +575,7 @@ void Z3DView::initSliceFilter()
           this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_sliceFilter);
   m_allFilters.push_back(m_sliceFilter.get());
-  m_layerList.append(neutube3d::ERendererLayer::SLICE);
+  m_layerList.append(neutu3d::ERendererLayer::SLICE);
 }
 
 void Z3DView::initPunctaFilter()
@@ -592,7 +595,7 @@ void Z3DView::initPunctaFilter()
           m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::punctumVisibleStateChanged,
           m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
-  m_layerList.append(neutube3d::ERendererLayer::PUNCTA);
+  m_layerList.append(neutu3d::ERendererLayer::PUNCTA);
 }
 
 void Z3DView::initSwcFilter()
@@ -615,7 +618,7 @@ void Z3DView::initSwcFilter()
   connect(m_doc, QOverload<QList<Swc_Tree_Node*>,
           QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
           m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
-  m_layerList.append(neutube3d::ERendererLayer::SWC);
+  m_layerList.append(neutu3d::ERendererLayer::SWC);
 }
 
 void Z3DView::initMeshFilter()
@@ -632,7 +635,7 @@ void Z3DView::initMeshFilter()
           m_meshFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_meshFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::ERendererLayer::MESH);
+  m_layerList.append(neutu3d::ERendererLayer::MESH);
 
   // When the user is dragging a rectangle to select its contents, display that rectangle.
 
@@ -680,7 +683,7 @@ void Z3DView::initRoiFilter()
           m_roiFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_roiFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::ERendererLayer::ROI);
+  m_layerList.append(neutu3d::ERendererLayer::ROI);
 }
 
 void Z3DView::initDecorationFilter()
@@ -705,7 +708,7 @@ void Z3DView::initDecorationFilter()
           m_decorationFilter.get(), &Z3DMeshFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
           m_decorationFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-  m_layerList.append(neutube3d::ERendererLayer::DECORATION);
+  m_layerList.append(neutu3d::ERendererLayer::DECORATION);
 }
 
 void Z3DView::initGraphFilter()
@@ -717,7 +720,7 @@ void Z3DView::initGraphFilter()
   connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_graphFilter);
   m_allFilters.push_back(m_graphFilter.get());
-  m_layerList.append(neutube3d::ERendererLayer::GRAPH);
+  m_layerList.append(neutu3d::ERendererLayer::GRAPH);
 }
 
 void Z3DView::initTodoFilter()
@@ -729,7 +732,7 @@ void Z3DView::initTodoFilter()
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_todoFilter);
   m_allFilters.push_back(m_todoFilter.get());
-  m_layerList.append(neutube3d::ERendererLayer::TODO);
+  m_layerList.append(neutu3d::ERendererLayer::TODO);
 }
 
 void Z3DView::initSurfaceFilter()
@@ -743,11 +746,11 @@ void Z3DView::initSurfaceFilter()
 
   connect(m_doc, &ZStackDoc::surfaceVisibleStateChanged,
           m_surfaceFilter.get(), &Z3DSurfaceFilter::updateSurfaceVisibleState);
-  m_layerList.append(neutube3d::ERendererLayer::SURFACE);
+  m_layerList.append(neutu3d::ERendererLayer::SURFACE);
 
 }
 
-void Z3DView::configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj)
+void Z3DView::configureLayer(neutu3d::ERendererLayer layer, const ZJsonObject &obj)
 {
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
@@ -755,7 +758,7 @@ void Z3DView::configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject 
   }
 }
 
-ZJsonObject Z3DView::getConfigJson(neutube3d::ERendererLayer layer) const
+ZJsonObject Z3DView::getConfigJson(neutu3d::ERendererLayer layer) const
 {
   ZJsonObject configJson;
   Z3DGeometryFilter *filter = getFilter(layer);
@@ -768,9 +771,9 @@ ZJsonObject Z3DView::getConfigJson(neutube3d::ERendererLayer layer) const
 
 void Z3DView::configure(const ZJsonObject &obj)
 {
-  for (QList<neutube3d::ERendererLayer>::const_iterator iter = m_layerList.begin();
+  for (QList<neutu3d::ERendererLayer>::const_iterator iter = m_layerList.begin();
        iter != m_layerList.end(); ++iter) {
-    neutube3d::ERendererLayer layer = *iter;
+    neutu3d::ERendererLayer layer = *iter;
     std::string layerKey = GetLayerString(layer);
     if (obj.hasKey(layerKey.c_str())) {
       ZJsonObject layerJson(obj.value(layerKey.c_str()));
@@ -782,9 +785,9 @@ void Z3DView::configure(const ZJsonObject &obj)
 ZJsonObject Z3DView::getSettings() const
 {
   ZJsonObject configJson;
-  for (QList<neutube3d::ERendererLayer>::const_iterator iter = m_layerList.begin();
+  for (QList<neutu3d::ERendererLayer>::const_iterator iter = m_layerList.begin();
        iter != m_layerList.end(); ++iter) {
-    neutube3d::ERendererLayer layer = *iter;
+    neutu3d::ERendererLayer layer = *iter;
     ZJsonObject layerJson = getConfigJson(layer);
     configJson.setEntry(GetLayerString(layer).c_str(), layerJson);
   }
@@ -806,10 +809,10 @@ void Z3DView::dump(const QString &message)
   m_canvas->dump(message);
 }
 
-void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
+void Z3DView::setCutBox(neutu3d::ERendererLayer layer, const ZIntCuboid &box)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     getSwcFilter()->setCutBox(box);
     break;
   default:
@@ -817,10 +820,10 @@ void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
   }
 }
 
-void Z3DView::resetCutBox(neutube3d::ERendererLayer layer)
+void Z3DView::resetCutBox(neutu3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     getSwcFilter()->resetCut();
     break;
   default:
@@ -854,24 +857,24 @@ void Z3DView::volumeDataChanged()
   updateVolumeData();
 }
 
-Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
+Z3DGeometryFilter* Z3DView::getFilter(neutu3d::ERendererLayer layer) const
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     return getSwcFilter();
-  case neutube3d::ERendererLayer::GRAPH:
+  case neutu3d::ERendererLayer::GRAPH:
     return getGraphFilter();
-  case neutube3d::ERendererLayer::PUNCTA:
+  case neutu3d::ERendererLayer::PUNCTA:
     return getPunctaFilter();
-  case neutube3d::ERendererLayer::TODO:
+  case neutu3d::ERendererLayer::TODO:
     return getTodoFilter();
-  case neutube3d::ERendererLayer::SURFACE:
+  case neutu3d::ERendererLayer::SURFACE:
     return getSurfaceFilter();
-  case neutube3d::ERendererLayer::MESH:
+  case neutu3d::ERendererLayer::MESH:
     return getMeshFilter();
-  case neutube3d::ERendererLayer::ROI:
+  case neutu3d::ERendererLayer::ROI:
     return getRoiFilter();
-  case neutube3d::ERendererLayer::DECORATION:
+  case neutu3d::ERendererLayer::DECORATION:
     return getDecorationFilter();
   default:
     break;
@@ -880,10 +883,10 @@ Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
   return NULL;
 }
 
-Z3DBoundedFilter* Z3DView::getBoundedFilter(neutube3d::ERendererLayer layer) const
+Z3DBoundedFilter* Z3DView::getBoundedFilter(neutu3d::ERendererLayer layer) const
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::VOLUME:
+  case neutu3d::ERendererLayer::VOLUME:
     return getVolumeFilter();
   default:
     return getFilter(layer);
@@ -892,7 +895,7 @@ Z3DBoundedFilter* Z3DView::getBoundedFilter(neutube3d::ERendererLayer layer) con
   return NULL;
 }
 
-void Z3DView::setZScale(neutube3d::ERendererLayer layer, double scale)
+void Z3DView::setZScale(neutu3d::ERendererLayer layer, double scale)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);
   if (filter != NULL) {
@@ -900,7 +903,7 @@ void Z3DView::setZScale(neutube3d::ERendererLayer layer, double scale)
   }
 }
 
-void Z3DView::setScale(neutube3d::ERendererLayer layer, double sx, double sy, double sz)
+void Z3DView::setScale(neutu3d::ERendererLayer layer, double sx, double sy, double sz)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);
   if (filter != NULL) {
@@ -910,7 +913,7 @@ void Z3DView::setScale(neutube3d::ERendererLayer layer, double sx, double sy, do
   }
 }
 
-void Z3DView::setOpacity(neutube3d::ERendererLayer layer, double opacity)
+void Z3DView::setOpacity(neutu3d::ERendererLayer layer, double opacity)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);
   if (filter != NULL) {
@@ -918,7 +921,7 @@ void Z3DView::setOpacity(neutube3d::ERendererLayer layer, double opacity)
   }
 }
 
-void Z3DView::setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity)
+void Z3DView::setOpacityQuietly(neutu3d::ERendererLayer layer, double opacity)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);
   if (filter != NULL) {
@@ -926,7 +929,7 @@ void Z3DView::setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity)
   }
 }
 
-void Z3DView::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
+void Z3DView::setLayerVisible(neutu3d::ERendererLayer layer, bool visible)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);
   if (filter != NULL) {
@@ -934,7 +937,7 @@ void Z3DView::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
   }
 }
 
-bool Z3DView::isLayerVisible(neutube3d::ERendererLayer layer) const
+bool Z3DView::isLayerVisible(neutu3d::ERendererLayer layer) const
 {
   bool v = false;
 
@@ -946,7 +949,7 @@ bool Z3DView::isLayerVisible(neutube3d::ERendererLayer layer) const
   return v;
 }
 
-void Z3DView::setFront(neutube3d::ERendererLayer layer, bool on)
+void Z3DView::setFront(neutu3d::ERendererLayer layer, bool on)
 {
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
@@ -956,49 +959,49 @@ void Z3DView::setFront(neutube3d::ERendererLayer layer, bool on)
 
 void Z3DView::setZScale(double scale)
 {
-  foreach (neutube3d::ERendererLayer layer, m_layerList) {
+  foreach (neutu3d::ERendererLayer layer, m_layerList) {
     setZScale(layer, scale);
   }
 }
 
 void Z3DView::setScale(double sx, double sy, double sz)
 {
-  foreach (neutube3d::ERendererLayer layer, m_layerList) {
+  foreach (neutu3d::ERendererLayer layer, m_layerList) {
     setScale(layer, sx, sy, sz);
   }
 }
 
-std::string Z3DView::GetLayerString(neutube3d::ERendererLayer layer)
+std::string Z3DView::GetLayerString(neutu3d::ERendererLayer layer)
 {
   switch (layer) {
-  case neutube3d::ERendererLayer::GRAPH:
+  case neutu3d::ERendererLayer::GRAPH:
     return "Graph";
-  case neutube3d::ERendererLayer::SWC:
+  case neutu3d::ERendererLayer::SWC:
     return "SWC";
-  case neutube3d::ERendererLayer::PUNCTA:
+  case neutu3d::ERendererLayer::PUNCTA:
     return "Puncta";
-  case neutube3d::ERendererLayer::SURFACE:
+  case neutu3d::ERendererLayer::SURFACE:
     return "Surface";
-  case neutube3d::ERendererLayer::TODO:
+  case neutu3d::ERendererLayer::TODO:
     return "Todo";
-  case neutube3d::ERendererLayer::VOLUME:
+  case neutu3d::ERendererLayer::VOLUME:
     return "Volume";
-  case neutube3d::ERendererLayer::MESH:
+  case neutu3d::ERendererLayer::MESH:
     return "Mesh";
-  case neutube3d::ERendererLayer::ROI:
+  case neutu3d::ERendererLayer::ROI:
     return "ROI";
-  case neutube3d::ERendererLayer::DECORATION:
+  case neutu3d::ERendererLayer::DECORATION:
     return "Decoration";
-  case neutube3d::ERendererLayer::SLICE:
+  case neutu3d::ERendererLayer::SLICE:
     return "Slice";
   }
 
   return "";
 }
 
-void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
+void Z3DView::updateDocData(neutu3d::ERendererLayer layer)
 {
-  if (layer == neutube3d::ERendererLayer::VOLUME) {
+  if (layer == neutu3d::ERendererLayer::VOLUME) {
     updateVolumeData();
   } else {
     ZStackDoc3dHelper::UpdateViewData(this, layer);
@@ -1061,7 +1064,7 @@ void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
 }
 
 QPointF Z3DView::getScreenProjection(
-    double x, double y, double z, neutube3d::ERendererLayer layer)
+    double x, double y, double z, neutu3d::ERendererLayer layer)
 {
   QPointF pt(0, 0);
 

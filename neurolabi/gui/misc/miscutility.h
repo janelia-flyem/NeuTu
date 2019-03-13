@@ -89,6 +89,8 @@ double SampleStack(const Stack *stack, double x, double y, double z,
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
+
+ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 }
 
 //// partial-specialization optimization for 8-bit numbers

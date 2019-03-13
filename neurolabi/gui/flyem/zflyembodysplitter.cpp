@@ -4,6 +4,8 @@
 
 #include "common/neutube_def.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "mvc/zstackdoc.h"
@@ -103,6 +105,7 @@ void ZFlyEmBodySplitter::runSplit(
           doc->getObjectList(ZStackObjectRole::ROLE_SEED);
       if (seedList.size() > 1) {
         ZStackWatershedContainer container(NULL, NULL);
+        container.setProfileLogger(&neutu::LogProfileInfo);
         foreach (ZStackObject *seed, seedList) {
           container.addSeed(seed);
         }
@@ -133,7 +136,7 @@ void ZFlyEmBodySplitter::runSplit(
             std::vector<ZStackWatershedContainer*> containerList =
                 container.makeLocalSeedContainer(256);
 
-            ZOUT(LINFO(), 5) << containerList.size() << "containers";
+            KINFO << QString("%1 watershed containers").arg(containerList.size());
             for (ZStackWatershedContainer *subcontainer : containerList) {
               subcontainer->run();
               ZStackDocAccessor::ParseWatershedContainer(doc, subcontainer);
@@ -225,7 +228,14 @@ ZSparseStack* ZFlyEmBodySplitter::getBodyForSplit()
   }
 
   if (spStack == nullptr) {
+    QElapsedTimer timer;
+    timer.start();
     spStack = m_reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
+    neutu::LogProfileInfo(
+          timer.elapsed(),
+          "Load body for split: " + std::to_string(m_bodyId) + " " +
+          neutu::ToString(m_labelType));
+
     cacheBody(spStack);
   }
 

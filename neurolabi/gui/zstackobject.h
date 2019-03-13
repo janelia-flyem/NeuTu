@@ -6,7 +6,7 @@
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
-#include "common/zsharedpointer.h"
+//#include "common/zsharedpointer.h"
 
 class ZPainter;
 class ZIntCuboid;

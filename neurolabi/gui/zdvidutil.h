@@ -13,8 +13,6 @@ class ZDvidInfo;
 class ZIntCuboid;
 class ZDvidReader;
 
-#define DVID_UUID_COMMON_LENGTH 4
-
 namespace dvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
 libdvid::BinaryDataPtr MakeRequest(
@@ -44,6 +42,7 @@ libdvid::BinaryDataPtr MakePostRequest(
     const ZJsonObject &obj, int &statusCode);
 
 void MakeHeadRequest(const std::string &url, int &statusCode);
+bool HasHead(const std::string &url);
 
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);

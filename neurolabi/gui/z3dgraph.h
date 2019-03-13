@@ -110,7 +110,7 @@ private:
 
 class Z3DGraph;
 
-typedef ZSharedPointer<Z3DGraph> Z3DGraphPtr;
+typedef std::shared_ptr<Z3DGraph> Z3DGraphPtr;
 
 class Z3DGraph : public ZStackObject
 {
