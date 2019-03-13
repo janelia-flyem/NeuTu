@@ -845,7 +845,7 @@ void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
 
 void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
 {
-  getCompleteDocument()->setSupervoxelMode(on);
+  getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
 }
 
 bool ZFlyEmProofPresenter::processCustomOperator(

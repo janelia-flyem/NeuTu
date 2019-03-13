@@ -62,6 +62,29 @@ QSize get_canvas_size(const QStringList &text)
 
 }
 
+/************
+ * 0 -- 3
+ * |    |
+ * 1 -- 2
+ */
+void neutu::DrawText(
+    QPainter &painter, const QSize &windowSize, int cornerIndex,
+    const QStringList &text)
+{
+  QSize canvasSize = get_canvas_size(text);
+
+  QPoint pos(10, 1);
+  if (cornerIndex == 1 || cornerIndex == 2) {
+    pos.setY(std::max(0, windowSize.height() - canvasSize.height()));
+  }
+
+  if (cornerIndex == 2 || cornerIndex == 3) {
+    pos.setX(std::max(0, windowSize.width() - canvasSize.width()));
+  }
+
+  DrawText(painter, pos, text);
+}
+
 void neutu::DrawText(QPainter &painter, const QPoint &pos, const QString &text)
 {
   if (!text.isEmpty()) {

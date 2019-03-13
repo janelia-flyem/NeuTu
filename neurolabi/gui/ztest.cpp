@@ -29524,11 +29524,30 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
 
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvidTarget(reader->getDvidTarget());
+  doc.test();
+
+//  doc.setSupervoxelMode(true);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  ZDvidTarget target = reader->getDvidTarget();
+  target.setSupervoxelView(true);
+  labelSlice->setDvidTarget(target);
+  std::cout << labelSlice->isSupervoxel() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
