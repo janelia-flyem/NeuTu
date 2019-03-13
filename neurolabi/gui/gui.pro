@@ -1175,9 +1175,9 @@ SOURCES += main.cpp \
     dvid/zdvidbodyhelper.cpp \
     dvid/zdviddataslicetaskfactory.cpp \
     dvid/zdviddataslicetask.cpp \
-    z3dwindowcontroller.cpp \
-    zstackblockfactory.cpp \
     dvid/zdvidstackblockfactory.cpp \
+    z3dwindowcontroller.cpp \
+    zstackblockfactory.cpp \    
     zstackblocksource.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
