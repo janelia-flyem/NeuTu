@@ -22,7 +22,7 @@ void ZDvidLabelSliceHighresTask::execute()
             m_usingCenterCut)) {
         doc->prepareDvidLabelSlice(
               m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight,
-              m_usingCenterCut);
+              m_usingCenterCut, m_supervoxel);
 //        LDEBUG() << "Task executed in thread: " << QThread::currentThreadId();
       } else {
 //        LDEBUG() << "Task ignored in thread: " << QThread::currentThreadId();

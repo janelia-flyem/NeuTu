@@ -1159,7 +1159,6 @@ SOURCES += main.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
     zarbsliceviewparam.cpp \
-    dialogs/zneu3sliceviewdialog.cpp \
     znetbufferreader.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
@@ -1192,6 +1191,7 @@ SOURCES += main.cpp \
     dialogs/neuprintquerydialog.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
+    dialogs/zneu3sliceviewdialog.cpp \
     dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \

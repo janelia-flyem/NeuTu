@@ -387,6 +387,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_TOGGLE_SUPERVOXEL_VIEW:
     action = new QAction("View Supervoxel", parent);
+    action->setIcon(QIcon(":/images/view_supervoxel.png"));
+    action->setCheckable(true);
     break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy Position", parent);

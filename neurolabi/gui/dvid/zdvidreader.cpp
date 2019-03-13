@@ -3377,6 +3377,7 @@ void ZDvidReader::configureLowtis(T *config, const std::string &dataName) const
   config->dvid_uuid = getDvidTarget().getUuid();
   config->datatypename = dataName;
   config->enableprefetch = NeutubeConfig::LowtisPrefetching();
+  config->supervoxelview = getDvidTarget().isSupervoxelView();
 }
 
 #if defined(_ENABLE_LOWTIS_)

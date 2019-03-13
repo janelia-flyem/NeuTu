@@ -1172,7 +1172,9 @@ void ZFlyEmProofDoc::prepareDvidData()
 
   addDvidLabelSlice(neutu::EAxis::Z, false);
   if (getDvidTarget().hasSupervoxel()) {
-    addDvidLabelSlice(neutu::EAxis::Z, true);
+    ZDvidLabelSlice* slice = addDvidLabelSlice(neutu::EAxis::Z, true);
+    slice->setVisible(false);
+    slice->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
   }
 
   if (getDvidInfo().isValid()) {
@@ -1219,7 +1221,15 @@ void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
   prepareLabelSlice();
 }
 
-void ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
+bool ZFlyEmProofDoc::test()
+{
+  ZDvidLabelSlice *slice = addDvidLabelSlice(neutu::EAxis::Z, true);
+  std::cout << slice->isSupervoxel() << std::endl;
+
+  return true;
+}
+
+ZDvidLabelSlice* ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
   labelSlice->setSliceAxis(axis);
@@ -1246,6 +1256,8 @@ void ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
           new ZDvidLabelSliceHighresTaskFactory));
 
   addObject(labelSlice, 0, true);
+
+  return labelSlice;
 }
 
 
@@ -1291,7 +1303,7 @@ void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
 //    doc->processObjectModified(obj);
   }
 }
-
+#if 0
 template<>
 void UpdateDvidTargetForObject<ZDvidTileEnsemble>(ZFlyEmProofDoc *doc)
 {
@@ -1303,6 +1315,7 @@ void UpdateDvidTargetForObject<ZDvidTileEnsemble>(ZFlyEmProofDoc *doc)
 //    doc->processObjectModified(obj);
   }
 }
+#endif
 
 }
 
@@ -1317,11 +1330,11 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   }
   */
 //  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
-  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
+//  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
   UpdateDvidTargetForObject<ZDvidSparseStack>(this);
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
   UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
-  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+//  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
   UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
 //  processObjectModified();
@@ -1353,14 +1366,18 @@ bool ZFlyEmProofDoc::isSupervoxelMode() const
   return m_supervoxelMode;
 }
 
-void ZFlyEmProofDoc::setSupervoxelMode(bool on)
+void ZFlyEmProofDoc::setSupervoxelMode(bool on, const ZStackViewParam &viewParam)
 {
   m_supervoxelMode = on;
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
   for (ZDvidLabelSlice *slice : teList) {
-    if (slice->isSupervoxel() == m_supervoxelMode) {
+#ifdef _DEBUG_
+    std::cout << "Slice: " << slice->getSource() << " "
+              << slice->isSupervoxel() << std::endl;
+#endif
+    if (slice->isSupervoxel() == on) {
       slice->setVisible(true);
-      slice->forceUpdate(true);
+      slice->update(viewParam);
       bufferObjectModified(slice);
     } else {
       slice->setVisible(false);
@@ -2367,18 +2384,29 @@ void ZFlyEmProofDoc::backupMergeOperation()
 
 void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool usingCenterCut)
+    bool usingCenterCut, bool sv)
 {
-  if (!m_workWriter.good()) {
-    m_workWriter.open(getDvidTarget());
+  const ZDvidReader *reader = nullptr;
+  if (sv) {
+    if (!m_supervoxelWorkReader.good()) {
+      ZDvidTarget target = getDvidTarget();
+      target.setSupervoxelView(true);
+      m_supervoxelWorkReader.open(target);
+    }
+    reader = &m_supervoxelWorkReader;
+  } else {
+    if (!m_workWriter.good()) {
+      m_workWriter.open(getDvidTarget());
+    }
+    reader = &m_workWriter.getDvidReader();
   }
 
   ZArray *array = NULL;
 
-  if (m_workWriter.good()) {
+  if (reader->good()) {
     if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
-      array = m_workWriter.getDvidReader().readLabels64Lowtis(
+      array = reader->readLabels64Lowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
             svp.getWidth(), svp.getHeight(),
             zoom, centerCutX, centerCutY, usingCenterCut);
@@ -2392,7 +2420,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 //      }
 
       if (!box.isEmpty()) {
-        array = m_workWriter.getDvidReader().readLabels64Lowtis(
+        array = reader->readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);

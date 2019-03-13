@@ -78,7 +78,7 @@ public:
   ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
 
   bool isSupervoxelMode() const;
-  void setSupervoxelMode(bool on);
+  void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
 
   ZDvidGraySlice* getDvidGraySlice() const;
   ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
@@ -453,9 +453,8 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
-  void prepareDvidLabelSlice(
-      const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
@@ -473,6 +472,8 @@ public:
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void uploadUserDataConfig();
+
+  bool test();
 
 public:
   virtual void executeAddTodoCommand(
@@ -617,7 +618,7 @@ protected:
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
-  void addDvidLabelSlice(neutu::EAxis axis, bool sv);
+  ZDvidLabelSlice *addDvidLabelSlice(neutu::EAxis axis, bool sv);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
   void setRoutineCheck(bool on);
@@ -706,6 +707,7 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
 
   ZDvidWriter m_workWriter;
+  ZDvidReader m_supervoxelWorkReader;
   ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
