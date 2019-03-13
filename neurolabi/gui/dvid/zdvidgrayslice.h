@@ -1,6 +1,8 @@
 #ifndef ZDVIDGRAYSLICE_H
 #define ZDVIDGRAYSLICE_H
 
+#include <memory>
+
 #include "zstackobject.h"
 #include "zimage.h"
 //#include "zdvidreader.h"
