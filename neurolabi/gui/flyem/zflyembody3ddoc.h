@@ -10,7 +10,7 @@
 #include <QTime>
 
 #include "common/neutube_def.h"
-#include "dvid/zdvidtarget.h"
+
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
@@ -135,7 +135,7 @@ public:
 //  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return getMainDvidReader().getDvidTarget();
   }
 
   const ZDvidReader& getMainDvidReader() const;
@@ -401,6 +401,7 @@ signals:
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  bool _loadFile(const QString &filePath) override;
 
 private:
   ZStackObject* retriveBodyObject(
@@ -570,7 +571,7 @@ private:
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_workDvidReader;
   ZDvidWriter m_mainDvidWriter;
   ZDvidReader m_bodyReader;

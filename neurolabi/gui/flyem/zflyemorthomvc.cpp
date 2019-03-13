@@ -20,12 +20,12 @@ ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
 
 void ZFlyEmOrthoMvc::init()
 {
-  m_dvidDlg = NULL;
-  m_bodyInfoDlg = NULL;
+//  m_dvidDlg = NULL;
+//  m_bodyInfoDlg = NULL;
 //  m_supervisor = new ZFlyEmSupervisor(this);
-  m_splitCommitDlg = NULL;
+//  m_splitCommitDlg = NULL;
 
-  m_objectWindow = NULL;
+//  m_objectWindow = NULL;
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
@@ -121,8 +121,9 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
   if (doc != NULL) {
     ZDvidReader &reader = doc->getDvidReader();
     if (reader.isReady()) {
-      ZJsonObject contrastObj = reader.readContrastProtocal();
-      getPresenter()->setHighContrastProtocal(contrastObj);
+//      ZJsonObject contrastObj = reader.readContrastProtocal();
+      getPresenter()->setHighContrastProtocal(
+            doc->getContrastProtocol().toJsonObject());
 //      enableSynapseFetcher();
     }
 

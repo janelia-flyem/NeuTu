@@ -1,6 +1,8 @@
 #include "taskbodymerge.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidurl.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodyconfig.h"
 #include "flyem/zflyemproofdoc.h"

@@ -441,12 +441,16 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/1234/bodies2_skeletons",
             dvidUrl4.getSkeletonUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/1234/branches/key/master",
+            dvidUrl4.getOldMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/repo/1234/branch-versions/master",
             dvidUrl4.getMasterUrl());
 
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2_skeletons",
             dvidUrl4.getSkeletonUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/branches/key/master",
+            dvidUrl4.getOldMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/repo/3456/branch-versions/master",
             dvidUrl4.getMasterUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
             dvidUrl4.getDefaultDataInstancesUrl());
@@ -682,6 +686,16 @@ TEST(ZDvidTest, ZDvidNode)
         "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
   ASSERT_FALSE(node.isMock());
   ASSERT_EQ("http:emdata2.int.janelia.org:9000:3456", node.getSourceString(true));
+
+  node.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/123456789/branches/key/master");
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:123", node.getSourceString(true, 3));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:1234", node.getSourceString(true, 4));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:12345", node.getSourceString(true, 5));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, 30));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, 0));
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, -1));
 
   node.setFromUrl(
         "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");

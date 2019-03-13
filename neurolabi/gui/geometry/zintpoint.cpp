@@ -33,6 +33,22 @@ void ZIntPoint::set(int x, int y, int z)
   m_z = z;
 }
 
+int ZIntPoint::getValue(neutu::EAxis axis) const
+{
+  switch (axis) {
+  case neutu::EAxis::X:
+    return m_x;
+  case neutu::EAxis::Y:
+    return m_y;
+  case neutu::EAxis::Z:
+    return m_z;
+  default:
+    break;
+  }
+
+  return 0;
+}
+
 const int& ZIntPoint::operator [](int index) const
 {
   TZ_ASSERT(index >= 0 && index < 3, "Invalid index");

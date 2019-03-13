@@ -3,7 +3,10 @@
 
 #include <QDialog>
 #include <QGraphicsScene>
+
 #include "flyem/zflyembodysplitproject.h"
+#include "flyem/zflyembookmarklistmodel.h"
+
 #include "dvid/zdvidtarget.h"
 #include "zmessageprocessor.h"
 

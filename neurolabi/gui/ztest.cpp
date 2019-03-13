@@ -223,6 +223,7 @@
 
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "flyem/flyemdatareader.h"
 
 //#include "zcircle.h"
 
@@ -16359,7 +16360,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidTarget target("emdata4.int.janelia.org", "a21a", 8900);
   ZDvidReader reader;
   reader.open(target);
 
@@ -29420,6 +29421,10 @@ void ZTest::test(MainWindow *host)
   std::cout << "Segment number: " << obj.getSegmentNumber() << std::endl;
 #endif
 
+#if 1
+  std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
+#endif
+
 #if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
@@ -29512,6 +29517,19 @@ void ZTest::test(MainWindow *host)
   qDebug() << neuopentracing::ToString(neuopentracing::Value(1));
   qDebug() << neuopentracing::ToString(neuopentracing::Value(true));
   qDebug() << neuopentracing::ToString(neuopentracing::Value("test"));
+
+#endif
+
+#if 0
+  ZObject3dScan *obj = flyem::LoadRoiFromJson(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
+  config.print();
 
 #endif
 

@@ -29,7 +29,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstackmvc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "dvid/zdvidsparsestack.h"
+//#include "dvid/zdvidsparsestack.h"
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
 #include "zstackdocselector.h"
@@ -3815,7 +3815,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
   processed = processCustomOperator(op, &interactionEvent) || processed;
 //  }
 
-  processEvent(interactionEvent);
+  if (interactionEvent.getEvent() != ZInteractionEvent::EVENT_NULL) {
+    processEvent(interactionEvent);
+  }
 
   return processed;
 }

@@ -5,10 +5,12 @@
 #include <QElapsedTimer>
 
 #include "logging/zqslog.h"
+#include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "neutubeconfig.h"
+#include "dvid/zdvidurl.h"
+
 
 ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
   QObject(parent)

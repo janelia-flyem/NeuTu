@@ -9,21 +9,35 @@
 #include <QElapsedTimer>
 #include <sstream>
 
+#include "common/utilities.h"
+
 #include "neutubeconfig.h"
-#include "dvid/zdvidlabelslice.h"
-#include "dvid/zdvidreader.h"
+
 #include "zstackobjectsourcefactory.h"
-#include "dvid/zdvidtileensemble.h"
-#include "dvid/zdvidlabelslice.h"
 #include "zstackfactory.h"
-#include "dvid/zdvidsparsestack.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidsparsevolslice.h"
+
 #include "zwidgetmessage.h"
 #include "flyem/zflyemsupervisor.h"
 #include "zpuncta.h"
+#include "zstackdocaccessor.h"
+
+#include "dvid/zdviddataslicehelper.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsynapsecommand.h"
+#include "dvid/zflyembookmarkcommand.h"
+#include "dvid/zdvidannotation.h"
+#include "dvid/zdvidannotationcommand.h"
+#include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidreader.h"
+
 //#include "zflyemproofmvc.h"
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
@@ -33,12 +47,6 @@
 #include "zdialogfactory.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidsynapsecommand.h"
-#include "dvid/zflyembookmarkcommand.h"
-#include "dvid/zdvidannotation.h"
-#include "dvid/zdvidannotationcommand.h"
-#include "dvid/zdvidgrayslice.h"
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
@@ -54,7 +62,6 @@
 #include "zmeshfactory.h"
 #include "zswctree.h"
 #include "zflyemroutinechecktask.h"
-#include "dvid/zdviddataslicehelper.h"
 #include "zarray.h"
 #include "zflyembodymanager.h"
 #include "zmesh.h"
@@ -62,6 +69,10 @@
 #include "flyem/zflyembodystatus.h"
 #include "zflyemroimanager.h"
 #include "logging/zlog.h"
+#include "zfiletype.h"
+#include "flyemdatareader.h"
+#include "flyemdatawriter.h"
+#include "misc/miscutility.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -132,7 +143,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
-          getDvidReader().readBodyAnnotation(bodyId);
+          FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
       recordAnnotation(bodyId, annotation);
 
       if (!annotation.isEmpty()) {  
@@ -853,6 +864,16 @@ bool ZFlyEmProofDoc::isDvidMutable() const
   return (getDvidTarget().readOnly() == false);
 }
 
+ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
+{
+  if (!m_bookmarkReader.isReady()) {
+    KINFO << "Open bookmark reader";
+    m_bookmarkReader.openRaw(getDvidReader().getDvidTarget());
+  }
+
+  return m_bookmarkReader;
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
@@ -891,6 +912,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
         }
       }
     }
+
+    updateDataConfig();
 
     flowInfo << "->Read DVID Info";
     readInfo();
@@ -973,6 +996,32 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
   emit bodySelectionChanged();
 }
 
+void ZFlyEmProofDoc::updateDataConfig()
+{
+  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
+  m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
+}
+
+const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
+{
+  return m_dataConfig.getContrastProtocol();
+}
+
+void ZFlyEmProofDoc::setContrastProtocol(const ZJsonObject &obj)
+{
+  m_dataConfig.loadContrastProtocol(obj);
+}
+
+void ZFlyEmProofDoc::uploadUserDataConfig()
+{
+  FlyEmDataWriter::UploadUserDataConfig(getDvidWriter(), m_dataConfig);
+}
+
+const ZFlyEmBodyAnnotationMerger& ZFlyEmProofDoc::getBodyStatusProtocol() const
+{
+  return m_dataConfig.getBodyStatusProtocol();
+}
+
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
   m_dvidReader.updateMaxLabelZoom();
@@ -1021,6 +1070,40 @@ void ZFlyEmProofDoc::readInfo()
   KINFO << startLog;
 }
 
+void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
+{
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+      std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
+#endif
+      obj->setColor(0, 255, 0);
+      obj->setZOrder(2);
+      obj->setTarget(ZStackObject::ETarget::WIDGET);
+      obj->useCosmeticPen(true);
+      obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+      obj->useCosmeticPen(true);
+      //          obj->setDsIntv(31, 31, 31);
+      obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
+//        obj->setHittable(false);
+      obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+      //      addObject(obj);
+      m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+      m_dataBuffer->deliver();
+
+
+      ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+      mesh->setSource(obj->getSource());
+      m_dataBuffer->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+      m_dataBuffer->deliver();
+
+      //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
+    } else {
+      delete obj;
+    }
+  }
+}
+
 void ZFlyEmProofDoc::loadRoiFunc()
 {
   if (!getDvidTarget().getRoiName().empty()) {
@@ -1029,29 +1112,8 @@ void ZFlyEmProofDoc::loadRoiFunc()
     }
     ZObject3dScan *obj =
         m_roiReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
-    if (obj != NULL) {
-      if (!obj->isEmpty()) {
-#ifdef _DEBUG_
-        std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
-#endif
-        obj->setColor(0, 255, 0);
-        obj->setZOrder(2);
-        obj->setTarget(ZStackObject::ETarget::WIDGET);
-        obj->useCosmeticPen(true);
-        obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
-        obj->useCosmeticPen(true);
-        //          obj->setDsIntv(31, 31, 31);
-        obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
-//        obj->setHittable(false);
-        obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
-        //      addObject(obj);
-        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
-        m_dataBuffer->deliver();
-        //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
-      } else {
-        delete obj;
-      }
-    }
+
+    addRoiMask(obj);
   }
 }
 
@@ -1119,8 +1181,9 @@ void ZFlyEmProofDoc::initTileData()
   ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
   ensemble->setDvidTarget(getDvidTarget().getTileTarget());
-  ZJsonObject obj = m_dvidReader.readContrastProtocal();
-  ensemble->setContrastProtocal(obj);
+  ensemble->setContrastProtocal(m_dataConfig.getContrastProtocol().toJsonObject());
+//  ZJsonObject obj = m_dvidReader.readContrastProtocal();
+//  ensemble->setContrastProtocal(obj);
   addObject(ensemble, true);
 }
 
@@ -2173,7 +2236,8 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
   ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (m_dvidReader.isReady()) {
-    ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
+    ZFlyEmBodyAnnotation annotation =
+        FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
     if (annotation.isFinalized()) {
       return false;
     }
@@ -3181,19 +3245,18 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
-  ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
+  KINFO << "Importing flyem bookmarks";
 
   QList<ZFlyEmBookmark*> bookmarkList;
 
   m_loadingAssignedBookmark = true;
 
-  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+//  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   if (!filePath.empty()) {
-//    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
-#if 1
+    //    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
-    ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
-    std::vector<ZStackObject*> removed;
+    KINFO << QString("%1 bookmarks").arg(objList.size());
+//    std::vector<ZStackObject*> removed;
 
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -3201,23 +3264,69 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-          ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
-          removeObject(*iter, false);
-          removed.push_back(*iter);
+//          ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
+//          removeObject(*iter, false);
+          ZStackDocAccessor::RemoveObject(this, obj, true);
+//          removed.push_back(obj);
         }
       }
     }
-#endif
 
-    ZJsonObject obj;
+    ZJsonObject jsonObj;
 
-    obj.load(filePath);
+    jsonObj.load(filePath);
 
-    ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    QList<ZStackObject*> addedList;
+
+    ZJsonArray bookmarkArrayObj(jsonObj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     QList<ZFlyEmBookmark*> nullIdBookmarkList;
     for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
       ZJsonObject bookmarkObj(bookmarkArrayObj.at(i),
                               ZJsonValue::SET_INCREASE_REF_COUNT);
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      if (bookmark->loadJsonObject(bookmarkObj)) {
+        if (getBookmarkReader().isBookmarkChecked(
+              bookmark->getCenter().toIntPoint())) {
+          bookmark->setChecked(true);
+        }
+        bookmark->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+        bookmark->setCustom(false);
+        //            addCommand->addBookmark(bookmark);
+//        KINFO << "Adding bookmark:" << neutu::ToString(bookmark);
+        bookmarkList.append(bookmark);
+        if (bookmark->getBodyId() <= 0) {
+          nullIdBookmarkList.append(bookmark);
+        }
+        addedList.append(bookmark);
+//        addObject(bookmark);
+      }
+    }
+
+    readBookmarkBodyId(nullIdBookmarkList);
+
+    ZStackDocAccessor::AddObject(this, addedList);
+  }
+
+    //    pushUndoCommand(command);
+
+  /*
+  for (std::vector<ZStackObject*>::iterator iter = removed.begin();
+       iter != removed.end(); ++iter) {
+    ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
+    delete *iter;
+  }
+  */
+//  endObjectModifiedMode();
+
+//  processObjectModified();
+
+  m_loadingAssignedBookmark = false;
+
+  KINFO << "Bookmark imported";
+
+  return bookmarkList;
+
+#if 0
       ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
       text.toLower();
       if (bookmarkObj["location"] != NULL) {
@@ -3264,26 +3373,8 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
       }
     }
+#endif
 
-    readBookmarkBodyId(nullIdBookmarkList);
-
-//    pushUndoCommand(command);
-
-    for (std::vector<ZStackObject*>::iterator iter = removed.begin();
-         iter != removed.end(); ++iter) {
-      ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
-      delete *iter;
-    }
-  }
-  endObjectModifiedMode();
-
-  processObjectModified();
-
-  m_loadingAssignedBookmark = false;
-
-  ZOUT(LINFO(), 3) << "Bookmark imported";
-
-  return bookmarkList;
 }
 
 QString ZFlyEmProofDoc::getInfo() const
@@ -3828,7 +3919,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
     ZIntCuboidObj *roi = getSplitRoi();
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3848,7 +3939,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-        cuboid = flyem::EstimateSplitRoi(seedMask.getBoundBox());
+        cuboid = misc::EstimateSplitRoi(seedMask.getBoundBox());
       }
     } else {
       cuboid = roi->getCuboid();
@@ -4810,6 +4901,33 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   }
 
   return bookmark;
+}
+
+bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
+{
+  switch (ZFileType::FileType(filePath.toStdString())) {
+  case ZFileType::EFileType::SWC: {
+    std::unique_ptr<ZSwcTree> tree = std::make_unique<ZSwcTree>();
+    tree->load(filePath.toStdString());
+    if (!tree->isEmpty()) {
+      tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
+      tree->setColor(QColor(255, 0, 0));
+      addObject(tree.release());
+
+      return true;
+    }
+  }
+    break;
+  case ZFileType::EFileType::JSON: {
+    ZObject3dScan *obj = flyem::LoadRoiFromJson(filePath.toStdString());
+    addRoiMask(obj);
+  }
+    break;
+  default:
+    break;
+  }
+
+  return false;
 }
 
 void ZFlyEmProofDoc::diagnose() const

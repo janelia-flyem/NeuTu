@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
+#include "tz_math.h"
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "tz_error.h"
@@ -22,7 +24,7 @@
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
-#include "tz_math.h"
+#include "flyemdatareader.h"
 
 using namespace std;
 
@@ -180,7 +182,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         bool traced = false;
 
         if (annotationSet.count(bodyId) > 0) {
-          ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+          ZFlyEmBodyAnnotation annotation =
+              FlyEmDataReader::ReadBodyAnnotation(fdReader, bodyId);
           name = annotation.getName();
 
           if (!annotation.getType().empty()) {
@@ -224,7 +227,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
          iter != annotationSet.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(fdReader, bodyId);
         std::string name = annotation.getName();
 
         bool goodNeuron = true;

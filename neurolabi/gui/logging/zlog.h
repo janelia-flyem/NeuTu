@@ -21,6 +21,7 @@ public:
   virtual void log(
       const std::string &key, const neuopentracing::Value &value, bool appending);
   virtual void end();
+  virtual bool hasTag(const std::string &key) const;
 
   bool isStarted() const { return m_started; }
 
@@ -149,6 +150,7 @@ public:
   void log(const std::string &key, const neuopentracing::Value &value,
            bool appending) override;
   void end() override;
+  bool hasTag(const std::string &key) const override;
 //  bool isStarted() const override;
 
   static void SetOperationName(const std::string &name);
@@ -168,6 +170,7 @@ public:
 //  KInfo();
 //  KInfo(bool localogging);
   using KLog::KLog;
+  using KLog::hasTag;
 
   KInfo& operator << (const char *info);
   KInfo& operator << (const std::string &info);

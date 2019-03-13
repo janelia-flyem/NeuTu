@@ -45,25 +45,25 @@ public:
   ~Z3DView();
 
 public: //utilties
-  static std::string GetLayerString(neutube3d::ERendererLayer layer);
+  static std::string GetLayerString(neutu3d::ERendererLayer layer);
 
 public: //properties
-  void setZScale(neutube3d::ERendererLayer layer, double scale);
-  void setScale(neutube3d::ERendererLayer layer, double sx, double sy, double sz);
+  void setZScale(neutu3d::ERendererLayer layer, double scale);
+  void setScale(neutu3d::ERendererLayer layer, double sx, double sy, double sz);
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
-  void setOpacity(neutube3d::ERendererLayer layer, double opacity);
-  void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
+  void setOpacity(neutu3d::ERendererLayer layer, double opacity);
+  void setOpacityQuietly(neutu3d::ERendererLayer layer, double opacity);
 //  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
-  bool isLayerVisible(neutube3d::ERendererLayer layer) const;
-  void setFront(neutube3d::ERendererLayer layer, bool on);
+  void setLayerVisible(neutu3d::ERendererLayer layer, bool visible);
+  bool isLayerVisible(neutu3d::ERendererLayer layer) const;
+  void setFront(neutu3d::ERendererLayer layer, bool on);
 
-  void configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(neutube3d::ERendererLayer layer) const;
+  void configureLayer(neutu3d::ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(neutu3d::ERendererLayer layer) const;
   void configure(const ZJsonObject &obj);
 
-  const QList<neutube3d::ERendererLayer>& getLayerList() const {
+  const QList<neutu3d::ERendererLayer>& getLayerList() const {
     return m_layerList;
   }
 
@@ -72,7 +72,7 @@ public:
     return m_doc;
   }
 
-  void updateDocData(neutube3d::ERendererLayer layer);
+  void updateDocData(neutu3d::ERendererLayer layer);
   void updateCustomCanvas(const QImage &image);
   void updateCanvas();
 
@@ -145,8 +145,8 @@ public:
     return m_sliceFilter.get();
   }
 
-  Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
-  Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
+  Z3DGeometryFilter* getFilter(neutu3d::ERendererLayer layer) const;
+  Z3DBoundedFilter* getBoundedFilter(neutu3d::ERendererLayer layer) const;
 
   inline Z3DNetworkEvaluator& getNetworkEvaluator() {
     return *m_networkEvaluator;
@@ -163,7 +163,7 @@ public:
   template <typename T>
   std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(T *filter);
 
-  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(neutube3d::ERendererLayer layer);
+  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(neutu3d::ERendererLayer layer);
 
   std::shared_ptr<ZWidgetsGroup> globalParasWidgetsGroup();
 
@@ -199,11 +199,11 @@ public:
   { return m_boundBox; }
 
 public:
-  void setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box);
-  void resetCutBox(neutube3d::ERendererLayer layer);
+  void setCutBox(neutu3d::ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(neutu3d::ERendererLayer layer);
 
   QPointF getScreenProjection(
-      double x, double y, double z, neutube3d::ERendererLayer layer);
+      double x, double y, double z, neutu3d::ERendererLayer layer);
 
   ZJsonObject getSettings() const;
 
@@ -255,7 +255,7 @@ private:
   void initDecorationFilter();
   void initSliceFilter();
 
-  void addFilter(neutube3d::ERendererLayer layer);
+  void addFilter(neutu3d::ERendererLayer layer);
 
   void updateVolumeData();
 //  void updateSliceData();
@@ -298,7 +298,7 @@ private:
   std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 
   ZBBox<glm::dvec3> m_boundBox;
-  QList<neutube3d::ERendererLayer> m_layerList;
+  QList<neutu3d::ERendererLayer> m_layerList;
   std::vector<Z3DBoundedFilter*> m_allFilters;
 
 //  ZStackDoc3dHelper m_docHelper;

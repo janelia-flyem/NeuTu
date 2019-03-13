@@ -1,7 +1,10 @@
 #ifndef ZSTACKDOCPROXY_H
 #define ZSTACKDOCPROXY_H
 
-#include "mvc/zstackdoc.h"
+#include <QList>
+
+class ZStackDoc;
+class ZMesh;
 
 class ZStackDocProxy
 {
@@ -17,7 +20,6 @@ public:
   static QList<ZMesh*> GetNonRoiMeshList(const ZStackDoc *doc);
   static QList<ZMesh*> GetBodyMeshList(const ZStackDoc *doc);
   static QList<ZMesh*> GetRoiMeshList(ZStackDoc *doc);
-  static ZMesh* GetMeshForSplit(ZStackDoc *doc);
 };
 
 

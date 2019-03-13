@@ -932,9 +932,14 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
-std::string ZDvidUrl::getMasterUrl() const
+std::string ZDvidUrl::getOldMasterUrl() const
 {
   return getKeyUrl("branches", "master");
+}
+
+std::string ZDvidUrl::getMasterUrl() const
+{
+  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const
@@ -1258,6 +1263,11 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 
   return GetFullUrl(GetKeyCommandUrl(
         getDataUrl(ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION))), key);
+}
+
+std::string ZDvidUrl::getDataConfigUrl(const std::string &userName) const
+{
+  return getKeyUrl("neutu_config", "user_" + userName);
 }
 
 std::string ZDvidUrl::getSplitUrl(

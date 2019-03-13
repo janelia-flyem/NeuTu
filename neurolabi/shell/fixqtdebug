@@ -11,7 +11,7 @@ then
   cd $2
 fi
 
-libs="Core Gui Network OpenGL Xml PrintSupport Widgets Concurrent WebEngineWidgets WebEngineCore WebChannel Quick Qml"
+libs="Core Gui Network OpenGL Xml PrintSupport Widgets Concurrent WebEngineWidgets WebEngineCore WebChannel Quick Qml Positioning"
 for lib in $libs
 do
   libfile=lib${qt}${lib}.dylib

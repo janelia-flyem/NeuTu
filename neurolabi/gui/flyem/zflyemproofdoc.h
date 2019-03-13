@@ -8,8 +8,6 @@
 #include "zstackdoccommand.h"
 #include "common/zsharedpointer.h"
 
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -23,6 +21,7 @@
 #include "zflyemmb6analyzer.h"
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
+#include "flyemdataconfig.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -36,7 +35,7 @@ class ZFlyEmSynapseAnnotationDialog;
 class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 class ZFlyEmRoiManager;
-
+class ZStackBlockGrid;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -460,8 +459,13 @@ public:
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;
 
-
   void diagnose() const override;
+
+  const ZContrastProtocol& getContrastProtocol() const;
+  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  void updateDataConfig();
+  void setContrastProtocol(const ZJsonObject &obj);
+  void uploadUserDataConfig();
 
 public:
   virtual void executeAddTodoCommand(
@@ -616,6 +620,8 @@ protected:
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
 
+  bool _loadFile(const QString &filePath) override;
+
 private:
   void connectSignalSlot();
 
@@ -625,6 +631,7 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
+  void addRoiMask(ZObject3dScan *obj);
 
   std::set<uint64_t> getCurrentSelectedBodyId(neutu::ELabelSource type) const;
 
@@ -675,6 +682,8 @@ private:
 
   void warnSynapseReadonly();
 
+  ZDvidReader& getBookmarkReader();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
@@ -685,6 +694,7 @@ protected:
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
   ZDvidReader m_grayscaleReader;
+  ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
@@ -701,6 +711,8 @@ protected:
   ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
   ZJsonObject m_infoJson;
+
+  FlyEmDataConfig m_dataConfig;
 
   QTimer *m_routineTimer;
 

@@ -22,6 +22,8 @@ public:
   int getChannel() const;
 
   bool diagnosis() const;
+  bool overTracing() const;
+  bool screenSeed() const;
 
 private:
   bool usingDefaultLevel() const;

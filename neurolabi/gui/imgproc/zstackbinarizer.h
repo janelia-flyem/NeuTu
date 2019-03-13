@@ -44,6 +44,11 @@ public:
     m_minObjectSize = s;
   }
 
+  /*!
+   * \brief Get the threshold used in the most recent binarization operation.
+   */
+  int getActualThreshold() const;
+
 private:
   void binarizeByLocmax(Stack *stack);
   int *computeLocmaxHist(const Stack *stack);
@@ -60,6 +65,7 @@ private:
   int m_retryCount;
   int m_minObjectSize;
   double m_sigmaScale;
+  int m_actualThreshold;
 };
 
 #endif // ZSTACKBINARIZER_H
