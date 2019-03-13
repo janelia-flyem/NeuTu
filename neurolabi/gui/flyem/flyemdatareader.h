@@ -2,6 +2,7 @@
 #define FLYEMDATAREADER_H
 
 #include <vector>
+#include <cstdint>
 
 #include "dvid/zdviddef.h"
 

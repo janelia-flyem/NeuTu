@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <QColor>
 #include "geometry/zpoint.h"
 #include "zpointnetwork.h"

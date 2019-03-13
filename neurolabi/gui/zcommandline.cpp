@@ -1072,7 +1072,8 @@ int ZCommandLine::skeletonizeDvid()
   reader.updateMaxLabelZoom();
 
   ZDvidWriter writer;
-  ZDvidReader bodyReader;
+  ZDvidReader *bodyReader = &reader;
+  ZDvidReader mirrorReader;
 
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
@@ -1097,10 +1098,17 @@ int ZCommandLine::skeletonizeDvid()
     writer.open(reader.getDvidTarget());
     std::string mirror = reader.readMirror();
     ZDvidTarget target = reader.getDvidTarget();
+
     if (!mirror.empty()) {
       target.setServer(mirror);
+      if (mirrorReader.open(target)) {
+        bodyReader = &mirrorReader;
+      } else {
+        LWARN() << "The mirror server" << mirror
+                << "is down. Switched to the main server.";
+      }
     }
-    bodyReader.open(target);
+
 
     ZDvidUrl dvidUrl(reader.getDvidTarget());
 
@@ -1164,7 +1172,7 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      const int mid = bodyReader.readBodyMutationId(bodyId);
+      const int mid = bodyReader->readBodyMutationId(bodyId);
       if (!m_forceUpdate || mid > 0) {
         if (savingToFile) {
           if (outputFileInfo.exists()) {
@@ -1192,19 +1200,21 @@ int ZCommandLine::skeletonizeDvid()
         ZObject3dScan obj;
 
         int zoom = 0;
-        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
-          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+        if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader->readBodyBlockCount(bodyId);
           constexpr int maxBlockCount = 3000;
           int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
-          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+          zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
-        bodyReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+        bodyReader->readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
+
+
         if (tree != NULL) {
           if (mid > 0) {
             flyem::SetMutationId(tree, mid);
@@ -1212,7 +1222,20 @@ int ZCommandLine::skeletonizeDvid()
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            writer.writeSwc(bodyId, tree);
+            if (mid > 0) {
+              const int latestMid = bodyReader->readBodyMutationId(bodyId);
+
+              if (mid != latestMid) {
+                LWARN() << bodyId << ":" << mid << "->" << latestMid
+                        <<  "The body has been changed during skeletonization. "
+                            "No skeleton will be updated.";
+                delete tree;
+                tree = NULL;
+              }
+            }
+            if (tree != NULL) {
+              writer.writeSwc(bodyId, tree);
+            }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
