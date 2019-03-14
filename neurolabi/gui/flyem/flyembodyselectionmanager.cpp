@@ -42,6 +42,15 @@ void FlyEmBodySelectionManager::deselectAll()
   m_lastSelected = 0;
 }
 
+void FlyEmBodySelectionManager::xorSelection(uint64_t bodyId)
+{
+  if (isSelected(bodyId)) {
+    deselectBody(bodyId);
+  } else {
+    selectBody(bodyId);
+  }
+}
+
 uint64_t FlyEmBodySelectionManager::getLastSelected() const
 {
   return m_lastSelected;
