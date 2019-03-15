@@ -3918,9 +3918,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(
             width, height, offset, array->getDataPointer<char>(), zoom, centerCut);
 
       setStatusCode(200);
-    } catch (libdvid::DVIDException &e) {
+    } catch (std::exception &e) {
       LERROR() << e.what();
-      setStatusCode(e.getStatus());
+      setStatusCode(0);
+//      setStatusCode(e.getStatus());
 
       delete array;
       array = NULL;
