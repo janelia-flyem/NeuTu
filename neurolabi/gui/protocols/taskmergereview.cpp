@@ -396,9 +396,16 @@ QMenu *TaskMergeReview::getTaskMenu()
 
 bool TaskMergeReview::usePrefetching()
 {
-  // TODO: Figure out how to use prefetching more effectively.
+  if (m_bodyIds.empty()) {
+    setBodiesFromSuperVoxels();
+  }
 
-  return false;
+  m_visibleBodies.clear();
+  for (uint64_t id : m_bodyIds) {
+    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
+  }
+
+  return true;
 }
 
 const std::set<uint64_t>& TaskMergeReview::getBodyIds() const

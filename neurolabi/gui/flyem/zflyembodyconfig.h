@@ -72,6 +72,10 @@ public:
 
 //  bool usingCoarseSource() const;
 
+  // Indicates that the body meshes should be buffered (for prefetching).
+  void setAddBuffer(bool addBuffer = true);
+  bool getAddBuffer() const;
+
 private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
@@ -81,6 +85,8 @@ private:
   ZIntCuboid m_range;
   int m_dsLevel = 0;
   int m_localDsLevel = 0;
+
+  bool m_addBuffer = false;
 };
 
 #endif // ZFLYEMBODYCONFIG_H

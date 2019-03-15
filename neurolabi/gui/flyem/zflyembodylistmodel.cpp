@@ -148,11 +148,6 @@ void ZFlyEmBodyListModel::removeBody(uint64_t bodyId)
   }
 }
 
-void ZFlyEmBodyListModel::removeAllBodies()
-{
-  removeRows(0, rowCount(), QModelIndex());
-}
-
 QModelIndex ZFlyEmBodyListModel::getIndex(uint64_t bodyId) const
 {
   return index(getRow(bodyId));

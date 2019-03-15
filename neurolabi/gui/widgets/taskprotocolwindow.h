@@ -46,7 +46,7 @@ signals:
     //because it is used to trigger the operation of removing all bodies?
     //Similarly, bodyAdded can be addingBody
     void bodyAdded(uint64_t bodyId);
-    void allBodiesRemoved();
+    void bodyRemoved(uint64_t bodyId);
 
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
@@ -172,8 +172,8 @@ private:
     int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
-    void updateBodyWindow();
-    void disableButtonsWhileUpdating();
+    void updateBodyWindow(int taskIdBodiesToRemove = -1);
+    void disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove);
     void enableButtonsAfterUpdating();
     int getNext();
     int getNextUncompleted();
