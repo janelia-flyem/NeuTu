@@ -100,3 +100,13 @@ void ZFlyEmBodyConfig::setBodyId(uint64_t bodyId)
     m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
   }
 }
+
+void ZFlyEmBodyConfig::setAddBuffer(bool addBuffer)
+{
+  m_addBuffer = addBuffer;
+}
+
+bool ZFlyEmBodyConfig::getAddBuffer() const
+{
+  return m_addBuffer;
+}

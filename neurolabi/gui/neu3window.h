@@ -73,12 +73,6 @@ public slots:
   void removeBody(uint64_t bodyId);
 
   /*!
-   * \brief Remove all bodies from the current list, which can be more efficient
-   * than removing them one at a time.
-   */
-  void removeAllBodies();
-
-  /*!
    * \brief Add a body to the body list.
    */
   void addBody(uint64_t bodyId);

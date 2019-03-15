@@ -472,7 +472,7 @@ void Neu3Window::createTaskWindow() {
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
     connect(m_taskProtocolWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
-    connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
+    connect(m_taskProtocolWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
     connect(m_taskProtocolWidget, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
@@ -939,26 +939,6 @@ void Neu3Window::unloadBody(uint64_t bodyId)
 void Neu3Window::removeBody(uint64_t bodyId)
 {
   m_bodyListWidget->getModel()->removeBody(bodyId);
-}
-
-void Neu3Window::removeAllBodies()
-{
-  // Supress some expensive and unnecessary updates after each body removal.
-  DoingBulkUpdate doingBulkUpdate(this);
-
-  m_bodyListWidget->getModel()->removeAllBodies();
-
-  // With the optimized version of syncBodyListModel(), which no longer does the
-  // expensive operation of showing all the meshes from a tar archive in the
-  // ZBodyListWidget, the following steps are necessary.
-
-  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
-  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  for (ZMesh *mesh : meshList) {
-    dataDoc->deselectBody(mesh->getLabel());
-  }
-
-  getBodyDocument()->processBodySelectionChange();
 }
 
 void Neu3Window::test()

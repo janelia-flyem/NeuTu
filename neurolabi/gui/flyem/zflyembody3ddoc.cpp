@@ -98,7 +98,8 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
  */
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent)
+  ZStackDoc(parent),
+  m_workDvidReader(NUM_WORK_DVID_READERS)
 {
   initArbGraySlice();
 
@@ -1538,7 +1539,10 @@ void ZFlyEmBody3dDoc::addBody(const ZFlyEmBodyConfig &config)
   QMutexLocker locker(&m_BodySetMutex);
   uint64_t bodyId = config.getBodyId();
   if (!getBodyManager().contains(bodyId)) {
-    getBodyManager().registerBody(bodyId);
+    if (!config.getAddBuffer()) {
+      getBodyManager().registerBody(bodyId);
+    }
+
     ZFlyEmBodyConfig newConfig = config;
 
     if (getBodyType() == flyem::EBodyType::SKELETON) {
@@ -1546,6 +1550,7 @@ void ZFlyEmBody3dDoc::addBody(const ZFlyEmBodyConfig &config)
     } else {
       newConfig.setDsLevel(m_maxDsLevel);
     }
+
     addBodyFunc(newConfig);
   }
 }
@@ -1828,19 +1833,29 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
       }
 //      }
     }
-    getBodyManager().registerBody(config.getBodyId(), subbodySet);
+    if (!config.getAddBuffer()) {
+      getBodyManager().registerBody(config.getBodyId(), subbodySet);
+    } else {
+      getBodyManager().registerBufferedBody(config.getBodyId(), subbodySet);
+    }
   } else {
     getBodyManager().registerBody(config.getBodyId());
   }
 
   notifyBodyUpdated(config.getBodyId(), config.getDsLevel());
 
-  if (config.isTar()) {
+  if (config.isTar() && !config.getAddBuffer()) {
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
-    // the ID of the archive).
+    // the ID of the archive). But only if the meshes are not being buffered (for
+    // prefetching).
     LDEBUG() << "Emitting bodyMeshesAdded";
     emit bodyMeshesAdded(meshes.size());
+  }
+
+  if (config.getAddBuffer()) {
+    QString msg = QString("Done prefetching body %1").arg(config.getBodyId());
+    emit messageGenerated(ZWidgetMessage(msg));
   }
 
 #if 0
@@ -2500,7 +2515,10 @@ void ZFlyEmBody3dDoc::updateMeshFunc(
   int numMeshes = 0;
   if (config.isTar()) {
     for (ZMesh *mesh : meshes) {
-      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
+      ZStackDocObjectUpdate::EAction action =
+          config.getAddBuffer() ? ZStackDocObjectUpdate::EAction::ADD_BUFFER :
+                                  ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE;
+      getDataBuffer()->addUpdate(mesh, action);
     }
     config.setDsLevel(0);
     numMeshes = meshes.size();
@@ -2528,7 +2546,9 @@ void ZFlyEmBody3dDoc::updateMeshFunc(
   }
   getDataBuffer()->deliver();
 
-  emit bodyMeshLoaded(numMeshes);
+  if (!config.getAddBuffer()) {
+    emit bodyMeshLoaded(numMeshes);
+  }
 }
 
 void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
@@ -2969,6 +2989,11 @@ bool ZFlyEmBody3dDoc::isAgglo(uint64_t bodyId) const
   return getBodyManager().hasMapping(bodyId);
 }
 
+QSet<uint64_t> ZFlyEmBody3dDoc::getMappedSet(uint64_t bodyId) const
+{
+  return getBodyManager().getMappedSet(bodyId);
+}
+
 /*
 QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
 {
@@ -3237,6 +3262,25 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::getTarCachedMeshes(uint64_t bodyId)
     if ((int) recoveredMeshes.size() != meshIds.size()) {
       recoveredMeshes.clear();
     }
+  } else {
+    // Check for buffered (prefetched) meshes.
+
+    meshIds = getBodyManager().getBufferedMappedSet(bodyId);
+    if (!meshIds.empty()) {
+      for (uint64_t meshId : meshIds) {
+        ZStackObject *obj = takeObjectFromBuffer(
+              ZStackObject::EType::MESH,
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                meshId, 0, flyem::EBodyType::MESH));
+        if (ZMesh *mesh = dynamic_cast<ZMesh*>(obj)) {
+          recoveredMeshes.push_back(mesh);
+        }
+      }
+      if ((int) recoveredMeshes.size() != meshIds.size()) {
+        recoveredMeshes.clear();
+      }
+      getBodyManager().deregisterBufferedBody(bodyId);
+    }
   }
 
   return recoveredMeshes;
@@ -3358,8 +3402,9 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
   if (ZFlyEmBodyManager::encodesTar(config.getBodyId())) {
     if (ZFlyEmBodyManager::encodedLevel(config.getBodyId()) == 1) {
+      bool showProgress = !config.getAddBuffer();
       std::vector<ZMesh*> meshArray = makeTarMeshModels(
-            reader, config.getBodyId(), m_objectTime.elapsed());
+            reader, config.getBodyId(), m_objectTime.elapsed(), showProgress);
       if (meshArray.size() == 1) {
         mesh = meshArray[0];
       } else {
@@ -3474,17 +3519,21 @@ namespace {
 }
 
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
-    const ZDvidReader &reader, uint64_t bodyId, int t)
+    const ZDvidReader &reader, uint64_t bodyId, int t, bool showProgress)
 {
   std::vector<ZMesh*> resultVec;
 
-  emit meshArchiveLoadingStarted();
+  if (showProgress) {
+    emit meshArchiveLoadingStarted();
+  }
 
   // It is challenging to emit progress updates as m_dvidReader reads the data for the
   // tar archive, so just initialize the progress meter to show ani ntermediate status.
 
   const float PROGRESS_FRACTION_START = 1 / 3.0;
-  emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
+  if (showProgress) {
+    emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
+  }
 
   bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
 
@@ -3499,9 +3548,11 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     // The following lambda function updates the progress dialog during the decompression.
 
     auto progress = [=](size_t i, size_t n) {
-      float fraction = float(i) / n;
-      float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
-      emit meshArchiveLoadingProgress(progressFraction);
+      if (showProgress) {
+        float fraction = float(i) / n;
+        float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
+        emit meshArchiveLoadingProgress(progressFraction);
+      }
     };
 
     reader.readMeshArchiveAsync(arc, resultVec, progress);
@@ -3520,7 +3571,9 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
 
     reader.readMeshArchiveEnd(arc);
 
-    emit meshArchiveLoadingEnded();
+    if (showProgress) {
+      emit meshArchiveLoadingEnded();
+    }
   } else {
     QString title = "Mesh Loading Failed";
     uint64_t idUnencoded = ZFlyEmBodyManager::decode(bodyId);
@@ -3535,9 +3588,9 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
 }
 
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
-    uint64_t bodyId, int t)
+    uint64_t bodyId, int t, bool showProgress)
 {
-  return makeTarMeshModels(getWorkDvidReader(), bodyId, t);
+  return makeTarMeshModels(getWorkDvidReader(), bodyId, t, showProgress);
 }
 
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
@@ -3554,7 +3607,8 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
   if (result.empty()) {
     int t = m_objectTime.elapsed();
     if (config.isTar()) {
-      result = makeTarMeshModels(config.getBodyId(), t);
+      bool showProgress = !config.getAddBuffer();
+      result = makeTarMeshModels(config.getBodyId(), t, showProgress);
     } else {
       ZMesh *mesh = NULL;
 
@@ -3684,12 +3738,14 @@ const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
 void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 {
 //  m_dvidTarget = target;
-  m_workDvidReader.clear();
+  for (ZDvidReader& reader : m_workDvidReader) {
+    reader.clear();
+    reader.open(target);
+  }
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
 
   m_mainDvidWriter.open(target);
-  m_workDvidReader.open(getDvidTarget());
 
   updateDvidInfo();
 
@@ -3708,7 +3764,18 @@ const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
 
 const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
 {
-  return m_workDvidReader;
+  if (!m_workDvidReaderIndices.hasLocalData()) {
+    if (m_workDvidReaderNextIndex < NUM_WORK_DVID_READERS) {
+      QMutexLocker locker(&m_workDvidReaderNextIndexMutex);
+      m_workDvidReaderIndices.setLocalData(m_workDvidReaderNextIndex++);
+    } else {
+      ZWidgetMessage msg("ZFlyEmBody3dDoc::getWorkDvidReader(): more threads than expected, "
+                         "corruption is likely", neutu::EMessageType::WARNING,
+                         ZWidgetMessage::TARGET_TEXT_APPENDING | ZWidgetMessage::TARGET_KAFKA);
+      return m_workDvidReader.front();
+    }
+  }
+  return m_workDvidReader[m_workDvidReaderIndices.localData()];
 }
 
 void ZFlyEmBody3dDoc::updateDvidInfo()
