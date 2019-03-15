@@ -27114,7 +27114,7 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 1
+#if 0
   ZJsonObject obj;
   std::string dataDir = "/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data";
   obj.load(dataDir + "/_paper/neuron_type/data/data_bundle.json");
@@ -29527,6 +29527,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
+#endif
+
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
