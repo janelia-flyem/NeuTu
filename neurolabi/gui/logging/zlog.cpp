@@ -80,6 +80,10 @@ ZLog::Time::Time(uint64_t t) : Tag("time", t)
 {
 }
 
+ZLog::Level::Level(int level) : Tag("level", level)
+{
+}
+
 ZLog::Handle::Handle(void *p) : Tag("", "")
 {
   std::ostringstream stream;
@@ -124,6 +128,7 @@ const char* ZLog::Description::KEY = "description";
 const char* ZLog::Duration::KEY = "duration";
 const char* ZLog::Time::KEY = "time";
 const char* ZLog::Diagnostic::KEY = "diagnostic";
+const char* ZLog::Level::KEY = "level";
 
 std::string KLog::m_operationName = DEFAULT_OPERATION_NAME;
 
