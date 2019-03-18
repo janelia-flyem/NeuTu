@@ -119,6 +119,11 @@ public:
     Time(uint64_t);
   };
 
+  struct Level : public Tag {
+    static const char *KEY;
+    Level(int);
+  };
+
   struct Window : public Tag {
     Window(const std::string &value) : Tag("window", value) {}
   };
