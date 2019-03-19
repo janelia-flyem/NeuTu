@@ -1759,7 +1759,7 @@ std::size_t TaskBodyCleave::getIndexNotCleavedOff() const
   // supervoxels with index 0, which are the supervoxels that could not be assigned by the
   // cleaving server (because they are not reachable from the seeds).
 
-  std::size_t result = SIZE_MAX;
+  std::size_t result = std::numeric_limits<std::size_t>::max();
   for (auto it : m_meshIdToCleaveIndex) {
     std::size_t index = it.second;
     if (index != 0) {
