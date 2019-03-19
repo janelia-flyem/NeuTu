@@ -170,6 +170,9 @@ protected:
 
   void dolly(const glm::ivec2& mouseStart, const glm::ivec2& mouseEnd, int w, int h, float centerDistStart);
 
+private:
+  void log3DCameraEvent(const QString &action);
+
 protected:
   ZEventListenerParameter* m_rotateEvent;
   ZEventListenerParameter* m_shiftEvent;

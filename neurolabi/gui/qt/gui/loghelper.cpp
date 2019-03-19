@@ -140,3 +140,4 @@ void neutu::LogKeyReleaseEvent(QKeyEvent *event, const QString &window)
 {
   LogKeyEvent(event, "release", window);
 }
+
