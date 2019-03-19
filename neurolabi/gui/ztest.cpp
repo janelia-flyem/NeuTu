@@ -29541,10 +29541,15 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/data_status");
+
+  reader->readJsonObjectFromKey("neutu_config", "contrast");
   reader->readJsonObject(
         "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/contrast");
 
-  reader->readJsonObjectFromKey("neutu_config", "contrast");
+
 #endif
 
   std::cout << "Done." << std::endl;

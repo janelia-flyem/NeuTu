@@ -494,12 +494,14 @@ void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
   }
 }
 
+/*
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getAssignedBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {

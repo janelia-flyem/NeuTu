@@ -88,7 +88,7 @@ private slots:
   void goToPosition();
   void goToBody();
   void selectBody();
-  void locateAssignedBookmark(const QModelIndex &index);
+//  void locateAssignedBookmark(const QModelIndex &index);
   void locateUserBookmark(const QModelIndex &index);
   void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
