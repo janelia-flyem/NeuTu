@@ -266,6 +266,8 @@ public:
 
   void updateMeshForSelected();
 
+  void processAssignedInfo(int x, int y, int z);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
