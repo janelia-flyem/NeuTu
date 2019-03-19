@@ -2,34 +2,29 @@
 #define ZMULTISCALEMANAGEMENT_H
 
 #include <vector>
-#include <qtreeview.h>
+#include <string>
+#include <QTreeWidget>
+
 #include "zsandboxmodule.h"
 #include "zstack.hxx"
-#include "zsegmentationrepresentation.h"
+#include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "segment/zsegmentationtree.h"
 
-class QStandardItem;
-class QStandardItemModel;
+
+using std::string;
+using std::vector;
+
 class ZStack;
 class ZStackObject;
 class ZStackFrame;
 class QCheckBox;
 class QSpinBox;
+class QComboBox;
+class QLineEdit;
 
 
-/*
-class ZTreeView:public QTreeView
-{
-public:
-  ZTreeView(QWidget* parent):QTreeView::QTreeView(parent){}
- protected:
-  void  dropEvent(QDropEvent * event);
-  QStandardItem* deepCopy(QStandardItem* item);
-};*/
-
-
-class ZMultiscaleSegmentationWindow:public QWidget
-{
+class ZMultiscaleSegmentationWindow:public QWidget,public ZSegmentationTreeObserver{
   Q_OBJECT
 protected:
   ZMultiscaleSegmentationWindow();
@@ -38,44 +33,39 @@ public:
   static ZMultiscaleSegmentationWindow* instance();
   ~ZMultiscaleSegmentationWindow();
 
-  //void moveNode(QString label, QString new_parent_label);
-  //QStandardItem* findItemById(QStandardItem* root, int id);
-  //void clearTreeView();
-  //void selectNode(int id);
-  //void deselectNode(int id);
+public:
+  void selectNode(const string& id);
+  void deselectNode(const string& id);
+
+public:
+  virtual void update(const ZSegmentationTree* tree, const string& id);
 
 private slots:
   void onOpenStack();
   void onSegment();
-  /*void onAutoSegment();*/
-  //void onClear();
-  //void onExport();
-  //void onSelectNode(QModelIndex index);
-  //void onMerge();
-  //void onFlood();
-  //void onPromote();
+  void onNodeItemClicked(QTreeWidgetItem*,int);
+  void onMerge();
 
 private:
   std::vector<ZStackObject*> getSeeds();
-  //std::vector<ZStack*> seedsFromMaximum(ZStack* stack);
   void removeSeeds();
-  //QStandardItem* getSelectedNodeItem();
-  //void highLight(ZSegmentationNode* node);
+  void updateMask(const std::string& active_id);
+  void updateTreeView(const std::string& active_id);
+  void test();
 
 private:
   void init();
-  void initWidgets();
-public:
-  //ZSegmentationViewNode* m_root;
-  //ZTreeView* m_tree_view;
+
 private:
   ZStack* m_stack;
   ZStackFrame* m_frame;
-  ZSegmentationRepresentationDefault m_segmentation;
-  //QStandardItemModel* m_tree;
-  //QCheckBox* m_show_leaf;
-  //QCheckBox* m_leaky_boundary;
-  //QSpinBox *m_alpha, *m_beta;
+  shared_ptr<ZSegmentationTree> m_seg_tree;
+  QTreeWidget* m_view;
+  QComboBox* m_encoder_type;
+  string m_selected_id;
+  QLineEdit* m_merge_from;
+  QLineEdit* m_merge_to;
+
   static ZMultiscaleSegmentationWindow* s_window;
 };
 
@@ -92,10 +82,6 @@ private slots:
 
 private:
   void init();
-
-private:
-
-  //ZMultiscaleSegmentationWindow* m_window;
 };
 
 #endif // ZMULTISCALEMANAGEMENT_H
