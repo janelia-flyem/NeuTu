@@ -287,9 +287,9 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   waitForReading();
 #endif
 
-#ifdef _DEBUG_
-  STD_COUT << "Exiting " << "ZDvidBufferReader::read" << std::endl;
-#endif
+  KLOG << ZLog::Info()
+       << ZLog::Description("Exiting ZDvidBufferReader::read")
+       << ZLog::Level(2);
 }
 
 #if 0
