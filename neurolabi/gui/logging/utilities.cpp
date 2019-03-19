@@ -14,6 +14,19 @@ void LogUrlIO(const QString &action, const QString &url)
        << ZLog::Level(2);
 }
 
+void LogUrlIO(
+    const QString &action, const QString &url,  const QByteArray &payload)
+{
+  KLOG << ZLog::Info() << ZLog::Tag("action", action.toStdString())
+       << ZLog::Tag("url", url.toStdString())
+       << ZLog::Level(2);
+  if (!payload.isEmpty()) {
+    KLOG << ZLog::Info()
+         << ZLog::Description(
+              QString("Payload length: %1").arg(payload.length()).toStdString())
+         << ZLog::Level(2);
+  }
+}
 //void LogBodyOperation(
 //    const QString &action, uint64_t bodyId, EBodyLabelType labelType)
 //{

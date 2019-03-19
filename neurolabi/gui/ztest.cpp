@@ -29526,7 +29526,7 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
 #endif
@@ -29537,6 +29537,14 @@ void ZTest::test(MainWindow *host)
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
 
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/contrast");
+
+  reader->readJsonObjectFromKey("neutu_config", "contrast");
 #endif
 
   std::cout << "Done." << std::endl;
