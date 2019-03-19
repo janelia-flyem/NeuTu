@@ -990,6 +990,12 @@ void ZFlyEmProofMvc::makeBigOrthoWindow()
   makeOrthoWindow(1024, 1024, 1024);
 }
 
+void ZFlyEmProofMvc::zoomToAssigned(int x, int y, int z)
+{
+  getCompleteDocument()->processAssignedInfo(x, y, z);
+  zoomTo(x, y, z);
+}
+
 void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
     Z3DWindow *window, ZFlyEmBody3dDoc *doc)
 {

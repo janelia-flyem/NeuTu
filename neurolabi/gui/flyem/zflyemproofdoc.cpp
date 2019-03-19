@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "common/utilities.h"
+#include "logging/zlog.h"
 
 #include "neutubeconfig.h"
 
@@ -3547,6 +3548,21 @@ void ZFlyEmProofDoc::updateMeshForSelected()
     getDvidWriter().writeMesh(*mesh, bodyId, 0);
     delete mesh;
   }
+}
+
+void ZFlyEmProofDoc::processAssignedInfo(int x, int y, int z)
+{
+  uint64_t bodyId = getDvidReader().readBodyIdAt(x, y, z);
+  QString msg =  QString("Locating (%1, %2, %3) from assgined on %4").arg(x).arg(y)
+      .arg(z).arg(bodyId);
+
+
+  if (getDvidReader().getDvidTarget().hasSynapseLabelsz()) {
+    int count = getDvidReader().readSynapseLabelszBody(
+          bodyId, dvid::ELabelIndexType::ALL_SYN);
+    msg += QString(" (#synapses: %1)").arg(count);
+  }
+  KINFO << msg;
 }
 
 /*

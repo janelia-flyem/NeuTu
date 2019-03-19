@@ -203,6 +203,9 @@ public:
 //  void useLabelArray(bool on);
 //  void useLabelMap(bool on);
 
+  bool hasSynapse() const;
+  bool hasSynapseLabelsz() const;
+
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
   std::string getSegmentationName() const;

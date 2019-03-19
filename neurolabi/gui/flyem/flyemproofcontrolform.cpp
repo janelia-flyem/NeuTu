@@ -494,6 +494,15 @@ void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
   }
 }
 
+void FlyEmProofControlForm::locateAssignedBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingToAssigned(bookmark->getLocation().getX(),
+                           bookmark->getLocation().getY(),
+                           bookmark->getLocation().getZ());
+  }
+}
+
 /*
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
@@ -503,12 +512,14 @@ void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 }
 */
 
+/*
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
 void FlyEmProofControlForm::updateLatency(int t)
 {
