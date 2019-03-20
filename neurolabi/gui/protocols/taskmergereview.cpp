@@ -966,7 +966,7 @@ void TaskMergeReview::zoomToFitMeshes()
   double radius = 0;
   std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>() };
 
-  const size_t stride = 3;
+  const size_t stride = 5;
 
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
