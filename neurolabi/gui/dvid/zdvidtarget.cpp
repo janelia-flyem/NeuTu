@@ -924,7 +924,12 @@ bool ZDvidTarget::hasSynapse() const
 
 bool ZDvidTarget::hasSynapseLabelsz() const
 {
-  return !getSynapseLabelszName().empty();
+  return m_hasSynapseLabelsz && !getSynapseLabelszName().empty();
+}
+
+void ZDvidTarget::enableSynapseLabelsz(bool on)
+{
+  m_hasSynapseLabelsz = on;
 }
 
 void ZDvidTarget::TileConfig::loadJsonObject(const ZJsonObject &jsonObj)

@@ -205,6 +205,7 @@ public:
 
   bool hasSynapse() const;
   bool hasSynapseLabelsz() const;
+  void enableSynapseLabelsz(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
@@ -406,6 +407,7 @@ private:
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
   std::string m_grayScaleName;
+  bool m_hasSynapseLabelsz = true;
   std::string m_synapseLabelszName;
   std::string m_roiName;
   std::string m_todoListName;

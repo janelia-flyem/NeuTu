@@ -93,7 +93,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(coarseMeshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+          this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
