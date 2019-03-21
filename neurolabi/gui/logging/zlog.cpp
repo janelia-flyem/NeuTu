@@ -22,7 +22,7 @@
  * in a local log file.
  */
 
-ZLog::ZLog(bool localLogging) : m_localLogging(localLogging)
+ZLog::ZLog(EDestination dest) : m_dest(dest)
 {
 }
 
@@ -41,7 +41,8 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    if (m_localLogging) {
+    if (m_dest == EDestination::KAFKA_AND_LOCAL ||
+        m_dest == EDestination::AUTO) {
       LINFO_NLN() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
     }
     m_tags = QJsonObject();
@@ -142,7 +143,7 @@ void KLog::ResetOperationName()
   m_operationName = DEFAULT_OPERATION_NAME;
 }
 
-KLog::KLog(bool localLogging) : ZLog(localLogging)
+KLog::KLog(EDestination dest) : ZLog(dest)
 {
 }
 
@@ -180,6 +181,19 @@ void KLog::start()
   }
 
   ZLog::start();
+}
+
+bool KLog::localLogging() const
+{
+  bool local = (m_dest == EDestination::KAFKA_AND_LOCAL);
+
+  if (!local) {
+    if (!m_span) {
+      local = (m_dest == EDestination::AUTO);
+    }
+  }
+
+  return local;
 }
 
 void KLog::log(

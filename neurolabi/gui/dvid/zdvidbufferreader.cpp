@@ -3,17 +3,12 @@
 #include <exception>
 #include <iostream>
 
-//#include <QTimer>
-//#include <QNetworkRequest>
 #include <QDebug>
+
+#include "libdvidheader.h"
 
 #include "logging/utilities.h"
 #include "logging/zlog.h"
-
-//#include <QNetworkReply>
-//#include <QCoreApplication>
-
-#include "libdvidheader.h"
 
 #include "zsleeper.h"
 #include "znetbufferreader.h"
