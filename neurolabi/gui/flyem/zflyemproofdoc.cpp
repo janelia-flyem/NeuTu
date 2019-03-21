@@ -3553,7 +3553,7 @@ void ZFlyEmProofDoc::updateMeshForSelected()
 void ZFlyEmProofDoc::processAssignedInfo(int x, int y, int z)
 {
   uint64_t bodyId = getDvidReader().readBodyIdAt(x, y, z);
-  QString msg =  QString("Locating (%1, %2, %3) from assgined on %4").arg(x).arg(y)
+  QString msg =  QString("Locating (%1, %2, %3) from assigned on %4").arg(x).arg(y)
       .arg(z).arg(bodyId);
 
 
