@@ -1,6 +1,8 @@
 #ifndef ZDVIDBUFFERREADER_H
 #define ZDVIDBUFFERREADER_H
 
+#include <memory>
+
 //#include <QObject>
 #include <QByteArray>
 //#include <QNetworkAccessManager>

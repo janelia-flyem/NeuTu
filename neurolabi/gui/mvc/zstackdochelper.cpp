@@ -116,6 +116,7 @@ bool ZStackDocHelper::hasCurrentZ() const
   return m_hasCurrentZ;
 }
 
+#if 0
 ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
@@ -133,7 +134,7 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 
   return box;
 }
-
+#endif
 
 bool ZStackDocHelper::HasMultipleBodySelected(
     const ZFlyEmProofDoc *doc, neutu::ELabelSource type)

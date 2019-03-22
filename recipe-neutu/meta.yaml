@@ -29,6 +29,8 @@ requirements:
 
   host:
     - python >=3.6
+    - libcxx 4.0.1* # [osx]
+    - libcxxabi 4.0.1* # [osx]
     - qt      5* # [linux64]
     - qt      5.9* # [osx]
     - fftw    3.3*
@@ -36,8 +38,8 @@ requirements:
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post58
-    - libdvid-cpp >=cpp-0.3.post73
+    - lowtis  0.1.0.post62*
+    - libdvid-cpp  0.3.post72*
     - cmake
     - ninja 1.7.2*
     - tbb 2018_20171205.*
@@ -51,6 +53,8 @@ requirements:
 
   run:
     - python >=3.6
+    - libcxx 4.0.1* # [osx]
+    - libcxxabi 4.0.1* # [osx]
     - qt      5* # [linux64]
     - qt      5.9* # [osx]
     - fftw    3.3*
@@ -58,8 +62,8 @@ requirements:
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post58
-    - libdvid-cpp >=cpp-0.3.post73
+    - lowtis  0.1.0.post62*
+    - libdvid-cpp  0.3.post72*
     - tbb 2018_20171205.*
     - vtk 7.1*
     - assimp 4.0.1*

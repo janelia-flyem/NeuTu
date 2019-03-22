@@ -927,6 +927,21 @@ std::string ZDvidTarget::getBodyInfoName() const
                             getBodyLabelName());
 }
 
+bool ZDvidTarget::hasSynapse() const
+{
+  return !getSynapseName().empty();
+}
+
+bool ZDvidTarget::hasSynapseLabelsz() const
+{
+  return m_hasSynapseLabelsz && !getSynapseLabelszName().empty();
+}
+
+void ZDvidTarget::enableSynapseLabelsz(bool on)
+{
+  m_hasSynapseLabelsz = on;
+}
+
 void ZDvidTarget::TileConfig::loadJsonObject(const ZJsonObject &jsonObj)
 {
   if (jsonObj.hasKey("low_quality")) {
