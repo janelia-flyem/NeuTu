@@ -949,6 +949,14 @@ std::string ZDvidWriter::del(const std::string &url)
 std::string ZDvidWriter::post(
     const std::string &url, const std::string &payload, bool isJson)
 {
+  if (!payload.empty()) {
+    QString msg = QString("Posting %1").arg(payload.c_str()).left(100);
+    if (msg.size() > 100) {
+      msg += "...";
+    }
+    KINFO << msg;
+  }
+
   return post(url, payload.c_str(), payload.length(), isJson);
 }
 
