@@ -856,14 +856,17 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
         if (mergeVerified(newTargetId, newMerged)) {
           m_writer.mergeBody(newTargetId, newMerged);
-          mergeBodyAnnotation(newTargetId, newMerged);
 
           if (m_writer.getStatusCode() != 200) {
             emit messageGenerated(
                   ZWidgetMessage(
                     "Failed to upload merging results",
-                    neutu::EMessageType::ERROR));
+                    neutu::EMessageType::ERROR,
+                    ZWidgetMessage::TARGET_TEXT_APPENDING |
+                    ZWidgetMessage::TARGET_KAFKA));
           } else {
+            mergeBodyAnnotation(newTargetId, newMerged);
+
             updateAffliatedData(newTargetId, newMerged, warnMsg);
 
             if (oldSelection.count(newTargetId) > 0) {
