@@ -42,7 +42,7 @@ public:
     return m_sparseStackDsIntv;
   }
 
-  static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
+//  static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
 
 
 //  static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);

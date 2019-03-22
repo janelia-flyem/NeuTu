@@ -77,7 +77,8 @@ void neutu::LogMouseEvent(
   KLOG << ZLog::Interact()
        << ZLog::Window(window.toStdString())
        << ZLog::Action(action.toStdString())
-       << ZLog::Object("mouse", name);
+       << ZLog::Object("mouse", name)
+       << ZLog::Level(1);
 }
 
 void neutu::LogMouseEvent(QWheelEvent *event, const QString &window)
@@ -89,7 +90,8 @@ void neutu::LogMouseEvent(QWheelEvent *event, const QString &window)
        << ZLog::Window(window.toStdString())
        << ZLog::Action("scroll")
        << ZLog::Tag("value", event->delta())
-       << ZLog::Object("mouse", name);
+       << ZLog::Object("mouse", name)
+       << ZLog::Level(1);
 }
 
 void neutu::LogMouseDragEvent(QMouseEvent *event, const QString &window)
@@ -109,7 +111,8 @@ void neutu::LogMouseReleaseEvent(
     KLOG << ZLog::Interact()
          << ZLog::Window(window.toStdString())
          << ZLog::Action("release")
-         << ZLog::Object("mouse", name);
+         << ZLog::Object("mouse", name)
+         << ZLog::Level(1);
   }
 }
 
@@ -123,7 +126,8 @@ void neutu::LogKeyEvent(QKeyEvent *event, const QString &action, const QString &
     KLOG << ZLog::Interact()
          << ZLog::Window(window.toStdString())
          << ZLog::Action(action.toStdString())
-         << ZLog::Object("key", name);
+         << ZLog::Object("key", name)
+         << ZLog::Level(1);
   }
 }
 
@@ -136,3 +140,4 @@ void neutu::LogKeyReleaseEvent(QKeyEvent *event, const QString &window)
 {
   LogKeyEvent(event, "release", window);
 }
+

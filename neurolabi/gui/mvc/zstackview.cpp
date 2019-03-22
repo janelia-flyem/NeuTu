@@ -3144,7 +3144,8 @@ void ZStackView::logViewParam()
        << ZLog::Description("View changed to " + param.toString())
        << ZLog::Handle(this)
        << ZLog::Object("ZStackView")
-       << ZLog::Tag("parameter", neutu::ToQJsonValue(param.toJsonObject()));
+       << ZLog::Tag("parameter", neutu::ToQJsonValue(param.toJsonObject()))
+       << ZLog::Level(2);
 //       << ZLog::Tag("parameter", QJsonValue(jdoc.object()));
 }
 

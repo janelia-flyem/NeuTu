@@ -991,6 +991,12 @@ void ZFlyEmProofMvc::makeBigOrthoWindow()
   makeOrthoWindow(1024, 1024, 1024);
 }
 
+void ZFlyEmProofMvc::zoomToAssigned(int x, int y, int z)
+{
+  getCompleteDocument()->processAssignedInfo(x, y, z);
+  zoomTo(x, y, z);
+}
+
 void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
     Z3DWindow *window, ZFlyEmBody3dDoc *doc)
 {
@@ -1811,7 +1817,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
-  LINFO() << "Setting dvid env in ZFlyEmProofMvc";
+  KINFO << "Setting dvid env in ZFlyEmProofMvc";
 
   getProgressSignal()->startProgress("Loading data ...");
 
@@ -1846,7 +1852,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 //    ZJsonObject contrastObj = reader.readContrastProtocal();
 //    getPresenter()->setHighContrastProtocal(contrastObj);
 
-    LINFO() << "Init grayslice";
+    KINFO << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
 //      slice->updateContrast(getCompletePresenter()->highTileContrast());
@@ -1858,7 +1864,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getView()->setScrollStrategy(scrollStrategy);
     }
 
-    LINFO() << "Init tiles";
+    KINFO << "Init tiles";
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
@@ -1880,7 +1886,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   if (getRole() == ERole::ROLE_WIDGET) {
     if (getDvidTarget().isValid()) {
-      LINFO() << "Download annotations";
+      KINFO << "Download annotations";
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -1904,7 +1910,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   }
 
   if (m_dlgManager->isRoiDlgReady()) {
-    LINFO() << "Set ROI dialog";
+    KINFO << "Set ROI dialog";
     ZFlyEmRoiToolDialog *dlg = m_dlgManager->getRoiDlg();
     dlg->clear();
     dlg->updateDvidTarget();
@@ -1922,7 +1928,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
 
-  LINFO() << "DVID Ready";
+  KINFO << "DVID Ready";
   emit dvidReady();
 
   if (getRole() == ERole::ROLE_WIDGET) {
@@ -3399,7 +3405,7 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
 void ZFlyEmProofMvc::exitHighlightMode()
 {
-  ZOUT(LINFO(), 3) << "Exiting highlight mode";
+  KINFO << "Exiting highlight mode";
 
   getCompletePresenter()->setHighlightMode(false);
   highlightSelectedObject(false);
@@ -3413,7 +3419,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::getCachedBodyForSplit(uint64_t bodyId)
 ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     uint64_t bodyId, ZDvidReader &reader)
 {
-  ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
+  KINFO << QString("Reading sparse stack async: %1").arg(bodyId);
   ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, neutu::EBodyLabelType::BODY);
 
   body->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
@@ -3423,7 +3429,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
 //  body->setHittable(false);
   body->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
   body->setSelectable(false);
-  ZOUT(LINFO(), 3) << "Adding body:" << body;
+  KINFO << QString("Adding body: %1").arg(bodyId);
   getDocument()->addObject(body, true);
 
   return body;
@@ -4873,7 +4879,7 @@ void ZFlyEmProofMvc::clearUserBookmarkModel()
 
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
-  ZOUT(LINFO(), 3) << "Importing bookmarks";
+  KINFO << "Importing bookmarks from " + filePath + " ...";
 
   getProgressSignal()->startProgress("Importing bookmarks ...");
   //  m_splitProject.loadBookmark(filePath);
@@ -5398,8 +5404,7 @@ void ZFlyEmProofMvc::reportBodyCorruption()
                                        tr("Comment:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok) {
-    LINFO() << "***Body corrupted***";
-    QString message = "Current selected:";
+    QString message = "***Body corrupted*** Current selected:";
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     for (uint64_t id : bodySet) {
@@ -5410,8 +5415,7 @@ void ZFlyEmProofMvc::reportBodyCorruption()
         arg(ZDvidUrl(getDvidTarget()).getSparsevolUrl(0).c_str()).
         arg(pt.toString().c_str());
 
-    LINFO() << message;
-    LINFO() << "Comment:" << text;
+    KINFO << message + "; Comment: " + text;
   }
 }
 
@@ -6332,7 +6336,7 @@ void ZFlyEmProofMvc::retrieveRois()
   const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
-    ZOUT(LINFO(), 3) << "Loading ROIs";
+    KINFO << "Loading ROIs";
     QFuture<void> future =
         QtConcurrent::run(this, &ZFlyEmProofMvc::loadROIFunc);
     m_futureMap[threadId] = future;
