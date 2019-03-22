@@ -394,8 +394,8 @@ public:
                          int dim1, int dim2, int width, int height);
                          */
 
-  int readSynapseLabelszBody(
-      uint64_t bodyId, dvid::ELabelIndexType index) const;
+  int readSynapseLabelszBody(uint64_t bodyId, dvid::ELabelIndexType index) const;
+  QList<int> readSynapseLabelszBodies(QList<uint64_t> bodyIDs, dvid::ELabelIndexType indexType);
   ZJsonArray readSynapseLabelsz(int n, dvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(
       int threshold, dvid::ELabelIndexType index) const;
