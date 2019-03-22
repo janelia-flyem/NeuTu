@@ -45,6 +45,10 @@ private slots:
   void onSegment();
   void onNodeItemClicked(QTreeWidgetItem*,int);
   void onMerge();
+  void onExport();
+  void onShowLeaves(int state);
+  void onCreateSuperVoxels();
+  void onSuperVoxel();
 
 private:
   std::vector<ZStackObject*> getSeeds();
@@ -52,6 +56,9 @@ private:
   void updateMask(const std::string& active_id);
   void updateTreeView(const std::string& active_id);
   void test();
+
+  ZStack* seedsFromLocalMaximum(const ZStack& stack)const;
+  ZStack* makeSelectedStack();
 
 private:
   void init();
@@ -65,6 +72,8 @@ private:
   string m_selected_id;
   QLineEdit* m_merge_from;
   QLineEdit* m_merge_to;
+  QCheckBox* m_show_leaves;
+  QCheckBox* m_enable_super_voxel;
 
   static ZMultiscaleSegmentationWindow* s_window;
 };

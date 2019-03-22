@@ -7,53 +7,46 @@
 #include <iostream>
 #include "zstack.hxx"
 
-class ZEdge
-{
+
+using std::vector;
+using std::priority_queue;
+using std::map;
+
+
+class ZEdge{
 public:
-  ZEdge(uint index_a, uint index_b, double weight){m_a = index_a, m_b = index_b, m_weight = weight;}
+  ZEdge(int from, int to, double weight):m_from(from),m_to(to),m_weight(weight){}
   bool operator < (const ZEdge& e)const{return m_weight < e.m_weight;}
 public:
-  uint m_a;
-  uint m_b;
+  int  m_from;
+  int m_to;
   double  m_weight;
 };
 
 
-
-class ZActiveSet
-{
+class ZActiveSet{
 public:
   ZActiveSet(){m_label = 0;}
-  ~ZActiveSet(){/*m_vertices.clear();*/}
-  void setLabel(uint64_t label){m_label = label;}
-  void add(uint v){m_vertices.push_back(v);}
-  void merge(ZActiveSet* set){m_vertices.insert(m_vertices.end(),set->m_vertices.begin(),set->m_vertices.end());}
-public:
-  uint64_t m_label;
-  std::vector<uint> m_vertices;
+  ~ZActiveSet(){m_vertices.clear();}
+  inline int getLabel()const{return m_label;}
+  inline void setLabel(int label){m_label = label;}
+  inline void add(int v){m_vertices.push_back(v);}
+  inline void merge(const ZActiveSet& set){m_vertices.insert(m_vertices.end(),set.m_vertices.begin(),set.m_vertices.end());}
+  inline uint size()const{return m_vertices.size();}
+  inline vector<int>& data(){return m_vertices;}
+private:
+  int m_label;
+  std::vector<int> m_vertices;
 };
 
 
-class ZWatershedMST
-{
+class ZWatershedMST{
 public:
-  ZWatershedMST(ZStack* stack, ZStack* seed, double alpha, double beta){m_stack = stack; m_seed = seed;m_alpha = alpha; m_beta = beta;}
-  ~ZWatershedMST(){/*m_map_of_activeset.clear();*/}
+  ZWatershedMST(){}
+  ~ZWatershedMST(){}
 
-  ZStack* run();
+public:
+  void run(vector<int>& rv, const vector<int>& vertices, const vector<ZEdge>& edges, const map<int,int>& seeds);
 
-private:
-  size_t init();
-  void updateActiveSet(ZActiveSet* source, ZActiveSet* target);
-  inline double weight(uint8 a, uint8 b){return std::exp(-m_beta*(a-b)*(a-b));}
-
-private:
-  ZStack* m_stack;
-  ZStack* m_seed;
-  double m_alpha, m_beta;
-  std::priority_queue<ZEdge> m_queue_of_edges;
-  std::vector<ZActiveSet*> m_map_of_activeset;
 };
-
-
 #endif // ZWATERSHEDMST_H

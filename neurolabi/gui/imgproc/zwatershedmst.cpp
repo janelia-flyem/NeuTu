@@ -1,110 +1,61 @@
+#include<memory>
 #include "zwatershedmst.h"
 
-ZStack* ZWatershedMST::run()
-{
-  size_t processed = init();
+using std::shared_ptr;
 
-  size_t total = 0;
-  for(uint i=0; i < m_stack->getVoxelNumber(); ++i)
-  {
-    if(m_stack->array8()[i])total++;
+
+void ZWatershedMST::run(vector<int>& rv, const vector<int>& vertices,const vector<ZEdge>& edges,
+const map<int,int>& seeds){
+  std::priority_queue<ZEdge> que(edges.begin(),edges.end());
+  std::map<int,shared_ptr<ZActiveSet>> activeset;
+
+  for(uint i = 0; i < vertices.size(); ++i){
+    shared_ptr<ZActiveSet> set = std::make_shared<ZActiveSet>();
+    set->add(vertices[i]);
+    activeset[vertices[i]] = set;
   }
-  while(!m_queue_of_edges.empty() && processed < total)
-  {
-    ZEdge edge = m_queue_of_edges.top();
-    uint a = edge.m_a, b = edge.m_b;
-    ZActiveSet* aa = m_map_of_activeset[a];
-    ZActiveSet* ab = m_map_of_activeset[b];
 
-    if(aa != ab)
-    {
-      if(!ab->m_label)//b does not contain seeds
-      {
-        aa->merge(ab);
-        updateActiveSet(ab, aa);
-        if(aa->m_label)
-        {
-          processed += ab->m_vertices.size();
-        }
-        ab->m_vertices.clear();
-        delete ab;
-      }
-      else if(!aa->m_label)//b contains seeds
-      {
-        ab->merge(aa);
-        updateActiveSet(aa, ab);
-        if(ab->m_label)
-        {
-          processed += aa->m_vertices.size();
-        }
-        aa->m_vertices.clear();
-        delete aa;
-      }
+  uint total = vertices.size();
+  uint processed = 0;
+
+  for(auto it = seeds.begin(); it != seeds.end(); ++it){
+    activeset[it->first]->setLabel(it->second);
+    processed ++;
+  }
+
+  while(!que.empty() && processed < total){
+    const ZEdge& edge = que.top();
+    que.pop();
+
+    int from = edge.m_from;
+    int to =  edge.m_to;
+
+    shared_ptr<ZActiveSet> from_set = activeset[from];
+    shared_ptr<ZActiveSet> to_set = activeset[to];
+
+    if(from_set == to_set){
+      continue;
     }
-    m_queue_of_edges.pop();
-  }
 
-  ZStack* rv = new ZStack(GREY,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->channelNumber());
-  uint8_t* prv = rv->array8();
-  for(uint i = 0 ; i < m_map_of_activeset.size(); ++i)
-  {
-    prv[i] = m_map_of_activeset[i]->m_label;
-  }
-  rv->setOffset(m_stack->getOffset());
-  return rv;
-}
-
-
-size_t ZWatershedMST::init()
-{
-  size_t size = m_stack->getVoxelNumber();
-  m_map_of_activeset.resize(size);
-
-  size_t seed_cnt = 0;
-  int width = m_stack->width();
-  int height = m_stack->height();
-  int depth = m_stack->depth();
-  size_t area = width * height;
-
-  uint8_t* pdata = m_stack->array8();
-  uint8_t* pseed = m_seed->array8();
-
-  for(uint i = 0 ; i < size ; ++i)
-  {
-    ZActiveSet* set = new ZActiveSet();
-    set->add(i);
-    if(pseed[i])
-    {
-      set->setLabel(pseed[i]);
-      seed_cnt ++;
-    }
-    m_map_of_activeset[i] = set;
-  }
-
-  for(int z = 0; z < depth-1; ++z)
-  {
-    for(int y = 0; y < height-1; ++y)
-    {
-      for(int x = 0; x < width-1; ++x)
-      {
-        uint index = z*area + y*width + x;
-        if(pdata[index])
-        {
-          if(pdata[index+1])m_queue_of_edges.push(ZEdge(index,index+1,weight(pdata[index],pdata[index+1])));
-          if(pdata[index+width])m_queue_of_edges.push(ZEdge(index,index+width,weight(pdata[index],pdata[index+width])));
-          if(pdata[index+area])m_queue_of_edges.push(ZEdge(index,index+area,weight(pdata[index],pdata[index+area])));
-        }
+    if(to_set->getLabel() == 0){
+      from_set->merge(*to_set.get());
+      for(int v: to_set->data()){
+        activeset[v] = from_set;
       }
+      if(from_set->getLabel() != 0){
+        processed += to_set->size();
+      }
+    } else if(from_set->getLabel() == 0){// to_set->getLabel() != 0
+      to_set->merge(*from_set.get());
+      for(int v: from_set->data()){
+        activeset[v] = to_set;
+      }
+      processed += from_set->size();
     }
   }
-  return seed_cnt;
-}
 
-
-void ZWatershedMST::updateActiveSet(ZActiveSet *source, ZActiveSet *target)
-{
-  for(auto v:source->m_vertices)
-  {
-    m_map_of_activeset[v] = target;
+  rv.resize(vertices.size());
+  for(uint i = 0; i < vertices.size(); ++i){
+    rv[i] = activeset[vertices[i]]->getLabel();
   }
 }

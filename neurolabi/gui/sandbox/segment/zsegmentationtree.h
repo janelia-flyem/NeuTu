@@ -37,8 +37,12 @@ public:
   string getChildID(const string& id, int label)const;
   vector<string> getChildrenIDs(const string& id)const;
 
-  void labelStack(const string& id, ZStack& stack)const;
-  void labelStack(const string& id, ZStack* pstack)const{if(pstack)labelStack(id,*pstack);}
+  vector<string> getLeavesIDs(const string& id)const;
+
+  vector<string> getAllIDs(const string& id)const;
+
+  void labelStack(const string& id, ZStack& stack, int label = 0)const;
+  void labelStack(const string& id, ZStack* pstack, int label = 0)const{if(pstack)labelStack(id,*pstack,label);}
 
   void addObserver(ZSegmentationTreeObserver* observer){m_observers.push_back(observer);}
   void removeObserver(ZSegmentationTreeObserver* observer);
