@@ -1,18 +1,13 @@
 #ifndef ZDVIDWRITER_H
 #define ZDVIDWRITER_H
 
-#include "zqtheader.h"
-
 #include <string>
 #include <vector>
 
-#include "flyem/zflyem.h"
-#include "zsparsestack.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
-#include "flyem/zflyembodyannotation.h"
+#include "c_stack.h"
+
+#include "zqtheader.h"
 #include "zjsonobject.h"
-#include "common/zsharedpointer.h"
 #include "zdvidreader.h"
 
 namespace libdvid{
@@ -30,6 +25,7 @@ class ZFlyEmToDoItem;
 class ZArray;
 class ZStack;
 class ZObject3dScan;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidWriter /*: public QObject*/
 {
@@ -144,7 +140,7 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
-  uint64_t rewriteBody(uint64_t label);
+//  uint64_t rewriteBody(uint64_t label);
 
   //Returns (remainderId, newBodyId)
   std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
@@ -325,8 +321,8 @@ private:
   QString m_statusErrorMessage;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
-  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDConnection> m_connection;
 #endif
 };
 

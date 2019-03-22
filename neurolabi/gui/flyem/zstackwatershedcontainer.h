@@ -3,13 +3,13 @@
 
 #include <utility>
 #include <vector>
+#include <functional>
+#include <iostream>
 
 #include "tz_stack_watershed.h"
 #include "geometry/zintcuboid.h"
 #include "zstackptr.h"
 #include "zstackarray.h"
-
-#include <QString>
 
 class ZStack;
 class ZObject3dScan;
@@ -140,11 +140,11 @@ public:
       m_scale=scale;
   }
 
-  void setAlgorithm(const QString &algorithm){
+  void setAlgorithm(const std::string &algorithm) {
     m_algorithm=algorithm;
   }
 
-  void setDsMethod(const QString & method){
+  void setDsMethod(const std::string & method) {
     m_dsMethod=method;
   }
 
@@ -209,6 +209,9 @@ public:
    */
   bool computationDowsampled();
 
+public:
+  void setProfileLogger(std::function<void(int64_t, const std::string&)> logger);
+
 private:
   void init();
   void init(ZStack *stack, ZSparseStack *spStack);
@@ -266,6 +269,11 @@ private:
 
   void refineBorder(const ZStackPtr &stack);
 
+  std::string getName() const;
+  void setName(const std::string &name);
+
+  void logProfile(int64_t duration, const std::string &info);
+
 private:
   ZStack *m_stack = NULL;
   ZSparseStack *m_spStack = NULL;
@@ -285,9 +293,15 @@ private:
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;
-  size_t m_maxStackVolume = neutube::HALFGIGA;
-  QString m_algorithm;
-  QString m_dsMethod;
+  size_t m_maxStackVolume = neutu::HALFGIGA;
+  std::string m_algorithm;
+  std::string m_dsMethod;
+
+  std::string m_name; //Name for logging purpose
+
+  std::function<void(int64_t, const std::string&)> m_profileLogger =
+      [](int64_t duration, const std::string &info) {
+    std::cout << info << ": " << duration << "ms" << std::endl; };
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

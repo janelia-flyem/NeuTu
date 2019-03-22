@@ -15,7 +15,7 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 
   flyem::PrepareBodyStatus(ui->statusComboBox);
 
-  if (neutube::IsAdminUser()) {
+  if (neutu::IsAdminUser()) {
     showFinalizedStatus();
 //    ui->statusComboBox->addItem("Finalized");
   }
@@ -126,9 +126,9 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
-  annotation.setUser(neutube::GetCurrentUserName());
+  annotation.setUser(neutu::GetCurrentUserName());
   if (isNameChanged()) {
-    annotation.setNamingUser(neutube::GetCurrentUserName());
+    annotation.setNamingUser(neutu::GetCurrentUserName());
   }
 
   return annotation;
@@ -233,7 +233,7 @@ void ZFlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
     if (m_adminSatutsList.contains(status.c_str())) {
-      ui->statusComboBox->setEnabled(neutube::IsAdminUser());
+      ui->statusComboBox->setEnabled(neutu::IsAdminUser());
     }
 //    if (!neutube::IsAdminUser()) {
 //    if (!ZFlyEmBodyStatus::IsAccessible(status)) {

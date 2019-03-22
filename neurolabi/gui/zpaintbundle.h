@@ -160,7 +160,7 @@ public:
   typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
   typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
-  ZPaintBundle(neutube::EAxis sliceAxis = neutube::EAxis::Z);
+  ZPaintBundle(neutu::EAxis sliceAxis = neutu::EAxis::Z);
 
   inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
   inline const_iterator end() const { return const_iterator(this, const_iterator::End); }
@@ -185,7 +185,7 @@ public:
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
 
-  void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
+  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 
   inline int getZ() const {
     return m_sliceIndex + m_stackOffset.getZ();//.getSliceCoord(m_sliceAxis);
@@ -218,7 +218,7 @@ private:
 //  std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
   ZIntPoint m_stackOffset;
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis;
 };
 
 #endif // ZPAINTBUNDLE_H

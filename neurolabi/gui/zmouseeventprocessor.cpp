@@ -1,12 +1,14 @@
 #include "zmouseeventprocessor.h"
 #include "widgets/zimagewidget.h"
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
+
 #include "zinteractivecontext.h"
 #include "zstackoperator.h"
 #include "zstack.hxx"
+
 #include "mvc/zpositionmapper.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
+#include "mvc/zstackdoc.h"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
   m_context(NULL)
@@ -63,7 +65,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
     }
   }
 
-  int z0 = ZStackDocHelper::GetStackSpaceRange(
+  int z0 = ZStackDocUtil::GetStackSpaceRange(
         *m_doc, getSliceAxis()).getFirstCorner().getZ();
   ZPoint stackPosition = ZPositionMapper::WidgetToStack(
         pt, viewProj, z0);
@@ -78,11 +80,11 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZPoint dataPos = stackPosition;
   switch (getSliceAxis()) {
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     dataPos = ZPositionMapper::StackToData(stackPosition, m_arbSlice);
     break;
   default:
@@ -106,7 +108,7 @@ void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
   }
 }
 
-void ZMouseEventProcessor::setSliceAxis(neutube::EAxis axis)
+void ZMouseEventProcessor::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
 }
@@ -116,7 +118,7 @@ void ZMouseEventProcessor::setArbSlice(const ZAffinePlane &ap)
   m_arbSlice = ap;
 }
 
-neutube::EAxis ZMouseEventProcessor::getSliceAxis() const
+neutu::EAxis ZMouseEventProcessor::getSliceAxis() const
 {
   return m_sliceAxis;
 }

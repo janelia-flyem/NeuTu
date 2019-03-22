@@ -11,11 +11,11 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const;
 //  virtual const std::string& className() const;
 
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
-  bool isOnSlice(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isOnSlice(int z, neutu::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::INT_CUBOID;
@@ -38,7 +38,7 @@ public:
   int getHeight() const;
   int getDepth() const;
 
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }

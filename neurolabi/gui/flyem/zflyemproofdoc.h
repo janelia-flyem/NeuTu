@@ -4,17 +4,16 @@
 #include <QString>
 #include <QMap>
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdoccommand.h"
 #include "common/zsharedpointer.h"
 
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidversiondag.h"
 
+#include "flyemdef.h"
 #include "zflyembodymerger.h"
 #include "zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
@@ -22,6 +21,7 @@
 #include "zflyemmb6analyzer.h"
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
+#include "flyemdataconfig.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -35,7 +35,7 @@ class ZFlyEmSynapseAnnotationDialog;
 class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 class ZFlyEmRoiManager;
-
+class ZStackBlockGrid;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -72,13 +72,13 @@ public:
   void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
-  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
+  ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
-  ZFlyEmToDoList* getTodoList(neutube::EAxis axis) const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
+  ZFlyEmToDoList* getTodoList(neutu::EAxis axis) const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -118,20 +118,20 @@ public:
 
   bool hasBodySelected() const;
 
-  std::set<uint64_t> getSelectedBodySet(neutube::EBodyLabelType labelType) const;
-  void setSelectedBody(const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
-  void setSelectedBody(uint64_t bodyId, neutube::EBodyLabelType labelType);
-  void toggleBodySelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  std::set<uint64_t> getSelectedBodySet(neutu::ELabelSource labelType) const;
+  void setSelectedBody(const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
+  void setSelectedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void toggleBodySelection(uint64_t bodyId, neutu::ELabelSource labelType);
   /*!
    * \brief Deselect bodies
    *
    * Deselect bodies that have the same mapped ID as that of \a bodyId.
    */
-  void deselectMappedBody(uint64_t bodyId, neutube::EBodyLabelType labelType);
-  void deselectMappedBody(const std::set<uint64_t> &bodySet, neutube::EBodyLabelType labelType);
+  void deselectMappedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void deselectMappedBody(const std::set<uint64_t> &bodySet, neutu::ELabelSource labelType);
 
   void addSelectedBody(
-      const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -173,7 +173,7 @@ public:
 
 //  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
 
   ZDvidSparseStack* getDvidSparseStack() const override;
 
@@ -255,9 +255,9 @@ public:
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
-  void runSplit(flyem::EBodySplitMode mode);
-  void runFullSplit(flyem::EBodySplitMode mode);
-  void runLocalSplit(flyem::EBodySplitMode mode);
+  void runSplit(neutu::EBodySplitMode mode);
+  void runFullSplit(neutu::EBodySplitMode mode);
+  void runLocalSplit(neutu::EBodySplitMode mode);
   void exitSplit();
 
   bool isSplitRunning() const;
@@ -265,6 +265,8 @@ public:
 //  void setLabelSliceAlpha(int alpha);
 
   void updateMeshForSelected();
+
+  void processAssignedInfo(int x, int y, int z);
 
 public:
   void notifyBodyMerged();
@@ -283,10 +285,10 @@ public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest, neutube::EAxis axis);
-  void annotateSelectedSynapse(ZJsonObject propJson, neutube::EAxis axis);
+  void tryMoveSelectedSynapse(const ZIntPoint &dest, neutu::EAxis axis);
+  void annotateSelectedSynapse(ZJsonObject propJson, neutu::EAxis axis);
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
-                               neutube::EAxis axis);
+                               neutu::EAxis axis);
 
   /*!
    * \brief Sync the synapse with DVID
@@ -312,7 +314,7 @@ public: //Synapse functions
       const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
   void moveSynapse(
       const ZIntPoint &from, const ZIntPoint &to,
-      ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
+      ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
   void highlightPsd(bool on);
@@ -324,14 +326,14 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
-  void setTodoItemAction(neutube::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
   void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg,
-                                neutube::EAxis axis);
+                                neutu::EAxis axis);
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -376,7 +378,7 @@ public:
   /*!
    * \brief Fetch DVID label slice data and set body selections
    */
-  void updateDvidLabelSlice(neutube::EAxis axis);
+  void updateDvidLabelSlice(neutu::EAxis axis);
 
   void allowDvidLabelSliceBlinking(bool on);
 //  void updateDvidLabelSlice();
@@ -419,7 +421,7 @@ public:
    * \param axis Axis of the objects to remove
    * \return Number of objects removed
    */
-  int removeDvidSparsevol(neutube::EAxis axis);
+  int removeDvidSparsevol(neutu::EAxis axis);
 
   void loadSplitFromService();
   void loadSplitTaskFromService();
@@ -459,12 +461,17 @@ public:
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;
 
-
   void diagnose() const override;
+
+  const ZContrastProtocol& getContrastProtocol() const;
+  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  void updateDataConfig();
+  void setContrastProtocol(const ZJsonObject &obj);
+  void uploadUserDataConfig();
 
 public:
   virtual void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   virtual void executeRemoveTodoCommand() override;
 
@@ -519,7 +526,7 @@ public slots: //Commands
   void executeAddTodoItemCommand(int x, int y, int z, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(
-      int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId = 0);
+      int x, int y, int z, neutu::EToDoAction action, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
   void executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
@@ -546,7 +553,7 @@ public slots:
 
   void updateDvidLabelObject(EObjectModifiedMode updateMode);
   void updateDvidLabelObjectSliently();
-  void updateDvidLabelObject(neutube::EAxis axis);
+  void updateDvidLabelObject(neutu::EAxis axis);
 
 
   void loadSynapse(const std::string &filePath);
@@ -570,17 +577,17 @@ public slots:
   void unverifySelectedSynapse();
 
   void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
-  void checkInSelectedBody(flyem::EBodySplitMode mode);
+  void checkInSelectedBody(neutu::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody(flyem::EBodySplitMode mode);
-  bool checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode);
+  void checkOutBody(neutu::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, flyem::EBodySplitMode mode);
+      uint64_t bodyId, neutu::EBodySplitMode mode);
 
 
   bool checkBodyWithMessage(
-      uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode);
+      uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
 
   void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();
@@ -605,15 +612,17 @@ protected:
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
-  void addDvidLabelSlice(neutube::EAxis axis);
+  void addDvidLabelSlice(neutu::EAxis axis);
   void annotateSynapse(
-      const ZIntPoint &pt, ZJsonObject propJson, neutube::EAxis axis);
+      const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
   void setRoutineCheck(bool on);
   uint64_t getBodyIdForSplit() const;
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
+
+  bool _loadFile(const QString &filePath) override;
 
 private:
   void connectSignalSlot();
@@ -624,8 +633,9 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
+  void addRoiMask(ZObject3dScan *obj);
 
-  std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutu::ELabelSource type) const;
 
   void init();
   void initTimer();
@@ -649,10 +659,10 @@ private:
   template<typename T>
   ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  void runSplitFunc(flyem::EBodySplitMode mode, flyem::EBodySplitRange range);
-  void runSplitFunc(flyem::EBodySplitMode mode);
-  void localSplitFunc(flyem::EBodySplitMode mode);
-  void runFullSplitFunc(flyem::EBodySplitMode mode);
+  void runSplitFunc(neutu::EBodySplitMode mode, flyem::EBodySplitRange range);
+  void runSplitFunc(neutu::EBodySplitMode mode);
+  void localSplitFunc(neutu::EBodySplitMode mode);
+  void runFullSplitFunc(neutu::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
@@ -674,6 +684,8 @@ private:
 
   void warnSynapseReadonly();
 
+  ZDvidReader& getBookmarkReader();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
@@ -684,6 +696,7 @@ protected:
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
   ZDvidReader m_grayscaleReader;
+  ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
@@ -700,6 +713,8 @@ protected:
   ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
   ZJsonObject m_infoJson;
+
+  FlyEmDataConfig m_dataConfig;
 
   QTimer *m_routineTimer;
 

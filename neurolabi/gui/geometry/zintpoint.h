@@ -36,6 +36,8 @@ public:
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }
 
+  int getValue(neutu::EAxis axis) const;
+
   const int& operator[] (int index) const;
   int& operator[] (int index);
 
@@ -121,9 +123,9 @@ public:
 
   double distanceTo(double x, double y, double z) const;
 
-  void shiftSliceAxis(neutube::EAxis axis);
-  void shiftSliceAxisInverse(neutube::EAxis axis);
-  int getSliceCoord(neutube::EAxis axis) const;
+  void shiftSliceAxis(neutu::EAxis axis);
+  void shiftSliceAxisInverse(neutu::EAxis axis);
+  int getSliceCoord(neutu::EAxis axis) const;
 
   void invalidate();
   bool isValid() const;

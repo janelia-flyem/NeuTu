@@ -18,11 +18,11 @@
  * derived forms shaped by the ELK specification.
  *
  * KLog is derived from ZLog to serve a wrapper of neuopentracing APIs. When
- * no Kafka broker is available, KLog works like ZLog, which saves messages
+ * no Kafka broker is available, KLog works like ZLog, which tries to save messages
  * in a local log file.
  */
 
-ZLog::ZLog()
+ZLog::ZLog(EDestination dest) : m_dest(dest)
 {
 }
 
@@ -41,7 +41,10 @@ void ZLog::endLog()
 {
   if (!m_tags.isEmpty()) {
     QJsonDocument jsonDoc(m_tags);
-    ZOUT(LINFO(), 5) << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    if (m_dest == EDestination::KAFKA_AND_LOCAL ||
+        m_dest == EDestination::AUTO) {
+      LINFO_NLN() << jsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str();
+    }
     m_tags = QJsonObject();
   }
   m_started = false;
@@ -52,17 +55,33 @@ void ZLog::end()
   endLog();
 }
 
-void ZLog::log(const std::string &key, const neuopentracing::Value &value)
+bool ZLog::hasTag(const std::string &key) const
 {
-  m_tags[key.c_str()] = value.toJson();
+  return m_tags.contains(key.c_str());
+}
+
+void ZLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
+{
+  if (appending && m_tags.contains(key.c_str())) {
+    m_tags[key.c_str()] = neuopentracing::ToString(m_tags.value(key.c_str()))
+        + " " +
+        neuopentracing::ToString(value);
+  } else {
+    m_tags[key.c_str()] = value.toJson();
+  }
 }
 
 ZLog::Time::Time() :
-  Tag("time", neutube::GetTimestamp())
+  Tag("time", neutu::GetTimestamp())
 {
 }
 
 ZLog::Time::Time(uint64_t t) : Tag("time", t)
+{
+}
+
+ZLog::Level::Level(int level) : Tag("level", level)
 {
 }
 
@@ -80,7 +99,12 @@ void ZLog::End(ZLog &log)
 
 ZLog& ZLog::operator << (const ZLog::Tag &tag)
 {
-  log(tag.m_key, tag.m_value);
+  bool appending = (
+        tag.m_key == Description::KEY ||
+        tag.m_key == Diagnostic::KEY
+      );
+
+  log(tag.m_key, tag.m_value, appending);
 
   return *this;
 }
@@ -100,6 +124,13 @@ const char* DEFAULT_OPERATION_NAME = "app";
 #endif
 }
 
+const char* ZLog::Category::KEY = "category";
+const char* ZLog::Description::KEY = "description";
+const char* ZLog::Duration::KEY = "duration";
+const char* ZLog::Time::KEY = "time";
+const char* ZLog::Diagnostic::KEY = "diagnostic";
+const char* ZLog::Level::KEY = "level";
+
 std::string KLog::m_operationName = DEFAULT_OPERATION_NAME;
 
 void KLog::SetOperationName(const std::string &name)
@@ -112,13 +143,13 @@ void KLog::ResetOperationName()
   m_operationName = DEFAULT_OPERATION_NAME;
 }
 
-KLog::KLog()
+KLog::KLog(EDestination dest) : ZLog(dest)
 {
 }
 
 KLog::~KLog()
 {
-  endKLog();
+  end();
 }
 
 //bool KLog::isStarted() const
@@ -142,26 +173,47 @@ void KLog::start()
       }
 
       if (!m_span->hasTag("time")) {
-        m_span->SetTag("time", neutube::GetTimestamp());
+        m_span->SetTag("time", neutu::GetTimestamp());
       }
       m_span->SetTag(
-            "version", GET_SOFTWARE_NAME + " " + neutube::GetVersionString());
+            "version", GET_SOFTWARE_NAME + " " + neutu::GetVersionString());
     }
   }
 
   ZLog::start();
 }
 
-void KLog::log(const std::string &key, const neuopentracing::Value &value)
+bool KLog::localLogging() const
+{
+  bool local = (m_dest == EDestination::KAFKA_AND_LOCAL);
+
+  if (!local) {
+    if (!m_span) {
+      local = (m_dest == EDestination::AUTO);
+    }
+  }
+
+  return local;
+}
+
+void KLog::log(
+    const std::string &key, const neuopentracing::Value &value, bool appending)
 {
   if (!isStarted()) {
     start();
   }
 
   if (m_span) {
-    m_span->SetTag(key, value);
-  } else {
-    ZLog::log(key, value);
+    if (appending) {
+      m_span->appendTag(key, value);
+    } else {
+      m_span->SetTag(key, value);
+    }
+//    m_span->SetTag(key, value);
+  }
+
+  if (localLogging()) {
+    ZLog::log(key, value, appending);
   }
 }
 
@@ -181,16 +233,36 @@ void KLog::endKLog()
 void KLog::end()
 {
   endKLog();
+
   ZLog::end();
 }
 
-KInfo::KInfo()
+bool KLog::hasTag(const std::string &key) const
 {
+  if (m_span) {
+    return m_span->hasTag(key);
+  }
+
+  return ZLog::hasTag(key);
 }
+
+//KInfo::KInfo()
+//{
+//}
+
+//KInfo::KInfo(bool localLogging) : ZLog(localLogging)
+//{
+//}
 
 KInfo& KInfo::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+  if (info) {
+    if (hasTag(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Info() << ZLog::Description(info);
+    }
+  }
 
   return (*this);
 }
@@ -209,13 +281,16 @@ KInfo& KInfo::operator << (const QString &info)
   return (*this);
 }
 
-KWarn::KWarn()
-{
-}
-
 KWarn& KWarn::operator << (const char* info)
 {
-  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+  if (info) {
+    if (hasTag(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Warn() << ZLog::Description(info);
 
   return (*this);
 }
@@ -228,6 +303,34 @@ KWarn& KWarn::operator << (const std::string &info)
 }
 
 KWarn& KWarn::operator << (const QString &info)
+{
+  (*this) << info.toStdString();
+
+  return (*this);
+}
+
+KError& KError::operator << (const char* info)
+{
+  if (info) {
+    if (hasTag(ZLog::Description::KEY)) {
+      dynamic_cast<KLog&>(*this) << ZLog::Description(info);
+    } else {
+      dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+    }
+  }
+//  dynamic_cast<KLog&>(*this) << ZLog::Error() << ZLog::Description(info);
+
+  return (*this);
+}
+
+KError& KError::operator << (const std::string &info)
+{
+  (*this) << info.c_str();
+
+  return (*this);
+}
+
+KError& KError::operator << (const QString &info)
 {
   (*this) << info.toStdString();
 

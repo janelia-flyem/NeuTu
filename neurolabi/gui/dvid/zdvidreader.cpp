@@ -22,20 +22,20 @@
 #include "zstackfactory.h"
 #include "zswctree.h"
 #include "zdvidinfo.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidfilter.h"
-#include "dvid/zdvidbufferreader.h"
-#include "dvid/zdvidurl.h"
+//#include "dvid/zdvidtarget.h"
+#include "zdvidfilter.h"
+//#include "dvid/zdvidbufferreader.h"
+#include "zdvidurl.h"
 #include "zarray.h"
 #include "zstring.h"
-#include "flyem/zflyemneuronbodyinfo.h"
+//#include "flyem/zflyemneuronbodyinfo.h"
 #include "dvid/zdvidtile.h"
 #include "zdvidtileinfo.h"
 #include "zobject3dscan.h"
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
-#include "flyem/zflyembodyannotation.h"
+//#include "flyem/zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
@@ -45,7 +45,7 @@
 #include "zflyemutilities.h"
 #include "zobject3dscanarray.h"
 #include "zdvidpath.h"
-#include "flyem/zserviceconsumer.h"
+//#include "flyem/zserviceconsumer.h"
 #include "zmeshio.h"
 #include "zmesh.h"
 #include "zstackobjectsourcefactory.h"
@@ -55,7 +55,8 @@
 #include "geometry/zaffinerect.h"
 #include "zarrayfactory.h"
 #include "zobject3dfactory.h"
-#include "dvid/zdvidstackblockfactory.h"
+#include "zdvidstackblockfactory.h"
+#include "zdvidsynapse.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -273,6 +274,11 @@ void ZDvidReader::updateSegmentationData()
       getDvidTarget().setSegmentationName(getDvidTarget().getBodyLabelName());
     }
   }
+
+  if (!getDvidTarget().getSynapseLabelszName().empty()) {
+    getDvidTarget().enableSynapseLabelsz(
+          hasData(getDvidTarget().getSynapseLabelszName()));
+  }
 }
 
 bool ZDvidReader::open(const QString &sourceString)
@@ -326,8 +332,8 @@ void ZDvidReader::testApiLoad()
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType,
-    int z, neutube::EAxis axis, bool canonizing,
+    uint64_t bodyId, neutu::EBodyLabelType labelType,
+    int z, neutu::EAxis axis, bool canonizing,
     ZObject3dScan *result) const
 {
   if (result != NULL) {
@@ -345,7 +351,7 @@ ZObject3dScan *ZDvidReader::readBody(
     ZDvidUrl dvidUrl(getDvidTarget());
 
     std::string url;
-    if (labelType == flyem::EBodyLabelType::BODY) {
+    if (labelType == neutu::EBodyLabelType::BODY) {
       url = dvidUrl.getSparsevolUrl(bodyId, z, z, axis);
     } else {
       url = dvidUrl.getSupervoxelUrl(bodyId, z, z, axis);
@@ -375,7 +381,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int z, neutube::EAxis axis, bool canonizing,
+    uint64_t bodyId, int z, neutu::EAxis axis, bool canonizing,
     ZObject3dScan *result) const
 {
   if (result != NULL) {
@@ -417,7 +423,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
-    uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const
+    uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -449,12 +455,12 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 #ifdef _DEBUG_
         STD_COUT << "Read first part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, labelType, startZ, endZ, true, neutube::EAxis::Z, result);
+        readBody(bodyId, labelType, startZ, endZ, true, neutu::EAxis::Z, result);
       } else {
 #ifdef _DEBUG_
         STD_COUT << "Read part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, labelType, startZ, endZ, true, neutube::EAxis::Z, &part);
+        readBody(bodyId, labelType, startZ, endZ, true, neutu::EAxis::Z, &part);
         if (!part.isEmpty()) {
           result->unify(part);
         }
@@ -470,7 +476,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
     uint64_t bodyId, ZObject3dScan *result) const
 {
-  return readBodyWithPartition(bodyId, flyem::EBodyLabelType::BODY, result);
+  return readBodyWithPartition(bodyId, neutu::EBodyLabelType::BODY, result);
 #if 0
   if (result != NULL) {
     result->clear();
@@ -520,7 +526,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int minZ, int maxZ, bool canonizing, neutube::EAxis axis,
+    uint64_t bodyId, int minZ, int maxZ, bool canonizing, neutu::EAxis axis,
     ZObject3dScan *result) const
 {
   if (result != NULL) {
@@ -553,8 +559,8 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType,
-    int minZ, int maxZ, bool canonizing, neutube::EAxis axis,
+    uint64_t bodyId, neutu::EBodyLabelType labelType,
+    int minZ, int maxZ, bool canonizing, neutu::EAxis axis,
     ZObject3dScan *result) const
 {
   if (result != NULL) {
@@ -571,10 +577,10 @@ ZObject3dScan *ZDvidReader::readBody(
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
 
-    if (labelType == flyem::EBodyLabelType::BODY) {
+    if (labelType == neutu::EBodyLabelType::BODY) {
       reader.read(dvidUrl.getSparsevolUrl(bodyId, minZ, maxZ, axis).c_str(),
                   isVerbose());
-    } else if (labelType == flyem::EBodyLabelType::SUPERVOXEL) {
+    } else if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
       reader.read(dvidUrl.getSupervoxelUrl(bodyId, minZ, maxZ, axis).c_str(),
                   isVerbose());
     }
@@ -597,7 +603,7 @@ ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
-  return readBody(bodyId, flyem::EBodyLabelType::BODY, box, canonizing, result);
+  return readBody(bodyId, neutu::EBodyLabelType::BODY, box, canonizing, result);
 
 #if 0
   if (result != NULL) {
@@ -632,7 +638,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType,
+    uint64_t bodyId, neutu::EBodyLabelType labelType,
     const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
@@ -650,7 +656,7 @@ ZObject3dScan *ZDvidReader::readBody(
     if (box.isEmpty()) {
       size_t bodySize = readBodySize(bodyId, labelType);
 
-      if (bodySize / neutube::ONEGIGA > 4) {
+      if (bodySize / neutu::ONEGIGA > 4) {
         needPartition = true;
       }
     }
@@ -660,17 +666,17 @@ ZObject3dScan *ZDvidReader::readBody(
     if (needPartition == false) {
       ZDvidUrl dvidUrl(getDvidTarget());
       switch (labelType) {
-      case flyem::EBodyLabelType::BODY:
+      case neutu::EBodyLabelType::BODY:
         reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
                     isVerbose());
         break;
-      case flyem::EBodyLabelType::SUPERVOXEL:
+      case neutu::EBodyLabelType::SUPERVOXEL:
         reader.read(dvidUrl.getSupervoxelUrl(bodyId, box).c_str(),
                     isVerbose());
         break;
       }
 
-      if (reader.getStatus() != neutube::EReadStatus::FAILED) {
+      if (reader.getStatus() != neutu::EReadStatus::FAILED) {
         const QByteArray &buffer = reader.getBuffer();
         result->importDvidObjectBuffer(buffer.data(), buffer.size());
       } else {
@@ -698,7 +704,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType, int zoom,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, int zoom,
     const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
@@ -739,7 +745,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBodyRle(
-    uint64_t bodyId, flyem::EBodyLabelType labelType, int zoom,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, int zoom,
     const ZIntCuboid &box, bool canonizing,
     ZObject3dScan *result) const
 {
@@ -769,7 +775,7 @@ ZObject3dScan *ZDvidReader::readBodyRle(
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {
-    case flyem::EBodyLabelType::BODY:
+    case neutu::EBodyLabelType::BODY:
       if (zoom == 0 || box.isEmpty()) {
         reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
                     isVerbose());
@@ -789,7 +795,7 @@ ZObject3dScan *ZDvidReader::readBodyRle(
         buffered = false;
       }
       break;
-    case flyem::EBodyLabelType::SUPERVOXEL:
+    case neutu::EBodyLabelType::SUPERVOXEL:
       reader.read(dvidUrl.getSupervoxelUrl(bodyId, zoom, box).c_str(),
                   isVerbose());
       break;
@@ -951,7 +957,7 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result) const
 {
   return readBody(
-        bodyId, flyem::EBodyLabelType::SUPERVOXEL, ZIntCuboid(), canonizing, result);
+        bodyId, neutu::EBodyLabelType::SUPERVOXEL, ZIntCuboid(), canonizing, result);
 #if 0
   if (result != NULL) {
     result->clear();
@@ -1060,7 +1066,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
     STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != neutube::EReadStatus::FAILED) {
+    if (reader.getStatus() != neutu::EReadStatus::FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -1086,7 +1092,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType,
+    uint64_t bodyId, neutu::EBodyLabelType labelType,
     bool canonizing, ZObject3dScan *result) const
 {
   if (result != NULL) {
@@ -1107,10 +1113,10 @@ ZObject3dScan *ZDvidReader::readBody(
     timer.start();
 
     switch (labelType) {
-    case flyem::EBodyLabelType::BODY:
+    case neutu::EBodyLabelType::BODY:
       reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
       break;
-    case flyem::EBodyLabelType::SUPERVOXEL:
+    case neutu::EBodyLabelType::SUPERVOXEL:
       reader.read(dvidUrl.getSupervoxelUrl(bodyId).c_str(), isVerbose());
       break;
     }
@@ -1119,7 +1125,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
     STD_COUT << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != neutube::EReadStatus::FAILED) {
+    if (reader.getStatus() != neutu::EReadStatus::FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -1181,7 +1187,7 @@ ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
   }
 
   m_bufferReader.read(url.c_str(), isVerbose());
-  if (m_bufferReader.getStatus() != neutube::EReadStatus::FAILED) {
+  if (m_bufferReader.getStatus() != neutu::EReadStatus::FAILED) {
     const QByteArray &buffer = m_bufferReader.getBuffer();
     mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
   }
@@ -1221,7 +1227,7 @@ ZMesh* ZDvidReader::readSupervoxelMesh(uint64_t svId) const
   std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
   if (!url.empty()) {
     m_bufferReader.read(url.c_str(), isVerbose());
-    if (m_bufferReader.getStatus() != neutube::EReadStatus::FAILED) {
+    if (m_bufferReader.getStatus() != neutu::EReadStatus::FAILED) {
       const QByteArray &buffer = m_bufferReader.getBuffer();
       mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
     }
@@ -1255,7 +1261,7 @@ struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytes
   timer.start();
 
   m_bufferReader.read(tarUrl.c_str(), isVerbose());
-  if (m_bufferReader.getStatus() == neutube::EReadStatus::FAILED) {
+  if (m_bufferReader.getStatus() == neutu::EReadStatus::FAILED) {
     return nullptr;
   }
 
@@ -1396,7 +1402,7 @@ ZObject3dScan* ZDvidReader::readMultiscaleBody(
     uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const
 {
   result = readBody(
-        bodyId, flyem::EBodyLabelType::BODY, zoom, ZIntCuboid(), canonizing, result);
+        bodyId, neutu::EBodyLabelType::BODY, zoom, ZIntCuboid(), canonizing, result);
   int scale = zgeom::GetZoomScale(zoom);
   result->setDsIntv(scale - 1);
 
@@ -1575,7 +1581,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
   tic();
 #endif
 
-  if (bufferReader.getStatus() == neutube::EReadStatus::OK) {
+  if (bufferReader.getStatus() == neutu::EReadStatus::OK) {
     const QByteArray &data = bufferReader.getBuffer();
     if (data.length() > 0) {
 //      int realBlockNumber = *((int*) data.constData());
@@ -1671,7 +1677,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(
                     isVerbose());
   setStatusCode(bufferReader.getStatusCode());
   ZStack *stack = NULL;
-  if (bufferReader.getStatus() == neutube::EReadStatus::OK) {
+  if (bufferReader.getStatus() == neutu::EReadStatus::OK) {
     const QByteArray &data = bufferReader.getBuffer();
     int realBlockNumber = *((int*) data.constData());
 
@@ -1802,7 +1808,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 }
 
 ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
-    uint64_t bodyId, flyem::EBodyLabelType labelType) const
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setLabelType(labelType);
@@ -1842,7 +1848,7 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
 }
 
 ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(
-    uint64_t bodyId, flyem::EBodyLabelType labelType) const
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setLabelType(labelType);
@@ -1927,7 +1933,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId, int zoom) const
 }
 
 ZSparseStack* ZDvidReader::readSparseStackOnDemand(
-    uint64_t bodyId, flyem::EBodyLabelType type, ZSparseStack *out) const
+    uint64_t bodyId, neutu::EBodyLabelType type, ZSparseStack *out) const
 {
   ZSparseStack *spStack = out;
 
@@ -2758,7 +2764,7 @@ std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
 }
 
 ZClosedCurve* ZDvidReader::readRoiCurve(
-    const std::string &key, ZClosedCurve *result)
+    const std::string &key, ZClosedCurve *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -3371,7 +3377,7 @@ void LogReadingTime(int64_t time, int64_t thre, const std::string &name)
 template<typename T>
 void ZDvidReader::configureLowtis(T *config, const std::string &dataName) const
 {
-  config->username = neutube::GetCurrentUserName();
+  config->username = neutu::GetCurrentUserName();
   config->dvid_server = getDvidTarget().getAddressWithPort();
   config->dvid_uuid = getDvidTarget().getUuid();
   config->datatypename = dataName;
@@ -3409,7 +3415,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
 //      m_lowtisConfigGray.enableprefetch = NeutubeConfig::LowtisPrefetching();
 
-      m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
+      m_lowtisServiceGray = std::shared_ptr<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
 
     } catch (libdvid::DVIDException &e) {
@@ -3584,8 +3590,37 @@ ZIntCuboid ZDvidReader::GetStackBoxAtCenter(
   return box;
 }
 
+std::vector<uint64_t> ZDvidReader::readBodyIdAt(const ZJsonArray &queryObj) const
+{
+  std::vector<uint64_t> bodyArray;
+
+  QString queryForm = queryObj.dumpString(0).c_str();
+
+#ifdef _DEBUG_
+  std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+  QByteArray payload;
+  payload.append(queryForm);
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  m_bufferReader.read(
+        dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
+  setStatusCode(m_bufferReader.getStatusCode());
+
+  ZJsonArray infoJson;
+  infoJson.decodeString(m_bufferReader.getBuffer().data());
+
+  for (size_t i = 0; i < infoJson.size(); ++i) {
+    uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
+    bodyArray.push_back(bodyId);
+  }
+
+  return bodyArray;
+}
+
 void ZDvidReader::prepareLowtisService(
-    ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+    std::shared_ptr<lowtis::ImageService> &service, const std::string &dataName,
     lowtis::DVIDConfig &config, int cx, int cy) const
 {
   if (service.get() == NULL) {
@@ -3888,9 +3923,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(
             width, height, offset, array->getDataPointer<char>(), zoom, centerCut);
 
       setStatusCode(200);
-    } catch (libdvid::DVIDException &e) {
+    } catch (std::exception &e) {
       LERROR() << e.what();
-      setStatusCode(e.getStatus());
+      setStatusCode(0);
+//      setStatusCode(e.getStatus());
 
       delete array;
       array = NULL;
@@ -3952,11 +3988,11 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
   return false;
 }
 
-bool ZDvidReader::hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const
+bool ZDvidReader::hasBody(uint64_t bodyId, neutu::EBodyLabelType type) const
 {
-  if (type == flyem::EBodyLabelType::BODY) {
+  if (type == neutu::EBodyLabelType::BODY) {
     return hasBody(bodyId);
-  } else if (type == flyem::EBodyLabelType::SUPERVOXEL) {
+  } else if (type == neutu::EBodyLabelType::SUPERVOXEL) {
     if (getDvidTarget().hasSupervoxel()) {
       try {
         ZString endpoint = getDvidTarget().getSegmentationName() + "/sparsevol/";
@@ -3990,13 +4026,13 @@ size_t ZDvidReader::readBodySize(uint64_t bodyId) const
 }
 
 size_t ZDvidReader::readBodySize(
-    uint64_t bodyId, flyem::EBodyLabelType type) const
+    uint64_t bodyId, neutu::EBodyLabelType type) const
 {
   size_t s = 0;
   std::string url;
-  if (type == flyem::EBodyLabelType::BODY) {
+  if (type == neutu::EBodyLabelType::BODY) {
     url = ZDvidUrl(getDvidTarget()).getBodySizeUrl(bodyId);
-  } else  if (type == flyem::EBodyLabelType::SUPERVOXEL) {
+  } else  if (type == neutu::EBodyLabelType::SUPERVOXEL) {
     url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
   }
   if (!url.empty()) {
@@ -4008,16 +4044,16 @@ size_t ZDvidReader::readBodySize(
 }
 
 std::tuple<size_t, size_t, ZIntCuboid> ZDvidReader::readBodySizeInfo(
-    uint64_t bodyId, flyem::EBodyLabelType type) const
+    uint64_t bodyId, neutu::EBodyLabelType type) const
 {
   size_t voxelCount = 0;
   size_t blockCount = 0;
   ZIntCuboid boundBox;
 
   std::string url;
-  if (type == flyem::EBodyLabelType::BODY) {
+  if (type == neutu::EBodyLabelType::BODY) {
     url = ZDvidUrl(getDvidTarget()).getSparsevolSizeUrl(bodyId);
-  } else if (type == flyem::EBodyLabelType::SUPERVOXEL) {
+  } else if (type == neutu::EBodyLabelType::SUPERVOXEL) {
     url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
   }
 
@@ -4142,7 +4178,7 @@ bool ZDvidReader::hasBodyInfo(uint64_t bodyId) const
   return  bufferReader.isReadable(
         dvidUrl.getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 }
-
+/*
 ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 {
   ZJsonObject obj;
@@ -4161,6 +4197,7 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 
   return bodyInfo;
 }
+*/
 
 int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
 {
@@ -4483,7 +4520,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) 
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == neutube::EReadStatus::OK) {
+  if (reader.getStatus() == neutu::EReadStatus::OK) {
     if (obj == NULL) {
       obj = new ZObject3dScan;
     }
@@ -4499,7 +4536,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) 
 }
 
 ZObject3dScan* ZDvidReader::readCoarseBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const
+    uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *obj) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
   reader.tryCompress(false);
@@ -4507,11 +4544,11 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::EBodyLabelType::BODY:
+  case neutu::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::EBodyLabelType::SUPERVOXEL:
+  case neutu::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
@@ -4520,7 +4557,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
   reader.read(url.c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == neutube::EReadStatus::OK) {
+  if (reader.getStatus() == neutu::EReadStatus::OK) {
     if (obj == NULL) {
       obj = new ZObject3dScan;
     }
@@ -4536,7 +4573,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
 }
 
 ZObject3dScan* ZDvidReader::readCoarseBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, const ZIntCuboid &box,
     ZObject3dScan *obj) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
@@ -4545,11 +4582,11 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::EBodyLabelType::BODY:
+  case neutu::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::EBodyLabelType::SUPERVOXEL:
+  case neutu::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
@@ -4560,7 +4597,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
   reader.read(url.c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == neutube::EReadStatus::OK) {
+  if (reader.getStatus() == neutu::EReadStatus::OK) {
     if (obj == NULL) {
       obj = new ZObject3dScan;
     }
@@ -4595,7 +4632,7 @@ ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
 }
 
 ZObject3dScan ZDvidReader::readCoarseBody(
-    uint64_t bodyId, flyem::EBodyLabelType labelType) const
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
   reader.tryCompress(false);
@@ -4603,11 +4640,11 @@ ZObject3dScan ZDvidReader::readCoarseBody(
 
   std::string url;
   switch (labelType) {
-  case flyem::EBodyLabelType::BODY:
+  case neutu::EBodyLabelType::BODY:
     url = dvidUrl.getCoarseSparsevolUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
-  case flyem::EBodyLabelType::SUPERVOXEL:
+  case neutu::EBodyLabelType::SUPERVOXEL:
     url = dvidUrl.getCoarseSupervoxelUrl(
           bodyId, m_dvidTarget.getBodyLabelName());
     break;
@@ -4637,7 +4674,7 @@ int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == neutube::EReadStatus::OK) {
+  if (reader.getStatus() == neutu::EReadStatus::OK) {
     count = ZObject3dScan::CountVoxelNumber(
           reader.getBuffer().data(), reader.getBuffer().size());
   }
@@ -4941,6 +4978,7 @@ ZDvidRoi* ZDvidReader::readRoi(const std::string &dataName, ZDvidRoi *roi)
   return roi;
 }
 
+/*
 ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 {
   ZFlyEmBodyAnnotation annotation;
@@ -4956,7 +4994,7 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 
   return annotation;
 }
-
+*/
 bool ZDvidReader::hasBodyAnnotation() const
 {
   return hasData(getDvidTarget().getBodyAnnotationName());
@@ -5091,22 +5129,6 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
   return synapseJson;
 }
 
-std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box, flyem::EDvidAnnotationLoadMode mode) const
-{
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
-
-  std::vector<ZDvidSynapse> synapseArray(obj.size());
-
-  for (size_t i = 0; i < obj.size(); ++i) {
-    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    synapseArray[i].loadJsonObject(synapseJson, mode);
-  }
-
-  return synapseArray;
-}
-
 ZJsonArray ZDvidReader::readSynapseLabelsz(int n, dvid::ELabelIndexType index) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -5199,13 +5221,30 @@ ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, dvid::ELabelI
     return obj;
 }
 
+#if 1
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    uint64_t label, flyem::EDvidAnnotationLoadMode mode) const
+    const ZIntCuboid &box, dvid::EAnnotationLoadMode mode) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
+
+  std::vector<ZDvidSynapse> synapseArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
+  }
+
+  return synapseArray;
+}
+
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    uint64_t label, dvid::EAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != flyem::EDvidAnnotationLoadMode::NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, mode != dvid::EAnnotationLoadMode::NO_PARTNER));
 
   std::vector<ZDvidSynapse> synapseArray(obj.size());
 
@@ -5220,12 +5259,12 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     uint64_t label, const ZDvidRoi &roi,
-    flyem::EDvidAnnotationLoadMode mode) const
+    dvid::EAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != flyem::EDvidAnnotationLoadMode::NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, mode != dvid::EAnnotationLoadMode::NO_PARTNER));
 
   std::vector<ZDvidSynapse> synapseArray;
 
@@ -5243,7 +5282,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    int x, int y, int z, flyem::EDvidAnnotationLoadMode mode) const
+    int x, int y, int z, dvid::EAnnotationLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
@@ -5259,10 +5298,11 @@ ZDvidSynapse ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    const ZIntPoint &pt, flyem::EDvidAnnotationLoadMode mode) const
+    const ZIntPoint &pt, dvid::EAnnotationLoadMode mode) const
 {
   return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
 }
+#endif
 
 std::string ZDvidReader::readMirror() const
 {
@@ -5279,14 +5319,24 @@ std::string ZDvidReader::readMirror() const
   return mirror;
 }
 
+std::string ZDvidReader::GetMasterUrl(const ZDvidUrl &dvidUrl)
+{
+  std::string url = dvidUrl.getMasterUrl();
+  if (!dvid::HasHead(url)) {
+    url = dvidUrl.getOldMasterUrl();
+  }
+  LKINFO << "Master url: " + url;
+
+  return url;
+}
+
 std::string ZDvidReader::readMasterNode() const
 {
   std::string master;
 
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     m_bufferReader.read(url.c_str());
     master = GetMasterNodeFromBuffer(m_bufferReader);
   }
@@ -5300,8 +5350,7 @@ std::vector<std::string> ZDvidReader::readMasterList() const
 
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     m_bufferReader.read(url.c_str());
     masterList = GetMasterListFromBuffer(m_bufferReader);
   }
@@ -5402,8 +5451,7 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     reader.read(url.c_str());
     master = GetMasterNodeFromBuffer(reader);
   }
@@ -5423,8 +5471,7 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
-    std::string url = dvidUrl.getMasterUrl();
-    LINFO() << "Master url: " << url;
+    std::string url = GetMasterUrl(dvidUrl);
     reader.read(url.c_str());
     masterList = GetMasterListFromBuffer(reader);
   }
@@ -5446,7 +5493,7 @@ std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZFlyEmToDoItem &item = itemArray[i];
-    item.loadJsonObject(itemJson, flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON);
+    item.loadJsonObject(itemJson, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
   }
 
   return itemArray;
@@ -5518,8 +5565,8 @@ std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
   QStringList keyList = readKeys(dataName.c_str(), "task__0", "task__z");
   foreach (const QString &key, keyList) {
     ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
-    if (obj.hasKey(neutube::json::REF_KEY)) {
-      obj = readJsonObject(ZJsonParser::stringValue(obj[neutube::json::REF_KEY]));
+    if (obj.hasKey(neutu::json::REF_KEY)) {
+      obj = readJsonObject(ZJsonParser::stringValue(obj[neutu::json::REF_KEY]));
     }
     if (!obj.isEmpty()) {
       taskMap[key.toStdString()] = obj;
@@ -5534,9 +5581,9 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
 {
   ZJsonObject taskJson = readJsonObjectFromKey(
         ZDvidData::GetTaskName("split").c_str(), taskKey.c_str());
-  if (taskJson.hasKey(neutube::json::REF_KEY)) {
+  if (taskJson.hasKey(neutu::json::REF_KEY)) {
     taskJson = readJsonObject(
-          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+          ZJsonParser::stringValue(taskJson[neutu::json::REF_KEY]));
   }
   ZJsonArray seedArrayJson(taskJson.value("seeds"));
   QList<ZStackObject*> seedList;

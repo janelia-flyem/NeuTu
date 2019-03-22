@@ -12,21 +12,22 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "widgets/zparameterarray.h"
-#include "zstackmvc.h"
-#include "zstackdoc.h"
-#include "zflyemcontrolform.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+#include "mvc/zstackmvc.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackpresenter.h"
+
+//#include "zflyemcontrolform.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidtile.h"
-#include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
-#include "flyem/zflyembodymergedoc.h"
+//#include "flyem/zflyembodymergedoc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "zstackpresenter.h"
-#include "flyem/flyemproofcontrolform.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
+//#include "flyem/flyemproofcontrolform.h"
+//#include "flyem/zflyemproofmvc.h"
+//#include "flyem/zflyemproofdoc.h"
 #include "zsysteminfo.h"
 #include "zwidgetmessage.h"
 
@@ -49,7 +50,8 @@ ZDialogFactory::~ZDialogFactory()
 
 }
 
-ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
+ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(
+    QWidget *parent, ZDvidDialogType dialogType)
 {
   ZDvidTargetProviderDialog *dlg;
 
@@ -90,7 +92,7 @@ ZSpinBoxDialog* ZDialogFactory::makeSpinBoxDialog(QWidget *parent)
   ZSpinBoxDialog *dlg = new ZSpinBoxDialog(parent);
   return dlg;
 }
-
+#if 0
 QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
@@ -170,7 +172,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
   return dlg;
 }
-
+#endif
 
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {
@@ -355,11 +357,11 @@ void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
 {
   if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
       switch (msg.getType()) {
-      case neutube::EMessageType::INFORMATION:
+      case neutu::EMessageType::INFORMATION:
         QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());
         break;
-      case neutube::EMessageType::WARNING:
-      case neutube::EMessageType::ERROR:
+      case neutu::EMessageType::WARNING:
+      case neutu::EMessageType::ERROR:
         QMessageBox::warning(parent, msg.getTitle(), msg.toHtmlString());
         break;
       default:

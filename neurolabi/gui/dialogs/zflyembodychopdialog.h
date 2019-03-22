@@ -14,7 +14,7 @@ class ZFlyEmBodyChopDialog : public QDialog
 public:
   explicit ZFlyEmBodyChopDialog(QWidget *parent = 0);
 
-  neutube::EAxis getAxis() const;
+  neutu::EAxis getAxis() const;
 
 signals:
 

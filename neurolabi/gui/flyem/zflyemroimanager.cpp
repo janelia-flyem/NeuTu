@@ -12,6 +12,7 @@
 #include "zmeshfactory.h"
 #include "zjsonobject.h"
 #include "zjsondef.h"
+#include "zjsonparser.h"
 
 namespace {
 
@@ -204,8 +205,8 @@ void ZFlyEmRoiManager::updateMeshFromRefData(const QString &roiName)
 {
   ZJsonObject roiInfo = getDvidReader().readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName);
-  if (roiInfo.hasKey(neutube::json::REF_KEY)) {
-    ZJsonObject jsonObj(roiInfo.value(neutube::json::REF_KEY));
+  if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+    ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
     if (type.empty()) {

@@ -307,7 +307,7 @@ public: /* attributes */
 
 
   // make mc_stack
-  static Mc_Stack* makeMcStack(
+  static Mc_Stack* MakeMcStack(
       const Stack *stack1, const Stack *stack2, const Stack *stack3);
 
   //Source of the stack. Usually it is the file where the image is originally
@@ -483,7 +483,7 @@ public: /* operations */
                    int c = 0);
 
 
-  void* projection(neutube::EImageBackground bg,
+  void* projection(neutu::EImageBackground bg,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 

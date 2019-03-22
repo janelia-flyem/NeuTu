@@ -10,10 +10,10 @@ class QKeyEvent;
 class ZKeyEventSwcMapper
 {
 public:
-  ZKeyEventSwcMapper(neutube::Document::ETag tag = neutube::Document::ETag::NORMAL);
+  ZKeyEventSwcMapper(neutu::Document::ETag tag = neutu::Document::ETag::NORMAL);
 
   ZSwcTree::EOperation getOperation(QKeyEvent *event);
-  void setTag(neutube::Document::ETag tag);
+  void setTag(neutu::Document::ETag tag);
 
 private:
   void initKeyMap();
@@ -25,7 +25,7 @@ private:
   QMap<int, ZSwcTree::EOperation> m_altKeyMap;
   QMap<int, ZSwcTree::EOperation> m_shiftKeyMap;
 
-  neutube::Document::ETag m_docTag;
+  neutu::Document::ETag m_docTag;
 };
 
 #endif // ZKEYEVENTSWCMAPPER_H

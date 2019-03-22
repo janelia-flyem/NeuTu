@@ -69,6 +69,11 @@ signals:
   void refreshing();
 //  void loadingAllNamedBodies();
 
+private:
+  void logInfo(const QString &msg) const;
+  static QString ToString(EMode mode);
+  ZDvidReader& getIoBodyReader();
+
 private slots:
     void onCloseButton();
     void onRefreshButton();
@@ -172,6 +177,7 @@ private:
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
     ZDvidReader m_sequencerReader;
+    ZDvidReader m_ioBodyReader;
     bool m_hasLabelsz = false;
     bool m_hasBodyAnnotation = false;
     std::string m_defaultSynapseLabelsz;

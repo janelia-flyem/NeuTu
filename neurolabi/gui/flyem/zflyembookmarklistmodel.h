@@ -4,10 +4,10 @@
 #include <QAbstractTableModel>
 #include <QVector>
 #include <QString>
-#include "flyem/zflyembookmark.h"
-#include "flyem/zflyembookmarkpresenter.h"
-//#include "flyem/zflyembookmarkarray.h"
-#include "flyem/zflyembookmarkptrarray.h"
+
+#include "zflyembookmark.h"
+#include "zflyembookmarkpresenter.h"
+#include "zflyembookmarkptrarray.h"
 
 class QSortFilterProxyModel;
 

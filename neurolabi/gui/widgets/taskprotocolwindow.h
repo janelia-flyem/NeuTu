@@ -42,6 +42,9 @@ public:
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
+    //#Review-TZ: It might be better to replace allBodiesRemoved with the name removingAllBodie
+    //because it is used to trigger the operation of removing all bodies?
+    //Similarly, bodyAdded can be addingBody
     void bodyAdded(uint64_t bodyId);
     void allBodiesRemoved();
 
@@ -55,6 +58,11 @@ signals:
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 //    void taskUpdated(const QString &type);
+
+protected:
+    void emitInfo(const QString &msg);
+    void emitWarning(const QString &msg);
+    void emitMessage(const QString &msg, neutu::EMessageType type);
 
 private slots:
     void onNextButton();

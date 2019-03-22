@@ -13,11 +13,13 @@
 
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
-#include "dvid/zdvidreader.h"
+
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidurl.h"
 #include "dvid/zdvidwriter.h"
+
 #include "mainwindow.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswcgenerator.h"
 #include "zjsonfactory.h"
 #include "geometry/zcuboid.h"
@@ -598,8 +600,8 @@ void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
 void ZFlyEmRoiDialog::newDataFrame()
 {
   ZStackFrame *frame = getMainWindow()->createStackFrame(
-        m_docReader, neutube::Document::ETag::FLYEM_ROI);
-  frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        m_docReader, neutu::Document::ETag::FLYEM_ROI);
+  frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
   setDataFrame(frame);
 
   getMainWindow()->addStackFrame(frame);

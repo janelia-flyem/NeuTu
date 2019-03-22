@@ -50,6 +50,7 @@ public slots:
   void syncHighlightMode();
   void locateMainWindow();
   void resetCrosshair();
+  void reloadStack();
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
   void setSegmentationVisible(bool on);

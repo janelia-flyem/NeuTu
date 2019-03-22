@@ -9,7 +9,7 @@
 #include "flyem/zflyemroiproject.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zwidgetmessage.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 #include "zswctree.h"
 
 ZFlyEmRoiToolDialog::ZFlyEmRoiToolDialog(QWidget *parent) :
@@ -174,7 +174,7 @@ void ZFlyEmRoiToolDialog::dump(const ZWidgetMessage &msg)
 
 void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
-  dump(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION));
+  dump(ZWidgetMessage(msg, neutu::EMessageType::INFORMATION));
 }
 
 void ZFlyEmRoiToolDialog::processMessage(const ZWidgetMessage &msg)
@@ -198,7 +198,7 @@ bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
         m_projectList.append(project);
         if (getDocument() != NULL) {
           project->setDataRange(
-                ZStackDocHelper::GetDataSpaceRange(getDocument()));
+                ZStackDocUtil::GetDataSpaceRange(getDocument()));
         }
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;

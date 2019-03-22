@@ -36,7 +36,7 @@ public:
   typedef QMap<Qt::MouseButtons, QMap<ZMouseEvent::EAction, ZMouseEvent> >
     TMouseEventMap;
 
-  ZPoint getPositionOffset(neutube::ECoordinateSystem cs) const;
+  ZPoint getPositionOffset(neutu::ECoordinateSystem cs) const;
 
   /*!
    * \brief Get the offset from the last left-button-pressed position to the
@@ -45,10 +45,10 @@ public:
    * It returns (0, 0, 0) if there is no left-button-pressed position recorded.
    */
   ZPoint
-  getPositionOffsetFromLastLeftPress(neutube::ECoordinateSystem cs) const;
+  getPositionOffsetFromLastLeftPress(neutu::ECoordinateSystem cs) const;
 
   ZPoint getPosition(Qt::MouseButtons buttons, ZMouseEvent::EAction action,
-                     neutube::ECoordinateSystem cs) const;
+                     neutu::ECoordinateSystem cs) const;
 
   /*
   bool hasPosition(const Qt::MouseButtons &button,

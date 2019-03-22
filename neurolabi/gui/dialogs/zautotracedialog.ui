@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>415</width>
-    <height>230</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,12 +150,46 @@
        </property>
       </spacer>
      </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QCheckBox" name="diagnosisCheckBox">
        <property name="text">
         <string>Diagnosis</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="seedScreenCheckBox">
+       <property name="text">
+        <string>Seed Screen</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="overTraceCheckBox">
+       <property name="text">
+        <string>OverTrace</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

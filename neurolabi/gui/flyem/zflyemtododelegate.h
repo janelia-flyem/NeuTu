@@ -12,7 +12,7 @@ public:
   ~ZFlyEmToDoDelegate() = default;
 
 public:
-  void add(int x, int y, int z, bool checked, neutube::EToDoAction action,
+  void add(int x, int y, int z, bool checked, neutu::EToDoAction action,
            uint64_t bodyId);
 
 private:

@@ -17,8 +17,8 @@
 #include "dialogs/informationdialog.h"
 #include "dialogs/parameterdialog.h"
 #include "zstring.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "tz_darray.h"
@@ -204,9 +204,9 @@ void ZFlyEmDataFrame::addData(ZFlyEmDataBundle *data)
                                    ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
       m_imageFactory.setDownsampleInterval(7, 7, 7);
       m_imageFactory.setSourceDimension(
-            m_dataArray[0]->getSourceDimension(neutube::EAxis::X),
-          m_dataArray[0]->getSourceDimension(neutube::EAxis::Y),
-          m_dataArray[0]->getSourceDimension(neutube::EAxis::Z)
+            m_dataArray[0]->getSourceDimension(neutu::EAxis::X),
+          m_dataArray[0]->getSourceDimension(neutu::EAxis::Y),
+          m_dataArray[0]->getSourceDimension(neutu::EAxis::Z)
           );
     }
   }
@@ -2436,13 +2436,13 @@ void ZFlyEmDataFrame::updateQualityControl()
 #ifdef _DEBUG_
   double resolution[3];
   int imageSize[3];
-  resolution[0] = m_dataArray[0]->getSwcResolution(neutube::EAxis::X);
-  resolution[1] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Y);
-  resolution[2] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Z);
+  resolution[0] = m_dataArray[0]->getSwcResolution(neutu::EAxis::X);
+  resolution[1] = m_dataArray[0]->getSwcResolution(neutu::EAxis::Y);
+  resolution[2] = m_dataArray[0]->getSwcResolution(neutu::EAxis::Z);
 
-  imageSize[0] = m_dataArray[0]->getSourceDimension(neutube::EAxis::X);
-  imageSize[1] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Y);
-  imageSize[2] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Z);
+  imageSize[0] = m_dataArray[0]->getSourceDimension(neutu::EAxis::X);
+  imageSize[1] = m_dataArray[0]->getSourceDimension(neutu::EAxis::Y);
+  imageSize[2] = m_dataArray[0]->getSourceDimension(neutu::EAxis::Z);
 
   m_qualityManager->getHotSpot().exportRavelerBookmark(
         GET_DATA_DIR + "/test.json", resolution, imageSize);

@@ -2,7 +2,7 @@
 
 #include <QKeyEvent>
 
-ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(neutube::Document::ETag tag) :
+ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(neutu::Document::ETag tag) :
   m_docTag(tag)
 {
   initKeyMap();
@@ -10,9 +10,9 @@ ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(neutube::Document::ETag tag) :
 
 void ZKeyEventStrokeMapper::initKeyMap()
 {
-  m_plainKeyMap[Qt::Key_Backspace] = ZStroke2d::OPERATION_DELETE;
-  m_plainKeyMap[Qt::Key_Delete] = ZStroke2d::OPERATION_DELETE;
-  m_plainKeyMap[Qt::Key_X] = ZStroke2d::OPERATION_DELETE;
+  m_plainKeyMap[Qt::Key_Backspace] = ZStroke2d::EOperation::DELETE;
+  m_plainKeyMap[Qt::Key_Delete] = ZStroke2d::EOperation::DELETE;
+  m_plainKeyMap[Qt::Key_X] = ZStroke2d::EOperation::DELETE;
 
   /*
   m_plainKeyMap[Qt::Key_W] = ZSwcTree::OPERATION_MOVE_NODE_UP;
@@ -48,7 +48,7 @@ void ZKeyEventStrokeMapper::initKeyMap()
 
 ZStroke2d::EOperation ZKeyEventStrokeMapper::getOperation(QKeyEvent *event)
 {
-  ZStroke2d::EOperation operation = ZStroke2d::OPERATION_NULL;
+  ZStroke2d::EOperation operation = ZStroke2d::EOperation::NONE;
 
   if (event->modifiers() == Qt::NoModifier) {
     if (m_plainKeyMap.contains(event->key())) {
@@ -71,7 +71,7 @@ ZStroke2d::EOperation ZKeyEventStrokeMapper::getOperation(QKeyEvent *event)
   return operation;
 }
 
-void ZKeyEventStrokeMapper::setTag(neutube::Document::ETag tag)
+void ZKeyEventStrokeMapper::setTag(neutu::Document::ETag tag)
 {
   m_docTag = tag;
   updateKeyMap();
@@ -79,6 +79,6 @@ void ZKeyEventStrokeMapper::setTag(neutube::Document::ETag tag)
 
 void ZKeyEventStrokeMapper::updateKeyMap()
 {
-  if (m_docTag == neutube::Document::ETag::FLYEM_SPLIT) {
+  if (m_docTag == neutu::Document::ETag::FLYEM_SPLIT) {
   }
 }

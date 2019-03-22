@@ -24,7 +24,7 @@ public:
   bool hasHead(const QString &url);
   void post(const QString &url, const QByteArray &data);
 
-  neutube::EReadStatus getStatus() const;
+  neutu::EReadStatus getStatus() const;
   int getStatusCode() const {
     return m_statusCode;
   }
@@ -63,7 +63,7 @@ private slots:
 private:
   void _init();
   void startReading();
-  void endReading(neutube::EReadStatus status);
+  void endReading(neutu::EReadStatus status);
   bool isReadingDone() const;
   QNetworkAccessManager* getNetworkAccessManager();
 
@@ -73,7 +73,7 @@ private:
   QNetworkReply *m_networkReply = nullptr;
   QEventLoop *m_eventLoop = nullptr;
   bool m_isReadingDone = false;
-  neutube::EReadStatus m_status = neutube::EReadStatus::NONE;
+  neutu::EReadStatus m_status = neutu::EReadStatus::NONE;
   int m_statusCode = 0;
   int m_maxSize = 0;
   std::map<QString, QString> m_header;

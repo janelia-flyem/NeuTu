@@ -1,16 +1,17 @@
 #ifndef ZFLYEMSTACKDOC_H
 #define ZFLYEMSTACKDOC_H
 
-#include "tz_graph.h"
-#include "zstackdoc.h"
-#include "zsynapseannotationarray.h"
-#include "zsuperpixelmaparray.h"
-#include "zgraph.h"
-#include "zsegmentationbundle.h"
-
 #include <vector>
 #include <string>
 #include <map>
+
+//#include "tz_graph.h"
+#include "mvc/zstackdoc.h"
+#include "zsynapseannotationarray.h"
+#include "zsuperpixelmaparray.h"
+#include "zsegmentationbundle.h"
+
+class ZGraph;
 
 class ZFlyEmStackDoc : public ZStackDoc
 {
@@ -28,7 +29,7 @@ public:
   void setSuperpixelMap(const ZSuperpixelMapArray &superpixelMap);
   void appendBodyNeighbor(std::vector<std::vector<double> > *selected);
 
-  QString rawDataInfo(double x, double y, int z, neutube::EAxis axis) const;
+  QString rawDataInfo(double x, double y, int z, neutu::EAxis axis) const;
 //  using ZStackDoc::rawDataInfo; // fix warning -Woverloaded-virtual
 
   //void setSegmentation(ZStack *seg);

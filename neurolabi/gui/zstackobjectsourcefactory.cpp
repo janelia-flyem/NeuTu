@@ -206,17 +206,17 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
-    neutube::EAxis axis)
+    neutu::EAxis axis)
 {
   std::string source = "#.DVIDLabelSlice";
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     source += ".X";
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -227,18 +227,18 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource(
-    neutube::EAxis axis)
+    neutu::EAxis axis)
 {
   std::string source =  "#.DVIDGraySlice";
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     source += ".X";
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     source += ".Y";
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     source += ".A";
     break;
   default:
@@ -358,14 +358,14 @@ std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
 }
 
 std::string
-ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutube::EAxis axis)
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutu::EAxis axis)
 {
   std::string source = MakeDvidSynapseEnsembleSource();
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     source += ".X";
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     source += ".Y";
     break;
   default:
@@ -405,14 +405,14 @@ std::string ZStackObjectSourceFactory::MakeProtocolRangeSource()
 }
 
 std::string
-ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutu::EAxis axis)
 {
   std::string source = MakeTodoListEnsembleSource();
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     source += ".X";
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     source += ".Y";
     break;
   default:

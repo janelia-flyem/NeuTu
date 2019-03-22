@@ -23,16 +23,16 @@ QList<ZPunctum*> ZPunctumIO::load(const QString &file)
 {
   QList<ZPunctum*> punctaList;
   switch (ZFileType::FileType(file.toStdString())) {
-  case ZFileType::FILE_V3D_APO:
+  case ZFileType::EFileType::V3D_APO:
     readV3DApoFile(file, punctaList);
     break;
-  case ZFileType::FILE_V3D_MARKER:
+  case ZFileType::EFileType::V3D_MARKER:
     readV3DMarkerFile(file, punctaList);
     break;
-  case ZFileType::FILE_RAVELER_BOOKMARK:
+  case ZFileType::EFileType::RAVELER_BOOKMARK:
     readRavelerBookmarkFile(file, punctaList);
     break;
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
     readJsonFile(file, punctaList);
   default:
     LWARN() << "Not supported puncta file type:" << file;

@@ -13,25 +13,20 @@
 
 #include "QsLog.h"
 
-#include "dialogs/informationdialog.h"
+#include "logging/zlog.h"
+#include "mvc/logging.h"
+
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"
 #include "tz_stack_lib.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "zdocumentable.h"
-//#include "zstackdrawable.h"
-#include "zlocalneuroseg.h"
-#include "zlocsegchain.h"
 #include "tz_vrml_io.h"
 #include "tz_vrml_material.h"
 #include "tz_color.h"
-#include "zstackframe.h"
-#include "zellipse.h"
 #include "tz_workspace.h"
 #include "tz_string.h"
-#include "zlocsegchainconn.h"
 #include "tz_stack.h"
 #include "tz_stack_objlabel.h"
 #include "tz_stack_attribute.h"
@@ -46,16 +41,23 @@
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
 #include "tz_local_rpi_neuroseg.h"
-#include "zlocalrect.h"
 #include "tz_geo3d_ball.h"
 #include "tz_workspace.h"
-#include "zdirectionaltemplatechain.h"
 #include "tz_r2_ellipse.h"
-#include "zstack.hxx"
 #include "tz_stack_stat.h"
-#include "mainwindow.h"
-#include "zerror.h"
 #include "tz_error.h"
+
+#include "zlocsegchainconn.h"
+#include "zstackframe.h"
+#include "zlocalneuroseg.h"
+#include "zlocsegchain.h"
+#include "zellipse.h"
+#include "zlocalrect.h"
+#include "zdirectionaltemplatechain.h"
+#include "zstack.hxx"
+
+//#include "mainwindow.h"
+#include "zerror.h"
 #include "zswcnetwork.h"
 #include "zstring.h"
 #include "zcolormap.h"
@@ -77,12 +79,10 @@
 #include "zstackdoccommand.h"
 #include "zstroke2d.h"
 #include "zqtmessagereporter.h"
-#include "zswcconnector.h"
+#include "swc/zswcconnector.h"
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include "dialogs/swcskeletontransformdialog.h"
-#include "dialogs/swcsizedialog.h"
 #include "tz_stack_watershed.h"
 #include "imgproc/zstackwatershed.h"
 #include "zstackarray.h"
@@ -124,6 +124,13 @@
 #include "data3d/zstackobjecthelper.h"
 #include "z3dgraph.h"
 #include "zcurve.h"
+#include "zneurontracer.h"
+
+#include "dialogs/swcskeletontransformdialog.h"
+#include "dialogs/swcsizedialog.h"
+#include "dialogs/resolutiondialog.h"
+#include "dialogs/zrescaleswcdialog.h"
+#include "dialogs/informationdialog.h"
 
 //using namespace std;
 
@@ -223,7 +230,7 @@ void ZStackDoc::init()
   m_isReadyForPaint = true;
   m_isSegmentationReady = false;
   m_changingSaveState = true;
-  m_autoSaving = true;
+  m_autoSaving = NeutubeConfig::getInstance().isAutoSaveEnabled();
 
   m_stack = NULL;
   m_sparseStack = NULL;
@@ -255,7 +262,7 @@ void ZStackDoc::init()
 
   //setReporter(new ZQtMessageReporter());
 
-  if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
+  if (m_autoSaving) {
     QTimer *timer = new QTimer(this);
     timer->start(NeutubeConfig::getInstance().getAutoSaveInterval());
     connect(timer, SIGNAL(timeout()), this, SLOT(autoSaveSlot()));
@@ -263,8 +270,8 @@ void ZStackDoc::init()
 
 //  createActions();
 
-  setTag(neutube::Document::ETag::NORMAL);
-  setStackBackground(neutube::EImageBackground::DARK);
+  setTag(neutu::Document::ETag::NORMAL);
+  setStackBackground(neutu::EImageBackground::DARK);
 
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
@@ -289,6 +296,28 @@ void ZStackDoc::init()
 //  startWorkThread();
 }
 
+ZNeuronTracer& ZStackDoc::getNeuronTracer()
+{
+  if (!m_neuronTracer) {
+    m_neuronTracer = std::make_shared<ZNeuronTracer>();
+  }
+  return *m_neuronTracer;
+}
+
+Trace_Workspace* ZStackDoc::getTraceWorkspace()
+{
+  return getNeuronTracer().getTraceWorkspace();
+}
+
+Connection_Test_Workspace* ZStackDoc::getConnectionTestWorkspace() {
+  return getNeuronTracer().getConnectionTestWorkspace();
+}
+
+Stack* ZStackDoc::computeSeedMask(Stack *stack)
+{
+  return getNeuronTracer().computeSeedMask(stack);
+}
+
 void ZStackDoc::shortcutTest()
 {
   std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
@@ -311,7 +340,7 @@ void ZStackDoc::clearData()
 
   /* workspaces */
   m_isTraceMaskObsolete = true;
-  m_neuronTracer.clear();
+  m_neuronTracer.reset();
 
   //Meta information
   m_stackSource.clear();
@@ -332,44 +361,38 @@ void ZStackDoc::clearData()
 
 void ZStackDoc::initNeuronTracer()
 {
-  m_neuronTracer.initTraceWorkspace(getStack());
-  m_neuronTracer.initConnectionTestWorkspace();
+  getNeuronTracer().setLogger([](const std::string &str) {
+    LINFO_NLN() << str;
+  });
+
+  getNeuronTracer().initTraceWorkspace(getStack());
+  getNeuronTracer().initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
-    if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK &&
+    if (getTag() == neutu::Document::ETag::BIOCYTIN_STACK &&
         getStack()->channelNumber() > 1) {
-      m_neuronTracer.setSignalChannel(1);
+      getNeuronTracer().setSignalChannel(1);
 //      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
     } else {
 //      m_neuronTracer.setIntensityField(getStack()->c_stack());
     }
-    m_neuronTracer.setIntensityField(getStack());
+    getNeuronTracer().setIntensityField(getStack());
   }
-  m_neuronTracer.setBackgroundType(getStackBackground());
-  if (getTag() == neutube::Document::ETag::FLYEM_BODY) {
-    m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
+  getNeuronTracer().setBackgroundType(getStackBackground());
+  if (getTag() == neutu::Document::ETag::FLYEM_BODY) {
+    getNeuronTracer().setVertexOption(ZStackGraph::VO_SURFACE);
   }
 
-  m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+  getNeuronTracer().setResolution(getResolution().voxelSizeX(),
                                getResolution().voxelSizeY(),
                                getResolution().voxelSizeZ());
 
-  /*
-  if (GET_APPLICATION_NAME == "Biocytin") {
-    m_neuronTracer.setResolution(1, 1, 10);
-  }
-  */
-
-//  ZIntPoint offset = getStackOffset();
-//  m_neuronTracer.setStackOffset(offset.getX(), offset.getY(), offset.getZ());
+#ifdef _DEBUG_
+  getNeuronTracer().enableTraceMask(false);
+#endif
 }
 
-/*
-void ZStackDoc::setParentFrame(ZStackFrame *parent)
-{
-  m_parentFrame = parent;
-}
-*/
+
 ZStack* ZStackDoc::getStack() const
 {
   return m_stack;
@@ -389,10 +412,10 @@ ZIntCuboid ZStackDoc::getDataRange() const
   return getStack()->getBoundBox();
 }
 
-void ZStackDoc::setStackBackground(neutube::EImageBackground bg)
+void ZStackDoc::setStackBackground(neutu::EImageBackground bg)
 {
     m_stackBackground = bg;
-    m_neuronTracer.setBackgroundType(bg);
+    getNeuronTracer().setBackgroundType(bg);
 }
 
 void ZStackDoc::emptySlot()
@@ -400,33 +423,11 @@ void ZStackDoc::emptySlot()
   QMessageBox::information(NULL, "empty slot", "To be implemented");
 }
 
-//void ZStackDoc::disconnectSwcNodeModelUpdate()
-//{
-//  disconnect(this, SIGNAL(swcModified()),
-//             m_swcNodeObjsModel, SLOT(updateModelData()));
-//}
-
-
-//void ZStackDoc::disconnectPunctaModelUpdate()
-//{
-//  disconnect(this, SIGNAL(punctaModified()),
-//             m_punctaObjsModel, SLOT(updateModelData()));
-//}
 
 void ZStackDoc::connectSignalSlot()
 {
   connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
           m_modelManager, SLOT(processObjectModified(ZStackObjectInfoSet)));
-
-//  connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
-//          m_roiObjsModel, SLOT(processObjectModified(ZStackObjectInfoSet)));
-//  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
-//  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -441,9 +442,6 @@ void ZStackDoc::connectSignalSlot()
           this, SLOT(advanceProgressSlot(double)));
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
-
-//  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
-//          this, SLOT(reloadData(ZStackDocReader)));
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)
@@ -511,7 +509,7 @@ void ZStackDoc::addTaskSlot(ZTask *task)
 void ZStackDoc::autoSaveSwc()
 {
   if (isSwcSavingRequired()) {
-    if (getTag() == neutube::Document::ETag::FLYEM_BODY_DISPLAY) {
+    if (getTag() == neutu::Document::ETag::FLYEM_BODY_DISPLAY) {
       return;
     }
 
@@ -561,7 +559,7 @@ void ZStackDoc::autoSave()
 
 void ZStackDoc::autoSaveSlot()
 {
-  LINFO() << "Autosave triggered.";
+  LKINFO << "Autosave triggered.";
   if (m_autoSaving) {
     autoSave();
   }
@@ -643,20 +641,20 @@ bool ZStackDoc::saveSwc(const std::string &filePath)
 void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
                                      double xRes, double yRes, double zRes)
 {
-  m_neuronTracer.updateTraceWorkspace(traceEffort, traceMasked,
+  getNeuronTracer().updateTraceWorkspace(traceEffort, traceMasked,
                                       xRes, yRes, zRes);
 }
 
 void ZStackDoc::updateTraceWorkspaceResolution(double xRes, double yRes, double zRes)
 {
-  m_neuronTracer.updateTraceWorkspaceResolution(xRes, yRes, zRes);
+  getNeuronTracer().updateTraceWorkspaceResolution(xRes, yRes, zRes);
 }
 
 void ZStackDoc::updateConnectionTestWorkspace(
     double xRes, double yRes, double zRes,
     char unit, double distThre, bool spTest, bool crossoverTest)
 {
-  m_neuronTracer.updateConnectionTestWorkspace(
+  getNeuronTracer().updateConnectionTestWorkspace(
         xRes, yRes, zRes, unit, distThre, spTest, crossoverTest);
 }
 
@@ -3378,7 +3376,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
 //  blockSignals(false);
 //  emit punctaModified();
 }
-
+#if 0
 int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 {
   if (getTraceWorkspace() == NULL) {
@@ -3402,6 +3400,7 @@ int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 
   return id;
 }
+#endif
 
 #if 0
 int ZStackDoc::pickPunctaIndex(int x, int y, int z) const
@@ -3714,6 +3713,19 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
   return const_cast<ZSwcTree*>(dynamic_cast<const ZSwcTree*>(objList.at(index)));
 }
 
+void ZStackDoc::removeTakenObject(ZStackObject *obj, bool deleteObject)
+{
+  neutu::LogObjectOperation("remove", obj);
+
+  m_playerList.removePlayer(obj);
+
+  bufferObjectModified(obj);
+
+  if (deleteObject) {
+    delete obj;
+  }
+}
+
 bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
   bool removed = false;
@@ -3723,15 +3735,24 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
     ZStackObject *taken = m_objectGroup.take(obj);
     if (taken != NULL) { //note obj can be invalid unless it resides in the doc
       assert(taken == obj);
+      removeTakenObject(obj, deleteObject);
+      removed = true;
+      processObjectModified();
+
+      /*
+      neutu::LogObjectOperation("remove", obj);
+
+
       m_playerList.removePlayer(obj);
       removed = true;
 
-      processObjectModified(obj);
+      bufferObjectModified(obj);
       processObjectModified();
 
       if (deleteObject) {
         delete obj;
       }
+      */
     }
   }
 
@@ -3748,13 +3769,7 @@ void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
   TStackObjectList objList = m_objectGroup.take(type);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    bufferObjectModified(*iter);
-    m_playerList.removePlayer(*iter);
-
-    if (deleteObject) {
-      delete *iter;
-    }
+    removeTakenObject(*iter, deleteObject);
   }
 
   processObjectModified();
@@ -3829,9 +3844,13 @@ void ZStackDoc::removeObjectP(
 //    role.addRole(m_playerList.removePlayer(*iter));
     ZStackObject *obj = *iter;
 
-#ifdef _DEBUG_
+    removeTakenObject(obj, deleting);
+#ifdef _DEBUG_2
     std::cout << "Removing object: " << obj << std::endl;
 #endif
+
+    /*
+    neutu::LogObjectOperation("remove", obj);
 
     bufferObjectModified(obj);
     m_playerList.removePlayer(obj);
@@ -3839,6 +3858,7 @@ void ZStackDoc::removeObjectP(
     if (deleting) {
       delete obj;
     }
+    */
   }
 
   processObjectModified();
@@ -3859,12 +3879,18 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 
   TStackObjectList objSet = m_objectGroup.take(ZStackObjectHelper::IsEmptyTree);
 
-//  QSet<ZStackObject::ETarget> targetSet;
 
-//  ZStackObjectRole role;
   for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
        ++iter) {
 //    role.addRole(m_playerList.removePlayer(*iter));
+
+    removeTakenObject(*iter, deleteObject);
+    if (!deleteObject) {
+      emptyTreeSet.insert(dynamic_cast<ZSwcTree*>(*iter));
+    }
+
+    /*
+    neutu::LogObjectOperation("remove", *iter);
 
     bufferObjectModified(*iter);
 //    bufferObjectModified((*iter)->getRole());
@@ -3874,24 +3900,10 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
     } else {
       emptyTreeSet.insert(dynamic_cast<ZSwcTree*>(*iter));
     }
+    */
   }
 
   processObjectModified();
-
-//  if (!emptyTreeSet.empty()) {
-
-////    bufferObjectModified(ZStackObject::EType::TYPE_SWC);
-////    bufferObjectModified(role);
-//    processObjectModified();
-//  }
-
-  /*
-  if (!emptyTreeSet.empty()) {
-    notifySwcModified();
-    processObjectModified(targetSet);
-    notifyPlayerChanged(role.getRole());
-  }
-  */
 
   return emptyTreeSet;
 }
@@ -3916,21 +3928,7 @@ std::set<ZSwcTree*> ZStackDoc::getEmptySwcTreeSet() const
 
 void ZStackDoc::removeAllSwcTree(bool deleteObject)
 {
-  //QMutexLocker locker(&m_mutex);
-
   removeObject(ZStackObject::EType::SWC, deleteObject);
-  /*
-  if (m_objectGroup.removeObject(ZStackObject::EType::TYPE_SWC, deleteObject)) {
-    notifySwcModified();
-  }
-  */
-//  blockSignals(true);
-//  QMutableListIterator<ZSwcTree*> swcIter(m_swcList);
-//  while (swcIter.hasNext()) {
-//    ZSwcTree *tree = swcIter.next();
-//    removeObject(tree, deleteObject);
-//  }
-//  blockSignals(false);
 }
 
 #define REMOVE_SELECTED_OBJECT(objtype, list, iter)	\
@@ -3950,13 +3948,18 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
 //  ZStackObjectRole role;
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
+
+    removeTakenObject(*iter, deleteObject);
+    /*
+    neutu::LogObjectOperation("remove", *iter);
+
     bufferObjectModified(*iter);
     m_playerList.removePlayer(*iter);
 
     if (deleteObject) {
       delete *iter;
     }
+    */
   }
 
   processObjectModified();
@@ -4113,7 +4116,7 @@ void ZStackDoc::setMeshSelected(ZMesh* mesh, bool select)
   }
 }
 
-void ZStackDoc::deselectAllMesh()
+int ZStackDoc::deselectAllMesh()
 {
   QList<ZMesh*> deselected;
 
@@ -4127,6 +4130,8 @@ void ZStackDoc::deselectAllMesh()
   m_objectGroup.setSelected(ZStackObject::EType::MESH, false);
 
   notifyDeselected(deselected);
+
+  return deselected.size();
 }
 
 #if 1
@@ -4542,58 +4547,6 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
 
   notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
                          m_objectGroup.getSelector()->getDeselectedSet());
-
-#if 0
-  switch (type) {
-  case ZStackObject::EType::TYPE_SWC_NODE:
-    deselectAllSwcTreeNodes();
-    break;
-  case ZStackObject::TYPE_DVID_LABEL_SLICE:
-  {
-    QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
-    foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
-      if (labelSlice->isHittable()) {
-        labelSlice->deselectAll();
-      }
-    }
-  }
-    break;
-  default:
-  {
-    TStackObjectList objList = getObjectList(type);
-    m_objectGroup.getSelector()->reset();
-
-    for (TStackObjectList::iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      ZStackObject *obj = *iter;
-      if (obj->isSelected()) {
-        m_objectGroup.setSelected(obj, false);
-      }
-    }
-    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedObjectSet(type),
-                           m_objectGroup.getSelector()->getDeselectedObjectSet(type));
-  }
-    break;
-  }
-
-  //m_selectedSwcTreeNodes.clear();
-
-
-  if (type == ZStackObject::EType::TYPE_SWC) {
-    notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::EType::TYPE_SWC));
-  }
-
-  if (type == ZStackObject::EType::TYPE_PUNCTUM) {
-    notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::EType::TYPE_PUNCTUM));
-  }
-
-  if (type == ZStackObject::EType::TYPE_LOCSEG_CHAIN) {
-    notifyDeselected(getSelectedObjectList<ZLocsegChain>(
-                       ZStackObject::EType::TYPE_LOCSEG_CHAIN));
-  }
-#endif
-
-//  m_objectGroup.setSelected(false);
 }
 
 void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)
@@ -4624,9 +4577,8 @@ void ZStackDoc::setMeshVisible(ZMesh* mesh, bool visible)
 {
   if (mesh->isVisible() != visible) {
     mesh->setVisible(visible);
-    bufferObjectModified(mesh);
+    bufferObjectVisibilityChanged(mesh);
     processObjectModified();
-//    emit meshVisibleStateChanged();
   }
 }
 
@@ -4706,14 +4658,7 @@ ZCurve ZStackDoc::locsegProfileCurve(int option) const
   return curve;
 }
 
-/*
-void ZStackDoc::addObject(ZStackObject *obj)
-{
-  m_objectGroup.add(obj);
-//  m_objectList.append(obj);
-  notifyObjectModified();
-}
-*/
+
 void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
 {
   if (m_swcNetwork == NULL) {
@@ -4750,14 +4695,14 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
 
 void ZStackDoc::setAutoTraceMinScore(double score)
 {
-  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_AUTO);
-  m_neuronTracer.setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
+  getNeuronTracer().setMinScore(score, ZNeuronTracer::TRACING_AUTO);
+  getNeuronTracer().setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
 //  m_neuronTracer.setAutoTraceMinScore(score);
 }
 
 void ZStackDoc::setManualTraceMinScore(double score)
 {
-  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
+  getNeuronTracer().setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
 
 //  m_neuronTracer.setManualTraceMinScore(score);
 //  m_neuronTracer.setAutoTraceMinScore(score);
@@ -4853,7 +4798,7 @@ void ZStackDoc::mergeAllChain()
    }
 }
 
-QString ZStackDoc::rawDataInfo(double cx, double cy, int z, neutube::EAxis axis) const
+QString ZStackDoc::rawDataInfo(double cx, double cy, int z, neutu::EAxis axis) const
 {
   QString info;
 
@@ -4997,13 +4942,13 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
                          m_objectGroup.getSelector()->getDeselectedSet());
 }
 
-void ZStackDoc::selectObject(ZStackObject *obj, neutube::ESelectOption option)
+void ZStackDoc::selectObject(ZStackObject *obj, neutu::ESelectOption option)
 {
   switch (option) {
-  case neutube::ESelectOption::ALONE:
+  case neutu::ESelectOption::ALONE:
     getObjectGroup().deselectAll();
     break;
-  case neutube::ESelectOption::ALONE_TYPE:
+  case neutu::ESelectOption::ALONE_TYPE:
     if (obj != NULL) {
       getObjectGroup().setSelected(obj->getType(), false);
     } else {
@@ -5087,7 +5032,7 @@ bool ZStackDoc::invert()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::invert(mainStack);
+    ZStackProcessor::Invert(mainStack);
     notifyStackModified(false);
     return true;
   }
@@ -5170,7 +5115,7 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
   for (QList<QUrl>::const_iterator iter = urlList.begin();
        iter != urlList.end(); ++iter) {
     // load files inside if is folder
-    QString filePath = neutube::GetFilePath(*iter);
+    QString filePath = neutu::GetFilePath(*iter);
     QFileInfo dirCheck(filePath);
     if (dirCheck.isDir()) {
       QDir dir = dirCheck.absoluteDir();
@@ -5188,83 +5133,14 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
 
 void ZStackDoc::loadFileList(const QStringList &fileList)
 {
-//  bool swcLoaded = false;
-//  bool chainLoaded = false;
-  bool networkLoaded = false;
-//  bool punctaLoaded = false;
-//  bool obj3dScanLoaded = false;
-  //bool apoLoaded = false;
-
-//  m_changingSaveState = false;
-
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
-    switch (ZFileType::FileType(iter->toStdString())) {
-    case ZFileType::FILE_SWC:
-    case ZFileType::FILE_SYNAPSE_ANNOTATON:
-//      swcLoaded = true;
-      break;
-    case ZFileType::FILE_SWC_NETWORK:
-    case ZFileType::FILE_FLYEM_NETWORK:
-//      swcLoaded = true;
-      networkLoaded = true;
-      break;
-    case ZFileType::FILE_LOCSEG_CHAIN:
-//      chainLoaded = true;
-      break;
-    case ZFileType::FILE_V3D_APO:
-    case ZFileType::FILE_V3D_MARKER:
-    case ZFileType::FILE_RAVELER_BOOKMARK:
-//      punctaLoaded = true;
-      break;
-    case ZFileType::FILE_OBJECT_SCAN:
-//      obj3dScanLoaded = true;
-      break;
-    default:
-      break;
-    }
-
-//    blockSignals(true);
     loadFile(*iter);
-//    blockSignals(false);
   }
-
   endObjectModifiedMode();
   processObjectModified();
-
-  if (networkLoaded) {
-    emit swcNetworkModified();
-  }
-
-//  m_changingSaveState = true;
-
-  /*
-  if (swcLoaded) {
-    emit swcModified();
-  }
-
-  if (chainLoaded) {
-    emit chainModified();
-  }
-
-  if (networkLoaded) {
-    emit swcNetworkModified();
-  }
-
-  if (punctaLoaded) {
-    emit punctaModified();
-  }
-
-  if (obj3dScanLoaded) {
-    notifyObject3dScanModified();
-  }
-  */
-
-#ifdef _FLYEM_2
-  emit punctaModified();
-#endif
 }
 
 bool ZStackDoc::loadFile(const std::string filePath)
@@ -5277,8 +5153,12 @@ bool ZStackDoc::loadFile(const char *filePath)
   return loadFile(QString(filePath));
 }
 
-
 bool ZStackDoc::loadFile(const QString &filePath)
+{
+  return _loadFile(filePath);
+}
+
+bool ZStackDoc::_loadFile(const QString &filePath)
 {
   QFile file(filePath);
 
@@ -5295,7 +5175,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   std::string filePathStr = filePath.toStdString();
 //  const char *filePathStr = filePath.toLocal8Bit().constData();
   switch (ZFileType::FileType(filePathStr)) {
-  case ZFileType::FILE_SWC:
+  case ZFileType::EFileType::SWC:
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
@@ -5306,13 +5186,13 @@ bool ZStackDoc::loadFile(const QString &filePath)
   }
 //    loadSwc(filePath);
     break;
-  case ZFileType::FILE_LOCSEG_CHAIN:
+  case ZFileType::EFileType::LOCSEG_CHAIN:
     loadLocsegChain(filePath);
     break;
-  case ZFileType::FILE_SWC_NETWORK:
+  case ZFileType::EFileType::SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
-  case ZFileType::FILE_GRAPH_3D:
+  case ZFileType::EFileType::GRAPH_3D:
   {
     Z3DGraph *graph = new Z3DGraph;
     graph->load(filePath.toStdString());
@@ -5321,7 +5201,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     }
   }
     break;
-  case ZFileType::FILE_OBJECT_SCAN_ARRAY:
+  case ZFileType::EFileType::OBJECT_SCAN_ARRAY:
   {
     succ = false;
     ZObject3dScanArray objArray;
@@ -5348,8 +5228,8 @@ bool ZStackDoc::loadFile(const QString &filePath)
     objArray.shallowClear();
   }
     break;
-  case ZFileType::FILE_OBJECT_SCAN:
-    setTag(neutube::Document::ETag::FLYEM_BODY);
+  case ZFileType::EFileType::OBJECT_SCAN:
+    setTag(neutu::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->load(filePath.toStdString());
@@ -5375,8 +5255,8 @@ bool ZStackDoc::loadFile(const QString &filePath)
       }
     }
     break; //experimenting _DEBUG_
-  case ZFileType::FILE_DVID_OBJECT:
-    setTag(neutube::Document::ETag::FLYEM_BODY);
+  case ZFileType::EFileType::DVID_OBJECT:
+    setTag(neutu::Document::ETag::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
       obj->importDvidObject(filePathStr);
@@ -5404,33 +5284,33 @@ bool ZStackDoc::loadFile(const QString &filePath)
       }
     }
     break;
-  case ZFileType::FILE_TIFF:
-  case ZFileType::FILE_LSM:
-  case ZFileType::FILE_V3D_RAW:
-  case ZFileType::FILE_PNG:
-  case ZFileType::FILE_V3D_PBD:
+  case ZFileType::EFileType::TIFF:
+  case ZFileType::EFileType::LSM:
+  case ZFileType::EFileType::V3D_RAW:
+  case ZFileType::EFileType::PNG:
+  case ZFileType::EFileType::V3D_PBD:
     readStack(filePathStr.c_str(), false);
     break;
-  case ZFileType::FILE_SPARSE_STACK:
+  case ZFileType::EFileType::SPARSE_STACK:
     readSparseStack(filePathStr);
     break;
-  case ZFileType::FILE_FLYEM_NETWORK:
+  case ZFileType::EFileType::FLYEM_NETWORK:
     importFlyEmNetwork(filePathStr.c_str());
     break;
-  case ZFileType::FILE_JSON:
-  case ZFileType::FILE_SYNAPSE_ANNOTATON:
+  case ZFileType::EFileType::JSON:
+  case ZFileType::EFileType::SYNAPSE_ANNOTATON:
     if (!importSynapseAnnotation(filePathStr)) {
       succ = false;
     }
     break;
-  case ZFileType::FILE_V3D_APO:
-  case ZFileType::FILE_V3D_MARKER:
-  case ZFileType::FILE_RAVELER_BOOKMARK:
+  case ZFileType::EFileType::V3D_APO:
+  case ZFileType::EFileType::V3D_MARKER:
+  case ZFileType::EFileType::RAVELER_BOOKMARK:
     if (!importPuncta(filePathStr.c_str())) {
       succ = false;
     }
     break;
-  case ZFileType::FILE_MESH:
+  case ZFileType::EFileType::MESH:
     if (!importMesh(filePath)) {
       succ = false;
     }
@@ -5463,7 +5343,7 @@ void ZStackDoc::deprecate(EComponent component)
   case EComponent::STACK:
     delete stackRef();
     stackRef() = NULL;
-    m_neuronTracer.clear();
+    m_neuronTracer.reset();
     break;
   case EComponent::SPARSE_STACK:
     delete m_sparseStack;
@@ -5495,7 +5375,7 @@ ZStackObject* ZStackDoc::hitTestWidget(int x, int y)
 */
 
 ZStackObject* ZStackDoc::hitTest(
-    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis)
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutu::EAxis axis)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5538,7 +5418,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 }
 
 ZStackObject* ZStackDoc::hitTest(
-    double x, double y, neutube::EAxis sliceAxis)
+    double x, double y, neutu::EAxis sliceAxis)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5826,7 +5706,7 @@ void ZStackDoc::test(QProgressBar *pb)
   }
 }
 
-const char* ZStackDoc::tubePrefix() const
+const char* ZStackDoc::tubePrefix()
 {
   if (getTraceWorkspace() != NULL) {
     return getTraceWorkspace()->save_prefix;
@@ -5856,8 +5736,10 @@ void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::EMessageType::INFORMATION,
-          ZWidgetMessage::TARGET_CUSTOM_AREA));
+          message, neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_CUSTOM_AREA |
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
 }
 
 void ZStackDoc::notifyPunctumModified()
@@ -6038,11 +5920,6 @@ void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
   ZStackObjectInfo info;
   info.set(*obj);
   processObjectModified(info, sync);
-  /*
-  processObjectModified(obj->getType(), sync);
-  processObjectModified(obj->getTarget(), sync);
-  processObjectModified(obj->getRole(), sync);
-  */
 }
 
 void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
@@ -6143,7 +6020,7 @@ void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
 
 void ZStackDoc::notifyObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  LDEBUG() << "emit signal: objectModified";
+//  LDEBUG() << "emit signal: objectModified";
   emit objectModified(infoSet);
 }
 
@@ -6461,11 +6338,11 @@ void ZStackDoc::setStackBc(double factor, double offset, int channel)
 {
   if (channel == 0) {
     if (factor != 1.0 || offset != 0.0) {
-      m_neuronTracer.setBcAdjust(true);
-      m_neuronTracer.setGreyFactor(factor);
-      m_neuronTracer.setGrayOffset(offset);
+      getNeuronTracer().setBcAdjust(true);
+      getNeuronTracer().setGreyFactor(factor);
+      getNeuronTracer().setGrayOffset(offset);
     } else {
-      m_neuronTracer.setBcAdjust(false);
+      getNeuronTracer().setBcAdjust(false);
     }
   }
 }
@@ -6477,7 +6354,8 @@ void ZStackDoc::notify(const ZWidgetMessage &msg)
 
 void ZStackDoc::notify(const QString &msg)
 {
-  notify(ZWidgetMessage(msg));
+  emitInfo(msg);
+//  notify(ZWidgetMessage(msg));
 }
 
 void ZStackDoc::notifyUpdateLatency(int64_t t)
@@ -6487,7 +6365,7 @@ void ZStackDoc::notifyUpdateLatency(int64_t t)
 
 void ZStackDoc::processMessage(const ZWidgetMessage &msg)
 {
-  emit messageGenerated(msg);
+  notify(msg);
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -6534,7 +6412,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
           m_neuronTracer.setResolution(1, 1, 10);
         }
         */
-        m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+        getNeuronTracer().setResolution(getResolution().voxelSizeX(),
                                      getResolution().voxelSizeY(),
                                      getResolution().voxelSizeZ());
 
@@ -6544,11 +6422,11 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //          m_neuronTracer.useEdgePath(true);
 //        }
 
-        if (getTag() == neutube::Document::ETag::FLYEM_ROI) {
-          m_neuronTracer.setEstimatingRadius(false);
+        if (getTag() == neutu::Document::ETag::FLYEM_ROI) {
+          getNeuronTracer().setEstimatingRadius(false);
         }
 
-        Swc_Tree *branch = m_neuronTracer.trace(
+        Swc_Tree *branch = getNeuronTracer().trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
               SwcTreeNode::z(prevNode), SwcTreeNode::radius(prevNode),
               center.x(), center.y(), center.z(), radius);
@@ -6563,7 +6441,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               leaf = SwcTreeNode::firstChild(leaf);
             }
             ZSwcPath originalPath(root, leaf);
-            if (getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
+            if (getTag() == neutu::Document::ETag::BIOCYTIN_STACK) {
               originalPath.smooth(true);
             } else {
               originalPath.smoothRadius(true);
@@ -7174,7 +7052,7 @@ bool ZStackDoc::estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter)
 
   int channel = 0;
   if (getStack()->channelNumber() == 3 &&
-      getTag() == neutube::Document::ETag::BIOCYTIN_STACK) {
+      getTag() == neutu::Document::ETag::BIOCYTIN_STACK) {
     channel = 1;
   }
 
@@ -7428,7 +7306,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   }
 
   notify(ZWidgetMessage(
-           message, neutube::EMessageType::INFORMATION,
+           message, neutu::EMessageType::INFORMATION,
            ZWidgetMessage::TARGET_STATUS_BAR));
 
   return succ;
@@ -7496,7 +7374,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
 }
 void ZStackDoc::executeAddTodoCommand(
     int /*x*/, int /*y*/, int /*z*/, bool /*checked*/,
-    neutube::EToDoAction /*action*/, uint64_t /*id*/)
+    neutu::EToDoAction /*action*/, uint64_t /*id*/)
 {
 }
 
@@ -7783,7 +7661,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
 
   if (tree1 != tree2) {
     //Check source
-    if (ZFileType::FileType(tree2->getSource()) == ZFileType::FILE_SWC) {
+    if (ZFileType::FileType(tree2->getSource()) == ZFileType::EFileType::SWC) {
       upNode = tn2;
       downNode = tn1;
     }
@@ -7851,7 +7729,7 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
                       getStack()->depth());
   }
 
-  Swc_Tree *branch = m_neuronTracer.trace(
+  Swc_Tree *branch = getNeuronTracer().trace(
         SwcTreeNode::x(tn1), SwcTreeNode::y(tn1),
         SwcTreeNode::z(tn1), SwcTreeNode::radius(tn1),
         SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
@@ -8154,6 +8032,8 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
     return;
   }
 
+  neutu::LogObjectOperation("add", obj);
+
   if (obj->isSelected()) {
     setSelected(obj, true);
   }
@@ -8338,8 +8218,8 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 //    m_isSegmentationReady = false;
     setSegmentationReady(false);
 
-    emit messageGenerated(
-          ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
+    notify(ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
+
     emit seedModified();
   }
 
@@ -8544,9 +8424,9 @@ bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
 bool ZStackDoc::executeTraceSwcBranchCommand(
     double /*x*/, double /*y*/, double /*z*/, int /*c*/)
 {
-  emit messageGenerated(
-        ZWidgetMessage("Multi-channel image tracing is yet to be supported",
-                       neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
+  notify(ZWidgetMessage(
+           "Multi-channel image tracing is yet to be supported",
+           neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
 
   return false;
 }
@@ -8567,13 +8447,13 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
   */
 
   //ZNeuronTracer tracer;
-  m_neuronTracer.setIntensityField(getStack());
+  getNeuronTracer().setIntensityField(getStack());
   //tracer.setTraceWorkspace(getTraceWorkspace());
   //tracer.setStackOffset(getStackOffset().x(), getStackOffset().y(),
   //                      getStackOffset().z());
 
   refreshTraceMask();
-  ZSwcPath branch = m_neuronTracer.trace(x, y, z);
+  ZSwcPath branch = getNeuronTracer().trace(x, y, z);
 
   if (branch.size() > 1) {
     ZSwcConnector swcConnector;
@@ -8721,7 +8601,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
 
 void ZStackDoc::updateTraceMask()
 {
-  m_neuronTracer.initTraceMask(true);
+  getNeuronTracer().initTraceMask(true);
 
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -8743,27 +8623,27 @@ void ZStackDoc::updateTraceMask()
 
 bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-  m_neuronTracer.setProgressReporter(getProgressReporter());
+  getNeuronTracer().setProgressReporter(getProgressReporter());
 
   startProgress(0.9);
-  m_neuronTracer.setTraceLevel(traceLevel);
-  m_neuronTracer.setBackgroundType(m_stackBackground);
+  getNeuronTracer().setTraceLevel(traceLevel);
+  getNeuronTracer().setBackgroundType(m_stackBackground);
 
-  int recover = m_neuronTracer.getRecoverLevel();
+  int recover = getNeuronTracer().getRecoverLevel();
 
   if (hasSwcData()) {
-    m_neuronTracer.setRecoverLevel(0);
+    getNeuronTracer().setRecoverLevel(0);
   }
 
-  m_neuronTracer.setSignalChannel(c);
+  getNeuronTracer().setSignalChannel(c);
 
-  m_neuronTracer.setTraceRange(getStack()->getBoundBox());
+  getNeuronTracer().setTraceRange(getStack()->getBoundBox());
 
   updateTraceMask();
 
-  ZSwcTree *tree = m_neuronTracer.trace(getStack(), doResample);
+  ZSwcTree *tree = getNeuronTracer().trace(getStack(), doResample);
 
-  m_neuronTracer.setRecoverLevel(recover);
+  getNeuronTracer().setRecoverLevel(recover);
 
   endProgress(0.9);
 
@@ -8842,7 +8722,11 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           notifySwcModified();
           QString msg = QString(tree->getSource().c_str()) + " saved.";
           emit statusMessageUpdated(msg);
-          emit messageGenerated(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION));
+          notify(ZWidgetMessage(
+                   msg, neutu::EMessageType::INFORMATION,
+                   ZWidgetMessage::TARGET_TEXT_APPENDING |
+                   ZWidgetMessage::TARGET_STATUS_BAR));
+//          emit messageGenerated(ZWidgetMessage(msg, neutu::EMessageType::INFORMATION));
         }
       }
     }
@@ -9573,7 +9457,7 @@ ZIntPoint ZStackDoc::getStackOffset() const
   return ZIntPoint(0, 0, 0);
 }
 
-int ZStackDoc::getStackOffset(neutube::EAxis axis) const
+int ZStackDoc::getStackOffset(neutu::EAxis axis) const
 {
   return getStackOffset().getSliceCoord(axis);
 }
@@ -9881,11 +9765,12 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   obj->getLabel()));
           obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
-          obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
+          obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
           obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
-          LINFO() << "Adding" << obj << obj->getSource();
+          LKINFO << QString("Adding %1 %2").arg(neutu::ToString(obj).c_str())
+                    .arg(obj->getSource().c_str());
           //              addObject(obj, true);
           m_dataBuffer->addUpdate(
                 obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
@@ -10144,7 +10029,7 @@ void ZStackDoc::runSeededWatershed()
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
 
-  ZOUT(LINFO(), 3) << "Retrieving label set";
+  ZOUT(LKINFO, 3) << "Retrieving label set";
 
   QSet<int> labelSet;
   foreach (const ZDocPlayer *player, playerList) {
@@ -10152,11 +10037,14 @@ void ZStackDoc::runSeededWatershed()
   }
 
   if (labelSet.size() < 2) {
-    ZWidgetMessage message(
-          QString("The seed has no more than one label. No split is done"));
-    message.setType(neutube::EMessageType::WARNING);
+    emitWarning("The seed has no more than one label. No split is done");
+//    ZWidgetMessage message(
+//          QString("The seed has no more than one label. No split is done"),
+//          neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_TEXT_APPENDING);
+//    message.setType(neutu::EMessageType::WARNING);
 
-    emit messageGenerated(message);
+//    emit messageGenerated(message);
+
     return;
   }
 
@@ -10769,7 +10657,8 @@ void ZStackDoc::setVisible(ZStackObject *obj, bool visible)
 {
   if (obj->isVisible() != visible) {
     obj->setVisible(visible);
-    bufferObjectModified(obj);
+    bufferObjectVisibilityChanged(obj);
+//    bufferObjectModified(obj);
     processObjectModified(obj);
   }
 }
@@ -10777,9 +10666,9 @@ void ZStackDoc::setVisible(ZStackObject *obj, bool visible)
 void ZStackDoc::prepareSwc(ZSwcTree *tree)
 {
   if (m_showingFullSwc) {
-    tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+    tree->addVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
   } else {
-    tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+    tree->removeVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
   }
 }
 
@@ -10860,6 +10749,24 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
+{
+  emit messageGenerated(ZWidgetMessage(msg, type,
+                                       ZWidgetMessage::TARGET_TEXT_APPENDING |
+                                       ZWidgetMessage::TARGET_LOG_FILE |
+                                       ZWidgetMessage::TARGET_KAFKA));
+}
+
+void ZStackDoc::emitInfo(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::INFORMATION);
+}
+
+void ZStackDoc::emitWarning(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::WARNING);
+}
+
 template <class InputIterator>
 void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool select)
 {
@@ -10890,7 +10797,7 @@ void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
                                      const std::set<T*> &newSelected)
 {
   QList<T*> selected;
-  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
+  std::set<T*> addedSet = neutu::setdiff(newSelected, oldSelected);
   for (typename std::set<T*>::const_iterator iter = addedSet.begin();
        iter != addedSet.end(); ++iter) {
     selected.append(const_cast<T*>(*iter));
@@ -10914,7 +10821,7 @@ void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
                                        const std::set<T*> &newSelected)
 {
   QList<T*> deselected;
-  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
+  std::set<T*> removedSet = neutu::setdiff(oldSelected, newSelected);
   for (typename std::set<T*>::const_iterator iter = removedSet.begin();
        iter != removedSet.end(); ++iter) {
     deselected.append(const_cast<T*>(*iter));

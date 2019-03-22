@@ -5,20 +5,23 @@
 
 #include <fstream>
 
-#include "zsegmentationbundle.h"
-#include "zflyemstackdoc.h"
-#include "zdoublevector.h"
-#include "zstackpresenter.h"
-#include "zstackview.h"
-#include "zsegmentationanalyzer.h"
-#include "zopencv_header.h"
-#include "neutubeconfig.h"
 #include "tz_u8array.h"
+
 #include "zhdf5reader.h"
 #include "zhdf5writer.h"
 #include "zstring.h"
-#include "flyem/zbcfset.h"
+#include "zbcfset.h"
 #include "zmatrix.h"
+#include "zdoublevector.h"
+
+#include "neutubeconfig.h"
+
+#include "zsegmentationbundle.h"
+#include "zflyemstackdoc.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackview.h"
+#include "zsegmentationanalyzer.h"
+#include "zopencv_header.h"
 
 using namespace std;
 

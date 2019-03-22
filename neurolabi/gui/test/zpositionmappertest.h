@@ -4,8 +4,9 @@
 #include "ztestheader.h"
 #include "mvc/zpositionmapper.h"
 #include "zviewproj.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "geometry/zaffineplane.h"
+#include "mvc/zstackdocutil.h"
 
 #ifdef _USE_GTEST_
 
@@ -13,7 +14,7 @@ TEST(ZPositionMapper, WidgetToRawStack)
 {
   ZStackDoc doc;
   doc.loadStack(ZStackFactory::MakeVirtualStack(100, 200, 300));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::EAxis::Z);
+  ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
@@ -58,7 +59,7 @@ TEST(ZPositionMapper, WidgetToRawStackWithOffset)
   range.setFirstCorner(10, 20, 30);
   range.setSize(100, 200, 300);
   doc.loadStack(ZStackFactory::MakeVirtualStack(range));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::EAxis::Z);
+  ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
@@ -103,7 +104,7 @@ TEST(ZPositionMapper, WidgetToStack)
   range.setFirstCorner(10, 20, 30);
   range.setSize(100, 200, 300);
   doc.loadStack(ZStackFactory::MakeVirtualStack(range));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::EAxis::Z);
+  ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
@@ -172,7 +173,7 @@ TEST(ZPositionMapper, StackToData)
   ASSERT_DOUBLE_EQ(210, pt.getY());
   ASSERT_DOUBLE_EQ(320, pt.getZ());
 
-  pt = ZPositionMapper::StackToData(ZPoint(10, 20, 30), neutube::EAxis::X);
+  pt = ZPositionMapper::StackToData(ZPoint(10, 20, 30), neutu::EAxis::X);
   ASSERT_DOUBLE_EQ(30, pt.getX());
   ASSERT_DOUBLE_EQ(20, pt.getY());
   ASSERT_DOUBLE_EQ(10, pt.getZ());

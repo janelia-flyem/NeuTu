@@ -4,19 +4,25 @@
 #include <QKeyEvent>
 
 #include "common/zsharedpointer.h"
-#include "flyem/zflyemorthodoc.h"
-#include "flyem/zflyemorthomvc.h"
+#include "logging/zlog.h"
+
+#include "neutubeconfig.h"
+#include "mvc/zstackdocutil.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackpresenter.h"
+#include "zcrosshair.h"
+
 #include "dvid/zdvidtarget.h"
-#include "flyem/flyemorthocontrolform.h"
-#include "zstackview.h"
-#include "zstackpresenter.h"
+
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
-#include "zcrosshair.h"
+
+#include "zflyemorthodoc.h"
+#include "zflyemorthomvc.h"
+#include "flyemorthocontrolform.h"
+#include "zflyemorthoviewhelper.h"
 #include "zflyemproofpresenter.h"
-#include "neutubeconfig.h"
-#include "flyem/zflyemorthoviewhelper.h"
-#include "zstackdochelper.h"
+
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -41,16 +47,16 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target,
       ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc(width, height, depth));
   sharedDoc->setDvidTarget(target);
 
-  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Z);
+  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::Z);
   m_xyMvc->setDvidLabelSliceSize(width, height);
 //  xyWidget->setDvidTarget(target);
 //  m_xyMvc->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
 
-  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::X);
+  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::X);
   m_yzMvc->setDvidLabelSliceSize(depth, height);
 //  yzWidget->setDvidTarget(target);
 
-  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::EAxis::Y);
+  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::Y);
   m_xzMvc->setDvidLabelSliceSize(width, depth);
 //  xzWidget->setDvidTarget(target);
 
@@ -115,8 +121,10 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_controlForm, SIGNAL(movingRight()), this, SLOT(moveRight()));
   connect(m_controlForm, SIGNAL(locatingMain()),
           this, SLOT(locateMainWindow()));
-  connect(m_controlForm, SIGNAL(resettingCrosshair()),
-          this, SLOT(resetCrosshair()));
+  connect(m_controlForm, &FlyEmOrthoControlForm::resettingCrosshair,
+          this, &ZFlyEmOrthoWidget::resetCrosshair);
+  connect(m_controlForm, &FlyEmOrthoControlForm::reloading,
+          this, &ZFlyEmOrthoWidget::reloadStack);
   connect(m_controlForm, SIGNAL(showingSeg(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(m_controlForm, SIGNAL(showingData(bool)),
@@ -200,7 +208,7 @@ void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 void ZFlyEmOrthoWidget::moveUp()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() - currentBox.getHeight() / 2);
 
@@ -210,7 +218,7 @@ void ZFlyEmOrthoWidget::moveUp()
 void ZFlyEmOrthoWidget::moveDown()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() + currentBox.getHeight() / 2);
 
@@ -220,7 +228,7 @@ void ZFlyEmOrthoWidget::moveDown()
 void ZFlyEmOrthoWidget::moveLeft()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() - currentBox.getWidth() / 2);
 
@@ -230,7 +238,7 @@ void ZFlyEmOrthoWidget::moveLeft()
 void ZFlyEmOrthoWidget::moveRight()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocUtil::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() + currentBox.getWidth() / 2);
 
@@ -241,6 +249,16 @@ void ZFlyEmOrthoWidget::locateMainWindow()
 {
   ZIntPoint center = m_xyMvc->getViewCenter();
   emit zoomingTo(center.getX(), center.getY(), center.getZ());
+}
+
+void ZFlyEmOrthoWidget::reloadStack()
+{
+  KLOG << ZLog::Info()
+       << ZLog::Description("orthogonal view: reload stack from crosshair")
+       << ZLog::Window("ZFlyEmOrthoWidget");
+
+  m_xyMvc->updateStackFromCrossHair();
+  resetCrosshair();
 }
 
 void ZFlyEmOrthoWidget::resetCrosshair()
@@ -400,7 +418,7 @@ void ZFlyEmOrthoWidget::endCrossHairSync()
 
 void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
+  if (mvc->getView()->getSliceAxis() == neutu::EAxis::ARB) {
     return;
   }
 
@@ -410,19 +428,19 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     helper.syncCrossHair(m_yzMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
@@ -431,7 +449,7 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
-  if (mvc->getView()->getSliceAxis() == neutube::EAxis::ARB) {
+  if (mvc->getView()->getSliceAxis() == neutu::EAxis::ARB) {
     return;
   }
 
@@ -441,26 +459,26 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     helper.syncViewPort(m_yzMvc);
     helper.syncViewPort(m_xzMvc);
 
 //    m_yzMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(mvc->getView());
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_xzMvc);
 //    m_xyMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());
 //    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

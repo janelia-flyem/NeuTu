@@ -3,15 +3,12 @@
 #include <exception>
 #include <iostream>
 
-//#include <QTimer>
-//#include <QNetworkRequest>
 #include <QDebug>
 
-#include "logging/utilities.h"
-//#include <QNetworkReply>
-//#include <QCoreApplication>
-
 #include "libdvidheader.h"
+
+#include "logging/utilities.h"
+#include "logging/zlog.h"
 
 #include "zsleeper.h"
 #include "znetbufferreader.h"
@@ -30,7 +27,7 @@ void ZDvidBufferReader::_init()
 {
 //  m_networkReply = NULL;
   m_isReadingDone = false;
-  m_status = neutube::EReadStatus::NONE;
+  m_status = neutu::EReadStatus::NONE;
   m_tryingCompress = false;
 
   //Make sure that the reader is processed in the main event loop
@@ -106,7 +103,7 @@ void ZDvidBufferReader::read(
     qDebug() << "Reading " << url;
   }
 
-  neutu::LogUrlIO("read", url);
+  neutu::LogUrlIO("read", url, payload);
 
   m_buffer.clear();
 
@@ -119,8 +116,12 @@ void ZDvidBufferReader::read(
   if (target.isValid()) {
     try {
       std::string endPoint = ZDvidUrl::GetPath(url.toStdString());
-      libdvid::BinaryDataPtr libdvidPayload =
-          libdvid::BinaryData::create_binary_data(payload.data(), payload.length());
+      libdvid::BinaryDataPtr libdvidPayload;
+      if (!payload.isEmpty()) {
+        libdvidPayload = libdvid::BinaryData::create_binary_data(
+              payload.data(), payload.length());
+      }
+
       libdvid::BinaryDataPtr data;
 
       libdvid::ConnectionMethod connMeth = libdvid::GET;
@@ -143,12 +144,14 @@ void ZDvidBufferReader::read(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
       }
 
-      m_buffer.append(data->get_data().c_str(), data->length());
-      m_status = neutube::EReadStatus::OK;
+      if (data->length() > 0) {
+        m_buffer.append(data->get_data().c_str(), data->length());
+      }
+      m_status = neutu::EReadStatus::OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      STD_COUT << e.what() << std::endl;
-      m_status = neutube::EReadStatus::FAILED;
+      KWARN << e.what();
+      m_status = neutu::EReadStatus::FAILED;
       m_statusCode = e.getStatus();
     }
   }
@@ -180,12 +183,12 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
     }
 
     m_buffer.append(data->get_data().c_str(), data->length());
-    m_status = neutube::EReadStatus::OK;
+    m_status = neutu::EReadStatus::OK;
     m_statusCode = 200;
   } catch (libdvid::DVIDException &e) {
-    STD_COUT << e.what() << std::endl;
+    KWARN << e.what();
     m_statusCode = e.getStatus();
-    m_status = neutube::EReadStatus::FAILED;
+    m_status = neutu::EReadStatus::FAILED;
   }
 #endif
 }
@@ -222,19 +225,21 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
-      // qDebug() << "Reading done:" << url;
+      KINFO << "Reading done:" << url;
 
-      m_buffer.append(data->get_data().c_str(), data->length());
-      m_status = neutube::EReadStatus::OK;
+      if (data->length() > 0) {
+        m_buffer.append(data->get_data().c_str(), data->length());
+      }
+      m_status = neutu::EReadStatus::OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      STD_COUT << "Exception: " << e.what() << std::endl;
+      KWARN << "Exception:" << e.what();
       m_statusCode = e.getStatus();
-      m_status = neutube::EReadStatus::FAILED;
+      m_status = neutu::EReadStatus::FAILED;
     } catch (std::exception &e) {
-      STD_COUT << "Any exception: " << e.what() << std::endl;
+      KWARN << "Any exception:" << e.what();
       m_statusCode = 0;
-      m_status = neutube::EReadStatus::FAILED;
+      m_status = neutu::EReadStatus::FAILED;
     }
   } else {
 #if 0
@@ -277,9 +282,9 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   waitForReading();
 #endif
 
-#ifdef _DEBUG_
-  // STD_COUT << "Exiting " << "ZDvidBufferReader::read" << std::endl;
-#endif
+  KLOG << ZLog::Info()
+       << ZLog::Description("Exiting ZDvidBufferReader::read")
+       << ZLog::Level(2);
 }
 
 #if 0
@@ -410,7 +415,7 @@ void ZDvidBufferReader::startReading()
 {
   m_isReadingDone = false;
   m_buffer.clear();
-  m_status = neutube::EReadStatus::OK;
+  m_status = neutu::EReadStatus::OK;
 }
 
 bool ZDvidBufferReader::isReadingDone() const
@@ -474,7 +479,7 @@ void ZDvidBufferReader::cancelReading()
 }
 #endif
 
-void ZDvidBufferReader::endReading(neutube::EReadStatus status)
+void ZDvidBufferReader::endReading(neutu::EReadStatus status)
 {
   m_status = status;
   m_isReadingDone = true;
@@ -497,7 +502,7 @@ void ZDvidBufferReader::endReading(neutube::EReadStatus status)
 #endif
 }
 
-neutube::EReadStatus ZDvidBufferReader::getStatus() const
+neutu::EReadStatus ZDvidBufferReader::getStatus() const
 {
   return m_status;
 }

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <QFileDialog>
 #include "zshowsegresult.h"
-#include "zstackdoc.h"
-#include "zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
 #include "zobject3d.h"
 #include "zobject3dfactory.h"
 #include "zcolorscheme.h"

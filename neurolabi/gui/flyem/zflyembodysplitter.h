@@ -6,6 +6,7 @@
 #include "tz_stdint.h"
 #include "common/neutube_def.h"
 #include "dvid/zdvidreader.h"
+#include "flyemdef.h"
 
 class ZStackDoc;
 class ZFlyEmBody3dDoc;
@@ -25,7 +26,7 @@ public:
   ZFlyEmBodySplitter(QObject *parent = NULL);
   virtual ~ZFlyEmBodySplitter();
 
-  enum EState {
+  enum class EState {
     STATE_NO_SPLIT, STATE_LOCAL_SPLIT, STATE_SPLIT, STATE_FULL_SPLIT
   };
 
@@ -34,9 +35,9 @@ public:
   uint64_t getBodyId() const;
   void setBodyId(uint64_t bodyId);
 
-  void setBody(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
+  void setBody(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar);
 
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
   EState getState() const;
   bool fromTar() const;
   void setFromTar(bool status);
@@ -66,15 +67,15 @@ private:
 
 private:
   uint64_t m_bodyId = 0; //Body for splitting
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
   bool m_fromTar = false;
-  EState m_state= STATE_NO_SPLIT;
+  EState m_state= EState::STATE_NO_SPLIT;
 
   ZDvidReader m_reader;
 
   ZSparseStack *m_cachedObject = nullptr;
   uint64_t m_cachedBodyId = 0;
-  flyem::EBodyLabelType m_cachedLabelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_cachedLabelType = neutu::EBodyLabelType::BODY;
 };
 
 #endif // ZFLYEMBODYSPLITTER_H

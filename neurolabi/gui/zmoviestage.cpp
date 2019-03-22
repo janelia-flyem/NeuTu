@@ -1,7 +1,7 @@
 #include "zmoviestage.h"
 #include "z3dwindow.h"
 #include "z3dvolumefilter.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZMovieStage::ZMovieStage(Z3DWindow *window) : m_window(window),
   m_isSwcChanged(false), m_isVolumeChanged(false), m_isPunctaChanged(false),

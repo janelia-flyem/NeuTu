@@ -1,7 +1,7 @@
 #ifndef ZJSONDEF_H
 #define ZJSONDEF_H
 
-namespace neutube {
+namespace neutu {
 namespace json {
 static const char* REF_KEY = "->";
 }

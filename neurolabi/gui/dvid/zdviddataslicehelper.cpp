@@ -42,12 +42,12 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   return 0;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
 {
   return m_updatePolicy;
 }
 
-void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+void ZDvidDataSliceHelper::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 {
   m_updatePolicy = policy;
 }
@@ -349,7 +349,7 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 
   if (m_currentViewParam.getViewPort().isEmpty() &&
       !viewParam.getViewPort().isEmpty()) {
-    if (m_currentViewParam.getSliceAxis() == neutube::EAxis::ARB) {
+    if (m_currentViewParam.getSliceAxis() == neutu::EAxis::ARB) {
       //Must be on the same plane to be contained
       if (m_currentViewParam.getSliceViewParam().hasSamePlaneCenter(
             viewParam.getSliceViewParam())) {
@@ -442,29 +442,29 @@ void ZDvidDataSliceHelper::syncActualQuality()
 }
 
 void ZDvidDataSliceHelper::setPreferredUpdatePolicy(
-    flyem::EDataSliceUpdatePolicy policy)
+    neutu::EDataSliceUpdatePolicy policy)
 {
   m_preferredUpdatePolicy = policy;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
 {
   return m_preferredUpdatePolicy;
 }
 
-void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
+void ZDvidDataSliceHelper::inferUpdatePolicy(neutu::EAxis axis)
 {
   if (getMaxZoom() == 0) {
-    if (axis == neutube::EAxis::ARB) {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
+    if (axis == neutu::EAxis::ARB) {
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::HIDDEN);
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::SMALL);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::SMALL);
     }
   } else {
-    if (axis == neutube::EAxis::ARB) {
+    if (axis == neutu::EAxis::ARB) {
       setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::LOWRES);
     }
   }
 }

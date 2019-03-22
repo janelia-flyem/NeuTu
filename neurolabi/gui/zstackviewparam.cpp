@@ -10,21 +10,21 @@
 
 ZStackViewParam::ZStackViewParam()
 {
-  init(neutube::ECoordinateSystem::RAW_STACK);
+  init(neutu::ECoordinateSystem::RAW_STACK);
 }
 
-ZStackViewParam::ZStackViewParam(neutube::ECoordinateSystem coordSys)
+ZStackViewParam::ZStackViewParam(neutu::ECoordinateSystem coordSys)
 {
   init(coordSys);
 }
 
-void ZStackViewParam::init(neutube::ECoordinateSystem coordSys)
+void ZStackViewParam::init(neutu::ECoordinateSystem coordSys)
 {
   m_z = 0;
   m_coordSys = coordSys;
-  m_action = neutube::View::EExploreAction::EXPLORE_UNKNOWN;
+  m_action = neutu::View::EExploreAction::EXPLORE_UNKNOWN;
   m_fixingZ = false;
-  m_sliceAxis = neutube::EAxis::Z;
+  m_sliceAxis = neutu::EAxis::Z;
 }
 
 QRectF ZStackViewParam::getProjRect() const
@@ -105,7 +105,7 @@ void ZStackViewParam::setProjRect(const QRectF &rect)
 }
 #endif
 
-void ZStackViewParam::setExploreAction(neutube::View::EExploreAction action)
+void ZStackViewParam::setExploreAction(neutu::View::EExploreAction action)
 {
   m_action = action;
 }
@@ -116,7 +116,7 @@ bool ZStackViewParam::operator ==(const ZStackViewParam &param) const
     return false;
   }
 
-  if (getSliceAxis() == neutube::EAxis::ARB) {
+  if (getSliceAxis() == neutu::EAxis::ARB) {
     if (getSliceViewParam() != param.getSliceViewParam()) {
       return false;
     }
@@ -134,7 +134,7 @@ bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
 bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
   if (getSliceAxis() == param.getSliceAxis()) {
-    if (getSliceAxis() == neutube::EAxis::ARB) {
+    if (getSliceAxis() == neutu::EAxis::ARB) {
       return getSliceViewParam().contains(param.getSliceViewParam());
     } else if (m_z == param.m_z) {
       if (param.getViewPort().isEmpty()) {
@@ -189,12 +189,12 @@ size_t ZStackViewParam::getArea() const
   return size_t(getViewPort().width()) * size_t(getViewPort().height());
 }
 
-void ZStackViewParam::setSliceAxis(neutube::EAxis sliceAxis)
+void ZStackViewParam::setSliceAxis(neutu::EAxis sliceAxis)
 {
   m_sliceAxis = sliceAxis;
 }
 
-neutube::EAxis ZStackViewParam::getSliceAxis() const
+neutu::EAxis ZStackViewParam::getSliceAxis() const
 {
   return m_sliceAxis;
 }
@@ -261,7 +261,7 @@ void ZStackViewParam::setArbSliceView(const ZArbSliceViewParam &param)
 void ZStackViewParam::moveSlice(int step)
 {
   m_z += step;
-  if (m_sliceAxis == neutube::EAxis::ARB) {
+  if (m_sliceAxis == neutu::EAxis::ARB) {
     ZPoint dp = m_v1.cross(m_v2) * step;
     m_center += dp.toIntPoint();
   }
@@ -276,7 +276,7 @@ bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
 {
   bool result = false;
   if (m_sliceAxis == param.m_sliceAxis) {
-    if (m_sliceAxis == neutube::EAxis::ARB) {
+    if (m_sliceAxis == neutu::EAxis::ARB) {
       result = zgeom::IsSameAffinePlane(
             m_center.toPoint(), m_v1, m_v2,
             param.m_center.toPoint(), param.m_v1, param.m_v2);
@@ -291,8 +291,8 @@ bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
 std::string ZStackViewParam::toString() const
 {
   std::ostringstream stream;
-  if (m_sliceAxis != neutube::EAxis::ARB) {
-    stream << "Axis=" << neutube::EnumValue(m_sliceAxis) << "; ";
+  if (m_sliceAxis != neutu::EAxis::ARB) {
+    stream << "Axis=" << neutu::EnumValue(m_sliceAxis) << "; ";
     QRect vp = getViewPort();
     stream << "(" << vp.x() << "," << vp.y() << ")"
            << vp.width() << "x" << vp.height() << "; z=" << getZ();
@@ -314,9 +314,9 @@ void point_to_array(const T1 &pt, T2 *v)
 ZJsonObject ZStackViewParam::toJsonObject() const
 {
   ZJsonObject jsonObj = m_viewProj.toJsonObject();
-  jsonObj.setEntry("axis", neutube::EnumValue(m_sliceAxis));
+  jsonObj.setEntry("axis", neutu::EnumValue(m_sliceAxis));
   jsonObj.setEntry("z", m_z);
-  if (m_sliceAxis == neutube::EAxis::ARB) {
+  if (m_sliceAxis == neutu::EAxis::ARB) {
     int center[3];
     point_to_array(m_center, center);
 

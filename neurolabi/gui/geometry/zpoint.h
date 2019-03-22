@@ -150,10 +150,10 @@ public:
     }
   };
 
-  void shiftSliceAxis(neutube::EAxis axis);
-  void shiftSliceAxisInverse(neutube::EAxis axis);
+  void shiftSliceAxis(neutu::EAxis axis);
+  void shiftSliceAxisInverse(neutu::EAxis axis);
 
-  double getSliceCoord(neutube::EAxis axis) const;
+  double getSliceCoord(neutu::EAxis axis) const;
 
 public:
   const static double MIN_DIST;

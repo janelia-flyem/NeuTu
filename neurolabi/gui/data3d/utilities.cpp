@@ -21,5 +21,5 @@ std::string zstackobject::ToString(ZStackObject::ETarget target)
     return "stack canvas";
   }
 
-  return std::to_string(neutube::EnumValue(target));
+  return std::to_string(neutu::EnumValue(target));
 }

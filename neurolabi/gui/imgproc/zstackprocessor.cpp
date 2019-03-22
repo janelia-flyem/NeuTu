@@ -870,7 +870,7 @@ void ZStackProcessor::removeIsolatedObject(ZStack *stack, int r, int dr)
   Kill_Stack(out2);
 }
 
-void ZStackProcessor::invert(ZStack *stack)
+void ZStackProcessor::Invert(ZStack *stack)
 {
   double maxValue = stack->max();
   for (int c = 0; c < stack->channelNumber(); ++c) {
@@ -886,7 +886,7 @@ void ZStackProcessor::SubtractBackground(ZStack *stack)
   }
 }
 
-void ZStackProcessor::SubtractBackground(
+int ZStackProcessor::SubtractBackground(
     Stack *stackData, double minFr, int maxIter)
 {
   ZIntHistogram *hist = C_Stack::hist(stackData, NULL);
@@ -927,6 +927,8 @@ void ZStackProcessor::SubtractBackground(
   }
 
   delete hist;
+
+  return commonIntensity;
 }
 
 ZStack* ZStackProcessor::Rgb2Gray(const ZStack *stack)

@@ -36,7 +36,7 @@ public:
   static ZObject3dScanArray* MakeObject3dScanArray(const ZStack &stack,
                                                    int yStep = 1);
   static ZObject3dScanArray* MakeObject3dScanArray(
-      const ZStack &stack, neutube::EAxis sliceAxis);
+      const ZStack &stack, neutu::EAxis sliceAxis);
 
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
       const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
@@ -54,7 +54,7 @@ public:
    * \return An array of objects.
    */
   static ZObject3dScanArray* MakeObject3dScanArray(
-      const ZStack &stack, neutube::EAxis axis, bool foreground,
+      const ZStack &stack, neutu::EAxis axis, bool foreground,
       ZObject3dScanArray *out);
 
   static ZObject3dScanArray* MakeObject3dScanArray(
@@ -62,7 +62,7 @@ public:
       bool foreground);
 
   static ZObject3dScanArray* MakeObject3dScanArray(
-      const ZArray &array, neutube::EAxis axis, bool foreground,
+      const ZArray &array, neutu::EAxis axis, bool foreground,
       ZObject3dScanArray *out);
 
   static ZObject3dScan* MakeObject3dScan(

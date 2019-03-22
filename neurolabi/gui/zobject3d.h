@@ -47,7 +47,7 @@ public:
   virtual bool load(const char *filePath);
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutube::EAxis sliceAxis) const;
+      neutu::EAxis sliceAxis) const;
 
 public:
   /*!

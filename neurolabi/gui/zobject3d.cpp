@@ -169,11 +169,11 @@ bool ZObject3d::load(const char *filePath)
 
 void ZObject3d::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
 
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return;
   }
 
@@ -192,7 +192,7 @@ void ZObject3d::display(
   std::vector<QPoint> pointArray;
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
@@ -205,8 +205,8 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
@@ -223,7 +223,7 @@ void ZObject3d::display(
       }
     }
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

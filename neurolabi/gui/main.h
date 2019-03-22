@@ -60,7 +60,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #endif    // qt version > 5.0.0
 #endif
 
-namespace neutube {
+namespace neutu {
 static std::string UserName;
 }
 
@@ -236,6 +236,10 @@ MainConfig get_program_config(int argc, char *argv[])
   }
   if (config.userName.empty()) {
     config.userName = qgetenv("USER").toStdString();
+  }
+
+  if (qgetenv("NEUTU_ADVANCED").toInt() == 1) {
+    config.advanced = true;
   }
 
   if (argc > 1) {

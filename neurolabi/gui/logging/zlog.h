@@ -14,25 +14,25 @@
 class ZLog
 {
 public:
-  ZLog();
+  enum class EDestination {
+    AUTO, //Kafka if it's available; otherwise to local
+    KAFKA, //Kafka only
+    KAFKA_AND_LOCAL //Kafka if it's available; local logging as well
+  };
+
+  ZLog(EDestination dest = EDestination::AUTO);
   virtual ~ZLog();
 
   virtual void start();
-  virtual void log(const std::string &key, const neuopentracing::Value &value);
+  virtual void log(
+      const std::string &key, const neuopentracing::Value &value, bool appending);
   virtual void end();
+  virtual bool hasTag(const std::string &key) const;
 
   bool isStarted() const { return m_started; }
 
   struct Tag {
     Tag() {}
-//    Tag(const std::string &key, const std::string &value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const char *value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const int64_t &value) :
-//      m_key(key), m_value(value) {}
-//    Tag(const std::string &key, const QJsonValue &value) :
-//      m_key(key), m_value(value) {}
 
     Tag(const std::string &key, const neuopentracing::Value &value) :
       m_key(key), m_value(value) {}
@@ -49,7 +49,8 @@ public:
   static void End(ZLog &log);
 
   struct Category : public Tag {
-    Category(const std::string &value) : Tag("category", value) {}
+    static const char *KEY;
+    Category(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Info : public Category {
@@ -72,22 +73,23 @@ public:
     Profile() : Category("PROFILE") {}
   };
 
-  /*
   struct Interact : public Category {
-    Interact() : Category("interact") {}
+    Interact() : Category("INTERACT") {}
   };
-  */
 
   struct Duration : public Tag {
-    Duration(int64_t t) : Tag("duration", t) {}
+    static const char *KEY;
+    Duration(int64_t t) : Tag(KEY, t) {}
   };
 
   struct Diagnostic : public Tag {
-    Diagnostic(const std::string &value) : Tag("diagnostic", value) {}
+    static const char *KEY;
+    Diagnostic(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Description : public Tag {
-    Description(const std::string &value) : Tag("description", value) {}
+    static const char *KEY;
+    Description(const std::string &value) : Tag(KEY, value) {}
   };
 
   struct Action : public Tag {
@@ -118,8 +120,14 @@ public:
   };
 
   struct Time : public Tag {
+    static const char *KEY;
     Time();
     Time(uint64_t);
+  };
+
+  struct Level : public Tag {
+    static const char *KEY;
+    Level(int);
   };
 
   struct Window : public Tag {
@@ -132,29 +140,33 @@ public:
 private:
   void endLog();
 
-private:
+protected:
   bool m_started = false;
   QJsonObject m_tags;
+  EDestination m_dest = EDestination::AUTO;
+//  bool m_localLogging = true;
 };
 
 class KLog : public ZLog
 {
 public:
-  KLog();
+  KLog(EDestination dest = EDestination::KAFKA);
   ~KLog();
 
   void start() override;
-  void log(const std::string &key, const neuopentracing::Value &value) override;
+  void log(const std::string &key, const neuopentracing::Value &value,
+           bool appending) override;
   void end() override;
-//  bool isStarted() const override;
+  bool hasTag(const std::string &key) const override;
 
   static void SetOperationName(const std::string &name);
   static void ResetOperationName(); //reset to default
 
 private:
   void endKLog();
+  bool localLogging() const;
 
-private:
+protected:
   std::unique_ptr<neuopentracing::Span> m_span;
   static std::string m_operationName;
 };
@@ -162,7 +174,10 @@ private:
 class KInfo : public KLog
 {
 public:
-  KInfo();
+//  KInfo();
+//  KInfo(bool localogging);
+  using KLog::KLog;
+  using KLog::hasTag;
 
   KInfo& operator << (const char *info);
   KInfo& operator << (const std::string &info);
@@ -172,16 +187,41 @@ public:
 class KWarn : public KLog
 {
 public:
-  KWarn();
+  using KLog::KLog;
 
   KWarn& operator << (const char *info);
   KWarn& operator << (const std::string &info);
   KWarn& operator << (const QString &info);
 };
 
+class KError : public KLog
+{
+public:
+  using KLog::KLog;
+
+  KError& operator << (const char *info);
+  KError& operator << (const std::string &info);
+  KError& operator << (const QString &info);
+};
+
+
 #define KLOG KLog()
 #define KINFO KInfo()
 #define KWARN KWarn()
+#define KERROR KError()
+
+//Send to both kafka and local file
+#define LKLOG KLog(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKINFO KInfo(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKWARN KWarn(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKERROR KError(ZLog::EDestination::KAFKA_AND_LOCAL)
+
+//Auto
+#define ZLOG KLog(ZLog::EDestination::AUTO)
+#define ZINFO KInfo(ZLog::EDestination::AUTO)
+#define ZWARN KWarn(ZLog::EDestination::AUTO)
+#define ZERROR KError(ZLog::EDestination::AUTO)
+
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()
 #else

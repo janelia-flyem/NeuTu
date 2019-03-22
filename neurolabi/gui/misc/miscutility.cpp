@@ -6,7 +6,7 @@
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
-#include "flyem/zflyemqualityanalyzer.h"
+//#include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
@@ -16,6 +16,7 @@
 #include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #include "zarray.h"
+#include "zstring.h"
 
 using namespace std;
 
@@ -150,21 +151,21 @@ static void ComputeGradient(
 
 static int ComputeLightIntensity(
     const Stack *stack, const Stack *innerDist, const Stack *outerDist,
-    int x, int y, int z, neutube::EAxis axis)
+    int x, int y, int z, neutu::EAxis axis)
 {
   double dx, dy, dz;
   ComputeGradient(stack, innerDist, outerDist, x, y, z, &dx, &dy, &dz);
   double norm = 1.0;
   if (dx != 0.0 || dy != 0.0 || dz != 0.0) {
     switch (axis) {
-    case neutube::EAxis::X:
+    case neutu::EAxis::X:
       norm = fabs(dx / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::EAxis::Y:
+    case neutu::EAxis::Y:
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::EAxis::Z:
-    case neutube::EAxis::ARB:
+    case neutu::EAxis::Z:
+    case neutu::EAxis::ARB:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -174,7 +175,7 @@ static int ComputeLightIntensity(
   //return Clip_Value(1.0 / (1.0 + exp((0.5 - norm) * 5.0)) * 255.0, 0, 255);
 }
 
-Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
+Stack* misc::computeNormal(const Stack *stack, neutu::EAxis axis)
 {
   Stack *tmpStack = C_Stack::clone(stack);
   Stack *innerDist = Stack_Bwdist_L_U16P(tmpStack, NULL, 0);
@@ -192,16 +193,16 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   int outHeight = 0;
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     outWidth = height;
     outHeight = depth;
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     outWidth = width;
     outHeight = depth;
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     outWidth = width;
     outHeight = height;
     break;
@@ -214,7 +215,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   size_t offset2 = 0;
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int y = 0; y < C_Stack::height(stack); ++y) {
       bool hit = false;
@@ -235,7 +236,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -256,8 +257,8 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::EAxis::ARB:
-  case neutube::EAxis::Z:
+  case neutu::EAxis::ARB:
+  case neutu::EAxis::Z:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -348,7 +349,7 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   std::vector<std::string> tokens = ZString(path).tokenize(':');
   std::vector<std::string> pathArray;
   if (tokens.size() > 0) {
-    if (ZFileType::FileType(tokens[0]) == ZFileType::FILE_HDF5) {
+    if (ZFileType::FileType(tokens[0]) == ZFileType::EFileType::HDF5) {
       pathArray = tokens;
     }
   }
@@ -788,4 +789,30 @@ size_t misc::CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan
   obj.dilatePlane();
 
   return CountOverlap(obj, obj2);
+}
+
+ZIntCuboid misc::EstimateSplitRoi(const ZIntCuboid &boundBox)
+{
+  ZIntCuboid newBox = boundBox;
+
+  newBox.expandZ(10);
+  size_t v = newBox.getVolume();
+
+//  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  double s = Cube_Root(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
+  if (s > 1) {
+    double ds = s - 1.0;
+    int dw = iround(newBox.getWidth() * ds);
+    int dh = iround(newBox.getHeight() * ds);
+    int dd = iround(newBox.getDepth() * ds);
+
+    const int xMargin = dw / 2;
+    const int yMargin = dh / 2;
+    const int zMargin = dd / 2;
+    newBox.expandX(xMargin);
+    newBox.expandY(yMargin);
+    newBox.expandZ(zMargin);
+  }
+
+  return newBox;
 }

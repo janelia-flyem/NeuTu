@@ -9,10 +9,11 @@
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
 #include "zstring.h"
-
+#include "zjsonparser.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
 #include "zdvidutil.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
@@ -30,7 +31,7 @@ public:
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
-  neutube::EServerStatus m_neuprintStatus = neutube::EServerStatus::OFFLINE;
+  neutu::EServerStatus m_neuprintStatus = neutu::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()
@@ -324,7 +325,7 @@ ZDvidSparseStack* ZGlobal::readDvidSparseStack(const std::string &url) const
     if (reader != NULL) {
       if (reader->getDvidTarget().hasBodyLabel()) {
         spStack = reader->readDvidSparseStack(
-              bodyId, flyem::EBodyLabelType::BODY);
+              bodyId, neutu::EBodyLabelType::BODY);
       }
     }
   }
@@ -396,7 +397,7 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = kafkaBrokersEnv;
   }
 
-  if (!kafkaBrokers.empty()) {
+  if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
     try {
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);

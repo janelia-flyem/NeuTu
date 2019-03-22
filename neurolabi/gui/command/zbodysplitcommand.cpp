@@ -25,6 +25,7 @@
 #include "dvid/zdvidpath.h"
 #include "zstackgarbagecollector.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidurl.h"
 #include "zswctree.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
@@ -41,16 +42,16 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
     inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(neutube::json::REF_KEY)) {
+    if (inputJson.hasKey(neutu::json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[neutube::json::REF_KEY]));
+            ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    if (ZFileType::FileType(inputPath) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(inputPath) == ZFileType::EFileType::JSON) {
       inputJson.load(inputPath);
     }
   }
@@ -113,7 +114,7 @@ ZBodySplitCommand::parseSignalPath(
       signalPath = ZString(signalPath).absolutePath(dataDir);
     }
 
-    if (ZFileType::FileType(signalPath) == ZFileType::FILE_SPARSE_STACK) {
+    if (ZFileType::FileType(signalPath) == ZFileType::EFileType::SPARSE_STACK) {
       spStack = new ZSparseStack;
       spStack->load(signalPath);
       gc.registerObject(spStack);
@@ -197,7 +198,7 @@ int ZBodySplitCommand::run(
 
   if (config.hasKey("supervoxel")) {
     if (ZJsonParser::booleanValue(config["supervoxel"]) == true) {
-      m_labelType = flyem::EBodyLabelType::SUPERVOXEL;
+      m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
     }
   }
 
@@ -353,7 +354,7 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   uint64_t currentBodyId = m_bodyId;
   if (currentBodyId > 0) {
     for (ZObject3dScan *obj : *objArray) {
-      if (m_labelType == flyem::EBodyLabelType::BODY) {
+      if (m_labelType == neutu::EBodyLabelType::BODY) {
         uint64_t newBodyId = writer.writeSplit(*obj, currentBodyId, 0);
         newBodyIdArray.push_back(newBodyId);
       } else {
@@ -433,7 +434,7 @@ void ZBodySplitCommand::processResult(
               writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry(neutube::json::REF_KEY, endPoint);
+          regionJson.setEntry(neutu::json::REF_KEY, endPoint);
           resultArray.append(regionJson);
 #ifdef _DEBUG_2
           obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -460,7 +461,7 @@ void ZBodySplitCommand::processResult(
           std::cout << "Result endpoint: " << endPoint << std::endl;
 
           if (!splitTaskKey.empty()) {
-            refJson.setEntry(neutube::json::REF_KEY, endPoint);
+            refJson.setEntry(neutu::json::REF_KEY, endPoint);
           }
         } else {
           if (!splitTaskKey.empty()) {

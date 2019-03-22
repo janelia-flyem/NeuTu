@@ -5,24 +5,34 @@
 #include <QSortFilterProxyModel>
 
 #include "ui_flyemproofcontrolform.h"
+
+#include "qt/gui/utilities.h"
 #include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
-#include "flyem/zflyembodymergeproject.h"
-#include "zstackdoc.h"
+#include "flyemdef.h"
+#include "zflyembodymergeproject.h"
+#include "mvc/zstackdoc.h"
 #include "zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
-#include "flyem/zflyemproofmvc.h"
+#include "zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::FlyEmProofControlForm)
 {
   ui->setupUi(this);
+
+  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->bodyViewPushButton, flyem::FINE_BODY_ICON);
+  neutu::SetHtmlIcon(ui->coarseMeshPushButton, flyem::COARSE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->skeletonViewPushButton, "<font color=blue>Y</font>");
+
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
   m_latencyWidget =
@@ -83,7 +93,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(coarseMeshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+          this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -484,19 +494,32 @@ void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
   }
 }
 
+void FlyEmProofControlForm::locateAssignedBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingToAssigned(bookmark->getLocation().getX(),
+                           bookmark->getLocation().getY(),
+                           bookmark->getLocation().getZ());
+  }
+}
+
+/*
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getAssignedBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
+/*
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
 void FlyEmProofControlForm::updateLatency(int t)
 {

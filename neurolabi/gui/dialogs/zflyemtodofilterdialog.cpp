@@ -31,7 +31,7 @@ bool ZFlyEmTodoFilterDialog::passed(const ZFlyEmToDoItem &item) const
   } else if (ui->todoComboBox->currentText() == "Done") {
     return item.isChecked();
   } else if (ui->todoComboBox->currentText() == "Normal") {
-    return item.getAction() == neutube::EToDoAction::TO_DO;
+    return item.getAction() == neutu::EToDoAction::TO_DO;
   }
 
   return false;

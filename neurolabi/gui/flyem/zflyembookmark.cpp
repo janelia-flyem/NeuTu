@@ -39,7 +39,7 @@ void ZFlyEmBookmark::init()
 //  m_bookmarkRole = ROLE_ASSIGNED;
   m_isInTable = true;
 
-  m_visualEffect = neutube::display::Sphere::VE_DOT_CENTER;
+  m_visualEffect = neutu::display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
 //  setHittable(false);
@@ -255,7 +255,7 @@ void ZFlyEmBookmark::setCustom(bool state)
 
 void ZFlyEmBookmark::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   ZStackBall::display(painter, slice, option, sliceAxis);
 
@@ -283,8 +283,10 @@ void ZFlyEmBookmark::display(
 
 
 
-void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
+bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 {
+  bool loaded = false;
+
   clear();
 
 #if 1
@@ -340,10 +342,13 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       if (jsonObj.hasKey("custom")) {
         setCustom(ZJsonParser::booleanValue(jsonObj["custom"]));
       }
+
+      loaded = true;
     }
   }
 #endif
 
+  return loaded;
 }
 
 std::string ZFlyEmBookmark::toLogString() const

@@ -12,7 +12,7 @@ public:
   ZStackDocFactory();
 
 public:
-  static ZSharedPointer<ZStackDoc> Make(neutube::Document::ETag tag);
+  static ZSharedPointer<ZStackDoc> Make(neutu::Document::ETag tag);
 
 };
 

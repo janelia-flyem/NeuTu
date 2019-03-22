@@ -14,8 +14,8 @@ class ZStackDocLoader
 public:
   ZStackDocLoader();
 
-  enum ELoadMode {
-    LOAD_OVERWRITE, LOAD_APPEND
+  enum class ELoadMode {
+    OVERWRITE, APPEND
   };
 
   void clear();

@@ -1,8 +1,6 @@
 #ifndef ZFLYEMBODY3DDOC_H
 #define ZFLYEMBODY3DDOC_H
 
-#include "zstackdoc.h"
-
 #include <QSet>
 #include <QTimer>
 #include <QQueue>
@@ -12,10 +10,11 @@
 #include <QTime>
 
 #include "common/neutube_def.h"
-#include "dvid/zdvidtarget.h"
+
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
+#include "mvc/zstackdoc.h"
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
@@ -136,7 +135,7 @@ public:
 //  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return getMainDvidReader().getDvidTarget();
   }
 
   const ZDvidReader& getMainDvidReader() const;
@@ -252,7 +251,7 @@ public:
 
 public:
   void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   void executeAddTodoCommand(
       int x, int y, int z, bool checked, uint64_t bodyId);
@@ -292,7 +291,7 @@ public:
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
   ZDvidSparseStack* loadDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType type);
+      uint64_t bodyId, neutu::EBodyLabelType type);
   ZDvidSparseStack* loadDvidSparseStackForSplit();
 
   /* Disabled for simplifying the splitting workflow. Might be used again in
@@ -300,11 +299,11 @@ public:
   uint64_t protectBodyForSplit();
 
   bool protectBody(uint64_t bodyId);
-  void releaseBody(uint64_t bodyId, flyem::EBodyLabelType labelType);
+  void releaseBody(uint64_t bodyId, neutu::EBodyLabelType labelType);
   bool isBodyProtected(uint64_t bodyId) const;
 
   void activateSplit(uint64_t bodyId);
-  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
+  void activateSplit(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar);
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
@@ -351,7 +350,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(neutube::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action);
   void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
@@ -402,6 +401,7 @@ signals:
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  bool _loadFile(const QString &filePath) override;
 
 private:
   ZStackObject* retriveBodyObject(
@@ -481,7 +481,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
 
   static bool IsOverSize(const ZStackObject *obj);
 
@@ -510,7 +510,7 @@ signals:
 private slots:
 //  void updateBody();
   void processEvent();
-  void processEvent(const ZFlyEmBodyEvent &event);
+//  void processEvent(const ZFlyEmBodyEvent &event);
 
 private:
   void processEventFunc(const ZFlyEmBodyEvent &event);
@@ -532,7 +532,7 @@ private:
   bool isSupervoxel(const ZStackObject *obj) const;
   uint64_t getBodyId(const ZStackObject *obj) const;
 
-  flyem::EBodyLabelType getLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getLabelType(uint64_t bodyId) const;
 
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
@@ -571,7 +571,7 @@ private:
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_workDvidReader;
   ZDvidWriter m_mainDvidWriter;
   ZDvidReader m_bodyReader;

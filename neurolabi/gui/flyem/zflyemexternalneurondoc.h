@@ -1,7 +1,7 @@
 #ifndef ZFLYEMEXTERNALNEURONDOC_H
 #define ZFLYEMEXTERNALNEURONDOC_H
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 class ZFlyEmExternalNeuronDoc : public ZStackDoc
 {

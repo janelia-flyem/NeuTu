@@ -9,6 +9,8 @@
 #include "zerror.h"
 #include "zdvidutil.h"
 
+#define DVID_UUID_COMMON_LENGTH 4
+
 ZDvidVersionDag::ZDvidVersionDag()
 {
   m_data = ZSharedPointer<ZDvidVersionDagData>(new ZDvidVersionDagData);

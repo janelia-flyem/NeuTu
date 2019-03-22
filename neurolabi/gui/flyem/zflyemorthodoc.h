@@ -4,6 +4,7 @@
 #include "flyem/zflyemproofdoc.h"
 
 class ZCrossHair;
+class ZIntPoint;
 
 class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
 {
@@ -15,11 +16,12 @@ public:
   void updateStack(const ZIntPoint &center);
   void prepareDvidData();
 
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
 
   ZCrossHair* getCrossHair() const;
+  ZPoint getCrossHairCenter();
 
-  void setCrossHairCenter(double x, double y, neutube::EAxis axis);
+  void setCrossHairCenter(double x, double y, neutu::EAxis axis);
   void setCrossHairCenter(const ZIntPoint &center);
 
   void setSize(int width, int height, int depth);
@@ -31,9 +33,9 @@ public slots:
 private:
   void init(int width, int height, int depth);
   void initSynapseEnsemble();
-  void initSynapseEnsemble(neutube::EAxis axis);
+  void initSynapseEnsemble(neutu::EAxis axis);
   void initTodoList();
-  void initTodoList(neutube::EAxis axis);
+  void initTodoList(neutu::EAxis axis);
 
 private:
   int m_width;
