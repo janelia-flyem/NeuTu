@@ -453,6 +453,8 @@ protected slots:
 
   void syncBodySelectionFromOrthoWindow();
   void syncBodySelectionToOrthoWindow();
+
+  void zoomToAssigned(int x, int y, int z);
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -729,6 +731,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(zoomingToAssigned(int, int, int)),
+          this, SLOT(zoomToAssigned(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));

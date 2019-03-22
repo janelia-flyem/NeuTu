@@ -397,7 +397,7 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = kafkaBrokersEnv;
   }
 
-  if (!kafkaBrokers.empty()) {
+  if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
     try {
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);
