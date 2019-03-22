@@ -222,7 +222,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
-      qDebug() << "Reading done:" << url;
+      // qDebug() << "Reading done:" << url;
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = neutube::EReadStatus::OK;
@@ -278,7 +278,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 #endif
 
 #ifdef _DEBUG_
-  STD_COUT << "Exiting " << "ZDvidBufferReader::read" << std::endl;
+  // STD_COUT << "Exiting " << "ZDvidBufferReader::read" << std::endl;
 #endif
 }
 

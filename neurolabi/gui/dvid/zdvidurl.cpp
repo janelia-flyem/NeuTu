@@ -1782,6 +1782,16 @@ std::string ZDvidUrl::getSynapseLabelszBodyUrl(uint64_t bodyId) const
   return url;
 }
 
+std::string ZDvidUrl::getSynapseLabelszBodiesUrl() const
+{
+  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
+    if (!url.empty()) {
+        url += "/counts";
+    }
+
+    return url;
+}
+
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
   std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
@@ -1831,6 +1841,11 @@ std::string ZDvidUrl::getSynapseLabelszBodyUrl(
 {
   return GetFullUrl(getSynapseLabelszBodyUrl(bodyId),
                     GetLabelszIndexTypeStr(indexType));
+}
+
+std::string ZDvidUrl::getSynapseLabelszBodiesUrl(dvid::ELabelIndexType indexType) const
+{
+    return GetFullUrl(getSynapseLabelszBodiesUrl(), GetLabelszIndexTypeStr(indexType));
 }
 
 std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
