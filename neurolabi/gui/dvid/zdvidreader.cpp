@@ -274,6 +274,11 @@ void ZDvidReader::updateSegmentationData()
       getDvidTarget().setSegmentationName(getDvidTarget().getBodyLabelName());
     }
   }
+
+  if (!getDvidTarget().getSynapseLabelszName().empty()) {
+    getDvidTarget().enableSynapseLabelsz(
+          hasData(getDvidTarget().getSynapseLabelszName()));
+  }
 }
 
 bool ZDvidReader::open(const QString &sourceString)

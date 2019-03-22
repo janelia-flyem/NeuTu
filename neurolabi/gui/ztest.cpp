@@ -29425,15 +29425,18 @@ void ZTest::test(MainWindow *host)
   std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
 #endif
 
-#if 0
+#if 1
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
+  ZINFO << "Test: auto logging";
 
   KWARN << "Test: to kafka only";
   LKWARN << "Test: to both local and kafka";
+  ZWARN << "Test: auto logging";
 
   KERROR << "Test: to kafka only";
   LKERROR << "Test: to both local and kafka";
+  ZERROR << "Test: auto logging";
 
   neutu::LogMessage(
         ZWidgetMessage(
@@ -29531,7 +29534,6 @@ void ZTest::test(MainWindow *host)
   reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
 #endif
 
-
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
@@ -29539,12 +29541,26 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/data_status");
+
+  reader->readJsonObjectFromKey("neutu_config", "contrast");
   reader->readJsonObject(
         "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/contrast");
 
-  reader->readJsonObjectFromKey("neutu_config", "contrast");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("MB_Test");
+
+  reader->getDvidTarget().print();
+  std::cout << "Has synapse: " << reader->getDvidTarget().hasSynapse() << std::endl;
+  std::cout << "Has synapse labelsz: " << reader->getDvidTarget().hasSynapseLabelsz() << std::endl;
+  std::cout << reader->getDvidTarget().getSynapseLabelszName() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
