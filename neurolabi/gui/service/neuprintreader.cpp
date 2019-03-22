@@ -3,6 +3,8 @@
 #include <QFile>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -42,7 +44,7 @@ void NeuPrintReader::authorizeFromJson(const QString &auth)
     if (!token.empty()) {
       authorize(token.c_str());
     } else {
-      LWARN() << "No NeuPrint token found.";
+      KWARN << "No NeuPrint token found.";
     }
   }
 }
@@ -53,7 +55,7 @@ void NeuPrintReader::authorizeFromFile(const QString &filePath)
     QFile f(filePath);
     if (f.open(QIODevice::ReadOnly)) {
       QTextStream stream(&f);
-      qDebug() << "Auth: " << stream.readAll();
+//      qDebug() << "Auth: " << stream.readAll();
       authorizeFromJson(stream.readAll());
     }
   }
@@ -64,12 +66,12 @@ void NeuPrintReader::readDatasets()
   m_dataset.clear();
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
 
-  if (m_bufferReader.getStatus() == neutube::EReadStatus::OK) {
+  if (m_bufferReader.getStatus() == neutu::EReadStatus::OK) {
     m_dataset.decode(m_bufferReader.getBuffer().toStdString());
   }
 
   if (m_dataset.isEmpty()) {
-    LWARN() << "No datasets retreived from NeuPrint.";
+    KWARN << "No datasets retreived from NeuPrint.";
   }
 }
 
@@ -197,11 +199,16 @@ static QList<uint64_t> extract_body_list(const QByteArray &response)
   ZJsonObject resultObj;
   resultObj.decode(response.toStdString());
 
-  resultObj.print();
+//  resultObj.print();
 
   QList<uint64_t> bodyList;
   if (resultObj.hasKey("data")) {
     ZJsonArray data(resultObj.value("data"));
+#ifdef _DEBUG_
+    if (data.size() == 0) {
+      KWARN << "No body found";
+    }
+#endif
     for (size_t i = 0; i < data.size(); ++i) {
 #ifdef _DEBUG_
       std::cout << "Body ID: " << ZJsonParser::integerValue(data.at(i), 0) << std::endl;
@@ -209,6 +216,9 @@ static QList<uint64_t> extract_body_list(const QByteArray &response)
       uint64_t bodyId = ZJsonParser::integerValue(data.at(i), 0);
       bodyList.append(bodyId);
     }
+  } else {
+    KWARN << "Unexpected response:"
+          << QString::fromStdString(response.toStdString()).left(100);
   }
 
   return bodyList;
@@ -231,7 +241,8 @@ ZJsonArray NeuPrintReader::queryTopNeuron(int n)
 
     dataObj.setEntry("cypher", queryString.toStdString());
 
-#ifdef _DEBUG_
+    KINFO << "Query:" << dataObj.dumpString(0);
+#ifdef _DEBUG_2
     std::cout << "Query:" << std::endl;
     dataObj.print();
 #endif
@@ -282,9 +293,10 @@ ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
                              "RETURN n.bodyId, n.name, n.status, n.pre, n.post");
                              */
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   dataObj.print();
 #endif
+  KINFO << "Query:" << dataObj.dumpString(0);
 
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
@@ -306,10 +318,11 @@ ZJsonArray NeuPrintReader::queryAllNamedNeuron()
   }
   dataObj.setEntry("cypher", query.toStdString());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Query:" << std::endl;
   dataObj.print();
 #endif
+  KINFO << "Query:" << dataObj.dumpString(0);
 
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
@@ -331,10 +344,13 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
   }
   dataObj.setEntry("cypher", query.toStdString());
 
-#ifdef _DEBUG_
+//  KINFO << query;
+
+#ifdef _DEBUG_2
   std::cout << "Query:" << std::endl;
   dataObj.print();
 #endif
+  KINFO << "Query:" << dataObj.dumpString(0);
 
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
@@ -362,10 +378,13 @@ ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
   }
   dataObj.setEntry("cypher", queryString.toStdString());
 
-#ifdef _DEBUG_
+//  KINFO << queryString;
+
+#ifdef _DEBUG_2
   std::cout << "Query:" << std::endl;
   dataObj.print();
 #endif
+  KINFO << "Query:" << dataObj.dumpString(0);
 
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
@@ -412,7 +431,10 @@ QList<uint64_t> NeuPrintReader::queryNeuron(
 
   dataObj.setEntry("pre_threshold", 2);
 
-  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+  std::string queryStr = dataObj.dumpString(0);
+  m_bufferReader.post(url, queryStr.c_str());
+
+  KINFO << queryStr;
 
   return extract_body_list(m_bufferReader.getBuffer());
 }

@@ -155,7 +155,7 @@
 #include "flyem/zbcfset.h"
 #include "flyem/zflyemstackframe.h"
 #include "zmoviemaker.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "bigdata/zstackblockgrid.h"
 #include "z3dwindow.h"
 #include "flyem/zhotspot.h"
@@ -223,6 +223,7 @@
 
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "flyem/flyemdatareader.h"
 
 //#include "zcircle.h"
 
@@ -246,7 +247,7 @@
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
@@ -256,7 +257,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
-#include "zstackmvc.h"
+#include "mvc/zstackmvc.h"
 //#include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofmvc.h"
@@ -321,6 +322,7 @@
 #include "zstackobjectpainter.h"
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 
 //#include "test/ztestall.h"
 
@@ -8724,7 +8726,8 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::string sessionDir = dataPath + "/flyem/skeletonization/session3";
+  std::string dataPath = "/nearline/flyem/proj/zhaot/data";
+  std::string sessionDir = dataPath + "/skeletonization/session_c";
 
   QFileInfoList fileList;
   QDir dir(sessionDir.c_str());
@@ -8733,8 +8736,8 @@ void ZTest::test(MainWindow *host)
   fileList = dir.entryInfoList(filters);
 
   foreach (QFileInfo fileInfo, fileList) {
-    ZString objPath = sessionDir + "/";
-    objPath.appendNumber(ZString::lastInteger(fileInfo.baseName().toStdString()));
+    ZString objPath = sessionDir + "/sobj/";
+    objPath.appendNumber(ZString::LastInteger(fileInfo.baseName().toStdString()));
     objPath += ".sobj";
 
     std::cout << fileInfo.absoluteFilePath().toStdString() << std::endl;
@@ -8748,7 +8751,7 @@ void ZTest::test(MainWindow *host)
       offset.importTextFile(
             fileInfo.absoluteFilePath().toStdString() + ".offset.txt");
       if (offset.size() == 3) {
-        obj.translate(offset[0], offset[1], offset[2]);
+        obj.translate(offset[0] / 2, offset[1] / 2, offset[2]);
         std::cout << "Saving " << objPath << std::endl;
         obj.save(objPath);
       } else {
@@ -16357,7 +16360,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidTarget target("emdata4.int.janelia.org", "a21a", 8900);
   ZDvidReader reader;
   reader.open(target);
 
@@ -18203,18 +18206,18 @@ void ZTest::test(MainWindow *host)
     int z = rand.rndint(0, 1000);
 
     synapse.setPosition(x, y, z);
-    se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+    se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
     x = rand.rndint(0, 100);
     y = rand.rndint(0, 100);
     z = rand.rndint(0, 1000);
-    se.removeSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+    se.removeSynapse(x, y, z, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
     x = rand.rndint(0, 100);
     y = rand.rndint(0, 100);
     z = rand.rndint(0, 1000);
     ZDvidSynapse &synapse2 =
-        se.getSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+        se.getSynapse(x, y, z, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
     synapse2.getX();
   }
 #endif
@@ -19468,23 +19471,23 @@ void ZTest::test(MainWindow *host)
 
 
   ZDvidSynapseEnsemble se;
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 30);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 30, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(31, 28, 29);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   synapse.setPosition(-1, -2, -3);
-  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL);
 
   std::cout << se << std::endl;
 
@@ -19497,15 +19500,15 @@ void ZTest::test(MainWindow *host)
   }
 
 
-  std::cout << se.getSynapse(0, 0, 0, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(0, 0, 0, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
-  std::cout << se.getSynapse(-1, -2, -3, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(-1, -2, -3, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
-  std::cout << se.getSynapse(31, 28, 29, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(31, 28, 29, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
-  std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::DATA_LOCAL)
+  std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::EDataScope::DATA_LOCAL)
             << std::endl;
 
 #endif
@@ -27113,7 +27116,8 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZJsonObject obj;
-  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data/data_bundle.json");
+  std::string dataDir = "/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data";
+  obj.load(dataDir + "/_paper/neuron_type/data/data_bundle.json");
   ZJsonArray neuronArrayJson(obj.value("neuron"));
   std::cout << neuronArrayJson.size() << std::endl;
 
@@ -27122,7 +27126,7 @@ void ZTest::test(MainWindow *host)
   for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
     ZJsonObject neuronJson(neuronArrayJson.value(i));
     std::string volumeFile =
-        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/" +
+        dataDir + "/_paper/neuron_type/data/" +
         ZJsonParser::stringValue(neuronJson["volume"]);
     QFileInfo fileInfo(volumeFile.c_str());
     if (!fileInfo.exists()) {
@@ -27156,7 +27160,7 @@ void ZTest::test(MainWindow *host)
   }
 
   std::ofstream stream(
-        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/adjmat.txt");
+        dataDir + "/_paper/neuron_type/data/adjmat.txt");
 
   for (size_t i = 0; i < objArray.size(); ++i) {
     for (size_t j = 0; j < objArray.size(); ++j) {
@@ -28112,7 +28116,7 @@ void ZTest::test(MainWindow *host)
   size_t blockCount = 0;
   ZIntCuboid box;
   std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-        662776660, flyem::EBodyLabelType::BODY);
+        662776660, neutu::EBodyLabelType::BODY);
   std::cout << bodySize << " " << blockCount << std::endl;
   std::cout << box.toString() << std::endl;
 #endif
@@ -28140,7 +28144,7 @@ void ZTest::test(MainWindow *host)
     size_t blockCount = 0;
     ZIntCuboid box;
     std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
-          5813050455, flyem::EBodyLabelType::BODY);
+          5813050455, neutu::EBodyLabelType::BODY);
     std::cout << blockCount << std::endl;
 
     ZObject3dScan obj;
@@ -28968,6 +28972,16 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  tic();
+  if (reader) {
+    reader->readKeyValue("roi_data", "be890b70bcd206be62e81377250e9dbe");
+  }
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
   ZFlyEmBodyMergeProject project;
   project.setDvidTarget(reader->getDvidTarget());
@@ -29267,7 +29281,7 @@ void ZTest::test(MainWindow *host)
     ZObject3dScan obj;
 //    reader->readBody(body, true, &obj);
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
 
     size_t byteCount = obj.getByteCount();
     size_t voxelCount = obj.getVoxelNumber();
@@ -29308,7 +29322,7 @@ void ZTest::test(MainWindow *host)
   for (uint64_t body : bodyList) {
     ZObject3dScan obj;
     reader->readBody(
-          body, flyem::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
+          body, neutu::EBodyLabelType::BODY, 1, ZIntCuboid(), true, &obj);
     timer.restart();
     ccc.push_back(obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE).size());
     ccaTime.push_back(timer.elapsed());
@@ -29385,6 +29399,168 @@ void ZTest::test(MainWindow *host)
   writer->createData("keyvalue", "test3");
 
   std::cout << writer->isStatusOk() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().GetDvidReader("hemibrain_test");
+
+  ZJsonObject obj = reader->readBodyStatusV2();
+
+  obj.print();
+
+  ZFlyEmBodyAnnotationMerger merger;
+  merger.loadJsonObject(obj);
+
+  merger.print();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+  ZObject3dScan obj;
+  reader->readSupervoxel(1104125131, true, &obj);
+  std::cout << "Segment number: " << obj.getSegmentNumber() << std::endl;
+#endif
+
+#if 0
+  std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
+#endif
+
+#if 1
+  KINFO << "Test: to kafka only";
+  LKINFO << "Test: to both local and kafka";
+  ZINFO << "Test: auto logging";
+
+  KWARN << "Test: to kafka only";
+  LKWARN << "Test: to both local and kafka";
+  ZWARN << "Test: auto logging";
+
+  KERROR << "Test: to kafka only";
+  LKERROR << "Test: to both local and kafka";
+  ZERROR << "Test: auto logging";
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: no logging", neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_NULL));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to local only",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to kafka only",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA));
+
+  neutu::LogMessage(
+        ZWidgetMessage(
+          "Test ZWidgetMessage: to both local and kafka",
+          neutu::EMessageType::ERROR,
+          ZWidgetMessage::TARGET_KAFKA |
+          ZWidgetMessage::TARGET_LOG_FILE));
+
+  KINFO << "Test:" << " to kafka only";
+  LKINFO << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KWARN << "Test:" << " to kafka only";
+  LKWARN << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KERROR << "Test:" << " to kafka only";
+  LKERROR << "Test:" <<  " to both local and kafka" << " " << 0;
+
+  KLOG << ZLog::Info() << ZLog::Info() << ZLog::Description("test");
+  KLOG << ZLog::Info() << ZLog::Warn() << ZLog::Description("test")
+       << ZLog::Description("warn");
+
+#endif
+
+#if 0
+  qDebug() << neuopentracing::ToString(neuopentracing::Value(1));
+  qDebug() << neuopentracing::ToString(neuopentracing::Value(true));
+  qDebug() << neuopentracing::ToString(neuopentracing::Value("test"));
+
+#endif
+
+#if 0
+  ZObject3dScan *obj = flyem::LoadRoiFromJson(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois/0.part.json");
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
+  config.print();
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/data_status");
+
+  reader->readJsonObjectFromKey("neutu_config", "contrast");
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/contrast");
+
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("MB_Test");
+
+  reader->getDvidTarget().print();
+  std::cout << "Has synapse: " << reader->getDvidTarget().hasSynapse() << std::endl;
+  std::cout << "Has synapse labelsz: " << reader->getDvidTarget().hasSynapseLabelsz() << std::endl;
+  std::cout << reader->getDvidTarget().getSynapseLabelszName() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

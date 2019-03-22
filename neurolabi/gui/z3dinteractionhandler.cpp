@@ -145,26 +145,35 @@ Z3DTrackballInteractionHandler::Z3DTrackballInteractionHandler(const QString& na
   addEventListener(m_keyRollEvent);
 }
 
+
+void Z3DTrackballInteractionHandler::log3DCameraEvent(const QString &action)
+{
+  KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+       << ZLog::Action(action.toStdString()) << ZLog::Level(2);
+}
+
 void Z3DTrackballInteractionHandler::rotateEvent(QMouseEvent* e, int w, int h)
 {
   if (e->type() == QEvent::MouseButtonPress) {
-    setState(State::Rotate);
+    setState(State::PreRotate);
     mousePressEvent(e, w, h);
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
     if (isStateToggledOff(State::Rotate)) {
+      log3DCameraEvent("stop rotate");
 //      KLOG << ZLog::Interact() << ZLog::Description("Stop rotating camera")
 //           << ZLog::Handle(this);
-      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
-           << ZLog::Action("stop rotate");
+//      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//           << ZLog::Action("stop rotate");
     }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
     emit cameraMoved();
     emit cameraRotated();
     if (isStateToggledOn(State::Rotate)) {
-      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
-           << ZLog::Action("start rotate");
+      log3DCameraEvent("start rotate");
+//      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//           << ZLog::Action("start rotate");
 //      KLOG << ZLog::Interact() << ZLog::Description("Start rotating camera")
 //           << ZLog::Handle(this);
     }
@@ -198,8 +207,18 @@ void Z3DTrackballInteractionHandler::shiftEvent(QMouseEvent* e, int w, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     setState(State::Shift);
     mousePressEvent(e, w, h);
+    if (isStateToggledOn(State::Shift)) {
+      log3DCameraEvent("start pan");
+//      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//           << ZLog::Action("start pan");
+    }
   } else if (e->type() == QEvent::MouseButtonRelease) {
     mouseReleaseEvent(e, w, h);
+    if (isStateToggledOff(State::Shift)) {
+      log3DCameraEvent("stop pan");
+//      KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//           << ZLog::Action("stop pan");
+    }
   } else if (e->type() == QEvent::MouseMove) {
     mouseMoveEvent(e, w, h);
     emit cameraMoved();
@@ -326,6 +345,35 @@ void Z3DTrackballInteractionHandler::mouseMoveEvent(QMouseEvent* e, int w, int h
 
   glm::ivec2 newMouse(e->x(), h - e->y());
 
+  switch (m_state) {
+  case State::PreRotate:
+    setState(State::Rotate);
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Rotate:
+    rotate(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Shift:
+    shift(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Roll:
+    roll(m_lastMousePosition, newMouse, w, h);
+    e->accept();
+    m_lastMousePosition = newMouse;
+    break;
+  case State::Dolly:
+    dolly(m_lastMousePosition, newMouse, w, h, m_lastCenterDistance);
+    e->accept();
+    break;
+  default:
+    break;
+  }
+
+  /*
   if (m_state == State::Rotate) {
     rotate(m_lastMousePosition, newMouse, w, h);
     e->accept();
@@ -342,6 +390,7 @@ void Z3DTrackballInteractionHandler::mouseMoveEvent(QMouseEvent* e, int w, int h
     dolly(m_lastMousePosition, newMouse, w, h, m_lastCenterDistance);
     e->accept();
   }
+  */
 }
 
 void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent* e, int /*unused*/, int /*unused*/)
@@ -420,8 +469,8 @@ void Z3DTrackballInteractionHandler::shift(
   } else {
     // camera move in opposite direction
     m_camera->setCamera(m_camera->get().eye() - vec, m_camera->get().center() - vec);
-    KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
-         << ZLog::Action("pan");
+//    KLOG << ZLog::Info() << ZLog::Object("camera") << ZLog::Handle(this)
+//         << ZLog::Action("pan");
   }
 }
 

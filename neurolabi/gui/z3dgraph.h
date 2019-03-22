@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <QColor>
 #include "geometry/zpoint.h"
 #include "zpointnetwork.h"
@@ -110,7 +111,7 @@ private:
 
 class Z3DGraph;
 
-typedef ZSharedPointer<Z3DGraph> Z3DGraphPtr;
+typedef std::shared_ptr<Z3DGraph> Z3DGraphPtr;
 
 class Z3DGraph : public ZStackObject
 {
@@ -157,7 +158,7 @@ public:
   void clear();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 //  const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);

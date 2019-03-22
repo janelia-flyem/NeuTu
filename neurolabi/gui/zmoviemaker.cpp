@@ -7,7 +7,7 @@
 #include "zfiletype.h"
 #include "zswcmovieactor.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "z3dinteractionhandler.h"
 #include "tz_error.h"
 #include "z3dswcfilter.h"
@@ -77,7 +77,7 @@ void ZMovieMaker::prepareStage()
 //  window->getAxis()->setVisible(m_showingAxis);
 
 
-  window->getFilter(neutube3d::ERendererLayer::SURFACE)->setOpacity(0.85);
+  window->getFilter(neutu3d::ERendererLayer::SURFACE)->setOpacity(0.85);
 
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
@@ -98,7 +98,7 @@ void ZMovieMaker::recruitCast()
   for (std::map<string, string>::const_iterator iter = cast.begin();
        iter != cast.end(); ++iter) {
     switch (ZFileType::FileType(iter->second)) {
-    case ZFileType::FILE_SWC:
+    case ZFileType::EFileType::SWC:
     {
       ZSwcTree *tree = new ZSwcTree;
       tree->load(iter->second.c_str());
@@ -111,7 +111,7 @@ void ZMovieMaker::recruitCast()
       m_cast.push_back(actor);
     }
       break;
-    case ZFileType::FILE_OBJECT_SCAN:
+    case ZFileType::EFileType::OBJECT_SCAN:
     {
       ZObject3dScan obj;
       obj.load(iter->second);
@@ -128,7 +128,7 @@ void ZMovieMaker::recruitCast()
       }
     }
       break;
-    case ZFileType::FILE_JSON:
+    case ZFileType::EFileType::JSON:
     {
       ZObject3dScan obj;
       obj.importDvidRoi(iter->second);
@@ -145,7 +145,7 @@ void ZMovieMaker::recruitCast()
       }
     }
       break;
-    case ZFileType::FILE_TIFF:
+    case ZFileType::EFileType::TIFF:
     {
       ZStack *stack = new ZStack();
       stack->load(iter->second);
@@ -163,7 +163,7 @@ void ZMovieMaker::recruitCast()
       m_cast.push_back(actor);
     }
       break;
-    case ZFileType::FILE_V3D_MARKER:
+    case ZFileType::EFileType::V3D_MARKER:
     {
       QList<ZPunctum*> punctaList =
           ZPunctumIO::load(iter->second.c_str());

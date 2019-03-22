@@ -268,6 +268,9 @@ ZIntPoint ZJsonParser::toIntPoint(const json_t *value)
   return pt;
 }
 
+
+
+/*
 template<>
 std::string ZJsonParser::getValue<std::string>(const json_t *value) const
 {
@@ -277,13 +280,14 @@ std::string ZJsonParser::getValue<std::string>(const json_t *value) const
 
   return stringValue(value);
 }
+*/
 
-template<>
-bool ZJsonParser::getValue<bool>(const json_t *value) const
-{
-  if (value == NULL) {
-    return m_defaultBoolValue;
-  }
+//template<>
+//bool ZJsonParser::getValue<bool>(const json_t *value) const
+//{
+//  if (value == NULL) {
+//    return false;
+//  }
 
-  return booleanValue(value);
-}
+//  return booleanValue(value);
+//}

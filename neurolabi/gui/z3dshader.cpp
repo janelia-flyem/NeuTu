@@ -1,7 +1,7 @@
 #include "z3dshader.h"
 
 #include "z3dgl.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include <vector>
 
 Z3DShader::Z3DShader(Z3DShader::Type type)

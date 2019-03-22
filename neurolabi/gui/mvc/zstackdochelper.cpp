@@ -4,14 +4,18 @@
 #include <QColor>
 
 #include "zstackdoc.h"
+#include "zstackview.h"
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
-#include "zstackview.h"
+//#include "dvid/zdvidsparsestack.h"
+
 #include "geometry/zintcuboid.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
-#include "dvid/zdvidsparsestack.h"
+
 #include "zstack.hxx"
+#include "zsparsestack.h"
 
 ZStackDocHelper::ZStackDocHelper()
 {
@@ -33,8 +37,21 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     m_sparseStackDsIntv.set(0, 0, 0);
   }
 
+  const ZSparseStack *spStack = doc->getSparseStack();
+
+  const ZStack* stack = nullptr;
+
+  if (spStack) {
+    stack = spStack->getStack();
+  }
+
+  if (stack) {
+    m_sparseStackDsIntv = stack->getDsIntv();
+  }
+
+  /*
   ZStack *stack = NULL;
-  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
@@ -53,8 +70,9 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     }
     m_sparseStackDsIntv = spStack->getDenseDsIntv();
   }
+  */
 
-  return stack;
+  return const_cast<ZStack*>(stack);
 }
 
 void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
@@ -98,11 +116,12 @@ bool ZStackDocHelper::hasCurrentZ() const
   return m_hasCurrentZ;
 }
 
+#if 0
 ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
       const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
       if (cdoc != NULL) {
         box = cdoc->getSplitRoi()->getCuboid();
@@ -115,74 +134,23 @@ ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 
   return box;
 }
-
-ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc *doc, neutube::EAxis sliceAxis)
-{
-  ZIntCuboid box;
-  if (doc != NULL) {
-    box = GetStackSpaceRange(*doc, sliceAxis);
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
-    const ZStackDoc &doc, neutube::EAxis sliceAxis)
-{
-  ZIntCuboid box;
-
-  if (doc.hasStack()) {
-    box = doc.getStack()->getBoundBox();
-    if (sliceAxis == neutube::EAxis::ARB) {
-      ZIntPoint center = box.getCenter();
-      int length = iround(box.getDiagonalLength());
-      box.setSize(length, length, length);
-      box.setCenter(center);
-    } else {
-      box.shiftSliceAxis(sliceAxis);
-    }
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
-{
-  ZIntCuboid box;
-  if (doc != NULL) {
-    box = GetDataSpaceRange(*doc);
-  }
-
-  return box;
-}
-
-ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
-{
-  ZIntCuboid box;
-
-  if (doc.hasStack()) {
-    box = doc.getStack()->getBoundBox();
-  }
-
-  return box;
-}
+#endif
 
 bool ZStackDocHelper::HasMultipleBodySelected(
-    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::ELabelSource type)
 {
   return CountSelectedBody(doc, type) > 1;
 }
 
 int ZStackDocHelper::CountSelectedBody(
-    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+    const ZFlyEmProofDoc *doc, neutu::ELabelSource type)
 {
   return doc->getSelectedBodySet(type).size();
 }
 
 bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 {
-  return CountSelectedBody(doc, neutube::EBodyLabelType::ORIGINAL) > 0;
+  return CountSelectedBody(doc, neutu::ELabelSource::ORIGINAL) > 0;
 }
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
@@ -205,44 +173,34 @@ QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
   QColor color;
-  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::EAxis::Z);
+  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, neutube::EBodyLabelType::ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::ORIGINAL);
   }
 
   return color;
 }
 
-std::string ZStackDocHelper::SaveStack(
-    const ZStackDoc *doc, const std::string &path)
-{
-  std::string  resultPath;
-  if (doc->hasStackData()) {
-    resultPath = doc->getStack()->save(path);
-  }
-
-  return resultPath;
-}
 
 bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD;
 }
 
 bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::ETag::FLYEM_ORTHO;
+  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
 }

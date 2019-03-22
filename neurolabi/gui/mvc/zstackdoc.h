@@ -6,6 +6,7 @@
 #define _ZSTACKDOC_H_
 
 #include <set>
+#include <memory>
 
 #include <QString>
 #include <QList>
@@ -23,35 +24,30 @@
 
 #include "neutube.h"
 #include "common/utilities.h"
+#include "common/zsharedpointer.h"
 
-//#include "zcurve.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-//#include "zpunctum.h"
+#include "tz_error.h"
+
 #include "zprogressreporter.h"
-#include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
 #include "biocytin/zstackprojector.h"
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
-#include "dialogs/resolutiondialog.h"
-#include "zneurontracer.h"
+//#include "zneurontracer.h"
 #include "zdocplayer.h"
-//#include "z3dgraph.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
-#include "tz_error.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
-#include "common/zsharedpointer.h"
 #include "zactionfactory.h"
-//#include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
-
+//#include "mvc/mvcdef.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -105,6 +101,9 @@ class ZTask;
 class Z3DGraph;
 class ZPunctum;
 class ZCurve;
+class ResolutionDialog;
+class ZNeuronTracer;
+struct ZRescaleSwcSetting;
 
 /*!
  * \brief The class of stack document
@@ -229,7 +228,7 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZIntPoint getStackOffset() const;
-  int getStackOffset(neutube::EAxis axis) const;
+  int getStackOffset(neutu::EAxis axis) const;
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
@@ -272,7 +271,7 @@ public: //attributes
   virtual void setParentDoc(ZSharedPointer<ZStackDoc> parentDoc);
 
   // Prefix for tracing project.
-  const char *tubePrefix() const;
+  const char *tubePrefix();
 
   inline QList<ZStackObject*> *drawableList() {
     return &(m_objectGroup.getObjectList());
@@ -292,7 +291,7 @@ public: //attributes
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree
@@ -482,7 +481,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(double cx, double cy, int z, neutube::EAxis axis) const;
+  virtual QString rawDataInfo(double cx, double cy, int z, neutu::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -529,15 +528,6 @@ public: //Image processing
   bool bwperim();
   void runSeededWatershed();
   void runLocalSeededWatershed();
-
-private:
-  void localSeededWatershed();
-  void seededWatershed();
-  template <class InputIterator>
-  void removeObjectP(InputIterator first, InputIterator last, bool deleting);
-
-  void updateSwc();
-  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -628,7 +618,7 @@ public:
 
   bool importMesh(const QString& filePath);
 
-  int pickLocsegChainId(int x, int y, int z) const;
+//  int pickLocsegChainId(int x, int y, int z) const;
   void holdClosestSeg(int id, int x, int y, int z);
   int selectLocsegChain(int id, int x = -1, int y = -1, int z = -1,
   		bool showProfile = false);
@@ -654,11 +644,11 @@ public:
   ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
   ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y, neutube::EAxis sliceAxis);
+  ZStackObject *hitTest(double x, double y, neutu::EAxis sliceAxis);
 //  ZStackObject *hitTestWidget(int x, int y);
 
   ZStackObject *hitTest(
-      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis);
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutu::EAxis axis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -702,7 +692,7 @@ public:
   void setMeshSelected(ZMesh* mesh, bool select);
   template <class InputIterator>
   void setMeshSelected(InputIterator first, InputIterator last, bool select);
-  void deselectAllMesh();
+  int deselectAllMesh();
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
@@ -799,6 +789,8 @@ public:
   virtual ZSparseStack* getSparseStack();
   virtual ZObject3dScan* getSparseStackMask() const;
 
+//  virtual ZStack* getDenseFormOfSparseStack() const;
+
 //  QSet<ZStackObject::ETarget>
 //  updateActiveViewObject(const ZStackViewParam &param);
 
@@ -823,7 +815,7 @@ public:
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
   void selectObject(ZStackObject *obj, bool appending);
-  void selectObject(ZStackObject *obj, neutube::ESelectOption option);
+  void selectObject(ZStackObject *obj, neutu::ESelectOption option);
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
@@ -859,10 +851,10 @@ public:
   void selectNoisyTrees();
 
 public:
-  inline neutube::Document::ETag getTag() const { return m_tag; }
-  inline void setTag(neutube::Document::ETag tag) { m_tag = tag; }
-  void setStackBackground(neutube::EImageBackground bg);
-  inline neutube::EImageBackground getStackBackground() const {
+  inline neutu::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(neutu::Document::ETag tag) { m_tag = tag; }
+  void setStackBackground(neutu::EImageBackground bg);
+  inline neutu::EImageBackground getStackBackground() const {
     return m_stackBackground;
   }
 
@@ -901,9 +893,7 @@ public:
   }
 
 public:
-  ZNeuronTracer& getNeuronTracer() {
-    return m_neuronTracer;
-  }
+  ZNeuronTracer& getNeuronTracer();
 
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
@@ -913,13 +903,10 @@ public:
                                      char unit, double distThre, bool spTest,
                                      bool crossoverTest);
 
-  inline Trace_Workspace* getTraceWorkspace() const {
-    return m_neuronTracer.getTraceWorkspace();
-  }
+  Trace_Workspace* getTraceWorkspace();
 
-  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
-    return m_neuronTracer.getConnectionTestWorkspace();
-  }
+  Connection_Test_Workspace* getConnectionTestWorkspace();
+  Stack *computeSeedMask(Stack *stack);
 
 //  void disconnectSwcNodeModelUpdate();
 //  void disconnectPunctaModelUpdate();
@@ -961,14 +948,25 @@ public:
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
 
+  /*!
+   * \brief Process object modfication
+   *
+   * When the current mode is prompt, the modified information will be emitted
+   * with a signal to notifier its receivers, and the modification buffer will
+   * be cleared afterwards. Nothing will be done in any other mode.
+   */
   void processObjectModified();
+
+
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
-//  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
-//                             bool sync = true);
-//  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-//                             bool sync = true);
+
+  /*!
+   * \brief Process object modfication
+   *
+   * It emits a object-modified signal with the information of \a obj in the
+   * PROMPT mode, or buffers the inforation in the BUFFER mode.
+   */
   void processObjectModified(ZStackObject *obj, bool sync = true);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
@@ -1224,7 +1222,7 @@ public slots: //undoable commands
       QList<Swc_Tree_Node*> &nodeList, int type);
 
   virtual void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t id);
   virtual void executeRemoveTodoCommand();
 
@@ -1381,6 +1379,21 @@ protected:
   void endWorkThread();
   void startWorkThread();
 
+  void emitInfo(const QString &msg);
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
+
+  virtual bool _loadFile(const QString &filePath);
+
+private:
+  void localSeededWatershed();
+  void seededWatershed();
+  template <class InputIterator>
+  void removeObjectP(InputIterator first, InputIterator last, bool deleting);
+
+  void updateSwc();
+  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
+
 private:
   void init();
 
@@ -1406,6 +1419,8 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
+
+  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
 private slots:
   void shortcutTest();
@@ -1438,7 +1453,7 @@ private:
 
   /* workspaces */
   bool m_isTraceMaskObsolete;
-  ZNeuronTracer m_neuronTracer;
+  std::shared_ptr<ZNeuronTracer> m_neuronTracer;
 
   //Meta information
   ZStackFile m_stackSource;
@@ -1458,8 +1473,8 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
-  neutube::Document::ETag m_tag;
-  neutube::EImageBackground m_stackBackground;
+  neutu::Document::ETag m_tag;
+  neutu::EImageBackground m_stackBackground;
 
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;

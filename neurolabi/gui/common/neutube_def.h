@@ -3,12 +3,14 @@
 
 #include <limits>
 #include <functional>
+#include <string>
+
 
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
 
-namespace neutube {
+namespace neutu {
 
 static constexpr uint64_t ONEGIGA = 1073741824;
 static constexpr uint64_t HALFGIGA = 536870912;
@@ -62,6 +64,12 @@ constexpr typename std::underlying_type<T>::type EnumValue(T val)
     return static_cast<typename std::underlying_type<T>::type>(val);
 }
 
+template <typename...>
+struct voider { using type = void; };
+
+template <typename... T>
+using void_t = typename voider<T...>::type;
+
 enum class EPlane {
   XY = 0, XZ, YZ
 };
@@ -95,8 +103,22 @@ enum class EMessageType {
   INFORMATION, WARNING, ERROR, DEBUG
 };
 
-enum class EBodyLabelType {
+enum class ELabelSource {
   ORIGINAL, MAPPED
+};
+
+enum class EBodyLabelType {
+  BODY, SUPERVOXEL
+};
+
+std::string ToString(EBodyLabelType type);
+
+enum class EBodySplitMode {
+  NONE, ONLINE, OFFLINE
+};
+
+enum class EDataSliceUpdatePolicy {
+  DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
 };
 
 enum class EBiDirection {
@@ -168,50 +190,24 @@ namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
 static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
-}
+} //namespace display
 
-#if defined(INT32_MIN)
-static const int DIM_INVALID_INDEX = INT32_MIN;
-#else
-static const int DIM_INVALID_INDEX = -2147483647;
-#endif
+//#if defined(INT32_MIN)
+//static const int DIM_INVALID_INDEX = INT32_MIN;
+//#else
+//static const int DIM_INVALID_INDEX = -2147483647;
+//#endif
 
-static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
-static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
-}
-
-namespace flyem {
-enum class EDvidAnnotationLoadMode {
-  NO_PARTNER, PARTNER_LOCATION, PARTNER_RELJSON
-};
-
-enum class EProofreadingMode {
-  NORMAL, SPLIT
-};
-
-enum class EBodyType {
-  DEFAULT, SPHERE, SKELETON, MESH
-};
-
-enum class EBodyLabelType {
-  BODY, SUPERVOXEL
-};
-
-enum class EBodySplitMode {
-  NONE, ONLINE, OFFLINE
-};
-
-enum class EBodySplitRange {
-  FULL, SEED, LOCAL
-};
-
-enum class EDataSliceUpdatePolicy {
-  DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
-};
+static const int DIM_INVALID_INDEX = std::numeric_limits<int32_t>::min();
 
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
+
+static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
+static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
+static const size_t BIG_STACK_VOLUME_HINT = 923741823;
 }
+
 
 using TProgressFunc = std::function<void(size_t, size_t)>;
 

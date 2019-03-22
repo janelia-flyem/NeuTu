@@ -11,13 +11,13 @@ TEST(ZFlyEmTaskHelper, Todo)
 {
   ZFlyEmTaskHelper helper;
 
-  ASSERT_EQ(neutube::TO_SPLIT, helper.getDefaultTodoAction());
+  ASSERT_EQ(neutu::TO_SPLIT, helper.getDefaultTodoAction());
 
   helper.setCurrentTaskType(ProtocolTaskFactory::TASK_BODY_CLEAVE);
-  ASSERT_EQ(neutube::TO_SUPERVOXEL_SPLIT, helper.getDefaultTodoAction());
+  ASSERT_EQ(neutu::TO_SUPERVOXEL_SPLIT, helper.getDefaultTodoAction());
 
   helper.setCurrentTaskType(ProtocolTaskFactory::TASK_BODY_MERGE);
-  ASSERT_EQ(neutube::TO_SPLIT, helper.getDefaultTodoAction());
+  ASSERT_EQ(neutu::TO_SPLIT, helper.getDefaultTodoAction());
 }
 
 #endif

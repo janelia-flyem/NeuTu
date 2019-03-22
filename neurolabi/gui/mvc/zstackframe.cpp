@@ -43,6 +43,7 @@
 #include "zmeshfactory.h"
 #include "z3dmeshfilter.h"
 #include "qt/core/qthelper.h"
+#include "zneurontracer.h"
 
 #include "widgets/zimagewidget.h"
 
@@ -146,7 +147,7 @@ void ZStackFrame::BaseConstruct(ZStackFrame *frame, ZStackDoc *doc)
 }
 
 ZStackFrame*
-ZStackFrame::Make(QMdiArea *parent, neutube::Document::ETag docTag)
+ZStackFrame::Make(QMdiArea *parent, neutu::Document::ETag docTag)
 {
   ZSharedPointer<ZStackDoc> doc =
       ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL));
@@ -209,7 +210,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
 
   updateDocument();
 
-  if (document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+  if (document()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
     m_presenter->setViewMode(ZInteractiveContext::VIEW_OBJECT_PROJECT);
   }
   setView(m_view);
@@ -329,7 +330,7 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
   connectAction(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)), Qt::AutoConnection);
 
-  if (m_doc->getTag() != neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+  if (m_doc->getTag() != neutu::Document::ETag::BIOCYTIN_PROJECTION) {
     connectAction(m_doc.get(), SIGNAL(zoomingToSelectedSwcNode()),
                   this, SLOT(zoomToSelectedSwcNodes()), Qt::AutoConnection);
   }
@@ -577,7 +578,7 @@ void ZStackFrame::setupDisplay()
   emit ready(this);
 }
 
-void ZStackFrame::setSizeHintOption(neutube::ESizeHintOption option)
+void ZStackFrame::setSizeHintOption(neutu::ESizeHintOption option)
 {
   if (view() != NULL) {
     view()->setSizeHintOption(option);
@@ -589,7 +590,7 @@ int ZStackFrame::readStack(const char *filePath)
   Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_SWC:
+  case ZFileType::EFileType::SWC:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
       return ERROR_IO_READ;
@@ -600,15 +601,15 @@ int ZStackFrame::readStack(const char *filePath)
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_V3D_APO:
-  case ZFileType::FILE_V3D_MARKER:
+  case ZFileType::EFileType::V3D_APO:
+  case ZFileType::EFileType::V3D_MARKER:
     m_doc->importPuncta(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_LOCSEG_CHAIN: {
+  case ZFileType::EFileType::LOCSEG_CHAIN: {
     QStringList files;
     files.push_back(filePath);
     m_doc->importLocsegChain(files);
@@ -618,14 +619,14 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   }
-  case ZFileType::FILE_SWC_NETWORK:
+  case ZFileType::EFileType::SWC_NETWORK:
     m_doc->loadSwcNetwork(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
     if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
@@ -758,6 +759,8 @@ void ZStackFrame::autoTraceFunc()
   document()->setProgressReporter(&reporter);
 
   document()->getNeuronTracer().setDiagnosis(m_autoTraceDlg->diagnosis());
+  document()->getNeuronTracer().setOverTrace(m_autoTraceDlg->overTracing());
+  document()->getNeuronTracer().setSeedScreening(m_autoTraceDlg->screenSeed());
   executeAutoTraceCommand(getAutoTraceDlg()->getTraceLevel(),
                           getAutoTraceDlg()->resampling(),
                           getAutoTraceDlg()->getChannel());
@@ -816,7 +819,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(neutube::GetFilePath(url).toStdString())) {
+    if (ZFileType::isImageFile(neutu::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -828,7 +831,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
     if (mainWindow != NULL) {
       QStringList fileList;
       foreach (QUrl url, imageUrls) {
-        fileList.append(neutube::GetFilePath(url));
+        fileList.append(neutu::GetFilePath(url));
       }
       mainWindow->openFile(fileList);
     }
@@ -1355,7 +1358,7 @@ ZStack* ZStackFrame::getStrokeMask()
   return view()->getStrokeMask(1);
 }
 
-ZStack* ZStackFrame::getStrokeMask(neutube::EColor color)
+ZStack* ZStackFrame::getStrokeMask(neutu::EColor color)
 {
   return view()->getStrokeMask(color);
 }
@@ -1366,7 +1369,7 @@ void ZStackFrame::exportObjectMask(const QString &filePath)
 }
 
 void ZStackFrame::exportObjectMask(
-    neutube::EColor color, const QString &filePath)
+    neutu::EColor color, const QString &filePath)
 {
   view()->exportObjectMask(color, filePath.toStdString());
 }
@@ -1423,7 +1426,7 @@ void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 
 void ZStackFrame::setViewPortCenter(int x, int y, int z)
 {
-  view()->setViewPortCenter(x, y, z, neutube::EAxisSystem::NORMAL);
+  view()->setViewPortCenter(x, y, z, neutu::EAxisSystem::NORMAL);
 //  presenter()->setViewPortCenter(x, y, z);
 }
 
@@ -1441,7 +1444,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
-  view()->setViewPortCenter(x, y, z, neutube::EAxisSystem::SHIFTED);
+  view()->setViewPortCenter(x, y, z, neutu::EAxisSystem::SHIFTED);
 
 //  presenter()->setViewPortCenter(x, y, z);
 }
@@ -1672,7 +1675,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_PNG) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::EFileType::PNG) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);
@@ -1716,11 +1719,11 @@ void ZStackFrame::importMask(const QString &filePath)
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
-               neutube::EMessageType::ERROR);
+               neutu::EMessageType::ERROR);
       }
     } else {
       report("Loading mask failed", "Must be single 8-bit image",
-             neutube::EMessageType::ERROR);
+             neutu::EMessageType::ERROR);
     }
     delete stack;
   }
@@ -1844,7 +1847,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
     if (isExclusive) {
       clearDecoration();
     }
-    obj->addVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID);
+    obj->addVisualEffect(neutu::display::SparseObject::VE_FORCE_SOLID);
     addDecoration(obj);
     updateView();
 
@@ -2000,8 +2003,8 @@ void ZStackFrame::MessageProcessor::processMessage(
   {
     ZStackFrame *frame = qobject_cast<ZStackFrame*>(host);
     if (frame != NULL) {
-      if (frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_STACK ||
-          frame->document()->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+      if (frame->document()->getTag() == neutu::Document::ETag::BIOCYTIN_STACK ||
+          frame->document()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
         ZWindowFactory::Open3DWindow(frame, Z3DView::EInitMode::EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {

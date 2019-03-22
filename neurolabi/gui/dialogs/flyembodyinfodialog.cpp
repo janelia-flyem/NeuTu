@@ -1,3 +1,5 @@
+#include "flyembodyinfodialog.h"
+
 #include <iostream>
 #include <stdlib.h>
 #include <sstream>
@@ -22,17 +24,18 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 
+#include "zglobal.h"
+
+#include "logging/zlog.h"
+
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidroi.h"
 
-#include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
 #include "zdialogfactory.h"
-#include "zstring.h"
 #include "service/neuprintreader.h"
-#include "zglobal.h"
 #include "neuprintquerydialog.h"
 
 /*
@@ -194,6 +197,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
 void FlyEmBodyInfoDialog::prepareWidget()
 {
+  logInfo("Prepare widget: " + ToString(m_mode));
+
 //  setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
   if (m_mode == EMode::QUERY || m_mode == EMode::NEUPRINT) {
     setWindowTitle("Body Information (Selected)");
@@ -243,6 +248,8 @@ void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
 
 void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
 {
+  logInfo(QString("Set a list %1 bodies").arg(bodyList.size()));
+
   ZJsonArray bodies;
   ZDvidReader &reader = m_sequencerReader;
   if (reader.isReady()) {
@@ -274,7 +281,7 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
         npost = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::POST_SYN);
       } else {
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(
-              bodyId, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+              bodyId, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         for (size_t i=0; i<synapses.size(); i++) {
           if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
@@ -359,14 +366,43 @@ void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
     }
 }
 
+void FlyEmBodyInfoDialog::logInfo(const QString &msg) const
+{
+  KLOG << ZLog::Info()
+       << ZLog::Description(msg.toStdString())
+       << ZLog::Window("FlyEmBodyInfoDialog");
+}
+
+QString FlyEmBodyInfoDialog::ToString(EMode mode)
+{
+  switch (mode) {
+  case EMode::NEUPRINT:
+    return "neuprint";
+  case EMode::QUERY:
+    return "connection";
+  case EMode::SEQUENCER:
+    return "sequencer";
+  }
+
+  return "";
+}
+
+ZDvidReader& FlyEmBodyInfoDialog::getIoBodyReader()
+{
+  if (!m_ioBodyReader.isReady()) {
+    m_ioBodyReader.open(m_reader.getDvidTarget());
+    m_ioBodyReader.setVerbose(false);
+  }
+
+  return m_ioBodyReader;
+}
+
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
     QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
-#ifdef _DEBUG_
-    std::cout << bodyId << " activated." << std::endl;
-#endif
+    logInfo(QString("%1 ativated").arg(bodyId));
 
     // double-click = select and goto
     // shift-double-click = select and goto, but don't clear previous bodies from 3d views
@@ -599,6 +635,8 @@ void FlyEmBodyInfoDialog::updateStatusLabel() {
         arg(nPre).arg(m_totalPre).arg(nPost).arg(m_totalPost);
     setStatusLabel(label);
 
+    logInfo(label);
+
     // have I mentioned how much I despise C++ strings?
 
 //    std::ostringstream outputStream;
@@ -662,6 +700,9 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
 void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
 {
   int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+
+  logInfo(QString("Update bodies triggered by max body number change: %1").arg(maxBodies));
+
   if (maxBodies > 1000) {
     int ans = QMessageBox::Ok;
     if (m_mode == EMode::SEQUENCER) {
@@ -1455,6 +1496,9 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_totalPost = 0;
 
     ZJsonArray bookmarks(data);
+
+    logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
+
     m_bodyModel->setRowCount(bookmarks.size());
     m_bodyModel->blockSignals(true);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -1467,43 +1511,6 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_bodyModel->blockSignals(false);
           }
         }
-
-#if 0
-        // carefully set data for column items so they will sort
-        //  properly (eg, IDs numerically, not lexically)
-        qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
-        QStandardItem * bodyIDItem = new QStandardItem();
-        bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
-        m_bodyModel->setItem(i, BODY_ID_COLUMN, bodyIDItem);
-
-        if (bkmk.hasKey("name")) {
-            const char* name = ZJsonParser::stringValue(bkmk["name"]);
-            m_bodyModel->setItem(i, BODY_NAME_COLUMN, new QStandardItem(QString(name)));
-        }
-
-        if (bkmk.hasKey("body T-bars")) {
-            int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
-            m_totalPre += nPre;
-            QStandardItem * preSynapseItem = new QStandardItem();
-            preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-            m_bodyModel->setItem(i, BODY_NPRE_COLUMN, preSynapseItem);
-        }
-
-        if (bkmk.hasKey("body PSDs")) {
-            int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
-            m_totalPost += nPost;
-            QStandardItem * postSynapseItem = new QStandardItem();
-            postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-            m_bodyModel->setItem(i, BODY_NPOST_COLUMN, postSynapseItem);
-        }
-
-        // note that this routine expects "body status", not "status";
-        //  historical side-effect of the original file format we read from
-        if (bkmk.hasKey("body status")) {
-            const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-            m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
-        }
-#endif
     }
     m_bodyModel->blockSignals(false);
 
@@ -1538,7 +1545,9 @@ void FlyEmBodyInfoDialog::onjsonLoadColorMapError(QString message) {
 void FlyEmBodyInfoDialog::onSaveColorFilter() {
     if (ui->bodyFilterField->text().size() > 0) {
         // no duplicates
-        if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, FILTER_NAME_COLUMN).size() == 0) {
+        if (m_filterModel->findItems(
+              ui->bodyFilterField->text(), Qt::MatchExactly,
+              FILTER_NAME_COLUMN).size() == 0) {
             updateColorFilter(ui->bodyFilterField->text());
         }
     }
@@ -1706,6 +1715,8 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
     // note: oldFilter currently unused; I was thinking about allowing an edit
     //  to a filter that would replace an older filter but didn't implement it
 
+    logInfo("Update color filter");
+
     QStandardItem * filterTextItem = new QStandardItem(filter);
     m_filterModel->appendRow(filterTextItem);
 
@@ -1756,6 +1767,7 @@ void FlyEmBodyInfoDialog::setFilterTableModelColor(QColor color, int modelRow) {
 
 void FlyEmBodyInfoDialog::onDeleteButton() {
     if (ui->filterTableView->selectionModel()->hasSelection()) {
+        logInfo("Remove selected color filter");
         // we only allow single row selections; get the filter string
         //  from the selected row; only one, so take the first index thereof:
         QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
@@ -1975,7 +1987,6 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 
 void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
-
     // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
 
     // I'm leaving all the timing prints commented out for future use
@@ -1986,22 +1997,23 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
-    ZDvidReader reader;
-    reader.setVerbose(false);
+    ZDvidReader &reader = getIoBodyReader();
+//    reader.setVerbose(false);
 
     // testing
     // reader.setVerbose(true);
 
 
-    if (reader.open(m_currentDvidTarget)) {
+    if (reader.isReady()) {
+        logInfo("Retieving body inputs and outputs");
         // std::cout << "open DVID reader: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         std::vector<ZDvidSynapse> synapses;
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
                 bodyID, *getRoi(ui->roiComboBox->currentText()),
-                flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+                dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else {
-          synapses = reader.readSynapse(bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+          synapses = reader.readSynapse(bodyID, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         }
 
         // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;

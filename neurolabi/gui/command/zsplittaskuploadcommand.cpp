@@ -5,12 +5,14 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
 #include "zstroke2d.h"
-#include "flyem/zflyemmisc.h"
 #include "zglobal.h"
 #include "zstring.h"
+
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
+#include "flyem/zflyemmisc.h"
 
 ZSplitTaskUploadCommand::ZSplitTaskUploadCommand()
 {
@@ -91,7 +93,7 @@ int ZSplitTaskUploadCommand::run(
 
         std::string location = writer->writeServiceTask("split", taskJson);
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::json::REF_KEY, location);
+        entryJson.setEntry(neutu::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
         std::cout << "*    Task for " << bodyId << " is saved @ "

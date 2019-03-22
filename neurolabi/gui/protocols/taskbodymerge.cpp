@@ -1,6 +1,8 @@
 #include "taskbodymerge.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidurl.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodyconfig.h"
 #include "flyem/zflyemproofdoc.h"
@@ -302,7 +304,7 @@ QString TaskBodyMerge::targetString()
   return "SV " + QString::number(m_supervoxelId1) + " +<br>SV " + QString::number(m_supervoxelId2);
 }
 
-bool TaskBodyMerge::skip()
+bool TaskBodyMerge::skip(QString &reason)
 {
   if ((m_bodyId1 == 0) || (m_bodyId2 == 0)) {
 
@@ -310,6 +312,7 @@ bool TaskBodyMerge::skip()
     // map to a body (e.g., because the super voxel was split), but we still want a record
     // of these tasks in the results, so write that record here.
 
+    reason = "SV maps to no body";
     writeResult("autoSkippedNoBody");
     m_lastSavedButton = nullptr;
     return true;
@@ -317,6 +320,7 @@ bool TaskBodyMerge::skip()
 
     // Likewise for redundant tasks.
 
+    reason = "SVs map to one body";
     writeResult("autoSkippedSameBody");
     m_lastSavedButton = nullptr;
     return true;
@@ -1228,18 +1232,22 @@ void TaskBodyMerge::writeResult(const QString &result)
   // Populate the OpenTracing-style "span" with the results of this task, and log it
   // (via Kafka).
 
-  std::unique_ptr<neuopentracing::Span> s_span =
-      neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
-  s_span->SetTag("client", "neu3");
-  s_span->SetTag("version", getBuildVersion());
-  if (!m_usageTimes.empty()) {
-    s_span->SetTag("duration", m_usageTimes.back());
+  if (neuopentracing::Tracer::Global()) {
+    std::unique_ptr<neuopentracing::Span> s_span =
+        neuopentracing::Tracer::Global()->StartSpan("focusedMerging");
+    if (s_span) {
+      s_span->SetTag("client", "neu3");
+      s_span->SetTag("version", getBuildVersion());
+      if (!m_usageTimes.empty()) {
+        s_span->SetTag("duration", m_usageTimes.back());
+      }
+      s_span->SetTag("category", "neu3.focusedMerging.result");
+      for (auto it = json.begin(); it != json.end(); it++) {
+        s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
+      }
+      s_span->Finish();
+    }
   }
-  s_span->SetTag("category", "neu3.focusedMerging.result");
-  for (auto it = json.begin(); it != json.end(); it++) {
-    s_span->SetTag(it.key().toStdString(), neuopentracing::Value(it.value()));
-  }
-  s_span->Finish();
 }
 
 QString TaskBodyMerge::readResult()

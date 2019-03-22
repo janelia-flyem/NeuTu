@@ -47,6 +47,7 @@ protected:
   enum class State
   {
     None,
+    PreRotate,
     Rotate,
     Roll,
     Dolly,
@@ -168,6 +169,9 @@ protected:
   void roll(const glm::ivec2& mouseStart, const glm::ivec2& mouseEnd, int w, int h);
 
   void dolly(const glm::ivec2& mouseStart, const glm::ivec2& mouseEnd, int w, int h, float centerDistStart);
+
+private:
+  void log3DCameraEvent(const QString &action);
 
 protected:
   ZEventListenerParameter* m_rotateEvent;

@@ -17,25 +17,24 @@
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
-
-//#include "logging/zqslog.h"
+#include "logging/zqslog.h"
 
 #include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
-#include "zflyemproofmvc.h"
-#include "flyemproofcontrolform.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackpresenter.h"
+
 #include "zflyembookmarkview.h"
 #include "zflyemdataloader.h"
 #include "flyemsplitcontrolform.h"
-
-#include "flyem/zflyemmessagewidget.h"
-#include "flyem/zflyemproofdoc.h"
-#include "flyem/zflyemproofpresenter.h"
+#include "zflyemproofmvc.h"
+#include "flyemproofcontrolform.h"
+#include "zflyemmessagewidget.h"
+#include "zflyemproofdoc.h"
+#include "zflyemproofpresenter.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -72,10 +71,10 @@ void ZProofreadWindow::init()
   layout->setMargin(1);
   widget->setLayout(layout);
 
-  ZDvidTarget target;
+//  ZDvidTarget target;
 //  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 
-  m_mainMvc = ZFlyEmProofMvc::Make(target);
+  m_mainMvc = ZFlyEmProofMvc::Make(/*target*/);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
@@ -140,7 +139,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, neutu::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -591,7 +590,7 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         neutube::EMessageType::INFORMATION,
+         neutu::EMessageType::INFORMATION,
          ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
@@ -601,7 +600,7 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
   dump("Launching split ...", false);
 
@@ -615,7 +614,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        neutube::EBodyLabelType::ORIGINAL);
+        neutu::ELabelSource::ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -626,9 +625,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE;
+        neutu::EBodySplitMode mode = neutu::EBodySplitMode::ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = flyem::EBodySplitMode::OFFLINE;
+          mode = neutu::EBodySplitMode::OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
@@ -641,7 +640,7 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from body splitting mode.", neutube::EMessageType::INFORMATION,
+         "Back from body splitting mode.", neutu::EMessageType::INFORMATION,
          ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
@@ -658,7 +657,7 @@ void ZProofreadWindow::dump(const QString &message, bool appending)
 
 void ZProofreadWindow::dumpError(const QString &message, bool appending)
 {
-  ZWidgetMessage msg(message, neutube::EMessageType::ERROR);
+  ZWidgetMessage msg(message, neutu::EMessageType::ERROR);
   if (!appending) {
     msg.setTarget(ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA);
   }
@@ -668,12 +667,10 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
-  if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
-    neutu::LogMessage(msg);
-  }
+  neutu::LogMessage(msg);
 
   if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
-    if (msg.getType() == neutube::EMessageType::ERROR) {
+    if (msg.getType() == neutu::EMessageType::ERROR) {
       m_messageWidget->dumpError(msg.toHtmlString(), msg.isAppending());
     } else {
       m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
@@ -779,7 +776,8 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
 //  removeToolBar(m_toolBar);
 
-  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
+  setWindowTitle(
+        (target.getName() + " @ " + target.getSourceString(false, 5)).c_str());
 
   enableTargetAction(target.isValid());
 
@@ -830,29 +828,6 @@ void ZProofreadWindow::logError(const QString &msg)
   KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
 //  LINFO() << msg;
 }
-
-#if 0
-void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
-{
-  std::string plainStr = msg.toPlainString().toStdString();
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    KLog() << ZLog::Info() << ZLog::Description(plainStr);
-    break;
-  case neutube::EMessageType::WARNING:
-    KLog() << ZLog::Warn() << ZLog::Description(plainStr);
-//    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    KLog() << ZLog::Error() << ZLog::Description(plainStr);
-//    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
-}
-#endif
 
 void ZProofreadWindow::changeEvent(QEvent *event)
 {

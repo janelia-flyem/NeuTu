@@ -47,6 +47,7 @@ signals:
   void savingMerge();
   void committingMerge();
   void zoomingTo(int x, int y, int z);
+  void zoomingToAssigned(int x, int y, int z);
   void locatingBody(uint64_t);
   void goingToBody();
   void selectingBody();
@@ -88,9 +89,11 @@ private slots:
   void goToPosition();
   void goToBody();
   void selectBody();
-  void locateAssignedBookmark(const QModelIndex &index);
-  void locateUserBookmark(const QModelIndex &index);
+//  void locateAssignedBookmark(const QModelIndex &index);
+//  void locateUserBookmark(const QModelIndex &index);
   void locateBookmark(const ZFlyEmBookmark *bookmark);
+  void locateAssignedBookmark(const ZFlyEmBookmark *bookmark);
+
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
 //  void enableSequencerColorMap(bool on);

@@ -3,7 +3,7 @@
 #include <QAction>
 
 #include "zsandbox.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "imgproc/zstackprocessor.h"
 #include "mainwindow.h"
 #include "zstack.hxx"

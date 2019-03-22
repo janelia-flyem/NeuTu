@@ -56,30 +56,30 @@ void ZStTransform::setScale(double sx, double sy)
   m_sy = sy;
 }
 
-double ZStTransform::getScale(neutube::EAxis axis) const
+double ZStTransform::getScale(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return getSx();
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return getSy();
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     return getSz();
   }
 
   return 1.0;
 }
 
-double ZStTransform::getOffset(neutube::EAxis axis) const
+double ZStTransform::getOffset(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return getTx();
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return getTy();
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     return getTz();
   }
 
@@ -190,7 +190,7 @@ void ZStTransform::estimate(const QRectF &input, const QRectF &output)
 
 void ZStTransform::estimate(
     double source0, double source1, double target0, double target1,
-    neutube::EAxis axis)
+    neutu::EAxis axis)
 {
   double s = 0.0;
   double t = 0.0;
@@ -203,16 +203,16 @@ void ZStTransform::estimate(
   }
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     m_sx = s;
     m_dx = t;
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     m_sy = s;
     m_dy = t;
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     m_sz = s;
     m_dz = t;
     break;

@@ -43,9 +43,9 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 }
 
 void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -103,14 +103,14 @@ bool ZSlicedPuncta::load(const std::string &filePath, double radius)
   bool succ = false;
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
   {
     ZJsonObject obj;
     obj.load(filePath);
     succ = load(obj, radius);
   }
     break;
-  case ZFileType::FILE_TXT:
+  case ZFileType::EFileType::TXT:
   {
     ZColorScheme scheme;
     scheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);
@@ -169,7 +169,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutu::display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

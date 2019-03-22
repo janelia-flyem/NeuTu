@@ -462,7 +462,7 @@ std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
   if (!config.format.empty()) {
     url = AppendQuery(url, std::make_pair(std::string("format"), config.format));
   }
-  if (config.labelType == flyem::EBodyLabelType::SUPERVOXEL) {
+  if (config.labelType == neutu::EBodyLabelType::SUPERVOXEL) {
     url = AppendQuery(url, std::make_pair(std::string("supervoxels"), true));
   }
 
@@ -472,9 +472,9 @@ std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
-    uint64_t bodyId, int z, neutube::EAxis axis) const
+    uint64_t bodyId, int z, neutu::EAxis axis) const
 {
-  if (axis == neutube::EAxis::ARB) {
+  if (axis == neutu::EAxis::ARB) {
     return "";
   }
 
@@ -538,9 +538,9 @@ std::string ZDvidUrl::getSparsevolLastModUrl(uint64_t bodyId)
 }
 
 std::string ZDvidUrl::getSupervoxelUrl(
-    uint64_t bodyId, int z, neutube::EAxis axis) const
+    uint64_t bodyId, int z, neutu::EAxis axis) const
 {
-  if (axis == neutube::EAxis::ARB) {
+  if (axis == neutu::EAxis::ARB) {
     return "";
   }
 
@@ -582,9 +582,9 @@ std::string ZDvidUrl::getSupervoxelUrl(
 }
 
 std::string ZDvidUrl::getSupervoxelUrl(
-    uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
+    uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const
 {
-  if (axis == neutube::EAxis::ARB) {
+  if (axis == neutu::EAxis::ARB) {
     return "";
   }
 
@@ -625,9 +625,9 @@ std::string ZDvidUrl::getSupervoxelUrl(
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
-    uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
+    uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const
 {
-  if (axis == neutube::EAxis::ARB) {
+  if (axis == neutu::EAxis::ARB) {
     return "";
   }
 
@@ -703,7 +703,7 @@ std::string ZDvidUrl::AppendQueryM(
 }
 
 std::string ZDvidUrl::AppendRangeQuery(
-    const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact)
+    const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact)
 {
   if (url.empty()) {
     return "";
@@ -712,22 +712,22 @@ std::string ZDvidUrl::AppendRangeQuery(
   std::string newUrl = url;
 
   switch (axis) {
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     newUrl = AppendQueryM(
           url, {std::make_pair("minz", minZ),
                 std::make_pair("maxz", maxZ)});
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     newUrl = AppendQueryM(
           url, {std::make_pair("minx", minZ),
                 std::make_pair("maxx", maxZ)});
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     newUrl = AppendQueryM(
           url, {std::make_pair("miny", minZ),
                 std::make_pair("maxy", maxZ)});
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
@@ -932,9 +932,14 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
-std::string ZDvidUrl::getMasterUrl() const
+std::string ZDvidUrl::getOldMasterUrl() const
 {
   return getKeyUrl("branches", "master");
+}
+
+std::string ZDvidUrl::getMasterUrl() const
+{
+  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const
@@ -1258,6 +1263,11 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 
   return GetFullUrl(GetKeyCommandUrl(
         getDataUrl(ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION))), key);
+}
+
+std::string ZDvidUrl::getDataConfigUrl(const std::string &userName) const
+{
+  return getKeyUrl("neutu_config", "user_" + userName);
 }
 
 std::string ZDvidUrl::getSplitUrl(

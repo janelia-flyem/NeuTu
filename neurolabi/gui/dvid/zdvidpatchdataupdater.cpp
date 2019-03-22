@@ -1,6 +1,6 @@
 #include "zdvidpatchdataupdater.h"
 #include "zdvidtileensemble.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zdvidpatchdatafetcher.h"
 #include "zstackdocdatabuffer.h"
 

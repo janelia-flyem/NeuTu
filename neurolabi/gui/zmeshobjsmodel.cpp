@@ -1,6 +1,6 @@
 #include "zmeshobjsmodel.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zobjsitem.h"
 #include "zmesh.h"
 #include "QsLog.h"
@@ -90,7 +90,8 @@ bool ZMeshObjsModel::needCheckbox(const QModelIndex &index) const
 
 void ZMeshObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  if (infoSet.contains(ZStackObject::EType::MESH)) {
+  if (infoSet.contains(ZStackObject::EType::MESH) &&
+      !infoSet.onlyVisibilityChanged(ZStackObject::EType::MESH)) {
     updateModelData();
   }
 }

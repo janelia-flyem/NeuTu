@@ -81,11 +81,11 @@ void ZDvidTile::loadDvidSlice(
     m_z = z;
   }
 
-  if (hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST) != highContrast) {
+  if (hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST) != highContrast) {
     if (highContrast) {
-      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     }
     modified = true;
   }
@@ -111,7 +111,7 @@ void ZDvidTile::loadDvidSlice(
 
 void ZDvidTile::updateImageContrast()
 {
-  bool hc = hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+  bool hc = hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
 
   if (m_originalBackup) {
     *m_image = *m_originalBackup;
@@ -144,11 +144,11 @@ void ZDvidTile::updatePixmap()
 
 void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
 {
-  if (high != hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST)) {
+  if (high != hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST)) {
     if (high) {
-      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
       //      delete m_image;
       //      m_image = NULL;
       //      update(getZ());
@@ -181,9 +181,9 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstras
 
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -227,7 +227,7 @@ void ZDvidTile::display(
 //    tic();
 //    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
-    LDEBUG() << "Painting tile:" << m_pixmap.size();
+//    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
@@ -305,7 +305,7 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z,
-                    hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
+                    hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST));
     }
 #endif
   }

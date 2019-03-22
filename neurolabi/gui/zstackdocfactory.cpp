@@ -1,30 +1,32 @@
 #include "zstackdocfactory.h"
-#include "zstackdoc.h"
-#include "flyem/zflyemproofdoc.h"
+
+#include "mvc/zstackdoc.h"
+
 #include "biocytin/zbiocytinprojectiondoc.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodymergedoc.h"
 #include "flyem/zflyemstackdoc.h"
-
+#include "flyem/zflyemproofdoc.h"
 
 ZStackDocFactory::ZStackDocFactory()
 {
 }
 
-ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(neutube::Document::ETag tag)
+ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(neutu::Document::ETag tag)
 {
   ZStackDoc *doc = NULL;
   switch (tag) {
-  case neutube::Document::ETag::BIOCYTIN_PROJECTION:
+  case neutu::Document::ETag::BIOCYTIN_PROJECTION:
     doc = new ZBiocytinProjectionDoc;
     break;
-  case neutube::Document::ETag::FLYEM_PROOFREAD:
+  case neutu::Document::ETag::FLYEM_PROOFREAD:
     doc = new ZFlyEmProofDoc;
     break;
-  case neutube::Document::ETag::FLYEM_STACK:
+  case neutu::Document::ETag::FLYEM_STACK:
     doc = new ZFlyEmStackDoc;
     break;
-  case neutube::Document::ETag::FLYEM_MERGE:
+  case neutu::Document::ETag::FLYEM_MERGE:
     doc = new ZFlyEmBodyMergeDoc;
     break;
   default:
@@ -33,9 +35,9 @@ ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(neutube::Document::ETag tag)
   }
 
   doc->setTag(tag);
-  if (tag == neutube::Document::ETag::BIOCYTIN_STACK) {
+  if (tag == neutu::Document::ETag::BIOCYTIN_STACK) {
     doc->setResolution(1, 1, 8, 'p');
-    doc->setStackBackground(neutube::EImageBackground::BRIGHT);
+    doc->setStackBackground(neutu::EImageBackground::BRIGHT);
   }
 
   return ZSharedPointer<ZStackDoc>(doc);

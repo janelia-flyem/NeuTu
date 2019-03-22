@@ -10,7 +10,7 @@
 #include "zobject3dscan.h"
 
 //#define MAX_STACK_VOLUME 1847483647
-#define MAX_STACK_VOLUME 923741823
+//#define MAX_STACK_VOLUME 923741823
 
 //#define MAX_STACK_VOLUME 1000
 
@@ -217,12 +217,12 @@ void ZSparseStack::assignStackValue(
 
 size_t ZSparseStack::GetMaxStackVolume()
 {
-  return MAX_STACK_VOLUME;
+  return neutu::BIG_STACK_VOLUME_HINT;
 }
 
 bool ZSparseStack::DownsampleRequired(const ZIntCuboid &box)
 {
-  return box.getVolume() > MAX_STACK_VOLUME;
+  return box.getVolume() > GetMaxStackVolume();
 }
 
 bool ZSparseStack::downsampleRequired() const
@@ -504,7 +504,7 @@ ZStack* ZSparseStack::makeStack(
 
 ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, bool preservingGap)
 {
-  return makeStack(box, MAX_STACK_VOLUME, preservingGap);
+  return makeStack(box, GetMaxStackVolume(), preservingGap);
 }
 
 ZIntPoint ZSparseStack::getDenseDsIntv() const
@@ -538,7 +538,7 @@ ZStack* ZSparseStack::getStack()
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
     if (!m_objectMask->isEmpty()) {
       size_t volume = cuboid.getVolume();
-      double dsRatio = (double) volume / MAX_STACK_VOLUME;
+      double dsRatio = (double) volume / GetMaxStackVolume();
       if (dsRatio > 1.0) {
         ZObject3dScan obj = *m_objectMask;
         ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(dsRatio);

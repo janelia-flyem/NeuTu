@@ -374,7 +374,7 @@ ZCubeArray::~ZCubeArray()
 
 void ZCubeArray::display(
     ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    neutube::EAxis /*sliceAxis*/) const
+    neutu::EAxis /*sliceAxis*/) const
 {
 }
 

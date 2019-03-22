@@ -37,10 +37,12 @@ public:
   std::string getApiUrl() const;
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
+  std::string getOldMasterUrl() const;
   std::string getMasterUrl() const;
   std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
   std::string getDataMapUrl() const;
+  std::string getDataConfigUrl(const std::string &userName) const;
 
   std::string getCommitInfoUrl() const;
 
@@ -82,9 +84,9 @@ public:
   std::string getSupervoxelUrl(const std::string &dataName) const;
   std::string getSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSupervoxelUrl(uint64_t bodyId) const;
-  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutu::EAxis axis) const;
   std::string getSupervoxelUrl(
-      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+      uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const;
   std::string getSupervoxelUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getSupervoxelUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
   std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
@@ -95,15 +97,15 @@ public:
     ZIntCuboid range;
     int zoom = 0;
     std::string format;
-    flyem::EBodyLabelType labelType;
+    neutu::EBodyLabelType labelType;
   };
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
-  std::string getSparsevolUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z, neutu::EAxis axis) const;
   std::string getSparsevolUrl(
-      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+      uint64_t bodyId, int minZ, int maxZ, neutu::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getSparsevolUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
@@ -341,7 +343,7 @@ public:
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
   static std::string AppendRangeQuery(
-      const std::string &url, int minZ, int maxZ, neutube::EAxis axis, bool exact);
+      const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact);
 
 private:
   std::string getSplitUrl(

@@ -44,6 +44,8 @@
 #include "misc/miscutility.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyemutilities.h"
+#include "flyem/zflyembodyannotation.h"
+#include "flyem/flyemdatareader.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -445,7 +447,7 @@ int ZCommandLine::runSynapseObjectList()
 
 int ZCommandLine::runOutputClassList()
 {
-  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_JSON) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::JSON) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
     std::map<string, int> classMap = bundle.getClassIdMap();
@@ -579,7 +581,7 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-    if (ZFileType::FileType(m_output) == ZFileType::FILE_SWC) {
+    if (ZFileType::FileType(m_output) == ZFileType::EFileType::SWC) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
 
       //Unfortunately ZSwcTree::save does not return any status, so we use this
@@ -776,7 +778,7 @@ int ZCommandLine::runGeneral()
 #endif
 
     ZJsonObject config;
-    if (ZFileType::FileType(m_generalConfig) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::EFileType::JSON) {
       config.load(m_generalConfig);
     } else {
       config.decode(m_generalConfig);
@@ -1021,7 +1023,8 @@ std::vector<uint64_t> ZCommandLine::getSkeletonBodyList(ZDvidReader &reader) con
          iter != bodyIdSet.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (m_namedOnly) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
         if (!annotation.getName().empty()) {
           bodyIdArray.push_back(bodyId);
         }
@@ -1069,7 +1072,8 @@ int ZCommandLine::skeletonizeDvid()
   reader.updateMaxLabelZoom();
 
   ZDvidWriter writer;
-  ZDvidReader bodyReader;
+  ZDvidReader *bodyReader = &reader;
+  ZDvidReader mirrorReader;
 
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
@@ -1094,10 +1098,17 @@ int ZCommandLine::skeletonizeDvid()
     writer.open(reader.getDvidTarget());
     std::string mirror = reader.readMirror();
     ZDvidTarget target = reader.getDvidTarget();
+
     if (!mirror.empty()) {
       target.setServer(mirror);
+      if (mirrorReader.open(target)) {
+        bodyReader = &mirrorReader;
+      } else {
+        LWARN() << "The mirror server" << mirror
+                << "is down. Switched to the main server.";
+      }
     }
-    bodyReader.open(target);
+
 
     ZDvidUrl dvidUrl(reader.getDvidTarget());
 
@@ -1161,7 +1172,7 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      const int mid = bodyReader.readBodyMutationId(bodyId);
+      const int mid = bodyReader->readBodyMutationId(bodyId);
       if (!m_forceUpdate || mid > 0) {
         if (savingToFile) {
           if (outputFileInfo.exists()) {
@@ -1189,19 +1200,21 @@ int ZCommandLine::skeletonizeDvid()
         ZObject3dScan obj;
 
         int zoom = 0;
-        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
-          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+        if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader->readBodyBlockCount(bodyId);
           constexpr int maxBlockCount = 3000;
           int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
-          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+          zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
-        bodyReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+        bodyReader->readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
+
+
         if (tree != NULL) {
           if (mid > 0) {
             flyem::SetMutationId(tree, mid);
@@ -1209,7 +1222,20 @@ int ZCommandLine::skeletonizeDvid()
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            writer.writeSwc(bodyId, tree);
+            if (mid > 0) {
+              const int latestMid = bodyReader->readBodyMutationId(bodyId);
+
+              if (mid != latestMid) {
+                LWARN() << bodyId << ":" << mid << "->" << latestMid
+                        <<  "The body has been changed during skeletonization. "
+                            "No skeleton will be updated.";
+                delete tree;
+                tree = NULL;
+              }
+            }
+            if (tree != NULL) {
+              writer.writeSwc(bodyId, tree);
+            }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
@@ -1265,7 +1291,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
     return 1;
   }
 
@@ -1287,11 +1313,11 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.print();
   }
 
-  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_TIFF) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::TIFF) {
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        neutube::EMessageType::ERROR);
+                        neutu::EMessageType::ERROR);
       return 1;
     }
     ZStack stack;
@@ -1302,7 +1328,7 @@ int ZCommandLine::skeletonizeFile()
       stack.binarize();
     }
     tree = skeletonizer.makeSkeleton(stack);
-  } else if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_OBJECT_SCAN) {
+  } else if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::OBJECT_SCAN) {
     ZObject3dScan obj;
     obj.load(m_input[0]);
     if (m_isVerbose) {
@@ -1313,7 +1339,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 

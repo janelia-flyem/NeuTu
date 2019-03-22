@@ -7,12 +7,12 @@
 #include "zeventlistenerparameter.h"
 #include "zmesh.h"
 #include "QsLog.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "zmeshutils.h"
 #include "zlabelcolortable.h"
 #include "zsparseobject.h"
-#include "zstackdochelper.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 #include "misc/miscutility.h"
 
 const size_t Z3DVolumeFilter::m_maxNumOfFullResolutionVolumeSlice = 6;
@@ -205,7 +205,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
       }
     }
   }
-  //LOG(INFO) << img << vols.size();
+  LOG(INFO) << img << vols.size();
   setData(vols, img);
 }
 

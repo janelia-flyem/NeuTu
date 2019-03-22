@@ -83,7 +83,7 @@ TEST(ZImage, setData)
 
 TEST(ZContrastProtocol, Basic)
 {
-  ZContrastProtocol cp(0, 1, ZContrastProtocol::NONLINEAR_NONE);
+  ZContrastProtocol cp(0, 1, ZContrastProtocol::ENonlinearMode::NONE);
   ASSERT_TRUE(cp.hasNoEffect());
   ASSERT_EQ(1, cp.mapGrey(1));
 }

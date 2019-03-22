@@ -4,8 +4,8 @@
 #include <QWidget>
 
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
-#include "zstackpresenter.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackpresenter.h"
 #include "zactionfactory.h"
 #include "z3dwindow.h"
 #include "zmenuconfig.h"
@@ -167,14 +167,14 @@ QMenu* ZMenuFactory::makeStackContextMenu(
   }
 
   switch (presenter->buddyDocument()->getTag()) {
-  case neutube::Document::ETag::FLYEM_SPLIT:
-  case neutube::Document::ETag::SEGMENTATION_TARGET:
+  case neutu::Document::ETag::FLYEM_SPLIT:
+  case neutu::Document::ETag::SEGMENTATION_TARGET:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_SPLIT_DATA));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_ADD_SPLIT_SEED));
     break;
-  case neutube::Document::ETag::NORMAL:
-  case neutube::Document::ETag::BIOCYTIN_STACK:
+  case neutu::Document::ETag::NORMAL:
+  case neutu::Document::ETag::BIOCYTIN_STACK:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_ADD_SWC_NODE));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_TOGGLE_SWC_SKELETON));
@@ -208,12 +208,14 @@ QMenu* ZMenuFactory::makeSynapseContextMenu(
 
 void ZMenuFactory::AddAction(QMenu *menu, ZActionFactory::EAction actionKey)
 {
-  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
-    menu->addSeparator();
-  } else {
-    QAction *action = ZActionFactory::MakeAction(actionKey, menu);
-    if (action != NULL) {
-      menu->addAction(action);
+  if (menu) {
+    if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      QAction *action = ZActionFactory::MakeAction(actionKey, menu);
+      if (action != NULL) {
+        menu->addAction(action);
+      }
     }
   }
 }
@@ -221,11 +223,13 @@ void ZMenuFactory::AddAction(QMenu *menu, ZActionFactory::EAction actionKey)
 void ZMenuFactory::AddAction(
     QMenu *menu, QAction *action, ZActionFactory::EAction actionKey)
 {
-  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
-    menu->addSeparator();
-  } else {
-    if (action != NULL) {
-      menu->addAction(action);
+  if (menu) {
+    if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      if (action != NULL) {
+        menu->addAction(action);
+      }
     }
   }
 }

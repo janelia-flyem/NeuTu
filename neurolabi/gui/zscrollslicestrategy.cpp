@@ -1,6 +1,6 @@
 #include "zscrollslicestrategy.h"
 #include "zstackviewparam.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 
 ZScrollSliceStrategy::ZScrollSliceStrategy(ZStackView *view) : m_view(view)
 {

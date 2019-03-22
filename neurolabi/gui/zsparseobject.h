@@ -31,7 +31,7 @@ public:
   void setLabel(uint64_t label);
 
   void display(ZPainter &painter, int z, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   void append(const ZObject3dScan &obj);
 

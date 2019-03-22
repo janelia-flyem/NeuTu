@@ -1,6 +1,8 @@
 #ifndef ZDVIDGRAYSLICE_H
 #define ZDVIDGRAYSLICE_H
 
+#include <memory>
+
 #include "zstackobject.h"
 #include "zimage.h"
 //#include "zdvidreader.h"
@@ -32,7 +34,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);

@@ -9,7 +9,7 @@
 #include "zdialogfactory.h"
 #include "flyem/zflyemroiproject.h"
 #include "zqtbarprogressreporter.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "geometry/zintcuboid.h"
 #include "zstackdocreader.h"
 

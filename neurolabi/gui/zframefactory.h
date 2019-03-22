@@ -19,10 +19,10 @@ public:
   static ZFlyEmDataFrame* MakeFlyEmDataFrame(const QString &bundlePath);
   static ZStackFrame* MakeStackFrame(
       ZStackDocReader &reader,
-      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
   static ZStackFrame* MakeStackFrame(
-      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
 };

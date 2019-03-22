@@ -122,7 +122,7 @@ void ZVoxel::print() const
             << std::endl;
 }
 
-void ZVoxel::shiftSliceAxis(neutube::EAxis axis)
+void ZVoxel::shiftSliceAxis(neutu::EAxis axis)
 {
   zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }

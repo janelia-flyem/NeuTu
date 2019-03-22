@@ -9,45 +9,52 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
+#include "tz_math.h"
+#include "tz_utilities.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
+
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "zmatrix.h"
-#include "tz_math.h"
-#include "tz_utilities.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "geometry/zcuboid.h"
-#include "dvid/zdvidinfo.h"
-#include "zstackdoc.h"
+#include "geometry/zaffinerect.h"
+#include "geometry/zintcuboidarray.h"
+
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackdochelper.h"
 #include "z3dgraphfactory.h"
 #include "zstackobjectsourcefactory.h"
-#include "zstackdochelper.h"
 #include "z3dwindow.h"
-#include "dvid/zdvidtarget.h"
+#include "zcubearray.h"
+
 #include "dvid/zdvidreader.h"
-#include "zstackviewparam.h"
-#include "geometry/zintcuboidarray.h"
-#include "zobject3dfactory.h"
-#include "tz_stack_bwmorph.h"
-#include "tz_stack_neighborhood.h"
-#include "zstroke2d.h"
+#include "dvid/zdvidinfo.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidsynapse.h"
+
+#include "zstackviewparam.h"
+#include "zobject3dfactory.h"
+#include "zstroke2d.h"
 #include "zfileparser.h"
 #include "zjsonfactory.h"
-#include "dvid/zdvidwriter.h"
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
-#include "flyem/zmainwindowcontroller.h"
+#include "zmainwindowcontroller.h"
 #include "zswctree.h"
-#include "geometry/zaffinerect.h"
 #include "zarray.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
 #include "zmeshfactory.h"
+#include "zflyembodyannotation.h"
 
 void flyem::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -847,7 +854,7 @@ void flyem::Decorate3dBodyWindow(
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(neutube3d::ERendererLayer::GRAPH, 0.4);
+      window->setOpacity(neutu3d::ERendererLayer::GRAPH, 0.4);
     }
   }
 }
@@ -1061,25 +1068,25 @@ QList<QString> flyem::GetDefaultBodyStatus()
 }
 
 void flyem::MakeTriangle(
-    const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
+    const QRectF &rect, QPointF *ptArray, neutu::ECardinalDirection direction)
 {
   switch (direction) {
-  case neutube::ECardinalDirection::EAST:
+  case neutu::ECardinalDirection::EAST:
     ptArray[0] = QPointF(rect.right(), rect.center().y());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.bottomLeft();
     break;
-  case neutube::ECardinalDirection::WEST:
+  case neutu::ECardinalDirection::WEST:
     ptArray[0] = QPointF(rect.left(), rect.center().y());
     ptArray[1] = rect.topRight();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::ECardinalDirection::NORTH:
+  case neutu::ECardinalDirection::NORTH:
     ptArray[0] = QPointF(rect.center().x(), rect.top());
     ptArray[1] = rect.bottomLeft();
     ptArray[2] = rect.bottomRight();
     break;
-  case neutube::ECardinalDirection::SOUTH:
+  case neutu::ECardinalDirection::SOUTH:
     ptArray[0] = QPointF(rect.center().x(), rect.bottom());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.topRight();
@@ -1305,7 +1312,7 @@ void flyem::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::json::REF_KEY, location);
+        entryJson.setEntry(neutu::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }
@@ -1344,6 +1351,7 @@ QString flyem::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
+#if 0
 ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 {
   ZIntCuboid newBox = boundBox;
@@ -1351,7 +1359,8 @@ ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
   newBox.expandZ(10);
   size_t v = newBox.getVolume();
 
-  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+//  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  double s = Cube_Root(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
   if (s > 1) {
     double ds = s - 1.0;
     int dw = iround(newBox.getWidth() * ds);
@@ -1368,6 +1377,7 @@ ZIntCuboid flyem::EstimateSplitRoi(const ZIntCuboid &boundBox)
 
   return newBox;
 }
+#endif
 
 QString flyem::GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
@@ -1421,6 +1431,57 @@ QString flyem::GetNeuroglancerPath(
   return path;
 }
 
+#if 0
+namespace {
+
+ZIntPoint load_point_from_json_zyx(const ZJsonArray &v)
+{
+  ZIntPoint pt;
+
+  pt.setX(ZJsonParser::integerValue(v, 0));
+  pt.setX(ZJsonParser::integerValue(v, 1));
+  pt.setX(ZJsonParser::integerValue(v, 2));
+
+  return pt;
+}
+
+}
+#endif
+
+ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
+{
+  ZObject3dScan *sobj = nullptr;
+
+  ZJsonObject obj;
+  obj.load(filePath);
+  if (ZJsonParser::stringValue(obj["type"]) == "points" && obj.hasKey("roi")
+      && ZJsonParser::stringValue(obj["order"]) == "zyx") {
+    if (obj.hasKey("resolution")) {
+      int res = ZJsonParser::integerValue(obj["resolution"]);
+      if (res > 0) {
+        sobj = new ZObject3dScan;
+        sobj->setSource(filePath);
+        sobj->setDsIntv(res - 1);
+        ZJsonArray roiJson(obj.value("roi"));
+        ZObject3dScan::Appender appender(sobj);
+        for (size_t i = 0; i < roiJson.size(); ++i) {
+          ZJsonArray v(roiJson.value(i));
+          if (v.size() == 3) {
+//            ZIntPoint pt = load_point_from_json_zyx(v);
+            int z = ZJsonParser::integerValue(v.at(0));
+            int y = ZJsonParser::integerValue(v.at(1));
+            int x = ZJsonParser::integerValue(v.at(2));
+            appender.addSegment(z, y, x, x);
+          }
+        }
+      }
+    }
+  }
+
+  return sobj;
+}
+
+/*
 void flyem::UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)
 {
@@ -1441,7 +1502,7 @@ void flyem::UpdateBodyStatus(
 #endif
   }
 }
-
+*/
 void flyem::UploadRoi(
     const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer)
 {
@@ -1631,10 +1692,10 @@ QList<ZStackObject*> flyem::LoadSplitTask(
     ZJsonObject taskJson =
         reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
                                       taskKey.c_str());
-    if (taskJson.hasKey(neutube::json::REF_KEY)) {
+    if (taskJson.hasKey(neutu::json::REF_KEY)) {
       taskJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+            ZJsonParser::stringValue(taskJson[neutu::json::REF_KEY]));
     }
 
     seedList = LoadSplitTask(taskJson);
@@ -1807,7 +1868,9 @@ QString flyem::FIB19::GenerateFIB19VsSynapseCast(
         uint64_t bodyId = reader.readBodyIdAt(pos);
         QString name = ZJsonParser::stringValue(obj["name"]).c_str();
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-              bodyId, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
+//            reader.readSynapse(
+//              bodyId, dvid::EAnnotationLoadMode::NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();

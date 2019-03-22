@@ -332,7 +332,7 @@ ZIntCuboidFaceArray ZIntCuboidArray::getSideBorderFace() const
   for (ZIntCuboidFaceArray::const_iterator iter = borderFaceArray.begin();
        iter != borderFaceArray.end(); ++iter) {
     const ZIntCuboidFace &face = *iter;
-    if (face.getAxis() != neutube::EAxis::Z) {
+    if (face.getAxis() != neutu::EAxis::Z) {
       sideBorderFaceArray.append(face);
     }
   }

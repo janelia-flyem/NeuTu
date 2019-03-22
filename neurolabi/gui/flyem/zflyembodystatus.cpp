@@ -12,11 +12,28 @@ const char *ZFlyEmBodyStatus::KEY_PROTECTION = "protection";
 const char *ZFlyEmBodyStatus::KEY_EXPERT = "expert";
 const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
 const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
+const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
 
+/** Implementation details
+ *
+ * Protection level:
+ * 0: add and change (isAccessible)
+<<<<<<< HEAD
+ * >=9: change only
+ * [7, 9): add and change by admin only (isAdminAccessible)
+ * [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
+=======
+ * >=9: change by everyone only
+ * [5, 8]: add and change by admin only (isAdminAccessible)
+ *
+ * A >=5 level is overridden by a postitive admin level:
+ *   1: addmin add only
+ *   other: reserved
+>>>>>>> flyem_alpha
+ */
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)
 {
-
 }
 
 void ZFlyEmBodyStatus::reset()
@@ -27,6 +44,7 @@ void ZFlyEmBodyStatus::reset()
   m_isExpertStatus = false;
   m_isFinal = false;
   m_isMergable = true;
+  m_adminLevel = 0;
 }
 
 int ZFlyEmBodyStatus::getPriority() const
@@ -62,6 +80,7 @@ void ZFlyEmBodyStatus::setMergable(bool on)
 void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
 {
   reset();
+
   ZJsonObjectParser parser;
   m_status = parser.getValue(obj, KEY_NAME, "");
   m_priority = parser.getValue(obj, KEY_PRIORITY, 999);
@@ -69,6 +88,7 @@ void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
   m_isExpertStatus = parser.getValue(obj, KEY_EXPERT, false);
   m_isFinal = parser.getValue(obj, KEY_FINAL, false);
   m_isMergable = parser.getValue(obj, KEY_MERGABLE, true);
+  m_adminLevel = parser.getValue<int>(obj, KEY_ADMIN_LEVEL, 0);
 }
 
 ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
@@ -80,6 +100,9 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
    obj.setEntry(KEY_EXPERT, m_isExpertStatus);
    obj.setEntry(KEY_FINAL, m_isFinal);
    obj.setEntry(KEY_MERGABLE, m_isMergable);
+   if (m_adminLevel > 0) {
+     obj.setEntry(KEY_ADMIN_LEVEL, m_adminLevel);
+   }
 
    return obj;
 }
@@ -91,30 +114,39 @@ std::string ZFlyEmBodyStatus::getName() const
 
 bool ZFlyEmBodyStatus::isAdminAccessible() const
 {
-  return (m_protection >= 5 && m_protection < 9);
+  return (m_protection >= 7 && m_protection < 9);
 }
+
+/*
+bool ZFlyEmBodyStatus::annotateByAdminOnly() const
+{
+  return (isAdminAccessible() || (!isAccessible() && m_adminLevel == 1));
+}
+*/
 
 bool ZFlyEmBodyStatus::isAccessible() const
 {
-  if (m_protection >= 9) {
+  if (isAdminAccessible() || (m_adminLevel == 1)) {
+    return neutu::IsAdminUser();
+  } else if (m_protection >= 9) {
     return false;
-  } else if (isAdminAccessible()) {
-    return neutube::IsAdminUser();
   }
 
   return true;
 }
 
+#if 0
 bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
 {
 #if _QT_GUI_USED_
   if (ZString(status).lower() == "roughly traced") {
-    return neutube::IsAdminUser();
+    return neutu::IsAdminUser();
   }
 #endif
 
   return true;
 }
+#endif
 
 std::string ZFlyEmBodyStatus::GetExpertStatus()
 {

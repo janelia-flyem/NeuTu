@@ -59,7 +59,7 @@ class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
 class SynapseImportDialog;
-class FlyEmBodyMergeProjectDialog;
+//class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
 class ZFlyEmProjectManager;
@@ -132,7 +132,7 @@ public: /* File and message dialogs */
   QString getDirectory(const QString &caption);
 
   void report(const std::string &title, const std::string &msg,
-              neutube::EMessageType msgType);
+              neutu::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
   QMenu* getSandboxMenu() const;
@@ -194,17 +194,17 @@ public slots:
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      ZStack *stack,neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      Stack *stack,neutube::Document::ETag tag = neutube::Document::ETag::NORMAL,
+      Stack *stack,neutu::Document::ETag tag = neutu::Document::ETag::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
-      neutube::Document::ETag tag = neutube::Document::ETag::NORMAL);
+      neutu::Document::ETag tag = neutu::Document::ETag::NORMAL);
 
   ZStackFrame* showStackDoc(ZStackDocPtr doc);
   ZStackFrame* showStackDoc(ZStackDoc *doc);
@@ -250,7 +250,7 @@ private slots:
   void on_actionWatershed_triggered();
   void on_actionSave_Stack_triggered();
   void on_actionExtract_Channel_triggered();
-  void on_actionAutoMerge_triggered();
+//  void on_actionAutoMerge_triggered();
   void on_actionLoad_from_a_file_triggered();
   void on_actionSave_As_triggered();
   //void on_actionFrom_SWC_triggered();
@@ -747,7 +747,7 @@ private:
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
-  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
+//  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
   ZAutoTraceDialog *m_autoTraceDlg;
   ProjectionDialog *m_projDlg;

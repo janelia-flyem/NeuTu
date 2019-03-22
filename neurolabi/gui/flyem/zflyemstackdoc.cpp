@@ -10,6 +10,7 @@
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "geometry/zgeometry.h"
+#include "zgraph.h"
 
 using namespace std;
 
@@ -62,7 +63,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
   }
 }
 
-QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutube::EAxis axis) const
+QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutu::EAxis axis) const
 {
   QString info = ZStackDoc::rawDataInfo(x, y, z, axis);
 

@@ -1,18 +1,5 @@
 #include "taskbodycleave.h"
 
-#include "logging/zlog.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
-#include "flyem/zflyembody3ddoc.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemsupervisor.h"
-#include "zdvidutil.h"
-#include "zstackdocproxy.h"
-#include "zwidgetmessage.h"
-#include "z3dmeshfilter.h"
-#include "z3dwindow.h"
-
 #include <iostream>
 
 #include <QCheckBox>
@@ -36,6 +23,20 @@
 #include <QUndoCommand>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemsupervisor.h"
+#include "flyem/logging.h"
+#include "zdvidutil.h"
+#include "zstackdocproxy.h"
+#include "zwidgetmessage.h"
+#include "z3dmeshfilter.h"
+#include "z3dwindow.h"
 
 namespace {
 
@@ -386,7 +387,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 TaskBodyCleave::~TaskBodyCleave()
 {
   if (m_checkedOut) {
-    m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 }
 
@@ -480,7 +481,7 @@ QString TaskBodyCleave::targetString()
   return QString::number(m_bodyId);
 }
 
-bool TaskBodyCleave::skip()
+bool TaskBodyCleave::skip(QString &reason)
 {
   if (m_bodyDoc->usingOldMeshesTars()) {
     return false;
@@ -503,6 +504,9 @@ bool TaskBodyCleave::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    if (m_skip) {
+      reason = "tarsupervoxels HEAD failed";
+    }
     return m_skip;
   }
   m_timeOfLastSkipCheck = now;
@@ -516,21 +520,25 @@ bool TaskBodyCleave::skip()
   dvid::MakeHeadRequest(tarUrl, statusCode);
   m_skip = (statusCode != 200);
 
-  LINFO() << "TaskBodyCleave::skip() HEAD took" << timer.elapsed() << "ms to decide to"
-          << (m_skip ? "skip" : "not skip") << "body" << m_bodyId;
+  if (m_skip) {
+    reason = "tarsupervoxels HEAD failed";
+  }
+
+  LKINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
+            arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
 
   // Add to the auxiliary output a mention that this task was skipped.
 
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyCleave::skip() could not open DVID target for reading";
+    LKERROR << "TaskBodyCleave::skip() could not open DVID target for reading";
     return m_skip;
   }
 
   ZDvidWriter writer;
   if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyCleave::skip() could not open DVID target for writing";
+    LKERROR << "TaskBodyCleave::skip() could not open DVID target for writing";
     return m_skip;
   }
 
@@ -542,7 +550,7 @@ bool TaskBodyCleave::skip()
 void TaskBodyCleave::beforeNext()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -568,7 +576,7 @@ void TaskBodyCleave::beforeNext()
 void TaskBodyCleave::beforePrev()
 {
   if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::EBodySplitMode::NONE);
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
 
   applyPerTaskSettings();
@@ -589,7 +597,7 @@ void TaskBodyCleave::beforeLoading()
 {
   KLog::SetOperationName("body_cleaving");
 
-  m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
+  m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
@@ -603,15 +611,18 @@ void TaskBodyCleave::beforeLoading()
     }
 
     if (owner == overridableOwner) {
-      LINFO() << "TaskBodyCleave overriding checkout by" << owner;
+      LKINFO << "TaskBodyCleave overriding checkout by " + owner;
       m_supervisor->checkInAdmin(m_bodyId);
-      m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::EBodySplitMode::NONE);
+      m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
     }
   }
 
+  flyem::LogBodyOperation("start cleaving", m_bodyId, neutu::EBodyLabelType::BODY);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("start cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 }
 
 namespace {
@@ -671,9 +682,12 @@ void TaskBodyCleave::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
 
+  flyem::LogBodyOperation("end cleavng", m_bodyId, neutu::EBodyLabelType::BODY);
+  /*
   KLOG << ZLog::Info()
        << ZLog::Action("end cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
+       */
 
   KLog::ResetOperationName();
 }
@@ -703,6 +717,8 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
   bool show = (state != Qt::Unchecked);
   enableCleavingUI(show);
   applyColorMode(show);
+
+  KINFO << QString("Show cleaving: %1").arg(show);
 }
 
 void TaskBodyCleave::onToggleShowCleaving()
@@ -711,7 +727,7 @@ void TaskBodyCleave::onToggleShowCleaving()
     return;
   }
 
-  m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked());
+  m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked()); 
 }
 
 void TaskBodyCleave::onShowSeedsOnlyChanged(int)
@@ -721,6 +737,8 @@ void TaskBodyCleave::onShowSeedsOnlyChanged(int)
   }
 
   updateColors();
+
+  KINFO << QString("Show seeds only: %1").arg(m_showSeedsOnlyCheckBox->isChecked());
 }
 
 void TaskBodyCleave::onToggleShowSeedsOnly()
@@ -741,6 +759,8 @@ void TaskBodyCleave::onCleaveIndexShortcut()
   if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
     int i = m_actionToComboBoxIndex[action];
     m_cleaveIndexComboBox->setCurrentIndex(i);
+
+    KINFO << QString("Set cleave index to %1").arg(i);
   }
 }
 
@@ -764,6 +784,8 @@ void TaskBodyCleave::onSelectBody()
   std::set<uint64_t> toSelect;
   bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
   selectBodies(toSelect);
+
+  KINFO << QString("Select %1 bodies").arg(toSelect.size());
 }
 
 void TaskBodyCleave::onShowBodyChanged(int state)
@@ -784,6 +806,8 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   selectBodies(bodiesForIndex, false);
 
   updateVisibility();
+
+  KINFO << QString("Show body: %1").arg(state);
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -801,6 +825,8 @@ void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
   if (!uiIsEnabled()) {
     return;
   }
+
+  KINFO << QString("Toggle chosen cleave body: %1").arg(toggle);
 
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
@@ -976,6 +1002,8 @@ void TaskBodyCleave::onHideSelected()
     return;
   }
 
+  KINFO << "Hide selected bodies";
+
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
@@ -996,6 +1024,8 @@ void TaskBodyCleave::onClearHidden()
     return;
   }
 
+  KINFO << "Clear hidden bodies";
+
   selectBodies(m_hiddenIds);
   m_hiddenIds.clear();
   updateVisibility();
@@ -1014,6 +1044,8 @@ void TaskBodyCleave::onChooseCleaveMethod()
     if (ok) {
       m_cleaveMethod = text;
     }
+
+    KINFO << "Choose cleaving method: " + text;
   }
 }
 
@@ -1512,6 +1544,8 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
 
   m_cleaveRepliesPending++;
   m_networkManager->post(request, requestData);
+
+  KINFO << QString("Cleave posted: ") + QString(requestData);
 }
 
 bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const
@@ -1693,7 +1727,7 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING,
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING,
                          ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
@@ -2027,7 +2061,7 @@ ProtocolTaskConfig TaskBodyCleave::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SUPERVOXEL_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
 
   return config;
 }

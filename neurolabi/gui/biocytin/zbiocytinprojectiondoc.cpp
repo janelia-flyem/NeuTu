@@ -1,11 +1,11 @@
 #include "zbiocytinprojectiondoc.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswctree.h"
 
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)
 {
-  setTag(neutube::Document::ETag::BIOCYTIN_PROJECTION);
+  setTag(neutu::Document::ETag::BIOCYTIN_PROJECTION);
 }
 
 ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()

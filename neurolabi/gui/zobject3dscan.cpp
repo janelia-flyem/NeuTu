@@ -87,7 +87,7 @@ void ZObject3dScan::init()
 //  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
-  m_sliceAxis = neutube::EAxis::Z;
+  m_sliceAxis = neutu::EAxis::Z;
   setColor(255, 255, 255, 255);
 }
 
@@ -551,8 +551,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
   zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
-  case neutube::EAxis::Z: //XY plane
-  case neutube::EAxis::ARB: //Arbitrary cutting plane is treated as the same as Z
+  case neutu::EAxis::Z: //XY plane
+  case neutu::EAxis::ARB: //Arbitrary cutting plane is treated as the same as Z
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; ++y) {
       int x1 = -1;
@@ -592,8 +592,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
     }
   }
   break;
-  case neutube::EAxis::Y: //XZ plane
-  case neutube::EAxis::X: //ZY plane
+  case neutu::EAxis::Y: //XZ plane
+  case neutu::EAxis::X: //ZY plane
     for (int z = 0; z < sd; ++z) {
       for (int y = 0; y < sh; ++y) {
         int x1 = -1;
@@ -679,13 +679,13 @@ bool ZObject3dScan::load(const std::string &filePath)
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
-      if (ZFileType::FileType(strArray[0]) == ZFileType::FILE_HDF5) {
+      if (ZFileType::FileType(strArray[0]) == ZFileType::EFileType::HDF5) {
         succ = importHdf5(strArray[0], strArray[1]);
       }
     }
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_DVID_OBJECT) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::DVID_OBJECT) {
     succ = importDvidObject(filePath);
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_OBJECT_SCAN) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::OBJECT_SCAN) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
       int stripeNumber = 0;
@@ -716,7 +716,7 @@ bool ZObject3dScan::load(const std::string &filePath)
 
       succ = true;
     }
-  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_SPARSE_STACK) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::SPARSE_STACK) {
     std::ifstream stream(filePath.c_str(), std::ios_base::binary);
     if (stream.good()) {
       read(stream);
@@ -915,9 +915,9 @@ void ZObject3dScan::drawStack(ZStack *stack, int v) const
 void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
 {
-  assert(m_sliceAxis == neutube::EAxis::Z);
+  assert(m_sliceAxis == neutu::EAxis::Z);
 
-  if (m_sliceAxis == neutube::EAxis::Z) {
+  if (m_sliceAxis == neutu::EAxis::Z) {
     for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       const ZObject3dStripe &stripe = *iter;
@@ -1331,7 +1331,7 @@ namespace {
 //Assuming s1 and s2 are canonized slices
 bool IsSliceAdjacent(
     const ZObject3dScan &slice1, const ZObject3dScan &slice2,
-    neutube::EStackNeighborhood nbr)
+    neutu::EStackNeighborhood nbr)
 {
   bool adjacent = false;
 
@@ -1397,7 +1397,7 @@ bool IsSliceAdjacent(
 }
 
 bool ZObject3dScan::isAdjacentTo(
-    const ZObject3dScan &obj, neutube::EStackNeighborhood nbr) const
+    const ZObject3dScan &obj, neutu::EStackNeighborhood nbr) const
 {
   canonizeConst();
   obj.canonizeConst();
@@ -1484,7 +1484,7 @@ bool ZObject3dScan::isAdjacentTo(
   }
 
 #ifdef _DEBUG_
-  if (nbr == neutube::EStackNeighborhood::D1) {
+  if (nbr == neutu::EStackNeighborhood::D1) {
     TZ_ASSERT(adjacent == isAdjacentTo_Old(obj), "Incompatible value.");
   }
 #endif
@@ -2235,7 +2235,7 @@ static QList<std::vector<QPoint> > extract_contour(
 #endif
 
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
 #if _QT_GUI_USED_
 //  if (isSelected() && style == ZStackObject::SOLID) {
@@ -2261,11 +2261,11 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   QPen pen(m_color);
 
 
-  if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
+  if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
     style = ZStackObject::EDisplayStyle::BOUNDARY;
   }
 
-  if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
+  if (hasVisualEffect(neutu::display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::EDisplayStyle::SOLID;
   }
 
@@ -2810,7 +2810,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   return false;
 }
 
-bool ZObject3dScan::hit(double x, double y, neutube::EAxis axis)
+bool ZObject3dScan::hit(double x, double y, neutu::EAxis axis)
 {
   if (!isHittable() || m_sliceAxis != axis) {
     return false;
@@ -3577,7 +3577,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
     zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
-    if (getSliceAxis() == neutube::EAxis::X) {
+    if (getSliceAxis() == neutu::EAxis::X) {
       for (int i = 0; i < runLength; ++i) {
         addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
       }
@@ -3877,7 +3877,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = neutube::DIM_INVALID_INDEX;
+  int cz = neutu::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 
@@ -4210,20 +4210,20 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
 }
 
 ZObject3dScan* ZObject3dScan::chop(
-    int v, neutube::EAxis axis, ZObject3dScan *remain,
+    int v, neutu::EAxis axis, ZObject3dScan *remain,
     ZObject3dScan *result) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return chopX(v, remain, result);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return chopY(v, remain, result);
     break;
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return chopZ(v, remain, result);
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 

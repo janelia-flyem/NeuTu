@@ -4,11 +4,11 @@
 #include "dvid/zdvidreader.h"
 
 #include "neutubeconfig.h"
-
+#include "zstack.hxx"
 #include "zjsonobject.h"
 #include "zglobal.h"
 #include "misc/miscutility.h"
-#include "zstack.hxx"
+#include "dvid/zdvidurl.h"
 
 ZBodyExportCommand::ZBodyExportCommand()
 {
@@ -40,7 +40,7 @@ int ZBodyExportCommand::run(
           box.setHeight(box.getHeight() * dvidInfo.getBlockSize().getY());
           box.setDepth(box.getDepth() * dvidInfo.getBlockSize().getZ());
           int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                box, neutube::ONEGIGA, true);
+                box, neutu::ONEGIGA, true);
           int scale = std::log2(dsIntv + 1);
           if (scale > reader->getDvidTarget().getMaxLabelZoom()) {
             scale = reader->getDvidTarget().getMaxLabelZoom();
@@ -54,7 +54,7 @@ int ZBodyExportCommand::run(
         if (!obj.isEmpty()) {
           if (needDownsampling) {
             int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                  obj.getBoundBox(), neutube::ONEGIGA, false);
+                  obj.getBoundBox(), neutu::ONEGIGA, false);
             obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
           }
           ZStack *stack = obj.toStackObject();

@@ -9,6 +9,9 @@
 #include "zflyembodyannotation.h"
 #include "zstring.h"
 
+const char* ZFlyEmBodyAnnotationMerger::KEY_STATUS = "status";
+const char* ZFlyEmBodyAnnotationMerger::KEY_CONFILICT = "conflict";
+
 ZFlyEmBodyAnnotationMerger::ZFlyEmBodyAnnotationMerger()
 {
 }
@@ -25,11 +28,37 @@ bool ZFlyEmBodyAnnotationMerger::isEmpty() const
   return m_statusList.empty();
 }
 
+ZJsonObject ZFlyEmBodyAnnotationMerger::toJsonObject() const
+{
+  ZJsonObject obj;
+
+  ZJsonArray statusArray;
+  for (const ZFlyEmBodyStatus &status : m_statusList) {
+    statusArray.append(status.toJsonObject());
+  }
+  obj.setEntry(KEY_STATUS, statusArray);
+
+  ZJsonArray conflictArray;
+  for (auto bodySet : m_conflictStatus) {
+    ZJsonArray bodyArray;
+    for (const std::string& body : bodySet) {
+      bodyArray.append(body);
+    }
+    if (!bodyArray.isEmpty()) {
+      conflictArray.append(bodyArray);
+    }
+  }
+
+  obj.setEntry(KEY_CONFILICT, conflictArray);
+
+  return obj;
+}
+
 void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
 {
   reset();
 
-  ZJsonArray statusListJson(statusJson.value("status"));
+  ZJsonArray statusListJson(statusJson.value(KEY_STATUS));
 
   for (size_t i = 0; i < statusListJson.size(); ++i) {
     ZFlyEmBodyStatus status;
@@ -38,8 +67,8 @@ void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
     m_statusMap[ZString(status.getName()).lower()] = status;
   }
 
-  if (statusJson.hasKey("conflict")) {
-    ZJsonArray arrayJson(statusJson.value("conflict"));
+  if (statusJson.hasKey(KEY_CONFILICT)) {
+    ZJsonArray arrayJson(statusJson.value(KEY_CONFILICT));
     for (size_t i = 0; i < arrayJson.size(); ++i) {
       ZJsonArray conflictJson(arrayJson.value(i));
       std::set<std::string> conflict;

@@ -3,6 +3,7 @@
 
 #include <map>
 #include <iostream>
+#include <functional>
 
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
@@ -11,7 +12,7 @@
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
-#include "geometry/zintpoint.h"
+//#include "geometry/zintpoint.h"
 #include "zneurontracerconfig.h"
 
 class ZStack;
@@ -19,7 +20,7 @@ class ZSwcTree;
 class ZSwcConnector;
 class ZJsonObject;
 class ZWeightedPoint;
-//class ZIntPoint;
+class ZIntPoint;
 
 class ZNeuronTraceSeeder {
 public:
@@ -84,7 +85,7 @@ public:
 
   void clear();
 
-  inline void setBackgroundType(neutube::EImageBackground bg) {
+  inline void setBackgroundType(neutu::EImageBackground bg) {
     m_backgroundType = bg;
   }
 
@@ -175,6 +176,14 @@ public:
 
   void setDiagnosis(bool on) { m_diagnosis = on; }
 
+  void setLogger(std::function<void(const std::string&)> f) {
+    m_log = f;
+  }
+
+  void enableTraceMask(bool on);
+  void setOverTrace(bool on);
+  void setSeedScreening(bool on);
+
 public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
@@ -222,7 +231,10 @@ private:
 
   void init();
 
+  int getMinSeedObjSize(double seedDensity) const;
+
   std::string getDiagnosisDir() const;
+  void log(const std::string &str);
 
   class Diagnosis {
   public:
@@ -239,9 +251,13 @@ private:
     void save(const std::vector<Locseg_Chain*> &chainArray,
               const std::string &name);
     void save(ZSwcTree *tree, const std::string &name);
+    void saveInfo();
+    void setInfo(const std::string &key, const std::string &value);
+    void setInfo(const std::string &key, int value);
 
   private:
     std::string m_dir;
+    ZJsonObject m_info;
   };
 
 private:
@@ -249,7 +265,7 @@ private:
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
-  neutube::EImageBackground m_backgroundType;
+  neutu::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
 //  double m_stackOffset[3];
@@ -269,16 +285,20 @@ private:
   std::vector<Locseg_Chain*> m_chainArray;
   Stack *m_mask;
   Stack *m_baseMask;
-  ZIntPoint m_seedDsIntv;
+//  ZIntPoint m_seedDsIntv;
 
   bool m_bcAdjust;
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
+  bool m_maskTracing;
   bool m_diagnosis = false;
+  bool m_screeningSeed = true;
 
   ZNeuronTracerConfig m_config; //default configuration
   Diagnosis m_diag;
+  std::function<void(const std::string)> m_log =
+      [](const std::string &str) { std::cout << str << std::endl; };
   /*
   static const char *m_levelKey;
   static const char *m_minimalScoreKey;

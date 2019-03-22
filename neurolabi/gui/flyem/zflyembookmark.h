@@ -32,7 +32,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
@@ -80,7 +80,7 @@ public:
   QString getDvidKey() const;
 
   ZJsonObject toJsonObject(bool ignoringComment = false) const;
-  void loadJsonObject(const ZJsonObject &jsonObj);
+  bool loadJsonObject(const ZJsonObject &jsonObj);
 
   //For the new annotation API
   ZJsonObject toDvidAnnotationJson() const;

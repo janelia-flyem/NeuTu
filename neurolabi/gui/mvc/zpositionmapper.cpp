@@ -108,7 +108,7 @@ ZPoint ZPositionMapper::StackToData(const ZPoint &pt, const ZAffinePlane &ap)
   return StackToData(pt, ap.getOffset(), ap);
 }
 
-ZPoint ZPositionMapper::StackToData(const ZPoint &pt, neutube::EAxis axis)
+ZPoint ZPositionMapper::StackToData(const ZPoint &pt, neutu::EAxis axis)
 {
   ZPoint pt2 = pt;
   pt2.shiftSliceAxisInverse(axis);
@@ -138,7 +138,7 @@ ZPoint ZPositionMapper::DataToStack(const ZPoint &pt, const ZAffinePlane &ap)
   return DataToStack(pt, ap.getOffset(), ap);
 }
 
-ZPoint ZPositionMapper::DataToStack(const ZPoint &pt, neutube::EAxis axis)
+ZPoint ZPositionMapper::DataToStack(const ZPoint &pt, neutu::EAxis axis)
 {
   ZPoint pt2 = pt;
   pt2.shiftSliceAxis(axis);
@@ -149,7 +149,7 @@ ZPoint ZPositionMapper::DataToStack(const ZPoint &pt, neutube::EAxis axis)
 ZPoint ZPositionMapper::mapDataToStack(const ZPoint &pt)
 {
   ZPoint result;
-  if (m_sliceAxis == neutube::EAxis::ARB) {
+  if (m_sliceAxis == neutu::EAxis::ARB) {
     result = DataToStack(pt, m_ap);
   } else {
     result = DataToStack(pt, m_sliceAxis);

@@ -1,6 +1,6 @@
 #include "zstackdocproxy.h"
 
-#include "flyem/zflyembody3ddoc.h"
+#include "mvc/zstackdoc.h"
 #include "zmesh.h"
 
 ZStackDocProxy::ZStackDocProxy()
@@ -88,19 +88,4 @@ QList<ZMesh*> ZStackDocProxy::GetRoiMeshList(ZStackDoc *doc)
   return filteredMeshList;
 }
 
-ZMesh* ZStackDocProxy::GetMeshForSplit(ZStackDoc *doc)
-{
-  ZMesh *mesh = NULL;
 
-  ZFlyEmBody3dDoc *bodyDoc = qobject_cast<ZFlyEmBody3dDoc*>(doc);
-  if (bodyDoc != NULL) {
-    mesh = bodyDoc->getMeshForSplit();
-  } else {
-    QList<ZMesh*> meshList = doc->getMeshList();
-    if (!meshList.isEmpty()) {
-      mesh = meshList.front();
-    }
-  }
-
-  return mesh;
-}

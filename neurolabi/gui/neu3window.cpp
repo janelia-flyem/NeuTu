@@ -11,8 +11,11 @@
 #endif
 
 #include "ui_neu3window.h"
+#include "logging/utilities.h"
+//#include "logging/neuopentracing.h"
+
 #include "z3dwindow.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zdialogfactory.h"
 #include "zsysteminfo.h"
 #include "z3dcanvas.h"
@@ -21,23 +24,26 @@
 #include "widgets/flyembodyinfowidget.h"
 #include "widgets/zdvidserverwidget.h"
 #include "dialogs/flyembodyinfodialog.h"
+
 #include "flyem/zflyemproofmvc.h"
-#include "dialogs/zdviddialog.h"
-#include "z3dpunctafilter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
-#include "zstackdochelper.h"
+#include "flyem/zflyembodylistmodel.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/zflyemdoc3dbodystateaccessor.h"
+
+#include "dialogs/zdviddialog.h"
+#include "z3dpunctafilter.h"
+
+#include "mvc/zstackdochelper.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
 #include "widgets/taskprotocolwindow.h"
-#include "flyem/zflyembodylistmodel.h"
 #include "zroiwidget.h"
 #include "zstackdocproxy.h"
 #include "zglobal.h"
 #include "sandbox/zbrowseropener.h"
-#include "flyem/zflyemmisc.h"
 #include "dialogs/flyemsettingdialog.h"
-#include "flyem/zflyemdoc3dbodystateaccessor.h"
 #include "zactionlibrary.h"
 #include "zarbsliceviewparam.h"
 #include "flyem/zflyemarbmvc.h"
@@ -56,7 +62,6 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
 #include "flyem/zflyembodyenv.h"
-#include "logging/neuopentracing.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"
@@ -255,13 +260,13 @@ void Neu3Window::updateBodyState()
 #ifdef _DEBUG_
   std::cout << "Update state: "
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
-                 neutube::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
+                 neutu::ELabelSource::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
 #if 0
   if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
         neutube::BODY_LABEL_ORIGINAL).size() == 1) {
-    m_dataContainer->enableSplit(flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
+    m_dataContainer->enableSplit(neutu::EBodySplitMode::BODY_SPLIT_ONLINE);
   } else {
     m_dataContainer->disableSplit();
   }
@@ -303,7 +308,7 @@ bool Neu3Window::loadDvidTarget()
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
   if (dlg->exec()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
@@ -632,7 +637,7 @@ void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutu::EAxis::ARB);
     slice->setCustomColorMap(m_browserColorScheme);
 
     updateSliceBrowserSelection();
@@ -969,7 +974,7 @@ void Neu3Window::test()
 
 void Neu3Window::testBodyChange()
 {
-  m_3dwin->setColorMode(neutube3d::ERendererLayer::MESH, "Mesh Source");
+  m_3dwin->setColorMode(neutu3d::ERendererLayer::MESH, "Mesh Source");
   static ZRandomGenerator rand;
 
   QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
@@ -1063,7 +1068,6 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_DIALOG)) {
     m_3dwin->processMessage(msg);
   }
-
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
@@ -1147,7 +1151,7 @@ void Neu3Window::syncBodyListModel()
   }
   LDEBUG() << "Syncing" << bodyStr;
 #endif
-  dataDoc->setSelectedBody(selected, neutube::EBodyLabelType::MAPPED);
+  dataDoc->setSelectedBody(selected, neutu::ELabelSource::MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;

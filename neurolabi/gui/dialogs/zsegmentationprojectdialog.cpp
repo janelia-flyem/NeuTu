@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "zframefactory.h"
 #include "zstackdocreader.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -43,7 +43,7 @@ MainWindow* ZSegmentationProjectDialog::getMainWindow()
 ZStackFrame* ZSegmentationProjectDialog::newDataFrame()
 {
   ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
-        neutube::Document::ETag::SEGMENTATION_TARGET);
+        neutu::Document::ETag::SEGMENTATION_TARGET);
 
   connect(frame, SIGNAL(closed(ZStackFrame*)),
           m_model->getProject(), SLOT(detachFrame()));
@@ -54,7 +54,7 @@ ZStackFrame* ZSegmentationProjectDialog::newDataFrame()
 ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
 {
   ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
-        reader, neutube::Document::ETag::SEGMENTATION_TARGET);
+        reader, neutu::Document::ETag::SEGMENTATION_TARGET);
 
   connect(frame, SIGNAL(closed(ZStackFrame*)),
           m_model->getProject(), SLOT(detachFrame()));

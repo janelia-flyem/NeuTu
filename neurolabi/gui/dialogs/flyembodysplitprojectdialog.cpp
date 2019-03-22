@@ -9,9 +9,9 @@
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
-#include "zstackframe.h"
-#include "zstackview.h"
-#include "zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackdoc.h"
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackskeletonizer.h"
@@ -28,6 +28,7 @@
 #include "zmessagemanager.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+#include "flyem/flyemdatareader.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -583,10 +584,9 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
   ui->sideViewLabel->setText("Side view: generating ...");
   //m_sideViewScene->clear();
 
-
-  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
   QPixmap pixmap;
   bool thumbnailReady = false;
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
 
   Stack *stack = NULL;
   ZDvidReader reader;
@@ -656,7 +656,7 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
       int sourceYDim = dvidInfo.getStackSize()[1];
 
       ZFlyEmNeuronBodyInfo bodyInfo =
-          reader.readBodyInfo(bodyId);
+          FlyEmDataReader::ReadBodyInfo(reader, bodyId);
       int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
       int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
       int bodyHeight = bodyInfo.getBoundBox().getDepth();
@@ -698,6 +698,8 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
     m_sideViewScene->addItem(thumbnailItem);
     ui->sideViewLabel->setText(QString("Side view: %1").arg(bodyId));
     emit sideViewReady();
+  } else {
+    delete thumbnailItem;
   }
 }
 

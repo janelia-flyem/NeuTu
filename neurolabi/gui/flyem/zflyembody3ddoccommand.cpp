@@ -18,7 +18,7 @@ ZFlyEmBody3dDocCommand::AddTodo::AddTodo(ZStackDoc *doc, QUndoCommand *parent)
 
 
 void ZFlyEmBody3dDocCommand::AddTodo::setTodoItem(
-    int x, int y, int z, bool checked, neutube::EToDoAction action,
+    int x, int y, int z, bool checked, neutu::EToDoAction action,
     uint64_t bodyId)
 {
   ZFlyEmBody3dDoc *doc = getCompleteDocument();

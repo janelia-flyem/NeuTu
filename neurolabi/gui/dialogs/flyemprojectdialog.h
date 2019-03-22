@@ -29,7 +29,7 @@ public:
 
   ZStackFrame *newDataFrame(ZStackDocReader &reader);
 
-  inline void setDocTag(neutube::Document::ETag tag) {
+  inline void setDocTag(neutu::Document::ETag tag) {
     m_docTag = tag;
   }
 
@@ -65,7 +65,7 @@ protected:
   //ZStackDocReader m_docReader;
   ZDvidTargetProviderDialog *m_dvidDlg;
   QMenu *m_mainMenu;
-  neutube::Document::ETag m_docTag;
+  neutu::Document::ETag m_docTag;
   ZProgressReporter *m_progressReporter;
   //ZProgressable m_progressManager;
 };

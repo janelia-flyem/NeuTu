@@ -5,7 +5,7 @@
 #include <vector>
 #include <set>
 
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 
 class ZFlyEmStackDoc;
 

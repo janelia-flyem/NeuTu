@@ -14,7 +14,7 @@ public:
   void paint(
       const ZStackObject *obj,
       ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
-      neutube::EAxis sliceAxis) const;
+      neutu::EAxis sliceAxis) const;
 
   void paint(const ZStackObject *obj, ZPainter &painter, int slice);
   void paint(
@@ -25,7 +25,7 @@ public:
     m_painterConst = on;
   }
 
-  void setSliceAxis(neutube::EAxis sliceAxis);
+  void setSliceAxis(neutu::EAxis sliceAxis);
   void setDisplayStyle(ZStackObject::EDisplayStyle style);
 
   static ZLineSegment GetFocusSegment(
@@ -34,7 +34,7 @@ public:
 private:
   bool m_painterConst = true;
   ZStackObject::EDisplayStyle m_style = ZStackObject::EDisplayStyle::NORMAL;
-  neutube::EAxis m_axis = neutube::EAxis::Z;
+  neutu::EAxis m_axis = neutu::EAxis::Z;
 };
 
 #endif // ZSTACKOBJECTPAINTER_H

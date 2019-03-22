@@ -13,6 +13,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
+#include "zjsonparser.h"
 
 //const char* ZServiceConsumer::REF_KEY = "->";
 
@@ -56,9 +57,9 @@ ZObject3dScan* ZServiceConsumer::ReadSplitObject(
     const ZJsonObject &objJson, ZDvidReader *reader)
 {
   ZObject3dScan *obj = NULL;
-  if (objJson.hasKey(neutube::json::REF_KEY) && objJson.hasKey("label")) {
+  if (objJson.hasKey(neutu::json::REF_KEY) && objJson.hasKey("label")) {
     QByteArray regionData = reader->readDataFromEndpoint(
-          ZJsonParser::stringValue(objJson[neutube::json::REF_KEY]));
+          ZJsonParser::stringValue(objJson[neutu::json::REF_KEY]));
     if (!regionData.isEmpty()) {
       obj = new ZObject3dScan;
       obj->importDvidObjectBuffer(
@@ -199,9 +200,9 @@ ZJsonObject ZServiceConsumer::ReadHeadObject(
       const ZDvidReader &reader, const QString &dataName, const QString &key)
 {
   ZJsonObject obj = reader.readJsonObjectFromKey(dataName, key);
-  if (obj.hasKey(neutube::json::REF_KEY)) {
+  if (obj.hasKey(neutu::json::REF_KEY)) {
     obj = reader.readJsonObject(
-          ZJsonParser::stringValue(obj[neutube::json::REF_KEY]));
+          ZJsonParser::stringValue(obj[neutu::json::REF_KEY]));
   }
 
   return obj;
@@ -268,8 +269,8 @@ QList<ZObject3dScan*> ZServiceConsumer::ReadSplitResult(const QString &path)
 
     if (!obj.isEmpty()) {
       ZJsonObject headJson = obj;
-      if (obj.hasKey(neutube::json::REF_KEY)) {
-        std::string refPath = ZJsonParser::stringValue(obj[neutube::json::REF_KEY]);
+      if (obj.hasKey(neutu::json::REF_KEY)) {
+        std::string refPath = ZJsonParser::stringValue(obj[neutu::json::REF_KEY]);
         data = reader->readDataFromEndpoint(refPath);
         if (data[0] == '{') {
           headJson.decodeString(

@@ -104,11 +104,14 @@ public:
    * \brief Get a single string to represent the target
    *
    * \a withHttpPrefix specifies whether the source string contains the "http:"
-   * prefix or not.
+   * prefix or not. \a uuidBrief specifies the max number of characters of the
+   * uuid used in the source string, except when its no greater than 0, the
+   * intrinsic uuid will be used.
    *
    * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
-  std::string getSourceString(bool withHttpPrefix = true) const;
+  std::string getSourceString(
+      bool withHttpPrefix = true, int uuidBrief = 0) const;
 
   /*!
    * \brief getBodyPath
@@ -199,6 +202,10 @@ public:
   bool hasCoarseSplit() const;
 //  void useLabelArray(bool on);
 //  void useLabelMap(bool on);
+
+  bool hasSynapse() const;
+  bool hasSynapseLabelsz() const;
+  void enableSynapseLabelsz(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
@@ -400,6 +407,7 @@ private:
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
   std::string m_grayScaleName;
+  bool m_hasSynapseLabelsz = true;
   std::string m_synapseLabelszName;
   std::string m_roiName;
   std::string m_todoListName;

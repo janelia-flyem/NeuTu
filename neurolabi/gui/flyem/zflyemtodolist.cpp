@@ -1,11 +1,11 @@
 #include "zflyemtodolist.h"
 
-#include "dvid/zdvidurl.h"
-#include "zpainter.h"
 #include "tz_math.h"
-#include "dvid/zdvidwriter.h"
-#include "zstackview.h"
+#include "zpainter.h"
 #include "geometry/zgeometry.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+#include "mvc/zstackview.h"
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);
@@ -45,7 +45,7 @@ void ZFlyEmToDoList::init()
   m_startZ = 0;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = neutube::EAxis::Z;
+  m_sliceAxis = neutu::EAxis::Z;
   m_isReady = false;
 }
 
@@ -64,7 +64,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (itemJson.hasKey("Pos")) {
         ZFlyEmToDoItem item;
-        item.loadJsonObject(itemJson, flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON);
+        item.loadJsonObject(itemJson, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
         addItem(item, DATA_LOCAL);
       }
     }
@@ -349,7 +349,7 @@ bool ZFlyEmToDoList::isReady() const
 
 void ZFlyEmToDoList::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -381,7 +381,7 @@ void ZFlyEmToDoList::display(
 
           if (!ready && m_view != NULL) {
             ready =itemSlice.isReady(
-                  m_view->getViewPort(neutube::ECoordinateSystem::STACK), rangeRect);
+                  m_view->getViewPort(neutu::ECoordinateSystem::STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -762,7 +762,7 @@ ZFlyEmToDoList::ItemSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZFlyEmToDoList::ItemSlice::addItem(
-    const ZFlyEmToDoItem &item, neutube::EAxis sliceAxis)
+    const ZFlyEmToDoItem &item, neutu::EAxis sliceAxis)
 {
   ZIntPoint center = item.getPosition();
   center.shiftSliceAxis(sliceAxis);

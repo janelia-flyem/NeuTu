@@ -4,7 +4,7 @@
 
 #include "neutubeconfig.h"
 #include "QsLog.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
 #include "common/utilities.h"
@@ -112,7 +112,7 @@ void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
   ZOUT(LTRACE(), 5) << "Setup graph model";
   QList<ZStackObject*> graphList =
       m_doc->getObjectList(ZStackObject::EType::GRAPH_3D);
-  int numDigit = neutube::numDigits(graphList.size()+1);
+  int numDigit = neutu::numDigits(graphList.size()+1);
   for (int i=0; i<graphList.size(); i++) {
     data.clear();
     Z3DGraph *p = dynamic_cast<Z3DGraph*>(graphList.at(i));

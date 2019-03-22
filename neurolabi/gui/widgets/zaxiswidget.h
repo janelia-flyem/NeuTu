@@ -17,7 +17,7 @@ public:
   explicit ZAxisWidget(QWidget *parent = 0);
   ~ZAxisWidget();
 
-  neutube::EAxis getAxis() const;
+  neutu::EAxis getAxis() const;
 
 private:
   Ui::ZAxisWidget *ui;

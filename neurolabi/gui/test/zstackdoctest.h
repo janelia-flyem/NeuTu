@@ -2,7 +2,7 @@
 #define ZSTACKDOCTEST_H
 
 #include "ztestheader.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zobject3d.h"
 #include "zstackdocaccessor.h"
@@ -17,6 +17,15 @@ TEST(ZStackDoc, Basic)
 
   EXPECT_TRUE(doc.stackSourcePath().empty());
 
+}
+
+TEST(ZStackDoc, removeObject)
+{
+  ZStackDoc doc;
+  ZObject3d *obj = new ZObject3d();
+  doc.addObject(obj);
+  ASSERT_TRUE(doc.removeObject(obj, true));
+  ASSERT_FALSE(doc.removeObject(obj, true));
 }
 
 TEST(ZStackDoc, Swc)

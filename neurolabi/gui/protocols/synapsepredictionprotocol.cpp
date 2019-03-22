@@ -608,7 +608,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
   bool isVerified = true;
   if (reader.good()) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        reader.readSynapse(pt, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN) {
       std::vector<ZIntPoint> psdArray = synapse.getPartners();
@@ -616,7 +616,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
            iter != psdArray.end(); ++iter) {
         const ZIntPoint &pt = *iter;
         ZDvidSynapse synapse =
-            reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+            reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
         if (!synapse.isVerified()) {
           isVerified = false;
           break;
@@ -630,14 +630,14 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
       if (!partnerArray.empty()) {
         targetPoint = partnerArray.front();
         ZDvidSynapse presyn =
-            reader.readSynapse(targetPoint, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            reader.readSynapse(targetPoint, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         std::vector<ZIntPoint> psdArray = presyn.getPartners();
         for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             isVerified = false;
             break;
@@ -659,7 +659,7 @@ void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 
   if (reader.good()) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        reader.readSynapse(pt, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
@@ -842,9 +842,9 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
 
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
-            synapseList = reader.readSynapse(m_protocolRange, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(m_protocolRange, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else if (m_variation == VARIATION_BODY) {
-            synapseList = reader.readSynapse(m_bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(m_bodyID, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else {
             variationError(m_variation);
         }
@@ -1057,13 +1057,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
     std::vector<ZDvidSynapse> result;
 
     if (reader.good()) {
-        ZDvidSynapse synapse = reader.readSynapse(point, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        ZDvidSynapse synapse = reader.readSynapse(point, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         // find the presynaptic site
         if (!(synapse.getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN)) {
             if (synapse.getPartners().size() > 0) {
                 ZIntPoint preLocation = synapse.getPartners().front();
-                synapse = reader.readSynapse(preLocation, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+                synapse = reader.readSynapse(preLocation, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
             } else {
                 // can't find presynaptic site, so give up
                 return result;
@@ -1074,7 +1074,7 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
         // get all the post-synaptic sites
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], dvid::EAnnotationLoadMode::NO_PARTNER);
             // we've been seeing some blank lines in the PSD table; I think
             //  they might be due to unlinked PSDs, and this might catch them:
             if (post.isValid()) {

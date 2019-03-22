@@ -8,7 +8,7 @@
 #include "mainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyembodymergeframe.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "dvid/zdvidversionmodel.h"
 #include "dvid/zdvidreader.h"
 #include "zdialogfactory.h"
@@ -26,7 +26,7 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   ui->verionTreeView->setExpandsOnDoubleClick(false);
   //ui->infoWidget->hide();
   m_project = new ZFlyEmBodyMergeProject(this);
-  m_docTag = neutube::Document::ETag::FLYEM_MERGE;
+  m_docTag = neutu::Document::ETag::FLYEM_MERGE;
 
   setupProgress();
 

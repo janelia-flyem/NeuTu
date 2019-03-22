@@ -9,6 +9,7 @@
 #include "flyem/zsynapseannotationarray.h"
 #include "dvid/zdvidwriter.h"
 #include "zwidgetmessage.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackFrame;
 class ZSwcTree;
@@ -53,6 +54,9 @@ public:
    * \return true iff the DVID target is writable
    */
   bool setDvidTarget(const ZDvidTarget &target, bool downloadingData);
+
+  const ZDvidReader& getDvidReader() const;
+  ZDvidWriter& getDvidWriter();
 
   void showDataFrame() const;
   void closeDataFrame();

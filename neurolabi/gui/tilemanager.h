@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "common/zsharedpointer.h"
 
 class ZTileManager;

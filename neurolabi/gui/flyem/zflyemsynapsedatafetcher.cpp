@@ -5,10 +5,12 @@
 #include <QElapsedTimer>
 
 #include "logging/zqslog.h"
+#include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "neutubeconfig.h"
+#include "dvid/zdvidurl.h"
+
 
 ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
   QObject(parent)
@@ -131,8 +133,8 @@ void ZFlyEmSynapseDataFetcher::addSynapse(ZDvidSynapseEnsemble *se)
       ZJsonObject synapseJson(m_data.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
-        se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
+        se->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       }
     }
 

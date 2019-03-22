@@ -10,7 +10,7 @@ class ZLogMessageReporter : public ZMessageReporter
 public:
   ZLogMessageReporter();
   void report(const std::string &title, const std::string &message,
-              neutube::EMessageType msgType);
+              neutu::EMessageType msgType);
 
   virtual void setInfoFile(const std::string &f);
 

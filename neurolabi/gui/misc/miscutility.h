@@ -33,7 +33,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 /*!
  * \brief Y normal of a binary stack
  */
-Stack* computeNormal(const Stack *stack, neutube::EAxis axis);
+Stack* computeNormal(const Stack *stack, neutu::EAxis axis);
 
 int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 
@@ -89,6 +89,8 @@ double SampleStack(const Stack *stack, double x, double y, double z,
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
+
+ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 }
 
 //// partial-specialization optimization for 8-bit numbers

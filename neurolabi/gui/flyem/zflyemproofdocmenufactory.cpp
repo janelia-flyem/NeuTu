@@ -3,15 +3,19 @@
 #include <QMenu>
 
 #include "neutubeconfig.h"
-#include "zstackpresenter.h"
-#include "zactionfactory.h"
-#include "flyem/zflyemproofpresenter.h"
-#include "flyem/zflyemproofdoc.h"
-#include "z3dwindow.h"
+
 #include "zintcuboidobj.h"
+
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackdochelper.h"
+
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
-#include "zstackdochelper.h"
+#include "zactionfactory.h"
+#include "zflyemproofpresenter.h"
+#include "zflyemproofdoc.h"
+#include "z3dwindow.h"
+
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -126,7 +130,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
       std::set<uint64_t> selectedOriginal =
-          doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+          doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
         if (!doc->getDvidTarget().readOnly()) {
@@ -148,7 +152,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           config.appendSeparator();
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             std::set<uint64_t> selectedMapped =
-                doc->getSelectedBodySet(neutube::EBodyLabelType::MAPPED);
+                doc->getSelectedBodySet(neutu::ELabelSource::MAPPED);
 
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);
@@ -195,7 +199,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -217,7 +221,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       }
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
@@ -250,7 +254,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
 //  addAction(actionList, presenter, menu);
 
-  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
     TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);

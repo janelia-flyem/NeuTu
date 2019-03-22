@@ -37,9 +37,9 @@ public:
 
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
-                         neutube::EAxis axis);
+                         neutu::EAxis axis);
 
-  enum ERole {
+  enum class ERole {
     ROLE_WIDGET, ROLE_DOCUMENT
   };
 
@@ -135,12 +135,12 @@ protected:
 
 protected:
   static void BaseConstruct(
-      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis);
+      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis);
   virtual void customInit();
   virtual void createPresenter();
-  void createPresenter(neutube::EAxis axis);
+  void createPresenter(neutu::EAxis axis);
   virtual void createView();
-  virtual void createView(neutube::EAxis axis);
+  virtual void createView(neutu::EAxis axis);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 //  virtual void focusInEvent(QFocusEvent * event);
@@ -166,7 +166,7 @@ private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc,
-                 neutube::EAxis axis = neutube::EAxis::Z);
+                 neutu::EAxis axis = neutu::EAxis::Z);
 
 private slots:
   void shortcutTest();

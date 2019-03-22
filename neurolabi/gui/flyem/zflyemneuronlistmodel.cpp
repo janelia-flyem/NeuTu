@@ -1,7 +1,7 @@
 #include "zflyemneuronlistmodel.h"
 #include <QModelIndex>
 #include "zflyemneuron.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcobjsmodel.h"
 //#include "zpunctaobjsmodel.h"
@@ -381,7 +381,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
   if (stack != NULL) {
     doc->loadStack(stack);
-    doc->setTag(neutube::Document::ETag::FLYEM_BODY);
+    doc->setTag(neutu::Document::ETag::FLYEM_BODY);
   }
 
   return dsIntvPt;

@@ -278,15 +278,15 @@ void ZStackBlockGrid::read(std::istream &stream)
   m_blockSize.read(stream);
 
   int count = 0;
-  neutube::read(stream, count);
+  neutu::read(stream, count);
   int maxIndex = -1;
-  neutube::read(stream, maxIndex);
+  neutu::read(stream, maxIndex);
 
   if (maxIndex >= 0) {
     m_stackArray.resize(maxIndex + 1, 0);
     for (int i = 0; i < count; ++i) {
       int index = -1;
-      neutube::read(stream, index);
+      neutu::read(stream, index);
       if (index >= 0) {
         ZStack *stack = new ZStack;
         stack->read(stream);
@@ -312,13 +312,13 @@ void ZStackBlockGrid::write(std::ostream &stream) const
     }
   }
 
-  neutube::write(stream, count);
-  neutube::write(stream, maxIndex);
+  neutu::write(stream, count);
+  neutu::write(stream, maxIndex);
 
   for (int i = 0; i < (int) m_stackArray.size(); ++i) {
     ZStack *stack = m_stackArray[i];
     if (stack != NULL) {
-      neutube::write(stream, i);
+      neutu::write(stream, i);
       stack->write(stream);
     }
   }

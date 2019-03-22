@@ -1,8 +1,9 @@
 #include "taskmergereview.h"
 
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidtarget.h"
+
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
@@ -252,7 +253,7 @@ QString TaskMergeReview::targetString()
   return "task " + m_taskId;
 }
 
-bool TaskMergeReview::skip()
+bool TaskMergeReview::skip(QString &reason)
 {
   // For now, at least, the "HEAD" command to check whether a tarsupervoxels instance has
   // a complete tar archive may be slow for large bodies.  So avoid executing it repeatedly
@@ -271,6 +272,7 @@ bool TaskMergeReview::skip()
 
   int now = QTime::currentTime().msecsSinceStartOfDay();
   if ((m_timeOfLastSkipCheck > 0) && (now - m_timeOfLastSkipCheck < interval)) {
+    reason = m_skipReason;
     return (m_skip != Skip::NOT_SKIPPED);
   }
   m_timeOfLastSkipCheck = now;
@@ -282,12 +284,15 @@ bool TaskMergeReview::skip()
   switch (setBodiesResult) {
     case SetBodiesResult::FAILED_MAPPING:
       m_skip = Skip::SKIPPED_MAPPING;
+      reason = "SVs mapping to bodies failed";
       break;
     case SetBodiesResult::FAILED_MAJOR:
       m_skip = Skip::SKIPPED_MAJOR;
+      reason = "too few major bodies";
       break;
     case SetBodiesResult::FAILED_SIZES:
       m_skip = Skip::SKIPPED_SIZES;
+      reason = "SVs sizes failed";
       break;
     default:
       m_skip = Skip::NOT_SKIPPED;
@@ -301,7 +306,8 @@ bool TaskMergeReview::skip()
         s_netReader = new ZNetBufferReader(m_bodyDoc->getParent3DWindow());
       }
       if (!s_netReader->hasHead(tarUrl.c_str())) {
-        m_skip = Skip::SKIPPED_MESHES;
+        m_skip = Skip::SKIPPED_MESHES; 
+        reason = "tarsupervoxels HEAD failed";
         break;
       }
     }
@@ -317,6 +323,7 @@ bool TaskMergeReview::skip()
     writeOutput();
   }
 
+  m_skipReason = reason;
   return (m_skip != Skip::NOT_SKIPPED);
 }
 
@@ -361,10 +368,9 @@ QWidget *TaskMergeReview::getTaskWidget()
     setBodiesFromSuperVoxels();
   }
 
-  if (m_visibleBodies.isEmpty()) {
-    for (uint64_t id : m_bodyIds) {
-      m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
-    }
+  m_visibleBodies.clear();
+  for (uint64_t id : m_bodyIds) {
+    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
   }
 
   if (!m_lastSavedButton) {
@@ -608,7 +614,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
       for (int i = 0; i < responseArray.size(); i++) {
         QJsonValue responseElem = responseArray.at(i);
         if (!responseElem.isUndefined()) {
-          uint64_t bodyId= responseElem.toDouble();
+          uint64_t bodyId = responseElem.toDouble();
           if (bodyId == 0) {
             return SetBodiesResult::FAILED_MAPPING;
           }
@@ -990,7 +996,7 @@ void TaskMergeReview::displayWarning(const QString &title, const QString &text,
 
   QTimer::singleShot(0, this, [=](){
     if (details.isEmpty() && !allowSuppression) {
-      ZWidgetMessage msg(title, text, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
+      ZWidgetMessage msg(title, text, neutu::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG);
       m_bodyDoc->notify(msg);
     } else {
       QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
@@ -1106,7 +1112,7 @@ void TaskMergeReview::writeOutput()
   for (uint64_t id : m_bodyIds) {
     std::vector<ZFlyEmToDoItem*> todos = m_bodyDoc->getDataDocument()->getTodoItem(id);
     allTodoCount += std::accumulate(todos.begin(), todos.end(), 0, [](int a, ZFlyEmToDoItem* b) {
-      return a + (b->getAction() == neutube::EToDoAction::TO_SPLIT);
+      return a + (b->getAction() == neutu::EToDoAction::TO_SPLIT);
     });
   }
   json[KEY_TODO_COUNT] = QJsonValue(allTodoCount);
@@ -1304,7 +1310,7 @@ ProtocolTaskConfig TaskMergeReview::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
 
   return config;
 }

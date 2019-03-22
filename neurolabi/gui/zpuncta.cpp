@@ -37,9 +37,9 @@ void ZPuncta::sort() const
 }
 
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                      neutube::EAxis sliceAxis) const
+                      neutu::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::EAxis::Z) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -103,14 +103,14 @@ bool ZPuncta::load(const std::string &filePath, double radius)
   bool succ = false;
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
   {
     ZJsonObject obj;
     obj.load(filePath);
     succ = load(obj, radius);
   }
     break;
-  case ZFileType::FILE_TXT:
+  case ZFileType::EFileType::TXT:
   {
     ZColorScheme scheme;
     scheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);
@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutu::display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

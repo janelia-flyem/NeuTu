@@ -5,7 +5,7 @@
 
 class ZJsonObject;
 
-class ZFlyEmBodyStatus
+class   ZFlyEmBodyStatus
 {
 public:
   ZFlyEmBodyStatus(const std::string &status = "");
@@ -13,6 +13,7 @@ public:
   std::string getName() const;
   bool isAccessible() const;
   bool isAdminAccessible() const;
+//  bool annotateByAdminOnly() const;
   bool isExpertStatus() const;
   bool isFinal() const;
   bool isMergable() const;
@@ -26,8 +27,6 @@ public:
   void setMergable(bool on);
 
   std::string getStatusKey() const;
-
-  static bool IsAccessible(const std::string &status);
 
   static std::string GetExpertStatus();
 
@@ -45,6 +44,7 @@ public:
   static const char *KEY_EXPERT;
   static const char *KEY_FINAL;
   static const char *KEY_MERGABLE;
+  static const char *KEY_ADMIN_LEVEL;
 
 private:
   std::string m_status;
@@ -53,6 +53,7 @@ private:
   bool m_isExpertStatus = false;
   bool m_isFinal = false;
   bool m_isMergable = true;
+  int m_adminLevel = 0;
 };
 
 #endif // ZFLYEMBODYSTATUS_H

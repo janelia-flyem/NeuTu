@@ -8,7 +8,7 @@
 
 using namespace std;
 
-ZMovieSceneClipper::ZMovieSceneClipper() : m_target(UNKNOWN_TARGET),
+ZMovieSceneClipper::ZMovieSceneClipper() : m_target(ETarget::UNKNOWN_TARGET),
   m_lowerClipSpeed(0.0), m_upperClipSpeed(0.0)
 {
   m_hasReset[0] = false;
@@ -19,7 +19,7 @@ ZMovieSceneClipper::ZMovieSceneClipper() : m_target(UNKNOWN_TARGET),
 
 void ZMovieSceneClipper::print() const
 {
-  cout << "Target: " << m_target << endl;
+  cout << "Target: " << neutu::EnumValue(m_target) << endl;
   cout << "Axis: " << m_axis << endl;
   cout << "Speed: " << m_lowerClipSpeed << ", " << m_upperClipSpeed << endl;
 }
@@ -41,12 +41,12 @@ void ZMovieSceneClipper::reset(Z3DWindow *stage,
 void ZMovieSceneClipper::clip(
     Z3DWindow *stage, ZMovieSceneClipperState *state) const
 {
-  if (m_target == UNKNOWN_TARGET) {
+  if (m_target == ETarget::UNKNOWN_TARGET) {
     return;
   }
 
   switch (m_target) {
-  case VOLUME:
+  case ETarget::VOLUME:
   {
     Z3DVolumeFilter *volume = stage->getVolumeFilter();
     int lowerCut = state->getLowerClip(m_target, m_axis);
@@ -67,7 +67,7 @@ void ZMovieSceneClipper::clip(
     }
   }
     break;
-  case SWC:
+  case ETarget::SWC:
   {
     Z3DSwcFilter *renderer = stage->getSwcFilter();
     int lowerCut = state->getLowerClip(m_target, m_axis);
@@ -88,7 +88,7 @@ void ZMovieSceneClipper::clip(
     }
   }
     break;
-  case PUNCTA:
+  case ETarget::PUNCTA:
     break;
   default:
     break;
@@ -109,11 +109,11 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
   map<string, json_t*> entryMap = obj.toEntryMap(false);
   if (entryMap.count("target") > 0 && entryMap.count("axis") > 0) {
     if (ZJsonParser::stringValue(entryMap["target"]) == "volume") {
-      m_target = VOLUME;
+      m_target = ETarget::VOLUME;
     }
 
     if (ZJsonParser::stringValue(entryMap["target"]) == "swc") {
-      m_target = SWC;
+      m_target = ETarget::SWC;
     }
 
     if (entryMap.count("reset") > 0) {
@@ -186,13 +186,13 @@ std::pair<double, double>* ZMovieSceneClipperState::getClipHandle(
   pair<double, double> *clipHandle = NULL;
 
   switch (target) {
-  case ZMovieSceneClipper::VOLUME:
+  case ZMovieSceneClipper::ETarget::VOLUME:
     clipHandle = m_volumeClip;
     break;
-  case ZMovieSceneClipper::SWC:
+  case ZMovieSceneClipper::ETarget::SWC:
     clipHandle = m_swcClip;
     break;
-  case ZMovieSceneClipper:: PUNCTA:
+  case ZMovieSceneClipper::ETarget::PUNCTA:
     clipHandle = m_punctaClip;
     break;
   default:
@@ -208,13 +208,13 @@ std::pair<int, int>* ZMovieSceneClipperState::getClipRangeHandle(
   std::pair<int, int> *clipRangeHandle = NULL;
 
   switch (target) {
-  case ZMovieSceneClipper::VOLUME:
+  case ZMovieSceneClipper::ETarget::VOLUME:
     clipRangeHandle = m_volumeClipRange;
     break;
-  case ZMovieSceneClipper::SWC:
+  case ZMovieSceneClipper::ETarget::SWC:
     clipRangeHandle = m_swcClipRange;
     break;
-  case ZMovieSceneClipper:: PUNCTA:
+  case ZMovieSceneClipper::ETarget::PUNCTA:
     clipRangeHandle = m_punctaClipRange;
     break;
   default:

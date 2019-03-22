@@ -71,7 +71,7 @@ void ZSwcTree::init()
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
   m_type = GetType();
-  addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+  addVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
 
   m_label = 0;
@@ -312,7 +312,7 @@ void ZSwcTree::parseComment(istream &stream)
   }
 
   ZJsonObject jsonObj;
-  if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
+  if (ZFileType::FileType(styleFilePath) == ZFileType::EFileType::JSON) {
     if (!styleFilePath.isAbsolutePath()) {
       styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
     }
@@ -448,7 +448,7 @@ bool ZSwcTree::load(const char *filePath)
     }
 
     ZJsonObject jsonObj;
-    if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(styleFilePath) == ZFileType::EFileType::FILE_JSON) {
       if (!styleFilePath.isAbsolutePath()) {
         styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
       }
@@ -670,7 +670,7 @@ void ZSwcTree::displaySkeleton(
       }
 
       painter.setPen(pen);
-      if (hasVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON) &&
+      if (hasVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON) &&
           slice >= 0) {
         painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                          QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
@@ -758,7 +758,7 @@ void ZSwcTree::displaySkeleton(
 
 void ZSwcTree::displayNode(
       ZPainter &painter, double dataFocus, int slice, bool isProj,
-      ZStackObject::EDisplayStyle style, neutube::EAxis axis) const
+      ZStackObject::EDisplayStyle style, neutu::EAxis axis) const
 {
   ZStackBall circle;
   circle.setBasePenWidth(getBasePenWidth());
@@ -801,7 +801,7 @@ void ZSwcTree::displayNode(
       case EDisplayStyle::SOLID:
         circle.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                    SwcTreeNode::radius(tn));
-        circle.addVisualEffect(neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+        circle.addVisualEffect(neutu::display::Sphere::VE_OUT_FOCUS_DIM);
         circle.setColor(nodeColor);
         circle.display(painter, slice, style, axis);
         break;
@@ -819,20 +819,20 @@ void ZSwcTree::displayNode(
 }
 
 void ZSwcTree::displaySelectedNode(
-    ZPainter &painter, int slice, neutube::EAxis axis) const
+    ZPainter &painter, int slice, neutu::EAxis axis) const
 {
   ZStackBall selectionCircle;
   selectionCircle.setColor(255, 255, 0);
-  selectionCircle.setVisualEffect(neutube::display::Sphere::VE_NO_FILL |
-                         neutube::display::Sphere::VE_OUT_FOCUS_DIM |
-                         neutube::display::Sphere::VE_DASH_PATTERN);
+  selectionCircle.setVisualEffect(neutu::display::Sphere::VE_NO_FILL |
+                         neutu::display::Sphere::VE_OUT_FOCUS_DIM |
+                         neutu::display::Sphere::VE_DASH_PATTERN);
   selectionCircle.useCosmeticPen(m_usingCosmeticPen);
 
   ZStackBall selectionBox;
   selectionBox.setColor(255, 255, 0);
   selectionBox.useCosmeticPen(true);
-  selectionBox.setVisualEffect(neutube::display::Sphere::VE_BOUND_BOX |
-                               neutube::display::Sphere::VE_NO_CIRCLE);
+  selectionBox.setVisualEffect(neutu::display::Sphere::VE_BOUND_BOX |
+                               neutu::display::Sphere::VE_NO_CIRCLE);
 
   for (std::set<Swc_Tree_Node*>::const_iterator iter = m_selectedNode.begin();
        iter != m_selectedNode.end(); ++iter) {
@@ -852,14 +852,14 @@ void ZSwcTree::displaySelectedNode(
 
 void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style,
-                       neutube::EAxis axis) const
+                       neutu::EAxis axis) const
 {
   //To do: reorganize; separate node and skeleton widths
   if (!isVisible()) {
     return;
   }
 
-  if (axis != neutube::EAxis::Z) {
+  if (axis != neutu::EAxis::Z) {
     return;
   }
 
@@ -1503,9 +1503,9 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 #endif
 }
 
-Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, neutube::EAxis axis)
+Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, neutu::EAxis axis)
 {
-  if (axis == neutube::EAxis::Z) {
+  if (axis == neutu::EAxis::Z) {
     if (data() != NULL) {
       return Swc_Tree_Hit_Node_P(data(), x, y);
     }
@@ -1514,7 +1514,7 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, neutube::EAxis axis)
   return NULL;
 }
 
-bool ZSwcTree::hit(double x, double y, neutube::EAxis axis)
+bool ZSwcTree::hit(double x, double y, neutu::EAxis axis)
 {
   m_hitSwcNode = hitTest(x, y, axis);
 
@@ -3416,7 +3416,7 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
 
 bool ZSwcTree::hasGoodSourceName()
 {
-  if (ZFileType::FileType(getSource()) == ZFileType::FILE_SWC) {
+  if (ZFileType::FileType(getSource()) == ZFileType::EFileType::SWC) {
     return true;
   }
 
@@ -3625,7 +3625,7 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
       m_terminalFocusColor = QColor(255, 220, 0);
     }
     m_branchPointColor = QColor(164, 255, 164, 255);
-    m_nodeColor = QColor(255, 164, 164, 255);
+    m_nodeColor = QColor(255, 0, 0, 128);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
 
     m_rootFocusColor = QColor(0, 0, 255);
