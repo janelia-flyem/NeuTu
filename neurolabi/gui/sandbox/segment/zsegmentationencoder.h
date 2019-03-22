@@ -44,6 +44,8 @@ public://interfaces derived classes should override
 
   virtual ZIntCuboid getBoundBox()const = 0;
 
+  //virtual int getVoxelNumber() const = 0;
+
   void initBoundBox(const ZIntCuboid& box);
 
 public:

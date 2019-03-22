@@ -92,10 +92,10 @@ string ZSegmentationTree::getChildID(const std::string &id, int label) const{
 }
 
 
-void ZSegmentationTree::labelStack(const std::string &id, ZStack &stack) const{
+void ZSegmentationTree::labelStack(const std::string &id, ZStack &stack, int label) const{
   ZSegmentationNode* node = m_root->find(id);
   if(node){
-    node->labelStack(stack);
+    node->labelStack(stack,label);
   }
 }
 
@@ -167,4 +167,25 @@ bool ZSegmentationTree::contains(const std::string &id, int x, int y, int z) con
     return node->contains(x,y,z);
   }
   return false;
+}
+
+
+vector<string> ZSegmentationTree::getLeavesIDs(const std::string &id) const{
+  ZSegmentationNode* node = m_root->find(id);
+  vector<string> rv;
+  if (node){
+    for(auto leaf: node->getLeaves()){
+      rv.push_back(leaf->getID());
+    }
+  }
+  return rv;
+}
+
+
+vector<string> ZSegmentationTree::getAllIDs(const std::string &id) const{
+  ZSegmentationNode* node = m_root->find(id);
+  if(node){
+    return node->getAllIDs();
+  }
+  return vector<string>();
 }

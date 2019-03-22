@@ -308,15 +308,6 @@ vector<int>& ZSegmentationEncoderRLXVector::getSegment(int z, int y){
   int z0 = m_init_box.getFirstCorner().getZ();
   int y0 = m_init_box.getFirstCorner().getY();
 
-  /*if(!m_inited){
-    int z1 = m_init_box.getLastCorner().getZ();
-    int y1 = m_init_box.getLastCorner().getY();
-    m_data.resize(z1 - z0 + 1);
-    for(vector<vector<int>>& vc : m_data){
-      vc.resize(y1 - y0 + 1);
-    }
-    m_inited = true;
-  }*/
   z = z - z0;
   y = y - y0;
   if(z >= (int)m_data.size()){
@@ -325,6 +316,7 @@ vector<int>& ZSegmentationEncoderRLXVector::getSegment(int z, int y){
   if(y >= (int)m_data[z].size()){
     m_data[z].resize(y + 1);
   }
+  //assert(z >= 0 && y >= 0);
   return m_data[z][y];
 }
 
@@ -350,8 +342,8 @@ bool ZSegmentationEncoderRLXVector::hasSegment(int z, int y) const{
   int y0 = m_init_box.getFirstCorner().getY();
   z = z - z0;
   y = y - y0;
-  if(z >=0  && z < (int)m_data.size()){
-    if(y >=0 && y < (int)m_data[z].size()){
+  if(z >= 0  && z < (int)m_data.size()){
+    if(y >= 0 && y < (int)m_data[z].size()){
       return true;
     }
   }

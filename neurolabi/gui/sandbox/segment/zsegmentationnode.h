@@ -3,10 +3,12 @@
 
 
 #include<memory>
+#include<map>
 #include"zsegmentationencoder.h"
 
 
 using std::shared_ptr;
+using std::map;
 
 
 class ZSegmentationNode{
@@ -71,6 +73,10 @@ public:
 
   virtual vector<string> getAllIDs()const=0;
 
+  //virtual map<string,map<string,int>> getAdjMatrix()const=0;
+
+  //virtual int getVoxelNumber()const=0;
+
 protected:
   string getNextID()const;
 
@@ -117,6 +123,10 @@ public:
   virtual vector<ZSegmentationNode*> getLeaves(){vector<ZSegmentationNode*>rv{this};return rv;}
 
   virtual vector<string> getAllIDs()const{vector<string> rv{this->getID()}; return rv;}
+
+  //virtual map<string,map<string,int>> getAdjMatrix()const;
+
+  //virtual int getVoxelNumber()const;
 
 public://should never be called
   virtual shared_ptr<ZSegmentationNode> getChildByLabel(int){return nullptr;}
@@ -167,6 +177,10 @@ public:
   virtual vector<ZSegmentationNode*> getLeaves();
 
   virtual vector<string> getAllIDs()const;
+
+  //virtual map<string,map<string,int>> getAdjMatrix()const;
+
+  //virtual int getVoxelNumber()const;
 
 public://should never be called
   virtual void add(int, int, int){}
