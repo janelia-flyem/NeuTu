@@ -77,7 +77,11 @@ cd $scriptDir
 condarc=$condaDir/.condarc
 echo 'channels:' > $condarc
 echo '  - flyem-forge' >> $condarc
-echo '  - conda-forge/label/cf201901' >> $condarc
+if [ `uname` == 'Darwin' ]; then
+  echo '  - conda-forge' >> $condarc
+else
+  echo '  - conda-forge/label/cf201901' >> $condarc
+fi
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
 
@@ -89,7 +93,7 @@ fi
 
 if [ -z $package ]
 then
-  package = neutu
+  package=neutu
 fi
 
 envName='neutu-env'
