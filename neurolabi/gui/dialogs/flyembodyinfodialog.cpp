@@ -246,15 +246,39 @@ void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
   emit dataChanged(bodies);
 }
 
-void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
+void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodySet)
 {
-  logInfo(QString("Set a list %1 bodies").arg(bodyList.size()));
+  logInfo(QString("Set a list %1 bodies").arg(bodySet.size()));
 
   ZJsonArray bodies;
   ZDvidReader &reader = m_sequencerReader;
   if (reader.isReady()) {
     m_bodyNames.clear();
     m_namelessBodies.clear();
+
+    // I need to preserve order below
+    QList<uint64_t> bodyList;
+    for (uint64_t bodyId: bodySet) {
+        bodyList << bodyId;
+    }
+
+    // get synapse counts all at once if you can
+    QMap<uint64_t, int> preCountMap;
+    QMap<uint64_t, int> postCountMap;
+
+
+    // the "if m_hasLabelsz" code here used to also have "if m_mode == Emode::QUERY";
+    //  however, I found it also needs to run in Emode::NEUPRINT as well (that mode was added later);
+    //  as far as I can tell, though, there's no reason it can't or shouldn't run in Emode::SEQUENCER
+    //  as well, so I removed the whole Emode test altogether
+    if (m_hasLabelsz) {
+        QList<int> preCounts = reader.readSynapseLabelszBodies(bodyList, dvid::ELabelIndexType::PRE_SYN);
+        QList<int> postCounts = reader.readSynapseLabelszBodies(bodyList, dvid::ELabelIndexType::POST_SYN);
+        for (int i=0; i<bodyList.size(); i++) {
+            preCountMap[bodyList[i]] = preCounts[i];
+            postCountMap[bodyList[i]] = postCounts[i];
+        }
+    }
 
     for (uint64_t bodyId : bodyList) {
       ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
@@ -276,20 +300,24 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodyList)
 
       int npre = 0;
       int npost = 0;
+      // I think this mode check needs to remain; if mode isn't QUERY, we can drop empty
+      //    bodies; but if mode = QUERY, it's a single user-selected body, and we should
+      //    always find its synapses
       if ((m_mode == EMode::QUERY || !bodyData.isEmpty()) && m_hasLabelsz) {
-        npre = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::PRE_SYN);
-        npost = reader.readSynapseLabelszBody(bodyId, dvid::ELabelIndexType::POST_SYN);
+          npre = preCountMap[bodyId];
+          npost = postCountMap[bodyId];
       } else {
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(
+          // brute-force fallback if we don't have labelsz in DVID:
+          std::vector<ZDvidSynapse> synapses = reader.readSynapse(
               bodyId, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
-        for (size_t i=0; i<synapses.size(); i++) {
-          if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
-            npre++;
-          } else {
-            npost++;
+          for (size_t i=0; i<synapses.size(); i++) {
+              if (synapses[i].getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+                  npre++;
+              } else {
+                  npost++;
+              }
           }
-        }
       }
 
       bodyData.setEntry("body ID", bodyId);
@@ -1848,9 +1876,6 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 }
 
 void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
-
-    // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
-
     // I'm leaving all the timing prints commented out for future use
     // QElapsedTimer spottimer;
     // QElapsedTimer totaltimer;
@@ -1860,11 +1885,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader &reader = getIoBodyReader();
-//    reader.setVerbose(false);
 
     // testing
     // reader.setVerbose(true);
-
 
     if (reader.isReady()) {
         logInfo("Retieving body inputs and outputs");
@@ -2106,9 +2129,6 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
-
-    // std::cout << "in onDoubleClickIOConnectionsTable at index " << proxyIndex.row() << ", " << proxyIndex.column() << std::endl;
-
     QModelIndex modelIndex = m_connectionsProxy->mapToSource(proxyIndex);
 
     QStandardItem *itemX = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_X_COLUMN);
