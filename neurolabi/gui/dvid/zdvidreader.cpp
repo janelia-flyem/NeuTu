@@ -216,6 +216,19 @@ void ZDvidReader::updateDataStatus()
         }
       }
     }
+
+    if (obj.hasKey("@default")) {
+      ZJsonObject defaultDataJson(obj.value("@default"));
+      if (getDvidTarget().getSynapseLabelszName().empty()) {
+        if (defaultDataJson.hasKey("labelsz")) {
+          std::string labelsz = ZJsonParser::stringValue(defaultDataJson["labelsz"]);
+          if (hasData(labelsz)) {
+            getDvidTarget().setSynapseLabelszName(labelsz);
+            getDvidTarget().enableSynapseLabelsz(true);
+          }
+        }
+      }
+    }
   }
 }
 

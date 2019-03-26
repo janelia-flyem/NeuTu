@@ -496,7 +496,7 @@ void MainWindow::initDialog()
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
-  m_mergeBodyDlg = NULL;
+//  m_mergeBodyDlg = NULL;
   m_dvidOpDlg = NULL;
   m_synapseDlg = NULL;
 #endif
