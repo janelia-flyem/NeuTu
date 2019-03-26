@@ -24,13 +24,13 @@ build:
 
 requirements:
   build:
-    - gxx_linux-64 # [linux]
+    - {{ compiler('cxx') }}     # [unix]
     - cmake
 
   host:
     - python >=3.6
-    - libcxx 4.0.1* # [osx]
-    - libcxxabi 4.0.1* # [osx]
+    #- libcxx 4.0.1* # [osx]
+    #- libcxxabi 4.0.1* # [osx]
     - qt      5* # [linux64]
     - qt      5.9* # [osx]
     - fftw    3.3*
@@ -53,8 +53,8 @@ requirements:
 
   run:
     - python >=3.6
-    - libcxx 4.0.1* # [osx]
-    - libcxxabi 4.0.1* # [osx]
+    #- libcxx 4.0.1* # [osx]
+    #- libcxxabi 4.0.1* # [osx]
     - qt      5* # [linux64]
     - qt      5.9* # [osx]
     - fftw    3.3*
