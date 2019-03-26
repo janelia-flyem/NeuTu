@@ -47,7 +47,7 @@
 #include "zjsonfactory.h"
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
-#include "zmainwindowcontroller.h"
+//#include "zmainwindowcontroller.h"
 #include "zswctree.h"
 #include "zarray.h"
 #include "zstack.hxx"

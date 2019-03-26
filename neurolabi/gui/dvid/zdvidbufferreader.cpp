@@ -225,7 +225,9 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
-      KINFO << "Reading done:" << url;
+
+      neutu::LogUrlIO("reading done", url);
+//      KINFO << "Reading done:" << url;
 
       if (data->length() > 0) {
         m_buffer.append(data->get_data().c_str(), data->length());
