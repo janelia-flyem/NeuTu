@@ -47,6 +47,7 @@ signals:
     //Similarly, bodyAdded can be addingBody
     void bodyAdded(uint64_t bodyId);
     void bodyRemoved(uint64_t bodyId);
+    void allBodiesRemoved();
 
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
