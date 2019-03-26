@@ -4940,6 +4940,7 @@ bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
   }
     break;
   default:
+    ZStackDoc::_loadFile(filePath);
     break;
   }
 
