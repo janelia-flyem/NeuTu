@@ -810,7 +810,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
     int64_t fullTime = 0;
     fullTimer.start();
 
-
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader &reader = m_sequencerReader;
@@ -819,12 +818,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
         m_namelessBodies.clear();
 
         // the specific form of json we're passing around is a
-        //  historical accident; should be refactored someday
+        //  historical accident; it could be refactored someday
 
         // get all the bodies that have annotations in this UUID;
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!), so we remove those
-
         dvidTimer.start();
         QString bodyAnnotationName = reader.getDvidTarget().getBodyAnnotationName().c_str();
         dvidTime += dvidTimer.elapsed();
@@ -858,7 +856,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
         #endif
 
 
-
         // if we're doing only named bodies, filter out unnamed bodies; filter from
         //  both keyList and bodyAnnotationList
         if (namedOnly) {
@@ -883,22 +880,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             }
         }
 
-
-        // test: get all named bodies labelsz counts individually before and after
-        //  the bulk get; I see mismatches, and I need to nail them down
-        QMap<QString, int> beforePre;
-        QMap<QString, int> beforePost;
-        foreach (QString bodyIDstring, keyList) {
-            uint64_t bodyID = bodyIDstring.toLongLong(&ok);
-            beforePre[bodyIDstring] = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
-            beforePost[bodyIDstring] = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
-        }
-
-
-
-
-
-
         QList<int> preCounts;
         QList<int> postCounts;
         if (m_hasLabelsz) {
@@ -911,53 +892,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             preCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::PRE_SYN);
             postCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::POST_SYN);
             dvidTime += dvidTimer.elapsed();
-            std::cout << "bulk labelsz counts" << std::endl;
-            std::cout << "input bodies: " << bodyIDs.size() << std::endl;
-            std::cout << "output preCounts: " << preCounts.size() << std::endl;
-            std::cout << "output postCounts: " << postCounts.size() << std::endl;
-
-
-            // debug
-            if (keyList.size() != preCounts.size() || keyList.size() != postCounts.size()) {
-                std::cout << "array size mismatch" << std::endl;
-            }
         }
 
-
-        // get pre/post counts individually after bulk get:
-        QMap<QString, int> afterPre;
-        QMap<QString, int> afterPost;
-        foreach (QString bodyIDstring, keyList) {
-            uint64_t bodyID = bodyIDstring.toLongLong(&ok);
-            afterPre[bodyIDstring] = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
-            afterPost[bodyIDstring] = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
-        }
-
-
-        // compare before, bulk, and after:
-        for (int i=0; i<keyList.size(); i++) {
-            QString bodyIDstring = keyList[i];
-            if (beforePre[bodyIDstring] != preCounts[i] || preCounts[i] != afterPre[bodyIDstring]) {
-                std::cout << "nPre mismatch:\t" << beforePre[bodyIDstring] << "\t" << preCounts[i] << "\t"
-                    << afterPre[bodyIDstring] << std::endl;
-            }
-            if (beforePost[bodyIDstring] != postCounts[i] || postCounts[i] != afterPost[bodyIDstring]) {
-                std::cout << "nPost mismatch:\t" << beforePost[bodyIDstring] << "\t" << postCounts[i] << "\t"
-                    << afterPost[bodyIDstring] << std::endl;
-            }
-        }
-
-
-
-
-        // debug
-        int count = 0;
-
-
-
-
-
-
+        // main loop: adjust all the body data
         ZJsonArray bodies;
         qlonglong bodyID;
         for (int i=0; i<keyList.size(); i++) {
@@ -996,44 +933,17 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 }
 
                 if (!bodyData.isEmpty() && m_hasLabelsz) {
-                    dvidTimer.restart();
-                    int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
-                    int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
-                    dvidTime += dvidTimer.elapsed();
-
-
-                    // debug/test: compare two methods of retrieval
-                    if (npre != preCounts[i]) {
-                        std::cout << "precount mismatch: body: " << bodyID << ": " << npre << " (single, last) vs " << preCounts[i] << "(bulk)" << std::endl;
-                    }
-                    if (npost != postCounts[i]) {
-                        std::cout << "postcount mismatch: body: " << bodyID << ": " << npost << " (single, last) vs " << postCounts[i] << "(bulk)" << std::endl;
-                    }
-
-                    // old:
-                    bodyData.setEntry("body T-bars", npre);
-                    bodyData.setEntry("body PSDs", npost);
-
-                    // new:
-                    // bodyData.setEntry("body T-bars", preCounts[i]);
-                    // bodyData.setEntry("body PSDs", postCounts[i]);
-
-                    // debug
-                    count++;
-
+                    bodyData.setEntry("body T-bars", preCounts[i]);
+                    bodyData.setEntry("body PSDs", postCounts[i]);
                 }
                 bodies.append(bodyData);
             } 
         }
 
         fullTime = fullTimer.elapsed();
-        // I left the timers active; I think we'll want them later, plus
-        //  they should be very low overhead
         #ifdef _DEBUG_
             std::cout << "sequencer load: DVID time/total time (ms) = " << dvidTime << "/" << fullTime << std::endl;
-            std::cout << "entries set: " << count << std::endl;
         #endif
-
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
         emit dataChanged(bodies);
@@ -1065,13 +975,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
     ZDvidReader &reader = m_sequencerReader;
     if (reader.isReady()) {
 
-        // you would use this call to get all bodies with any synapses:
-        // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::ELabelIndexType::INDEX_ALL_SYN);
-
-        // as it turns out, that's usually too many (and you would have to retrieve
-        //  the lists in pages); so we let the user set the max number of bodies to get in the UI
+        // user specifies how many bodies to get synapses for
         dvidTimer.start();
-
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
               m_currentMaxBodies, dvid::ELabelIndexType::ALL_SYN);
         dvidTime += dvidTimer.elapsed();
@@ -1093,7 +998,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             std::cout << "    # body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
             std::cout << "    # bodies read with synapses = " << thresholdData.size() << std::endl;
         #endif
-
 
         // now find which of the bodies in thresholdData have annotations;
         //  also grab the body IDs for the bulk labelsz call
@@ -1121,15 +1025,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 
         // get all the synapse counts at once
         int64_t storedSynapseTime = 0;
-        std::cout << "getting synapse counts (new): " << dvidTime << std::endl;
         storedSynapseTime = dvidTime;
         dvidTimer.restart();
         QList<int> preCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::PRE_SYN);
         QList<int> postCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::POST_SYN);
         dvidTime += dvidTimer.elapsed();
-        std::cout << "finished (new): " << dvidTime << std::endl;
         storedSynapseTime = dvidTime - storedSynapseTime;
-
 
 
         // build the data structure we pass along to the table
@@ -1190,41 +1091,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             }
 
             // synapse info
-            /*
-            if (i == 0) {
-                std::cout << "getting synapse counts (old): " << dvidTime << std::endl;
-                storedSynapseTime = dvidTime;
-            }
-            dvidTimer.restart();
-            int npre = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::PRE_SYN);
-            int npost = reader.readSynapseLabelszBody(bodyID, dvid::ELabelIndexType::POST_SYN);
-            dvidTime += dvidTimer.elapsed();
-            if (i == thresholdData.size() - 1) {
-                std::cout << "elapsed (old): " << dvidTime << std::endl;
-                storedSynapseTime = dvidTime - storedSynapseTime;
-            }
-            */
-
-
-
-
-            /*
-            // debug/test: compare two methods of retrieval
-            if (npre != preCounts[i]) {
-                std::cout << "precount mismatch: " << npre << " (old) vs " << preCounts[i] << "(new)" << std::endl;
-            }
-            if (npost != postCounts[i]) {
-                std::cout << "postcount mismatch: " << npost << " (old) vs " << postCounts[i] << "(new)" << std::endl;
-            }
-            */
-
-
-
-            // old:
-            // entry.setEntry("body T-bars", npre);
-            // entry.setEntry("body PSDs", npost);
-
-            // new:
             entry.setEntry("body T-bars", preCounts[i]);
             entry.setEntry("body PSDs", postCounts[i]);
 
@@ -1251,10 +1117,6 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         #endif
 
          emit namedBodyChanged(namedBodies);
-
-
-
-
 
     } else {
         // but we need to clear the loading message if we can't read from DVID
