@@ -5176,10 +5176,6 @@ QList<int> ZDvidReader::readSynapseLabelszBodies(QList<uint64_t> bodyIDs, dvid::
     if (!buffer.isEmpty()) {
 
         QJsonDocument doc = QJsonDocument::fromJson(buffer);
-
-        // debug:
-        // std::cout << doc.toJson().toStdString() << std::endl;
-
         QJsonArray array = doc.array();
 
         // return is a list of {"Label": label, "PreSyn": count}; not necessarily ordered!
@@ -5191,10 +5187,11 @@ QList<int> ZDvidReader::readSynapseLabelszBodies(QList<uint64_t> bodyIDs, dvid::
             bool ok = false;
             uint64_t bodyID = temp.toLongLong(&ok);
             if (!ok) {
-                // error handling if you are not fine with 0 as default value
-
-                // testing
-                std::cout << "error parsing bodyID " << temp.toString().toStdString() << std::endl;
+                // error handling; I'm going to be a little sloppy here; there's no reason in
+                //  the world that DVID would return me something that wouldn't parse,
+                //  so just log it and skip it
+                LWARN() << "error parsing bodyID " << temp.toString().toStdString();
+                continue;
             }
 
             QString indexString = QString::fromStdString(ZDvidUrl::GetLabelszIndexTypeStr(indexType));

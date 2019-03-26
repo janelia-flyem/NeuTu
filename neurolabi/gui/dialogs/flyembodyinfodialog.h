@@ -35,7 +35,7 @@ public:
 
   void simplify();
 
-  void setBodyList(const std::set<uint64_t> &bodyList);
+  void setBodyList(const std::set<uint64_t> &bodySet);
   void setBodyList(const ZJsonArray &bodies);
 
   int getMaxBodies() const;
