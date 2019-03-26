@@ -21,6 +21,7 @@ public:
   QModelIndex getIndex(uint64_t bodyId) const;
 
   void removeBody(uint64_t bodyId);
+  void removeAllBodies();
 
   void removeRowList(const QList<int> &rowList);
 

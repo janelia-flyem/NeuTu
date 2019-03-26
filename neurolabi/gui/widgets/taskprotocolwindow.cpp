@@ -881,6 +881,8 @@ void TaskProtocolWindow::updateBodyWindow(int taskIdBodiesToRemove) {
         if (taskIdBodiesToRemove != -1) {
             toRemove = m_taskList[taskIdBodiesToRemove]->visibleBodies();
             toRemove.unite(m_taskList[taskIdBodiesToRemove]->selectedBodies());
+        } else {
+          emit allBodiesRemoved();
         }
 
         disableButtonsWhileUpdating(toRemove);
