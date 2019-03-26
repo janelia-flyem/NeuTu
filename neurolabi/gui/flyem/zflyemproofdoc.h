@@ -326,6 +326,7 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+  void setTodoItemChecked(int x, int y, int z, bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();

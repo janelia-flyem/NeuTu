@@ -1456,6 +1456,31 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
   }
 }
 
+void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
+{
+  bool modified = false;
+
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_LOCAL);
+    if (item.isValid()) {
+      if (checking != item.isChecked()) {
+        item.setChecked(checking);
+        td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+        bufferObjectModified(td);
+        modified = true;
+      }
+    }
+  }
+
+  if (modified) {
+    processObjectModified();
+    notifyTodoItemModified(ZIntPoint(x, y, z), true);
+  }
+}
+
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 { //Duplicated code with setTodoItemAction
   ZOUT(LTRACE(), 5) << "Check to do items";
