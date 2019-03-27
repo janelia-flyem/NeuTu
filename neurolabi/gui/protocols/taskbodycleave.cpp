@@ -1450,8 +1450,8 @@ void TaskBodyCleave::applyColorMode(bool showingCleaving)
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     if (showingCleaving) {
-      filter->setColorMode("Indexed Color");
       updateColors();
+      filter->setColorMode("Indexed Color");
     } else {
       filter->setColorMode("Mesh Source");
     }
