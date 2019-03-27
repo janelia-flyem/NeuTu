@@ -8,6 +8,8 @@
 #include <QUrl>
 
 #include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
@@ -842,7 +844,9 @@ std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const char *payload,
     int length, bool isJson)
 {
-  LKINFO << "HTTP " + method + ": " + url;
+  neutu::LogUrlIO(method.c_str(), url.c_str());
+
+//  LKINFO << "HTTP " + method + ": " + url;
 
   m_statusCode = 0;
   m_statusErrorMessage.clear();
