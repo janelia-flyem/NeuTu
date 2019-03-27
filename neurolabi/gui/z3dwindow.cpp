@@ -26,6 +26,7 @@
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "qt/gui/utilities.h"
+#include "qt/gui/loghelper.h"
 
 #include "logging/utilities.h"
 #include "logging/zlog.h"
@@ -2579,8 +2580,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     return;
   }
 
-  KINFO << QString("Key %1 pressed in Z3DWindow").
-           arg(neutu::GetKeyString(event->key(), event->modifiers()));
+  neutu::LogKeyPressEvent(event, "Z3DWindow");
+//  KINFO << QString("Key %1 pressed in Z3DWindow").
+//           arg(neutu::GetKeyString(event->key(), event->modifiers()));
 
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
