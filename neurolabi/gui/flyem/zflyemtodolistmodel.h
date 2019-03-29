@@ -65,6 +65,8 @@ public:
   void setUncheckedVisibleOnly();
   void setAllVisible();
 
+  void setSelectedChecked(QItemSelectionModel *sel, bool checked);
+
 signals:
   void locatingItem(ZFlyEmToDoItem *item);
   void doubleClicked(QModelIndex index);
@@ -75,9 +77,11 @@ public slots:
 private:
   void init();
   void connectSignalSlot();
+//  void setChecked(const QModelIndex &index, bool checked);
   void setChecked(int row, bool checked);
   void setChecked(const QModelIndexList &indexList, bool checked);
   QModelIndexList getSelected(QItemSelectionModel *sel) const;
+  QModelIndex getMappedIndex(const QModelIndex &index);
 
 private:
   QList<ZFlyEmToDoItem*> m_itemList;

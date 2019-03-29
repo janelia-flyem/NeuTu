@@ -37,19 +37,19 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="checkedRadioButton">
-       <property name="text">
-        <string>Checked</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QRadioButton" name="allRadioButton">
        <property name="text">
         <string>All</string>
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="checkedRadioButton">
+       <property name="text">
+        <string>Checked</string>
        </property>
       </widget>
      </item>
@@ -65,14 +65,14 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="checkPushButton">
        <property name="text">
         <string>Check Selected</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="uncheckPushButton">
        <property name="text">
         <string>Uncheck Selected</string>
        </property>
@@ -106,7 +106,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>

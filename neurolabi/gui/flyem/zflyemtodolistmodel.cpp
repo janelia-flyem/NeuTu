@@ -25,9 +25,18 @@ void ZFlyEmTodoListModel::connectSignalSlot()
 {
 }
 
+QModelIndex ZFlyEmTodoListModel::getMappedIndex(const QModelIndex &index)
+{
+  if (m_proxy != NULL) {
+    return m_proxy->mapToSource(index);
+  }
+
+  return index;
+}
+
 void ZFlyEmTodoListModel::processDoubleClick(const QModelIndex &index)
 {
-  ZFlyEmToDoItem *item = getItem(index);
+  ZFlyEmToDoItem *item = getItem(getMappedIndex(index));
   if (item != NULL) {
     if (getDocument() != NULL) {
       getDocument()->notifyZoomingTo(item->getPosition());
@@ -154,9 +163,6 @@ bool ZFlyEmTodoListModel::removeColumns(
 const ZFlyEmToDoItem* ZFlyEmTodoListModel::getItem(const QModelIndex &index) const
 {
   QModelIndex mappedIndex = index;
-  if (m_proxy != NULL) {
-    mappedIndex = m_proxy->mapToSource(index);
-  }
 
   return getItem(mappedIndex.row());
 }
@@ -242,6 +248,8 @@ void ZFlyEmTodoListModel::setChecked(
 
 QModelIndexList ZFlyEmTodoListModel::getSelected(QItemSelectionModel *sel) const
 {
+//  return sel->selection().indexes();
+
   return getProxy()->mapSelectionToSource(sel->selection()).indexes();
 }
 
@@ -253,6 +261,12 @@ void ZFlyEmTodoListModel::update(int row)
 void ZFlyEmTodoListModel::sortTodoList()
 {
   getProxy()->sort(getProxy()->sortColumn(), getProxy()->sortOrder());
+}
+
+void ZFlyEmTodoListModel::setSelectedChecked(
+    QItemSelectionModel *sel, bool checked)
+{
+  setChecked(getSelected(sel), checked);
 }
 
 void ZFlyEmTodoListModel::setVisibleTest(
