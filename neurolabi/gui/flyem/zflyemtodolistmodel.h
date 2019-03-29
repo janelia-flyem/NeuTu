@@ -70,6 +70,7 @@ public:
 signals:
   void locatingItem(ZFlyEmToDoItem *item);
   void doubleClicked(QModelIndex index);
+  void checkingTodoItem(int x, int y, int z, bool checked);
 
 public slots:
   void processDoubleClick(const QModelIndex &index);

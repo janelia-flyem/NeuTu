@@ -36,6 +36,9 @@ QModelIndex ZFlyEmTodoListModel::getMappedIndex(const QModelIndex &index)
 
 void ZFlyEmTodoListModel::processDoubleClick(const QModelIndex &index)
 {
+#ifdef _DEBUG_
+  std::cout << "Index id: " << index.internalId() << std::endl;
+#endif
   ZFlyEmToDoItem *item = getItem(getMappedIndex(index));
   if (item != NULL) {
     if (getDocument() != NULL) {
@@ -235,6 +238,7 @@ void ZFlyEmTodoListModel::setChecked(int row, bool checked)
   if (item) {
     item->setChecked(checked);
     update(row);
+    emit checkingTodoItem(item->getX(), item->getY(), item->getZ(), checked);
   }
 }
 
