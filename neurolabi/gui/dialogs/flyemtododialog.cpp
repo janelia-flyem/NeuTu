@@ -39,11 +39,30 @@ void FlyEmTodoDialog::init()
           this, &FlyEmTodoDialog::updateVisibility);
   connect(ui->uncheckedRadioButton, &QRadioButton::toggled,
           this, &FlyEmTodoDialog::updateVisibility);
+  connect(ui->checkPushButton, &QPushButton::clicked,
+          this, &FlyEmTodoDialog::checkSelected);
+  connect(ui->uncheckPushButton, &QPushButton::clicked,
+          this, &FlyEmTodoDialog::uncheckSelected);
 }
 
 void FlyEmTodoDialog::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   m_model->setDocument(doc);
+}
+
+void FlyEmTodoDialog::setChecked(bool checked)
+{
+  m_model->setSelectedChecked(ui->todoTableView->selectionModel(), checked);
+}
+
+void FlyEmTodoDialog::checkSelected()
+{
+  setChecked(true);
+}
+
+void FlyEmTodoDialog::uncheckSelected()
+{
+  setChecked(false);
 }
 
 void FlyEmTodoDialog::updateTable()

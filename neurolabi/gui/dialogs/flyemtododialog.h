@@ -27,10 +27,13 @@ public slots:
 
 private:
   void init();
+  void setChecked(bool checked);
 
 private slots:
   void updateTextFilter(QString text);
   void updateVisibility(bool on);
+  void checkSelected();
+  void uncheckSelected();
 
 private:
   Ui::FlyEmTodoDialog *ui;
