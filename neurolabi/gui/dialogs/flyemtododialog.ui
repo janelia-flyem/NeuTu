@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
+    <width>587</width>
     <height>548</height>
    </rect>
   </property>
@@ -14,6 +14,51 @@
    <string>Todo List</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;Note:&lt;/span&gt; Todo modifications outside of the dialog will not be reflected in the table automatically. &lt;br/&gt;----&amp;gt; You need to use the '&lt;span style=&quot; font-weight:600;&quot;&gt;Update&lt;/span&gt;' button to update the table explicity.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="updatePushButton">
+       <property name="text">
+        <string>   Update   </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="checkPushButton">
+       <property name="text">
+        <string>Check Selected</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="uncheckPushButton">
+       <property name="text">
+        <string>Uncheck Selected</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item>
     <widget class="ZFlyEmTodoListView" name="todoTableView"/>
    </item>
@@ -57,44 +102,6 @@
       <widget class="QRadioButton" name="uncheckedRadioButton">
        <property name="text">
         <string>Unchecked</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="checkPushButton">
-       <property name="text">
-        <string>Check Selected</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="uncheckPushButton">
-       <property name="text">
-        <string>Uncheck Selected</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="updatePushButton">
-       <property name="text">
-        <string>   Update   </string>
        </property>
       </widget>
      </item>

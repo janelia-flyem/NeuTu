@@ -25,6 +25,9 @@ public:
 public slots:
   void updateTable();
 
+signals:
+  void checkingTodoItem(int x, int y, int z, bool checked);
+
 private:
   void init();
   void setChecked(bool checked);

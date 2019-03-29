@@ -373,6 +373,8 @@ FlyEmTodoDialog* ZFlyEmProofMvc::getTodoDlg()
 void ZFlyEmProofMvc::configureTodoDlg(FlyEmTodoDialog *dlg)
 {
   dlg->setDocument(getDocument());
+  connect(dlg, &FlyEmTodoDialog::checkingTodoItem,
+          getCompleteDocument(), &ZFlyEmProofDoc::setTodoItemChecked);
 }
 
 void ZFlyEmProofMvc::configureSplitUploadDlg(ZFlyEmSplitUploadOptionDialog *dlg)

@@ -1,9 +1,11 @@
 #include "zflyemtodolistview.h"
 
 #include <QSortFilterProxyModel>
+#include <QHeaderView>
 
 ZFlyEmTodoListView::ZFlyEmTodoListView(QWidget *parent) : QTableView(parent)
 {
+  horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
 }
 
 QSortFilterProxyModel* ZFlyEmTodoListView::getModel() const

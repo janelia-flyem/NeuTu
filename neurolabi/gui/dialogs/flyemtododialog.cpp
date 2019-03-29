@@ -43,6 +43,8 @@ void FlyEmTodoDialog::init()
           this, &FlyEmTodoDialog::checkSelected);
   connect(ui->uncheckPushButton, &QPushButton::clicked,
           this, &FlyEmTodoDialog::uncheckSelected);
+  connect(m_model, &ZFlyEmTodoListModel::checkingTodoItem,
+          this, &FlyEmTodoDialog::checkingTodoItem);
 }
 
 void FlyEmTodoDialog::setDocument(ZSharedPointer<ZStackDoc> doc)
