@@ -4,11 +4,12 @@
 #include <QAbstractTableModel>
 
 #include "common/zsharedpointer.h"
+#include "qt/core/zsortfilterproxymodel.h"
 #include "flyem/zflyemtodopresenter.h"
 
 class ZStackDoc;
 class ZFlyEmProofDoc;
-class QSortFilterProxyModel;
+class QItemSelectionModel;
 
 class ZFlyEmTodoListModel : public QAbstractTableModel
 {
@@ -17,6 +18,7 @@ public:
   explicit ZFlyEmTodoListModel(QObject *parent = 0);
 
   const ZFlyEmTodoPresenter *getPresenter() const;
+  ZFlyEmTodoPresenter *getPresenter();
 
   int rowCount( const QModelIndex & parent = QModelIndex() ) const;
   int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -51,9 +53,17 @@ public:
 
   void update();
 
-  QSortFilterProxyModel* getSortProxy() const {
+  QSortFilterProxyModel* getProxy() const {
     return m_proxy;
   }
+
+  void sortTodoList();
+
+  void setVisibleTest(std::function<bool(const ZFlyEmToDoItem&)> f);
+
+  void setCheckedVisibleOnly();
+  void setUncheckedVisibleOnly();
+  void setAllVisible();
 
 signals:
   void locatingItem(ZFlyEmToDoItem *item);
@@ -65,13 +75,16 @@ public slots:
 private:
   void init();
   void connectSignalSlot();
+  void setChecked(int row, bool checked);
+  void setChecked(const QModelIndexList &indexList, bool checked);
+  QModelIndexList getSelected(QItemSelectionModel *sel) const;
 
 private:
   QList<ZFlyEmToDoItem*> m_itemList;
   ZSharedPointer<ZStackDoc> m_doc;
   ZFlyEmTodoPresenter m_defaultPresenter;
   ZSharedPointer<ZFlyEmTodoPresenter> m_presenter;
-  QSortFilterProxyModel* m_proxy;
+  ZSortFilterProxyModel* m_proxy = nullptr;
 };
 
 template <typename InputIterator>

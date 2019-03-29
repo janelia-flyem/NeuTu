@@ -3,9 +3,11 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
+#include <QHeaderView>
+
 #include "logging/zqslog.h"
 
-#include "zflyembookmarklistmodel.h"
+#include "../zflyembookmarklistmodel.h"
 #include "logging/zlog.h"
 
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
@@ -61,6 +63,7 @@ void ZFlyEmBookmarkView::setBookmarkModel(
   resizeColumnsToContents();
   setSortingEnabled(true);
   setModel(model->getProxy());
+  horizontalHeader()->setSortIndicator(model->columnCount() - 1, Qt::AscendingOrder);
 
   /*
   m_proxy = proxy;

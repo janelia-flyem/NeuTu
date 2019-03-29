@@ -844,7 +844,7 @@ std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const char *payload,
     int length, bool isJson)
 {
-  neutu::LogUrlIO(method, url.c_str());
+  neutu::LogUrlIO(method.c_str(), url.c_str());
 
 //  LKINFO << "HTTP " + method + ": " + url;
 
