@@ -1,8 +1,8 @@
 #include "zflyemtodolistmodel.h"
-#include <QSortFilterProxyModel>
+
+#include <QItemSelectionModel>
 
 #include "zflyemproofdoc.h"
-
 
 ZFlyEmTodoListModel::ZFlyEmTodoListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -14,9 +14,10 @@ void ZFlyEmTodoListModel::init()
 {
   connectSignalSlot();
 
-  m_proxy = new QSortFilterProxyModel;
+  m_proxy = new ZSortFilterProxyModel;
   m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
   m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  m_proxy->setFilterKeyColumn(-1);
   m_proxy->setSourceModel(this);
 }
 
@@ -41,6 +42,15 @@ QVariant ZFlyEmTodoListModel::headerData(
 }
 
 const ZFlyEmTodoPresenter *ZFlyEmTodoListModel::getPresenter() const
+{
+  if (m_presenter.get() == NULL) {
+    return &m_defaultPresenter;
+  }
+
+  return m_presenter.get();
+}
+
+ZFlyEmTodoPresenter *ZFlyEmTodoListModel::getPresenter()
 {
   if (m_presenter.get() == NULL) {
     return &m_defaultPresenter;
@@ -213,7 +223,57 @@ void ZFlyEmTodoListModel::update()
   }
 }
 
+void ZFlyEmTodoListModel::setChecked(int row, bool checked)
+{
+  ZFlyEmToDoItem *item = getItem(index(row, 0));
+  if (item) {
+    item->setChecked(checked);
+    update(row);
+  }
+}
+
+void ZFlyEmTodoListModel::setChecked(
+    const QModelIndexList &indexList, bool checked)
+{
+  for (const QModelIndex &index : indexList) {
+    setChecked(index.row(), checked);
+  }
+}
+
+QModelIndexList ZFlyEmTodoListModel::getSelected(QItemSelectionModel *sel) const
+{
+  return getProxy()->mapSelectionToSource(sel->selection()).indexes();
+}
+
 void ZFlyEmTodoListModel::update(int row)
 {
   emit dataChanged(index(row, 0), index(row, columnCount() - 1));
+}
+
+void ZFlyEmTodoListModel::sortTodoList()
+{
+  getProxy()->sort(getProxy()->sortColumn(), getProxy()->sortOrder());
+}
+
+void ZFlyEmTodoListModel::setVisibleTest(
+    std::function<bool(const ZFlyEmToDoItem&)> f)
+{
+  getPresenter()->setVisibleTest(f);
+  getProxy()->invalidate();
+}
+
+void ZFlyEmTodoListModel::setCheckedVisibleOnly()
+{
+  setVisibleTest([](const ZFlyEmToDoItem &item) { return item.isChecked(); });
+
+}
+
+void ZFlyEmTodoListModel::setUncheckedVisibleOnly()
+{
+  setVisibleTest([](const ZFlyEmToDoItem &item) { return !item.isChecked(); });
+}
+
+void ZFlyEmTodoListModel::setAllVisible()
+{
+  setVisibleTest([](const ZFlyEmToDoItem&) { return true; });
 }

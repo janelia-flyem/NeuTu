@@ -68,7 +68,7 @@
 #include "flyem/zflyemsynapsedataupdater.h"
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
 #include "dvid/zdvidpatchdatafetcher.h"
 #include "dvid/zdvidpatchdataupdater.h"

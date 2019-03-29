@@ -7,11 +7,11 @@ ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   m_fieldList << "   Type   " << "    Body ID    " << "   Comment   "
               << "      Z      " << "      X      " << "      Y      "
               << "     User     " << "  Status  "
-              << "  Time  ";
+              << "  Time  " << "id";
 }
 
 QVariant ZFlyEmBookmarkPresenter::data(
-    const ZFlyEmBookmark &bookmark, int index, int role) const
+    const ZFlyEmBookmark &bookmark, int index, int role, int rowId) const
 {
   switch(role) {
   case Qt::DisplayRole:
@@ -42,6 +42,8 @@ QVariant ZFlyEmBookmarkPresenter::data(
       return bookmark.getStatus();
     case 8:
       return bookmark.getTime();
+    case 9:
+      return rowId;
     }
     break;
   case Qt::ToolTipRole:

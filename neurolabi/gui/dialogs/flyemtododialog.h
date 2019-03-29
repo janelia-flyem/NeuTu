@@ -28,6 +28,10 @@ public slots:
 private:
   void init();
 
+private slots:
+  void updateTextFilter(QString text);
+  void updateVisibility(bool on);
+
 private:
   Ui::FlyEmTodoDialog *ui;
   ZFlyEmTodoListModel *m_model;
