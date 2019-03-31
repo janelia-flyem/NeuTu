@@ -6,6 +6,8 @@
 #include<vector>
 #include<memory>
 #include<tuple>
+#include<map>
+#include<list>
 #include<unordered_map>
 #include"zstack.hxx"
 #include"zintcuboid.h"
@@ -16,6 +18,8 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 using std::tuple;
+using std::map;
+using std::list;
 using std::shared_ptr;
 using std::make_tuple;
 
@@ -45,8 +49,10 @@ public://interfaces derived classes should override
   virtual ZIntCuboid getBoundBox()const = 0;
 
   //virtual int getVoxelNumber() const = 0;
+  virtual void consume(const ZStack& /*stack*/){}
 
   void initBoundBox(const ZIntCuboid& box);
+
 
 public:
 
@@ -96,10 +102,11 @@ public:
   virtual double memUsage()const = 0;
 
   //void clear();
+  virtual void consume(const ZStack& stack);
 
   virtual ZIntCuboid getBoundBox()const{return ZIntCuboid(m_minx,m_miny,m_minz,m_maxx,m_maxy,m_maxz);}
 
-private:
+protected:
 
   void _addSegment(int z, int y, int start, int end);
   inline void _maybe_update_bound_box(int z, int y, int start, int end);
@@ -154,7 +161,18 @@ private:
 class ZSegmentationEncoderRLXVector:public ZSegmentationEncoderRLX{
 public:
   ZSegmentationEncoderRLXVector(){m_inited = false;}
-  virtual ~ZSegmentationEncoderRLXVector(){m_data.clear();}
+  virtual ~ZSegmentationEncoderRLXVector(){
+    map<int,int> m;
+    for(vector<vector<int>>& yz: m_data){
+      for(vector<int>& x:yz){
+        m[x.size()/2]++;
+      }
+    }
+    for(auto it = m.begin(); it != m.end(); ++it){
+      std::cout<<it->first<<"->"<<it->second<<std::endl;
+    }
+    m_data.clear();
+  }
 
 public:
   virtual vector<int>& getSegment(int z, int y);
@@ -190,6 +208,7 @@ public:
   virtual double memUsage()const;
 
   //void clear();
+  virtual void consume(const ZStack& stack);
 
   virtual ZIntCuboid getBoundBox()const{return ZIntCuboid(m_minx,m_miny,m_minz,m_maxx,m_maxy,m_maxz);}
 
@@ -222,6 +241,8 @@ public:
   virtual string type()const{return "RAW";}
 
   virtual double memUsage()const;
+
+  virtual void consume(const ZStack& stack);
 
   //void clear();
 
@@ -266,6 +287,92 @@ protected:
 };
 
 
+
+class ZSegmentationEncoderOctTree: public ZSegmentationEncoder{
+public:
+  struct OctTree{
+    OctTree(){for(int i=0; i<8; ++i){child[i]=nullptr;}}
+    ~OctTree(){
+       destroy();
+    }
+
+    void destroy(){
+      for(int i = 0; i<8; ++i){
+        if(child[i]){
+          child[i]->destroy();
+          delete child[i];
+          child[i] = nullptr;
+        }
+      }
+    }
+
+    OctTree* child[8];
+    ZIntCuboid box;
+    bool leaf;
+    bool contains(const ZIntPoint& p){
+      if(!box.contains(p)){
+        return false;
+      }
+      if(leaf){
+        return true;
+      }
+      for(int i = 0; i < 8; ++i){
+        if(child[i] && child[i]->box.contains(p)){
+          return child[i]->contains(p);
+        }
+      }
+      return false;
+    }
+    double memUsage(){
+      double rv = 0;
+      for(int i = 0; i < 8; ++i){
+        if(child[i]){
+          rv += child[i]->memUsage();
+        }
+      }
+      rv += sizeof(OctTree);
+      return rv;
+    }
+  };
+public:
+  ZSegmentationEncoderOctTree(){}
+  virtual ~ZSegmentationEncoderOctTree(){}
+
+public:
+  virtual void add(const ZIntPoint& point);
+
+  virtual bool contains(const ZIntPoint& point)const;
+
+  virtual void unify(const ZSegmentationEncoder& segmentation_encoder){}
+
+  virtual void labelStack(ZStack& stack, int value)const{}
+
+  virtual ZSegmentationEncoder* clone()const{return nullptr;}
+
+  virtual string type()const{return "OctTree";}
+
+  virtual double memUsage()const{
+    if(m_data){
+      return m_data->memUsage();
+    }
+    return 0.0;
+  }
+
+  virtual void consume(const ZStack& stack);
+
+  //void clear();
+
+  virtual ZIntCuboid getBoundBox()const{return m_data->box;}
+
+private:
+  OctTree* _construct(const ZStack& stack, const ZIntCuboid& box);
+
+protected:
+  std::shared_ptr<OctTree> m_data;
+};
+
+
+
 class ZSegmentationEncoderFactory{
 public:
   virtual ZSegmentationEncoder* create()const = 0;
@@ -307,11 +414,12 @@ class ZSegmentationEncoderScanFactory:public ZSegmentationEncoderFactory{
 public:
   virtual ZSegmentationEncoder* create()const{return new ZSegmentationEncoderScan();}
 };
-/*
-class ZSegmentationEncoderRLXOneHashingFactory:public ZSegmentationEncoderFactory{
+
+
+class ZSegmentationEncoderOctTreeFactory:public ZSegmentationEncoderFactory{
 public:
-  virtual ZSegmentationEncoder* create()const{return new ZSegmentationEncoderRLXOneHashing();}
-};*/
+  virtual ZSegmentationEncoder* create()const{return new ZSegmentationEncoderOctTree();}
+};
 
 
 #endif // ZSEGMENTATIONENCODER_H

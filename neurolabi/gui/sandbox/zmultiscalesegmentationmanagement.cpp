@@ -332,8 +332,8 @@ ZStack* ZMultiscaleSegmentationWindow::makeSelectedStack(){
 
 
 void ZMultiscaleSegmentationWindow::onSegment(){
-  //test();
-  if(!m_frame || !m_stack){
+  test();
+  /*if(!m_frame || !m_stack){
     return;
   }
 
@@ -361,11 +361,14 @@ void ZMultiscaleSegmentationWindow::onSegment(){
       std::cout<<"Mem Usage: "<<m_seg_tree->memUsage()/1024.0/1024.0<<"M"<<std::endl;
     }
     removeSeeds();
-  }
+  }*/
 }
 
 
 void ZMultiscaleSegmentationWindow::onSuperVoxel(){
+
+  //onCreateSuperVoxels();
+
   if(m_seg_tree->isLeaf(m_selected_id)){
     return;
   }
@@ -427,9 +430,9 @@ void ZMultiscaleSegmentationWindow::onSuperVoxel(){
     }
   }
 
-  for(auto it = edges.begin(); it != edges.end(); ++it){
+  /*for(auto it = edges.begin(); it != edges.end(); ++it){
     std::cout<<it->m_from<<" "<<it->m_to<<" "<<it->m_weight<<std::endl;
-  }
+  }*/
 
   //get seeds
   shared_ptr<ZStack> seed_stack = shared_ptr<ZStack>(stack->clone());
@@ -574,23 +577,51 @@ void ZMultiscaleSegManagementModule::execute(){
 
 
 void ZMultiscaleSegmentationWindow::test(){
-  ZStack* seg = new ZStack();
-  seg->load("/home/deli/share/stacks/transfer/data5/seg.tif");
-  for(uint8_t* p = seg->array8(); p < seg->array8() + seg->getVoxelNumber(); ++p){
-    if(*p)*p=1;
+  vector<string> file_names = {"/home/deli/share/stacks/transfer/data4/seg.tif",
+  "/home/deli/share/stacks/transfer/data5/seg.tif",
+  "/home/deli/share/stacks/transfer/data6/seg.tif",
+  "/home/deli/share/stacks/transfer/data9/seg.tif"};
+
+  for(auto name : file_names){
+    std::cout<<name<<std::endl;
+    shared_ptr<ZStack> seg = shared_ptr<ZStack>(new ZStack());
+    seg->load(name);
+    for(uint8_t* p = seg->array8(); p < seg->array8() + seg->getVoxelNumber(); ++p){
+      if(*p)*p=1;
+    }
+    int x0 = seg->getBoundBox().getFirstCorner().getX();
+    int y0 = seg->getBoundBox().getFirstCorner().getY();
+    int z0 = seg->getBoundBox().getFirstCorner().getZ();
+    int x1 = seg->getBoundBox().getLastCorner().getX();
+    int y1 = seg->getBoundBox().getLastCorner().getY();
+    int z1 = seg->getBoundBox().getLastCorner().getZ();
+
+    clock_t start,end;
+
+    shared_ptr<ZSegmentationEncoder> encoder = shared_ptr<ZSegmentationEncoder>(new ZSegmentationEncoderRLXVector());
+
+    start = std::clock();
+    encoder->consume(*seg);
+    end = std::clock();
+    std::cout<<"Construction Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
+
+    start = std::clock();
+    double sum= 0.0;
+    for(int z = z0; z <= z1; ++z){
+      for(int y = y0; y <= y1; ++y){
+        for(int x = x0; x <= x1; ++x){
+          sum += encoder->contains(x,y,z);
+        }
+      }
+    }
+    end = std::clock();
+    std::cout<<"Access Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<" Check Sum: "<<sum<<std::endl;
+    std::cout<<"Mem: "<<encoder->memUsage()/1024.0/1024.0<<std::endl;
   }
 
-  int x0 = seg->getBoundBox().getFirstCorner().getX();
-  int y0 = seg->getBoundBox().getFirstCorner().getY();
-  int z0 = seg->getBoundBox().getFirstCorner().getZ();
-  int x1 = seg->getBoundBox().getLastCorner().getX();
-  int y1 = seg->getBoundBox().getLastCorner().getY();
-  int z1 = seg->getBoundBox().getLastCorner().getZ();
-
-  clock_t start,end;
 
   //RAW
-  shared_ptr<ZSegmentationTree> tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRawFactory());
+  /*shared_ptr<ZSegmentationTree> tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRawFactory());
   start = std::clock();
   tree->consume(tree->getRootID(),seg);
   end = std::clock();
@@ -626,7 +657,7 @@ void ZMultiscaleSegmentationWindow::test(){
   std::cout<<"Access Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<" Check Sum: "<<sum<<std::endl;
 
   //OSH
-  /*tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXOneStageHashingFactory());
+  tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXOneStageHashingFactory());
   start = std::clock();
   tree->consume(tree->getRootID(),seg);
   end = std::clock();
@@ -641,7 +672,7 @@ void ZMultiscaleSegmentationWindow::test(){
     }
   }
   end = std::clock();
-  std::cout<<"Access Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<" Check Sum: "<<sum<<std::endl;*/
+  std::cout<<"Access Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<" Check Sum: "<<sum<<std::endl;
 
   //TSH
   tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXTwoStageHashingFactory());
@@ -697,5 +728,5 @@ void ZMultiscaleSegmentationWindow::test(){
   end = std::clock();
   std::cout<<"Access Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<" Check Sum: "<<sum<<std::endl;
 
-  delete seg;
+  delete seg;*/
 }
