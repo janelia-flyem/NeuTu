@@ -13,9 +13,7 @@ void ZSegmentationEncoder::add(const vector<int> &xs, const vector<int> &ys, con
 
 
 void ZSegmentationEncoder::initBoundBox(const ZIntCuboid &box){
-  //std::cout<<11111111111111<<std::endl;
   m_init_box = box;
-  //std::cout<<"BoundBox:"<<box.getVolume()<<std::endl;
 }
 
 
@@ -133,6 +131,49 @@ void ZSegmentationEncoderRLX::_maybe_update_bound_box(int z, int y, int start, i
   m_miny = m_miny < y ? m_miny : y;
   m_maxx = m_maxx > end ? m_maxx : end;
   m_minx = m_minx < start ? m_minx : start;
+}
+
+
+void ZSegmentationEncoderRLX::consume(const ZStack &stack){
+  const uint8_t* p = stack.array8();
+  int width = stack.width();
+  int height = stack.height();
+  int depth = stack.depth();
+  int slice = width*height;
+  int ofx = stack.getOffset().getX();
+  int ofy = stack.getOffset().getY();
+  int ofz = stack.getOffset().getZ();
+  int index = 0;
+  int v = 0;
+
+  for(int d = 0; d < depth; ++d){
+    for(int h = 0; h < height; ++h){
+      index = d * slice + h * width;
+      bool flag = false;
+      int x1 = 0;
+      int x2 = 0;
+      for(int w = 0; w < width; ++w){
+        v = p[index++];
+        if(v){
+          if(!flag){
+            x1 = w;
+            x2 = x1;
+            flag = true;
+          } else {
+            ++x2;
+          }
+        } else {
+          if(flag){
+            flag = false;
+            _addSegment(d+ofz,h+ofy,x1+ofx,x2+ofx);
+          }
+        }
+      }
+      if(flag){
+        _addSegment(d+ofz,h+ofy,x1+ofx,x2+ofx);
+      }
+    }
+  }
 }
 
 
@@ -355,7 +396,7 @@ double ZSegmentationEncoderRLXVector::memUsage()const{
   //return m_data.
   double rv = m_data.size() * sizeof(vector<vector<int>>);
   for(auto it = m_data.begin(); it != m_data.end(); ++it){
-    rv += it->size()*sizeof(vector<int>);
+    rv += it->size() * sizeof(vector<int>);
     for(auto ip = it->begin(); ip != it->end(); ++ip){
       rv += ip->size() * sizeof(int);
     }
@@ -404,6 +445,34 @@ void ZSegmentationEncoderBitMap::add(const ZIntPoint &point){
     m_data.resize(out_index + 1);
   }*/
   m_data[out_index] |= (1 << in_index);
+}
+
+
+void ZSegmentationEncoderBitMap::consume(const ZStack &stack){
+  initBoundBox(stack.getBoundBox());
+
+  const uint8_t* p = stack.array8();
+  int width = stack.width();
+  int height = stack.height();
+  int depth = stack.depth();
+  int slice = width*height;
+  int ofx = stack.getOffset().getX();
+  int ofy = stack.getOffset().getY();
+  int ofz = stack.getOffset().getZ();
+  int index = 0;
+  int v = 0;
+
+  for(int d = 0; d < depth; ++d){
+    for(int h = 0; h < height; ++h){
+      index = d * slice + h * width;
+      for(int w = 0; w < width; ++w){
+        v = p[index++];
+        if(v){
+          add(ZIntPoint(w+ofx,h+ofy,d+ofz));
+        }
+      }
+    }
+  }
 }
 
 
@@ -527,6 +596,34 @@ void ZSegmentationEncoderRaw::add(const ZIntPoint &point){
 }
 
 
+void ZSegmentationEncoderRaw::consume(const ZStack &stack){
+  initBoundBox(stack.getBoundBox());
+
+  const uint8_t* p = stack.array8();
+  int width = stack.width();
+  int height = stack.height();
+  int depth = stack.depth();
+  int slice = width*height;
+  int ofx = stack.getOffset().getX();
+  int ofy = stack.getOffset().getY();
+  int ofz = stack.getOffset().getZ();
+  int index = 0;
+  int v = 0;
+
+  for(int d = 0; d < depth; ++d){
+    for(int h = 0; h < height; ++h){
+      index = d * slice + h * width;
+      for(int w = 0; w < width; ++w){
+        v = p[index++];
+        if(v){
+          add(ZIntPoint(w+ofx,h+ofy,d+ofz));
+        }
+      }
+    }
+  }
+}
+
+
 ZSegmentationEncoder* ZSegmentationEncoderRaw::clone()const{
   ZSegmentationEncoderRaw* rv = new ZSegmentationEncoderRaw();
   rv->m_data = shared_ptr<ZStack>(m_data->clone());
@@ -643,4 +740,121 @@ double ZSegmentationEncoderScan::memUsage()const{
 
 ZIntCuboid ZSegmentationEncoderScan::getBoundBox()const{
   return m_data->getBoundBox();
+}
+
+
+void ZSegmentationEncoderOctTree::add(const ZIntPoint &point){
+
+}
+
+
+bool ZSegmentationEncoderOctTree::contains(const ZIntPoint &point) const{
+  if(m_data){
+    return m_data->contains(point);
+  }
+  return false;
+}
+
+
+void ZSegmentationEncoderOctTree::consume(const ZStack &stack){
+  m_data = shared_ptr<OctTree>(_construct(stack,stack.getBoundBox()));
+}
+
+
+ZSegmentationEncoderOctTree::OctTree* ZSegmentationEncoderOctTree::_construct(const ZStack &stack, const ZIntCuboid &box){
+
+  /*int _x1=box.getFirstCorner().getX();
+  int _y1=box.getFirstCorner().getY();
+  int _z1=box.getFirstCorner().getZ();
+  int _x2=box.getLastCorner().getX();
+  int _y2=box.getLastCorner().getY();
+  int _z2=box.getLastCorner().getZ();
+
+  std::cout<<"("<<_x1<<","<<_y1<<","<<_z1<<")"<<"("<<_x2<<","<<_y2<<","<<_z2<<")"<<std::endl;*/
+
+  int width = box.getWidth();
+  int height = box.getHeight();
+  int depth = box.getDepth();
+
+  if(width <= 0 || height <= 0 || depth <=0){
+    return nullptr;
+  }
+
+  int ofx = box.getFirstCorner().getX();
+  int ofy = box.getFirstCorner().getY();
+  int ofz = box.getFirstCorner().getZ();
+
+  if(width == 1 && height == 1 && depth ==1){
+    int v = stack.getIntValue(ofx,ofy,ofz);
+    if(v){
+      OctTree* rv = new OctTree();
+      rv->leaf = true;
+      rv->box = box;
+      return rv;
+    } else {
+      return nullptr;
+    }
+  }
+
+  OctTree* sub[8]={nullptr};
+
+  for(int k = 0 ; k < 2; ++k){
+    for(int j = 0; j < 2; ++j){
+      for(int i = 0; i < 2; ++i){
+        int x1 = ofx + i * width / 2;
+        int y1 = ofy + j * height / 2;
+        int z1 = ofz + k * depth / 2;
+        int x2 = ofx + (i + 1) * width / 2 - 1;
+        int y2 = ofy + (j + 1) * height / 2 - 1;
+        int z2 = ofz + (k + 1) * depth / 2 - 1;
+        sub[k*4+j*2+i] = _construct(stack,ZIntCuboid(x1,y1,z1,x2,y2,z2));
+      }
+    }
+  }
+
+  bool full_black = true;
+  bool full_white = true;
+
+  for(int i = 0; i < 8; ++i){
+    if(sub[i]){
+      full_white = false;
+    } else {
+      full_black = false;
+    }
+  }
+
+  if(full_black){
+    OctTree* rv = new OctTree();
+    rv->box = box;
+    bool leaf = true;
+    for(int i = 0; i < 8; ++i){
+      if(!sub[i]->leaf){
+        leaf = false;
+      }
+    }
+    if(leaf){
+      rv->leaf = true;
+      for(int i = 0; i < 8; ++i){
+        delete sub[i];
+      }
+    } else {
+      rv->leaf = false;
+      for(int i = 0; i < 8; ++i){
+        rv->child[i] = sub[i];
+      }
+    }
+    return rv;
+  } else if(full_white){
+    return nullptr;
+  } else {
+    OctTree* rv = new OctTree();
+    rv->box = box;
+    rv->leaf = false;
+    for(int i = 0; i < 8; ++i){
+      rv->child[i] = sub[i];
+    }
+    return rv;
+  }
+
+  return nullptr;
 }
