@@ -28087,6 +28087,40 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/allneuropils/synapse_thresh_allneuropils_nohole.labels.tif.sobj");
+  std::string name = "all_neuropils";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
+  std::string name = "dACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
+  std::string name = "SLP";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
   neutuse::TaskWriter writer;
   writer.open("http://emdata2.int.janelia.org:2018");
   writer.testConnection();
@@ -29425,7 +29459,7 @@ void ZTest::test(MainWindow *host)
   std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
 #endif
 
-#if 1
+#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
   ZINFO << "Test: auto logging";

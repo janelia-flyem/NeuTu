@@ -27,7 +27,7 @@
 #include "zwidgetmessage.h"
 #include "mvc/zstackpresenter.h"
 
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "zflyemdataloader.h"
 #include "flyemsplitcontrolform.h"
 #include "zflyemproofmvc.h"

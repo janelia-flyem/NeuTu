@@ -13,7 +13,7 @@
 #include "flyemdef.h"
 #include "zflyembodymergeproject.h"
 #include "mvc/zstackdoc.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
