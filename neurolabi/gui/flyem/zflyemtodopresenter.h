@@ -1,6 +1,8 @@
 #ifndef ZFLYEMTODOPRESENTER_H
 #define ZFLYEMTODOPRESENTER_H
 
+#include <functional>
+
 #include "zabstractmodelpresenter.h"
 
 class ZFlyEmToDoItem;
