@@ -5,7 +5,7 @@
 #include "zflyemproofdoc.h"
 
 ZFlyEmTodoListModel::ZFlyEmTodoListModel(QObject *parent) :
-  QAbstractTableModel(parent)
+  ZSortFilterTableModel(parent)
 {
   init();
 }
@@ -14,25 +14,25 @@ void ZFlyEmTodoListModel::init()
 {
   connectSignalSlot();
 
-  m_proxy = new ZSortFilterProxyModel;
-  m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-  m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-  m_proxy->setFilterKeyColumn(-1);
-  m_proxy->setSourceModel(this);
+//  m_proxy = new ZSortFilterProxyModel;
+//  m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+//  m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+//  m_proxy->setFilterKeyColumn(-1);
+//  m_proxy->setSourceModel(this);
 }
 
 void ZFlyEmTodoListModel::connectSignalSlot()
 {
 }
 
-QModelIndex ZFlyEmTodoListModel::getMappedIndex(const QModelIndex &index)
-{
-  if (m_proxy != NULL) {
-    return m_proxy->mapToSource(index);
-  }
+//QModelIndex ZFlyEmTodoListModel::getMappedIndex(const QModelIndex &index)
+//{
+//  if (m_proxy != NULL) {
+//    return m_proxy->mapToSource(index);
+//  }
 
-  return index;
-}
+//  return index;
+//}
 
 void ZFlyEmTodoListModel::processDoubleClick(const QModelIndex &index)
 {
@@ -237,7 +237,7 @@ void ZFlyEmTodoListModel::setChecked(int row, bool checked)
   ZFlyEmToDoItem *item = getItem(index(row, 0));
   if (item) {
     item->setChecked(checked);
-    update(row);
+    updateRow(row);
     emit checkingTodoItem(item->getX(), item->getY(), item->getZ(), checked);
   }
 }
@@ -250,22 +250,26 @@ void ZFlyEmTodoListModel::setChecked(
   }
 }
 
-QModelIndexList ZFlyEmTodoListModel::getSelected(QItemSelectionModel *sel) const
-{
-//  return sel->selection().indexes();
+//QModelIndexList ZFlyEmTodoListModel::getSelected(QItemSelectionModel *sel) const
+//{
+////  return sel->selection().indexes();
 
-  return getProxy()->mapSelectionToSource(sel->selection()).indexes();
-}
+//  return getProxy()->mapSelectionToSource(sel->selection()).indexes();
+//}
 
+/*
 void ZFlyEmTodoListModel::update(int row)
 {
   emit dataChanged(index(row, 0), index(row, columnCount() - 1));
 }
+*/
 
+/*
 void ZFlyEmTodoListModel::sortTodoList()
 {
   getProxy()->sort(getProxy()->sortColumn(), getProxy()->sortOrder());
 }
+*/
 
 void ZFlyEmTodoListModel::setSelectedChecked(
     QItemSelectionModel *sel, bool checked)
