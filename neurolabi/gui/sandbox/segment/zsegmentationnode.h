@@ -3,17 +3,19 @@
 
 
 #include<memory>
+#include<string>
 #include<map>
 #include"zsegmentationencoder.h"
 
 
 using std::shared_ptr;
 using std::map;
+using std::string;
 
 
 class ZSegmentationNode{
 public:
-  ZSegmentationNode(int label, shared_ptr<ZSegmentationEncoderFactory> encoder_factory, ZSegmentationNode* parent = nullptr);
+  ZSegmentationNode(int label, ZSegmentationNode* parent = nullptr);
   virtual ~ZSegmentationNode(){}
 
 protected:
@@ -83,14 +85,13 @@ protected:
 protected:
   int m_label;//segmentation label
   string m_id;//universal id
-  shared_ptr<ZSegmentationEncoderFactory> m_encoder_factory;
   ZSegmentationNode* m_parent;
 };
 
 
 class ZSegmentationLeaf: public ZSegmentationNode{
 public:
-  ZSegmentationLeaf(int label, shared_ptr<ZSegmentationEncoderFactory> encoder_factory, ZSegmentationNode* parent = nullptr);
+  ZSegmentationLeaf(int label, const ZIntPoint& offset, ZSegmentationNode* parent = nullptr);
   virtual ~ZSegmentationLeaf();
 
 private:
@@ -141,7 +142,7 @@ private:
 
 class ZSegmentationComposite: public ZSegmentationNode{
 public:
-  ZSegmentationComposite(int label, shared_ptr<ZSegmentationEncoderFactory> encoder_factory, ZSegmentationNode* parent = nullptr);
+  ZSegmentationComposite(int label, ZSegmentationNode* parent = nullptr);
   virtual ~ZSegmentationComposite();
 
 private:

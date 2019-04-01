@@ -68,7 +68,6 @@ private:
   ZStackFrame* m_frame;
   shared_ptr<ZSegmentationTree> m_seg_tree;
   QTreeWidget* m_view;
-  QComboBox* m_encoder_type;
   string m_selected_id;
   QLineEdit* m_merge_from;
   QLineEdit* m_merge_to;
