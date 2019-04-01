@@ -251,7 +251,7 @@
         <item>
          <widget class="QPushButton" name="coarseMeshPushButton">
           <property name="toolTip">
-           <string>3D body visualization (high resolution mesh)</string>
+           <string>3D body visualization (low resolution mesh)</string>
           </property>
           <property name="text">
            <string>Mesh (L)</string>
@@ -489,10 +489,7 @@
   </layout>
   <zorder>dataInfoWidget</zorder>
   <zorder>bookmarkWidget</zorder>
-  <zorder></zorder>
-  <zorder></zorder>
   <zorder>groupBox_3</zorder>
-  <zorder></zorder>
  </widget>
  <customwidgets>
   <customwidget>
