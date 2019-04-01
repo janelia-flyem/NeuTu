@@ -7,7 +7,7 @@ ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   m_fieldList << "   Type   " << "    Body ID    " << "   Comment   "
               << "      Z      " << "      X      " << "      Y      "
               << "     User     " << "  Status  "
-              << "  Time  " << "id";
+              << "  Time  ";
 }
 
 QVariant ZFlyEmBookmarkPresenter::data(
