@@ -691,7 +691,8 @@ bool ZObject3dScan::load(const std::string &filePath)
       int stripeNumber = 0;
       fread(&stripeNumber, sizeof(int), 1, fp);
 
-      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number", return false);
+      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number",
+                    fclose(fp); return false);
       /*
     if (stripeNumber < 0) {
       RECORD_ERROR(true, "Invalid stripe number");
