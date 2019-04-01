@@ -48,8 +48,6 @@ void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
 //    getCompletePresenter()->allowBlinkingSegmentation(true);
     getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
                                     SLOT(allowBlinkingSegmentation(bool)));
-//    getCompleteDocument()->allowDvidLabelSliceBlinking(
-//          getCompletePresenter()->allowingBlinkingSegmentation());
   }
 }
 

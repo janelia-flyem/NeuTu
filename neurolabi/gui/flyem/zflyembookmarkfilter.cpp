@@ -3,8 +3,8 @@
 
 #include <QSortFilterProxyModel>
 
-#include "zflyembookmarkview.h"
-#include "zflyembookmarkwidget.h"
+#include "widgets/zflyembookmarkview.h"
+#include "widgets/zflyembookmarkwidget.h"
 
 ZFlyEmBookmarkFilter::ZFlyEmBookmarkFilter(QWidget *parent) :
     QWidget(parent),

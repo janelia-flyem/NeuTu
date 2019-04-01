@@ -3,9 +3,11 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
+#include <QHeaderView>
+
 #include "logging/zqslog.h"
 
-#include "zflyembookmarklistmodel.h"
+#include "../zflyembookmarklistmodel.h"
 #include "logging/zlog.h"
 
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
@@ -61,6 +63,7 @@ void ZFlyEmBookmarkView::setBookmarkModel(
   resizeColumnsToContents();
   setSortingEnabled(true);
   setModel(model->getProxy());
+//  horizontalHeader()->setSortIndicator(model->columnCount() - 1, Qt::AscendingOrder);
 
   /*
   m_proxy = proxy;
@@ -178,17 +181,20 @@ void ZFlyEmBookmarkView::checkBookmark(ZFlyEmBookmark *bookmark, bool checking)
 
 void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
 {
-  QItemSelectionModel *sel = selectionModel();
-  QItemSelection sourceSelection =
-      getProxy()->mapSelectionToSource(sel->selection());
+//  QItemSelectionModel *sel = selectionModel();
+//  QItemSelection sourceSelection =
+//      getProxy()->mapSelectionToSource(sel->selection());
 
-  QModelIndexList selected = sourceSelection.indexes();
+//  QModelIndexList selected = sourceSelection.indexes();
+
+
+  QModelIndexList selected = getModel()->getSelected(selectionModel());
 
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
     checkBookmark(bookmark, checking);
 
-    getModel()->update(index.row());
+    getModel()->updateRow(index.row());
 
     emit bookmarkChecked(bookmark);
   }
@@ -229,6 +235,6 @@ void ZFlyEmBookmarkView::uncheckCurrentBookmark()
 void ZFlyEmBookmarkView::sort()
 {
   if (getModel() != NULL) {
-    getModel()->sortBookmark();
+    getModel()->sortTable();
   }
 }

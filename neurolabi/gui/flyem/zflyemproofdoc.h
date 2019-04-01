@@ -605,6 +605,7 @@ public slots:
                        int zoom, int centerCutX, int centerCutY,
                        bool usingCenterCut);
 
+  void setTodoItemChecked(int x, int y, int z, bool checking);
 
 protected:
   void autoSave() override;

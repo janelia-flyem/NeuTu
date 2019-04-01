@@ -68,7 +68,7 @@
 #include "flyem/zflyemsynapsedataupdater.h"
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
 #include "dvid/zdvidpatchdatafetcher.h"
 #include "dvid/zdvidpatchdataupdater.h"
@@ -373,6 +373,8 @@ FlyEmTodoDialog* ZFlyEmProofMvc::getTodoDlg()
 void ZFlyEmProofMvc::configureTodoDlg(FlyEmTodoDialog *dlg)
 {
   dlg->setDocument(getDocument());
+  connect(dlg, &FlyEmTodoDialog::checkingTodoItem,
+          getCompleteDocument(), &ZFlyEmProofDoc::setTodoItemChecked);
 }
 
 void ZFlyEmProofMvc::configureSplitUploadDlg(ZFlyEmSplitUploadOptionDialog *dlg)
@@ -5623,8 +5625,11 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
     }
 
     if (writer.getStatusCode() != 200) {
-      emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                           neutu::EMessageType::WARNING));
+      emit messageGenerated(
+            ZWidgetMessage("Failed to record bookmark.",
+                           neutu::EMessageType::WARNING,
+                           ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+                           ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
   }
 }
@@ -5701,14 +5706,14 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {
-  getAssignedBookmarkModel()->sortBookmark();
+  getAssignedBookmarkModel()->sortTable();
 //  m_assignedBookmarkProxy->sort(m_assignedBookmarkProxy->sortColumn(),
 //                                m_assignedBookmarkProxy->sortOrder());
 }
 
 void ZFlyEmProofMvc::sortUserBookmarkTable()
 {
-  getUserBookmarkModel()->sortBookmark();
+  getUserBookmarkModel()->sortTable();
 //  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
 //                            m_userBookmarkProxy->sortOrder());
 }
@@ -5768,7 +5773,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
       getDocument()->getObjectList<ZFlyEmBookmark>();
   appendAssignedBookmarkTable(bookmarkList);
 
-  model->sortBookmark();
+//  model->sortTable();
 }
 
 void ZFlyEmProofMvc::updateBookmarkTable()
@@ -5787,7 +5792,8 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-    model->sortBookmark();
+//    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -5812,7 +5818,8 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
       }
     }
 
-    model->sortBookmark();
+    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -5837,7 +5844,8 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       }
     }
 
-    model->sortBookmark();
+    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 

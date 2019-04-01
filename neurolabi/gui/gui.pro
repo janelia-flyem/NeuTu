@@ -166,7 +166,6 @@ equals(SANITIZE_BUILD, "address") {
   QMAKE_LFLAGS += -fsanitize=address
 }
 
-
 unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
     macx {
