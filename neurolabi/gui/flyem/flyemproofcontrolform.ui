@@ -493,16 +493,12 @@
   <zorder></zorder>
   <zorder>groupBox_3</zorder>
   <zorder></zorder>
-  <zorder>bodyViewPushButton</zorder>
-  <zorder>coarseBodyPushButton</zorder>
-  <zorder>meshPushButton</zorder>
-  <zorder>coarseMeshPushButton</zorder>
  </widget>
  <customwidgets>
   <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
-   <header location="global">flyem/zflyembookmarkwidget.h</header>
+   <header location="global">flyem/widgets/zflyembookmarkwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

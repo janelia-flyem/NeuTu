@@ -299,6 +299,8 @@ Stack* JNeuronTracer::makeMask(const Stack *stack)
     free(im3dB);
   } else {
     printf("ERROR: The number of channels in the image is currently assumed to be 1 or 3. \n");
+    free(imFlat);
+    free(bw);
     return NULL;
     //      return;
   }
