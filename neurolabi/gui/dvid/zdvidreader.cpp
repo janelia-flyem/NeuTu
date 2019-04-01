@@ -5165,6 +5165,59 @@ int ZDvidReader::readSynapseLabelszBody(
   return count;
 }
 
+QList<int> ZDvidReader::readSynapseLabelszBodies(QList<uint64_t> bodyIDs, dvid::ELabelIndexType indexType)
+{
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZDvidBufferReader &bufferReader = m_bufferReader;
+
+    // the payload = bodies to get counts for
+    QJsonArray bodies;
+    foreach (uint64_t bodyID, bodyIDs) {
+        bodies.append(QJsonValue((qint64) bodyID));
+    }
+    QJsonDocument doc(bodies);
+    QByteArray payload = doc.toJson();
+    bufferReader.read(QString::fromStdString(dvidUrl.getSynapseLabelszBodiesUrl(indexType)),
+        payload,
+        "GET",
+        isVerbose());
+    setStatusCode(bufferReader.getStatusCode());
+
+    QList<int> counts;
+
+    const QByteArray &buffer = m_bufferReader.getBuffer();
+    if (!buffer.isEmpty()) {
+
+        QJsonDocument doc = QJsonDocument::fromJson(buffer);
+        QJsonArray array = doc.array();
+
+        // return is a list of {"Label": label, "PreSyn": count}; not necessarily ordered!
+        //  build a map, then build the output list in same order as input
+        QMap<uint64_t, int> countMap;
+        for (int i=0; i<array.size(); ++i) {
+            QJsonObject obj = array.at(i).toObject();
+            QVariant temp = obj["Label"].toVariant();
+            bool ok = false;
+            uint64_t bodyID = temp.toLongLong(&ok);
+            if (!ok) {
+                // error handling; I'm going to be a little sloppy here; there's no reason in
+                //  the world that DVID would return me something that wouldn't parse,
+                //  so just log it and skip it
+                LWARN() << "error parsing bodyID " << temp.toString().toStdString();
+                continue;
+            }
+
+            QString indexString = QString::fromStdString(ZDvidUrl::GetLabelszIndexTypeStr(indexType));
+            countMap[bodyID] = obj[indexString].toInt();
+            }
+        foreach (uint64_t bodyID, bodyIDs) {
+            counts << countMap[bodyID];
+        }
+      }
+    m_bufferReader.clearBuffer();
+    return counts;
+}
+
 ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, dvid::ELabelIndexType index) const {
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index));
