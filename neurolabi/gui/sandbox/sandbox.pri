@@ -17,9 +17,7 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/segment/zsegmentationencoder.h \
     $$PWD/segment/zsegmentationtree.h \
     $$PWD/segment/zsegmentationnode.h \
-    $$PWD/segment/zsegmentationnodewrapper.h \
-    $$PWD/segment/zsegmentationalg.h \
-    $$PWD/segment/zdspmethod.h
+    $$PWD/segment/zsegmentationnodewrapper.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zsurfreconmodule.cpp\
@@ -40,9 +38,7 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/segment/zsegmentationencoder.cpp \
     $$PWD/segment/zsegmentationtree.cpp \
     $$PWD/segment/zsegmentationnode.cpp \
-    $$PWD/segment/zsegmentationnodewrapper.cpp \
-    $$PWD/segment/zsegmentationalg.cpp \
-    $$PWD/segment/zdspmethod.cpp
+    $$PWD/segment/zsegmentationnodewrapper.cpp
 
 contains(CONFIG, surfrecon) {
   HEADERS += \

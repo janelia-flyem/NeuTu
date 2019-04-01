@@ -217,12 +217,6 @@ void ZMultiscaleSegmentationWindow::init()
   m_show_leaves = new QCheckBox("Show Leaves");
   m_enable_super_voxel = new QCheckBox("Super Voxel");
 
-  m_encoder_type = new QComboBox();
-  m_encoder_type->addItem("RLXVector");
-  m_encoder_type->addItem("RLX1SH");
-  m_encoder_type->addItem("RLX2SH");
-  m_encoder_type->addItem("BitMap");
-  m_encoder_type->addItem("Raw");
 
   m_merge_from = new QLineEdit();
   m_merge_to = new QLineEdit();
@@ -231,8 +225,6 @@ void ZMultiscaleSegmentationWindow::init()
   QGridLayout* lay=new QGridLayout(this);
   lay->addWidget(m_view,0,0,8,15);
   lay->addWidget(open_stack,9,0,1,5);
-  lay->addWidget(new QLabel("Encoder:"),9,5,1,3);
-  lay->addWidget(m_encoder_type,9,8,1,7);
 
   lay->addWidget(segment,10,0,1,5);
   lay->addWidget(m_enable_super_voxel,10,5,1,5);
@@ -332,8 +324,8 @@ ZStack* ZMultiscaleSegmentationWindow::makeSelectedStack(){
 
 
 void ZMultiscaleSegmentationWindow::onSegment(){
-  test();
-  /*if(!m_frame || !m_stack){
+  //test();
+  if(!m_frame || !m_stack){
     return;
   }
 
@@ -361,7 +353,7 @@ void ZMultiscaleSegmentationWindow::onSegment(){
       std::cout<<"Mem Usage: "<<m_seg_tree->memUsage()/1024.0/1024.0<<"M"<<std::endl;
     }
     removeSeeds();
-  }*/
+  }
 }
 
 
@@ -491,18 +483,7 @@ void ZMultiscaleSegmentationWindow::onOpenStack(){
     ZSandbox::GetMainWindow()->addStackFrame(m_frame);
     ZSandbox::GetMainWindow()->presentStackFrame(m_frame);
 
-    if(m_encoder_type->currentText() == "Raw"){
-      m_seg_tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRawFactory());
-    } else if(m_encoder_type->currentText() == "BitMap"){
-      m_seg_tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderBitMapFactory());
-    } else if(m_encoder_type->currentText() == "RLX2SH"){
-      m_seg_tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXTwoStageHashingFactory());
-    } else if(m_encoder_type->currentText() == "RLX1SH"){
-      m_seg_tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXOneStageHashingFactory());
-    } else if(m_encoder_type->currentText() == "RLXVector"){
-      m_seg_tree = std::make_shared<ZSegmentationTree>(new ZSegmentationEncoderRLXVectorFactory());
-    }
-
+    m_seg_tree = std::shared_ptr<ZSegmentationTree>(new ZSegmentationTree());
     m_selected_id = m_seg_tree->getRootID();
     m_seg_tree->addObserver(this);
     m_view->clear();
@@ -598,7 +579,7 @@ void ZMultiscaleSegmentationWindow::test(){
 
     clock_t start,end;
 
-    shared_ptr<ZSegmentationEncoder> encoder = shared_ptr<ZSegmentationEncoder>(new ZSegmentationEncoderRLXVector());
+    shared_ptr<ZSegmentationEncoder> encoder = shared_ptr<ZSegmentationEncoder>(new ZSegmentationEncoder(seg->getOffset()));
 
     start = std::clock();
     encoder->consume(*seg);

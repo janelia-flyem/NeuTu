@@ -12,10 +12,9 @@ ZSegmentationTree::~ZSegmentationTree(){
 }
 
 
-ZSegmentationTree::ZSegmentationTree(ZSegmentationEncoderFactory* encoder_factory){
+ZSegmentationTree::ZSegmentationTree(){
 
-  m_encoder_factory = shared_ptr<ZSegmentationEncoderFactory>(encoder_factory);
-  m_root = shared_ptr<ZSegmentationNode>(new ZSegmentationComposite(0,m_encoder_factory,nullptr));
+  m_root = shared_ptr<ZSegmentationNode>(new ZSegmentationComposite(0,nullptr));
 }
 
 

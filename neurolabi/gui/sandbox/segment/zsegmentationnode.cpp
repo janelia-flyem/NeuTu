@@ -5,8 +5,8 @@
 using std::stringstream;
 
 
-ZSegmentationNode::ZSegmentationNode(int label, shared_ptr<ZSegmentationEncoderFactory> encoder_factory, ZSegmentationNode* parent)
-:m_label(label), m_encoder_factory(encoder_factory), m_parent(parent){
+ZSegmentationNode::ZSegmentationNode(int label, ZSegmentationNode* parent)
+:m_label(label), m_parent(parent){
   m_id = getNextID();
 }
 
@@ -42,9 +42,9 @@ ZSegmentationLeaf::~ZSegmentationLeaf(){
 }
 
 
-ZSegmentationLeaf::ZSegmentationLeaf(int label, shared_ptr<ZSegmentationEncoderFactory> factory, ZSegmentationNode* parent)
-:ZSegmentationNode(label,factory,parent){
-  m_encoder = shared_ptr<ZSegmentationEncoder>(m_encoder_factory->create());
+ZSegmentationLeaf::ZSegmentationLeaf(int label,const ZIntPoint& offset, ZSegmentationNode* parent)
+:ZSegmentationNode(label,parent){
+  m_encoder = shared_ptr<ZSegmentationEncoder>(new ZSegmentationEncoder(offset));
 }
 
 
@@ -63,7 +63,7 @@ void ZSegmentationLeaf::labelStack(ZStack &stack, int v)const{
 
 
 void ZSegmentationLeaf::consume(const ZStack & stack){
-  ZSegmentationNode* p = new ZSegmentationComposite(getLabel(),m_encoder_factory);
+  ZSegmentationNode* p = new ZSegmentationComposite(getLabel());
   p->consume(stack);
   getParent()->replace(this,p);
 }
@@ -95,9 +95,8 @@ void ZSegmentationLeaf::merge(ZSegmentationNode *node){
 }
 
 
-ZSegmentationComposite::ZSegmentationComposite(int label, shared_ptr<ZSegmentationEncoderFactory> encoder_factory, ZSegmentationNode* parent)
-:ZSegmentationNode(label, encoder_factory,parent){
-
+ZSegmentationComposite::ZSegmentationComposite(int label, ZSegmentationNode* parent)
+:ZSegmentationNode(label,parent){
 
 }
 
@@ -260,9 +259,7 @@ void ZSegmentationComposite::consume(const ZStack &stack){
           if(child){
             child->add(ofx+w,ofy+h,ofz+d);
           } else {
-            //std::cout<<111111<<std::endl;
-            child = shared_ptr<ZSegmentationNode>(new ZSegmentationLeaf(v,m_encoder_factory,this));
-            child->getEncoder()->initBoundBox(stack.getBoundBox());
+            child = shared_ptr<ZSegmentationNode>(new ZSegmentationLeaf(v,stack.getOffset(),this));
             child->add(ofx+w,ofy+h,ofz+d);
             m_children.push_back(child);
           }

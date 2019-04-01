@@ -15,11 +15,8 @@ class ZSegmentationTreeObserver;
 
 class ZSegmentationTree{
 public:
-  ZSegmentationTree(ZSegmentationEncoderFactory* encoder_factory);
+  ZSegmentationTree();
   ~ZSegmentationTree();
-
-private:
-  ZSegmentationTree(){}
 
 public:
   string getRootID()const{return m_root->getID();}
@@ -66,7 +63,6 @@ private:
 
 private:
   shared_ptr<ZSegmentationNode> m_root;
-  shared_ptr<ZSegmentationEncoderFactory> m_encoder_factory;
   vector<ZSegmentationTreeObserver*> m_observers;
 };
 
