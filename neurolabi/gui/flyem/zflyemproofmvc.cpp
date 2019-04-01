@@ -5773,7 +5773,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
       getDocument()->getObjectList<ZFlyEmBookmark>();
   appendAssignedBookmarkTable(bookmarkList);
 
-  model->sortTable();
+//  model->sortTable();
 }
 
 void ZFlyEmProofMvc::updateBookmarkTable()
@@ -5792,7 +5792,7 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-    model->getProxy()->invalidate();
+//    model->getProxy()->invalidate();
 //    model->sortTable();
   }
 }
@@ -5818,7 +5818,8 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
       }
     }
 
-    model->sortTable();
+    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -5843,7 +5844,8 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       }
     }
 
-    model->sortTable();
+    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
