@@ -5,14 +5,16 @@
 #include <QColor>
 
 #include "tz_math.h"
+#include "geometry/zcuboid.h"
 #include "zjsonarray.h"
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "c_json.h"
-#include "geometry/zcuboid.h"
 #include "zresolution.h"
 #include "zdvidutil.h"
+
+const char* ZDvidAnnotation::KEY_COMMENT = "comment";
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -25,7 +27,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = EKind::KIND_INVALID;
   m_bodyId = 0;
-  m_status = EStatus::STATUS_NORMAL;
+  m_status = EStatus::NORMAL;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -593,6 +595,11 @@ const
   return prop;
 }
 
+bool ZDvidAnnotation::hasProperty(const std::string &key) const
+{
+  return m_propertyJson.hasKey(key.c_str());
+}
+
 void ZDvidAnnotation::addProperty(
     const std::string &key, const std::string &value)
 {
@@ -606,6 +613,20 @@ void ZDvidAnnotation::removeProperty(const std::string &key)
   if (m_propertyJson.hasKey(key.c_str())) {
     m_propertyJson.removeKey(key.c_str());
   }
+}
+
+void ZDvidAnnotation::setComment(const std::string &comment)
+{
+  if (comment.empty()) {
+    removeProperty(KEY_COMMENT);
+  } else {
+    addProperty(KEY_COMMENT, comment);
+  }
+}
+
+std::string ZDvidAnnotation::getComment() const
+{
+  return getProperty<std::string>(KEY_COMMENT);
 }
 
 std::string ZDvidAnnotation::GetKindName(EKind kind)

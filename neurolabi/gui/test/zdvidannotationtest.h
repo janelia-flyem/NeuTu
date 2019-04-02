@@ -10,6 +10,25 @@
 
 #ifdef _USE_GTEST_
 
+TEST(ZDvidAnnotation, Property)
+{
+  ZDvidAnnotation annot;
+  annot.setPosition(1, 2, 3);
+  ASSERT_EQ(ZIntPoint(1, 2, 3), annot.getPosition());
+  annot.setRadius(1.0);
+  ASSERT_EQ(1.0, annot.getRadius());
+
+  annot.setKind(ZDvidAnnotation::EKind::KIND_PRE_SYN);
+  ASSERT_EQ(ZDvidAnnotation::EKind::KIND_PRE_SYN, annot.getKind());
+
+  annot.setComment("test");
+  ASSERT_EQ("test", annot.getComment());
+
+  annot.setComment("");
+  ASSERT_TRUE(annot.getComment().empty());
+  ASSERT_FALSE(annot.hasProperty(ZDvidAnnotation::KEY_COMMENT));
+}
+
 TEST(ZDvidAnnotation, Json)
 {
   ASSERT_EQ("PreSynTo", ZDvidAnnotation::GetMatchingRelation("PostSynTo"));
@@ -67,7 +86,7 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   ASSERT_EQ(neutu::EToDoAction::TO_MERGE, item.getAction());
 
 
-  std::string mergeTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
+  std::string mergeTag = std::string(ZFlyEmToDoItem::KEY_ACTION) + ":"
       + ZFlyEmToDoItem::ACTION_MERGE_TAG;
   ASSERT_FALSE(item.hasTag(mergeTag));
 
@@ -86,7 +105,7 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 //  item.toJsonObject().print();
   ASSERT_EQ(neutu::EToDoAction::TO_DO, item.getAction());
 
-  std::string splitTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
+  std::string splitTag = std::string(ZFlyEmToDoItem::KEY_ACTION) + ":"
       + ZFlyEmToDoItem::ACTION_SPLIT_TAG;
   ASSERT_FALSE(item.hasTag(splitTag));
 
