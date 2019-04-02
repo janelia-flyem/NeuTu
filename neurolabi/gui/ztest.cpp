@@ -28030,6 +28030,18 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20190325";
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string filePath = dataDir + "/20190325_SLP.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "SLP");
+
+  filePath = dataDir + "/20190325_dACA.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "dACA");
+#endif
+
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
