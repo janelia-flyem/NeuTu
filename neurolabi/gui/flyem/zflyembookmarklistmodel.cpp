@@ -93,6 +93,11 @@ void ZFlyEmBookmarkListModel::clear()
   m_bookmarkArray.clear();
 }
 
+void ZFlyEmBookmarkListModel::appendSliently(const ZFlyEmBookmark *bookmark)
+{
+  m_bookmarkArray.append(const_cast<ZFlyEmBookmark*>(bookmark));
+}
+
 void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark *bookmark)
 {
   m_bookmarkArray.append(const_cast<ZFlyEmBookmark*>(bookmark));

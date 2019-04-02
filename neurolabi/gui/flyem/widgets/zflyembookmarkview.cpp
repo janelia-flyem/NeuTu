@@ -63,7 +63,7 @@ void ZFlyEmBookmarkView::setBookmarkModel(
   resizeColumnsToContents();
   setSortingEnabled(true);
   setModel(model->getProxy());
-//  horizontalHeader()->setSortIndicator(model->columnCount() - 1, Qt::AscendingOrder);
+  horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
 
   /*
   m_proxy = proxy;
