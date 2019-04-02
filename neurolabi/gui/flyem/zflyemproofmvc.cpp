@@ -870,8 +870,8 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           this, SLOT(updateCoarseMeshWindowDeep()));
   connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
           this, &ZFlyEmProofMvc::updateMeshWindowDeep);
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateBookmarkTable()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateBookmarkTable()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBodyWindowDeep()));
