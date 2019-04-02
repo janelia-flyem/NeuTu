@@ -22,7 +22,6 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
 
@@ -53,7 +52,7 @@ private:
   static std::string GetActionTag(neutu::EToDoAction action);
 
 public:
-  static const char *ACTION_KEY;
+  static const char *KEY_ACTION;
   static const char *ACTION_GENERAL;
   static const char *ACTION_SPLIT;
   static const char *ACTION_SUPERVOXEL_SPLIT;

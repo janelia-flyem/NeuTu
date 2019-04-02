@@ -51,6 +51,7 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
   int index = neutu::EnumValue(item.getAction());
   Q_ASSERT(index < ui->actionComboBox->maxCount());
   ui->actionComboBox->setCurrentIndex(index);
+  ui->commentLineEdit->setText(item.getComment().c_str());
 }
 
 int ZFlyEmTodoAnnotationDialog::getPriority() const
@@ -66,11 +67,17 @@ int ZFlyEmTodoAnnotationDialog::getPriority() const
   return 0;
 }
 
+QString ZFlyEmTodoAnnotationDialog::getComment() const
+{
+  return ui->commentLineEdit->text();
+}
+
 void ZFlyEmTodoAnnotationDialog::annotate(ZFlyEmToDoItem *item)
 {
   if (item != NULL) {
     item->setAction(ui->actionComboBox->currentText().toStdString());
     item->setChecked(ui->checkedCheckBox->isChecked());
     item->setPriority(getPriority());
+    item->setComment(getComment().toStdString());
   }
 }

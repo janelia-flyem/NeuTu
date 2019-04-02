@@ -5299,7 +5299,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
   if (!synapseArray.empty()) {
     if (synapseArray.size() > 1) {
       LWARN() << "Duplicated synapses at" << "(" << x << "" << y << "" << z << ")";
-      synapseArray[0].setStatus(ZDvidAnnotation::EStatus::STATUS_DUPLICATED);
+      synapseArray[0].setStatus(ZDvidAnnotation::EStatus::DUPLICATED);
     }
     return synapseArray[0];
   }

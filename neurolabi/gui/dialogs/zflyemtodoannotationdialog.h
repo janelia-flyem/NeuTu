@@ -23,6 +23,7 @@ public:
 private:
   void initActionBox();
   int getPriority() const;
+  QString getComment() const;
 
 private:
   Ui::ZFlyEmTodoAnnotationDialog *ui;

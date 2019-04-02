@@ -9,7 +9,7 @@
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
 
-const char* ZFlyEmToDoItem::ACTION_KEY = "action";
+const char* ZFlyEmToDoItem::KEY_ACTION = "action";
 const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
 const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
 const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT = "to split supervoxel";
@@ -139,23 +139,23 @@ void ZFlyEmToDoItem::setAction(neutu::EToDoAction action)
 {
   switch (action) {
   case neutu::EToDoAction::TO_DO:
-    removeProperty(ACTION_KEY);
+    removeProperty(KEY_ACTION);
 //    removeActionTag();
     break;
   case neutu::EToDoAction::TO_MERGE:
-    addProperty(ACTION_KEY, ACTION_MERGE);
+    addProperty(KEY_ACTION, ACTION_MERGE);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
     break;
   case neutu::EToDoAction::TO_SPLIT:
-    addProperty(ACTION_KEY, ACTION_SPLIT);
+    addProperty(KEY_ACTION, ACTION_SPLIT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;
   case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT:
-    addProperty(ACTION_KEY, ACTION_SUPERVOXEL_SPLIT);
+    addProperty(KEY_ACTION, ACTION_SUPERVOXEL_SPLIT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
     break;
   case neutu::EToDoAction::TO_DO_IRRELEVANT:
-    addProperty(ACTION_KEY, ACTION_IRRELEVANT);
+    addProperty(KEY_ACTION, ACTION_IRRELEVANT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
     break;
   }
@@ -168,7 +168,7 @@ std::string ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction action)
   std::string tag;
 
   auto make_tag = [](const char *actionTag) {
-    return std::string(ACTION_KEY) + ":" + actionTag; };
+    return std::string(KEY_ACTION) + ":" + actionTag; };
 
   switch (action) {
   case neutu::EToDoAction::TO_DO:
@@ -209,7 +209,7 @@ void ZFlyEmToDoItem::removeActionTag()
 {
   for (std::set<std::string>::iterator iter = m_tagSet.begin();
        iter != m_tagSet.end(); ) {
-    if (ZString(*iter).startsWith(std::string(ACTION_KEY) + ":")) {
+    if (ZString(*iter).startsWith(std::string(KEY_ACTION) + ":")) {
       iter = m_tagSet.erase(iter);
     } else {
       ++iter;
