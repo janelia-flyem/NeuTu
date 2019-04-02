@@ -35,6 +35,7 @@ public:
 
   void clear();
   void append(const ZFlyEmBookmark *bookmark);
+  void appendSliently(const ZFlyEmBookmark *bookmark);
   void append(const QList<ZFlyEmBookmark*> &bookmarkList);
 //  void update(int row);
 

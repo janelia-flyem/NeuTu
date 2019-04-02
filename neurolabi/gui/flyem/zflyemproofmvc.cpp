@@ -5810,15 +5810,19 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
         if (getCompletePresenter()->isSplitOn()) {
           if ((bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::FALSE_MERGE) &&
               (bookmark->getBodyId() == m_splitProject.getBodyId())) {
-            model->append(bookmark);
+            model->appendSliently(bookmark);
           }
         } else {
-          model->append(bookmark);
+          model->appendSliently(bookmark);
         }
       }
     }
 
-    model->getProxy()->invalidate();
+    model->insertRows(0, model->getBookmarkArray().size());
+#ifdef _DEBUG_
+    std::cout << "table row count:" << model->rowCount() << std::endl;
+#endif
+//    model->getProxy()->invalidate();
 //    model->sortTable();
   }
 }
@@ -5844,7 +5848,8 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       }
     }
 
-    model->getProxy()->invalidate();
+//    model->sortTable();
+//    model->getProxy()->invalidate();
 //    model->sortTable();
   }
 }
