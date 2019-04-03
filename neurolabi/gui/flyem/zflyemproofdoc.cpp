@@ -1558,6 +1558,7 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
           bufferObjectModified(todoList);
           notifyTodoEdited(pos);
         }
+        notifyTodoItemModified(item.getPosition(), true);
         processObjectModified();
       }
     } 

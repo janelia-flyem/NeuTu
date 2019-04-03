@@ -6,6 +6,7 @@
 #include "z3dgeometryfilter.h"
 #include "z3dgraph.h"
 #include "widgets/zwidgetsgroup.h"
+#include "z3dfontrenderer.h"
 
 class ZFlyEmToDoList;
 class Z3DLineRenderer;
@@ -74,11 +75,14 @@ private:
 
   Z3DLineRenderer m_lineRenderer;
   Z3DSphereRenderer m_sphereRenderer;
+  Z3DFontRenderer m_fontRenderer;
 
   std::vector<glm::vec3> m_lines;
   std::vector<glm::vec4> m_lineColors;
   std::vector<glm::vec4> m_pointAndRadius;
   std::vector<glm::vec4> m_pointColors;
+  std::vector<glm::vec3> m_textPosition;
+  QStringList m_textList;
 
   std::vector<glm::vec4> m_pointPickingColors;
 
