@@ -17,6 +17,7 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
   , m_selectItemEvent("Select Todo Item", false)
   , m_lineRenderer(m_rendererBase)
   , m_sphereRenderer(m_rendererBase)
+  , m_fontRenderer(m_rendererBase)
 {
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                              Qt::NoModifier, QEvent::MouseButtonPress);
@@ -163,7 +164,11 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
 
   node.setCenter(center);
   node.setX(center.getX() + d);
+  if (QString(item->getComment().c_str()).startsWith('#')) {
+    node.setText(item->getComment().c_str());
+  }
   m_graph.addNode(node);
+  node.setText(""); //clear text
 
   Z3DGraphEdge edge;
   edge.useNodeColor(true);
@@ -305,6 +310,8 @@ void ZFlyEmTodoListFilter::prepareData()
 
   m_pointAndRadius.clear();
   m_lines.clear();
+  m_textPosition.clear();
+  m_textList.clear();
 
   std::vector<float> edgeWidth;
 
@@ -320,12 +327,16 @@ void ZFlyEmTodoListFilter::prepareData()
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
     Z3DGraphNode node = m_graph.getNode(i);
 
+    ZPoint nodePos = node.center();
     if (node.radius() > 0.0) {
-      ZPoint nodePos = node.center();
-
       m_pointAndRadius.push_back(
             glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
                       m_graph.getNode(i).radius()));
+    }
+
+    if (!node.getText().isEmpty()) {
+      m_textPosition.push_back(glm::vec3(nodePos.x(), nodePos.y(), nodePos.z()));
+      m_textList.append(node.getText());
     }
   }
 
@@ -336,6 +347,7 @@ void ZFlyEmTodoListFilter::prepareData()
   m_lineRenderer.setLineWidth(3.0);
   m_lineRenderer.setLineWidth(edgeWidth);
   m_sphereRenderer.setData(&m_pointAndRadius);
+  m_fontRenderer.setData(&m_textPosition, m_textList);
 
   prepareColor();
 
@@ -409,12 +421,12 @@ bool ZFlyEmTodoListFilter::isReady(Z3DEye eye) const
 
 void ZFlyEmTodoListFilter::renderOpaque(Z3DEye eye)
 {
-  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
+  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer, m_fontRenderer);
 }
 
 void ZFlyEmTodoListFilter::renderTransparent(Z3DEye eye)
 {
-  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
+  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer, m_fontRenderer);
 }
 
 void ZFlyEmTodoListFilter::updateGraphVisibleState()
