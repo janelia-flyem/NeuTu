@@ -50,7 +50,7 @@ public:
 
   double memUsage()const;
 
-  ZSegmentationEncoder* getEncoder(const string& id);
+  shared_ptr<ZSegmentationEncoder> getEncoder(const string& id);
 
   bool isLeaf(const string& id)const;
 

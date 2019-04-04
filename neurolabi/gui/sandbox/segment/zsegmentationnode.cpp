@@ -85,7 +85,7 @@ void ZSegmentationLeaf::merge(ZSegmentationNode *node){
 
   vector<ZSegmentationNode*> leaf_nodes = node->getLeaves();
   for(auto node: leaf_nodes){
-    m_encoder->unify(node->getEncoder());
+    m_encoder->unify(node->getEncoder().get());
   }
   ZSegmentationNode* parent = node->getParent();
   node->setParent(nullptr);
@@ -113,6 +113,24 @@ vector<ZSegmentationNode*> ZSegmentationComposite::getLeaves(){
     rv.insert(rv.end(),t.begin(),t.end());
   }
   return rv;
+}
+
+
+shared_ptr<ZSegmentationEncoder> ZSegmentationComposite::getEncoder(){
+  //create dymatically
+  if(m_children.size() == 0){
+    return nullptr;
+  }
+  shared_ptr<ZSegmentationEncoder> rv = (*m_children.begin())->getEncoder();
+  if(rv){
+    rv = shared_ptr<ZSegmentationEncoder>(rv->clone());//make sure not to change the original one
+    auto it = m_children.begin();
+    for(++it; it != m_children.end(); ++it){
+      rv->unify((*it)->getEncoder().get());
+    }
+    return rv;
+  }
+  return nullptr;
 }
 
 
@@ -236,9 +254,8 @@ vector<string> ZSegmentationComposite::getAllIDs() const{
 }
 
 
-void ZSegmentationComposite::consume(const ZStack &stack){
-  clear();
-  const uint8_t* p = stack.array8();
+template<typename T>
+void ZSegmentationComposite::_consume(const T* array, const ZStack& stack){
   int width = stack.width();
   int height = stack.height();
   int depth = stack.depth();
@@ -252,20 +269,51 @@ void ZSegmentationComposite::consume(const ZStack &stack){
   for(int d = 0; d < depth; ++d){
     for(int h = 0; h < height; ++h){
       index = d * slice + h * width;
+      int prev = 0;
+      int x1 = 0;
+      int x2 = 0;
       for(int w = 0; w < width; ++w){
-        v = p[index++];
-        if(v){
-          shared_ptr<ZSegmentationNode> child = getChildByLabel(v);
-          if(child){
-            child->add(ofx+w,ofy+h,ofz+d);
-          } else {
-            child = shared_ptr<ZSegmentationNode>(new ZSegmentationLeaf(v,stack.getOffset(),this));
-            child->add(ofx+w,ofy+h,ofz+d);
-            m_children.push_back(child);
+        v = array[index++];
+        if(v == prev){
+          ++x2;
+        } else {
+          if(prev){
+            shared_ptr<ZSegmentationNode> child = getChildByLabel(prev);
+            if(child){
+              child->getEncoder()->addSegment(ofz+d,ofy+h,ofx+x1,ofx+x2);
+            } else {
+              child = shared_ptr<ZSegmentationNode>(new ZSegmentationLeaf(prev,stack.getOffset(),this));
+              child->getEncoder()->addSegment(ofz+d,ofy+h,ofx+x1,ofx+x2);
+              m_children.push_back(child);
+            }
           }
+          x1 = x2 = w;
+          prev = v;
+        }
+      }
+      if(prev){
+        shared_ptr<ZSegmentationNode> child = getChildByLabel(prev);
+        if(child){
+          child->getEncoder()->addSegment(ofz+d,ofy+h,ofx+x1,ofx+x2);
+        } else {
+          child = shared_ptr<ZSegmentationNode>(new ZSegmentationLeaf(prev,stack.getOffset(),this));
+          child->getEncoder()->addSegment(ofz+d,ofy+h,ofx+x1,ofx+x2);
+          m_children.push_back(child);
         }
       }
     }
+  }
+}
+
+
+void ZSegmentationComposite::consume(const ZStack &stack){
+  clear();
+  if(stack.kind() == GREY){
+    _consume<uint8>(stack.array8(),stack);
+  } else if(stack.kind() == GREY16){
+    _consume<uint16>(stack.array16(),stack);
+  } else if(stack.kind() == FLOAT32){
+    _consume<float>(stack.array32(),stack);
   }
 }
 

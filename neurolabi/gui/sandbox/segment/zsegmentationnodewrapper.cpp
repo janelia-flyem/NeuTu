@@ -10,7 +10,7 @@ bool ZSegmentationNodeWrapper::hit(double x, double y, double z){
 }
 
 
-void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplayStyle /*option*/, neutube::EAxis sliceAxis) const{
+void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const{
 
   if (sliceAxis != m_sliceAxis || getColor().alpha() == 0) {
     return;
@@ -33,44 +33,86 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
   }
   painter.setPen(pen);
 
-  std::vector<QLine> lineArray;
-
   int z = slice + int(painter.getZOffset());
 
-  ZIntCuboid box = m_tree->getBoundBox(m_id);
+  shared_ptr<ZSegmentationEncoder> encoder = m_tree->getEncoder(m_id);
+
+  if(!encoder){
+    return;
+  }
+
+  ZIntCuboid box = encoder->getBoundBox();
 
   if(box.getWidth() <= 0 || box.getHeight() <= 0 || box.getDepth() <= 0||
      z < box.getFirstCorner().getZ() || z > box.getLastCorner().getZ()){
     return;
   }
 
-  int min_y = box.getFirstCorner().getY();
-  int max_y = box.getLastCorner().getY();
-  int min_x = box.getFirstCorner().getX();
-  int max_x = box.getLastCorner().getX();
+  option = displayStyle();
+  if(option == ZStackObject::BOUNDARY){
+    ZIntCuboid box = encoder->getBoundBox();
+    box.setFirstZ(z);
+    box.setLastZ(z);
+    shared_ptr<ZStack> stack = shared_ptr<ZStack>(new ZStack(GREY,box,1));
+    uint8_t* p = stack->array8();
 
-  for(int y = min_y; y <= max_y; y += 6){
-    bool first = true;
-    int start_x, end_x;
-    for(int x = min_x; x <= max_x + 1; ++x){
-      if(m_tree->contains(m_id,x,y,z)){
-        if(first){
-          first = false;
-          start_x = x;
-          end_x = x + 1;
-        } else {
-          ++end_x;
-        }
-      } else {
-        if(!first){
-          first = true;
-          --end_x;
-          if(end_x - start_x > 1)
-            lineArray.push_back(QLine(start_x,y,end_x,y));
+    int y0 = box.getFirstCorner().getY();
+    int y1 = box.getLastCorner().getY();
+    int x0 = box.getFirstCorner().getX();
+
+    int width = box.getWidth();
+    int height = box.getHeight();
+
+    for(int y = y0; y <= y1; ++y){
+      const vector<int>& segs = encoder->getSegment(z,y);
+      for(auto it = segs.begin(); it != segs.end();){
+        int x1 = *it++;
+        int x2 = *it++;
+        int offset = (y - y0) * width + x1 - x0;
+        for(int x = x1; x <= x2; ++x){
+          p[offset++] = 1;
         }
       }
     }
+
+    std::vector<QPoint> points;
+    int nb[4] = {1,-1,width,-width};
+    int max_off= stack->getVoxelNumber() - 1;
+    for(int y = 0; y < height; ++y){
+      int offset = y * width;
+      for(int x = 0; x < width; ++x, ++offset){
+        uint8 v = p[offset];
+        if(v){
+          if(x == 0 || y==0){
+            points.push_back(QPoint(x+x0,y+y0));
+          } else {
+            for(int i = 0; i < 4; ++i){
+              int off_nb = offset + nb[i];
+              if(off_nb >= 0 && off_nb <= max_off && p[off_nb] != v){
+                points.push_back(QPoint(x+x0,y+y0));
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    //painter.drawPolyline(&points[0], points.size());
+    painter.drawPoints(points);
+  } else{
+    std::vector<QLine> lineArray;
+    int y0 = box.getFirstCorner().getY();
+    int y1 = box.getLastCorner().getY();
+    int stride = 7;
+    for(int y = y0; y <= y1; y += stride){
+      const vector<int>& segments = encoder->getSegment(z,y);
+      for(auto it = segments.begin(); it != segments.end(); ){
+        int x1 = *it++;
+        int x2 = *it++;
+        lineArray.push_back(QLine(x1,y,x2,y));
+      }
+    }
+    painter.drawLines(lineArray);
   }
-  painter.drawLines(lineArray);
 }
 

@@ -121,7 +121,7 @@ void ZSegmentationTree::clear(){
 }
 
 
-ZSegmentationEncoder* ZSegmentationTree::getEncoder(const std::string &id){
+shared_ptr<ZSegmentationEncoder> ZSegmentationTree::getEncoder(const std::string &id){
   ZSegmentationNode* node = m_root->find(id);
   if(node){
     return node->getEncoder();

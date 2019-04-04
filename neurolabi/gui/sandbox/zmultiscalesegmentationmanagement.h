@@ -10,6 +10,7 @@
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "segment/zsegmentationtree.h"
+#include "segment/zmstcontainer.h"
 
 
 using std::string;
@@ -47,7 +48,6 @@ private slots:
   void onMerge();
   void onExport();
   void onShowLeaves(int state);
-  void onCreateSuperVoxels();
   void onSuperVoxel();
 
 private:
@@ -56,14 +56,13 @@ private:
   void updateMask(const std::string& active_id);
   void updateTreeView(const std::string& active_id);
   void test();
-
-  ZStack* seedsFromLocalMaximum(const ZStack& stack)const;
   ZStack* makeSelectedStack();
 
 private:
   void init();
 
 private:
+  //shared_ptr<ZSuperVoxelManager> m_super_voxels;
   ZStack* m_stack;
   ZStackFrame* m_frame;
   shared_ptr<ZSegmentationTree> m_seg_tree;
@@ -72,6 +71,7 @@ private:
   QLineEdit* m_merge_from;
   QLineEdit* m_merge_to;
   QCheckBox* m_show_leaves;
+  QCheckBox* m_show_contour;
   QCheckBox* m_enable_super_voxel;
 
   static ZMultiscaleSegmentationWindow* s_window;
