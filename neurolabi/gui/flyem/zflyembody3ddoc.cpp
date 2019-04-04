@@ -698,8 +698,53 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
 //  emit todoVisibleChanged();
 }
 
+void ZFlyEmBody3dDoc::annotateTodoItem(
+    std::function<void(ZFlyEmToDoItem *)> f,
+    std::function<bool(const ZFlyEmToDoItem *)> pred)
+{
+  std::vector<ZIntPoint> ptArray;
+
+  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::EType::FLYEM_TODO_ITEM);
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
+    if (item != NULL) {
+      if (pred(item)) {
+        f(item);
+        m_mainDvidWriter.writeToDoItem(*item);
+        ptArray.push_back(item->getPosition());
+        bufferObjectModified(item);
+      }
+    }
+  }
+
+  getDataDocument()->downloadTodo(ptArray);
+
+  processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
+{
+  annotateTodoItem(
+        [action, checked](ZFlyEmToDoItem* item) {
+            item->setAction(action);
+            item->setChecked(checked); },
+        [action, checked](const ZFlyEmToDoItem* item) -> bool{
+            return (action != item->getAction()) ||
+                (checked != item->isChecked());}
+  );
+}
+
 void ZFlyEmBody3dDoc::setTodoItemAction(neutu::EToDoAction action)
 {
+  annotateTodoItem(
+        [action](ZFlyEmToDoItem* item) { item->setAction(action); },
+        [action](const ZFlyEmToDoItem* item) -> bool{
+            return action != item->getAction();}
+  );
+
+#if 0
   std::vector<ZIntPoint> ptArray;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
@@ -720,6 +765,7 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutu::EToDoAction action)
   getDataDocument()->downloadTodo(ptArray);
 
   processObjectModified();
+#endif
 }
 
 void ZFlyEmBody3dDoc::annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj)

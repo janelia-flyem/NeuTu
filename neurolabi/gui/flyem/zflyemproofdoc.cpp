@@ -1486,7 +1486,15 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
 
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 { //Duplicated code with setTodoItemAction
-  ZOUT(LTRACE(), 5) << "Check to do items";
+  KINFO << "Check to do items";
+
+  annotateTodoItem(
+        [checking](ZFlyEmToDoItem &item) {
+              item.setChecked(checking);},
+        [checking](const ZFlyEmToDoItem &item) -> bool {
+              return checking != item.isChecked(); }
+  );
+#if 0
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -1512,11 +1520,63 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   }
 
   processObjectModified();
+#endif
+}
+
+void ZFlyEmProofDoc::annotateTodoItem(
+    std::function<void (ZFlyEmToDoItem &)> f,
+    std::function<bool(const ZFlyEmToDoItem&)> pred)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+
+  std::vector<ZIntPoint> ptArray;
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
+         iter != selectedSet.end(); ++iter) {
+      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        if (pred(item)) {
+          f(item);
+          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          ptArray.push_back(item.getPosition());
+        }
+      }
+    }
+    if (!selectedSet.empty()) {
+      bufferObjectModified(td);
+      notifyTodoItemModified(ptArray, true);
+    }
+  }
+
+  processObjectModified();
+}
+
+void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
+{
+  KINFO << "Set action of to do items";
+
+  annotateTodoItem(
+        [action, checked](ZFlyEmToDoItem &item) {
+              item.setAction(action);
+              item.setChecked(checked);},
+        [action, checked](const ZFlyEmToDoItem &item) -> bool {
+              return action != item.getAction() || checked != item.isChecked(); }
+  );
 }
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 { //Duplicated code with checkTodoItem
-  ZOUT(LTRACE(), 5) << "Set action of to do items";
+  KINFO << "Set action of to do items";
+
+  annotateTodoItem(
+        [action](ZFlyEmToDoItem &item) { item.setAction(action); },
+        [action](const ZFlyEmToDoItem &item) -> bool {
+              return action != item.getAction(); }
+  );
+#if 0
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -1542,6 +1602,7 @@ void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
   }
 
   processObjectModified();
+#endif
 }
 
 void ZFlyEmProofDoc::annotateSelectedTodoItem(
@@ -4725,6 +4786,17 @@ void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
     const ZIntPoint &pt, uint64_t bodyId)
 {
   executeAddToSupervoxelSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+void ZFlyEmProofDoc::executeAddTraceToSomaItemCommand(
+    int x, int y, int z, uint64_t bodyId)
+{
+  executeAddTodoItemCommand(x, y, z, neutu::EToDoAction::TO_TRACE_TO_SOMA, bodyId);
+}
+
+void ZFlyEmProofDoc::executeAddNoSomaItemCommand(int x, int y, int z, uint64_t bodyId)
+{
+  executeAddTodoCommand(x, y, z, true, neutu::EToDoAction::NO_SOMA, bodyId);
 }
 
 
