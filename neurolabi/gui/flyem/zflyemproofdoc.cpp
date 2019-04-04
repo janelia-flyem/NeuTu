@@ -843,15 +843,18 @@ void ZFlyEmProofDoc::initData(
 
 void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
-  if (m_dvidReader.isReady() && !getDvidTarget().readOnly()) {
-    initData("annotation", target.getBookmarkName());
-    initData("annotation", target.getTodoListName());
-    initData("keyvalue", target.getSkeletonName());
-    initData("keyvalue", target.getThumbnailName());
-    initData("keyvalue", target.getBookmarkKeyName());
-    initData("keyvalue", target.getBodyAnnotationName());
-    initData("keyvalue", target.getSplitLabelName());
-    initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
+  if (m_dvidReader.isReady() && !getDvidTarget().readOnly() &&
+      getDvidTarget().hasSegmentation()) {
+    if (m_dvidReader.hasData(getDvidTarget().getSegmentationName())) {
+      initData("annotation", target.getBookmarkName());
+      initData("annotation", target.getTodoListName());
+      initData("keyvalue", target.getSkeletonName());
+      initData("keyvalue", target.getThumbnailName());
+      initData("keyvalue", target.getBookmarkKeyName());
+      initData("keyvalue", target.getBodyAnnotationName());
+      initData("keyvalue", target.getSplitLabelName());
+      initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
+    }
   }
 }
 
