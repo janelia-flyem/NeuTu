@@ -1,4 +1,4 @@
-/* tz_stack_watershed.c
+/* tz_.c
  *
  * 31-May-2008 Initial write: Ting Zhao
  */

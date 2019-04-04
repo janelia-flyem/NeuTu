@@ -1,4 +1,5 @@
 #include<memory>
+#include<unordered_map>
 #include "zwatershedmst.h"
 
 using std::shared_ptr;
@@ -7,7 +8,7 @@ using std::shared_ptr;
 void ZWatershedMST::run(vector<int>& rv, const vector<int>& vertices,const vector<ZEdge>& edges,
 const map<int,int>& seeds){
   std::priority_queue<ZEdge> que(edges.begin(),edges.end());
-  std::map<int,shared_ptr<ZActiveSet>> activeset;
+  std::unordered_map<int,shared_ptr<ZActiveSet>> activeset;
 
   for(uint i = 0; i < vertices.size(); ++i){
     shared_ptr<ZActiveSet> set = std::make_shared<ZActiveSet>();

@@ -63,7 +63,7 @@ public:
 
   virtual void clear() = 0;
 
-  virtual ZSegmentationEncoder* getEncoder() = 0;
+  virtual shared_ptr<ZSegmentationEncoder> getEncoder() = 0;
 
   virtual bool contains(int x, int y, int z) const =0;
 
@@ -115,7 +115,7 @@ public:
 
   virtual void clear(){}
 
-  virtual ZSegmentationEncoder* getEncoder(){return m_encoder.get();}
+  shared_ptr<ZSegmentationEncoder> getEncoder(){return m_encoder;}
 
   virtual bool contains(int x, int y, int z) const;
 
@@ -179,13 +179,17 @@ public:
 
   virtual vector<string> getAllIDs()const;
 
+  virtual shared_ptr<ZSegmentationEncoder> getEncoder();
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
   //virtual int getVoxelNumber()const;
 
 public://should never be called
   virtual void add(int, int, int){}
-  virtual ZSegmentationEncoder* getEncoder(){return nullptr;}
+
+private:
+  template<typename T>
+  void _consume(const T* array, const ZStack& stack);
 
 private:
   vector<shared_ptr<ZSegmentationNode>> m_children;
