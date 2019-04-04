@@ -2191,6 +2191,9 @@ static void AddTodoMarker(
       case neutu::EToDoAction::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
+      case neutu::EToDoAction::TO_TRACE_TO_SOMA:
+        LWARN() << "TO_TRACE_TO_SOMA not available";
+        break;
       case neutu::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
         break;

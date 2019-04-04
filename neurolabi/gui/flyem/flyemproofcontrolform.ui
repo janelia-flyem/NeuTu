@@ -220,7 +220,7 @@
            <string>3D body visualization (high resolution ball cloud)</string>
           </property>
           <property name="text">
-           <string>Ball Cloud (H)</string>
+           <string>(H) Ball Cloud</string>
           </property>
          </widget>
         </item>
@@ -230,7 +230,7 @@
            <string>3D body visualization (low resolution ball cloud)</string>
           </property>
           <property name="text">
-           <string>Ball Cloud (L)</string>
+           <string>(L) Ball Cloud</string>
           </property>
          </widget>
         </item>
@@ -244,7 +244,7 @@
            <string>3D body visualization (high resolution mesh)</string>
           </property>
           <property name="text">
-           <string>Mesh (H)</string>
+           <string>(H) Mesh</string>
           </property>
          </widget>
         </item>
@@ -254,7 +254,7 @@
            <string>3D body visualization (low resolution mesh)</string>
           </property>
           <property name="text">
-           <string>Mesh (L)</string>
+           <string>(L) Mesh</string>
           </property>
          </widget>
         </item>

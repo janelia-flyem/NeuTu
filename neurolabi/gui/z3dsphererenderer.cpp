@@ -197,6 +197,12 @@ void Z3DSphereRenderer::renderPickingUsingOpengl()
 
 void Z3DSphereRenderer::render(Z3DEye eye)
 {
+  /*
+  if (renderingPickingOnly()) {
+    return;
+  }
+  */
+
   if (m_pointAndRadius.empty())
     return;
   appendDefaultColors();

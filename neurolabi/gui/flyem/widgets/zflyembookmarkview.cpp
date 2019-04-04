@@ -6,9 +6,9 @@
 #include <QHeaderView>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
 
 #include "../zflyembookmarklistmodel.h"
-#include "logging/zlog.h"
 
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
   QTableView(parent)
