@@ -1,6 +1,8 @@
 #ifndef ZFLYEMBODY3DDOC_H
 #define ZFLYEMBODY3DDOC_H
 
+#include <functional>
+
 #include <QSet>
 #include <QTimer>
 #include <QQueue>
@@ -351,6 +353,7 @@ public slots:
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
   void setTodoItemAction(neutu::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action, bool checked);
   void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
@@ -440,6 +443,9 @@ private:
   QColor getBodyColor(uint64_t bodyId);
 
   void updateDvidInfo();
+
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem*)> f,
+                        std::function<bool(const ZFlyEmToDoItem*)> pred);
 
   void addBodyFunc(ZFlyEmBodyConfig &config);
   void addBodyMeshFunc(ZFlyEmBodyConfig &config);
