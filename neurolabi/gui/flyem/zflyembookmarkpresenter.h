@@ -11,7 +11,7 @@ public:
   explicit ZFlyEmBookmarkPresenter(QObject *parent = 0);
 
   virtual QVariant data(
-      const ZFlyEmBookmark &bookmark, int index, int role) const;
+      const ZFlyEmBookmark &bookmark, int index, int role, int rowId) const;
 
 signals:
 

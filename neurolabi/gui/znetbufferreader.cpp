@@ -164,7 +164,7 @@ bool ZNetBufferReader::isReadable(const QString &url)
 
   startReading();
 
-  KINFO << "ZNetBufferReader::isReadable:" << url;
+//  KINFO << "ZNetBufferReader::isReadable:" << url;
 
 //  KINFO << "Check readable: " + url;
   neutu::LogUrlIO("Check readable", url);

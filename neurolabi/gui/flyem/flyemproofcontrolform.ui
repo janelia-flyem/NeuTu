@@ -220,7 +220,7 @@
            <string>3D body visualization (high resolution ball cloud)</string>
           </property>
           <property name="text">
-           <string>Ball Cloud (H)</string>
+           <string>(H) Ball Cloud</string>
           </property>
          </widget>
         </item>
@@ -230,7 +230,7 @@
            <string>3D body visualization (low resolution ball cloud)</string>
           </property>
           <property name="text">
-           <string>Ball Cloud (L)</string>
+           <string>(L) Ball Cloud</string>
           </property>
          </widget>
         </item>
@@ -244,17 +244,17 @@
            <string>3D body visualization (high resolution mesh)</string>
           </property>
           <property name="text">
-           <string>Mesh (H)</string>
+           <string>(H) Mesh</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="coarseMeshPushButton">
           <property name="toolTip">
-           <string>3D body visualization (high resolution mesh)</string>
+           <string>3D body visualization (low resolution mesh)</string>
           </property>
           <property name="text">
-           <string>Mesh (L)</string>
+           <string>(L) Mesh</string>
           </property>
          </widget>
         </item>
@@ -489,20 +489,13 @@
   </layout>
   <zorder>dataInfoWidget</zorder>
   <zorder>bookmarkWidget</zorder>
-  <zorder></zorder>
-  <zorder></zorder>
   <zorder>groupBox_3</zorder>
-  <zorder></zorder>
-  <zorder>bodyViewPushButton</zorder>
-  <zorder>coarseBodyPushButton</zorder>
-  <zorder>meshPushButton</zorder>
-  <zorder>coarseMeshPushButton</zorder>
  </widget>
  <customwidgets>
   <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
-   <header location="global">flyem/zflyembookmarkwidget.h</header>
+   <header location="global">flyem/widgets/zflyembookmarkwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

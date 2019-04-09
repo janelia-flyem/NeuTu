@@ -45,7 +45,7 @@ QVariant ZDvidVersionModel::data(
         for (size_t i = 2; i < parentList.size(); ++i) {
           str += ", " + parentList[i];
         }
-        return str.c_str();
+        return QVariant(str.c_str());
       }
     }
     }

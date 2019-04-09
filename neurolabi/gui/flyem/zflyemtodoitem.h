@@ -22,7 +22,6 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
 
@@ -36,11 +35,14 @@ public:
   bool isChecked() const;
   void setChecked(bool checked);
   int getPriority() const;
+//  bool isCheckable() const;
 
   void setAction(neutu::EToDoAction action);
   neutu::EToDoAction getAction() const;
+  std::string getActionName() const;
 
   void setAction(const std::string &action);
+  bool hasSomaAction() const;
 
   QColor getDisplayColor() const;
 
@@ -53,16 +55,20 @@ private:
   static std::string GetActionTag(neutu::EToDoAction action);
 
 public:
-  static const char *ACTION_KEY;
+  static const char *KEY_ACTION;
   static const char *ACTION_GENERAL;
   static const char *ACTION_SPLIT;
   static const char *ACTION_SUPERVOXEL_SPLIT;
   static const char *ACTION_IRRELEVANT;
   static const char *ACTION_MERGE;
+  static const char *ACTION_TRACE_TO_SOMA;
+  static const char *ACTION_NO_SOMA;
   static const char *ACTION_SPLIT_TAG;
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;
   static const char *ACTION_MERGE_TAG;
+  static const char *ACTION_TRACE_TO_SOMA_TAG;
+  static const char *ACTION_NO_SOMA_TAG;
 
   static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 

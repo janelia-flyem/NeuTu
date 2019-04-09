@@ -26,6 +26,7 @@
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "qt/gui/utilities.h"
+#include "qt/gui/loghelper.h"
 
 #include "logging/utilities.h"
 #include "logging/zlog.h"
@@ -490,6 +491,14 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(addToSplitMarker()));
     break;
+  case ZActionFactory::ACTION_ADD_TODO_TRACE_TO_SOMA:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(addTraceToSomaMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_NO_SOMA:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(addNoSomaMarker()));
+    break;
   case ZActionFactory::ACTION_ADD_TODO_SVSPLIT:
     break;
   case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
@@ -500,6 +509,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
     action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemIrrelevant()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_TRACE_TO_SOMA:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemTraceToSoma()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NO_SOMA:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemNoSoma()));
     break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
@@ -2164,6 +2179,16 @@ void Z3DWindow::emitAddToSupervoxelSplitMarker(
   emit addingToSupervoxelSplitMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
+void Z3DWindow::emitAddTraceToSomaMarker(const ZIntPoint &pt, uint64_t bodyId)
+{
+  emit addingTraceToSomaMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+void Z3DWindow::emitAddNoSomaMarker(const ZIntPoint &pt, uint64_t bodyId)
+{
+  emit addingNoSomaMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
 static void AddTodoMarker(
     Z3DWindow *window, neutu::EToDoAction action, bool checked)
 {
@@ -2177,7 +2202,7 @@ static void AddTodoMarker(
       bodyId = tree->getLabel();
     }
     ZIntPoint pt = SwcTreeNode::center(tn).toIntPoint();
-    if (checked) {
+    if (checked && (action != neutu::EToDoAction::NO_SOMA)) {
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
@@ -2189,6 +2214,12 @@ static void AddTodoMarker(
         break;
       case neutu::EToDoAction::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
+        break;
+      case neutu::EToDoAction::TO_TRACE_TO_SOMA:
+        window->emitAddTraceToSomaMarker(pt, bodyId);
+        break;
+      case neutu::EToDoAction::NO_SOMA:
+        window->emitAddNoSomaMarker(pt, bodyId);
         break;
       case neutu::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
@@ -2237,6 +2268,16 @@ void Z3DWindow::addToSupervoxelSplitMarker()
   AddTodoMarker(this, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT, false);
 }
 
+void Z3DWindow::addTraceToSomaMarker()
+{
+  AddTodoMarker(this, neutu::EToDoAction::TO_TRACE_TO_SOMA, false);
+}
+
+void Z3DWindow::addNoSomaMarker()
+{
+  AddTodoMarker(this, neutu::EToDoAction::NO_SOMA, false);
+}
+
 void Z3DWindow::addDoneMarker()
 {
   AddTodoMarker(this, neutu::EToDoAction::TO_DO, true);
@@ -2246,7 +2287,7 @@ void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutu::EToDoAction::TO_SPLIT);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_SPLIT, false);
   }
 }
 
@@ -2254,7 +2295,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutu::EToDoAction::TO_DO);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_DO, false);
   }
 }
 
@@ -2262,7 +2303,23 @@ void Z3DWindow::setTodoItemIrrelevant()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(neutu::EToDoAction::TO_DO_IRRELEVANT);
+    doc->setTodoItemAction(neutu::EToDoAction::TO_DO_IRRELEVANT, false);
+  }
+}
+
+void Z3DWindow::setTodoItemTraceToSoma()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(neutu::EToDoAction::TO_TRACE_TO_SOMA, false);
+  }
+}
+
+void Z3DWindow::setTodoItemNoSoma()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(neutu::EToDoAction::NO_SOMA, true);
   }
 }
 
@@ -2579,8 +2636,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     return;
   }
 
-  KINFO << QString("Key %1 pressed in Z3DWindow").
-           arg(neutu::GetKeyString(event->key(), event->modifiers()));
+  neutu::LogKeyPressEvent(event, "Z3DWindow");
+//  KINFO << QString("Key %1 pressed in Z3DWindow").
+//           arg(neutu::GetKeyString(event->key(), event->modifiers()));
 
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())

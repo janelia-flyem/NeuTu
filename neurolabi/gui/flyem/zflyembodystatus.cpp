@@ -18,18 +18,9 @@ const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
  *
  * Protection level:
  * 0: add and change (isAccessible)
-<<<<<<< HEAD
  * >=9: change only
  * [7, 9): add and change by admin only (isAdminAccessible)
  * [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
-=======
- * >=9: change by everyone only
- * [5, 8]: add and change by admin only (isAdminAccessible)
- *
- * A >=5 level is overridden by a postitive admin level:
- *   1: addmin add only
- *   other: reserved
->>>>>>> flyem_alpha
  */
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)

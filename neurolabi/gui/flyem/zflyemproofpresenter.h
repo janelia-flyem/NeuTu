@@ -132,6 +132,8 @@ public slots:
   void tryAddToSplitItem();
   void tryAddToSupervoxelSplitItem();
   void tryAddToMergeItem();
+  void tryAddTraceToSomaItem();
+  void tryAddNoSomaItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
@@ -139,6 +141,8 @@ public slots:
   void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
+  void setTodoItemToTraceToSoma();
+  void setTodoItemToNoSoma();
   void selectBodyInRoi();
   void zoomInRectRoi();
   void refreshSegmentation();
@@ -148,6 +152,8 @@ public slots:
   void tryAddToMergeItem(const ZIntPoint &pt);
   void tryAddToSplitItem(const ZIntPoint &pt);
   void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
+  void tryAddTraceToSomaItem(const ZIntPoint &pt);
+  void tryAddNoSomaItem(const ZIntPoint &pt);
 
   void showSupervoxelList();
 

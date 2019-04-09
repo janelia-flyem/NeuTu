@@ -10,58 +10,64 @@
 #include <QWebEngineView>
 #endif
 
+#include "tz_math.h"
+
 #include "ui_neu3window.h"
 #include "logging/utilities.h"
 //#include "logging/neuopentracing.h"
 
-#include "z3dwindow.h"
 #include "mvc/zstackdoc.h"
+#include "mvc/zstackdochelper.h"
+
+#include "z3dwindow.h"
 #include "zdialogfactory.h"
 #include "zsysteminfo.h"
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
+#include "zroiwidget.h"
+#include "zstackdocproxy.h"
+#include "zglobal.h"
+#include "sandbox/zbrowseropener.h"
+
+#include "zactionlibrary.h"
+#include "zarbsliceviewparam.h"
+#include "zstackdocaccessor.h"
+#include "zstackobjectsourcefactory.h"
+#include "zstackobjectaccessor.h"
+#include "zrandomgenerator.h"
+#include "zqtbarprogressreporter.h"
+#include "zwidgetmessage.h"
+
+#include "dvid/zdvidlabelslice.h"
+
 #include "widgets/flyembodyinfowidget.h"
 #include "widgets/zdvidserverwidget.h"
-#include "dialogs/flyembodyinfodialog.h"
+#include "widgets/zbodylistwidget.h"
+#include "widgets/taskprotocolwindow.h"
 
+#include "dialogs/zdviddialog.h"
+#include "dialogs/flyembodyinfodialog.h"
+#include "dialogs/stringlistdialog.h"
+#include "dialogs/flyemsettingdialog.h"
+#include "dialogs/zneu3sliceviewdialog.h"
+
+//#include "z3dpunctafilter.h"
+
+#include "flyem/zflyemarbmvc.h"
+#include "flyem/zflyemmessagewidget.h"
+#include "flyem/zproofreadwindow.h"
+#include "flyem/zflyemproofmvccontroller.h"
+#include "flyem/zflyembodyidcolorscheme.h"
+#include "flyem/zflyemarbdoc.h"
+#include "flyem/zflyemtaskhelper.h"
+#include "flyem/zflyembodyenv.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembodylistmodel.h"
 #include "flyem/zflyemmisc.h"
 #include "flyem/zflyemdoc3dbodystateaccessor.h"
-
-#include "dialogs/zdviddialog.h"
-#include "z3dpunctafilter.h"
-
-#include "mvc/zstackdochelper.h"
-#include "dialogs/stringlistdialog.h"
-#include "widgets/zbodylistwidget.h"
-#include "widgets/taskprotocolwindow.h"
-#include "zroiwidget.h"
-#include "zstackdocproxy.h"
-#include "zglobal.h"
-#include "sandbox/zbrowseropener.h"
-#include "dialogs/flyemsettingdialog.h"
-#include "zactionlibrary.h"
-#include "zarbsliceviewparam.h"
-#include "flyem/zflyemarbmvc.h"
-#include "zstackdocaccessor.h"
-#include "zstackobjectsourcefactory.h"
-#include "dialogs/zneu3sliceviewdialog.h"
-#include "zrandomgenerator.h"
-#include "zqtbarprogressreporter.h"
-#include "flyem/zflyemmessagewidget.h"
-#include "zwidgetmessage.h"
-#include "flyem/zproofreadwindow.h"
-#include "flyem/zflyemproofmvccontroller.h"
-#include "zstackobjectaccessor.h"
-#include "flyem/zflyembodyidcolorscheme.h"
-#include "flyem/zflyemarbdoc.h"
-#include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemtaskhelper.h"
-#include "flyem/zflyembodyenv.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"
@@ -1240,7 +1246,9 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
-  window->getMainMvc()->setDvidTarget(m_dataContainer->getDvidTarget());
+  ZDvidTarget target = m_dataContainer->getDvidTarget();
+  target.setReadOnly(true);
+  window->getMainMvc()->setDvidTarget(target);
 //  window->showMaximized();
 }
 

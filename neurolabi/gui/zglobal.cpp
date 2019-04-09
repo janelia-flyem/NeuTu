@@ -165,7 +165,7 @@ QString ZGlobal::getNeuPrintToken() const
   obj.decode(getNeuPrintAuth().toStdString());
   std::string token = ZJsonParser::stringValue(obj["token"]);
 
-  return token.c_str();
+  return QString::fromStdString(token);
 }
 
 NeuPrintReader* ZGlobal::getNeuPrintReader()
@@ -397,7 +397,7 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = kafkaBrokersEnv;
   }
 
-  if (!kafkaBrokers.empty()) {
+  if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
     try {
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);

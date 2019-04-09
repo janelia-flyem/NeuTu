@@ -61,6 +61,15 @@ public:
       return glm::mat4(1.f);
   }
 
+  /*
+  void setRenderPickingOnly(bool on) {
+    m_renderPickingOnly = on;
+  }
+  bool renderingPickingOnly() const {
+    return m_renderPickingOnly;
+  }
+  */
+
   // commonly used render functions
   // Render a screen-aligned quad (whole screen)
   static void renderScreenQuad(const ZVertexArrayObject& vao, const Z3DShaderProgram& shader);
@@ -110,6 +119,7 @@ protected:
   bool m_followSizeScale;
 
   bool m_hardwareSupportVAO;
+//  bool m_renderPickingOnly = false;
 };
 
 #endif // Z3DPRIMITIVERENDERER_H

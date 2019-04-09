@@ -24,6 +24,7 @@
 
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemtodolistfilter.h"
+#include "flyem/zflyemtodoitem.h"
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {

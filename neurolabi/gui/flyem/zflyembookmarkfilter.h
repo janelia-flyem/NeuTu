@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "zflyembookmarkwidget.h"
+class ZFlyEmBookmarkWidget;
 
 namespace Ui {
 class ZFlyEmBookmarkFilter;

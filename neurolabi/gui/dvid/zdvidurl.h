@@ -300,11 +300,13 @@ public:
 
   std::string getSynapseLabelszUrl(int n) const;
   std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
+  std::string getSynapseLabelszBodiesUrl() const;
 
   static std::string GetLabelszIndexTypeStr(dvid::ELabelIndexType type);
   std::string getSynapseLabelszUrl(int n, dvid::ELabelIndexType indexType) const;
   std::string getSynapseLabelszBodyUrl(
       uint64_t bodyId, dvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszBodiesUrl(dvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
   std::string getSynapseLabelszThresholdUrl(
