@@ -30,6 +30,13 @@
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
 
+/** Implementation details
+ *
+ * This class is to separate dialog-related code from ZFlyEmProofMvc, reducing
+ * the size of zflyemproofmvc.cpp. It does not granulate the ZFlyEmProofMvc
+ * class, however, because of the mutual dependency of the two classes.
+ */
+
 FlyEmMvcDialogManager::FlyEmMvcDialogManager(ZFlyEmProofMvc *parent) :
   m_parent(parent)
 {

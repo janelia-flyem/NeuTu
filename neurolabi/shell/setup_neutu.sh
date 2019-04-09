@@ -36,12 +36,12 @@ else
   install_dir=$PWD/$install_dir
 fi
 
-if [ $# -gt 0 ]
+if [ $# -gt 1 ]
 then
   package=$2
 fi
 
-if [ $# -gt 1 ]
+if [ $# -gt 2 ]
 then
   channel=$3
 fi
@@ -89,7 +89,7 @@ fi
 
 if [ -z $package ]
 then
-  package = neutu
+  package=neutu
 fi
 
 envName='neutu-env'

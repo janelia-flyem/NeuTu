@@ -27114,7 +27114,7 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 1
+#if 0
   ZJsonObject obj;
   std::string dataDir = "/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data";
   obj.load(dataDir + "/_paper/neuron_type/data/data_bundle.json");
@@ -28030,6 +28030,18 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20190325";
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string filePath = dataDir + "/20190325_SLP.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "SLP");
+
+  filePath = dataDir + "/20190325_dACA.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "dACA");
+#endif
+
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
@@ -28084,6 +28096,40 @@ void ZTest::test(MainWindow *host)
       writer->writeRoi(roi, name);
     }
   }
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/allneuropils/synapse_thresh_allneuropils_nohole.labels.tif.sobj");
+  std::string name = "all_neuropils";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
+  std::string name = "dACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
+  std::string name = "SLP";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  writer->writeRoi(roi, name);
 #endif
 
 #if 0
@@ -29428,12 +29474,15 @@ void ZTest::test(MainWindow *host)
 #if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
+  ZINFO << "Test: auto logging";
 
   KWARN << "Test: to kafka only";
   LKWARN << "Test: to both local and kafka";
+  ZWARN << "Test: auto logging";
 
   KERROR << "Test: to kafka only";
   LKERROR << "Test: to both local and kafka";
+  ZERROR << "Test: auto logging";
 
   neutu::LogMessage(
         ZWidgetMessage(
@@ -29526,11 +29575,38 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/data_status");
+
+  reader->readJsonObjectFromKey("neutu_config", "contrast");
+  reader->readJsonObject(
+        "http://emdata4.int.janelia.org:8900/api/node/b98b4829e305479ca7ac4b17194c425b/neutu_config/key/contrast");
+
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("MB_Test");
+
+  reader->getDvidTarget().print();
+  std::cout << "Has synapse: " << reader->getDvidTarget().hasSynapse() << std::endl;
+  std::cout << "Has synapse labelsz: " << reader->getDvidTarget().hasSynapseLabelsz() << std::endl;
+  std::cout << reader->getDvidTarget().getSynapseLabelszName() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

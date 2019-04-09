@@ -300,16 +300,16 @@
    <item>
     <layout class="QHBoxLayout" name="volumeViewLayout">
      <item>
-      <widget class="QPushButton" name="view3dBodyPushButton">
+      <widget class="QPushButton" name="viewSplitPushButton">
        <property name="text">
-        <string>Volume View</string>
+        <string>View 3D Split</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="viewSplitPushButton">
+      <widget class="QPushButton" name="view3dBodyPushButton">
        <property name="text">
-        <string>View 3D Split</string>
+        <string>Volume View</string>
        </property>
       </widget>
      </item>
@@ -335,7 +335,7 @@
   <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
-   <header location="global">flyem/zflyembookmarkwidget.h</header>
+   <header location="global">flyem/widgets/zflyembookmarkwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

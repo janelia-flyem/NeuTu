@@ -1,6 +1,8 @@
 #ifndef ZFLYEMPROOFDOC_H
 #define ZFLYEMPROOFDOC_H
 
+#include <functional>
+
 #include <QString>
 #include <QMap>
 
@@ -266,6 +268,8 @@ public:
 
   void updateMeshForSelected();
 
+  void processAssignedInfo(int x, int y, int z);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -325,6 +329,9 @@ public: //Todo list functions
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action, bool checked);
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> f,
+                        std::function<bool(const ZFlyEmToDoItem&)> pred);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
   void setTodoItemToMerge();
@@ -534,6 +541,9 @@ public slots: //Commands
       int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSupervoxelSplitItemCommand(
       const ZIntPoint &pt, uint64_t bodyId = 0);
+  void executeAddTraceToSomaItemCommand(int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddNoSomaItemCommand(int x, int y, int z, uint64_t bodyId = 0);
+
   void executeRemoveTodoItemCommand();
 
   void executeRotateRoiPlaneCommand(int z, double theta);
@@ -603,6 +613,7 @@ public slots:
                        int zoom, int centerCutX, int centerCutY,
                        bool usingCenterCut);
 
+  void setTodoItemChecked(int x, int y, int z, bool checking);
 
 protected:
   void autoSave() override;

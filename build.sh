@@ -117,10 +117,10 @@ then
   qmake_args="$qmake_args CONFIG+=debug"
 fi
 
-if [ $debug_config = "debug" ]
-then
-  qmake_args="$qmake_args CONFIG+=release"
-fi
+#if [ $debug_config = "debug" ]
+#then
+#  qmake_args="$qmake_args CONFIG+=release"
+#fi
 
 if [ -n "$cxx_define" ]
 then

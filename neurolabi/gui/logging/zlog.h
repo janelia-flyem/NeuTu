@@ -14,7 +14,13 @@
 class ZLog
 {
 public:
-  ZLog(bool localLogging = true);
+  enum class EDestination {
+    AUTO, //Kafka if it's available; otherwise to local
+    KAFKA, //Kafka only
+    KAFKA_AND_LOCAL //Kafka if it's available; local logging as well
+  };
+
+  ZLog(EDestination dest = EDestination::AUTO);
   virtual ~ZLog();
 
   virtual void start();
@@ -119,6 +125,11 @@ public:
     Time(uint64_t);
   };
 
+  struct Level : public Tag {
+    static const char *KEY;
+    Level(int);
+  };
+
   struct Window : public Tag {
     Window(const std::string &value) : Tag("window", value) {}
   };
@@ -126,24 +137,20 @@ public:
   ZLog& operator << (const Tag &tag);
   ZLog& operator << (const std::function<void(ZLog&)> f);
 
-protected:
-  inline bool localLogging() {
-    return m_localLogging;
-  }
-
 private:
   void endLog();
 
 protected:
   bool m_started = false;
   QJsonObject m_tags;
-  bool m_localLogging = true;
+  EDestination m_dest = EDestination::AUTO;
+//  bool m_localLogging = true;
 };
 
 class KLog : public ZLog
 {
 public:
-  KLog(bool localLogging = false);
+  KLog(EDestination dest = EDestination::KAFKA);
   ~KLog();
 
   void start() override;
@@ -151,13 +158,13 @@ public:
            bool appending) override;
   void end() override;
   bool hasTag(const std::string &key) const override;
-//  bool isStarted() const override;
 
   static void SetOperationName(const std::string &name);
   static void ResetOperationName(); //reset to default
 
 private:
   void endKLog();
+  bool localLogging() const;
 
 protected:
   std::unique_ptr<neuopentracing::Span> m_span;
@@ -204,10 +211,16 @@ public:
 #define KERROR KError()
 
 //Send to both kafka and local file
-#define LKLOG KLog(true)
-#define LKINFO KInfo(true)
-#define LKWARN KWarn(true)
-#define LKERROR KError(true)
+#define LKLOG KLog(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKINFO KInfo(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKWARN KWarn(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKERROR KError(ZLog::EDestination::KAFKA_AND_LOCAL)
+
+//Auto
+#define ZLOG KLog(ZLog::EDestination::AUTO)
+#define ZINFO KInfo(ZLog::EDestination::AUTO)
+#define ZWARN KWarn(ZLog::EDestination::AUTO)
+#define ZERROR KError(ZLog::EDestination::AUTO)
 
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()

@@ -13,7 +13,7 @@
 #include "flyemdef.h"
 #include "zflyembodymergeproject.h"
 #include "mvc/zstackdoc.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
@@ -93,7 +93,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(coarseMeshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+          this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -494,19 +494,32 @@ void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
   }
 }
 
+void FlyEmProofControlForm::locateAssignedBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingToAssigned(bookmark->getLocation().getX(),
+                           bookmark->getLocation().getY(),
+                           bookmark->getLocation().getZ());
+  }
+}
+
+/*
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getAssignedBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
+/*
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
 void FlyEmProofControlForm::updateLatency(int t)
 {

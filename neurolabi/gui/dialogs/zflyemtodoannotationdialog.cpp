@@ -24,6 +24,20 @@ void ZFlyEmTodoAnnotationDialog::initActionBox()
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_SPLIT);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_IRRELEVANT);
+  ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA);
+  ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_NO_SOMA);
+
+  connect(ui->actionComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(updateWidget()));
+}
+
+void ZFlyEmTodoAnnotationDialog::updateWidget()
+{
+  if (ui->actionComboBox->currentText() == ZFlyEmToDoItem::ACTION_NO_SOMA) {
+    ui->checkedCheckBox->setChecked(true);
+  } else {
+    ui->checkedCheckBox->setChecked(m_bufferChecked);
+  }
 }
 
 void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
@@ -47,10 +61,12 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
   }
 
   ui->checkedCheckBox->setChecked(item.isChecked());
+  m_bufferChecked = item.isChecked();
 
   int index = neutu::EnumValue(item.getAction());
   Q_ASSERT(index < ui->actionComboBox->maxCount());
   ui->actionComboBox->setCurrentIndex(index);
+  ui->commentLineEdit->setText(item.getComment().c_str());
 }
 
 int ZFlyEmTodoAnnotationDialog::getPriority() const
@@ -66,11 +82,17 @@ int ZFlyEmTodoAnnotationDialog::getPriority() const
   return 0;
 }
 
+QString ZFlyEmTodoAnnotationDialog::getComment() const
+{
+  return ui->commentLineEdit->text();
+}
+
 void ZFlyEmTodoAnnotationDialog::annotate(ZFlyEmToDoItem *item)
 {
   if (item != NULL) {
     item->setAction(ui->actionComboBox->currentText().toStdString());
     item->setChecked(ui->checkedCheckBox->isChecked());
     item->setPriority(getPriority());
+    item->setComment(getComment().toStdString());
   }
 }

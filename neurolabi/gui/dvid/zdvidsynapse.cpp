@@ -204,7 +204,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
 
-      if (getStatus() == EStatus::STATUS_DUPLICATED) {
+      if (getStatus() == EStatus::DUPLICATED) {
         painter.drawEllipse(
               QPointF(center.getX(), center.getY()), 1, 1);
       }
@@ -562,7 +562,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
   m_partnerKind.resize(m_partnerHint.size(), EKind::KIND_UNKNOWN);
-  m_partnerStatus.resize(m_partnerHint.size(), EStatus::STATUS_NORMAL);
+  m_partnerStatus.resize(m_partnerHint.size(), EStatus::NORMAL);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {

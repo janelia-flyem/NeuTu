@@ -113,6 +113,12 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_SVSPLIT:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSupervoxelSplitItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_TRACE_TO_SOMA:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddTraceToSomaItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_NO_SOMA:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddNoSomaItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -659,6 +665,16 @@ void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 //  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
+void ZFlyEmProofPresenter::tryAddTraceToSomaItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutu::EToDoAction::TO_TRACE_TO_SOMA);
+}
+
+void ZFlyEmProofPresenter::tryAddNoSomaItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, true, neutu::EToDoAction::NO_SOMA);
+}
+
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
@@ -705,6 +721,17 @@ void ZFlyEmProofPresenter::setTodoItemToSplit()
   getCompleteDocument()->setTodoItemAction(neutu::EToDoAction::TO_SPLIT);
 }
 
+void ZFlyEmProofPresenter::setTodoItemToTraceToSoma()
+{
+  getCompleteDocument()->setTodoItemAction(neutu::EToDoAction::TO_TRACE_TO_SOMA);
+}
+
+void ZFlyEmProofPresenter::setTodoItemToNoSoma()
+{
+  getCompleteDocument()->setTodoItemAction(neutu::EToDoAction::NO_SOMA);
+  getCompleteDocument()->checkTodoItem(true);
+}
+
 void ZFlyEmProofPresenter::setTodoDelegate(
     std::unique_ptr<ZFlyEmToDoDelegate> &&delegate)
 {
@@ -741,6 +768,22 @@ void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddToSupervoxelSplitItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddTraceToSomaItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
+  ZPoint pt = event.getDataPosition();
+  tryAddTraceToSomaItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddNoSomaItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
+  ZPoint pt = event.getDataPosition();
+  tryAddNoSomaItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()

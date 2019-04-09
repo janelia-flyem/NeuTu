@@ -8,6 +8,8 @@
 #include <QUrl>
 
 #include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
@@ -33,7 +35,7 @@
 #include "flyem/zflyemneuron.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "flyem/zflyembookmark.h"
-#include "flyem/zflyemmisc.h"
+//#include "flyem/zflyemmisc.h"
 #include "flyem/zflyemtodoitem.h"
 #include "flyem/zflyembodyannotation.h"
 
@@ -842,7 +844,9 @@ std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const char *payload,
     int length, bool isJson)
 {
-  LKINFO << "HTTP " + method + ": " + url;
+  neutu::LogUrlIO(method.c_str(), url.c_str());
+
+//  LKINFO << "HTTP " + method + ": " + url;
 
   m_statusCode = 0;
   m_statusErrorMessage.clear();
@@ -949,6 +953,14 @@ std::string ZDvidWriter::del(const std::string &url)
 std::string ZDvidWriter::post(
     const std::string &url, const std::string &payload, bool isJson)
 {
+  if (!payload.empty()) {
+    QString msg = QString("Posting %1").arg(payload.c_str()).left(100);
+    if (msg.size() > 100) {
+      msg += "...";
+    }
+    KINFO << msg;
+  }
+
   return post(url, payload.c_str(), payload.length(), isJson);
 }
 

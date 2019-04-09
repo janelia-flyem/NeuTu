@@ -438,6 +438,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_SVSPLIT:
     action = new QAction("To split supervoxel here", parent);
     break;
+  case ACTION_ADD_TODO_TRACE_TO_SOMA:
+    action = new QAction("Trace to soma here", parent);
+    break;
+  case ACTION_ADD_TODO_NO_SOMA:
+    action = new QAction("No soma here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;
@@ -466,6 +472,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_TODO_ITEM_ANNOT_SPLIT:
     action = new QAction("To split", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_TRACE_TO_SOMA:
+    action = new QAction("Trace to soma", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_NO_SOMA:
+    action = new QAction("No soma", parent);
     break;
   case ACTION_SELECT_BODY_IN_RECT:
     action = new QAction("Select bodies", parent);

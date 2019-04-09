@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "common/utilities.h"
+#include "logging/zlog.h"
 
 #include "neutubeconfig.h"
 
@@ -842,15 +843,18 @@ void ZFlyEmProofDoc::initData(
 
 void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
-  if (m_dvidReader.isReady() && !getDvidTarget().readOnly()) {
-    initData("annotation", target.getBookmarkName());
-    initData("annotation", target.getTodoListName());
-    initData("keyvalue", target.getSkeletonName());
-    initData("keyvalue", target.getThumbnailName());
-    initData("keyvalue", target.getBookmarkKeyName());
-    initData("keyvalue", target.getBodyAnnotationName());
-    initData("keyvalue", target.getSplitLabelName());
-    initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
+  if (m_dvidReader.isReady() && !getDvidTarget().readOnly() &&
+      getDvidTarget().hasSegmentation()) {
+    if (m_dvidReader.hasData(getDvidTarget().getSegmentationName())) {
+      initData("annotation", target.getBookmarkName());
+      initData("annotation", target.getTodoListName());
+      initData("keyvalue", target.getSkeletonName());
+      initData("keyvalue", target.getThumbnailName());
+      initData("keyvalue", target.getBookmarkKeyName());
+      initData("keyvalue", target.getBodyAnnotationName());
+      initData("keyvalue", target.getSplitLabelName());
+      initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
+    }
   }
 }
 
@@ -1455,9 +1459,42 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
   }
 }
 
+void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
+{
+  bool modified = false;
+
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_LOCAL);
+    if (item.isValid()) {
+      if (checking != item.isChecked()) {
+        item.setChecked(checking);
+        td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+        bufferObjectModified(td);
+        modified = true;
+      }
+    }
+  }
+
+  if (modified) {
+    processObjectModified();
+    notifyTodoItemModified(ZIntPoint(x, y, z), true);
+  }
+}
+
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 { //Duplicated code with setTodoItemAction
-  ZOUT(LTRACE(), 5) << "Check to do items";
+  KINFO << "Check to do items";
+
+  annotateTodoItem(
+        [checking](ZFlyEmToDoItem &item) {
+              item.setChecked(checking);},
+        [checking](const ZFlyEmToDoItem &item) -> bool {
+              return checking != item.isChecked(); }
+  );
+#if 0
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -1483,11 +1520,63 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   }
 
   processObjectModified();
+#endif
+}
+
+void ZFlyEmProofDoc::annotateTodoItem(
+    std::function<void (ZFlyEmToDoItem &)> f,
+    std::function<bool(const ZFlyEmToDoItem&)> pred)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+
+  std::vector<ZIntPoint> ptArray;
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
+         iter != selectedSet.end(); ++iter) {
+      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        if (pred(item)) {
+          f(item);
+          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          ptArray.push_back(item.getPosition());
+        }
+      }
+    }
+    if (!selectedSet.empty()) {
+      bufferObjectModified(td);
+      notifyTodoItemModified(ptArray, true);
+    }
+  }
+
+  processObjectModified();
+}
+
+void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
+{
+  KINFO << "Set action of to do items";
+
+  annotateTodoItem(
+        [action, checked](ZFlyEmToDoItem &item) {
+              item.setAction(action);
+              item.setChecked(checked);},
+        [action, checked](const ZFlyEmToDoItem &item) -> bool {
+              return action != item.getAction() || checked != item.isChecked(); }
+  );
 }
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 { //Duplicated code with checkTodoItem
-  ZOUT(LTRACE(), 5) << "Set action of to do items";
+  KINFO << "Set action of to do items";
+
+  annotateTodoItem(
+        [action](ZFlyEmToDoItem &item) { item.setAction(action); },
+        [action](const ZFlyEmToDoItem &item) -> bool {
+              return action != item.getAction(); }
+  );
+#if 0
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -1513,6 +1602,7 @@ void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
   }
 
   processObjectModified();
+#endif
 }
 
 void ZFlyEmProofDoc::annotateSelectedTodoItem(
@@ -1532,6 +1622,7 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
           bufferObjectModified(todoList);
           notifyTodoEdited(pos);
         }
+        notifyTodoItemModified(item.getPosition(), true);
         processObjectModified();
       }
     } 
@@ -3549,6 +3640,21 @@ void ZFlyEmProofDoc::updateMeshForSelected()
   }
 }
 
+void ZFlyEmProofDoc::processAssignedInfo(int x, int y, int z)
+{
+  uint64_t bodyId = getDvidReader().readBodyIdAt(x, y, z);
+  QString msg =  QString("Locating (%1, %2, %3) from assigned on %4").arg(x).arg(y)
+      .arg(z).arg(bodyId);
+
+
+  if (getDvidReader().getDvidTarget().hasSynapseLabelsz()) {
+    int count = getDvidReader().readSynapseLabelszBody(
+          bodyId, dvid::ELabelIndexType::ALL_SYN);
+    msg += QString(" (#synapses: %1)").arg(count);
+  }
+  KINFO << msg;
+}
+
 /*
 void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
 {
@@ -4682,6 +4788,17 @@ void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
   executeAddToSupervoxelSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
+void ZFlyEmProofDoc::executeAddTraceToSomaItemCommand(
+    int x, int y, int z, uint64_t bodyId)
+{
+  executeAddTodoItemCommand(x, y, z, neutu::EToDoAction::TO_TRACE_TO_SOMA, bodyId);
+}
+
+void ZFlyEmProofDoc::executeAddNoSomaItemCommand(int x, int y, int z, uint64_t bodyId)
+{
+  executeAddTodoCommand(x, y, z, true, neutu::EToDoAction::NO_SOMA, bodyId);
+}
+
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
 {
@@ -4924,6 +5041,7 @@ bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
   }
     break;
   default:
+    ZStackDoc::_loadFile(filePath);
     break;
   }
 

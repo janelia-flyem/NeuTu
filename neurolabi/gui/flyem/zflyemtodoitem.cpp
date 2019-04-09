@@ -9,7 +9,7 @@
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
 
-const char* ZFlyEmToDoItem::ACTION_KEY = "action";
+const char* ZFlyEmToDoItem::KEY_ACTION = "action";
 const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
 const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
 const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT = "to split supervoxel";
@@ -19,13 +19,19 @@ const char* ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT_TAG = "svsplit";
 const char* ZFlyEmToDoItem::ACTION_IRRELEVANT_TAG = "irrelevant";
 const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
 const char* ZFlyEmToDoItem::ACTION_MERGE_TAG = "merge";
+const char* ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA = "trace to soma";
+const char* ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA_TAG = "trace_to_soma";
+const char* ZFlyEmToDoItem::ACTION_NO_SOMA = "no soma";
+const char* ZFlyEmToDoItem::ACTION_NO_SOMA_TAG = "no_soma";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
   {ZFlyEmToDoItem::ACTION_MERGE, neutu::EToDoAction::TO_MERGE},
   {ZFlyEmToDoItem::ACTION_SPLIT, neutu::EToDoAction::TO_SPLIT},
   {ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT},
-  {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutu::EToDoAction::TO_DO_IRRELEVANT}
+  {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutu::EToDoAction::TO_DO_IRRELEVANT},
+  {ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA, neutu::EToDoAction::TO_TRACE_TO_SOMA},
+  {ZFlyEmToDoItem::ACTION_NO_SOMA, neutu::EToDoAction::NO_SOMA}
 };
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
@@ -104,6 +110,11 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
     case neutu::EToDoAction::TO_DO_IRRELEVANT:
       color.setRgb(Qt::gray);
       break;
+    case neutu::EToDoAction::TO_TRACE_TO_SOMA:
+      color.setRgb(160, 80, 0, 192);
+      break;
+    case neutu::EToDoAction::NO_SOMA:
+      break;
     }
   }
 
@@ -112,8 +123,19 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
 
 neutu::EToDoAction ZFlyEmToDoItem::getAction() const
 {
-  const char *key = "action"; //coupled with setAction
-  std::string value = getProperty<std::string>(key);
+  std::string actionName = getActionName();
+  neutu::EToDoAction action = neutu::EToDoAction::TO_DO;
+  if (m_actionMap.count(actionName) > 0) {
+    action = m_actionMap.at(actionName);
+  }
+
+  return action;
+
+#if 0
+  return m_actionMap[getActionName()];
+
+//  const char *key = "action"; //coupled with setAction
+  std::string value = getActionName();
   neutu::EToDoAction action = neutu::EToDoAction::TO_DO;
   if (value == ACTION_MERGE) {
     action = neutu::EToDoAction::TO_MERGE;
@@ -123,9 +145,26 @@ neutu::EToDoAction ZFlyEmToDoItem::getAction() const
     action = neutu::EToDoAction::TO_SUPERVOXEL_SPLIT;
   } else if (value == ACTION_IRRELEVANT) {
     action = neutu::EToDoAction::TO_DO_IRRELEVANT;
-  }
+  } else if (value == )
 
   return action;
+#endif
+}
+
+std::string ZFlyEmToDoItem::getActionName() const
+{
+  const char *key = "action"; //coupled with setAction
+  std::string value = getProperty<std::string>(key);
+
+  return value;
+}
+
+bool ZFlyEmToDoItem::hasSomaAction() const
+{
+  neutu::EToDoAction action = getAction();
+
+  return (action == neutu::EToDoAction::TO_TRACE_TO_SOMA) ||
+      (action == neutu::EToDoAction::NO_SOMA);
 }
 
 void ZFlyEmToDoItem::setAction(const std::string &action)
@@ -137,29 +176,43 @@ void ZFlyEmToDoItem::setAction(const std::string &action)
 
 void ZFlyEmToDoItem::setAction(neutu::EToDoAction action)
 {
+  if (action == neutu::EToDoAction::TO_DO) {
+    removeProperty(KEY_ACTION);
+  } else {
+    auto iter = std::find_if(
+          m_actionMap.begin(), m_actionMap.end(),
+          [action](const std::map<std::string, neutu::EToDoAction>::value_type& v) {
+      return v.second == action;});
+    if (iter != m_actionMap.end()) {
+      addProperty(KEY_ACTION, iter->first);
+    };
+  }
+
+#if 0
   switch (action) {
   case neutu::EToDoAction::TO_DO:
-    removeProperty(ACTION_KEY);
+    removeProperty(KEY_ACTION);
 //    removeActionTag();
     break;
   case neutu::EToDoAction::TO_MERGE:
-    addProperty(ACTION_KEY, ACTION_MERGE);
+    addProperty(KEY_ACTION, ACTION_MERGE);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
     break;
   case neutu::EToDoAction::TO_SPLIT:
-    addProperty(ACTION_KEY, ACTION_SPLIT);
+    addProperty(KEY_ACTION, ACTION_SPLIT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;
   case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT:
-    addProperty(ACTION_KEY, ACTION_SUPERVOXEL_SPLIT);
+    addProperty(KEY_ACTION, ACTION_SUPERVOXEL_SPLIT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
     break;
   case neutu::EToDoAction::TO_DO_IRRELEVANT:
-    addProperty(ACTION_KEY, ACTION_IRRELEVANT);
+    addProperty(KEY_ACTION, ACTION_IRRELEVANT);
 //    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
     break;
+  case neutu::EToDoAction::to_do_
   }
-
+#endif
   syncActionTag();
 }
 
@@ -168,7 +221,7 @@ std::string ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction action)
   std::string tag;
 
   auto make_tag = [](const char *actionTag) {
-    return std::string(ACTION_KEY) + ":" + actionTag; };
+    return std::string(KEY_ACTION) + ":" + actionTag; };
 
   switch (action) {
   case neutu::EToDoAction::TO_DO:
@@ -184,6 +237,12 @@ std::string ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction action)
     break;
   case neutu::EToDoAction::TO_DO_IRRELEVANT:
     tag = make_tag(ACTION_IRRELEVANT_TAG);
+    break;
+  case neutu::EToDoAction::TO_TRACE_TO_SOMA:
+    tag = make_tag(ACTION_TRACE_TO_SOMA_TAG);
+    break;
+  case neutu::EToDoAction::NO_SOMA:
+    tag = make_tag(ACTION_NO_SOMA_TAG);
     break;
   }
 
@@ -209,7 +268,7 @@ void ZFlyEmToDoItem::removeActionTag()
 {
   for (std::set<std::string>::iterator iter = m_tagSet.begin();
        iter != m_tagSet.end(); ) {
-    if (ZString(*iter).startsWith(std::string(ACTION_KEY) + ":")) {
+    if (ZString(*iter).startsWith(std::string(KEY_ACTION) + ":")) {
       iter = m_tagSet.erase(iter);
     } else {
       ++iter;
@@ -260,14 +319,25 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
       pen.setWidthF(basePenWidth * 0.5);
       painter.setPen(pen);
 
-      painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
-      painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
+      std::vector<QPointF> vertexArray(5);
+      vertexArray[0] = QPointF(x - radius, y);
+      vertexArray[1] = QPointF(x, y - radius);
+      vertexArray[2] = QPointF(x + radius, y);
+      vertexArray[3] = QPointF(x, y + radius);
+      vertexArray[4] = vertexArray[0];
+
+      painter.drawLine(vertexArray[0], vertexArray[2]);
+      painter.drawLine(vertexArray[1], vertexArray[3]);
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
       QPointF ptArray[9];
       flyem::MakeStar(QPointF(x, y), radius, ptArray);
       painter.drawPolyline(ptArray, 9);
+
+      if (hasSomaAction()) {
+        painter.drawPolyline(vertexArray);
+      }
 
       if (getPriority() > 0) {
         painter.save();
@@ -335,6 +405,13 @@ bool ZFlyEmToDoItem::isChecked() const
 
   return false;
 }
+
+/*
+bool ZFlyEmToDoItem::isCheckable() const
+{
+
+}
+*/
 
 void ZFlyEmToDoItem::setChecked(bool checked)
 {

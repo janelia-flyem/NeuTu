@@ -195,7 +195,7 @@ void FlyEmBodySplitProjectDialog::checkCurrentBookmark()
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
     bookmark->setChecked(true);
-    m_bookmarkList.update(index.row());
+    m_bookmarkList.updateRow(index.row());
   }
 }
 
