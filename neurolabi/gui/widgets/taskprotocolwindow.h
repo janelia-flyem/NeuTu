@@ -149,7 +149,6 @@ private:
     int m_bodyMeshesAddedReceived = 0;
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
-    int m_bodiesReused = 0;
     std::set<int> m_skippedTaskIndices;
     bool m_nextPrevAllowed = true;
 

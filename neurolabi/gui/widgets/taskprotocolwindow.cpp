@@ -747,15 +747,19 @@ bool TaskProtocolWindow::skip(int taskIndex)
  */
 void TaskProtocolWindow::prefetchForTaskIndex(int index) {
     if (m_taskList[index]->usePrefetching()) {
-        // each task may have bodies that it wants visible and selected;
-        //  add those, selected first (which are presumably more important?)
-        if (m_taskList[index]->selectedBodies().size() > 0) {
-            prefetch(m_taskList[index]->selectedBodies());
-        }
-        if (m_taskList[index]->visibleBodies().size() > 0) {
-            prefetch(m_taskList[index]->visibleBodies());
-        }
+        const QSet<uint64_t> &selected = m_taskList[index]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[index]->visibleBodies();
+        QSet<uint64_t> toPrefetch = selected + visible;
+        if (m_currentTaskIndex >= 0) {
 
+          // There is no need to prefetch any bodies already loaded by the current task.
+
+          toPrefetch -= m_taskList[m_currentTaskIndex]->selectedBodies();
+          toPrefetch -= m_taskList[m_currentTaskIndex]->visibleBodies();
+        }
+        if (!toPrefetch.empty()) {
+          prefetch(toPrefetch);
+        }
     }
 }
 
@@ -944,13 +948,22 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
     // slots indicate that all the old meshes have been fully deleted and all the new meshes
     // have been loaded.
 
+  const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+  const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+  QSet<uint64_t> visibleOrSelected = visible + selected;
+
     m_bodyRecycledExpected = 0;
     for (uint64_t id : toRemove) {
-        if (ZFlyEmBodyManager::IsEncoded(id)) {
-            QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
-            m_bodyRecycledExpected += mappedIds.size();
-        } else {
-            m_bodyRecycledExpected++;
+        if (!visibleOrSelected.contains(id)) {
+
+            // Only if a removed body is not being re-added should the expected count change.
+
+            if (ZFlyEmBodyManager::IsEncoded(id)) {
+                QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
+                m_bodyRecycledExpected += mappedIds.size();
+            } else {
+                m_bodyRecycledExpected++;
+            }
         }
     }
     m_bodyRecycledReceived = 0;
@@ -959,46 +972,22 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
     m_bodyMeshesAddedReceived = 0;
 
     bool usingTars = false;
-    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-    foreach (uint64_t bodyID, visible) {
+    foreach (uint64_t bodyID, visibleOrSelected) {
         if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
             usingTars = true;
+            if (!toRemove.contains(bodyID)) {
+
+                // Only if an added body was not just removed should the expected count change.
+
+                m_bodyMeshesAddedExpected++;
+            }
         }
     }
-
-    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
-    foreach (uint64_t bodyID, selected) {
-        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
-            usingTars = true;
-        }
-    }
-
-    m_bodiesReused = 0;
 
     if (usingTars) {
         m_bodyMeshLoadedExpected = 0;
-
-        // Bodies reused from the previous task will not generate bodyMeshesAdded
-        // signals, which needs to be considered when counting these signals.
-
-        QSet<uint64_t> bodies = m_body3dDoc->getNormalBodySet();
-        for (uint64_t bodyId : bodies) {
-            uint64_t id = ZFlyEmBodyManager::encode(bodyId);
-            m_bodiesReused += (visible.contains(id) || selected.contains(id));
-        }
     } else {
         m_bodyMeshLoadedExpected = (visible + selected).size();
-
-        // Bodies reused from the previous task may not generate onBodyRecycled and
-        // onBodyMeshLoaded signals, which needs to be considered when counting
-        // these signals.
-
-        for (auto it = toRemove.cbegin(); it != toRemove.cend(); it++) {
-            uint64_t id = *it;
-            m_bodiesReused += (visible.contains(id) || selected.contains(id));
-        }
     }
 
     m_bodyMeshLoadedReceived = 0;
@@ -1024,11 +1013,10 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
            << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
            << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
            << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
-           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
-           << "m_bodiesReused =" << m_bodiesReused;
-    if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
-        (m_bodyMeshesAddedExpected - m_bodiesReused == m_bodyMeshesAddedReceived) &&
-        (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
+           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
+    if ((m_bodyRecycledExpected <= m_bodyRecycledReceived) &&
+        (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+        (m_bodyMeshLoadedExpected <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
