@@ -5686,7 +5686,7 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       }
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
 
-      updateUserBookmarkTable();
+//      updateUserBookmarkTable();
     }
   }
 }

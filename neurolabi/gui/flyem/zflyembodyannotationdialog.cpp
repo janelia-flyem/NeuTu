@@ -20,6 +20,7 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 //    ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
+  ui->nameComboBox->hide();
 
   setWhatsThis("Annotate the selected body. You can specify the name and status"
                "of the body as well as add any comment as you like. "
