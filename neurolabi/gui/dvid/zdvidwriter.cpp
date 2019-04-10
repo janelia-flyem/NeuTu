@@ -570,6 +570,16 @@ void ZDvidWriter::createSynapseLabelsz()
   }
 }
 
+void ZDvidWriter::deleteData(const std::string &type, const std::string &name)
+{
+  if (type.empty() || name.empty()) {
+    return;
+  }
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.GetFullUrl(dvidUrl.getDataUrl(name), type);
+  del(url);
+}
 
 void ZDvidWriter::createData(
     const std::string &type, const std::string &name, bool versioned)
@@ -844,6 +854,11 @@ std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const char *payload,
     int length, bool isJson)
 {
+  if (url.empty()) {
+    KWARN << "Requesting an empty url: " + method;
+    return "";
+  }
+
   neutu::LogUrlIO(method.c_str(), url.c_str());
 
 //  LKINFO << "HTTP " + method + ": " + url;

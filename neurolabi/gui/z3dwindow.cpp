@@ -285,8 +285,10 @@ void Z3DWindow::init()
 
   connect(getPunctaFilter(), SIGNAL(punctumSelected(ZPunctum*, bool)),
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
-  connect(getMeshFilter(), SIGNAL(meshSelected(ZMesh*, bool)),
-          this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
+  if (getMeshFilter()) {
+    connect(getMeshFilter(), SIGNAL(meshSelected(ZMesh*, bool)),
+            this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
+  }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
   connect(getSwcFilter(), SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
@@ -395,7 +397,7 @@ void Z3DWindow::init()
 //            this, SLOT(setMeshOpacity(int)));
 //  }
 
-  if (m_meshOpacitySpinBox != NULL) {
+  if (m_meshOpacitySpinBox != NULL && getMeshFilter()) {
     m_meshOpacitySpinBox->setValue(getMeshFilter()->opacity());
     connect(m_meshOpacitySpinBox, SIGNAL(valueChanged(double)),
             this, SLOT(setMeshOpacity(double)));
