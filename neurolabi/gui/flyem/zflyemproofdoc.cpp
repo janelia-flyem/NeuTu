@@ -3010,8 +3010,12 @@ void ZFlyEmProofDoc::downloadTodoList()
   addObject(todoList);
 }
 
-void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark * /*bookmark*/)
+void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark* bookmark)
 {
+  if (bookmark->isCustom()) {
+    notifyBookmarkEdited(bookmark);
+    emit userBookmarkModified();
+  }
 //  m_isCustomBookmarkSaved = false;
 }
 

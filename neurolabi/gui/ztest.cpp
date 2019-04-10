@@ -28124,6 +28124,22 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(roi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.json");
+#endif
+
+#if 0
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(roi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.json");
+#endif
+
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
