@@ -10,6 +10,8 @@
 #include <boost/math/constants/constants.hpp>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "z3dcanvas.h"
 #include "z3dcompositor.h"
 #include "z3dcanvaspainter.h"
@@ -184,11 +186,20 @@ void Z3DView::updateBoundBox()
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
-#ifdef _DEBUG_2
-    std::cout << "Getting bounding box of " << flt->className().toStdString() << std::endl;
+#ifdef _DEBUG_
+    {KINFO << "Getting bounding box of " + flt->className();}
 #endif
     if (flt->isVisible()) {
       m_boundBox.expand(flt->axisAlignedBoundBox());
+#ifdef _DEBUG_
+      {KINFO << QString("Bound box updated: (%1, %2, %3) -> (%4, %5, %6)")
+               .arg(m_boundBox.minCorner()[0])
+               .arg(m_boundBox.minCorner()[1])
+               .arg(m_boundBox.minCorner()[2])
+               .arg(m_boundBox.maxCorner()[0])
+               .arg(m_boundBox.maxCorner()[1])
+               .arg(m_boundBox.maxCorner()[2]);}
+#endif
     }
   }
   if (m_boundBox.empty()) {
@@ -196,7 +207,8 @@ void Z3DView::updateBoundBox()
     m_boundBox.setMinCorner(glm::dvec3(0.0));
     m_boundBox.setMaxCorner(glm::dvec3(0.01));
   }
-  m_boundBox.setMaxCorner(glm::max(m_boundBox.maxCorner(), m_boundBox.minCorner() + 0.01));
+  m_boundBox.setMaxCorner(
+        glm::max(m_boundBox.maxCorner(), m_boundBox.minCorner() + 0.01));
   resetCameraClippingRange();
 }
 
@@ -424,7 +436,9 @@ void Z3DView::init()
 #endif
 
     addFilter(neutu3d::ERendererLayer::GRAPH);
-    addFilter(neutu3d::ERendererLayer::MESH);
+    if (m_initMode != EInitMode::EXCLUDE_MESH) {
+      addFilter(neutu3d::ERendererLayer::MESH);
+    }
     addFilter(neutu3d::ERendererLayer::ROI);
     addFilter(neutu3d::ERendererLayer::DECORATION);
 
@@ -1186,10 +1200,15 @@ void Z3DView::updateSliceData()
 }
 */
 
+bool Z3DView::allowingNormalVolume() const
+{
+  return m_initMode == EInitMode::NORMAL || m_initMode == EInitMode::EXCLUDE_MESH;
+}
+
 void Z3DView::updateVolumeData()
 {
   if (m_volumeFilter) {
-    if (m_initMode == EInitMode::NORMAL) {
+    if (allowingNormalVolume()) {
       m_volumeFilter->setData(m_doc);
     } else if (m_initMode == EInitMode::FULL_RES_VOLUME) {
       m_volumeFilter->setData(m_doc, std::numeric_limits<int>::max() / 2);

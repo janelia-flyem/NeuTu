@@ -61,6 +61,7 @@
 #include "zswcnetwork.h"
 #include "zstring.h"
 #include "zcolormap.h"
+#include "zintcuboidobj.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "flyem/zneuronnetwork.h"
 #include "zfiletype.h"
@@ -10436,6 +10437,14 @@ ZIntCuboid ZStackDoc::getCuboidRoi() const
     if (rectObj->getZSpan() > 0) {
       box.setFirstZ(box.getFirstCorner().getZ() - rectObj->getZSpan());
       box.setLastZ(box.getLastCorner().getZ() + rectObj->getZSpan());
+    }
+  } else {
+    ZIntCuboidObj *obj = dynamic_cast<ZIntCuboidObj*>(
+          getObjectGroup().findFirstSameSource(
+            ZStackObject::EType::INT_CUBOID,
+            ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
+    if (obj != NULL) {
+      box = obj->getCuboid();
     }
   }
 

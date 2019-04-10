@@ -1992,8 +1992,9 @@ void Z3DVolumeFilter::readSparseVolumeWithObject(const ZStackDoc* doc, std::vect
 void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::unique_ptr<Z3DVolume> >& vols)
 {
   ZStackDocHelper docHelper;
-  ZStack *stackData = docHelper.getSparseStack(doc);
-
+//  ZStack *stackData = docHelper.getSparseStack(doc);
+  std::unique_ptr<ZStack> stackData =
+      std::unique_ptr<ZStack>(docHelper.makeBoundedSparseStack(doc));
 
 #if 0
   ZSparseStack *spStack = m_doc->getSparseStack();
@@ -2004,7 +2005,7 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
   const ZStack *stackData = spStack->getStack();
 #endif
 
-  if (stackData == NULL) {
+  if (stackData.get() == NULL) {
     return;
   }
 

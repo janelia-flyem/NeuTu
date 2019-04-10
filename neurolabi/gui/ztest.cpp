@@ -28116,6 +28116,8 @@ void ZTest::test(MainWindow *host)
   std::string name = "dACA";
   if (!writer->getDvidReader().hasData(name)) {
     writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
   }
   std::cout << "Writing " << name << std::endl;
   writer->writeRoi(roi, name);
@@ -28128,6 +28130,8 @@ void ZTest::test(MainWindow *host)
   std::string name = "SLP";
   if (!writer->getDvidReader().hasData(name)) {
     writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
   }
   writer->writeRoi(roi, name);
 #endif

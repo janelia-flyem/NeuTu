@@ -247,7 +247,10 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
 
     if (isSelected()) {
-      painter.setPen(QColor(255, 255, 0));
+      QPen pen(QColor(255, 255, 0));
+      pen.setWidth(1);
+      painter.setPen(pen);
+      painter.setBrush(Qt::NoBrush);
       double radius = m_width / 3.0;
       painter.drawEllipse(m_pointArray.front(), radius, radius);
       if (m_pointArray.size() > 1) {
