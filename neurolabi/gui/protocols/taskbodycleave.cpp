@@ -1528,7 +1528,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   requestJson["request-number"] = int(requestNumber);
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
