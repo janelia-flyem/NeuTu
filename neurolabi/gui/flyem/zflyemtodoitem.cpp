@@ -424,6 +424,30 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   syncActionTag();
 }
 
+std::string ZFlyEmToDoItem::GetPriorityName(int p)
+{
+  if (p > 0) {
+    switch (p) {
+    case 1:
+    case 2:
+    case 3:
+      return "High";
+    case 4:
+    case 5:
+      return "Medium";
+    default:
+      return "Low";
+    }
+  }
+
+  return "Unknown";
+}
+
+std::string ZFlyEmToDoItem::getPriorityName() const
+{
+  return GetPriorityName(getPriority());
+}
+
 int ZFlyEmToDoItem::getPriority() const
 {
   int p = 0;

@@ -42,6 +42,8 @@ void ZFlyEmTodoAnnotationDialog::updateWidget()
 
 void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
 {
+  ui->priorityComboBox->setCurrentText(item.getPriorityName().c_str());
+  /*
   switch (item.getPriority()) {
   case 0:
     ui->priorityComboBox->setCurrentIndex(3);
@@ -59,6 +61,7 @@ void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
     ui->priorityComboBox->setCurrentIndex(2);
     break;
   }
+  */
 
   ui->checkedCheckBox->setChecked(item.isChecked());
   m_bufferChecked = item.isChecked();
