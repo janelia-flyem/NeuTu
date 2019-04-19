@@ -1,4 +1,6 @@
 #include<iostream>
+#include<fstream>
+#include<ctime>
 #include "zmstcontainer.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
@@ -6,11 +8,18 @@
 
 
 shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackObject *> &_seeds){
-  size_t volume = stack.getVoxelNumber();
-  bool super_voxel = (volume >= 100000);
+  size_t volume = 0;//stack.getVoxelNumber();
+  for(auto p = stack.array8(); p != stack.array8() + stack.getVoxelNumber(); ++p){
+    if(*p){
+      ++volume;
+    }
+  }
+  bool super_voxel = (volume >= 100*100*100);
   std::cout<<"Super Voxel is Enable: "<<super_voxel<<std::endl;
 
   shared_ptr<ZStack> label_stack = nullptr;
+  int vertices = 0;
+
   if(super_voxel){
     uint start_label = 1;
     int stride_x = 2;
@@ -23,9 +32,14 @@ shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackOb
       stride_y = 1;
     }
     if(stack.height() < 100){
-      stride_z =1;
+      stride_z = 1;
     }
+    clock_t start = clock();
     label_stack = _createSuperVoxel(stack, start_label, stride_x,stride_y,stride_z);
+    //label_stack->save("/home/deli/mask.tif");
+    clock_t end = clock();
+    std::cout<<"SuperVoxel Running Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
+    vertices = start_label - 1;
   } else {
     label_stack = shared_ptr<ZStack>(new ZStack(FLOAT32, stack.getBoundBox(), 1));
     const uint8_t * pStack = stack.array8();
@@ -37,26 +51,15 @@ shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackOb
         *p = static_cast<float>(index++);
       }
     }
+    vertices = index - 1;
   }
-
-  std::set<int> _vertices;
-  const float* p = label_stack->array32();
-  const float* const pEnd = p + label_stack->getVoxelNumber();
-  for(; p != pEnd; ++p){
-    if(*p){
-      _vertices.insert(static_cast<int>(*p));
-    }
-  }
-  vector<int> vertices(_vertices.begin(),_vertices.end());
-
-  std::cout<<"Graph Vertices: "<<vertices.size()<<std::endl;
 
   int width = label_stack->width();
   int height = label_stack->height();
   int depth = label_stack->depth();
   int area =  width * height;
 
-  p = label_stack->array32();
+  const float* p = label_stack->array32();
   map<int,map<int,vector<double>>> cons;
   int nb[3] = {1, width, area};
   const uint8_t* pData = stack.array8();
@@ -117,22 +120,24 @@ shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackOb
 
   std::vector<int> segmentation;
 
+  clock_t start = clock();
   ZWatershedMST().run(segmentation,vertices,edges,seeds);
-
-  p = label_stack->array32();
-  map<int,int> old_to_new;
-  for(uint i = 0; i < vertices.size(); ++i){
-    old_to_new[vertices[i]] = segmentation[i];
-  }
+  clock_t end = clock();
+  std::cout<<"Stack Size:"<<volume/1024.0/1024.0<<std::endl;
+  std::cout<<"Graph Vertices: "<<vertices<<std::endl;
+  std::cout<<"MST Running Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
 
   shared_ptr<ZStack> rv = shared_ptr<ZStack>(stack.clone());
   rv->setZero();
   uint8_t* q = rv->array8();
+
   p = label_stack->array32();
+  const float* const pEnd = p + label_stack->getVoxelNumber();
+
   for(; p != pEnd; ++p, ++q){
     int old_label = static_cast<int>(*p);
     if(old_label){
-      int new_label = old_to_new[old_label];
+      int new_label = segmentation[old_label - 1];
       *q = new_label;
     }
   }
@@ -150,6 +155,7 @@ shared_ptr<ZStack> ZMSTContainer::_createSuperVoxel(const ZStack &stack, uint& s
      container.setDsMethod("Min(ignore zero)");
      container.addSeed(*(status_seeds.second));
      container.run();
+
      ZStackPtr presult = container.getResultStack();
      uint8_t* src = presult->array8();
      float* dst = rv->array32();
@@ -250,9 +256,10 @@ std::pair<bool, shared_ptr<ZStack>> ZMSTContainer::_seedsFromLocalMaximum(const 
 
 
 double ZMSTContainer::_weight(double a, double b) const{
-  double connection = std::exp(-0.05*(std::abs(a-b))); //a==b-> 1, |a-b|==10 -> 0.6 |a-b|==20->0.37
-  double intensity = std::exp(-2*(1-(a+b)/500));//255->1, 200->0.64, 100->0.3
-  return 0.1 * connection + intensity;
+  //double connection = std::exp(-0.05*(std::abs(a-b))); //a==b-> 1, |a-b|==10 -> 0.6 |a-b|==20->0.37
+  //double intensity = std::exp(-2*(1-(a+b)/500));//255->1, 200->0.64, 100->0.3
+  //return 0.1 * connection + intensity;
+  return a + b;
 }
 
 /*

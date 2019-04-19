@@ -561,7 +561,19 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
 
-  seed=toSeedStack(seeds,sampled->width(),sampled->height(),sampled->depth(),sampled->getOffset());
+  seed = toSeedStack(seeds,sampled->width(),sampled->height(),sampled->depth(),sampled->getOffset());
+
+  //
+  /*if(scale > 1){
+    const uint8_t* pSeed = seed->array8();
+    const uint8_t* const pSeedEnd = pSeed + seed->getVoxelNumber();
+    uint8_t * pSampled = sampled->array8();
+    for(; pSeed != pSeedEnd; ++pSeed, ++pSampled){
+      if(*pSeed){
+        *pSampled = 255;
+      }
+    }
+  }*/
 
   time.restart();
 

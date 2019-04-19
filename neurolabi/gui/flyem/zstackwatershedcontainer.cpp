@@ -610,13 +610,13 @@ bool ZStackWatershedContainer::isEmpty() const
   return (m_stack == NULL) && (m_spStack ==NULL);
 }
 
-void ZStackWatershedContainer::run(double alpha, double beta)
+void ZStackWatershedContainer::run()
 {
   std::cout << "Running watershed ..." << std::endl;
   deprecate(COMP_RESULT);
 
   if(m_stack && m_stack->hasData()){//for normal stack
-    ZStackMultiScaleWatershed watershed(alpha,beta);
+    ZStackMultiScaleWatershed watershed;
     ZStackPtr stack = ZStackPtr(watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
     stack->setOffset(getSourceOffset());
     m_result.push_back(stack);

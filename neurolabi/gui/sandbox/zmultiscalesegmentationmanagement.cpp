@@ -333,7 +333,12 @@ void ZMultiscaleSegmentationWindow::onSuperVoxel(){
   }
 
   ZMSTContainer container;
+
+  //clock_t start =  clock();
   shared_ptr<ZStack> rv = container.run(*stack, getSeeds());
+  //clock_t end = clock();
+
+
   if(rv){
     m_seg_tree->consume(m_selected_id,*rv);
   }
