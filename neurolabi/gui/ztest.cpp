@@ -22254,6 +22254,58 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6d7", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan roi = reader.readRoi("seven_column_roi");
+  int z = 4600/32;
+  {
+    ZObject3dScan obj = roi.getSlice(0, z);
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/FIB25/distal.obj");
+  }
+
+  {
+    ZObject3dScan obj = roi.getSlice(z+1, roi.getMaxZ());
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/FIB25/proximal.obj");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "7abe", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+
+  {
+    ZObject3dScan newRoiAlpha1 = reader.readRoi("alpha1_roi_0217");
+    newRoiAlpha1.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha1);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha1.obj");
+  }
+
+  {
+    ZObject3dScan newRoiAlpha2 = reader.readRoi("alpha2_roi_0217");
+    newRoiAlpha2.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha2);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha2.obj");
+  }
+
+  {
+    ZObject3dScan newRoiAlpha3 = reader.readRoi("alpha3_roi_0217");
+    newRoiAlpha3.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha3);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha3.obj");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
   ZDvidReader reader;
@@ -29627,6 +29679,29 @@ void ZTest::test(MainWindow *host)
   std::cout << "Has synapse: " << reader->getDvidTarget().hasSynapse() << std::endl;
   std::cout << "Has synapse labelsz: " << reader->getDvidTarget().hasSynapseLabelsz() << std::endl;
   std::cout << reader->getDvidTarget().getSynapseLabelszName() << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+  std::string roiName = "PVLP";
+  ZMesh *mesh =
+      FlyEmDataReader::ReadRoiMesh(writer->getDvidReader(), roiName);
+  std::string filePath = GET_TEST_DATA_DIR + "/test.drc";
+  mesh->save(filePath.c_str());
+  writer->uploadRoiMesh(filePath, roiName);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+  std::string roiName = "AL-DC3";
+  ZObject3dScan obj = writer->getDvidReader().readRoi(roiName);
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+  ZMesh *mesh = mf.makeMesh(obj);
+
+  std::string filePath = GET_TEST_DATA_DIR + "/test.drc";
+  mesh->save(filePath.c_str());
+  writer->uploadRoiMesh(filePath, roiName);
 #endif
 
   std::cout << "Done." << std::endl;

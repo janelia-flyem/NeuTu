@@ -6,11 +6,16 @@
 //#include "geometry/zintcuboid.h"
 
 #include "zstring.h"
+#include "zjsondef.h"
 #include "neutubeconfig.h"
+#include "zmesh.h"
 
 #include "zjsonparser.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
+#include "zobject3dscan.h"
+
+#include "zmeshfactory.h"
 
 #include "logging/zlog.h"
 
@@ -82,6 +87,138 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   }
 
   return annotation;
+}
+
+ZMesh* FlyEmDataReader::LoadRoi(
+    const ZDvidReader &reader, const std::string &roiName,
+    const std::string &key, const std::string &source)
+{
+  ZMesh *mesh = NULL;
+
+  if (!roiName.empty() && !key.empty()) {
+
+#ifdef _DEBUG_
+    std::cout << "Add ROI: " << "from " << key << " (" << source << ")"
+              << " as " << roiName << std::endl;
+#endif
+
+    if (source == "roi") {
+      ZObject3dScan roi;
+      reader.readRoi(key, &roi);
+      if (!roi.isEmpty()) {
+        ZMeshFactory mf;
+        mf.setOffsetAdjust(true);
+        mesh = mf.makeMesh(roi);
+//        mesh = ZMeshFactory::MakeMesh(roi);
+
+        //      m_loadedROIs.push_back(roi);
+        //      std::string source =
+        //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+        //      m_roiSourceList.push_back(source);
+      }
+    } else if (source == "mesh") {
+      mesh = reader.readMesh(
+            ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
+    }
+  }
+
+  return mesh;
+}
+
+ZMesh* FlyEmDataReader::LoadRoi(
+    const ZDvidReader &reader, const std::string &roiName,
+    const std::vector<std::string> &keyList, const std::string &source)
+{
+  ZMesh *mesh = NULL;
+  if (!roiName.empty() && !keyList.empty()) {
+    if (source == "roi") {
+      ZObject3dScan roi;
+      for (const std::string &key : keyList) {
+        reader.readRoi(key, &roi, true);
+      }
+      if (!roi.isEmpty()) {
+        mesh = ZMeshFactory::MakeMesh(roi);
+      }
+    } else if (source == "mesh") {
+      if (keyList.size() == 1) {
+        mesh = reader.readMesh(
+              ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), keyList[0]);
+      } else {
+        std::vector<ZMesh*> meshList;
+        for (const std::string &key : keyList) {
+          ZMesh *submesh = reader.readMesh(
+                ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
+          if (submesh != NULL) {
+            meshList.push_back(submesh);
+          }
+        }
+        if (!meshList.empty()) {
+          mesh = new ZMesh;
+          *mesh = ZMesh::Merge(meshList);
+          for (ZMesh *submesh : meshList) {
+            delete submesh;
+          }
+        }
+      }
+    }
+  }
+
+  return mesh;
+}
+
+ZMesh* FlyEmDataReader::ReadRoiMesh(
+    const ZDvidReader &reader, const std::string &roiName)
+{
+  ZMesh *mesh = NULL;
+
+  ZJsonObject roiInfo = reader.readJsonObjectFromKey(
+        ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
+  if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+    ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
+
+    std::string type = ZJsonParser::stringValue(jsonObj["type"]);
+    if (type.empty()) {
+      type = "mesh";
+    }
+
+    if (ZJsonParser::IsArray(jsonObj["key"])) {
+      ZJsonArray arrayJson(jsonObj.value("key"));
+      std::vector<std::string> keyList;
+      for (size_t i = 0; i < arrayJson.size(); ++i) {
+        std::string key = ZJsonParser::stringValue(arrayJson.at(i));
+        if (!key.empty()) {
+          keyList.push_back(key);
+        }
+      }
+      mesh = LoadRoi(reader, roiName, keyList, type);
+
+    } else {
+      std::string key = ZJsonParser::stringValue(jsonObj["key"]);
+      if (key.empty()) {
+        key = roiName;
+      }
+      mesh = LoadRoi(reader, roiName, key, type);
+    }
+  }
+
+  return mesh;
+
+//  ZMesh *mesh = NULL;
+
+//  if (source == "roi") {
+//    ZObject3dScan roi;
+//    reader.readRoi(key, &roi);
+//    if (!roi.isEmpty()) {
+//      ZMeshFactory mf;
+//      mf.setOffsetAdjust(true);
+//      mesh = mf.makeMesh(roi);
+//    }
+//  } else if (source == "mesh") {
+//    mesh = reader.readMesh(
+//          ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
+//  }
+
+//  return mesh;
 }
 
 #if 0

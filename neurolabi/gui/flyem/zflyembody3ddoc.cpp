@@ -4542,9 +4542,9 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
   m_garbageJustDumped = true;
 
   ZOUT(KLOG, 5) << ZLog::Profile()
-       << ZLog::Description(QString("Object (%1) dump time: %2 ms").
-                            arg(obj->getSource().c_str()).
-                            arg(timer.elapsed()).toStdString());
+       << ZLog::Description(QString("Object (%1) dump time").
+                            arg(obj->getSource().c_str()).toStdString())
+       << ZLog::Duration(timer.elapsed());
 }
 
 

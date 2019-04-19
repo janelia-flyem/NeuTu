@@ -4,7 +4,8 @@
 
 ZFlyEmTodoPresenter::ZFlyEmTodoPresenter()
 {
-  m_fieldList << " Body ID " << "Action" << "Comment" << "  Z   " << "  X  " << "  Y  " << "  User  ";
+  m_fieldList << " Body ID " << "Action" << "Comment" << "Priority"
+              << "  Z   " << "  X  " << "  Y  " << "  User  ";
 }
 
 void ZFlyEmTodoPresenter::setVisibleTest(
@@ -27,12 +28,19 @@ QVariant ZFlyEmTodoPresenter::data(
       case 2:
         return QString::fromStdString(item.getComment());
       case 3:
-        return item.getPosition().getZ();
+        if (item.getPriority() > 0) {
+          return QString::number(item.getPriority()) + "-"
+              + item.getPriorityName().c_str();
+        } else {
+          return item.getPriorityName().c_str();
+        }
       case 4:
-        return item.getPosition().getX();
+        return item.getPosition().getZ();
       case 5:
-        return item.getPosition().getY();
+        return item.getPosition().getX();
       case 6:
+        return item.getPosition().getY();
+      case 7:
         return item.getUserName().c_str();
       }
       break;

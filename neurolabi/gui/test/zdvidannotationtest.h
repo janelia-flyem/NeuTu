@@ -139,7 +139,17 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
     ZFlyEmToDoItem item(1, 2, 3);
     ASSERT_EQ(ZIntPoint(1, 2, 3), item.getPosition());
 
+    item.setPriority(0);
+    ASSERT_EQ("Unknown", item.getPriorityName());
 
+    item.setPriority(2);
+    ASSERT_EQ("High", item.getPriorityName());
+
+    item.setPriority(4);
+    ASSERT_EQ("Medium", item.getPriorityName());
+
+    item.setPriority(6);
+    ASSERT_EQ("Low", item.getPriorityName());
   }
 
 }
