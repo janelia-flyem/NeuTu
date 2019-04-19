@@ -5,26 +5,23 @@
 using std::shared_ptr;
 
 
-void ZWatershedMST::run(vector<int>& rv, const vector<int>& vertices,const vector<ZEdge>& edges,
-const map<int,int>& seeds){
-  std::priority_queue<ZEdge> que(edges.begin(),edges.end());
-  std::unordered_map<int,shared_ptr<ZActiveSet>> activeset;
+void ZWatershedMST::run(vector<int>& rv, int vertices, const vector<ZEdge>& edges, const map<int,int>& seeds){
+  std::priority_queue<ZEdge> que(edges.begin(), edges.end());
 
-  for(uint i = 0; i < vertices.size(); ++i){
+  vector<shared_ptr<ZActiveSet>> activeset(vertices + 1);
+  for(int i = 1; i <= vertices; ++i){
     shared_ptr<ZActiveSet> set = std::make_shared<ZActiveSet>();
-    set->add(vertices[i]);
-    activeset[vertices[i]] = set;
+    set->add(i);
+    activeset[i] = set;
   }
 
-  uint total = vertices.size();
-  uint processed = 0;
-
+  int processed = 0;
   for(auto it = seeds.begin(); it != seeds.end(); ++it){
     activeset[it->first]->setLabel(it->second);
     processed ++;
   }
 
-  while(!que.empty() && processed < total){
+  while(!que.empty() && processed < vertices){
     const ZEdge& edge = que.top();
     que.pop();
 
@@ -55,8 +52,8 @@ const map<int,int>& seeds){
     }
   }
 
-  rv.resize(vertices.size());
-  for(uint i = 0; i < vertices.size(); ++i){
-    rv[i] = activeset[vertices[i]]->getLabel();
+  rv.resize(vertices);
+  for(uint i = 1; i <= vertices; ++i){
+    rv[i-1] = activeset[i]->getLabel();
   }
 }

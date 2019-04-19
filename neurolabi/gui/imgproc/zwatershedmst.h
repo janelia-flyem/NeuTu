@@ -46,7 +46,8 @@ public:
   ~ZWatershedMST(){}
 
 public:
-  void run(vector<int>& rv, const vector<int>& vertices, const vector<ZEdge>& edges, const map<int,int>& seeds);
+  //1, ..., vertices are node labels
+  void run(vector<int>& rv, int vertices, const vector<ZEdge>& edges, const map<int,int>& seeds);
 
 };
 #endif // ZWATERSHEDMST_H
