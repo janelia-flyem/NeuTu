@@ -33,6 +33,7 @@ public:
   inline void setComment(const std::string &comment) { m_comment = comment; }
   inline void setUser(const std::string &user) { m_userName = user; }
   inline void setNamingUser(const std::string &user) { m_namingUser = user; }
+  inline void setInstance(const std::string &instance) { m_instance = instance; }
 
   /*!
    * \brief Load the data from a json string
@@ -72,6 +73,9 @@ public:
   static int GetStatusRank(const std::string &status);
 
 private:
+  static std::string GetOldFormatKey(const ZJsonObject &obj);
+
+private:
   uint64_t m_bodyId = 0;
   std::string m_status;
   std::string m_comment;
@@ -80,6 +84,15 @@ private:
   std::string m_userName;
   std::string m_namingUser;
 
+  std::string m_instance;
+  std::string m_majorInput;
+  std::string m_majorOutput;
+  std::string m_primaryNeurite;
+  bool m_outOfBounds = false;
+  bool m_crossMidline = false;
+  std::string m_neurotransmitter;
+  std::string m_synonym;
+
   static const char *KEY_BODY_ID;
   static const char *KEY_STATUS;
   static const char *KEY_NAME;
@@ -87,6 +100,14 @@ private:
   static const char *KEY_COMMENT;
   static const char *KEY_USER;
   static const char *KEY_NAMING_USER;
+  static const char *KEY_INSTANCE;
+  static const char *KEY_MAJOR_INPUT;
+  static const char *KEY_MAJOR_OUTPUT;
+  static const char *KEY_PRIMARY_NEURITE;
+  static const char *KEY_OUT_OF_BOUNDS;
+  static const char *KEY_CROSS_MIDLINE;
+  static const char *KEY_NEURONTRANSMITTER;
+  static const char *KEY_SYNONYM;
 };
 
 #endif // ZFLYEMBODYANNOTATION_H

@@ -15,6 +15,14 @@ const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
+const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
+const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
+const char *ZFlyEmBodyAnnotation::KEY_MAJOR_OUTPUT = "major output";
+const char *ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE = "primary neurite";
+const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
+const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
+const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
+const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
@@ -30,6 +38,14 @@ void ZFlyEmBodyAnnotation::clear()
   m_type.clear();
   m_userName.clear();
   m_namingUser.clear();
+  m_instance.clear();
+  m_majorInput.clear();
+  m_majorOutput.clear();
+  m_primaryNeurite.clear();
+  m_outOfBounds = false;
+  m_crossMidline = false;
+  m_neurotransmitter.clear();
+  m_synonym.clear();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -72,17 +88,51 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     if (!m_namingUser.empty()) {
       obj.setEntry(KEY_NAMING_USER, m_namingUser);
     }
+
+    obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
+    obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
+    obj.setNonEmptyEntry(KEY_MAJOR_OUTPUT, m_majorOutput);
+    obj.setNonEmptyEntry(KEY_PRIMARY_NEURITE, m_primaryNeurite);
+    obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
+    obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
+    obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
+    obj.setNonEmptyEntry(KEY_SYNONYM, m_synonym);
+
   }
 
   return obj;
 }
 
+std::string ZFlyEmBodyAnnotation::GetOldFormatKey(const ZJsonObject &obj)
+{
+  std::vector<std::string> keyList = obj.getAllKey();
+  if (keyList.size() == 1) {
+    std::string &key = keyList.front();
+    if (ZString(key).isAllDigit()) {
+      return key;
+    }
+  }
+
+  return "";
+}
+
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 {
-  if (obj.hasKey(KEY_BODY_ID) || obj.hasKey(KEY_STATUS) ||
-      obj.hasKey(KEY_COMMENT) || obj.hasKey(KEY_NAME) ||
-      obj.hasKey(KEY_TYPE) || obj.hasKey(KEY_NAMING_USER)) {
+  clear();
+
+  std::string key = GetOldFormatKey(obj);
+  if (!key.empty()) {
+    uint64_t bodyId = ZString(key).firstUint64();
+    if (bodyId > 0) {
+      setBodyId(bodyId);
+      ZJsonObject annotationJson(
+          const_cast<json_t*>(obj[key.c_str()]),
+          ZJsonObject::SET_INCREASE_REF_COUNT);
+      setType(ZJsonParser::stringValue(annotationJson["Type"]));
+      setName(ZJsonParser::stringValue(annotationJson["Name"]));
+    }
+  } else {
     if (obj.hasKey(KEY_BODY_ID)) {
       setBodyId(ZJsonParser::integerValue(obj[KEY_BODY_ID]));
     }
@@ -110,18 +160,9 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(KEY_NAMING_USER)) {
       setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER]));
     }
-  } else {
-    std::vector<std::string> keyList = obj.getAllKey();
-    if (keyList.size() == 1) {
-      uint64_t bodyId = ZString(keyList.front()).firstUint64();
-      if (bodyId > 0) {
-        setBodyId(bodyId);
-        ZJsonObject annotationJson(
-            const_cast<json_t*>(obj[keyList.front().c_str()]),
-            ZJsonObject::SET_INCREASE_REF_COUNT);
-        setType(ZJsonParser::stringValue(annotationJson["Type"]));
-        setName(ZJsonParser::stringValue(annotationJson["Name"]));
-      }
+
+    if (obj.hasKey(KEY_INSTANCE)) {
+      setInstance(ZJsonParser::stringValue(obj[KEY_INSTANCE]));
     }
   }
 }
