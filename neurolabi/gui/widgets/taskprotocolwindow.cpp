@@ -211,6 +211,7 @@ void TaskProtocolWindow::onPrevButton() {
     //  longer note in onNextButton()
     emit clearBodyQueue();
 
+    int taskIndexBodiesToRemove = m_currentTaskIndex;
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -226,7 +227,7 @@ void TaskProtocolWindow::onPrevButton() {
     //  is a debatable position)
 
     updateCurrentTaskLabel();
-    updateBodyWindow();
+    updateBodyWindow(taskIndexBodiesToRemove);
     updateLabel();
 
     updateBody3dDocConfig();
@@ -334,6 +335,7 @@ void TaskProtocolWindow::onNextButton() {
     //  bodies are or aren't needed "soon"
     emit clearBodyQueue();
 
+    int taskIndexBodiesToRemove = m_currentTaskIndex;
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
     } else {
@@ -343,15 +345,8 @@ void TaskProtocolWindow::onNextButton() {
         }
     }
 
-    // for now, simplest possible prefetching: just prefetch for the next task,
-    //  as long as there is one and it's not the current one
-    int nextTaskIndex = getNext();
-    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-        prefetchForTaskIndex(nextTaskIndex);
-    }
-
     updateCurrentTaskLabel();
-    updateBodyWindow();
+    updateBodyWindow(taskIndexBodiesToRemove);
     updateLabel();
 
     updateBody3dDocConfig();
@@ -446,7 +441,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
-    updateBodyWindow();
+    updateBodyWindow(m_currentTaskIndex);
 }
 
 void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
@@ -506,21 +501,23 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     //  to advance away from the current task, if it's completed
     if (!ui->showCompletedCheckBox->isChecked() &&
         m_taskList[m_currentTaskIndex]->completed()) {
+        int taskIndexBodiesToRemove = m_currentTaskIndex;
         m_currentTaskIndex = getNextUncompleted();
         if (m_currentTaskIndex < 0) {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
         updateCurrentTaskLabel();
-        updateBodyWindow();
+        updateBodyWindow(taskIndexBodiesToRemove);
         updateLabel();
     }
     // likewise, if there is nothing showing (all complete) and
     //  we go to "show completed", advance and show something
     if (ui->showCompletedCheckBox->isChecked() &&
         m_currentTaskIndex < 0) {
+        int taskIndexBodiesToRemove = m_currentTaskIndex;
         m_currentTaskIndex = getFirst(true);
         updateCurrentTaskLabel();
-        updateBodyWindow();
+        updateBodyWindow(taskIndexBodiesToRemove);
         updateLabel();
     }
     updateNextPrevButtonsEnabled();
@@ -578,13 +575,6 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
-
-    // first prefetch
-    int nextTaskIndex = getNext();
-    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-        prefetchForTaskIndex(nextTaskIndex);
-    }
-
 
     updateCurrentTaskLabel();
     updateBodyWindow();
@@ -757,13 +747,18 @@ bool TaskProtocolWindow::skip(int taskIndex)
  */
 void TaskProtocolWindow::prefetchForTaskIndex(int index) {
     if (m_taskList[index]->usePrefetching()) {
-        // each task may have bodies that it wants visible and selected;
-        //  add those, selected first (which are presumably more important?)
-        if (m_taskList[index]->selectedBodies().size() > 0) {
-            prefetch(m_taskList[index]->selectedBodies());
+        const QSet<uint64_t> &selected = m_taskList[index]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[index]->visibleBodies();
+        QSet<uint64_t> toPrefetch = selected + visible;
+        if (m_currentTaskIndex >= 0) {
+
+          // There is no need to prefetch any bodies already loaded by the current task.
+
+          toPrefetch -= m_taskList[m_currentTaskIndex]->selectedBodies();
+          toPrefetch -= m_taskList[m_currentTaskIndex]->visibleBodies();
         }
-        if (m_taskList[index]->visibleBodies().size() > 0) {
-            prefetch(m_taskList[index]->visibleBodies());
+        if (!toPrefetch.empty()) {
+          prefetch(toPrefetch);
         }
     }
 }
@@ -772,6 +767,20 @@ void TaskProtocolWindow::prefetchForTaskIndex(int index) {
  * request prefetch of bodies that you know are coming up next
  */
 void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
+    if (const char* setting = std::getenv("NEU3_USE_PREFETCHING")) {
+        if (std::string(setting) == "no") {
+            return;
+        }
+    }
+
+    QString msg("Starting prefetching ");
+    msg += (bodyIDs.count() == 1) ? "body " : "bodies ";
+    for (uint64_t id : bodyIDs) {
+      msg += QString::number(id) + ", ";
+    }
+    msg.chop(2);
+    emitInfo(msg);
+
     emit prefetchBody(bodyIDs);
 }
 
@@ -867,14 +876,24 @@ void TaskProtocolWindow::updateMenu(bool add) {
 /*
  * update the body view window for current index
  */
-void TaskProtocolWindow::updateBodyWindow() {
+void TaskProtocolWindow::updateBodyWindow(int taskIdBodiesToRemove) {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeLoading();
 
-        disableButtonsWhileUpdating();
+        QSet<uint64_t> toRemove;
+        if (taskIdBodiesToRemove != -1) {
+            toRemove = m_taskList[taskIdBodiesToRemove]->visibleBodies();
+            toRemove.unite(m_taskList[taskIdBodiesToRemove]->selectedBodies());
+        } else {
+          emit allBodiesRemoved();
+        }
 
-        emit allBodiesRemoved();
+        disableButtonsWhileUpdating(toRemove);
+
+        for (uint64_t id : toRemove) {
+            emit bodyRemoved(id);
+        }
 
         const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
@@ -913,11 +932,12 @@ void TaskProtocolWindow::updateBodyWindow() {
                 emit bodyAdded(bodyID);
             }
         }
+
         emit bodySelectionChanged(selected);
     }
 }
 
-void TaskProtocolWindow::disableButtonsWhileUpdating()
+void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove)
 {
     // If the user triggers several calls to updateBodyWindow() in rapid succession, by
     // quickly moving between tasks and using controls from the task widget that also change
@@ -928,55 +948,46 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     // slots indicate that all the old meshes have been fully deleted and all the new meshes
     // have been loaded.
 
-    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc);
-    m_bodyRecycledExpected = meshes.size();
+  const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+  const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+  QSet<uint64_t> visibleOrSelected = visible + selected;
+
+    m_bodyRecycledExpected = 0;
+    for (uint64_t id : toRemove) {
+        if (!visibleOrSelected.contains(id)) {
+
+            // Only if a removed body is not being re-added should the expected count change.
+
+            if (ZFlyEmBodyManager::IsEncoded(id)) {
+                QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
+                m_bodyRecycledExpected += mappedIds.size();
+            } else {
+                m_bodyRecycledExpected++;
+            }
+        }
+    }
     m_bodyRecycledReceived = 0;
 
     m_bodyMeshesAddedExpected = 0;
     m_bodyMeshesAddedReceived = 0;
 
     bool usingTars = false;
-    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-    foreach (uint64_t bodyID, visible) {
+    foreach (uint64_t bodyID, visibleOrSelected) {
         if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
             usingTars = true;
+            if (!toRemove.contains(bodyID)) {
+
+                // Only if an added body was not just removed should the expected count change.
+
+                m_bodyMeshesAddedExpected++;
+            }
         }
     }
-
-    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
-    foreach (uint64_t bodyID, selected) {
-        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
-            usingTars = true;
-        }
-    }
-
-    m_bodiesReused = 0;
 
     if (usingTars) {
         m_bodyMeshLoadedExpected = 0;
-
-        // Bodies reused from the previous task will not generate bodyMeshesAdded
-        // signals, which needs to be considered when counting these signals.
-
-        QSet<uint64_t> bodies = m_body3dDoc->getNormalBodySet();
-        for (uint64_t bodyId : bodies) {
-            uint64_t id = ZFlyEmBodyManager::encode(bodyId);
-            m_bodiesReused += (visible.contains(id) || selected.contains(id));
-        }
     } else {
         m_bodyMeshLoadedExpected = (visible + selected).size();
-
-        // Bodies reused from the previous task may not generate onBodyRecycled and
-        // onBodyMeshLoaded signals, which needs to be considered when counting
-        // these signals.
-
-        for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-            ZMesh *mesh = *it;
-            uint64_t id = mesh->getLabel();
-            m_bodiesReused += (visible.contains(id) || selected.contains(id));
-        }
     }
 
     m_bodyMeshLoadedReceived = 0;
@@ -1002,11 +1013,10 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
            << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
            << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
            << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
-           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
-           << "m_bodiesReused =" << m_bodiesReused;
-    if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
-        (m_bodyMeshesAddedExpected - m_bodiesReused == m_bodyMeshesAddedReceived) &&
-        (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
+           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
+    if ((m_bodyRecycledExpected <= m_bodyRecycledReceived) &&
+        (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+        (m_bodyMeshLoadedExpected <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
@@ -1027,6 +1037,16 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
         m_changingTask = false;
         updateNextPrevButtonsEnabled();
+
+        // for now, simplest possible prefetching: just prefetch for the next task,
+        //  as long as there is one and it's not the current one
+        // and start prefetching when control returns to the UI after reenabling it
+        QTimer::singleShot(0, this, [=]() {
+          int nextTaskIndex = getNext();
+          if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+              prefetchForTaskIndex(nextTaskIndex);
+          }
+        });
     }
 }
 

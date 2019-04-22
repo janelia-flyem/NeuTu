@@ -174,6 +174,24 @@ QSet<uint64_t> ZFlyEmBodyManager::getMappedSet(uint64_t bodyId) const
   return m_bodyMap.value(decode(bodyId));
 }
 
+void ZFlyEmBodyManager::registerBufferedBody(uint64_t id, const QSet<uint64_t> &comp)
+{
+  m_bufferedBodyMap[decode(id)] = comp;
+}
+
+void ZFlyEmBodyManager::deregisterBufferedBody(uint64_t id)
+{
+  if (!encodingSupervoxel(id)) {
+    uint64_t bodyId = decode(id);
+    m_bufferedBodyMap.remove(bodyId);
+  }
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getBufferedMappedSet(uint64_t bodyId) const
+{
+  return m_bufferedBodyMap.value(decode(bodyId));
+}
+
 QSet<uint64_t> ZFlyEmBodyManager::getNormalBodySet() const
 {
   QSet<uint64_t> bodySet = QSet<uint64_t>::fromList(m_bodyMap.keys());
