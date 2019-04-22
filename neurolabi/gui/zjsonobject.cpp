@@ -352,6 +352,13 @@ void ZJsonObject::setEntry(const char *key, bool v)
   setEntryWithoutKeyCheck(key, C_Json::makeBoolean(v));
 }
 
+void ZJsonObject::setTrueEntry(const char *key, bool v)
+{
+  if (v) {
+    setEntry(key, v);
+  }
+}
+
 void ZJsonObject::setEntry(const char *key, int64_t v)
 {
   if (!isValidKey(key)) {
