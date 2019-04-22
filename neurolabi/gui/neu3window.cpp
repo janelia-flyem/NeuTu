@@ -478,6 +478,7 @@ void Neu3Window::createTaskWindow() {
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
     connect(m_taskProtocolWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(m_taskProtocolWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
     connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
