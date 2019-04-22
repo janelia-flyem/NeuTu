@@ -35,6 +35,9 @@ public:
   bool isChecked() const;
   void setChecked(bool checked);
   int getPriority() const;
+  std::string getPriorityName() const;
+
+  static std::string GetPriorityName(int p);
 //  bool isCheckable() const;
 
   void setAction(neutu::EToDoAction action);

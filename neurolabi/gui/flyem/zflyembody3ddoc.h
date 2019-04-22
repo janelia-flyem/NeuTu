@@ -10,6 +10,7 @@
 #include <QColor>
 #include <QList>
 #include <QTime>
+#include <QThreadStorage>
 
 #include "common/neutube_def.h"
 
@@ -99,6 +100,7 @@ public:
 
   uint64_t getMappedId(uint64_t bodyId) const;
   bool isAgglo(uint64_t bodyId) const;
+  QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -425,9 +427,9 @@ private:
 
   std::vector<ZMesh*> getCachedMeshes(uint64_t bodyId, int zoom);
   std::vector<ZMesh *> makeBodyMeshModels(ZFlyEmBodyConfig &config);
-  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t);
+  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t, bool showProgress = true);
   std::vector<ZMesh*> makeTarMeshModels(
-      const ZDvidReader &reader, uint64_t bodyId, int t);
+      const ZDvidReader &reader, uint64_t bodyId, int t, bool showProgress = true);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -578,8 +580,16 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_workDvidReader;
   ZDvidWriter m_mainDvidWriter;
+
+  // Each background "work" thread reading meshes must have its own ZDvidReader.
+  // Currently, there are two such threads (one for standard reading, one for prefetching).
+  const int NUM_WORK_DVID_READERS = 2;
+  std::vector<ZDvidReader> m_workDvidReader;
+  mutable QThreadStorage<int> m_workDvidReaderIndices;
+  mutable int m_workDvidReaderNextIndex = 0;
+  mutable QMutex m_workDvidReaderNextIndexMutex;
+
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;
