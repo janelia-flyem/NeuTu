@@ -658,6 +658,7 @@ std::vector<bool> Z3DMeshFilter::hitObject(
 void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors,
                                      const std::map<uint64_t, std::size_t> &meshIdToColorIndex)
 {
+  m_meshIDToColorIndexFunc = nullptr;
   m_indexedColors = indexedColors;
   m_meshIDToColorIndex = meshIdToColorIndex;
   updateMeshVisibleState();
