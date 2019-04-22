@@ -193,20 +193,25 @@ int main(int argc, char *argv[])
   } else {
     /********* for debugging *************/
 
-#ifndef QT_NO_DEBUG
+//#ifndef QT_NO_DEBUG
     if (mainConfig.unitTest) {
 //      ZUnitTest(argc, argv).run();
-      ZTest::RunUnitTest(argc, argv);
-    }
-#else
-    if (mainConfig.unitTest) {
-      std::cout << "No unit test in the release version." << std::endl;
-    }
-#endif
-    if (!mainConfig.unitTest) {
+      return ZTest::RunUnitTest(argc, argv);
+    } else {
       std::cout << "Running test function" << std::endl;
       ZTest::test(NULL);
+
+      return 0;
     }
+//#else
+//    if (mainConfig.unitTest) {
+//      std::cout << "No unit test in the release version." << std::endl;
+//    }
+//#endif
+//    if (!mainConfig.unitTest) {
+//      std::cout << "Running test function" << std::endl;
+//      ZTest::test(NULL);
+//    }
 
     return 1;
   }

@@ -10,6 +10,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QMimeData>
+#include <QElapsedTimer>
 
 #include "logging/zlog.h"
 
@@ -3283,6 +3284,25 @@ void ZFlyEmProofMvc::annotateBody(
   updateViewButton();
 }
 
+void ZFlyEmProofMvc::warn(const QString &msg)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          msg, neutu::EMessageType::WARNING,
+          ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+          ZWidgetMessage::ETarget::TARGET_KAFKA));
+}
+
+void ZFlyEmProofMvc::warn(const std::string &msg)
+{
+  warn(QString::fromStdString(msg));
+}
+
+void ZFlyEmProofMvc::warn(const char *msg)
+{
+  warn(QString(msg));
+}
+
 void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -6042,8 +6062,15 @@ void ZFlyEmProofMvc::loadRoi(
         //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
+      QElapsedTimer timer;
+      timer.start();
       mesh = reader.readMesh(
             ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
+      KLOG << ZLog::Profile()
+           << ZLog::Description(QString("ROI (%1) mesh reading time")
+                                .arg(roiName.c_str()).arg(timer.elapsed())
+                                .toStdString())
+           << ZLog::Duration(timer.elapsed());
     }
 
     loadRoiMesh(mesh, roiName);
@@ -6161,11 +6188,26 @@ void ZFlyEmProofMvc::loadRoiFromRoiData(const ZDvidReader &reader)
 void ZFlyEmProofMvc::loadRoiFromRefData(
     const ZDvidReader &reader, const std::string &roiName)
 {
-#ifdef _DEBUG_
+  QElapsedTimer timer;
+  timer.start();
+  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
+  KLOG << ZLog::Profile()
+       << ZLog::Description(QString("ROI (%1) mesh loading time")
+                            .arg(roiName.c_str()).arg(timer.elapsed())
+                            .toStdString())
+       << ZLog::Duration(timer.elapsed());
+
+  if (mesh) {
+    loadRoiMesh(mesh, roiName);
+  } else {
+    warn("Failed to load ROI " + roiName);
+  }
+
+#ifdef _DEBUG_2
   std::cout << "Load ROIs from ROI data" << std::endl;
 #endif
 //  ZMesh *mesh = NULL;
-
+#if 0
   //Schema: {"->": {"type": type, "key", data}}
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
@@ -6196,6 +6238,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
       loadRoi(reader, roiName, key, type);
     }
   }
+#endif
 }
 
 void ZFlyEmProofMvc::loadROIFunc()

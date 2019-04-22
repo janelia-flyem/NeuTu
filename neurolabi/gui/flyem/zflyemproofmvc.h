@@ -464,6 +464,10 @@ protected:
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
+  void warn(const std::string &msg);
+  void warn(const char *msg);
+  void warn(const QString &msg);
+
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
