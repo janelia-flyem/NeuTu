@@ -1,5 +1,10 @@
 HEADERS += \
-    $$PWD/flyemdialogfactory.h
+    $$PWD/flyemdialogfactory.h \
+    $$PWD/flyembodyannotationdialog.h
 
 SOURCES += \
-    $$PWD/flyemdialogfactory.cpp
+    $$PWD/flyemdialogfactory.cpp \
+    $$PWD/flyembodyannotationdialog.cpp
+
+FORMS += \
+    $$PWD/flyembodyannotationdialog.ui

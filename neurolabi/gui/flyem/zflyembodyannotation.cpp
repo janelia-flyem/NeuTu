@@ -19,6 +19,7 @@ const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_OUTPUT = "major output";
 const char *ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE = "primary neurite";
+const char *ZFlyEmBodyAnnotation::KEY_LOCATION = "location";
 const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
 const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
 const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
@@ -42,6 +43,7 @@ void ZFlyEmBodyAnnotation::clear()
   m_majorInput.clear();
   m_majorOutput.clear();
   m_primaryNeurite.clear();
+  m_location.clear();
   m_outOfBounds = false;
   m_crossMidline = false;
   m_neurotransmitter.clear();
@@ -93,6 +95,7 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
     obj.setNonEmptyEntry(KEY_MAJOR_OUTPUT, m_majorOutput);
     obj.setNonEmptyEntry(KEY_PRIMARY_NEURITE, m_primaryNeurite);
+    obj.setNonEmptyEntry(KEY_LOCATION, m_location);
     obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
     obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
     obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
@@ -115,6 +118,18 @@ std::string ZFlyEmBodyAnnotation::GetOldFormatKey(const ZJsonObject &obj)
 
   return "";
 }
+/*
+namespace {
+template<typename T>
+void process_annotation_key(
+    const ZJsonObject &obj, const char *key, std::function<void(const T &)> f)
+{
+  if (obj.hasKey(key)) {
+    f(ZJsonParser().getValue<T>(obj[key]));
+  }
+}
+}
+*/
 
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
@@ -164,7 +179,98 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(KEY_INSTANCE)) {
       setInstance(ZJsonParser::stringValue(obj[KEY_INSTANCE]));
     }
+
+    if (obj.hasKey(KEY_MAJOR_INPUT)) {
+      setMajorInput(ZJsonParser::stringValue(obj[KEY_MAJOR_INPUT]));
+    }
+
+    if (obj.hasKey(KEY_MAJOR_OUTPUT)) {
+      setMajorOutput(ZJsonParser::stringValue(obj[KEY_MAJOR_OUTPUT]));
+    }
+
+    if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
+      setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
+    }
+
+    if (obj.hasKey(KEY_LOCATION)) {
+      setLocation(ZJsonParser::stringValue(obj[KEY_LOCATION]));
+    }
+
+    if (obj.hasKey(KEY_OUT_OF_BOUNDS)) {
+      setOutOfBounds(ZJsonParser::booleanValue(obj[KEY_OUT_OF_BOUNDS]));
+    }
+
+    if (obj.hasKey(KEY_CROSS_MIDLINE)) {
+      setCrossMidline(ZJsonParser::booleanValue(obj[KEY_CROSS_MIDLINE]));
+    }
+
+    if (obj.hasKey(KEY_NEURONTRANSMITTER)) {
+      setNeurotransmitter(ZJsonParser::stringValue(obj[KEY_NEURONTRANSMITTER]));
+    }
+
+    if (obj.hasKey(KEY_SYNONYM)) {
+      setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
+    }
+
+    /*
+    process_annotation_key<std::string>(
+          obj, KEY_MAJOR_OUTPUT,
+          std::bind(&ZFlyEmBodyAnnotation::setMajorOutput, this, std::placeholders::_1));
+          */
   }
+}
+
+std::string ZFlyEmBodyAnnotation::getName() const
+{
+  if (!m_name.empty()) {
+    return m_name;
+  }
+
+  if (!m_instance.empty()) {
+    return m_instance;
+  }
+
+  return m_majorInput + m_majorOutput + m_primaryNeurite;;
+}
+
+void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
+{
+  m_majorInput = v;
+}
+
+void ZFlyEmBodyAnnotation::setMajorOutput(const std::string &v)
+{
+  m_majorOutput = v;
+}
+
+void ZFlyEmBodyAnnotation::setPrimaryNeurite(const std::string &v)
+{
+  m_primaryNeurite = v;
+}
+
+void ZFlyEmBodyAnnotation::setLocation(const std::string &v)
+{
+  m_location = v;
+}
+
+void ZFlyEmBodyAnnotation::setOutOfBounds(bool v)
+{
+  m_outOfBounds = v;
+}
+
+void ZFlyEmBodyAnnotation::setCrossMidline(bool v)
+{
+  m_crossMidline = v;
+}
+
+void ZFlyEmBodyAnnotation::setNeurotransmitter(const std::string &v)
+{
+  m_neurotransmitter = v;
+}
+
+void ZFlyEmBodyAnnotation::setSynonym(const std::string &v)
+{
+  m_synonym = v;
 }
 
 /*member dependent*/
@@ -173,18 +279,27 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "Body annotation:" << std::endl;
   std::cout << "  Body ID: " << m_bodyId << std::endl;
   std::cout << "  Type: " << m_type << std::endl;
-  std::cout << "  Name: " << m_name << std::endl;
+  std::cout << "  Name: " << getName() << std::endl;
   std::cout << "  Status: " << m_status << std::endl;
   std::cout << "  Comment: " << m_comment << std::endl;
-  std::cout << "  User: " << KEY_USER << std::endl;
-  std::cout << "  Named User: " << KEY_NAMING_USER << std::endl;
+  std::cout << "  User: " << m_userName << std::endl;
+  std::cout << "  Named User: " << m_namingUser << std::endl;
+  std::cout << "  Instance: " << m_instance << std::endl;
+  std::cout << "  Major Input: " << m_majorInput << std::endl;
+  std::cout << "  Major Output: " << m_majorOutput << std::endl;
+  std::cout << "  Primary Neurite: " << m_primaryNeurite << std::endl;
+  std::cout << "  Location: " << m_location << std::endl;
+  std::cout << "  Out of Bounds: " << m_outOfBounds << std::endl;
+  std::cout << "  Cross Midline: " << m_crossMidline << std::endl;
+  std::cout << "  Neurotransmitter: " << m_neurotransmitter << std::endl;
+  std::cout << "  Synonym: " << m_synonym << std::endl;
 }
 
 /*member dependent*/
 bool ZFlyEmBodyAnnotation::isEmpty() const
 {
-  return m_status.empty() && m_comment.empty() && m_name.empty() &&
-      m_type.empty();
+  return m_status.empty() && m_comment.empty() &&
+      m_type.empty() && getName().empty();
 }
 
 int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
@@ -303,4 +418,24 @@ std::string ZFlyEmBodyAnnotation::toString() const
 bool ZFlyEmBodyAnnotation::isFinalized() const
 {
   return (ZString(getStatus()).lower() == "finalized");
+}
+
+bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
+{
+  return (m_bodyId == annot.m_bodyId) &&
+      (m_status == annot.m_status) &&
+      (m_comment == annot.m_comment) &&
+      (m_name == annot.m_name) &&
+      (m_type == annot.m_type) &&
+      (m_userName == annot.m_userName) &&
+      (m_namingUser == annot.m_namingUser) &&
+      (m_instance == annot.m_instance) &&
+      (m_majorInput == annot.m_majorInput) &&
+      (m_majorOutput == annot.m_majorOutput) &&
+      (m_primaryNeurite == annot.m_primaryNeurite) &&
+      (m_location == annot.m_location) &&
+      (m_outOfBounds == annot.m_outOfBounds) &&
+      (m_crossMidline == annot.m_crossMidline) &&
+      (m_neurotransmitter == annot.m_neurotransmitter) &&
+      (m_synonym == annot.m_synonym);
 }
