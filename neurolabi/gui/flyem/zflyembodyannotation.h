@@ -19,10 +19,12 @@ public:
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const std::string& getStatus() const { return m_status; }
   inline const std::string& getComment() const { return m_comment; }
-  inline const std::string& getName() const { return m_name; }
+//  inline const std::string& getName() const { return m_name; }
   inline const std::string& getType() const { return m_type; }
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
+
+  std::string getName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setStatus(const std::string &status) {
@@ -34,6 +36,14 @@ public:
   inline void setUser(const std::string &user) { m_userName = user; }
   inline void setNamingUser(const std::string &user) { m_namingUser = user; }
   inline void setInstance(const std::string &instance) { m_instance = instance; }
+  void setMajorInput(const std::string &v);
+  void setMajorOutput(const std::string &v);
+  void setPrimaryNeurite(const std::string &v);
+  void setLocation(const std::string &v);
+  void setOutOfBounds(bool v);
+  void setCrossMidline(bool v);
+  void setNeurotransmitter(const std::string &v);
+  void setSynonym(const std::string &v);
 
   /*!
    * \brief Load the data from a json string
@@ -69,6 +79,8 @@ public:
 
   bool isFinalized() const;
 
+  bool operator == (const ZFlyEmBodyAnnotation &annot) const;
+
 public:
   static int GetStatusRank(const std::string &status);
 
@@ -88,6 +100,7 @@ private:
   std::string m_majorInput;
   std::string m_majorOutput;
   std::string m_primaryNeurite;
+  std::string m_location;
   bool m_outOfBounds = false;
   bool m_crossMidline = false;
   std::string m_neurotransmitter;
@@ -104,6 +117,7 @@ private:
   static const char *KEY_MAJOR_INPUT;
   static const char *KEY_MAJOR_OUTPUT;
   static const char *KEY_PRIMARY_NEURITE;
+  static const char *KEY_LOCATION;
   static const char *KEY_OUT_OF_BOUNDS;
   static const char *KEY_CROSS_MIDLINE;
   static const char *KEY_NEURONTRANSMITTER;

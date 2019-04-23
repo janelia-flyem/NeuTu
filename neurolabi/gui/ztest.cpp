@@ -28094,6 +28094,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string dataDir = GET_FLYEM_DATA_DIR + "/roi/20190422";
+  flyem::UploadRoi(dataDir.c_str(), (dataDir + "/roiname.csv").c_str(), writer);
+#endif
+
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
@@ -29702,6 +29708,19 @@ void ZTest::test(MainWindow *host)
   std::string filePath = GET_TEST_DATA_DIR + "/test.drc";
   mesh->save(filePath.c_str());
   writer->uploadRoiMesh(filePath, roiName);
+#endif
+
+#if 1
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+  std::cout << annot.toJsonObject().dumpString(2) << std::endl;
+
+  ZFlyEmBodyAnnotation annot2;
+  annot2.loadJsonObject(annot.toJsonObject());
+  std::cout << "compare: " << (annot == annot2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
