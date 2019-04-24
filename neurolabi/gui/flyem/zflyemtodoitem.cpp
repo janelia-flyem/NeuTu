@@ -23,6 +23,8 @@ const char* ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA = "trace to soma";
 const char* ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA_TAG = "trace_to_soma";
 const char* ZFlyEmToDoItem::ACTION_NO_SOMA = "no soma";
 const char* ZFlyEmToDoItem::ACTION_NO_SOMA_TAG = "no_soma";
+const char* ZFlyEmToDoItem::ACTION_DIAGNOSTIC = "diagnostic";
+const char* ZFlyEmToDoItem::ACTION_DIAGNOSTIC_TAG = "diagnostic";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
@@ -31,7 +33,8 @@ const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_SUPERVOXEL_SPLIT, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT},
   {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutu::EToDoAction::TO_DO_IRRELEVANT},
   {ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA, neutu::EToDoAction::TO_TRACE_TO_SOMA},
-  {ZFlyEmToDoItem::ACTION_NO_SOMA, neutu::EToDoAction::NO_SOMA}
+  {ZFlyEmToDoItem::ACTION_NO_SOMA, neutu::EToDoAction::NO_SOMA},
+  {ZFlyEmToDoItem::ACTION_DIAGNOSTIC, neutu::EToDoAction::DIAGNOSTIC}
 };
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
@@ -112,6 +115,9 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
       break;
     case neutu::EToDoAction::TO_TRACE_TO_SOMA:
       color.setRgb(160, 80, 0, 192);
+      break;
+    case neutu::EToDoAction::DIAGNOSTIC:
+      color.setRgb(128, 0, 128, 192);
       break;
     case neutu::EToDoAction::NO_SOMA:
       break;
@@ -244,6 +250,9 @@ std::string ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction action)
   case neutu::EToDoAction::NO_SOMA:
     tag = make_tag(ACTION_NO_SOMA_TAG);
     break;
+  case neutu::EToDoAction::DIAGNOSTIC:
+    tag = make_tag(ACTION_DIAGNOSTIC_TAG);
+    break;
   }
 
   return tag;
@@ -331,9 +340,15 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
-      QPointF ptArray[9];
-      flyem::MakeStar(QPointF(x, y), radius, ptArray);
-      painter.drawPolyline(ptArray, 9);
+
+      if (getAction() != neutu::EToDoAction::DIAGNOSTIC) {
+        QPointF ptArray[9];
+        flyem::MakeStar(QPointF(x, y), radius, ptArray);
+        painter.drawPolyline(ptArray, 9);
+      } else {
+        QVector<QPointF> ptArray = flyem::MakeCrossKey(QPointF(x, y), radius);
+        painter.drawPolyline(ptArray.constData(), ptArray.size());
+      }
 
       if (hasSomaAction()) {
         painter.drawPolyline(vertexArray);
