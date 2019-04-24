@@ -140,7 +140,7 @@ void ZStackObject::setColor(const QColor &n) {
 #if defined(_QT_GUI_USED_)
   m_color = n;
 #else
-  UNUSED_PARAMETER(&n);
+  UNUSED_PARAMETER(n);
 #endif
 }
 

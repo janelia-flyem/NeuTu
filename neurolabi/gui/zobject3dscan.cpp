@@ -2370,7 +2370,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
 //  return painted;
 
 #else
-  UNUSED_PARAMETER(&painter);
+  UNUSED_PARAMETER(painter);
   UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(style);
 #endif

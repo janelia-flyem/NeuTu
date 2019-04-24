@@ -613,8 +613,8 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #else
   UNUSED_PARAMETER(lowerTn);
   UNUSED_PARAMETER(upperTn);
-  UNUSED_PARAMETER(&lineStart);
-  UNUSED_PARAMETER(&lineEnd);
+  UNUSED_PARAMETER(lineStart);
+  UNUSED_PARAMETER(lineEnd);
   UNUSED_PARAMETER(dataFocus);
 #endif
 }

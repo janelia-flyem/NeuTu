@@ -252,7 +252,7 @@ void ZObject3d::display(
   }
   painter.restore();
 #else
-  UNUSED_PARAMETER(&painter);
+  UNUSED_PARAMETER(painter);
   UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(option);
 #endif

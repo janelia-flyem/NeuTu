@@ -51,7 +51,7 @@ void ZPoint::display(ZPainter &painter, int n, Display_Style style) const
     painter.drawPoint(m_x, m_y);
   }
 #else
-  UNUSED_PARAMETER(&painter);
+  UNUSED_PARAMETER(painter);
   UNUSED_PARAMETER(n);
   UNUSED_PARAMETER(style);
 #endif

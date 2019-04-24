@@ -38,7 +38,7 @@ NeutubeConfig::NeutubeConfig()
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
   m_segmentationClassifThreshold(0.5), m_isSettingOn(true)
 {
-  UNUSED_PARAMETER(&config);
+  UNUSED_PARAMETER(config);
   m_messageReporter = new ZLogMessageReporter;
 }
 */

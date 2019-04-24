@@ -1409,7 +1409,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
-  UNUSED_PARAMETER(&bf);
+  UNUSED_PARAMETER(bf);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -1528,7 +1528,7 @@ uint64_t ZDvidWriter::writePartition(
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
-  UNUSED_PARAMETER(&bm);
+  UNUSED_PARAMETER(bm);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -1735,7 +1735,7 @@ void ZDvidWriter::deletePointAnnotation(
   ZDvidUrl url(getDvidTarget());
   del(url.getAnnotationUrl(dataName, x, y, z));
 #else
-  UNUSED_PARAMETER(&dataName);
+  UNUSED_PARAMETER(dataName);
   UNUSED_PARAMETER(x);
   UNUSED_PARAMETER(y);
   UNUSED_PARAMETER(z);
@@ -2043,8 +2043,8 @@ void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
   ZDvidUrl url(getDvidTarget());
   post(url.getSynapseMoveUrl(from, to));
 #else
-  UNUSED_PARAMETER(&from);
-  UNUSED_PARAMETER(&to);
+  UNUSED_PARAMETER(from);
+  UNUSED_PARAMETER(to);
 #endif
 }
 

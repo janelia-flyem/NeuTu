@@ -39,7 +39,7 @@ void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) cons
     }
   }
 #else
-  UNUSED_PARAMETER(&painter);
+  UNUSED_PARAMETER(painter);
   UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 #endif

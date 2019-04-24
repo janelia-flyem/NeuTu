@@ -3705,7 +3705,7 @@ void Z3DWindow::test()
 #if 0
   const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-  UNUSED_PARAMETER(&config);
+  UNUSED_PARAMETER(config);
 
   ZMovieMaker director;
   ZMovieScript script;
