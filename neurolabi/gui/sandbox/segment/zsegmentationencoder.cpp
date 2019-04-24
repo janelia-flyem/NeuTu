@@ -183,8 +183,9 @@ void ZSegmentationEncoder::unify(const ZSegmentationEncoder &encoder){
   const ZIntCuboid& boxa = encoder.getBoundBox();
   const ZIntCuboid& boxb = getBoundBox();
 
-  const ZIntPoint offset = std::min(boxa.getFirstCorner(),boxb.getFirstCorner());
-  ZSegmentationEncoder tmp(offset);
+  ZIntCuboid boxt = boxa;
+  boxt.join(boxb);
+  ZSegmentationEncoder tmp(boxt.getFirstCorner());
 
   int z0 = boxa.getFirstCorner().getZ();
   int z1 = boxa.getLastCorner().getZ();

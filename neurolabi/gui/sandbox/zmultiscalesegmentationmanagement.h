@@ -68,8 +68,8 @@ private:
   shared_ptr<ZSegmentationTree> m_seg_tree;
   QTreeWidget* m_view;
   string m_selected_id;
-  QLineEdit* m_merge_from;
-  QLineEdit* m_merge_to;
+  //QLineEdit* m_merge_from;
+  //QLineEdit* m_merge_to;
   QCheckBox* m_show_leaves;
   QCheckBox* m_show_contour;
   QCheckBox* m_enable_super_voxel;
