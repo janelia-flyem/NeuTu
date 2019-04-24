@@ -153,9 +153,19 @@ void ZSegmentationTree::merge(const std::string &from_id, const std::string &to_
   }
   ZSegmentationNode* from_parent = from->getParent();
   to->merge(from);
-  if(from_parent){
-    notify(from_parent->getID());
+
+  while(from_parent){//remove empty nodes
+    ZSegmentationNode* tmp = from_parent;
+    from_parent = from_parent->getParent();
+
+    if(from_parent && tmp->getChildrenLabels().empty()){
+      from_parent->removeChildByLabel(tmp->getLabel());
+    }
+    if(!from_parent){
+      notify(tmp->getID());
+    }
   }
+
   notify(to->getID());
 }
 

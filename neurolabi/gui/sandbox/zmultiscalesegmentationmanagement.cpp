@@ -189,27 +189,28 @@ void ZMultiscaleSegmentationWindow::init()
   m_enable_super_voxel = new QCheckBox("Super Voxel");
   m_show_contour =new QCheckBox("Show Contour");
 
-  m_merge_from = new QLineEdit();
-  m_merge_to = new QLineEdit();
+  //m_merge_from = new QLineEdit();
+  //m_merge_to = new QLineEdit();
 
   //setup layout
   QGridLayout* lay=new QGridLayout(this);
-  lay->addWidget(m_view,0,0,8,15);
-  lay->addWidget(open_stack,9,0,1,5);
+  lay->addWidget(m_view,0,0,8,16);
 
-  lay->addWidget(segment,10,0,1,5);
-  lay->addWidget(m_enable_super_voxel,10,5,1,5);
-  lay->addWidget(m_show_contour,10,10,1,5);
+  lay->addWidget(m_enable_super_voxel,9,0,1,4);
+  lay->addWidget(m_show_contour,9,4,1,4);
+  lay->addWidget(m_show_leaves,9,8,1,4);
 
+  lay->addWidget(open_stack,10,0,1,4);
+  lay->addWidget(segment,10,4,1,4);
+  lay->addWidget(merge,10,8,1,4);
+  lay->addWidget(_export,10,12,1,4);
   //lay->addWidget(create_super_voxels,11,0,1,5);
-  lay->addWidget(_export,11,5,1,5);
-  lay->addWidget(m_show_leaves,11,10,1,5);
 
-  lay->addWidget(new QLabel("From:"),12,0,1,2);
-  lay->addWidget(m_merge_from,12,2,1,3);
-  lay->addWidget(new QLabel("To:"),12,5,1,1);
-  lay->addWidget(m_merge_to,12,6,1,3);
-  lay->addWidget(merge,12,9,1,5);
+  /*lay->addWidget(new QLabel("From:"),11,0,1,2);
+  lay->addWidget(m_merge_from,11,2,1,3);
+  lay->addWidget(new QLabel("To:"),11,5,1,1);
+  lay->addWidget(m_merge_to,11,6,1,3);*/
+
 
   connect(open_stack,SIGNAL(clicked()),this,SLOT(onOpenStack()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
@@ -271,9 +272,17 @@ void ZMultiscaleSegmentationWindow::onShowLeaves(int state){
 
 
 void ZMultiscaleSegmentationWindow::onMerge(){
-  string from = m_merge_from->text().toStdString();
-  string to = m_merge_to->text().toStdString();
-  m_seg_tree->merge(from,to);
+  if(!m_frame){
+    return;
+  }
+  QList<ZSegmentationNodeWrapper*> list = m_frame->document()->getSelectedObjectList<ZSegmentationNodeWrapper>(ZStackObject::TYPE_SEGMENTATION_ENCODER);
+  string to = m_selected_id;
+  for(auto it = list.begin(); it != list.end(); ++it){
+    string from = (*it)->getNodeID();
+    if(from != to){
+      m_seg_tree->merge(from,to);
+    }
+  }
 }
 
 
