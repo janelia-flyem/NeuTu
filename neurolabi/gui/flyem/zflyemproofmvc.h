@@ -59,7 +59,7 @@ class FlyEmTodoDialog;
 class ZDvidTargetProviderDialog;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class FlyEmMvcDialogManager;
 class ZFlyEmSequencerColorScheme;
@@ -569,7 +569,7 @@ private:
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyAnnotationDialog *getBodyAnnotationDlg();
 //  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();

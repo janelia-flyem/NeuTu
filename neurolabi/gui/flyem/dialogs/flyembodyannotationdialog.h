@@ -57,16 +57,16 @@ public:
   std::string getStatus() const;
   bool isInstanceChanged() const;
 
+  void setDefaultStatusList(const QList<QString> statusList);
+  void addAdminStatus(const QString &status);
+  void updateStatusBox();
+
 private:
   void hideFinalizedStatus();
   void showFinalizedStatus();
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
   void processUnknownStatus(const std::string &status);
-
-  void setDefaultStatusList(const QList<QString> statusList);
-  void addAdminStatus(const QString &status);
-  void updateStatusBox();
 
 private slots:
   void fillInstance();

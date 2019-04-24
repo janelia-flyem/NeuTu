@@ -29710,7 +29710,7 @@ void ZTest::test(MainWindow *host)
   writer->uploadRoiMesh(filePath, roiName);
 #endif
 
-#if 1
+#if 0
   ZFlyEmBodyAnnotation annot;
   ZJsonObject obj;
   obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
@@ -29732,6 +29732,26 @@ void ZTest::test(MainWindow *host)
   std::cout << "compare: " << (annot == annot2) << std::endl;
 
 #endif
+
+#if 1
+
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+
+  ZFlyEmBodyAnnotation annot2;
+  ZJsonObject obj2;
+  obj2.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot2.json");
+  annot2.loadJsonObject(obj2);
+  annot2.print();
+
+  annot.mergeAnnotation(annot2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  annot.print();
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

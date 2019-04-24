@@ -12,6 +12,7 @@
 #include <QMimeData>
 #include <QElapsedTimer>
 
+#include "neutubeconfig.h"
 #include "logging/zlog.h"
 
 #include "zjsondef.h"
@@ -24,46 +25,47 @@
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidpatchdatafetcher.h"
+#include "dvid/zdvidpatchdataupdater.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidlabelslice.h"
 
 #include "zstackobjectsourcefactory.h"
-#include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
 #include "zstackviewlocator.h"
-#include "widgets/zimagewidget.h"
-#include "dvid/zdvidlabelslice.h"
+
+#include "z3dswcfilter.h"
+#include "z3dpunctafilter.h"
 #include "zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
 #include "zdialogfactory.h"
-#include "zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
-#include "flyem/zflyemsupervisor.h"
-#include "dvid/zdvidwriter.h"
+#include "zflyemsupervisor.h"
 #include "zstring.h"
-#include "flyem/zpaintlabelwidget.h"
+#include "zpaintlabelwidget.h"
 #include "zwidgetfactory.h"
 #include "zflyemcoordinateconverter.h"
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
 #include "protocols/protocolswitcher.h"
-#include "flyem/zflyembodywindowfactory.h"
-#include "flyem/zflyemmisc.h"
-#include "zswcgenerator.h"
+#include "zflyembodywindowfactory.h"
+#include "zflyemmisc.h"
 #include "zflyembody3ddoc.h"
-#include "neutubeconfig.h"
-#include "flyem/zflyemexternalneurondoc.h"
+#include "zflyemexternalneurondoc.h"
 #include "zfiletype.h"
-#include "z3dpunctafilter.h"
-#include "z3dswcfilter.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidsparsevolslice.h"
-#include "flyem/zflyemorthowindow.h"
+#include "zflyemorthowindow.h"
 #include "zroiwidget.h"
-#include "flyem/zflyemdataframe.h"
-#include "flyem/zflyemtodolistfilter.h"
+#include "zflyemdataframe.h"
+#include "zflyemtodolistfilter.h"
 #include "zclickablelabel.h"
 #include "znormcolormap.h"
+
 #include "widgets/zcolorlabel.h"
-#include "dialogs/zflyemsynapseannotationdialog.h"
+#include "widgets/zimagewidget.h"
+
 #include "zflyemorthodoc.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "flyem/zflyemsynapsedataupdater.h"
@@ -71,8 +73,6 @@
 #include "zflyemutilities.h"
 #include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
-#include "dvid/zdvidpatchdatafetcher.h"
-#include "dvid/zdvidpatchdataupdater.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
 #include "dialogs/zstresstestoptiondialog.h"
@@ -85,8 +85,6 @@
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
 #include "dvid/zdvidgrayslice.h"
-#include "dialogs/zflyemproofsettingdialog.h"
-#include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
@@ -114,6 +112,10 @@
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "dialogs/zflyemroitooldialog.h"
 #include "dialogs/zflyemgrayscaledialog.h"
+#include "dialogs/flyembodyannotationdialog.h"
+#include "dialogs/zflyemproofsettingdialog.h"
+#include "dialogs/zflyemmergeuploaddialog.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -409,7 +411,7 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 }
 #endif
 
-ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
+FlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   return m_dlgManager->getAnnotationDlg();
   /*
@@ -3331,7 +3333,7 @@ void ZFlyEmProofMvc::annotateSelectedBody()
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
-        ZFlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
+        FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
         dlg->updateStatusBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();

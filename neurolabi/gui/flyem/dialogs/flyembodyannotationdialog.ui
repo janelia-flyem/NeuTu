@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>599</width>
-    <height>444</height>
+    <width>524</width>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,19 +75,19 @@
        </item>
       </layout>
      </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Instance:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="instanceLineEdit"/>
-       </item>
-      </layout>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Instance:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="instanceLineEdit"/>
      </item>
      <item>
       <widget class="QPushButton" name="generatePushButton">
@@ -228,7 +228,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>36</width>
+            <width>9</width>
             <height>20</height>
            </size>
           </property>
@@ -297,19 +297,6 @@
        </item>
        <item>
         <widget class="QLineEdit" name="SynonymLineEdit"/>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </item>

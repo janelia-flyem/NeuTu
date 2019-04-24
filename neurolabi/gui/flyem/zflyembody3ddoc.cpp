@@ -31,7 +31,7 @@
 #include "neutubeconfig.h"
 #include "z3dwindow.h"
 #include "zstackdocdatabuffer.h"
-#include "dialogs/zflyembodycomparisondialog.h"
+
 #include "zswcutil.h"
 #include "zflyembody3ddockeyprocessor.h"
 #include "zflyembody3ddoccommand.h"
@@ -52,18 +52,21 @@
 #include "dvid/zdvidbodyhelper.h"
 #include "data3d/zstackobjecthelper.h"
 #include "zstackdocproxy.h"
-#include "zflyembodyannotationdialog.h"
+//#include "zflyembodyannotationdialog.h"
 #include "zflyemtaskhelper.h"
 #include "protocols/protocoltaskfactory.h"
 #include "zstackdoc3dhelper.h"
 #include "zstackobjectarray.h"
 #include "zflyembodyenv.h"
 #include "zflyembodystatus.h"
+#include "zpunctum.h"
+#include "flyemdatareader.h"
+
+#include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
-#include "zpunctum.h"
 #include "dialogs/flyemdialogfactory.h"
-#include "flyemdatareader.h"
+#include "dialogs/flyembodyannotationdialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -2032,7 +2035,7 @@ void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
   }
 }
 
-ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
+FlyEmBodyAnnotationDialog *ZFlyEmBody3dDoc::getBodyAnnotationDlg()
 {
   if (m_annotationDlg == nullptr) {
     m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
@@ -4328,7 +4331,7 @@ void ZFlyEmBody3dDoc::startBodyAnnotation()
   startBodyAnnotation(getBodyAnnotationDlg());
 }
 
-void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
+void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
 {
   if (isDvidMutable()) {
     dlg->updateStatusBox();
@@ -4348,7 +4351,8 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
           getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
         }
-        getDataDocument()->checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
+        getDataDocument()->checkInBodyWithMessage(
+              bodyId, neutu::EBodySplitMode::NONE);
       } else {
         emit messageGenerated(
               getDataDocument()->getAnnotationFailureMessage(bodyId));

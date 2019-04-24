@@ -220,10 +220,10 @@ ZFlyEmProofSettingDialog* FlyEmMvcDialogManager::getSettingDlg()
   return m_settingDlg;
 }
 
-ZFlyEmBodyAnnotationDialog* FlyEmMvcDialogManager::getAnnotationDlg()
+FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()
 {
   if (isNull(m_annotationDlg)) {
-    KINFO << "Creating ZFlyEmBodyAnnotationDialog";
+    KINFO << "Creating FlyEmBodyAnnotationDialog";
     m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
           m_parent->getCompleteDocument(), m_parent);
   }
