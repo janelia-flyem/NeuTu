@@ -13,6 +13,7 @@
 #include "protocolmetadata.h"
 #include "synapsepredictionprotocol.h"
 #include "synapsereviewprotocol.h"
+#include "todoreviewprotocol.h"
 
 #include "doNthingsprotocol.h"
 
@@ -73,8 +74,10 @@ const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
+
         << "synapse_prediction_body"
-        << "synapse_prediction_region";
+        << "synapse_prediction_region"
+        << "todo_review";
 
         // implemented but never rolled out:
         // << "synapse_review";
@@ -351,9 +354,13 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(
               m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    } else if (protocolName == "todo_review") {
+        m_activeProtocol = new ToDoReviewProtocol(m_parent);
+
     // implemented, basically works, but never used
     // } else if (protocolName == "synapse_review") {
     //     m_activeProtocol = new SynapseReviewProtocol(m_parent);
+
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
     } else if (protocolName == "synapse_prediction") {
