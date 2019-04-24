@@ -444,6 +444,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_NO_SOMA:
     action = new QAction("No soma here", parent);
     break;
+  case ACTION_ADD_TODO_DIAGNOSTIC:
+    action = new QAction("Diagnostic here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;

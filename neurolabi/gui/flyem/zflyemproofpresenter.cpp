@@ -119,6 +119,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_NO_SOMA:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddNoSomaItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddDiagnosticItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -675,6 +678,11 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem(const ZIntPoint &pt)
   tryAddTodoItem(pt, true, neutu::EToDoAction::NO_SOMA);
 }
 
+void ZFlyEmProofPresenter::tryAddDiagnosticItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutu::EToDoAction::DIAGNOSTIC);
+}
+
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
@@ -738,6 +746,16 @@ void ZFlyEmProofPresenter::setTodoDelegate(
   m_todoDelegate = std::move(delegate);
 }
 
+ZPoint ZFlyEmProofPresenter::getLastMouseReleasePosition(
+    Qt::MouseButtons buttons) const
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        buttons, ZMouseEvent::EAction::RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  return pt;
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -784,6 +802,11 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem()
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddNoSomaItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddDiagnosticItem()
+{
+  tryAddDiagnosticItem(getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
