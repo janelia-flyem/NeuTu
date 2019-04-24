@@ -420,9 +420,60 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
   }
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
-    m_status = annotation.m_status;
+//    m_status = annotation.m_status;
+    *this = annotation;
+  } else if (getStatusRank(m_status) == getStatusRank(annotation.m_status)) {
+    if (m_comment.empty()) {
+      m_comment = annotation.m_comment;
+    }
+
+    if (m_name.empty()) {
+      m_name = annotation.m_name;
+      m_namingUser = annotation.m_namingUser;
+    }
+
+    if (m_instance.empty()) {
+      m_instance = annotation.m_instance;
+      m_namingUser = annotation.m_namingUser;
+    }
+
+    if (m_type.empty()) {
+      m_type = annotation.m_type;
+    }
+
+    if (m_userName.empty()) {
+      m_userName = annotation.m_userName;
+    }
+
+    if (m_majorInput.empty()) {
+      m_majorInput = annotation.m_majorInput;
+    }
+
+    if (m_majorOutput.empty()) {
+      m_majorOutput = annotation.m_majorOutput;
+    }
+
+    if (m_primaryNeurite.empty()) {
+      m_primaryNeurite = annotation.m_primaryNeurite;
+    }
+
+    if (m_location.empty()) {
+      m_location = annotation.m_location;
+    }
+
+    m_outOfBounds = (m_outOfBounds || annotation.m_outOfBounds);
+    m_crossMidline = (m_crossMidline || annotation.m_crossMidline);
+
+    if (m_neurotransmitter.empty()) {
+      m_neurotransmitter = annotation.m_neurotransmitter;
+    }
+
+    if (m_synonym.empty()) {
+      m_synonym = annotation.m_synonym;
+    }
   }
 
+#if 0
   if (m_comment.empty()) {
     m_comment = annotation.m_comment;
   }
@@ -439,6 +490,7 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
   if (m_userName.empty()) {
     m_userName = annotation.m_userName;
   }
+#endif
 }
 
 std::string ZFlyEmBodyAnnotation::toString() const

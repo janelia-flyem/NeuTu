@@ -643,10 +643,15 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       if (bodyId != targetId) {
         if (m_annotationCache.contains(bodyId)) {
           ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
-          annotation.mergeAnnotation(
-                subann, [=](const std::string &status) {
-            return m_bodyStatusProtocol.getStatusRank(status);
-          });
+          if (m_bodyStatusProtocol.isEmpty()) {
+            annotation.mergeAnnotation(
+                  subann, &ZFlyEmBodyAnnotation::GetStatusRank);
+          } else {
+            annotation.mergeAnnotation(
+                  subann, [=](const std::string &status) {
+              return m_bodyStatusProtocol.getStatusRank(status);
+            });
+          }
         }
       }
     }
