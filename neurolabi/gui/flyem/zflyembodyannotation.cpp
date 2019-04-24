@@ -220,6 +220,46 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
+std::string ZFlyEmBodyAnnotation::getMajorInput() const
+{
+  return m_majorInput;
+}
+
+std::string ZFlyEmBodyAnnotation::getMajorOutput() const
+{
+  return m_majorOutput;
+}
+
+std::string ZFlyEmBodyAnnotation::getPrimaryNeurite() const
+{
+  return m_primaryNeurite;
+}
+
+std::string ZFlyEmBodyAnnotation::getLocation() const
+{
+  return m_location;
+}
+
+bool ZFlyEmBodyAnnotation::getOutOfBounds() const
+{
+  return m_outOfBounds;
+}
+
+bool ZFlyEmBodyAnnotation::getCrossMidline() const
+{
+  return m_crossMidline;
+}
+
+std::string ZFlyEmBodyAnnotation::getNeurotransmitter() const
+{
+  return m_neurotransmitter;
+}
+
+std::string ZFlyEmBodyAnnotation::getSynonym() const
+{
+  return m_synonym;
+}
+
 std::string ZFlyEmBodyAnnotation::getName() const
 {
   if (!m_name.empty()) {
@@ -230,7 +270,12 @@ std::string ZFlyEmBodyAnnotation::getName() const
     return m_instance;
   }
 
-  return m_majorInput + m_majorOutput + m_primaryNeurite;;
+  return getAutoName();
+}
+
+std::string ZFlyEmBodyAnnotation::getAutoName() const
+{
+  return m_majorInput + m_majorOutput + m_primaryNeurite;
 }
 
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
@@ -427,8 +472,8 @@ bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
       (m_comment == annot.m_comment) &&
       (m_name == annot.m_name) &&
       (m_type == annot.m_type) &&
-      (m_userName == annot.m_userName) &&
-      (m_namingUser == annot.m_namingUser) &&
+//      (m_userName == annot.m_userName) &&
+//      (m_namingUser == annot.m_namingUser) &&
       (m_instance == annot.m_instance) &&
       (m_majorInput == annot.m_majorInput) &&
       (m_majorOutput == annot.m_majorOutput) &&

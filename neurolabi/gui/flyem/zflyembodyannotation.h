@@ -24,7 +24,17 @@ public:
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
 
+  std::string getMajorInput() const;
+  std::string getMajorOutput() const;
+  std::string getPrimaryNeurite() const;
+  std::string getLocation() const;
+  bool getOutOfBounds() const;
+  bool getCrossMidline() const;
+  std::string getNeurotransmitter() const;
+  std::string getSynonym() const;
+
   std::string getName() const;
+  std::string getAutoName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setStatus(const std::string &status) {
