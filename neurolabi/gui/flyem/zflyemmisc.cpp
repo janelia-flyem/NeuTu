@@ -1045,6 +1045,27 @@ void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[8] = ptArray[0];
 }
 
+QVector<QPointF> flyem::MakeCrossKey(const QPointF &center, double radius)
+{
+  QVector<QPointF> ptArray;
+  double dr = radius * 0.2;
+  ptArray.append(center + QPointF(radius, dr));
+  ptArray.append(center + QPointF(dr, dr));
+  ptArray.append(center + QPointF(dr, radius));
+  ptArray.append(center + QPointF(-dr, radius));
+  ptArray.append(center + QPointF(-dr, dr));
+  ptArray.append(center + QPointF(-radius, dr));
+  ptArray.append(center + QPointF(-radius, -dr));
+  ptArray.append(center + QPointF(-dr, -dr));
+  ptArray.append(center + QPointF(-dr, -radius));
+  ptArray.append(center + QPointF(dr, -radius));
+  ptArray.append(center + QPointF(dr, -dr));
+  ptArray.append(center + QPointF(radius, -dr));
+  ptArray.append(center + QPointF(radius, dr));
+
+  return ptArray;
+}
+
 void flyem::PrepareBodyStatus(QComboBox *box)
 {
   if (box != NULL) {

@@ -134,6 +134,7 @@ public slots:
   void tryAddToMergeItem();
   void tryAddTraceToSomaItem();
   void tryAddNoSomaItem();
+  void tryAddDiagnosticItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
@@ -154,6 +155,7 @@ public slots:
   void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
   void tryAddTraceToSomaItem(const ZIntPoint &pt);
   void tryAddNoSomaItem(const ZIntPoint &pt);
+  void tryAddDiagnosticItem(const ZIntPoint &pt);
 
   void showSupervoxelList();
 
@@ -185,6 +187,8 @@ private:
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
   void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
+
+  ZPoint getLastMouseReleasePosition(Qt::MouseButtons buttons) const;
 
 private:
   bool m_isHightlightMode;
