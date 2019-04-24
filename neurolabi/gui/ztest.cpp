@@ -270,7 +270,7 @@
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-
+#include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
@@ -29719,8 +29719,18 @@ void ZTest::test(MainWindow *host)
   std::cout << annot.toJsonObject().dumpString(2) << std::endl;
 
   ZFlyEmBodyAnnotation annot2;
-  annot2.loadJsonObject(annot.toJsonObject());
+//  annot2.loadJsonObject(annot.toJsonObject());
+//  std::cout << "compare: " << (annot == annot2) << std::endl;
+
+  FlyEmBodyAnnotationDialog *dlg = new FlyEmBodyAnnotationDialog(host);
+  dlg->loadBodyAnnotation(annot);
+  dlg->exec();
+
+  annot2 = dlg->getBodyAnnotation();
+  annot2.print();
+  std::cout << annot2.toJsonObject().dumpString(2) << std::endl;
   std::cout << "compare: " << (annot == annot2) << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

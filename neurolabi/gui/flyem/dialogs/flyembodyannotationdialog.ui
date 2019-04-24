@@ -7,24 +7,51 @@
     <x>0</x>
     <y>0</y>
     <width>599</width>
-    <height>322</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Body Annotation</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_15">
      <item>
-      <widget class="QLabel" name="bodyIdLabel">
+      <widget class="QLabel" name="bodyIdLabel_2">
        <property name="text">
         <string>Body ID:</string>
        </property>
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="bodyIdLabel">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QLabel" name="namingUserLabel">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="userLabel">
        <property name="text">
         <string>TextLabel</string>
        </property>
@@ -39,7 +66,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Type</string>
+          <string>Type:</string>
          </property>
         </widget>
        </item>
@@ -49,24 +76,11 @@
       </layout>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Instance</string>
+          <string>Instance:</string>
          </property>
         </widget>
        </item>
@@ -76,22 +90,9 @@
       </layout>
      </item>
      <item>
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="userLabel">
+      <widget class="QPushButton" name="generatePushButton">
        <property name="text">
-        <string>TextLabel</string>
+        <string>generate</string>
        </property>
       </widget>
      </item>
@@ -102,7 +103,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Status</string>
+        <string>Status:</string>
        </property>
       </widget>
      </item>
@@ -125,13 +126,20 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_8">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Major input</string>
+          <string>Major input:</string>
          </property>
         </widget>
        </item>
@@ -145,7 +153,7 @@
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Major output</string>
+          <string>Major output:</string>
          </property>
         </widget>
        </item>
@@ -159,7 +167,7 @@
        <item>
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Primary neurite</string>
+          <string>Primary neurite:</string>
          </property>
         </widget>
        </item>
@@ -168,68 +176,97 @@
        </item>
       </layout>
      </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QRadioButton" name="leftRadioButton">
-       <property name="text">
-        <string>L</string>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Soma</string>
        </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QRadioButton" name="leftRadioButton">
+          <property name="text">
+           <string>L</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="middleRadioButton">
+          <property name="text">
+           <string>M</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rightRadioButton">
+          <property name="text">
+           <string>R</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="unknownRadioButton">
+          <property name="text">
+           <string>Unknown</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>36</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="middleRadioButton">
-       <property name="text">
-        <string>M</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="rightRadioButton">
-       <property name="text">
-        <string>R</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="unknownRadioButton">
-       <property name="text">
-        <string>Unknown</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_10">
-     <item>
-      <widget class="QCheckBox" name="outOfBoundsCheckBox">
-       <property name="text">
-        <string>Out-of-bounds</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="crossMidlineCheckBox">
-       <property name="text">
-        <string>Cross midline</string>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <widget class="QCheckBox" name="outOfBoundsCheckBox">
+         <property name="text">
+          <string>Out-of-bounds</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="crossMidlineCheckBox">
+         <property name="text">
+          <string>Cross midline</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -240,7 +277,7 @@
        <item>
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Neurotransmitter</string>
+          <string>Neurotransmitter:</string>
          </property>
         </widget>
        </item>
@@ -250,29 +287,29 @@
       </layout>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Synonym</string>
+          <string>Synonym:</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLineEdit" name="SynonymLineEdit"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -283,7 +320,7 @@
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>Comment</string>
+        <string>Comment:</string>
        </property>
       </widget>
      </item>
