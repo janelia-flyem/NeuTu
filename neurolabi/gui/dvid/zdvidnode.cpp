@@ -52,7 +52,7 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, int uuidBrief) const
 
   if (!getAddress().empty()) {
     std::string uuid = getUuid();
-    if (uuidBrief > 0 && uuid.size() > uuidBrief) {
+    if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
       uuid = uuid.substr(0, uuidBrief);
     }
 

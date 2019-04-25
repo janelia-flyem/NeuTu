@@ -2223,6 +2223,9 @@ static void AddTodoMarker(
       case neutu::EToDoAction::NO_SOMA:
         window->emitAddNoSomaMarker(pt, bodyId);
         break;
+      case neutu::EToDoAction::DIAGNOSTIC: //todo
+        LWARN() << "DIAGNOSTIC to be done";
+        break;
       case neutu::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
         break;

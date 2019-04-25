@@ -136,7 +136,7 @@ enum class EReadStatus {
 
 enum class EToDoAction {
   TO_DO = 0, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT,
-  TO_TRACE_TO_SOMA, NO_SOMA
+  TO_TRACE_TO_SOMA, NO_SOMA, DIAGNOSTIC
 };
 
 enum class EStackNeighborhood {

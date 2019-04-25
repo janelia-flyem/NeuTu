@@ -194,6 +194,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       if (doc->getDvidTarget().hasSupervoxel()) {
         config.append(ZActionFactory::ACTION_ADD_TODO_SVSPLIT);
       }
+      config.append(ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC);
       config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
