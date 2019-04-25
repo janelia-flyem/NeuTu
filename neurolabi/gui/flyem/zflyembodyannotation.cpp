@@ -275,7 +275,12 @@ std::string ZFlyEmBodyAnnotation::getName() const
 
 std::string ZFlyEmBodyAnnotation::getAutoName() const
 {
-  return m_majorInput + m_majorOutput + m_primaryNeurite;
+  std::string name = m_majorInput + m_majorOutput;
+  if (!m_primaryNeurite.empty()) {
+    name += "-" + m_primaryNeurite;
+  }
+
+  return  name;
 }
 
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
