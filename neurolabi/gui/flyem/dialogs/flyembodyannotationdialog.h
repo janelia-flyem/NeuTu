@@ -69,7 +69,7 @@ private:
   void processUnknownStatus(const std::string &status);
 
 private slots:
-  void fillInstance();
+  void fillType();
 
 private:
   Ui::FlyEmBodyAnnotationDialog *ui;

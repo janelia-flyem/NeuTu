@@ -14,7 +14,7 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(QWidget *parent) :
   ui->setupUi(this);
 
   connect(ui->generatePushButton, &QPushButton::clicked,
-          this, &FlyEmBodyAnnotationDialog::fillInstance);
+          this, &FlyEmBodyAnnotationDialog::fillType);
 }
 
 FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
@@ -321,8 +321,8 @@ void FlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)
   }
 }
 
-void FlyEmBodyAnnotationDialog::fillInstance()
+void FlyEmBodyAnnotationDialog::fillType()
 {
   ZFlyEmBodyAnnotation annot = getBodyAnnotation();
-  ui->instanceLineEdit->setText(QString::fromStdString(annot.getAutoName()));
+  ui->typeLineEdit->setText(QString::fromStdString(annot.getAutoType()));
 }
