@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
 
 #include "dvid/zdviddef.h"
 
@@ -10,6 +11,7 @@ class ZDvidReader;
 class FlyEmDataConfig;
 class ZFlyEmNeuronBodyInfo;
 class ZFlyEmBodyAnnotation;
+class ZMesh;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -25,6 +27,17 @@ public:
       const ZDvidReader &reader, uint64_t bodyId);
   static ZFlyEmBodyAnnotation ReadBodyAnnotation(
       const ZDvidReader &reader, uint64_t bodyId);
+  static ZMesh* ReadRoiMesh(
+      const ZDvidReader &reader, const std::string &roiName);
+
+private:
+  static ZMesh* LoadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::string &key, const std::string &source);
+  static ZMesh* LoadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::vector<std::string> &keyList, const std::string &source);
+
 #if 0
   static std::vector<ZDvidSynapse> ReadSynapse(
       const ZDvidReader &reader, const ZIntCuboid &box,

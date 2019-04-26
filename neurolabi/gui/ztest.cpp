@@ -270,7 +270,7 @@
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-
+#include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
@@ -22254,6 +22254,58 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6d7", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan roi = reader.readRoi("seven_column_roi");
+  int z = 4600/32;
+  {
+    ZObject3dScan obj = roi.getSlice(0, z);
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/FIB25/distal.obj");
+  }
+
+  {
+    ZObject3dScan obj = roi.getSlice(z+1, roi.getMaxZ());
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/FIB25/proximal.obj");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "7abe", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+
+  {
+    ZObject3dScan newRoiAlpha1 = reader.readRoi("alpha1_roi_0217");
+    newRoiAlpha1.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha1);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha1.obj");
+  }
+
+  {
+    ZObject3dScan newRoiAlpha2 = reader.readRoi("alpha2_roi_0217");
+    newRoiAlpha2.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha2);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha2.obj");
+  }
+
+  {
+    ZObject3dScan newRoiAlpha3 = reader.readRoi("alpha3_roi_0217");
+    newRoiAlpha3.printInfo();
+    ZMesh *mesh = ZMeshFactory::MakeMesh(newRoiAlpha3);
+    mesh->save(GET_FLYEM_DATA_DIR + "/roi/MB/alpha3.obj");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
   ZDvidReader reader;
@@ -28030,6 +28082,24 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20190325";
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string filePath = dataDir + "/20190325_SLP.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "SLP");
+
+  filePath = dataDir + "/20190325_dACA.labels.tif.obj";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "dACA");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string dataDir = GET_FLYEM_DATA_DIR + "/roi/20190422";
+  flyem::UploadRoi(dataDir.c_str(), (dataDir + "/roiname.csv").c_str(), writer);
+#endif
+
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
@@ -28084,6 +28154,60 @@ void ZTest::test(MainWindow *host)
       writer->writeRoi(roi, name);
     }
   }
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/allneuropils/synapse_thresh_allneuropils_nohole.labels.tif.sobj");
+  std::string name = "all_neuropils";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  }
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
+  std::string name = "dACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(roi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.json");
+#endif
+
+#if 0
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(roi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.json");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_SLP.labels.tif.sobj");
+  std::string name = "SLP";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
+  }
+  writer->writeRoi(roi, name);
 #endif
 
 #if 0
@@ -29425,7 +29549,7 @@ void ZTest::test(MainWindow *host)
   std::cout << (std::ostringstream() << "test " << 1).str() << std::endl;
 #endif
 
-#if 1
+#if 0
   KINFO << "Test: to kafka only";
   LKINFO << "Test: to both local and kafka";
   ZINFO << "Test: auto logging";
@@ -29582,6 +29706,72 @@ void ZTest::test(MainWindow *host)
   std::cout << "Has synapse labelsz: " << reader->getDvidTarget().hasSynapseLabelsz() << std::endl;
   std::cout << reader->getDvidTarget().getSynapseLabelszName() << std::endl;
 #endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+  std::string roiName = "PVLP";
+  ZMesh *mesh =
+      FlyEmDataReader::ReadRoiMesh(writer->getDvidReader(), roiName);
+  std::string filePath = GET_TEST_DATA_DIR + "/test.drc";
+  mesh->save(filePath.c_str());
+  writer->uploadRoiMesh(filePath, roiName);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibran-production");
+  std::string roiName = "AL-DC3";
+  ZObject3dScan obj = writer->getDvidReader().readRoi(roiName);
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+  ZMesh *mesh = mf.makeMesh(obj);
+
+  std::string filePath = GET_TEST_DATA_DIR + "/test.drc";
+  mesh->save(filePath.c_str());
+  writer->uploadRoiMesh(filePath, roiName);
+#endif
+
+#if 0
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+  std::cout << annot.toJsonObject().dumpString(2) << std::endl;
+
+  ZFlyEmBodyAnnotation annot2;
+//  annot2.loadJsonObject(annot.toJsonObject());
+//  std::cout << "compare: " << (annot == annot2) << std::endl;
+
+  FlyEmBodyAnnotationDialog *dlg = new FlyEmBodyAnnotationDialog(host);
+  dlg->loadBodyAnnotation(annot);
+  dlg->exec();
+
+  annot2 = dlg->getBodyAnnotation();
+  annot2.print();
+  std::cout << annot2.toJsonObject().dumpString(2) << std::endl;
+  std::cout << "compare: " << (annot == annot2) << std::endl;
+
+#endif
+
+#if 1
+
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+
+  ZFlyEmBodyAnnotation annot2;
+  ZJsonObject obj2;
+  obj2.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot2.json");
+  annot2.loadJsonObject(obj2);
+  annot2.print();
+
+  annot.mergeAnnotation(annot2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  annot.print();
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

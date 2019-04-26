@@ -1450,8 +1450,8 @@ void TaskBodyCleave::applyColorMode(bool showingCleaving)
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     if (showingCleaving) {
-      filter->setColorMode("Indexed Color");
       updateColors();
+      filter->setColorMode("Indexed Color");
     } else {
       filter->setColorMode("Mesh Source");
     }
@@ -1528,7 +1528,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   requestJson["request-number"] = int(requestNumber);
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1759,7 +1759,7 @@ std::size_t TaskBodyCleave::getIndexNotCleavedOff() const
   // supervoxels with index 0, which are the supervoxels that could not be assigned by the
   // cleaving server (because they are not reachable from the seeds).
 
-  std::size_t result = SIZE_MAX;
+  std::size_t result = std::numeric_limits<std::size_t>::max();
   for (auto it : m_meshIdToCleaveIndex) {
     std::size_t index = it.second;
     if (index != 0) {

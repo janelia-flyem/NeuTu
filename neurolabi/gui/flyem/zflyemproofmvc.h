@@ -59,7 +59,7 @@ class FlyEmTodoDialog;
 class ZDvidTargetProviderDialog;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class FlyEmMvcDialogManager;
 class ZFlyEmSequencerColorScheme;
@@ -464,6 +464,10 @@ protected:
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
+  void warn(const std::string &msg);
+  void warn(const char *msg);
+  void warn(const QString &msg);
+
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
@@ -565,7 +569,7 @@ private:
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
   FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyAnnotationDialog *getBodyAnnotationDlg();
 //  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
   NeuprintSetupDialog* getNeuPrintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();

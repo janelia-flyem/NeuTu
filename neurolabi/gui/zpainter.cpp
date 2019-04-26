@@ -724,6 +724,17 @@ void ZPainter::drawPolyline(const QPoint * points, int pointCount)
 #endif
 }
 
+void ZPainter::drawPolyline(const std::vector<QPoint> &pointArray)
+{
+  drawPolyline(pointArray.data(), pointArray.size());
+}
+
+void ZPainter::drawPolyline(const std::vector<QPointF> &pointArray)
+{
+  drawPolyline(pointArray.data(), pointArray.size());
+}
+
+
 void ZPainter::save()
 {
   getPainter()->save();

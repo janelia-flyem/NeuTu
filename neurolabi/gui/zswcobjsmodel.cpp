@@ -134,8 +134,14 @@ void ZSwcObjsModel::setupModelData(ZObjsItem *parent)
 void ZSwcObjsModel::setModelIndexCheckState(const QModelIndex &index, Qt::CheckState cs)
 {
   ZObjsModel::setModelIndexCheckState(index, cs);
-  if (getSwcTree(index) != NULL)
-    m_doc->setSwcVisible(getSwcTree(index), cs == Qt::Checked);
+  ZSwcTree *tree = getSwcTree(index);
+  if (tree != NULL) {
+#ifdef _DEBUG_
+    std::cout << "SWC " << tree->getSource()
+              << ((cs == Qt::Checked) ? " checked" : " unchecked") << std::endl;
+#endif
+    m_doc->setSwcVisible(tree, cs == Qt::Checked);
+  }
 }
 
 bool ZSwcObjsModel::needCheckbox(const QModelIndex &index) const

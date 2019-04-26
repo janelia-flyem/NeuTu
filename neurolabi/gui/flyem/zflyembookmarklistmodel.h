@@ -5,13 +5,16 @@
 #include <QVector>
 #include <QString>
 
+#include "qt/core/zsortfiltertablemodel.h"
+
 #include "zflyembookmark.h"
 #include "zflyembookmarkpresenter.h"
 #include "zflyembookmarkptrarray.h"
 
-class QSortFilterProxyModel;
+class ZSortFilterProxyModel;
 
-class ZFlyEmBookmarkListModel : public QAbstractTableModel
+
+class ZFlyEmBookmarkListModel : public ZSortFilterTableModel
 {
   Q_OBJECT
 public:
@@ -27,13 +30,14 @@ public:
   bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
   bool removeColumns(int col, int count, const QModelIndex &parent = QModelIndex());
 
-  QModelIndex index(int row, int column,
-                    const QModelIndex &parent = QModelIndex()) const;
+//  QModelIndex index(int row, int column,
+//                    const QModelIndex &parent = QModelIndex()) const;
 
   void clear();
   void append(const ZFlyEmBookmark *bookmark);
+  void appendSliently(const ZFlyEmBookmark *bookmark);
   void append(const QList<ZFlyEmBookmark*> &bookmarkList);
-  void update(int row);
+//  void update(int row);
 
   const ZFlyEmBookmark* getBookmark(int index) const;
   ZFlyEmBookmark* getBookmark(int index);
@@ -41,11 +45,11 @@ public:
 
   void removeBookmark(ZFlyEmBookmark *bookmark);
 
-  QSortFilterProxyModel *getProxy() const {
-    return m_proxy;
-  }
+//  QSortFilterProxyModel *getProxy() const {
+//    return m_proxy;
+//  }
 
-  void sortBookmark();
+//  void sortBookmark();
 
   bool isUsed() const {
     return m_isUsed;
@@ -63,15 +67,15 @@ signals:
 public slots:
 
 private:
-  void init(QObject *parent);
+  void init();
 
 private:
   ZFlyEmBookmarkPtrArray m_bookmarkArray;
-  QSortFilterProxyModel *m_proxy;
+//  ZSortFilterProxyModel *m_proxy;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
   ZFlyEmBookmarkPresenter *m_presenter;
   ZFlyEmBookmarkPresenter *m_defaultPresenter;
-  bool m_isUsed;
+  bool m_isUsed = false;
 };
 
 #endif // ZFLYEMBOOKMARKLISTMODEL_H

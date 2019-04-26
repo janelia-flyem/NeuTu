@@ -99,15 +99,6 @@ public: //Json APIs
                           const std::string &value);
 #endif
 
-//  std::vector<ZIntPoint> getPartners();
-/*
-public: //Additional properties
-  void setUserName(const std::string &name);
-  std::string getUserName() const;
-*/
-//private:
-//  static ZJsonArray GetRelationJson(ZJsonObject &json);
-
 private:
   void init();
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;

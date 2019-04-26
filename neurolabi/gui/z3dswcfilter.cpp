@@ -1500,20 +1500,24 @@ void Z3DSwcFilter::prepareDataForImmutable()
 
 
   for (auto &t : m_decomposedNodePairMap) {
-    auto &nodePairArray = t.second;
-    for (auto &nodePair : nodePairArray) {
-      prepareNodePairData(nodePair.first, nodePair.second);
+    if (t.first->isVisible()) {
+      auto &nodePairArray = t.second;
+      for (auto &nodePair : nodePairArray) {
+        prepareNodePairData(nodePair.first, nodePair.second);
+      }
     }
   }
 
   for (auto &t : m_decomposedNodeMap) {
-    auto &nodeArray = t.second;
-    for (auto &tn : nodeArray) {
+    if (t.first->isVisible()) {
+      auto &nodeArray = t.second;
+      for (auto &tn : nodeArray) {
 #ifdef _DEBUG_2
-      std::cout << "Decomposed node: " << tn << std::endl;
+        std::cout << "Decomposed node: " << tn << std::endl;
 #endif
-      m_pointAndRadius.emplace_back(
-            tn->node.x, tn->node.y, tn->node.z, tn->node.d);
+        m_pointAndRadius.emplace_back(
+              tn->node.x, tn->node.y, tn->node.z, tn->node.d);
+      }
     }
   }
 

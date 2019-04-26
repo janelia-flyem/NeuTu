@@ -34,13 +34,12 @@ public:
   enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
 
-  enum class EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
+  enum class EStatus { NORMAL, DUPLICATED };
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_ANNOTATION;
   }
 
-//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
 
@@ -159,8 +158,18 @@ public: //Additional properties
 
   void addProperty(const std::string &key, const std::string &value);
   void removeProperty(const std::string &key);
+
+  bool hasProperty(const std::string &key) const;
   template <typename T>
   T getProperty(const std::string &key) const;
+
+  /*!
+   * \brief Set the comment property of the annotation.
+   *
+   * It removes the comment property if \a comment is empty.
+   */
+  void setComment(const std::string &comment);
+  std::string getComment() const;
 
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
@@ -218,6 +227,9 @@ protected:
 
 private:
   void init();
+
+public:
+  static const char* KEY_COMMENT;
 
 protected:
   ZIntPoint m_position;

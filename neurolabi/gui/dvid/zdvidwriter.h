@@ -88,6 +88,7 @@ public:
 
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
+  void deleteData(const std::string &type, const std::string &name);
 
   void syncAnnotationToLabel(
       const std::string &name, const std::string &queryString = "");
@@ -277,6 +278,8 @@ public:
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
+  //For the following functions, nothing will be done with an empty string
+  //returned if the input url is empty.
   std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);
   std::string post(const std::string &url, const std::string &payload, bool isJson);

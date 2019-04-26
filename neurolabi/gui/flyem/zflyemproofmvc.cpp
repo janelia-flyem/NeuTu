@@ -10,7 +10,9 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QMimeData>
+#include <QElapsedTimer>
 
+#include "neutubeconfig.h"
 #include "logging/zlog.h"
 
 #include "zjsondef.h"
@@ -23,55 +25,54 @@
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidpatchdatafetcher.h"
+#include "dvid/zdvidpatchdataupdater.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidlabelslice.h"
 
 #include "zstackobjectsourcefactory.h"
-#include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
 #include "zstackviewlocator.h"
-#include "widgets/zimagewidget.h"
-#include "dvid/zdvidlabelslice.h"
+
+#include "z3dswcfilter.h"
+#include "z3dpunctafilter.h"
 #include "zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
 #include "zdialogfactory.h"
-#include "zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
-#include "flyem/zflyemsupervisor.h"
-#include "dvid/zdvidwriter.h"
+#include "zflyemsupervisor.h"
 #include "zstring.h"
-#include "flyem/zpaintlabelwidget.h"
+#include "zpaintlabelwidget.h"
 #include "zwidgetfactory.h"
 #include "zflyemcoordinateconverter.h"
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
 #include "protocols/protocolswitcher.h"
-#include "flyem/zflyembodywindowfactory.h"
-#include "flyem/zflyemmisc.h"
-#include "zswcgenerator.h"
+#include "zflyembodywindowfactory.h"
+#include "zflyemmisc.h"
 #include "zflyembody3ddoc.h"
-#include "neutubeconfig.h"
-#include "flyem/zflyemexternalneurondoc.h"
+#include "zflyemexternalneurondoc.h"
 #include "zfiletype.h"
-#include "z3dpunctafilter.h"
-#include "z3dswcfilter.h"
-#include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidsparsevolslice.h"
-#include "flyem/zflyemorthowindow.h"
+#include "zflyemorthowindow.h"
 #include "zroiwidget.h"
-#include "flyem/zflyemdataframe.h"
-#include "flyem/zflyemtodolistfilter.h"
+#include "zflyemdataframe.h"
+#include "zflyemtodolistfilter.h"
 #include "zclickablelabel.h"
 #include "znormcolormap.h"
+
 #include "widgets/zcolorlabel.h"
-#include "dialogs/zflyemsynapseannotationdialog.h"
+#include "widgets/zimagewidget.h"
+
 #include "zflyemorthodoc.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "flyem/zflyemsynapsedataupdater.h"
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
-#include "dvid/zdvidpatchdatafetcher.h"
-#include "dvid/zdvidpatchdataupdater.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
 #include "dialogs/zstresstestoptiondialog.h"
@@ -84,8 +85,6 @@
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
 #include "dvid/zdvidgrayslice.h"
-#include "dialogs/zflyemproofsettingdialog.h"
-#include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
@@ -114,6 +113,10 @@
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "dialogs/zflyemroitooldialog.h"
 #include "dialogs/zflyemgrayscaledialog.h"
+#include "dialogs/flyembodyannotationdialog.h"
+#include "dialogs/zflyemproofsettingdialog.h"
+#include "dialogs/zflyemmergeuploaddialog.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -374,6 +377,8 @@ FlyEmTodoDialog* ZFlyEmProofMvc::getTodoDlg()
 void ZFlyEmProofMvc::configureTodoDlg(FlyEmTodoDialog *dlg)
 {
   dlg->setDocument(getDocument());
+  connect(dlg, &FlyEmTodoDialog::checkingTodoItem,
+          getCompleteDocument(), &ZFlyEmProofDoc::setTodoItemChecked);
 }
 
 void ZFlyEmProofMvc::configureSplitUploadDlg(ZFlyEmSplitUploadOptionDialog *dlg)
@@ -407,7 +412,7 @@ NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 }
 #endif
 
-ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
+FlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
 {
   return m_dlgManager->getAnnotationDlg();
   /*
@@ -869,8 +874,8 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           this, SLOT(updateCoarseMeshWindowDeep()));
   connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
           this, &ZFlyEmProofMvc::updateMeshWindowDeep);
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateBookmarkTable()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateBookmarkTable()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBodyWindowDeep()));
@@ -1016,6 +1021,11 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(addingToSupervoxelSplitMarker(int,int,int,uint64_t)),
           getCompleteDocument(),
           SLOT(executeAddToSupervoxelSplitItemCommand(int,int,int,uint64_t)));
+  connect(window, &Z3DWindow::addingTraceToSomaMarker,
+          getCompleteDocument(), &ZFlyEmProofDoc::executeAddTraceToSomaItemCommand);
+  connect(window, &Z3DWindow::addingNoSomaMarker,
+          getCompleteDocument(), &ZFlyEmProofDoc::executeAddNoSomaItemCommand);
+
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
@@ -3294,6 +3304,25 @@ void ZFlyEmProofMvc::annotateBody(
   updateViewButton();
 }
 
+void ZFlyEmProofMvc::warn(const QString &msg)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          msg, neutu::EMessageType::WARNING,
+          ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+          ZWidgetMessage::ETarget::TARGET_KAFKA));
+}
+
+void ZFlyEmProofMvc::warn(const std::string &msg)
+{
+  warn(QString::fromStdString(msg));
+}
+
+void ZFlyEmProofMvc::warn(const char *msg)
+{
+  warn(QString(msg));
+}
+
 void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -3322,7 +3351,7 @@ void ZFlyEmProofMvc::annotateSelectedBody()
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
-        ZFlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
+        FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
         dlg->updateStatusBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -5663,8 +5692,11 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
     }
 
     if (writer.getStatusCode() != 200) {
-      emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                           neutu::EMessageType::WARNING));
+      emit messageGenerated(
+            ZWidgetMessage("Failed to record bookmark.",
+                           neutu::EMessageType::WARNING,
+                           ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
+                           ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
   }
 }
@@ -5716,7 +5748,7 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       }
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
 
-      updateUserBookmarkTable();
+//      updateUserBookmarkTable();
     }
   }
 }
@@ -5741,14 +5773,14 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {
-  getAssignedBookmarkModel()->sortBookmark();
+  getAssignedBookmarkModel()->sortTable();
 //  m_assignedBookmarkProxy->sort(m_assignedBookmarkProxy->sortColumn(),
 //                                m_assignedBookmarkProxy->sortOrder());
 }
 
 void ZFlyEmProofMvc::sortUserBookmarkTable()
 {
-  getUserBookmarkModel()->sortBookmark();
+  getUserBookmarkModel()->sortTable();
 //  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
 //                            m_userBookmarkProxy->sortOrder());
 }
@@ -5808,7 +5840,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
       getDocument()->getObjectList<ZFlyEmBookmark>();
   appendAssignedBookmarkTable(bookmarkList);
 
-  model->sortBookmark();
+//  model->sortTable();
 }
 
 void ZFlyEmProofMvc::updateBookmarkTable()
@@ -5827,7 +5859,8 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-    model->sortBookmark();
+//    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -5844,15 +5877,20 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
         if (getCompletePresenter()->isSplitOn()) {
           if ((bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::FALSE_MERGE) &&
               (bookmark->getBodyId() == m_splitProject.getBodyId())) {
-            model->append(bookmark);
+            model->appendSliently(bookmark);
           }
         } else {
-          model->append(bookmark);
+          model->appendSliently(bookmark);
         }
       }
     }
 
-    model->sortBookmark();
+    model->insertRows(0, model->getBookmarkArray().size());
+#ifdef _DEBUG_
+    std::cout << "table row count:" << model->rowCount() << std::endl;
+#endif
+//    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -5877,7 +5915,9 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       }
     }
 
-    model->sortBookmark();
+//    model->sortTable();
+//    model->getProxy()->invalidate();
+//    model->sortTable();
   }
 }
 
@@ -6064,8 +6104,15 @@ void ZFlyEmProofMvc::loadRoi(
         //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
+      QElapsedTimer timer;
+      timer.start();
       mesh = reader.readMesh(
             ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
+      KLOG << ZLog::Profile()
+           << ZLog::Description(QString("ROI (%1) mesh reading time")
+                                .arg(roiName.c_str()).arg(timer.elapsed())
+                                .toStdString())
+           << ZLog::Duration(timer.elapsed());
     }
 
     loadRoiMesh(mesh, roiName);
@@ -6183,11 +6230,26 @@ void ZFlyEmProofMvc::loadRoiFromRoiData(const ZDvidReader &reader)
 void ZFlyEmProofMvc::loadRoiFromRefData(
     const ZDvidReader &reader, const std::string &roiName)
 {
-#ifdef _DEBUG_
+  QElapsedTimer timer;
+  timer.start();
+  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
+  KLOG << ZLog::Profile()
+       << ZLog::Description(QString("ROI (%1) mesh loading time")
+                            .arg(roiName.c_str()).arg(timer.elapsed())
+                            .toStdString())
+       << ZLog::Duration(timer.elapsed());
+
+  if (mesh) {
+    loadRoiMesh(mesh, roiName);
+  } else {
+    warn("Failed to load ROI " + roiName);
+  }
+
+#ifdef _DEBUG_2
   std::cout << "Load ROIs from ROI data" << std::endl;
 #endif
 //  ZMesh *mesh = NULL;
-
+#if 0
   //Schema: {"->": {"type": type, "key", data}}
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
@@ -6218,6 +6280,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
       loadRoi(reader, roiName, key, type);
     }
   }
+#endif
 }
 
 void ZFlyEmProofMvc::loadROIFunc()

@@ -25,8 +25,18 @@ public:
 public slots:
   void updateTable();
 
+signals:
+  void checkingTodoItem(int x, int y, int z, bool checked);
+
 private:
   void init();
+  void setChecked(bool checked);
+
+private slots:
+  void updateTextFilter(QString text);
+  void updateVisibility(bool on);
+  void checkSelected();
+  void uncheckSelected();
 
 private:
   Ui::FlyEmTodoDialog *ui;

@@ -128,6 +128,8 @@ void Z3DGraphFilter::prepareData()
   m_baseAndBaseRadius.clear();
   m_arrowAxisAndTopRadius.clear();
   m_arrowBaseAndBaseRadius.clear();
+  m_textList.clear();
+  m_textPosition.clear();
 
   m_pointAndRadius.clear();
   m_lines.clear();

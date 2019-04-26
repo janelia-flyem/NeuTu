@@ -140,6 +140,19 @@ TEST(ZJsonObject, basic)
   obj.addEntryFrom(obj2);
   ASSERT_EQ("test3", ZJsonParser::stringValue(obj["key5"]));
   ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
+
+  obj.setNonEmptyEntry("key6", "");
+  ASSERT_FALSE(obj.hasKey("key6"));
+
+  obj.setNonEmptyEntry("key6", " ");
+  ASSERT_TRUE(obj.hasKey("key6"));
+
+  obj.setTrueEntry("key7", false);
+  ASSERT_FALSE(obj.hasKey("key7"));
+
+  obj.setTrueEntry("key7", true);
+  ASSERT_TRUE(obj.hasKey("key7"));
+
 }
 
 

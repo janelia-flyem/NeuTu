@@ -226,11 +226,7 @@ private:
   QList<QString> getBodyStatusList(
       std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
 
-//  uint64_t getTargetId(
-//      uint64_t targetId, const std::vector<uint64_t> &bodyId,
-//      bool mergingToLargest);
-
-  //void updateSelection();
+  void logSynapseInfo(uint64_t bodyId);
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;

@@ -23,9 +23,14 @@ public:
 private:
   void initActionBox();
   int getPriority() const;
+  QString getComment() const;
+
+private slots:
+  void updateWidget();
 
 private:
   Ui::ZFlyEmTodoAnnotationDialog *ui;
+  bool m_bufferChecked = false;
 };
 
 #endif // ZFLYEMTODOANNOTATIONDIALOG_H

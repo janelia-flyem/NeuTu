@@ -1,4 +1,5 @@
 include(dialogs/dialogs.pri)
+include(widgets/widgets.pri)
 
 FORMS += \
     $$PWD/flyemdataframeoptiondialog.ui \
@@ -8,7 +9,6 @@ FORMS += \
     $$PWD/zflyembodyannotationdialog.ui \
     $$PWD/zflyembookmarkannotationdialog.ui \
     $$PWD/zflyembookmarkfilter.ui \
-    $$PWD/zflyembookmarkwidget.ui \
     $$PWD/zflyemhackathonconfigdlg.ui
 
 HEADERS += \
@@ -57,8 +57,6 @@ HEADERS += \
     $$PWD/zflyembookmarklistmodel.h \
     $$PWD/zflyembookmarkpresenter.h \
     $$PWD/zflyembookmarkptrarray.h \
-    $$PWD/zflyembookmarkview.h \
-    $$PWD/zflyembookmarkwidget.h \
     $$PWD/zflyemdatabundle.h \
     $$PWD/zflyemdataframe.h \
     $$PWD/zflyemdoc3dbodystateaccessor.h \
@@ -177,8 +175,6 @@ SOURCES += \
     $$PWD/zflyembookmarklistmodel.cpp \
     $$PWD/zflyembookmarkpresenter.cpp \
     $$PWD/zflyembookmarkptrarray.cpp \
-    $$PWD/zflyembookmarkview.cpp \
-    $$PWD/zflyembookmarkwidget.cpp \
     $$PWD/zflyemdatabundle.cpp \
     $$PWD/zflyemdataframe.cpp \
     $$PWD/zflyemdoc3dbodystateaccessor.cpp \

@@ -37,7 +37,8 @@ Q_OBJECT
 
 public:
   enum class EInitMode {
-    NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME
+    NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME,
+    EXCLUDE_MESH //A temporary fix for disalbing meshes in some cases
   };
 
   Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);
@@ -257,6 +258,7 @@ private:
 
   void addFilter(neutu3d::ERendererLayer layer);
 
+  bool allowingNormalVolume() const;
   void updateVolumeData();
 //  void updateSliceData();
 
