@@ -67,7 +67,7 @@
   <customwidget>
    <class>ZFlyEmBookmarkView</class>
    <extends>QTableView</extends>
-   <header location="global">flyem/zflyembookmarkview.h</header>
+   <header location="global">flyem/widgets/zflyembookmarkview.h</header>
   </customwidget>
   <customwidget>
    <class>ZFlyEmBookmarkFilter</class>

@@ -29,6 +29,33 @@ ZStackDocHelper::~ZStackDocHelper()
   delete m_sparseStack;
 }
 
+ZStack* ZStackDocHelper::makeBoundedSparseStack(const ZStackDoc *doc)
+{
+  if (m_sparseStack != NULL) {
+    delete m_sparseStack;
+    m_sparseStack = NULL;
+    m_sparseStackDsIntv.set(0, 0, 0);
+  }
+
+
+//  if (doc->getCuboidRoi())
+
+  //Todo: remove const_cast
+  ZSparseStack *spStack = const_cast<ZStackDoc*>(doc)->getSparseStack();
+
+  ZStack *stack = NULL;
+
+  if (spStack) {
+    stack = spStack->makeStack(doc->getCuboidRoi(), false);
+  }
+
+  if (stack) {
+    m_sparseStackDsIntv = stack->getDsIntv();
+  }
+
+  return stack;
+}
+
 ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
 {
   if (m_sparseStack != NULL) {

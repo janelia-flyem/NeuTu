@@ -1,6 +1,8 @@
 #ifndef ZFLYEMBODY3DDOC_H
 #define ZFLYEMBODY3DDOC_H
 
+#include <functional>
+
 #include <QSet>
 #include <QTimer>
 #include <QQueue>
@@ -8,6 +10,7 @@
 #include <QColor>
 #include <QList>
 #include <QTime>
+#include <QThreadStorage>
 
 #include "common/neutube_def.h"
 
@@ -28,7 +31,7 @@ class ZMesh;
 class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
@@ -97,6 +100,7 @@ public:
 
   uint64_t getMappedId(uint64_t bodyId) const;
   bool isAgglo(uint64_t bodyId) const;
+  QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -315,7 +319,7 @@ public:
   void showAllMesh();
 
   uint64_t getSelectedSingleNormalBodyId() const;
-  void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
+  void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
 
   void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
@@ -351,6 +355,7 @@ public slots:
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
   void setTodoItemAction(neutu::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action, bool checked);
   void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
@@ -422,9 +427,9 @@ private:
 
   std::vector<ZMesh*> getCachedMeshes(uint64_t bodyId, int zoom);
   std::vector<ZMesh *> makeBodyMeshModels(ZFlyEmBodyConfig &config);
-  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t);
+  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t, bool showProgress = true);
   std::vector<ZMesh*> makeTarMeshModels(
-      const ZDvidReader &reader, uint64_t bodyId, int t);
+      const ZDvidReader &reader, uint64_t bodyId, int t, bool showProgress = true);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -440,6 +445,9 @@ private:
   QColor getBodyColor(uint64_t bodyId);
 
   void updateDvidInfo();
+
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem*)> f,
+                        std::function<bool(const ZFlyEmToDoItem*)> pred);
 
   void addBodyFunc(ZFlyEmBodyConfig &config);
   void addBodyMeshFunc(ZFlyEmBodyConfig &config);
@@ -537,7 +545,7 @@ private:
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
@@ -572,8 +580,16 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_workDvidReader;
   ZDvidWriter m_mainDvidWriter;
+
+  // Each background "work" thread reading meshes must have its own ZDvidReader.
+  // Currently, there are two such threads (one for standard reading, one for prefetching).
+  const int NUM_WORK_DVID_READERS = 2;
+  std::vector<ZDvidReader> m_workDvidReader;
+  mutable QThreadStorage<int> m_workDvidReaderIndices;
+  mutable int m_workDvidReaderNextIndex = 0;
+  mutable QMutex m_workDvidReaderNextIndexMutex;
+
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;
@@ -596,7 +612,7 @@ private:
 
   ZFlyEmBodySplitter *m_splitter;
 
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

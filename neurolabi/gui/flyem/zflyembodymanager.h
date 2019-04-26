@@ -67,6 +67,18 @@ public:
   uint64_t getAggloId(uint64_t bodyId) const;
   QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
+  /*!
+   * \brief Register a body with its subbody composition as being buffered
+   * (for prefetching)
+   *
+   * \a comp will overwrite the old composition of \a id if it has already been
+   * registered. \a id is registered as a normal body if \a comp is empty.
+   */
+
+  void registerBufferedBody(uint64_t id, const QSet<uint64_t> &comp);
+  void deregisterBufferedBody(uint64_t id);
+  QSet<uint64_t> getBufferedMappedSet(uint64_t bodyId) const;
+
   QSet<uint64_t> getNormalBodySet() const;
   QSet<uint64_t> getUnmappedBodySet() const;
   QSet<uint64_t> getOrphanSupervoxelSet(bool resultEncoded) const;
@@ -168,7 +180,7 @@ private:
   QMap<uint64_t, ZFlyEmBodyConfig> m_bodyConfigMap; //Hints for body update
   QSet<uint64_t> m_todoLoaded;
   QSet<uint64_t> m_synapseLoaded;
-
+  QMap<uint64_t, QSet<uint64_t>> m_bufferedBodyMap;
 };
 
 #endif // ZFLYEMBODYMANAGER_H

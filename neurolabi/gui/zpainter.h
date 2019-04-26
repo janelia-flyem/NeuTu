@@ -171,6 +171,8 @@ public:
 
   void drawPolyline(const QPointF * points, int pointCount);
   void drawPolyline(const QPoint * points, int pointCount);
+  void drawPolyline(const std::vector<QPoint> &pointArray);
+  void drawPolyline(const std::vector<QPointF> &pointArray);
 
   void drawText(
       int x, int y, int width, int height, int flags, const QString & text);

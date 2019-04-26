@@ -220,6 +220,7 @@ struct MainConfig {
   bool guiEnabled = true;
   bool advanced = false;
   bool showingVersion = false;
+  bool autoTestingTask = false;
 
   std::string userName;
   QStringList fileList;
@@ -240,6 +241,10 @@ MainConfig get_program_config(int argc, char *argv[])
 
   if (qgetenv("NEUTU_ADVANCED").toInt() == 1) {
     config.advanced = true;
+  }
+
+  if (qgetenv("AUTO_TESTING_TASK").toInt() == 1) {
+    config.autoTestingTask = true;
   }
 
   if (argc > 1) {

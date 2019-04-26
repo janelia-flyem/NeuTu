@@ -144,6 +144,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
           config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
           config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
           config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+          config.append(ZActionFactory::ACTION_ADD_TODO_TRACE_TO_SOMA);
+          config.append(ZActionFactory::ACTION_ADD_TODO_NO_SOMA);
         }
       }
 
@@ -183,6 +185,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT);
+        config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_TRACE_TO_SOMA);
+        config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NO_SOMA);
       }
     }
 

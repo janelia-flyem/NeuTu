@@ -28,6 +28,11 @@ ZCuboid::ZCuboid(double x1, double y1, double z1,
   set(x1, y1, z1, x2, y2, z2);
 }
 
+ZCuboid::ZCuboid(const ZPoint &firstCorner, const ZPoint &lastCorner)
+{
+  set(firstCorner, lastCorner);
+}
+
 ZCuboid::ZCuboid(const ZCuboid &cuboid) : m_firstCorner(cuboid.m_firstCorner),
   m_lastCorner(cuboid.m_lastCorner)
 {

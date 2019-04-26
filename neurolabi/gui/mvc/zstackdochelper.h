@@ -42,6 +42,9 @@ public:
     return m_sparseStackDsIntv;
   }
 
+  //Need to return unique pointer
+  ZStack* makeBoundedSparseStack(const ZStackDoc *doc);
+
 //  static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
 
 

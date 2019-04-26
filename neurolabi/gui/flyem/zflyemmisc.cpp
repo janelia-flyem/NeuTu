@@ -47,7 +47,7 @@
 #include "zjsonfactory.h"
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
-#include "zmainwindowcontroller.h"
+//#include "zmainwindowcontroller.h"
 #include "zswctree.h"
 #include "zarray.h"
 #include "zstack.hxx"
@@ -1043,6 +1043,27 @@ void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[6] = QPointF(rect.left(), center.y());
   ptArray[7] = QPointF(center.x() - sw, center.y() - sh);
   ptArray[8] = ptArray[0];
+}
+
+QVector<QPointF> flyem::MakeCrossKey(const QPointF &center, double radius)
+{
+  QVector<QPointF> ptArray;
+  double dr = radius * 0.2;
+  ptArray.append(center + QPointF(radius, dr));
+  ptArray.append(center + QPointF(dr, dr));
+  ptArray.append(center + QPointF(dr, radius));
+  ptArray.append(center + QPointF(-dr, radius));
+  ptArray.append(center + QPointF(-dr, dr));
+  ptArray.append(center + QPointF(-radius, dr));
+  ptArray.append(center + QPointF(-radius, -dr));
+  ptArray.append(center + QPointF(-dr, -dr));
+  ptArray.append(center + QPointF(-dr, -radius));
+  ptArray.append(center + QPointF(dr, -radius));
+  ptArray.append(center + QPointF(dr, -dr));
+  ptArray.append(center + QPointF(radius, -dr));
+  ptArray.append(center + QPointF(radius, dr));
+
+  return ptArray;
 }
 
 void flyem::PrepareBodyStatus(QComboBox *box)

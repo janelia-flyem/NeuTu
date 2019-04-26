@@ -5,6 +5,8 @@
 #include <QItemSelectionModel>
 #include <QDesktopWidget>
 
+#include "logging/zlog.h"
+
 #include "geometry/zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
 
@@ -641,10 +643,15 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       if (bodyId != targetId) {
         if (m_annotationCache.contains(bodyId)) {
           ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
-          annotation.mergeAnnotation(
-                subann, [=](const std::string &status) {
-            return m_bodyStatusProtocol.getStatusRank(status);
-          });
+          if (m_bodyStatusProtocol.isEmpty()) {
+            annotation.mergeAnnotation(
+                  subann, &ZFlyEmBodyAnnotation::GetStatusRank);
+          } else {
+            annotation.mergeAnnotation(
+                  subann, [=](const std::string &status) {
+              return m_bodyStatusProtocol.getStatusRank(status);
+            });
+          }
         }
       }
     }
@@ -825,11 +832,20 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
   return true;
 }
 
+void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
+{
+  if (bodyId > 0 && getDvidReader().getDvidTarget().hasSynapseLabelsz()) {
+    int count = getDvidReader().readSynapseLabelszBody(
+          bodyId, dvid::ELabelIndexType::ALL_SYN);
+    KINFO << QString("Merge target: %1 (#synapses: %2)").arg(bodyId).arg(count);
+  }
+}
+
 //Assuming m_annotationCache and m_mergeMap are up to date.
 void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 {
 //  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
-  bool anyMergeUploaded = false;
+//  bool anyMergeUploaded = false;
 
   if (!m_mergeMap.empty() && m_writer.good()) {
     getProgressSignal()->startProgress("Uploading merge result ...");
@@ -847,6 +863,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
       std::set<uint64_t> newBodySet;
       getProgressSignal()->startProgress(0.5);
+      int targetUploadedCount = 0;
+      uint64_t lastTarget = 0;
       foreach (uint64_t targetId, m_mergeMap.keys()) {
         const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
         auto mergeConfig = dvid::GetMergeConfig(
@@ -856,14 +874,17 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
         if (mergeVerified(newTargetId, newMerged)) {
           m_writer.mergeBody(newTargetId, newMerged);
-          mergeBodyAnnotation(newTargetId, newMerged);
 
           if (m_writer.getStatusCode() != 200) {
             emit messageGenerated(
                   ZWidgetMessage(
-                    "Failed to upload merging results",
-                    neutu::EMessageType::ERROR));
+                    QString("Failed to upload merging for %1").arg(newTargetId),
+                    neutu::EMessageType::ERROR,
+                    ZWidgetMessage::TARGET_TEXT_APPENDING |
+                    ZWidgetMessage::TARGET_KAFKA));
           } else {
+            mergeBodyAnnotation(newTargetId, newMerged);
+
             updateAffliatedData(newTargetId, newMerged, warnMsg);
 
             if (oldSelection.count(newTargetId) > 0) {
@@ -872,14 +893,19 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
             removeMerge(newTargetId);
             removeMerge(newMerged);
-            anyMergeUploaded = true;
+            ++targetUploadedCount;
+            lastTarget = newTargetId;
+
+            KINFO << QString("%1 bodies are merged into %2")
+                     .arg(merged.size()).arg(newTargetId);
+//            anyMergeUploaded = true;
           }
         }
         getProgressSignal()->advanceProgress(0.1);
       }
       getProgressSignal()->endProgress();
 
-      if (anyMergeUploaded) {
+      if (targetUploadedCount > 0) {
         updateSelection(newBodySet);
 
         getProgressSignal()->advanceProgress(0.1);
@@ -902,8 +928,13 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         saveMergeOperation();
 
 
-        ZWidgetMessage message("Body merge finalized.");
+        ZWidgetMessage message(
+              "Body merge finalized.", neutu::EMessageType::INFORMATION,
+              ZWidgetMessage::TARGET_TEXT_APPENDING |
+              ZWidgetMessage::TARGET_KAFKA);
         emit messageGenerated(message);
+
+        logSynapseInfo(lastTarget);
       }
 
       if (warnMsg.hasMessage()) {

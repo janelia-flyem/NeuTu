@@ -75,6 +75,7 @@ void MakeTriangle(const QRectF &rect, QPointF *ptArray,
                   neutu::ECardinalDirection direction);
 void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
+QVector<QPointF> MakeCrossKey(const QPointF &center, double radius);
 
 void PrepareBodyStatus(QComboBox *box);
 QList<QString> GetDefaultBodyStatus();

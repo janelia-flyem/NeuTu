@@ -165,7 +165,7 @@ QString ZGlobal::getNeuPrintToken() const
   obj.decode(getNeuPrintAuth().toStdString());
   std::string token = ZJsonParser::stringValue(obj["token"]);
 
-  return token.c_str();
+  return QString::fromStdString(token);
 }
 
 NeuPrintReader* ZGlobal::getNeuPrintReader()

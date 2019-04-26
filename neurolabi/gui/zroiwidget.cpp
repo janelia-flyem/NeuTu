@@ -173,7 +173,8 @@ void ZROIWidget::makeGUI()
     //
     double alpha = m_window->getFilter(neutu3d::ERendererLayer::ROI)->opacity();
  //   double alpha = m_window->getSurfaceFilter()->getOpacity();
-    m_opacityLabel = new QLabel(tr(" Opacity: %1").arg(alpha));
+    m_opacityLabel = new QLabel;//(tr(" Opacity: %1").arg(alpha, 0, 'f', 2, '0'));
+    updateOpacityLabel(alpha);
     m_opacitySlider = new QSlider(Qt::Horizontal);
     m_opacitySlider->setRange(0,100);
     m_opacitySlider->setValue(alpha*100);
@@ -460,6 +461,11 @@ void ZROIWidget::updateROIColors(int row, int column)
     }
 }
 
+void ZROIWidget::updateOpacityLabel(double v)
+{
+  m_opacityLabel->setText(tr(" Opacity: %1").arg(v, 0, 'f', 2, '0'));
+}
+
 void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 {
     ZOUT(LTRACE(), 5)<<"to render ROI: "<<item->text()<<item->checkState();
@@ -471,7 +477,8 @@ void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 void ZROIWidget::updateSlider(int v)
 {
     double alpha = double( v / 100.0 );
-    m_opacityLabel->setText(tr(" Opacity: %1").arg(alpha));
+    updateOpacityLabel(alpha);
+//    m_opacityLabel->setText(tr(" Opacity: %1").arg(alpha));
 
     if(m_window)
     {
@@ -484,7 +491,8 @@ void ZROIWidget::updateOpacity(double v)
 {
     int opacityVal = 100*v;
     m_opacitySlider->setValue(opacityVal);
-    m_opacityLabel->setText(tr(" Opacity: %1").arg(v));
+    updateOpacityLabel(v);
+//    m_opacityLabel->setText(tr(" Opacity: %1").arg(v));
 }
 
 

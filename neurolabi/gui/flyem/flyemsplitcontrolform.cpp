@@ -8,8 +8,8 @@
 
 #include "qt/gui/utilities.h"
 #include "flyemdef.h"
-#include "zflyembookmarkwidget.h"
-#include "zflyembookmarkview.h"
+#include "widgets/zflyembookmarkwidget.h"
+#include "widgets/zflyembookmarkview.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
