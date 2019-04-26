@@ -324,6 +324,8 @@
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 
+#include "ext/http/HTTPRequest.hpp"
+
 //#include "test/ztestall.h"
 
 using namespace std;
@@ -29753,7 +29755,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
 
   ZFlyEmBodyAnnotation annot;
   ZJsonObject obj;
@@ -29772,6 +29774,71 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+//  try
+//  {
+      // you can pass http::InternetProtocol::V6 to Request to make an IPv6 request
+
+
+      // send a get request
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+        http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+
+      {
+      http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+      }
+      // send a post request
+//      response = request.send("POST", "foo=1&bar=baz", {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << response.body.data() << std::endl; // print the result
+
+      // pass parameters as a map
+//      std::map<std::string, std::string> parameters = {{"foo", "1"}, {"bar", "baz"}};
+//      response = request.send("POST", parameters, {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << std::string(response.body.begin(), response.body.end()) << std::endl; // print the result
+//  }
+//  catch (const std::exception& e)
+//  {
+//      std::cerr << "Request failed, error: " << e.what() << std::endl;
+//  }
+
+//  ZDvidReader *reader = ZGlobal().GetInstance().getDvidReader("MB_Test");
+//  tic();
+//  reader->setVerbose(false);
+//  for (size_t i = 0; i < 5000; ++i) {
+//    reader->readDataInfo("bodies3");
+//  }
+//  ptoc();
+
+//  tic();
+//  ZNetBufferReader nreader;
+//  for (size_t i = 0; i < 5000; ++i) {
+//    nreader.read("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info", false);
+//  }
+//  ptoc();
+#endif
+
+#if 1
+
+
+#endif
 
   std::cout << "Done." << std::endl;
 }
