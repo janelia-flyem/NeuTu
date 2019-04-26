@@ -180,3 +180,5 @@ CONFIG(static_gtest) { # gtest from ext folder
 
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
+
+HEADERS += ext/http/HTTPRequest.hpp
