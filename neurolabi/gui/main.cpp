@@ -151,13 +151,19 @@ int main(int argc, char *argv[])
     int result = 1;
 
     if (mainWin != NULL) {
+      if (mainConfig.autoTestingTask) {
 #if defined(_FLYEM_) && !defined(_NEU3_)
 #  if defined(_DEBUG_)
-      ZMainWindowController::StartTestTask(mainWin);
+        ZMainWindowController::StartTestTask(mainWin);
 #  else
-      ZMainWindowController::StartTestTask(mainWin->startProofread());
+        ZMainWindowController::StartTestTask(mainWin->startProofread());
 #  endif
 #endif
+      } else {
+#if !defined(_DEBUG_)
+        mainWin->startProofread();
+#endif
+      }
 
 #if defined(_NEU3_2)
       mainWin->show();
