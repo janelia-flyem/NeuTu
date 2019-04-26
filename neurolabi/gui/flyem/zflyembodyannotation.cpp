@@ -266,21 +266,29 @@ std::string ZFlyEmBodyAnnotation::getName() const
     return m_name;
   }
 
-  if (!m_instance.empty()) {
-    return m_instance;
-  }
 
-  return getAutoName();
+  return m_instance;
+
+//  return getAutoName();
 }
 
-std::string ZFlyEmBodyAnnotation::getAutoName() const
+std::string ZFlyEmBodyAnnotation::getType() const
 {
-  std::string name = m_majorInput + m_majorOutput;
-  if (!m_primaryNeurite.empty()) {
-    name += "-" + m_primaryNeurite;
+  if (!m_type.empty()) {
+    return m_type;
   }
 
-  return  name;
+  return getAutoType();
+}
+
+std::string ZFlyEmBodyAnnotation::getAutoType() const
+{
+  std::string type = m_majorInput + m_majorOutput;
+  if (!m_primaryNeurite.empty()) {
+    type += "-" + m_primaryNeurite;
+  }
+
+  return  type;
 }
 
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)

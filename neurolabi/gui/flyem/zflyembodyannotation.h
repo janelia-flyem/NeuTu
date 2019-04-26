@@ -20,7 +20,7 @@ public:
   inline const std::string& getStatus() const { return m_status; }
   inline const std::string& getComment() const { return m_comment; }
 //  inline const std::string& getName() const { return m_name; }
-  inline const std::string& getType() const { return m_type; }
+//  inline const std::string& getType() const { return m_type; }
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
 
@@ -34,7 +34,10 @@ public:
   std::string getSynonym() const;
 
   std::string getName() const;
-  std::string getAutoName() const;
+
+  std::string getType() const;
+  std::string getAutoType() const;
+//  std::string getAutoName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setStatus(const std::string &status) {

@@ -73,6 +73,13 @@
        <item>
         <widget class="QLineEdit" name="typeLineEdit"/>
        </item>
+       <item>
+        <widget class="QPushButton" name="generatePushButton">
+         <property name="text">
+          <string>generate</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>
@@ -88,13 +95,6 @@
      </item>
      <item>
       <widget class="QLineEdit" name="instanceLineEdit"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="generatePushButton">
-       <property name="text">
-        <string>generate</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
