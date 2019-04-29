@@ -6788,7 +6788,7 @@ void MainWindow::on_actionOne_Column_triggered()
   //Crop skeletons and save them
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
-  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+  config.load(NeutubeConfig::getInstance().getConfigDir() +
               "/json/skeletonize_fib25_len40.json");
   skeletonizer.configure(config);
 

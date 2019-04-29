@@ -227,9 +227,9 @@ unix {
           message("SDK: $$QMAKE_MAC_SDK")
         }
 
-        doc.files = doc
-        doc.path = Contents/MacOS
-        QMAKE_BUNDLE_DATA += doc
+#        doc.files = doc
+#        doc.path = Contents/MacOS
+#        QMAKE_BUNDLE_DATA += doc
 #        config.files = config.xml
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config

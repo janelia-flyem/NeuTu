@@ -4693,7 +4693,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
 void Z3DWindow::help()
 {
-  m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
+  m_helpDlg->setSource((GET_CONFIG_DIR + "/doc/shortcut_3d.html").c_str());
   m_helpDlg->show();
   m_helpDlg->raise();
 }

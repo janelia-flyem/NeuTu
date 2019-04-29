@@ -86,11 +86,11 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
-#ifdef _NEU3_
-    QPixmap pixmap(":images/neu3.png");
-#else
-    QPixmap pixmap(QString::fromStdString(GET_APPLICATION_DIR + "/neutu_splash.png"));
-#endif
+//#ifdef _NEU3_
+//    QPixmap pixmap(":images/neu3.png");
+//#else
+    QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));
+//#endif
 
     QSplashScreen splash(pixmap);
     splash.show();

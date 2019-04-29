@@ -37,7 +37,7 @@ TEST(ZDvidReader, basic)
 {
   ZFlyEmConfig config;
 
-  config.setConfigPath(ZString::fullPath(GET_APPLICATION_DIR,
+  config.setConfigPath(ZString::fullPath(GET_CONFIG_DIR,
                                          "json", "", "flyem_config.json"));
   config.useDefaultConfig(false);
   config.loadConfig();

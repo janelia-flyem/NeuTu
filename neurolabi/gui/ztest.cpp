@@ -29836,7 +29836,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-
+  NeutubeConfig::getInstance().print();
 
 #endif
 
