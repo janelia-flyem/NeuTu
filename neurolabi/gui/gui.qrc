@@ -164,5 +164,6 @@
         <file>images/add_todo.png</file>
         <file>images/add_todo2.png</file>
         <file>images/add_tosplit.png</file>
+        <file>images/neutu_splash.png</file>
     </qresource>
 </RCC>

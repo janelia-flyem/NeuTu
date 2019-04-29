@@ -57,10 +57,14 @@ jsonconfig.target = jsonconfig
 jsonconfig.depends = FORCE
 jsonconfig.commands = cp -r $${PWD}/../json $${BIN_FOLDER}
 
-app_config.target = app_config
-app_config.depends = $$xmlconfig.target $$jsonconfig.target
+splashconfig.target = splash
+splashconfig.depends = FORCE
+splashconfig.commands = cp -r $${PWD}/images/neutu_splash.png $${BIN_FOLDER}
 
-QMAKE_EXTRA_TARGETS += xmlconfig jsonconfig app_config
+app_config.target = app_config
+app_config.depends = $$xmlconfig.target $$jsonconfig.target $$splashconfig.target
+
+QMAKE_EXTRA_TARGETS += xmlconfig jsonconfig splashconfig app_config
 
 #May not work in parallel compiling
 #PRE_TARGETDEPS = $${TargetFile}

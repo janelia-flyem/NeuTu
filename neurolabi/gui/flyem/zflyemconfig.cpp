@@ -361,6 +361,13 @@ void ZFlyEmConfig::updateServiceStatus()
 
 void ZFlyEmConfig::activateNeuTuServer()
 {
+  if (!m_neutuServerChecked) {
+    activateNeuTuServerForce();
+  }
+}
+
+void ZFlyEmConfig::activateNeuTuServerForce()
+{
   std::string server = getNeuTuServer();
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
   bool neutuseOpened = false;
@@ -380,6 +387,8 @@ void ZFlyEmConfig::activateNeuTuServer()
       }
     }
   }
+
+  m_neutuServerChecked = true;
 }
 
 /*
