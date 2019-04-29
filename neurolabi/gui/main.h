@@ -340,9 +340,11 @@ void configure(MainConfig &mainConfig)
 
 #ifdef _FLYEM_
   LoadFlyEmConfig(mainConfig.configPath, config, true);
+  /*
   if (mainConfig.isGuiEnabled()) {
     GET_FLYEM_CONFIG.activateNeuTuServer();
   }
+  */
 
   ZGlobalDvidRepo::GetInstance().init();
 #endif

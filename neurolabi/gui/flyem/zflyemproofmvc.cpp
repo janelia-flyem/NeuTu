@@ -2243,6 +2243,8 @@ void ZFlyEmProofMvc::setDvidTarget()
 //  }
 
   if (getDvidDialog()->exec()) {
+    GET_FLYEM_CONFIG.activateNeuTuServer();
+
     const ZDvidTarget &target = getDvidDialog()->getDvidTarget();
     setDvidTarget(target);
     /*

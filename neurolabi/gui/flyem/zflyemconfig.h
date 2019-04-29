@@ -98,6 +98,7 @@ public:
   bool hasNormalService() const;
   void updateServiceStatus();
 
+  void activateNeuTuServerForce();
   void activateNeuTuServer();
 
 //  void setRemoteServer(const std::string &server);
@@ -185,6 +186,7 @@ private:
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
   neutuse::TaskWriter m_neutuseWriter;
+  bool m_neutuServerChecked = false;
 #endif
 //  std::string m_taskServer;
   std::string m_configPath;

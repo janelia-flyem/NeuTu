@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
 
 #include <QProcess>
 #include <QDir>
+#include <QSplashScreen>
 
 #include "main.h"
 
@@ -85,6 +86,15 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+#ifdef _NEU3_
+    QPixmap pixmap(":images/neu3.png");
+#else
+    QPixmap pixmap(QString::fromStdString(GET_APPLICATION_DIR + "/neutu_splash.png"));
+#endif
+
+    QSplashScreen splash(pixmap);
+    splash.show();
+
     NeutubeConfig::UpdateUserInfo();
     ZGlobal::InitKafkaTracer();
 
@@ -147,6 +157,8 @@ int main(int argc, char *argv[])
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
 #endif
+
+    splash.finish(mainWin);
 
     int result = 1;
 
