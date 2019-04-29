@@ -9,5 +9,5 @@ fi
 export NEUTU_TARGET=$1
 
 recipe=recipe-neutu
-conda build $recipe -c flyem-forge -c conda-forge/label/cf201901
+conda build $recipe -c flyem-forge/label/upgrade201904 -c flyem-forge -c conda-forge
  
