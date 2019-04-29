@@ -232,7 +232,7 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           ZJsonObject config = reader.readJsonObject(skeletonUrl);
 
           if (config.isEmpty()) {
-            config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+            config.load(NeutubeConfig::getInstance().getConfigDir() +
                         "/json/skeletonize_fib25_len40.json");
           }
           skeletonizer.configure(config);

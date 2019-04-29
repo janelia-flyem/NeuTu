@@ -334,7 +334,7 @@ void configure(MainConfig &mainConfig)
 
   if (mainConfig.configPath.isEmpty()) {
     mainConfig.configPath =
-        QFileInfo(QDir((GET_APPLICATION_DIR + "/json").c_str()), "config.json").
+        QFileInfo(QDir((GET_CONFIG_DIR + "/json").c_str()), "config.json").
         absoluteFilePath();
   }
 
@@ -352,13 +352,13 @@ void configure(MainConfig &mainConfig)
   if (!mainConfig.runCommandLine) { //Command line mode takes care of configuration independently
 #if !defined(_FLYEM_)
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
-    tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    tracingConfig.load(config.getConfigDir() + "/json/trace_config.json");
 
     if (GET_APPLICATION_NAME == "Biocytin") {
       tracingConfig.load(
-            config.getApplicatinDir() + "/json/trace_config_biocytin.json");
+            config.getConfigDir() + "/json/trace_config_biocytin.json");
     } else {
-      tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+      tracingConfig.load(config.getConfigDir() + "/json/trace_config.json");
     }
 #endif
     //Sync log files

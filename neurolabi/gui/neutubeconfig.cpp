@@ -440,6 +440,7 @@ void NeutubeConfig::print()
   cout << endl;
 #endif
   cout << "Application dir: " << getApplicatinDir() << endl;
+  cout << "Config dir: " << getConfigDir() << endl;
   cout << "Autosave dir: " << getPath(EConfigItem::AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << "Log dir: " << getPath(EConfigItem::LOG_DIR) << endl;
@@ -487,7 +488,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
       return ZString::fullPath(getPath(WORKING_DIR), "autosave");
 #endif
   case EConfigItem::SKELETONIZATION_CONFIG:
-    return getApplicatinDir() + ZString::FileSeparator + "json" +
+    return getConfigDir() + ZString::FileSeparator + "json" +
         ZString::FileSeparator + "skeletonize_fib25_len40.json";
   case EConfigItem::DOCUMENT:
     return m_docUrl;
@@ -557,13 +558,30 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
     return ZString::fullPath(getPath(WORKING_DIR), "log_error.txt");
 #endif
   case EConfigItem::NEUPRINT_AUTH:
-    return NeutubeConfig::getInstance().getPath(
-          NeutubeConfig::EConfigItem::WORKING_DIR) + "/neuprint_auth.json";
+    return ZString::fullPath(NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR), "neuprint_auth.json");
+  case EConfigItem::CONFIG_DIR:
+    return ZString::fullPath(getApplicatinDir(), _CONFIG_FOLDER_);
   default:
     break;
   }
 
   return "";
+}
+
+std::string NeutubeConfig::getConfigDir() const
+{
+  return getPath(EConfigItem::CONFIG_DIR);
+}
+std::string NeutubeConfig::getConfigPath() const
+{
+  return ZString::fullPath(getConfigDir(), "config.xml");
+//  return getApplicatinDir() + "/config.xml";
+}
+std::string NeutubeConfig::getHelpFilePath() const
+{
+  return ZString::fullPath(getConfigDir(), "doc", "shortcut.html");
+//  return getConfigDir() + "/doc/shortcut.html";
 }
 
 NeutubeConfig::MainWindowConfig::MainWindowConfig() : m_tracingOn(true),

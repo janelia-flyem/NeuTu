@@ -321,7 +321,7 @@ void ZDialogFactory::About(QWidget *parent)
 
   QString thirdPartyLib = QString(
         "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
-      .arg(GET_APPLICATION_DIR.c_str());
+      .arg(GET_CONFIG_DIR.c_str());
   QMessageBox::about(parent, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "

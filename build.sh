@@ -183,50 +183,50 @@ echo "qmake done"
 THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
 make -j${THREAD_COUNT}
 
-bin_dir=.
-app_name=neuTube
+#bin_dir=.
+#app_name=neuTube
 
-if [ $edition = "flyem" ]
-then
-  app_name=neutu
-fi
+#if [ $edition = "flyem" ]
+#then
+#  app_name=neutu
+#fi
 
-if [ $edition = "neu3" ]
-then
-  app_name=neu3
-fi
+#if [ $edition = "neu3" ]
+#then
+#  app_name=neu3
+#fi
 
-if [ $debug_config = "debug" ]
-then
-  app_name=${app_name}_d
-fi
+#if [ $debug_config = "debug" ]
+#then
+#  app_name=${app_name}_d
+#fi
 
-if [ -d $bin_dir/$app_name.app ]
-then
-  bin_dir=$bin_dir/$app_name.app/Contents/MacOS
-fi
+#if [ -d $bin_dir/$app_name.app ]
+#then
+#  bin_dir=$bin_dir/$app_name.app/Contents/MacOS
+#fi
 
-if [ ! -d $bin_dir/doc ]
-then
-  cp -r ../gui/doc $bin_dir/
-fi
+#if [ ! -d $bin_dir/doc ]
+#then
+#  cp -r ../gui/doc $bin_dir/
+#fi
 
-if [ $edition = "flyem" ] || [ $edition = "neu3" ]
-then
-  cp ../gui/config_flyem.xml $bin_dir/config.xml
-  cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
-  cp -r ../json $bin_dir
-fi
+#if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+#then
+#  cp ../gui/config_flyem.xml $bin_dir/config.xml
+#  cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
+#  cp -r ../json $bin_dir
+#fi
 
-if [ $edition = "biocytin" ]
-then
-  cp ../gui/biocytin_config.xml $bin_dir/config.xml
-fi
+#if [ $edition = "biocytin" ]
+#then
+#  cp ../gui/biocytin_config.xml $bin_dir/config.xml
+#fi
 
-if [ $edition = "general" ]
-then
-  cp ../gui/config.xml $bin_dir/config.xml
-fi
+#if [ $edition = "general" ]
+#then
+#  cp ../gui/config.xml $bin_dir/config.xml
+#fi
 #echo "Deploying ..."
 
 #if [ -d neuTube.app ]
