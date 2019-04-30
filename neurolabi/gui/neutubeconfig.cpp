@@ -441,6 +441,7 @@ void NeutubeConfig::print()
 #endif
   cout << "Application dir: " << getApplicatinDir() << endl;
   cout << "Config dir: " << getConfigDir() << endl;
+  cout << "Config path: " << getConfigPath() << endl;
   cout << "Autosave dir: " << getPath(EConfigItem::AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << "Log dir: " << getPath(EConfigItem::LOG_DIR) << endl;

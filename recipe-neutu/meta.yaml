@@ -39,7 +39,8 @@ requirements:
     - hdf5    1.10*
     - pango   1.40* # [linux64]
     - lowtis  0.1.0.post65*
-    - libdvid-cpp  0.3.post83*
+    - libdvid-cpp  0.3.post83* # [osx]
+    - libdvid-cpp  0.3.post85* # [linux64]
     - cmake
     - ninja 1.7.2*
     - tbb 2019.4*
@@ -64,7 +65,8 @@ requirements:
     - hdf5    1.10*
     - pango   1.40* # [linux64]
     - lowtis  0.1.0.post65*
-    - libdvid-cpp  0.3.post83*
+    - libdvid-cpp  0.3.post83* # [osx]
+    - libdvid-cpp  0.3.post85* # [linux64]
     - tbb 2019.4*
     - tbb-devel 2019.4*
     - vtk 8.2.*

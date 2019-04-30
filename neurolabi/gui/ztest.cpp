@@ -29838,6 +29838,12 @@ void ZTest::test(MainWindow *host)
 #if 1
   NeutubeConfig::getInstance().print();
 
+  ZFlyEmConfig::getInstance().print();
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidSkeletonizeTask(
+        reader->getDvidTarget(), 1, true);
+  std:cout << task.toJsonObject().dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
