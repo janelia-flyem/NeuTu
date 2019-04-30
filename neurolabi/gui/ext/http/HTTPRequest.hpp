@@ -312,7 +312,11 @@ namespace http
                 throw std::runtime_error("Only HTTP scheme is supported");
 
             addrinfo hints;
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
             hints.ai_flags = AI_DEFAULT;
+#else
+            hints.ai_flags = AI_ADDRCONFIG;
+#endif
             hints.ai_family = getAddressFamily(internetProtocol);
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_protocol = 0;

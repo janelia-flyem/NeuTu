@@ -2579,6 +2579,14 @@ void ZFlyEmBody3dDoc::updateMeshFunc(
             mesh->getType(),
             ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
 
+      if (!objList.isEmpty()) {
+        ZStackObject *obj = objList.front();
+        if (obj) {
+          mesh->setColor(obj->getColor());
+        }
+        mesh->pushObjectColor();
+      }
+
       for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
            ++iter) {
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
