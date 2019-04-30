@@ -84,9 +84,7 @@ CONFIG(force_link) {
 
 TARGET = $$app_name
 
-CONFIG(force_link) {
-  QMAKE_POST_LINK += $$quote(echo "making config"; make app_config;)
-}
+QMAKE_POST_LINK += $$quote(echo "making config"; make app_config;)
 
 unix {
   # suppress warnings from 3rd party library, works for gcc and clang

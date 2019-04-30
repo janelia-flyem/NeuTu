@@ -95,7 +95,7 @@ splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
 docconfig.target = docconfig
 docconfig.depends = FORCE $$configfolder.target
 CONFIG(flyem) {
-  docconfig.commands = cp -r $${PWD}/doc $${BIN_FOLDER}/$${CONFIG_FOLDER}; cp $${PWD}/doc/flyem_proofread_help.html $${BIN_FOLDER}/doc/shortcut.html
+  docconfig.commands = cp -r $${PWD}/doc $${BIN_FOLDER}/$${CONFIG_FOLDER}; cp $${PWD}/doc/flyem_proofread_help.html $${BIN_FOLDER}/$${CONFIG_FOLDER}/doc/shortcut.html
 } else {
   docconfig.commands = cp -r $${PWD}/doc $${BIN_FOLDER}/$${CONFIG_FOLDER}
 }
