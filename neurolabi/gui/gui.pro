@@ -1110,8 +1110,6 @@ SOURCES += main.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
-    dialogs/zcomboeditdialog.cpp \
-    dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
     zglobal.cpp \
     dvid/zdvidresultservice.cpp \
@@ -1191,6 +1189,8 @@ SOURCES += main.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
+    dialogs/zcomboeditdialog.cpp \
+    dialogs/zflyembodycomparisondialog.cpp \
     dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
