@@ -206,6 +206,11 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
   return reader;
 }
 
+ZDvidTarget ZGlobal::getDvidTarget(const std::string &name) const
+{
+  return ZGlobalDvidRepo::GetInstance().getDvidTarget(name);
+}
+
 template<typename T>
 T* ZGlobal::getIODevice(
     const std::string &name, std::map<std::string, T*> &ioMap,
