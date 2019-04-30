@@ -17,7 +17,6 @@
 #endif
 /*************************************/
 
-
 template<typename T>
 void RegisterModule()
 {
@@ -37,6 +36,7 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZGradientMagnitudeModule>();
   RegisterModule<ZShowSegResultModule>();
   RegisterModule<ZBrowserOpenerModule>();
+
 #if defined(_ENABLE_SURFRECON_)
   RegisterModule<ZSurfReconModule>();
 #endif
