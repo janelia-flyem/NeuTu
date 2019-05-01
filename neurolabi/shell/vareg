@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function run_command {
+  echo "----------"
+  echo "$\$ "$1
+  echo "Output:"
+  eval $1
+  echo "----------"
+  echo ""
+}
+
+echo $0
+
+echo '>> ${var} is the same as $var'
+run_command 'x=1; echo "x=${x}"'
+
+echo '>> ${var-DEFAULT} returns DEFAULT if var is not declared'
+run_command 'echo "x=${y-2}"'
+
+run_command 'y='\'''\''; echo "x=${y-2}"'
+
+echo '>> ${var:-DEFAULT} returns DEFAULT if var is empty or not declared'
+run_command 'echo x=${z:-2}'
+run_command 'z='\'''\''; echo "x=${z:-2}"'
