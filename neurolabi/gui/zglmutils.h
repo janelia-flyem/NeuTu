@@ -4,7 +4,8 @@
 // This file includes some commonly used headers from glm and defines some useful functions
 // for glm
 
-#if defined(_CPP11_)
+//#if defined(_CPP11_)
+#if __cplusplus >= 201103L
 #define GLM_FORCE_CXX11
 #endif
 
