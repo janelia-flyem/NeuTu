@@ -84,7 +84,5 @@ if [ $(uname) == 'Darwin' ]; then
     mv ${build_dir}/${app_name}.app ${PREFIX}/bin/
 else
     mv ${build_dir}/${app_name} ${PREFIX}/bin/
-    mv ${build_dir}/config.xml ${PREFIX}/bin/
-    mv ${build_dir}/doc ${PREFIX}/bin/
-    mv ${build_dir}/json ${PREFIX}/bin/
+    mv ${build_dir}/${app_name}_config ${PREFIX}/bin/
 fi

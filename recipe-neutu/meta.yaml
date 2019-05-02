@@ -50,6 +50,10 @@ requirements:
     - libarchive 3.3.3*
     - libiconv >=1.15
     - librdkafka >=0.11.5
+    - alsa-lib # [linux64]
+    - xorg-libxrandr # [linux64]
+    - xorg-libxcursor # [linux64]
+    - xorg-libxtst # [linux64]
 
   run:
     - python >=3.6
@@ -72,6 +76,10 @@ requirements:
     - libarchive 3.3.3*
     - libiconv >=1.15
     - librdkafka >=0.11.5
+    - alsa-lib # [linux64]
+    - xorg-libxrandr # [linux64]
+    - xorg-libxcursor # [linux64]
+    - xorg-libxtst # [linux64]
 
 about:
   home: http://github.com/janelia-flyem/NeuTu
