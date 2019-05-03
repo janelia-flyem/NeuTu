@@ -6237,7 +6237,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
   ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
   KLOG << ZLog::Profile()
        << ZLog::Description(QString("ROI (%1) mesh loading time")
-                            .arg(roiName.c_str()).arg(timer.elapsed())
+                            .arg(roiName.c_str())
                             .toStdString())
        << ZLog::Duration(timer.elapsed());
 

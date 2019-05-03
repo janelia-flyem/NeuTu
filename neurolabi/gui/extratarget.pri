@@ -41,7 +41,7 @@ macx {
 }
 
 CONFIG_SOURCE = config.xml
-CONFIG(neu3) | CONFIG(flyem) {
+CONFIG(neu3) | CONFIG(flyem) | CONFIG(neutu) {
   CONFIG_SOURCE = config_flyem.xml
 } else {
   CONFIG(biocytin) {
@@ -53,7 +53,7 @@ CONFIG_FOLDER = neutube_config
 CONFIG(neu3) {
   CONFIG_FOLDER = neu3_config
 } else {
-  CONFIG(flyem) {
+  CONFIG(flyem) | CONFIG(neutu) {
     CONFIG_FOLDER = neutu_config
   } else {
     CONFIG(biocytin) {
@@ -83,7 +83,7 @@ CONFIG(neu3) {
 CONFIG(neu3) {
   splash_file = neu3_splash.png
 } else {
-  CONFIG(flyem) {
+  CONFIG(flyem) | CONFIG(neutu) {
     splash_file = neutu_splash.png
   }
 }
@@ -94,7 +94,7 @@ splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
 
 docconfig.target = docconfig
 docconfig.depends = FORCE $$configfolder.target
-CONFIG(flyem) {
+CONFIG(flyem) | CONFIG(neutu) {
   docconfig.commands = cp -r $${PWD}/doc $${BIN_FOLDER}/$${CONFIG_FOLDER}; cp $${PWD}/doc/flyem_proofread_help.html $${BIN_FOLDER}/$${CONFIG_FOLDER}/doc/shortcut.html
 } else {
   docconfig.commands = cp -r $${PWD}/doc $${BIN_FOLDER}/$${CONFIG_FOLDER}
