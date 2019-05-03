@@ -95,7 +95,10 @@ int main(int argc, char *argv[])
     QSplashScreen splash(pixmap);
     splash.show();
 
+    splash.showMessage("Preparing user environment ...");
     NeutubeConfig::UpdateUserInfo();
+
+    splash.showMessage("Initializing logging ...");
     ZGlobal::InitKafkaTracer();
 
     uint64_t timestamp = neutu::GetTimestamp();
@@ -120,6 +123,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+    splash.showMessage("Preparing work directories ...");
     MainWindow::createWorkDir();
     NeutubeConfig::UpdateAutoSaveDir();
 
@@ -132,6 +136,7 @@ int main(int argc, char *argv[])
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
 
+    splash.close();
     if (!mainWin->loadDvidTarget()) {
       mainWin->close();
 //      delete mainWin;
@@ -156,9 +161,8 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
-#endif
-
     splash.finish(mainWin);
+#endif
 
     int result = 1;
 
@@ -172,7 +176,7 @@ int main(int argc, char *argv[])
 #  endif
 #endif
       } else {
-#if !defined(_DEBUG_)
+#if !defined(_DEBUG_) && !defined(_NEU3_)
         mainWin->startProofread();
 #endif
       }

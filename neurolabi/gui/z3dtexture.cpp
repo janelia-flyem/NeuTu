@@ -21,7 +21,8 @@ Z3DTexture::Z3DTexture(GLenum textureTarget, GLint internalFormat, const glm::uv
   setWrap();
 }
 
-Z3DTexture::Z3DTexture(GLint internalFormat, const glm::uvec3& dimension, GLenum dataFormat, GLenum dataType)
+Z3DTexture::Z3DTexture(
+    GLint internalFormat, const glm::uvec3& dimension, GLenum dataFormat, GLenum dataType)
   : m_dimension(dimension)
   , m_internalFormat(internalFormat)
   , m_dataFormat(dataFormat)
