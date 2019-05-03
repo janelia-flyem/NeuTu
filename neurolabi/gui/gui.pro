@@ -139,30 +139,30 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= c++14
+    CONFIG *= strict_c++ c++14
 }
 
-CONFIG(c++11) {
-  message(Using C++11)
-#  DEFINES += _CPP11_
-  unix {
-    QMAKE_CXXFLAGS += -std=c++11
-    macx {
-      QMAKE_CXXFLAGS += -stdlib=libc++
-    }
-  }
-} else {
-  CONFIG(c++14) {
-    message(Using C++14)
-#    DEFINES += _CPP11_ #necessary for glm
-    unix {
-      QMAKE_CXXFLAGS += -std=c++14
-      macx {
-        QMAKE_CXXFLAGS += -stdlib=libc++
-      }
-    }
-  }
-}
+#CONFIG(c++11) {
+#  message(Using C++11)
+##  DEFINES += _CPP11_
+#  unix {
+#    QMAKE_CXXFLAGS += -std=c++11
+#    macx {
+#      QMAKE_CXXFLAGS += -stdlib=libc++
+#    }
+#  }
+#} else {
+#  CONFIG(c++14) {
+#    message(Using C++14)
+##    DEFINES += _CPP11_ #necessary for glm
+#    unix {
+#      QMAKE_CXXFLAGS += -std=c++14
+#      macx {
+#        QMAKE_CXXFLAGS += -stdlib=libc++
+#      }
+#    }
+#  }
+#}
 
 equals(SANITIZE_BUILD, "thread") {
   QMAKE_CXXFLAGS += -fsanitize=thread

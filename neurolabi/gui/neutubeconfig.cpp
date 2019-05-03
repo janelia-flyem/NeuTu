@@ -157,16 +157,21 @@ void NeutubeConfig::updateUserInfo()
 {
 #ifdef _QT_GUI_USED_
 #  if defined(_FLYEM_) || defined(_NEU3_)
-  ZNetBufferReader reader;
-  reader.read(
-        ("http://config.int.janelia.org/config/workday/" + getUserName()).c_str(),
-        true);
-  ZJsonObject obj;
-  obj.decode(reader.getBuffer().toStdString());
-  if (obj.hasKey("config")) {
-    ZJsonObject configObj(obj.value("config"));
-    m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));
-    m_userInfo.setLocation(ZJsonParser::stringValue(configObj["location"]));
+  if (const char* user_info_entry = std::getenv("NEUTU_USER_INFO_ENTRY")) {
+    ZString url(user_info_entry);
+    if (!url.endsWith("/")) {
+      url += "/";
+    }
+    url += getUserName();
+    ZNetBufferReader reader;
+    reader.read(url.c_str(), true);
+    ZJsonObject obj;
+    obj.decode(reader.getBuffer().toStdString());
+    if (obj.hasKey("config")) {
+      ZJsonObject configObj(obj.value("config"));
+      m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));
+      m_userInfo.setLocation(ZJsonParser::stringValue(configObj["location"]));
+    }
   }
 #  endif
 #endif
