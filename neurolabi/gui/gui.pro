@@ -1177,9 +1177,9 @@ SOURCES += main.cpp \
     zstackblocksource.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
-    data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     protocols/taskprotocoltaskfactory.cpp \
+    data3d/zstackobjectconfig.cpp \
     dvid/zdvidblockstream.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
