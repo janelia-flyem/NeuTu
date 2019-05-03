@@ -139,7 +139,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= strict_c++ c++14
+    CONFIG *= strict_c++ c++11
 }
 
 #CONFIG(c++11) {
