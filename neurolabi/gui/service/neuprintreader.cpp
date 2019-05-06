@@ -194,7 +194,7 @@ ZJsonArray extract_body_info(const QByteArray &response)
   return bodies;
 }
 
-static QList<uint64_t> extract_body_list(const QByteArray &response)
+QList<uint64_t> extract_body_list(const QByteArray &response)
 {
   ZJsonObject resultObj;
   resultObj.decode(response.toStdString());
@@ -224,7 +224,10 @@ static QList<uint64_t> extract_body_list(const QByteArray &response)
   return bodyList;
 }
 
+const char* BODY_QUERY_RETURN = "n.bodyId, n.name, n.status, n.pre, n.post";
+
 }
+
 
 ZJsonArray NeuPrintReader::queryTopNeuron(int n)
 {
@@ -235,7 +238,7 @@ ZJsonArray NeuPrintReader::queryTopNeuron(int n)
 
     CypherQuery query = CypherQueryBuilder().
         match(QString("(n:%1)").arg(getNeuronLabel('`'))).
-        ret("n.bodyId, n.name, n.status, n.pre, n.post").
+        ret(BODY_QUERY_RETURN).
         orderDesc("(n.pre + n.post)").limit(n);
     QString queryString = query.getQueryString();
 
@@ -268,7 +271,7 @@ ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
       match(QString("(n:%1{bodyId:%2})").arg(getNeuronLabel('`')).arg(bodyId)).
       with("n.clusterName AS cn, rois").
       match(QString("(n:%1{clusterName:cn})").arg(getNeuronLabel('`'))).
-      ret("n.bodyId, n.name, n.status, n.pre, n.post");
+      ret(BODY_QUERY_RETURN);
 
 #ifdef _DEBUG_2
   std::cout << "Query: " << query.getQueryString().toStdString() << std::endl;
@@ -276,22 +279,6 @@ ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
 
   dataObj.setEntry("cypher", query.getQueryString().toStdString());
 
-  /*
-  dataObj.setEntry("cypher", "MATCH (m:Meta{dataset:'"
-                             + m_currentDataset.toStdString() +
-                             "'}) "
-                             "WITH m.superLevelRois AS rois "
-                             "MATCH (n:"
-                             + getNeuronLabel('`').toStdString() +
-                             "{bodyId:" +
-                             std::to_string(bodyId) +
-                             "}) "
-                             "WITH n.clusterName AS cn, rois "
-                             "MATCH (n:"
-                             + getNeuronLabel('`').toStdString() +
-                             "{clusterName:cn}) "
-                             "RETURN n.bodyId, n.name, n.status, n.pre, n.post");
-                             */
 
 #ifdef _DEBUG_2
   dataObj.print();
@@ -312,7 +299,7 @@ ZJsonArray NeuPrintReader::queryAllNamedNeuron()
       + getNeuronLabel('`') +
       ") "
       "WHERE exists(n.name) AND n.name =~ '.*[^\\\\*]' "
-      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
+      "RETURN " + BODY_QUERY_RETURN;
   if (m_numberLimit > 0) {
      query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
   }
@@ -338,7 +325,7 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
       + getNeuronLabel('`') +
       "{name:\"" + name + "\"}) "
 //      "WHERE n.name=\"" + name + "\" "
-      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
+      "RETURN " + BODY_QUERY_RETURN;
   if (m_numberLimit > 0) {
      query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
   }
@@ -366,15 +353,12 @@ ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
   CypherQuery query = CypherQueryBuilder().
       match(QString("(n:%1)").arg(getNeuronLabel('`'))).
       where(QString("LOWER(n.status) = LOWER(\"%1\")").arg(status)).
-      ret("n.bodyId, n.name, n.status, n.pre, n.post");
+      ret(BODY_QUERY_RETURN);
   QString queryString = query.getQueryString();
 
-//  QString query = "MATCH (n:"
-//      + getNeuronLabel('`') +
-//      "{status:\"" + status + "\"}) "
-//      "RETURN n.bodyId, n.name, n.status, n.pre, n.post";
   if (m_numberLimit > 0) {
-     queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
+     queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1")
+         .arg(m_numberLimit);
   }
   dataObj.setEntry("cypher", queryString.toStdString());
 
