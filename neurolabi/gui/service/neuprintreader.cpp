@@ -161,7 +161,9 @@ bool NeuPrintReader::hasDataset(const QString &uuid)
 }
 
 namespace {
-//Assuming the following order: ID, name, status, pre, post
+const char* BODY_QUERY_RETURN = "n.bodyId, n.type, n.name, n.status, n.pre, n.post";
+
+//Assuming the following order: ID, type name, status, pre, post
 ZJsonArray extract_body_info(const QByteArray &response)
 {
   ZJsonArray bodies;
@@ -171,21 +173,27 @@ ZJsonArray extract_body_info(const QByteArray &response)
 
   if (resultObj.hasKey("data")) {
     ZJsonArray data(resultObj.value("data"));
-    if (data.size() >= 5) {
+    if (data.size() >= 6) {
       for (size_t i = 0; i < data.size(); ++i) {
-        uint64_t bodyId = ZJsonParser::integerValue(data.at(i), 0);
+        int index = 0;
+        uint64_t bodyId = ZJsonParser::integerValue(data.at(i), index++);
         ZJsonObject bodyData;
         bodyData.setEntry("body ID", bodyId);
-        std::string name = ZJsonParser::stringValue(data.at(i), 1);
+        std::string type = ZJsonParser::stringValue(data.at(i), index++);
+        if (!type.empty()) {
+          bodyData.setEntry("class", type);
+        }
+
+        std::string name = ZJsonParser::stringValue(data.at(i), index++);
         if (!name.empty()) {
           bodyData.setEntry("name", name);
         }
-        std::string status = ZJsonParser::stringValue(data.at(i), 2);
+        std::string status = ZJsonParser::stringValue(data.at(i), index++);
         if (!status.empty()) {
           bodyData.setEntry("body status", status);
         }
-        bodyData.setEntry("body T-bars", ZJsonParser::integerValue(data.at(i), 3));
-        bodyData.setEntry("body PSDs", ZJsonParser::integerValue(data.at(i), 4));
+        bodyData.setEntry("body T-bars", ZJsonParser::integerValue(data.at(i), index++));
+        bodyData.setEntry("body PSDs", ZJsonParser::integerValue(data.at(i), index++));
         bodies.append(bodyData);
       }
     }
@@ -223,8 +231,6 @@ QList<uint64_t> extract_body_list(const QByteArray &response)
 
   return bodyList;
 }
-
-const char* BODY_QUERY_RETURN = "n.bodyId, n.name, n.status, n.pre, n.post";
 
 }
 
