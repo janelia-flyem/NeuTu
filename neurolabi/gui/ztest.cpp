@@ -28181,6 +28181,24 @@ void ZTest::test(MainWindow *host)
   writer->writeRoi(roi, name);
 #endif
 
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
+  std::string name = "lACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+
+  writer->uploadRoiMesh(
+        GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.obj",
+        "lACA");
+#endif
+
 #if 0
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
@@ -29733,7 +29751,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
 
   ZFlyEmBodyAnnotation annot;
   ZJsonObject obj;
