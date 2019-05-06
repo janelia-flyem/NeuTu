@@ -182,6 +182,8 @@ void ZClickableColorLabel::setColor(const QColor &color)
 void ZClickableColorLabel::updateColor()
 {
   setColor(getColorDlg()->currentColor());
+//  delete m_colorDlg;
+//  m_colorDlg = nullptr;
 }
 
 
@@ -189,6 +191,9 @@ void ZClickableColorLabel::labelClicked()
 {
   if (m_isClickable) {
     getColorDlg()->show();
+#ifdef _DEBUG_
+    std::cout << "Color dialog visible?: " << getColorDlg()->isVisible() << std::endl;
+#endif
     getColorDlg()->raise();
 #if 0
     if (m_colorDlg) {
