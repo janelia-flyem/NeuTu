@@ -21,7 +21,11 @@ ZClickableLabel::~ZClickableLabel()
 void ZClickableLabel::mousePressEvent(QMouseEvent* ev)
 {
   if (ev->button() == Qt::LeftButton) {
-    labelClicked();
+    if (ev->modifiers() == Qt::NoModifier) {
+      labelClicked();
+    } else if (ev->modifiers() == Qt::ShiftModifier) {
+      labelShiftClicked();
+    }
   }
 }
 
@@ -44,6 +48,11 @@ bool ZClickableLabel::event(QEvent* event)
 void ZClickableLabel::labelClicked()
 {
   emit clicked();
+}
+
+void ZClickableLabel::labelShiftClicked()
+{
+  emit shiftClicked();
 }
 
 ZClickableColorLabel::ZClickableColorLabel(ZVec4Parameter* color, QWidget* parent, Qt::WindowFlags f)
@@ -104,10 +113,16 @@ ZClickableColorLabel::~ZClickableColorLabel()
   qDebug() << "ZClickableColorLabel " << this << " distroyed";
 #endif
 
+  detachColorDialog();
+}
+
+void ZClickableColorLabel::detachColorDialog()
+{
   if (m_colorDlg) {
     m_colorDlg->reject();
     m_colorDlg->setParent(nullptr);
     m_colorDlg->deleteLater();
+    m_colorDlg = nullptr;
   }
 }
 
@@ -182,13 +197,24 @@ void ZClickableColorLabel::setColor(const QColor &color)
 void ZClickableColorLabel::updateColor()
 {
   setColor(getColorDlg()->currentColor());
+//  delete m_colorDlg;
+//  m_colorDlg = nullptr;
 }
 
+//A temporary solution for the problem of shared states in QColorDialog objects.
+void ZClickableColorLabel::labelShiftClicked()
+{
+  detachColorDialog();
+  labelClicked();
+}
 
 void ZClickableColorLabel::labelClicked()
 {
   if (m_isClickable) {
     getColorDlg()->show();
+#ifdef _DEBUG_
+    std::cout << "Color dialog visible?: " << getColorDlg()->isVisible() << std::endl;
+#endif
     getColorDlg()->raise();
 #if 0
     if (m_colorDlg) {

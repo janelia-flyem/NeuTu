@@ -610,11 +610,12 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 }
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem(QString("name")));
-    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem(QString("# pre")));
-    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem(QString("# post")));
-    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem(QString("status")));
+    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
+    model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
+    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("name"));
+    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
+    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem("# post"));
+    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem("status"));
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
@@ -1328,8 +1329,19 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
+  if (bkmk.hasKey("class")) {
+    itemArray[BODY_TYPE_COLUMN] = new QStandardItem(
+          QString::fromStdString(ZJsonParser::stringValue(bkmk["class"])));
+  }
+
+  std::string name;
   if (bkmk.hasKey("name")) {
-    std::string name = ZJsonParser::stringValue(bkmk["name"]);
+    name = ZJsonParser::stringValue(bkmk["name"]);
+  } else if (bkmk.hasKey("instance")) {
+    name = ZJsonParser::stringValue(bkmk["instance"]);
+  }
+
+  if (!name.empty()) {
     itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString::fromStdString(name));
   }
 
@@ -1834,7 +1846,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     // get name, too, if it's there, then update label
     QStandardItem *item2 = m_bodyModel->item(index.row(), BODY_NAME_COLUMN);
     if (item2) {
-        updateBodyConnectionLabel(m_connectionsBody, item2->data(Qt::DisplayRole).toString());
+        updateBodyConnectionLabel(
+              m_connectionsBody, item2->data(Qt::DisplayRole).toString());
     } else {
         updateBodyConnectionLabel(m_connectionsBody, "");
     }
