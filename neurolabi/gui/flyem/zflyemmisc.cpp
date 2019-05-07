@@ -1409,7 +1409,7 @@ QString flyem::GetNeuroglancerPath(
   }
 
 
-  QString path = QString("http://%1/neuroglancer/#!{'layers':"
+  QString path = QString("http://%1/#!{'layers':"
                          "{'grayscale':{'type':'image'_'source':'dvid://"
                          "http://%2/%3/%4'}").
       arg(GET_FLYEM_CONFIG.getNeuroglancerServer().c_str()).

@@ -1,5 +1,8 @@
 #include "zflyemconfig.h"
+
 #include <iostream>
+#include <cstdlib>
+
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -136,10 +139,13 @@ void ZFlyEmConfig::loadConfig()
         setDefaultNeuTuServer(ZJsonParser::stringValue(obj[NEUTU_SERVER_KEY]));
       }
 
-      if (obj.hasKey(NEUROGLANCER_KEY)) {
-        m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+      if (const char* setting = std::getenv("NEUROGLANCER_SERVER")) {
+        m_neuroglancerServer = setting;
+      } else {
+        if (obj.hasKey(NEUROGLANCER_KEY)) {
+          m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+        }
       }
-
 
       if (obj.hasKey(DVID_ROOT_KEY)) {
         ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
