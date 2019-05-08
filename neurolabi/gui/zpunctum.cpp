@@ -180,8 +180,11 @@ std::string ZPunctum::toString()
 {
   std::ostringstream stream;
 
-  stream << "Puncta(" << m_name.toStdString() << "): "
-         << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
+  stream << "Punctum";
+  if (!m_name.isEmpty()) {
+    stream << " (" << m_name.toStdString() << ")";
+  }
+  stream << ":" << " (" << getX() << ", " << getY() << ", " << getZ() << ")";
 
   return stream.str();
 }

@@ -38,7 +38,7 @@ public:
   MakeActionMap(QList<ZStackDocObjectUpdate*> updateList);
 
 private:
-  ZStackObject *m_obj;
+  ZStackObject *m_obj = nullptr;
   EAction m_action;
 };
 

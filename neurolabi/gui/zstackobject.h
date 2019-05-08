@@ -49,7 +49,7 @@ public:
   ZStackObject();
   virtual ~ZStackObject();
 
-  enum class EType {
+  enum class EType { //#Review-TZ: Consier moving types to a separate file with namespace zstackobject
     UNIDENTIFIED = 0, //Unidentified type
     SWC,
     PUNCTUM,
