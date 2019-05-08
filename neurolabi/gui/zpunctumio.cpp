@@ -34,6 +34,10 @@ QList<ZPunctum*> ZPunctumIO::load(const QString &file)
     break;
   case ZFileType::EFileType::JSON:
     readJsonFile(file, punctaList);
+    break;
+  case ZFileType::EFileType::PUNCTA:
+    readPunctaFile(file, punctaList);
+    break;
   default:
     LWARN() << "Not supported puncta file type:" << file;
     break;
@@ -212,6 +216,26 @@ void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList
       }
     }
   }
+}
+
+void ZPunctumIO::readPunctaFile(const QString &file, QList<ZPunctum *> &punctaList)
+{
+  FILE *fp = fopen(file.toStdString().c_str(), "r");
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<int> coordinates = str.toIntegerArray();
+      if (coordinates.size() >= 3) {
+        ZPunctum* punctum = new ZPunctum();
+        punctum->setX(coordinates[0]);
+        punctum->setY(coordinates[1]);
+        punctum->setZ(coordinates[2]);
+        punctum->setSource(file.toStdString());
+        punctaList.push_back(punctum);
+      }
+    }
+  }
+  fclose(fp);
 }
 
 
