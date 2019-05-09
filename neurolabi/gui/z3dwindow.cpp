@@ -1577,6 +1577,8 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
     m_doc->setPunctumSelected(p, true);
   }
 
+  m_doc->notifyWindowMessageUpdated(QString::fromStdString(p->toString()));
+
   statusBar()->showMessage(p->toString().c_str());
 }
 

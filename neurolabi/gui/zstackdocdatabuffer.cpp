@@ -14,7 +14,7 @@ ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
 {
   if (m_action == EAction::ADD_NONUNIQUE ||
       m_action == EAction::ADD_UNIQUE ||
-      m_action == EAction::ADD_BUFFER) {
+      m_action == EAction::ADD_BUFFER) { //leftover objects
     delete m_obj;
   }
 }
