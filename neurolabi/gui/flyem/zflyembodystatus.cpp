@@ -20,7 +20,11 @@ const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
  * 0: add and change (isAccessible)
  * >=9: change only
  * [7, 9): add and change by admin only (isAdminAccessible)
- * [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
+ * *OBSOLETE [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
+ *
+ * admin level:
+ * 0: not adimin specific
+ * 1: add by admin only
  */
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)

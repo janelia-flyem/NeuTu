@@ -257,7 +257,10 @@ public:
   void startTimer();
 
   QList<QString> getBodyStatusList() const;
+
+  //Body statuses that can only be changed by admin users
   QList<QString> getAdminBodyStatusList() const;
+
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
 
