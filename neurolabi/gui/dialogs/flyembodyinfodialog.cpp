@@ -1148,7 +1148,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
 
                 std::string type = get_annotation_type(bodyData);
                 if (!type.empty()) {
-                  entry.setEntry("class", name);
+                  entry.setEntry("class", type);
                 }
 
                 if (bodyData.hasKey("status")) {
