@@ -16,6 +16,8 @@ void DrawText(QPainter &painter, const QPoint &pos, const QStringList &text);
 void DrawText(QPainter &painter, const QPoint &pos, const QString &text);
 void DrawText(QPainter &painter, const QSize &windowSize, int cornerIndex,
               const QStringList &text);
+void HideLayout(QLayout *layout, bool removing);
+
 }
 
 #endif // UTILITIES_H

@@ -2,6 +2,7 @@
 #include "ui_flyembodyannotationdialog.h"
 
 #include "neutube.h"
+//#include "qt/gui/utilities.h"
 
 #include "../zflyembodyannotation.h"
 
@@ -15,6 +16,12 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(QWidget *parent) :
 
   connect(ui->generatePushButton, &QPushButton::clicked,
           this, &FlyEmBodyAnnotationDialog::fillType);
+
+  if (!neutu::IsAdminUser()) {
+    ui->typeLineEdit->hide();
+    ui->generatePushButton->hide();
+//    neutu::HideLayout(ui->typeLayout, false);
+  }
 }
 
 FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
@@ -24,7 +31,11 @@ FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
 
 void FlyEmBodyAnnotationDialog::setType(const std::string &type)
 {
-  ui->typeLineEdit->setText(QString::fromStdString(type));
+  if (neutu::IsAdminUser()) {
+    ui->typeLineEdit->setText(QString::fromStdString(type));
+  } else {
+    ui->typeLabel->setText("Type:" + QString::fromStdString(type));
+  }
 }
 
 void FlyEmBodyAnnotationDialog::setInstance(const std::string &instance)
