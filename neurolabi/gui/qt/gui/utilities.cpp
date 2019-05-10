@@ -3,6 +3,7 @@
 #include <QTextDocument>
 #include <QPixmap>
 #include <QPainter>
+#include <QLayout>
 
 QString neutu::GetKeyString(int key, const Qt::KeyboardModifiers &modifier)
 {
@@ -38,4 +39,20 @@ void neutu::SetHtmlIcon(QPushButton *button, const QString &text)
   doc.drawContents(&painter, pixmap.rect());
 
   button->setIcon(QIcon(pixmap));
+}
+
+void neutu::HideLayout(QLayout *layout, bool removing)
+{
+  if (layout) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QWidget *widget = layout->itemAt(i)->widget();
+      if (widget != NULL) {
+        widget->hide();
+      }
+    }
+
+    if (removing) {
+      layout->removeItem(layout);
+    }
+  }
 }
