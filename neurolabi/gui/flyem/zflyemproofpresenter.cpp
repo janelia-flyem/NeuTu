@@ -172,6 +172,9 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, &QAction::triggered, this,
               &ZFlyEmProofPresenter::toggleSupervoxelView);
       break;
+    case ZActionFactory::ACTION_RUN_TIP_DETECTION:
+      connect(action, SIGNAL(triggered()), this, SLOT(runTipDetection()));
+      break;
     default:
       connected = false;
       break;
@@ -859,6 +862,15 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   turnOnActiveObject(ROLE_BOOKMARK);
   //buddyView()->paintActiveDecoration();
   updateCursor();
+}
+
+void ZFlyEmProofPresenter::runTipDetection() {
+    const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+          Qt::RightButton, ZMouseEvent::EAction::RELEASE);
+    ZPoint pt = event.getDataPosition();
+    uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
+
+    getCompleteDocument()->executeRunTipDetectionCommand(pt.toIntPoint(), bodyId);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const

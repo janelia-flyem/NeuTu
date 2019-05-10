@@ -243,6 +243,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_COPY_POSITION);
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
+    config.append(ZActionFactory::ACTION_RUN_TIP_DETECTION);
     if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
       config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);

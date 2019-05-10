@@ -2,8 +2,11 @@
 #define TODOREVIEWPROTOCOL_H
 
 #include <QDialog>
+#include <QStandardItemModel>
 
 #include "protocoldialog.h"
+#include "todosearcher.h"
+
 #include "zjsonobject.h"
 
 
@@ -34,12 +37,22 @@ private slots:
 
 private:
     static const std::string KEY_VERSION;
+    static const std::string KEY_PARAMETERS;
     static const int fileVersion;
 
-    void saveState();
+    enum TodoTableColumns {
+        ITEM_COLUMN,
+        CHECKED_COLUMN
+    };
 
+    void saveState();
+    void inputErrorDialog(QString message);
 
     Ui::ToDoReviewProtocol *ui;
+    ToDoSearcher m_searcher;
+    QStandardItemModel * m_sitesModel;
+    // QList<ZIntPoint> m_pendingList;
+    // QList<ZIntPoint> m_finishedList;
 };
 
 #endif // TODOREVIEWPROTOCOL_H

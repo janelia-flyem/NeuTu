@@ -15,7 +15,8 @@ public:
     explicit ToDoReviewInputDialog(QWidget *parent = 0);
     ~ToDoReviewInputDialog();
 
-    int getResult();
+    QString getBodyID();
+    QString getTextFilter();
 
 private:
     Ui::ToDoReviewInputDialog *ui;

@@ -74,6 +74,7 @@
 #include "flyemdatareader.h"
 #include "flyemdatawriter.h"
 #include "misc/miscutility.h"
+#include "tipdetectorrunner.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
 
@@ -4955,6 +4956,16 @@ void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z, uint64_t 
 void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId)
 {
   executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+void ZFlyEmProofDoc::executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t bodyId) {
+    // might need to be more clever if/when this runs stuff in a thread,
+    //  but for now, we're just testing how to make the thing run
+    TipDetectorRunner runner;
+    runner.setBodyId(bodyId);
+    runner.setPoint(pt);
+
+    runner.run();
 }
 
 void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(

@@ -590,6 +590,8 @@ HEADERS += mainwindow.h \
     protocols/synapsereviewinputdialog.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
+    protocols/todosearcher.h \
+    tipdetectorrunner.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -712,7 +714,7 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h 
+    dialogs/neuprintsetupdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1091,6 +1093,8 @@ SOURCES += main.cpp \
     protocols/synapsereviewinputdialog.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
+    protocols/todosearcher.cpp \
+    tipdetectorrunner.cpp \    
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \

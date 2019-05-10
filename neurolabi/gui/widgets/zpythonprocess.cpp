@@ -67,9 +67,9 @@ void ZPythonProcess::parsePythonOutput()
 
   QString output = m_process.readAllStandardOutput();
 
-
-//  qDebug() << output.size();
-//  qDebug() << output;
+  qDebug() << "in parsePythonOutput()";
+  qDebug() << output.size();
+  qDebug() << output;
 
   int startIndex = output.indexOf("@<json>") + 7;
   int endIndex = output.indexOf("</json>@");
@@ -82,10 +82,18 @@ void ZPythonProcess::parsePythonOutput()
 void ZPythonProcess::printOutputSummary() const
 {
   if (m_output.isEmpty()) {
-    std::cout << "No output.";
+    std::cout << "No output." << std::endl;
   } else {
     m_output.print();
   }
+}
+
+QString ZPythonProcess::getRawOutput() {
+    QString output = m_process.readAllStandardOutput();
+
+    std::cout << "in getRawOutput(); output = " << output.toStdString() << std::endl;
+
+    return output;
 }
 
 bool ZPythonProcess::findPython()

@@ -156,6 +156,7 @@ public slots:
   void tryAddTraceToSomaItem(const ZIntPoint &pt);
   void tryAddNoSomaItem(const ZIntPoint &pt);
   void tryAddDiagnosticItem(const ZIntPoint &pt);
+  void runTipDetection();
 
   void showSupervoxelList();
 
