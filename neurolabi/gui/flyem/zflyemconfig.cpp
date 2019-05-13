@@ -30,6 +30,8 @@ const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
 const char* ZFlyEmConfig::NEUTU_SERVER_KEY = "neutu_server";
 const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
 const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
+const char* ZFlyEmConfig::UI_KEY = "ui";
+const char* ZFlyEmConfig::STYLE_KEY = "style";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -188,6 +190,13 @@ void ZFlyEmConfig::loadConfig()
 
           target.print();
 #endif
+        }
+      }
+
+      if (obj.hasKey(UI_KEY)) {
+        ZJsonObject uiObj(obj.value(UI_KEY));
+        if (uiObj.hasKey(STYLE_KEY)) {
+          m_uiStyleSheet = ZJsonParser::stringValue(uiObj[STYLE_KEY]);
         }
       }
     }

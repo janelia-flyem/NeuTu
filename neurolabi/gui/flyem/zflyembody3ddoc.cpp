@@ -2575,30 +2575,34 @@ void ZFlyEmBody3dDoc::updateMeshFunc(
   } else {
     if (meshes.size() == 1) {
       ZMesh *mesh = meshes[0];
-      TStackObjectList objList = getObjectGroup().findSameClass(
-            mesh->getType(),
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
+      if (config.getAddBuffer()) {
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
+      } else {
+        TStackObjectList objList = getObjectGroup().findSameClass(
+              mesh->getType(),
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
 
-      if (!objList.isEmpty()) {
-        ZStackObject *obj = objList.front();
-        if (obj) {
-          mesh->setColor(obj->getColor());
+        if (!objList.isEmpty()) {
+          ZStackObject *obj = objList.front();
+          if (obj) {
+            mesh->setColor(obj->getColor());
+          }
+          mesh->pushObjectColor();
         }
-        mesh->pushObjectColor();
-      }
 
-      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-           ++iter) {
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
-      }
+        for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+             ++iter) {
+          getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
+        }
 
-      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
-      int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-            mesh->getSource());
-      config.setDsLevel(resLevel);
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+        int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+              mesh->getSource());
+        config.setDsLevel(resLevel);
 
-      if (objList.isEmpty()) {
-        numMeshes = 1;
+        if (objList.isEmpty()) {
+          numMeshes = 1;
+        }
       }
     }
   }

@@ -182,7 +182,11 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(neutu::GROUP_BOX_STYLE);
+  if (GET_FLYEM_CONFIG.getWindowStyleSheet().empty()) {
+    setStyleSheet(neutu::GROUP_BOX_STYLE);
+  } else {
+    setStyleSheet(GET_FLYEM_CONFIG.getWindowStyleSheet().c_str());
+  }
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
