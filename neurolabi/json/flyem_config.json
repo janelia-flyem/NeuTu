@@ -568,5 +568,8 @@
       "synapse": "annot_synapse",
       "user_name": ["zhaot", "takemuras", "olbrisd"]
     }
-  ]
+  ],
+  "ui": {
+    "style": "QGroupBox {  border: 1px solid lightgray; border-radius: 3px; margin-top: 2ex;} QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}"
+  }
 }
