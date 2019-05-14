@@ -1717,7 +1717,7 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
   m_showSegmentation = visible;
   if (getCompleteDocument() != NULL) {
     QList<ZDvidLabelSlice*> sliceList =
-        getCompleteDocument()->getDvidLabelSliceList();
+        getCompleteDocument()->getFrontDvidLabelSliceList();
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
       if (visible) {
@@ -5240,7 +5240,7 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
 //      ZDvidLabelSlice *slice = getDvidLabelSlice();
       QList<ZDvidLabelSlice*> sliceList =
-          getCompleteDocument()->getDvidLabelSliceList();
+          getCompleteDocument()->getFrontDvidLabelSliceList();
       for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
            iter != sliceList.end(); ++iter) {
         ZDvidLabelSlice *slice = *iter;

@@ -78,6 +78,9 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
   ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSliceList(bool sv);
+  QList<ZDvidLabelSlice*> getFrontDvidLabelSliceList() const;
+  QList<ZDvidLabelSlice*> getDvidBodySliceList() const;
 
   bool isSupervoxelMode() const;
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
@@ -201,7 +204,7 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
-  void syncBodySelection(ZDvidLabelSlice *labelSlice);
+//  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
 //  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
