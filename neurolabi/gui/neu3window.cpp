@@ -1044,18 +1044,24 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
   return zoomToLoadedBody;
 }
 
-void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
+void Neu3Window::zoomToBodyMesh(int numMeshLoaded)
 {
   if (!zoomToLoadedBodyEnabled()) {
     return;
   }
 
-  QList<ZMesh*> meshList =
-      ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  LDEBUG() << "Mesh list size:" << meshList.size();
-  if (!meshList.isEmpty()) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
+  if (numMeshLoaded > 0) {
+    QList<ZMesh*> meshList =
+        ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+    LDEBUG() << "Mesh list size:" << meshList.size();
+    if (numMeshLoaded == meshList.size()) {
+      ZMesh *mesh = meshList.front();
+      ZCuboid box = mesh->getBoundBox();
+      for (int i = 1; i < meshList.size(); ++i) {
+        box.join(meshList[i]->getBoundBox());
+      }
+      m_3dwin->gotoPosition(box);
+    }
   }
 }
 
