@@ -82,6 +82,9 @@ public:
   void joinX(double x);
   void joinY(double y);
   void joinZ(double z);
+
+  void join(const ZCuboid &box);
+
   /*!
    * \brief Expand the box minimally to include a point.
    */

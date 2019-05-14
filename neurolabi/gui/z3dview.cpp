@@ -186,12 +186,12 @@ void Z3DView::updateBoundBox()
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     {KINFO << "Getting bounding box of " + flt->className();}
 #endif
     if (flt->isVisible()) {
       m_boundBox.expand(flt->axisAlignedBoundBox());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       {KINFO << QString("Bound box updated: (%1, %2, %3) -> (%4, %5, %6)")
                .arg(m_boundBox.minCorner()[0])
                .arg(m_boundBox.minCorner()[1])
