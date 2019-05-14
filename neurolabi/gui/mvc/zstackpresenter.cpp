@@ -2988,7 +2988,8 @@ static void SyncDvidLabelSliceSelection(
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *buddySlice = *iter;
-    if (buddySlice != labelSlice) {
+    if ((buddySlice != labelSlice) &&
+        (buddySlice->isSupervoxel() == labelSlice->isSupervoxel())) {
       const std::set<uint64_t> &selectedSet =
           labelSlice->getSelectedOriginal();
       buddySlice->setSelection(selectedSet, neutu::ELabelSource::ORIGINAL);

@@ -182,7 +182,7 @@ bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
 {
-  QList<ZDvidLabelSlice*> sliceList = doc->getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = doc->getFrontDvidLabelSliceList();
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
