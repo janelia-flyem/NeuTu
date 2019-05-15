@@ -130,6 +130,7 @@ public:
   //virtual int getVoxelNumber()const;
 
 public://should never be called
+
   virtual shared_ptr<ZSegmentationNode> getChildByLabel(int){return nullptr;}
   virtual vector<int> getChildrenLabels()const{return vector<int>();}
   virtual void removeChildByLabel(int){}
