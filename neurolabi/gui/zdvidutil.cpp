@@ -511,7 +511,8 @@ std::pair<uint64_t, std::vector<uint64_t>> dvid::GetMergeConfig(
     if (mergingToLargest) {
       int maxSize = 0;
       for (uint64_t bodyId : bodyIdArray) {
-        const int bodySize = reader.readBodyBlockCount(bodyId);
+        const int bodySize = reader.readBodyBlockCount(
+              bodyId, neutu::EBodyLabelType::BODY);
 
         DEBUG_OUT << bodyId << ": " << bodySize << std::endl;
 

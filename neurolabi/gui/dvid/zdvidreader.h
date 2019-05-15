@@ -205,7 +205,7 @@ public:
    * \return The number of blocks of a body. It returns -1 if the count cannot
    *         be determined.
    */
-  int readBodyBlockCount(uint64_t bodyId) const;
+  int readBodyBlockCount(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZObject3dScan* readSupervoxel(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;

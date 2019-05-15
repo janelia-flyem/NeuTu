@@ -28,6 +28,7 @@
 #include "dvid/zdvidurl.h"
 #include "zswctree.h"
 #include "logging/utilities.h"
+#include "flyem/zflyembodymanager.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -76,6 +77,11 @@ ZBodySplitCommand::parseSignalPath(
   QUrl signalUrl(signalPath.c_str());
   if (signalUrl.scheme() == "http") { //Sparse stack
     m_bodyId = ZDvidUrl::GetBodyId(signalPath);
+    if (ZFlyEmBodyManager::encodingSupervoxel(m_bodyId)) {
+      m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
+    }
+    m_bodyId = ZFlyEmBodyManager::decode(m_bodyId);
+
     if (m_bodyId > 0) {
       ZDvidReader reader;
       ZDvidTarget target;
@@ -94,7 +100,7 @@ ZBodySplitCommand::parseSignalPath(
 
       reader.open(target);
       if (reader.isReady()) {
-        size_t blockCount = reader.readCoarseBodySize(m_bodyId);
+        size_t blockCount = reader.readCoarseBodySize(m_bodyId, m_labelType);
         if (blockCount < 50000000) {
           std::cout << "Block count: " << blockCount << std::endl;
 

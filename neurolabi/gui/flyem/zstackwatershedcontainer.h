@@ -164,6 +164,10 @@ public:
    * Obsolete function. To be removed.
    */
   ZStackPtr getResultStack() const {
+    if (m_result.empty()) {
+      return ZStackPtr();
+    }
+
     return m_result.front();
   }
 
