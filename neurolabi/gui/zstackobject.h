@@ -84,7 +84,8 @@ public:
     DVID_ANNOTATION,
     FLYEM_TODO_ITEM,
     FLYEM_TODO_LIST,
-    CROSS_HAIR
+    CROSS_HAIR,
+    SEGMENTATION_ENCODER
   };
 
   static std::string GetTypeName(EType type);
@@ -133,6 +134,14 @@ public:
   bool isSelected() const { return m_selected; }
 
   virtual void deselect(bool /*recursive*/) { setSelected(false); }
+
+  typedef void(*CallBack)(ZStackObject*);
+
+  void addCallBackOnSelection(CallBack callback){
+    m_callbacks_on_selection.push_back(callback);}
+
+  void addCallBackOnDeselection(CallBack callback){
+    m_callbacks_on_deselection.push_back(callback);}
 
   /*!
    * \brief Display an object to widget
@@ -408,6 +417,9 @@ protected:
 
   mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;
+
+  std::vector<CallBack> m_callbacks_on_selection;
+  std::vector<CallBack> m_callbacks_on_deselection;
 };
 
 

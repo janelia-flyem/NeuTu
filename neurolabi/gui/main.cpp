@@ -63,6 +63,11 @@ int main(int argc, char *argv[])
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
   if (mainConfig.runCommandLine) {
+    NeutubeConfig::getInstance().setCliSoftwareName("cli");
+    ZGlobal::InitKafkaTracer();
+    KLog::SetOperationName("cli");
+    KLog() << ZLog::Info()
+           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME);
     return run_command_line(argc, argv);
   }
 

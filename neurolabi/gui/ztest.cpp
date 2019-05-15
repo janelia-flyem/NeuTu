@@ -29853,7 +29853,7 @@ void ZTest::test(MainWindow *host)
 //  ptoc();
 #endif
 
-#if 1
+#if 0
   NeutubeConfig::getInstance().print();
 
   ZFlyEmConfig::getInstance().print();

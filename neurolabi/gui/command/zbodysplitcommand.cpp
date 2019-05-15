@@ -27,6 +27,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidurl.h"
 #include "zswctree.h"
+#include "logging/utilities.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -240,6 +241,7 @@ int ZBodySplitCommand::run(
 
 
   ZStackWatershedContainer container(data);
+  container.setProfileLogger(neutu::LogProfileInfo);
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);

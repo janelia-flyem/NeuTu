@@ -480,6 +480,7 @@ public:
       ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
+  int readCoarseBodySize(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZObject3dScan readRoi(const std::string &dataName) const;
   ZObject3dScan* readRoi(

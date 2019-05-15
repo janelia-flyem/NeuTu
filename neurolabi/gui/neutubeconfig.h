@@ -189,6 +189,7 @@ public:
 
   void setDefaultSoftwareName();
   void setTestSoftwareName();
+  void setCliSoftwareName(const std::string &app);
 
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();

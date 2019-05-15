@@ -79,7 +79,7 @@ public:
   NeuPrintReader* makeNeuPrintReader();
   NeuPrintReader* makeNeuPrintReader(const QString &uuid);
 
-  static void InitKafkaTracer();
+  static void InitKafkaTracer(std::string serviceName = "");
 
 public:
   static ZDvidReader* GetDvidReader(

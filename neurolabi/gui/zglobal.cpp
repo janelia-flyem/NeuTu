@@ -380,7 +380,7 @@ void ZGlobal::CopyToClipboard(const std::string &str)
   clipboard->setText(str.c_str());
 }
 
-void ZGlobal::InitKafkaTracer()
+void ZGlobal::InitKafkaTracer(std::string serviceName)
 {
 #if defined(_NEU3_) || defined(_FLYEM_)
   std::string kafkaBrokers = "";
@@ -389,10 +389,16 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = "kafka.int.janelia.org:9092";
   }
 
-  std::string serviceName = "neutu";
+  if (serviceName.empty()) {
+#if defined(_NEU3_)
+    serviceName = "neu3";
+#else
+    serviceName = "neutu";
+#endif
+  }
+
   std::string envName = "NEUTU_KAFKA_BROKERS";
 #if defined(_NEU3_)
-  serviceName = "neu3";
   envName = "NEU3_KAFKA_BROKERS";
 #endif
 
