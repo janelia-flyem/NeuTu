@@ -4065,11 +4065,12 @@ std::tuple<size_t, size_t, ZIntCuboid> ZDvidReader::readBodySizeInfo(
   ZIntCuboid boundBox;
 
   std::string url;
-  if (type == neutu::EBodyLabelType::BODY) {
-    url = ZDvidUrl(getDvidTarget()).getSparsevolSizeUrl(bodyId);
-  } else if (type == neutu::EBodyLabelType::SUPERVOXEL) {
-    url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
-  }
+  url = ZDvidUrl(getDvidTarget()).getSparsevolSizeUrl(bodyId, type);
+//  if (type == neutu::EBodyLabelType::BODY) {
+//    url = ZDvidUrl(getDvidTarget()).getSparsevolSizeUrl(bodyId);
+//  } else if (type == neutu::EBodyLabelType::SUPERVOXEL) {
+//    url = ZDvidUrl(getDvidTarget()).getSupervoxelSizeUrl(bodyId);
+//  }
 
   if (!url.empty()) {
     ZJsonObject jsonObj = readJsonObject(url);
@@ -4510,16 +4511,18 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   return dag;
 }
 
-int ZDvidReader::readBodyBlockCount(uint64_t bodyId) const
+int ZDvidReader::readBodyBlockCount(
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
   int count = 0;
   ZDvidUrl dvidUrl(getDvidTarget());
-  ZJsonObject jsonObj = readJsonObject(dvidUrl.getSparsevolSizeUrl(bodyId));
+  ZJsonObject jsonObj = readJsonObject(
+        dvidUrl.getSparsevolSizeUrl(bodyId, labelType));
   if (jsonObj.hasKey("numblocks")) {
     count = ZJsonParser::integerValue(jsonObj["numblocks"]);
   } else {
     //Todo: add block count read for labelblk data
-    count = readCoarseBodySize(bodyId);
+    count = readCoarseBodySize(bodyId, labelType);
   }
 
   return count;
@@ -4686,6 +4689,34 @@ int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
   ZDvidUrl dvidUrl(m_dvidTarget);
   reader.read(dvidUrl.getCoarseSparsevolUrl(
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
+  setStatusCode(reader.getStatusCode());
+
+  if (reader.getStatus() == neutu::EReadStatus::OK) {
+    count = ZObject3dScan::CountVoxelNumber(
+          reader.getBuffer().data(), reader.getBuffer().size());
+  }
+
+  clearBuffer();
+
+  return count;
+}
+
+
+int ZDvidReader::readCoarseBodySize(
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
+{
+  int count = 0;
+
+  ZDvidBufferReader &reader = m_bufferReader;
+  reader.tryCompress(false);
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  std::string url = dvidUrl.getCoarseSparsevolUrl(
+        bodyId, m_dvidTarget.getBodyLabelName(), labelType);
+//  if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
+//    url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
+//  }
+
+  reader.read(url.c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
   if (reader.getStatus() == neutu::EReadStatus::OK) {

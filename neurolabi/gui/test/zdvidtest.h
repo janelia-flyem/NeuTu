@@ -454,14 +454,16 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getMasterUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
             dvidUrl4.getDefaultDataInstancesUrl());
-  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
+  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::BODY).empty());
 
 //  target.useLabelArray(true);
   target.setSegmentationType(ZDvidData::EType::LABELARRAY);
   dvidUrl4.setDvidTarget(target, "3456");
 //  std::cout << target.getBodyLabelName() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
-            dvidUrl4.getSparsevolSizeUrl(1));
+            dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::BODY));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1?supervoxel=true",
+            dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::SUPERVOXEL));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1",
             dvidUrl4.getSparsevolUrl(1));
