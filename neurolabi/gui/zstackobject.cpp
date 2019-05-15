@@ -94,6 +94,18 @@ void ZStackObject::setLabel(uint64_t label)
 void ZStackObject::setSelected(bool selected)
 {
   m_selected = selected;
+
+  if(m_selected) {
+    for(auto callback: m_callbacks_on_selection)
+    {
+      callback(this);
+    }
+  } else {
+    for(auto callback: m_callbacks_on_deselection)
+    {
+      callback(this);
+    }
+  }
 }
 
 void ZStackObject::setColor(int red, int green, int blue)

@@ -112,6 +112,12 @@ void NeutubeConfig::setTestSoftwareName()
   m_softwareName += "_test";
 }
 
+void NeutubeConfig::setCliSoftwareName(const string &app)
+{
+  setDefaultSoftwareName();
+  m_softwareName += "_" + app;
+}
+
 void NeutubeConfig::SetDefaultSoftwareName()
 {
   getInstance().setDefaultSoftwareName();
