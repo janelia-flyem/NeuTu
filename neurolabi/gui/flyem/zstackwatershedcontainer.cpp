@@ -1457,6 +1457,14 @@ void ZStackWatershedContainer::printState() const
   }
 }
 
+
+ZSegmentationScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel)
+{
+  //pass
+  return NULL;
+}
+
+
 ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
     const ZIntCuboid &dataRange) const
 {

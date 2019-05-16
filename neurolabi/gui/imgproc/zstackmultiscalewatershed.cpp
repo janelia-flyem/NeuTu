@@ -27,6 +27,12 @@
 #include "sandbox/zsandbox.h"
 #include "mainwindow.h"
 
+#include "zstackdocdatabuffer.h"
+#include "neutubeconfig.h"
+#include "zdownsamplefilter.h"
+#include "zwatershedmst.h"
+
+
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -389,12 +395,12 @@ ZStack* ZStackMultiScaleWatershed::labelAreaNeedUpdate(ZStack* boundary_map,ZSta
   return rv;
 }
 
-
+/*
 ZStackMultiScaleWatershed::ZStackMultiScaleWatershed()
 {
 
 }
-
+*/
 
 ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 {
@@ -447,7 +453,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 
   src_clone->crop(box);
 
-  std::cout<<"----------# voxels within bounding box:"<<src_clone->getVoxelNumber()<<std::endl;
+  std::cout<<"----------voxels within bounding box:"<<src_clone->getVoxelNumber()<<std::endl;
 
   seed->crop(box);
 
@@ -557,9 +563,9 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     downsample->setDsFactor(scale,scale,scale);
     sampled=downsample->filterStack(*src);
     delete downsample;
-    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
+    /*ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
     ZSandbox::GetMainWindow()->addStackFrame(frame);
-    ZSandbox::GetMainWindow()->presentStackFrame(frame);
+    ZSandbox::GetMainWindow()->presentStackFrame(frame);*/
   }
   else{
     sampled=src->clone();
@@ -567,16 +573,33 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
 
-  seed=toSeedStack(seeds,sampled->width(),sampled->height(),sampled->depth(),sampled->getOffset());
+  seed = toSeedStack(seeds,sampled->width(),sampled->height(),sampled->depth(),sampled->getOffset());
+
+  //
+  /*if(scale > 1){
+    const uint8_t* pSeed = seed->array8();
+    const uint8_t* const pSeedEnd = pSeed + seed->getVoxelNumber();
+    uint8_t * pSampled = sampled->array8();
+    for(; pSeed != pSeedEnd; ++pSeed, ++pSampled){
+      if(*pSeed){
+        *pSampled = 255;
+      }
+    }
+  }*/
 
   time.restart();
 
   ZStack* sampled_watershed=NULL;
 
-  if(algorithm=="watershed"){
+  if(algorithm == "" || algorithm=="watershed"){
     sampled_watershed=watershed.run(sampled,seed);
   }
 
+  /*else if (algorithm == "watershedmst")
+  {
+    ZWatershedMST mst(sampled,seed,m_alpha,m_beta);
+    sampled_watershed = mst.run();
+  }*/
   else if(algorithm=="random_walker"){
     //std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
         //on QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
@@ -651,7 +674,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
   }
   else if(algorithm=="FFN"){
     const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/ffn";
-    sampled->setOffset(0,0,0);
+    //sampled->setOffset(0,0,0);
     //seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     //seed->save(working_dir.toStdString()+"/seed.tif");

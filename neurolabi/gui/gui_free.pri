@@ -208,8 +208,9 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidnode.h \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
-    $$PWD/zjsondef.h \
-    $$PWD/zgraph.h
+   $$PWD/zjsondef.h \
+   $$PWD/zgraph.h \
+   $$PWD/zsegmentationscan.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -395,6 +396,7 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
    $$PWD/zswcdirectionfeatureanalyzer.cpp \
-    $$PWD/flyem/zflyembodystatus.cpp \
-    $$PWD/zgraph.cpp
+   $$PWD/flyem/zflyembodystatus.cpp \
+   $$PWD/zgraph.cpp \
+   $$PWD/zsegmentationscan.cpp
 

@@ -11,7 +11,14 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/zgradientmagnitudemodule.h \
     $$PWD/zmultiscalewatershedmodule.h \
     $$PWD/zshowsegresult.h \
-    $$PWD/zbrowseropener.h
+    $$PWD/zbrowseropener.h \
+    $$PWD/zffnskeleton.h \
+    $$PWD/zmultiscalesegmentationmanagement.h \
+    $$PWD/segment/zsegmentationencoder.h \
+    $$PWD/segment/zsegmentationtree.h \
+    $$PWD/segment/zsegmentationnode.h \
+    $$PWD/segment/zsegmentationnodewrapper.h \
+    $$PWD/segment/zmstcontainer.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zsurfreconmodule.cpp\
@@ -26,7 +33,14 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/zgradientmagnitudemodule.cpp \
     $$PWD/zmultiscalewatershedmodule.cpp \
     $$PWD/zshowsegresult.cpp \
-    $$PWD/zbrowseropener.cpp
+    $$PWD/zbrowseropener.cpp \
+    $$PWD/zffnskeleton.cpp \
+    $$PWD/zmultiscalesegmentationmanagement.cpp \
+    $$PWD/segment/zsegmentationencoder.cpp \
+    $$PWD/segment/zsegmentationtree.cpp \
+    $$PWD/segment/zsegmentationnode.cpp \
+    $$PWD/segment/zsegmentationnodewrapper.cpp \
+    $$PWD/segment/zmstcontainer.cpp
 
 CONFIG(surfrecon) {
   HEADERS += \

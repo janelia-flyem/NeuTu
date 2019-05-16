@@ -10,6 +10,7 @@
 #include "geometry/zintcuboid.h"
 #include "zstackptr.h"
 #include "zstackarray.h"
+#include "zsegmentationscan.h"
 
 class ZStack;
 class ZObject3dScan;
@@ -158,6 +159,7 @@ public:
 
   void addResult(const ZStackArray &result);
 
+  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
   /*!
    * \brief Get the first result stack.
    *
