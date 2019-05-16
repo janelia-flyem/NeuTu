@@ -26,6 +26,8 @@
 #include "zstack.hxx"
 #include "zswctree.h"
 #include "zstroke2d.h"
+#include "imgproc/zstackprocessor.h"
+
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -99,6 +101,14 @@ void ZWaterShedWindow::onOk()
   ZStack  *src=doc->getStack();
   ZSparseStack* spSrc=doc->getSparseStack();
   if(!src && !spSrc)return;
+
+  /*ZStack* c=src->clone();
+  ZStackProcessor process;
+  process.mexihatFilter(c);
+  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(c);
+  ZSandbox::GetMainWindow()->addStackFrame(frame);
+  ZSandbox::GetMainWindow()->presentStackFrame(frame);*/
+
 
   int scale=spin_step->value();
   doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);

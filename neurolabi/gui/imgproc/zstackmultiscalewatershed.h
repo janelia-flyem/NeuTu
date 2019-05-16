@@ -16,7 +16,7 @@ class ZIntCuboid;
 class ZStackMultiScaleWatershed
 {
 public:
-  ZStackMultiScaleWatershed();
+  ZStackMultiScaleWatershed(){}
   ~ZStackMultiScaleWatershed();
 public:
 #if defined(_QT_GUI_USED_)
