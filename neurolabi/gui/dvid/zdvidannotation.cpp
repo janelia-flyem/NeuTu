@@ -470,6 +470,11 @@ bool ZDvidAnnotation::hasTag(const std::string &tag) const
   return m_tagSet.count(tag) > 0;
 }
 
+std::set<std::string> ZDvidAnnotation::getTagSet() const
+{
+  return m_tagSet;
+}
+
 ZJsonObject ZDvidAnnotation::MakeRelJson(
     const ZIntPoint &pt, const std::string &rel)
 {

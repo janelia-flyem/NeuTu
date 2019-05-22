@@ -28183,7 +28183,7 @@ void ZTest::test(MainWindow *host)
   writer->writeRoi(roi, name);
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
