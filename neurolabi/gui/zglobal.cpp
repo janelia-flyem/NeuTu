@@ -408,12 +408,15 @@ void ZGlobal::InitKafkaTracer(std::string serviceName)
     kafkaBrokers = kafkaBrokersEnv;
   }
 
+//  std::cout << "Kafka broker: " << kafkaBrokers << std::endl;
+
   if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
     try {
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);
       neuopentracing::Tracer::InitGlobal(tracer);
       if (tracer) {
+//        std::cout << "Kafka connected" << std::endl;
         LINFO() << "Kafka connected: " + kafkaBrokers;
       }
     } catch (std::exception &e) {
