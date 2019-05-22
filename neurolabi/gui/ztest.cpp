@@ -315,6 +315,7 @@
 #include "flyem/zflyembodystatus.h"
 #include "flyem/zflyembodyannotationmerger.h"
 #include "flyem/zflyemroimanager.h"
+#include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
@@ -28183,7 +28184,7 @@ void ZTest::test(MainWindow *host)
   writer->writeRoi(roi, name);
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
@@ -28199,6 +28200,20 @@ void ZTest::test(MainWindow *host)
   writer->uploadRoiMesh(
         GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.obj",
         "lACA");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+//  FlyEmDataWriter::UploadRoi(
+//        *writer, "lACA",
+//        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.sobj",
+//        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "SLP",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.obj");
+
 #endif
 
 #if 0
