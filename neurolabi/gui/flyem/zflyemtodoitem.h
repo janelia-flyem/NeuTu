@@ -53,9 +53,10 @@ public:
 
   void setPriority(int p);
 
+  static std::string GetActionTag(neutu::EToDoAction action);
+
 private:
   void syncActionTag();
-  static std::string GetActionTag(neutu::EToDoAction action);
 
 public:
   static const char *KEY_ACTION;
