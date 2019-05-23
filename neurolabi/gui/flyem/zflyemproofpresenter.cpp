@@ -224,7 +224,7 @@ ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZFlyEmProofDocMenuFactory);
-    m_menuFactory->setAdminState(neutu::IsAdminUser());
+    m_menuFactory->setAdminState(getCompleteDocument()->isAdmin());
   }
 
   return m_menuFactory.get();

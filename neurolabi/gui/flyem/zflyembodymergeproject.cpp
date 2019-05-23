@@ -486,7 +486,7 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 
   QList<QString> statusList;
   for (const ZFlyEmBodyStatus &status : bodyStatusList) {
-    if (status.isAccessible()) {
+    if (status.isAccessible(m_isAdmin)) {
       statusList.append(status.getName().c_str());
     }
   }
@@ -1846,6 +1846,11 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
   }
 
   return label;
+}
+
+void ZFlyEmBodyMergeProject::setAdmin(bool admin)
+{
+  m_isAdmin = admin;
 }
 
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
