@@ -324,6 +324,7 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "dvid/zdvidneurontracer.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -29877,6 +29878,18 @@ void ZTest::test(MainWindow *host)
   neutuse::Task task = neutuse::TaskFactory::MakeDvidSkeletonizeTask(
         reader->getDvidTarget(), 1, true);
   std:cout << task.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZDvidNeuronTracer tracer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setGrayScaleName("grayscale");
+  tracer.setDvidTarget(target);
+  tracer.trace(505, 1075, 61, 3.0);
+
+  ZSwcTree *tree = tracer.getResult();
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

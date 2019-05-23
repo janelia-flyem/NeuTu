@@ -136,6 +136,30 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   }
 
   {
+    ZFlyEmToDoItem item;
+    item.setAction(neutu::EToDoAction::TO_MERGE);
+
+    ASSERT_TRUE(item.hasTag(ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction::TO_MERGE)));
+
+    item.setAction(neutu::EToDoAction::TO_SPLIT);
+    std::cout << item.getTagSet().size() << std::endl;
+    [](const std::set<std::string> tagSet) {
+      std::for_each(tagSet.begin(), tagSet.end(), [](const std::string &tag) {
+        std::cout << tag << std::endl;
+      });
+    } (item.getTagSet());
+
+    ASSERT_FALSE(item.hasTag(ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction::TO_MERGE)));
+    ASSERT_TRUE(item.hasTag(ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction::TO_SPLIT)));
+
+    item.setChecked(true);
+    ASSERT_TRUE(item.getTagSet().empty());
+
+    item.setChecked(false);
+    ASSERT_TRUE(item.hasTag(ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction::TO_SPLIT)));
+  }
+
+  {
     ZFlyEmToDoItem item(1, 2, 3);
     ASSERT_EQ(ZIntPoint(1, 2, 3), item.getPosition());
 
