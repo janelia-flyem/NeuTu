@@ -3327,22 +3327,9 @@ void ZFlyEmProofMvc::warn(const char *msg)
 
 void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
 {
-  if (getSupervisor() != NULL) {
-    std::string owner = getSupervisor()->getOwner(bodyId);
-    if (owner.empty()) {
-//            owner = "unknown user";
-      emit messageGenerated(
-            ZWidgetMessage(
-              QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
-              arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-              neutu::EMessageType::ERROR));
-    } else {
-      emit messageGenerated(
-            ZWidgetMessage(
-              QString("The body %1 cannot be annotated because it has been locked by %2").
-              arg(bodyId).arg(owner.c_str()), neutu::EMessageType::ERROR));
-    }
-  }
+  emit messageGenerated(
+        ZWidgetMessage(getCompleteDocument()->getBodyLockFailMessage(bodyId),
+                       neutu::EMessageType::ERROR));
 }
 
 void ZFlyEmProofMvc::annotateSelectedBody()
@@ -6455,7 +6442,7 @@ void ZFlyEmProofMvc::updateViewButton()
 {
   std::cout << "Update view button" << std::endl;
   if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
-    if (!getDvidTarget().readOnly() && neutu::IsAdminUser()) {
+    if (!getDvidTarget().readOnly() && getCompleteDocument()->isAdmin()) {
       std::cout << "Update view button for admin" << std::endl;
       std::set<uint64_t> bodySet =
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);

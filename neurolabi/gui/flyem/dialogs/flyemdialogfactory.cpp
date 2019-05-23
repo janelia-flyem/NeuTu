@@ -33,7 +33,8 @@ ZFlyEmBodyAnnotationDialog* FlyEmDialogFactory::MakeBodyAnnotationDialog(
 FlyEmBodyAnnotationDialog* FlyEmDialogFactory::MakeBodyAnnotationDialog(
     ZFlyEmProofDoc *doc, QWidget *parent)
 {
-  FlyEmBodyAnnotationDialog *dlg = new FlyEmBodyAnnotationDialog(parent);
+  FlyEmBodyAnnotationDialog *dlg =
+      new FlyEmBodyAnnotationDialog(doc->isAdmin(), parent);
   QList<QString> statusList = doc->getBodyStatusList();
 
   if (!statusList.empty()) {
