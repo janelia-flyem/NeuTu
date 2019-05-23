@@ -19,7 +19,7 @@ class FlyEmBodyAnnotationDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit FlyEmBodyAnnotationDialog(QWidget *parent = 0);
+  explicit FlyEmBodyAnnotationDialog(bool admin, QWidget *parent);
   ~FlyEmBodyAnnotationDialog();
 
   ZFlyEmBodyAnnotation getBodyAnnotation() const;
@@ -74,7 +74,8 @@ private slots:
 private:
   Ui::FlyEmBodyAnnotationDialog *ui;
 
-  uint64_t m_bodyId;
+  uint64_t m_bodyId = 0;
+  bool m_isAdmin = false;
 
   std::string m_oldInstance;
 

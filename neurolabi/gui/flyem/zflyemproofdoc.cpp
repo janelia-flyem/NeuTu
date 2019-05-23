@@ -868,6 +868,11 @@ bool ZFlyEmProofDoc::isDvidMutable() const
   return (getDvidTarget().readOnly() == false);
 }
 
+bool ZFlyEmProofDoc::isAdmin() const
+{
+  return m_isAdmin;
+}
+
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
   if (!m_bookmarkReader.isReady()) {
@@ -878,12 +883,37 @@ ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
   return m_bookmarkReader;
 }
 
+void ZFlyEmProofDoc::updateUserStatus()
+{
+  m_isAdmin = false;
+  if (m_dvidReader.isReady()) {
+    ZJsonObject obj =
+        m_dvidReader.readJsonObjectFromKey("neutu_config", "user_status");
+    if (obj.hasKey("admin")) {
+      ZJsonArray userListJson(obj.value("admin"));
+//      NeutubeConfig::getInstance().getCur
+      for (size_t i = 0; i < userListJson.size(); ++i) {
+        std::string user = ZJsonParser::stringValue(userListJson.at(i));
+        if (user == neutu::GetCurrentUserName()) {
+          m_isAdmin = true;
+          break;
+        }
+      }
+    } else {
+      m_isAdmin = neutu::IsAdminUser();
+    }
+  }
+  m_mergeProject->setAdmin(m_isAdmin);
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
   if (m_dvidReader.open(target)) {
+    updateUserStatus();
+
     std::ostringstream flowInfo;
     flowInfo << "Update data statuses";
     m_dvidReader.updateDataStatus();
@@ -2017,6 +2047,24 @@ bool ZFlyEmProofDoc::checkBodyWithMessage(
   }
 
   return succ;
+}
+
+QString ZFlyEmProofDoc::getBodyLockFailMessage(uint64_t bodyId)
+{
+  QString msg;
+
+  if (getSupervisor() != NULL) {
+    std::string owner = getSupervisor()->getOwner(bodyId);
+    if (owner.empty()) {
+      msg = QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+          arg(bodyId).arg(getDvidTarget().getSupervisor().c_str());
+    } else {
+      msg = QString("The body %1 cannot be annotated because it has been locked by %2").
+              arg(bodyId).arg(owner.c_str());
+    }
+  }
+
+  return msg;
 }
 
 bool ZFlyEmProofDoc::checkInBodyWithMessage(
