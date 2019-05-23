@@ -28205,10 +28205,10 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
-//  FlyEmDataWriter::UploadRoi(
-//        *writer, "lACA",
-//        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.sobj",
-//        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.obj");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "lACA",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.obj");
 
   FlyEmDataWriter::UploadRoi(
         *writer, "SLP",
