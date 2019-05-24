@@ -17,6 +17,9 @@ public:
   static void RewriteBody(ZDvidWriter &writer, uint64_t bodyId);
   static void UploadUserDataConfig(
       ZDvidWriter &writer, const FlyEmDataConfig &config);
+  static void UploadRoi(
+      ZDvidWriter &writer, const std::string &name, const std::string &roiFile,
+      const std::string &meshFile);
 };
 
 #endif // FLYEMDATAWRITER_H

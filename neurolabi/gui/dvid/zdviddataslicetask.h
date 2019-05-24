@@ -17,6 +17,7 @@ public:
   void setCenterCut(int width, int height);
   void setDoc(ZStackDoc *doc);
   void useCenterCut(bool on);
+  void setSupervoxel(bool on);
 
 signals:
 
@@ -28,6 +29,7 @@ protected:
   int m_centerCutWidth = 0;
   int m_centerCutHeight = 0;
   bool m_usingCenterCut = false;
+  bool m_supervoxel = false;
   ZStackDoc *m_doc = nullptr;
 };
 

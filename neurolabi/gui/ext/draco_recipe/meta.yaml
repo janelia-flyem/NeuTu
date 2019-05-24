@@ -1,4 +1,4 @@
-{% set version = "master" %}
+{% set version = "1.3.5" %}
 # {% set minor_version = ".".join(version.split(".")[:2]) %}
 
 package:

@@ -385,6 +385,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SHOW_ORTHO_BIG:
     action = new QAction("Show Orthogonal View (1024)", parent);
     break;
+  case ACTION_TOGGLE_SUPERVOXEL_VIEW:
+    action = new QAction("View Supervoxel", parent);
+    action->setIcon(QIcon(":/images/view_supervoxel.png"));
+    action->setCheckable(true);
+    break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy Position", parent);
     break;

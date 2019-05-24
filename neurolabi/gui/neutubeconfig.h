@@ -26,7 +26,7 @@ public:
   enum class EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
-    FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
+    FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE, CONFIG_DIR,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
     WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
     LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE,
@@ -167,10 +167,9 @@ public:
   inline const std::string& getApplicatinDir() const {
     return m_applicationDir; }
 
-  inline std::string getConfigPath() const {
-    return getApplicatinDir() + "/config.xml"; }
-  inline std::string getHelpFilePath() const {
-    return getApplicatinDir() + "/doc/shortcut.html"; }
+  std::string getConfigDir() const;
+  std::string getConfigPath() const;
+  std::string getHelpFilePath() const;
 
   inline const std::vector<std::string> &getBodyConnectionFeature() {
     return m_bodyConnectionFeature;
@@ -190,6 +189,7 @@ public:
 
   void setDefaultSoftwareName();
   void setTestSoftwareName();
+  void setCliSoftwareName(const std::string &app);
 
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();
@@ -517,6 +517,7 @@ private:
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
+#define GET_CONFIG_DIR (NeutubeConfig::getInstance().getConfigDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 #define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
 #define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))

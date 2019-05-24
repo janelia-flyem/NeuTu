@@ -1765,23 +1765,27 @@ void ZNeuronTracer::initTraceWorkspace(ZStack *stack)
 void ZNeuronTracer::updateTraceWorkspaceResolution(
     double xRes, double yRes, double zRes)
 {
-  m_traceWorkspace->resolution[0] = xRes;
-  m_traceWorkspace->resolution[1] = yRes;
-  m_traceWorkspace->resolution[2] = zRes;
+  if (m_traceWorkspace) {
+    m_traceWorkspace->resolution[0] = xRes;
+    m_traceWorkspace->resolution[1] = yRes;
+    m_traceWorkspace->resolution[2] = zRes;
+  }
 }
 
 void ZNeuronTracer::updateTraceWorkspace(
     int traceEffort, bool traceMasked, double xRes, double yRes, double zRes)
 {
-  if (traceEffort > 0) {
-    m_traceWorkspace->refit = FALSE;
-  } else {
-    m_traceWorkspace->refit = TRUE;
+  if (m_traceWorkspace) {
+    if (traceEffort > 0) {
+      m_traceWorkspace->refit = FALSE;
+    } else {
+      m_traceWorkspace->refit = TRUE;
+    }
+
+    updateTraceWorkspaceResolution(xRes, yRes, zRes);
+
+    loadTraceMask(traceMasked);
   }
-
-  updateTraceWorkspaceResolution(xRes, yRes, zRes);
-
-  loadTraceMask(traceMasked);
 }
 
 void ZNeuronTracer::loadTraceMask(bool traceMasked)
@@ -1806,13 +1810,15 @@ void ZNeuronTracer::updateConnectionTestWorkspace(
     double xRes, double yRes, double zRes,
     char unit, double distThre, bool spTest, bool crossoverTest)
 {
-  m_connWorkspace->resolution[0] = xRes;
-  m_connWorkspace->resolution[1] = yRes;
-  m_connWorkspace->resolution[2] = zRes;
-  m_connWorkspace->unit = unit;
-  m_connWorkspace->dist_thre = distThre;
-  m_connWorkspace->sp_test = spTest;
-  m_connWorkspace->crossover_test = crossoverTest;
+  if (m_connWorkspace) {
+    m_connWorkspace->resolution[0] = xRes;
+    m_connWorkspace->resolution[1] = yRes;
+    m_connWorkspace->resolution[2] = zRes;
+    m_connWorkspace->unit = unit;
+    m_connWorkspace->dist_thre = distThre;
+    m_connWorkspace->sp_test = spTest;
+    m_connWorkspace->crossover_test = crossoverTest;
+  }
 }
 
 /*

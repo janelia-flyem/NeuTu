@@ -109,7 +109,7 @@ public:
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getSparsevolUrl(uint64_t bodyId, int zoom, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
-  std::string getSparsevolSizeUrl(uint64_t bodyId) const;
+  std::string getSparsevolSizeUrl(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   std::string getSparsevolUrl(const SparsevolConfig &config);
 
@@ -125,6 +125,9 @@ public:
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
   std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getCoarseSparsevolUrl(uint64_t bodyId) const;
+
+  std::string getCoarseSparsevolUrl(
+      uint64_t bodyId, const std::string &dataName, neutu::EBodyLabelType labelType) const;
 
 
   std::string getGrayscaleUrl() const;

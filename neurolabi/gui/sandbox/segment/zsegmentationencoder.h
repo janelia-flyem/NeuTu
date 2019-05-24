@@ -2,10 +2,10 @@
 #define ZSEGMENTATIONENCODER_H
 
 
-#include <vector>
-#include "zstack.hxx"
-#include "geometry/zintcuboid.h"
-#include "zobject3dscan.h"
+#include<vector>
+#include"zstack.hxx"
+#include"geometry/zintcuboid.h"
+#include"zobject3dscan.h"
 
 
 using std::vector;

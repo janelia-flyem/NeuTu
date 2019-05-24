@@ -206,6 +206,11 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
   return reader;
 }
 
+ZDvidTarget ZGlobal::getDvidTarget(const std::string &name) const
+{
+  return ZGlobalDvidRepo::GetInstance().getDvidTarget(name);
+}
+
 template<typename T>
 T* ZGlobal::getIODevice(
     const std::string &name, std::map<std::string, T*> &ioMap,
@@ -375,7 +380,7 @@ void ZGlobal::CopyToClipboard(const std::string &str)
   clipboard->setText(str.c_str());
 }
 
-void ZGlobal::InitKafkaTracer()
+void ZGlobal::InitKafkaTracer(std::string serviceName)
 {
 #if defined(_NEU3_) || defined(_FLYEM_)
   std::string kafkaBrokers = "";
@@ -384,10 +389,16 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = "kafka.int.janelia.org:9092";
   }
 
-  std::string serviceName = "neutu";
+  if (serviceName.empty()) {
+#if defined(_NEU3_)
+    serviceName = "neu3";
+#else
+    serviceName = "neutu";
+#endif
+  }
+
   std::string envName = "NEUTU_KAFKA_BROKERS";
 #if defined(_NEU3_)
-  serviceName = "neu3";
   envName = "NEU3_KAFKA_BROKERS";
 #endif
 
@@ -397,12 +408,15 @@ void ZGlobal::InitKafkaTracer()
     kafkaBrokers = kafkaBrokersEnv;
   }
 
+//  std::cout << "Kafka broker: " << kafkaBrokers << std::endl;
+
   if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
     try {
       auto config = neuopentracing::Config(kafkaBrokers);
       auto tracer = neuopentracing::Tracer::make(serviceName, config);
       neuopentracing::Tracer::InitGlobal(tracer);
       if (tracer) {
+//        std::cout << "Kafka connected" << std::endl;
         LINFO() << "Kafka connected: " + kafkaBrokers;
       }
     } catch (std::exception &e) {

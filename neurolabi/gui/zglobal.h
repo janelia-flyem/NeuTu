@@ -62,6 +62,8 @@ public:
   ZDvidWriter* getDvidWriterFromUrl(
       const std::string &url, const std::string &key = "") const;
 
+  ZDvidTarget getDvidTarget(const std::string &name) const;
+
   void setMainWindow(QMainWindow *win);
   template<typename T>
   T* getMainWindow() const;
@@ -77,7 +79,7 @@ public:
   NeuPrintReader* makeNeuPrintReader();
   NeuPrintReader* makeNeuPrintReader(const QString &uuid);
 
-  static void InitKafkaTracer();
+  static void InitKafkaTracer(std::string serviceName = "");
 
 public:
   static ZDvidReader* GetDvidReader(

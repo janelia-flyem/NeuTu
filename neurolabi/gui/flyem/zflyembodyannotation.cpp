@@ -274,18 +274,19 @@ std::string ZFlyEmBodyAnnotation::getName() const
 
 std::string ZFlyEmBodyAnnotation::getType() const
 {
-  if (!m_type.empty()) {
-    return m_type;
-  }
+  return m_type;
+//  if (!m_type.empty()) {
+//    return m_type;
+//  }
 
-  return getAutoType();
+//  return getAutoType();
 }
 
 std::string ZFlyEmBodyAnnotation::getAutoType() const
 {
   std::string type = m_majorInput + m_majorOutput;
   if (!m_primaryNeurite.empty()) {
-    type += "-" + m_primaryNeurite;
+    type += m_primaryNeurite;
   }
 
   return  type;
@@ -515,10 +516,15 @@ std::string ZFlyEmBodyAnnotation::toString() const
   } else {
     stream << "[ ";
     if (!getName().empty()) {
-      stream << getName() << " (" << getBodyId() << ")";
-    } else {
-      stream << getBodyId();
+      stream << getName();
     }
+
+    if (!getType().empty()) {
+      stream << ":" << getType();
+    }
+
+    stream << " (" << getBodyId() << ")";
+
     stream << ", " << getStatus() << " ]";
   }
 

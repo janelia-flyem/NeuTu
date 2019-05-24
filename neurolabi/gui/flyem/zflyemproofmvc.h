@@ -549,7 +549,7 @@ private:
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
-  ZDvidLabelSlice* getDvidLabelSlice() const;
+//  ZDvidLabelSlice* getDvidLabelSlice() const;
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
@@ -593,6 +593,7 @@ private:
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
+  void updateSupervoxelMessge(uint64_t bodyId);
   void setSelectedBodyStatus(const std::string &status);
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void warnAbouBodyLockFail(uint64_t bodyId);

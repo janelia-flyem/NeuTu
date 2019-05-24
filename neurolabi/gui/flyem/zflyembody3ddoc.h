@@ -154,6 +154,7 @@ public:
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
+  bool isAdmin() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);

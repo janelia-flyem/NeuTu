@@ -1720,10 +1720,8 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
 
         Z3DVolume *vh = new Z3DVolume(
               stack2, glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
-              glm::vec3(offset.x(), offset.y(),
-                        offset.z()),
-              m_rendererBase.coordTransform()
-                                      /*glm::vec3(.0)*/);
+              glm::vec3(offset.x(), offset.y(), offset.z()),
+              m_rendererBase.coordTransform());
 
         vols.emplace_back(vh);
       } else { //small stack

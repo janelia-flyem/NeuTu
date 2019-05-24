@@ -173,8 +173,8 @@ void ZFlyEmOrthoDoc::prepareDvidData()
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();
     initTodoList();
-    addDvidLabelSlice(neutu::EAxis::X);
-    addDvidLabelSlice(neutu::EAxis::Y);
-    addDvidLabelSlice(neutu::EAxis::Z);
+    addDvidLabelSlice(neutu::EAxis::X, false);
+    addDvidLabelSlice(neutu::EAxis::Y, false);
+    addDvidLabelSlice(neutu::EAxis::Z, false);
   }
 }

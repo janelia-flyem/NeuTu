@@ -119,29 +119,16 @@ bool ZFlyEmBodyStatus::annotateByAdminOnly() const
 }
 */
 
-bool ZFlyEmBodyStatus::isAccessible() const
+bool ZFlyEmBodyStatus::isAccessible(bool admin) const
 {
   if (isAdminAccessible() || (m_adminLevel == 1)) {
-    return neutu::IsAdminUser();
+    return admin;
   } else if (m_protection >= 9) {
     return false;
   }
 
   return true;
 }
-
-#if 0
-bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
-{
-#if _QT_GUI_USED_
-  if (ZString(status).lower() == "roughly traced") {
-    return neutu::IsAdminUser();
-  }
-#endif
-
-  return true;
-}
-#endif
 
 std::string ZFlyEmBodyStatus::GetExpertStatus()
 {

@@ -263,6 +263,8 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
     ZNetBufferReader bufferReader;
     bufferReader.read(url, false);
+    m_statusCode = bufferReader.getStatusCode();
+    m_status = bufferReader.getStatus();
     m_buffer = bufferReader.getBuffer();
   }
 

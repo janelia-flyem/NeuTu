@@ -27,6 +27,8 @@ public:
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
+  void setMappedUuid(const std::string &original, const std::string &mapped);
+
 
   /*!
    * \brief Set dvid target from source string
@@ -296,6 +298,9 @@ public:
   }
   void setSynapseReadonly(bool on);
 
+  bool isSupervoxelView() const;
+  void setSupervoxelView(bool on);
+
   int getMaxLabelZoom() const {
     return m_maxLabelZoom;
   }
@@ -316,6 +321,8 @@ public:
 
   bool isInferred() const;
   void setInferred(bool status);
+
+  std::string getOriginalUuid() const;
 
   std::string getSynapseLabelszName() const;
   void setSynapseLabelszName(const std::string &name);
@@ -431,6 +438,7 @@ private:
 //  bool m_usingLabelArray = false;
 //  bool m_usingLabelMap = false;
   bool m_isDefaultBodyLabel = false;
+  bool m_supervoxelView = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 
@@ -439,6 +447,7 @@ private:
   bool m_isEditable; //if the configuration is editable
   bool m_readOnly; //if the database is readonly
   dvid::ENodeStatus m_nodeStatus = dvid::ENodeStatus::OFFLINE; //Status of the node
+  std::string m_orignalUuid;
   bool m_isInferred = false;
 };
 

@@ -127,11 +127,6 @@ public:
    */
   void setSelected(bool selected);
 
-  typedef void(*CallBack)(ZStackObject*);
-
-  void addCallBackOnSelection(CallBack callback){m_callbacks_on_selection.push_back(callback);}
-
-  void addCallBackOnDeselection(CallBack callback){m_callbacks_on_deselection.push_back(callback);}
   /*!
    * \brief Get the selection state
    *
@@ -140,6 +135,14 @@ public:
   bool isSelected() const { return m_selected; }
 
   virtual void deselect(bool /*recursive*/) { setSelected(false); }
+
+  typedef void(*CallBack)(ZStackObject*);
+
+  void addCallBackOnSelection(CallBack callback){
+    m_callbacks_on_selection.push_back(callback);}
+
+  void addCallBackOnDeselection(CallBack callback){
+    m_callbacks_on_deselection.push_back(callback);}
 
   /*!
    * \brief Display an object to widget

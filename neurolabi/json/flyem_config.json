@@ -5,10 +5,11 @@
   "task server": "http://zhaot-ws1:9000/api/node/194d",
   "neuroglancer server": "emdata1.int.janelia.org",
   "dvid root": {
-    "@MB6": "99ef",
-    "@FIB19": "752d",
-    "@FIB25": "41cc",
-    "@CX": "2a3b",
+    "@MB6": "@99ef",
+    "@@FIB19": "752d",
+    "@FIB19": "@752d",
+    "@FIB25": "@41cc",
+    "@CX": "@2a3b",
     "@HEMI": "2884"
   },
   "dvid repo": [
@@ -81,7 +82,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "@FIB19",
+      "uuid": "@@FIB19",
       "default": true,
       "name": "FIB19 (emdata2)",
       "comment": "FIB19 production",
@@ -106,7 +107,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "@FIB19",
+      "uuid": "@@FIB19",
       "default": true,
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
@@ -320,7 +321,7 @@
       "label_block": "labels",
       "synapse": "mb6_synapses",
       "roi": "mb_subtracted",
-      "user_name": "zhaot"
+      "user_name": ["zhaot", "test"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -568,5 +569,8 @@
       "synapse": "annot_synapse",
       "user_name": ["zhaot", "takemuras", "olbrisd"]
     }
-  ]
+  ],
+  "ui": {
+    "style": "QGroupBox {  border: 1px solid lightgray; border-radius: 3px; margin-top: 2ex;} QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}"
+  }
 }

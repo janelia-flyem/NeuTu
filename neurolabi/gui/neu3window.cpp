@@ -25,6 +25,24 @@
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
+
+
+
+#include "dialogs/flyembodyinfodialog.h"
+
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembodylistmodel.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/zflyemdoc3dbodystateaccessor.h"
+#include "flyem/zflyemproofdocutil.h"
+
+
+#include "z3dpunctafilter.h"
+
+#include "mvc/zstackdochelper.h"
+
 #include "zroiwidget.h"
 #include "zstackdocproxy.h"
 #include "zglobal.h"
@@ -41,10 +59,10 @@
 
 #include "dvid/zdvidlabelslice.h"
 
-#include "widgets/flyembodyinfowidget.h"
-#include "widgets/zdvidserverwidget.h"
 #include "widgets/zbodylistwidget.h"
 #include "widgets/taskprotocolwindow.h"
+#include "widgets/flyembodyinfowidget.h"
+#include "widgets/zdvidserverwidget.h"
 
 #include "dialogs/zdviddialog.h"
 #include "dialogs/flyembodyinfodialog.h"
@@ -644,10 +662,12 @@ void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutu::EAxis::ARB);
-    slice->setCustomColorMap(m_browserColorScheme);
-
-    updateSliceBrowserSelection();
+    ZDvidLabelSlice* slice =
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(doc, neutu::EAxis::ARB);
+    if (slice) {
+      slice->setCustomColorMap(m_browserColorScheme);
+      updateSliceBrowserSelection();
+    }
   }
 }
 
@@ -1024,18 +1044,24 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
   return zoomToLoadedBody;
 }
 
-void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
+void Neu3Window::zoomToBodyMesh(int numMeshLoaded)
 {
   if (!zoomToLoadedBodyEnabled()) {
     return;
   }
 
-  QList<ZMesh*> meshList =
-      ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  LDEBUG() << "Mesh list size:" << meshList.size();
-  if (!meshList.isEmpty()) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
+  if (numMeshLoaded > 0) {
+    QList<ZMesh*> meshList =
+        ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+    LDEBUG() << "Mesh list size:" << meshList.size();
+    if (numMeshLoaded == meshList.size()) {
+      ZMesh *mesh = meshList.front();
+      ZCuboid box = mesh->getBoundBox();
+      for (int i = 1; i < meshList.size(); ++i) {
+        box.join(meshList[i]->getBoundBox());
+      }
+      m_3dwin->gotoPosition(box);
+    }
   }
 }
 

@@ -8,7 +8,7 @@
 
 const QString FlyEmBodyAnnotationDialog::FINALIZED_TEXT = "Finalized";
 
-FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(QWidget *parent) :
+FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::FlyEmBodyAnnotationDialog)
 {
@@ -17,7 +17,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(QWidget *parent) :
   connect(ui->generatePushButton, &QPushButton::clicked,
           this, &FlyEmBodyAnnotationDialog::fillType);
 
-  if (!neutu::IsAdminUser()) {
+  m_isAdmin = admin;
+  if (!m_isAdmin) {
     ui->typeLineEdit->hide();
     ui->generatePushButton->hide();
 //    neutu::HideLayout(ui->typeLayout, false);
@@ -31,9 +32,9 @@ FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
 
 void FlyEmBodyAnnotationDialog::setType(const std::string &type)
 {
-  if (neutu::IsAdminUser()) {
-    ui->typeLineEdit->setText(QString::fromStdString(type));
-  } else {
+  ui->typeLineEdit->setText(QString::fromStdString(type));
+
+  if (ui->typeLineEdit->isHidden()) {
     ui->typeLabel->setText("Type:" + QString::fromStdString(type));
   }
 }
@@ -172,7 +173,11 @@ std::string FlyEmBodyAnnotationDialog::getSynonym() const
 
 std::string FlyEmBodyAnnotationDialog::getStatus() const
 {
-  return ui->statusComboBox->currentText().toStdString();
+  if (ui->statusComboBox->currentIndex() > 0) {
+    return ui->statusComboBox->currentText().toStdString();
+  }
+
+  return "";
 }
 
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
@@ -317,7 +322,7 @@ void FlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
     if (m_adminSatutsList.contains(status.c_str())) {
-      ui->statusComboBox->setEnabled(neutu::IsAdminUser());
+      ui->statusComboBox->setEnabled(m_isAdmin);
     }
   }
 }

@@ -182,7 +182,11 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(neutu::GROUP_BOX_STYLE);
+  if (GET_FLYEM_CONFIG.getWindowStyleSheet().empty()) {
+    setStyleSheet(neutu::GROUP_BOX_STYLE);
+  } else {
+    setStyleSheet(GET_FLYEM_CONFIG.getWindowStyleSheet().c_str());
+  }
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -560,6 +564,11 @@ void ZProofreadWindow::createToolbar()
 
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSegmentationAction);
+  QAction *svAction = m_mainMvc->getCompletePresenter()->getAction(
+        ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
+  m_toolBar->addAction(svAction);
+  svAction->setVisible(false);
+
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
@@ -774,13 +783,14 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
-//  removeToolBar(m_toolBar);
-
   setWindowTitle(
         (target.getName() + " @ " + target.getSourceString(false, 5)).c_str());
 
   enableTargetAction(target.isValid());
-
+  if (target.hasSupervoxel()) {
+    m_mainMvc->getCompletePresenter()->getAction(
+            ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW)->setVisible(true);
+  }
 
   m_viewMenu->setEnabled(true);
 

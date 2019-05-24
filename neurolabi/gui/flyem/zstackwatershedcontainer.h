@@ -166,6 +166,10 @@ public:
    * Obsolete function. To be removed.
    */
   ZStackPtr getResultStack() const {
+    if (m_result.empty()) {
+      return ZStackPtr();
+    }
+
     return m_result.front();
   }
 
@@ -224,6 +228,7 @@ private:
   void clearResult();
   void clearSeed();
   Stack* getSource();
+  Stack* getRawSourceStack(ZStack* stack);
   ZStack* getSourceStack();
   ZIntPoint estimateDsIntv(const ZIntCuboid &box) const;
   void expandSeedArray(ZObject3d *obj);
