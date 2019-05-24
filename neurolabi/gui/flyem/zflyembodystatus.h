@@ -11,7 +11,7 @@ public:
   ZFlyEmBodyStatus(const std::string &status = "");
 
   std::string getName() const;
-  bool isAccessible() const;
+  bool isAccessible(bool admin) const;
   bool isAdminAccessible() const;
 //  bool annotateByAdminOnly() const;
   bool isExpertStatus() const;

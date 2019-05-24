@@ -920,6 +920,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             QMutableListIterator<QString> keyIter(keyList);
             QMutableListIterator<ZJsonObject> annIter(bodyAnnotationList);
             while (keyIter.hasNext()) {
+                keyIter.next();
 //                QString bodyIDstr = keyIter.next();
                 keyIter.next();
                 ZJsonObject bodyData = annIter.next();

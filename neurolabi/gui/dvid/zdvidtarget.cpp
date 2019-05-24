@@ -723,6 +723,22 @@ void ZDvidTarget::setInferred(bool status)
   m_isInferred = status;
 }
 
+void ZDvidTarget::setMappedUuid(
+    const std::string &original, const std::string &mapped)
+{
+  m_orignalUuid = original;
+  setUuid(mapped);
+}
+
+std::string ZDvidTarget::getOriginalUuid() const
+{
+  if (m_orignalUuid.empty()) {
+    return getUuid();
+  }
+
+  return m_orignalUuid;
+}
+
 std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
