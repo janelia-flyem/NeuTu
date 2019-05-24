@@ -178,7 +178,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
     std::string masterNode = ReadMasterNode(target);
     if (!masterNode.empty()) {
-      m_dvidTarget.setUuid(masterNode);
+      m_dvidTarget.setMappedUuid(target.getUuid(), masterNode);
     }
 
     succ = startService();
@@ -5349,10 +5349,7 @@ std::string ZDvidReader::readMasterNode() const
 {
   std::string master;
 
-  if (good()) {
-    ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = GetMasterUrl(dvidUrl);
-    m_bufferReader.read(url.c_str());
+  if (ReadMasterListBuffer(m_bufferReader, getDvidTarget())) {
     master = GetMasterNodeFromBuffer(m_bufferReader);
   }
 
@@ -5363,10 +5360,7 @@ std::vector<std::string> ZDvidReader::readMasterList() const
 {
   std::vector<std::string> masterList;
 
-  if (good()) {
-    ZDvidUrl dvidUrl(getDvidTarget());
-    std::string url = GetMasterUrl(dvidUrl);
-    m_bufferReader.read(url.c_str());
+  if (ReadMasterListBuffer(m_bufferReader, getDvidTarget())) {
     masterList = GetMasterListFromBuffer(m_bufferReader);
   }
 
@@ -5457,31 +5451,78 @@ std::vector<std::string> ZDvidReader::readMasterList() const
   return ReadMasterList(getDvidTarget());
 }
 */
+
+
+bool ZDvidReader::ReadMasterListBuffer(
+    ZDvidBufferReader &reader, const ZDvidTarget &target)
+{
+  const ZString uuid = target.getOriginalUuid();
+
+  std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(uuid);
+  if (!rootNode.empty()) {
+    bool usingOldUrl = false;
+    if (uuid.startsWith("@@")) {
+      usingOldUrl = true;
+    }
+
+    if (ZString(rootNode).startsWith("@")) {
+      rootNode = rootNode.substr(1);
+      usingOldUrl = true;
+    }
+
+    ZDvidUrl dvidUrl(target, rootNode);
+    std::string url;
+
+    if (!usingOldUrl) {
+      url = dvidUrl.getMasterUrl();
+      if (dvid::HasHead(url)) {
+        reader.read(url.c_str());
+        if (reader.getStatus() == neutu::EReadStatus::BAD_RESPONSE) {
+          usingOldUrl = true;
+        }
+      } else {
+        usingOldUrl = true;
+      }
+    }
+
+    if (usingOldUrl) {
+      url = dvidUrl.getOldMasterUrl();
+      reader.read(url.c_str());
+    }
+
+    return reader.getStatus() == neutu::EReadStatus::OK;
+  }
+
+  return false;
+}
+
+
 std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
 {
-#if defined(_FLYEM_)
   std::string master;
-  std::string rootNode =
-      GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
-  if (!rootNode.empty()) {
-    ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(target, rootNode);
-    std::string url = GetMasterUrl(dvidUrl);
-    if (ZString(target.getUuid()).startsWith("@@")) {
-      url = dvidUrl.getOldMasterUrl();
-    }
-    reader.read(url.c_str());
+
+  ZDvidBufferReader reader;
+
+  if (ReadMasterListBuffer(reader, target)) {
     master = GetMasterNodeFromBuffer(reader);
   }
 
   return master;
-#else
-  return "";
-#endif
 }
 
 std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
 {
+  std::vector<std::string> masterList;
+  ZDvidBufferReader reader;
+
+  if (ReadMasterListBuffer(reader, target)) {
+    masterList = GetMasterListFromBuffer(reader);
+  }
+
+  return masterList;
+
+
+  /*
 #if defined(_FLYEM_)
   std::vector<std::string> masterList;
   std::string rootNode =
@@ -5501,6 +5542,7 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
 #else
   return std::vector<std::string>();
 #endif
+*/
 }
 
 std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
