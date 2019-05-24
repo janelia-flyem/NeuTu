@@ -5389,8 +5389,10 @@ ZStackObject* ZStackDoc::hitTest(
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->hit(stackPos, widgetPos, axis)) {
-      return obj;
+    if (obj->isHittable()) {
+      if (obj->hit(stackPos, widgetPos, axis)) {
+        return obj;
+      }
     }
   }
 

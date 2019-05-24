@@ -600,6 +600,9 @@ ZIntPoint ZStackWatershedContainer::estimateDsIntv(const ZIntCuboid &box) const
 
 ZStack* ZStackWatershedContainer::getSourceStack()
 {
+  QElapsedTimer timer;
+  timer.start();
+
   ZIntCuboid range = getRange();
   if (m_source == NULL) {
     if (m_spStack != NULL) {
@@ -610,10 +613,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
         m_source->pushDsIntv(m_spStack->getDsIntv());
         delete filter;
       } else {
-        QElapsedTimer timer;
-        timer.start();
         m_source = m_spStack->makeStack(range, m_maxStackVolume, m_preservingGap);
-        logProfile(timer.elapsed(), "produce dense stack for watershed");
       }
     } else if (m_stack != NULL){
       if (range.equals(m_stack->getBoundBox())) {
@@ -633,12 +633,18 @@ ZStack* ZStackWatershedContainer::getSourceStack()
     }
   }
 
+  logProfile(timer.elapsed(), "produce dense stack for watershed");
+
   return m_source;
 }
 
 Stack* ZStackWatershedContainer::getSource()
 {
-  ZStack *stack  = getSourceStack();
+  return getRawSourceStack(getSourceStack());
+}
+
+Stack* ZStackWatershedContainer::getRawSourceStack(ZStack *stack)
+{
   if (stack != NULL) {
     return stack->c_stack(m_channel);
   } else {
@@ -771,20 +777,22 @@ void ZStackWatershedContainer::run()
     return;
   }
 
+  ZStack *sourceStack = getSourceStack();
+
   QElapsedTimer timer;
   timer.start();
 
-  //Todo: unified processing for dense and sparse stacks
-  if(m_stack && m_stack->hasData() && m_scale > 1){//for normal stack
-    ZStackMultiScaleWatershed watershed;
-    ZStackPtr stack(watershed.run(
-                      getSourceStack(),
-                      m_seedArray,m_scale,m_algorithm.c_str(),m_dsMethod.c_str()));
-    stack->setOffset(getSourceOffset());
-    m_result.push_back(stack);
-  } else {
-    Stack *source = getSource();
-    if (source != NULL) {
+  if (sourceStack) {
+    //Todo: unified processing for dense and sparse stacks
+    if((sourceStack != nullptr) && m_scale > 1){//for normal stack
+      ZStackMultiScaleWatershed watershed;
+      ZStackPtr stack(watershed.run(
+                        sourceStack, m_seedArray, m_scale, m_algorithm.c_str(),
+                        m_dsMethod.c_str()));
+      stack->setOffset(getSourceOffset());
+      m_result.push_back(stack);
+    } else {
+      Stack *source = getRawSourceStack(sourceStack);
       updateSeedMask();
 
 #ifdef _DEBUG_2
@@ -806,14 +814,14 @@ void ZStackWatershedContainer::run()
       }
 
       std::cout << "Downsampling interval: "
-                    << getSourceStack()->getDsIntv().toString() << std::endl;
+                << getSourceStack()->getDsIntv().toString() << std::endl;
 
       if (m_refiningBorder/* && !getSourceStack()->getDsIntv().isZero()*/) {
         refineBorder();
       }
-    } else {
-      ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
     }
+  } else {
+    ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
   }
 
   logProfile(timer.elapsed(), "watershed computation");

@@ -667,7 +667,8 @@ std::string ZDvidUrl::getSparsevolUrl(
   */
 }
 
-std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
+std::string ZDvidUrl::getSparsevolSizeUrl(
+    uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
   ZString url;
 
@@ -677,6 +678,9 @@ std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
       url += "/" + ZDvidData::GetName(ZDvidData::ERole::SPARSEVOL_SIZE);
       url += "/";
       url.appendNumber(bodyId);
+      if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
+        url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
+      }
     }
   }
 
@@ -864,6 +868,17 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), m_coarseSparsevolCommand);
 //      ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_COARSE);
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(
+    uint64_t bodyId, const std::string &dataName, neutu::EBodyLabelType labelType) const
+{
+  std::string url = getCoarseSparsevolUrl(bodyId, dataName);
+  if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
+    url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(

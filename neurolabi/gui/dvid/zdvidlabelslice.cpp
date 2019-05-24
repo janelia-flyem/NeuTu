@@ -23,7 +23,10 @@
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"
 #include "misc/miscutility.h"
-#include "flyem/zdvidlabelslicehighrestask.h"
+#include "zdviddataslicetask.h"
+#include "zdviddataslicetaskfactory.h"
+
+//#include "flyem/zdvidlabelslicehighrestask.h"
 
 /* Implementation details:
  *
@@ -169,19 +172,24 @@ bool ZDvidLabelSlice::containedIn(
 
 ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
 {
-  ZDvidLabelSliceHighresTask *task = NULL;
-  const int maxSize = 1024*1024;
-  if (getHelper()->needHighResUpdate()
-      && getHelper()->getViewDataSize() < maxSize) {
-    task = new ZDvidLabelSliceHighresTask;
-    ZStackViewParam viewParam = getHelper()->getViewParam();
-    viewParam.openViewPort();
-    task->setViewParam(viewParam);
-    task->setZoom(getHelper()->getZoom());
-    task->setCenterCut(
-          getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-    task->setDelay(100);
-    task->setDoc(doc);
+  ZDvidDataSliceTask *task = nullptr;
+//  ZDvidLabelSliceHighresTask *task = NULL;
+  if (m_taskFactory) {
+    const int maxSize = 1024*1024;
+    if (getHelper()->needHighResUpdate()
+        && getHelper()->getViewDataSize() < maxSize) {
+      //    task = new ZDvidLabelSliceHighresTask;
+      task = m_taskFactory->makeTask();
+      ZStackViewParam viewParam = getHelper()->getViewParam();
+      viewParam.openViewPort();
+      task->setViewParam(viewParam);
+      task->setZoom(getHelper()->getZoom());
+      task->setCenterCut(
+            getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
+      task->setDelay(100);
+      task->setDoc(doc);
+      task->setSupervoxel(getDvidTarget().isSupervoxelView());
+    }
   }
 
   return task;
@@ -207,6 +215,11 @@ void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
   getHelper()->inferUpdatePolicy(getSliceAxis());
 }
 
+bool ZDvidLabelSlice::isSupervoxel() const
+{
+  return getDvidTarget().isSupervoxelView();
+}
+
 int64_t ZDvidLabelSlice::getReadingTime() const
 {
   return getHelper()->getDvidReader().getReadingTime();
@@ -225,6 +238,12 @@ void ZDvidLabelSlice::setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy pol
 {
   getHelper()->setPreferredUpdatePolicy(policy);
   getHelper()->inferUpdatePolicy(getSliceAxis());
+}
+
+void ZDvidLabelSlice::setTaskFactory(
+    std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory)
+{
+  m_taskFactory = std::move(factory);
 }
 
 /*

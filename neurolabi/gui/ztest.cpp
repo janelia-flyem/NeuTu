@@ -315,6 +315,7 @@
 #include "flyem/zflyembodystatus.h"
 #include "flyem/zflyembodyannotationmerger.h"
 #include "flyem/zflyemroimanager.h"
+#include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
@@ -323,6 +324,9 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "dvid/zdvidneurontracer.h"
+
+#include "ext/http/HTTPRequest.hpp"
 
 //#include "test/ztestall.h"
 
@@ -28181,7 +28185,7 @@ void ZTest::test(MainWindow *host)
   writer->writeRoi(roi, name);
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
@@ -28197,6 +28201,20 @@ void ZTest::test(MainWindow *host)
   writer->uploadRoiMesh(
         GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.obj",
         "lACA");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "lACA",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "SLP",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.obj");
+
 #endif
 
 #if 0
@@ -29672,6 +29690,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
 #endif
@@ -29681,6 +29700,25 @@ void ZTest::test(MainWindow *host)
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvidTarget(reader->getDvidTarget());
+  doc.test();
+
+//  doc.setSupervoxelMode(true);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  ZDvidTarget target = reader->getDvidTarget();
+  target.setSupervoxelView(true);
+  labelSlice->setDvidTarget(target);
+  std::cout << labelSlice->isSupervoxel() << std::endl;
 #endif
 
 #if 0
@@ -29770,6 +29808,111 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+//  try
+//  {
+      // you can pass http::InternetProtocol::V6 to Request to make an IPv6 request
+
+
+      // send a get request
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+        http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+
+      {
+      http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+      }
+      // send a post request
+//      response = request.send("POST", "foo=1&bar=baz", {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << response.body.data() << std::endl; // print the result
+
+      // pass parameters as a map
+//      std::map<std::string, std::string> parameters = {{"foo", "1"}, {"bar", "baz"}};
+//      response = request.send("POST", parameters, {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << std::string(response.body.begin(), response.body.end()) << std::endl; // print the result
+//  }
+//  catch (const std::exception& e)
+//  {
+//      std::cerr << "Request failed, error: " << e.what() << std::endl;
+//  }
+
+//  ZDvidReader *reader = ZGlobal().GetInstance().getDvidReader("MB_Test");
+//  tic();
+//  reader->setVerbose(false);
+//  for (size_t i = 0; i < 5000; ++i) {
+//    reader->readDataInfo("bodies3");
+//  }
+//  ptoc();
+
+//  tic();
+//  ZNetBufferReader nreader;
+//  for (size_t i = 0; i < 5000; ++i) {
+//    nreader.read("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info", false);
+//  }
+//  ptoc();
+#endif
+
+#if 0
+  NeutubeConfig::getInstance().print();
+
+  ZFlyEmConfig::getInstance().print();
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidSkeletonizeTask(
+        reader->getDvidTarget(), 1, true);
+  std:cout << task.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  auto masterList = reader->readMasterList();
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+
+  std::cout << reader->readMasterNode() << std::endl;
+#endif
+
+#if 0
+  ZDvidNeuronTracer tracer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setGrayScaleName("grayscale");
+  tracer.setDvidTarget(target);
+  tracer.trace(505, 1075, 61, 3.0);
+
+  ZSwcTree *tree = tracer.getResult();
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+//  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("MB_Synapse_Shift");
+  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("hemibran-production");
+  std::string master = ZDvidReader::ReadMasterNode(target);
+  std::cout << "Master node: " << master << std::endl;
+
+  auto masterList = ZDvidReader::ReadMasterList(target);
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+#endif
 
   std::cout << "Done." << std::endl;
 }

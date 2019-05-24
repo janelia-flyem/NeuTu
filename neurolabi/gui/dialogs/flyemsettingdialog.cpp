@@ -190,7 +190,7 @@ void FlyEmSettingDialog::update()
     GET_FLYEM_CONFIG.setCustomNeuTuServer(getNeuTuServer());
   }
 
-  GET_FLYEM_CONFIG.activateNeuTuServer();
+  GET_FLYEM_CONFIG.activateNeuTuServerForce();
   updateNeutuseWidget();
 
   /*

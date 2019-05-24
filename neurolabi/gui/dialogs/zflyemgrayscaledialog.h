@@ -46,6 +46,12 @@ public:
 
   bool isFullRange() const;
   bool isSparse() const;
+  /*!
+   * \brief Get the actual range.
+   *
+   * It returns an empty box for full range.
+   */
+  ZIntCuboid getRange() const;
 
   void makeGrayscaleExportAppearance();
   void makeBodyExportAppearance();

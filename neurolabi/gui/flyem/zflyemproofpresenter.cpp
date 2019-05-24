@@ -168,6 +168,10 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST:
       connect(action, SIGNAL(triggered()), this, SLOT(showSupervoxelList()));
       break;
+    case ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::toggleSupervoxelView);
+      break;
     default:
       connected = false;
       break;
@@ -220,7 +224,7 @@ ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZFlyEmProofDocMenuFactory);
-    m_menuFactory->setAdminState(neutu::IsAdminUser());
+    m_menuFactory->setAdminState(getCompleteDocument()->isAdmin());
   }
 
   return m_menuFactory.get();
@@ -886,9 +890,6 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     }
 
     getCompleteDocument()->executeAddBookmarkCommand(bookmark);
-//    buddyDocument()->executeAddObjectCommand(bookmark);
-
-//    emit bookmarkAdded(bookmark);
   }
 }
 
@@ -906,6 +907,11 @@ void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
 {
   m_blinkingSegmenationAllowed = on;
   getCompleteDocument()->allowDvidLabelSliceBlinking(on);
+}
+
+void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
+{
+  getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
 }
 
 bool ZFlyEmProofPresenter::processCustomOperator(

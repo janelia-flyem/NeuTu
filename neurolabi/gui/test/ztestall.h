@@ -76,5 +76,6 @@
 #include "test/zwidgetmessagetest.h"
 #include "test/zstackobjecttest.h"
 #include "test/z3dswcfiltertest.h"
+#include "test/flyembodyselectionmanagertest.h"
 
 #endif // ZTESTALL_H

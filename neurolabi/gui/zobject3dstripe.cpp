@@ -978,6 +978,35 @@ void ZObject3dStripe::print(int indent) const
 
 ZObject3dStripe ZObject3dStripe::getComplement(int x0, int x1)
 {
+  /*//New implementation to be tested
+  canonize();
+
+  ZObject3dStripe result;
+
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int s = m_segmentArray[i];
+    int t = m_segmentArray[i+1];
+    if (s > x1) { //All segment out of range
+      break;
+    } else if (t >= x0) {
+      if (s > x0) {
+        result.m_segmentArray.push_back(x0);
+        result.m_segmentArray.push_back(s - 1);
+      }
+      x0 = t + 1;
+    }
+  }
+
+  if (x0 <= x1) {
+    result.m_segmentArray.push_back(x0);
+    result.m_segmentArray.push_back(x1);
+  }
+
+  result.setCanonized(true);
+
+  return result;
+  */
+
   ZObject3dStripe stripe;
   stripe.setY(getY());
   stripe.setZ(getZ());

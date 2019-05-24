@@ -13,12 +13,12 @@
 #include "zshowsegresult.h"
 #include "zbrowseropener.h"
 #include "zffnskeleton.h"
+
 #include "zmultiscalesegmentationmanagement.h"
 #if defined(_ENABLE_SURFRECON_)
 #include "zsurfreconmodule.h"
 #endif
 /*************************************/
-
 
 template<typename T>
 void RegisterModule()
@@ -41,6 +41,7 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZBrowserOpenerModule>();
   RegisterModule<ZFFNSkeletonModule>();
   RegisterModule<ZMultiscaleSegManagementModule>();
+
 #if defined(_ENABLE_SURFRECON_)
   RegisterModule<ZSurfReconModule>();
 #endif

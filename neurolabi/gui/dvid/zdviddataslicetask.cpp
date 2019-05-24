@@ -30,3 +30,8 @@ void ZDvidDataSliceTask::useCenterCut(bool on)
 {
   m_usingCenterCut = on;
 }
+
+void ZDvidDataSliceTask::setSupervoxel(bool on)
+{
+  m_supervoxel = on;
+}

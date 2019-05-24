@@ -272,7 +272,8 @@ void ZMultiscaleSegmentationWindow::onShowLeaves(int state){
 }
 
 
-void ZMultiscaleSegmentationWindow::onMerge(){
+void ZMultiscaleSegmentationWindow::onMerge()
+{
   if(!m_frame){
     return;
   }
@@ -385,11 +386,6 @@ void ZMultiscaleSegmentationWindow::removeSeeds(){
     return;
   }
   m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEED);
-  /*
-  for(ZStroke2d* stroke:m_frame->document()->getStrokeList()){
-    m_frame->document()->removeObject(stroke);
-  }
-  */
 }
 
 
@@ -402,8 +398,12 @@ std::vector<ZStackObject*> ZMultiscaleSegmentationWindow::getSeeds(){
   std::map<QString,int> color_indices;
   int i = 0;
 
-  for(ZStroke2d* stroke:m_frame->document()->getStrokeList()){
-    std::map<QString,int>::iterator p_index = color_indices.find(stroke->getColor().name());
+  QList<ZStackObject*> objList =
+      m_frame->document()->getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  for (ZStackObject* stroke : objList) {
+    std::map<QString,int>::iterator p_index =
+        color_indices.find(stroke->getColor().name());
     if (p_index==color_indices.end()){
       color_indices.insert(std::make_pair(stroke->getColor().name(),++i));
       stroke->setLabel(i);

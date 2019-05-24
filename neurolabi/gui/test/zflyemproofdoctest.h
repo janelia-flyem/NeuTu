@@ -21,11 +21,11 @@ TEST(ZFlyEmProofDoc, DVID)
     ASSERT_TRUE(doc.getDvidReader().good());
     ASSERT_TRUE(doc.getDvidWriter().good());
 
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::X));
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::Y));
-    ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::Z) != NULL);
+    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::X, false));
+    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::Y, false));
+    ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::Z, false) != NULL);
 
-    ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutu::EAxis::Z);
+    ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutu::EAxis::Z, false);
     ZStackViewParam param;
     param.setViewPort(3565, 5292, 4260, 5853);
     param.setZ(7313);

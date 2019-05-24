@@ -98,6 +98,7 @@ public:
   bool hasNormalService() const;
   void updateServiceStatus();
 
+  void activateNeuTuServerForce();
   void activateNeuTuServer();
 
 //  void setRemoteServer(const std::string &server);
@@ -161,6 +162,10 @@ public:
     m_psdNameDetail = on;
   }
 
+  std::string getWindowStyleSheet() const {
+    return m_uiStyleSheet;
+  }
+
 public:
   const static char *DVID_REPO_KEY;
   const static char *DVID_ROOT_KEY;
@@ -171,6 +176,8 @@ public:
   const static char *NEUTU_SERVER_KEY;
   const static char *NEUROGLANCER_KEY;
   const static char *CENTERCUT_KEY;
+  const static char *UI_KEY;
+  const static char *STYLE_KEY;
 
 private:
   void init();
@@ -185,6 +192,7 @@ private:
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
   neutuse::TaskWriter m_neutuseWriter;
+  bool m_neutuServerChecked = false;
 #endif
 //  std::string m_taskServer;
   std::string m_configPath;
@@ -197,6 +205,7 @@ private:
   std::string m_defaultNeuTuServer;
   bool m_usingDefaultTaskServer = true;
   std::string m_defaultTaskServer;
+  std::string m_uiStyleSheet;
 
   bool m_analyzingMb6;
   bool m_psdNameDetail = false;

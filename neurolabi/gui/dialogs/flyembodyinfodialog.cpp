@@ -902,7 +902,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
 
         // read all the body annotations at once
         dvidTimer.restart();
-        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(
+              bodyAnnotationName, keyList);
         dvidTime += dvidTimer.elapsed();
 
         #ifdef _DEBUG_
@@ -919,7 +920,9 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             QMutableListIterator<QString> keyIter(keyList);
             QMutableListIterator<ZJsonObject> annIter(bodyAnnotationList);
             while (keyIter.hasNext()) {
+                keyIter.next();
 //                QString bodyIDstr = keyIter.next();
+                keyIter.next();
                 ZJsonObject bodyData = annIter.next();
                 std::string name = get_annotation_name(bodyData);
 //                bool hasName = false;

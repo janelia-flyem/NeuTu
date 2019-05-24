@@ -311,6 +311,16 @@ void ZDvidTarget::setSynapseReadonly(bool on)
   m_isSynpaseEditable = !on;
 }
 
+bool ZDvidTarget::isSupervoxelView() const
+{
+  return m_supervoxelView;
+}
+
+void ZDvidTarget::setSupervoxelView(bool on)
+{
+  m_supervoxelView = on;
+}
+
 dvid::ENodeStatus ZDvidTarget::getNodeStatus() const
 {
   return m_nodeStatus;
@@ -711,6 +721,22 @@ bool ZDvidTarget::isInferred() const
 void ZDvidTarget::setInferred(bool status)
 {
   m_isInferred = status;
+}
+
+void ZDvidTarget::setMappedUuid(
+    const std::string &original, const std::string &mapped)
+{
+  m_orignalUuid = original;
+  setUuid(mapped);
+}
+
+std::string ZDvidTarget::getOriginalUuid() const
+{
+  if (m_orignalUuid.empty()) {
+    return getUuid();
+  }
+
+  return m_orignalUuid;
 }
 
 std::string ZDvidTarget::getBodyLabelName() const

@@ -182,6 +182,8 @@ void ZFlyEmToDoItem::setAction(const std::string &action)
 
 void ZFlyEmToDoItem::setAction(neutu::EToDoAction action)
 {
+  removeActionTag();
+
   if (action == neutu::EToDoAction::TO_DO) {
     removeProperty(KEY_ACTION);
   } else {
@@ -194,31 +196,6 @@ void ZFlyEmToDoItem::setAction(neutu::EToDoAction action)
     };
   }
 
-#if 0
-  switch (action) {
-  case neutu::EToDoAction::TO_DO:
-    removeProperty(KEY_ACTION);
-//    removeActionTag();
-    break;
-  case neutu::EToDoAction::TO_MERGE:
-    addProperty(KEY_ACTION, ACTION_MERGE);
-//    addTag(std::string(ACTION_KEY) + ":" + ACTION_MERGE_TAG);
-    break;
-  case neutu::EToDoAction::TO_SPLIT:
-    addProperty(KEY_ACTION, ACTION_SPLIT);
-//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
-    break;
-  case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT:
-    addProperty(KEY_ACTION, ACTION_SUPERVOXEL_SPLIT);
-//    addTag(std::string(ACTION_KEY) + ":" + ACTION_SUPERVOXEL_SPLIT_TAG);
-    break;
-  case neutu::EToDoAction::TO_DO_IRRELEVANT:
-    addProperty(KEY_ACTION, ACTION_IRRELEVANT);
-//    addTag(std::string(ACTION_KEY) + ":" + ACTION_IRRELEVANT_TAG);
-    break;
-  case neutu::EToDoAction::to_do_
-  }
-#endif
   syncActionTag();
 }
 

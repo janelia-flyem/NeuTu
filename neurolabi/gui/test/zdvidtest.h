@@ -454,14 +454,16 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getMasterUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
             dvidUrl4.getDefaultDataInstancesUrl());
-  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
+  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::BODY).empty());
 
 //  target.useLabelArray(true);
   target.setSegmentationType(ZDvidData::EType::LABELARRAY);
   dvidUrl4.setDvidTarget(target, "3456");
 //  std::cout << target.getBodyLabelName() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
-            dvidUrl4.getSparsevolSizeUrl(1));
+            dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::BODY));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1?supervoxel=true",
+            dvidUrl4.getSparsevolSizeUrl(1, neutu::EBodyLabelType::SUPERVOXEL));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1",
             dvidUrl4.getSparsevolUrl(1));
@@ -705,126 +707,144 @@ TEST(ZDvidTest, ZDvidNode)
 
 TEST(ZDvidTest, ZDvidTarget)
 {
-  ASSERT_TRUE(ZDvidTarget::Test());
+  {
+    ZDvidTarget target("emdata.janelia.org", "1234", 1000);
+    ASSERT_FALSE(target.isInferred());
+    ASSERT_EQ("1234", target.getUuid());
+    ASSERT_EQ("1234", target.getOriginalUuid());
+  }
 
-  ZDvidTarget target;
-  target.setServer("http://emdata2.int.janelia.org:9000");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
+  {
+    ZDvidTarget target("emdata.janelia.org", "@test", 1000);
+    ASSERT_FALSE(target.isInferred());
+    target.setMappedUuid(target.getUuid(), "1234");
 
-  target.setServer("http://emdata2.int.janelia.org");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+    ASSERT_EQ("@test", target.getOriginalUuid());
+  }
 
-  target.clear();
-  target.setServer(
-        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
+  {
+    ASSERT_TRUE(ZDvidTarget::Test());
 
-  target.clear();
-  target.setServer(
-        "http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(-1, target.getPort());
+    ZDvidTarget target;
+    target.setServer("http://emdata2.int.janelia.org:9000");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
 
-  target.setUuid("234");
-  ASSERT_EQ("234", target.getUuid());
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddressWithPort());
+    target.setServer("http://emdata2.int.janelia.org");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
 
-  target.setUuid("12345");
-  ASSERT_EQ("12345", target.getUuid());
+    target.clear();
+    target.setServer(
+          "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
 
-  target.setServer("emdata2.int.janelia.org:9000");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
+    target.clear();
+    target.setServer(
+          "http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(-1, target.getPort());
 
-  target.clear();
-  target.setFromUrl(
-        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
-  ASSERT_EQ("3456", target.getUuid());
-  target.setTodoListName("test");
-  ASSERT_EQ("test", target.getTodoListName());
+    target.setUuid("234");
+    ASSERT_EQ("234", target.getUuid());
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddressWithPort());
 
-  ZJsonObject obj;
-  obj.decodeString("{\"gray_scale\":{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
-                   "\"uuid\": \"2a3\"}}");
-  target.setSourceConfig(obj);
-  target.prepareTile();
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
-  ASSERT_EQ("3456", target.getUuid());
+    target.setUuid("12345");
+    ASSERT_EQ("12345", target.getUuid());
 
-  target.prepareGrayScale();
-  ASSERT_EQ("hackathon.janelia.org", target.getAddress());
-  ASSERT_EQ("2a3", target.getUuid());
-  ASSERT_EQ(8800, target.getPort());
+    target.setServer("emdata2.int.janelia.org:9000");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
 
-  obj.decodeString("{\"multires_tile\":{\"address\":\"hackathon2.janelia.org\", \"port\": 9800, "
-                   "\"uuid\": \"1a3\"}}");
-  target.setSourceConfig(obj);
-  target.prepareTile();
-  ASSERT_EQ("hackathon2.janelia.org", target.getAddress());
-  ASSERT_EQ("1a3", target.getUuid());
-  ASSERT_EQ(9800, target.getPort());
-  target.print();
+    target.clear();
+    target.setFromUrl(
+          "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("3456", target.getUuid());
+    target.setTodoListName("test");
+    ASSERT_EQ("test", target.getTodoListName());
 
-  target.setTileSource(ZDvidNode("emdata2.int.janelia.org", "1234", 9000));
-  ZDvidNode node = target.getTileSource();
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
-  ASSERT_EQ(9000, node.getPort());
-  ASSERT_EQ("1234", node.getUuid());
+    ZJsonObject obj;
+    obj.decodeString("{\"gray_scale\":{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
+                     "\"uuid\": \"2a3\"}}");
+    target.setSourceConfig(obj);
+    target.prepareTile();
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("3456", target.getUuid());
 
-  ASSERT_FALSE(target.isLowQualityTile("tiles"));
-  target.configTile("tiles", true);
-  ASSERT_TRUE(target.isLowQualityTile("tiles"));
+    target.prepareGrayScale();
+    ASSERT_EQ("hackathon.janelia.org", target.getAddress());
+    ASSERT_EQ("2a3", target.getUuid());
+    ASSERT_EQ(8800, target.getPort());
 
-  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
-  node = target.getGrayScaleSource();
-  ASSERT_EQ("emdata3.int.janelia.org", node.getAddress());
-  ASSERT_EQ(9100, node.getPort());
-  ASSERT_EQ("2234", node.getUuid());
+    obj.decodeString("{\"multires_tile\":{\"address\":\"hackathon2.janelia.org\", \"port\": 9800, "
+                     "\"uuid\": \"1a3\"}}");
+    target.setSourceConfig(obj);
+    target.prepareTile();
+    ASSERT_EQ("hackathon2.janelia.org", target.getAddress());
+    ASSERT_EQ("1a3", target.getUuid());
+    ASSERT_EQ(9800, target.getPort());
+    target.print();
 
-  target.setTileSource(ZDvidNode("", "", -1));
-  node = target.getTileSource();
-  ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
-  ASSERT_EQ(9800, node.getPort());
-  ASSERT_EQ("1a3", node.getUuid());
+    target.setTileSource(ZDvidNode("emdata2.int.janelia.org", "1234", 9000));
+    ZDvidNode node = target.getTileSource();
+    ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+    ASSERT_EQ(9000, node.getPort());
+    ASSERT_EQ("1234", node.getUuid());
 
-  target.clear();
-  target.setFromUrl(
-        "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9000, target.getPort());
-  ASSERT_EQ("3456", target.getUuid());
-  target.setTodoListName("test");
-  ASSERT_EQ("test", target.getTodoListName());
-  ASSERT_TRUE(target.isMock());
-  ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456:*", target.getSourceString());
+    ASSERT_FALSE(target.isLowQualityTile("tiles"));
+    target.configTile("tiles", true);
+    ASSERT_TRUE(target.isLowQualityTile("tiles"));
 
-  target.setFromUrl(
-        "http://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
-  ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9100, target.getPort());
-  ASSERT_EQ("1234", target.getUuid());
-  target.setTodoListName("test");
-  ASSERT_EQ("test", target.getTodoListName());
-  ASSERT_FALSE(target.isMock());
-  ASSERT_EQ("body_test", target.getBodyLabelName());
-  ASSERT_EQ("http:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
+    target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
+    node = target.getGrayScaleSource();
+    ASSERT_EQ("emdata3.int.janelia.org", node.getAddress());
+    ASSERT_EQ(9100, node.getPort());
+    ASSERT_EQ("2234", node.getUuid());
 
-  target.setFromUrl(
-        "mock://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
-  ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
-  ASSERT_EQ(9100, target.getPort());
-  ASSERT_EQ("1234", target.getUuid());
-  target.setTodoListName("test");
-  ASSERT_EQ("test", target.getTodoListName());
-  ASSERT_TRUE(target.isMock());
-  ASSERT_EQ("body_test", target.getBodyLabelName());
-  ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
+    target.setTileSource(ZDvidNode("", "", -1));
+    node = target.getTileSource();
+    ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
+    ASSERT_EQ(9800, node.getPort());
+    ASSERT_EQ("1a3", node.getUuid());
+
+    target.clear();
+    target.setFromUrl(
+          "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("3456", target.getUuid());
+    target.setTodoListName("test");
+    ASSERT_EQ("test", target.getTodoListName());
+    ASSERT_TRUE(target.isMock());
+    ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456:*", target.getSourceString());
+
+    target.setFromUrl(
+          "http://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
+    ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9100, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+    target.setTodoListName("test");
+    ASSERT_EQ("test", target.getTodoListName());
+    ASSERT_FALSE(target.isMock());
+    ASSERT_EQ("body_test", target.getBodyLabelName());
+    ASSERT_EQ("http:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
+
+    target.setFromUrl(
+          "mock://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
+    ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9100, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+    target.setTodoListName("test");
+    ASSERT_EQ("test", target.getTodoListName());
+    ASSERT_TRUE(target.isMock());
+    ASSERT_EQ("body_test", target.getBodyLabelName());
+    ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
+  }
 }
 
 TEST(ZDvidTest, DataType)

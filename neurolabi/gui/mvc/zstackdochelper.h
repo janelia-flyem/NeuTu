@@ -48,7 +48,7 @@ public:
 //  static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
 
 
-  static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
+//  static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
   static bool HasMultipleBodySelected(
       const ZFlyEmProofDoc *doc, neutu::ELabelSource type);
   static int CountSelectedBody(

@@ -191,6 +191,8 @@
 #include "zpunctum.h"
 #include "zcurve.h"
 #include "widgets/zimagewidget.h"
+#include "sandbox/zbrowseropener.h"
+#include "zglobal.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
@@ -4414,8 +4416,11 @@ void MainWindow::on_actionShortcut_triggered()
 {
   if (GET_APPLICATION_NAME == "Biocytin" ||
       GET_APPLICATION_NAME == "FlyEM") {
-    m_helpDlg->show();
-    m_helpDlg->raise();
+//    m_helpDlg->show();
+//    m_helpDlg->raise();
+
+    ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+    bo->open("https://app.gitbook.com/@janelia-flyem/s/neutu/");
   } else if (GET_APPLICATION_NAME == "General") {
     QString title = QString("<h2> %1 Help </h2").
         arg(NeutubeConfig::getInstance().getSoftwareName().c_str());
@@ -6788,7 +6793,7 @@ void MainWindow::on_actionOne_Column_triggered()
   //Crop skeletons and save them
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
-  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+  config.load(NeutubeConfig::getInstance().getConfigDir() +
               "/json/skeletonize_fib25_len40.json");
   skeletonizer.configure(config);
 

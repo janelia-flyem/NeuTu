@@ -24,7 +24,7 @@ public:
       const ZJsonObject &config);
 
 private:
-  static ZDvidReader* ParseInputPath(
+  ZDvidReader* parseInputPath(
       const std::string &inputPath, ZJsonObject &inputJson,
       std::string &splitTaskKey, std::string &splitResultKey,
       std::string &dataDir, bool &isFile);
@@ -41,6 +41,8 @@ private:
       bool committing, const std::string &commitPath);
   std::vector<uint64_t> commitResult(
       ZObject3dScanArray *objArray, ZDvidWriter &writer);
+
+  std::string getLabelTypeName() const;
 
 private:
   uint64_t m_bodyId = 0;

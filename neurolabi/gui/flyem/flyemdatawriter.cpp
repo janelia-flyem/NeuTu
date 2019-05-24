@@ -3,6 +3,7 @@
 #include "geometry/zintpoint.h"
 #include "zobject3dscan.h"
 #include "zjsonobject.h"
+#include "zfiletype.h"
 
 #include "neutubeconfig.h"
 
@@ -74,4 +75,36 @@ void FlyEmDataWriter::UploadUserDataConfig(
   std::string userName = NeutubeConfig::GetUserName();
   writer.writeJson(ZDvidData::GetName(ZDvidData::ERole::NEUTU_CONFIG),
                    "user_" + userName, obj);
+}
+
+void FlyEmDataWriter::UploadRoi(
+    ZDvidWriter &writer, const std::string &name, const std::string &roiFile,
+    const std::string &meshFile)
+{
+  if (!name.empty()) {
+    if (!roiFile.empty()) {
+      if (ZFileType::FileType(roiFile) == ZFileType::EFileType::OBJECT_SCAN) {
+        ZObject3dScan roi;
+        roi.load(roiFile);
+        if (!writer.getDvidReader().hasData(name)) {
+          writer.createData("roi", name);
+        } else {
+          writer.deleteData("roi", name);
+        }
+        std::cout << "Writing " << name << std::endl;
+        writer.writeRoi(roi, name);
+      } else {
+        std::cout << "WARNING: Unexpected file roi file: " << roiFile << std::endl;
+      }
+    }
+
+    if (!meshFile.empty()) {
+      if (ZFileType::FileType(meshFile) == ZFileType::EFileType::MESH) {
+        std::cout << "Writing mesh for " << name << std::endl;
+        writer.uploadRoiMesh(meshFile, name);
+      } else {
+        std::cout << "WARNING: Unexpected file mesh file: " << meshFile << std::endl;
+      }
+    }
+  }
 }

@@ -95,15 +95,12 @@ void ZStackObject::setSelected(bool selected)
 {
   m_selected = selected;
 
-  if(m_selected)
-  {
+  if(m_selected) {
     for(auto callback: m_callbacks_on_selection)
     {
       callback(this);
     }
-  }
-  else
-  {
+  } else {
     for(auto callback: m_callbacks_on_deselection)
     {
       callback(this);
