@@ -72,6 +72,8 @@ public:
 
   bool isDvidMutable() const;
 
+  bool isAdmin() const;
+
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
 
@@ -607,6 +609,8 @@ public slots:
   bool checkInBodyWithMessage(
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  QString getBodyLockFailMessage(uint64_t bodyId);
+
 
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
@@ -677,6 +681,8 @@ private:
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
 
+  void updateUserStatus();
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
       ZFlyEmBodyColorOption::EColorOption type);
   template<typename T>
@@ -746,6 +752,8 @@ protected:
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
   bool m_supervoxelMode = false;
+
+  bool m_isAdmin = false;
 
   //Data settings
   int m_graySliceCenterCutWidth = 256;

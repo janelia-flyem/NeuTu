@@ -27,6 +27,8 @@ public:
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
+  void setMappedUuid(const std::string &original, const std::string &mapped);
+
 
   /*!
    * \brief Set dvid target from source string
@@ -320,6 +322,8 @@ public:
   bool isInferred() const;
   void setInferred(bool status);
 
+  std::string getOriginalUuid() const;
+
   std::string getSynapseLabelszName() const;
   void setSynapseLabelszName(const std::string &name);
 
@@ -443,6 +447,7 @@ private:
   bool m_isEditable; //if the configuration is editable
   bool m_readOnly; //if the database is readonly
   dvid::ENodeStatus m_nodeStatus = dvid::ENodeStatus::OFFLINE; //Status of the node
+  std::string m_orignalUuid;
   bool m_isInferred = false;
 };
 

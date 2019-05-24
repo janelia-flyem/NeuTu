@@ -7,7 +7,7 @@
 
 const QString ZFlyEmBodyAnnotationDialog::FINALIZED_TEXT = "Finalized";
 
-ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
+ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(bool admin, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::ZFlyEmBodyAnnotationDialog)
 {
@@ -15,7 +15,9 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 
   flyem::PrepareBodyStatus(ui->statusComboBox);
 
-  if (neutu::IsAdminUser()) {
+  m_isAdmin = admin;
+
+  if (m_isAdmin) {
     showFinalizedStatus();
 //    ui->statusComboBox->addItem("Finalized");
   }
@@ -234,7 +236,7 @@ void ZFlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
     if (m_adminSatutsList.contains(status.c_str())) {
-      ui->statusComboBox->setEnabled(neutu::IsAdminUser());
+      ui->statusComboBox->setEnabled(m_isAdmin);
     }
 //    if (!neutube::IsAdminUser()) {
 //    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
