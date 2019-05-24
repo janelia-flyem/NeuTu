@@ -5,10 +5,11 @@
   "task server": "http://zhaot-ws1:9000/api/node/194d",
   "neuroglancer server": "emdata1.int.janelia.org",
   "dvid root": {
-    "@MB6": "99ef",
+    "@MB6": "@99ef",
     "@@FIB19": "752d",
-    "@FIB25": "41cc",
-    "@CX": "2a3b",
+    "@FIB19": "@752d",
+    "@FIB25": "@41cc",
+    "@CX": "@2a3b",
     "@HEMI": "2884"
   },
   "dvid repo": [
@@ -94,7 +95,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "@@FIB19",
+      "uuid": "@FIB19",
       "default": false,
       "name": "FIB19 (emdata2) Synapse Check",
       "comment": "FIB19 production",

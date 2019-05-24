@@ -29770,6 +29770,27 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  auto masterList = reader->readMasterList();
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+
+  std::cout << reader->readMasterNode() << std::endl;
+#endif
+
+#if 0
+//  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("MB_Synapse_Shift");
+  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("hemibran-production");
+  std::string master = ZDvidReader::ReadMasterNode(target);
+  std::cout << "Master node: " << master << std::endl;
+
+  auto masterList = ZDvidReader::ReadMasterList(target);
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+#endif
 
   std::cout << "Done." << std::endl;
 }

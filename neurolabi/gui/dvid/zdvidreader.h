@@ -567,6 +567,9 @@ public:
     return m_readingTime;
   }
 
+  std::string readBodyLabelName() const;
+  void syncBodyLabelName();
+
   bool good() const;
 
   std::string readMasterNode() const;
@@ -583,10 +586,7 @@ public:
 
   ZJsonObject readDataMap() const;
 
-  std::string readBodyLabelName() const;
-  void syncBodyLabelName();
 
-//  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
@@ -681,6 +681,9 @@ private:
   bool reportMissingData(const std::string dataName) const;
 
   static std::string GetMasterUrl(const ZDvidUrl &dvidUrl);
+
+  static bool ReadMasterListBuffer(
+      ZDvidBufferReader &reader, const ZDvidTarget &target);
 
   static ZIntCuboid GetStackBox(
       int x0, int y0, int z0, int width, int height, int zoom);
