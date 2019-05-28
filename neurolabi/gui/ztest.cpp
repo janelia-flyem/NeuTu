@@ -29914,5 +29914,29 @@ void ZTest::test(MainWindow *host)
   });
 #endif
 
+#if 1
+  std::vector<std::string> fileArray = {
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_2.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_3.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_4.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_6.part.json"
+  };
+
+  for (const std::string inputPath : fileArray) {
+    ZObject3dScan obj;
+    //  std::string inputPath =
+    //      GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_2.part.json";
+    flyem::LoadRoiFromJson(inputPath, &obj);
+
+    obj.save(inputPath + ".sobj");
+
+    ZStack *stack = ZStackFactory::MakeZeroStack(1088, 1280, 1344);
+    obj.upSample(3, 3, 3);
+    obj.drawStack(stack, 255);
+    stack->save(inputPath + ".tif");
+    delete stack;
+  }
+#endif
+
   std::cout << "Done." << std::endl;
 }

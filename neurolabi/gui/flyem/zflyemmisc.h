@@ -144,7 +144,8 @@ void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
 
 std::vector<uint64_t> LoadBodyList(const std::string &input);
 
-ZObject3dScan* LoadRoiFromJson(const std::string &filePath);
+ZObject3dScan* LoadRoiFromJson(
+    const std::string &filePath, ZObject3dScan *result = nullptr);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
