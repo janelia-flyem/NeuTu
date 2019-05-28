@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 #  endif
 #endif
       } else {
-#if !defined(_DEBUG_)
+#if !defined(_DEBUG_)  && !defined(_NEU3_)
         mainWin->startProofread();
 #endif
       }
