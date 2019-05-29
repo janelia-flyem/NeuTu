@@ -25,6 +25,8 @@ public:
   inline int getLabel()const{return  m_label;}
   void setLabel(int label){m_label = label;}
   string getID()const{return m_id;}
+  void setColor(const QColor& color){m_color = color;}
+  QColor getColor()const{return m_color;}
 
 public:
   virtual void consume(const ZStack& stack) = 0;
@@ -88,6 +90,7 @@ protected:
   int m_label;//segmentation label
   string m_id;//universal id
   ZSegmentationNode* m_parent;
+  QColor m_color;
 };
 
 

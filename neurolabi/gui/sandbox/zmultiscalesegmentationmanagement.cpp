@@ -57,8 +57,8 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
   //remove existing masks
   m_frame->document()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION,true);
 
-  ZColorScheme scheme;
-  scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  //ZColorScheme scheme;
+  //scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
   int i = 1;
 
   queue<string> ids;
@@ -80,9 +80,9 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     string t = ids.front();
     ids.pop();
     ZSegmentationNodeWrapper* wrapper = new ZSegmentationNodeWrapper(m_seg_tree,t);
-    QColor color = scheme.getColor(i++);
-    color.setAlpha(50);
-    wrapper->setColor(color);
+    //QColor color = scheme.getColor(i++);
+    //color.setAlpha(50);
+    //wrapper->setColor(color);
     wrapper->setObjectId(t);
     wrapper->addCallBackOnSelection(onSelectMask);
     wrapper->addCallBackOnDeselection(onDeselectMask);

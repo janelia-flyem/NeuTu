@@ -1,5 +1,6 @@
 #include<sstream>
 #include "zsegmentationnode.h"
+#include "zcolorscheme.h"
 
 
 using std::stringstream;
@@ -8,6 +9,14 @@ using std::stringstream;
 ZSegmentationNode::ZSegmentationNode(int label, ZSegmentationNode* parent)
 :m_label(label), m_parent(parent){
   m_id = getNextID();
+  int id;
+  stringstream s;
+  s<<m_id;
+  s>>id;
+  static ZColorScheme scheme;
+  scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  m_color = scheme.getColor(id);
+  m_color.setAlpha(50);
 }
 
 

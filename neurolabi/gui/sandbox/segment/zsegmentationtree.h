@@ -66,6 +66,7 @@ public:
 
   void group(const string& id, map<int,vector<int>>& groups);
 
+  QColor getColor(const string& id)const;
 
 private:
   void notify(const string& id)const;
