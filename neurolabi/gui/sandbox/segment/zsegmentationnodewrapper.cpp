@@ -24,7 +24,8 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
     return;
   }
 
-  QPen pen(m_color);
+  QColor color = m_tree->getColor(m_id);
+  QPen pen(color);
 
   if (isSelected()) {
       QColor color(Qt::white);

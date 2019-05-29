@@ -130,6 +130,15 @@ shared_ptr<ZSegmentationEncoder> ZSegmentationTree::getEncoder(const std::string
 }
 
 
+QColor ZSegmentationTree::getColor(const std::string &id) const{
+  ZSegmentationNode* node = m_root->find(id);
+  if(node){
+    return node->getColor();
+  }
+  return QColor();
+}
+
+
 double ZSegmentationTree::memUsage()const{
   return m_root->memUsage();
 }
