@@ -4,7 +4,7 @@
 
 #include<vector>
 #include"zstack.hxx"
-#include"geometry/zintcuboid.h"
+#include"zintcuboidobj.h"
 #include"zobject3dscan.h"
 
 
@@ -44,6 +44,8 @@ public:
 
 private:
   inline void _maybe_update_bound_box(int z, int y, int start, int end);
+  template<typename T>
+  void labelStack(ZStack& stack, T* array, int value)const;
 
 protected:
   ZIntPoint m_offset;

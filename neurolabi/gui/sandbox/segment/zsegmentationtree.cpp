@@ -1,7 +1,7 @@
 #include<sstream>
 #include"zsegmentationtree.h"
 #include"zstack.hxx"
-#include"geometry/zintcuboid.h"
+#include"zintcuboidobj.h"
 #include"zpainter.h"
 
 using std::stringstream;
@@ -153,7 +153,6 @@ void ZSegmentationTree::merge(const std::string &from_id, const std::string &to_
   }
   ZSegmentationNode* from_parent = from->getParent();
   to->merge(from);
-
   while(from_parent){//remove empty nodes
     ZSegmentationNode* tmp = from_parent;
     from_parent = from_parent->getParent();
@@ -167,6 +166,25 @@ void ZSegmentationTree::merge(const std::string &from_id, const std::string &to_
   }
 
   notify(to->getID());
+}
+
+
+int ZSegmentationTree::getLabel(const std::string &id) const{
+  ZSegmentationNode* node = m_root->find(id);
+  if(node){
+    return node->getLabel();
+  }
+  return -1;
+}
+
+
+void ZSegmentationTree::group(const std::string &id, map<int, vector<int> > &groups){
+  ZSegmentationNode* node = m_root->find(id);
+  if(!node){
+    return;
+  }
+  node->group(groups);
+  notify(id);
 }
 
 

@@ -220,10 +220,22 @@ void ZSegmentationEncoder::unify(const ZSegmentationEncoder &encoder){
 
 
 void ZSegmentationEncoder::labelStack(ZStack &stack, int value) const{
+  if(stack.kind() == GREY){
+    labelStack<uint8>(stack,stack.array8(),value);
+  } else if (stack.kind() == GREY16){
+    labelStack<uint16>(stack,stack.array16(),value);
+  } else if(stack.kind() == FLOAT32){
+    labelStack<float>(stack,stack.array32(),value);
+  }
+}
+
+
+template<typename T>
+void ZSegmentationEncoder::labelStack(ZStack &stack, T* array, int value) const{
   int width = stack.width();
   int height = stack.height();
   int area = width * height;
-  uint8_t* pdata = stack.array8();
+  T* pdata = array;
   int index = 0;
 
   int ofx = stack.getOffset().getX();
