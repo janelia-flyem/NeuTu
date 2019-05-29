@@ -106,6 +106,37 @@ ZSegmentationComposite::~ZSegmentationComposite(){
 }
 
 
+void ZSegmentationComposite::group(const map<int, vector<int> > &groups){
+  if(!groups.size()){
+    return;
+  }
+
+  for(auto it = groups.begin(); it != groups.end(); ++it){
+    const vector<int>& group = it->second;
+    int label = 1;
+    std::vector<int> vec_labels = getChildrenLabels();
+    std::set<int> set_labels(vec_labels.begin(),vec_labels.end());
+    for(;;++label){//find first not used label
+      if(set_labels.find(label) == set_labels.end()){
+        break;
+      }
+    }
+
+    shared_ptr<ZSegmentationComposite> p = shared_ptr<ZSegmentationComposite>(new ZSegmentationComposite(label,this));
+
+    for(auto child_label: group){
+      shared_ptr<ZSegmentationNode> child = getChildByLabel(child_label);
+      removeChildByLabel(child_label);
+      p->m_children.push_back(child);
+      child->setParent(p.get());
+    }
+    if(p->getChildrenLabels().size()){
+      m_children.push_back(p);
+    }
+  }
+}
+
+
 vector<ZSegmentationNode*> ZSegmentationComposite::getLeaves(){
   vector<ZSegmentationNode*> rv;
   for(auto child: m_children){
