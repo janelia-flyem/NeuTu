@@ -206,6 +206,23 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
   return mesh;
 }
 
+ZObject3dScan* FlyEmDataReader::ReadRoi(
+      const ZDvidReader &reader, const std::vector<std::string> &roiList,
+      ZObject3dScan *result)
+{
+  if (result) {
+    result->clear();
+  } else {
+    result = new ZObject3dScan;
+  }
+
+  for (const std::string roi : roiList) {
+    reader.readRoi(roi, result, true);
+  }
+
+  return result;
+}
+
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
