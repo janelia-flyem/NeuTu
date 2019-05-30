@@ -27,6 +27,7 @@ ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
   }
   vtkIdType npts;
   vtkIdType* pts;
+  polys->InitTraversal();
   for (int i = 0; i < polyData->GetNumberOfPolys(); ++i) {
     int h = polys->GetNextCell(npts, pts);
     if (h == 0) {

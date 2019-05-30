@@ -112,15 +112,15 @@ ZBodySplitCommand::parseSignalPath(
     }
 
     if (m_bodyId > 0) {
+      ZDvidTarget target;
+      target.setFromUrl(signalPath);
+
+      KINFO << signalPath;
 //      KINFO << QString("Start splitting %1").arg(m_bodyId);
       KLOG << ZLog::Info()
-           << ZLog::Object(getLabelTypeName(), "", std::to_string(m_bodyId))
+           << ZLog::Object(getLabelTypeName(), target.getSourceString(), std::to_string(m_bodyId))
            << ZLog::Action("start split");
 
-      ZDvidReader reader;
-      ZDvidTarget target;
-
-      target.setFromUrl(signalPath);
       if (!signalInfo.isEmpty()) {
         if (signalInfo.hasKey("address")) {
           target.setServer(ZJsonParser::stringValue(signalInfo["address"]));
@@ -132,6 +132,7 @@ ZBodySplitCommand::parseSignalPath(
         target.updateData(signalInfo);
       }
 
+      ZDvidReader reader;
       reader.open(target);
       if (reader.isReady()) {
         size_t blockCount = reader.readCoarseBodySize(m_bodyId, m_labelType);

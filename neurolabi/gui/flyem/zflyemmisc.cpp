@@ -1469,10 +1469,9 @@ ZIntPoint load_point_from_json_zyx(const ZJsonArray &v)
 }
 #endif
 
-ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
-{
-  ZObject3dScan *sobj = nullptr;
-
+ZObject3dScan* flyem::LoadRoiFromJson(
+    const std::string &filePath, ZObject3dScan *result)
+{  
   ZJsonObject obj;
   obj.load(filePath);
   if (ZJsonParser::stringValue(obj["type"]) == "points" && obj.hasKey("roi")
@@ -1480,11 +1479,15 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
     if (obj.hasKey("resolution")) {
       int res = ZJsonParser::integerValue(obj["resolution"]);
       if (res > 0) {
-        sobj = new ZObject3dScan;
-        sobj->setSource(filePath);
-        sobj->setDsIntv(res - 1);
+        if (result == nullptr) {
+          result = new ZObject3dScan;
+        } else {
+          result->clear();
+        }
+        result->setSource(filePath);
+        result->setDsIntv(res - 1);
         ZJsonArray roiJson(obj.value("roi"));
-        ZObject3dScan::Appender appender(sobj);
+        ZObject3dScan::Appender appender(result);
         for (size_t i = 0; i < roiJson.size(); ++i) {
           ZJsonArray v(roiJson.value(i));
           if (v.size() == 3) {
@@ -1499,7 +1502,7 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
     }
   }
 
-  return sobj;
+  return result;
 }
 
 /*

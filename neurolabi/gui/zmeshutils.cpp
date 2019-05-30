@@ -5,6 +5,7 @@
 #include <queue>
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkDecimatePro.h>
+#include <vtkOBJWriter.h>
 
 #include "misc/zvtkutil.h"
 #include "logging/zqslog.h"
@@ -2561,11 +2562,19 @@ ZMesh ZMeshUtils::Smooth(const ZMesh &mesh)
   vtkSmartPointer<vtkSmoothPolyDataFilter> smoothFilter =
           vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
   smoothFilter->SetInputData(meshToVtkPolyData(mesh));
-  smoothFilter->SetNumberOfIterations(3);
+  smoothFilter->SetNumberOfIterations(15);
   smoothFilter->SetRelaxationFactor(0.1);
   smoothFilter->FeatureEdgeSmoothingOff();
   smoothFilter->BoundarySmoothingOn();
   smoothFilter->Update();
+
+#ifdef _DEBUG_2
+  vtkSmartPointer<vtkOBJWriter> writer =
+      vtkSmartPointer<vtkOBJWriter>::New();
+  writer->SetInputData(smoothFilter->GetOutput());
+  writer->SetFileName("/Users/zhaot/Work/neutu/neurolabi/data/_test.obj");
+  writer->Update();
+#endif
 
   return vtkPolyDataToMesh(smoothFilter->GetOutput());
 }
@@ -2575,7 +2584,7 @@ ZMesh ZMeshUtils::Decimate(const ZMesh &mesh)
   vtkSmartPointer<vtkDecimatePro> decimate =
       vtkSmartPointer<vtkDecimatePro>::New();
   decimate->SetInputData(meshToVtkPolyData(mesh));
-  decimate->SetTargetReduction(.9);
+  decimate->SetTargetReduction(.8);
   decimate->PreserveTopologyOn();
   decimate->Update();
 
