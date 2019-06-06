@@ -12,11 +12,10 @@ using std::shared_ptr;
 using std::string;
 
 
-class ZSegmentationNodeWrapper: public ZStackObject
-{
+class ZSegmentationNodeWrapper: public ZStackObject{
 public:
   ZSegmentationNodeWrapper(shared_ptr<ZSegmentationTree> tree, const string& node_id)
-    :m_tree(tree),m_id(node_id){m_type= ZStackObject::EType::SEGMENTATION_ENCODER;}
+  :m_tree(tree),m_id(node_id){m_type= ZStackObject::EType::SEGMENTATION_ENCODER;}
 
   ~ZSegmentationNodeWrapper(){/*std::cout<<"Node wrapper deleted: "<<m_id<<std::endl;*/}
 

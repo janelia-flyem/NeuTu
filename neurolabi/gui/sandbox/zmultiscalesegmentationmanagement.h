@@ -49,6 +49,7 @@ private slots:
   void onExport();
   void onShowLeaves(int state);
   void onSuperVoxel();
+  void onCreateSuperVoxels();
 
 private:
   std::vector<ZStackObject*> getSeeds();
@@ -57,6 +58,9 @@ private:
   void updateTreeView(const std::string& active_id);
   void test();
   ZStack* makeSelectedStack();
+
+  shared_ptr<ZStack> _createSuperVoxel(const ZStack& stack, uint& start_label, int sx, int sy, int sz)const;
+  std::pair<bool, shared_ptr<ZStack>> _seedsFromLocalMaximum(const ZStack& stack, int sx, int sy, int sz)const;
 
 private:
   void init();
@@ -72,7 +76,7 @@ private:
   //QLineEdit* m_merge_to;
   QCheckBox* m_show_leaves;
   QCheckBox* m_show_contour;
-  QCheckBox* m_enable_super_voxel;
+  //QCheckBox* m_enable_super_voxel;
 
   static ZMultiscaleSegmentationWindow* s_window;
 };
