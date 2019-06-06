@@ -25,6 +25,8 @@ public:
   inline int getLabel()const{return  m_label;}
   void setLabel(int label){m_label = label;}
   string getID()const{return m_id;}
+  void setColor(const QColor& color){m_color = color;}
+  QColor getColor()const{return m_color;}
 
 public:
   virtual void consume(const ZStack& stack) = 0;
@@ -75,6 +77,8 @@ public:
 
   virtual vector<string> getAllIDs()const=0;
 
+  virtual void group(const map<int,vector<int>>& groups)=0;
+
   //virtual map<string,map<string,int>> getAdjMatrix()const=0;
 
   //virtual int getVoxelNumber()const=0;
@@ -86,6 +90,7 @@ protected:
   int m_label;//segmentation label
   string m_id;//universal id
   ZSegmentationNode* m_parent;
+  QColor m_color;
 };
 
 
@@ -135,6 +140,7 @@ public://should never be called
   virtual vector<int> getChildrenLabels()const{return vector<int>();}
   virtual void removeChildByLabel(int){}
   virtual void replace(ZSegmentationNode*, ZSegmentationNode*){}
+  virtual void group(const map<int,vector<int>>&){}
 
 private:
   shared_ptr<ZSegmentationEncoder> m_encoder;
@@ -181,6 +187,8 @@ public:
   virtual vector<string> getAllIDs()const;
 
   virtual shared_ptr<ZSegmentationEncoder> getEncoder();
+
+  virtual void group(const map<int,vector<int>>& groups);
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
   //virtual int getVoxelNumber()const;

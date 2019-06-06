@@ -1,45 +1,132 @@
 #include<iostream>
 #include<fstream>
 #include<ctime>
+#include<set>
 #include "zmstcontainer.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
 #include "flyem/zstackwatershedcontainer.h"
 
 
-shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackObject *> &_seeds){
-  size_t volume = 0;//stack.getVoxelNumber();
-  for(auto p = stack.array8(); p != stack.array8() + stack.getVoxelNumber(); ++p){
-    if(*p){
-      ++volume;
-    }
-  }
-  bool super_voxel = (volume >= 100*100*100);
-  std::cout<<"Super Voxel is Enable: "<<super_voxel<<std::endl;
-
+void ZMSTContainer::run(vector<int> &result_mapping, const ZStack &stack, const vector<ZStackObject *> &_seeds, shared_ptr<ZStack> label){
   shared_ptr<ZStack> label_stack = nullptr;
   int vertices = 0;
 
-  if(super_voxel){
-    uint start_label = 1;
-    int stride_x = 2;
-    int stride_y = 2;
-    int stride_z = 2;
-    if(stack.width() < 100){
-      stride_x = 1;
+  if(label){
+    label_stack = label;
+    const float * pStack = label->array32();
+    const float* const pEnd = pStack + label->getVoxelNumber();
+    std::set<int> labels;
+    for(;pStack != pEnd; ++pStack){
+      if(*pStack){
+        labels.insert(*pStack);
+      }
     }
-    if(stack.height() < 100){
-      stride_y = 1;
+    vertices = labels.size();
+  } else {
+    label_stack = shared_ptr<ZStack>(new ZStack(FLOAT32, stack.getBoundBox(), 1));
+    const uint8_t * pStack = stack.array8();
+    const uint8_t* const pEnd = pStack + stack.getVoxelNumber();
+    float* p = label_stack->array32();
+    int index = 1;
+    for(; pStack != pEnd; ++pStack, ++p){
+      if(*pStack){
+        *p = static_cast<float>(index++);
+      }
     }
-    if(stack.height() < 100){
-      stride_z = 1;
+    vertices = index - 1;
+  }
+
+  int width = label_stack->width();
+  int height = label_stack->height();
+  int depth = label_stack->depth();
+  int area =  width * height;
+
+  const float* p = label_stack->array32();
+  map<int,map<int,vector<double>>> cons;
+  int nb[3] = {1, width, area};
+  const uint8_t* pData = stack.array8();
+
+  for(int d = 0; d < depth - 1; ++d){
+    for(int h = 0; h < height - 1; ++h){
+      for(int w = 0; w < width - 1; ++w){
+        int offset = w + h * width + d * area;
+        int u = static_cast<int>(p[offset]);
+        if(u){
+          for(int i = 0; i < 3; ++i){
+            int v = static_cast<int>(p[offset + nb[i]]);
+            if(v && u != v){
+              double a = static_cast<double>(pData[offset]);
+              double b = static_cast<double>(pData[offset + nb[i]]);
+              cons[u][v].push_back(_weight(a,b));
+            }
+          }
+        }
+      }
     }
-    clock_t start = clock();
-    label_stack = _createSuperVoxel(stack, start_label, stride_x,stride_y,stride_z);
-    //label_stack->save("/home/deli/mask.tif");
-    clock_t end = clock();
-    std::cout<<"SuperVoxel Running Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
-    vertices = start_label - 1;
+  }
+
+  vector<ZEdge> edges;
+  for(auto it = cons.begin(); it != cons.end(); ++it){
+    int u = it->first;
+    for(auto ip = it->second.begin(); ip != it->second.end(); ++ip){
+      int v = ip->first;
+      const vector<double>& weights = ip->second;
+      double weight = std::accumulate(weights.begin(),weights.end(),0.0)/(weights.size() + 1e-6);
+      edges.push_back(ZEdge(u,v,weight));
+    }
+  }
+
+  std::map<int,int> seeds;
+  p = label_stack->array32();
+
+  int ofx = stack.getOffset().getX();
+  int ofy = stack.getOffset().getY();
+  int ofz = stack.getOffset().getZ();
+
+  for (ZStackObject* obj: _seeds){
+    ZStroke2d* seed = dynamic_cast<ZStroke2d*>(obj);
+    if(seed){
+      int label = seed->getLabel();
+      const vector<int>& voxels = seed->toObject3d()->voxelArray();
+      for(auto it = voxels.begin(); it !=  voxels.end();){
+        int x = *it++ - ofx;
+        int y = *it++ - ofy;
+        int z = *it++ - ofz;
+        int index = static_cast<int>(p[x + y * width + z * area]);
+        if(index){
+          seeds[index] = label;
+        }
+      }
+    }
+  }
+
+  result_mapping.clear();
+
+  clock_t start = clock();
+  ZWatershedMST().run(result_mapping,vertices,edges,seeds);
+  clock_t end = clock();
+  //std::cout<<"Stack Size:"<<volume/1024.0/1024.0<<std::endl;
+  std::cout<<"Graph Vertices: "<<vertices<<std::endl;
+  std::cout<<"MST Running Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
+}
+
+
+shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackObject *> &_seeds, shared_ptr<ZStack> label){
+  shared_ptr<ZStack> label_stack = nullptr;
+  int vertices = 0;
+
+  if(label){
+    label_stack = label;
+    const float * pStack = label->array32();
+    const float* const pEnd = pStack + label->getVoxelNumber();
+    std::set<int> labels;
+    for(;pStack != pEnd; ++pStack){
+      if(*pStack){
+        labels.insert(*pStack);
+      }
+    }
+    vertices = labels.size();
   } else {
     label_stack = shared_ptr<ZStack>(new ZStack(FLOAT32, stack.getBoundBox(), 1));
     const uint8_t * pStack = stack.array8();
@@ -123,7 +210,7 @@ shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackOb
   clock_t start = clock();
   ZWatershedMST().run(segmentation,vertices,edges,seeds);
   clock_t end = clock();
-  std::cout<<"Stack Size:"<<volume/1024.0/1024.0<<std::endl;
+  //std::cout<<"Stack Size:"<<volume/1024.0/1024.0<<std::endl;
   std::cout<<"Graph Vertices: "<<vertices<<std::endl;
   std::cout<<"MST Running Time: "<<(end-start)*1000/CLOCKS_PER_SEC<<std::endl;
 
@@ -143,115 +230,6 @@ shared_ptr<ZStack> ZMSTContainer::run(const ZStack& stack, const vector<ZStackOb
   }
 
   return rv;
-}
-
-
-shared_ptr<ZStack> ZMSTContainer::_createSuperVoxel(const ZStack &stack, uint& start_label,int sx, int sy, int sz) const {
-  shared_ptr<ZStack> rv = shared_ptr<ZStack>(new ZStack(FLOAT32, stack.getBoundBox(), 1));
-  std::pair<bool,shared_ptr<ZStack>> status_seeds = _seedsFromLocalMaximum(stack,sx,sy,sz);
-
-  if(status_seeds.first){
-     ZStackWatershedContainer container(const_cast<ZStack*>(&stack));
-     container.setDsMethod("Min(ignore zero)");
-     container.addSeed(*(status_seeds.second));
-     container.run();
-
-     ZStackPtr presult = container.getResultStack();
-     uint8_t* src = presult->array8();
-     float* dst = rv->array32();
-     std::set<int> labels;
-     for(uint i = 0; i < presult->getVoxelNumber(); ++i){
-      if(src[i]){
-        dst[i] = src[i] + start_label - 1;
-        labels.insert(src[i]);
-      }
-     }
-     start_label += labels.size();
-  } else {
-    ZIntCuboid box = stack.getBoundBox();
-    ZIntCuboid box_a = box;
-    ZIntCuboid box_b = box;
-    int width = box.getWidth();
-    int height = box.getHeight();
-    int depth = box.getDepth();
-    if(height >= width && height >= depth){
-      box_a.setLastY(box.getFirstCorner().getY() + height/2);
-      box_b.setFirstY(box.getFirstCorner().getY() + height/2 + 1);
-    } else if(width >= height && width >= depth){
-      box_a.setLastX(box.getFirstCorner().getX() + width/2);
-      box_b.setFirstX(box.getFirstCorner().getX() + width/2 + 1);
-    } else {
-      box_a.setLastZ(box.getFirstCorner().getZ() + depth/2);
-      box_b.setFirstZ(box.getFirstCorner().getZ() + depth /2 + 1);
-    }
-    shared_ptr<ZStack> stack_a = shared_ptr<ZStack>(stack.makeCrop(box_a));
-    shared_ptr<ZStack> stack_b = shared_ptr<ZStack>(stack.makeCrop(box_b));
-
-    shared_ptr<ZStack> rv_a = _createSuperVoxel(*stack_a,start_label,sx,sy,sz);
-    shared_ptr<ZStack> rv_b = _createSuperVoxel(*stack_b,start_label,sx,sy,sz);
-
-    int x0 = rv_a->getOffset().getX();
-    int y0 = rv_a->getOffset().getY();
-    int z0 = rv_a->getOffset().getZ();
-    rv->setBlockValue(x0,y0,z0,rv_a.get());
-    int x1 = rv_b->getOffset().getX();
-    int y1 = rv_b->getOffset().getY();
-    int z1 = rv_b->getOffset().getZ();
-    rv->setBlockValue(x1,y1,z1,rv_b.get());
-  }
-  return rv;
-}
-
-std::pair<bool, shared_ptr<ZStack>> ZMSTContainer::_seedsFromLocalMaximum(const ZStack &stack,int sx, int sy, int sz) const{
-  shared_ptr<ZStack> rv = shared_ptr<ZStack>(stack.clone());
-  rv->setZero();
-
-  int width = stack.width();
-  int height = stack.height();
-  int depth  = stack.depth();
-  int area = width * height;
-
-  const uint8_t* p = stack.array8();
-  uint8_t* q = rv->array8();
-  uint k = 1;
-
-  int stride_x = sx;
-  int stride_y = sy;
-  int stride_z = sz;
-
-  for(int d = 1; d < depth - 1; d += stride_z){
-    for(int h = 1; h < height - 1; h += stride_y){
-      size_t index = 1 + h * width + d * area;
-      for(int w = 1; w < width - 1; w += stride_x, index += stride_x){
-        bool ok = true;
-        uint8 v = p[index];
-        if(v){
-          for(int k = -1; k <= 1; ++k){
-            for(int j = -1; j <= 1; ++j){
-              for(int i = -1; i <= 1; ++i){
-                if( i==0 && j==0 && k==0){
-                  continue;
-                }
-                if(p[index + k*area + j*width +i] >= v){
-                  ok = false;
-                  break;
-                }
-              }
-            }
-          }
-          if(ok){
-            if( k > 255){
-              return std::make_pair(false,nullptr);
-            }
-            q[index] = k++;
-            //w += 1;
-            //index += 1;
-          }
-        }
-      }
-    }
-  }
-  return std::make_pair(true,rv);
 }
 
 

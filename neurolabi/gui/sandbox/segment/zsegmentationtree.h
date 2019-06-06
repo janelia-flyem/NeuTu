@@ -3,11 +3,15 @@
 
 
 #include<memory>
+#include<vector>
+#include<map>
 #include"zsegmentationencoder.h"
 #include"zsegmentationnode.h"
 
 
 using std::shared_ptr;
+using std::vector;
+using std::map;
 
 
 class ZSegmentationTreeObserver;
@@ -57,6 +61,12 @@ public:
   bool contains(const string& id, int x, int y, int z)const;
 
   bool hasID(const string& id)const;
+
+  int getLabel(const string& id) const;
+
+  void group(const string& id, map<int,vector<int>>& groups);
+
+  QColor getColor(const string& id)const;
 
 private:
   void notify(const string& id)const;
