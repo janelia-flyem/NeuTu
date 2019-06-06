@@ -3,6 +3,7 @@
 #include <QTextDocument>
 #include <QPixmap>
 #include <QPainter>
+#include <QLayout>
 
 QString neutu::GetKeyString(int key, const Qt::KeyboardModifiers &modifier)
 {
@@ -124,6 +125,22 @@ void neutu::DrawText(QPainter &painter, const QPoint &pos, const QStringList &te
       painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       painter.drawPixmap(0, 0, pixmap);
       painter.restore();
+    }
+  }
+}
+
+void neutu::HideLayout(QLayout *layout, bool removing)
+{
+  if (layout) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QWidget *widget = layout->itemAt(i)->widget();
+      if (widget != NULL) {
+        widget->hide();
+      }
+    }
+
+    if (removing) {
+      layout->removeItem(layout);
     }
   }
 }

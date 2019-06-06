@@ -1,5 +1,8 @@
 #include "zflyemconfig.h"
+
 #include <iostream>
+#include <cstdlib>
+
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -27,6 +30,8 @@ const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
 const char* ZFlyEmConfig::NEUTU_SERVER_KEY = "neutu_server";
 const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
 const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
+const char* ZFlyEmConfig::UI_KEY = "ui";
+const char* ZFlyEmConfig::STYLE_KEY = "style";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -136,10 +141,13 @@ void ZFlyEmConfig::loadConfig()
         setDefaultNeuTuServer(ZJsonParser::stringValue(obj[NEUTU_SERVER_KEY]));
       }
 
-      if (obj.hasKey(NEUROGLANCER_KEY)) {
-        m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+      if (const char* setting = std::getenv("NEUROGLANCER_SERVER")) {
+        m_neuroglancerServer = setting;
+      } else {
+        if (obj.hasKey(NEUROGLANCER_KEY)) {
+          m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+        }
       }
-
 
       if (obj.hasKey(DVID_ROOT_KEY)) {
         ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
@@ -182,6 +190,13 @@ void ZFlyEmConfig::loadConfig()
 
           target.print();
 #endif
+        }
+      }
+
+      if (obj.hasKey(UI_KEY)) {
+        ZJsonObject uiObj(obj.value(UI_KEY));
+        if (uiObj.hasKey(STYLE_KEY)) {
+          m_uiStyleSheet = ZJsonParser::stringValue(uiObj[STYLE_KEY]);
         }
       }
     }

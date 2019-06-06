@@ -493,6 +493,11 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+bool ZFlyEmBody3dDoc::isAdmin() const
+{
+  return getDataDocument()->isAdmin();
+}
+
 void ZFlyEmBody3dDoc::initArbGraySlice()
 {
   ZDvidGraySlice *slice = new ZDvidGraySlice();
@@ -2575,30 +2580,34 @@ void ZFlyEmBody3dDoc::updateMeshFunc(
   } else {
     if (meshes.size() == 1) {
       ZMesh *mesh = meshes[0];
-      TStackObjectList objList = getObjectGroup().findSameClass(
-            mesh->getType(),
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
+      if (config.getAddBuffer()) {
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
+      } else {
+        TStackObjectList objList = getObjectGroup().findSameClass(
+              mesh->getType(),
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
 
-      if (!objList.isEmpty()) {
-        ZStackObject *obj = objList.front();
-        if (obj) {
-          mesh->setColor(obj->getColor());
+        if (!objList.isEmpty()) {
+          ZStackObject *obj = objList.front();
+          if (obj) {
+            mesh->setColor(obj->getColor());
+          }
+          mesh->pushObjectColor();
         }
-        mesh->pushObjectColor();
-      }
 
-      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-           ++iter) {
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
-      }
+        for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+             ++iter) {
+          getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
+        }
 
-      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
-      int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-            mesh->getSource());
-      config.setDsLevel(resLevel);
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
+        int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+              mesh->getSource());
+        config.setDsLevel(resLevel);
 
-      if (objList.isEmpty()) {
-        numMeshes = 1;
+        if (objList.isEmpty()) {
+          numMeshes = 1;
+        }
       }
     }
   }
@@ -4346,24 +4355,32 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
 
     uint64_t bodyId = getSelectedSingleNormalBodyId();
     if (bodyId > 0 && getDataDocument() != NULL) {
-      dlg->setBodyId(bodyId);
-      const ZDvidReader &reader = getMainDvidReader();
-      if (reader.isReady()) {
-        ZFlyEmBodyAnnotation annotation =
-            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+      if (getDataDocument()->checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
+        dlg->setBodyId(bodyId);
+        const ZDvidReader &reader = getMainDvidReader();
+        if (reader.isReady()) {
+          ZFlyEmBodyAnnotation annotation =
+              FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
 
-        if (!annotation.isEmpty()) {
-          dlg->loadBodyAnnotation(annotation);
-        }
+          if (!annotation.isEmpty()) {
+            dlg->loadBodyAnnotation(annotation);
+          }
 
-        if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+          if (dlg->exec() && dlg->getBodyId() == bodyId) {
+            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+          }
+          getDataDocument()->checkInBodyWithMessage(
+                bodyId, neutu::EBodySplitMode::NONE);
+        } else {
+          emit messageGenerated(
+                getDataDocument()->getAnnotationFailureMessage(bodyId));
         }
-        getDataDocument()->checkInBodyWithMessage(
-              bodyId, neutu::EBodySplitMode::NONE);
       } else {
         emit messageGenerated(
-              getDataDocument()->getAnnotationFailureMessage(bodyId));
+              ZWidgetMessage(
+                getDataDocument()->getBodyLockFailMessage(bodyId),
+                neutu::EMessageType::INFORMATION,
+                ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA));
       }
     }
   }

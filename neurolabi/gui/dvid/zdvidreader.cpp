@@ -4434,6 +4434,10 @@ std::string ZDvidReader::GetMasterNodeFromBuffer(
 
   ZJsonArray branchJson;
   branchJson.decodeString(bufferReader.getBuffer().data());
+#ifdef _DEBUG_
+  branchJson.print();
+#endif
+
   if (branchJson.size() > 0) {
     master = ZJsonParser::stringValue(branchJson.at(0));
   }
@@ -5463,6 +5467,9 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
     std::string url = GetMasterUrl(dvidUrl);
+    if (ZString(target.getUuid()).startsWith("@@")) {
+      url = dvidUrl.getOldMasterUrl();
+    }
     reader.read(url.c_str());
     master = GetMasterNodeFromBuffer(reader);
   }
@@ -5483,6 +5490,9 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(target, rootNode);
     std::string url = GetMasterUrl(dvidUrl);
+    if (ZString(target.getUuid()).startsWith("@@")) {
+      url = dvidUrl.getOldMasterUrl();
+    }
     reader.read(url.c_str());
     masterList = GetMasterListFromBuffer(reader);
   }

@@ -28,6 +28,7 @@ public:
 
 signals:
   void clicked();
+  void shiftClicked();
 
 
 protected:
@@ -39,6 +40,7 @@ protected:
 
   // default implement is emit the signal
   virtual void labelClicked();
+  virtual void labelShiftClicked();
 
   QMutex *m_syncMutex = nullptr;
 };
@@ -73,9 +75,11 @@ protected:
 
   virtual bool getTip(const QPoint& p, QRect* r, QString* s) override;
 
-  virtual void labelClicked() override;
+  void labelClicked() override;
+  void labelShiftClicked() override;
   void initColorDlg();
 
+  void detachColorDialog();
 
 protected slots:
   void setColor(const QColor &color);

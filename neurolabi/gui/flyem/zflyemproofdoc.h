@@ -72,12 +72,17 @@ public:
 
   bool isDvidMutable() const;
 
+  bool isAdmin() const;
+
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
   ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSliceList(bool sv);
+  QList<ZDvidLabelSlice*> getFrontDvidLabelSliceList() const;
+  QList<ZDvidLabelSlice*> getDvidBodySliceList() const;
 
   bool isSupervoxelMode() const;
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
@@ -201,7 +206,7 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
-  void syncBodySelection(ZDvidLabelSlice *labelSlice);
+//  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
 //  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
@@ -257,7 +262,10 @@ public:
   void startTimer();
 
   QList<QString> getBodyStatusList() const;
+
+  //Body statuses that can only be changed by admin users
   QList<QString> getAdminBodyStatusList() const;
+
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
 
@@ -601,6 +609,8 @@ public slots:
   bool checkInBodyWithMessage(
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  QString getBodyLockFailMessage(uint64_t bodyId);
+
 
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
@@ -671,6 +681,8 @@ private:
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
 
+  void updateUserStatus();
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
       ZFlyEmBodyColorOption::EColorOption type);
   template<typename T>
@@ -740,6 +752,8 @@ protected:
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
   bool m_supervoxelMode = false;
+
+  bool m_isAdmin = false;
 
   //Data settings
   int m_graySliceCenterCutWidth = 256;

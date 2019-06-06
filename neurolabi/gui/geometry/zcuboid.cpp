@@ -343,6 +343,14 @@ void ZCuboid::joinZ(double z)
   }
 }
 
+void ZCuboid::join(const ZCuboid &box)
+{
+  if (box.isValid()) {
+    include(box.firstCorner());
+    include(box.lastCorner());
+  }
+}
+
 double ZCuboid::computeDistance(
     double minX1, double maxX1, double minX2, double maxX2)
 {

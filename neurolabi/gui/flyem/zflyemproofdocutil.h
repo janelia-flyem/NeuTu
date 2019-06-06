@@ -16,8 +16,7 @@ public:
   ZFlyEmProofDocUtil();
 
 public:
-  static ZDvidLabelSlice* GetActiveLabelSlice(
-      ZFlyEmProofDoc *doc, neutu::EAxis axis);
+  static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc, neutu::EAxis axis);
   static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc);
   static std::set<uint64_t> GetSelectedBodyId(
       ZFlyEmProofDoc *doc,

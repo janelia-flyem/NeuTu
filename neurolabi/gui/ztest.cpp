@@ -323,6 +323,7 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "dvid/zdvidneurontracer.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -28184,6 +28185,24 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
+  std::string name = "lACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+
+  writer->uploadRoiMesh(
+        GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.obj",
+        "lACA");
+#endif
+
+#if 0
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
   ZJsonArray array =
@@ -29835,7 +29854,7 @@ void ZTest::test(MainWindow *host)
 //  ptoc();
 #endif
 
-#if 1
+#if 0
   NeutubeConfig::getInstance().print();
 
   ZFlyEmConfig::getInstance().print();
@@ -29844,6 +29863,18 @@ void ZTest::test(MainWindow *host)
   neutuse::Task task = neutuse::TaskFactory::MakeDvidSkeletonizeTask(
         reader->getDvidTarget(), 1, true);
   std:cout << task.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZDvidNeuronTracer tracer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setGrayScaleName("grayscale");
+  tracer.setDvidTarget(target);
+  tracer.trace(505, 1075, 61, 3.0);
+
+  ZSwcTree *tree = tracer.getResult();
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

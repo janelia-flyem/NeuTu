@@ -108,6 +108,7 @@ public:
 
   void removeTag(const std::string &tag);
   bool hasTag(const std::string &tag) const;
+  std::set<std::string> getTagSet() const;
 
   void clear();
 

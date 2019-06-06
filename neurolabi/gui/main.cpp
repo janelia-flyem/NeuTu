@@ -86,19 +86,19 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
-//#ifdef _NEU3_
-//    QPixmap pixmap(":images/neu3.png");
-//#else
+#if defined(__APPLE__)
     QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));
-//#endif
-
     QSplashScreen splash(pixmap);
     splash.show();
-
     splash.showMessage("Preparing user environment ...");
+#endif
+
     NeutubeConfig::UpdateUserInfo();
 
+#if defined(__APPLE__)
     splash.showMessage("Initializing logging ...");
+#endif
+
     ZGlobal::InitKafkaTracer();
 
     uint64_t timestamp = neutu::GetTimestamp();
@@ -123,7 +123,10 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+#if defined(__APPLE__)
     splash.showMessage("Preparing work directories ...");
+#endif
+
     MainWindow::createWorkDir();
     NeutubeConfig::UpdateAutoSaveDir();
 
@@ -136,7 +139,10 @@ int main(int argc, char *argv[])
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
 
+#if defined(__APPLE__)
     splash.close();
+#endif
+
     if (!mainWin->loadDvidTarget()) {
       mainWin->close();
 //      delete mainWin;
@@ -161,7 +167,9 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
+#  if defined(__APPLE__)
     splash.finish(mainWin);
+#  endif
 #endif
 
     int result = 1;
