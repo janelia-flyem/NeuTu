@@ -107,6 +107,7 @@ public:
   ZSparseStack *getSparseStack();
 
   ZSparseStack *getSparseStack(const ZIntCuboid &box);
+  const ZSparseStack *getSparseStack(const ZIntCuboid &box) const;
 
 //  void downloadBodyMask(ZDvidReader &reader);
 

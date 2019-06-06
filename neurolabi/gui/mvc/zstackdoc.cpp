@@ -716,6 +716,11 @@ bool ZStackDoc::hasVisibleSparseStack() const
   return hasSparseStack();
 }
 
+ZSparseStack *ZStackDoc::getSparseStack(const ZIntCuboid&)
+{
+  return m_sparseStack;
+}
+
 const ZSparseStack* ZStackDoc::getSparseStack() const
 {
   return m_sparseStack;

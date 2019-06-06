@@ -137,7 +137,7 @@ void ZFFNSkeletonModule::trace(const ZIntPoint& seed_pos)
 
   static ZStack zero_stack(GREY,m_resolution,m_resolution,m_resolution,1);
   std::vector<int> indices;
-  for(int i=0;i<m_segs.size();++i){
+  for(size_t i=0;i<m_segs.size();++i){
     std::vector<ZIntPoint> common;
     std::set<ZIntPoint>* seg_mask=m_segs[i];
     if(seg_mask!=NULL)
@@ -162,7 +162,7 @@ void ZFFNSkeletonModule::trace(const ZIntPoint& seed_pos)
   //pruner.prune(skeleton);
 
   if(indices.size()!=0){
-    for(int i=0;i<indices.size();++i){
+    for(size_t i=0;i<indices.size();++i){
       int index=indices[i];
       connectSwcTree(skeleton,m_skeleton[index]);
       //Swc_Tree_Connect_Branch(skeleton->data(),m_skeleton[index]->begin());
@@ -179,7 +179,7 @@ void ZFFNSkeletonModule::trace(const ZIntPoint& seed_pos)
   //clear seed
   m_doc->removeObject(ZStackObjectRole::ROLE_SEED,true);
   int cnt=0;
-  for(int i=0;i<m_skeleton.size();++i){
+  for(size_t i=0;i<m_skeleton.size();++i){
     if(m_skeleton[i]!=NULL)
       cnt++;
   }

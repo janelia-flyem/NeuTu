@@ -18,12 +18,19 @@ ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
   vtkDataArray* pointsNormals = polyData->GetPointData()->GetNormals();
 
   std::vector<glm::dvec3> vertices(points->GetNumberOfPoints());
-  std::vector<glm::dvec3> normals(pointsNormals->GetNumberOfTuples());
-  CHECK(vertices.size() == normals.size());
+
+  std::vector<glm::dvec3> normals;
+  if (pointsNormals) {
+    normals.resize(pointsNormals->GetNumberOfTuples());
+    CHECK(vertices.size() == normals.size());
+  }
+
   std::vector<gl::GLuint> indices;
   for (vtkIdType id = 0; id < points->GetNumberOfPoints(); ++id) {
     points->GetPoint(id, &vertices[id][0]);
-    pointsNormals->GetTuple(id, &normals[id][0]);
+    if (pointsNormals) {
+      pointsNormals->GetTuple(id, &normals[id][0]);
+    }
   }
   vtkIdType npts;
   vtkIdType* pts;
@@ -43,7 +50,9 @@ ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
   ZMesh msh;
   msh.setVertices(vertices);
   msh.setIndices(indices);
-  msh.setNormals(normals);
+  if (pointsNormals) {
+    msh.setNormals(normals);
+  }
   return msh;
 }
 

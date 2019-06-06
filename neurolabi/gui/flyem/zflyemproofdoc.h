@@ -101,6 +101,8 @@ public:
   const ZSparseStack* getSparseStack() const override;
   ZSparseStack* getSparseStack() override;
 
+  ZSparseStack* getSparseStack(const ZIntCuboid& box) override;
+
   ZStackBlockGrid* getStackGrid();
 
   //bool hasSparseStack() const;

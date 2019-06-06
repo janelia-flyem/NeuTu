@@ -2512,6 +2512,14 @@ ZSparseStack* ZFlyEmProofDoc::getSparseStack()
   return NULL;
 }
 
+ZSparseStack *ZFlyEmProofDoc::getSparseStack(const ZIntCuboid& box)
+{
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack(box);
+  }
+
+  return NULL;
+}
 
 bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 {

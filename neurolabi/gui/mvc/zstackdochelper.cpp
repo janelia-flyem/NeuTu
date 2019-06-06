@@ -41,7 +41,8 @@ ZStack* ZStackDocHelper::makeBoundedSparseStack(const ZStackDoc *doc)
 //  if (doc->getCuboidRoi())
 
   //Todo: remove const_cast
-  ZSparseStack *spStack = const_cast<ZStackDoc*>(doc)->getSparseStack();
+  ZSparseStack *spStack =
+      const_cast<ZStackDoc*>(doc)->getSparseStack(doc->getCuboidRoi());
 
   ZStack *stack = NULL;
 

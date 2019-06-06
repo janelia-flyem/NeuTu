@@ -325,6 +325,7 @@
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 #include "dvid/zdvidneurontracer.h"
+#include "flyem/zflyemmeshfactory.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -29961,6 +29962,37 @@ void ZTest::test(MainWindow *host)
 
   ZMesh mesh3 = ZMeshUtils::Smooth(mesh2);
   mesh3.save(GET_TEST_DATA_DIR + "/_test3.obj");
+#endif
+
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "FB07",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB07.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB07.labels.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "FB08v",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB08v.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB08v.labels.tif.obj");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO2");
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc");
+#endif
+
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+
+  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "(L)NO2");
+
 #endif
 
 

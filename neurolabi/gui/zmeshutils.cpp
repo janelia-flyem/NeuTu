@@ -6,6 +6,8 @@
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkDecimatePro.h>
 #include <vtkOBJWriter.h>
+//#include <vtkQuadricDecimation.h>
+//#include <vtkQuadricClustering.h>
 
 #include "misc/zvtkutil.h"
 #include "logging/zqslog.h"
@@ -2579,12 +2581,16 @@ ZMesh ZMeshUtils::Smooth(const ZMesh &mesh)
   return vtkPolyDataToMesh(smoothFilter->GetOutput());
 }
 
-ZMesh ZMeshUtils::Decimate(const ZMesh &mesh)
+ZMesh ZMeshUtils::Decimate(const ZMesh &mesh, double reduction)
 {
   vtkSmartPointer<vtkDecimatePro> decimate =
       vtkSmartPointer<vtkDecimatePro>::New();
   decimate->SetInputData(meshToVtkPolyData(mesh));
-  decimate->SetTargetReduction(.8);
+//  decimate->SetNumberOfXDivisions(32);
+//  decimate->SetNumberOfYDivisions(32);
+//  decimate->SetNumberOfZDivisions(32);
+  decimate->SetTargetReduction(reduction);
+//  decimate->VolumePreservationOn();
   decimate->PreserveTopologyOn();
   decimate->Update();
 

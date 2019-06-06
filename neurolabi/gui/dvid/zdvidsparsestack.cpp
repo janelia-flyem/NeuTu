@@ -888,6 +888,11 @@ ZSparseStack* ZDvidSparseStack::getSparseStack(const ZIntCuboid &box)
   return &m_sparseStack;
 }
 
+const ZSparseStack* ZDvidSparseStack::getSparseStack(const ZIntCuboid &box) const
+{
+  return const_cast<ZDvidSparseStack&>(*this).getSparseStack(box);
+}
+
 bool ZDvidSparseStack::hit(double x, double y, double z)
 {
   ZObject3dScan *objectMask = getObjectMask();
