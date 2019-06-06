@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -lt 1 ]
+then
+  echo './neutu_qt_prepare_post <conda_env_dir>'
+  exit
+fi
+
+CONDA_ENV_DIR=$1
+
+cd ..
+./update_library --force-update CONDA_ENV="$CONDA_ENV_DIR"
+
+red=`tput setaf 1`
+green=`tput setaf 2`
+yellow=`tput setaf 3`
+reset=`tput sgr0`
+
+echo ""
+echo "===Instructions for configuring Debug version in QtCreator==="
+
+echo ""
+echo "1. Kit setup"
+echo "  * Add qt version: ${CONDA_ENV_DIR}${reset}/bin/qmake"
+echo "  * Add Build & Run kit:"
+if [ `uname` = 'Darwin' ]
+then
+  echo "      Compiler: Clang (x86 64bit)"
+fi
+echo "      Qt version: the one added in the last step"
+echo ""
+echo "2. Build settings"
+echo "  * Change the kit to the one just added."
+echo "  * qmake build configuration: ${green}Debug${reset}"
+echo "  * Additional arguments for qmake:" 
+echo "    ${green}CONFIG+=flyem CONFIG+=force_link CONDA_ENV=${CONDA_ENV_DIR}${reset}"
+echo ""
+echo "  ${red}Note${reset}: The 'force_link' config option forces executing the link step in every build even when the executable is up to date. It is necessary to make sure pre-compile and post-link steps to be run properly. Without the option, you need to specify addtional make steps manually in the project settings, including '${yellow}make neurolabi${reset}' before the default make step and '${yellow}make app_config${reset}' after the default make step".
+ 
+
+
+ 
