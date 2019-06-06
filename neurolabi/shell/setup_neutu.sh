@@ -76,7 +76,7 @@ fi
 cd $scriptDir
 condarc=$condaDir/.condarc
 echo 'channels:' > $condarc
-echo '  - flyem-forge' >> $condarc
+echo '  - flyem-forge/label/ff201905' >> $condarc
 echo '  - conda-forge/label/cf201901' >> $condarc
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
