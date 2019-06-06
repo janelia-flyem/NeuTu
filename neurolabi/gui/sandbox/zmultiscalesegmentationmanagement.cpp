@@ -59,7 +59,7 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
 
   //ZColorScheme scheme;
   //scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
-  int i = 1;
+//  int i = 1;
 
   queue<string> ids;
   if(m_seg_tree->isLeaf(id)){
