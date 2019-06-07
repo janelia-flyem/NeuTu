@@ -8,6 +8,14 @@ then
   exit
 fi
 
+if [ `uname` == 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
+cd $scriptDir
+
 CONDA_DIR=$1
 ENV_NAME=$2
 ./setup_neutu_env $CONDA_DIR $ENV_NAME
