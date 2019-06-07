@@ -18,7 +18,7 @@ then
 fi
 
 source $CONDA_DIR/bin/activate root
-conda create -n $ENV_NAME python=3.6 -y -c flyem-forge/label/upgrade201904 -c conda-forge -c defaults
+conda create -n $ENV_NAME python=3.6 -y -c flyem-forge -c conda-forge -c defaults
 
 # Create a special file to tell the conda solver that upgrading/downgrading Qt and Python is forbidden.
 # https://conda.io/docs/user-guide/tasks/manage-pkgs.html?highlight=pinned#preventing-packages-from-updating-pinning
@@ -29,9 +29,9 @@ EOF
 
 source $CONDA_DIR/bin/activate $ENV_NAME
 if [ `uname` == 'Linux' ]; then
-  conda install --file neutu_conda_requirements_linux.txt -y -c flyem-forge/label/upgrade201904 -c conda-forge -c defaults
+  conda install --file neutu_conda_requirements_linux.txt -y -c flyem-forge -c conda-forge -c defaults
 else
-  conda install --file neutu_conda_requirements_mac.txt -y -c flyem-forge/label/upgrade201904 -c conda-forge -c defaults
+  conda install --file neutu_conda_requirements_mac.txt -y -c flyem-forge -c conda-forge -c defaults
 fi
 ./fixqtdebug Qt5 ${ENV_DIR}/lib
 
