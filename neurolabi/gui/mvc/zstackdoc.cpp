@@ -716,6 +716,11 @@ bool ZStackDoc::hasVisibleSparseStack() const
   return hasSparseStack();
 }
 
+ZSparseStack *ZStackDoc::getSparseStack(const ZIntCuboid&)
+{
+  return m_sparseStack;
+}
+
 const ZSparseStack* ZStackDoc::getSparseStack() const
 {
   return m_sparseStack;
@@ -5307,6 +5312,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
   case ZFileType::EFileType::V3D_APO:
   case ZFileType::EFileType::V3D_MARKER:
   case ZFileType::EFileType::RAVELER_BOOKMARK:
+  case ZFileType::EFileType::PUNCTA:
     if (!importPuncta(filePathStr.c_str())) {
       succ = false;
     }
@@ -5388,8 +5394,10 @@ ZStackObject* ZStackDoc::hitTest(
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->hit(stackPos, widgetPos, axis)) {
-      return obj;
+    if (obj->isHittable()) {
+      if (obj->hit(stackPos, widgetPos, axis)) {
+        return obj;
+      }
     }
   }
 

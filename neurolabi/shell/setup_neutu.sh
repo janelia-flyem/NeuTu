@@ -77,7 +77,7 @@ cd $scriptDir
 condarc=$condaDir/.condarc
 echo 'channels:' > $condarc
 echo '  - flyem-forge' >> $condarc
-echo '  - conda-forge/label/cf201901' >> $condarc
+echo '  - conda-forge' >> $condarc
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
 
@@ -115,6 +115,13 @@ fi
 run_script=$bindir/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
+echo ''
+echo 'export QT_BEARER_POLL_TIMEOUT=999999999' >> $run_script
+if curl -X HEAD -I http://config.int.janelia.org/config/workday | grep '200 OK'; then
+  echo 'export NEUPRINT=https://emdata1.int.janelia.org:11000' >> $run_script
+  echo 'NEUTU_USER_INFO_ENTRY=http://config.int.janelia.org/config/workday' >> $run_script
+fi
 #echo "source $condaDir/bin/activate $envName" >> $run_script
 echo $neutu_bin_dir'/neutu $*' >> $run_script
 chmod a+x $run_script
+echo "Congratuations! Now you can launch NeuTu by running '$run_script'"

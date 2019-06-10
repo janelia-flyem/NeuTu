@@ -1,7 +1,7 @@
 #ifndef ZDVIDLABELSLICEHIGHRESTASK_H
 #define ZDVIDLABELSLICEHIGHRESTASK_H
 
-#include "zdviddataslicetask.h"
+#include "dvid/zdviddataslicetask.h"
 #include "zstackviewparam.h"
 
 class ZStackDoc;

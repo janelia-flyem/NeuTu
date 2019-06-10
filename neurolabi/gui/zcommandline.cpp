@@ -1201,7 +1201,8 @@ int ZCommandLine::skeletonizeDvid()
 
         int zoom = 0;
         if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
-          const int blockCount = bodyReader->readBodyBlockCount(bodyId);
+          const int blockCount = bodyReader->readBodyBlockCount(
+                bodyId, neutu::EBodyLabelType::BODY);
           constexpr int maxBlockCount = 3000;
           int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));

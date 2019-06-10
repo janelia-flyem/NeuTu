@@ -63,14 +63,18 @@ void ZFlyEmArbDoc::prepareDvidData()
     }
 
     if (getDvidTarget().hasSegmentation()) {
+      addDvidLabelSlice(neutu::EAxis::ARB, false);
+#if 0
       ZDvidLabelSlice *slice = new ZDvidLabelSlice;
       slice->setSliceAxis(neutu::EAxis::ARB);
       slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
       slice->setSource(
-            ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutu::EAxis::ARB));
+            ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
+              neutu::EAxis::ARB, false));
       slice->setDvidTarget(getDvidTarget());
 //      prepareGraySlice(slice);
       addObject(slice, true);
+#endif
     }
   }
 }

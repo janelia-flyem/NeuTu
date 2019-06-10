@@ -486,7 +486,7 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 
   QList<QString> statusList;
   for (const ZFlyEmBodyStatus &status : bodyStatusList) {
-    if (status.isAccessible()) {
+    if (status.isAccessible(m_isAdmin)) {
       statusList.append(status.getName().c_str());
     }
   }
@@ -643,10 +643,15 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       if (bodyId != targetId) {
         if (m_annotationCache.contains(bodyId)) {
           ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
-          annotation.mergeAnnotation(
-                subann, [=](const std::string &status) {
-            return m_bodyStatusProtocol.getStatusRank(status);
-          });
+          if (m_bodyStatusProtocol.isEmpty()) {
+            annotation.mergeAnnotation(
+                  subann, &ZFlyEmBodyAnnotation::GetStatusRank);
+          } else {
+            annotation.mergeAnnotation(
+                  subann, [=](const std::string &status) {
+              return m_bodyStatusProtocol.getStatusRank(status);
+            });
+          }
         }
       }
     }
@@ -737,20 +742,22 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
 
 void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySet)
 {
-  QList<ZDvidLabelSlice*> labelList =
-      getDocument()->getDvidLabelSliceList();
-  foreach (ZDvidLabelSlice *slice, labelList) {
-    slice->setSelection(newBodySet, neutu::ELabelSource::ORIGINAL);
-//            slice->mapSelection();
-  }
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc) {
+    QList<ZDvidLabelSlice*> labelList = doc->getDvidBodySliceList();
+    foreach (ZDvidLabelSlice *slice, labelList) {
+      slice->setSelection(newBodySet, neutu::ELabelSource::ORIGINAL);
+      //            slice->mapSelection();
+    }
 
-  m_selectedOriginal.clear();
-  for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
-       iter != newBodySet.end(); ++iter) {
-    m_selectedOriginal.insert(*iter);
-  }
+    m_selectedOriginal.clear();
+    for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
+         iter != newBodySet.end(); ++iter) {
+      m_selectedOriginal.insert(*iter);
+    }
 
-  ZOUT(LTRACE(), 5) << "Label slice updated";
+    ZOUT(LTRACE(), 5) << "Label slice updated";
+  }
 }
 
 void ZFlyEmBodyMergeProject::refreshSegmentationView()
@@ -1839,6 +1846,11 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
   }
 
   return label;
+}
+
+void ZFlyEmBodyMergeProject::setAdmin(bool admin)
+{
+  m_isAdmin = admin;
 }
 
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)

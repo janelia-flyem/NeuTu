@@ -20,7 +20,11 @@ const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
  * 0: add and change (isAccessible)
  * >=9: change only
  * [7, 9): add and change by admin only (isAdminAccessible)
- * [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
+ * *OBSOLETE [4, 6]: add by admin only, change by every one (annotateByAdminOnly())
+ *
+ * admin level:
+ * 0: not adimin specific
+ * 1: add by admin only
  */
 ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
   m_status(status)
@@ -115,29 +119,16 @@ bool ZFlyEmBodyStatus::annotateByAdminOnly() const
 }
 */
 
-bool ZFlyEmBodyStatus::isAccessible() const
+bool ZFlyEmBodyStatus::isAccessible(bool admin) const
 {
   if (isAdminAccessible() || (m_adminLevel == 1)) {
-    return neutu::IsAdminUser();
+    return admin;
   } else if (m_protection >= 9) {
     return false;
   }
 
   return true;
 }
-
-#if 0
-bool ZFlyEmBodyStatus::IsAccessible(const std::string &status)
-{
-#if _QT_GUI_USED_
-  if (ZString(status).lower() == "roughly traced") {
-    return neutu::IsAdminUser();
-  }
-#endif
-
-  return true;
-}
-#endif
 
 std::string ZFlyEmBodyStatus::GetExpertStatus()
 {

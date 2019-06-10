@@ -41,7 +41,8 @@ ZStack* ZStackDocHelper::makeBoundedSparseStack(const ZStackDoc *doc)
 //  if (doc->getCuboidRoi())
 
   //Todo: remove const_cast
-  ZSparseStack *spStack = const_cast<ZStackDoc*>(doc)->getSparseStack();
+  ZSparseStack *spStack =
+      const_cast<ZStackDoc*>(doc)->getSparseStack(doc->getCuboidRoi());
 
   ZStack *stack = NULL;
 
@@ -182,7 +183,7 @@ bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
 
 void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
 {
-  QList<ZDvidLabelSlice*> sliceList = doc->getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = doc->getFrontDvidLabelSliceList();
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
@@ -196,6 +197,7 @@ void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
   doc->notifyBodySelectionChanged();
 }
 
+#if 0
 QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
@@ -207,7 +209,7 @@ QColor ZStackDocHelper::GetBodyColor(
 
   return color;
 }
-
+#endif
 
 bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 {

@@ -10,6 +10,7 @@
 #include "geometry/zintcuboid.h"
 #include "zstackptr.h"
 #include "zstackarray.h"
+#include "zsegmentationscan.h"
 
 class ZStack;
 class ZObject3dScan;
@@ -158,12 +159,17 @@ public:
 
   void addResult(const ZStackArray &result);
 
+  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
   /*!
    * \brief Get the first result stack.
    *
    * Obsolete function. To be removed.
    */
   ZStackPtr getResultStack() const {
+    if (m_result.empty()) {
+      return ZStackPtr();
+    }
+
     return m_result.front();
   }
 
@@ -222,6 +228,7 @@ private:
   void clearResult();
   void clearSeed();
   Stack* getSource();
+  Stack* getRawSourceStack(ZStack* stack);
   ZStack* getSourceStack();
   ZIntPoint estimateDsIntv(const ZIntCuboid &box) const;
   void expandSeedArray(ZObject3d *obj);

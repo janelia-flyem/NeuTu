@@ -206,9 +206,13 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
-    neutu::EAxis axis)
+    neutu::EAxis axis, bool sv)
 {
   std::string source = "#.DVIDLabelSlice";
+  if (sv) {
+    source += ".supervoxel";
+  }
+
   switch (axis) {
   case neutu::EAxis::X:
     source += ".X";

@@ -74,6 +74,8 @@
 #include "flyemdatareader.h"
 #include "flyemdatawriter.h"
 #include "misc/miscutility.h"
+#include "zdvidlabelslicehighrestask.h"
+#include "zdvidlabelslicehighrestaskfactory.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -85,6 +87,7 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
+  m_futureMap.waitForFinished();
   endWorkThread();
   KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
 //  LDEBUG() << "ZFlyEmProofDoc destroyed";
@@ -325,17 +328,19 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
        iter != selected.end(); ++iter) {
     uint64_t bodyId = *iter;
     msg += QString("%1 ").arg(bodyId);
-    const QSet<uint64_t> &originalBodySet =
-        getBodyMerger()->getOriginalLabelSet(bodyId);
-    if (originalBodySet.size() > 1) {
-      msg += "<font color=#888888>(";
-      for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
-           iter != originalBodySet.end(); ++iter) {
-        if (selected.count(*iter) == 0) {
-          msg += QString("_%1").arg(*iter);
+    if (!isSupervoxelMode()) {
+      const QSet<uint64_t> &originalBodySet =
+          getBodyMerger()->getOriginalLabelSet(bodyId);
+      if (originalBodySet.size() > 1) {
+        msg += "<font color=#888888>(";
+        for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
+             iter != originalBodySet.end(); ++iter) {
+          if (selected.count(*iter) == 0) {
+            msg += QString("_%1").arg(*iter);
+          }
         }
+        msg += ")</font> ";
       }
-      msg += ")</font> ";
     }
   }
 
@@ -363,7 +368,7 @@ void ZFlyEmProofDoc::setSelectedBody(
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
 
   if (currentSelected != selected) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
     if (!sliceList.isEmpty()) {
       for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
            iter != sliceList.end(); ++iter) {
@@ -440,7 +445,7 @@ void ZFlyEmProofDoc::deselectMappedBody(
 
 bool ZFlyEmProofDoc::hasBodySelected() const
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
 
   for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
@@ -448,7 +453,6 @@ bool ZFlyEmProofDoc::hasBodySelected() const
     if (!labelSlice->getSelectedOriginal().empty()) {
       return true;
     }
-//    finalSet.insert(selected.begin(), selected.end());
   }
 
   return false;
@@ -457,7 +461,7 @@ bool ZFlyEmProofDoc::hasBodySelected() const
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
     neutu::ELabelSource labelType) const
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
 
   std::set<uint64_t> finalSet;
   for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
@@ -564,7 +568,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
   }
 
   if (okToContinue) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
 
     ZFlyEmBodyMerger::TLabelSet labelSet;
     for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
@@ -738,7 +742,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   }
 
   if (okToContinue) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
 
     ZFlyEmBodyMerger::TLabelSet labelSet;
     for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
@@ -795,7 +799,7 @@ void ZFlyEmProofDoc::annotateBody(
   if (writer.good()) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
 
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
          iter != sliceList.end(); ++iter) {
@@ -868,6 +872,11 @@ bool ZFlyEmProofDoc::isDvidMutable() const
   return (getDvidTarget().readOnly() == false);
 }
 
+bool ZFlyEmProofDoc::isAdmin() const
+{
+  return m_isAdmin;
+}
+
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
   if (!m_bookmarkReader.isReady()) {
@@ -878,12 +887,37 @@ ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
   return m_bookmarkReader;
 }
 
+void ZFlyEmProofDoc::updateUserStatus()
+{
+  m_isAdmin = false;
+  if (m_dvidReader.isReady()) {
+    ZJsonObject obj =
+        m_dvidReader.readJsonObjectFromKey("neutu_config", "user_status");
+    if (obj.hasKey("admin")) {
+      ZJsonArray userListJson(obj.value("admin"));
+//      NeutubeConfig::getInstance().getCur
+      for (size_t i = 0; i < userListJson.size(); ++i) {
+        std::string user = ZJsonParser::stringValue(userListJson.at(i));
+        if (user == neutu::GetCurrentUserName()) {
+          m_isAdmin = true;
+          break;
+        }
+      }
+    } else {
+      m_isAdmin = neutu::IsAdminUser();
+    }
+  }
+  m_mergeProject->setAdmin(m_isAdmin);
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
   if (m_dvidReader.open(target)) {
+    updateUserStatus();
+
     std::ostringstream flowInfo;
     flowInfo << "Update data statuses";
     m_dvidReader.updateDataStatus();
@@ -1172,7 +1206,12 @@ void ZFlyEmProofDoc::prepareDvidData()
     initGrayscaleSlice();
   }
 
-  addDvidLabelSlice(neutu::EAxis::Z);
+  addDvidLabelSlice(neutu::EAxis::Z, false);
+  if (getDvidTarget().hasSupervoxel()) {
+    ZDvidLabelSlice* slice = addDvidLabelSlice(neutu::EAxis::Z, true);
+    slice->setVisible(false);
+    slice->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+  }
 
   if (getDvidInfo().isValid()) {
     setResolution(getDvidInfo().getVoxelResolution());
@@ -1218,21 +1257,43 @@ void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
   prepareLabelSlice();
 }
 
-void ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis)
+bool ZFlyEmProofDoc::test()
+{
+  ZDvidLabelSlice *slice = addDvidLabelSlice(neutu::EAxis::Z, true);
+  std::cout << slice->isSupervoxel() << std::endl;
+
+  return true;
+}
+
+ZDvidLabelSlice* ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
   labelSlice->setSliceAxis(axis);
   labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-  labelSlice->setDvidTarget(getDvidTarget());
+  if (sv) {
+    ZDvidTarget target = getDvidTarget();
+    target.setSupervoxelView(sv);
+    labelSlice->setDvidTarget(target);
+  } else {
+    labelSlice->setDvidTarget(getDvidTarget());
+  }
 
   KINFO << QString("Max label zoom: %1").arg(getDvidTarget().getMaxLabelZoom());
 
   labelSlice->setSource(
-        ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
-  labelSlice->setBodyMerger(&m_bodyMerger);
+        ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis, sv));
+  if (!sv) {
+    labelSlice->setBodyMerger(&m_bodyMerger);
+  }
   labelSlice->setCenterCut(
         m_labelSliceCenterCutWidth, m_labelSliceCenterCutHeight);
+  labelSlice->setTaskFactory(
+        std::unique_ptr<ZDvidDataSliceTaskFactory>(
+          new ZDvidLabelSliceHighresTaskFactory));
+
   addObject(labelSlice, 0, true);
+
+  return labelSlice;
 }
 
 
@@ -1278,7 +1339,7 @@ void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
 //    doc->processObjectModified(obj);
   }
 }
-
+#if 0
 template<>
 void UpdateDvidTargetForObject<ZDvidTileEnsemble>(ZFlyEmProofDoc *doc)
 {
@@ -1290,6 +1351,7 @@ void UpdateDvidTargetForObject<ZDvidTileEnsemble>(ZFlyEmProofDoc *doc)
 //    doc->processObjectModified(obj);
   }
 }
+#endif
 
 }
 
@@ -1304,21 +1366,26 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   }
   */
 //  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::OBJECT_MODIFIED_CACHE);
-  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
+//  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
   UpdateDvidTargetForObject<ZDvidSparseStack>(this);
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
   UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
-  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+//  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
   UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
 //  processObjectModified();
 }
 
+ZDvidLabelSlice* ZFlyEmProofDoc::getActiveLabelSlice(neutu::EAxis axis) const
+{
+  return getDvidLabelSlice(axis, isSupervoxelMode());
+}
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutu::EAxis axis) const
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutu::EAxis axis, bool sv) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
-  std::string source = ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis);
+  std::string source =
+      ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis, sv);
   for (QList<ZDvidLabelSlice*>::iterator iter = teList.begin();
        iter != teList.end(); ++iter) {
     ZDvidLabelSlice *te = *iter;
@@ -1328,6 +1395,75 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutu::EAxis axis) const
   }
 
   return NULL;
+}
+
+/*
+QList<ZDvidLabelSlice*> ZFlyEmProofDoc::getDvidLabelSliceList(bool sv)
+{
+  QList<ZDvidLabelSlice*> result;
+
+  QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
+  for (ZDvidLabelSlice *labelSlice : teList) {
+    if (labelSlice->isSupervoxel() == sv) {
+      result.append(labelSLice);
+    }
+  }
+
+  return result;
+}
+*/
+
+QList<ZDvidLabelSlice*> ZFlyEmProofDoc::getFrontDvidLabelSliceList() const
+{
+  QList<ZDvidLabelSlice*> result;
+
+  QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
+  for (ZDvidLabelSlice *labelSlice : teList) {
+    if (labelSlice->isSupervoxel() == isSupervoxelMode()) {
+      result.append(labelSlice);
+    }
+  }
+
+  return result;
+}
+
+QList<ZDvidLabelSlice*> ZFlyEmProofDoc::getDvidBodySliceList() const
+{
+  QList<ZDvidLabelSlice*> result;
+
+  QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
+  for (ZDvidLabelSlice *labelSlice : teList) {
+    if (labelSlice->isSupervoxel() == false) {
+      result.append(labelSlice);
+    }
+  }
+
+  return result;
+}
+
+bool ZFlyEmProofDoc::isSupervoxelMode() const
+{
+  return m_supervoxelMode;
+}
+
+void ZFlyEmProofDoc::setSupervoxelMode(bool on, const ZStackViewParam &viewParam)
+{
+  m_supervoxelMode = on;
+  QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
+  for (ZDvidLabelSlice *slice : teList) {
+#ifdef _DEBUG_
+    std::cout << "Slice: " << slice->getSource() << " "
+              << slice->isSupervoxel() << std::endl;
+#endif
+    if (slice->isSupervoxel() == on) {
+      slice->setVisible(true);
+      slice->update(viewParam);
+      bufferObjectModified(slice);
+    } else {
+      slice->setVisible(false);
+    }
+  }
+  processObjectModified();
 }
 
 ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
@@ -2019,6 +2155,24 @@ bool ZFlyEmProofDoc::checkBodyWithMessage(
   return succ;
 }
 
+QString ZFlyEmProofDoc::getBodyLockFailMessage(uint64_t bodyId)
+{
+  QString msg;
+
+  if (getSupervisor() != NULL) {
+    std::string owner = getSupervisor()->getOwner(bodyId);
+    if (owner.empty()) {
+      msg = QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+          arg(bodyId).arg(getDvidTarget().getSupervisor().c_str());
+    } else {
+      msg = QString("The body %1 cannot be annotated because it has been locked by %2").
+              arg(bodyId).arg(owner.c_str());
+    }
+  }
+
+  return msg;
+}
+
 bool ZFlyEmProofDoc::checkInBodyWithMessage(
     uint64_t bodyId, neutu::EBodySplitMode mode)
 {
@@ -2052,7 +2206,8 @@ bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode)
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
     neutu::ELabelSource type) const
 {
-  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(neutu::EAxis::Z);
+  const ZDvidLabelSlice *labelSlice =
+      getDvidLabelSlice(neutu::EAxis::Z, false);
   if (labelSlice != NULL) {
     return labelSlice->getSelected(type);
   }
@@ -2301,7 +2456,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice(neutu::EAxis::Z)->getLabelColor(
+    slice->setColor(getDvidLabelSlice(neutu::EAxis::Z, false)->getLabelColor(
                       slice->getLabel(), neutu::ELabelSource::ORIGINAL));
     processObjectModified(slice);
     //slice->updateSelection();
@@ -2357,6 +2512,14 @@ ZSparseStack* ZFlyEmProofDoc::getSparseStack()
   return NULL;
 }
 
+ZSparseStack *ZFlyEmProofDoc::getSparseStack(const ZIntCuboid& box)
+{
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack(box);
+  }
+
+  return NULL;
+}
 
 bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 {
@@ -2414,18 +2577,29 @@ void ZFlyEmProofDoc::backupMergeOperation()
 
 void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool usingCenterCut)
+    bool usingCenterCut, bool sv)
 {
-  if (!m_workWriter.good()) {
-    m_workWriter.open(getDvidTarget());
+  const ZDvidReader *reader = nullptr;
+  if (sv) {
+    if (!m_supervoxelWorkReader.good()) {
+      ZDvidTarget target = getDvidTarget();
+      target.setSupervoxelView(true);
+      m_supervoxelWorkReader.open(target);
+    }
+    reader = &m_supervoxelWorkReader;
+  } else {
+    if (!m_workWriter.good()) {
+      m_workWriter.open(getDvidTarget());
+    }
+    reader = &m_workWriter.getDvidReader();
   }
 
   ZArray *array = NULL;
 
-  if (m_workWriter.good()) {
+  if (reader->good()) {
     if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
       ZArbSliceViewParam svp = viewParam.getSliceViewParam();
-      array = m_workWriter.getDvidReader().readLabels64Lowtis(
+      array = reader->readLabels64Lowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
             svp.getWidth(), svp.getHeight(),
             zoom, centerCutX, centerCutY, usingCenterCut);
@@ -2439,7 +2613,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 //      }
 
       if (!box.isEmpty()) {
-        array = m_workWriter.getDvidReader().readLabels64Lowtis(
+        array = reader->readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);
@@ -2524,7 +2698,8 @@ void ZFlyEmProofDoc::updateLabelSlice(
     int centerCutX, int centerCutY, bool usingCenterCut)
 {
   if (array != NULL) {
-    ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis());
+    ZDvidLabelSlice *slice =
+        getDvidLabelSlice(viewParam.getSliceAxis(), m_supervoxelMode);
     if (slice != NULL) {
       if (slice->consume(
             array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
@@ -2745,7 +2920,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
 void ZFlyEmProofDoc::updateDvidLabelObject(neutu::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
-  ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
+  ZDvidLabelSlice *labelSlice = getActiveLabelSlice(axis);
   if (labelSlice != NULL) {
 //    labelSlice->clearCache();
     labelSlice->forceUpdate(false);
@@ -4247,7 +4422,7 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
@@ -4279,7 +4454,7 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
     bodyType = neutu::EBodyLabelType::SUPERVOXEL;
   }
   if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId), bodyType)) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
          iter != sliceList.end(); ++iter) {
@@ -4295,7 +4470,7 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 
 void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
@@ -4406,7 +4581,7 @@ bool ZFlyEmProofDoc::isActive(ZFlyEmBodyColorOption::EColorOption type)
 
 void ZFlyEmProofDoc::recordBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutu::EAxis::Z);
+  ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     slice->recordSelection();
   }
@@ -4414,12 +4589,13 @@ void ZFlyEmProofDoc::recordBodySelection()
 
 void ZFlyEmProofDoc::processBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutu::EAxis::Z);
+  ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
     slice->processSelection();
   }
 }
 
+/*
 void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
 {
   ZOUT(LTRACE(), 5) << "Sync dvid label selection";
@@ -4434,6 +4610,7 @@ void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
     }
   }
 }
+*/
 
 void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
 {

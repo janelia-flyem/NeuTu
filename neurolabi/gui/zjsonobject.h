@@ -93,6 +93,11 @@ public:
    */
   void setEntry(const char *key, const std::vector<std::string> &value);
 
+  /*!
+   * \brief Set the entry if the value is not empty
+   *
+   * It does nothing if \a value is empty.
+   */
   void setNonEmptyEntry(const char *key, const std::string &value);
 
   /*!
@@ -117,6 +122,13 @@ public:
    * \brief setEntry Set an entry of the object with a boolean
    */
   void setEntry(const char *key, bool v);
+
+  /*!
+   * \brief Set the entry if the value is true.
+   *
+   * It does nothing if \a v is false.
+   */
+  void setTrueEntry(const char *key, bool v);
 
   /*!
    * \brief setEntry Set an entry of the object with an integer

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e 
+
+if test $# -eq 0
+then
+  echo './neutu_qt_prepare_env <conda_dir> <env_name>'
+  exit
+fi
+
+if [ `uname` == 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
+cd $scriptDir
+
+CONDA_DIR=$1
+ENV_NAME=$2
+./setup_neutu_env $CONDA_DIR $ENV_NAME
+
+./neutu_qt_prepare_post "${CONDA_DIR}/envs/$ENV_NAME"
+

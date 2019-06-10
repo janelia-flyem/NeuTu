@@ -26,6 +26,7 @@ void ZFlyEmTodoAnnotationDialog::initActionBox()
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_IRRELEVANT);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_NO_SOMA);
+  ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_DIAGNOSTIC);
 
   connect(ui->actionComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(updateWidget()));

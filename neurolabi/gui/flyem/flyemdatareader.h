@@ -12,6 +12,7 @@ class FlyEmDataConfig;
 class ZFlyEmNeuronBodyInfo;
 class ZFlyEmBodyAnnotation;
 class ZMesh;
+class ZObject3dScan;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -29,6 +30,18 @@ public:
       const ZDvidReader &reader, uint64_t bodyId);
   static ZMesh* ReadRoiMesh(
       const ZDvidReader &reader, const std::string &roiName);
+
+  /*!
+   * \brief Read one or more ROIs into a single object
+   *
+   * All previous content of \a result  be cleared after the function all.
+   *
+   * \return A new object if \a result is NULL. If \a result is not NULL,
+   * it returns \a result that holds the result.
+   */
+  static ZObject3dScan* ReadRoi(
+      const ZDvidReader &reader, const std::vector<std::string> &roiList,
+      ZObject3dScan *result);
 
 private:
   static ZMesh* LoadRoi(

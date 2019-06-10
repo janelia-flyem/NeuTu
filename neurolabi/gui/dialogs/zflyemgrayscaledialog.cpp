@@ -68,6 +68,16 @@ ZIntCuboid ZFlyEmGrayscaleDialog::getBoundBox() const
   return box;
 }
 
+ZIntCuboid ZFlyEmGrayscaleDialog::getRange() const
+{
+  ZIntCuboid box;
+  if (!isFullRange()) {
+    box = getBoundBox();
+  }
+
+  return box;
+}
+
 int ZFlyEmGrayscaleDialog::getOffsetX() const
 {
   return ui->xSpinBox->value();

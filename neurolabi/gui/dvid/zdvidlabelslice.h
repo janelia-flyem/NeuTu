@@ -4,17 +4,17 @@
 #include <QCache>
 #include <QMutex>
 
+#include "common/zsharedpointer.h"
+#include "zuncopyable.h"
+#include "neutube.h"
 #include "zstackobject.h"
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
-//#include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
-#include "neutube.h"
 #include "zimage.h"
 #include "zselector.h"
-//#include "zdvidreader.h"
-#include "common/zsharedpointer.h"
+
 #include "flyem/zflyembodycolorscheme.h"
 #include "flyem/zflyembodymerger.h"
 
@@ -26,8 +26,9 @@ class ZStackViewParam;
 class ZArbSliceViewParam;
 class ZTask;
 class ZStackDoc;
+class ZDvidDataSliceTaskFactory;
 
-class ZDvidLabelSlice : public ZStackObject
+class ZDvidLabelSlice : public ZStackObject, ZUncopyable
 {
 public:
   ZDvidLabelSlice();
@@ -71,6 +72,7 @@ public:
   bool isSelectionFrozen() const { return m_selectionFrozen; }
   void freezeSelection(bool on) { m_selectionFrozen = on; }
 
+  bool isSupervoxel() const;
 
   void setSelection(
       const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
@@ -167,6 +169,7 @@ public:
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool usingCenterCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc);
+  void setTaskFactory(std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory);
 
   void allowBlinking(bool on);
 
@@ -242,6 +245,7 @@ private:
 
 
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
+  std::unique_ptr<ZDvidDataSliceTaskFactory> m_taskFactory;
 
   bool m_selectionFrozen;
 //  bool m_multiResUpdate = true;

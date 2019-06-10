@@ -37,6 +37,7 @@ private slots:
   void editRoiList();
   void updateWidgetForDefaultSetting();
   void setAdvanced();
+  void load();
 
 private:
   bool usingDefaultSetting() const;
@@ -47,6 +48,7 @@ private:
   std::string getSegmentationName() const;
   std::string getSynapseName() const;
   std::string getRoiName() const;
+  void setServer(const ZDvidTarget &dvidTarget, int index);
 
   int getPort() const;
   QString getAddress() const;

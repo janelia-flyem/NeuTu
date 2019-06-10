@@ -44,6 +44,8 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
   } else if (str.endsWith(".v3dpbd", ZString::CASE_INSENSITIVE) ||
              str.endsWith(".pbd", ZString::CASE_INSENSITIVE)) {
     return EFileType::V3D_PBD;
+  } else if (str.endsWith(".puncta", ZString::CASE_INSENSITIVE)) {
+    return EFileType::PUNCTA;
   } else if (str.endsWith(".txt", ZString::CASE_INSENSITIVE)) {
     FILE *fp = fopen(str.c_str(), "r");
     if (fp != NULL) {
@@ -134,6 +136,8 @@ std::string ZFileType::TypeName(EFileType type)
     return "HDF5";
   case EFileType::MESH:
     return "Mesh";
+  case EFileType::PUNCTA:
+    return "Puncta";
   default:
     return "Unknown";
   }
@@ -168,6 +172,7 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == EFileType::V3D_APO) ||
       (type == EFileType::V3D_MARKER) ||
       (type == EFileType::RAVELER_BOOKMARK) ||
+      (type == EFileType::PUNCTA) ||
       (type == EFileType::OBJECT_SCAN) ||
       (type == EFileType::OBJECT_SCAN_ARRAY) ||
       (type == EFileType::SPARSE_STACK) ||

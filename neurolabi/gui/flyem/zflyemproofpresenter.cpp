@@ -119,6 +119,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_NO_SOMA:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddNoSomaItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddDiagnosticItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -164,6 +167,10 @@ bool ZFlyEmProofPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST:
       connect(action, SIGNAL(triggered()), this, SLOT(showSupervoxelList()));
+      break;
+    case ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::toggleSupervoxelView);
       break;
     default:
       connected = false;
@@ -217,7 +224,7 @@ ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZFlyEmProofDocMenuFactory);
-    m_menuFactory->setAdminState(neutu::IsAdminUser());
+    m_menuFactory->setAdminState(getCompleteDocument()->isAdmin());
   }
 
   return m_menuFactory.get();
@@ -675,6 +682,11 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem(const ZIntPoint &pt)
   tryAddTodoItem(pt, true, neutu::EToDoAction::NO_SOMA);
 }
 
+void ZFlyEmProofPresenter::tryAddDiagnosticItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutu::EToDoAction::DIAGNOSTIC);
+}
+
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
@@ -738,6 +750,16 @@ void ZFlyEmProofPresenter::setTodoDelegate(
   m_todoDelegate = std::move(delegate);
 }
 
+ZPoint ZFlyEmProofPresenter::getLastMouseReleasePosition(
+    Qt::MouseButtons buttons) const
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        buttons, ZMouseEvent::EAction::RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  return pt;
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -784,6 +806,11 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem()
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
   tryAddNoSomaItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddDiagnosticItem()
+{
+  tryAddDiagnosticItem(getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
@@ -863,9 +890,6 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     }
 
     getCompleteDocument()->executeAddBookmarkCommand(bookmark);
-//    buddyDocument()->executeAddObjectCommand(bookmark);
-
-//    emit bookmarkAdded(bookmark);
   }
 }
 
@@ -883,6 +907,11 @@ void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
 {
   m_blinkingSegmenationAllowed = on;
   getCompleteDocument()->allowDvidLabelSliceBlinking(on);
+}
+
+void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
+{
+  getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
 }
 
 bool ZFlyEmProofPresenter::processCustomOperator(

@@ -49,6 +49,7 @@ bool ZStackDocReader::readFile(const QString &filePath)
   case ZFileType::EFileType::V3D_APO:
   case ZFileType::EFileType::V3D_MARKER:
   case ZFileType::EFileType::RAVELER_BOOKMARK:
+  case ZFileType::EFileType::PUNCTA:
     loadPuncta(filePath);
     break;
   default:

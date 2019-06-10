@@ -31,7 +31,7 @@ class ZMesh;
 class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
@@ -154,6 +154,7 @@ public:
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
+  bool isAdmin() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
@@ -319,7 +320,7 @@ public:
   void showAllMesh();
 
   uint64_t getSelectedSingleNormalBodyId() const;
-  void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
+  void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
 
   void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
@@ -545,7 +546,7 @@ private:
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
@@ -612,7 +613,7 @@ private:
 
   ZFlyEmBodySplitter *m_splitter;
 
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

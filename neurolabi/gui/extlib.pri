@@ -144,9 +144,11 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
+VTK_VER = 8.2
+
 #
 exists($${CONDA_ENV}) {
-  VTK_VER = 7.1
+#  VTK_VER = 7.1
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
@@ -162,7 +164,7 @@ LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} \
     -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} \
     -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} \
     -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} \
-    -lvtkFiltersGeneral-$${VTK_VER}
+    -lvtkFiltersGeneral-$${VTK_VER} -lvtkIOCore-$${VTK_VER} -lvtkIOGeometry-$${VTK_VER}
 
 win32 {
   LIBS += -lopengl32 -lglu32
@@ -180,3 +182,5 @@ CONFIG(static_gtest) { # gtest from ext folder
 
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
+
+HEADERS += ext/http/HTTPRequest.hpp

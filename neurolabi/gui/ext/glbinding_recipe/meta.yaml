@@ -8,10 +8,10 @@ package:
 source:
   url: https://github.com/cginternals/glbinding/archive/v{{ version }}.tar.gz
   fn:  glbinding-{{ version }}.tar.gz
-  sha256: 48f2e590a4a951005f79fec6c487217aa9b344a33ca1a8d2b7e618f04681ec60
+  sha256: 21e219a5613c7de3668bea3f9577dc925790aaacfa597d9eb523fee2e6fda85c
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:

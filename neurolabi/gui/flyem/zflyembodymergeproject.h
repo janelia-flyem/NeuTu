@@ -68,6 +68,7 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setAdmin(bool admin);
 
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
@@ -235,6 +236,7 @@ private:
   ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
+  bool m_isAdmin = false;
 
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies

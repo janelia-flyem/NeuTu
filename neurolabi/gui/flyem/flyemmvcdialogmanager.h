@@ -17,7 +17,7 @@ class FlyEmTodoDialog;
 class ZDvidTargetProviderDialog;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 
 /*!
@@ -46,7 +46,7 @@ public:
   FlyEmBodyIdDialog* getBodyIdDialog();
   ZFlyEmMergeUploadDialog* getMergeUploadDlg();
   ZFlyEmProofSettingDialog* getSettingDlg();
-  ZFlyEmBodyAnnotationDialog* getAnnotationDlg();
+  FlyEmBodyAnnotationDialog* getAnnotationDlg();
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
@@ -88,7 +88,7 @@ private:
   FlyEmBodyIdDialog *m_bodyIdDialog = nullptr;
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg = nullptr;
   ZFlyEmProofSettingDialog *m_settingDlg = nullptr;
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;

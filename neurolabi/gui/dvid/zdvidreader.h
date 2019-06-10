@@ -205,7 +205,7 @@ public:
    * \return The number of blocks of a body. It returns -1 if the count cannot
    *         be determined.
    */
-  int readBodyBlockCount(uint64_t bodyId) const;
+  int readBodyBlockCount(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZObject3dScan* readSupervoxel(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
@@ -480,6 +480,7 @@ public:
       ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
+  int readCoarseBodySize(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
   ZObject3dScan readRoi(const std::string &dataName) const;
   ZObject3dScan* readRoi(
@@ -567,6 +568,9 @@ public:
     return m_readingTime;
   }
 
+  std::string readBodyLabelName() const;
+  void syncBodyLabelName();
+
   bool good() const;
 
   std::string readMasterNode() const;
@@ -583,10 +587,7 @@ public:
 
   ZJsonObject readDataMap() const;
 
-  std::string readBodyLabelName() const;
-  void syncBodyLabelName();
 
-//  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
@@ -681,6 +682,9 @@ private:
   bool reportMissingData(const std::string dataName) const;
 
   static std::string GetMasterUrl(const ZDvidUrl &dvidUrl);
+
+  static bool ReadMasterListBuffer(
+      ZDvidBufferReader &reader, const ZDvidTarget &target);
 
   static ZIntCuboid GetStackBox(
       int x0, int y0, int z0, int width, int height, int zoom);

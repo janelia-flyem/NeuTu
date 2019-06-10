@@ -238,6 +238,33 @@ void FlyEmBodyInfoDialog::prepareWidget()
   ui->allNamedPushButton->hide(); //obsolete
 }
 
+namespace {
+
+std::string get_annotation_name(const ZJsonObject &bodyData)
+{
+  std::string name;
+  if (bodyData.hasKey("name")) {
+    name = ZJsonParser::stringValue(bodyData["name"]);
+  } else if (bodyData.hasKey("instance")) {
+    name = ZJsonParser::stringValue(bodyData["instance"]);
+  }
+
+  return name;
+}
+
+std::string get_annotation_type(const ZJsonObject &bodyData)
+{
+  std::string type;
+  if (bodyData.hasKey("type")) {
+    type = ZJsonParser::stringValue(bodyData["type"]);
+  } else if (bodyData.hasKey("class")) {
+    type = ZJsonParser::stringValue(bodyData["class"]);
+  }
+
+  return type;
+}
+
+}
 void FlyEmBodyInfoDialog::setBodyList(const ZJsonArray &bodies)
 {
   m_bodyNames.clear();
@@ -610,11 +637,12 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 }
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem(QString("name")));
-    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem(QString("# pre")));
-    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem(QString("# post")));
-    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem(QString("status")));
+    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
+    model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
+    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("instance"));
+    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
+    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem("# post"));
+    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem("status"));
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
@@ -624,7 +652,7 @@ void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
 
 void FlyEmBodyInfoDialog::setIOBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("name")));
+    model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("instance")));
     model->setHorizontalHeaderItem(IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
 }
 
@@ -874,7 +902,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
 
         // read all the body annotations at once
         dvidTimer.restart();
-        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(
+              bodyAnnotationName, keyList);
         dvidTime += dvidTimer.elapsed();
 
         #ifdef _DEBUG_
@@ -891,16 +920,19 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             QMutableListIterator<QString> keyIter(keyList);
             QMutableListIterator<ZJsonObject> annIter(bodyAnnotationList);
             while (keyIter.hasNext()) {
-                QString bodyIDstr = keyIter.next();
+                keyIter.next();
+//                QString bodyIDstr = keyIter.next();
+                keyIter.next();
                 ZJsonObject bodyData = annIter.next();
-                bool hasName = false;
-                if (bodyData.hasKey("name")) {
-                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
-                    if (!name.empty()) {
-                        hasName = true;
-                    }
-                }
-                if (!hasName) {
+                std::string name = get_annotation_name(bodyData);
+//                bool hasName = false;
+//                if (bodyData.hasKey("name")) {
+//                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
+//                    if (!name.empty()) {
+//                        hasName = true;
+//                    }
+//                }
+                if (name.empty()) {
                     // remove the key and data
                     keyIter.remove();
                     annIter.remove();
@@ -940,16 +972,20 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
                 // grab the previously retrieved data and modify it:
                 ZJsonObject bodyData = bodyAnnotationList[i];
 
-                // remove name if empty; store it otherwise
-                if (bodyData.hasKey("name")) {
-                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
-                    if (name.empty()) {
-                        bodyData.removeKey("name");
-                    } else {
-                        // keyList contains body ID strings
-                        m_bodyNames[bodyID] = QString(name.c_str());
-                    }
+                std::string name = get_annotation_name(bodyData);
+                if (!name.empty()) {
+                  m_bodyNames[bodyID] = QString(name.c_str());
                 }
+                // remove name if empty; store it otherwise
+//                if (bodyData.hasKey("name")) {
+//                    std::string name = ZJsonParser::stringValue(bodyData["name"]);
+//                    if (name.empty()) {
+//                        bodyData.removeKey("name");
+//                    } else {
+//                        // keyList contains body ID strings
+//                        m_bodyNames[bodyID] = QString(name.c_str());
+//                    }
+//                }
 
                 // remove status if empty; change status => body status
                 if (bodyData.hasKey("status")) {
@@ -1097,18 +1133,25 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                     bodyData = bodyAnnotations[bodyIDstring];
                 }
 
-                if (bodyData.hasKey("name")) {
-                    if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
-                        entry.setEntry("name", bodyData["name"]);
-                        // store name for later use
-                        m_bodyNames[bodyID] =
-                            QString(ZJsonParser::stringValue(bodyData["name"]).c_str());
-                    } else {
-                        m_namelessBodies.insert(bodyID);
-                    }
-                    namedBodies.append(entry);
+                std::string name = get_annotation_name(bodyData);
+//                if (bodyData.hasKey("name")) {
+//                  name = ZJsonParser::stringValue(bodyData["name"]);
+//                } else if (bodyData.hasKey("instance")) {
+//                  name = ZJsonParser::stringValue(bodyData["instance"]);
+//                }
+                if (!name.empty()) {
+                  // store name for later use
+                  m_bodyNames[bodyID] = QString(name.c_str());
+                  entry.setEntry("name", name);
+
+//                  namedBodies.append(entry);
                 } else {
-                    m_namelessBodies.insert(bodyID);
+                  m_namelessBodies.insert(bodyID);
+                }
+
+                std::string type = get_annotation_type(bodyData);
+                if (!type.empty()) {
+                  entry.setEntry("class", type);
                 }
 
                 if (bodyData.hasKey("status")) {
@@ -1328,8 +1371,19 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
-  if (bkmk.hasKey("name")) {
-    std::string name = ZJsonParser::stringValue(bkmk["name"]);
+  std::string type = get_annotation_type(bkmk);
+  if (!type.empty()) {
+    itemArray[BODY_TYPE_COLUMN] = new QStandardItem(QString::fromStdString(type));
+  }
+
+  std::string name = get_annotation_name(bkmk);
+//  if (bkmk.hasKey("name")) {
+//    name = ZJsonParser::stringValue(bkmk["name"]);
+//  } else if (bkmk.hasKey("instance")) {
+//    name = ZJsonParser::stringValue(bkmk["instance"]);
+//  }
+
+  if (!name.empty()) {
     itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString::fromStdString(name));
   }
 
@@ -1834,7 +1888,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     // get name, too, if it's there, then update label
     QStandardItem *item2 = m_bodyModel->item(index.row(), BODY_NAME_COLUMN);
     if (item2) {
-        updateBodyConnectionLabel(m_connectionsBody, item2->data(Qt::DisplayRole).toString());
+        updateBodyConnectionLabel(
+              m_connectionsBody, item2->data(Qt::DisplayRole).toString());
     } else {
         updateBodyConnectionLabel(m_connectionsBody, "");
     }
@@ -1995,6 +2050,13 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
         foreach (ZJsonObject bodyData, bodyAnnotationList) {
             uint64_t tempBodyID = ZJsonParser::integerValue(bodyData["body ID"]);
+            std::string name = get_annotation_name(bodyData);
+            if (name.empty()) {
+              m_namelessBodies.insert(tempBodyID);
+            } else {
+              m_bodyNames[tempBodyID] = QString(name.c_str());
+            }
+            /*
             if (bodyData.hasKey("name")) {
                 if (!ZJsonParser::stringValue(bodyData["name"]).empty()) {
                     m_bodyNames[tempBodyID] =
@@ -2005,6 +2067,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
             } else {
                 m_namelessBodies.insert(tempBodyID);
             }
+            */
         }
 
         // std::cout << "got previously unknown names: " << spottimer.restart() / 1000.0 << "s" << std::endl;

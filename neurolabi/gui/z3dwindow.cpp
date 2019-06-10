@@ -1577,6 +1577,8 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
     m_doc->setPunctumSelected(p, true);
   }
 
+  m_doc->notifyWindowMessageUpdated(QString::fromStdString(p->toString()));
+
   statusBar()->showMessage(p->toString().c_str());
 }
 
@@ -2222,6 +2224,9 @@ static void AddTodoMarker(
         break;
       case neutu::EToDoAction::NO_SOMA:
         window->emitAddNoSomaMarker(pt, bodyId);
+        break;
+      case neutu::EToDoAction::DIAGNOSTIC: //todo
+        LWARN() << "DIAGNOSTIC to be done";
         break;
       case neutu::EToDoAction::TO_DO_IRRELEVANT: //todo
         LWARN() << "TO_DO_IRRELEVANT to be done";
@@ -4690,7 +4695,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
 void Z3DWindow::help()
 {
-  m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
+  m_helpDlg->setSource((GET_CONFIG_DIR + "/doc/shortcut_3d.html").c_str());
   m_helpDlg->show();
   m_helpDlg->raise();
 }

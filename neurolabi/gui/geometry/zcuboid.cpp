@@ -28,6 +28,11 @@ ZCuboid::ZCuboid(double x1, double y1, double z1,
   set(x1, y1, z1, x2, y2, z2);
 }
 
+ZCuboid::ZCuboid(const ZPoint &firstCorner, const ZPoint &lastCorner)
+{
+  set(firstCorner, lastCorner);
+}
+
 ZCuboid::ZCuboid(const ZCuboid &cuboid) : m_firstCorner(cuboid.m_firstCorner),
   m_lastCorner(cuboid.m_lastCorner)
 {
@@ -335,6 +340,14 @@ void ZCuboid::joinZ(double z)
     m_firstCorner.setZ(z);
   } else if (m_lastCorner.z() < z) {
     m_lastCorner.setZ(z);
+  }
+}
+
+void ZCuboid::join(const ZCuboid &box)
+{
+  if (box.isValid()) {
+    include(box.firstCorner());
+    include(box.lastCorner());
   }
 }
 

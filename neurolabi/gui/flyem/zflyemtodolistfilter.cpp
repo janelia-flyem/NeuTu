@@ -11,6 +11,7 @@
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "neutubeconfig.h"
+#include "z3dgraphfactory.h"
 
 ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(
     Z3DGlobalParameters& globalParas, QObject* parent)
@@ -151,9 +152,82 @@ void ZFlyEmTodoListFilter::updateGraph()
   invalidateResult();
 }
 
+namespace {
+Z3DGraph* make_todo_graph(const ZFlyEmToDoItem *item)
+{
+  Z3DGraph *graph = NULL;;
+
+  if (item) {
+    ZPoint center = item->getPosition().toPoint();
+    double d = item->getRadius() + item->getRadius();
+
+    graph = new Z3DGraph;
+
+
+    Z3DGraphNode node;
+    node.setColor(item->getDisplayColor());
+    node.setRadius(0);
+
+    double width = 2;
+    if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC) {
+      Z3DGraphFactory factory;
+      factory.setNodeColorHint(item->getDisplayColor());
+      factory.setEdgeColorHint(item->getDisplayColor());
+      factory.setEdgeWidthHint(width);
+      factory.setNodeRadiusHint(0);
+      double dr = d * 0.1;
+      {
+        Z3DGraph *subgraph =
+            factory.makeBox(ZCuboid(center - ZPoint(dr, d, dr),
+                                    center + ZPoint(dr, d, dr)));
+        graph->append(*subgraph);
+        delete subgraph;
+      }
+
+      {
+        Z3DGraph *subgraph =
+            factory.makeBox(ZCuboid(center - ZPoint(dr, dr, d),
+                                    center + ZPoint(dr, dr, d)));
+        graph->append(*subgraph);
+        delete subgraph;
+      }
+
+      {
+        Z3DGraph *subgraph =
+            factory.makeBox(ZCuboid(center - ZPoint(d, dr, dr),
+                                    center + ZPoint(d, dr, dr)));
+        graph->append(*subgraph);
+        delete subgraph;
+      }
+    } else {
+      node.setCenter(center.getX() - d, center.getY(), center.getZ());
+      graph->addNode(node);
+      node.setCenter(center.getX() + d, center.getY(), center.getZ());
+      graph->addNode(node);
+      graph->addEdge(0, 1, width, GRAPH_LINE);
+
+      node.setCenter(center.getX(), center.getY() - d, center.getZ());
+      graph->addNode(node);
+      node.setCenter(center.getX(), center.getY() + d, center.getZ());
+      graph->addNode(node);
+      graph->addEdge(2, 3, width, GRAPH_LINE);
+
+      node.setCenter(center.getX(), center.getY(), center.getZ() - d);
+      graph->addNode(node);
+      node.setCenter(center.getX(), center.getY(), center.getZ() + d);
+      graph->addNode(node);
+      graph->addEdge(4, 5, width, GRAPH_LINE);
+    }
+  }
+
+  return graph;
+}
+
+}
+
 void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
 {
-  std::array<int, 6> vertexArray{{0, 0, 0, 0, 0, 0}};
+//  std::array<int, 6> vertexArray{{0, 0, 0, 0, 0, 0}};
 
   Z3DGraphNode node;
   node.setCenter(item->getPosition());
@@ -162,28 +236,41 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
 
 //  if (item->getAction() != neutu::EToDoAction::TO_TRACE_TO_SOMA &&
 //      item->getAction() != neutu::EToDoAction::NO_SOMA) {
-    m_graph.addNode(node);
+  if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC) {
+    node.setRadius(item->getRadius() * 0.5);
+  }
+  m_graph.addNode(node);
+//  }
 //  }
 
   ZPoint center = node.center();
   double d = node.radius() + node.radius();
 
-  int nodeCount = m_graph.getNodeNumber();
+//  int nodeCount = m_graph.getNodeNumber();
 
-  node.setCenter(center);
-  node.setX(center.getX() - d);
-  node.setColor(item->getDisplayColor());
-  node.setRadius(0);
-  m_graph.addNode(node);
+//  node.setCenter(center);
+//  node.setX(center.getX() - d);
+//  node.setColor(item->getDisplayColor());
+//  node.setRadius(0);
+//  m_graph.addNode(node);
 
-  node.setCenter(center);
-  node.setX(center.getX() + d);
+
   if (QString(item->getComment().c_str()).startsWith('#')) {
     node.setText(item->getComment().c_str());
+    node.setCenter(center);
+    node.setX(center.getX() + d);
+    node.setRadius(0);
   }
-  m_graph.addNode(node);
-  node.setText(""); //clear text
+//  m_graph.addNode(node);
+//  node.setText(""); //clear text
 
+  Z3DGraph *subgraph = make_todo_graph(item);
+  if (subgraph) {
+    m_graph.append(*subgraph);
+    delete subgraph;
+  }
+
+#if 0
   Z3DGraphEdge edge;
   edge.useNodeColor(true);
   edge.setShape(GRAPH_LINE);
@@ -246,6 +333,7 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
       m_graph.addEdge(edge);
     }
   }
+#endif
 }
 
 void ZFlyEmTodoListFilter::addItem(ZFlyEmToDoItem *item)

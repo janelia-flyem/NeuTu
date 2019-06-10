@@ -53,9 +53,10 @@ public:
 
   void setPriority(int p);
 
+  static std::string GetActionTag(neutu::EToDoAction action);
+
 private:
   void syncActionTag();
-  static std::string GetActionTag(neutu::EToDoAction action);
 
 public:
   static const char *KEY_ACTION;
@@ -66,12 +67,14 @@ public:
   static const char *ACTION_MERGE;
   static const char *ACTION_TRACE_TO_SOMA;
   static const char *ACTION_NO_SOMA;
+  static const char *ACTION_DIAGNOSTIC;
   static const char *ACTION_SPLIT_TAG;
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;
   static const char *ACTION_MERGE_TAG;
   static const char *ACTION_TRACE_TO_SOMA_TAG;
   static const char *ACTION_NO_SOMA_TAG;
+  static const char *ACTION_DIAGNOSTIC_TAG;
 
   static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 

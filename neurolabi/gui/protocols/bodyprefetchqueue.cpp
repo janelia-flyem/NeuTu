@@ -60,10 +60,26 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
       m_queue.enqueue(bodyID);
       LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
 
-      ZFlyEmBodyConfig config(bodyID);
-      config.setAddBuffer();
-      m_doc->addBody(config);
+      if (!ZFlyEmBodyManager::encodesTar(bodyID)) {
+
+        int zoom = 0;
+        ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0, &zoom);
+
+        if (mesh != NULL) {
+          auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                bodyID, 0, flyem::EBodyType::MESH);
+          mesh->setSource(source);
+
+          m_doc->getDataBuffer()->addUpdate(
+                mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
+        }
+      } else{
+        ZFlyEmBodyConfig config(bodyID);
+        config.setAddBuffer();
+        m_doc->addBody(config);
+      }
     }
+
     if (wasEmpty) {
         m_queueHasItems.wakeAll();
     }

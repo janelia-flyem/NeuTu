@@ -20,21 +20,25 @@ fi
 export CONDA_ENV=${PREFIX}
 
 app_name=${NEUTU_TARGET:-neutu}
+app_base_name=$app_name
 if [ ${NEUTU_TARGET} == 'neutu-debug' ]
 then
-  app_name=neutu_d
+  app_base_name=neutu
+  app_name=${app_base_name}_d
 fi
 
 if [ ${NEUTU_TARGET} == 'neu3-debug' ]
 then
-  app_name=neu3_d
+  app_base_name=neu3
+  app_name=${app_base_name}_d
 fi
 
 for x in neutu-develop neutu-alpha neutu-beta neutu neutu-di
 do
   if [ ${NEUTU_TARGET} == "$x" ]
   then
-    app_name=neutu
+    app_base_name=neutu
+    app_name=$app_base_name
     break
   fi
 done
@@ -43,7 +47,8 @@ for x in neu3-develop neu3-alpha neu3-beta neu3 neu3-di
 do
   if [ ${NEUTU_TARGET} == "$x" ]
   then
-    app_name=neu3
+    app_base_name=neu3
+    app_name=$app_base_name
     break
   fi
 done
@@ -66,7 +71,7 @@ then
 fi
 
 edition=flyem
-if [ "$app_name" == 'neu3_d' ] || [ "$app_name" == 'neu3' ]
+if [ "$app_base_name" == 'neu3' ]
 then
   edition=neu3
 fi
@@ -84,7 +89,5 @@ if [ $(uname) == 'Darwin' ]; then
     mv ${build_dir}/${app_name}.app ${PREFIX}/bin/
 else
     mv ${build_dir}/${app_name} ${PREFIX}/bin/
-    mv ${build_dir}/config.xml ${PREFIX}/bin/
-    mv ${build_dir}/doc ${PREFIX}/bin/
-    mv ${build_dir}/json ${PREFIX}/bin/
+    mv ${build_dir}/${app_base_name}_config ${PREFIX}/bin/
 fi

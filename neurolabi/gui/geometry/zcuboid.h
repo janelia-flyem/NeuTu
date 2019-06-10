@@ -31,6 +31,7 @@ class ZCuboid
 public:
   ZCuboid();
   ZCuboid(double x1, double y1, double z1, double x2, double y2, double z2);
+  ZCuboid(const ZPoint &firstCorner, const ZPoint &lastCorner);
   ZCuboid(const ZCuboid &cuboid);
 
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
@@ -81,6 +82,9 @@ public:
   void joinX(double x);
   void joinY(double y);
   void joinZ(double z);
+
+  void join(const ZCuboid &box);
+
   /*!
    * \brief Expand the box minimally to include a point.
    */

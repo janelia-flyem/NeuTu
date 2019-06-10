@@ -270,7 +270,7 @@
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-
+#include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
@@ -315,6 +315,7 @@
 #include "flyem/zflyembodystatus.h"
 #include "flyem/zflyembodyannotationmerger.h"
 #include "flyem/zflyemroimanager.h"
+#include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
@@ -323,6 +324,10 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "dvid/zdvidneurontracer.h"
+#include "flyem/zflyemmeshfactory.h"
+
+#include "ext/http/HTTPRequest.hpp"
 
 //#include "test/ztestall.h"
 
@@ -28094,6 +28099,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  std::string dataDir = GET_FLYEM_DATA_DIR + "/roi/20190422";
+  flyem::UploadRoi(dataDir.c_str(), (dataDir + "/roiname.csv").c_str(), writer);
+#endif
+
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/_flyem/roi/20180920_tif";
   std::ifstream stream(GET_TEST_DATA_DIR + "/_flyem/roi/20180913_tif/roiname.csv");
 
@@ -28173,6 +28184,38 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << "Writing " << name << std::endl;
   writer->writeRoi(roi, name);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  ZObject3dScan roi;
+  roi.load(GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.sobj");
+  std::string name = "lACA";
+  if (!writer->getDvidReader().hasData(name)) {
+    writer->createData("roi", name);
+  } else {
+    writer->deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer->writeRoi(roi, name);
+
+  writer->uploadRoiMesh(
+        GET_FLYEM_DATA_DIR + "/roi/20190501/20190501_lACA.labels.tif.obj",
+        "lACA");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "lACA",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_lACA.labels.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "SLP",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190516/20190516_SLP.labels.tif.obj");
+
 #endif
 
 #if 0
@@ -29648,6 +29691,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   reader->readLabels64Lowtis(0, 0, 20696, 268 * 128, 310 * 128, 6, true, 256, 256);
 #endif
@@ -29657,6 +29701,25 @@ void ZTest::test(MainWindow *host)
   FlyEmDataConfig config = FlyEmDataReader::ReadDataConfig(*reader);
   config.print();
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvidTarget(reader->getDvidTarget());
+  doc.test();
+
+//  doc.setSupervoxelMode(true);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibrain_test");
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  ZDvidTarget target = reader->getDvidTarget();
+  target.setSupervoxelView(true);
+  labelSlice->setDvidTarget(target);
+  std::cout << labelSlice->isSupervoxel() << std::endl;
 #endif
 
 #if 0
@@ -29704,5 +29767,235 @@ void ZTest::test(MainWindow *host)
   writer->uploadRoiMesh(filePath, roiName);
 #endif
 
+#if 0
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+  std::cout << annot.toJsonObject().dumpString(2) << std::endl;
+
+  ZFlyEmBodyAnnotation annot2;
+//  annot2.loadJsonObject(annot.toJsonObject());
+//  std::cout << "compare: " << (annot == annot2) << std::endl;
+
+  FlyEmBodyAnnotationDialog *dlg = new FlyEmBodyAnnotationDialog(host);
+  dlg->loadBodyAnnotation(annot);
+  dlg->exec();
+
+  annot2 = dlg->getBodyAnnotation();
+  annot2.print();
+  std::cout << annot2.toJsonObject().dumpString(2) << std::endl;
+  std::cout << "compare: " << (annot == annot2) << std::endl;
+
+#endif
+
+#if 0
+
+  ZFlyEmBodyAnnotation annot;
+  ZJsonObject obj;
+  obj.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot.json");
+  annot.loadJsonObject(obj);
+  annot.print();
+
+  ZFlyEmBodyAnnotation annot2;
+  ZJsonObject obj2;
+  obj2.load(GET_FLYEM_DATA_DIR + "/test/json/body_annot2.json");
+  annot2.loadJsonObject(obj2);
+  annot2.print();
+
+  annot.mergeAnnotation(annot2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  annot.print();
+
+#endif
+
+#if 0
+//  try
+//  {
+      // you can pass http::InternetProtocol::V6 to Request to make an IPv6 request
+
+
+      // send a get request
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+        http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+
+      {
+      http::Request request("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info");
+      tic();
+      for (size_t i = 0; i < 5000; ++i) {
+
+        http::Response response = request.send("GET");
+//        std::string str(response.body.begin(), response.body.end());
+//        std::cout << i << ": " << str << std::endl; // print the result
+      }
+      ptoc();
+      }
+      // send a post request
+//      response = request.send("POST", "foo=1&bar=baz", {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << response.body.data() << std::endl; // print the result
+
+      // pass parameters as a map
+//      std::map<std::string, std::string> parameters = {{"foo", "1"}, {"bar", "baz"}};
+//      response = request.send("POST", parameters, {
+//          "Content-Type: application/x-www-form-urlencoded"
+//      });
+//      std::cout << std::string(response.body.begin(), response.body.end()) << std::endl; // print the result
+//  }
+//  catch (const std::exception& e)
+//  {
+//      std::cerr << "Request failed, error: " << e.what() << std::endl;
+//  }
+
+//  ZDvidReader *reader = ZGlobal().GetInstance().getDvidReader("MB_Test");
+//  tic();
+//  reader->setVerbose(false);
+//  for (size_t i = 0; i < 5000; ++i) {
+//    reader->readDataInfo("bodies3");
+//  }
+//  ptoc();
+
+//  tic();
+//  ZNetBufferReader nreader;
+//  for (size_t i = 0; i < 5000; ++i) {
+//    nreader.read("http://emdata1.int.janelia.org:8500/api/node/babdf6dbc23e44a69953a66e2260ff0a/bodies3/info", false);
+//  }
+//  ptoc();
+#endif
+
+#if 0
+  NeutubeConfig::getInstance().print();
+
+  ZFlyEmConfig::getInstance().print();
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  neutuse::Task task = neutuse::TaskFactory::MakeDvidSkeletonizeTask(
+        reader->getDvidTarget(), 1, true);
+  std:cout << task.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  auto masterList = reader->readMasterList();
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+
+  std::cout << reader->readMasterNode() << std::endl;
+#endif
+
+#if 0
+  ZDvidNeuronTracer tracer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setGrayScaleName("grayscale");
+  tracer.setDvidTarget(target);
+  tracer.trace(505, 1075, 61, 3.0);
+
+  ZSwcTree *tree = tracer.getResult();
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+//  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("MB_Synapse_Shift");
+  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("hemibran-production");
+  std::string master = ZDvidReader::ReadMasterNode(target);
+  std::cout << "Master node: " << master << std::endl;
+
+  auto masterList = ZDvidReader::ReadMasterList(target);
+  std::for_each(masterList.begin(), masterList.end(), [](const std::string &node) {
+    std::cout << node << std::endl;
+  });
+#endif
+
+#if 0
+  std::vector<std::string> fileArray = {
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_2.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_3.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_4.part.json",
+    GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_6.part.json"
+  };
+
+  for (const std::string inputPath : fileArray) {
+    ZObject3dScan obj;
+    //  std::string inputPath =
+    //      GET_FLYEM_DATA_DIR + "/roi/20190521FB/15_0.20_15_2.part.json";
+    flyem::LoadRoiFromJson(inputPath, &obj);
+
+    obj.save(inputPath + ".sobj");
+
+    ZStack *stack = ZStackFactory::MakeZeroStack(1088, 1280, 1344);
+    obj.upSample(3, 3, 3);
+    obj.drawStack(stack, 255);
+    stack->save(inputPath + ".tif");
+    delete stack;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  std::vector<std::string> roiList = { "(L)NO1", "(L)NO2" };
+
+  ZObject3dScan roi;
+  FlyEmDataReader::ReadRoi(*reader, roiList, &roi);
+  roi.save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+//  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+  mesh->generateNormals();
+  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+  mesh2.save(GET_TEST_DATA_DIR + "/_test2.obj");
+
+  ZMesh mesh3 = ZMeshUtils::Smooth(mesh2);
+  mesh3.save(GET_TEST_DATA_DIR + "/_test3.obj");
+#endif
+
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "FB07",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB07.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB07.labels.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "FB08v",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB08v.labels.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/2019May_FB/FB08v.labels.tif.obj");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO2");
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc");
+#endif
+
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+
+  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc";
+  std::cout << "Uploading " << filePath << std::endl;
+  writer->uploadRoiMesh(filePath, "(L)NO2");
+
+#endif
+
+
   std::cout << "Done." << std::endl;
 }
+

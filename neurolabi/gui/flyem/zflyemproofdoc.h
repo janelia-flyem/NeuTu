@@ -54,6 +54,8 @@ public:
     return m_versionDag;
   }
 
+  friend class ZFlyEmProofDocUtil;
+
   virtual void setDvidTarget(const ZDvidTarget &target);
 
 //  virtual void updateTileData();
@@ -70,11 +72,21 @@ public:
 
   bool isDvidMutable() const;
 
+  bool isAdmin() const;
+
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
+  ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSliceList(bool sv);
+  QList<ZDvidLabelSlice*> getFrontDvidLabelSliceList() const;
+  QList<ZDvidLabelSlice*> getDvidBodySliceList() const;
+
+  bool isSupervoxelMode() const;
+  void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
+
   ZDvidGraySlice* getDvidGraySlice() const;
   ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
@@ -88,6 +100,8 @@ public:
 
   const ZSparseStack* getSparseStack() const override;
   ZSparseStack* getSparseStack() override;
+
+  ZSparseStack* getSparseStack(const ZIntCuboid& box) override;
 
   ZStackBlockGrid* getStackGrid();
 
@@ -194,7 +208,7 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
-  void syncBodySelection(ZDvidLabelSlice *labelSlice);
+//  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
 //  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
@@ -250,7 +264,10 @@ public:
   void startTimer();
 
   QList<QString> getBodyStatusList() const;
+
+  //Body statuses that can only be changed by admin users
   QList<QString> getAdminBodyStatusList() const;
+
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
 
@@ -453,9 +470,8 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
-  void prepareDvidLabelSlice(
-      const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
@@ -473,6 +489,8 @@ public:
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void uploadUserDataConfig();
+
+  bool test();
 
 public:
   virtual void executeAddTodoCommand(
@@ -593,6 +611,8 @@ public slots:
   bool checkInBodyWithMessage(
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  QString getBodyLockFailMessage(uint64_t bodyId);
+
 
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
@@ -621,7 +641,7 @@ protected:
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
-  void addDvidLabelSlice(neutu::EAxis axis);
+  ZDvidLabelSlice *addDvidLabelSlice(neutu::EAxis axis, bool sv);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
   void setRoutineCheck(bool on);
@@ -662,6 +682,8 @@ private:
 
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
+
+  void updateUserStatus();
 
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
       ZFlyEmBodyColorOption::EColorOption type);
@@ -710,6 +732,7 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
 
   ZDvidWriter m_workWriter;
+  ZDvidReader m_supervoxelWorkReader;
   ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
@@ -730,6 +753,9 @@ protected:
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
+  bool m_supervoxelMode = false;
+
+  bool m_isAdmin = false;
 
   //Data settings
   int m_graySliceCenterCutWidth = 256;

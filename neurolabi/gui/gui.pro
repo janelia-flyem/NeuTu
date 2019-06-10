@@ -22,7 +22,7 @@ CONFIG(neu3) | CONFIG(neutu) | CONFIG(flyem)  { #flyem CONFIG is an outdated opt
 
 DEFINES *= _ENABLE_LOWTIS_
 DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
-DEFINES += _GLIBCXX_USE_CXX11_ABI=0
+#DEFINES += _GLIBCXX_USE_CXX11_ABI=0
 
 #This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
@@ -84,9 +84,7 @@ CONFIG(force_link) {
 
 TARGET = $$app_name
 
-CONFIG(force_link) {
-  QMAKE_POST_LINK += $$quote(echo "making config"; make app_config;)
-}
+QMAKE_POST_LINK += $$quote(echo "making config"; make app_config;)
 
 unix {
   # suppress warnings from 3rd party library, works for gcc and clang
@@ -141,19 +139,30 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= c++11
+    CONFIG *= strict_c++ c++11
 }
 
-CONFIG(c++11) {
-  message(Using C++11)
-  DEFINES += _CPP11_
-  unix {
-    QMAKE_CXXFLAGS += -std=c++11
-    macx {
-      QMAKE_CXXFLAGS += -stdlib=libc++
-    }
-  }
-}
+#CONFIG(c++11) {
+#  message(Using C++11)
+##  DEFINES += _CPP11_
+#  unix {
+#    QMAKE_CXXFLAGS += -std=c++11
+#    macx {
+#      QMAKE_CXXFLAGS += -stdlib=libc++
+#    }
+#  }
+#} else {
+#  CONFIG(c++14) {
+#    message(Using C++14)
+##    DEFINES += _CPP11_ #necessary for glm
+#    unix {
+#      QMAKE_CXXFLAGS += -std=c++14
+#      macx {
+#        QMAKE_CXXFLAGS += -stdlib=libc++
+#      }
+#    }
+#  }
+#}
 
 equals(SANITIZE_BUILD, "thread") {
   QMAKE_CXXFLAGS += -fsanitize=thread
@@ -227,9 +236,9 @@ unix {
           message("SDK: $$QMAKE_MAC_SDK")
         }
 
-        doc.files = doc
-        doc.path = Contents/MacOS
-        QMAKE_BUNDLE_DATA += doc
+#        doc.files = doc
+#        doc.path = Contents/MacOS
+#        QMAKE_BUNDLE_DATA += doc
 #        config.files = config.xml
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
@@ -414,6 +423,8 @@ HEADERS += mainwindow.h \
     zpainter.h \
     dialogs/resolutiondialog.h \
     dvid/zdvidrequest.h \
+    dvid/zdviddataslicetaskfactory.h \
+    dvid/zdviddataslicetask.h \
     zmatlabprocess.h \
     zneuronseed.h \
     dialogs/dvidimagedialog.h \
@@ -1108,8 +1119,6 @@ SOURCES += main.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
-    dialogs/zcomboeditdialog.cpp \
-    dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
     zglobal.cpp \
     dvid/zdvidresultservice.cpp \
@@ -1156,7 +1165,6 @@ SOURCES += main.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
     zarbsliceviewparam.cpp \
-    dialogs/zneu3sliceviewdialog.cpp \
     znetbufferreader.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
@@ -1171,9 +1179,11 @@ SOURCES += main.cpp \
     concurrent/zworker.cpp \
     concurrent/ztaskqueue.cpp \
     dvid/zdvidbodyhelper.cpp \
-    z3dwindowcontroller.cpp \
-    zstackblockfactory.cpp \
+    dvid/zdviddataslicetaskfactory.cpp \
+    dvid/zdviddataslicetask.cpp \
     dvid/zdvidstackblockfactory.cpp \
+    z3dwindowcontroller.cpp \
+    zstackblockfactory.cpp \    
     zstackblocksource.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
@@ -1187,6 +1197,9 @@ SOURCES += main.cpp \
     dialogs/neuprintquerydialog.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
+    dialogs/zneu3sliceviewdialog.cpp \
+    dialogs/zcomboeditdialog.cpp \
+    dialogs/zflyembodycomparisondialog.cpp \
     dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \

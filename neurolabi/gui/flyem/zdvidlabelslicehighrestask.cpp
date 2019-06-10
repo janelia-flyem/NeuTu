@@ -14,14 +14,15 @@ void ZDvidLabelSliceHighresTask::execute()
   ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc);
   if (doc != NULL) {
 
-    ZDvidLabelSlice *slice = doc->getDvidLabelSlice(m_viewParam.getSliceAxis());
+    ZDvidLabelSlice *slice = doc->getDvidLabelSlice(
+          m_viewParam.getSliceAxis(), m_supervoxel);
     if (slice != NULL) {
       if (slice->containedIn(
             m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight,
             m_usingCenterCut)) {
         doc->prepareDvidLabelSlice(
               m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight,
-              m_usingCenterCut);
+              m_usingCenterCut, m_supervoxel);
 //        LDEBUG() << "Task executed in thread: " << QThread::currentThreadId();
       } else {
 //        LDEBUG() << "Task ignored in thread: " << QThread::currentThreadId();

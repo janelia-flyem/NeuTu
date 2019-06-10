@@ -21,6 +21,8 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidbufferreader.h"
+#include "zdvidutil.h"
 //#include "dvid/zdvidsynapse.h"
 //#include "dvid/zdvidroi.h"
 
@@ -202,24 +204,25 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
   }
 
   return mesh;
-
-//  ZMesh *mesh = NULL;
-
-//  if (source == "roi") {
-//    ZObject3dScan roi;
-//    reader.readRoi(key, &roi);
-//    if (!roi.isEmpty()) {
-//      ZMeshFactory mf;
-//      mf.setOffsetAdjust(true);
-//      mesh = mf.makeMesh(roi);
-//    }
-//  } else if (source == "mesh") {
-//    mesh = reader.readMesh(
-//          ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
-//  }
-
-//  return mesh;
 }
+
+ZObject3dScan* FlyEmDataReader::ReadRoi(
+      const ZDvidReader &reader, const std::vector<std::string> &roiList,
+      ZObject3dScan *result)
+{
+  if (result) {
+    result->clear();
+  } else {
+    result = new ZObject3dScan;
+  }
+
+  for (const std::string roi : roiList) {
+    reader.readRoi(roi, result, true);
+  }
+
+  return result;
+}
+
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

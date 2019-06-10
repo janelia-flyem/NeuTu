@@ -75,6 +75,7 @@ void MakeTriangle(const QRectF &rect, QPointF *ptArray,
                   neutu::ECardinalDirection direction);
 void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
+QVector<QPointF> MakeCrossKey(const QPointF &center, double radius);
 
 void PrepareBodyStatus(QComboBox *box);
 QList<QString> GetDefaultBodyStatus();
@@ -143,7 +144,8 @@ void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
 
 std::vector<uint64_t> LoadBodyList(const std::string &input);
 
-ZObject3dScan* LoadRoiFromJson(const std::string &filePath);
+ZObject3dScan* LoadRoiFromJson(
+    const std::string &filePath, ZObject3dScan *result = nullptr);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
