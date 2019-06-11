@@ -4964,7 +4964,7 @@ void ZFlyEmProofDoc::executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t
     TipDetectorRunner runner;
     runner.setBodyId(bodyId);
     runner.setPoint(pt);
-
+    runner.setDvidTarget(getDvidTarget());
     runner.run();
 }
 
