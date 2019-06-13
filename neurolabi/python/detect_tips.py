@@ -120,7 +120,7 @@ def postdvid(call, username, data):
 
 def parseparameters():
     if len(sys.argv) < 5:
-        errorquit("missing arguments; received:", ", ".join(sys.argv))
+        errorquit("missing arguments; received: " + ", ".join(sys.argv))
 
     params = Parameters(
         sys.argv[1],
