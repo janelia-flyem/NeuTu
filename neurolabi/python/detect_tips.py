@@ -18,6 +18,7 @@ requires:
 # std lib
 from dataclasses import dataclass
 import getpass
+import json
 import sys
 
 
@@ -62,8 +63,8 @@ def place_todos(locations, params):
     
 
 
-    # test: only annotate a handful
-    postannotations(annlist[:5], params)
+    # test: only annotate a few
+    postannotations(annlist[:3], params)
     # postannotations(annlist, params)
 
 
@@ -77,7 +78,7 @@ def maketodo(location, params):
         "Prop": {},
     }
     ann["Pos"] = list(location)
-    ann["Prop"]["comment"] = ""
+    ann["Prop"]["comment"] = "placed by detect_tips.py"
     ann["Prop"]["user"] = params.username
     ann["Prop"]["checked"] = "0"
     return ann
@@ -102,11 +103,11 @@ def postannotations(annlist, params):
 
 
 
-def postdvid(call, data, username):
+def postdvid(call, username, data):
     '''
     POSTs the input data to DVID
 
-    input: the URL to call; the data to be posted; username
+    input: the URL to call; username; the data to be posted
     '''
     # add user and app tags
     if "?" not in call:
@@ -154,12 +155,8 @@ def main():
     params = parseparameters()
 
     locations = find_tips(params)
-    textreportquit(f"found {len(locations)} tips")
 
-
-
-
-    place_todos(locations)
+    place_todos(locations, params)
 
 
     # temp return
