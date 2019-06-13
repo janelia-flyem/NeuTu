@@ -9,15 +9,17 @@ usage: detect_tips.py serverport uuid bodyid todoinstance
 
 
 requires:
-- dvid_tools library
+- dvid_tools library (and its dependencies)
 
 
 """
 
 # ------------------------- imports -------------------------
 # std lib
+from contextlib import redirect_stdout
 from dataclasses import dataclass
 import getpass
+from io import StringIO
 import json
 import sys
 
@@ -48,8 +50,14 @@ def find_tips(params):
 
     output: list of [x, y, z] locations
     """
+
     dt.set_param(params.serverport, params.uuid, params.username)
-    tips = dt.detect_tips(params.bodyid)
+
+    # this routine spews output to stdout, which I want to control; so
+    #   trap and ignore it
+    output = StringIO()
+    with redirect_stdout(output):
+        tips = dt.detect_tips(params.bodyid)
     return tips.loc[:, ["x", "y", "z"]].values.tolist()
 
 
@@ -60,7 +68,6 @@ def place_todos(locations, params):
     input: list of [x, y, z] locations
     """
     annlist = [maketodo(loc, params) for loc in locations]
-    
 
 
     # test: only annotate a few
