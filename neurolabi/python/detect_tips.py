@@ -94,7 +94,7 @@ def postannotations(annlist, params):
     todocall = params.serverport + "/api/node/" + params.uuid + "/segmentation_todo/elements"
     r = postdvid(todocall, params.username, data=annlist)
     if r.status_code != requests.codes.ok:
-        print(call)
+        print(todocall)
         print(r.status_code)
         print(r.text)
 
