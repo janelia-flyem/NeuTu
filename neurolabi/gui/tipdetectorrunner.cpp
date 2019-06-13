@@ -1,5 +1,8 @@
 #include "tipdetectorrunner.h"
 
+#include <QJsonDocument>
+#include <QJsonObject>
+
 #include "widgets/zpythonprocess.h"
 
 TipDetectorRunner::TipDetectorRunner()
@@ -31,53 +34,40 @@ void TipDetectorRunner::run() {
     // my local tip detection script, within NeuTu source:
     process.setScript("/Users/olbrisd/projects/flyem/NeuTu/neutube/neurolabi/python/detect_tips.py");
 
-    // simple test script
-    // process.setScript("/Users/olbrisd/projects/flyem/NeuTu/testing/tip-detection/simple.py");
-
-
-
     process.addArg(QString::fromStdString(m_target.getAddressWithPort()));
     process.addArg(QString::fromStdString(m_target.getUuid()));
     process.addArg(QString::number(m_bodyId));
     process.addArg(QString::fromStdString(m_target.getTodoListName()));
 
-
-
     bool status = process.run(false);
     if (status) {
-        // at this point the script ran and gave output, but it may not
-        //  have run successfully
-        QStringList outputLines = process.getRawOutput().split("\n");
+        // the script return should be in json; if not, it's a serious failure,
+        //  and we'll echo the output we did get
+        // otherwise we expect a json dict with a "status" and "message" at a
+        //  minimum; I intend to add more details to a successful return that
+        //  the UI can present as appropriate (eg, number of tips added)
+        QString output = process.getRawOutput();
+        QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
+        if (doc.isNull()) {
+            // undefined behavior
+            std::cout << "script returned unexpected output; output:" << std::endl;
+            std::cout << output.toStdString() << std::endl;
+            return;
+        }
 
-        if (outputLines.first() == "error") {
-            std::cout << "script returned failure; output:" << std::endl;
-            for (QString line: outputLines.mid(1)) {
-                std::cout << line.toStdString() << std::endl;
-            }
-
-
-
-        } else if (outputLines.first() == "success") {
-            std::cout << "script returned success; output:" << std::endl;
-            for (QString line: outputLines.mid(1)) {
-                std::cout << line.toStdString() << std::endl;
-            }
-
-            // probably successful returns will be json?
-
+        QJsonObject obj = doc.object();
+        if (!obj["status"].toBool()) {
+            // failure, but one with a message
+            std::cout << "script returned failure: " << obj["message"].toString().toStdString() << std::endl;
 
 
         } else {
-            // undefined behavior
-            std::cout << "script returned unexpected output; output:" << std::endl;
-            for (QString line: outputLines) {
-                std::cout << line.toStdString() << std::endl;
-            }
+            // success
+            std::cout << "script returned success: " << obj["message"].toString().toStdString() << std::endl;
 
 
 
         }
-
 
     } else {
         // this is the system-level failure branch

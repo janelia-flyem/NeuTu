@@ -3,7 +3,15 @@
 detect_tips.py
 
 
-this script finds tips of skeletons that should be reviewed
+this script finds tips of skeletons that should be reviewed; it
+places to do items on those locations, then reports back its status
+via std out in json form:
+
+output = {
+    "status": true | false (success or failure),
+    "message": "error or success message",
+    }
+
 
 usage: detect_tips.py serverport uuid bodyid todoinstance
 
@@ -106,8 +114,7 @@ def postannotations(annlist, params):
         print(r.text)
 
         # do something here
-
-
+        pass
 
 
 def postdvid(call, username, data):
@@ -124,6 +131,7 @@ def postdvid(call, username, data):
     call += "u={}&app={}".format(username, appname)
     
     return requests.post(call, data=json.dumps(data))
+
 
 def parseparameters():
     if len(sys.argv) < 5:
@@ -144,29 +152,32 @@ def parseparameters():
 
 
 def textreportquit(message):
-    print("success")
-    print(message)
+    result = {
+        "status": True,
+        "message": message,
+    }
+    print(json.dumps(result))
     sys.exit(0)
 
 
 def errorquit(message):
-    print("error")
-    print(message)
+    result = {
+        "status": False,
+        "message": message,
+    }
+    print(json.dumps(result))
     sys.exit(1)
 
 
 def main():
 
-    # probably need error checking after each step
-
     params = parseparameters()
 
     locations = find_tips(params)
 
-    place_todos(locations, params)
+    if locations:
+        place_todos(locations, params)
 
-
-    # temp return
     textreportquit(f"placed {len(locations)} tips")
 
 
