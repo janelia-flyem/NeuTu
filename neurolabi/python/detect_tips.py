@@ -12,6 +12,9 @@ output = {
     "message": "error or success message",
     }
 
+(there is other optional data that is returned in the output json
+on success)
+
 
 usage: detect_tips.py serverport uuid bodyid todoinstance
 
@@ -43,13 +46,12 @@ appname = "NeuTu/detect_tips.py"
 
 
 # ------------------------- code -------------------------
-
 def postdvid(call, username, data):
-    '''
+    """
     POSTs the input data to DVID
 
     input: the URL to call; username; the data to be posted
-    '''
+    """
     # add user and app tags
     if "?" not in call:
         call += "?"
@@ -81,16 +83,18 @@ class TipDetector:
 
     def findandplace(self):
         """
-        find tips and place to do items; report results
+        find tips and place to do items; report results by printing json; quit
         """
-        self.find_tips()
-        self.place_todos()
+        self.findtips()
+        self.placetodos()
         self.reportquit()
 
-    def find_tips(self):
+    def findtips(self):
         """
-        finds tips for input body id
+        finds and stores tip locations for input body id
         """
+
+        t1 = time.time()
 
         dt.set_param(self.serverport, self.uuid, self.username)
 
@@ -99,22 +103,24 @@ class TipDetector:
         output = StringIO()
         with redirect_stdout(output):
             tips = dt.detect_tips(self.bodyid)
-
         self.locations = tips.loc[:, ["x", "y", "z"]].values.tolist()
 
-    def place_todos(self):
-        """
-        posts a to do item at each input location
+        t2 = time.time()
+        self.tfind = t2 - t1
 
-        input: list of [x, y, z] locations (if None, use last set found)
+    def placetodos(self):
+        """
+        posts a to do item at each previously found tip location
         """
 
         if len(self.locations) == 0:
             # needs error handling?
             return
-
+        t1 = time.time()
         annlist = [self.maketodo(loc) for loc in self.locations]
         self.postannotations(annlist)
+        t2 = time.time()
+        self.tplace = t2 - t1
 
     def maketodo(self, location):
         """
@@ -153,10 +159,13 @@ class TipDetector:
             self.ntodosplaced = len(annlist)
 
     def reportquit(self):
-        message = f"{len(self.locations)} tips located; {self.ntodosplaced} to do items placed"
+        message = f"{len(self.locations)} tips found in {self.tfind}s; {self.ntodosplaced} to do items placed in {self.tplace}s"
         result = {
             "status": True,
             "message": message,
+            "tfind": self.tfind,
+            "tplace": self.tplace,
+            "locations": self.locations,
         }
         print(json.dumps(result))
         sys.exit(0)
