@@ -114,8 +114,10 @@ class TipDetector:
         """
 
         if len(self.locations) == 0:
-            # needs error handling?
+            self.ntodosplaced = 0
+            self.tplace = 0.0
             return
+
         t1 = time.time()
         annlist = [self.maketodo(loc) for loc in self.locations]
         self.postannotations(annlist)
@@ -147,13 +149,13 @@ class TipDetector:
         todocall = self.serverport + "/api/node/" + self.uuid + "/segmentation_todo/elements"
         r = postdvid(todocall, self.username, data=annlist)
         if r.status_code != requests.codes.ok:
-
-            # need better error handling
-            print(todocall)
-            print(r.status_code)
-            print(r.text)
-
-            self.ntodosplaced = 0
+            # bail out; later I'd prefer to have the error percolate up and be
+            #   handled by the calling routine, but for now, just quit:
+            message = "to do placement failed!\n"
+            message += f"url: {todocall}\n"
+            message += f"status code: {r.status_code}\n"
+            message += f"returned text: {r.text}\n"
+            errorquit(message)
         else:
             # successful
             self.ntodosplaced = len(annlist)
