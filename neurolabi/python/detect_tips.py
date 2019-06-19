@@ -25,11 +25,11 @@ requires:
 # ------------------------- imports -------------------------
 # std lib
 from contextlib import redirect_stdout
-from dataclasses import dataclass
 import getpass
 from io import StringIO
 import json
 import sys
+import time
 
 
 import requests
@@ -43,79 +43,6 @@ appname = "NeuTu/detect_tips.py"
 
 
 # ------------------------- code -------------------------
-@dataclass
-class Parameters:
-    serverport: str
-    uuid: str
-    bodyid: str
-    todoinstance: str
-    username: str
-
-
-def find_tips(params):
-    """
-    finds tips for input body id
-
-    output: list of [x, y, z] locations
-    """
-
-    dt.set_param(params.serverport, params.uuid, params.username)
-
-    # this routine spews output to stdout, which I want to control; so
-    #   trap and ignore it
-    output = StringIO()
-    with redirect_stdout(output):
-        tips = dt.detect_tips(params.bodyid)
-    return tips.loc[:, ["x", "y", "z"]].values.tolist()
-
-
-def place_todos(locations, params):
-    """
-    posts a to do item at each input location
-
-    input: list of [x, y, z] locations
-    """
-    annlist = [maketodo(loc, params) for loc in locations]
-
-
-    # test: only annotate a few
-    postannotations(annlist[:3], params)
-    # postannotations(annlist, params)
-
-
-def maketodo(location, params):
-    """
-    input: [x, y, z] location
-    output: json for a to do annotation at that location 
-    """
-    ann = {
-        "Kind": "Note",
-        "Prop": {},
-    }
-    ann["Pos"] = list(location)
-    ann["Prop"]["comment"] = "placed by detect_tips.py"
-    ann["Prop"]["user"] = params.username
-    ann["Prop"]["checked"] = "0"
-    return ann
-
-
-def postannotations(annlist, params):
-    """
-    posts the list of annotations to dvid
-
-    input: list of json annotations
-    """
-
-    todocall = params.serverport + "/api/node/" + params.uuid + "/segmentation_todo/elements"
-    r = postdvid(todocall, params.username, data=annlist)
-    if r.status_code != requests.codes.ok:
-        print(todocall)
-        print(r.status_code)
-        print(r.text)
-
-        # do something here
-        pass
-
 
 def postdvid(call, username, data):
     '''
@@ -129,35 +56,8 @@ def postdvid(call, username, data):
     else:
         call += "&"
     call += "u={}&app={}".format(username, appname)
-    
+
     return requests.post(call, data=json.dumps(data))
-
-
-def parseparameters():
-    if len(sys.argv) < 5:
-        errorquit("missing arguments; received: " + ", ".join(sys.argv))
-
-    params = Parameters(
-        sys.argv[1],
-        sys.argv[2],
-        sys.argv[3],
-        sys.argv[4],
-        getpass.getuser()
-        )
-
-    if not params.serverport.startswith("http://"):
-        params.serverport = "http://" + params.serverport
-
-    return params
-
-
-def textreportquit(message):
-    result = {
-        "status": True,
-        "message": message,
-    }
-    print(json.dumps(result))
-    sys.exit(0)
 
 
 def errorquit(message):
@@ -169,17 +69,112 @@ def errorquit(message):
     sys.exit(1)
 
 
+class TipDetector:
+    def __init__(self, serverport, uuid, bodyid, todoinstance):
+        self.serverport = serverport
+        self.uuid = uuid
+        self.bodyid = bodyid
+        self.todoinstance = todoinstance
+        self.username = getpass.getuser()
+        self.locations = []
+        self.ntodosplaced = 0
+
+    def findandplace(self):
+        """
+        find tips and place to do items; report results
+        """
+        self.find_tips()
+        self.place_todos()
+        self.reportquit()
+
+    def find_tips(self):
+        """
+        finds tips for input body id
+        """
+
+        dt.set_param(self.serverport, self.uuid, self.username)
+
+        # this routine spews output to stdout, which I want to control; so
+        #   trap and ignore it
+        output = StringIO()
+        with redirect_stdout(output):
+            tips = dt.detect_tips(self.bodyid)
+
+        self.locations = tips.loc[:, ["x", "y", "z"]].values.tolist()
+
+    def place_todos(self):
+        """
+        posts a to do item at each input location
+
+        input: list of [x, y, z] locations (if None, use last set found)
+        """
+
+        if len(self.locations) == 0:
+            # needs error handling?
+            return
+
+        annlist = [self.maketodo(loc) for loc in self.locations]
+        self.postannotations(annlist)
+
+    def maketodo(self, location):
+        """
+        input: [x, y, z] location
+        output: json for a to do annotation at that location
+        """
+        ann = {
+            "Kind": "Note",
+            "Prop": {},
+        }
+        ann["Pos"] = list(location)
+        ann["Prop"]["comment"] = "placed by detect_tips.py"
+        ann["Prop"]["user"] = self.username
+        ann["Prop"]["checked"] = "0"
+        return ann
+
+    def postannotations(self, annlist):
+        """
+        posts the list of annotations to dvid
+
+        input: list of json annotations
+        """
+
+        todocall = self.serverport + "/api/node/" + self.uuid + "/segmentation_todo/elements"
+        r = postdvid(todocall, self.username, data=annlist)
+        if r.status_code != requests.codes.ok:
+
+            # need better error handling
+            print(todocall)
+            print(r.status_code)
+            print(r.text)
+
+            self.ntodosplaced = 0
+        else:
+            # successful
+            self.ntodosplaced = len(annlist)
+
+    def reportquit(self):
+        message = f"{len(self.locations)} tips located; {self.ntodosplaced} to do items placed"
+        result = {
+            "status": True,
+            "message": message,
+        }
+        print(json.dumps(result))
+        sys.exit(0)
+
+
 def main():
+    if len(sys.argv) < 5:
+        errorquit("missing arguments; received: " + ", ".join(sys.argv))
 
-    params = parseparameters()
+    serverport = sys.argv[1]
+    if not serverport.startswith("http://"):
+        serverport = "http://" + serverport
+    uuid = sys.argv[2]
+    bodyid = sys.argv[3]
+    todoinstance = sys.argv[4]
 
-    locations = find_tips(params)
-
-    if locations:
-        place_todos(locations, params)
-
-    textreportquit(f"placed {len(locations)} tips")
-
+    detector = TipDetector(serverport, uuid, bodyid, todoinstance)
+    detector.findandplace()
 
 
 # ------------------------- script starts here -------------------------
