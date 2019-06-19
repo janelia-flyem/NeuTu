@@ -29942,13 +29942,43 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
-  std::vector<std::string> roiList = { "(L)NO1", "(L)NO2" };
+  std::vector<std::string> roiList = { "(L)NO1", "(L)NO2", "(L)NO3" };
 
   ZObject3dScan roi;
   FlyEmDataReader::ReadRoi(*reader, roiList, &roi);
-  roi.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  roi.save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Left.sobj");
 
+  ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Left.obj");
 //  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  std::vector<std::string> roiList = { "NO1", "NO2", "NO3" };
+
+  ZObject3dScan roi;
+  FlyEmDataReader::ReadRoi(*reader, roiList, &roi);
+  roi.save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Right.sobj");
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Right.obj");
+//  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "NO(Left)",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Left.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Left.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "NO(Right)",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Right.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Right.obj");
+
 #endif
 
 #if 0
@@ -29982,19 +30012,23 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
-  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO2");
-  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc");
+  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO3");
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO3.drc");
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
 
-  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc";
+  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO3.drc";
   std::cout << "Uploading " << filePath << std::endl;
-  writer->uploadRoiMesh(filePath, "(L)NO2");
-
+  writer->uploadRoiMesh(filePath, "(L)NO3");
 #endif
 
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  writer->deleteKey("rois", "(L)NO2D");
+  writer->deleteKey("rois", "(L)NO2V");
+#endif
 
   std::cout << "Done." << std::endl;
 }

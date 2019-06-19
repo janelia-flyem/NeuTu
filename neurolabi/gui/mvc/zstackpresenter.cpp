@@ -1486,8 +1486,11 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   if (op.getHitObject() != NULL) {
-    if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
-      op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+    if (interactiveContext().getUniqueMode() ==
+        ZInteractiveContext::EUniqueMode::INTERACT_FREE) {
+      if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
+        op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+      }
     }
   }
 

@@ -205,7 +205,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
