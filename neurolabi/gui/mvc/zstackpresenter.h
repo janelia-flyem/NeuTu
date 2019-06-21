@@ -443,7 +443,7 @@ signals:
   void bodyCheckoutTriggered(neutu::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
-  void exitingRectEdit();
+//  void exitingRectEdit();
 //  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
