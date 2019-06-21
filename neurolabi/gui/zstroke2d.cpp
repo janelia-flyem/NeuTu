@@ -168,7 +168,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 #ifdef _DEBUG_
   if (m_pointArray.size() == 1) {
     std::cout << "Painting stroke: " << this << " "
-              << m_pointArray[0].x()  << ", " << m_pointArray[1].y();
+              << m_pointArray[0].x()  << ", " << m_pointArray[0].y()
+              << "; Slice axis: " << neutu::ToString(sliceAxis) << std::endl;
   }
 #endif
 

@@ -1075,7 +1075,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
         updateActiveObjectForSynapseMove(currentStackPos);
       }
       ZPoint pos = currentStackPos;
-      pos.shiftSliceAxis(buddyView()->getSliceAxis());
+//      pos.shiftSliceAxis(buddyView()->getSliceAxis());
       stroke->setLast(pos.x(), pos.y());
       if (e != NULL) {
         e->setEvent(
@@ -1286,6 +1286,11 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
 
   ZPoint pos = currentStackPos;
 //  pos.shiftSliceAxis(buddyView()->getSliceAxis());
+#ifdef _DEBUG_
+  std::cout << "Update stroke: " << this << " " << pos.x() << ", " << pos.y()
+            << std::endl;
+#endif
+
   stroke->set(pos.x(), pos.y());
 
   ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;
