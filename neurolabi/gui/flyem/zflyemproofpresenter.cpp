@@ -1259,7 +1259,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         stroke->set(pt.getX(), pt.getY());
 
         ZPoint pos = currentStackPos;
-        pos.shiftSliceAxis(buddyView()->getSliceAxis());
+//        pos.shiftSliceAxis(buddyView()->getSliceAxis());
         stroke->set(pos.x(), pos.y());
 
         stroke->append(pos.x(), pos.y());
@@ -1285,7 +1285,7 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
 
   ZPoint pos = currentStackPos;
-  pos.shiftSliceAxis(buddyView()->getSliceAxis());
+//  pos.shiftSliceAxis(buddyView()->getSliceAxis());
   stroke->set(pos.x(), pos.y());
 
   ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;

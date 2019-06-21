@@ -165,16 +165,16 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
     return;
   }
 
+#ifdef _DEBUG_
+  if (m_pointArray.size() == 1) {
+    std::cout << "Painting stroke: " << this << " "
+              << m_pointArray[0].x()  << ", " << m_pointArray[1].y();
+  }
+#endif
+
   painter.save();
 
   QColor color = m_color;
-//  if (m_z >= 0 && m_z != z) {
-//    if (isEraser()) {
-//      return;
-//    }
-//    //color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
-//    return;
-//  }
   QPen pen(color);
   QBrush brush(color);
 

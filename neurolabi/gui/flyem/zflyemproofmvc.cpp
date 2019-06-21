@@ -5987,48 +5987,54 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
     if (m_coarseBodyWindow->hasRectRoi()) {
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
       if (reader.isReady()) {
-        if (getCompletePresenter()->isSplitOn()) {
-          ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
-          if (body.isEmpty()) {
-            emit messageGenerated(
-                  ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
-                                 arg(m_splitProject.getBodyId()),
-                                 neutu::EMessageType::ERROR));
-          } else {
-            ZDvidInfo dvidInfo = reader.readLabelInfo();
-            ZObject3dScan bodyInRoi;
-            ZObject3dScan::ConstSegmentIterator iter(&body);
-            while (iter.hasNext()) {
-              const ZObject3dScan::Segment &seg = iter.next();
-              for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-                ZIntPoint pt(0, seg.getY(), seg.getZ());
-                pt.setX(x);
-//                pt -= dvidInfo.getStartBlockIndex();
-                pt *= dvidInfo.getBlockSize();
-                pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
-                                dvidInfo.getBlockSize().getY() / 2, 0);
-//                pt += dvidInfo.getStartCoordinates();
+        if (reader.getDvidTarget().hasCoarseSplit()) {
+          if (getCompletePresenter()->isSplitOn()) {
+            ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
+            if (body.isEmpty()) {
+              emit messageGenerated(
+                    ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
+                                   arg(m_splitProject.getBodyId()),
+                                   neutu::EMessageType::ERROR));
+            } else {
+              ZDvidInfo dvidInfo = reader.readLabelInfo();
+              ZObject3dScan bodyInRoi;
+              ZObject3dScan::ConstSegmentIterator iter(&body);
+              while (iter.hasNext()) {
+                const ZObject3dScan::Segment &seg = iter.next();
+                for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+                  ZIntPoint pt(0, seg.getY(), seg.getZ());
+                  pt.setX(x);
+                  //                pt -= dvidInfo.getStartBlockIndex();
+                  pt *= dvidInfo.getBlockSize();
+                  pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                                  dvidInfo.getBlockSize().getY() / 2, 0);
+                  //                pt += dvidInfo.getStartCoordinates();
 
-                if (m_coarseBodyWindow->isProjectedInRectRoi(pt)) {
-                  bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                  if (m_coarseBodyWindow->isProjectedInRectRoi(pt)) {
+                    bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                  }
                 }
               }
-            }
 #ifdef _DEBUG_2
-            body.save(GET_TEST_DATA_DIR + "/test2.sobj");
-            bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
+              body.save(GET_TEST_DATA_DIR + "/test2.sobj");
+              bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-            m_splitProject.commitCoarseSplit(bodyInRoi);
-            flyem::SubtractBodyWithBlock(
-                  getCompleteDocument()->getBodyForSplit()->getObjectMask(),
-                  bodyInRoi, dvidInfo);
-            getCompleteDocument()->processObjectModified(
-                  getCompleteDocument()->getBodyForSplit());
-            getCompleteDocument()->processObjectModified();
+              m_splitProject.commitCoarseSplit(bodyInRoi);
+              flyem::SubtractBodyWithBlock(
+                    getCompleteDocument()->getBodyForSplit()->getObjectMask(),
+                    bodyInRoi, dvidInfo);
+              getCompleteDocument()->processObjectModified(
+                    getCompleteDocument()->getBodyForSplit());
+              getCompleteDocument()->processObjectModified();
+            }
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage("Must enter split mode to enable crop.",
+                                 neutu::EMessageType::WARNING));
           }
         } else {
           emit messageGenerated(
-                ZWidgetMessage("Must enter split mode to enable crop.",
+                ZWidgetMessage("Cropping is not supported for this dataset.",
                                neutu::EMessageType::WARNING));
         }
       }
