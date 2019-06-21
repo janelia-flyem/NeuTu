@@ -182,6 +182,29 @@ void ZFlyEmProofDocUtil::ExportSelecteBodyLevel(
 
 bool ZFlyEmProofDocUtil::HasSupervoxel(ZFlyEmProofDoc *doc)
 {
-  return doc->getDvidTarget().hasSupervoxel();
+  if (doc) {
+    return doc->getDvidTarget().hasSupervoxel();
+  }
+
+  return false;
+}
+
+bool ZFlyEmProofDocUtil::HasWrittableSynapse(ZFlyEmProofDoc *doc)
+{
+  if (HasSynapse(doc)) {
+    return !doc->getDvidTarget().readOnly() &&
+        doc->getDvidTarget().isSynapseEditable();
+  }
+
+  return false;
+}
+
+bool ZFlyEmProofDocUtil::HasSynapse(ZFlyEmProofDoc *doc)
+{
+  if (doc) {
+    return doc->getDvidTarget().hasSynapse();
+  }
+
+  return false;
 }
 

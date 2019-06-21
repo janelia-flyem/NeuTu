@@ -895,6 +895,11 @@ public:
   }
 
 public:
+  void emitInfo(const QString &msg);
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
+
+public:
   ZNeuronTracer& getNeuronTracer();
 
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
@@ -1380,10 +1385,6 @@ protected:
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void startWorkThread();
-
-  void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg);
-  void emitMessage(const QString &msg, neutu::EMessageType type);
 
   virtual bool _loadFile(const QString &filePath);
 

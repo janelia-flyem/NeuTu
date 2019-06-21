@@ -99,8 +99,7 @@ CONFIG += static_gtest
 include(extlib.pri)
 
 QT += printsupport
-CONFIG(NO_WEBENGINE) {
-} else {
+CONFIG(WEBENGINE) {
   qtHaveModule(webenginewidgets) {
     QT += webenginewidgets
     DEFINES += _USE_WEBENGINE_

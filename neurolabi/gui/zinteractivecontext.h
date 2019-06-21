@@ -174,6 +174,8 @@ public:
   void setUniqueMode(EUniqueMode mode);
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
+  bool isFreeMode() const;
+
   neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
   void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 

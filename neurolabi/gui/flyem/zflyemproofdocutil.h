@@ -29,6 +29,8 @@ public:
   static void ExportSelectedBody(ZFlyEmProofDoc *doc, const QString &filePath);
 
   static bool HasSupervoxel(ZFlyEmProofDoc *doc);
+  static bool HasSynapse(ZFlyEmProofDoc *doc);
+  static bool HasWrittableSynapse(ZFlyEmProofDoc *doc);
 };
 
 #endif // ZFLYEMPROOFDOCUTIL_H

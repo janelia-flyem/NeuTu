@@ -21,6 +21,7 @@
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
+#include "zflyemproofdocutil.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -295,7 +296,9 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_B:
-    if (event->modifiers() == Qt::NoModifier) {
+    if (event->modifiers() == Qt::NoModifier &&
+        interactiveContext().isFreeMode() &&
+        buddyDocument()->getTag() ==  neutu::Document::ETag::FLYEM_PROOFREAD) {
       if (getCompleteDocument()->hasBodySelected()) {
         emit goingToBodyBottom();
         processed = true;
@@ -309,10 +312,38 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_T:
-    if (event->modifiers() == Qt::NoModifier) {
-      emit goingToBodyTop();
-      processed = true;
-    }
+
+      if (interactiveContext().isFreeMode()) {
+        if (buddyDocument()->getTag() ==  neutu::Document::ETag::FLYEM_PROOFREAD) {
+          if (event->modifiers() == Qt::NoModifier) {
+            emit goingToBodyTop();
+            processed = true;
+          }
+        }
+      } else {
+        if (ZFlyEmProofDocUtil::HasWrittableSynapse(doc)) {
+          ZStackOperator op;
+          if (interactiveContext().bookmarkEditMode() ==
+              ZInteractiveContext::BOOKMARK_ADD) {
+            if (event->modifiers() == Qt::NoModifier) {
+              op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_START_TBAR);
+            } else if (event->modifiers() == Qt::ShiftModifier) {
+              op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_START_PSD);
+            }
+          } else if (interactiveContext().synapseEditMode() ==
+                     ZInteractiveContext::SYNAPSE_ADD_PRE) {
+            op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_START_PSD);
+          } else if (interactiveContext().synapseEditMode() ==
+                     ZInteractiveContext::SYNAPSE_ADD_POST) {
+            op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_START_TBAR);
+          }
+          if (!op.isNull()) {
+            processed = true;
+            process(op);
+          }
+        }
+      }
+
     break;
   case Qt::Key_1:
     if (interactiveContext().todoEditMode() ==
@@ -322,7 +353,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_V:
-  if (!doc->getDvidTarget().readOnly()) {
+  if (ZFlyEmProofDocUtil::HasWrittableSynapse(doc)) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_MOVE);
       if (action != NULL) {
@@ -333,7 +364,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   }
     break;
   case Qt::Key_X:
-  if (!doc->getDvidTarget().readOnly()) {
+  if (ZFlyEmProofDocUtil::HasWrittableSynapse(doc)) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_DELETE);
       if (action != NULL) {
@@ -344,9 +375,20 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   }
     break;
   case Qt::Key_Y:
-  if (!doc->getDvidTarget().readOnly()) {
+  if (ZFlyEmProofDocUtil::HasWrittableSynapse(doc)) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
+    break;
+  case Qt::Key_N:
+  if (ZFlyEmProofDocUtil::HasWrittableSynapse(doc)) {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
       if (action != NULL) {
         action->trigger();
         processed = true;
@@ -484,25 +526,33 @@ void ZFlyEmProofPresenter::tryAddPostSynapseMode()
 
 void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
 {
-  turnOnActiveObject(ROLE_SYNAPSE, false);
-  switch (kind) {
-  case ZDvidSynapse::EKind::KIND_PRE_SYN:
-    m_interactiveContext.setSynapseEditMode(
-          ZInteractiveContext::SYNAPSE_ADD_PRE);
-    break;
-  case ZDvidSynapse::EKind::KIND_POST_SYN:
-    m_interactiveContext.setSynapseEditMode(
-          ZInteractiveContext::SYNAPSE_ADD_POST);
-    break;
-  default:
-    m_interactiveContext.setSynapseEditMode(
-          ZInteractiveContext::SYNAPSE_ADD_PRE);
-    break;
-  }
-  updateActiveObjectForSynapseAdd();
-  buddyView()->paintActiveDecoration();
+  exitEdit();
 
-  updateCursor();
+  if (ZFlyEmProofDocUtil::HasWrittableSynapse(getCompleteDocument())) {
+    turnOnActiveObject(ROLE_SYNAPSE, false);
+    switch (kind) {
+    case ZDvidSynapse::EKind::KIND_PRE_SYN:
+      m_interactiveContext.setSynapseEditMode(
+            ZInteractiveContext::SYNAPSE_ADD_PRE);
+      break;
+    case ZDvidSynapse::EKind::KIND_POST_SYN:
+      m_interactiveContext.setSynapseEditMode(
+            ZInteractiveContext::SYNAPSE_ADD_POST);
+      break;
+    default:
+      m_interactiveContext.setSynapseEditMode(
+            ZInteractiveContext::SYNAPSE_ADD_PRE);
+      break;
+    }
+    updateActiveObjectForSynapseAdd();
+    buddyView()->paintActiveDecoration();
+
+    updateCursor();
+  } else {
+    getCompleteDocument()->emitWarning(
+          "Cannot add a synapse "
+          "because either no synapse data is specified or it is readonly.");
+  }
 }
 
 void ZFlyEmProofPresenter::tryMoveSynapseMode()
@@ -844,6 +894,8 @@ void ZFlyEmProofPresenter::tryAddTodoItemMode(double x, double y)
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 {
+  exitEdit();
+
   interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
 
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
@@ -1164,6 +1216,12 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_REFRESH_SEGMENTATION:
     getCompleteDocument()->rewriteSegmentation();
     break;
+  case ZStackOperator::OP_DVID_SYNAPSE_START_TBAR:
+    tryAddPreSynapseMode();
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_START_PSD:
+    tryAddPostSynapseMode();
+    break;
   default:
     processed = false;
     break;
@@ -1309,7 +1367,6 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
   stroke->setColor(color);
   stroke->setWidth(ZDvidSynapse::GetDefaultRadius(kind) * 2.0);
 }
-
 
 /*
 void ZFlyEmProofPresenter::createBodyContextMenu()

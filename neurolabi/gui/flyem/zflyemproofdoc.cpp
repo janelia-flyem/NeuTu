@@ -39,36 +39,41 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 
-//#include "zflyemproofmvc.h"
-#include "flyem/zflyembookmark.h"
 #include "zstring.h"
-#include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
-#include "zslicedpuncta.h"
-#include "zdialogfactory.h"
+#include "zstackarray.h"
+#include "zsleeper.h"
+#include "zstroke2d.h"
+
+#include "zflyembookmark.h"
+#include "zsynapseannotationarray.h"
+#include "zflyemproofdockeyprocessor.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
-#include "flyem/zflyemproofdoccommand.h"
+#include "zflyemproofdoccommand.h"
+#include "zflyembodymanager.h"
+#include "zflyembodystatus.h"
+#include "zflyemroimanager.h"
+
+#include "zslicedpuncta.h"
+#include "zdialogfactory.h"
+
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
 #include "imgproc/zstackwatershed.h"
-#include "zstackarray.h"
-#include "zsleeper.h"
-#include "zdvidutil.h"
+
 #include "zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
-#include "zstroke2d.h"
+#include "zdvidutil.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
 #include "zflyemroutinechecktask.h"
 #include "zarray.h"
-#include "zflyembodymanager.h"
+
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
-#include "flyem/zflyembodystatus.h"
-#include "zflyemroimanager.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
 #include "flyemdatareader.h"
@@ -5199,6 +5204,11 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   }
 
   return bookmark;
+}
+
+void ZFlyEmProofDoc::makeKeyProcessor()
+{
+  m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
 }
 
 bool ZFlyEmProofDoc::_loadFile(const QString &filePath)

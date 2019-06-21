@@ -2,6 +2,14 @@
 #include "geometry/zpoint.h"
 #include "widgets/zimagewidget.h"
 
+/* Implementation details
+ *
+ * ZInteractiveContext is a class of managing the interactiion context of a MVC
+ * environment. The context affects how the MVC responds to key and mouse events.
+ * The context is categorized by modes, and a free mode means that no specific
+ * mode is on.
+ */
+
 ZInteractiveContext::ZInteractiveContext()
 {
   m_traceMode = TRACE_OFF;
@@ -53,6 +61,11 @@ bool ZInteractiveContext::isContextMenuActivated() const
 void ZInteractiveContext::blockContextMenu(bool blocking)
 {
   m_blockingContextMenu = blocking;
+}
+
+bool ZInteractiveContext::isFreeMode() const
+{
+  return getUniqueMode() == EUniqueMode::INTERACT_FREE;
 }
 
 void ZInteractiveContext::setUniqueMode(EUniqueMode mode)

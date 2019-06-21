@@ -225,7 +225,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/verify.png"));
     break;
   case ACTION_SYNAPSE_UNVERIFY:
-    action = new QAction("Unverfiy", parent);
+    action = new QAction("Unverify", parent);
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);

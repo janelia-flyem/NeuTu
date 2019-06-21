@@ -2544,6 +2544,20 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   updateCursor();
 }
 
+void ZStackPresenter::exitEdit()
+{
+  turnOffActiveObject();
+  interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
+  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_EDIT_OFF);
+  interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
+  interactiveContext().setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+  updateCursor();
+  m_interactiveContext.setExitingEdit(true);
+}
+
 void ZStackPresenter::exitStrokeEdit()
 {
   turnOffActiveObject(ROLE_STROKE);

@@ -600,7 +600,7 @@ private:
 //  NeuPrintReader *getNeuPrintReader();
 
   enum class EViewButton {
-    GOTO_BODY, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
   };
 
   QPushButton* getViewButton(EViewButton option);

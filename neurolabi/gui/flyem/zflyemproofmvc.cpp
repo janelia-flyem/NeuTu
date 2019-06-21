@@ -1945,6 +1945,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     if (getDvidTarget().hasSegmentation()) {
       getViewButton(EViewButton::GOTO_BODY)->show();
     }
+    getViewButton(EViewButton::GOTO_POSITION)->show();
   }
 }
 
@@ -2592,6 +2593,15 @@ void ZFlyEmProofMvc::goToBody()
 //        emit locatingBody();
       }
     }
+  }
+}
+
+void ZFlyEmProofMvc::goToPosition()
+{
+  ZIntPoint pt = ZDialogFactory::AskForIntPoint(
+        ZGlobal::GetInstance().getStackPosition(), this);
+  if (pt.isValid()) {
+    zoomTo(pt);
   }
 }
 
@@ -3701,7 +3711,7 @@ QMenu* ZFlyEmProofMvc::makeControlPanelMenu()
 
   return menu;
 }
-
+/*
 void ZFlyEmProofMvc::goToPosition()
 {
   bool ok;
@@ -3727,6 +3737,7 @@ void ZFlyEmProofMvc::goToPosition()
     }
   }
 }
+*/
 
 void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
 {
@@ -6438,6 +6449,7 @@ void ZFlyEmProofMvc::initViewButton()
   makeViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
   makeViewButton(EViewButton::ANNOTATE_TRACED);
   makeViewButton(EViewButton::GOTO_BODY);
+  makeViewButton(EViewButton::GOTO_POSITION);
   for (auto b : m_viewButtons) {
     getView()->addToolButton(b.second);
     b.second->hide();
@@ -6505,6 +6517,9 @@ void ZFlyEmProofMvc::makeViewButton(EViewButton option)
   switch (option) {
   case EViewButton::GOTO_BODY:
     makeViewButton(option, "Go to Body", SLOT(goToBody()));
+    break;
+  case EViewButton::GOTO_POSITION:
+    makeViewButton(option, "Go to Position", SLOT(goToPosition()));
     break;
   case EViewButton::ANNOTATE_ROUGHLY_TRACED:
     makeViewButton(option, "Roughly Traced", SLOT(onAnnotationRoughlyTraced()));

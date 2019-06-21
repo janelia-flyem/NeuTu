@@ -651,6 +651,8 @@ protected:
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
 
+  void makeKeyProcessor() override;
+
   bool _loadFile(const QString &filePath) override;
 
 private:
