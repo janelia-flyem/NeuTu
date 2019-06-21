@@ -919,6 +919,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+  ZPoint currentDataPos = event.getDataPosition();
 
   bool processed = true;
 
@@ -1049,16 +1050,16 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
-    tryAddSynapse(currentStackPos.toIntPoint(), true);
+    tryAddSynapse(currentDataPos.toIntPoint(), true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD_ORPHAN:
-    tryAddSynapse(currentStackPos.toIntPoint(), false);
+    tryAddSynapse(currentDataPos.toIntPoint(), false);
     break;
   case ZStackOperator::OP_FLYEM_TODO_ADD:
-    tryAddTodoItem(currentStackPos.toIntPoint());
+    tryAddTodoItem(currentDataPos.toIntPoint());
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_MOVE:
-    tryMoveSynapse(currentStackPos.toIntPoint());
+    tryMoveSynapse(currentDataPos.toIntPoint());
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     if (m_interactiveContext.synapseEditMode() !=
