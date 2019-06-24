@@ -285,7 +285,7 @@ void ZStackDoc::init()
   m_actionLibrary = ZSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
   m_actionLibrary->setUndoStack(m_undoStack);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   QAction *shortcut = new QAction(this);
 //  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
   shortcut->setShortcut(Qt::Key_G);

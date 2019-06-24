@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QtAlgorithms>
+#include <QShortcut>
 
 #include "synapsepredictioninputdialog.h"
 #include "synapsepredictionbodyinputdialog.h"
@@ -54,6 +55,12 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
+
+    QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
+    connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
+
+    QShortcut *shortcutRefresh = new QShortcut(Qt::Key_R, this);
+    connect(shortcutRefresh, SIGNAL(activated()), this, SLOT(onRefreshButton()));
 
     connect(ui->reviewFirstButton, SIGNAL(clicked(bool)),
             this, SLOT(onReviewFirstButton()));
