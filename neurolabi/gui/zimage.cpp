@@ -12,6 +12,17 @@
 #include "tz_math.h"
 #include "zjsonobject.h"
 
+/* Implementation details
+ *
+ * ZImage is the class inherited from QImage for displaying image data.
+ * In addition to the APIs in QImage, ZImage provides functions for setting
+ * image data efficiently. Currently ZImage supports two formats:
+ * Format_Indexed8, Format_ARGB32, Format_ARGB32, Format_Premultiplied.
+ *
+ * Setting data in ZImage accesses raw image data pointer directly for speed,
+ * although it has not be well justified.
+ */
+
 ZImage::ZImage() : QImage()
 {
   init();

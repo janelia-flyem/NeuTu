@@ -85,6 +85,8 @@ private:
   ZSwcTree* traceFile();
   ZSwcTree* traceDvid();
 
+  void loadInputJson();
+
 private:
   std::vector<std::string> m_input;
   std::string m_output;
@@ -100,7 +102,7 @@ private:
   int m_intv[3];
   bool m_intvSpecified;
   int m_blockOffset[3];
-  int m_position[3];
+  std::vector<int> m_position;
   int m_size[3];
   int m_level;
   double m_scale;

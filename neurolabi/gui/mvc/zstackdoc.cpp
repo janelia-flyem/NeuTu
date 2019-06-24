@@ -144,8 +144,8 @@
  * The main member variables of ZStackDoc include:
  *   m_stack: the stack data, which can also be virtual to specify data range of
  *     the document.
- *   m_objectGroup: Set of ZStackObject objects, which are main geometrical objects
- *     of the document.
+ *   m_objectGroup: Set of ZStackObject objects, which are mainly geometrical
+ *     objects of the document.
  *
  * Some other member variables include:
  *   m_sparseStack: Sparse representation of a stack. This provides the support

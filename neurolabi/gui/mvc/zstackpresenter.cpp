@@ -3018,6 +3018,12 @@ static void SyncDvidLabelSliceSelection(
   }
 }
 
+bool ZStackPresenter::process(ZStackOperator::EOperation op)
+{
+  ZStackOperator opr(op);
+  return process(opr);
+}
+
 bool ZStackPresenter::process(ZStackOperator &op)
 {
   bool processed = true;

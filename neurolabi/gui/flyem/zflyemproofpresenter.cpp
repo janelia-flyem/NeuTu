@@ -345,6 +345,18 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       }
 
     break;
+  case Qt::Key_I:
+    if (event->modifiers() == Qt::NoModifier) {
+      process(ZStackOperator::OP_DVID_SYNAPSE_START_PSD);
+      processed = true;
+    }
+    break;
+  case Qt::Key_O:
+    if (event->modifiers() == Qt::NoModifier) {
+      process(ZStackOperator::OP_DVID_SYNAPSE_START_TBAR);
+      processed = true;
+    }
+    break;
   case Qt::Key_1:
     if (interactiveContext().todoEditMode() ==
         ZInteractiveContext::TODO_ADD_ITEM) {

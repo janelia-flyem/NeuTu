@@ -14,8 +14,6 @@ class ZStackDoc;
 class ZStackOperator
 {
 public:
-  ZStackOperator();
-
   enum EOperation {
     OP_NULL,
 
@@ -111,6 +109,9 @@ public:
     OP_EXPLORE_LOCAL
   };
 
+  ZStackOperator();
+  ZStackOperator(EOperation op);
+
   void clear();
 
   inline EOperation getOperation() const {
@@ -186,17 +187,17 @@ public:
   static bool IsOperable(EOperation op, const ZStackDoc *doc);
 
 private:
-  EOperation m_op;
+  EOperation m_op = OP_NULL;
   //Swc_Tree_Node *m_hitNode;
-  ZStackObject *m_hitObject;
+  ZStackObject *m_hitObject = nullptr;
 //  ZStroke2d *m_hitStroke;
 //  ZObject3d *m_hitObj3d;
-  int m_punctaIndex;
-  bool m_togglingStrokeLabel;
+  int m_punctaIndex = -1;
+  bool m_togglingStrokeLabel = false;
   int m_label = 0;
   bool m_shift = false;
-  Qt::MouseButtons m_buttonPressed;
-  const ZMouseEventRecorder *m_mouseEventRecorder;
+  Qt::MouseButtons m_buttonPressed = Qt::NoButton;
+  const ZMouseEventRecorder *m_mouseEventRecorder = nullptr;
 };
 
 template<>

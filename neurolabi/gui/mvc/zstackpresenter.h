@@ -486,6 +486,7 @@ protected:
   bool estimateActiveStrokeWidth();
 
   bool process(ZStackOperator &op);
+  bool process(ZStackOperator::EOperation op);
 
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
