@@ -165,7 +165,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
     return;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_pointArray.size() == 1) {
     std::cout << "Painting stroke: " << this << " "
               << m_pointArray[0].x()  << ", " << m_pointArray[0].y()

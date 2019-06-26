@@ -30030,6 +30030,10 @@ void ZTest::test(MainWindow *host)
   writer->deleteKey("rois", "(L)NO2V");
 #endif
 
+#if 1
+  neutu::LogMessageF("test", neutu::EMessageType::INFORMATION);
+#endif
+
   std::cout << "Done." << std::endl;
 }
 
