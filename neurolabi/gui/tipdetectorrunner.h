@@ -1,6 +1,8 @@
 #ifndef TIPDETECTORRUNNER_H
 #define TIPDETECTORRUNNER_H
 
+#include <QString>
+
 #include "dvid/zdvidtarget.h"
 #include "geometry/zintpoint.h"
 
@@ -18,6 +20,8 @@ private:
     ZIntPoint m_point;
     uint64_t m_bodyId;
     ZDvidTarget m_target;
+    QString m_pythonPath;
+    QString m_scriptPath;
 };
 
 #endif // TIPDETECTORRUNNER_H
