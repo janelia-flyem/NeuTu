@@ -114,6 +114,7 @@ signals:
   void highlightModeChanged();
   void showingSupervoxelList();
   void togglingBodyColorMap();
+  void refreshingData();
 
 public slots:
   void deleteSelectedSynapse();
@@ -147,6 +148,7 @@ public slots:
   void selectBodyInRoi();
   void zoomInRectRoi();
   void refreshSegmentation();
+  void refreshData();
 
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);

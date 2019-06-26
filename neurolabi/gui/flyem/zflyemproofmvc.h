@@ -375,6 +375,8 @@ public slots:
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
+  void refreshBookmark();
+
   void changeColorMap(const QString &option);
   void changeColorMap(QAction *action);
 
@@ -455,6 +457,8 @@ protected slots:
   void syncBodySelectionToOrthoWindow();
 
   void zoomToAssigned(int x, int y, int z);
+
+  void refreshData();
 //  void notifyBookmarkDeleted();
 
 protected:

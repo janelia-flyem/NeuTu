@@ -180,6 +180,21 @@ void ZFlyEmProofDocUtil::ExportSelecteBodyLevel(
   }
 }
 
+QList<ZFlyEmBookmark*> ZFlyEmProofDocUtil::GetUserBookmarkList(
+    ZFlyEmProofDoc *doc)
+{
+  QList<ZFlyEmBookmark*> objList;
+  QList<ZFlyEmBookmark*> bookmarkList =
+      doc->getObjectList<ZFlyEmBookmark>();
+  for (ZFlyEmBookmark *bookmark : bookmarkList) {
+    if (bookmark->isCustom()) {
+      objList.append(bookmark);
+    }
+  }
+
+  return objList;
+}
+
 bool ZFlyEmProofDocUtil::HasSupervoxel(ZFlyEmProofDoc *doc)
 {
   if (doc) {

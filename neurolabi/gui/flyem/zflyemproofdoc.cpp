@@ -3007,6 +3007,13 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
   }
 }
 
+//void ZFlyEmProofDoc::refreshBookmark()
+//{
+//  QList<ZFlyEmBookmark*> bookmarkList =
+//      getDocument()->getObjectList<ZFlyEmBookmark>();
+
+//}
+
 void ZFlyEmProofDoc::downloadBookmark()
 {
   if (m_dvidReader.isReady()) {

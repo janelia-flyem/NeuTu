@@ -158,6 +158,10 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, &QAction::triggered, this,
               &ZFlyEmProofPresenter::refreshSegmentation);
       break;
+    case ZActionFactory::ACTION_REFRESH_DATA:
+      connect(action, &QAction::triggered,
+              this, &ZFlyEmProofPresenter::refreshData);
+      break;
     case ZActionFactory::ACTION_SYNAPSE_VERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
               this, SLOT(verifySelectedSynapse()));
@@ -189,6 +193,18 @@ void ZFlyEmProofPresenter::refreshSegmentation()
 {
   getCompleteDocument()->refreshDvidLabelBuffer(0);
   getCompleteDocument()->updateDvidLabelSlice(buddyView()->getSliceAxis());
+}
+
+void ZFlyEmProofPresenter::refreshData()
+{
+  /*
+  getCompleteDocument()->refreshBookmark();
+  getCompleteDocument()->refreshSynapse();
+  getCompleteDocument()->refreshBookmark();
+  getCompleteDocument()->refreshTodo();
+  */
+
+  emit refreshingData();
 }
 
 void ZFlyEmProofPresenter::selectBodyInRoi()

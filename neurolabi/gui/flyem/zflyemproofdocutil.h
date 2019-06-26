@@ -3,12 +3,14 @@
 
 #include <set>
 #include <QString>
+#include <QList>
 
 #include "common/neutube_def.h"
 
 class ZDvidLabelSlice;
 class ZFlyEmProofDoc;
 class ZIntCuboid;
+class ZFlyEmBookmark;
 
 class ZFlyEmProofDocUtil
 {
@@ -31,6 +33,8 @@ public:
   static bool HasSupervoxel(ZFlyEmProofDoc *doc);
   static bool HasSynapse(ZFlyEmProofDoc *doc);
   static bool HasWrittableSynapse(ZFlyEmProofDoc *doc);
+
+  static QList<ZFlyEmBookmark*> GetUserBookmarkList(ZFlyEmProofDoc *doc);
 };
 
 #endif // ZFLYEMPROOFDOCUTIL_H

@@ -591,6 +591,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(toggleBodyColorMap()));
   connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
           this, SLOT(showSupervoxelList()));
+  connect(getCompletePresenter(), SIGNAL(refreshingData()),
+          this, SLOT(refreshData()));
 
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
@@ -5861,6 +5863,32 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     appendUserBookmarkTable(bookmarkList);
 //    model->getProxy()->invalidate();
 //    model->sortTable();
+  }
+}
+
+void ZFlyEmProofMvc::refreshData()
+{
+  refreshBookmark();
+  getCompletePresenter()->refreshSegmentation();
+}
+
+void ZFlyEmProofMvc::refreshBookmark()
+{
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+
+  QList<ZFlyEmBookmark*> bookmarkList =
+      ZFlyEmProofDocUtil::GetUserBookmarkList(doc);
+
+  if (!bookmarkList.isEmpty()) {
+    std::set<ZStackObject*> objSet;
+    objSet.insert(bookmarkList.begin(), bookmarkList.end());
+    doc->removeObject(objSet, true);
+    ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
+
+    if (model->isUsed()) {
+      model->clear();
+    }
+    doc->downloadBookmark();
   }
 }
 

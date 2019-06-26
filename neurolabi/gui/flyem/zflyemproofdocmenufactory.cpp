@@ -262,6 +262,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   }
 
   config.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+  config.append(ZActionFactory::ACTION_REFRESH_DATA);
 
 //  addAction(actionList, presenter, menu);
 
