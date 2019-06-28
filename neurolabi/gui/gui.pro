@@ -592,6 +592,7 @@ HEADERS += mainwindow.h \
     protocols/todoreviewinputdialog.h \
     protocols/todosearcher.h \
     tipdetectorrunner.h \
+    tipdetectordialog.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -791,6 +792,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/protocoldialog.ui \
+    tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
@@ -819,7 +821,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui 
+    dialogs/neuprintsetupdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1095,6 +1097,7 @@ SOURCES += main.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/todosearcher.cpp \
     tipdetectorrunner.cpp \    
+    tipdetectordialog.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
@@ -1210,7 +1213,7 @@ SOURCES += main.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
-    dialogs/neuprintsetupdialog.cpp
+    dialogs/neuprintsetupdialog.cpp 
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

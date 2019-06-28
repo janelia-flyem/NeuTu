@@ -167,6 +167,7 @@ class TipDetector:
             "message": message,
             "tfind": self.tfind,
             "tplace": self.tplace,
+            "ttotal": self.tfind + self.tplace,
             "locations": self.locations,
         }
         print(json.dumps(result))

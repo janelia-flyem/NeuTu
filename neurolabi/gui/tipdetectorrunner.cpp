@@ -2,7 +2,6 @@
 
 #include <QCoreApplication>
 #include <QJsonDocument>
-#include <QJsonObject>
 
 #include "widgets/zpythonprocess.h"
 
@@ -31,8 +30,11 @@ void TipDetectorRunner::setDvidTarget(ZDvidTarget target) {
     m_target = target;
 }
 
-void TipDetectorRunner::run() {
+QJsonObject TipDetectorRunner::getOutput() {
+    return m_output;
+}
 
+void TipDetectorRunner::run() {
     ZPythonProcess process;
     process.setPythonPath(m_pythonPath);
     process.setScript(m_scriptPath);
@@ -45,38 +47,22 @@ void TipDetectorRunner::run() {
     bool status = process.run(false);
     if (status) {
         // the script return should be in json; if not, it's a serious failure,
-        //  and we'll echo the output we did get
-        // otherwise we expect a json dict with a "status" and "message" at a
-        //  minimum; I intend to add more details to a successful return that
-        //  the UI can present as appropriate (eg, number of tips added)
+        //  and we'll echo the output we did get; otherwise, just pass
+        //  the script output to the calling routine
         QString output = process.getRawOutput();
         QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
         if (doc.isNull()) {
-            // undefined behavior
-            std::cout << "script returned unexpected output; output:" << std::endl;
-            std::cout << output.toStdString() << std::endl;
-            return;
-        }
-
-        QJsonObject obj = doc.object();
-        if (!obj["status"].toBool()) {
-            // failure, but one with a message
-            std::cout << "script returned failure: " << obj["message"].toString().toStdString() << std::endl;
-
-
+            m_output["status"] = false;
+            m_output["message"] = "Tip detection script returned unparseable output: " + output;
         } else {
-            // success
-            std::cout << "script returned success: " << obj["message"].toString().toStdString() << std::endl;
-
-
-
+            m_output = doc.object();
         }
 
     } else {
         // this is the system-level failure branch
-        std::cout << "script failed to run properly" << std::endl;
+        m_output["status"] = false;
+        m_output["message"] = "Tip detection script failed to run properly!";
     }
-
 }
 
 

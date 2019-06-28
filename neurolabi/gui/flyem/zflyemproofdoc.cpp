@@ -75,6 +75,7 @@
 #include "flyemdatawriter.h"
 #include "misc/miscutility.h"
 #include "tipdetectorrunner.h"
+#include "tipdetectordialog.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
 
@@ -4959,6 +4960,19 @@ void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t 
 }
 
 void ZFlyEmProofDoc::executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t bodyId) {
+
+    TipDetectorDialog inputDialog;
+    inputDialog.setBodyID(bodyId);
+    inputDialog.setDvidTarget(getDvidTarget());
+    int ans = inputDialog.exec();
+    if (ans == QDialog::Rejected) {
+        std::cout << "tip detector dialog canceled" << std::endl;
+    } else {
+        std::cout << "tip detector dialog accepted" << std::endl;
+    }
+
+    return;
+
     // might need to be more clever if/when this runs stuff in a thread,
     //  but for now, we're just testing how to make the thing run
     TipDetectorRunner runner;

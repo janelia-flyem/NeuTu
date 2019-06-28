@@ -2,6 +2,7 @@
 #define TIPDETECTORRUNNER_H
 
 #include <QString>
+#include <QJsonObject>
 
 #include "dvid/zdvidtarget.h"
 #include "geometry/zintpoint.h"
@@ -14,6 +15,7 @@ public:
     void setPoint(ZIntPoint point);
     void setBodyId(uint64_t bodyId);
     void setDvidTarget(ZDvidTarget target);
+    QJsonObject getOutput();
     void run();
 
 private:
@@ -22,6 +24,7 @@ private:
     ZDvidTarget m_target;
     QString m_pythonPath;
     QString m_scriptPath;
+    QJsonObject m_output;
 };
 
 #endif // TIPDETECTORRUNNER_H
