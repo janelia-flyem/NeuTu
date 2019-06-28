@@ -3118,6 +3118,17 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
   }
 }
 
+void ZFlyEmProofDoc::refreshTodo()
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (ZFlyEmToDoList* td : todoList) {
+    td->clearCache();
+    bufferObjectModified(td);
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmProofDoc::downloadTodo(const std::vector<ZIntPoint> &ptArray)
 {
   ZOUT(LTRACE(), 5) << "Download to do items";

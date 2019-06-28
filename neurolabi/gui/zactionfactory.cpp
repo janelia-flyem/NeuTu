@@ -402,6 +402,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_SUPERVOXEL_ID:
     action = new QAction("Copy Supervoxel ID", parent);
     break;
+  case ACTION_COPY_NEUROGLANCER_LINK:
+    action = new QAction("Copy Neuroglancer Link", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;

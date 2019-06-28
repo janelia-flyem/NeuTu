@@ -130,7 +130,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 #ifdef _DEBUG_2

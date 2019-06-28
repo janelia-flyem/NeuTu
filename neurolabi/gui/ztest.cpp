@@ -326,6 +326,10 @@
 #include "logging/utilities.h"
 #include "dvid/zdvidneurontracer.h"
 #include "flyem/zflyemmeshfactory.h"
+#include "flyem/neuroglancer/zneuroglancerlayerspecfactory.h"
+#include "flyem/neuroglancer/zneuroglancerpath.h"
+#include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
+#include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30030,8 +30034,47 @@ void ZTest::test(MainWindow *host)
   writer->deleteKey("rois", "(L)NO2V");
 #endif
 
-#if 1
+#if 0
   neutu::LogMessageF("test", neutu::EMessageType::INFORMATION);
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+
+  ZNeuroglancerPath gpath;
+
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(8, 8, 8);
+  nav.setCoordinates(15000, 15000, 10000);
+  gpath.setNavigation(nav);
+
+  gpath.addLayer(
+        ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(
+          reader->getDvidTarget()));
+  gpath.addLayer(
+        ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(
+          reader->getDvidTarget()));
+
+  std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
+      ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+        "segmentation");
+  annotLayer->setVoxelSize(8, 8, 8);
+  gpath.addLayer(
+        std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);
+
+  std::cout << "Neuroglancer path: " << gpath.getPath() << std::endl;
+
+  QUrl url(gpath.getPath().c_str());
+  qDebug() << url.toEncoded();
+#endif
+
+#if 1
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+  QString path = ZNeuroglancerPathFactory::MakePath(
+        reader->getDvidTarget(), ZIntPoint(8, 8, 8), ZPoint(15000, 15000, 10000));
+  qDebug() << GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString();
 #endif
 
   std::cout << "Done." << std::endl;

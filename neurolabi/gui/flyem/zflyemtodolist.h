@@ -131,6 +131,8 @@ public:
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
   ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
+  void clearCache();
+
   ZIntCuboid update(const ZIntCuboid &box);
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);

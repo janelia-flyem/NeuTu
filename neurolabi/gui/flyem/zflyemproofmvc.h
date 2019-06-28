@@ -376,6 +376,7 @@ public slots:
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
   void refreshBookmark();
+  void refreshTodo();
 
   void changeColorMap(const QString &option);
   void changeColorMap(QAction *action);

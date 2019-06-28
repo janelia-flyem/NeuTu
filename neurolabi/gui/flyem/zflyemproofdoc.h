@@ -478,6 +478,7 @@ public:
   ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
 
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
+  void refreshTodo();
 
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;

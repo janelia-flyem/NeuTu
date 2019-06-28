@@ -5861,15 +5861,19 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-//    model->getProxy()->invalidate();
-//    model->sortTable();
   }
 }
 
 void ZFlyEmProofMvc::refreshData()
 {
   refreshBookmark();
+  refreshTodo();
   getCompletePresenter()->refreshSegmentation();
+}
+
+void ZFlyEmProofMvc::refreshTodo()
+{
+  getCompleteDocument()->refreshTodo();
 }
 
 void ZFlyEmProofMvc::refreshBookmark()
@@ -5888,8 +5892,8 @@ void ZFlyEmProofMvc::refreshBookmark()
     if (model->isUsed()) {
       model->clear();
     }
-    doc->downloadBookmark();
   }
+  doc->downloadBookmark();
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(

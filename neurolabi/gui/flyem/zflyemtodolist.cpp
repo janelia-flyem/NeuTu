@@ -49,6 +49,11 @@ void ZFlyEmToDoList::init()
   m_isReady = false;
 }
 
+void ZFlyEmToDoList::clearCache()
+{
+  m_itemList.clear();
+}
+
 ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 {
   ZIntCuboid dataBox = box;

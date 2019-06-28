@@ -248,6 +248,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
       config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
+    config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    config.appendSeparator();
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);
