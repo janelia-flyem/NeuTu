@@ -398,6 +398,7 @@ public slots:
   void copyCurrentPosition();
   void copyLabelId();
   void copySupervoxelId();
+  void copyNeuroglancerLink();
 
   void notifyUser(const QString &msg);
 
@@ -496,6 +497,8 @@ protected:
 
   ZPoint getMousePositionInStack(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
+
+  virtual void copyLink(const QString &option) const;
 
 protected:
   //ZStackFrame *m_parent;

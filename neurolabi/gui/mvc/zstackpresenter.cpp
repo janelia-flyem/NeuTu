@@ -445,6 +445,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
+      break;
     default:
       connected = false;
       break;
@@ -2823,6 +2826,16 @@ void ZStackPresenter::copySupervoxelId()
   ZGlobal::CopyToClipboard(std::to_string(id));
 
   buddyDocument()->notify(QString("%1 copied").arg(id));
+}
+
+void ZStackPresenter::copyLink(const QString &/*option*/) const
+{
+
+}
+
+void ZStackPresenter::copyNeuroglancerLink()
+{
+  copyLink("neuroglancer");
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()

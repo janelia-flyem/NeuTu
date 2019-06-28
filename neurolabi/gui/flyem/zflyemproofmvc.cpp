@@ -5888,8 +5888,8 @@ void ZFlyEmProofMvc::refreshBookmark()
     if (model->isUsed()) {
       model->clear();
     }
-    doc->downloadBookmark();
   }
+  doc->downloadBookmark();
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(

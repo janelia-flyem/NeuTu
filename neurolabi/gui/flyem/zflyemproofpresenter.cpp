@@ -5,6 +5,8 @@
 
 #include "logging/zlog.h"
 #include "qt/gui/loghelper.h"
+#include "zglobal.h"
+
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
 #include "mvc/zstackdoc.h"
@@ -22,6 +24,8 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
+#include "neuroglancer/zneuroglancerpathfactory.h"
+
 
 #ifdef _WIN32
 #undef GetUserName
@@ -1261,6 +1265,30 @@ bool ZFlyEmProofPresenter::processCustomOperator(
         isSplitWindow());
 
   return processed;
+}
+
+void ZFlyEmProofPresenter::copyLink(const QString &option) const
+{
+  if (option == "neuroglancer") {
+    const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+          Qt::RightButton, ZMouseEvent::EAction::RELEASE);
+    ZPoint pt = event.getDataPosition();
+
+    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
+
+    ZDvidInfo dvidInfo = getCompleteDocument()->getDvidInfo();
+    ZResolution res = dvidInfo.getVoxelResolution();
+
+
+    QList<ZFlyEmBookmark*> bookmarkList =
+        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
+
+    QString path = ZNeuroglancerPathFactory::MakePath(
+          target, ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
+          pt, bookmarkList);
+    ZGlobal::CopyToClipboard(
+          GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
+  }
 }
 
 bool ZFlyEmProofPresenter::highTileContrast() const
