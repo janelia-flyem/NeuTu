@@ -59,6 +59,9 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
     connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
 
+    QShortcut *shortcutPrev = new QShortcut(Qt::Key_Q, this);
+    connect(shortcutPrev, SIGNAL(activated()), this, SLOT(onPrevButton()));
+
     QShortcut *shortcutRefresh = new QShortcut(Qt::Key_R, this);
     connect(shortcutRefresh, SIGNAL(activated()), this, SLOT(onRefreshButton()));
 

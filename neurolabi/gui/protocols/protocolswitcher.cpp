@@ -365,6 +365,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     }
 
     if (m_activeProtocol != NULL) {
+      if (m_usingParentEventFilter) {
+        m_activeProtocol->installEventFilter(parent());
+      }
+
       m_activeProtocol->setDvidTarget(m_currentDvidTarget);
       connect(m_activeProtocol, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
               this, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)));
@@ -597,6 +601,24 @@ void ProtocolSwitcher::processSynapseMoving(
   }
 }
 
+void ProtocolSwitcher::useParentEventFilter(bool on)
+{
+  m_usingParentEventFilter = on;
+  if (m_usingParentEventFilter) {
+    installEventFilterForProtocol(parent());
+  } else {
+    if (m_activeProtocol) {
+      m_activeProtocol->removeEventFilter(parent());
+    }
+  }
+}
+
+void ProtocolSwitcher::installEventFilterForProtocol(QObject *object)
+{
+  if (m_activeProtocol) {
+    m_activeProtocol->installEventFilter(object);
+  }
+}
 
 
 

@@ -79,6 +79,8 @@ void ZProofreadWindow::init()
 
   layout->addWidget(m_mainMvc);
 
+  installEventFilter(m_mainMvc);
+
   QVBoxLayout *controlLayout = new QVBoxLayout;
 
   m_controlGroup = new QStackedWidget(this);

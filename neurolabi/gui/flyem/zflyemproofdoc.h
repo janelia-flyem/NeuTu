@@ -589,6 +589,8 @@ public slots:
   void downloadTodo(int x, int y, int z);
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
+  void refreshSynapse();
+
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
   void deprecateSplitSource();

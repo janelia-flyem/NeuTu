@@ -3199,6 +3199,17 @@ void ZFlyEmProofDoc::downloadSynapse()
 #endif
 }
 
+void ZFlyEmProofDoc::refreshSynapse()
+{
+  QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+  for (ZDvidSynapseEnsemble *se : seList) {
+    se->clearCache();
+    bufferObjectModified(se);
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmProofDoc::downloadTodoList()
 {
   ZFlyEmToDoList *todoList = new ZFlyEmToDoList;

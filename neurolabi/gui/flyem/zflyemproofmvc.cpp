@@ -167,6 +167,7 @@ void ZFlyEmProofMvc::init()
 //  }
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
+//  m_protocolSwitcher->useParentEventFilter(true);
 //  m_supervisor = new ZFlyEmSupervisor(this);
 //  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
 //  m_todoDlg = new FlyEmTodoDialog(this);
@@ -395,6 +396,21 @@ bool ZFlyEmProofMvc::hasWidgetRole() const
 {
   return (getRole() == ERole::ROLE_WIDGET);
 }
+
+bool ZFlyEmProofMvc::eventFilter(QObject *watched, QEvent *event)
+{
+#ifdef _DEBUG_2
+  qDebug() << watched << event->type();
+#endif
+
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+    return processKeyEvent(keyEvent);
+  }
+
+  return ZStackMvc::eventFilter(watched, event);
+}
+
 #if 0
 NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 {
@@ -5868,6 +5884,7 @@ void ZFlyEmProofMvc::refreshData()
 {
   refreshBookmark();
   refreshTodo();
+  getCompleteDocument()->refreshSynapse();
   getCompletePresenter()->refreshSegmentation();
 }
 

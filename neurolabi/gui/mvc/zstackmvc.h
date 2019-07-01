@@ -121,7 +121,7 @@ public slots:
 
   void saveStack();
 
-  virtual void processKeyEvent(QKeyEvent *event);
+  virtual bool processKeyEvent(QKeyEvent *event);
 
   virtual void testSlot();
 
