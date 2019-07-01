@@ -39,7 +39,6 @@ ZJsonObject make_bookmark_annotation_json(const ZFlyEmBookmark &bookmark)
 
 }
 
-
 QString ZNeuroglancerPathFactory::MakePath(
     const ZDvidTarget &target, const ZIntPoint &voxelSize,
     const ZPoint &position, const QList<ZFlyEmBookmark*> bookmarkList)
