@@ -7,14 +7,6 @@
 
 TipDetectorRunner::TipDetectorRunner()
 {
-    // my local Fly EM conda env that has dvid_tools installed
-    m_pythonPath = "/Users/olbrisd/projects/flyem/miniconda/envs/neutu-dvidtools/bin/python";
-
-    // this doesn't work on Mac
-    // m_scriptPath = QCoreApplication::applicationDirPath()+"/../python/detect_tips.py";
-
-    // my local tip detection script, within NeuTu source:
-    m_scriptPath = "/Users/olbrisd/projects/flyem/NeuTu/neutube/neurolabi/python/detect_tips.py";
 
 }
 
@@ -36,8 +28,16 @@ QJsonObject TipDetectorRunner::getOutput() {
 
 void TipDetectorRunner::run() {
     ZPythonProcess process;
-    process.setPythonPath(m_pythonPath);
-    process.setScript(m_scriptPath);
+
+    // this doesn't work on Mac
+    // QString scriptPath = QCoreApplication::applicationDirPath()+"/../python/detect_tips.py";
+
+    std::cout <<"in runner: dirpath = " << QCoreApplication::applicationDirPath().toStdString() << std::endl;
+
+    // my local tip detection script, within NeuTu source:
+    QString scriptPath = "/Users/olbrisd/projects/flyem/NeuTu/neutube/neurolabi/python/detect_tips.py";
+
+    process.setScript(scriptPath);
 
     process.addArg(QString::fromStdString(m_target.getAddressWithPort()));
     process.addArg(QString::fromStdString(m_target.getUuid()));
