@@ -25,6 +25,7 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
+class ZDvidGraySliceEnsemble;
 class ZArbSliceViewParam;
 class ZDvidTileEnsemble;
 class ZTask;
@@ -344,6 +345,19 @@ public:
   QString getTypeName() const { return "DvidGraySlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySlice *getCompleteData() const;
+  ZTask* getFutureTask(ZStackDoc *doc) const;
+};
+
+/**************************************************/
+class ZDvidGraySliceEnsemblePlayer : public ZDocPlayer
+{
+public:
+  ZDvidGraySliceEnsemblePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidGraySliceEnsemble"; }
+  bool updateData(const ZStackViewParam &viewParam) const;
+  ZDvidGraySliceEnsemble *getCompleteData() const;
   ZTask* getFutureTask(ZStackDoc *doc) const;
 };
 

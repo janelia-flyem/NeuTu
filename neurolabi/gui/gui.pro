@@ -712,7 +712,8 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h
+    dialogs/neuprintsetupdialog.h \
+    dvid/zdvidgraysliceensemble.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1202,7 +1203,8 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dialogs/neuprintsetupdialog.cpp
+    dialogs/neuprintsetupdialog.cpp \
+    dvid/zdvidgraysliceensemble.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

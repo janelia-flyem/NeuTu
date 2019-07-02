@@ -241,9 +241,13 @@ void ZFlyEmProofDoc::connectSignalSlot()
           this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
 
+  /*
   connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
           this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
+          */
+  connect(this, &ZFlyEmProofDoc::updatingGraySlice,
+          this, &ZFlyEmProofDoc::updateGraySlice);
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));

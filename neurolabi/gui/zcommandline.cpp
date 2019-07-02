@@ -716,7 +716,7 @@ int ZCommandLine::runTraceNeuron()
   loadTraceConfig();
 
   ZSwcTree *tree = NULL;
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
     tree = traceDvid();
   } else {
     tree = traceFile();
@@ -1325,7 +1325,7 @@ int ZCommandLine::runSkeletonize()
     tic();
   }
 
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
     stat = skeletonizeDvid();
   } else {
     stat = skeletonizeFile();

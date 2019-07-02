@@ -1262,6 +1262,14 @@ ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
   return target;
 }
 
+std::vector<ZDvidTarget> ZDvidTarget::getGrayScaleTargetList() const
+{
+  std::vector<ZDvidTarget> targetList;
+  targetList.push_back(getGrayScaleTarget());
+
+  return targetList;
+}
+
 ZDvidTarget ZDvidTarget::getTileTarget() const
 {
   ZDvidNode node = getTileSource();
@@ -1301,7 +1309,7 @@ void ZDvidTarget::prepareTile()
   }
 }
 
-bool ZDvidTarget::isDvidTarget(const std::string &source)
+bool ZDvidTarget::IsDvidTarget(const std::string &source)
 {
   return ZString(source).startsWith("http:");
 }

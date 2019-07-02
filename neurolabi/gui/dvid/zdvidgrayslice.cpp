@@ -485,6 +485,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->useCenterCut(false);
     task->setDelay(100);
     task->setDoc(doc);
+    task->setHandle(getSource());
   }
 
   return task;
@@ -561,7 +562,8 @@ void ZDvidGraySlice::printInfo() const
 void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 {
   getHelper()->setDvidTarget(target);
-  getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  getHelper()->updateMaxZoom();
+//  getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
 //  m_dvidTarget = target;
 //  getDvidReader().open(target);
 }
