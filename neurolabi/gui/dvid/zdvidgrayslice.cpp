@@ -562,8 +562,11 @@ void ZDvidGraySlice::printInfo() const
 void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 {
   getHelper()->setDvidTarget(target);
-  getHelper()->updateMaxZoom();
-//  getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  if (target.getMaxGrayscaleZoom() > 0) {
+    getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  } else {
+    getHelper()->updateMaxZoom();
+  }
 //  m_dvidTarget = target;
 //  getDvidReader().open(target);
 }

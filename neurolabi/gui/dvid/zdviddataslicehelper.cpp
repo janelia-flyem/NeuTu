@@ -214,7 +214,7 @@ int ZDvidDataSliceHelper::getActualZoom() const
 
 void ZDvidDataSliceHelper::setZoom(int zoom)
 {
-  m_zoom = std::max(0, std::min(zoom, m_maxZoom));
+  m_zoom = std::max(0, std::min(zoom, getMaxZoom()));
 }
 
 int ZDvidDataSliceHelper::getLowresZoom() const
