@@ -45,7 +45,7 @@ void TipDetectorDialog::onRunButton() {
 
     if (output["status"].toBool()) {
         setStatus(FINISHED);
-        ui->todoLabel->setText(QString::number(output["locations"].toDouble()));
+        ui->todoLabel->setText(QString::number(output["nlocations"].toInt()));
         ui->timeLabel->setText(QString::number(output["ttotal"].toDouble()) + "s");
 
         // debugging:
