@@ -604,6 +604,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_PASTE_3DCAMERA:
     action = m_actionLibrary->getAction(item, this, SLOT(pasteView()));
     break;
+  case ZActionFactory::ACTION_SAVE_ALL_MESH:
+    action = m_actionLibrary->getAction(item, this, SLOT(saveAllVisibleMesh()));
+    break;
 //  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
 //    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
 //    break;
@@ -1257,6 +1260,15 @@ void Z3DWindow::pasteView()
     if (!cameraJson.isEmpty()) {
       getCamera()->set(cameraJson);
     }
+  }
+}
+
+void Z3DWindow::saveAllVisibleMesh()
+{
+  QString fileName = ZDialogFactory::GetSaveFileName("Save Mesh", ".obj", this);
+
+  if (!fileName.isEmpty()) {
+    ZStackDocProxy::SaveVisibleMesh(getDocument(), fileName);
   }
 }
 

@@ -201,7 +201,11 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
       }
     }
+  }
 
+  config.appendSeparator();
+  if (doc->hasMesh()) {
+    config.append(ZActionFactory::ACTION_SAVE_ALL_MESH);
   }
 
   config.appendSeparator();

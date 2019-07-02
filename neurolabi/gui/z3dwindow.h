@@ -268,6 +268,7 @@ public slots:
   void loadView();
   void copyView();
   void pasteView();
+  void saveAllVisibleMesh();
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
