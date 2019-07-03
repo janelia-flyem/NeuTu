@@ -35,14 +35,14 @@ import sys
 import time
 
 
+# third party
 import requests
-
 
 import dvidtools as dt
 
 
 # ------------------------- constants -------------------------
-appname = "NeuTu/detect_tips.py"
+appname = "detect_tips.py"
 
 
 # ------------------------- code -------------------------
@@ -120,7 +120,11 @@ class TipDetector:
 
         t1 = time.time()
         annlist = [self.maketodo(loc) for loc in self.locations]
-        self.postannotations(annlist)
+
+        # testing; don't actually post
+        # self.postannotations(annlist)
+
+
         t2 = time.time()
         self.tplace = t2 - t1
 
