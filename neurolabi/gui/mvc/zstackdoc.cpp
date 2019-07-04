@@ -8279,6 +8279,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::EType::DVID_GRAY_SLICE:
         player = new ZDvidGraySlicePlayer(obj);
         break;
+      case ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE:
+        player = new ZDvidGraySliceEnsemblePlayer(obj);
+        break;
       case ZStackObject::EType::DVID_SPARSEVOL_SLICE:
         player = new ZDvidSparsevolSlicePlayer(obj);
         break;

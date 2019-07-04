@@ -18,7 +18,7 @@ void ZDvidGraySliceHighresTask::execute()
             m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut)) {
         doc->prepareDvidGraySlice(
               m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight,
-              m_usingCenterCut);
+              m_usingCenterCut, slice->getSource());
       }
     }
   }

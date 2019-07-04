@@ -670,7 +670,6 @@ HEADERS += mainwindow.h \
     ilastik/laplacian_smoothing.h \
     zarbsliceviewparam.h \
     dialogs/zneu3sliceviewdialog.h \
-    znetbufferreader.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
@@ -1161,7 +1160,6 @@ SOURCES += main.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
     zarbsliceviewparam.cpp \
-    znetbufferreader.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
     zstackdocnullmenufactory.cpp \

@@ -52,6 +52,8 @@ void ZFlyEmArbDoc::prepareDvidData()
     loadStack(stack);
 
     if (getDvidTarget().hasGrayScaleData()) {
+      initGrayscaleSlice(neutu::EAxis::ARB);
+      /*
       ZDvidGraySlice *slice = new ZDvidGraySlice;
       slice->setSliceAxis(neutu::EAxis::ARB);
       slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
@@ -60,6 +62,7 @@ void ZFlyEmArbDoc::prepareDvidData()
       slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
       prepareGraySlice(slice);
       addObject(slice, true);
+      */
     }
 
     if (getDvidTarget().hasSegmentation()) {

@@ -1881,7 +1881,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 //    getPresenter()->setHighContrastProtocal(contrastObj);
 
     KINFO << "Init grayslice";
-    ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+    ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice(
+          getView()->getSliceAxis());
     if (slice != NULL) {
 //      slice->updateContrast(getCompletePresenter()->highTileContrast());
 

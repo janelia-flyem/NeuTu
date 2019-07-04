@@ -13,14 +13,9 @@
 #include <vector>
 #include <tuple>
 
-//#include "flyem/zflyem.h"
-#include "zclosedcurve.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
-//#include "zdvidsynapse.h"
 #include "zdvidbufferreader.h"
-//#include "zdvidurl.h"
-#include "znetbufferreader.h"
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
@@ -48,6 +43,7 @@ class ZStack;
 class ZAffineRect;
 class ZDvidUrl;
 class ZDvidSynapse;
+class ZClosedCurve;
 
 struct archive;
 
@@ -545,8 +541,8 @@ public:
   ZJsonArray readSynapseJson(
       const InputIterator &first, const InputIterator &last);
 
-  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
-  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
+//  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
+//  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
   ZJsonObject readToDoItemJson(int x, int y, int z);
   ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
@@ -715,7 +711,7 @@ protected:
   mutable int m_statusCode = 0;
   mutable int64_t m_readingTime = 0;
 
-  mutable ZNetBufferReader m_netBufferReader;
+//  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
 
 #if defined(_ENABLE_LIBDVIDCPP_)

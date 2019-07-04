@@ -2816,7 +2816,7 @@ ZStackViewParam ZStackView::getViewParameter(
 
   if (m_sliceAxis == neutu::EAxis::ARB) {
     ZArbSliceViewParam viewParam = m_sliceViewParam;
-    viewParam.setSize(0, 0);
+//    viewParam.setSize(0, 0);
     param.setArbSliceView(viewParam);
   }
   //param.setViewPort(imageWidget()->viewPort());
@@ -2891,7 +2891,7 @@ void ZStackView::updateSliceViewParam()
 
         m_sliceViewParam.move(dx, dy, dz);
 #ifdef _DEBUG_
-        std::cout << "Updated center: " << m_sliceViewParam.getCenter().toString()
+        std::cout << "*********Updated center: " << m_sliceViewParam.getCenter().toString()
                   << std::endl;
 #endif
       }
@@ -3208,7 +3208,7 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
-  updateActiveDecorationCanvas();
+//  updateActiveDecorationCanvas();
 //  updateNewTileCanvas();
 
 #ifdef _DEBUG_2

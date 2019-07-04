@@ -472,8 +472,10 @@ public:
 
   void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
-  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut,
+      const std::string &source);
 
   ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
 
@@ -531,7 +533,7 @@ signals:
                           bool usingCenterCut);
   void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                          int zoom, int centerCutX, int centerCutY,
-                         bool usingCenterCut);
+                         bool usingCenterCut, const std::string &source);
 
 
 public slots: //Commands
@@ -634,7 +636,7 @@ public slots:
                         bool usingCenterCut);
   void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                        int zoom, int centerCutX, int centerCutY,
-                       bool usingCenterCut);
+                       bool usingCenterCut, const std::string &source);
 
   void setTodoItemChecked(int x, int y, int z, bool checking);
 
@@ -653,6 +655,7 @@ protected:
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
+  void initGrayscaleSlice(neutu::EAxis axis);
 
   void makeKeyProcessor() override;
 
@@ -682,8 +685,6 @@ private:
   void initData(const std::string &type, const std::string &dataName);
 
   void initTileData();
-  void initGrayscaleSlice();
-
 
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();

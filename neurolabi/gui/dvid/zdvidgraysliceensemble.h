@@ -30,12 +30,12 @@ public:
   bool update(const ZStackViewParam &viewParam);
   ZTask* makeFutureTask(ZStackDoc *doc);
 
-private:
   std::shared_ptr<ZDvidGraySlice> getActiveSlice() const;
+  std::shared_ptr<ZDvidGraySlice> getSlice(const std::string &source) const;
 
 private:
   size_t m_activeIndex = 0;
-  std::vector<std::shared_ptr<ZDvidGraySlice>> m_grayList;
+  std::vector<std::shared_ptr<ZDvidGraySlice>> m_sliceList;
 };
 
 #endif // ZDVIDGRAYSLICEENSEMBLE_H

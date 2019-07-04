@@ -6,6 +6,7 @@
 
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemtodoitem.h"
+#include "geometry/zcuboid.h"
 #include "z3dsphererenderer.h"
 #include "z3dlinerenderer.h"
 #include "z3dlinewithfixedwidthcolorrenderer.h"

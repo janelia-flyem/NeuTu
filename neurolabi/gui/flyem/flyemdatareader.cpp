@@ -91,6 +91,35 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   return annotation;
 }
 
+std::vector<ZFlyEmToDoItem> FlyEmDataReader::ReadToDoItem(
+    const ZDvidReader &reader, const ZIntCuboid &box)
+{
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  ZJsonArray obj = reader.readJsonArray(dvidUrl.getTodoListUrl(box));
+
+  std::vector<ZFlyEmToDoItem> itemArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZFlyEmToDoItem &item = itemArray[i];
+    item.loadJsonObject(itemJson, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  }
+
+  return itemArray;
+}
+
+ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
+      const ZDvidReader &reader, int x, int y, int z)
+{
+  std::vector<ZFlyEmToDoItem> itemArray =
+      ReadToDoItem(reader, ZIntCuboid(x, y, z, x, y, z));
+  if (!itemArray.empty()) {
+    return itemArray[0];
+  }
+
+  return ZFlyEmToDoItem();
+}
+
 ZMesh* FlyEmDataReader::LoadRoi(
     const ZDvidReader &reader, const std::string &roiName,
     const std::string &key, const std::string &source)

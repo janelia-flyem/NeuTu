@@ -16,7 +16,11 @@
 
 #include "zstackobjectsourcefactory.h"
 #include "zstackfactory.h"
-
+#include "zstring.h"
+#include "zintcuboidobj.h"
+#include "zstackarray.h"
+#include "zsleeper.h"
+#include "zstroke2d.h"
 #include "zwidgetmessage.h"
 #include "flyem/zflyemsupervisor.h"
 #include "zpuncta.h"
@@ -36,14 +40,8 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidlabelslice.h"
-#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidgraysliceensemble.h"
 #include "dvid/zdvidreader.h"
-
-#include "zstring.h"
-#include "zintcuboidobj.h"
-#include "zstackarray.h"
-#include "zsleeper.h"
-#include "zstroke2d.h"
 
 #include "zflyembookmark.h"
 #include "zsynapseannotationarray.h"
@@ -1171,10 +1169,24 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 {
+  ZDvidGraySlice *slice = nullptr;
+
   ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
 
-  return dynamic_cast<ZDvidGraySlice*>(obj);
+  if (obj) {
+    slice = dynamic_cast<ZDvidGraySlice*>(obj);
+  } else {
+    obj = getObject(
+          ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
+          ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+    ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
+    if (se) {
+      slice = se->getActiveSlice().get();
+    }
+  }
+
+  return slice;
 }
 
 
@@ -1212,7 +1224,7 @@ void ZFlyEmProofDoc::prepareDvidData()
   if (getDvidTarget().hasTileData()) {
     initTileData();
   } else {
-    initGrayscaleSlice();
+    initGrayscaleSlice(neutu::EAxis::Z);
   }
 
   addDvidLabelSlice(neutu::EAxis::Z, false);
@@ -1239,9 +1251,18 @@ void ZFlyEmProofDoc::initTileData()
   addObject(ensemble, true);
 }
 
-void ZFlyEmProofDoc::initGrayscaleSlice()
+void ZFlyEmProofDoc::initGrayscaleSlice(neutu::EAxis axis)
 {
   if (getDvidTarget().hasGrayScaleData()) {
+    ZDvidGraySliceEnsemble *se = new ZDvidGraySliceEnsemble;
+    se->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    se->setSource(
+          ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+    se->setDvidTarget(getDvidTarget());
+    prepareGraySlice(se->getActiveSlice().get());
+    addObject(se, true);
+
+    /*
     ZDvidGraySlice *slice = new ZDvidGraySlice;
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     slice->setSource(
@@ -1249,6 +1270,7 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
     prepareGraySlice(slice);
     addObject(slice, true);
+    */
   }
 }
 
@@ -2637,8 +2659,9 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 }
 
 void ZFlyEmProofDoc::prepareDvidGraySlice(
-    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool usingCenterCut)
+    const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY,
+    bool usingCenterCut, const std::string &source)
 {
   if (!m_grayscaleWorkReader.good()) {
     m_grayscaleWorkReader.open(getDvidTarget().getGrayScaleTarget());
@@ -2666,7 +2689,7 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
 
   if (array != NULL) {
     emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
-                           usingCenterCut);
+                           usingCenterCut, source);
   }
 }
 
@@ -2721,17 +2744,18 @@ void ZFlyEmProofDoc::updateLabelSlice(
   }
 }
 
-void ZFlyEmProofDoc::updateGraySlice(
-    ZStack *array, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY, bool usingCenterCut)
+void ZFlyEmProofDoc::updateGraySlice(ZStack *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY, bool usingCenterCut, const std::string &source)
 {
   if (array != NULL) {
     ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
     if (slice != NULL) {
-      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
-                         usingCenterCut)) {
-        bufferObjectModified(slice->getTarget());
-        processObjectModified();
+      if (slice->getSource() == source) {
+        if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
+                           usingCenterCut)) {
+          bufferObjectModified(slice->getTarget());
+          processObjectModified();
+        }
       }
     } else {
       delete array;
@@ -3815,7 +3839,7 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
     ZDvidGraySlice *slice = getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(highContrast);
-      bufferObjectModified(slice->getTarget());
+      bufferObjectModified(slice);
       processObjectModified();
     }
   }

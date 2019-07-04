@@ -6,6 +6,7 @@
 #include <string>
 
 #include "dvid/zdviddef.h"
+#include "zflyemtodoitem.h"
 
 class ZDvidReader;
 class FlyEmDataConfig;
@@ -28,6 +29,12 @@ public:
       const ZDvidReader &reader, uint64_t bodyId);
   static ZFlyEmBodyAnnotation ReadBodyAnnotation(
       const ZDvidReader &reader, uint64_t bodyId);
+
+  static std::vector<ZFlyEmToDoItem> ReadToDoItem(
+      const ZDvidReader &reader, const ZIntCuboid &box);
+  static ZFlyEmToDoItem ReadToDoItem(
+      const ZDvidReader &reader, int x, int y, int z);
+
   static ZMesh* ReadRoiMesh(
       const ZDvidReader &reader, const std::string &roiName);
 

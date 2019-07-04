@@ -307,7 +307,7 @@
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 #include "common/memorystream.h"
 #include "service/neuprintreader.h"
 #include "zjsonparser.h"
@@ -30069,13 +30069,20 @@ void ZTest::test(MainWindow *host)
   qDebug() << url.toEncoded();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("cleave_split_test");
   QString path = ZNeuroglancerPathFactory::MakePath(
         reader->getDvidTarget(), ZIntPoint(8, 8, 8), ZPoint(15000, 15000, 10000));
   qDebug() << GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString();
 #endif
+
+#if 1
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+  std::cout << reader->hasData("segmentation") << std::endl;
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

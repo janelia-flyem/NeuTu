@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 #include "zjsonobject.h"
 
 class ZJsonArray;

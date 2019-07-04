@@ -2444,7 +2444,8 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
 
 ZFlyEmToDoItem ZFlyEmBody3dDoc::readTodoItem(int x, int y, int z) const
 {
-  ZFlyEmToDoItem item = getMainDvidReader().readToDoItem(x, y, z);
+  ZFlyEmToDoItem item = FlyEmDataReader::ReadToDoItem(
+        getMainDvidReader(), x, y, z);
 
   return item;
 }
