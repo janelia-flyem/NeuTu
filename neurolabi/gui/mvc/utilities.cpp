@@ -167,7 +167,9 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     ZPoint dataPos;
     if (axis == neutu::EAxis::ARB) {
       if (view->viewingInfo(neutu::mvc::ViewInfoFlag::DATA_COORD)) {
-        dataPos = ZPositionMapper::StackToData(stackPos, view->getAffinePlane());
+        dataPos = ZPositionMapper::StackToData(
+              ZPoint(stackPos.x(), stackPos.y(), view->getZ(neutu::ECoordinateSystem::STACK)),
+              view->getViewCenter().toPoint(), view->getAffinePlane());
         info += QString("(%1, %2, %3)").
             arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
             arg(iround(dataPos.getZ()));

@@ -40,6 +40,7 @@ public:
 
   QRectF getProjRect() const;
   QRect getViewPort() const;
+  QPoint getViewPortCenter() const;
 
   QPoint getWidgetCenter() const;
 
@@ -55,6 +56,12 @@ public:
   void setZoomWithFixedPoint(double zoom, const QPoint &viewPoint);
 //  void setZoomWithFixedPoint(double zoom, const QPointF &viewPoint);
 
+  /*!
+   * \brief move a viewport position to a widget postion.
+   *
+   * After moving, the viewport position (\a srcX, \a srcY) should be mapped to
+   * the widget position (\a dstX, \a dstY).
+   */
   void move(int srcX, int srcY, double dstX, double dstY);
   void move(const QPoint &src, const QPointF &dst);
   void move(const QPoint &src, const QPoint &dst);

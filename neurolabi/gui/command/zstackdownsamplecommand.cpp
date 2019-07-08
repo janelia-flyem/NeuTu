@@ -6,11 +6,20 @@
 #include "zstack.hxx"
 #include "zstackwriter.h"
 
+
 ZStackDownsampleCommand::ZStackDownsampleCommand()
 {
 
 }
 
+/*!
+ * Configuration
+ * {
+ *   "command": "downsample_stack",
+ *   "intv": [<int>, <int>, <int>],
+ *   "option": "max"|"min"|"mean"
+ * }
+ */
 int ZStackDownsampleCommand::run(
     const std::vector<std::string> &input, const std::string &output,
     const ZJsonObject &config)

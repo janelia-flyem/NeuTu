@@ -223,7 +223,7 @@ void ZDvidTarget::setFromSourceString(
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
+  if (tokens.size() < 4 || (tokens[0] != "http" && tokens[0] != "mock")) {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else

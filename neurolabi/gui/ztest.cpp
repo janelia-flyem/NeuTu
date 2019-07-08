@@ -196,6 +196,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprinter.h"
+#include "zneurontracer.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -30069,12 +30070,58 @@ void ZTest::test(MainWindow *host)
   qDebug() << url.toEncoded();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReader("cleave_split_test");
   QString path = ZNeuroglancerPathFactory::MakePath(
         reader->getDvidTarget(), ZIntPoint(8, 8, 8), ZPoint(15000, 15000, 10000));
   qDebug() << GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromSourceString("http:localhost:1900:uuid::grayscale");
+  target.toJsonObject().print();
+#endif
+
+#if 0
+  //Generate data for hbtest/tif
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZDvidTarget target = reader->getDvidTarget().getGrayScaleTarget();
+  target.setGrayScaleName("grayscale");
+  ZDvidReader greader;
+  greader.open(target);
+
+  ZIntPoint s(2048, 2048, 8);
+  for (int i = 0; i < 256; ++i) {
+    ZIntPoint start(13452, 20071, 20696 + s.getZ() * i);
+    ZIntCuboid box = ZIntCuboid(start, start + s - 1);
+    ZStack *stack = greader.readGrayScale(box);
+    std::cout << "=====> box: " << box.toString() << std::endl;
+
+    ZString output = "/Volumes/FlyEM-Data1/data/hbtest/grayscale/";
+//        GET_TEST_DATA_DIR + "/_dvid/Volumes/FlyEM-Data1/data/hbtest/grayscale";
+    output.appendNumber(i + 1, 4);
+    output += ".tif";
+    stack->save(output);
+  }
+#endif
+
+#if 0
+  ZStack *stack = new ZStack;
+  stack->load(GET_BENCHMARK_DIR + "/fork2/fork2.tif");
+
+  ZNeuronTracer tracer;
+  tracer.setIntensityField(stack);
+  tracer.setTraceLevel(0);
+
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/fork2/partial.swc");
+  tracer.trace(64, 64, 61, &tree);
+
+  tree.resortId();
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

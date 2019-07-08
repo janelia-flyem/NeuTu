@@ -2792,6 +2792,7 @@ void ZStackView::updateViewParam(const ZArbSliceViewParam &param)
 
 void ZStackView::resetViewParam(const ZArbSliceViewParam &param)
 {
+  syncArbViewCenter();
   ZStackViewParam currentParam = getViewParameter(param);
   updateViewParam(currentParam);
 }
@@ -2877,6 +2878,15 @@ void ZStackView::setViewPortOffset(int x, int y)
 //  notifyViewChanged(NeuTube::View::EXPLORE_MOVE);
 }
 
+void ZStackView::syncArbViewCenter()
+{
+  m_imageWidget->setViewPortCenterQuitely(
+        m_sliceViewParam.getX(), m_sliceViewParam.getY());
+  int z = m_sliceViewParam.getZ() - getZ0();
+  m_depthControl->setValueQuietly(z);
+  m_zSpinBox->setValueQuietly(z);
+}
+
 void ZStackView::updateSliceViewParam()
 {
   if (getSliceAxis() == neutu::EAxis::ARB) {
@@ -2889,10 +2899,21 @@ void ZStackView::updateSliceViewParam()
         int dy = center.y() - oldCenter.y();
         int dz = viewParam.getZ() - m_oldViewParam.getZ();
 
-        m_sliceViewParam.move(dx, dy, dz);
+        if (dx != 0 || dy != 0 || dz != 0) {
+          m_sliceViewParam.move(dx, dy, dz);
+        }
 #ifdef _DEBUG_
-        std::cout << "Updated center: " << m_sliceViewParam.getCenter().toString()
+        std::cout << "=======> old center: "
+                  << oldCenter.x() << "," << oldCenter.y() << ","
                   << std::endl;
+        std::cout << "=======> current center: "
+                  << center.x() << "," << center.y() << ","
+                  << std::endl;
+        std::cout << "=======> moving: " << dx << "," << dy << "," << dz << std::endl;
+        std::cout << "=======> Updated center: " << m_sliceViewParam.getCenter().toString()
+                  << std::endl;
+        ZIntPoint viewportCenter = getCenter();
+        std::cout << "=======> Viewport center " << viewportCenter.toString() << std::endl;
 #endif
       }
     }
@@ -2903,9 +2924,19 @@ void ZStackView::move(const QPoint &src, const QPointF &dst)
 {  
   recordViewParam();
 
+#ifdef _DEBUG_
+  qDebug() << "=====> Viewport center before moving:"
+           << imageWidget()->viewPort().center();
+#endif
+
   imageWidget()->blockPaint(true);
   imageWidget()->moveViewPort(src, dst);
   imageWidget()->blockPaint(false);
+
+#ifdef _DEBUG_
+  qDebug() << "=====> Viewport center after moving:"
+           << imageWidget()->viewPort().center();
+#endif
 
   updateSliceViewParam();
 

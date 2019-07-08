@@ -332,6 +332,9 @@ void ZNeuronTracer::clear()
   m_stack = NULL;
 
   clearBuffer();
+
+  delete m_initialSwc;
+  m_initialSwc = nullptr;
 }
 
 Stack* ZNeuronTracer::getIntensityData() const
@@ -389,6 +392,137 @@ void ZNeuronTracer::initTraceMask(bool clearing)
   if (clearing) {
     Zero_Stack(m_traceWorkspace->trace_mask);
   }
+}
+
+ZSwcTree* ZNeuronTracer::connectBranch(const ZSwcPath &branch, ZSwcTree *host)
+{
+  if (branch.size() > 1) {
+    ZSwcConnector swcConnector;
+    swcConnector.setMinDist(10);
+    swcConnector.useSurfaceDist(true);
+
+    Swc_Tree_Node *branchRoot = branch.front();
+    if (host == nullptr) {
+      host = new ZSwcTree;
+      host->setDataFromNode(branchRoot);
+    } else {
+      std::vector<ZSwcTree*> hostArray;
+      hostArray.push_back(host);
+      std::pair<Swc_Tree_Node*, Swc_Tree_Node*> conn =
+          swcConnector.identifyConnection(branch, hostArray);
+
+      if (conn.first != NULL) {
+        bool needAdjust = false;
+        if (!SwcTreeNode::isRoot(conn.first)) {
+          SwcTreeNode::setAsRoot(conn.first);
+          branchRoot = conn.first;
+        }
+
+        if (SwcTreeNode::hasOverlap(conn.first, conn.second)) {
+          needAdjust = true;
+        } else {
+          if (SwcTreeNode::isTurn(conn.second, conn.first,
+                                  SwcTreeNode::firstChild(conn.first))) {
+            needAdjust = true;
+          }
+        }
+        if (needAdjust) {
+          SwcTreeNode::average(branchRoot, SwcTreeNode::firstChild(branchRoot),
+                               branchRoot);
+          if (SwcTreeNode::isTurn(conn.second, conn.first,
+                                  SwcTreeNode::firstChild(conn.first))) {
+            SwcTreeNode::average(SwcTreeNode::firstChild(branchRoot), conn.second,
+                                 branchRoot);
+          }
+        }
+      } else {
+        if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
+          Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
+          ZPoint rootCenter = SwcTreeNode::center(branchRoot);
+          ZPoint nbrCenter = SwcTreeNode::center(rootNeighbor);
+
+          double lambda = ZNeuronTracer::findBestTerminalBreak(
+                rootCenter, SwcTreeNode::radius(branchRoot),
+                nbrCenter, SwcTreeNode::radius(rootNeighbor),
+                getStack()->c_stack());
+
+          if (lambda < 1.0) {
+            SwcTreeNode::interpolate(
+                  branchRoot, rootNeighbor, lambda, branchRoot);
+          }
+        }
+      }
+
+      Swc_Tree_Node *loop = conn.second;
+      Swc_Tree_Node *hook = conn.first;
+
+      if (hook != NULL) {
+        //Adjust the branch point
+        std::vector<Swc_Tree_Node*> neighborArray =
+            SwcTreeNode::neighborArray(loop);
+        for (std::vector<Swc_Tree_Node*>::iterator iter = neighborArray.begin();
+             iter != neighborArray.end(); ++iter) {
+          Swc_Tree_Node *tn = *iter;
+          if (SwcTreeNode::hasSignificantOverlap(tn, hook)) {
+            loop = tn;
+            Swc_Tree_Node *newHook = hook;
+            newHook = SwcTreeNode::firstChild(hook);
+            SwcTreeNode::detachParent(newHook);
+            SwcTreeNode::kill(hook);
+            hook = newHook;
+            branchRoot = hook;
+          }
+        }
+      }
+
+
+      ZSwcTree tree;
+      tree.setDataFromNode(branchRoot);
+
+      if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
+        Swc_Tree_Node *terminal = tree.firstLeaf();
+        Swc_Tree_Node *terminalNeighbor = SwcTreeNode::parent(tree.firstLeaf());
+        ZPoint terminalCenter = SwcTreeNode::center(terminal);
+        ZPoint nbrCenter = SwcTreeNode::center(terminalNeighbor);
+
+        double lambda = ZNeuronTracer::findBestTerminalBreak(
+              terminalCenter, SwcTreeNode::radius(terminal),
+              nbrCenter, SwcTreeNode::radius(terminalNeighbor),
+              getStack()->c_stack());
+
+        if (lambda < 1.0) {
+          SwcTreeNode::interpolate(terminal, terminalNeighbor, lambda, terminal);
+        }
+      }
+
+      if (conn.first != NULL) {
+        SwcTreeNode::setParent(hook, loop);
+      } else {
+        host->forceVirtualRoot();
+        SwcTreeNode::setParent(branchRoot, host->root());
+      }
+      tree.setData(nullptr, ZSwcTree::FREE_WRAPPER);
+    }
+  }
+
+  return host;
+}
+
+ZSwcTree* ZNeuronTracer::trace(double x, double y, double z, ZSwcTree *host)
+{
+  if (host != nullptr) {
+    if (getTraceWorkspace()->trace_mask == NULL) {
+      getTraceWorkspace()->trace_mask =
+          C_Stack::make(GREY, getStack()->width(), getStack()->height(),
+                        getStack()->depth());
+      Zero_Stack(getTraceWorkspace()->trace_mask);
+    }
+    host->labelStack(getTraceWorkspace()->trace_mask);
+  }
+
+  ZSwcPath path = trace(x, y, z);
+
+  return connectBranch(path, host);
 }
 
 ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
