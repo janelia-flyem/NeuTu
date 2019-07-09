@@ -3,7 +3,7 @@
 #include "logging/zqslog.h"
 #include "zdvidutil.h"
 #include "neutubeconfig.h"
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 
 namespace neutuse {
 

@@ -1255,6 +1255,7 @@ void ZFlyEmProofDoc::initGrayscaleSlice(neutu::EAxis axis)
 {
   if (getDvidTarget().hasGrayScaleData()) {
     ZDvidGraySliceEnsemble *se = new ZDvidGraySliceEnsemble;
+    se->setSliceAxis(axis);
     se->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     se->setSource(
           ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));

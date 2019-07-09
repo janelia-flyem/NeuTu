@@ -56,6 +56,8 @@
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
+#include "command/zstackfiltercommand.h"
+
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
 #endif
@@ -85,7 +87,6 @@ void ZCommandLine::init()
   for (int i = 0; i < 3; ++i) {
     m_intv[i] = 0;
     m_blockOffset[i] = 0;
-    m_size[i] = 0;
   }
   m_level = 0;
   m_scale = 1.0;
@@ -104,6 +105,7 @@ void ZCommandLine::registerModule()
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
+  registerModule<ZStackFilterCommand>("filter_stack");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif
@@ -502,12 +504,11 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
-ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+ZStack* ZCommandLine::readDvidStack(const ZDvidTarget &target)
 {
-  if (m_position.size() == 3) {
-    ZStack *stack = NULL;
-    ZDvidTarget target;
-    target.loadJsonObject(dvidConfig);
+  ZStack *stack = NULL;
+
+  if (m_position.size() == 3 && m_size.size() == 3) {
     ZDvidReader reader;
     if (reader.open(target)) {
       ZIntCuboid box;
@@ -515,12 +516,19 @@ ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
       box.setSize(m_size[0], m_size[1], m_size[2]);
       stack = reader.readGrayScale(box);
     }
-
-    return stack;
   }
 
-  return nullptr;
+  return stack;
 }
+/*
+ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+{
+  ZDvidTarget target;
+  target.loadJsonObject(dvidConfig);
+
+  return readDvidStack(target);
+}
+*/
 
 bool ZCommandLine::ExportPointArray(
     const std::vector<ZWeightedPoint> &ptArray, const string &outFilePath)
@@ -543,6 +551,21 @@ bool ZCommandLine::ExportPointArray(
   return succ;
 }
 
+ZDvidTarget ZCommandLine::getInputDvidTarget() const
+{
+  ZDvidTarget target;
+
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::JSON) {
+    ZJsonObject dvidConfig;
+    dvidConfig.load(m_input[0]);
+    target.loadJsonObject(dvidConfig);
+  } else {
+    target.setFromSourceString(m_input[0]);
+  }
+
+  return target;
+}
+
 int ZCommandLine::runComputeSeed()
 {
   if (m_input.empty()) {
@@ -555,24 +578,22 @@ int ZCommandLine::runComputeSeed()
     return 1;
   }
 
-  ZJsonObject dvidConfig;
-  dvidConfig.load(m_input[0]);
+  ZDvidTarget target = getInputDvidTarget();
 
-  if (dvidConfig.isEmpty()) {
+  if (!target.isValid()) {
     std::cout << "The input " << m_input[0]
-              << " must be a JSON file with valid DVID configuration. Abort."
+              << " must be a valid DVID configuration. Abort."
               << std::endl;
     return 1;
   }
 
-  loadTraceConfig();
-
-  ZNeuronTracer tracer;
-
   bool saved = false;
 
-  ZStack *stack = readDvidStack(dvidConfig);
+  ZStack *stack = readDvidStack(target);
   if (stack != NULL) {
+    loadTraceConfig();
+
+    ZNeuronTracer tracer;
     tracer.setTraceLevel(m_level);
 
     std::vector<ZWeightedPoint> ptArray = tracer.computeSeedPosition(stack);
@@ -644,6 +665,25 @@ void ZCommandLine::loadInputJson()
       }
     }
 
+    if (obj.hasKey("size")) {
+      ZJsonArray sizeJson(obj.value("size"));
+      if (sizeJson.size() == 3) {
+        m_size.resize(3);
+        for (size_t i = 0; i < 3; ++i) {
+          m_size[i] = ZJsonParser::integerValue(sizeJson.getData(), i);
+        }
+      } else {
+        std::cerr << "ERROR: invalid size input!" <<  std::endl;
+        exit(1);
+      }
+    }
+
+    if (obj.hasKey("swc")) {
+      m_input[1] = ZJsonParser::stringValue(obj["swc"]);
+    } else {
+      m_input[1].clear();
+    }
+
     m_input[0].clear();
     if (obj.hasKey("signal")) {
       m_input[0] = ZJsonParser::stringValue(obj["signal"]);
@@ -663,10 +703,20 @@ ZSwcTree* ZCommandLine::traceFile()
   ZSwcTree *tree = nullptr;
 
   if (m_position.size() == 3) {
-    ZSwcPath path = tracer.trace(m_position[0], m_position[1], m_position[2]);
-    if (!path.empty()) {
+    std::string swcPath;
+    if (m_input.size() > 1) {
+      swcPath = m_input[1];
+    }
+    if (ZFileType::FileType(swcPath) != ZFileType::EFileType::SWC) {
+      ZSwcPath path = tracer.trace(m_position[0], m_position[1], m_position[2]);
+      if (!path.empty()) {
+        tree = new ZSwcTree;
+        tree->setDataFromNodeRoot(path[0]);
+      }
+    } else {
       tree = new ZSwcTree;
-      tree->setDataFromNodeRoot(path[0]);
+      tree->load(swcPath);
+      tracer.trace(m_position[0], m_position[1], m_position[2], tree);
     }
   } else {
     tree = tracer.trace(&signal);
@@ -674,15 +724,14 @@ ZSwcTree* ZCommandLine::traceFile()
   return tree;
 }
 
-ZSwcTree* ZCommandLine::traceDvid()
+ZSwcTree* ZCommandLine::traceDvid(const ZDvidTarget &target)
 {
   if (m_position.size() == 3) {
     ZDvidNeuronTracer tracer;
 
-    ZDvidTarget target;
-    target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
-
-    target.setNullSegmentationName();
+//    ZDvidTarget target;
+//    target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
+//    target.setNullSegmentationName();
     tracer.setDvidTarget(target);
     tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 
@@ -716,8 +765,9 @@ int ZCommandLine::runTraceNeuron()
   loadTraceConfig();
 
   ZSwcTree *tree = NULL;
-  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
-    tree = traceDvid();
+  ZDvidTarget target = getInputDvidTarget();
+  if (target.isValid()) {
+    tree = traceDvid(target);
   } else {
     tree = traceFile();
   }

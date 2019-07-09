@@ -9,7 +9,8 @@ HEADERS += \
     $$PWD/zstackframe.h \
     $$PWD/zstackdochelper.h \
     $$PWD/mvcdef.h \
-    $$PWD/zstackdocutil.h
+    $$PWD/zstackdocutil.h \
+    $$PWD/zstackviewrecorder.h
 
 SOURCES += \
     $$PWD/logging.cpp \
@@ -22,4 +23,5 @@ SOURCES += \
     $$PWD/zstackframe.cpp \
     $$PWD/zstackdochelper.cpp \
     $$PWD/mvcdef.cpp \
-    $$PWD/zstackdocutil.cpp
+    $$PWD/zstackdocutil.cpp \
+    $$PWD/zstackviewrecorder.cpp

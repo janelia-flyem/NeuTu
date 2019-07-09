@@ -3556,6 +3556,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
+#ifdef _DEBUG_
+  std::cout << "======> Grab position: " << grabPosition.toString() << std::endl;
+#endif
 //    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),

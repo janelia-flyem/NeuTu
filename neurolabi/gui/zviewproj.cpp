@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <QDebug>
 
 #include "tz_math.h"
 #include "zjsonobject.h"
@@ -248,6 +249,11 @@ QRect ZViewProj::getViewPort() const
   return m_viewPort;
 }
 
+QPoint ZViewProj::getViewPortCenter() const
+{
+  return getViewPort().center();
+}
+
 QPoint ZViewProj::getWidgetCenter() const
 {
   return m_widgetRect.center();
@@ -414,6 +420,10 @@ void ZViewProj::setZoomWithFixedPoint(double zoom, const QPoint &viewPoint)
 void ZViewProj::move(int srcX, int srcY, double dstX, double dstY)
 {
   if (m_zoom > 0.0) {
+#ifdef _DEBUG_2
+    qDebug() << m_widgetRect;
+#endif
+
     int x0 = srcX - iround(dstX / m_zoom);
     int y0 = srcY - iround(dstY / m_zoom);
 

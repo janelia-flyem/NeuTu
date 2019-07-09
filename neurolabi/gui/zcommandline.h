@@ -14,6 +14,7 @@ class ZStack;
 class ZWeightedPoint;
 class ZDvidReader;
 class ZCommandModule;
+class ZDvidTarget;
 
 class ZCommandLine
 {
@@ -73,7 +74,8 @@ private:
       ZSwcTree *tree1, ZSwcTree *tree2, ZSwcTreeMatcher &matcher) const;
 
 private:
-  ZStack* readDvidStack(const ZJsonObject &dvidConfig);
+//  ZStack* readDvidStack(const ZJsonObject &dvidConfig);
+  ZStack* readDvidStack(const ZDvidTarget &target);
   void loadTraceConfig();
   static bool ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
                                const std::string &outFilePath);
@@ -83,9 +85,11 @@ private:
   ZJsonObject getSkeletonizeConfig(ZDvidReader &reader);
 
   ZSwcTree* traceFile();
-  ZSwcTree* traceDvid();
+  ZSwcTree* traceDvid(const ZDvidTarget &target);
 
   void loadInputJson();
+
+  ZDvidTarget getInputDvidTarget() const;
 
 private:
   std::vector<std::string> m_input;
@@ -97,13 +101,14 @@ private:
   std::string m_configDir;
   std::string m_outputFlag;
   std::string m_generalConfig;
+//  std::string m_initialSwcPath;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];
   bool m_intvSpecified;
   int m_blockOffset[3];
   std::vector<int> m_position;
-  int m_size[3];
+  std::vector<int> m_size;
   int m_level;
   double m_scale;
   bool m_fullOverlapScreen;

@@ -3743,7 +3743,7 @@ void MainWindow::on_actionMexican_Hat_triggered()
     ZStackProcessor proc;
     MexicanHatDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.mexihatFilter(currentStackFrame()->document()->getStack(),
+      proc.MexihatFilter(currentStackFrame()->document()->getStack(),
                      dlg.sigma());
       currentStackFrame()->updateView();
     }

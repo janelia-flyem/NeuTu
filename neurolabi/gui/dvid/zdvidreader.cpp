@@ -3846,7 +3846,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
       dim2vec.push_back(vy2);
       dim2vec.push_back(vz2);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       STD_COUT << "Stack info:";
       stack->printInfo();
 
@@ -3943,7 +3943,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
       std::vector<double> dim1vec = MakeVec3(vx1, vy1, vz1);
       std::vector<double> dim2vec = MakeVec3(vx2, vy2, vz2);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       STD_COUT << "Stack info:";
       array->printInfo();
 

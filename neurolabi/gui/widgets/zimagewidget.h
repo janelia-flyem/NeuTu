@@ -76,6 +76,7 @@ public:
    * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
    */
   void setViewPortOffset(int x, int y);
+  void setViewPortCenterQuitely(int cx, int cy);
 
   const ZViewProj& getViewProj() const {
     return m_viewProj;

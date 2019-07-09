@@ -356,6 +356,7 @@ public:
   ZDvidTarget getTileTarget() const;
 
   std::vector<ZDvidTarget> getGrayScaleTargetList() const;
+  void clearGrayScale();
 
   static bool Test();
 

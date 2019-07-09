@@ -223,7 +223,7 @@ void ZDvidTarget::setFromSourceString(
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
+  if (tokens.size() < 4 || (tokens[0] != "http" && tokens[0] != "mock")) {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
@@ -398,7 +398,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
 
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
-  obj.setEntry(m_supervisorServerKey, m_supervisorServer);
+  obj.setNonEmptyEntry(m_supervisorServerKey, m_supervisorServer);
   obj.setEntry(m_defaultSettingKey, usingDefaultDataSetting());
 
   return obj;
@@ -1268,6 +1268,12 @@ std::vector<ZDvidTarget> ZDvidTarget::getGrayScaleTargetList() const
   targetList.push_back(getGrayScaleTarget());
 
   return targetList;
+}
+
+void ZDvidTarget::clearGrayScale()
+{
+  setGrayScaleName("");
+  m_sourceConfig.erase(m_grayScaleNameKey);
 }
 
 ZDvidTarget ZDvidTarget::getTileTarget() const

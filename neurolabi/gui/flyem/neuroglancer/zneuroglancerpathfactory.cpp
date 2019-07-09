@@ -1,9 +1,13 @@
 #include "zneuroglancerpathfactory.h"
 
+#include <string>
+
 #include <QUrl>
 
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
+
+#include "dvid/zdvidtarget.h"
 
 #include "../zflyembookmark.h"
 
@@ -52,12 +56,17 @@ QString ZNeuroglancerPathFactory::MakePath(
 
   gpath.addLayer(
         ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(target));
-  gpath.addLayer(
-        ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
+
+  std::string segLayer = "";
+  if (target.hasSegmentation()) {
+    gpath.addLayer(
+          ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
+    segLayer = "segmentation";
+  }
 
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
       ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
-        target, "segmentation");
+        target, segLayer);
   annotLayer->setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
   gpath.addLayer(
         std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);

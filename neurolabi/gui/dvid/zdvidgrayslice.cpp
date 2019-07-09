@@ -243,7 +243,7 @@ void ZDvidGraySlice::updatePixmap()
     m_pixmap.setOffset(-getX(), -getY());
     validatePixmap();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "gray slice pixmap offset: "
             << m_pixmap.getTransform().getTx() << " "
             << m_pixmap.getTransform().getTy() << std::endl;

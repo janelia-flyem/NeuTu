@@ -712,7 +712,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
     dialogs/neuprintsetupdialog.h \
-    dvid/zdvidgraysliceensemble.h
+    dvid/zdvidgraysliceensemble.h \
+    dvid/zdvidenv.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1172,10 +1173,6 @@ SOURCES += main.cpp \
     concurrent/zworkthread.cpp \
     concurrent/zworker.cpp \
     concurrent/ztaskqueue.cpp \
-    dvid/zdvidbodyhelper.cpp \
-    dvid/zdviddataslicetaskfactory.cpp \
-    dvid/zdviddataslicetask.cpp \
-    dvid/zdvidstackblockfactory.cpp \
     z3dwindowcontroller.cpp \
     zstackblockfactory.cpp \    
     zstackblocksource.cpp \
@@ -1184,6 +1181,10 @@ SOURCES += main.cpp \
     protocols/taskfalsesplitreview.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     data3d/zstackobjectconfig.cpp \
+    dvid/zdvidbodyhelper.cpp \
+    dvid/zdviddataslicetaskfactory.cpp \
+    dvid/zdviddataslicetask.cpp \
+    dvid/zdvidstackblockfactory.cpp \
     dvid/zdvidblockstream.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
@@ -1202,7 +1203,8 @@ SOURCES += main.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dialogs/neuprintsetupdialog.cpp \
-    dvid/zdvidgraysliceensemble.cpp
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
