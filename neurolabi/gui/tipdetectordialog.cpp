@@ -30,10 +30,8 @@ void TipDetectorDialog::onRunButton() {
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
     // this doesn't force the widgets to update (label and button):
-    //  (the curson does update, though)
+    //  (the cursor changes properly, though)
     // QApplication::processEvents();
-
-
 
     runner.run();
 
@@ -47,9 +45,6 @@ void TipDetectorDialog::onRunButton() {
         setStatus(FINISHED);
         ui->todoLabel->setText(QString::number(output["nlocations"].toInt()));
         ui->timeLabel->setText(QString::number(output["ttotal"].toDouble()) + "s");
-
-        // debugging:
-        std::cout << "message: " << output["message"].toString().toStdString() << std::endl;
     } else {
         setStatus(ERROR);
         setMessage(output["message"].toString());
@@ -86,9 +81,10 @@ void TipDetectorDialog::setStatus(ScriptStatus status) {
     ui->statusLabel->setText(statusString);
     ui->statusLabel->setStyleSheet("QLabel { background-color : " + color + "; }");
 
-    // these don't help the label get updated, ugh
-    ui->statusLabel->update();
-    QApplication::processEvents();
+    // none of these make the label get updated, ugh
+    // ui->statusLabel->repaint();
+    // ui->statusLabel->update();
+    // QApplication::processEvents();
 }
 
 void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {

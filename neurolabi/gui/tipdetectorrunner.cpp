@@ -32,8 +32,6 @@ void TipDetectorRunner::run() {
     // this doesn't work on Mac
     // QString scriptPath = QCoreApplication::applicationDirPath()+"/../python/detect_tips.py";
 
-    std::cout <<"in runner: dirpath = " << QCoreApplication::applicationDirPath().toStdString() << std::endl;
-
     // my local tip detection script, within NeuTu source:
     QString scriptPath = "/Users/olbrisd/projects/flyem/NeuTu/neutube/neurolabi/python/detect_tips.py";
 
