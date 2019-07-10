@@ -52,7 +52,7 @@ void TipDetectorDialog::onRunButton() {
 }
 
 void TipDetectorDialog::setMessage(QString message) {
-    ui->messageLabel->setText(message);
+    ui->messageText->setHtml(message);
 }
 
 void TipDetectorDialog::setStatus(ScriptStatus status) {
