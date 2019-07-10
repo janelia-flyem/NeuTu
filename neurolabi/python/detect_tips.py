@@ -38,7 +38,11 @@ import time
 # third party
 import requests
 
-import dvidtools as dt
+try:
+    import dvidtools as dt
+    hasDVIDtools = True
+except ImportError:
+    hasDVIDtools = False
 
 
 # ------------------------- constants -------------------------
@@ -121,9 +125,7 @@ class TipDetector:
         t1 = time.time()
         annlist = [self.maketodo(loc) for loc in self.locations]
 
-        # testing; don't actually post
-        # self.postannotations(annlist)
-
+        self.postannotations(annlist)
 
         t2 = time.time()
         self.tplace = t2 - t1
@@ -180,6 +182,9 @@ class TipDetector:
 
 
 def main():
+    if not hasDVIDtools:
+        errorquit("could not import dvid_tools library")
+
     if len(sys.argv) < 5:
         errorquit("missing arguments; received: " + ", ".join(sys.argv))
 
