@@ -3,6 +3,8 @@
 #include "zdvidgrayslice.h"
 #include "zdvidtarget.h"
 #include "zstackobjectsourcefactory.h"
+#include "zdvidenv.h"
+#include "zcontrastprotocol.h"
 
 ZDvidGraySliceEnsemble::ZDvidGraySliceEnsemble()
 {
@@ -13,6 +15,28 @@ ZDvidGraySliceEnsemble::ZDvidGraySliceEnsemble()
 ZDvidGraySliceEnsemble::~ZDvidGraySliceEnsemble()
 {
 
+}
+
+bool ZDvidGraySliceEnsemble::activateNext()
+{
+  if (m_sliceList.size() > 1) {
+    std::shared_ptr<ZDvidGraySlice> currentSlice =
+        ZDvidGraySliceEnsemble::getActiveSlice();
+
+    ++m_activeIndex;
+    if (m_activeIndex >= m_sliceList.size()) {
+      m_activeIndex = 0;
+    }
+
+    std::shared_ptr<ZDvidGraySlice> newSlice =
+        ZDvidGraySliceEnsemble::getActiveSlice();
+
+    newSlice->update(currentSlice->getViewParam());
+
+    return true;
+  }
+
+  return false;
 }
 
 std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::getActiveSlice() const
@@ -45,10 +69,15 @@ void ZDvidGraySliceEnsemble::display(
   }
 }
 
-void ZDvidGraySliceEnsemble::setDvidTarget(const ZDvidTarget &target)
+void ZDvidGraySliceEnsemble::prepare(const ZDvidTarget &target)
 {
   m_sliceList.clear();
   std::vector<ZDvidTarget> targetList = target.getGrayScaleTargetList();
+  prepare(targetList);
+}
+
+void ZDvidGraySliceEnsemble::prepare(const std::vector<ZDvidTarget> &targetList)
+{
   for (const ZDvidTarget &target : targetList) {
     if (target.isValid()) {
       std::shared_ptr<ZDvidGraySlice> grayslice =
@@ -66,6 +95,12 @@ void ZDvidGraySliceEnsemble::setDvidTarget(const ZDvidTarget &target)
     }
   }
 }
+
+void ZDvidGraySliceEnsemble::prepare(const ZDvidEnv &env)
+{
+  prepare(env.getTargetList(ZDvidEnv::ERole::GRAYSCALE));
+}
+
 
 bool ZDvidGraySliceEnsemble::update(const ZStackViewParam &viewParam)
 {
@@ -85,4 +120,33 @@ ZTask* ZDvidGraySliceEnsemble::makeFutureTask(ZStackDoc *doc)
   }
 
   return nullptr;
+}
+
+void ZDvidGraySliceEnsemble::updateContrast(bool contrast)
+{
+  m_usingContrastProtocol = contrast;
+  std::shared_ptr<ZDvidGraySlice> grayslice = getActiveSlice();
+  if (grayslice) {
+    grayslice->updateContrast(contrast);
+  }
+}
+
+void ZDvidGraySliceEnsemble::updateContrast(
+    const ZJsonObject &protocolJson, bool hc)
+{
+  m_usingContrastProtocol = hc;
+  if (!m_sliceList.empty()) {
+    std::shared_ptr<ZDvidGraySlice> grayslice = m_sliceList.front();
+    ZContrastProtocol protocal;
+    protocal.load(protocolJson);
+    grayslice->setContrastProtocol(protocal);
+    grayslice->updateContrast(hc);
+  }
+}
+
+void ZDvidGraySliceEnsemble::setCenterCut(int width, int height)
+{
+  for (auto slice : m_sliceList) {
+    slice->setCenterCut(width, height);
+  }
 }

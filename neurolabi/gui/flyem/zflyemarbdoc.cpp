@@ -3,6 +3,8 @@
 #include "zstackfactory.h"
 #include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidenv.h"
+
 #include "zstackobjectsourcefactory.h"
 
 ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
@@ -20,7 +22,9 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
 
     readInfo();
 
-    prepareDvidData();
+    ZDvidEnv env;
+    env.set(target);
+    prepareDvidData(env);
   } else {
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
@@ -29,7 +33,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
   }
 }
 
-void ZFlyEmArbDoc::prepareDvidData()
+void ZFlyEmArbDoc::prepareDvidData(const ZDvidEnv &env)
 {
   if (m_dvidReader.isReady()) {
     ZDvidInfo dvidInfo = getDvidInfo();
@@ -52,7 +56,7 @@ void ZFlyEmArbDoc::prepareDvidData()
     loadStack(stack);
 
     if (getDvidTarget().hasGrayScaleData()) {
-      initGrayscaleSlice(neutu::EAxis::ARB);
+      initGrayscaleSlice(env, neutu::EAxis::ARB);
       /*
       ZDvidGraySlice *slice = new ZDvidGraySlice;
       slice->setSliceAxis(neutu::EAxis::ARB);

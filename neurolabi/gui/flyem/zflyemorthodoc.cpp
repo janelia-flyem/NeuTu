@@ -168,7 +168,7 @@ ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
   return NULL;
 }
 
-void ZFlyEmOrthoDoc::prepareDvidData()
+void ZFlyEmOrthoDoc::prepareDvidData(const ZDvidEnv &/*env*/)
 {
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();

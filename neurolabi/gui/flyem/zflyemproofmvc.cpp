@@ -14,6 +14,7 @@
 
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
+#include "logging/utilities.h"
 
 #include "zjsondef.h"
 #include "zflyemproofdoc.h"
@@ -32,6 +33,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidenv.h"
 
 #include "zstackobjectsourcefactory.h"
 #include "zprogresssignal.h"
@@ -117,6 +119,7 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
+#include "dialogs/zstackviewrecorddialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -151,6 +154,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 
 void ZFlyEmProofMvc::init()
 {
+  setLogger(neutu::LogMessageF);
+
   setFocusPolicy(Qt::ClickFocus);
 
 //  m_dlgManager = std::make_unique<FlyEmMvcDialogManager>(this);
@@ -1779,6 +1784,19 @@ void ZFlyEmProofMvc::setDvidTargetFromDialog()
   getProgressSignal()->endProgress();
 }
 
+void ZFlyEmProofMvc::setDvidFromJson(const std::string &filePath)
+{
+  ZJsonObject obj;
+  obj.load(filePath);
+
+  ZDvidEnv env;
+  env.loadJsonObject(obj);
+
+  if (env.isValid()) {
+    setDvid(env);
+  }
+}
+
 void ZFlyEmProofMvc::enableSynapseFetcher()
 {
   ZDvidSynapseEnsemble *se =
@@ -1826,8 +1844,158 @@ void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
   patchFetcher->start(100);
 }
 
+void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
+{
+  if (getCompleteDocument() == NULL) {
+    emit messageGenerated(
+          ZWidgetMessage("Corrupted data structure. Abort",
+                         neutu::EMessageType::WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
+  if (getCompleteDocument()->getDvidTarget().isValid()) {
+    emit messageGenerated(
+          ZWidgetMessage("You cannot change the database in this window. "
+                         "Please open a new proofread window to load a different database",
+                         neutu::EMessageType::WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
+  addLog("Setting dvid env in ZFlyEmProofMvc");
+//  KINFO << "Setting dvid env in ZFlyEmProofMvc";
+
+  getProgressSignal()->startProgress("Loading data ...");
+
+  ZDvidReader reader;
+  if (!reader.open(env.getMainTarget())) {
+    ZWidgetMessage msg("Failed to open the database.",
+                       neutu::EMessageType::WARNING,
+                       ZWidgetMessage::TARGET_DIALOG);
+
+    QString detail = "Detail: ";
+    if (!reader.getErrorMsg().empty()) {
+      detail += reader.getErrorMsg().c_str();
+    }
+    msg.appendMessage(detail);
+    emit messageGenerated(msg);
+
+    getProgressSignal()->endProgress();
+    return;
+  }
+
+//  exitCurrentDoc();
+
+  clear();
+  getProgressSignal()->advanceProgress(0.1);
+  //    getCompleteDocument()->clearData();
+
+  ZDvidEnv newEnv = env;
+  newEnv.setMainTarget(reader.getDvidTarget());
+  getCompleteDocument()->setDvid(newEnv);
+
+
+  if (getRole() == ERole::ROLE_WIDGET) {
+//    LINFO() << "Set contrast";
+//    ZJsonObject contrastObj = reader.readContrastProtocal();
+//    getPresenter()->setHighContrastProtocal(contrastObj);
+
+    KINFO << "Init grayslice";
+    ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice(
+          getView()->getSliceAxis());
+    if (slice != NULL) {
+//      slice->updateContrast(getCompletePresenter()->highTileContrast());
+
+      ZDvidGraySliceScrollStrategy *scrollStrategy =
+          new ZDvidGraySliceScrollStrategy(getView());
+      scrollStrategy->setGraySlice(slice);
+
+      getView()->setScrollStrategy(scrollStrategy);
+    }
+
+    KINFO << "Init tiles";
+    QList<ZDvidTileEnsemble*> teList =
+        getCompleteDocument()->getDvidTileEnsembleList();
+    foreach (ZDvidTileEnsemble *te, teList) {
+      prepareTile(te);
+    }
+    updateContrast();
+  }
+
+//  getView()->reset(false);
+  getProgressSignal()->advanceProgress(0.1);
+
+  m_splitProject.setDvidTarget(getDvidTarget());
+  m_splitProject.setDvidInfo(getDvidInfo());
+  getCompleteDocument()->syncMergeWithDvid();
+  //    m_mergeProject.setDvidTarget(getDvidTarget());
+  //    m_mergeProject.syncWithDvid()
+
+  getProgressSignal()->advanceProgress(0.2);
+
+  if (getRole() == ERole::ROLE_WIDGET) {
+    if (getDvidTarget().isValid()) {
+      KINFO << "Download annotations";
+      getCompleteDocument()->downloadSynapse();
+      enableSynapseFetcher();
+      getCompleteDocument()->downloadBookmark();
+      getCompleteDocument()->downloadTodoList();
+
+      ZFlyEmToDoList *todoList =
+          getCompleteDocument()->getTodoList(neutu::EAxis::Z);
+      if (todoList) {
+        todoList->attachView(getView());
+      }
+    }
+  }
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  emit dvidTargetChanged(getDvidTarget());
+
+//  m_splitUploadDlg->setDvidTarget(getDvidTarget());
+  if (m_dlgManager->isSplitUploadDlgReady()) {
+    configureSplitUploadDlg(m_dlgManager->getSplitUploadDlg());
+  }
+
+  if (m_dlgManager->isRoiDlgReady()) {
+    KINFO << "Set ROI dialog";
+    ZFlyEmRoiToolDialog *dlg = m_dlgManager->getRoiDlg();
+    dlg->clear();
+    dlg->updateDvidTarget();
+    dlg->downloadAllProject();
+  }
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  getProgressSignal()->endProgress();
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Database %1 loaded.").arg(
+            getDvidTarget().getSourceString(false).c_str()),
+          neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_STATUS_BAR));
+
+  KINFO << "DVID Ready";
+  emit dvidReady();
+
+  if (getRole() == ERole::ROLE_WIDGET) {
+    if (getDvidTarget().hasSegmentation()) {
+      getViewButton(EViewButton::GOTO_BODY)->show();
+    }
+    getViewButton(EViewButton::GOTO_POSITION)->show();
+  }
+}
+
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
+  ZDvidEnv env;
+  env.set(target);
+
+  setDvid(env);
+#if 0
   if (getCompleteDocument() == NULL) {
     emit messageGenerated(
           ZWidgetMessage("Corrupted data structure. Abort",
@@ -1966,6 +2134,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
     getViewButton(EViewButton::GOTO_POSITION)->show();
   }
+#endif
+
 }
 
 void ZFlyEmProofMvc::showSetting()
@@ -1984,6 +2154,8 @@ void ZFlyEmProofMvc::showSetting()
 
 void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
 {
+  getCompleteDocument()->updateContrast(protocolJson, hc);
+#if 0
   ZContrastProtocol protocal;
   protocal.load(protocolJson);
 
@@ -1995,6 +2167,7 @@ void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
     getCompleteDocument()->bufferObjectModified(slice);
   }
 
+
   QList<ZDvidTileEnsemble*> teList =
       getCompleteDocument()->getDvidTileEnsembleList();
   foreach (ZDvidTileEnsemble *te, teList) {
@@ -2003,6 +2176,7 @@ void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
     getCompleteDocument()->bufferObjectModified(te);
   }
   getCompleteDocument()->processObjectModified();
+#endif
 }
 
 void ZFlyEmProofMvc::updateContrast()
@@ -2037,7 +2211,7 @@ void ZFlyEmProofMvc::updateTmpContrast()
   getContrastDlg()->getContrastProtocal().print();
 #endif
   updateContrast(getContrastDlg()->getContrastProtocal(), true);
-  getCompleteDocument()->enhanceTileContrast(true);
+  getCompleteDocument()->enhanceTileContrast(getView()->getSliceAxis(), true);
 }
 
 void ZFlyEmProofMvc::resetContrast()
@@ -2147,6 +2321,13 @@ void ZFlyEmProofMvc::startMergeProfile(const uint64_t bodyId, int msec)
 void ZFlyEmProofMvc::startMergeProfile()
 {
   startMergeProfile(29783151, 60000);
+}
+
+void ZFlyEmProofMvc::configureRecorder()
+{
+  if (m_dlgManager->getRecordDlg()->exec()) {
+    m_dlgManager->getRecordDlg()->configureRecorder(getView()->getRecorder());
+  }
 }
 
 void ZFlyEmProofMvc::endTestTask()
@@ -5737,7 +5918,7 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
   if (state) {
     updateContrast();
   }
-  getCompleteDocument()->enhanceTileContrast(state);
+  getCompleteDocument()->enhanceTileContrast(getView()->getSliceAxis(), state);
 }
 
 void ZFlyEmProofMvc::smoothDisplay(bool state)

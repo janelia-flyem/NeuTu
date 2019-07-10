@@ -38,6 +38,7 @@ class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
+class ZDvidEnv;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -57,6 +58,7 @@ public:
   friend class ZFlyEmProofDocUtil;
 
   virtual void setDvidTarget(const ZDvidTarget &target);
+  virtual void setDvid(const ZDvidEnv &env);
 
 //  virtual void updateTileData();
 
@@ -87,8 +89,10 @@ public:
   bool isSupervoxelMode() const;
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
 
-  ZDvidGraySlice* getDvidGraySlice() const;
+//  ZDvidGraySlice* getDvidGraySlice() const;
   ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
+  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble(neutu::EAxis axis) const;
+
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
@@ -195,7 +199,7 @@ public:
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
-  void enhanceTileContrast(bool highContrast);
+  void enhanceTileContrast(neutu::EAxis axis, bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
@@ -491,6 +495,7 @@ public:
   const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
+  void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
 
   bool test();
@@ -500,6 +505,8 @@ public:
       int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   virtual void executeRemoveTodoCommand() override;
+
+  void toggleGrayscale(neutu::EAxis axis);
 
 signals:
   void bodyMerged();
@@ -645,7 +652,7 @@ protected:
   void customNotifyObjectModified(ZStackObject::EType type) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
-  virtual void prepareDvidData();
+  virtual void prepareDvidData(const ZDvidEnv &env);
   ZDvidLabelSlice *addDvidLabelSlice(neutu::EAxis axis, bool sv);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
@@ -654,8 +661,10 @@ protected:
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareGraySlice(ZDvidGraySliceEnsemble *se);
   void prepareLabelSlice();
-  void initGrayscaleSlice(neutu::EAxis axis);
+//  void initGrayscaleSlice(neutu::EAxis axis);
+  void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
 
   void makeKeyProcessor() override;
 
@@ -739,7 +748,7 @@ protected:
 
   ZDvidWriter m_workWriter;
   ZDvidReader m_supervoxelWorkReader;
-  ZDvidReader m_grayscaleWorkReader;
+//  ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 

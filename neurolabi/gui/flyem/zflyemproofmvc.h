@@ -65,6 +65,7 @@ class FlyEmMvcDialogManager;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmBookmark;
 class ZFlyEmBookmarkListModel;
+class ZDvidEnv;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -99,6 +100,8 @@ public:
 
   virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
+  void setDvidFromJson(const std::string &filePath);
+  void setDvid(const ZDvidEnv &env);
 
   void clear();
 
@@ -410,6 +413,8 @@ public slots:
   void testBodySplit();
 
   void endTestTask();
+
+  void configureRecorder();
 
 protected slots:
   void detachCoarseBodyWindow();

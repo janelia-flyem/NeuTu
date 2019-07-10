@@ -92,6 +92,8 @@ public slots:
 
   void showAndRaise();
 
+  void loadDatabase();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);

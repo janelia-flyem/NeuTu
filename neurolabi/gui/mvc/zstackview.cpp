@@ -44,9 +44,12 @@
 #include "zscrollslicestrategy.h"
 #include "zarbsliceviewparam.h"
 #include "zstackdocutil.h"
-#include "mvc/zpositionmapper.h"
-#include "mvc/utilities.h"
 #include "data3d/utilities.h"
+
+#include "zstackviewrecorder.h"
+#include "zpositionmapper.h"
+#include "utilities.h"
+
 
 using namespace std;
 
@@ -204,6 +207,9 @@ void ZStackView::init()
   blockViewChangeEvent(false);
 
   m_sliceStrategy = new ZScrollSliceStrategy(this);
+
+  m_recorder = std::shared_ptr<ZStackViewRecorder>(
+        new ZStackViewRecorder);
 }
 
 void ZStackView::addToolButton(QPushButton *button)
@@ -230,6 +236,10 @@ void ZStackView::enableMessageManager()
   }
 }
 
+ZStackViewRecorder* ZStackView::getRecorder()
+{
+  return m_recorder.get();
+}
 
 void ZStackView::hideThresholdControl()
 {
@@ -919,6 +929,8 @@ void ZStackView::updateImageScreen(EUpdateOption option)
     default:
       break;
     }
+
+    tryAutoRecord();
   }
 }
 
@@ -1217,6 +1229,10 @@ void ZStackView::redraw(EUpdateOption option)
              arg(stackPaintTime).arg(tilePaintTime).
              arg(objectPaintTime).toStdString();
   }
+
+//  if (getRecorder()->isAuto()) {
+//    getRecorder()->takeShot(this);
+//  }
 }
 
 
@@ -1300,13 +1316,18 @@ void ZStackView::setThreshold(int thre)
   }
 }
 
+void ZStackView::takeScreenshot()
+{
+  getRecorder()->takeShot(this);
+}
+
 void ZStackView::takeScreenshot(const QString &filename)
 {
   QImageWriter writer(filename);
   writer.setCompression(1);
 
-  QImage image(iround(m_imageWidget->projectSize().width()),
-               iround(m_imageWidget->projectSize().height()),
+  QImage image(iround(m_imageWidget->width()),
+               iround(m_imageWidget->height()),
                QImage::Format_ARGB32);
 
   m_imageWidget->setViewHintVisible(false);
@@ -2749,6 +2770,13 @@ void ZStackView::setViewProj(const ZViewProj &vp)
     recordViewParam();
     m_imageWidget->setViewProj(vp);
     processViewChange(true);
+  }
+}
+
+void ZStackView::tryAutoRecord()
+{
+  if (getRecorder()->isAuto()) {
+    getRecorder()->takeShot(this);
   }
 }
 

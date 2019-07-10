@@ -163,6 +163,7 @@ public slots:
 
   void allowBlinkingSegmentation(bool on);
   void toggleSupervoxelView(bool on);
+  void takeScreenshot();
 
 protected:
   virtual void tryAddTodoItem(

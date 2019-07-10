@@ -36,6 +36,7 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void setMainTarget(const ZDvidTarget &target);
 
   ZDvidTarget& getMainTarget();
   std::vector<ZDvidTarget>& getTargetList(ERole role);

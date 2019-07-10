@@ -29,6 +29,7 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
+#include "dialogs/zstackviewrecorddialog.h"
 
 /** Implementation details
  *
@@ -218,6 +219,13 @@ ZFlyEmProofSettingDialog* FlyEmMvcDialogManager::getSettingDlg()
   createIfNecessary(m_settingDlg);
 
   return m_settingDlg;
+}
+
+ZStackViewRecordDialog* FlyEmMvcDialogManager::getRecordDlg()
+{
+  createIfNecessary(m_recordDlg);
+
+  return m_recordDlg;
 }
 
 FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()

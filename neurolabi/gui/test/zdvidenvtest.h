@@ -11,21 +11,30 @@
 #ifdef _USE_GTEST_
 TEST(ZDvidEnv, Basic)
 {
-  ZDvidEnv env;
+  {
+    ZDvidEnv env;
 
-  ASSERT_FALSE(env.isValid());
+    ASSERT_FALSE(env.isValid());
 
-  ZDvidTarget target;
-  ZJsonObject obj;
-  obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting.json");
-  target.loadJsonObject(obj);
+    ZDvidTarget target;
+    ZJsonObject obj;
+    obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting.json");
+    target.loadJsonObject(obj);
 
-  env.set(target);
+    env.set(target);
 
-  std::cout << env.toJsonObject().dumpString(2) << std::endl;
+    ASSERT_TRUE(env.isValid());
+  }
 
+  {
+    ZJsonObject obj;
+    obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting2.json");
 
-  ASSERT_TRUE(env.isValid());
+    ZDvidEnv env;
+    env.loadJsonObject(obj);
+
+    std::cout << env.toJsonObject().dumpString(2) << std::endl;
+  }
 }
 
 #endif

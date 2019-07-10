@@ -181,6 +181,10 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, &QAction::triggered, this,
               &ZFlyEmProofPresenter::toggleSupervoxelView);
       break;
+    case ZActionFactory::ACTION_VIEW_SCREENSHOT:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::takeScreenshot);
+      break;
     default:
       connected = false;
       break;
@@ -332,12 +336,16 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_T:
-
       if (interactiveContext().isFreeMode()) {
         if (buddyDocument()->getTag() ==  neutu::Document::ETag::FLYEM_PROOFREAD) {
           if (event->modifiers() == Qt::NoModifier) {
             emit goingToBodyTop();
             processed = true;
+          } else if (event->modifiers() == Qt::ShiftModifier) {
+            ZStackOperator op;
+            op.setOperation(ZStackOperator::OP_GRAYSCALE_TOGGLE);
+            processed = true;
+            process(op);
           }
         }
       } else {
@@ -998,6 +1006,11 @@ void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
   getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
 }
 
+void ZFlyEmProofPresenter::takeScreenshot()
+{
+  buddyView()->takeScreenshot();
+}
+
 bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
@@ -1253,6 +1266,10 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_START_PSD:
     tryAddPostSynapseMode();
+    break;
+  case ZStackOperator::OP_GRAYSCALE_TOGGLE:
+    getCompleteDocument()->toggleGrayscale(
+          buddyView()->getSliceAxis());
     break;
   default:
     processed = false;

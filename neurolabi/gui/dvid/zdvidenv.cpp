@@ -61,7 +61,7 @@ void ZDvidEnv::set(const ZDvidTarget &target)
   clear();
 
   m_mainTarget = target;
-  m_mainTarget.clearGrayScale();
+//  m_mainTarget.clearGrayScale();
   m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
 }
 
@@ -77,6 +77,11 @@ void ZDvidEnv::appendDvidTarget(
   }
 }
 
+void ZDvidEnv::setMainTarget(const ZDvidTarget &target)
+{
+  m_mainTarget = target;
+}
+
 void ZDvidEnv::loadJsonObject(const ZJsonObject &obj)
 {
   clear();
@@ -87,10 +92,7 @@ void ZDvidEnv::loadJsonObject(const ZJsonObject &obj)
 
   if (m_mainTarget.hasGrayScaleData()) {
     grayscaleTargetList.push_back(m_mainTarget.getGrayScaleTarget());
-    m_mainTarget.clearGrayScale(); //Grayscale moved to target map
-#ifdef _DEBUG_
-    std::cout << "Grayscale name: " << m_mainTarget.getGrayScaleName() << std::endl;
-#endif
+//    m_mainTarget.clearGrayScale(); //Grayscale moved to target map
   }
 
   if (obj.hasKey(KEY_GRAYSCALE)) {

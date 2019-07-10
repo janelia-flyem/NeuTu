@@ -42,6 +42,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidgraysliceensemble.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidenv.h"
 
 #include "zflyembookmark.h"
 #include "zsynapseannotationarray.h"
@@ -917,6 +918,116 @@ void ZFlyEmProofDoc::updateUserStatus()
   m_mergeProject->setAdmin(m_isAdmin);
 }
 
+void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
+{
+  KINFO << "Setting dvid env in ZFlyEmProofDoc";
+  QElapsedTimer timer;
+  timer.start();
+  if (m_dvidReader.open(env.getMainTarget())) {
+    updateUserStatus();
+
+    std::ostringstream flowInfo;
+    flowInfo << "Update data statuses";
+    m_dvidReader.updateDataStatus();
+
+    flowInfo << "->Prepare DVID readers";
+    m_dvidWriter.openRaw(m_dvidReader.getDvidTarget());
+
+    if (m_dvidReader.getDvidTarget().hasSynapse()) {
+      m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
+    }
+
+    if (m_dvidReader.getDvidTarget().hasSegmentation()) {
+      m_todoReader.openRaw(m_dvidReader.getDvidTarget());
+      m_sparseVolReader.openRaw(m_dvidReader.getDvidTarget());
+    }
+
+    auto targetList = env.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
+    if (!targetList.empty()) {
+      m_grayscaleReader.open(targetList.front());
+    }
+
+//    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
+//    m_dvidTarget = target;
+    m_activeBodyColorMap.reset();
+    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
+
+    flowInfo << "->Prepare DVID data instances";
+    initData(getDvidTarget());
+    if (getSupervisor() != NULL) {
+      flowInfo << "->Prepare librarian";
+      getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
+      if (!getSupervisor()->isEmpty() &&
+          !m_dvidReader.getDvidTarget().readOnly()) {
+        int statusCode = getSupervisor()->testServer();
+        if (statusCode != 200) {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("WARNING: Failed to connect to the librarian %1. "
+                          "Please do NOT proofread segmentation "
+                          "until you fix the problem.").
+                  arg(getSupervisor()->getMainUrl().c_str()),
+                  neutu::EMessageType::WARNING));
+        }
+      }
+    }
+
+    updateDataConfig();
+
+    flowInfo << "->Read DVID Info";
+    readInfo();
+
+    flowInfo << "->Prepare DVID-related data";
+    prepareDvidData(env);
+
+    flowInfo << "->Update DVID target for objects";
+    updateDvidTargetForObject();
+
+    flowInfo << "->Update DVID info for objects";
+    updateDvidInfoForObject();
+
+#ifdef _DEBUG_2
+//    m_dvidReader.getDvidTarget().setReadOnly(true);
+    const_cast<ZDvidTarget&>(target).setReadOnly(true);
+#endif
+
+    //Run check anyway to get around a strange bug of showing grayscale
+    flowInfo << "->Check proofreading data instances";
+    int missing = m_dvidReader.checkProofreadingData();
+    if (!getDvidTarget().readOnly()) {
+      if (missing > 0) {
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("WARNING: Some data for proofreading are missing in "
+                        "the database. "
+                        "Please do NOT proofread segmentation "
+                        "until you fix the problem."),
+                neutu::EMessageType::WARNING));
+      }
+    }
+
+    m_roiManager = new ZFlyEmRoiManager(this);
+    m_roiManager->setDvidTarget(getDvidTarget());
+    m_roiManager->loadRoiList();
+
+    KDEBUG << ZLog::Diagnostic(flowInfo.str());
+//    LDEBUG() << flowInfo.str();
+    startTimer();
+  } else {
+    m_dvidReader.clear();
+//    m_dvidTarget.clear();
+    ZWidgetMessage msg("Failed to open the node.", neutu::EMessageType::ERROR);
+    QString detail = "Detail: ";
+    if (!m_dvidReader.getErrorMsg().empty()) {
+      detail += m_dvidReader.getErrorMsg().c_str();
+    }
+    msg.appendMessage(detail);
+    emit messageGenerated(msg);
+  }
+  KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
+         << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
@@ -964,7 +1075,9 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     readInfo();
 
     flowInfo << "->Prepare DVID-related data";
-    prepareDvidData();
+    ZDvidEnv env;
+    env.set(m_dvidReader.getDvidTarget());
+    prepareDvidData(env);
 
     flowInfo << "->Update DVID target for objects";
     updateDvidTargetForObject();
@@ -1055,6 +1168,27 @@ const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
 void ZFlyEmProofDoc::setContrastProtocol(const ZJsonObject &obj)
 {
   m_dataConfig.loadContrastProtocol(obj);
+}
+
+void ZFlyEmProofDoc::updateContrast(const ZJsonObject &protocolJson, bool hc)
+{
+  QList<ZDvidGraySliceEnsemble*> seList =
+      getObjectList<ZDvidGraySliceEnsemble>();
+  for (ZDvidGraySliceEnsemble *se : seList) {
+    se->updateContrast(protocolJson, hc);
+    bufferObjectModified(se);
+  }
+
+  ZContrastProtocol protocal;
+  protocal.load(protocolJson);
+
+  QList<ZDvidTileEnsemble*> teList = getDvidTileEnsembleList();
+  foreach (ZDvidTileEnsemble *te, teList) {
+    te->setContrastProtocal(protocolJson);
+    te->enhanceContrast(hc);
+    bufferObjectModified(te);
+  }
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::uploadUserDataConfig()
@@ -1162,28 +1296,35 @@ void ZFlyEmProofDoc::loadRoiFunc()
   }
 }
 
+/*
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
   return getDvidGraySlice(neutu::EAxis::Z);
+}
+*/
+
+ZDvidGraySliceEnsemble* ZFlyEmProofDoc::getDvidGraySliceEnsemble(
+    neutu::EAxis axis) const
+{
+  ZStackObject *obj = getObject(
+        ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
+        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+  ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
+
+  return se;
 }
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 {
   ZDvidGraySlice *slice = nullptr;
 
-  ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
-
-  if (obj) {
+  ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble(axis);
+  if (se) {
+    slice = se->getActiveSlice().get();
+  } else { //to be removed
+    ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
+                                  ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
     slice = dynamic_cast<ZDvidGraySlice*>(obj);
-  } else {
-    obj = getObject(
-          ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
-          ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
-    ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
-    if (se) {
-      slice = se->getActiveSlice().get();
-    }
   }
 
   return slice;
@@ -1199,7 +1340,7 @@ const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
   return m_labelInfo;
 }
 
-void ZFlyEmProofDoc::prepareDvidData()
+void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
 {
   if (m_dvidReader.isReady()) {
     ZDvidInfo dvidInfo = getDvidInfo();
@@ -1224,7 +1365,7 @@ void ZFlyEmProofDoc::prepareDvidData()
   if (getDvidTarget().hasTileData()) {
     initTileData();
   } else {
-    initGrayscaleSlice(neutu::EAxis::Z);
+    initGrayscaleSlice(env, neutu::EAxis::Z);
   }
 
   addDvidLabelSlice(neutu::EAxis::Z, false);
@@ -1251,17 +1392,20 @@ void ZFlyEmProofDoc::initTileData()
   addObject(ensemble, true);
 }
 
-void ZFlyEmProofDoc::initGrayscaleSlice(neutu::EAxis axis)
+void ZFlyEmProofDoc::initGrayscaleSlice(
+    const ZDvidEnv &env, neutu::EAxis axis)
 {
-  if (getDvidTarget().hasGrayScaleData()) {
-    ZDvidGraySliceEnsemble *se = new ZDvidGraySliceEnsemble;
-    se->setSliceAxis(axis);
-    se->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    se->setSource(
-          ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
-    se->setDvidTarget(getDvidTarget());
-    prepareGraySlice(se->getActiveSlice().get());
-    addObject(se, true);
+  auto targetList = env.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
+
+//  if (getDvidTarget().hasGrayScaleData()) {
+  ZDvidGraySliceEnsemble *se = new ZDvidGraySliceEnsemble;
+  se->setSliceAxis(axis);
+  se->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  se->setSource(
+        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+  se->prepare(targetList);
+  prepareGraySlice(se->getActiveSlice().get());
+  addObject(se, true);
 
     /*
     ZDvidGraySlice *slice = new ZDvidGraySlice;
@@ -1272,14 +1416,19 @@ void ZFlyEmProofDoc::initGrayscaleSlice(neutu::EAxis axis)
     prepareGraySlice(slice);
     addObject(slice, true);
     */
-  }
 }
 
 void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
 {
   m_graySliceCenterCutWidth = width;
   m_graySliceCenterCutHeight = height;
-  prepareGraySlice(getDvidGraySlice());
+
+  QList<ZDvidGraySliceEnsemble*> seList =
+      getObjectList<ZDvidGraySliceEnsemble>();
+  for (ZDvidGraySliceEnsemble *se : seList) {
+    se->setCenterCut(width, height);
+  }
+//  prepareGraySlice(getDvidGraySlice());
 }
 
 void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
@@ -2664,6 +2813,37 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
     int centerCutX, int centerCutY,
     bool usingCenterCut, const std::string &source)
 {
+  ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
+  if (slice) {
+    const ZDvidReader &workReader = slice->getWorkDvidReader();
+
+    ZStack *array = NULL;
+    if (workReader.good()) {
+      if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
+        ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+        array = workReader.readGrayScaleLowtis(
+              svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
+              svp.getWidth(), svp.getHeight(),
+              zoom, centerCutX, centerCutY, usingCenterCut);
+      } else {
+        ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+              viewParam.getViewPort(), viewParam.getZ());
+
+        array = workReader.readGrayScaleLowtis(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              zoom, centerCutX, centerCutY, usingCenterCut);
+      }
+    }
+
+    if (array != NULL) {
+      emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
+                             usingCenterCut, source);
+    }
+  }
+
+
+  /*
   if (!m_grayscaleWorkReader.good()) {
     m_grayscaleWorkReader.open(getDvidTarget().getGrayScaleTarget());
   }
@@ -2692,6 +2872,7 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
     emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
                            usingCenterCut, source);
   }
+  */
 }
 
 /*
@@ -3300,6 +3481,13 @@ void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
   }
 }
 
+void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySliceEnsemble *se)
+{
+  if (se) {
+    se->setCenterCut(m_graySliceCenterCutWidth, m_graySliceCenterCutHeight);
+  }
+}
+
 void ZFlyEmProofDoc::prepareLabelSlice()
 {
   auto sliceList = getDvidLabelSliceList();
@@ -3823,7 +4011,7 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
   }
 }
 
-void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
+void ZFlyEmProofDoc::enhanceTileContrast(neutu::EAxis axis, bool highContrast)
 {
   ZDvidTileEnsemble *tile = getDvidTileEnsemble();
   if (tile != NULL) {
@@ -3837,12 +4025,21 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
            << ZLog::Description("Updating contrast: " +
                                 std::to_string(highContrast));
 //    LDEBUG() << "Updating contrast:" << highContrast;
-    ZDvidGraySlice *slice = getDvidGraySlice();
+
+    ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble(axis);
+    if (se) {
+      se->updateContrast(highContrast);
+      bufferObjectModified(se);
+      processObjectModified();
+    }
+    /*
+    ZDvidGraySlice *slice = getDvidGraySlice(axis);
     if (slice != NULL) {
       slice->updateContrast(highContrast);
       bufferObjectModified(slice);
       processObjectModified();
     }
+    */
   }
 }
 
@@ -4837,6 +5034,20 @@ void ZFlyEmProofDoc::repairSelectedSynapses()
     }
   } else {
     warnSynapseReadonly();
+  }
+}
+
+void ZFlyEmProofDoc::toggleGrayscale(neutu::EAxis axis)
+{
+  ZStackObject *obj = getObject(
+        ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
+        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+  ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
+  if (se) {
+    if (se->activateNext()) {
+      bufferObjectModified(se);
+      processObjectModified();
+    }
   }
 }
 

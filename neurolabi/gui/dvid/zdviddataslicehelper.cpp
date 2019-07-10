@@ -17,6 +17,7 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
+  m_workReader.openRaw(m_reader.getDvidTarget());
   updateCenterCut();
 }
 

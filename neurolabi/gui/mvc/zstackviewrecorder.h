@@ -17,6 +17,11 @@ public:
   void restart();
   void takeShot(ZStackView *view);
 
+  void setPrefix(const QString prefix);
+  void setMode(EMode mode);
+
+  bool isAuto() const;
+
 private:
   EMode m_mode = EMode::MANUAL;
 

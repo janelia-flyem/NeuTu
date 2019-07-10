@@ -11,7 +11,7 @@ public:
   explicit ZFlyEmArbDoc(QObject *parent = 0);
 
   void setDvidTarget(const ZDvidTarget &target);
-  void prepareDvidData();
+  void prepareDvidData(const ZDvidEnv &env);
 
 private:
   void initArbGraySlice();

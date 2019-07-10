@@ -51,6 +51,11 @@ const ZDvidReader& ZDvidGraySlice::getDvidReader() const
   return m_helper->getDvidReader();
 }
 
+const ZDvidReader& ZDvidGraySlice::getWorkDvidReader() const
+{
+  return m_helper->getWorkDvidReader();
+}
+
 const ZDvidTarget& ZDvidGraySlice::getDvidTarget() const
 {
   return getDvidReader().getDvidTarget();

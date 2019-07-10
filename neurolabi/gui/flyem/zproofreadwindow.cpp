@@ -286,6 +286,11 @@ void ZProofreadWindow::createMenu()
 
   menuBar()->addMenu(fileMenu);
 
+  QAction *loadDvidAction = new QAction("Load Database", this);
+  connect(loadDvidAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabase);
+  fileMenu->addAction(loadDvidAction);
+
   m_importBookmarkAction = new QAction("Import Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
   fileMenu->addAction(m_importBookmarkAction);
@@ -458,8 +463,12 @@ void ZProofreadWindow::createMenu()
 
   dvidMenu->addAction(m_dvidOperateAction);
 
-
   m_toolMenu->addMenu(dvidMenu);
+
+  QAction *recorderAction = new QAction("Recorder", this);
+  connect(recorderAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
+  m_toolMenu->addAction(recorderAction);
 
   menuBar()->addMenu(m_toolMenu);
 
@@ -591,6 +600,9 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
+
+  m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+        ZActionFactory::ACTION_VIEW_SCREENSHOT));
 
   addSynapseActionToToolbar();
 }
@@ -953,4 +965,13 @@ void ZProofreadWindow::showAndRaise()
   }
   activateWindow();
   raise();
+}
+
+void ZProofreadWindow::loadDatabase()
+{
+  QString filename = ZDialogFactory::GetOpenFileName(
+        "DVID Settings", "", this);
+  if (!filename.isEmpty()) {
+    m_mainMvc->setDvidFromJson(filename.toStdString());
+  }
 }

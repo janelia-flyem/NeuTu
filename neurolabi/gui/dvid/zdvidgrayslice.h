@@ -55,6 +55,8 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   const ZDvidReader& getDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
+
   const ZDvidTarget& getDvidTarget() const;
   int getX() const;
   int getY() const;
