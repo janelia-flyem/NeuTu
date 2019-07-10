@@ -20,6 +20,7 @@ public:
   void setPrefix(const QString prefix);
   void setMode(EMode mode);
 
+  QString getPrefix() const;
   bool isAuto() const;
 
 private:

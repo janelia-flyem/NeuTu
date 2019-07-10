@@ -119,7 +119,6 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
-#include "dialogs/zstackviewrecorddialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -2325,9 +2324,7 @@ void ZFlyEmProofMvc::startMergeProfile()
 
 void ZFlyEmProofMvc::configureRecorder()
 {
-  if (m_dlgManager->getRecordDlg()->exec()) {
-    m_dlgManager->getRecordDlg()->configureRecorder(getView()->getRecorder());
-  }
+  getView()->configureRecorder();
 }
 
 void ZFlyEmProofMvc::endTestTask()

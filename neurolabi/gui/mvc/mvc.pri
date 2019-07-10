@@ -10,7 +10,8 @@ HEADERS += \
     $$PWD/zstackdochelper.h \
     $$PWD/mvcdef.h \
     $$PWD/zstackdocutil.h \
-    $$PWD/zstackviewrecorder.h
+    $$PWD/zstackviewrecorder.h \
+    $$PWD/dialogs/zstackviewrecorddialog.h
 
 SOURCES += \
     $$PWD/logging.cpp \
@@ -24,4 +25,8 @@ SOURCES += \
     $$PWD/zstackdochelper.cpp \
     $$PWD/mvcdef.cpp \
     $$PWD/zstackdocutil.cpp \
-    $$PWD/zstackviewrecorder.cpp
+    $$PWD/zstackviewrecorder.cpp \
+    $$PWD/dialogs/zstackviewrecorddialog.cpp
+
+FORMS +=  \
+    $$PWD/dialogs/zstackviewrecorddialog.ui

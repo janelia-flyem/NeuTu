@@ -38,3 +38,8 @@ void ZStackViewRecorder::setMode(EMode mode)
 {
   m_mode = mode;
 }
+
+QString ZStackViewRecorder::getPrefix() const
+{
+  return m_prefix;
+}

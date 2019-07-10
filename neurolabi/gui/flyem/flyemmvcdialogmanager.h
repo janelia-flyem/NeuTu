@@ -19,7 +19,7 @@ class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
-class ZStackViewRecordDialog;
+//class ZStackViewRecordDialog;
 
 /*!
  * \brief The class for managing dialogs used by ZFlyEmProofMvc.
@@ -51,7 +51,7 @@ public:
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
-  ZStackViewRecordDialog* getRecordDlg();
+//  ZStackViewRecordDialog* getRecordDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
   bool isDvidDlgReady() const;
@@ -94,7 +94,7 @@ private:
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
-  ZStackViewRecordDialog *m_recordDlg = nullptr;
+//  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
 };
 

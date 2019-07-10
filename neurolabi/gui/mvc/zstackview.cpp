@@ -45,6 +45,7 @@
 #include "zarbsliceviewparam.h"
 #include "zstackdocutil.h"
 #include "data3d/utilities.h"
+#include "dialogs/zstackviewrecorddialog.h"
 
 #include "zstackviewrecorder.h"
 #include "zpositionmapper.h"
@@ -1318,6 +1319,10 @@ void ZStackView::setThreshold(int thre)
 
 void ZStackView::takeScreenshot()
 {
+  if (getRecorder()->getPrefix().isEmpty()) {
+    configureRecorder();
+  }
+
   getRecorder()->takeShot(this);
 }
 
@@ -2261,6 +2266,17 @@ void ZStackView::paintObjectBuffer()
   } else {
     m_objectCanvasPainter.setPainted(false);
     m_objectCanvas->setVisible(false);
+  }
+}
+
+void ZStackView::configureRecorder()
+{
+  if (m_recordDlg == nullptr) {
+    m_recordDlg = new ZStackViewRecordDialog(this);
+  }
+
+  if (m_recordDlg->exec()) {
+    m_recordDlg->configureRecorder(getRecorder());
   }
 }
 

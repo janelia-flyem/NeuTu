@@ -713,8 +713,7 @@ HEADERS += mainwindow.h \
     dialogs/zstackframesettingdialog.h \
     dialogs/neuprintsetupdialog.h \
     dvid/zdvidgraysliceensemble.h \
-    dvid/zdvidenv.h \
-    dialogs/zstackviewrecorddialog.h
+    dvid/zdvidenv.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -817,8 +816,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui \
-    dialogs/zstackviewrecorddialog.ui
+    dialogs/neuprintsetupdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1206,8 +1204,7 @@ SOURCES += main.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dialogs/neuprintsetupdialog.cpp \
     dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp \
-    dialogs/zstackviewrecorddialog.cpp
+    dvid/zdvidenv.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

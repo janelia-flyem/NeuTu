@@ -54,6 +54,7 @@ class ZScrollSliceStrategy;
 class ZStackViewParam;
 class ZStackObjectPainter;
 class ZStackViewRecorder;
+class ZStackViewRecordDialog;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -311,6 +312,7 @@ public:
   }
 
   ZStackViewRecorder* getRecorder();
+  void configureRecorder();
 
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
@@ -704,6 +706,7 @@ protected:
   ZIntCuboid m_currentStackRange;
 
   std::shared_ptr<ZStackViewRecorder> m_recorder;
+  ZStackViewRecordDialog *m_recordDlg = nullptr;
 };
 
 #endif
