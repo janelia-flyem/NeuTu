@@ -987,10 +987,13 @@ void ZProofreadWindow::loadDatabase()
 
 void ZProofreadWindow::loadDatabaseFromUrl()
 {
-  QString url = QInputDialog::getMultiLineText(
-        this, "Load Database", "URL");
-  if (!url.isEmpty()) {
-    m_mainMvc->setDvidFromUrl(url);
+  QString text = QInputDialog::getMultiLineText(
+        this, "Load Database", "URL/JSON").trimmed();
+
+  if (text.startsWith("{")) {
+    m_mainMvc->setDvidFromJsonObject(text.toStdString());
+  } else if (!text.isEmpty()) {
+    m_mainMvc->setDvidFromUrl(text);
   }
 
   /*

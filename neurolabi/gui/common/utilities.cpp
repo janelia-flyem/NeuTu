@@ -34,8 +34,3 @@ std::string neutu::ToString(const void *p)
   stream << p;
   return stream.str();
 }
-
-constexpr size_t neutu::Length(const char *str)
-{
-  return sizeof(str) - 1;
-}

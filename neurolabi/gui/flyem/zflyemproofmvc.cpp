@@ -1789,6 +1789,19 @@ void ZFlyEmProofMvc::setDvidTargetFromDialog()
   getProgressSignal()->endProgress();
 }
 
+void ZFlyEmProofMvc::setDvidFromJsonObject(const std::string &str)
+{
+  ZJsonObject obj;
+  obj.decode(str);
+
+  ZDvidEnv env;
+  env.loadJsonObject(obj);
+
+  if (env.isValid()) {
+    setDvid(env);
+  }
+}
+
 void ZFlyEmProofMvc::setDvidFromJson(const std::string &filePath)
 {
   ZJsonObject obj;
