@@ -101,6 +101,7 @@ public:
   virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
   void setDvidFromJson(const std::string &filePath);
+  void setDvidFromUrl(const QString &url);
   void setDvid(const ZDvidEnv &env);
 
   void clear();

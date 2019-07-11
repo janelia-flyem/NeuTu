@@ -1265,7 +1265,7 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
       //          obj->setDsIntv(31, 31, 31);
       obj->addVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
-      obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+      obj->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
       //      addObject(obj);
       m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
       m_dataBuffer->deliver();
@@ -1372,7 +1372,7 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
   if (getDvidTarget().hasSupervoxel()) {
     ZDvidLabelSlice* slice = addDvidLabelSlice(neutu::EAxis::Z, true);
     slice->setVisible(false);
-    slice->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+    slice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
   }
 
   if (getDvidInfo().isValid()) {
@@ -3038,7 +3038,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
   foreach (ZObject3dScan *obj, objList) {
     obj->setColor(getSeedColor(obj->getLabel()));
     obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
-    obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+    obj->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
     obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
@@ -3810,7 +3810,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
               bookmark->getCenter().toIntPoint())) {
           bookmark->setChecked(true);
         }
-        bookmark->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+        bookmark->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
         bookmark->setCustom(false);
         //            addCommand->addBookmark(bookmark);
 //        KINFO << "Adding bookmark:" << neutu::ToString(bookmark);

@@ -5,21 +5,26 @@
 
 #include "zneuroglancerlayerspec.h"
 
+const char* ZNeuroglancerPath::DATA_START_TAG = "!";
+
 ZNeuroglancerPath::ZNeuroglancerPath()
 {
 
 }
 
-void ZNeuroglancerPath::appendSetting(std::string &currentPath, const std::string &setting)
+/*
+void ZNeuroglancerPath::appendSetting(
+    std::string &currentPath, const std::string &setting)
 {
   if (!setting.empty()) {
     if (currentPath.empty()) {
-      currentPath += "/#!" + setting;
+      currentPath += str::string("/#") + ZNeuroglancerPath::DATA_START_TAG + setting;
     } else {
       currentPath += "," + setting;
     }
   }
 }
+*/
 
 /*
 QString ZNeuroglancerPath::getLayerString() const
@@ -81,5 +86,6 @@ std::string ZNeuroglancerPath::getPath() const
   rootObj.setNonEmptyEntry("layout", m_layout);
   rootObj.setEntry("perspectiveZoom", m_perspectiveZoom);
 
-  return "/#!" + rootObj.dumpString(0);
+  return std::string("/#") + DATA_START_TAG + rootObj.dumpString(0);
 }
+

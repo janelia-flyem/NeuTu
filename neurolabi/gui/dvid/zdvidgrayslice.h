@@ -167,7 +167,7 @@ private:
   bool m_isPixmapValid = false;
 
   bool m_usingContrastProtocol = false;
-  ZContrastProtocol m_contrastProtocal;
+  ZContrastProtocol m_contrastProtocol;
 
   QMutex m_pixmapMutex;
 //  ZStackViewParam m_currentViewParam;

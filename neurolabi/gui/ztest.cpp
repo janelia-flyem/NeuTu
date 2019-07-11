@@ -194,6 +194,7 @@
 #include "zmultitaskmanager.h"
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidenv.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprinter.h"
 #include "zneurontracer.h"
@@ -331,6 +332,7 @@
 #include "flyem/neuroglancer/zneuroglancerpath.h"
 #include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
+#include "flyem/neuroglancer/zneuroglancerpathparser.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30115,6 +30117,61 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("127.0.0.1", "4280", 1600);
+  target.setSegmentationName("segmentation");
+  writer.open(target);
+
+  ZIntPoint s(512, 512, 64);
+  for (int i = 0; i < 1; ++i) {
+    ZIntPoint start(13452, 20071, 20696 + s.getZ() * i);
+    ZIntCuboid box = ZIntCuboid(start, start + s - 1);
+    ZArray *array = reader->readLabels64(box);
+    array->setStartCoordinate({0, 0, 0});
+    writer.writeLabel(*array);
+  }
+#endif
+
+#if 0
+//  QUrl url("http://localhost:8080/test!");
+  QUrl url("http://localhost:8080/#!%7B%22layers%22:%5B%7B%22source%22:%22dvid://http://emdata3.int.janelia.org:8600/a89e/grayscale%22%2C%22type%22:%22image%22%2C%22name%22:%22grayscale%22%7D%2C%7B%22source%22:%22dvid://http://emdata2.int.janelia.org:7900/4151/segmentation%22%2C%22type%22:%22segmentation%22%2C%22segments%22:%5B%222%22%5D%2C%22name%22:%22segmentation%22%7D%2C%7B%22tool%22:%22annotatePoint%22%2C%22type%22:%22annotation%22%2C%22voxelSize%22:%5B8%2C8%2C8%5D%2C%22linkedSegmentationLayer%22:%22segmentation%22%2C%22name%22:%22annotation%22%7D%5D%2C%22navigation%22:%7B%22pose%22:%7B%22position%22:%7B%22voxelSize%22:%5B8%2C8%2C8%5D%2C%22voxelCoordinates%22:%5B17032%2C20889%2C25479%5D%7D%2C%22orientation%22:%5B0.04880080372095108%2C-0.527595043182373%2C0.011728000827133656%2C0.8480120301246643%5D%7D%2C%22zoomFactor%22:8%7D%2C%22perspectiveOrientation%22:%5B0.04880080372095108%2C-0.527595043182373%2C0.011728000827133656%2C0.8480120301246643%5D%2C%22perspectiveZoom%22:64%2C%22showSlices%22:false%2C%22selectedLayer%22:%7B%22layer%22:%22annotation%22%2C%22visible%22:true%7D%2C%22layout%22:%224panel%22%7D");
+  qDebug() << url.fragment(QUrl::FullyDecoded);
+
+  std::cout << neutu::Length("test") << std::endl;
+#endif
+
+#if 0
+  QUrl url("http://emdata3.int.janelia.org:8600/a89e/grayscale");
+  qDebug() << url.path().split("/", QString::SkipEmptyParts);
+#endif
+
+#if 1
+  ZDvidEnv env = ZNeuroglancerPathParser::MakeDvidEnvFromUrl(
+        "http://localhost:8080/#!%7B%22layers%22:%5B%7B%22source%22:%22"
+        "dvid://http://emdata3.int.janelia.org:8600/a89e/grayscale%22%2C%22"
+        "type%22:%22image%22%2C%22name%22:%22grayscale%22%7D%2C%7B%22source%22:%22"
+        "dvid://http://emdata2.int.janelia.org:7900/4151/segmentation%22%2C%22"
+        "type%22:%22segmentation%22%2C%22segments%22:%5B%222%22%5D%2C%22"
+        "name%22:%22segmentation%22%7D%2C%7B%22tool%22:%22annotatePoint%22%2C%22"
+        "type%22:%22annotation%22%2C%22voxelSize%22:%5B8%2C8%2C8%5D%2C%22"
+        "linkedSegmentationLayer%22:%22segmentation%22%2C%22name%22:%22"
+        "annotation%22%7D%5D%2C%22navigation%22:%7B%22pose%22:%7B%22"
+        "position%22:%7B%22voxelSize%22:%5B8%2C8%2C8%5D%2C%22"
+        "voxelCoordinates%22:%5B17032%2C20889%2C25479%5D%7D%2C%22"
+        "orientation%22:%5B0.04880080372095108%2C-0.527595043182373%2C"
+        "0.011728000827133656%2C0.8480120301246643%5D%7D%2C%22"
+        "zoomFactor%22:8%7D%2C%22perspectiveOrientation%22:%5B"
+        "0.04880080372095108%2C-0.527595043182373%2C0.011728000827133656%2C"
+        "0.8480120301246643%5D%2C%22perspectiveZoom%22:64%2C%22showSlices%22:"
+        "false%2C%22selectedLayer%22:%7B%22layer%22:%22annotation%22%2C%22"
+        "visible%22:true%7D%2C%22layout%22:%224panel%22%7D");
+  std::cout << env.toJsonObject().dumpString() << std::endl;
+#endif
+
+
+#if 0
   ZStack *stack = new ZStack;
   stack->load(GET_BENCHMARK_DIR + "/fork2/fork2.tif");
 
@@ -30130,7 +30187,7 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   ZJsonObject obj = reader->getDvidTarget().toJsonObject();
   obj.dump(GET_TEST_DATA_DIR + "/_test/dvid_setting.json");

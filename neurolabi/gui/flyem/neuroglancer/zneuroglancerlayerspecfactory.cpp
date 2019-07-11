@@ -16,7 +16,7 @@ ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(const ZDvidTarget &target)
   if (target.hasGrayScaleData()) {
     layer = std::make_shared<ZNeuroglancerLayerSpec>();
     layer->setName("grayscale");
-    layer->setType("image");
+    layer->setType(ZNeuroglancerLayerSpec::TYPE_GRAYSCALE);
     layer->setSource(
           "dvid://http://" + target.getGrayScaleSource().getAddressWithPort() +
           "/" + target.getGrayScaleSource().getUuid() + "/" +
@@ -33,7 +33,7 @@ ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(const ZDvidTarget &target)
   if (target.hasSegmentation()) {
     layer = std::make_shared<ZNeuroglancerLayerSpec>();
     layer->setName("segmentation");
-    layer->setType("segmentation");
+    layer->setType(ZNeuroglancerLayerSpec::TYPE_SEGMENTATION);
     layer->setSource(
           "dvid://http://" + target.getAddressWithPort() +
           "/" + target.getUuid() + "/" + target.getSegmentationName());
@@ -50,7 +50,7 @@ ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(const ZDvidTarget &targe
 
   layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
   layer->setName("annotation");
-  layer->setType("annotation");
+  layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
   layer->setLinkedSegmentation(linkedSegmentationLayer);
   layer->setTool("annotatePoint");
   layer->setSource(

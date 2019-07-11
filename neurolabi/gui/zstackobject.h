@@ -110,7 +110,7 @@ public:
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
-  enum class EHitProtocal {
+  enum class EHitProtocol {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
@@ -356,10 +356,10 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_hitProtocal != EHitProtocal::HIT_NONE && isVisible();
+    return m_hitProtocal != EHitProtocol::HIT_NONE && isVisible();
   }
 
-  inline void setHitProtocal(EHitProtocal protocal) {
+  inline void setHitProtocal(EHitProtocol protocal) {
     m_hitProtocal = protocal;
   }
 
@@ -394,7 +394,7 @@ protected:
   bool m_isSelectable;
   bool m_isVisible;
 //  bool m_isHittable;
-  EHitProtocal m_hitProtocal;
+  EHitProtocol m_hitProtocal;
   bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;

@@ -18,6 +18,8 @@ public:
       const ZDvidTarget &target, const ZIntPoint &voxelSize,
       const ZPoint &position,
       const QList<ZFlyEmBookmark*> bookmarkList = QList<ZFlyEmBookmark*>());
+
+
 };
 
 #endif // ZNEUROGLANCERPATHFACTORY_H

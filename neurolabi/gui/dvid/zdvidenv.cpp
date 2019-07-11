@@ -16,16 +16,7 @@ void ZDvidEnv::enableRole(ERole role)
 
 bool ZDvidEnv::isValid() const
 {
-  if (!m_mainTarget.isValid()) {
-    for (auto &v : m_targetMap) {
-      if (!v.second.empty()) {
-        return true;
-      }
-      return false;
-    }
-  }
-
-  return true;
+  return getMainTarget().isValid();
 }
 
 void ZDvidEnv::clear()
@@ -36,9 +27,36 @@ void ZDvidEnv::clear()
   }
 }
 
-ZDvidTarget &ZDvidEnv::getMainTarget()
+ZDvidTarget& ZDvidEnv::getMainTarget()
 {
+  if (!m_mainTarget.isValid()) {
+    std::vector<ZDvidTarget> &targetList = ZDvidEnv::getTargetList(ERole::GRAYSCALE);
+    if (!targetList.empty()) {
+      return targetList.front();
+    }
+  }
+
   return m_mainTarget;
+}
+
+void ZDvidEnv::setHost(const std::string &host)
+{
+  m_mainTarget.setServer(host);
+}
+
+void ZDvidEnv::setPort(int port)
+{
+  m_mainTarget.setPort(port);
+}
+
+void ZDvidEnv::setUuid(const std::string &uuid)
+{
+  m_mainTarget.setUuid(uuid);
+}
+
+void ZDvidEnv::setSegmentation(const std::string &name)
+{
+  m_mainTarget.setSegmentationName(name);
 }
 
 std::vector<ZDvidTarget>& ZDvidEnv::getTargetList(ERole role)
@@ -63,6 +81,13 @@ void ZDvidEnv::set(const ZDvidTarget &target)
   m_mainTarget = target;
 //  m_mainTarget.clearGrayScale();
   m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
+}
+
+void ZDvidEnv::appendValidDvidTarget(const ZDvidTarget &target, ERole role)
+{
+  if (target.isValid()) {
+    getTargetList(role).push_back(target);
+  }
 }
 
 void ZDvidEnv::appendDvidTarget(

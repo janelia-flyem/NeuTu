@@ -103,7 +103,7 @@ private:
 private:
   std::string m_address;
   std::string m_uuid;
-  int m_port;
+  int m_port = -1;
   bool m_isMocked = false; //Mocked node if true
 
   const static char* m_addressKey;

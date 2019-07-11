@@ -73,6 +73,19 @@ uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
 
+template<size_t N>
+size_t Length(const char (&)[N])
+{
+    return N - 1;
+}
+
+template<size_t N>
+size_t Length(const wchar_t (&)[N])
+{
+    return N - 1;
+}
+
+
 }
 
 //template<>

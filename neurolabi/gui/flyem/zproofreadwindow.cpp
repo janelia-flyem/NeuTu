@@ -11,6 +11,7 @@
 #include <QStatusBar>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QInputDialog>
 
 #include "tz_math.h"
 
@@ -35,6 +36,7 @@
 #include "zflyemmessagewidget.h"
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
+#include "neuroglancer/zneuroglancerpathparser.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -286,10 +288,15 @@ void ZProofreadWindow::createMenu()
 
   menuBar()->addMenu(fileMenu);
 
-  QAction *loadDvidAction = new QAction("Load Database", this);
-  connect(loadDvidAction, &QAction::triggered,
+  m_loadDvidAction = new QAction("Load Database", this);
+  connect(m_loadDvidAction, &QAction::triggered,
           this, &ZProofreadWindow::loadDatabase);
-  fileMenu->addAction(loadDvidAction);
+  fileMenu->addAction(m_loadDvidAction);
+
+  m_loadDvidUrlAction = new QAction("Load Neuroglancer Link", this);
+  connect(m_loadDvidUrlAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabaseFromUrl);
+  fileMenu->addAction(m_loadDvidUrlAction);
 
   m_importBookmarkAction = new QAction("Import Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
@@ -521,6 +528,8 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_openTodoAction->setEnabled(on);
   m_openProtocolsAction->setEnabled(on);
   m_tuneContrastAction->setEnabled(on);
+  m_loadDvidAction->setEnabled(!on);
+  m_loadDvidUrlAction->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -974,4 +983,27 @@ void ZProofreadWindow::loadDatabase()
   if (!filename.isEmpty()) {
     m_mainMvc->setDvidFromJson(filename.toStdString());
   }
+}
+
+void ZProofreadWindow::loadDatabaseFromUrl()
+{
+  QString url = QInputDialog::getMultiLineText(
+        this, "Load Database", "URL");
+  if (!url.isEmpty()) {
+    m_mainMvc->setDvidFromUrl(url);
+  }
+
+  /*
+  static QInputDialog *dlg = new QInputDialog(this);
+
+  dlg->setOption(QInputDialog::UsePlainTextEditForTextInput);
+  dlg->text
+  if (dlg->exec()) {
+    QString url = dlg->textValue();
+    if (!url.isEmpty()) {
+      m_mainMvc->setDvidFromUrl(url);
+    }
+  }
+  */
+
 }

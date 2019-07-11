@@ -24,17 +24,9 @@ ZDvidNode::ZDvidNode()
 ZDvidNode::ZDvidNode(
     const std::string &address, const std::string &uuid, int port)
 {
-  init();
-
   set(address, uuid, port);
 }
 
-
-void ZDvidNode::init()
-{
-  m_port = -1;
-  m_isMocked = false;
-}
 
 void ZDvidNode::setMock(bool on)
 {
@@ -132,7 +124,7 @@ void ZDvidNode::set(
 void ZDvidNode::clear()
 {
   set("", "", -1);
-  init();
+  m_isMocked = false;
 }
 
 void ZDvidNode::setServer(const std::string &address)

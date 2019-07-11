@@ -125,13 +125,13 @@ void ZDvidGraySlice::updateContrast(bool highContrast)
 
 void ZDvidGraySlice::updateContrast(const ZJsonObject &obj)
 {
-  m_contrastProtocal.load(obj);
+  m_contrastProtocol.load(obj);
   updateContrast();
 }
 
 void ZDvidGraySlice::updateContrast()
 {
-  m_image.setContrastProtocol(m_contrastProtocal);
+  m_image.setContrastProtocol(m_contrastProtocol);
   m_image.updateContrast(m_usingContrastProtocol);
   invalidatePixmap();
 #if 0
@@ -386,7 +386,7 @@ void ZDvidGraySlice::setZoom(int zoom)
 
 void ZDvidGraySlice::setContrastProtocol(const ZContrastProtocol &cp)
 {
-  m_contrastProtocal = cp;
+  m_contrastProtocol = cp;
 }
 
 int ZDvidGraySlice::getScale() const

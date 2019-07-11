@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <string>
 
 #include "zdvidtarget.h"
 
@@ -32,6 +33,10 @@ public:
   void clear();
 
   void set(const ZDvidTarget &target);
+  void setHost(const std::string &host);
+  void setPort(int port);
+  void setUuid(const std::string &uuid);
+  void setSegmentation(const std::string &name);
 
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
@@ -43,6 +48,8 @@ public:
 
   const ZDvidTarget& getMainTarget() const;
   const std::vector<ZDvidTarget>& getTargetList(ERole role) const;
+
+  void appendValidDvidTarget(const ZDvidTarget &target, ERole role);
 
 private:
   void appendDvidTarget(

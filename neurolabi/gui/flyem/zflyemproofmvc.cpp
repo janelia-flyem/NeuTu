@@ -49,9 +49,7 @@
 #include "zstring.h"
 #include "zpaintlabelwidget.h"
 #include "zwidgetfactory.h"
-#include "zflyemcoordinateconverter.h"
-#include "zflyembookmarkannotationdialog.h"
-#include "zflyembookmark.h"
+
 #include "protocols/protocolswitcher.h"
 #include "zflyembodywindowfactory.h"
 #include "zflyemmisc.h"
@@ -68,11 +66,7 @@
 #include "widgets/zcolorlabel.h"
 #include "widgets/zimagewidget.h"
 
-#include "zflyemorthodoc.h"
-#include "flyem/zflyemsynapsedatafetcher.h"
-#include "flyem/zflyemsynapsedataupdater.h"
-#include "flyem/zflyemroiproject.h"
-#include "zflyemutilities.h"
+
 #include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
 #include "zrandomgenerator.h"
@@ -85,7 +79,7 @@
 #include "zstackdockeyprocessor.h"
 #include "z3dgraphfilter.h"
 #include "z3dmeshfilter.h"
-#include "flyem/zflyembody3ddocmenufactory.h"
+
 #include "dvid/zdvidgrayslice.h"
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
@@ -93,11 +87,23 @@
 #include "zstack.hxx"
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
+
 #include "zflyembodystatus.h"
 #include "flyemmvcdialogmanager.h"
 #include "zflyembookmarklistmodel.h"
 #include "flyemdatareader.h"
 #include "zflyemproofdocutil.h"
+#include "zflyemorthodoc.h"
+#include "zflyemsynapsedatafetcher.h"
+#include "zflyemsynapsedataupdater.h"
+#include "zflyemroiproject.h"
+#include "zflyemutilities.h"
+#include "zflyembody3ddocmenufactory.h"
+#include "zflyemcoordinateconverter.h"
+#include "zflyembookmarkannotationdialog.h"
+#include "zflyembookmark.h"
+
+#include "neuroglancer/zneuroglancerpathparser.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -1790,6 +1796,15 @@ void ZFlyEmProofMvc::setDvidFromJson(const std::string &filePath)
 
   ZDvidEnv env;
   env.loadJsonObject(obj);
+
+  if (env.isValid()) {
+    setDvid(env);
+  }
+}
+
+void ZFlyEmProofMvc::setDvidFromUrl(const QString &url)
+{
+  ZDvidEnv env = ZNeuroglancerPathParser::MakeDvidEnvFromUrl(url);
 
   if (env.isValid()) {
     setDvid(env);
@@ -3652,7 +3667,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   body->setSource(
         ZStackObjectSourceFactory::MakeSplitObjectSource());
 //  body->setHittable(false);
-  body->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+  body->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
   body->setSelectable(false);
   KINFO << QString("Adding body: %1").arg(bodyId);
   getDocument()->addObject(body, true);
@@ -3689,7 +3704,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
-      labelSlice->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+      labelSlice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
 
       body->setColor(labelSlice->getLabelColor(
                        bodyId, neutu::ELabelSource::ORIGINAL));
@@ -4547,7 +4562,7 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
-    labelSlice->setHitProtocal(ZStackObject::EHitProtocal::HIT_DATA_POS);
+    labelSlice->setHitProtocal(ZStackObject::EHitProtocol::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();
