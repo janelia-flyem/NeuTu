@@ -130,7 +130,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 #ifdef _DEBUG_2
@@ -320,6 +320,12 @@ void ZImageWidget::setViewPortOffset(int x, int y)
 {
   m_viewProj.setOffset(x, y);
   updateView();
+}
+
+void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
+{
+  m_viewProj.setOffset(cx - (viewPort().width() - 1) / 2,
+                       cy - (viewPort().height() - 1) / 2);
 }
 
 void ZImageWidget::setZoomRatio(double zoomRatio)

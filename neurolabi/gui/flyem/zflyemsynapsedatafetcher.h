@@ -30,6 +30,8 @@ public:
   void submit(const QVector<ZIntCuboid> &region);
   void addSynapse(ZDvidSynapseEnsemble *se);
 
+  void clearLastFetching();
+
 private:
   void fetchFunc();
   void init();
@@ -45,6 +47,7 @@ private:
   QVector<ZIntCuboid> m_fetchingRegion;
   QMutex m_regionMutex;
   QMutex m_dataMutex;
+  QMutex m_lastFetchingRegionMutex;
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;

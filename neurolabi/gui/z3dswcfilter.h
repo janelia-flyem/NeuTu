@@ -204,6 +204,8 @@ private:
   // get visible data from origSwcList put into swcList
   void loadVisibleData();
 
+  bool isAmongVisible(const ZSwcTree *tree) const;
+
   void sortNodeList();
   void clearDecorateSwcList();
 
@@ -278,7 +280,7 @@ private:
   // swc list used for rendering, it is a subset of m_origSwcList. Some swcs are
   // hidden because they are unchecked from the object model. This allows us to control
   // the visibility of each single swc tree.
-  std::vector<ZSwcTree*> m_swcList;
+  std::vector<ZSwcTree*> m_visibleSwcList;
   std::vector<ZSwcTree*> m_registeredSwcList;    // used for picking
   std::vector<ZSwcTree*> m_decorateSwcList;  //For decoration. Self-owned.
   std::vector<Swc_Tree_Node*> m_registeredSwcTreeNodeList;    // used for picking
@@ -293,6 +295,8 @@ private:
 
   ZSwcTree* m_pressedSwc = nullptr;
   Swc_Tree_Node* m_pressedSwcTreeNode = nullptr;
+  ZSwcTree *m_pressedSwcTreeNodeHost = nullptr;
+
   std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
 
   std::vector<glm::vec4> m_baseAndBaseRadius;

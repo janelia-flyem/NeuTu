@@ -275,7 +275,7 @@ public:
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
-  static bool isDvidTarget(const std::string &source);
+  static bool IsDvidTarget(const std::string &source);
 
   inline bool isSupervised() const { return m_isSupervised; }
   void enableSupervisor(bool on) {
@@ -354,6 +354,8 @@ public:
   ZDvidNode getTileSource() const;
   ZDvidTarget getGrayScaleTarget() const;
   ZDvidTarget getTileTarget() const;
+
+  std::vector<ZDvidTarget> getGrayScaleTargetList() const;
 
   static bool Test();
 

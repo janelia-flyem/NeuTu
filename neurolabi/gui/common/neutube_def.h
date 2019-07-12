@@ -112,6 +112,7 @@ enum class EBodyLabelType {
 };
 
 std::string ToString(EBodyLabelType type);
+std::string ToString(EAxis axis);
 
 enum class EBodySplitMode {
   NONE, ONLINE, OFFLINE

@@ -223,7 +223,7 @@ void ZDvidTarget::setFromSourceString(
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
+  if (tokens.size() < 4 || (tokens[0] != "http" && tokens[0] != "mock")) {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
@@ -1262,6 +1262,14 @@ ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
   return target;
 }
 
+std::vector<ZDvidTarget> ZDvidTarget::getGrayScaleTargetList() const
+{
+  std::vector<ZDvidTarget> targetList;
+  targetList.push_back(getGrayScaleTarget());
+
+  return targetList;
+}
+
 ZDvidTarget ZDvidTarget::getTileTarget() const
 {
   ZDvidNode node = getTileSource();
@@ -1301,7 +1309,7 @@ void ZDvidTarget::prepareTile()
   }
 }
 
-bool ZDvidTarget::isDvidTarget(const std::string &source)
+bool ZDvidTarget::IsDvidTarget(const std::string &source)
 {
   return ZString(source).startsWith("http:");
 }

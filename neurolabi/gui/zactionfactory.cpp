@@ -225,7 +225,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/verify.png"));
     break;
   case ACTION_SYNAPSE_UNVERIFY:
-    action = new QAction("Unverfiy", parent);
+    action = new QAction("Unverify", parent);
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
@@ -402,6 +402,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_SUPERVOXEL_ID:
     action = new QAction("Copy Supervoxel ID", parent);
     break;
+  case ACTION_COPY_NEUROGLANCER_LINK:
+    action = new QAction("Copy Neuroglancer Link", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
@@ -514,13 +517,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Show Selected Puncta", parent);
     break;
   case ACTION_REWRITE_SEGMENTATION:
-    action = new QAction("Rewrite segmentation", parent);
+    action = new QAction("Rewrite Segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
   case ACTION_REFRESH_SEGMENTATION:
-    action = new QAction("Refresh segmentation", parent);
+    action = new QAction("Refresh Segmentation", parent);
     action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    break;
+  case ACTION_REFRESH_DATA:
+    action = new QAction("Refresh Data", parent);
+    action->setToolTip("Try to fetch the latest data from DVID");
     break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
@@ -672,6 +679,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_RUN_TIP_DETECTION:
     action = new QAction("Run tip detection", parent);
+    break;
+  case ACTION_SAVE_ALL_MESH:
+    action = new QAction("Save Meshes As", parent);
     break;
   default:
     break;

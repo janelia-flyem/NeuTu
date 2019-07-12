@@ -205,7 +205,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -248,6 +249,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
       config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
+    config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    config.appendSeparator();
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);
@@ -262,6 +266,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   }
 
   config.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+  config.append(ZActionFactory::ACTION_REFRESH_DATA);
 
 //  addAction(actionList, presenter, menu);
 

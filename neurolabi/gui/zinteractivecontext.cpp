@@ -2,21 +2,43 @@
 #include "geometry/zpoint.h"
 #include "widgets/zimagewidget.h"
 
+/* Implementation details
+ *
+ * ZInteractiveContext is a class of managing the interactiion context of a MVC
+ * environment. The context affects how the MVC responds to key and mouse events.
+ * The context is categorized by modes, and a free mode means that no specific
+ * mode is on. The editing modes are grouped by different enum types,
+ * each corresponding to a certain type of object. Those modes include:
+ *
+ * TubeEditMode m_tubeEditMode: tube (obsolete)
+ * SwcEditMode m_swcEditMode: SWC skeletons
+ * StrokeEditMode m_strokeEditMode: strokes
+ * RectEditMode m_rectEditMode: rectangles
+ * BookmarkEditMode m_bookmarkEditMode: bookmarks
+ * SynapseEditMode m_synapseEditMode: synapses
+ * TodoEditMode m_todoEditMode: todos
+ *
+ * Those modes are exclusive. So switching from one mode to another needs to turn
+ * off the old mode.
+ */
+
 ZInteractiveContext::ZInteractiveContext()
 {
-  m_traceMode = TRACE_OFF;
-  m_tubeEditMode = TUBE_EDIT_OFF;
   m_viewMode = VIEW_NORMAL;
   m_exploreMode = EXPLORE_OFF;
   m_oldExploreMode = EXPLORE_OFF;
+
+  m_traceMode = TRACE_OFF;
+
+  m_tubeEditMode = TUBE_EDIT_OFF;
   m_markPunctaMode = MARK_PUNCTA_OFF;
-//  m_swcEditMode = SWC_EDIT_SELECT;
   m_swcEditMode = SWC_EDIT_OFF;
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
   m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
   m_todoEditMode = TODO_EDIT_OFF;
   m_synapseEditMode = SYNAPSE_EDIT_OFF;
+
   m_exitingEdit = false;
   m_blockingContextMenu = false;
   m_sliceAxis = neutu::EAxis::Z;
@@ -53,6 +75,11 @@ bool ZInteractiveContext::isContextMenuActivated() const
 void ZInteractiveContext::blockContextMenu(bool blocking)
 {
   m_blockingContextMenu = blocking;
+}
+
+bool ZInteractiveContext::isFreeMode() const
+{
+  return getUniqueMode() == EUniqueMode::INTERACT_FREE;
 }
 
 void ZInteractiveContext::setUniqueMode(EUniqueMode mode)
@@ -190,3 +217,43 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
 
   return mode;
 }
+
+bool ZInteractiveContext::isEditOff() const
+{
+  return (m_tubeEditMode == TUBE_EDIT_OFF) &&
+      (m_markPunctaMode == MARK_PUNCTA_OFF) &&
+      (m_strokeEditMode == STROKE_EDIT_OFF) &&
+      (m_rectEditMode == RECT_EDIT_OFF) &&
+      (m_bookmarkEditMode == BOOKMARK_EDIT_OFF) &&
+      (m_todoEditMode == TODO_EDIT_OFF) &&
+      (m_synapseEditMode == SYNAPSE_EDIT_OFF) &&
+      (m_swcEditMode == SWC_EDIT_OFF);
+}
+
+namespace {
+template <typename T>
+void change_edit_mode(T& mode, const T& value, bool &toggled)
+{
+  if (mode != value) {
+    mode = value;
+    toggled = true;
+  }
+}
+}
+
+bool ZInteractiveContext::turnOffEditMode()
+{
+  bool toggled = false;
+
+  change_edit_mode(m_tubeEditMode, TUBE_EDIT_OFF, toggled);
+  change_edit_mode(m_markPunctaMode, MARK_PUNCTA_OFF, toggled);
+  change_edit_mode(m_strokeEditMode, STROKE_EDIT_OFF, toggled);
+  change_edit_mode(m_rectEditMode, RECT_EDIT_OFF, toggled);
+  change_edit_mode(m_bookmarkEditMode, BOOKMARK_EDIT_OFF, toggled);
+  change_edit_mode(m_todoEditMode, TODO_EDIT_OFF, toggled);
+  change_edit_mode(m_synapseEditMode, SYNAPSE_EDIT_OFF, toggled);
+  change_edit_mode(m_swcEditMode, SWC_EDIT_OFF, toggled);
+
+  return toggled;
+}
+

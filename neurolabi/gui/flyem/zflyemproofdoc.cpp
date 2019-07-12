@@ -39,36 +39,41 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 
-//#include "zflyemproofmvc.h"
-#include "flyem/zflyembookmark.h"
 #include "zstring.h"
-#include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
-#include "zslicedpuncta.h"
-#include "zdialogfactory.h"
+#include "zstackarray.h"
+#include "zsleeper.h"
+#include "zstroke2d.h"
+
+#include "zflyembookmark.h"
+#include "zsynapseannotationarray.h"
+#include "zflyemproofdockeyprocessor.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
-#include "flyem/zflyemproofdoccommand.h"
+#include "zflyemproofdoccommand.h"
+#include "zflyembodymanager.h"
+#include "zflyembodystatus.h"
+#include "zflyemroimanager.h"
+
+#include "zslicedpuncta.h"
+#include "zdialogfactory.h"
+
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
 #include "imgproc/zstackwatershed.h"
-#include "zstackarray.h"
-#include "zsleeper.h"
-#include "zdvidutil.h"
+
 #include "zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
-#include "zstroke2d.h"
+#include "zdvidutil.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
 #include "zflyemroutinechecktask.h"
 #include "zarray.h"
-#include "zflyembodymanager.h"
+
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
-#include "flyem/zflyembodystatus.h"
-#include "zflyemroimanager.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
 #include "flyemdatareader.h"
@@ -238,9 +243,13 @@ void ZFlyEmProofDoc::connectSignalSlot()
           this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
 
+  /*
   connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
           this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
+          */
+  connect(this, &ZFlyEmProofDoc::updatingGraySlice,
+          this, &ZFlyEmProofDoc::updateGraySlice);
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
@@ -3004,6 +3013,13 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
   }
 }
 
+//void ZFlyEmProofDoc::refreshBookmark()
+//{
+//  QList<ZFlyEmBookmark*> bookmarkList =
+//      getDocument()->getObjectList<ZFlyEmBookmark>();
+
+//}
+
 void ZFlyEmProofDoc::downloadBookmark()
 {
   if (m_dvidReader.isReady()) {
@@ -3108,6 +3124,17 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
   }
 }
 
+void ZFlyEmProofDoc::refreshTodo()
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (ZFlyEmToDoList* td : todoList) {
+    td->clearCache();
+    bufferObjectModified(td);
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmProofDoc::downloadTodo(const std::vector<ZIntPoint> &ptArray)
 {
   ZOUT(LTRACE(), 5) << "Download to do items";
@@ -3176,6 +3203,17 @@ void ZFlyEmProofDoc::downloadSynapse()
     m_futureMap[threadId] = future;
   }
 #endif
+}
+
+void ZFlyEmProofDoc::refreshSynapse()
+{
+  QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+  for (ZDvidSynapseEnsemble *se : seList) {
+    se->clearCache();
+    bufferObjectModified(se);
+  }
+
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadTodoList()
@@ -5224,6 +5262,11 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   }
 
   return bookmark;
+}
+
+void ZFlyEmProofDoc::makeKeyProcessor()
+{
+  m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
 }
 
 bool ZFlyEmProofDoc::_loadFile(const QString &filePath)

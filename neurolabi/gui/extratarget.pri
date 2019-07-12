@@ -73,7 +73,7 @@ xmlconfig.commands = cp $${PWD}/$${CONFIG_SOURCE} $$xmlconfig.target
 
 jsonconfig.target = jsonconfig
 jsonconfig.depends = FORCE $$configfolder.target
-jsonconfig.commands = cp -r $${PWD}/../json $${BIN_FOLDER}/$${CONFIG_FOLDER}/json
+jsonconfig.commands = rm -rf $${BIN_FOLDER}/$${CONFIG_FOLDER}/json; cp -r $${PWD}/../json $${BIN_FOLDER}/$${CONFIG_FOLDER}/json
 
 SPLASH_SOURCE = $${PWD}/images/neutu_splash.png
 CONFIG(neu3) {

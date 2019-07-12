@@ -445,6 +445,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
+      break;
     default:
       connected = false;
       break;
@@ -1486,8 +1489,11 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   if (op.getHitObject() != NULL) {
-    if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
-      op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+    if (interactiveContext().getUniqueMode() ==
+        ZInteractiveContext::EUniqueMode::INTERACT_FREE) {
+      if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
+        op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+      }
     }
   }
 
@@ -2541,6 +2547,24 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   updateCursor();
 }
 
+void ZStackPresenter::exitEdit()
+{
+  if (interactiveContext().turnOffEditMode()) {
+    turnOffActiveObject();
+    //  interactiveContext().setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
+    //  interactiveContext().setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA_OFF);
+    //  interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
+    //  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+    //  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_EDIT_OFF);
+    //  interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
+    //  interactiveContext().setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+    //  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+    updateCursor();
+    m_interactiveContext.setExitingEdit(true);
+  }
+}
+
 void ZStackPresenter::exitStrokeEdit()
 {
   turnOffActiveObject(ROLE_STROKE);
@@ -2569,7 +2593,7 @@ void ZStackPresenter::exitRectEdit()
 
     m_interactiveContext.setExitingEdit(true);
 
-    emit exitingRectEdit();
+//    emit exitingRectEdit();
   }
 }
 
@@ -2804,6 +2828,16 @@ void ZStackPresenter::copySupervoxelId()
   buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
+void ZStackPresenter::copyLink(const QString &/*option*/) const
+{
+
+}
+
+void ZStackPresenter::copyNeuroglancerLink()
+{
+  copyLink("neuroglancer");
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -2995,6 +3029,12 @@ static void SyncDvidLabelSliceSelection(
       buddySlice->setSelection(selectedSet, neutu::ELabelSource::ORIGINAL);
     }
   }
+}
+
+bool ZStackPresenter::process(ZStackOperator::EOperation op)
+{
+  ZStackOperator opr(op);
+  return process(opr);
 }
 
 bool ZStackPresenter::process(ZStackOperator &op)
@@ -3516,6 +3556,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
+#ifdef _DEBUG_
+  std::cout << "======> Grab position: " << grabPosition.toString() << std::endl;
+#endif
 //    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),

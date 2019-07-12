@@ -5,12 +5,15 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
+
 #include "dialogs/zdviddialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
 #include "dialogs/zspinboxgroupdialog.h"
 
+
+class ZIntPoint;
 class QSpacerItem;
 class ZParameterArray;
 class ZWidgetMessage;
@@ -58,6 +61,10 @@ public:
   static void About(QWidget *parent);
 
   static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
+
+  static ZIntPoint AskForIntPoint(QWidget *parent);
+  static ZIntPoint AskForIntPoint(
+      const ZIntPoint &defaultPos, QWidget *parent);
 
 private:
 

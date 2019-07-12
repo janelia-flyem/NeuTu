@@ -100,7 +100,7 @@
      <item>
       <widget class="QLabel" name="grayscaleLabel">
        <property name="text">
-        <string>Gray Scale</string>
+        <string>Grayscale</string>
        </property>
       </widget>
      </item>

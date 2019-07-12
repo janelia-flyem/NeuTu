@@ -196,6 +196,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprinter.h"
+#include "zneurontracer.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -326,6 +327,10 @@
 #include "logging/utilities.h"
 #include "dvid/zdvidneurontracer.h"
 #include "flyem/zflyemmeshfactory.h"
+#include "flyem/neuroglancer/zneuroglancerlayerspecfactory.h"
+#include "flyem/neuroglancer/zneuroglancerpath.h"
+#include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
+#include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -29942,13 +29947,43 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
-  std::vector<std::string> roiList = { "(L)NO1", "(L)NO2" };
+  std::vector<std::string> roiList = { "(L)NO1", "(L)NO2", "(L)NO3" };
 
   ZObject3dScan roi;
   FlyEmDataReader::ReadRoi(*reader, roiList, &roi);
-  roi.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  roi.save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Left.sobj");
 
+  ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Left.obj");
 //  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  std::vector<std::string> roiList = { "NO1", "NO2", "NO3" };
+
+  ZObject3dScan roi;
+  FlyEmDataReader::ReadRoi(*reader, roiList, &roi);
+  roi.save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Right.sobj");
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/NO_Right.obj");
+//  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "NO(Left)",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Left.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Left.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "NO(Right)",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Right.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/NO_Right.obj");
+
 #endif
 
 #if 0
@@ -29982,19 +30017,112 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
-  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO2");
-  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc");
+  ZMesh *mesh = ZFlyEmMeshFactory::MakeRoiMesh(*reader, "(L)NO3");
+  mesh->save(GET_TEST_DATA_DIR + "/_flyem/roi/LNO3.drc");
 #endif
 
-#if 1
+#if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
 
-  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO2.drc";
+  std::string filePath = GET_TEST_DATA_DIR + "/_flyem/roi/LNO3.drc";
   std::cout << "Uploading " << filePath << std::endl;
-  writer->uploadRoiMesh(filePath, "(L)NO2");
-
+  writer->uploadRoiMesh(filePath, "(L)NO3");
 #endif
 
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  writer->deleteKey("rois", "(L)NO2D");
+  writer->deleteKey("rois", "(L)NO2V");
+#endif
+
+#if 0
+  neutu::LogMessageF("test", neutu::EMessageType::INFORMATION);
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+
+  ZNeuroglancerPath gpath;
+
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(8, 8, 8);
+  nav.setCoordinates(15000, 15000, 10000);
+  gpath.setNavigation(nav);
+
+  gpath.addLayer(
+        ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(
+          reader->getDvidTarget()));
+  gpath.addLayer(
+        ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(
+          reader->getDvidTarget()));
+
+  std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
+      ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+        "segmentation");
+  annotLayer->setVoxelSize(8, 8, 8);
+  gpath.addLayer(
+        std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);
+
+  std::cout << "Neuroglancer path: " << gpath.getPath() << std::endl;
+
+  QUrl url(gpath.getPath().c_str());
+  qDebug() << url.toEncoded();
+#endif
+
+#if 0
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReader("cleave_split_test");
+  QString path = ZNeuroglancerPathFactory::MakePath(
+        reader->getDvidTarget(), ZIntPoint(8, 8, 8), ZPoint(15000, 15000, 10000));
+  qDebug() << GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromSourceString("http:localhost:1900:uuid::grayscale");
+  target.toJsonObject().print();
+#endif
+
+#if 0
+  //Generate data for hbtest/tif
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+
+  ZDvidTarget target = reader->getDvidTarget().getGrayScaleTarget();
+  target.setGrayScaleName("grayscale");
+  ZDvidReader greader;
+  greader.open(target);
+
+  ZIntPoint s(2048, 2048, 8);
+  for (int i = 0; i < 256; ++i) {
+    ZIntPoint start(13452, 20071, 20696 + s.getZ() * i);
+    ZIntCuboid box = ZIntCuboid(start, start + s - 1);
+    ZStack *stack = greader.readGrayScale(box);
+    std::cout << "=====> box: " << box.toString() << std::endl;
+
+    ZString output = "/Volumes/FlyEM-Data1/data/hbtest/grayscale/";
+//        GET_TEST_DATA_DIR + "/_dvid/Volumes/FlyEM-Data1/data/hbtest/grayscale";
+    output.appendNumber(i + 1, 4);
+    output += ".tif";
+    stack->save(output);
+  }
+#endif
+
+#if 0
+  ZStack *stack = new ZStack;
+  stack->load(GET_BENCHMARK_DIR + "/fork2/fork2.tif");
+
+  ZNeuronTracer tracer;
+  tracer.setIntensityField(stack);
+  tracer.setTraceLevel(0);
+
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/fork2/partial.swc");
+  tracer.trace(64, 64, 61, &tree);
+
+  tree.resortId();
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
 
   std::cout << "Done." << std::endl;
 }

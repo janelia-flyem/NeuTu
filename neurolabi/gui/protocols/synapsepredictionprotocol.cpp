@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QtAlgorithms>
+#include <QShortcut>
 
 #include "synapsepredictioninputdialog.h"
 #include "synapsepredictionbodyinputdialog.h"
@@ -55,6 +56,15 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
 
+    QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
+    connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
+
+    QShortcut *shortcutPrev = new QShortcut(Qt::Key_Q, this);
+    connect(shortcutPrev, SIGNAL(activated()), this, SLOT(onPrevButton()));
+
+    QShortcut *shortcutRefresh = new QShortcut(Qt::Key_R, this);
+    connect(shortcutRefresh, SIGNAL(activated()), this, SLOT(onRefreshButton()));
+
     connect(ui->reviewFirstButton, SIGNAL(clicked(bool)),
             this, SLOT(onReviewFirstButton()));
     connect(ui->reviewPrevButton, SIGNAL(clicked(bool)),
@@ -79,7 +89,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
-    m_currentPendingIndex = 0;
+    initPendingIndex();
+//    m_currentPendingIndex = 0;
     m_currentFinishedIndex = 0;
 }
 
@@ -198,12 +209,17 @@ void SynapsePredictionProtocol::setRange(const ZJsonArray &rangeJson)
   setRange(range);
 }
 
+void SynapsePredictionProtocol::initPendingIndex()
+{
+  if (m_pendingList.size() > 0) {
+    m_currentPendingIndex = 0;
+  } else {
+    m_currentPendingIndex = -1;
+  }
+}
+
 void SynapsePredictionProtocol::onFirstButton() {
-    if (m_pendingList.size() > 0) {
-      m_currentPendingIndex = 0;
-    } else {
-      m_currentPendingIndex = -1;
-    }
+    initPendingIndex();
 
     gotoCurrent();
     updateLabels();
@@ -211,11 +227,14 @@ void SynapsePredictionProtocol::onFirstButton() {
 
 void SynapsePredictionProtocol::onReviewFirstButton()
 {
+  initPendingIndex();
+  /*
   if (m_finishedList.size() > 0) {
     m_currentPendingIndex = 0;
   } else {
     m_currentPendingIndex = -1;
   }
+  */
 
   gotoCurrentFinished();
 }
@@ -828,7 +847,9 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     // I don't *think* there's any way these lists will already be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
-    m_currentPendingIndex = 0;
+
+
+//    m_currentPendingIndex = 0;
 
     ZDvidReader &reader = m_dvidReader;
 //    reader.setVerbose(false);
@@ -896,6 +917,8 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
 
         progressDialog.setValue(100);
     }
+
+    initPendingIndex();
 }
 
 /*

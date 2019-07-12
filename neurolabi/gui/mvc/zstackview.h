@@ -606,6 +606,7 @@ private:
 
   void logViewParam();
 //  void setCentralView(int width, int height);
+  void syncArbViewCenter();
 
   class ViewParamRecordOnce {
   public:

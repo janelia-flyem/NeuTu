@@ -14,8 +14,6 @@ class ZStackDoc;
 class ZStackOperator
 {
 public:
-  ZStackOperator();
-
   enum EOperation {
     OP_NULL,
 
@@ -97,7 +95,8 @@ public:
     OP_DVID_SYNAPSE_SELECT_SINGLE, OP_DVID_SYNAPSE_SELECT_MULTIPLE,
     OP_DVID_SYNAPSE_SELECT_TOGGLE,
     OP_DVID_SYNAPSE_ADD, OP_DVID_SYNAPSE_ADD_ORPHAN, OP_DVID_SYNAPSE_MOVE,
-    OP_DVID_SYNAPSE_ANNOTATE,
+    OP_DVID_SYNAPSE_ANNOTATE, OP_DVID_SYNAPSE_START_TBAR,
+    OP_DVID_SYNAPSE_START_PSD,
 
     OP_FLYEM_TOD_ENTER_ADD_MODE,
     OP_FLYEM_TODO_ADD, OP_FLYEM_TODO_DELETE, OP_FLYEM_TODO_SELECT_SINGLE,
@@ -109,6 +108,9 @@ public:
     OP_CROSSHAIR_GRAB, OP_CROSSHAIR_MOVE, OP_CROSSHAIR_RELEASE,
     OP_EXPLORE_LOCAL
   };
+
+  ZStackOperator();
+  ZStackOperator(EOperation op);
 
   void clear();
 
@@ -185,17 +187,17 @@ public:
   static bool IsOperable(EOperation op, const ZStackDoc *doc);
 
 private:
-  EOperation m_op;
+  EOperation m_op = OP_NULL;
   //Swc_Tree_Node *m_hitNode;
-  ZStackObject *m_hitObject;
+  ZStackObject *m_hitObject = nullptr;
 //  ZStroke2d *m_hitStroke;
 //  ZObject3d *m_hitObj3d;
-  int m_punctaIndex;
-  bool m_togglingStrokeLabel;
+  int m_punctaIndex = -1;
+  bool m_togglingStrokeLabel = false;
   int m_label = 0;
   bool m_shift = false;
-  Qt::MouseButtons m_buttonPressed;
-  const ZMouseEventRecorder *m_mouseEventRecorder;
+  Qt::MouseButtons m_buttonPressed = Qt::NoButton;
+  const ZMouseEventRecorder *m_mouseEventRecorder = nullptr;
 };
 
 template<>

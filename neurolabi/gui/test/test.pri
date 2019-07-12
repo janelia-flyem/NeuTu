@@ -80,7 +80,8 @@ HEADERS += \
     $$PWD/zwidgetmessagetest.h \
     $$PWD/zstackobjecttest.h \
     $$PWD/z3dswcfiltertest.h \
-    $$PWD/flyembodyselectionmanagertest.h
+    $$PWD/flyembodyselectionmanagertest.h \
+    $$PWD/zinteractivecontexttest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

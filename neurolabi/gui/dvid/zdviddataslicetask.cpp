@@ -35,3 +35,8 @@ void ZDvidDataSliceTask::setSupervoxel(bool on)
 {
   m_supervoxel = on;
 }
+
+void ZDvidDataSliceTask::setHandle(const std::string &handle)
+{
+  m_handle = handle;
+}

@@ -85,8 +85,6 @@ void ZCommandLine::init()
   for (int i = 0; i < 3; ++i) {
     m_intv[i] = 0;
     m_blockOffset[i] = 0;
-    m_position[i] = 0;
-    m_size[i] = 0;
   }
   m_level = 0;
   m_scale = 1.0;
@@ -503,21 +501,31 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
-ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+ZStack* ZCommandLine::readDvidStack(const ZDvidTarget &target)
 {
   ZStack *stack = NULL;
-  ZDvidTarget target;
-  target.loadJsonObject(dvidConfig);
-  ZDvidReader reader;
-  if (reader.open(target)) {
-    ZIntCuboid box;
-    box.setFirstCorner(m_position[0], m_position[1], m_position[2]);
-    box.setSize(m_size[0], m_size[1], m_size[2]);
-    stack = reader.readGrayScale(box);
+
+  if (m_position.size() == 3 && m_size.size() == 3) {
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      ZIntCuboid box;
+      box.setFirstCorner(m_position[0], m_position[1], m_position[2]);
+      box.setSize(m_size[0], m_size[1], m_size[2]);
+      stack = reader.readGrayScale(box);
+    }
   }
 
   return stack;
 }
+/*
+ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+{
+  ZDvidTarget target;
+  target.loadJsonObject(dvidConfig);
+
+  return readDvidStack(target);
+}
+*/
 
 bool ZCommandLine::ExportPointArray(
     const std::vector<ZWeightedPoint> &ptArray, const string &outFilePath)
@@ -540,6 +548,21 @@ bool ZCommandLine::ExportPointArray(
   return succ;
 }
 
+ZDvidTarget ZCommandLine::getInputDvidTarget() const
+{
+  ZDvidTarget target;
+
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::JSON) {
+    ZJsonObject dvidConfig;
+    dvidConfig.load(m_input[0]);
+    target.loadJsonObject(dvidConfig);
+  } else {
+    target.setFromSourceString(m_input[0]);
+  }
+
+  return target;
+}
+
 int ZCommandLine::runComputeSeed()
 {
   if (m_input.empty()) {
@@ -552,24 +575,22 @@ int ZCommandLine::runComputeSeed()
     return 1;
   }
 
-  ZJsonObject dvidConfig;
-  dvidConfig.load(m_input[0]);
+  ZDvidTarget target = getInputDvidTarget();
 
-  if (dvidConfig.isEmpty()) {
+  if (!target.isValid()) {
     std::cout << "The input " << m_input[0]
-              << " must be a JSON file with valid DVID configuration. Abort."
+              << " must be a valid DVID configuration. Abort."
               << std::endl;
     return 1;
   }
 
-  loadTraceConfig();
-
-  ZNeuronTracer tracer;
-
   bool saved = false;
 
-  ZStack *stack = readDvidStack(dvidConfig);
+  ZStack *stack = readDvidStack(target);
   if (stack != NULL) {
+    loadTraceConfig();
+
+    ZNeuronTracer tracer;
     tracer.setTraceLevel(m_level);
 
     std::vector<ZWeightedPoint> ptArray = tracer.computeSeedPosition(stack);
@@ -617,6 +638,56 @@ void ZCommandLine::loadTraceConfig()
   }
 }
 
+void ZCommandLine::loadInputJson()
+{
+  if (m_input[0] == "json") {
+    std::string jsonInput = m_input[1];
+    ZJsonObject obj;
+    if (ZFileType::FileType(jsonInput) == ZFileType::EFileType::JSON) {
+      obj.load(jsonInput);
+    } else {
+      obj.decode(jsonInput);
+    }
+
+    if (obj.hasKey("position")) {
+      ZJsonArray posJson(obj.value("position"));
+      if (posJson.size() == 3) {
+        m_position.resize(3, 0);
+        for (size_t i = 0; i < 3; ++i) {
+          m_position[i] = ZJsonParser::integerValue(posJson.getData(), i);
+        }
+      } else {
+        std::cerr << "ERROR: invalid position input!" <<  std::endl;
+        exit(1);
+      }
+    }
+
+    if (obj.hasKey("size")) {
+      ZJsonArray sizeJson(obj.value("size"));
+      if (sizeJson.size() == 3) {
+        m_size.resize(3);
+        for (size_t i = 0; i < 3; ++i) {
+          m_size[i] = ZJsonParser::integerValue(sizeJson.getData(), i);
+        }
+      } else {
+        std::cerr << "ERROR: invalid size input!" <<  std::endl;
+        exit(1);
+      }
+    }
+
+    if (obj.hasKey("swc")) {
+      m_input[1] = ZJsonParser::stringValue(obj["swc"]);
+    } else {
+      m_input[1].clear();
+    }
+
+    m_input[0].clear();
+    if (obj.hasKey("signal")) {
+      m_input[0] = ZJsonParser::stringValue(obj["signal"]);
+    }
+  }
+}
+
 ZSwcTree* ZCommandLine::traceFile()
 {
   ZStack signal;
@@ -624,34 +695,60 @@ ZSwcTree* ZCommandLine::traceFile()
 
   ZNeuronTracer tracer;
   tracer.setIntensityField(&signal);
-
   tracer.setTraceLevel(m_level);
 
-  ZSwcTree *tree = tracer.trace(&signal);
+  ZSwcTree *tree = nullptr;
 
+  if (m_position.size() == 3) {
+    std::string swcPath;
+    if (m_input.size() > 1) {
+      swcPath = m_input[1];
+    }
+    if (ZFileType::FileType(swcPath) != ZFileType::EFileType::SWC) {
+      ZSwcPath path = tracer.trace(m_position[0], m_position[1], m_position[2]);
+      if (!path.empty()) {
+        tree = new ZSwcTree;
+        tree->setDataFromNodeRoot(path[0]);
+      }
+    } else {
+      tree = new ZSwcTree;
+      tree->load(swcPath);
+      tracer.trace(m_position[0], m_position[1], m_position[2], tree);
+    }
+  } else {
+    tree = tracer.trace(&signal);
+  }
   return tree;
 }
 
-ZSwcTree* ZCommandLine::traceDvid()
+ZSwcTree* ZCommandLine::traceDvid(const ZDvidTarget &target)
 {
-  ZDvidNeuronTracer tracer;
+  if (m_position.size() == 3) {
+    ZDvidNeuronTracer tracer;
 
-  ZDvidTarget target;
-  target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
+//    ZDvidTarget target;
+//    target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
+//    target.setNullSegmentationName();
+    tracer.setDvidTarget(target);
+    tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 
-  target.setNullSegmentationName();
-  tracer.setDvidTarget(target);
-  tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
+    ZSwcTree *tree = tracer.getResult();
 
-  ZSwcTree *tree = tracer.getResult();
+    return tree;
+  }
 
-  return tree;
+  return nullptr;
 }
 
 int ZCommandLine::runTraceNeuron()
 {
   if (m_input.empty()) {
     std::cout << "No input specified. Abort." << std::endl;
+    return 1;
+  }
+
+  if (m_input[0].empty()) {
+    std::cout << "No input data specified. Abort." << std::endl;
     return 1;
   }
 
@@ -665,8 +762,9 @@ int ZCommandLine::runTraceNeuron()
   loadTraceConfig();
 
   ZSwcTree *tree = NULL;
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
-    tree = traceDvid();
+  ZDvidTarget target = getInputDvidTarget();
+  if (target.isValid()) {
+    tree = traceDvid(target);
   } else {
     tree = traceFile();
   }
@@ -1274,7 +1372,7 @@ int ZCommandLine::runSkeletonize()
     tic();
   }
 
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
     stat = skeletonizeDvid();
   } else {
     stat = skeletonizeFile();
@@ -1394,7 +1492,8 @@ int ZCommandLine::run(int argc, char *argv[])
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << "Executable directory: " << applicationDir << std::endl;
-  m_configDir = applicationDir + "/json";
+  m_configDir = NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json";
   std::string configPath = m_configDir + "/command_config.json";
 
   if (Is_Arg_Matched(const_cast<char*>("--config"))) {
@@ -1464,7 +1563,9 @@ int ZCommandLine::run(int argc, char *argv[])
     m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);;
     //      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
   }
-//  }
+
+
+  loadInputJson();
 
   if (Is_Arg_Matched(const_cast<char*>("-o"))) {
     m_output = Get_String_Arg(const_cast<char*>("-o"));
@@ -1486,6 +1587,7 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
 //  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
+//    m_position.resize(3, 0);
 //    for (int i = 0; i < 3; ++i) {
 //      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
 //    }

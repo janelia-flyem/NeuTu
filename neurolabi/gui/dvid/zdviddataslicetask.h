@@ -1,6 +1,8 @@
 #ifndef ZDVIDDATASLICETASK_H
 #define ZDVIDDATASLICETASK_H
 
+#include <string>
+
 #include "ztask.h"
 #include "zstackviewparam.h"
 
@@ -18,6 +20,7 @@ public:
   void setDoc(ZStackDoc *doc);
   void useCenterCut(bool on);
   void setSupervoxel(bool on);
+  void setHandle(const std::string &handle);
 
 signals:
 
@@ -31,6 +34,7 @@ protected:
   bool m_usingCenterCut = false;
   bool m_supervoxel = false;
   ZStackDoc *m_doc = nullptr;
+  std::string m_handle;
 };
 
 #endif // ZDVIDDATASLICETASK_H

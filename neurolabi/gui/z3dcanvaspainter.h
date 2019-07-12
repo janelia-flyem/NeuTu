@@ -1,12 +1,14 @@
 #ifndef Z3DCANVASPAINTER_H
 #define Z3DCANVASPAINTER_H
 
+#include <QString>
+
 #include "z3dboundedfilter.h"
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
 #include "widgets/znumericparameter.h"
 #include "qt/core/zexception.h"
-#include <QString>
+
 
 class Z3DTexture;
 

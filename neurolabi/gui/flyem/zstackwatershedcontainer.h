@@ -159,7 +159,7 @@ public:
 
   void addResult(const ZStackArray &result);
 
-  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
+//  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
   /*!
    * \brief Get the first result stack.
    *

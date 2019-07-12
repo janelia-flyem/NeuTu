@@ -28,11 +28,9 @@ Once the installation is done, you can launch the program by running
     
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
-    conda config --add channels flyem-forge
     conda create -n <NAME> -c flyem-forge neutu-develop
     
-    #For future update, you can run 'conda update -n <NAME> neutu' after activating miniconda.
+    #For future update, you can run 'conda update -n <NAME> neutu -c flyem-forge neutu-develop' after activating miniconda.
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
@@ -45,11 +43,9 @@ After successful installation, you should be able to lauch the application neutu
     #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
-    conda config --add channels flyem-forge
     conda create -n <NAME> -c flyem-forge neutu-develop
     
-    #For future update, you can run 'conda update -n <NAME> neutu-develop' after activating miniconda.
+    #For future update, you can run 'conda update -n <NAME> neutu-develop -c flyem-forge neutu-develop' after activating miniconda.
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 

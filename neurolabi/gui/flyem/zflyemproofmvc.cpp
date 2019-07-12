@@ -167,6 +167,7 @@ void ZFlyEmProofMvc::init()
 //  }
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
+//  m_protocolSwitcher->useParentEventFilter(true);
 //  m_supervisor = new ZFlyEmSupervisor(this);
 //  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
 //  m_todoDlg = new FlyEmTodoDialog(this);
@@ -395,6 +396,21 @@ bool ZFlyEmProofMvc::hasWidgetRole() const
 {
   return (getRole() == ERole::ROLE_WIDGET);
 }
+
+bool ZFlyEmProofMvc::eventFilter(QObject *watched, QEvent *event)
+{
+#ifdef _DEBUG_2
+  qDebug() << watched << event->type();
+#endif
+
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+    return processKeyEvent(keyEvent);
+  }
+
+  return ZStackMvc::eventFilter(watched, event);
+}
+
 #if 0
 NeuPrintQueryDialog* ZFlyEmProofMvc::getNeuPrintRoiQueryDlg()
 {
@@ -591,6 +607,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(toggleBodyColorMap()));
   connect(getCompletePresenter(), SIGNAL(showingSupervoxelList()),
           this, SLOT(showSupervoxelList()));
+  connect(getCompletePresenter(), SIGNAL(refreshingData()),
+          this, SLOT(refreshData()));
 
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
@@ -1945,6 +1963,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     if (getDvidTarget().hasSegmentation()) {
       getViewButton(EViewButton::GOTO_BODY)->show();
     }
+    getViewButton(EViewButton::GOTO_POSITION)->show();
   }
 }
 
@@ -2592,6 +2611,15 @@ void ZFlyEmProofMvc::goToBody()
 //        emit locatingBody();
       }
     }
+  }
+}
+
+void ZFlyEmProofMvc::goToPosition()
+{
+  ZIntPoint pt = ZDialogFactory::AskForIntPoint(
+        ZGlobal::GetInstance().getStackPosition(), this);
+  if (pt.isValid()) {
+    zoomTo(pt);
   }
 }
 
@@ -3701,7 +3729,7 @@ QMenu* ZFlyEmProofMvc::makeControlPanelMenu()
 
   return menu;
 }
-
+/*
 void ZFlyEmProofMvc::goToPosition()
 {
   bool ok;
@@ -3727,6 +3755,7 @@ void ZFlyEmProofMvc::goToPosition()
     }
   }
 }
+*/
 
 void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
 {
@@ -5848,9 +5877,40 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-//    model->getProxy()->invalidate();
-//    model->sortTable();
   }
+}
+
+void ZFlyEmProofMvc::refreshData()
+{
+  refreshBookmark();
+  refreshTodo();
+  getCompleteDocument()->refreshSynapse();
+  getCompletePresenter()->refreshSegmentation();
+}
+
+void ZFlyEmProofMvc::refreshTodo()
+{
+  getCompleteDocument()->refreshTodo();
+}
+
+void ZFlyEmProofMvc::refreshBookmark()
+{
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+
+  QList<ZFlyEmBookmark*> bookmarkList =
+      ZFlyEmProofDocUtil::GetUserBookmarkList(doc);
+
+  if (!bookmarkList.isEmpty()) {
+    std::set<ZStackObject*> objSet;
+    objSet.insert(bookmarkList.begin(), bookmarkList.end());
+    doc->removeObject(objSet, true);
+    ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
+
+    if (model->isUsed()) {
+      model->clear();
+    }
+  }
+  doc->downloadBookmark();
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(
@@ -5987,48 +6047,54 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
     if (m_coarseBodyWindow->hasRectRoi()) {
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
       if (reader.isReady()) {
-        if (getCompletePresenter()->isSplitOn()) {
-          ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
-          if (body.isEmpty()) {
-            emit messageGenerated(
-                  ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
-                                 arg(m_splitProject.getBodyId()),
-                                 neutu::EMessageType::ERROR));
-          } else {
-            ZDvidInfo dvidInfo = reader.readLabelInfo();
-            ZObject3dScan bodyInRoi;
-            ZObject3dScan::ConstSegmentIterator iter(&body);
-            while (iter.hasNext()) {
-              const ZObject3dScan::Segment &seg = iter.next();
-              for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-                ZIntPoint pt(0, seg.getY(), seg.getZ());
-                pt.setX(x);
-//                pt -= dvidInfo.getStartBlockIndex();
-                pt *= dvidInfo.getBlockSize();
-                pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
-                                dvidInfo.getBlockSize().getY() / 2, 0);
-//                pt += dvidInfo.getStartCoordinates();
+        if (reader.getDvidTarget().hasCoarseSplit()) {
+          if (getCompletePresenter()->isSplitOn()) {
+            ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
+            if (body.isEmpty()) {
+              emit messageGenerated(
+                    ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
+                                   arg(m_splitProject.getBodyId()),
+                                   neutu::EMessageType::ERROR));
+            } else {
+              ZDvidInfo dvidInfo = reader.readLabelInfo();
+              ZObject3dScan bodyInRoi;
+              ZObject3dScan::ConstSegmentIterator iter(&body);
+              while (iter.hasNext()) {
+                const ZObject3dScan::Segment &seg = iter.next();
+                for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+                  ZIntPoint pt(0, seg.getY(), seg.getZ());
+                  pt.setX(x);
+                  //                pt -= dvidInfo.getStartBlockIndex();
+                  pt *= dvidInfo.getBlockSize();
+                  pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                                  dvidInfo.getBlockSize().getY() / 2, 0);
+                  //                pt += dvidInfo.getStartCoordinates();
 
-                if (m_coarseBodyWindow->isProjectedInRectRoi(pt)) {
-                  bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                  if (m_coarseBodyWindow->isProjectedInRectRoi(pt)) {
+                    bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                  }
                 }
               }
-            }
 #ifdef _DEBUG_2
-            body.save(GET_TEST_DATA_DIR + "/test2.sobj");
-            bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
+              body.save(GET_TEST_DATA_DIR + "/test2.sobj");
+              bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-            m_splitProject.commitCoarseSplit(bodyInRoi);
-            flyem::SubtractBodyWithBlock(
-                  getCompleteDocument()->getBodyForSplit()->getObjectMask(),
-                  bodyInRoi, dvidInfo);
-            getCompleteDocument()->processObjectModified(
-                  getCompleteDocument()->getBodyForSplit());
-            getCompleteDocument()->processObjectModified();
+              m_splitProject.commitCoarseSplit(bodyInRoi);
+              flyem::SubtractBodyWithBlock(
+                    getCompleteDocument()->getBodyForSplit()->getObjectMask(),
+                    bodyInRoi, dvidInfo);
+              getCompleteDocument()->processObjectModified(
+                    getCompleteDocument()->getBodyForSplit());
+              getCompleteDocument()->processObjectModified();
+            }
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage("Must enter split mode to enable crop.",
+                                 neutu::EMessageType::WARNING));
           }
         } else {
           emit messageGenerated(
-                ZWidgetMessage("Must enter split mode to enable crop.",
+                ZWidgetMessage("Cropping is not supported for this dataset.",
                                neutu::EMessageType::WARNING));
         }
       }
@@ -6432,6 +6498,7 @@ void ZFlyEmProofMvc::initViewButton()
   makeViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
   makeViewButton(EViewButton::ANNOTATE_TRACED);
   makeViewButton(EViewButton::GOTO_BODY);
+  makeViewButton(EViewButton::GOTO_POSITION);
   for (auto b : m_viewButtons) {
     getView()->addToolButton(b.second);
     b.second->hide();
@@ -6499,6 +6566,9 @@ void ZFlyEmProofMvc::makeViewButton(EViewButton option)
   switch (option) {
   case EViewButton::GOTO_BODY:
     makeViewButton(option, "Go to Body", SLOT(goToBody()));
+    break;
+  case EViewButton::GOTO_POSITION:
+    makeViewButton(option, "Go to Position", SLOT(goToPosition()));
     break;
   case EViewButton::ANNOTATE_ROUGHLY_TRACED:
     makeViewButton(option, "Roughly Traced", SLOT(onAnnotationRoughlyTraced()));

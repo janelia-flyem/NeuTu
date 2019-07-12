@@ -99,9 +99,11 @@ CONFIG += static_gtest
 include(extlib.pri)
 
 QT += printsupport
-qtHaveModule(webenginewidgets) {
-  QT += webenginewidgets
-  DEFINES += _USE_WEBENGINE_
+CONFIG(WEBENGINE) {
+  qtHaveModule(webenginewidgets) {
+    QT += webenginewidgets
+    DEFINES += _USE_WEBENGINE_
+  }
 }
 
 DEFINES += _QT_GUI_USED_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
@@ -715,7 +717,8 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h
+    dialogs/neuprintsetupdialog.h \
+    dvid/zdvidgraysliceensemble.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1116,13 +1119,6 @@ SOURCES += main.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
-    dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp \
-    dialogs/zswcisolationdialog.cpp \
-    dialogs/zstresstestoptiondialog.cpp \
-    dialogs/zflyembodyscreenshotdialog.cpp \
-    dialogs/zflyemskeletonupdatedialog.cpp \
-    dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
@@ -1200,9 +1196,9 @@ SOURCES += main.cpp \
     zstackblocksource.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
-    data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     protocols/taskprotocoltaskfactory.cpp \
+    data3d/zstackobjectconfig.cpp \
     dvid/zdvidblockstream.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
@@ -1213,7 +1209,15 @@ SOURCES += main.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
-    dialogs/neuprintsetupdialog.cpp 
+    dialogs/ztestoptiondialog.cpp \
+    dialogs/zinfodialog.cpp \
+    dialogs/zswcisolationdialog.cpp \
+    dialogs/zstresstestoptiondialog.cpp \
+    dialogs/zflyembodyscreenshotdialog.cpp \
+    dialogs/zflyemskeletonupdatedialog.cpp \
+    dialogs/zdvidadvanceddialog.cpp \
+    dialogs/neuprintsetupdialog.cpp \
+    dvid/zdvidgraysliceensemble.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

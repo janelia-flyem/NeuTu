@@ -4,6 +4,9 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
+
+#include "geometry/zintpoint.h"
 
 #include "zwidgetfactory.h"
 #include "dialogs/zdviddialog.h"
@@ -12,6 +15,7 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "widgets/zparameterarray.h"
+
 #include "mvc/zstackmvc.h"
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackview.h"
@@ -368,4 +372,42 @@ void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
         break;
       }
     }
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(QWidget *parent)
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  return AskForIntPoint(pt, parent);
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(
+    const ZIntPoint &defaultPos, QWidget *parent)
+{
+  QString defaultText;
+  if (defaultPos.isValid()) {
+    defaultText = defaultPos.toString().c_str();
+  }
+
+  ZIntPoint pt;
+  pt.invalidate();
+
+  bool ok;
+
+  QString text = QInputDialog::getText(
+        parent, QObject::tr("Go To"),
+        QObject::tr("Coordinates:"), QLineEdit::Normal,
+        defaultText, &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        pt.set(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+
+  return pt;
 }

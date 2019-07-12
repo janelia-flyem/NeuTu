@@ -42,14 +42,14 @@ void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 
 void ZDvidSynapseEnsemble::init()
 {
-  m_startZ = 0;
+//  m_startZ = 0;
   m_type = EType::DVID_SYNAPE_ENSEMBLE;
-  m_view = NULL;
+//  m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = neutu::EAxis::Z;
   addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
-  m_dataFetcher = NULL;
-  m_isReady = false;
+//  m_dataFetcher = NULL;
+//  m_isReady = false;
 }
 
 ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
@@ -792,6 +792,12 @@ void ZDvidSynapseEnsemble::display(
       synapse.display(painter, slice, option, sliceAxis);
     }
   }
+}
+
+void ZDvidSynapseEnsemble::clearCache()
+{
+  m_synapseEnsemble.clear();
+  m_dataFetcher->clearLastFetching();
 }
 
 void ZDvidSynapseEnsemble::removeSynapseLink(

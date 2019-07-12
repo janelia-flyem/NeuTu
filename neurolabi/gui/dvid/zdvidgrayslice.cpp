@@ -243,7 +243,7 @@ void ZDvidGraySlice::updatePixmap()
     m_pixmap.setOffset(-getX(), -getY());
     validatePixmap();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "gray slice pixmap offset: "
             << m_pixmap.getTransform().getTx() << " "
             << m_pixmap.getTransform().getTy() << std::endl;
@@ -485,6 +485,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->useCenterCut(false);
     task->setDelay(100);
     task->setDoc(doc);
+    task->setHandle(getSource());
   }
 
   return task;
@@ -561,7 +562,11 @@ void ZDvidGraySlice::printInfo() const
 void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 {
   getHelper()->setDvidTarget(target);
-  getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  if (target.getMaxGrayscaleZoom() > 0) {
+    getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  } else {
+    getHelper()->updateMaxZoom();
+  }
 //  m_dvidTarget = target;
 //  getDvidReader().open(target);
 }

@@ -8,10 +8,13 @@
 #include "zjsonobject.h"
 #include "zstackball.h"
 #include "swctreenode.h"
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidgraysliceensemble.h"
+
 #include "flyem/zflyemmisc.h"
 
 ZDocPlayer::~ZDocPlayer()
@@ -718,6 +721,45 @@ bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
 ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc) const
 {
   ZDvidGraySlice *obj = getCompleteData();
+  if (obj != NULL) {
+    return obj->makeFutureTask(doc);
+  }
+
+  return NULL;
+}
+
+/////////////////////////////
+
+
+//////////////
+ZDvidGraySliceEnsemblePlayer::ZDvidGraySliceEnsemblePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
+ZDvidGraySliceEnsemble* ZDvidGraySliceEnsemblePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidGraySliceEnsemble*>(m_data);
+}
+
+bool ZDvidGraySliceEnsemblePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidGraySliceEnsemble *obj = getCompleteData();
+    if (obj != NULL) {
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
+    }
+  }
+
+  return updated;
+}
+
+ZTask* ZDvidGraySliceEnsemblePlayer::getFutureTask(ZStackDoc *doc) const
+{
+  ZDvidGraySliceEnsemble *obj = getCompleteData();
   if (obj != NULL) {
     return obj->makeFutureTask(doc);
   }

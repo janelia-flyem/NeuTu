@@ -342,6 +342,7 @@ public slots:
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
   void exitStrokeEdit();
+  void exitEdit();
 //  void exitSwcEdit();
   void deleteSwcNode();
   void lockSelectedSwcNodeFocus();
@@ -397,6 +398,7 @@ public slots:
   void copyCurrentPosition();
   void copyLabelId();
   void copySupervoxelId();
+  void copyNeuroglancerLink();
 
   void notifyUser(const QString &msg);
 
@@ -442,7 +444,7 @@ signals:
   void bodyCheckoutTriggered(neutu::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
-  void exitingRectEdit();
+//  void exitingRectEdit();
 //  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
@@ -485,6 +487,7 @@ protected:
   bool estimateActiveStrokeWidth();
 
   bool process(ZStackOperator &op);
+  bool process(ZStackOperator::EOperation op);
 
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
@@ -494,6 +497,8 @@ protected:
 
   ZPoint getMousePositionInStack(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
+
+  virtual void copyLink(const QString &option) const;
 
 protected:
   //ZStackFrame *m_parent;

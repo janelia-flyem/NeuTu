@@ -107,6 +107,7 @@ public:
   void clear();
 
   void setMaxZoom(int maxZoom);
+  void updateMaxZoom();
 
   void invalidateViewParam();
   void updateCenterCut();

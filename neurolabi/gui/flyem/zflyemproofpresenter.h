@@ -23,7 +23,7 @@ protected:
 public:
   static ZFlyEmProofPresenter* Make(QWidget *parent);
 
-  bool customKeyProcess(QKeyEvent *event);
+  bool customKeyProcess(QKeyEvent *event) override;
 
   void toggleHighlightMode();
   bool isHighlight() const;
@@ -41,9 +41,9 @@ public:
   void disableSplit();
   void setSplitEnabled(bool s);
 
-  bool processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEvent(QKeyEvent *event) override;
   bool processCustomOperator(
-      const ZStackOperator &op, ZInteractionEvent *e = NULL);
+      const ZStackOperator &op, ZInteractionEvent *e = NULL) override;
 
   neutu::EBodySplitMode getSplitMode() const {
     return m_splitMode;
@@ -58,24 +58,24 @@ public:
     m_splitMode = mode;
   }
 
-  void processRectRoiUpdate(ZRect2d *rect, bool appending);
+  void processRectRoiUpdate(ZRect2d *rect, bool appending) override;
 
-  ZKeyOperationConfig* getKeyConfig();
-  void configKeyMap();
+  ZKeyOperationConfig* getKeyConfig() override;
+  void configKeyMap() override;
 
 //  void createBodyContextMenu();
 
-  ZStackDocMenuFactory* getMenuFactory();
+  ZStackDocMenuFactory* getMenuFactory() override;
 
   ZFlyEmProofDoc* getCompleteDocument() const;
 
   void createSynapseContextMenu();
   QMenu* getSynapseContextMenu();
 
-  QMenu* getContextMenu();
+  QMenu* getContextMenu() override;
 
 //  QAction* makeAction(ZActionFactory::EAction item);
-  bool connectAction(QAction *action, ZActionFactory::EAction item);
+  bool connectAction(QAction *action, ZActionFactory::EAction item) override;
 
   void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
 
@@ -114,6 +114,7 @@ signals:
   void highlightModeChanged();
   void showingSupervoxelList();
   void togglingBodyColorMap();
+  void refreshingData();
 
 public slots:
   void deleteSelectedSynapse();
@@ -147,6 +148,7 @@ public slots:
   void selectBodyInRoi();
   void zoomInRectRoi();
   void refreshSegmentation();
+  void refreshData();
 
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
@@ -172,6 +174,8 @@ protected:
       uint64_t bodyId);
   void tryAddTodoItem(
       const ZIntPoint &pt, bool checked, neutu::EToDoAction action);
+
+  void copyLink(const QString &option) const override;
 
 private:
 //  void connectAction();

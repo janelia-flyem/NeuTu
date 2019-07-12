@@ -88,4 +88,32 @@ QList<ZMesh*> ZStackDocProxy::GetRoiMeshList(ZStackDoc *doc)
   return filteredMeshList;
 }
 
+void ZStackDocProxy::SaveMesh(
+    ZStackDoc *doc, const QString &fileName,
+    std::function<bool (const ZMesh *)> pred)
+{
+  QMutexLocker locker(doc->getObjectGroup().getMutex());
+  QList<ZStackObject*> meshList = doc->getObjectGroup().getObjectListUnsync(
+        ZMesh::GetType());
 
+  std::vector<ZMesh*> visibleMeshList;
+  for (ZStackObject *obj : meshList) {
+    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
+    if (mesh) {
+      if (pred(mesh)) {
+        visibleMeshList.push_back(mesh);
+      }
+    }
+  }
+
+  ZMesh mesh = ZMesh::Merge(visibleMeshList);
+  mesh.save(fileName.toStdString());
+}
+
+void ZStackDocProxy::SaveVisibleMesh(
+    ZStackDoc *doc, const QString &fileName)
+{
+  SaveMesh(doc, fileName, [](const ZMesh *mesh) {
+    return mesh->isVisible();
+  });
+}

@@ -478,6 +478,7 @@ public:
   ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
 
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
+  void refreshTodo();
 
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;
@@ -590,6 +591,8 @@ public slots:
   void downloadTodo(int x, int y, int z);
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
+  void refreshSynapse();
+
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
@@ -652,6 +655,8 @@ protected:
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
   void prepareLabelSlice();
+
+  void makeKeyProcessor() override;
 
   bool _loadFile(const QString &filePath) override;
 

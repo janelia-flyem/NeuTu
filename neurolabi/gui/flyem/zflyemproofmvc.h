@@ -107,7 +107,7 @@ public:
   void enableSplit(neutu::EBodySplitMode mode);
   void disableSplit();
 
-  void processViewChangeCustom(const ZStackViewParam &viewParam);
+  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 
   ZFlyEmSupervisor* getSupervisor() const;
 
@@ -133,6 +133,8 @@ public:
   void setExiting(bool exiting) {
     m_quitting = exiting;
   }
+
+  bool eventFilter(QObject *watched, QEvent *event) override;
 
   Z3DWindow* makeExternalSkeletonWindow(neutu3d::EWindowType windowType);
   Z3DWindow* makeExternalMeshWindow(neutu3d::EWindowType windowType);
@@ -375,6 +377,9 @@ public slots:
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
+  void refreshBookmark();
+  void refreshTodo();
+
   void changeColorMap(const QString &option);
   void changeColorMap(QAction *action);
 
@@ -455,14 +460,16 @@ protected slots:
   void syncBodySelectionToOrthoWindow();
 
   void zoomToAssigned(int x, int y, int z);
+
+  void refreshData();
 //  void notifyBookmarkDeleted();
 
 protected:
-  void customInit();
-  void createPresenter();
+  void customInit() override;
+  void createPresenter() override;
 //  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
-  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg) override;
 
   void warn(const std::string &msg);
   void warn(const char *msg);
@@ -600,7 +607,7 @@ private:
 //  NeuPrintReader *getNeuPrintReader();
 
   enum class EViewButton {
-    GOTO_BODY, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
   };
 
   QPushButton* getViewButton(EViewButton option);

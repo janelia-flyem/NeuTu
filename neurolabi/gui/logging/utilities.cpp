@@ -41,19 +41,21 @@ void LogLocalMessage(const ZWidgetMessage &msg)
 {
   if (msg.hasTarget(ZWidgetMessage::TARGET_LOG_FILE)) {
     QString plainStr = msg.toPlainString();
-    switch (msg.getType()) {
-    case neutu::EMessageType::INFORMATION:
-      LINFO_NLN() << plainStr;
-      break;
-    case neutu::EMessageType::WARNING:
-      LWARN_NLN() << plainStr;
-      break;
-    case neutu::EMessageType::ERROR:
-      LERROR_NLN() << plainStr;
-      break;
-    case neutu::EMessageType::DEBUG:
-      LDEBUG_NLN() << plainStr;
-      break;
+    if (!plainStr.isEmpty()) {
+      switch (msg.getType()) {
+      case neutu::EMessageType::INFORMATION:
+        LINFO_NLN() << plainStr.toStdString().c_str();
+        break;
+      case neutu::EMessageType::WARNING:
+        LWARN_NLN() << plainStr.toStdString().c_str();
+        break;
+      case neutu::EMessageType::ERROR:
+        LERROR_NLN() << plainStr.toStdString().c_str();
+        break;
+      case neutu::EMessageType::DEBUG:
+        LDEBUG_NLN() << plainStr.toStdString().c_str();
+        break;
+      }
     }
   }
 }
@@ -85,6 +87,13 @@ void LogMessage(const ZWidgetMessage &msg)
 {
   LogLocalMessage(msg);
   LogKafkaMessage(msg);
+}
+
+void LogMessageF(const std::string &str, neutu::EMessageType type)
+{
+  ZWidgetMessage msg(str, type);
+  msg.setTarget(ZWidgetMessage::TARGET_LOG_FILE | ZWidgetMessage::TARGET_KAFKA);
+  LogMessage(msg);
 }
 
 void LogProfileInfo(int64_t duration, const std::string &info)

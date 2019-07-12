@@ -170,9 +170,14 @@ public:
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
+  bool turnOffEditMode();
+  bool isEditOff() const;
+
   EUniqueMode getUniqueMode() const;
   void setUniqueMode(EUniqueMode mode);
   //void setView(const QRect &projRegion, const QRect &viewPort);
+
+  bool isFreeMode() const;
 
   neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
   void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
