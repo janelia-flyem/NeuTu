@@ -27,17 +27,18 @@ QJsonObject TipDetectorRunner::getOutput() {
 }
 
 void TipDetectorRunner::run() {
+
+    // for now, use ZPythonProcess even though not ideal; we should just
+    //  use QProcess directly, and start it in a thread as well
+
+    // we're running a standalone Python script whereas ZPythonProcess
+    //  expects to call the script through Python; so instead, pretend
+    //  the script is Python, the first arg is the script name, and add
+    //  the other args as usual:
+
     ZPythonProcess process;
-
-    // this doesn't work on Mac
-    // QString scriptPath = QCoreApplication::applicationDirPath()+"/../python/detect_tips.py";
-
-    // my local tip detection script, within NeuTu source:
-    QString scriptPath = "/Users/olbrisd/projects/flyem/NeuTu/neutube/neurolabi/python/detect_tips.py";
-
-    process.setScript(scriptPath);
-
-    process.addArg(QString::fromStdString(m_target.getAddressWithPort()));
+    process.setPythonPath("marktips");
+    process.setScript(QString::fromStdString(m_target.getAddressWithPort()));
     process.addArg(QString::fromStdString(m_target.getUuid()));
     process.addArg(QString::number(m_bodyId));
     process.addArg(QString::fromStdString(m_target.getTodoListName()));
