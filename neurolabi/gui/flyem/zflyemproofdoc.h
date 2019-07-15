@@ -14,6 +14,7 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidversiondag.h"
+#include "dvid/zdvidenv.h"
 
 #include "flyemdef.h"
 #include "zflyembodymerger.h"
@@ -63,6 +64,7 @@ public:
 //  virtual void updateTileData();
 
   const ZDvidTarget& getDvidTarget() const;
+  const ZDvidEnv& getDvidEnv() const;
 
   const ZDvidInfo& getGrayScaleInfo() const {
     return m_grayScaleInfo;
@@ -247,13 +249,8 @@ public:
   void activateBodyColorMap(const QString &colorMapName);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
-  ZDvidReader& getDvidReader() {
-    return m_dvidReader;
-  }
-
-  const ZDvidReader& getDvidReader() const {
-    return m_dvidReader;
-  }
+  ZDvidReader& getDvidReader();
+  const ZDvidReader& getDvidReader() const;
 
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
@@ -733,9 +730,10 @@ private:
   ZDvidReader& getBookmarkReader();
 
 protected:
+  ZDvidEnv m_dvidEnv;
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_dvidReader;
+//  ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;
   ZDvidReader m_todoReader;

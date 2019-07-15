@@ -21,8 +21,8 @@ public:
 
   ZFlyEmOrthoDoc* getCompleteDocument() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
-  ZDvidTarget getDvidTarget() const;
+  void setDvidTarget(const ZDvidTarget &target) override;
+  ZDvidTarget getDvidTarget() const override;
   void updateDvidTargetFromDoc();
 
   void updateStack(const ZIntPoint &center);

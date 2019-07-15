@@ -38,23 +38,23 @@ const char* ZDvidTarget::m_proofreadingKey = "proofreading";
 
 ZDvidTarget::ZDvidTarget()
 {
-  init();
+//  init();
 }
 
 ZDvidTarget::ZDvidTarget(
     const std::string &address, const std::string &uuid, int port)
 {
-  init();
+//  init();
 
   set(address, uuid, port);
 }
 
 ZDvidTarget::ZDvidTarget(const ZDvidNode &node)
 {
-  init();
+//  init();
   m_node = node;
 }
-
+/*
 void ZDvidTarget::init()
 {
   m_isSupervised = true;
@@ -72,6 +72,7 @@ void ZDvidTarget::init()
   setSegmentationName("*");
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
+*/
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) const
 {
@@ -99,12 +100,20 @@ void ZDvidTarget::set(
 
 void ZDvidTarget::clear()
 {
+  *this = ZDvidTarget();
+}
+
+#if 0
+void ZDvidTarget::clear()
+{
   m_node.clear();
-  init();
+//  init();
   m_name = "";
   m_comment = "";
   m_localFolder = "";
   m_bodyLabelName = "*";
+  m_segmentationName.clear();
+  m_multiscale2dName.clear();
   m_grayScaleName = "";
   m_synapseLabelszName = "";
   m_synapseName = "";
@@ -115,7 +124,9 @@ void ZDvidTarget::clear()
   m_supervisorServer.clear();
   m_tileConfig.clear();
   m_sourceConfig.clear();
+  m_isInferred = false;
 }
+#endif
 
 void ZDvidTarget::setServer(const std::string &address)
 {
@@ -171,6 +182,11 @@ void ZDvidTarget::setFromUrl(const std::string &url)
     }
   }
   set(tokens2[0], uuid, port);
+}
+
+bool ZDvidTarget::hasDvidUuid() const
+{
+  return getNode().hasDvidUuid();
 }
 
 void ZDvidTarget::setFromSourceString(const std::string &sourceString)
@@ -726,17 +742,14 @@ void ZDvidTarget::setInferred(bool status)
 void ZDvidTarget::setMappedUuid(
     const std::string &original, const std::string &mapped)
 {
-  m_orignalUuid = original;
-  setUuid(mapped);
+  m_node.setMappedUuid(original, mapped);
+//  m_orignalUuid = original;
+//  setUuid(mapped);
 }
 
 std::string ZDvidTarget::getOriginalUuid() const
 {
-  if (m_orignalUuid.empty()) {
-    return getUuid();
-  }
-
-  return m_orignalUuid;
+  return m_node.getOriginalUuid();
 }
 
 std::string ZDvidTarget::getBodyLabelName() const

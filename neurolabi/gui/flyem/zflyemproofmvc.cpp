@@ -2487,6 +2487,11 @@ void ZFlyEmProofMvc::setDvidTarget()
   }
 }
 
+ZDvidEnv ZFlyEmProofMvc::getDvidEnv() const
+{
+  return getCompleteDocument()->getDvidEnv();
+}
+
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
 //  if (m_dlgManager->isDvidDlgReady()) {

@@ -14,11 +14,11 @@ ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
 
 void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  if (m_dvidReader.open(target)) {
-    m_dvidWriter.open(target);
-    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
+  if (m_dvidWriter.open(target)) {
+//    m_dvidWriter.open(target);
+    m_grayscaleReader.openRaw(getDvidTarget().getGrayScaleTarget());
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
+    m_mergeProject->setDvidTarget(getDvidTarget());
 
     readInfo();
 
@@ -26,7 +26,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
     env.set(target);
     prepareDvidData(env);
   } else {
-    m_dvidReader.clear();
+    m_dvidWriter.clear();
 //    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
@@ -35,7 +35,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
 
 void ZFlyEmArbDoc::prepareDvidData(const ZDvidEnv &env)
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     ZDvidInfo dvidInfo = getDvidInfo();
 
     ZIntCuboid boundBox;

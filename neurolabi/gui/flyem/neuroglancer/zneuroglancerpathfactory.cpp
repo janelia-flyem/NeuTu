@@ -8,6 +8,7 @@
 #include "geometry/zpoint.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidenv.h"
 
 #include "../zflyembookmark.h"
 
@@ -78,3 +79,42 @@ QString ZNeuroglancerPathFactory::MakePath(
   return QString(QUrl(gpath.getPath().c_str()).toEncoded());
 }
 
+QString ZNeuroglancerPathFactory::MakePath(
+    const ZDvidEnv &env, const ZIntPoint &voxelSize,
+    const ZPoint &position, const QList<ZFlyEmBookmark*> bookmarkList)
+{
+  ZNeuroglancerPath gpath;
+
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
+  nav.setCoordinates(position.getX(), position.getY(), position.getZ());
+  gpath.setNavigation(nav);
+
+  ZDvidTarget grayscaleTarget = env.getMainGrayscaleTarget();
+  if (grayscaleTarget.isValid()) {
+    gpath.addLayer(
+          ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(grayscaleTarget));
+  }
+
+  ZDvidTarget target = env.getMainTarget();
+
+  std::string segLayer = "";
+  if (target.hasSegmentation()) {
+    gpath.addLayer(
+          ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
+    segLayer = "segmentation";
+  }
+
+  std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
+      ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+        target, segLayer);
+  annotLayer->setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
+  gpath.addLayer(
+        std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);
+
+  for (const ZFlyEmBookmark *bookmark : bookmarkList) {
+    annotLayer->addAnnotation(make_bookmark_annotation_json(*bookmark));
+  }
+
+  return QString(QUrl(gpath.getPath().c_str()).toEncoded());
+}

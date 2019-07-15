@@ -89,7 +89,8 @@ void ZDvidReader::setStatusCode(int code) const
 
 void ZDvidReader::clear()
 {
-  m_dvidTarget.clear();
+  m_dvidTarget = ZDvidTarget();
+//  m_dvidTarget.clear();
 #if defined(_ENABLE_LOWTIS_)
   m_lowtisService.reset();
   m_lowtisServiceGray.reset();

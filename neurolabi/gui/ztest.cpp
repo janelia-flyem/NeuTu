@@ -30101,15 +30101,14 @@ void ZTest::test(MainWindow *host)
   ZDvidReader greader;
   greader.open(target);
 
-  ZIntPoint s(2048, 2048, 8);
-  for (int i = 0; i < 256; ++i) {
+  ZIntPoint s(2048, 2048, 64);
+  for (int i = 0; i < 32; ++i) {
     ZIntPoint start(13452, 20071, 20696 + s.getZ() * i);
     ZIntCuboid box = ZIntCuboid(start, start + s - 1);
     ZStack *stack = greader.readGrayScale(box);
     std::cout << "=====> box: " << box.toString() << std::endl;
 
-    ZString output = "/Volumes/FlyEM-Data1/data/hbtest/grayscale/";
-//        GET_TEST_DATA_DIR + "/_dvid/Volumes/FlyEM-Data1/data/hbtest/grayscale";
+    ZString output = "/Volumes/FlyEM-Data1/data/hbtest2/tif/grayscale/";
     output.appendNumber(i + 1, 4);
     output += ".tif";
     stack->save(output);
@@ -30125,12 +30124,21 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   ZIntPoint s(512, 512, 64);
-  for (int i = 0; i < 1; ++i) {
-    ZIntPoint start(13452, 20071, 20696 + s.getZ() * i);
-    ZIntCuboid box = ZIntCuboid(start, start + s - 1);
-    ZArray *array = reader->readLabels64(box);
-    array->setStartCoordinate({0, 0, 0});
-    writer.writeLabel(*array);
+  ZIntPoint sourceStart(13452, 20071, 20696);
+
+  for (int k = 0; k < 32; ++k) {
+    for (int j = 0; j < 4; ++j) {
+      for (int i = 0; i < 4; ++i) {
+        ZIntPoint dest = s * ZIntPoint(i, j, k);
+        ZIntPoint start(sourceStart + dest);
+        ZIntCuboid box = ZIntCuboid(start, start + s - 1);
+        ZArray *array = reader->readLabels64(box);
+        array->setStartCoordinate(dest.getX(), dest.getY(), dest.getZ());
+        std::cout << start.toString() << " ==> " << dest.toString() << std::endl;
+        writer.writeLabel(*array);
+        delete array;
+      }
+    }
   }
 #endif
 
@@ -30147,7 +30155,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << url.path().split("/", QString::SkipEmptyParts);
 #endif
 
-#if 1
+#if 0
   ZDvidEnv env = ZNeuroglancerPathParser::MakeDvidEnvFromUrl(
         "http://localhost:8080/#!%7B%22layers%22:%5B%7B%22source%22:%22"
         "dvid://http://emdata3.int.janelia.org:8600/a89e/grayscale%22%2C%22"

@@ -119,6 +119,7 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  ZDvidEnv getDvidEnv() const;
   virtual ZDvidTarget getDvidTarget() const;
   std::string getDvidTargetUuid() const;
 

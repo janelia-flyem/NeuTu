@@ -19,8 +19,13 @@ public:
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
+  void setInferredUuid(const std::string &uuid);
+  void setMappedUuid(const std::string &original, const std::string &mapped);
+
   void setMock(bool on);
   bool isMock() const;
+
+  bool hasDvidUuid() const;
 
   /*!
    * \brief Set dvid target from source string
@@ -63,6 +68,10 @@ public:
     return m_uuid;
   }
 
+  inline const std::string& getOriginalUuid() const {
+    return m_originalUuid;
+  }
+
   std::string getUrl() const;
 
   /*!
@@ -98,11 +107,9 @@ public:
   bool operator != (const ZDvidNode &node) const;
 
 private:
-  void init();
-
-private:
   std::string m_address;
   std::string m_uuid;
+  std::string m_originalUuid;
   int m_port = -1;
   bool m_isMocked = false; //Mocked node if true
 

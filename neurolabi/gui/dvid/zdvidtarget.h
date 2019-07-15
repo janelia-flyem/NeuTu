@@ -29,6 +29,7 @@ public:
 
   void setMappedUuid(const std::string &original, const std::string &mapped);
 
+  bool hasDvidUuid() const;
 
   /*!
    * \brief Set dvid target from source string
@@ -361,7 +362,7 @@ public:
   static bool Test();
 
 private:
-  void init();
+//  void init();
   void setSource(const char *key, const ZDvidNode &node);
   ZDvidNode getSource(const char *key) const;
 
@@ -430,12 +431,12 @@ private:
 //  ZJsonObject m_sourceConfig;
 
   std::set<std::string> m_userList;
-  bool m_isSupervised;
+  bool m_isSupervised = true;
   std::string m_supervisorServer;
-  int m_maxLabelZoom;
-  int m_maxGrayscaleZoom;
-  bool m_usingMultresBodyLabel;
-  bool m_usingDefaultSetting;
+  int m_maxLabelZoom = 0;
+  int m_maxGrayscaleZoom = 0;
+  bool m_usingMultresBodyLabel = true;
+  bool m_usingDefaultSetting = false;
   bool m_isSynpaseEditable = true;
   ZDvidData::EType m_segmentationType = ZDvidData::EType::LABELBLK;
 //  bool m_usingLabelArray = false;
@@ -445,12 +446,12 @@ private:
 //  std::string m_userName;
 //  std::string m_tileName;
 
-  int m_bgValue; //grayscale background
+  int m_bgValue = 255; //grayscale background
 
-  bool m_isEditable; //if the configuration is editable
-  bool m_readOnly; //if the database is readonly
+  bool m_isEditable = true; //if the configuration is editable
+  bool m_readOnly = false; //if the database is readonly
   dvid::ENodeStatus m_nodeStatus = dvid::ENodeStatus::OFFLINE; //Status of the node
-  std::string m_orignalUuid;
+//  std::string m_orignalUuid;
   bool m_isInferred = false;
 };
 

@@ -842,7 +842,7 @@ void ZFlyEmProofDoc::initData(
     const std::string &type, const std::string &dataName)
 {
   if (!type.empty() && !dataName.empty()) {
-    if (!m_dvidReader.hasData(dataName)) {
+    if (!getDvidReader().hasData(dataName)) {
       m_dvidWriter.createData(type, dataName);
       if (!m_dvidWriter.isStatusOk()) {
         emit messageGenerated(
@@ -855,9 +855,9 @@ void ZFlyEmProofDoc::initData(
 
 void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
-  if (m_dvidReader.isReady() && !getDvidTarget().readOnly() &&
+  if (getDvidReader().isReady() && !getDvidTarget().readOnly() &&
       getDvidTarget().hasSegmentation()) {
-    if (m_dvidReader.hasData(getDvidTarget().getSegmentationName())) {
+    if (getDvidReader().hasData(getDvidTarget().getSegmentationName())) {
       initData("annotation", target.getBookmarkName());
       initData("annotation", target.getTodoListName());
       initData("keyvalue", target.getSkeletonName());
@@ -872,7 +872,12 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 
 const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
 {
-  return m_dvidReader.getDvidTarget();
+  return getDvidReader().getDvidTarget();
+}
+
+const ZDvidEnv& ZFlyEmProofDoc::getDvidEnv() const
+{
+  return m_dvidEnv;
 }
 
 bool ZFlyEmProofDoc::isDvidMutable() const
@@ -898,9 +903,9 @@ ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 void ZFlyEmProofDoc::updateUserStatus()
 {
   m_isAdmin = false;
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     ZJsonObject obj =
-        m_dvidReader.readJsonObjectFromKey("neutu_config", "user_status");
+        getDvidReader().readJsonObjectFromKey("neutu_config", "user_status");
     if (obj.hasKey("admin")) {
       ZJsonArray userListJson(obj.value("admin"));
 //      NeutubeConfig::getInstance().getCur
@@ -918,47 +923,59 @@ void ZFlyEmProofDoc::updateUserStatus()
   m_mergeProject->setAdmin(m_isAdmin);
 }
 
+ZDvidReader& ZFlyEmProofDoc::getDvidReader() {
+  return const_cast<ZDvidReader&>(
+        static_cast<const ZFlyEmProofDoc&>(*this).getDvidReader());
+}
+
+const ZDvidReader& ZFlyEmProofDoc::getDvidReader() const {
+  return m_dvidWriter.getDvidReader();
+}
+
 void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 {
+  m_dvidEnv = env;
+
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
-  if (m_dvidReader.open(env.getMainTarget())) {
+  if (m_dvidWriter.open(env.getFullMainTarget())) {
     updateUserStatus();
 
     std::ostringstream flowInfo;
     flowInfo << "Update data statuses";
-    m_dvidReader.updateDataStatus();
+    getDvidReader().updateDataStatus();
+//    m_dvidReader.updateDataStatus();
 
     flowInfo << "->Prepare DVID readers";
-    m_dvidWriter.openRaw(m_dvidReader.getDvidTarget());
+//    m_dvidWriter.openRaw(m_dvidReader.getDvidTarget());
 
-    if (m_dvidReader.getDvidTarget().hasSynapse()) {
-      m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
+    if (getDvidTarget().hasSynapse()) {
+      m_synapseReader.openRaw(getDvidTarget());
     }
 
-    if (m_dvidReader.getDvidTarget().hasSegmentation()) {
-      m_todoReader.openRaw(m_dvidReader.getDvidTarget());
-      m_sparseVolReader.openRaw(m_dvidReader.getDvidTarget());
+    if (getDvidTarget().hasSegmentation()) {
+      m_todoReader.openRaw(getDvidTarget());
+      m_sparseVolReader.openRaw(getDvidTarget());
     }
 
-    auto targetList = env.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
-    if (!targetList.empty()) {
-      m_grayscaleReader.open(targetList.front());
+    ZDvidTarget grayscaleTarget = env.getMainGrayscaleTarget();
+    if (grayscaleTarget.isValid()) {
+      m_grayscaleReader.open(grayscaleTarget);
     }
 
 //    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
 //    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
+    m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
 
     flowInfo << "->Prepare DVID data instances";
     initData(getDvidTarget());
     if (getSupervisor() != NULL) {
       flowInfo << "->Prepare librarian";
-      getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
+      getSupervisor()->setDvidTarget(getDvidTarget());
       if (!getSupervisor()->isEmpty() &&
-          !m_dvidReader.getDvidTarget().readOnly()) {
+          !getDvidTarget().readOnly()) {
         int statusCode = getSupervisor()->testServer();
         if (statusCode != 200) {
           emit messageGenerated(
@@ -993,7 +1010,7 @@ void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 
     //Run check anyway to get around a strange bug of showing grayscale
     flowInfo << "->Check proofreading data instances";
-    int missing = m_dvidReader.checkProofreadingData();
+    int missing = getDvidReader().checkProofreadingData();
     if (!getDvidTarget().readOnly()) {
       if (missing > 0) {
         emit messageGenerated(
@@ -1014,12 +1031,12 @@ void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 //    LDEBUG() << flowInfo.str();
     startTimer();
   } else {
-    m_dvidReader.clear();
+    m_dvidWriter.clear();
 //    m_dvidTarget.clear();
     ZWidgetMessage msg("Failed to open the node.", neutu::EMessageType::ERROR);
     QString detail = "Detail: ";
-    if (!m_dvidReader.getErrorMsg().empty()) {
-      detail += m_dvidReader.getErrorMsg().c_str();
+    if (!getDvidReader().getErrorMsg().empty()) {
+      detail += getDvidReader().getErrorMsg().c_str();
     }
     msg.appendMessage(detail);
     emit messageGenerated(msg);
@@ -1030,10 +1047,14 @@ void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
+  ZDvidEnv env;
+  env.set(target);
+  setDvid(env);
+#if 0
   KINFO << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
-  if (m_dvidReader.open(target)) {
+  if (m_dvidWriter.open(target)) {
     updateUserStatus();
 
     std::ostringstream flowInfo;
@@ -1125,6 +1146,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   }
   KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
          << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
+#endif
 }
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
@@ -1156,7 +1178,7 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
 
 void ZFlyEmProofDoc::updateDataConfig()
 {
-  m_dataConfig = FlyEmDataReader::ReadDataConfig(m_dvidReader);
+  m_dataConfig = FlyEmDataReader::ReadDataConfig(getDvidReader());
   m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
 }
 
@@ -1203,7 +1225,7 @@ const ZFlyEmBodyAnnotationMerger& ZFlyEmProofDoc::getBodyStatusProtocol() const
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-  m_dvidReader.updateMaxLabelZoom();
+  getDvidReader().updateMaxLabelZoom();
 //  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
@@ -1216,8 +1238,8 @@ void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 void ZFlyEmProofDoc::readInfo()
 {
   m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
-  m_labelInfo = m_dvidReader.readLabelInfo();
-  m_versionDag = m_dvidReader.readVersionDag();
+  m_labelInfo = getDvidReader().readLabelInfo();
+  m_versionDag = getDvidReader().readVersionDag();
 
 #ifdef _DEBUG_2
   std::cout << "Label Info:" << std::endl;
@@ -1228,11 +1250,11 @@ void ZFlyEmProofDoc::readInfo()
   m_versionDag.print();
 #endif
 
-  m_infoJson = m_dvidReader.readInfo();
+  m_infoJson = getDvidReader().readInfo();
 
   std::string startLog = "Start using UUID " +
-      m_dvidReader.getDvidTarget().getUuid() + "@" +
-      m_dvidReader.getDvidTarget().getAddressWithPort();
+      getDvidTarget().getUuid() + "@" +
+      getDvidTarget().getAddressWithPort();
 
   if (m_infoJson.hasKey("Alias")) {
     startLog += std::string("; Alias: ") +
@@ -1287,7 +1309,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
 {
   if (!getDvidTarget().getRoiName().empty()) {
     if (!m_roiReader.isReady()) {
-      m_roiReader.open(m_dvidReader.getDvidTarget());
+      m_roiReader.open(getDvidTarget());
     }
     ZObject3dScan *obj =
         m_roiReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
@@ -1333,7 +1355,7 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
-  if (getDvidTarget().hasGrayScaleData()) {
+  if (m_grayscaleReader.isReady()) {
     return m_grayScaleInfo;
   }
 
@@ -1342,7 +1364,7 @@ const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 
 void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     ZDvidInfo dvidInfo = getDvidInfo();
 
     ZIntCuboid boundBox;
@@ -1746,7 +1768,7 @@ bool ZFlyEmProofDoc::hasTodoItemSelected() const
 void ZFlyEmProofDoc::notifyTodoItemModified(
     const ZIntPoint &pt, bool emitingEdit)
 {
-  uint64_t bodyId = m_dvidReader.readBodyIdAt(pt);
+  uint64_t bodyId = getDvidReader().readBodyIdAt(pt);
   if (bodyId > 0) {
     emit todoModified(bodyId);
   }
@@ -1759,7 +1781,7 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
 void ZFlyEmProofDoc::notifyTodoItemModified(
     const std::vector<ZIntPoint> &ptArray, bool emitingEdit)
 {
-  std::vector<uint64_t> bodyIdArray = m_dvidReader.readBodyIdAt(ptArray);
+  std::vector<uint64_t> bodyIdArray = getDvidReader().readBodyIdAt(ptArray);
   std::set<uint64_t> bodyIdSet;
   bodyIdSet.insert(bodyIdArray.begin(), bodyIdArray.end());
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
@@ -2650,7 +2672,8 @@ void ZFlyEmProofDoc::clearData()
 {
   ZStackDoc::clearData();
   m_bodyMerger.clear();
-  m_dvidReader.clear();
+  m_dvidWriter.clear();
+//  m_dvidReader.clear();
 //  m_dvidTarget.clear();
   m_grayScaleInfo.clear();
   m_labelInfo.clear();
@@ -2662,9 +2685,9 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
   ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
 
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     ZFlyEmBodyAnnotation annotation =
-        FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
+        FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
     if (annotation.isFinalized()) {
       return false;
     }
@@ -3194,8 +3217,8 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
 
 void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
 {
-  if (m_dvidReader.isReady()) {
-    ZJsonObject bookmarkJson = m_dvidReader.readBookmarkJson(x, y, z);
+  if (getDvidReader().isReady()) {
+    ZJsonObject bookmarkJson = getDvidReader().readBookmarkJson(x, y, z);
     ZFlyEmBookmark *bookmark = getBookmark(x, y, z);
     if (!bookmarkJson.isEmpty()) {
       bool newBookmark = false;
@@ -3226,10 +3249,10 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
 
 void ZFlyEmProofDoc::downloadBookmark()
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     std::string currentUserName = neutu::GetCurrentUserName();
     ZJsonArray bookmarkJson =
-        m_dvidReader.readTaggedBookmark("user:" + currentUserName);
+        getDvidReader().readTaggedBookmark("user:" + currentUserName);
     beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     int bookmarkCount = 0;
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
@@ -3240,11 +3263,11 @@ void ZFlyEmProofDoc::downloadBookmark()
           (bookmark->getUserName().length() == (int) currentUserName.length());
       if (good) {
         ZJsonObject checkJson =
-            m_dvidReader.readBookmarkJson(bookmark->getCenter().toIntPoint());
+            getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
         good = (!checkJson.isEmpty());
       }
       if (good) {
-        if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
           //        bookmarkObj.setProperty("checked", "1");
@@ -3275,7 +3298,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
-          if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
             bookmark->setChecked(true);
           }
           m_dvidWriter.writeBookmark(*bookmark);
@@ -3900,6 +3923,8 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
 QString ZFlyEmProofDoc::getInfo() const
 {
+  return m_dvidEnv.toJsonObject().dumpString(2).c_str();
+#if 0
   QString info = getDvidTarget().toJsonObject().dumpString(2).c_str();
   if (getDvidTarget().hasGrayScaleData()) {
     info.append("\n");
@@ -3908,6 +3933,7 @@ QString ZFlyEmProofDoc::getInfo() const
   }
 
   return info;
+#endif
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)

@@ -21,22 +21,45 @@ bool ZDvidEnv::isValid() const
 
 void ZDvidEnv::clear()
 {
-  m_mainTarget.clear();
+  m_mainTarget = ZDvidTarget();
+//  m_mainTarget.clear();
   for (auto &v : m_targetMap) {
     v.second.clear();
   }
 }
 
-ZDvidTarget& ZDvidEnv::getMainTarget()
+ZDvidTarget &ZDvidEnv::getMainTarget()
+{
+  return const_cast<ZDvidTarget &>(
+        static_cast<const ZDvidEnv&>(*this).getMainTarget());
+}
+
+const ZDvidTarget& ZDvidEnv::getMainTarget() const
 {
   if (!m_mainTarget.isValid()) {
-    std::vector<ZDvidTarget> &targetList = ZDvidEnv::getTargetList(ERole::GRAYSCALE);
+    const std::vector<ZDvidTarget> &targetList =
+        ZDvidEnv::getTargetList(ERole::GRAYSCALE);
     if (!targetList.empty()) {
       return targetList.front();
     }
   }
 
   return m_mainTarget;
+}
+
+ZDvidTarget ZDvidEnv::getFullMainTarget() const
+{
+  ZDvidTarget target = m_mainTarget;
+
+  if (!target.hasGrayScaleData()) {
+    ZDvidTarget grayscaleTarget = getMainGrayscaleTarget();
+    if (grayscaleTarget.hasGrayScaleData()) {
+      target.setGrayScaleName(grayscaleTarget.getGrayScaleName());
+      target.setGrayScaleSource(grayscaleTarget.getNode());
+    }
+  }
+
+  return target;
 }
 
 void ZDvidEnv::setHost(const std::string &host)
@@ -64,9 +87,19 @@ std::vector<ZDvidTarget>& ZDvidEnv::getTargetList(ERole role)
   return m_targetMap[role];
 }
 
-const ZDvidTarget &ZDvidEnv::getMainTarget() const
+const ZDvidTarget& ZDvidEnv::getMainGrayscaleTarget() const
 {
-  return m_mainTarget;
+  if (m_mainTarget.hasGrayScaleData()) {
+    return m_mainTarget;
+  }
+
+  const std::vector<ZDvidTarget> &targetList =
+      ZDvidEnv::getTargetList(ERole::GRAYSCALE);
+  if (!targetList.empty()) {
+    return targetList.front();
+  }
+
+  return m_emptyTarget;
 }
 
 const std::vector<ZDvidTarget>& ZDvidEnv::getTargetList(ERole role) const
@@ -79,15 +112,29 @@ void ZDvidEnv::set(const ZDvidTarget &target)
   clear();
 
   m_mainTarget = target;
-//  m_mainTarget.clearGrayScale();
+  m_mainTarget.clearGrayScale();
   m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
+}
+
+namespace {
+
+void append_dvid_target(
+    std::vector<ZDvidTarget> &targetList, const ZDvidTarget &target)
+{
+  if (target.isValid()) {
+    if (target.hasDvidUuid()) {
+      targetList.push_back(target);
+    } else {
+      std::cout << "WARNING: Failed to add a target: DVID node with alias detected!";
+    }
+  }
+}
+
 }
 
 void ZDvidEnv::appendValidDvidTarget(const ZDvidTarget &target, ERole role)
 {
-  if (target.isValid()) {
-    getTargetList(role).push_back(target);
-  }
+  append_dvid_target(getTargetList(role), target);
 }
 
 void ZDvidEnv::appendDvidTarget(
@@ -96,10 +143,13 @@ void ZDvidEnv::appendDvidTarget(
   for (size_t i = 0; i < arrayObj.size(); ++i) {
     ZDvidTarget target;
     target.loadJsonObject(ZJsonObject(arrayObj.value(i)));
-    if (target.isValid()) {
-      targetList.push_back(target);
-    }
+    append_dvid_target(targetList, target);
   }
+}
+
+void ZDvidEnv::setReadOnly(bool on)
+{
+  getMainTarget().setReadOnly(on);
 }
 
 void ZDvidEnv::setMainTarget(const ZDvidTarget &target)
@@ -117,7 +167,7 @@ void ZDvidEnv::loadJsonObject(const ZJsonObject &obj)
 
   if (m_mainTarget.hasGrayScaleData()) {
     grayscaleTargetList.push_back(m_mainTarget.getGrayScaleTarget());
-//    m_mainTarget.clearGrayScale(); //Grayscale moved to target map
+    m_mainTarget.clearGrayScale(); //Grayscale moved to target map
   }
 
   if (obj.hasKey(KEY_GRAYSCALE)) {

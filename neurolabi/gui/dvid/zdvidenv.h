@@ -41,6 +41,8 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void setReadOnly(bool on);
+
   void setMainTarget(const ZDvidTarget &target);
 
   ZDvidTarget& getMainTarget();
@@ -48,6 +50,12 @@ public:
 
   const ZDvidTarget& getMainTarget() const;
   const std::vector<ZDvidTarget>& getTargetList(ERole role) const;
+  const ZDvidTarget& getMainGrayscaleTarget() const;
+
+  /*!
+   * \brief Main target with main grayscale data if available
+   */
+  ZDvidTarget getFullMainTarget() const;
 
   void appendValidDvidTarget(const ZDvidTarget &target, ERole role);
 
@@ -65,6 +73,7 @@ private:
 
 private:
   ZDvidTarget m_mainTarget;
+  ZDvidTarget m_emptyTarget;
   std::map<ERole, std::vector<ZDvidTarget>> m_targetMap;
 
   static const char *KEY_GRAYSCALE;

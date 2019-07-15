@@ -1272,9 +1272,16 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
+  ZDvidEnv env = m_dataContainer->getDvidEnv();
+  env.setReadOnly(true);
+
+  window->getMainMvc()->setDvid(env);
+
+  /*
   ZDvidTarget target = m_dataContainer->getDvidTarget();
   target.setReadOnly(true);
   window->getMainMvc()->setDvidTarget(target);
+  */
 //  window->showMaximized();
 }
 

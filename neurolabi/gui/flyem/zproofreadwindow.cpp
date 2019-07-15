@@ -288,12 +288,12 @@ void ZProofreadWindow::createMenu()
 
   menuBar()->addMenu(fileMenu);
 
-  m_loadDvidAction = new QAction("Load Database", this);
+  m_loadDvidAction = new QAction("Import Database", this);
   connect(m_loadDvidAction, &QAction::triggered,
           this, &ZProofreadWindow::loadDatabase);
   fileMenu->addAction(m_loadDvidAction);
 
-  m_loadDvidUrlAction = new QAction("Load Neuroglancer Link", this);
+  m_loadDvidUrlAction = new QAction("Load Database", this);
   connect(m_loadDvidUrlAction, &QAction::triggered,
           this, &ZProofreadWindow::loadDatabaseFromUrl);
   fileMenu->addAction(m_loadDvidUrlAction);

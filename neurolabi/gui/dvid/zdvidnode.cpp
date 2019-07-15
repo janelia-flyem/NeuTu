@@ -17,6 +17,20 @@ const char* ZDvidNode::m_addressKey = "address";
 const char* ZDvidNode::m_portKey = "port";
 const char* ZDvidNode::m_uuidKey = "uuid";
 
+/* Implementation details
+ *
+ * The member m_uuid in this class can be
+ *   > explicit, which is just a normal DVID UUID
+ *   > reference, which starts with "ref:", it is
+ *       expected to followed by a link where the actual UUID is stored
+ *   > alias, which starts with "@", referring to the master node of the root
+ *       alias configured in the flyem configuration file.
+ *
+ * setUuid() can take any kind of UUID, but it will only try to translate the
+ * reference one.
+ *
+ */
+
 ZDvidNode::ZDvidNode()
 {
 }
@@ -27,6 +41,16 @@ ZDvidNode::ZDvidNode(
   set(address, uuid, port);
 }
 
+bool ZDvidNode::hasDvidUuid() const
+{
+  if (!m_uuid.empty()) {
+    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:")) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 void ZDvidNode::setMock(bool on)
 {
@@ -123,8 +147,11 @@ void ZDvidNode::set(
 
 void ZDvidNode::clear()
 {
+  *this = ZDvidNode();
+  /*
   set("", "", -1);
   m_isMocked = false;
+  */
 }
 
 void ZDvidNode::setServer(const std::string &address)
@@ -166,8 +193,23 @@ void ZDvidNode::setServer(const std::string &address)
   }
 }
 
+void ZDvidNode::setInferredUuid(const std::string &uuid)
+{
+  m_uuid = uuid;
+}
+
+void ZDvidNode::setMappedUuid(
+    const std::string &original, const std::string &mapped)
+{
+  m_originalUuid = original;
+  m_uuid = mapped;
+}
+
 void ZDvidNode::setUuid(const std::string &uuid)
 {
+  m_uuid.clear();
+  m_originalUuid = uuid;
+
   if (ZString(uuid).startsWith("ref:")) {
 #if _QT_APPLICATION_
     std::string uuidLink = uuid.substr(4);

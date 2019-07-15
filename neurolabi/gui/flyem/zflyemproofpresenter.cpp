@@ -1301,7 +1301,8 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
         ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
     QString path = ZNeuroglancerPathFactory::MakePath(
-          target, ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
+          getCompleteDocument()->getDvidEnv(),
+          ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
           pt, bookmarkList);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());

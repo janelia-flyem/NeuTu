@@ -82,7 +82,8 @@ HEADERS += \
     $$PWD/z3dswcfiltertest.h \
     $$PWD/flyembodyselectionmanagertest.h \
     $$PWD/zinteractivecontexttest.h \
-    $$PWD/zdvidenvtest.h
+    $$PWD/zdvidenvtest.h \
+    $$PWD/zdvidnodetest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

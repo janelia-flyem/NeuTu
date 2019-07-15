@@ -170,7 +170,7 @@ ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
 
 void ZFlyEmOrthoDoc::prepareDvidData(const ZDvidEnv &/*env*/)
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     initSynapseEnsemble();
     initTodoList();
     addDvidLabelSlice(neutu::EAxis::X, false);
