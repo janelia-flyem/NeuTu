@@ -571,6 +571,8 @@ public slots: //Commands
 
   void executeRemoveTodoItemCommand();
 
+  void executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t bodyId);
+
   void executeRotateRoiPlaneCommand(int z, double theta);
   void executeScaleRoiPlaneCommand(int z, double sx, double sy);
 

@@ -33,14 +33,16 @@ public:
    *
    * \return true iff the Matlab program can be launched.
    */
-  bool run();
+  bool run(bool parseOutput=true);
 
-  bool runScript(const QString &script);
+  bool runScript(const QString &script, bool parseOutput=true);
 
   /*!
    * \brief Print output.
    */
   void printOutputSummary() const;
+
+  QString getRawOutput();
 
   /*!
    * \brief Find the executable path of Python

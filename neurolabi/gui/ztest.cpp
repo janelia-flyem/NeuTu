@@ -333,6 +333,7 @@
 #include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
+#include "zsysteminfo.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30199,6 +30200,11 @@ void ZTest::test(MainWindow *host)
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   ZJsonObject obj = reader->getDvidTarget().toJsonObject();
   obj.dump(GET_TEST_DATA_DIR + "/_test/dvid_setting.json");
+#endif
+
+#if 0
+  qDebug() << QSysInfo::prettyProductName()
+           << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
 #endif
 
   std::cout << "Done." << std::endl;

@@ -199,6 +199,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       }
       config.append(ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC);
       config.append(ZActionFactory::ACTION_SEPARATOR);
+      config.append(ZActionFactory::ACTION_RUN_TIP_DETECTION);
+      config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
         config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);

@@ -677,6 +677,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_PASTE_3DCAMERA:
     action = new QAction("Paste View", parent);
     break;
+  case ACTION_RUN_TIP_DETECTION:
+    action = new QAction("Run tip detection", parent);
+    break;
   case ACTION_SAVE_ALL_MESH:
     action = new QAction("Save Meshes As", parent);
     break;
