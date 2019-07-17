@@ -8,6 +8,8 @@
 
 #include <archive.h>
 
+#include "common/utilities.h"
+
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -317,6 +319,11 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
          ZOUT(LKINFO, 5) << QString("Deleting SWC object: %1 %2").
                             arg(neutu::ToString(obj).c_str()).
                             arg(obj->getSource().c_str());
+       } else {
+#ifdef _DEBUG_
+         LKINFO << QString("Deleting %1 %2").arg(neutu::ToString(obj).c_str()).
+                   arg(obj->getSource().c_str());
+#endif
        }
 
        if (obj != iter.key()) {
@@ -2762,8 +2769,9 @@ namespace {
 
 bool is_recycable(ZStackObject::EType type)
 {
-  return (type == ZStackObject::EType::MESH) ||
-      (type == ZStackObject::EType::SWC);
+  return true;
+//  return (type == ZStackObject::EType::MESH) ||
+//      (type == ZStackObject::EType::SWC);
 }
 
 bool is_recycable(const ZStackObject *obj)
