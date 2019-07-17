@@ -2838,9 +2838,11 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
     }
 
     if (removingAnnotation) {
+      //Use RECYCLE instead of KILL until premature deletion is fixeed
+      //for selection signals.
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::EAction::KILL);
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::EAction::RECYCLE);
       /*
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
@@ -2856,7 +2858,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -2865,7 +2867,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
       }
 
       objList = getObjectGroup().findSameClass(
