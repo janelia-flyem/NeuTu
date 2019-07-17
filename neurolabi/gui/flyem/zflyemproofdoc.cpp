@@ -95,6 +95,11 @@ ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
   m_futureMap.waitForFinished();
   endWorkThread();
+
+  foreach (ZDvidReader *reader, m_grayscaleReaderMap) {
+    delete reader;
+  }
+
   KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
 //  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
@@ -934,14 +939,20 @@ const ZDvidReader& ZFlyEmProofDoc::getDvidReader() const {
   return m_dvidWriter.getDvidReader();
 }
 
-void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
+bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 {
-  m_dvidEnv = env;
+  m_originalEnv = env;
 
-  KINFO << "Setting dvid env in ZFlyEmProofDoc";
-  QElapsedTimer timer;
-  timer.start();
   if (m_dvidWriter.open(env.getFullMainTarget())) {
+    m_dvidEnv = env;
+    ZDvidTarget target = m_dvidWriter.getDvidTarget();
+    target.clearGrayScale();
+    m_dvidEnv.setMainTarget(target);
+
+    KINFO << "Setting dvid env in ZFlyEmProofDoc";
+    QElapsedTimer timer;
+    timer.start();
+
     updateUserStatus();
 
     std::ostringstream flowInfo;
@@ -1030,6 +1041,10 @@ void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_roiManager->loadRoiList();
 
     KDEBUG << ZLog::Diagnostic(flowInfo.str());
+
+    KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
+           << ZLog::Diagnostic(std::string("Time cost to call ") + __FUNCTION__);
+
 //    LDEBUG() << flowInfo.str();
     startTimer();
   } else {
@@ -1042,11 +1057,13 @@ void ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     }
     msg.appendMessage(detail);
     emit messageGenerated(msg);
-  }
-  KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
-         << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
-}
 
+    return false;
+  }
+
+  return true;
+}
+#if 0
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   ZDvidEnv env;
@@ -1150,6 +1167,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
          << ZLog::Diagnostic("Time cost to call ZFlyEmProofDoc::setDvidTarget");
 #endif
 }
+#endif
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
 {

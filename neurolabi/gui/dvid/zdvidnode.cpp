@@ -70,6 +70,10 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, int uuidBrief) const
     std::string uuid = getUuid();
     if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
       uuid = uuid.substr(0, uuidBrief);
+    } else if (int(uuid.size()) < uuidBrief) {
+#if defined(_QT_APPLICATION_)
+      LWARN() << "Out-of bound uuid brief (" << uuidBrief << ") for" << uuid;
+#endif
     }
 
     source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;

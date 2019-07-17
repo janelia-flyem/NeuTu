@@ -103,7 +103,7 @@ public:
   void setDvidFromJson(const std::string &filePath);
   void setDvidFromJsonObject(const std::string &str);
   void setDvidFromUrl(const QString &url);
-  void setDvid(const ZDvidEnv &env);
+  virtual void setDvid(const ZDvidEnv &env);
 
   void clear();
 
@@ -120,7 +120,7 @@ public:
   bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
   ZDvidEnv getDvidEnv() const;
-  virtual ZDvidTarget getDvidTarget() const;
+  ZDvidTarget getDvidTarget() const;
   std::string getDvidTargetUuid() const;
 
   void setDvidDialog(ZDvidTargetProviderDialog *dlg);

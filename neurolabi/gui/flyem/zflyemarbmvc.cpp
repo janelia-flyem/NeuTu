@@ -39,6 +39,7 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidTarget &target)
   return mvc;
 }
 
+/*
 void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
 {
   ZDvidReader reader;
@@ -50,6 +51,17 @@ void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
                                     SLOT(allowBlinkingSegmentation(bool)));
   }
 }
+*/
+
+void ZFlyEmArbMvc::setDvid(const ZDvidEnv &env)
+{
+  clear();
+  if (getCompleteDocument()->setDvid(env)) {
+    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+                                    SLOT(allowBlinkingSegmentation(bool)));
+  }
+}
+
 
 ZFlyEmArbDoc* ZFlyEmArbMvc::getCompleteDocument() const
 {

@@ -108,11 +108,19 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());
 }
 
+/*
 void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getCompleteDocument()->setDvidTarget(target);
 
   updateDvidTargetFromDoc();
+}*/
+
+void ZFlyEmOrthoMvc::setDvid(const ZDvidEnv &env)
+{
+  if (getCompleteDocument()->setDvid(env)) {
+    updateDvidTargetFromDoc();
+  }
 }
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
@@ -164,10 +172,12 @@ void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
   getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
+/*
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const
 {
   return getCompleteDocument()->getDvidTarget();
 }
+*/
 
 void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
 {

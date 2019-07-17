@@ -58,8 +58,8 @@ public:
 
   friend class ZFlyEmProofDocUtil;
 
-  virtual void setDvidTarget(const ZDvidTarget &target);
-  virtual void setDvid(const ZDvidEnv &env);
+//  virtual void setDvidTarget(const ZDvidTarget &target);
+  virtual bool setDvid(const ZDvidEnv &env);
 
 //  virtual void updateTileData();
 
@@ -733,6 +733,7 @@ private:
 
 protected:
   ZDvidEnv m_dvidEnv;
+  ZDvidEnv m_originalEnv;
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
 //  ZDvidReader m_dvidReader;
@@ -741,7 +742,11 @@ protected:
   ZDvidReader m_todoReader;
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
-  ZDvidReader m_grayscaleReader;
+
+  QMap<std::string, ZDvidReader*> m_grayscaleReaderMap;
+
+  ZDvidReader *m_mainGrayscaleReader;
+
   ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;

@@ -959,7 +959,7 @@ void ZFlyEmProofMvc::makeOrthoWindow(int width, int height, int depth)
        << ZLog::Action("make")
        << ZLog::Object("ZFlyEmOrthoWindow");
 
-  m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget(), width, height, depth);
+  m_orthoWindow = new ZFlyEmOrthoWindow(getDvidEnv(), width, height, depth);
   connect(m_orthoWindow, SIGNAL(destroyed()), this, SLOT(detachOrthoWindow()));
   connect(m_orthoWindow, SIGNAL(bookmarkEdited(int, int, int)),
           getCompleteDocument(), SLOT(downloadBookmark(int,int,int)));
@@ -1895,15 +1895,19 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 
   getProgressSignal()->startProgress("Loading data ...");
 
-  ZDvidReader reader;
-  if (!reader.open(env.getMainTarget())) {
+  clear();
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  if (!getCompleteDocument()->setDvid(env)) {
     ZWidgetMessage msg("Failed to open the database.",
                        neutu::EMessageType::WARNING,
                        ZWidgetMessage::TARGET_DIALOG);
 
     QString detail = "Detail: ";
-    if (!reader.getErrorMsg().empty()) {
-      detail += reader.getErrorMsg().c_str();
+    std::string errMsg = getCompleteDocument()->getDvidReader().getErrorMsg();
+    if (!errMsg.empty()) {
+      detail += errMsg.c_str();
     }
     msg.appendMessage(detail);
     emit messageGenerated(msg);
@@ -1911,17 +1915,6 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     getProgressSignal()->endProgress();
     return;
   }
-
-//  exitCurrentDoc();
-
-  clear();
-  getProgressSignal()->advanceProgress(0.1);
-  //    getCompleteDocument()->clearData();
-
-  ZDvidEnv newEnv = env;
-  newEnv.setMainTarget(reader.getDvidTarget());
-  getCompleteDocument()->setDvid(newEnv);
-
 
   if (getRole() == ERole::ROLE_WIDGET) {
 //    LINFO() << "Set contrast";

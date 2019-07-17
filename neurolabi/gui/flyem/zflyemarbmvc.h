@@ -20,17 +20,18 @@ public:
   ZFlyEmArbDoc* getCompleteDocument() const;
   ZFlyEmArbPresenter* getCompletePresenter() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+//  void setDvidTarget(const ZDvidTarget &target);
+  void setDvid(const ZDvidEnv &env) override;
 
   void updateViewParam(const ZArbSliceViewParam &param);
   void resetViewParam(const ZArbSliceViewParam &param);
-  void processViewChangeCustom(const ZStackViewParam &viewParam);
+  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 
 signals:
   void sliceViewChanged(const ZArbSliceViewParam &param);
 
 protected:
-  void createPresenter();
+  void createPresenter() override;
 
 private:
   void init();

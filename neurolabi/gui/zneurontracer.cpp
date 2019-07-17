@@ -243,7 +243,7 @@ void ZNeuronTracer::configure()
 //  ZNeuronTracerConfig &config = ZNeuronTracerConfig::getInstance();
   ZNeuronTracerConfig &config = m_config;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Default configuration:" << std::endl;
   config.print();
 #endif
