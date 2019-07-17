@@ -71,7 +71,8 @@ void NeuPrintReader::readDatasets()
   }
 
   if (m_dataset.isEmpty()) {
-    KWARN << "No datasets retreived from NeuPrint.";
+    KWARN << "No datasets retreived from NeuPrint: " +
+             m_bufferReader.getBuffer().toStdString();
   }
 }
 
