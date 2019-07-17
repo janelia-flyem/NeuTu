@@ -1,4 +1,10 @@
 #include "zstackobject.h"
+
+#if _QT_APPLICATION_2
+#include <QThread>
+#include <QCoreApplication>
+#endif
+
 #include "tz_cdefs.h"
 //#include "zswctree.h"
 #include "geometry/zintcuboid.h"
@@ -22,6 +28,19 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
 
 ZStackObject::~ZStackObject()
 {
+#if _QT_APPLICATION_2
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      if (getType() != ZStackObject::EType::DVID_SYNAPSE &&
+          getType() != ZStackObject::EType::OBJECT3D_SCAN) {
+        std::cout << "Deteleted in separate threads!!!" << std::endl;
+        std::cout << "Deconstructing " << this << ": " << getTypeName() << ", "
+                  << getSource() << std::endl;
+      }
+    }
+  }
+#endif
+
 #ifdef _DEBUG_2
   std::cout << "Deconstructing " << this << ": " << getTypeName() << ", "
             << getSource() << std::endl;

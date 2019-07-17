@@ -2791,8 +2791,8 @@ void ZFlyEmBody3dDoc::dumpObject(ZStackObject *obj, bool recycling)
       dumpGarbage(obj, recycling);
       emit bodyRecycled(obj->getLabel());
     } else {
-      dumpGarbage(obj, false);
-//      delete obj;
+//      dumpGarbage(obj, false);
+      delete obj;
     }
   }
 }
@@ -2850,7 +2850,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       //for selection signals.
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::EAction::RECYCLE);
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::EAction::KILL);
       /*
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
@@ -2866,7 +2866,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -2875,7 +2875,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
-        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
       }
 
       objList = getObjectGroup().findSameClass(
