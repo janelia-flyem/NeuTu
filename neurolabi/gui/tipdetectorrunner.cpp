@@ -35,7 +35,6 @@ void TipDetectorRunner::run() {
     //  expects to call the script through Python; so instead, pretend
     //  the script is Python, the first arg is the script name, and add
     //  the other args as usual:
-
     ZPythonProcess process;
     process.setPythonPath("marktips");
     process.setScript(QString::fromStdString(m_target.getAddressWithPort()));
@@ -49,10 +48,15 @@ void TipDetectorRunner::run() {
         //  and we'll echo the output we did get; otherwise, just pass
         //  the script output to the calling routine
         QString output = process.getRawOutput();
+        QString errorOutput = process.getErrorOutput();
         QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
         if (doc.isNull()) {
+            if (output.isEmpty()) {
+                output = "(no output)";
+            }
             m_output["status"] = false;
-            m_output["message"] = "Tip detection script returned unparseable output: " + output;
+            m_output["message"] = QString("Tip detection script returned unparseable output!  std out: ") +
+                output + "; std err: " + errorOutput;
         } else {
             m_output = doc.object();
         }
