@@ -2769,9 +2769,8 @@ namespace {
 
 bool is_recycable(ZStackObject::EType type)
 {
-  return true;
-//  return (type == ZStackObject::EType::MESH) ||
-//      (type == ZStackObject::EType::SWC);
+  return (type == ZStackObject::EType::MESH) ||
+      (type == ZStackObject::EType::SWC);
 }
 
 bool is_recycable(const ZStackObject *obj)
@@ -2792,7 +2791,8 @@ void ZFlyEmBody3dDoc::dumpObject(ZStackObject *obj, bool recycling)
       dumpGarbage(obj, recycling);
       emit bodyRecycled(obj->getLabel());
     } else {
-      delete obj;
+      dumpGarbage(obj, false);
+//      delete obj;
     }
   }
 }
