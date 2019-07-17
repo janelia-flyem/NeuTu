@@ -1,7 +1,11 @@
 #include "zstackobjectgroup.h"
 
 #include <QMutexLocker>
-#include "QsLog/QsLog.h"
+#include <QThread>
+#include <QCoreApplication>
+
+#include "logging/zlog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
@@ -278,6 +282,17 @@ void ZStackObjectGroup::deselectAllUnsync()
 ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
 {
   ZOUT(LTRACE(), 6) << "Taking object:" << obj;
+
+#if 0
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      std::cout << "Removing in separate threads!!! "
+                << obj << ": " << obj->getTypeName() << ", "
+                << obj->getSource() << std::endl;
+      abort();
+    }
+  }
+#endif
 
   ZStackObject *found = NULL;
   if (m_objectList.removeOne(obj)) {
@@ -587,6 +602,15 @@ bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 void ZStackObjectGroup::removeAllObjectUnsync(bool deleting)
 {
   ZOUT(LTRACE(), 6) << "Removing all objects. Deleting" << deleting;
+
+#if 0
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      std::cout << "Removing in separate threads!!! ";
+      abort();
+    }
+  }
+#endif
 
   if (deleting) {
     for (QList<ZStackObject*>::iterator iter = m_objectList.begin();

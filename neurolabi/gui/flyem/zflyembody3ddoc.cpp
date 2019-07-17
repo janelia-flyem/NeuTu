@@ -8,6 +8,8 @@
 
 #include <archive.h>
 
+#include "common/utilities.h"
+
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -317,6 +319,11 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
          ZOUT(LKINFO, 5) << QString("Deleting SWC object: %1 %2").
                             arg(neutu::ToString(obj).c_str()).
                             arg(obj->getSource().c_str());
+       } else {
+#ifdef _DEBUG_
+         LKINFO << QString("Deleting %1 %2").arg(neutu::ToString(obj).c_str()).
+                   arg(obj->getSource().c_str());
+#endif
        }
 
        if (obj != iter.key()) {
@@ -2785,6 +2792,7 @@ void ZFlyEmBody3dDoc::dumpObject(ZStackObject *obj, bool recycling)
       dumpGarbage(obj, recycling);
       emit bodyRecycled(obj->getLabel());
     } else {
+//      dumpGarbage(obj, false);
       delete obj;
     }
   }
@@ -2839,6 +2847,8 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
     }
 
     if (removingAnnotation) {
+      //Use RECYCLE instead of KILL until premature deletion is fixeed
+      //for selection signals.
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
       getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::EAction::KILL);
