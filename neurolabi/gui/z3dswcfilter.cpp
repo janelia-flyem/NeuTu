@@ -2415,8 +2415,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
-    addLog("Picking swc at " + std::to_string(m_startCoord.x) + ", " +
-           std::to_string(m_startCoord.y));
+//    addLog("Picking swc at " + std::to_string(m_startCoord.x) + ", " +
+//           std::to_string(m_startCoord.y));
 #ifdef _DEBUG_2
     std::cout << "Picking swc at "
               << m_startCoord.x << ", " << m_startCoord.y <<  std::endl;
@@ -2424,7 +2424,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
     const void* obj = pickObject(e->x(), e->y());
 
-    addLog("Picked: " + neutu::ToString(obj));
+//    addLog("Picked: " + neutu::ToString(obj));
 #ifdef _DEBUG_2
     std::cout << "Picked: " << obj << std::endl;
 #endif
@@ -2438,6 +2438,10 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
          it!=m_visibleSwcList.end(); ++it) {
       if (*it == obj) {
         m_pressedSwc = *it;
+#ifdef _DEBUG_
+        addLog(std::string(__FUNCTION__) + ": SWC Pressed: " +
+               neutu::ToString(m_pressedSwc));
+#endif
         return;
       }
     }
@@ -2493,12 +2497,20 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
-        if (!(isNodePicking() && m_pressedSwc))
+        if (!(isNodePicking() && m_pressedSwc)) {
+#ifdef _DEBUG_
+          addLog(std::string(__FUNCTION__) + ": Selecting SWC: " + neutu::ToString(m_pressedSwc));
+#endif
           emit treeSelected(m_pressedSwc, appending);
+        }
 
         if (m_interactionMode == EInteractionMode::ConnectSwcNode && isNodePicking()) {
           emit(connectingSwcTreeNode(m_pressedSwcTreeNode));
         } else {
+#ifdef _DEBUG_
+          addLog(std::string(__FUNCTION__) + ": Selecting SWC node: " +
+                 neutu::ToString(m_pressedSwcTreeNode));
+#endif
           emit treeNodeSelected(m_pressedSwcTreeNode, appending);
           if (e->modifiers() == Qt::ShiftModifier) {
             ZOUT(LTRACE(), 5) << "treeNodeSelectConnection emitted";
