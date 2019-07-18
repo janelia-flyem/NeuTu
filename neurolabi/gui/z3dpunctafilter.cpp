@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "common/utilities.h"
+
 #include "neutubeconfig.h"
 #include "zrandom.h"
 #include "zpunctumcolorscheme.h"
@@ -506,6 +508,10 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
     for (auto p : m_punctaList) {
       if (p == obj) {
         m_pressedPunctum = p;
+#ifdef _DEBUG_
+        addLog(std::string(__FUNCTION__) + ": punctum pressed: " +
+               neutu::ToString(m_pressedPunctum));
+#endif
         break;
       }
     }
@@ -519,9 +525,20 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
         emit punctumSelected(m_pressedPunctum, true);
       else
         emit punctumSelected(m_pressedPunctum, false);
-      if (m_pressedPunctum)
+      if (m_pressedPunctum) {
+#ifdef _DEBUG_
+        addLog(std::string(__FUNCTION__) + ": selecting punctum: " +
+               neutu::ToString(m_pressedPunctum));
+#endif
         e->accept();
+      }
     }
+#ifdef _DEBUG_
+    if (m_pressedPunctum) {
+      addLog(std::string(__FUNCTION__) + ": punctum reset: " +
+             neutu::ToString(m_pressedPunctum));
+    }
+#endif
     m_pressedPunctum = nullptr;
   }
 }
