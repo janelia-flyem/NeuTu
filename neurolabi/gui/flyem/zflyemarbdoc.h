@@ -10,9 +10,9 @@ class ZFlyEmArbDoc : public ZFlyEmProofDoc
 public:
   explicit ZFlyEmArbDoc(QObject *parent = 0);
 
-  void setDvid(const ZDvidEnv &env) override;
+  bool setDvid(const ZDvidEnv &env) override;
 //  void setDvidTarget(const ZDvidTarget &target);
-  void prepareDvidData(const ZDvidEnv &env);
+  void prepareDvidData(const ZDvidEnv &env) override;
 
 private:
   void initArbGraySlice();

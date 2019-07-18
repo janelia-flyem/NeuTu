@@ -28,13 +28,13 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
   return frame;
 }
 
-ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidTarget &target)
+ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidEnv &env)
 {
   ZFlyEmArbDoc *doc = new ZFlyEmArbDoc;
   ZFlyEmArbMvc *mvc =
       ZFlyEmArbMvc::Make(NULL, ZSharedPointer<ZFlyEmArbDoc>(doc));
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }

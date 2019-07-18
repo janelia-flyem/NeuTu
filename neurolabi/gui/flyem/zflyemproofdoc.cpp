@@ -939,6 +939,49 @@ const ZDvidReader& ZFlyEmProofDoc::getDvidReader() const {
   return m_dvidWriter.getDvidReader();
 }
 
+ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader() const
+{
+  return m_mainGrayscaleReader;
+}
+
+void ZFlyEmProofDoc::setGrayscaleReader(
+    const std::string &key, ZDvidReader *reader)
+{
+  if (m_grayscaleReaderMap.contains(key)) {
+    ZDvidReader *obsoleteReader = m_grayscaleReaderMap.value(key);
+    if (m_mainGrayscaleReader == obsoleteReader) {
+      m_mainGrayscaleReader = nullptr;
+    }
+    delete obsoleteReader;
+  }
+  if (reader) {
+    m_grayscaleReaderMap[key] = reader;
+  } else {
+    m_grayscaleReaderMap.remove(key);
+  }
+}
+
+void ZFlyEmProofDoc::prepareGrayscaleReader()
+{
+  auto targetList = m_dvidEnv.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
+  int index = 0;
+  for (const ZDvidTarget& target : targetList) {
+    ZDvidReader *reader = new ZDvidReader;
+    std::string key = target.getSourceStringWithGrayscale();
+    if (reader->open(target)) {
+      reader->updateMaxGrayscaleZoom();
+      setGrayscaleReader(key, reader);
+      if (index == 0) {
+        m_mainGrayscaleReader = reader;
+      }
+    } else {
+      LKWARN << "Invalid grayscale target: " + key;
+      delete reader;
+    }
+    ++index;
+  }
+}
+
 bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 {
   m_originalEnv = env;
@@ -972,10 +1015,13 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
       m_sparseVolReader.openRaw(getDvidTarget());
     }
 
+    prepareGrayscaleReader();
+    /*
     ZDvidTarget grayscaleTarget = env.getMainGrayscaleTarget();
     if (grayscaleTarget.isValid()) {
       m_grayscaleReader.open(grayscaleTarget);
     }
+    */
 
 //    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
 //    m_dvidTarget = target;
@@ -1249,15 +1295,19 @@ void ZFlyEmProofDoc::updateMaxLabelZoom()
 //  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
+/*
 void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 {
   m_grayscaleReader.updateMaxGrayscaleZoom();
 //  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
 }
-
+*/
 void ZFlyEmProofDoc::readInfo()
 {
-  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
+  if (m_mainGrayscaleReader) {
+    m_grayScaleInfo = m_mainGrayscaleReader->readGrayScaleInfo();
+  }
+//  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
   m_labelInfo = getDvidReader().readLabelInfo();
   m_versionDag = getDvidReader().readVersionDag();
 
@@ -1286,7 +1336,7 @@ void ZFlyEmProofDoc::readInfo()
   }
 
   updateMaxLabelZoom();
-  updateMaxGrayscaleZoom();
+//  updateMaxGrayscaleZoom();
 
   KINFO << startLog;
 }
@@ -1375,8 +1425,10 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
-  if (m_grayscaleReader.isReady()) {
-    return m_grayScaleInfo;
+  if (m_mainGrayscaleReader) {
+    if (m_mainGrayscaleReader->isReady()) {
+      return m_grayScaleInfo;
+    }
   }
 
   return m_labelInfo;

@@ -581,11 +581,11 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
   return mvc;
 }
 
-ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
+ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidEnv &env, ERole role)
 {
   ZFlyEmProofMvc *mvc = Make(role);
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
@@ -1785,7 +1785,7 @@ void ZFlyEmProofMvc::syncMergeWithDvid()
 void ZFlyEmProofMvc::setDvidTargetFromDialog()
 {
   getProgressSignal()->startProgress("Loading data ...");
-  setDvidTarget(getDvidDialog()->getDvidTarget());
+  setDvid(ZDvidEnv(getDvidDialog()->getDvidTarget()));
   getProgressSignal()->endProgress();
 }
 
@@ -2009,6 +2009,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
   }
 }
 
+#if 0
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
   ZDvidEnv env;
@@ -2157,6 +2158,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 #endif
 
 }
+#endif
+
 
 void ZFlyEmProofMvc::showSetting()
 {
@@ -2270,7 +2273,7 @@ void ZFlyEmProofMvc::profile()
   getProgressSignal()->startProgress("Loading data ...");
   const ZDvidTarget &target = getDvidDialog()->getDvidTarget("#profile#");
   if (target.isValid()) {
-    setDvidTarget(target);
+    setDvid(ZDvidEnv(target));
   }
   getProgressSignal()->endProgress();
 
@@ -2297,7 +2300,7 @@ void ZFlyEmProofMvc::startTestTask(const ZJsonObject &config)
       ZFlyEmProofMvcController::DisableSequencer(this);
 
       getProgressSignal()->startProgress("Loading data ...");
-      setDvidTarget(target);
+      setDvid(ZDvidEnv(target));
       getProgressSignal()->endProgress();
 
       if (config.hasKey("type")) {
@@ -2457,15 +2460,11 @@ void ZFlyEmProofMvc::diagnose()
 
 void ZFlyEmProofMvc::setDvidTarget()
 {
-//  if (m_dvidDlg == NULL) {
-//    m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
-//  }
-
   if (getDvidDialog()->exec()) {
     GET_FLYEM_CONFIG.activateNeuTuServer();
 
     const ZDvidTarget &target = getDvidDialog()->getDvidTarget();
-    setDvidTarget(target);
+    setDvid(ZDvidEnv(target));
     /*
     const QString threadId = "setDvidTarget";
     if (!m_futureMap.isAlive(threadId)) {

@@ -12,6 +12,31 @@ ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
   setTag(neutu::Document::ETag::FLYEM_ARBSLICE);
 }
 
+bool ZFlyEmArbDoc::setDvid(const ZDvidEnv &env)
+{
+  m_originalEnv = env;
+
+  if (m_dvidWriter.open(env.getFullMainTarget())) {
+    m_dvidEnv = env;
+    prepareGrayscaleReader();
+
+    m_activeBodyColorMap.reset();
+    m_mergeProject->setDvidTarget(getDvidTarget());
+
+    readInfo();
+
+    prepareDvidData(env);
+    return true;
+  }else {
+    m_dvidWriter.clear();
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
+  }
+
+  return false;
+}
+
+#if 0
 void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidWriter.open(target)) {
@@ -32,6 +57,7 @@ void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
           ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
   }
 }
+#endif
 
 void ZFlyEmArbDoc::prepareDvidData(const ZDvidEnv &env)
 {

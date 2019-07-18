@@ -29817,6 +29817,23 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  try {
+//    http::Request request("http://emdata2.int.janelia.org:2018");
+
+    http::Request request("http://127.0.0.1:1600/api/node/4280/grayscale/info");
+
+    http::Response response = request.send("GET");
+    std::string str(response.body.begin(), response.body.end());
+    std::cout << "Code: " << response.code << std::endl;
+    std::cout << response.code << " " << str << std::endl;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+
+#endif
+
+
 #if 0
 //  try
 //  {

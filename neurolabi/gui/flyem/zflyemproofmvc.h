@@ -81,7 +81,7 @@ public:
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
       neutu::EAxis axis = neutu::EAxis::Z, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
-      const ZDvidTarget &target, ERole role = ERole::ROLE_WIDGET);
+      const ZDvidEnv &env, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
@@ -98,7 +98,7 @@ public:
   const ZDvidInfo& getDvidInfo() const;
   const ZDvidInfo& getGrayScaleInfo() const;
 
-  virtual void setDvidTarget(const ZDvidTarget &target);
+//  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
   void setDvidFromJson(const std::string &filePath);
   void setDvidFromJsonObject(const std::string &str);

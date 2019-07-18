@@ -665,6 +665,10 @@ protected:
 //  void initGrayscaleSlice(neutu::EAxis axis);
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
 
+  void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
+  void prepareGrayscaleReader();
+  ZDvidReader* getCurrentGrayscaleReader() const;
+
   void makeKeyProcessor() override;
 
   bool _loadFile(const QString &filePath) override;
@@ -695,7 +699,7 @@ private:
   void initTileData();
 
   void updateMaxLabelZoom();
-  void updateMaxGrayscaleZoom();
+//  void updateMaxGrayscaleZoom();
 
   void updateUserStatus();
 

@@ -15,7 +15,7 @@ public:
   explicit ZFlyEmArbMvc(QWidget *parent = 0);
 
   static ZFlyEmArbMvc* Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> doc);
-  static ZFlyEmArbMvc* Make(const ZDvidTarget &target);
+  static ZFlyEmArbMvc* Make(const ZDvidEnv &env);
 
   ZFlyEmArbDoc* getCompleteDocument() const;
   ZFlyEmArbPresenter* getCompletePresenter() const;

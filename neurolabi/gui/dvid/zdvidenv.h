@@ -23,6 +23,7 @@ class ZDvidEnv
 {
 public:
   ZDvidEnv();
+  explicit ZDvidEnv(const ZDvidTarget &target);
 
   enum class ERole {
     GRAYSCALE, SEGMENTATION

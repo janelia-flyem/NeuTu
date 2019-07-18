@@ -9,6 +9,14 @@ ZDvidEnv::ZDvidEnv()
   enableRole(ERole::SEGMENTATION);
 }
 
+ZDvidEnv::ZDvidEnv(const ZDvidTarget &target)
+{
+  enableRole(ERole::GRAYSCALE);
+  enableRole(ERole::SEGMENTATION);
+  m_mainTarget = target;
+  m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
+}
+
 void ZDvidEnv::enableRole(ERole role)
 {
   m_targetMap[role] = std::vector<ZDvidTarget>();

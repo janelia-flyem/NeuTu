@@ -14,9 +14,10 @@ public:
   static ZFlyEmOrthoMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
       neutu::EAxis axis = neutu::EAxis::Z);
-  static ZFlyEmOrthoMvc* Make(const ZDvidTarget &target, neutu::EAxis axis);
+
+  static ZFlyEmOrthoMvc* Make(const ZDvidEnv &env, neutu::EAxis axis);
   static ZFlyEmOrthoMvc* Make(
-      const ZDvidTarget &target, neutu::EAxis axis,
+      const ZDvidEnv &env, neutu::EAxis axis,
       int width, int height, int depth);
 
   ZFlyEmOrthoDoc* getCompleteDocument() const;
