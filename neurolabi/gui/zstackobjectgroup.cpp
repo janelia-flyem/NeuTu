@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QCoreApplication>
 
+#include "common/utilities.h"
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
 #include "neutubeconfig.h"
@@ -302,6 +303,9 @@ ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
     getObjectListUnsync(obj->getType()).removeOne(obj);
     //remove_p(getSet(obj->getType()), obj);
 
+#ifdef _DEBUG_
+    LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+#endif
     getSelectedSetUnsync(obj->getType()).remove(obj);
 
     getSelector()->removeObject(obj);
@@ -521,6 +525,9 @@ bool ZStackObjectGroup::removeObjectUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+#ifdef _DEBUG_
+        LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+#endif
         getSelectedSetUnsync(obj->getType()).remove(obj);
         getSelector()->removeObject(obj);
 
@@ -1123,6 +1130,9 @@ TStackObjectList ZStackObjectGroup::takeSelectedUnsync(ZStackObject::EType type)
   }
 
   getObjectListUnsync(type).clear();
+#ifdef _DEBUG_
+    LKINFO << "objectgroup selection cleared";
+#endif
   getSelectedSetUnsync(type).clear();
 
   return objSet;
