@@ -29823,7 +29823,7 @@ void ZTest::test(MainWindow *host)
 
     http::Request request("http://127.0.0.1:1600/api/node/4280/grayscale/info");
 
-    http::Response response = request.send("GET");
+    http::Response response = request.send("HEAD");
     std::string str(response.body.begin(), response.body.end());
     std::cout << "Code: " << response.code << std::endl;
     std::cout << response.code << " " << str << std::endl;

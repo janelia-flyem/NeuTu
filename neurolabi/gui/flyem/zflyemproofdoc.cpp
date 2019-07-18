@@ -939,8 +939,13 @@ const ZDvidReader& ZFlyEmProofDoc::getDvidReader() const {
   return m_dvidWriter.getDvidReader();
 }
 
-ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader() const
+ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader(neutu::EAxis axis) const
 {
+  ZDvidGraySlice* slice = getDvidGraySlice(axis);
+  if (slice) {
+    return m_grayscaleReaderMap.value(
+          slice->getDvidTarget().getSourceStringWithGrayscale(), nullptr);
+  }
   return m_mainGrayscaleReader;
 }
 

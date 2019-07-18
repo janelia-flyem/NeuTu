@@ -495,6 +495,8 @@ public:
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
 
+  ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
+
   bool test();
 
 public:
@@ -667,7 +669,6 @@ protected:
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void prepareGrayscaleReader();
-  ZDvidReader* getCurrentGrayscaleReader() const;
 
   void makeKeyProcessor() override;
 

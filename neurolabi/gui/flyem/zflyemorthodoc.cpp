@@ -106,7 +106,7 @@ ZPoint ZFlyEmOrthoDoc::getCrossHairCenter()
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
-  ZDvidReader *reader = getCurrentGrayscaleReader();
+  ZDvidReader *reader = getCurrentGrayscaleReader(neutu::EAxis::Z);
   if (reader) {
     if (reader->isReady()) {
       ZIntCuboid box;

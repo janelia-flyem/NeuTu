@@ -2,8 +2,12 @@
 #define ZFLYEMPROOFDOCTEST_H
 
 #include "ztestheader.h"
-#include "flyem/zflyemproofdoc.h"
+
 #include "neutubeconfig.h"
+
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemorthodoc.h"
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "zjsonobject.h"
@@ -91,6 +95,28 @@ TEST(ZFlyEmProofDoc, grayscale)
                      ZDvidEnv::ERole::GRAYSCALE).size()));
 
   ASSERT_EQ("http:127.0.0.1:1600:4280", doc.getDvidTarget().getSourceString());
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getCurrentGrayscaleReader(neutu::EAxis::Z)->getDvidTarget().
+            getSourceStringWithGrayscale());
+}
+
+TEST(ZFlyEmOrthoDoc, Basic)
+{
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting2.json");
+  ZDvidEnv env;
+  env.loadJsonObject(obj);
+
+  ZFlyEmOrthoDoc doc;
+  doc.setDvid(env);
+
+  ASSERT_TRUE(doc.getDvidTarget().hasGrayScaleData());
+  ASSERT_EQ(2, int(doc.getDvidEnv().getTargetList(
+                     ZDvidEnv::ERole::GRAYSCALE).size()));
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280", doc.getDvidTarget().getSourceString());
+  ASSERT_EQ(nullptr, doc.getCurrentGrayscaleReader(neutu::EAxis::Z));
 }
 
 #endif
