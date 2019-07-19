@@ -1,7 +1,8 @@
 #include "zstackobjectselector.h"
 
 #include <iostream>
-#include <unordered_set>
+
+#include "common/utilities.h"
 
 ZStackObjectSelector::ZStackObjectSelector()
 {
@@ -112,27 +113,19 @@ bool ZStackObjectSelector::isEmpty() const
 
 namespace {
 
-template <typename T>
-void remove_object_from_set(std::set<T> &s, std::function<bool(const T&)> pred)
+void remove_object_from_set(std::set<const ZStackObject*> &s,
+                            std::function<bool(const ZStackObject*)> pred)
 {
-  for (auto iter = s.begin(); iter != s.end();) {
-    if (pred(*iter)) {
-      s.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
+  neutu::setremoveif(s, pred);
 }
 
 }
 
 void ZStackObjectSelector::removeObjectByType(ZStackObject::EType type)
 {
-  using TConstZStackObjectPointer = const ZStackObject*;
-  auto pred = std::function<bool(const TConstZStackObjectPointer&)>(
-        [&](const TConstZStackObjectPointer &obj) -> bool {
+  auto pred = [&](const ZStackObject* obj) -> bool {
     return (obj->getType() == type);
-  });
+  };
 
   remove_object_from_set(m_selectedSet, pred);
   remove_object_from_set(m_deselectedSet, pred);
