@@ -52,6 +52,7 @@ void TipDetectorDialog::onRunButton() {
         ui->locationsLabel->setText(QString::number(output["nlocations"].toInt()));
         ui->locationsRoiLabel->setText(QString::number(output["nlocationsRoI"].toInt()));
         ui->timeLabel->setText(QString::number(output["ttotal"].toDouble()) + "s");
+        setMessage("Script ran successfully!");
     } else {
         setStatus(ERROR);
         setMessage(output["message"].toString());
