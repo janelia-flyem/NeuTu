@@ -287,6 +287,7 @@
 #include "dvid/zdvidpath.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
+#include "qt/network/znetworkutils.h"
 
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
@@ -29817,13 +29818,17 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  std::cout << ZNetworkUtils::HasHead("http://emdata2.int.janelia.org:2018");
+#endif
+
 #if 1
   try {
-//    http::Request request("http://emdata2.int.janelia.org:2018");
+    http::Request request("http://emdata2.int.janelia.org:2018");
 
-    http::Request request("http://127.0.0.1:1600/api/node/4280/grayscale/info");
+//    http::Request request("http://127.0.0.1:1600/api/node/4280/grayscale/info");
 
-    http::Response response = request.send("HEAD");
+    http::Response response = request.send("GET");
     std::string str(response.body.begin(), response.body.end());
     std::cout << "Code: " << response.code << std::endl;
     std::cout << response.code << " " << str << std::endl;

@@ -5,6 +5,7 @@
 #include "zdvidutil.h"
 #include "neutubeconfig.h"
 #include "qt/network/znetbufferreader.h"
+#include "qt/network/znetworkutils.h"
 
 namespace neutuse {
 
@@ -64,6 +65,8 @@ bool TaskIO::ready() const
 void TaskIO::testConnection()
 {
   if (!m_address.empty() && m_connection) {
+//    m_connected = ZNetworkUtils::HasHead(m_address.c_str());
+
     try {
       http::Request request(m_address);
       http::Response response = request.send("HEAD");

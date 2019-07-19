@@ -23,6 +23,7 @@
 #include "zmessageprocessor.h"
 #include "zwindowfactory.h"
 #include "zinteractivecontext.h"
+#include "zthreadfuturemap.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -596,6 +597,8 @@ private:
   void generateMBONConvCast(const std::string &movieFolder);
   void generateFIB19VsCast(const std::string &movieFolder);
 
+  void runRoutineCheckFunc();
+
 private:
   QMdiArea *mdiArea;
 
@@ -780,6 +783,7 @@ private:
   int m_proofreadWindowCount;
 
   QTimer *m_autoCheckTimer;
+  ZThreadFutureMap m_futureMap;
   //ZStackDocReader *m_docReader;
 };
 

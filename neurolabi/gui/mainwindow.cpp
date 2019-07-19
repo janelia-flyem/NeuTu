@@ -7064,16 +7064,27 @@ void MainWindow::on_actionProof_triggered()
   startProofread();
 }
 
-void MainWindow::runRoutineCheck()
+void MainWindow::runRoutineCheckFunc()
 {
-  if (NeutubeConfig::AutoStatusCheck()) {
-    LINFO() << "Running routine check ...";
 #if defined(_FLYEM_)
     if (!GET_FLYEM_CONFIG.hasNormalService()) {
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
       GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
     }
 #endif
+}
+
+void MainWindow::runRoutineCheck()
+{
+  if (NeutubeConfig::AutoStatusCheck()) {
+    LINFO() << "Running routine check ...";
+
+    QString threadId = "runRoutineCheck";
+    if (!m_futureMap.isAlive(threadId)) {
+      QFuture<void> future =
+          QtConcurrent::run(this, &MainWindow::runRoutineCheckFunc);
+      m_futureMap[threadId] = future;
+    }
 #if 0
     QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
     if (!memoryUsage.isEmpty()) {
