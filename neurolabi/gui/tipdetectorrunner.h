@@ -14,6 +14,7 @@ public:
 
     void setPoint(ZIntPoint point);
     void setBodyId(uint64_t bodyId);
+    void setRoI(QString roi);
     void setDvidTarget(ZDvidTarget target);
     QJsonObject getOutput();
     void run();
@@ -21,6 +22,7 @@ public:
 private:
     ZIntPoint m_point;
     uint64_t m_bodyId;
+    QString m_roi;
     ZDvidTarget m_target;
     QJsonObject m_output;
 };

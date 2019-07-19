@@ -18,6 +18,7 @@ public:
     ~TipDetectorDialog();
 
     void setBodyID(uint64_t bodyID);
+    void setRoiList(QStringList roiList);
     void setDvidTarget(ZDvidTarget target);
 
 private slots:

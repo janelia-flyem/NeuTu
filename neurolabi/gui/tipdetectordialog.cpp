@@ -22,10 +22,15 @@ void TipDetectorDialog::onRunButton() {
 
     TipDetectorRunner runner;
     runner.setBodyId(m_bodyID);
+    QString currentRoi = ui->roiMenu->currentText();
+    if (currentRoi != "(none)") {
+        runner.setRoI(currentRoi);
+    }
     runner.setDvidTarget(m_target);
 
     // adjust UI for run state
     ui->runButton->setEnabled(false);
+    ui->roiMenu->setEnabled(false);
     setStatus(RUNNING);
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -45,6 +50,7 @@ void TipDetectorDialog::onRunButton() {
         setStatus(FINISHED);
         ui->todoLabel->setText(QString::number(output["nplaced"].toInt()));
         ui->locationsLabel->setText(QString::number(output["nlocations"].toInt()));
+        ui->locationsRoiLabel->setText(QString::number(output["nlocationsRoI"].toInt()));
         ui->timeLabel->setText(QString::number(output["ttotal"].toDouble()) + "s");
     } else {
         setStatus(ERROR);
@@ -95,6 +101,11 @@ void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
 void TipDetectorDialog::setBodyID(uint64_t bodyID) {
     m_bodyID = bodyID;
     ui->bodyIDLabel->setText(QString::number(bodyID));
+}
+
+void TipDetectorDialog::setRoiList(QStringList roiList) {
+    roiList.insert(0, "(none)");
+    ui->roiMenu->addItems(roiList);
 }
 
 TipDetectorDialog::~TipDetectorDialog()

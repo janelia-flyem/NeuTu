@@ -18,6 +18,10 @@ void TipDetectorRunner::setPoint(ZIntPoint point) {
     m_point = point;
 }
 
+void TipDetectorRunner::setRoI(QString roi) {
+    m_roi = roi;
+}
+
 void TipDetectorRunner::setDvidTarget(ZDvidTarget target) {
     m_target = target;
 }
@@ -41,6 +45,10 @@ void TipDetectorRunner::run() {
     process.addArg(QString::fromStdString(m_target.getUuid()));
     process.addArg(QString::number(m_bodyId));
     process.addArg(QString::fromStdString(m_target.getTodoListName()));
+    if (!m_roi.isEmpty()) {
+        process.addArg("--roi");
+        process.addArg(m_roi);
+    }
 
     bool status = process.run(false);
     if (status) {
