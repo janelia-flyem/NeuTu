@@ -62,6 +62,8 @@ public:
 
   void deselectAll();
 
+  void removeObjectByType(ZStackObject::EType type);
+
 //  bool isInSelectedSet(const ZStackObject *obj) const;
 //  bool isInDeselectedSet(const ZStackObject *obj) const;
 
