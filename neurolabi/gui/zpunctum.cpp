@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <sstream>
 
+#ifdef _DEBUG_
+#include "common/utilities.h"
+#include "logging/zlog.h"
+#endif
+
 #include "zrandom.h"
 #include "zstackball.h"
 
@@ -34,6 +39,10 @@ ZPunctum::ZPunctum(const ZIntPoint &center, double r)
 
 ZPunctum::~ZPunctum()
 {
+#ifdef _DEBUG_
+  LKINFO << "Deconstructing " + neutu::ToString(this) + ": " + getTypeName() + ", "
+            + getSource();
+#endif
 }
 
 void ZPunctum::init(double x, double y, double z, double r)

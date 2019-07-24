@@ -331,6 +331,7 @@
 #include "flyem/neuroglancer/zneuroglancerpath.h"
 #include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
+#include "zsysteminfo.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30122,6 +30123,11 @@ void ZTest::test(MainWindow *host)
 
   tree.resortId();
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  qDebug() << QSysInfo::prettyProductName()
+           << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
 #endif
 
   std::cout << "Done." << std::endl;

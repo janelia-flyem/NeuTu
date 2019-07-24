@@ -1,7 +1,12 @@
 #include "zstackobjectgroup.h"
 
 #include <QMutexLocker>
-#include "QsLog/QsLog.h"
+#include <QThread>
+#include <QCoreApplication>
+
+#include "common/utilities.h"
+#include "logging/zlog.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
@@ -279,6 +284,17 @@ ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
 {
   ZOUT(LTRACE(), 6) << "Taking object:" << obj;
 
+#if 0
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      std::cout << "Removing in separate threads!!! "
+                << obj << ": " << obj->getTypeName() << ", "
+                << obj->getSource() << std::endl;
+      abort();
+    }
+  }
+#endif
+
   ZStackObject *found = NULL;
   if (m_objectList.removeOne(obj)) {
     found = obj;
@@ -287,6 +303,9 @@ ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
     getObjectListUnsync(obj->getType()).removeOne(obj);
     //remove_p(getSet(obj->getType()), obj);
 
+#ifdef _DEBUG_
+    LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+#endif
     getSelectedSetUnsync(obj->getType()).remove(obj);
 
     getSelector()->removeObject(obj);
@@ -414,7 +433,9 @@ TStackObjectList ZStackObjectGroup::takeSameClass(
 
 TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
 {
-  ZOUT(LTRACE(), 6) << "Taking object by type";
+#ifdef _DEBUG_
+  LKINFO << "Taking object by type";
+#endif
 
   TStackObjectList objSet = getObjectListUnsync(type);
   if (!objSet.empty()) {
@@ -427,6 +448,13 @@ TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
   }
 
   getObjectListUnsync(type).clear();
+
+#ifdef _DEBUG_
+  LKINFO << std::string(__FUNCTION__) + " objectgroup selelection clear: " +
+            ZStackObject::GetTypeName(type);
+#endif
+  getSelectedSetUnsync(type).clear();
+  getSelector()->removeObjectByType(type);
 
   return objSet;
 }
@@ -506,6 +534,9 @@ bool ZStackObjectGroup::removeObjectUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+#ifdef _DEBUG_
+        LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+#endif
         getSelectedSetUnsync(obj->getType()).remove(obj);
         getSelector()->removeObject(obj);
 
@@ -587,6 +618,15 @@ bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 void ZStackObjectGroup::removeAllObjectUnsync(bool deleting)
 {
   ZOUT(LTRACE(), 6) << "Removing all objects. Deleting" << deleting;
+
+#if 0
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      std::cout << "Removing in separate threads!!! ";
+      abort();
+    }
+  }
+#endif
 
   if (deleting) {
     for (QList<ZStackObject*>::iterator iter = m_objectList.begin();
@@ -1099,7 +1139,11 @@ TStackObjectList ZStackObjectGroup::takeSelectedUnsync(ZStackObject::EType type)
   }
 
   getObjectListUnsync(type).clear();
+#ifdef _DEBUG_
+    LKINFO << "objectgroup selection cleared";
+#endif
   getSelectedSetUnsync(type).clear();
+  getSelector()->removeObjectByType(type);
 
   return objSet;
 }

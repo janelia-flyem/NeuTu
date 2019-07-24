@@ -1962,7 +1962,7 @@ ZSparseStack* ZDvidReader::readSparseStackOnDemand(
     }
     spStack->setObjectMask(body);
 
-    spStack->setBlockMask(readCoarseBody(bodyId, type, NULL));
+//    spStack->setBlockMask(readCoarseBody(bodyId, type, NULL));
 
     ZDvidStackBlockFactory *blockFactory = new ZDvidStackBlockFactory;
     blockFactory->setDvidTarget(getDvidTarget());

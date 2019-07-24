@@ -75,7 +75,8 @@ bool NeuprintSetupDialog::apply()
           } else {
             ZDialogFactory::Warn(
                   "NeuPrint Not Supported",
-                  "Cannot use NeuPrint because this dataset is not supported by the server.",
+                  "Cannot use NeuPrint because this dataset is not supported by the server"
+                  "or th token is wrong.",
                   this);
           }
         } else {

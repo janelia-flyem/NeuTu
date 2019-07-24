@@ -39,6 +39,14 @@ int main(int argc, char *argv[])
 #include "zglobal.h"
 #include "logging/zlog.h"
 
+namespace {
+std::string get_machine_info()
+{
+  return GET_SOFTWARE_NAME + " " + neutu::GetVersionString() +
+      " @{" + QSysInfo::prettyProductName().toStdString() + "}";
+}
+}
+
 int main(int argc, char *argv[])
 {
 #if 0 //Disable redirect for explicit logging
@@ -108,10 +116,9 @@ int main(int argc, char *argv[])
 
     uint64_t timestamp = neutu::GetTimestamp();
     KLog() << ZLog::Info() //<< ZLog::Time(timestamp)
-           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
+           << ZLog::Description("BEGIN " + get_machine_info())
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutu::GetVersionString();
+    LINFO() << "Start " + get_machine_info();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -219,10 +226,9 @@ int main(int argc, char *argv[])
     }
 
     KLog() << ZLog::Info()
-           << ZLog::Description("END " + GET_SOFTWARE_NAME)
+           << ZLog::Description("END " + get_machine_info())
            << ZLog::Tag("start_time", timestamp);
-    LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutu::GetVersionString();
+    LINFO() << "Exit " + get_machine_info();
 
     return result;
   } else {
