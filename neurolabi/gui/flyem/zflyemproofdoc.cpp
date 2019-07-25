@@ -96,8 +96,8 @@ ZFlyEmProofDoc::~ZFlyEmProofDoc()
   m_futureMap.waitForFinished();
   endWorkThread();
 
-  foreach (ZDvidReader *reader, m_grayscaleReaderMap) {
-    delete reader;
+  for (auto &p: m_grayscaleReaderMap) {
+    delete p.second;
   }
 
   KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
@@ -877,9 +877,17 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
   }
 }
 
-const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
+ZDvidTarget ZFlyEmProofDoc::getDvidTarget() const
 {
-  return getDvidReader().getDvidTarget();
+  ZDvidTarget target = getDvidReader().getDvidTarget();
+  ZDvidReader *grayscaleReader = getCurrentGrayscaleReader();
+  if (grayscaleReader) {
+    target.setGrayScaleName(grayscaleReader->getDvidTarget().getGrayScaleName());
+    target.setGrayScaleSource(grayscaleReader->getDvidTarget().getGrayScaleSource());
+  }
+
+  return target;
+//  return getDvidReader().getDvidTarget();
 }
 
 const ZDvidEnv& ZFlyEmProofDoc::getDvidEnv() const
@@ -939,19 +947,116 @@ const ZDvidReader& ZFlyEmProofDoc::getDvidReader() const {
   return m_dvidWriter.getDvidReader();
 }
 
+namespace {
+
+std::string get_grayscale_key(const ZDvidTarget &target) {
+  return target.getGrayscaleSourceString();
+}
+
+}
+
 ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader(neutu::EAxis axis) const
 {
+  ZDvidReader *reader = m_mainGrayscaleReader;
   ZDvidGraySlice* slice = getDvidGraySlice(axis);
   if (slice) {
-    return m_grayscaleReaderMap.value(
-          slice->getDvidTarget().getSourceStringWithGrayscale(), nullptr);
+    const std::string &key = get_grayscale_key(slice->getDvidTarget());
+    auto iter = m_grayscaleReaderMap.find(key);
+    if (iter != m_grayscaleReaderMap.end()) {
+      reader = iter->second;
+    } else {
+      reader = nullptr;
+    }
   }
-  return m_mainGrayscaleReader;
+
+  return reader;
+}
+
+ZDvidReader* ZFlyEmProofDoc::getCurrentBodyGrayscaleReader()
+{
+  std::string key = m_currentGrayscaleKey;
+  if (key.empty()) {
+    key = get_grayscale_key(m_mainGrayscaleReader->getDvidTarget());
+  }
+
+  QMutexLocker locker(&m_bodyGrayscaleReaderMapMutex);
+  if (m_bodyGrayscaleReaderMap.empty()) {
+    prepareBodyGrayscaleReader();
+  }
+
+  return neutu::GetValue(m_bodyGrayscaleReaderMap, key,
+                         static_cast<ZDvidReader*>(nullptr));
+}
+
+ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader() const
+{
+  if (m_currentGrayscaleKey.empty()) {
+    return m_mainGrayscaleReader;
+  }
+
+  return neutu::GetValue(m_grayscaleReaderMap, m_currentGrayscaleKey,
+                         static_cast<ZDvidReader*>(nullptr));
+}
+
+const ZDvidInfo& ZFlyEmProofDoc::getCurrentGrayscaleInfo() const
+{
+  ZDvidReader *reader = getCurrentGrayscaleReader();
+  if (reader) {
+    return m_dvidInfoMap.at(get_grayscale_key(reader->getDvidTarget()));
+  }
+
+  return m_emptyInfo;
+}
+
+const ZDvidInfo& ZFlyEmProofDoc::getMainGrayscaleInfo() const
+{
+  if (m_mainGrayscaleReader) {
+    std::string key =
+        m_mainGrayscaleReader->getDvidTarget().getGrayscaleSourceString();
+    try {
+      return m_dvidInfoMap.at(key);
+    } catch(...) {
+    }
+  }
+
+  return m_emptyInfo;
+}
+
+void ZFlyEmProofDoc::setGrayscaleReader(
+    std::unordered_map<std::string, ZDvidReader *> &readerMap,
+    const std::string &key, ZDvidReader *reader,
+    bool updatingMainReader)
+{
+  auto iter = readerMap.find(key);
+  if (iter != readerMap.end()) {
+    ZDvidReader *obsoleteReader = iter->second;
+    if (updatingMainReader) {
+      if (m_mainGrayscaleReader == obsoleteReader) {
+        m_mainGrayscaleReader = nullptr;
+      }
+    }
+    delete obsoleteReader;
+  }
+
+  if (reader) {
+    readerMap[key] = reader;
+  } else {
+    readerMap.erase(key);
+  }
 }
 
 void ZFlyEmProofDoc::setGrayscaleReader(
     const std::string &key, ZDvidReader *reader)
 {
+  auto iter = m_grayscaleReaderMap.find(key);
+  if (iter != m_grayscaleReaderMap.end()) {
+    ZDvidReader *obsoleteReader = iter->second;
+    if (m_mainGrayscaleReader == obsoleteReader) {
+      m_mainGrayscaleReader = nullptr;
+    }
+    delete obsoleteReader;
+  }
+  /*
   if (m_grayscaleReaderMap.contains(key)) {
     ZDvidReader *obsoleteReader = m_grayscaleReaderMap.value(key);
     if (m_mainGrayscaleReader == obsoleteReader) {
@@ -959,20 +1064,55 @@ void ZFlyEmProofDoc::setGrayscaleReader(
     }
     delete obsoleteReader;
   }
+  */
+
   if (reader) {
     m_grayscaleReaderMap[key] = reader;
   } else {
-    m_grayscaleReaderMap.remove(key);
+    m_grayscaleReaderMap.erase(key);
   }
 }
 
-void ZFlyEmProofDoc::prepareGrayscaleReader()
+void ZFlyEmProofDoc::prepareGrayscaleReader(
+    std::unordered_map<std::string, ZDvidReader*> &readerMap,
+    bool updatingMainReader)
 {
   auto targetList = m_dvidEnv.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
   int index = 0;
   for (const ZDvidTarget& target : targetList) {
     ZDvidReader *reader = new ZDvidReader;
-    std::string key = target.getSourceStringWithGrayscale();
+    std::string key = target.getGrayscaleSourceString();
+    if (reader->open(target)) {
+      reader->updateMaxGrayscaleZoom();
+      setGrayscaleReader(readerMap, key, reader, updatingMainReader);
+//      setGrayscaleReader(key, reader);
+      if (updatingMainReader) {
+        if (index == 0) {
+          m_mainGrayscaleReader = reader;
+        }
+      }
+    } else {
+      LKWARN << "Invalid grayscale target: " + key;
+      delete reader;
+    }
+    ++index;
+  }
+}
+
+void ZFlyEmProofDoc::prepareBodyGrayscaleReader()
+{
+  prepareGrayscaleReader(m_bodyGrayscaleReaderMap, false);
+}
+
+void ZFlyEmProofDoc::prepareGrayscaleReader()
+{
+  prepareGrayscaleReader(m_grayscaleReaderMap, true);
+#if 0
+  auto targetList = m_dvidEnv.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
+  int index = 0;
+  for (const ZDvidTarget& target : targetList) {
+    ZDvidReader *reader = new ZDvidReader;
+    std::string key = target.getGrayscaleSourceString();
     if (reader->open(target)) {
       reader->updateMaxGrayscaleZoom();
       setGrayscaleReader(key, reader);
@@ -985,6 +1125,7 @@ void ZFlyEmProofDoc::prepareGrayscaleReader()
     }
     ++index;
   }
+#endif
 }
 
 bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
@@ -1011,6 +1152,8 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     flowInfo << "->Prepare DVID readers";
 //    m_dvidWriter.openRaw(m_dvidReader.getDvidTarget());
 
+    prepareGrayscaleReader();
+
     if (getDvidTarget().hasSynapse()) {
       m_synapseReader.openRaw(getDvidTarget());
     }
@@ -1020,7 +1163,6 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
       m_sparseVolReader.openRaw(getDvidTarget());
     }
 
-    prepareGrayscaleReader();
     /*
     ZDvidTarget grayscaleTarget = env.getMainGrayscaleTarget();
     if (grayscaleTarget.isValid()) {
@@ -1309,9 +1451,16 @@ void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 */
 void ZFlyEmProofDoc::readInfo()
 {
+  for (const auto &p : m_grayscaleReaderMap) {
+    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
+  }
+
+
+  /*
   if (m_mainGrayscaleReader) {
     m_grayScaleInfo = m_mainGrayscaleReader->readGrayScaleInfo();
   }
+  */
 //  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
   m_labelInfo = getDvidReader().readLabelInfo();
   m_versionDag = getDvidReader().readVersionDag();
@@ -1431,9 +1580,13 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
   if (m_mainGrayscaleReader) {
+    getMainGrayscaleInfo();
+    /*
     if (m_mainGrayscaleReader->isReady()) {
       return m_grayScaleInfo;
     }
+    */
+
   }
 
   return m_labelInfo;
@@ -2750,9 +2903,10 @@ void ZFlyEmProofDoc::clearData()
   ZStackDoc::clearData();
   m_bodyMerger.clear();
   m_dvidWriter.clear();
+  m_dvidInfoMap.clear();
 //  m_dvidReader.clear();
 //  m_dvidTarget.clear();
-  m_grayScaleInfo.clear();
+//  m_grayScaleInfo.clear();
   m_labelInfo.clear();
   m_versionDag.clear();
   m_infoJson.clear();
@@ -3493,7 +3647,11 @@ void ZFlyEmProofDoc::downloadSynapse()
     synapseEnsemble->setDvidInfo(getDvidInfo());
     synapseEnsemble->setSource(
           ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
-    synapseEnsemble->setResolution(m_grayScaleInfo.getVoxelResolution());
+
+    ZDvidInfo info = getMainGrayscaleInfo();
+    if (info.isValid()) {
+      synapseEnsemble->setResolution(info.getVoxelResolution());
+    }
 
     addObject(synapseEnsemble);
   }
@@ -4622,7 +4780,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
 
         originalStack->runFillValueFunc(roi, true, cont);
 
-        ZDvidInfo dvidInfo = m_grayScaleInfo;
+        ZDvidInfo dvidInfo = originalStack->getGrayscaleInfo();
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
 
@@ -5147,7 +5305,14 @@ void ZFlyEmProofDoc::toggleGrayscale(neutu::EAxis axis)
         ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
   ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
   if (se) {
-    if (se->activateNext()) {
+    auto slice = se->activateNext();
+    if (slice) {
+      m_currentGrayscaleKey = get_grayscale_key(slice->getDvidTarget());
+      ZDvidSparseStack *spStack = getBodyForSplit();
+      if (spStack) {
+        spStack->setGrayscaleReader(getCurrentBodyGrayscaleReader());
+      }
+
       bufferObjectModified(se);
       processObjectModified();
     }

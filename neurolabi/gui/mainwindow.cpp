@@ -7068,8 +7068,9 @@ void MainWindow::runRoutineCheckFunc()
 {
 #if defined(_FLYEM_)
     if (!GET_FLYEM_CONFIG.hasNormalService()) {
-      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
-      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
+      GET_FLYEM_CONFIG.updateServiceStatus();
+//      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+//      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
     }
 #endif
 }

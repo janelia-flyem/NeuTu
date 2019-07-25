@@ -4738,14 +4738,21 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
 
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
 
-  ZOUT(LTRACE(), 5) << "Dump puncta";
+#ifdef _DEBUG_
+  LKINFO << "Dump puncta";
+#endif
+//  ZOUT(LTRACE(), 5) << "Dump puncta";
   removeBodyObject<ZPunctum>(recycling);
 
-  ZOUT(LTRACE(), 5) << "Dump todo list";
+#ifdef _DEBUG_
+  LKINFO << "Dump todo list";
+#endif
+
   removeBodyObject<ZFlyEmToDoItem>(recycling);
 
-
-  ZOUT(LTRACE(), 5) << "Dump swc";
+#ifdef _DEBUG_
+  LKINFO << "Dump swc";
+#endif
   removeBodyObject<ZSwcTree>(recycling);
 //  QList<ZSwcTree*> treeList = getSwcList();
 //  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
@@ -4755,7 +4762,9 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
 //    dumpGarbage(tree, recycling);
 //  }
 
-  ZOUT(LTRACE(), 5) << "Dump meshes";
+#ifdef _DEBUG_
+  LKINFO << "Dump meshes";
+#endif
   QList<ZMesh*> meshList = ZStackDocProxy::GetNonRoiMeshList(this);
   for (ZMesh *mesh : meshList) {
     removeObject(mesh, false);

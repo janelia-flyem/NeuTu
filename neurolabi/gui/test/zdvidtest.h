@@ -824,7 +824,7 @@ TEST(ZDvidTest, ZDvidTarget)
     ASSERT_TRUE(target.isMock());
     ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456", target.getSourceString());
     ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456::",
-              target.getSourceStringWithGrayscale());
+              target.getGrayscaleSourceString());
 
     target.setFromUrl(
           "http://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
@@ -837,7 +837,7 @@ TEST(ZDvidTest, ZDvidTarget)
     ASSERT_EQ("body_test", target.getBodyLabelName());
     ASSERT_EQ("http:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
     ASSERT_EQ("http:emdata3.int.janelia.org:9100:1234::",
-              target.getSourceStringWithGrayscale());
+              target.getGrayscaleSourceString());
 
     target.setFromUrl(
           "mock://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
@@ -852,7 +852,7 @@ TEST(ZDvidTest, ZDvidTarget)
               target.getSourceString());
     target.setGrayScaleName("grayscale");
     ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234::grayscale",
-              target.getSourceStringWithGrayscale());
+              target.getGrayscaleSourceString());
   }
 }
 

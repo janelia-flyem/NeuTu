@@ -14,6 +14,8 @@ class ZFlyEmNeuronBodyInfo;
 class ZFlyEmBodyAnnotation;
 class ZMesh;
 class ZObject3dScan;
+class ZDvidSparseStack;
+class ZDvidTarget;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -49,6 +51,10 @@ public:
   static ZObject3dScan* ReadRoi(
       const ZDvidReader &reader, const std::vector<std::string> &roiList,
       ZObject3dScan *result);
+
+  static ZDvidSparseStack* ReadDvidSparseStack(
+      const ZDvidTarget &target, ZDvidReader *grayscaleReader,
+      uint64_t bodyId, neutu::EBodyLabelType labelType, bool async);
 
 private:
   static ZMesh* LoadRoi(

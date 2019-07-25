@@ -22,6 +22,8 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidsparsestack.h"
+
 #include "zdvidutil.h"
 //#include "dvid/zdvidsynapse.h"
 //#include "dvid/zdvidroi.h"
@@ -252,6 +254,30 @@ ZObject3dScan* FlyEmDataReader::ReadRoi(
   return result;
 }
 
+ZDvidSparseStack* FlyEmDataReader::ReadDvidSparseStack(
+    const ZDvidTarget &target, ZDvidReader *grayscaleReader,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, bool async)
+{
+  ZDvidSparseStack *spStack = nullptr;
+  if (target.isValid() && target.hasSegmentation()) {
+    spStack = new ZDvidSparseStack;
+    spStack->setLabelType(labelType);
+    spStack->setLabel(bodyId);
+    if (grayscaleReader) {
+      if (grayscaleReader->isReady()) {
+        spStack->setGrayscaleReader(*grayscaleReader); //Need to set before target
+      }
+    }
+    spStack->setDvidTarget(target);
+    if (async) {
+      spStack->loadBodyAsync(bodyId);
+    } else {
+      spStack->loadBody(bodyId);
+    }
+  }
+
+  return spStack;
+}
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

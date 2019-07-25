@@ -11,102 +11,102 @@ TEST(ZResolution, Basic)
 {
   ZResolution resolution;
   resolution.setVoxelSize(1, 2, 3);
-  resolution.setUnit(ZResolution::UNIT_PIXEL);
+  resolution.setUnit(ZResolution::EUnit::UNIT_PIXEL);
   ASSERT_DOUBLE_EQ(1.0, resolution.voxelSizeX());
   ASSERT_DOUBLE_EQ(2.0, resolution.voxelSizeY());
   ASSERT_DOUBLE_EQ(3.0, resolution.voxelSizeZ());
-  ASSERT_EQ(ZResolution::UNIT_PIXEL, resolution.getUnit());
+  ASSERT_EQ(ZResolution::EUnit::UNIT_PIXEL, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_NANOMETER));
 
-  resolution.setUnit(ZResolution::UNIT_MICRON);
-  ASSERT_EQ(ZResolution::UNIT_MICRON, resolution.getUnit());
-
-  ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
-  ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
-  ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
+  resolution.setUnit(ZResolution::EUnit::UNIT_MICRON);
+  ASSERT_EQ(ZResolution::EUnit::UNIT_MICRON, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        1000.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        2000.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        3000.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
-
-  resolution.setUnit(ZResolution::UNIT_NANOMETER);
-  ASSERT_EQ(ZResolution::UNIT_NANOMETER, resolution.getUnit());
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_PIXEL));
+        1000.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_PIXEL));
+        2000.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_PIXEL));
+        3000.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_NANOMETER));
+
+  resolution.setUnit(ZResolution::EUnit::UNIT_NANOMETER);
+  ASSERT_EQ(ZResolution::EUnit::UNIT_NANOMETER, resolution.getUnit());
 
   ASSERT_DOUBLE_EQ(
-        0.001, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_MICRON));
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        0.002, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_MICRON));
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        0.003, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_MICRON));
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_PIXEL));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::UNIT_NANOMETER));
+        0.001, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::UNIT_NANOMETER));
+        0.002, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::UNIT_NANOMETER));
+        0.003, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_MICRON));
+
+  ASSERT_DOUBLE_EQ(
+        1.0, resolution.getVoxelSize(neutu::EAxis::X, ZResolution::EUnit::UNIT_NANOMETER));
+  ASSERT_DOUBLE_EQ(
+        2.0, resolution.getVoxelSize(neutu::EAxis::Y, ZResolution::EUnit::UNIT_NANOMETER));
+  ASSERT_DOUBLE_EQ(
+        3.0, resolution.getVoxelSize(neutu::EAxis::Z, ZResolution::EUnit::UNIT_NANOMETER));
 
 
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getPlaneVoxelSize(neutu::EPlane::XY, ZResolution::UNIT_PIXEL));
+        2.0, resolution.getPlaneVoxelSize(neutu::EPlane::XY, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getPlaneVoxelSize(neutu::EPlane::XZ, ZResolution::UNIT_PIXEL));
+        3.0, resolution.getPlaneVoxelSize(neutu::EPlane::XZ, ZResolution::EUnit::UNIT_PIXEL));
   ASSERT_DOUBLE_EQ(
-        6.0, resolution.getPlaneVoxelSize(neutu::EPlane::YZ, ZResolution::UNIT_PIXEL));
+        6.0, resolution.getPlaneVoxelSize(neutu::EPlane::YZ, ZResolution::EUnit::UNIT_PIXEL));
   /*
   ASSERT_DOUBLE_EQ(
-        0.001, resolution.getVoxelSize(neutube::X_AXIS, ZResolution::UNIT_MICRON));
+        0.001, resolution.getVoxelSize(neutube::X_AXIS, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        0.002, resolution.getVoxelSize(neutube::Y_AXIS, ZResolution::UNIT_MICRON));
+        0.002, resolution.getVoxelSize(neutube::Y_AXIS, ZResolution::EUnit::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(
-        0.003, resolution.getVoxelSize(neutube::Z_AXIS, ZResolution::UNIT_MICRON));
+        0.003, resolution.getVoxelSize(neutube::Z_AXIS, ZResolution::EUnit::UNIT_MICRON));
 
   ASSERT_DOUBLE_EQ(
-        1.0, resolution.getVoxelSize(neutube::X_AXIS, ZResolution::UNIT_NANOMETER));
+        1.0, resolution.getVoxelSize(neutube::X_AXIS, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        2.0, resolution.getVoxelSize(neutube::Y_AXIS, ZResolution::UNIT_NANOMETER));
+        2.0, resolution.getVoxelSize(neutube::Y_AXIS, ZResolution::EUnit::UNIT_NANOMETER));
   ASSERT_DOUBLE_EQ(
-        3.0, resolution.getVoxelSize(neutube::Z_AXIS, ZResolution::UNIT_NANOMETER));
+        3.0, resolution.getVoxelSize(neutube::Z_AXIS, ZResolution::EUnit::UNIT_NANOMETER));
         */
 }
 

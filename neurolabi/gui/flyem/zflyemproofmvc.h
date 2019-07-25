@@ -96,7 +96,7 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   const ZDvidInfo& getDvidInfo() const;
-  const ZDvidInfo& getGrayScaleInfo() const;
+//  const ZDvidInfo& getGrayScaleInfo() const;
 
 //  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();

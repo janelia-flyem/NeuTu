@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QMap>
+#include <unordered_map>
 
 #include "mvc/zstackdoc.h"
 #include "zstackdoccommand.h"
@@ -63,12 +64,17 @@ public:
 
 //  virtual void updateTileData();
 
-  const ZDvidTarget& getDvidTarget() const;
+  ZDvidTarget getDvidTarget() const;
   const ZDvidEnv& getDvidEnv() const;
 
+  /*
   const ZDvidInfo& getGrayScaleInfo() const {
     return m_grayScaleInfo;
   }
+  */
+
+  const ZDvidInfo& getMainGrayscaleInfo() const;
+  const ZDvidInfo& getCurrentGrayscaleInfo() const;
 
   const ZDvidInfo& getLabelInfo() const {
     return m_labelInfo;
@@ -495,7 +501,11 @@ public:
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
 
+  //Obsolete. Use getCurrentGrayscaleReader() instead
   ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
+
+  ZDvidReader* getCurrentGrayscaleReader() const;
+  ZDvidReader* getCurrentBodyGrayscaleReader();
 
   bool test();
 
@@ -668,7 +678,14 @@ protected:
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
+  void setGrayscaleReader(
+      std::unordered_map<std::string, ZDvidReader*> &readerMap,
+      const std::string &key, ZDvidReader *reader, bool updatingMainReader);
   void prepareGrayscaleReader();
+  void prepareBodyGrayscaleReader();
+  void prepareGrayscaleReader(
+      std::unordered_map<std::string, ZDvidReader*> &readerMap,
+      bool updatingMainReader);
 
   void makeKeyProcessor() override;
 
@@ -748,9 +765,12 @@ protected:
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
 
-  QMap<std::string, ZDvidReader*> m_grayscaleReaderMap;
+  std::unordered_map<std::string, ZDvidReader*> m_grayscaleReaderMap;
+  std::unordered_map<std::string, ZDvidInfo> m_dvidInfoMap;
+  ZDvidInfo m_emptyInfo;
+  std::string m_currentGrayscaleKey;
 
-  ZDvidReader *m_mainGrayscaleReader;
+  ZDvidReader *m_mainGrayscaleReader = nullptr;
 
   ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
@@ -762,11 +782,17 @@ protected:
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 
+  //Body grayscale reader (should be used exclusively for body split)
+  //It's added for getCurrentBodyGrayscaleReader() only, do NOT use the
+  //variable directly anywhere else for thread safety.
+  std::unordered_map<std::string, ZDvidReader*> m_bodyGrayscaleReaderMap;
+  mutable QMutex m_bodyGrayscaleReaderMapMutex;
+
   mutable QMutex m_synapseReaderMutex;
   mutable QMutex m_todoReaderMutex;
 
   //Dvid info
-  ZDvidInfo m_grayScaleInfo;
+//  ZDvidInfo m_grayScaleInfo;
   ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
   ZJsonObject m_infoJson;

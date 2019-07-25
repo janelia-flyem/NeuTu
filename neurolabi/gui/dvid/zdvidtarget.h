@@ -116,7 +116,7 @@ public:
   std::string getSourceString(
       bool withHttpPrefix = true, int uuidBrief = 0) const;
 
-  std::string getSourceStringWithGrayscale() const;
+  std::string getGrayscaleSourceString() const;
 
   /*!
    * \brief getBodyPath

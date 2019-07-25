@@ -181,7 +181,7 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 TEST(ZDvidAnnotation, Radius)
 {
   ZResolution resolution;
-  resolution.setUnit(ZResolution::UNIT_PIXEL);
+  resolution.setUnit(ZResolution::EUnit::UNIT_PIXEL);
   resolution.setVoxelSize(1.0, 1.0, 1.0);
   ASSERT_DOUBLE_EQ(
         ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::EKind::KIND_POST_SYN),

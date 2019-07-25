@@ -1836,10 +1836,12 @@ void ZFlyEmProofMvc::enableSynapseFetcher()
   }
 }
 
+/*
 const ZDvidInfo& ZFlyEmProofMvc::getGrayScaleInfo() const
 {
   return getCompleteDocument()->getGrayScaleInfo();
 }
+*/
 
 const ZDvidInfo& ZFlyEmProofMvc::getDvidInfo() const
 {
@@ -3670,7 +3672,12 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     uint64_t bodyId, ZDvidReader &reader)
 {
   KINFO << QString("Reading sparse stack async: %1").arg(bodyId);
-  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, neutu::EBodyLabelType::BODY);
+  ZDvidSparseStack *body = FlyEmDataReader::ReadDvidSparseStack(
+        reader.getDvidTarget(),
+        getCompleteDocument()->getCurrentBodyGrayscaleReader(),
+        bodyId, neutu::EBodyLabelType::BODY, true);
+//  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(
+//        bodyId, neutu::EBodyLabelType::BODY);
 
   body->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);

@@ -433,7 +433,9 @@ TStackObjectList ZStackObjectGroup::takeSameClass(
 
 TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
 {
-  ZOUT(LTRACE(), 6) << "Taking object by type";
+#ifdef _DEBUG_
+  LKINFO << "Taking object by type";
+#endif
 
   TStackObjectList objSet = getObjectListUnsync(type);
   if (!objSet.empty()) {
@@ -446,6 +448,13 @@ TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
   }
 
   getObjectListUnsync(type).clear();
+
+#ifdef _DEBUG_
+  LKINFO << std::string(__FUNCTION__) + " objectgroup selelection clear: " +
+            ZStackObject::GetTypeName(type);
+#endif
+  getSelectedSetUnsync(type).clear();
+  getSelector()->removeObjectByType(type);
 
   return objSet;
 }
@@ -1134,6 +1143,7 @@ TStackObjectList ZStackObjectGroup::takeSelectedUnsync(ZStackObject::EType type)
     LKINFO << "objectgroup selection cleared";
 #endif
   getSelectedSetUnsync(type).clear();
+  getSelector()->removeObjectByType(type);
 
   return objSet;
 }

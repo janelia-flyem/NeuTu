@@ -52,6 +52,18 @@ std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
 template<typename T>
 std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
 
+template <typename T, typename UninaryPred>
+void setremoveif(std::set<T> &s, UninaryPred pred)
+{
+  for (auto iter = s.begin(); iter != s.end();) {
+    if (pred(*iter)) {
+      s.erase(iter++);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 // generic solution
 template <class T>
 int numDigits(T number)
@@ -85,6 +97,17 @@ size_t Length(const wchar_t (&)[N])
     return N - 1;
 }
 
+template<template<class...> class Container, typename KeyType, typename ValueType>
+ValueType GetValue(const Container<KeyType, ValueType> &m,
+                   const KeyType &key, const ValueType &defaultValue)
+{
+  typename Container<KeyType, ValueType>::const_iterator iter = m.find(key);
+  if (iter != m.end()) {
+    return iter->second;
+  }
+
+  return defaultValue;
+}
 
 }
 

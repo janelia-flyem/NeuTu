@@ -92,9 +92,9 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) con
   return source;
 }
 
-std::string ZDvidTarget::getSourceStringWithGrayscale() const
+std::string ZDvidTarget::getGrayscaleSourceString() const
 {
-  std::string source = m_node.getSourceString(true, 4);
+  std::string source = getGrayScaleSource().getSourceString(true, 4);
 
   source += "::" + getGrayScaleName();
 

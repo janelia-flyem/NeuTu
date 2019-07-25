@@ -83,7 +83,8 @@ HEADERS += \
     $$PWD/flyembodyselectionmanagertest.h \
     $$PWD/zinteractivecontexttest.h \
     $$PWD/zdvidenvtest.h \
-    $$PWD/zdvidnodetest.h
+    $$PWD/zdvidnodetest.h \
+    $$PWD/zdvidsparsestacktest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

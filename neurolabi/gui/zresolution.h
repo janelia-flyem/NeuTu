@@ -31,7 +31,7 @@ public:
     m_voxelSize[2] = z;
   }
 
-  enum EUnit {
+  enum class EUnit {
     UNIT_PIXEL, UNIT_MICRON, UNIT_NANOMETER
   };
 

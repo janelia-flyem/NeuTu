@@ -4,13 +4,15 @@
 #include "ztestheader.h"
 
 #include "neutubeconfig.h"
+#include "zjsonobject.h"
 
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemarbdoc.h"
 
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
-#include "zjsonobject.h"
+#include "dvid/zdvidsparsestack.h"
 
 #ifdef _USE_GTEST_
 
@@ -98,7 +100,92 @@ TEST(ZFlyEmProofDoc, grayscale)
 
   ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
             doc.getCurrentGrayscaleReader(neutu::EAxis::Z)->getDvidTarget().
-            getSourceStringWithGrayscale());
+            getGrayscaleSourceString());
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getCurrentGrayscaleReader()->getDvidTarget().
+            getGrayscaleSourceString());
+
+  ZDvidInfo info = doc.getMainGrayscaleInfo();
+  ASSERT_EQ("nm", info.getVoxelResolution().getUnitName());
+  ASSERT_EQ(8, info.getVoxelResolution().getVoxelSize(
+              neutu::EAxis::X, ZResolution::EUnit::UNIT_NANOMETER));
+  ASSERT_EQ(32, info.getBlockSize().getX());
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getDvidTarget().getGrayscaleSourceString());
+  ASSERT_EQ("grayscale",
+            doc.getDvidTarget().getGrayScaleName());
+
+//  target.print();
+
+  doc.toggleGrayscale(neutu::EAxis::Z);
+
+  ASSERT_EQ("http:127.0.0.1:1600:970f::grayscale",
+            doc.getDvidTarget().getGrayscaleSourceString());
+  ASSERT_EQ("grayscale",
+            doc.getDvidTarget().getGrayScaleName());
+
+  ASSERT_EQ("http:127.0.0.1:1600:970f::grayscale",
+            doc.getCurrentGrayscaleReader(neutu::EAxis::Z)->getDvidTarget().
+            getGrayscaleSourceString());
+
+  ASSERT_EQ("http:127.0.0.1:1600:970f::grayscale",
+            doc.getCurrentGrayscaleReader()->getDvidTarget().
+            getGrayscaleSourceString());
+
+  doc.toggleGrayscale(neutu::EAxis::Z);
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getCurrentGrayscaleReader(neutu::EAxis::Z)->getDvidTarget().
+            getGrayscaleSourceString());
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getCurrentGrayscaleReader()->getDvidTarget().
+            getGrayscaleSourceString());
+
+}
+
+TEST(ZFlyEmProofDoc, SparseStack)
+{
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting3.json");
+  ZDvidEnv env;
+  env.loadJsonObject(obj);
+
+  ZFlyEmProofDoc doc;
+  doc.setDvid(env);
+
+
+  {
+    ZDvidReader reader;
+    reader.open(doc.getDvidTarget());
+
+    ZDvidSparseStack *body = reader.readDvidSparseStack(
+          944729222, neutu::EBodyLabelType::BODY);
+    ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+              body->getDvidTarget().getGrayscaleSourceString());
+  }
+
+   doc.toggleGrayscale(neutu::EAxis::Z);
+   {
+     ZDvidReader reader;
+     reader.open(doc.getDvidTarget());
+
+     ZDvidSparseStack *body = reader.readDvidSparseStack(
+           944729222, neutu::EBodyLabelType::BODY);
+     ASSERT_EQ("http:127.0.0.1:1600:970f::grayscale",
+               body->getDvidTarget().getGrayscaleSourceString());
+   }
+
+   doc.toggleGrayscale(neutu::EAxis::Z);
+   {
+     ZDvidReader reader;
+     reader.open(doc.getDvidTarget());
+     ZDvidSparseStack *body = reader.readDvidSparseStack(
+           944729222, neutu::EBodyLabelType::BODY);
+     ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+               body->getDvidTarget().getGrayscaleSourceString());
+   }
 }
 
 TEST(ZFlyEmOrthoDoc, Basic)
@@ -117,6 +204,27 @@ TEST(ZFlyEmOrthoDoc, Basic)
 
   ASSERT_EQ("http:127.0.0.1:1600:4280", doc.getDvidTarget().getSourceString());
   ASSERT_EQ(nullptr, doc.getCurrentGrayscaleReader(neutu::EAxis::Z));
+}
+
+TEST(ZFlyEmArbDoc, Grayscale)
+{
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting4.json");
+  ZDvidEnv env;
+  env.loadJsonObject(obj);
+
+  ZFlyEmArbDoc doc;
+  doc.setDvid(env);
+
+  ASSERT_TRUE(doc.getDvidTarget().hasGrayScaleData());
+  ASSERT_EQ(2, int(doc.getDvidEnv().getTargetList(
+                     ZDvidEnv::ERole::GRAYSCALE).size()));
+
+  ASSERT_EQ("http:127.0.0.1:1600:4280:segmentation", doc.getDvidTarget().getSourceString());
+//  ASSERT_EQ(nullptr, doc.getCurrentGrayscaleReader(neutu::EAxis::Z));
+  ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+            doc.getCurrentGrayscaleReader(neutu::EAxis::ARB)->getDvidTarget().
+            getGrayscaleSourceString());
 }
 
 #endif

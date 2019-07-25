@@ -1648,6 +1648,9 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
       blockCoords[2] = blockIndex.getZ();
 #ifdef _DEBUG_
         STD_COUT << "starting reading: zoom = " << zoom << std::endl;
+#endif
+
+#if 0
         STD_COUT << getDvidTarget().getGrayScaleName() << std::endl;
         STD_COUT << blockCoords[0] << " " << blockCoords[1] << " " << blockCoords[2] << std::endl;
 
@@ -1655,13 +1658,13 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 #endif
       libdvid::GrayscaleBlocks blocks = m_service->get_grayblocks(
             getDvidTarget().getGrayScaleName(zoom), blockCoords, blockNumber);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         STD_COUT << "one read done" << std::endl;
 #endif
 
       ZIntCuboid currentBox = dvidInfo.getBlockBox(blockIndex);
       for (int i = 0; i < blockNumber; ++i) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         STD_COUT << "block:" << i << "/" << blockNumber << std::endl;
 #endif
         ZStack *stack = new ZStack(GREY, currentBox, 1);

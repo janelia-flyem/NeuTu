@@ -46,7 +46,7 @@ public:
    *
    * \return true iff the active slice is changed.
    */
-  bool activateNext();
+  std::shared_ptr<ZDvidGraySlice> activateNext();
 
 private:
   size_t m_activeIndex = 0;

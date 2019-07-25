@@ -245,7 +245,8 @@ public:
   ZDvidSparseStack* readDvidSparseStack(
       uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
+  ZDvidSparseStack* readDvidSparseStack(
+      uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
       uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
@@ -645,8 +646,8 @@ public:
 //  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
-  ZDvidReader(const ZDvidReader&);
-  ZDvidReader& operator=(const ZDvidReader&);
+//  ZDvidReader(const ZDvidReader&);
+//  ZDvidReader& operator=(const ZDvidReader&);
 
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -715,9 +716,9 @@ protected:
   mutable ZDvidBufferReader m_bufferReader;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
-  ZSharedPointer<libdvid::DVIDConnection> m_connection;
-  QMutex m_serviceMutex;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDConnection> m_connection;
+//  std::shared_ptr<QMutex> m_serviceMutex;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)
@@ -728,6 +729,8 @@ protected:
 #endif
 
 };
+
+using ZDvidReaderPtr = std::shared_ptr<ZDvidReader*>;
 
 template <typename InputIterator>
 ZJsonArray ZDvidReader::readSynapseJson(

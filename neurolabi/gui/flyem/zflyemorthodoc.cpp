@@ -72,7 +72,10 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(neutu::EAxis axis)
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
   se->setSource(ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(axis));
-  se->setResolution(m_grayScaleInfo.getVoxelResolution());
+  ZDvidInfo info = getMainGrayscaleInfo();
+  if (info.isValid()) {
+    se->setResolution(getMainGrayscaleInfo().getVoxelResolution());
+  }
   se->setReady(true);
   addObject(se);
 }
@@ -106,7 +109,7 @@ ZPoint ZFlyEmOrthoDoc::getCrossHairCenter()
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
-  ZDvidReader *reader = getCurrentGrayscaleReader(neutu::EAxis::Z);
+  ZDvidReader *reader = getCurrentGrayscaleReader();
   if (reader) {
     if (reader->isReady()) {
       ZIntCuboid box;

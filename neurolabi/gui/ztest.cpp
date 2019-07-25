@@ -30229,6 +30229,18 @@ void ZTest::test(MainWindow *host)
            << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
 #endif
 
+#if 1
+  std::set<int> s({1, 2, 3, 4, 5});
+  neutu::setremoveif(s, [](int x)->bool {
+    return (x%2 == 0);
+  });
+
+  std::for_each(s.begin(), s.end(), [](int x) {
+    std::cout << x << " ";
+  });
+  std::cout << std::endl;
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

@@ -17,7 +17,7 @@ ZDvidGraySliceEnsemble::~ZDvidGraySliceEnsemble()
 
 }
 
-bool ZDvidGraySliceEnsemble::activateNext()
+std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::activateNext()
 {
   if (m_sliceList.size() > 1) {
     std::shared_ptr<ZDvidGraySlice> currentSlice =
@@ -33,10 +33,10 @@ bool ZDvidGraySliceEnsemble::activateNext()
 
     newSlice->update(currentSlice->getViewParam());
 
-    return true;
+    return newSlice;
   }
 
-  return false;
+  return std::shared_ptr<ZDvidGraySlice>();
 }
 
 std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::getActiveSlice() const
