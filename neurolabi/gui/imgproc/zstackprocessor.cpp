@@ -92,11 +92,38 @@ void ZStackProcessor::shortestPathFlow(ZStack *stack)
   Kill_Stack(tmpdist);
 }
 
-void ZStackProcessor::mexihatFilter(ZStack *stack, double sigma)
+void ZStackProcessor::MexihatFilter(ZStack *stack, double sigma)
 {
   Stack *stackData = stack->c_stack();
 
   Filter_3d *filter = Mexihat_Filter_3d(sigma);
+
+  Stack *filtered = Filter_Stack(stackData, filter);
+
+  Kill_FMatrix(filter);
+
+  stack->load(filtered, true);
+}
+
+void ZStackProcessor::GaussianSmooth(ZStack *stack, double sigma)
+{
+  Stack *stackData = stack->c_stack();
+
+  Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
+
+  Stack *filtered = Filter_Stack(stackData, filter);
+
+  Kill_FMatrix(filter);
+
+  stack->load(filtered, true);
+}
+
+void ZStackProcessor::GaussianSmooth(
+    ZStack *stack, double sx, double sy, double sz)
+{
+  Stack *stackData = stack->c_stack();
+
+  Filter_3d *filter = Gaussian_Filter_3d(sx, sy, sz);
 
   Stack *filtered = Filter_Stack(stackData, filter);
 

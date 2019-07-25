@@ -683,6 +683,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SAVE_ALL_MESH:
     action = new QAction("Save Meshes As", parent);
     break;
+  case ACTION_VIEW_SCREENSHOT:
+    action = new QAction("Take Screenshot", parent);
+    action->setIcon(QIcon(":/images/screenshot_toolbar.png"));
+    break;
   default:
     break;
   }

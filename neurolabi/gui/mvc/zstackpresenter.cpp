@@ -3849,7 +3849,6 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyDocument()->executeRemoveSelectedObjectCommand();
     }
     break;
-
   default:
     processed = false;
     break;

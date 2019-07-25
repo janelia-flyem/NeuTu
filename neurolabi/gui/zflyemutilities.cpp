@@ -38,6 +38,7 @@ std::set<uint64_t> flyem::LoadBodySet(const std::string &input)
   return bodySet;
 }
 
+#if 0
 ZIntPoint flyem::FindClosestBg(const ZStack *stack, int x, int y, int z)
 {
   if (stack->getIntValue(x, y, z) == 0) {
@@ -82,6 +83,7 @@ ZIntPoint flyem::FindClosestBg(const ZStack *stack, int x, int y, int z)
 
   return pt;
 }
+#endif
 
 namespace {
 static const char* mutation_key = "mutation id";

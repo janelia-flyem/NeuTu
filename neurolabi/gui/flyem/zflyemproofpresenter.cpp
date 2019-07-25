@@ -181,6 +181,10 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, &QAction::triggered, this,
               &ZFlyEmProofPresenter::toggleSupervoxelView);
       break;
+    case ZActionFactory::ACTION_VIEW_SCREENSHOT:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::takeScreenshot);
+      break;
     case ZActionFactory::ACTION_RUN_TIP_DETECTION:
       connect(action, SIGNAL(triggered()), this, SLOT(runTipDetection()));
       break;
@@ -335,12 +339,16 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_T:
-
       if (interactiveContext().isFreeMode()) {
         if (buddyDocument()->getTag() ==  neutu::Document::ETag::FLYEM_PROOFREAD) {
           if (event->modifiers() == Qt::NoModifier) {
             emit goingToBodyTop();
             processed = true;
+          } else if (event->modifiers() == Qt::ShiftModifier) {
+            ZStackOperator op;
+            op.setOperation(ZStackOperator::OP_GRAYSCALE_TOGGLE);
+            processed = true;
+            process(op);
           }
         }
       } else {
@@ -1010,6 +1018,11 @@ void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
   getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
 }
 
+void ZFlyEmProofPresenter::takeScreenshot()
+{
+  buddyView()->takeScreenshot();
+}
+
 bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
@@ -1266,6 +1279,10 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_DVID_SYNAPSE_START_PSD:
     tryAddPostSynapseMode();
     break;
+  case ZStackOperator::OP_GRAYSCALE_TOGGLE:
+    getCompleteDocument()->toggleGrayscale(
+          buddyView()->getSliceAxis());
+    break;
   default:
     processed = false;
     break;
@@ -1296,7 +1313,8 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
         ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
     QString path = ZNeuroglancerPathFactory::MakePath(
-          target, ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
+          getCompleteDocument()->getDvidEnv(),
+          ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
           pt, bookmarkList);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());

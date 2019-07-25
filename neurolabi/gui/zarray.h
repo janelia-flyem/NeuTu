@@ -87,6 +87,7 @@ public:
 
   void setStartCoordinate(int index, int x);
   void setStartCoordinate(const std::vector<int> &coord);
+  void setStartCoordinate(int x, int y, int z);
 
   ZArray& operator= (const ZArray &array);
 

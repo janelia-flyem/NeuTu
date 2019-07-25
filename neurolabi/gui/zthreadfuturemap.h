@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QString>
 #include <QFuture>
+#include <QtConcurrentRun>
 
 class ZThreadFutureMap : public QHash<QString, QFuture<void> >
 {
@@ -29,6 +30,30 @@ public:
 
   void waitForFinished();
 
+  template<typename T, typename Class>
+  void resurrect(const QString &threadId, const Class *object, T (Class::*fn)());
+
+  template<typename T, typename Class>
+  void resurrect(const QString &threadId, const Class *object, T (Class::*fn)() const);
+
 };
+
+template<typename T, typename Class>
+void ZThreadFutureMap::resurrect(
+    const QString &threadId, const Class *object, T (Class::*fn)())
+{
+  if (!isAlive(threadId)) {
+    QtConcurrent::run(object, fn);
+  }
+}
+
+template<typename T, typename Class>
+void ZThreadFutureMap::resurrect(
+    const QString &threadId, const Class *object, T (Class::*fn)() const)
+{
+  if (!isAlive(threadId)) {
+    QtConcurrent::run(object, fn);
+  }
+}
 
 #endif // QTHREADFUTUREMAP_H

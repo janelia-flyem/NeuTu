@@ -8279,6 +8279,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::EType::DVID_GRAY_SLICE:
         player = new ZDvidGraySlicePlayer(obj);
         break;
+      case ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE:
+        player = new ZDvidGraySliceEnsemblePlayer(obj);
+        break;
       case ZStackObject::EType::DVID_SPARSEVOL_SLICE:
         player = new ZDvidSparsevolSlicePlayer(obj);
         break;
@@ -9773,7 +9776,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
           obj->setSource(
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   obj->getLabel()));
-          obj->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+          obj->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
           obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);

@@ -490,7 +490,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
     // later inspection reveals m_dvidTarget could be a local
     //  variable; don't want to mess with it now while I'm
     //  fixing something else, though
-    m_dvidTarget.clear();
+    m_dvidTarget = ZDvidTarget();
 
     m_dvidTarget.setServer(ui->serverBox->text().toStdString());
     m_dvidTarget.setUuid(ui->UUIDBox->text().toStdString());

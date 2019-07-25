@@ -144,11 +144,11 @@ double ZDvidAnnotation::GetDefaultRadius(
 {
   double r = GetDefaultRadius(kind);
 
-  if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
+  if (resolution.getUnit() == ZResolution::EUnit::UNIT_PIXEL) {
     r *= sqrt(resolution.getPlaneVoxelSize(neutu::EPlane::XY));
   } else {
     r *= sqrt(resolution.getPlaneVoxelSize(
-                neutu::EPlane::XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+                neutu::EPlane::XY, ZResolution::EUnit::UNIT_NANOMETER)) / 8.0;
   }
 
   return r;

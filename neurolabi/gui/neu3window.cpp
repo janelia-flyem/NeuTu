@@ -213,7 +213,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     LDEBUG() << "Init grayscale widget";
-    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidEnv());
 //    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
@@ -337,8 +337,8 @@ bool Neu3Window::loadDvidTarget()
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
-    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
-                      dlg->getDvidTarget());
+    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
+                      ZDvidEnv(dlg->getDvidTarget()));
 //    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
 
     m_dataContainer->hide();
@@ -1272,9 +1272,16 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
+  ZDvidEnv env = m_dataContainer->getDvidEnv();
+  env.setReadOnly(true);
+
+  window->getMainMvc()->setDvid(env);
+
+  /*
   ZDvidTarget target = m_dataContainer->getDvidTarget();
   target.setReadOnly(true);
   window->getMainMvc()->setDvidTarget(target);
+  */
 //  window->showMaximized();
 }
 

@@ -211,6 +211,12 @@ std::vector<std::pair<int, int>> IntersectSegment(
 void ZStackBlockSource::cacheStack(
     const ZObject3dScan &obj, const ZIntCuboid &range, int zoom)
 {
+#ifdef _DEBUG_
+  std::cout << "Caching stack range: " << range.toString() << std::endl;
+  std::cout << "Caching object:" << std::endl;
+  obj.print();
+#endif
+
   if (range.isEmpty()) {
     cacheStack(obj, zoom);
   } else {

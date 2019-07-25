@@ -122,7 +122,7 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 //      circle->set(bookmark.getLocation(), 5);
     circle->setColor(255, 0, 0);
     circle->setVisible(isVisible);
-    circle->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+    circle->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
     punctumArray.push_back(circle);
   }
 

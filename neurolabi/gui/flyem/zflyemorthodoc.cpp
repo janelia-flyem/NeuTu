@@ -72,7 +72,10 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(neutu::EAxis axis)
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
   se->setSource(ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(axis));
-  se->setResolution(m_grayScaleInfo.getVoxelResolution());
+  ZDvidInfo info = getMainGrayscaleInfo();
+  if (info.isValid()) {
+    se->setResolution(getMainGrayscaleInfo().getVoxelResolution());
+  }
   se->setReady(true);
   addObject(se);
 }
@@ -106,46 +109,49 @@ ZPoint ZFlyEmOrthoDoc::getCrossHairCenter()
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
-  if (m_grayscaleReader.isReady()) {
-    ZIntCuboid box;
-    box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
-    box.setSize(m_width, m_height, m_depth);
-//    m_dvidReader.readGrayScale(box);
-    ZStack *stack = m_grayscaleReader.readGrayScale(box);
-    loadStack(stack);
+  ZDvidReader *reader = getCurrentGrayscaleReader();
+  if (reader) {
+    if (reader->isReady()) {
+      ZIntCuboid box;
+      box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
+      box.setSize(m_width, m_height, m_depth);
+      //    m_dvidReader.readGrayScale(box);
+      ZStack *stack = reader->readGrayScale(box);
+      loadStack(stack);
 
-    ZDvidUrl dvidUrl(getDvidTarget());
-    QElapsedTimer timer;
-    timer.start();
-    ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));
-    LINFO() << "Synapse reading time: " << timer.elapsed();
+      ZDvidUrl dvidUrl(getDvidTarget());
+      QElapsedTimer timer;
+      timer.start();
+      ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));
+      LINFO() << "Synapse reading time: " << timer.elapsed();
 
-    QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
-    for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
-         iter != seList.end(); ++iter) {
-      ZDvidSynapseEnsemble *se = *iter;
-      se->setRange(box);
-//      se->setReady(true);
-    }
+      QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+      for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+           iter != seList.end(); ++iter) {
+        ZDvidSynapseEnsemble *se = *iter;
+        se->setRange(box);
+        //      se->setReady(true);
+      }
 
-    for (size_t i = 0; i < obj.size(); ++i) {
-      ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-      if (synapseJson.hasKey("Pos")) {
-        ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
-        for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
-             iter != seList.end(); ++iter) {
-          ZDvidSynapseEnsemble *se = *iter;
-          se->addSynapseUnsync(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
+      for (size_t i = 0; i < obj.size(); ++i) {
+        ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        if (synapseJson.hasKey("Pos")) {
+          ZDvidSynapse synapse;
+          synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
+          for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+               iter != seList.end(); ++iter) {
+            ZDvidSynapseEnsemble *se = *iter;
+            se->addSynapseUnsync(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
+          }
         }
       }
-    }
 
-    QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
-    for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
-         iter != todoList.end(); ++iter) {
-      ZFlyEmToDoList *obj = *iter;
-      obj->setRange(box);
+      QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+      for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+           iter != todoList.end(); ++iter) {
+        ZFlyEmToDoList *obj = *iter;
+        obj->setRange(box);
+      }
     }
   }
 }
@@ -168,9 +174,9 @@ ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
   return NULL;
 }
 
-void ZFlyEmOrthoDoc::prepareDvidData()
+void ZFlyEmOrthoDoc::prepareDvidData(const ZDvidEnv &/*env*/)
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     initSynapseEnsemble();
     initTodoList();
     addDvidLabelSlice(neutu::EAxis::X, false);

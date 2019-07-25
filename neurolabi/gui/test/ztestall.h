@@ -77,5 +77,8 @@
 #include "test/zstackobjecttest.h"
 #include "test/z3dswcfiltertest.h"
 #include "test/flyembodyselectionmanagertest.h"
+#include "test/zdvidenvtest.h"
+#include "test/zdvidnodetest.h"
+#include "test/zdvidsparsestacktest.h"
 
 #endif // ZTESTALL_H

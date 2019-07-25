@@ -252,6 +252,28 @@ std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource(
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(
+    neutu::EAxis axis)
+{
+  std::string source =  "#.DVIDGraySliceEnsemble";
+
+  switch (axis) {
+  case neutu::EAxis::X:
+    source += ".X";
+    break;
+  case neutu::EAxis::Y:
+    source += ".Y";
+    break;
+  case neutu::EAxis::ARB:
+    source += ".A";
+    break;
+  default:
+    break;
+  }
+
+  return source;
+}
+
 std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
 {
   std::string source = "#.FlyEMSplitObject";

@@ -52,26 +52,26 @@ ZResolution::EUnit ZResolution::getUnit() const
 {
   switch (m_unit) {
   case 'u':
-    return UNIT_MICRON;
+    return EUnit::UNIT_MICRON;
   case 'n':
-    return UNIT_NANOMETER;
+    return EUnit::UNIT_NANOMETER;
   case 'p':
-    return UNIT_PIXEL;
+    return EUnit::UNIT_PIXEL;
   }
 
-  return UNIT_PIXEL;
+  return EUnit::UNIT_PIXEL;
 }
 
 void ZResolution::setUnit(EUnit unit)
 {
   switch (unit) {
-  case UNIT_PIXEL:
+  case EUnit::UNIT_PIXEL:
     m_unit = 'p';
     break;
-  case UNIT_MICRON:
+  case EUnit::UNIT_MICRON:
     m_unit = 'u';
     break;
-  case UNIT_NANOMETER:
+  case EUnit::UNIT_NANOMETER:
     m_unit = 'n';
     break;
   }
@@ -121,17 +121,17 @@ double ZResolution::getUnitVoxelSize(EUnit unit) const
   EUnit currentUnit = getUnit();
   if (currentUnit != unit) {
     switch (unit) {
-    case UNIT_MICRON:
-      if (currentUnit == UNIT_NANOMETER) {
+    case EUnit::UNIT_MICRON:
+      if (currentUnit == EUnit::UNIT_NANOMETER) {
         v /= 1000.0;
       }
       break;
-    case UNIT_NANOMETER:
-      if (currentUnit == UNIT_MICRON) {
+    case EUnit::UNIT_NANOMETER:
+      if (currentUnit == EUnit::UNIT_MICRON) {
         v *= 1000.0;
       }
       break;
-    case UNIT_PIXEL:
+    case EUnit::UNIT_PIXEL:
       break;
     }
   }

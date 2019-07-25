@@ -53,6 +53,8 @@ class ZStTransform;
 class ZScrollSliceStrategy;
 class ZStackViewParam;
 class ZStackObjectPainter;
+class ZStackViewRecorder;
+class ZStackViewRecordDialog;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -235,6 +237,7 @@ public:
    * \brief Save the current scene in an image file.
    */
   void takeScreenshot(const QString &filename);
+  void takeScreenshot();
 
   void paintStackBuffer();
   void paintMaskBuffer();
@@ -307,6 +310,9 @@ public:
   void setDefaultViewPort(const QRect &rect) {
     m_defaultViewPort = rect;
   }
+
+  ZStackViewRecorder* getRecorder();
+  void configureRecorder();
 
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
@@ -623,6 +629,8 @@ private:
     ZStackView *m_view = nullptr;
   };
 
+  void tryAutoRecord();
+
 protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
@@ -696,6 +704,9 @@ protected:
       neutu::mvc::ViewInfoFlag::IMAGE_VALUE;
 
   ZIntCuboid m_currentStackRange;
+
+  std::shared_ptr<ZStackViewRecorder> m_recorder;
+  ZStackViewRecordDialog *m_recordDlg = nullptr;
 };
 
 #endif

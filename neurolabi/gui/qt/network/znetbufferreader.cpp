@@ -14,8 +14,6 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 
 void ZNetBufferReader::_init()
 {
-//  m_networkManager = new QNetworkAccessManager(this);
-
   m_eventLoop = new QEventLoop(this);
   connect(this, &ZNetBufferReader::readingCanceled,
           this, &ZNetBufferReader::cancelReading);

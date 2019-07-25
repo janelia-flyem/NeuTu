@@ -13,14 +13,9 @@
 #include <vector>
 #include <tuple>
 
-//#include "flyem/zflyem.h"
-#include "zclosedcurve.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
-//#include "zdvidsynapse.h"
 #include "zdvidbufferreader.h"
-//#include "zdvidurl.h"
-#include "znetbufferreader.h"
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
@@ -48,6 +43,7 @@ class ZStack;
 class ZAffineRect;
 class ZDvidUrl;
 class ZDvidSynapse;
+class ZClosedCurve;
 
 struct archive;
 
@@ -249,7 +245,8 @@ public:
   ZDvidSparseStack* readDvidSparseStack(
       uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
+  ZDvidSparseStack* readDvidSparseStack(
+      uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
       uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
@@ -545,8 +542,8 @@ public:
   ZJsonArray readSynapseJson(
       const InputIterator &first, const InputIterator &last);
 
-  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
-  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
+//  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
+//  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
   ZJsonObject readToDoItemJson(int x, int y, int z);
   ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
@@ -649,8 +646,8 @@ public:
 //  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
-  ZDvidReader(const ZDvidReader&);
-  ZDvidReader& operator=(const ZDvidReader&);
+//  ZDvidReader(const ZDvidReader&);
+//  ZDvidReader& operator=(const ZDvidReader&);
 
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -715,13 +712,13 @@ protected:
   mutable int m_statusCode = 0;
   mutable int64_t m_readingTime = 0;
 
-  mutable ZNetBufferReader m_netBufferReader;
+//  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
-  ZSharedPointer<libdvid::DVIDConnection> m_connection;
-  QMutex m_serviceMutex;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDConnection> m_connection;
+//  std::shared_ptr<QMutex> m_serviceMutex;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)
@@ -732,6 +729,8 @@ protected:
 #endif
 
 };
+
+using ZDvidReaderPtr = std::shared_ptr<ZDvidReader*>;
 
 template <typename InputIterator>
 ZJsonArray ZDvidReader::readSynapseJson(

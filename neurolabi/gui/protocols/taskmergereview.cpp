@@ -10,7 +10,7 @@
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
 #include "zdvidutil.h"
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dcamerautils.h"
