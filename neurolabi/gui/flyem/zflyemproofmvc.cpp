@@ -697,6 +697,8 @@ void ZFlyEmProofMvc::detachQueryWindow()
 
 void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
 {
+  connect(view, SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
   connect(view, SIGNAL(bookmarkChecked(QString,bool)),
           this, SLOT(recordCheckedBookmark(QString,bool)));
   connect(view, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -705,6 +707,15 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(ZFlyEmBookmark*)));
   connect(view, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
+  connect(view, SIGNAL(copyingBookmarkUrl(int,int,int)),
+          this, SLOT(copyBookmarkUrl(int,int,int)));
+}
+
+void ZFlyEmProofMvc::copyBookmarkUrl(int x, int y, int z)
+{
+  ZDvidUrl url(getDvidTarget());
+  std::string urlStr = url.getBookmarkUrl(x, y, z);
+  ZGlobal::CopyToClipboard(urlStr);
 }
 
 void ZFlyEmProofMvc::exportGrayscale()
@@ -5927,6 +5938,15 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
                            ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
                            ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
+  }
+}
+
+void ZFlyEmProofMvc::locateBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark) {
+    zoomTo(bookmark->getLocation().getX(),
+           bookmark->getLocation().getY(),
+           bookmark->getLocation().getZ());
   }
 }
 

@@ -368,6 +368,9 @@ public slots:
   void uncheckSelectedBookmark();
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
+  void copyBookmarkUrl(int x, int y, int z);
+
   void processSelectionChange(const ZStackObjectSelector &selector);
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);

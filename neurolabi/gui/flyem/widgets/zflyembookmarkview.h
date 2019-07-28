@@ -35,6 +35,7 @@ signals:
   void locatingBookmark(const ZFlyEmBookmark*);
   void removingBookmark(ZFlyEmBookmark*);
   void removingBookmark(QList<ZFlyEmBookmark*> bookmarkList);
+  void copyingBookmarkUrl(int x, int y, int z);
 
 public slots:
   void checkCurrentBookmark();
@@ -44,12 +45,14 @@ public slots:
 private slots:
   void processDouleClick(const QModelIndex &index);
   void processSingleClick(const QModelIndex &index);
+  void copySelectedBookmarkUrl();
 
 private:
   void init();
   void createMenu();
   void connectSignalSlot();
   void checkBookmark(ZFlyEmBookmark *bookmark, bool checking);
+  QList<ZFlyEmBookmark*> getSelectedBookmark() const;
 
 protected:
   void contextMenuEvent(QContextMenuEvent *);
