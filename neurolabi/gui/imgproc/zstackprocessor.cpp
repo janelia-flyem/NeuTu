@@ -909,7 +909,9 @@ void ZStackProcessor::SubtractBackground(ZStack *stack)
 {
   for (int c = 0; c < stack->channelNumber(); ++c) {
     int commonIntensity = Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
-    Stack_Subc(stack->c_stack(c), commonIntensity);
+    if (double(commonIntensity) < Stack_Mean(stack->c_stack())) {
+      Stack_Subc(stack->c_stack(c), commonIntensity);
+    }
   }
 }
 

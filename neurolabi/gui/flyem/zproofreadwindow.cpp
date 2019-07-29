@@ -246,6 +246,11 @@ void ZProofreadWindow::profile()
   m_mainMvc->profile();
 }
 
+void ZProofreadWindow::testSlot()
+{
+  m_mainMvc->testSlot();
+}
+
 void ZProofreadWindow::showSettings()
 {
   m_mainMvc->showSetting();
@@ -486,9 +491,9 @@ void ZProofreadWindow::createMenu()
           this, SIGNAL(showingMainWindow()));
   m_advancedMenu->addAction(mainWindowAction);
 
-  QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
-  m_advancedMenu->addAction(testAction);
+  QAction *stressTestAction = new QAction("Stress Test", this);
+  connect(stressTestAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
+  m_advancedMenu->addAction(stressTestAction);
 
   QAction *diagnoseAction = new QAction("Diagnose", this);
   connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
@@ -501,6 +506,10 @@ void ZProofreadWindow::createMenu()
   QAction *profileAction = new QAction("Profile", this);
   connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
   m_advancedMenu->addAction(profileAction);
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  m_advancedMenu->addAction(testAction);
 
 
 //  m_viewMenu->setEnabled(false);

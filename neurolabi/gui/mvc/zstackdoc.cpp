@@ -1689,6 +1689,11 @@ void ZStackDoc::loadReaderResult()
   emit stackLoaded();
 }
 
+bool ZStackDoc::allowingTracing() const
+{
+  return m_meta.allowingTracing();
+}
+
 QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
 {
   const_cast<ZStackDoc&>(*this).makeAction(item);

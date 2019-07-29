@@ -2,11 +2,14 @@
 
 #include <cmath>
 
+#include "neutubeconfig.h"
+
 #include "geometry/zintcuboid.h"
 #include "tz_math.h"
 #include "tz_locseg_chain.h"
 #include "zswctree.h"
 #include "zstack.hxx"
+#include "imgproc/zstackprocessor.h"
 
 ZDvidNeuronTracer::ZDvidNeuronTracer()
 {
@@ -42,6 +45,12 @@ void ZDvidNeuronTracer::setDvidTarget(const ZDvidTarget &target)
   if (m_dvidReader.open(target)) {
     m_dvidInfo = m_dvidReader.readGrayScaleInfo();
   }
+}
+
+void ZDvidNeuronTracer::setDvidReader(const ZDvidReader &reader)
+{
+  m_dvidReader = reader;
+  m_dvidInfo = m_dvidReader.readGrayScaleInfo();
 }
 
 ZSwcTree* ZDvidNeuronTracer::getResult() const
@@ -82,6 +91,12 @@ ZStack* ZDvidNeuronTracer::readStack(const ZIntCuboid &box)
 {
   ZStack *stack = m_dvidReader.readGrayScale(box);
 
+  ZStackProcessor::SubtractBackground(stack);
+
+#ifdef _DEBUG_2
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
   return stack;
 }
 
@@ -91,6 +106,8 @@ ZStack* ZDvidNeuronTracer::readStack(
   if (!m_dvidInfo.getDataRange().contains(x, y, z)) {
     return NULL;
   }
+
+  r = std::max(r * 3.0, 16.0);
 
   ZIntCuboid box;
   box.setFirstCorner(std::floor(x - r), std::floor(y - r), std::floor(z - r));
@@ -139,7 +156,7 @@ double ZDvidNeuronTracer::fit(Local_Neuroseg *locseg)
   Local_Neuroseg_Ball_Bound(locseg, &ball);
 
   ZStack *stack = readStack(
-        ball.center[0], ball.center[1], ball.center[2], ball.r * 2.0);
+        ball.center[0], ball.center[1], ball.center[2], ball.r);
 
   double score = -1.0;
 
@@ -161,7 +178,7 @@ double ZDvidNeuronTracer::optimize(Local_Neuroseg *locseg)
   Local_Neuroseg_Ball_Bound(locseg, &ball);
 
   ZStack *stack = readStack(
-        ball.center[0], ball.center[1], ball.center[2], ball.r * 3.0);
+        ball.center[0], ball.center[1], ball.center[2], ball.r);
 
   double score = -1.0;
 

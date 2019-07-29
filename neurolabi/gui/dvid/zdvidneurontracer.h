@@ -16,6 +16,7 @@ public:
   ~ZDvidNeuronTracer();
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setDvidReader(const ZDvidReader &reader);
 
 //  ZSwcTree *takeResult();
   ZSwcTree* getResult() const;

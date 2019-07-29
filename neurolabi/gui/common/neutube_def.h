@@ -48,6 +48,10 @@ enum class EImageBackground {
   BRIGHT, DARK
 };
 
+enum class EDataType {
+  UNKNOWN, EM, LIGHT_DARK, LIGHT_BRIGHT
+};
+
 enum class ESizeHintOption {
   DEFAULT, CURRENT_BEST, TAKING_SPACE
 };

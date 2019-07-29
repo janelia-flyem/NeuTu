@@ -30229,7 +30229,7 @@ void ZTest::test(MainWindow *host)
            << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
 #endif
 
-#if 1
+#if 0
   std::set<int> s({1, 2, 3, 4, 5});
   neutu::setremoveif(s, [](int x)->bool {
     return (x%2 == 0);
@@ -30239,6 +30239,13 @@ void ZTest::test(MainWindow *host)
     std::cout << x << " ";
   });
   std::cout << std::endl;
+#endif
+
+#if 1
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("light");
+  ZJsonObject obj;
+  obj.setEntry("tracing", true);
+  writer->writeJson("neutu_config", "meta", obj);
 #endif
 
   std::cout << "Done." << std::endl;

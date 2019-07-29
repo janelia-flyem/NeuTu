@@ -130,7 +130,8 @@ HEADERS += \
     $$PWD/zflyemproofdocutil.h \
     $$PWD/zdvidlabelslicehighrestaskfactory.h \
     $$PWD/flyembodyselectionmanager.h \
-    $$PWD/zflyemproofdockeyprocessor.h
+    $$PWD/zflyemproofdockeyprocessor.h \
+    $$PWD/zflyemproofdoctracinghelper.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -249,4 +250,5 @@ SOURCES += \
     $$PWD/zflyemproofdocutil.cpp \
     $$PWD/zdvidlabelslicehighrestaskfactory.cpp \
     $$PWD/flyembodyselectionmanager.cpp \
-    $$PWD/zflyemproofdockeyprocessor.cpp
+    $$PWD/zflyemproofdockeyprocessor.cpp \
+    $$PWD/zflyemproofdoctracinghelper.cpp

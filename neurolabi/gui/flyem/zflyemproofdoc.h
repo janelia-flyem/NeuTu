@@ -26,6 +26,7 @@
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
 #include "flyemdataconfig.h"
+#include "zflyemproofdoctracinghelper.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -262,6 +263,8 @@ public:
     return m_dvidWriter;
   }
 
+  const ZDvidReader &getWorkReader();
+
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
   }
@@ -395,6 +398,9 @@ public: //Bookmark functions
    *
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
+
+public: //tracing
+  void trace(const ZPoint &pt);
 
 public:
   bool isDataValid(const std::string &data) const;
@@ -658,6 +664,8 @@ public slots:
 
   void setTodoItemChecked(int x, int y, int z, bool checking);
 
+  void testSlot();
+
 protected:
   void autoSave() override;
   void customNotifyObjectModified(ZStackObject::EType type) override;
@@ -822,6 +830,8 @@ protected:
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   ZFlyEmRoiManager *m_roiManager = nullptr;
+
+  ZFlyEmProofDocTracingHelper m_tracingHelper;
 
   mutable ZFlyEmMB6Analyzer m_analyzer;
 

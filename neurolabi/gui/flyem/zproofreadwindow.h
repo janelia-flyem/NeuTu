@@ -87,6 +87,7 @@ public slots:
   void stressTestSlot();
   void diagnose();
   void profile();
+  void testSlot();
 
   void showSettings();
 
