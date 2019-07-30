@@ -335,6 +335,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
+#include "dvid/zdvidurl.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30229,7 +30230,7 @@ void ZTest::test(MainWindow *host)
            << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
 #endif
 
-#if 1
+#if 0
   std::set<int> s({1, 2, 3, 4, 5});
   neutu::setremoveif(s, [](int x)->bool {
     return (x%2 == 0);
@@ -30239,6 +30240,21 @@ void ZTest::test(MainWindow *host)
     std::cout << x << " ";
   });
   std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZObject3dScan obj;
+  reader->readSupervoxel(1877429256, true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
+  ZDvidUrl dvidUrl(reader->getDvidTarget());
+  uint64_t svId = 1877429256;
+  std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
+  std::cout<< url << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

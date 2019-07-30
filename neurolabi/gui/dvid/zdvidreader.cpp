@@ -1261,13 +1261,15 @@ ZMesh* ZDvidReader::readSupervoxelMesh(uint64_t svId) const
   return mesh;
 }
 
-struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, bool useOldMeshesTars) const
+struct archive *ZDvidReader::readMeshArchiveStart(
+    uint64_t bodyId, bool useOldMeshesTars) const
 {
   size_t bytesTotal;
   return readMeshArchiveStart(bodyId, bytesTotal, useOldMeshesTars);
 }
 
-struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal, bool useOldMeshesTars) const
+struct archive *ZDvidReader::readMeshArchiveStart(
+    uint64_t bodyId, size_t &bytesTotal, bool useOldMeshesTars) const
 {
   bytesTotal = 0;
 
