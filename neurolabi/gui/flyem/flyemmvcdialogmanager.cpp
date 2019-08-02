@@ -29,6 +29,7 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
+#include "dialogs/tipdetectordialog.h"
 
 /** Implementation details
  *
@@ -278,6 +279,15 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
   }
 
   return m_bodyInfoDlg;
+}
+
+TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
+    if (isNull(m_tipDetectorDlg)) {
+      KINFO << "Creating tip detector dialog";
+      m_tipDetectorDlg = new TipDetectorDialog(m_parent);
+    }
+
+    return m_tipDetectorDlg;
 }
 
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()

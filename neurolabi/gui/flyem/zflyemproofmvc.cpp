@@ -4601,11 +4601,11 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
 }
 
 void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId) {
-    TipDetectorDialog inputDialog;
-    inputDialog.setBodyID(bodyId);
-    inputDialog.setRoiList(getCompleteDocument()->getRoiList());
-    inputDialog.setDvidTarget(getDvidTarget());
-    inputDialog.exec();
+    TipDetectorDialog * inputDialog = m_dlgManager->getTipDetectorDlg();
+    inputDialog->setBodyID(bodyId);
+    inputDialog->setRoiList(getCompleteDocument()->getRoiList());
+    inputDialog->setDvidTarget(getDvidTarget());
+    inputDialog->exec();
 }
 
 void ZFlyEmProofMvc::closeSkeletonWindow()

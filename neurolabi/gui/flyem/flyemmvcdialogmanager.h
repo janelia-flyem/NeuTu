@@ -16,6 +16,7 @@ class ZFlyEmSkeletonUpdateDialog;
 class FlyEmTodoDialog;
 class ZDvidTargetProviderDialog;
 class FlyEmBodyInfoDialog;
+class TipDetectorDialog;
 class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
@@ -50,6 +51,7 @@ public:
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
+  TipDetectorDialog* getTipDetectorDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
   bool isDvidDlgReady() const;
@@ -92,6 +94,7 @@ private:
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
+  TipDetectorDialog *m_tipDetectorDlg = nullptr;
 
 };
 
