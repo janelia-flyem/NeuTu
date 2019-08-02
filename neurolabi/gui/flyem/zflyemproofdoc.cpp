@@ -80,7 +80,7 @@
 #include "flyemdatawriter.h"
 #include "misc/miscutility.h"
 #include "tipdetectorrunner.h"
-#include "tipdetectordialog.h"
+#include "dialogs/tipdetectordialog.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
 
