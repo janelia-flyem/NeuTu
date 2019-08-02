@@ -4997,14 +4997,6 @@ void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t 
   executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
-void ZFlyEmProofDoc::executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t bodyId) {
-    TipDetectorDialog inputDialog;
-    inputDialog.setBodyID(bodyId);
-    inputDialog.setRoiList(getRoiList());
-    inputDialog.setDvidTarget(getDvidTarget());
-    inputDialog.exec();
-}
-
 void ZFlyEmProofDoc::executeAddToSupervoxelSplitItemCommand(
     int x, int y, int z, uint64_t bodyId)
 {
