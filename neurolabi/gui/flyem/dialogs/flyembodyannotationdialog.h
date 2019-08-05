@@ -67,6 +67,7 @@ private:
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
   void processUnknownStatus(const std::string &status);
+  void initNullStatusItem();
 
 private slots:
   void fillType();
@@ -74,10 +75,13 @@ private slots:
 private:
   Ui::FlyEmBodyAnnotationDialog *ui;
 
-  uint64_t m_bodyId = 0;
   bool m_isAdmin = false;
 
   std::string m_oldInstance;
+
+  //Non-editable fields
+  uint64_t m_bodyId = 0;
+  std::string m_prevNamingUser;
 
   QList<QString> m_defaultStatusList;
   QSet<QString> m_adminSatutsList;

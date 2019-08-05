@@ -42,6 +42,22 @@ ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(const ZDvidTarget &target)
   return layer;
 }
 
+std::shared_ptr<ZNeuroglancerLayerSpec>
+ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(const ZDvidTarget &target)
+{
+  std::shared_ptr<ZNeuroglancerLayerSpec> layer;
+  if (target.hasSegmentation()) {
+    layer = std::make_shared<ZNeuroglancerLayerSpec>();
+    layer->setName("skeletons");
+    layer->setType(ZNeuroglancerLayerSpec::TYPE_SKELETON);
+    layer->setSource(
+          "dvid://http://" + target.getAddressWithPort() +
+          "/" + target.getUuid() + "/" + target.getSkeletonName());
+  }
+
+  return layer;
+}
+
 std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
 ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(const ZDvidTarget &target,
     const std::string &linkedSegmentationLayer)

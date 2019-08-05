@@ -14,6 +14,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
 {
   ui->setupUi(this);
 
+  initNullStatusItem();
+
   connect(ui->generatePushButton, &QPushButton::clicked,
           this, &FlyEmBodyAnnotationDialog::fillType);
 
@@ -28,6 +30,12 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
 FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
 {
   delete ui;
+}
+
+void FlyEmBodyAnnotationDialog::initNullStatusItem()
+{
+  ui->statusComboBox->clear();
+  ui->statusComboBox->addItem("---");
 }
 
 void FlyEmBodyAnnotationDialog::setType(const std::string &type)
@@ -216,6 +224,8 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setUser(user);
   if (isInstanceChanged()) {
     annotation.setNamingUser(user);
+  } else {
+    annotation.setNamingUser(m_prevNamingUser);
   }
   annotation.setMajorInput(getMajorInput());
   annotation.setMajorOutput(getMajorOutput());
@@ -245,6 +255,7 @@ void FlyEmBodyAnnotationDialog::setPrevNamingUser(const std::string &name)
   } else {
     ui->namingUserLabel->setText("");
   }
+  m_prevNamingUser = name;
 }
 
 void FlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
@@ -302,8 +313,7 @@ void FlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
 
 void FlyEmBodyAnnotationDialog::updateStatusBox()
 {
-  ui->statusComboBox->clear();
-  ui->statusComboBox->addItem("---");
+  initNullStatusItem();
   ui->statusComboBox->addItems(m_defaultStatusList);
 }
 

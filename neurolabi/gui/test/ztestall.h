@@ -80,5 +80,6 @@
 #include "test/zdvidenvtest.h"
 #include "test/zdvidnodetest.h"
 #include "test/zdvidsparsestacktest.h"
+#include "test/flyembodyannotationdialogtest.h"
 
 #endif // ZTESTALL_H

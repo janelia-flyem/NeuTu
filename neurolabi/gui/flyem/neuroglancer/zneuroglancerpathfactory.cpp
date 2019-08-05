@@ -63,6 +63,8 @@ QString ZNeuroglancerPathFactory::MakePath(
     gpath.addLayer(
           ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
     segLayer = "segmentation";
+
+//    gpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(target));
   }
 
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
@@ -103,6 +105,8 @@ QString ZNeuroglancerPathFactory::MakePath(
     gpath.addLayer(
           ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
     segLayer = "segmentation";
+
+//    gpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(target));
   }
 
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =

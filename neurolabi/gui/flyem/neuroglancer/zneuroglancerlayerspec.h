@@ -55,6 +55,7 @@ public:
   static const char* TYPE_SEGMENTATION;
   static const char* TYPE_GRAYSCALE;
   static const char* TYPE_ANNOTATION;
+  static const char* TYPE_SKELETON;
 
 private:
   std::string m_source;

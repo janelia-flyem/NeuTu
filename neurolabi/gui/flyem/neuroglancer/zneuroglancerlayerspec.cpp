@@ -9,6 +9,7 @@ const char* ZNeuroglancerLayerSpec::KEY_TYPE = "type";
 const char* ZNeuroglancerLayerSpec::TYPE_SEGMENTATION = "segmentation";
 const char* ZNeuroglancerLayerSpec::TYPE_GRAYSCALE = "image";
 const char* ZNeuroglancerLayerSpec::TYPE_ANNOTATION = "annotation";
+const char* ZNeuroglancerLayerSpec::TYPE_SKELETON = "skeletons";
 
 ZNeuroglancerLayerSpec::ZNeuroglancerLayerSpec()
 {

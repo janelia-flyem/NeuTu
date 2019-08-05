@@ -16,6 +16,8 @@ public:
       const ZDvidTarget &target);
   static std::shared_ptr<ZNeuroglancerLayerSpec> MakeSegmentationLayer(
       const ZDvidTarget &target);
+  static std::shared_ptr<ZNeuroglancerLayerSpec> MakeSkeletonLayer(
+      const ZDvidTarget &target);
   static std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
   MakePointAnnotationLayer(
       const ZDvidTarget &target, const std::string &linkedSegmentationLayer);
