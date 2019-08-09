@@ -45,7 +45,6 @@ void TipDetectorDialog::onRunButton() {
 }
 
 void TipDetectorDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus) {
-    setStatus(FINISHED);
     QString output = m_process.readAllStandardOutput();
     QString errorOutput = m_process.readAllStandardError();
     QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
@@ -56,12 +55,19 @@ void TipDetectorDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exi
         setMessage("Tip detection script returned unparseable output!  std out: " +
                    output + "; std err: " + errorOutput);
     } else {
-        setMessage("Script ran successfully!");
         QJsonObject data = doc.object();
-        ui->todoLabel->setText(QString::number(data["nplaced"].toInt()));
-        ui->locationsLabel->setText(QString::number(data["nlocations"].toInt()));
-        ui->locationsRoiLabel->setText(QString::number(data["nlocationsRoI"].toInt()));
-        ui->timeLabel->setText(QString::number(data["ttotal"].toDouble()) + "s");
+        if (data["status"].toBool()) {
+            setStatus(FINISHED);
+            setMessage("Script ran successfully!");
+            ui->todoLabel->setText(QString::number(data["nplaced"].toInt()));
+            ui->locationsLabel->setText(QString::number(data["nlocations"].toInt()));
+            ui->locationsRoiLabel->setText(QString::number(data["nlocationsRoI"].toInt()));
+            ui->timeLabel->setText(QString::number(data["ttotal"].toDouble()) + "s");
+        } else {
+            setStatus(ERROR);
+            QString message = data["message"].toString();
+            setMessage(message);
+        }
     }
 }
 
