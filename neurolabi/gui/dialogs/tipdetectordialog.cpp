@@ -87,29 +87,34 @@ void TipDetectorDialog::setMessage(QString message) {
 
 void TipDetectorDialog::setStatus(ScriptStatus status) {
     QString statusString;
-    QString color;
+    QString fgColor;
+    QString bgColor;
     switch (status) {
     case NOT_RUNNING:
         statusString = "Not running";
-        color = "silver";
+        fgColor = "black";
+        bgColor = "silver";
         break;
     case RUNNING:
         statusString = "Running";
-        color = "teal";
+        fgColor = "white";
+        bgColor = "teal";
         break;
     case FINISHED:
         statusString = "Finished";
-        color = "green";
+        fgColor = "white";
+        bgColor = "green";
         break;
     case ERROR:
         statusString = "Error";
-        color = "orange";
+        fgColor = "black";
+        bgColor = "orange";
         break;
     default:
         statusString = "";
     }
     ui->statusLabel->setText(statusString);
-    ui->statusLabel->setStyleSheet("QLabel { background-color : " + color + "; }");
+    ui->statusLabel->setStyleSheet("QLabel { color : " + fgColor + "; background-color : " + bgColor + "; }");
 }
 
 void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
