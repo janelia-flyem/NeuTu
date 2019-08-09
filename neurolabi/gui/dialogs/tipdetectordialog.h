@@ -2,6 +2,7 @@
 #define TIPDETECTORDIALOG_H
 
 #include <QDialog>
+#include <QProcess>
 
 #include "dvid/zdvidtarget.h"
 
@@ -22,7 +23,9 @@ public:
     void setDvidTarget(ZDvidTarget target);
 
 private slots:
-    void onRunButton();
+    void onRunButton();    
+    void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onProcessError(QProcess::ProcessError error);
 
 private:
     enum ScriptStatus {
@@ -36,6 +39,7 @@ private:
 
     uint64_t m_bodyID;
     ZDvidTarget m_target;
+    QProcess m_process;
 
     void setStatus(ScriptStatus status);
     void setMessage(QString message);

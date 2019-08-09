@@ -4605,7 +4605,8 @@ void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId)
     inputDialog->setBodyID(bodyId);
     inputDialog->setRoiList(getCompleteDocument()->getRoiList());
     inputDialog->setDvidTarget(getDvidTarget());
-    inputDialog->exec();
+    // inputDialog->exec();
+    inputDialog->show();
 }
 
 void ZFlyEmProofMvc::closeSkeletonWindow()

@@ -678,7 +678,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Paste View", parent);
     break;
   case ACTION_RUN_TIP_DETECTION:
-    action = new QAction("Run tip detection", parent);
+    action = new QAction("Tip detection dialog...", parent);
     break;
   case ACTION_SAVE_ALL_MESH:
     action = new QAction("Save Meshes As", parent);

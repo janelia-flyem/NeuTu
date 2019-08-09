@@ -2,9 +2,8 @@
 #include "ui_tipdetectordialog.h"
 
 #include <QApplication>
+#include <QJsonDocument>
 #include <QJsonObject>
-
-#include "tipdetectorrunner.h"
 
 TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
     QDialog(parent),
@@ -14,49 +13,66 @@ TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
 
     setStatus(NOT_RUNNING);
 
+    // UI connections
     connect(ui->runButton, SIGNAL(clicked(bool)), this, SLOT(onRunButton()));
 
+    // process connections
+    connect(&m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
+        this, SLOT(onProcessFinished(int, QProcess::ExitStatus)));
+    connect(&m_process, SIGNAL(errorOccurred(QProcess::ProcessError)),
+        this, SLOT(onProcessError(QProcess::ProcessError)));
 }
 
 void TipDetectorDialog::onRunButton() {
+    QStringList args;
+    args << QString::fromStdString(m_target.getAddressWithPort());
+    args << QString::fromStdString(m_target.getUuid());
+    args << QString::number(m_bodyID);
+    args << QString::fromStdString(m_target.getTodoListName());
 
-    TipDetectorRunner runner;
-    runner.setBodyId(m_bodyID);
     QString currentRoi = ui->roiMenu->currentText();
     if (currentRoi != "(none)") {
-        runner.setRoI(currentRoi);
+        args << "--roi";
+        args << currentRoi;
     }
-    runner.setDvidTarget(m_target);
 
-    // adjust UI for run state
+    // adjust UI for run state and go!
     ui->runButton->setEnabled(false);
     ui->roiMenu->setEnabled(false);
     setStatus(RUNNING);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    // this doesn't force the widgets to update (label and button):
-    //  (the cursor changes properly, though)
-    // QApplication::processEvents();
+    m_process.start("marktips", args);
+}
 
-    runner.run();
-
-    // we're back
-    QApplication::restoreOverrideCursor();
-
-    // display some output
-    QJsonObject output = runner.getOutput();
-
-    if (output["status"].toBool()) {
-        setStatus(FINISHED);
-        ui->todoLabel->setText(QString::number(output["nplaced"].toInt()));
-        ui->locationsLabel->setText(QString::number(output["nlocations"].toInt()));
-        ui->locationsRoiLabel->setText(QString::number(output["nlocationsRoI"].toInt()));
-        ui->timeLabel->setText(QString::number(output["ttotal"].toDouble()) + "s");
-        setMessage("Script ran successfully!");
+void TipDetectorDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+    setStatus(FINISHED);
+    QString output = m_process.readAllStandardOutput();
+    QString errorOutput = m_process.readAllStandardError();
+    QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
+    if (doc.isNull()) {
+        if (output.isEmpty()) {
+            output = "(no output)";
+        }
+        setMessage("Tip detection script returned unparseable output!  std out: " +
+                   output + "; std err: " + errorOutput);
     } else {
-        setStatus(ERROR);
-        setMessage(output["message"].toString());
+        setMessage("Script ran successfully!");
+        QJsonObject data = doc.object();
+        ui->todoLabel->setText(QString::number(data["nplaced"].toInt()));
+        ui->locationsLabel->setText(QString::number(data["nlocations"].toInt()));
+        ui->locationsRoiLabel->setText(QString::number(data["nlocationsRoI"].toInt()));
+        ui->timeLabel->setText(QString::number(data["ttotal"].toDouble()) + "s");
     }
+}
+
+void TipDetectorDialog::onProcessError(QProcess::ProcessError error) {
+    setStatus(ERROR);
+    QString message = "Tip detection script failed to run properly!";
+    QString errorOutput = m_process.readAllStandardError();
+    if (!errorOutput.isEmpty()) {
+        message += ("  Error: " + errorOutput);
+    }
+    setMessage(message);
 }
 
 void TipDetectorDialog::setMessage(QString message) {
@@ -88,11 +104,6 @@ void TipDetectorDialog::setStatus(ScriptStatus status) {
     }
     ui->statusLabel->setText(statusString);
     ui->statusLabel->setStyleSheet("QLabel { background-color : " + color + "; }");
-
-    // none of these make the label get updated, ugh
-    // ui->statusLabel->repaint();
-    // ui->statusLabel->update();
-    // QApplication::processEvents();
 }
 
 void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
