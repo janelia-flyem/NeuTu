@@ -41,9 +41,14 @@ private:
     uint64_t m_bodyID;
     ZDvidTarget m_target;
     QProcess m_process;
+    ScriptStatus m_status;
 
     void setStatus(ScriptStatus status);
+    ScriptStatus getStatus();
+    void updateStatus();
     void setMessage(QString message);
+    void disableRunUI();
+    void enableRunUI();
 };
 
 #endif // TIPDETECTORDIALOG_H

@@ -23,6 +23,16 @@ TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
         this, SLOT(onProcessError(QProcess::ProcessError)));
 }
 
+void TipDetectorDialog::disableRunUI() {
+    ui->runButton->setEnabled(false);
+    ui->roiMenu->setEnabled(false);
+}
+
+void TipDetectorDialog::enableRunUI() {
+    ui->runButton->setEnabled(true);
+    ui->roiMenu->setEnabled(true);
+}
+
 void TipDetectorDialog::onRunButton() {
     QStringList args;
     args << QString::fromStdString(m_target.getAddressWithPort());
@@ -36,15 +46,14 @@ void TipDetectorDialog::onRunButton() {
         args << currentRoi;
     }
 
-    // adjust UI for run state and go!
-    ui->runButton->setEnabled(false);
-    ui->roiMenu->setEnabled(false);
+    disableRunUI();
     setStatus(RUNNING);
 
     m_process.start("marktips", args);
 }
 
 void TipDetectorDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+    enableRunUI();
     QString output = m_process.readAllStandardOutput();
     QString errorOutput = m_process.readAllStandardError();
     QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8());
@@ -72,6 +81,7 @@ void TipDetectorDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exi
 }
 
 void TipDetectorDialog::onProcessError(QProcess::ProcessError error) {
+    enableRunUI();
     setStatus(ERROR);
     QString message = "Tip detection script failed to run properly!";
     QString errorOutput = m_process.readAllStandardError();
@@ -85,11 +95,20 @@ void TipDetectorDialog::setMessage(QString message) {
     ui->messageText->setHtml(message);
 }
 
+TipDetectorDialog::ScriptStatus TipDetectorDialog::getStatus() {
+    return m_status;
+}
+
 void TipDetectorDialog::setStatus(ScriptStatus status) {
+    m_status = status;
+    updateStatus();
+}
+
+void TipDetectorDialog::updateStatus() {
     QString statusString;
     QString fgColor;
     QString bgColor;
-    switch (status) {
+    switch (m_status) {
     case NOT_RUNNING:
         statusString = "Not running";
         fgColor = "black";
@@ -122,13 +141,19 @@ void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
 }
 
 void TipDetectorDialog::setBodyID(uint64_t bodyID) {
-    m_bodyID = bodyID;
-    ui->bodyIDLabel->setText(QString::number(bodyID));
+    // don't change things while we're running!
+    if (getStatus() != RUNNING) {
+        m_bodyID = bodyID;
+        ui->bodyIDLabel->setText(QString::number(bodyID));
+    }
 }
 
 void TipDetectorDialog::setRoiList(QStringList roiList) {
-    roiList.insert(0, "(none)");
-    ui->roiMenu->addItems(roiList);
+    // don't change things while we're running!
+    if (getStatus() != RUNNING) {
+        roiList.insert(0, "(none)");
+        ui->roiMenu->addItems(roiList);
+    }
 }
 
 void TipDetectorDialog::applicationQuitting() {

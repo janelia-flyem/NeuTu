@@ -79,7 +79,6 @@
 #include "flyemdatareader.h"
 #include "flyemdatawriter.h"
 #include "misc/miscutility.h"
-#include "dialogs/tipdetectordialog.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
 
