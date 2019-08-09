@@ -28228,6 +28228,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemibran-production");
+  FlyEmDataWriter::UploadRoi(
+        *writer, "BU",
+        GET_FLYEM_DATA_DIR + "/roi/20190801BU_LAL/20190801_BU.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190801BU_LAL/20190801_BU.tif.obj");
+
+  FlyEmDataWriter::UploadRoi(
+        *writer, "LAL",
+        GET_FLYEM_DATA_DIR + "/roi/20190801BU_LAL/20190801_LAL.tif.sobj",
+        GET_FLYEM_DATA_DIR + "/roi/20190801BU_LAL/20190801_LAL.tif.obj");
+#endif
+
 #if 0
   ZObject3dScan roi;
   roi.load(GET_FLYEM_DATA_DIR + "/roi/20190325/20190325_dACA.labels.tif.sobj");
@@ -29823,7 +29837,7 @@ void ZTest::test(MainWindow *host)
   std::cout << ZNetworkUtils::HasHead("http://emdata2.int.janelia.org:2018");
 #endif
 
-#if 1
+#if 0
   try {
     http::Request request("http://emdata2.int.janelia.org:2018");
 
@@ -30255,6 +30269,9 @@ void ZTest::test(MainWindow *host)
   uint64_t svId = 1877429256;
   std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
   std::cout<< url << std::endl;
+#endif
+
+#if 1
 #endif
 
   std::cout << "Done." << std::endl;

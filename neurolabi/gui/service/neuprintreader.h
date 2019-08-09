@@ -40,6 +40,8 @@ public:
 
   void updateCurrentDataset(const QString &uuid);
   bool hasDataset(const QString &uuid);
+  ZJsonObject getDatasetJson() const;
+  QStringList getDatasetList() const;
 
   QList<QString> getRoiList();
 

@@ -161,6 +161,22 @@ bool NeuPrintReader::hasDataset(const QString &uuid)
   return !getUuidKey(uuid).isEmpty();
 }
 
+ZJsonObject NeuPrintReader::getDatasetJson() const
+{
+  return m_dataset;
+}
+
+QStringList NeuPrintReader::getDatasetList() const
+{
+  QStringList dataList;
+  std::vector<std::string> keys = getDatasetJson().getAllKey();
+  for (const std::string key : keys) {
+    dataList.append(key.c_str());
+  }
+
+  return dataList;
+}
+
 namespace {
 const char* BODY_QUERY_RETURN = "n.bodyId, n.type, n.name, n.status, n.pre, n.post";
 

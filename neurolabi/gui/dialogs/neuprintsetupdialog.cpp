@@ -2,8 +2,11 @@
 
 #include <fstream>
 
+#include "zjsonparser.h"
 #include "ui_neuprintsetupdialog.h"
 #include "neutubeconfig.h"
+
+#include "qt/core/utilities.h"
 #include "zdialogfactory.h"
 #include "zglobal.h"
 #include "service/neuprintreader.h"
@@ -50,6 +53,8 @@ bool NeuprintSetupDialog::apply()
     ZDialogFactory::Warn(
           "No Server Specified", "Please specify the NeuPrint server", this);
   } else {
+    server = neutu::NormalizeServerAddress(server, "https");
+
     ZGlobal::GetInstance().setNeuPrintServer(server);
     NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
     if (reader) {
@@ -59,6 +64,10 @@ bool NeuprintSetupDialog::apply()
               "No Authorization", "Please specify the authorization token",
               this);
       } else {
+        if (ZJsonParser::IsObject(token.toStdString()) == false) {
+          token = "{\"token\":\"" + token + "\"" + "}";
+        }
+
         reader->authorizeFromJson(token);
         if (reader->hasAuthCode()) {
           QString authFile = NeutubeConfig::getInstance().getPath(
@@ -73,15 +82,25 @@ bool NeuprintSetupDialog::apply()
           if (reader->hasDataset(m_uuid)) {
             return true;
           } else {
+            QString details;
+            for (const QString &dataset : reader->getDatasetList()) {
+              details += dataset + " ";
+            }
+            details += token;
+
             ZDialogFactory::Warn(
                   "NeuPrint Not Supported",
-                  "Cannot use NeuPrint because this dataset is not supported by the server"
-                  "or th token is wrong.",
+                  "Cannot use NeuPrint at " + server +
+                  " because this dataset is not supported by the server"
+                  " or th token is wrong.\n\n"
+                  "Details: " + details,
                   this);
           }
         } else {
           ZDialogFactory::Warn(
-                "Authorization Failed", "Failed to get authorization from NeuPrint.",
+                "Authorization Failed",
+                "Failed to get authorization from NeuPrint at " + server +
+                " with token \n" + token,
                 this);
         }
       }

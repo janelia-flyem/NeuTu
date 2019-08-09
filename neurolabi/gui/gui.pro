@@ -530,15 +530,15 @@ HEADERS += mainwindow.h \
     dialogs/ztestdialog2.h \
     zstackdocloader.h \
     zstackwidget.h \
-    dvid/zdvidversiondag.h \
-    dvid/zdvidversion.h \
-    dvid/zdvidversionnode.h \
     zbodysplitbutton.h \
     zmessagefactory.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
     dvid/zdvidtileensemble.h \
     dvid/zdvidlabelslice.h \
+    dvid/zdvidversiondag.h \
+    dvid/zdvidversion.h \
+    dvid/zdvidversionnode.h \
     zsttransform.h \
     zpixmap.h \
     dvid/zdvidgrayslice.h \

@@ -85,7 +85,8 @@ HEADERS += \
     $$PWD/zdvidenvtest.h \
     $$PWD/zdvidnodetest.h \
     $$PWD/zdvidsparsestacktest.h \
-    $$PWD/flyembodyannotationdialogtest.h
+    $$PWD/flyembodyannotationdialogtest.h \
+    $$PWD/qtcoretest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp
