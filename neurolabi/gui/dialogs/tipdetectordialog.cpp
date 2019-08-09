@@ -120,6 +120,14 @@ void TipDetectorDialog::setRoiList(QStringList roiList) {
     ui->roiMenu->addItems(roiList);
 }
 
+void TipDetectorDialog::applicationQuitting() {
+    // this isn't 100% necessary...the Python process won't block the application
+    //  from quitting
+    if (m_process.state() != QProcess::NotRunning) {
+        m_process.kill();
+    }
+}
+
 TipDetectorDialog::~TipDetectorDialog()
 {
     delete ui;
