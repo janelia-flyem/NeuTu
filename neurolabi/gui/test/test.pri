@@ -81,7 +81,12 @@ HEADERS += \
     $$PWD/zstackobjecttest.h \
     $$PWD/z3dswcfiltertest.h \
     $$PWD/flyembodyselectionmanagertest.h \
-    $$PWD/zinteractivecontexttest.h
+    $$PWD/zinteractivecontexttest.h \
+    $$PWD/zdvidenvtest.h \
+    $$PWD/zdvidnodetest.h \
+    $$PWD/zdvidsparsestacktest.h \
+    $$PWD/flyembodyannotationdialogtest.h \
+    $$PWD/qtcoretest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

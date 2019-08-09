@@ -98,6 +98,7 @@ public:
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
+  ZIntPoint getSize() const;
 
   double getDiagonalLength() const;
 

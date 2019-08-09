@@ -94,21 +94,21 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
 
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
-          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+//          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));

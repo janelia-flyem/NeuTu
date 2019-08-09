@@ -132,7 +132,7 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
   if (view->viewingInfo(neutu::mvc::ViewInfoFlag::WINDOW_SCALE)) {
     if (vp.getZoom() > 0.00001) {
       if (doc->getResolution().getUnit() ==
-          ZResolution::UNIT_NANOMETER) {
+          ZResolution::EUnit::UNIT_NANOMETER) {
         double s = iround(
               view->imageWidget()->screenSize().width() / vp.getZoom() *
               doc->getResolution().voxelSizeX());

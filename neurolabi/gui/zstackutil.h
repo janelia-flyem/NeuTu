@@ -3,6 +3,7 @@
 
 class ZStackPtr;
 class ZStack;
+class ZIntPoint;
 
 namespace zstack {
 struct DsIntvGreaterThan {
@@ -14,6 +15,8 @@ struct DsIntvGreaterThan {
 int GetDsVolume(const ZStackPtr &stack);
 int GetDsVolume(const ZStack &stack);
 int GetDsVolume(const ZStack *stack);
+
+ZIntPoint FindClosestBg(const ZStack *stack, int x, int y, int z);
 
 }
 

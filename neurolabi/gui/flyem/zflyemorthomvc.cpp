@@ -76,21 +76,20 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   return mvc;
 }
 
-ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, neutu::EAxis axis)
+ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(const ZDvidEnv &env, neutu::EAxis axis)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc;
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, neutu::EAxis axis,
+    const ZDvidEnv &env, neutu::EAxis axis,
     int width, int height, int depth)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc(width, height, depth);
@@ -98,7 +97,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
@@ -108,11 +107,19 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());
 }
 
+/*
 void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getCompleteDocument()->setDvidTarget(target);
 
   updateDvidTargetFromDoc();
+}*/
+
+void ZFlyEmOrthoMvc::setDvid(const ZDvidEnv &env)
+{
+  if (getCompleteDocument()->setDvid(env)) {
+    updateDvidTargetFromDoc();
+  }
 }
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
@@ -164,10 +171,12 @@ void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
   getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
+/*
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const
 {
   return getCompleteDocument()->getDvidTarget();
 }
+*/
 
 void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
 {

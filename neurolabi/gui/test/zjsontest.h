@@ -155,6 +155,14 @@ TEST(ZJsonObject, basic)
 
 }
 
+TEST(ZJsonParser, basic)
+{
+  ASSERT_TRUE(ZJsonParser::IsObject("{\"test\": \"object\"}"));
+  ASSERT_TRUE(ZJsonParser::IsObject("{}"));
+  ASSERT_FALSE(ZJsonParser::IsObject("test"));
+  ASSERT_FALSE(ZJsonParser::IsObject("[1, 2, 3]"));
+}
+
 
 #endif
 

@@ -22,6 +22,8 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidsparsestack.h"
+
 #include "zdvidutil.h"
 //#include "dvid/zdvidsynapse.h"
 //#include "dvid/zdvidroi.h"
@@ -89,6 +91,35 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   }
 
   return annotation;
+}
+
+std::vector<ZFlyEmToDoItem> FlyEmDataReader::ReadToDoItem(
+    const ZDvidReader &reader, const ZIntCuboid &box)
+{
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  ZJsonArray obj = reader.readJsonArray(dvidUrl.getTodoListUrl(box));
+
+  std::vector<ZFlyEmToDoItem> itemArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZFlyEmToDoItem &item = itemArray[i];
+    item.loadJsonObject(itemJson, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  }
+
+  return itemArray;
+}
+
+ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
+      const ZDvidReader &reader, int x, int y, int z)
+{
+  std::vector<ZFlyEmToDoItem> itemArray =
+      ReadToDoItem(reader, ZIntCuboid(x, y, z, x, y, z));
+  if (!itemArray.empty()) {
+    return itemArray[0];
+  }
+
+  return ZFlyEmToDoItem();
 }
 
 ZMesh* FlyEmDataReader::LoadRoi(
@@ -223,6 +254,30 @@ ZObject3dScan* FlyEmDataReader::ReadRoi(
   return result;
 }
 
+ZDvidSparseStack* FlyEmDataReader::ReadDvidSparseStack(
+    const ZDvidTarget &target, ZDvidReader *grayscaleReader,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, bool async)
+{
+  ZDvidSparseStack *spStack = nullptr;
+  if (target.isValid() && target.hasSegmentation()) {
+    spStack = new ZDvidSparseStack;
+    spStack->setLabelType(labelType);
+    spStack->setLabel(bodyId);
+    if (grayscaleReader) {
+      if (grayscaleReader->isReady()) {
+        spStack->setGrayscaleReader(*grayscaleReader); //Need to set before target
+      }
+    }
+    spStack->setDvidTarget(target);
+    if (async) {
+      spStack->loadBodyAsync(bodyId);
+    } else {
+      spStack->loadBody(bodyId);
+    }
+  }
+
+  return spStack;
+}
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

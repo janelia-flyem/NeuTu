@@ -12,6 +12,12 @@ ZJsonParser::ZJsonParser()
 {
 }
 
+bool ZJsonParser::IsObject(const std::string &str)
+{
+  json_error_t error;
+  return IsObject(json_loads(str.c_str(), 0, &error));
+}
+
 bool ZJsonParser::IsObject(const json_t *value)
 {
   if (value == NULL) {

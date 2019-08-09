@@ -19,7 +19,7 @@ public:
 
 public:
   void medianFilter(ZStack *stack, int radius = 1);
-  void mexihatFilter(ZStack *stack, double sigma = 1.0);
+
   void cannyEdge(ZStack *stack, double variance = 1.0,
                  double low = 0.0, double high = 1.0);
   void anisotropicDiffusion(ZStack *stack, double timeStep = 0.125,
@@ -34,12 +34,16 @@ public:
   void shortestPathFlow(ZStack *stack);
   void expandRegion(ZStack *stack, int r);
 
-  void removeIsolatedObject(ZStack *stack, int r, int dr);
+  static void removeIsolatedObject(ZStack *stack, int r, int dr);
 
   static void Invert(ZStack *stack);
   static void SubtractBackground(ZStack *stack);
   static void SubtractBackground(ZStack *stack, double minFr, int maxIter);
   static int SubtractBackground(Stack *stack, double minFr, int maxIter);
+  static void MexihatFilter(ZStack *stack, double sigma = 1.0);
+  static void GaussianSmooth(ZStack *stack, double sigma = 1.0);
+  static void GaussianSmooth(ZStack *stack, double sx, double sy, double sz);
+
 
   static ZStack* Rgb2Gray(const ZStack *stack);
 

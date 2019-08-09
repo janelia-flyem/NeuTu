@@ -18,7 +18,7 @@ double GetFlyEmRoiMarkerRadius(double width, double height);
 std::set<uint64_t> LoadBodySet(const std::string &filePath);
 
 
-ZIntPoint FindClosestBg(const ZStack *stack, int x, int y, int z);
+//ZIntPoint FindClosestBg(const ZStack *stack, int x, int y, int z);
 
 int64_t GetMutationId(const ZSwcTree *tree);
 int64_t GetMutationId(const ZSwcTree &tree);

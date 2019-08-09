@@ -3,10 +3,13 @@
 #include "zstack.hxx"
 #include "zsparsestack.h"
 #include "zstackwriter.h"
+#include "zstackobjectsourcefactory.h"
 
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidgraysliceensemble.h"
 
 #include "zflyemproofdoc.h"
 #include "zflyembodymanager.h"
@@ -29,6 +32,12 @@ ZDvidLabelSlice* ZFlyEmProofDocUtil::GetActiveLabelSlice(
 ZDvidLabelSlice* ZFlyEmProofDocUtil::GetActiveLabelSlice(ZFlyEmProofDoc *doc)
 {
   return GetActiveLabelSlice(doc, neutu::EAxis::Z);
+}
+
+ZDvidGraySlice* ZFlyEmProofDocUtil::GetActiveGraySlice(
+    ZFlyEmProofDoc *doc, neutu::EAxis axis)
+{
+  return doc->getDvidGraySlice(axis);
 }
 
 std::set<uint64_t> ZFlyEmProofDocUtil::GetSelectedBodyId(

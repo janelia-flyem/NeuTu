@@ -65,12 +65,12 @@ public:
   }
 
 
-
-
 //  template<>
 //  static std::string getValue<std::string>(const json_t *value);
 
 public:
+  static bool IsObject(const std::string &str);
+
   static bool IsObject(const json_t *value);
   static bool IsArray(const json_t *value);
   static bool IsInteger(const json_t *value);

@@ -56,6 +56,8 @@
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
+#include "command/zstackfiltercommand.h"
+
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
 #endif
@@ -103,6 +105,7 @@ void ZCommandLine::registerModule()
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
+  registerModule<ZStackFilterCommand>("filter_stack");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif

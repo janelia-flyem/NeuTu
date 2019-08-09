@@ -9,7 +9,7 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 #include <QString>
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 #include "neutube.h"
 #else
 #include "common/neutube_def.h"

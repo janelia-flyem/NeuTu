@@ -3743,7 +3743,7 @@ void MainWindow::on_actionMexican_Hat_triggered()
     ZStackProcessor proc;
     MexicanHatDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.mexihatFilter(currentStackFrame()->document()->getStack(),
+      proc.MexihatFilter(currentStackFrame()->document()->getStack(),
                      dlg.sigma());
       currentStackFrame()->updateView();
     }
@@ -7064,16 +7064,28 @@ void MainWindow::on_actionProof_triggered()
   startProofread();
 }
 
+void MainWindow::runRoutineCheckFunc()
+{
+#if defined(_FLYEM_)
+    if (!GET_FLYEM_CONFIG.hasNormalService()) {
+      GET_FLYEM_CONFIG.updateServiceStatus();
+//      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+//      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
+    }
+#endif
+}
+
 void MainWindow::runRoutineCheck()
 {
   if (NeutubeConfig::AutoStatusCheck()) {
     LINFO() << "Running routine check ...";
-#if defined(_FLYEM_)
-    if (!GET_FLYEM_CONFIG.hasNormalService()) {
-      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
-      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
+
+    QString threadId = "runRoutineCheck";
+    if (!m_futureMap.isAlive(threadId)) {
+      QFuture<void> future =
+          QtConcurrent::run(this, &MainWindow::runRoutineCheckFunc);
+      m_futureMap[threadId] = future;
     }
-#endif
 #if 0
     QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
     if (!memoryUsage.isEmpty()) {

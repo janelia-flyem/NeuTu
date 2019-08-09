@@ -20,6 +20,7 @@ class TipDetectorDialog;
 class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
+//class ZStackViewRecordDialog;
 
 /*!
  * \brief The class for managing dialogs used by ZFlyEmProofMvc.
@@ -52,6 +53,7 @@ public:
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
   TipDetectorDialog* getTipDetectorDlg();
+//  ZStackViewRecordDialog* getRecordDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
   bool isDvidDlgReady() const;
@@ -95,6 +97,7 @@ private:
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
+//  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
 };
 

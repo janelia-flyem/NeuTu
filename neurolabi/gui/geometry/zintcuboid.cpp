@@ -52,6 +52,11 @@ int ZIntCuboid::getDepth() const
   return m_lastCorner.getZ() - m_firstCorner.getZ() + 1;
 }
 
+ZIntPoint ZIntCuboid::getSize() const
+{
+  return ZIntPoint(getWidth(), getHeight(), getDepth());
+}
+
 double ZIntCuboid::getDiagonalLength() const
 {
   return ZPoint(getWidth(), getHeight(), getDepth()).length();

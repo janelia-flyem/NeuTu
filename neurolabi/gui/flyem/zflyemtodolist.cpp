@@ -6,6 +6,7 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
 #include "mvc/zstackview.h"
+#include "flyemdatareader.h"
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);
@@ -80,7 +81,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 
 void ZFlyEmToDoList::update(int x, int y, int z)
 {
-  ZFlyEmToDoItem item = m_reader.readToDoItem(x, y, z);
+  ZFlyEmToDoItem item = FlyEmDataReader::ReadToDoItem(m_reader, x, y, z);
   if (item.isValid()) {
     addItem(item, DATA_LOCAL);
   } else {

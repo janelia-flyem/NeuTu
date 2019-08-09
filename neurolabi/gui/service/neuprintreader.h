@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
 #include "zjsonobject.h"
 
 class ZJsonArray;
@@ -40,6 +40,8 @@ public:
 
   void updateCurrentDataset(const QString &uuid);
   bool hasDataset(const QString &uuid);
+  ZJsonObject getDatasetJson() const;
+  QStringList getDatasetList() const;
 
   QList<QString> getRoiList();
 

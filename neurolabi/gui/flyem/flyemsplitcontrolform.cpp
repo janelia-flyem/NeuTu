@@ -74,8 +74,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(changeSplit()));
 //  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
 //          this, SLOT(loadBookmark()));
-  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -85,8 +85,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
 //          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
 
 //  connect(ui->synapsePushButton, SIGNAL(clicked()),

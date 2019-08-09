@@ -8,6 +8,7 @@
 #include "zneuroglancernavigation.h"
 
 class ZNeuroglancerLayerSpec;
+class ZJsonObject;
 
 class ZNeuroglancerPath
 {
@@ -22,7 +23,10 @@ public:
 
 private:
 //  QString getLayerString() const;
-  void appendSetting(std::string &currentPath, const std::string &setting);
+//  void appendSetting(std::string &currentPath, const std::string &setting);
+
+public:
+  static const char* DATA_START_TAG;
 
 private:
   std::vector<std::shared_ptr<ZNeuroglancerLayerSpec>> m_layerList;

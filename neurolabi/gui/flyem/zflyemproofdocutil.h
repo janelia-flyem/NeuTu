@@ -11,6 +11,7 @@ class ZDvidLabelSlice;
 class ZFlyEmProofDoc;
 class ZIntCuboid;
 class ZFlyEmBookmark;
+class ZDvidGraySlice;
 
 class ZFlyEmProofDocUtil
 {
@@ -20,6 +21,8 @@ public:
 public:
   static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc, neutu::EAxis axis);
   static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc);
+  static ZDvidGraySlice* GetActiveGraySlice(ZFlyEmProofDoc *doc, neutu::EAxis axis);
+
   static std::set<uint64_t> GetSelectedBodyId(
       ZFlyEmProofDoc *doc,
       neutu::EAxis axis, neutu::ELabelSource type);

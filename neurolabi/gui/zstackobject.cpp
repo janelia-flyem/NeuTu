@@ -14,7 +14,7 @@
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_hitProtocal(EHitProtocal::HIT_DATA_POS), m_projectionVisible(true),
+  m_isVisible(true), m_hitProtocal(EHitProtocol::HIT_DATA_POS), m_projectionVisible(true),
   m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
   m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
@@ -269,9 +269,9 @@ bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
                        neutu::EAxis axis)
 {
   switch (m_hitProtocal) {
-  case EHitProtocal::HIT_DATA_POS:
+  case EHitProtocol::HIT_DATA_POS:
     return hit(dataPos);
-  case EHitProtocal::HIT_WIDGET_POS:
+  case EHitProtocol::HIT_WIDGET_POS:
     return hitWidgetPos(widgetPos, axis);
   default:
     break;

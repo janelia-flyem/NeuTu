@@ -536,6 +536,12 @@ bool ZFlyEmBodyAnnotation::isFinalized() const
   return (ZString(getStatus()).lower() == "finalized");
 }
 
+bool ZFlyEmBodyAnnotation::hasSameUserStatus(const ZFlyEmBodyAnnotation &annot) const
+{
+  return (m_userName == annot.m_userName) &&
+      (m_namingUser == annot.m_namingUser);
+}
+
 bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
 {
   return (m_bodyId == annot.m_bodyId) &&

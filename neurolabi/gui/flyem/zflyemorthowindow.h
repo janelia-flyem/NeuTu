@@ -11,14 +11,15 @@ class ZFlyEmProofDoc;
 class ZWidgetMessage;
 class QProgressDialog;
 class ZProgressSignal;
+class ZDvidEnv;
 
 class ZFlyEmOrthoWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent = 0);
+  explicit ZFlyEmOrthoWindow(const ZDvidEnv &env, QWidget *parent = 0);
   explicit ZFlyEmOrthoWindow(
-      const ZDvidTarget &target, int width, int height, int depth,
+      const ZDvidEnv &env, int width, int height, int depth,
       QWidget *parent = 0);
 
   ZFlyEmOrthoDoc *getDocument() const;

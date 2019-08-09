@@ -5,6 +5,15 @@
 
 class ZJsonObject;
 
+/*!
+ * \brief The class for specifying a neuroglancer layer.
+ *
+ * A typical layer has the following three fields:
+ *
+ * name: name of the layer
+ * type: type of the layer, which can be 'image', 'segmentation', 'annotation' and so on
+ * source: source of the data
+ */
 class ZNeuroglancerLayerSpec
 {
 public:
@@ -12,6 +21,14 @@ public:
 
   std::string getName() const {
     return m_name;
+  }
+
+  std::string getType() const {
+    return m_type;
+  }
+
+  std::string getSource() const {
+    return m_source;
   }
 
   void setSource(const std::string &source) {
@@ -29,6 +46,16 @@ public:
   virtual ZJsonObject toJsonObject() const;
 
 //  std::string toPathString() const;
+
+public:
+  static const char* KEY_SOURCE;
+  static const char* KEY_TYPE;
+  static const char* KEY_NAME;
+
+  static const char* TYPE_SEGMENTATION;
+  static const char* TYPE_GRAYSCALE;
+  static const char* TYPE_ANNOTATION;
+  static const char* TYPE_SKELETON;
 
 private:
   std::string m_source;

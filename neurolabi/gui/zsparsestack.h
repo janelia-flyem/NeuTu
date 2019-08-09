@@ -134,6 +134,8 @@ public:
 
   bool isEmpty() const;
 
+  void clearGrayscale();
+
   void merge(ZSparseStack &sparseStack);
 
   void shakeOff();

@@ -1385,6 +1385,11 @@ std::string ZDvidUrl::getBookmarkUrl() const
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BOOKMARK));
 }
 
+std::string ZDvidUrl::getBookmarkUrl(int x, int y, int z) const
+{
+  return getBookmarkUrl(x, y, z, 1, 1, 1);
+}
+
 std::string ZDvidUrl::getBookmarkUrl(
     int x, int y, int z, int width, int height, int depth) const
 {

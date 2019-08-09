@@ -232,6 +232,7 @@ public:
   std::string getBookmarkKeyUrl(const ZIntPoint &pt) const;
 
   std::string getBookmarkUrl() const;
+  std::string getBookmarkUrl(int x, int y, int z) const;
   std::string getBookmarkUrl(int x, int y, int z,
                              int width, int height, int depth) const;
   std::string getBookmarkUrl(

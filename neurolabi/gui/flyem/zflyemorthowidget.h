@@ -12,14 +12,14 @@ class ZIntPoint;
 class ZStackView;
 class ZStackMvc;
 class ZWidgetMessage;
+class ZDvidEnv;
 
 class ZFlyEmOrthoWidget : public QWidget
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent = 0);
-  explicit ZFlyEmOrthoWidget(
-      const ZDvidTarget &target, int width, int height, int depth,
+  explicit ZFlyEmOrthoWidget(const ZDvidEnv &env, QWidget *parent = 0);
+  explicit ZFlyEmOrthoWidget(const ZDvidEnv &env, int width, int height, int depth,
       QWidget *parent = 0);
 
   ZFlyEmOrthoDoc *getDocument() const;
@@ -68,7 +68,7 @@ public:
 
 private:
 //  void init(const ZDvidTarget &target);
-  void init(const ZDvidTarget &target, int width, int height, int depth);
+  void init(const ZDvidEnv &env, int width, int height, int depth);
   void connectSignalSlot();
   void beginViewSync();
   void endViewSync();

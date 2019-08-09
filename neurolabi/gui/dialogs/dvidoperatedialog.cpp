@@ -39,7 +39,8 @@ void DvidOperateDialog::updateDvidTarget()
     m_dvidTarget = m_dvidDlg->getDvidTarget();
     ui->dvidLabel->setText(m_dvidTarget.getSourceString(false).c_str());
   } else {
-    m_dvidTarget.clear();
+    m_dvidTarget = ZDvidTarget();
+//    m_dvidTarget.clear();
     ui->dvidLabel->setText("");
   }
 }

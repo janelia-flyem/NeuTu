@@ -92,6 +92,7 @@ public:
 
   bool isFinalized() const;
 
+  bool hasSameUserStatus(const ZFlyEmBodyAnnotation &annot) const;
   bool operator == (const ZFlyEmBodyAnnotation &annot) const;
 
 public:

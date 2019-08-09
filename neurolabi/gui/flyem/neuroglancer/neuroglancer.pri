@@ -4,7 +4,8 @@ HEADERS += \
     $$PWD/zneuroglancernavigation.h \
     $$PWD/zneuroglancerlayerspecfactory.h \
     $$PWD/zneuroglancerannotationlayerspec.h \
-    $$PWD/zneuroglancerpathfactory.h
+    $$PWD/zneuroglancerpathfactory.h \
+    $$PWD/zneuroglancerpathparser.h
 
 SOURCES += \
     $$PWD/zneuroglancerpath.cpp \
@@ -12,4 +13,5 @@ SOURCES += \
     $$PWD/zneuroglancernavigation.cpp \
     $$PWD/zneuroglancerlayerspecfactory.cpp \
     $$PWD/zneuroglancerannotationlayerspec.cpp \
-    $$PWD/zneuroglancerpathfactory.cpp
+    $$PWD/zneuroglancerpathfactory.cpp \
+    $$PWD/zneuroglancerpathparser.cpp

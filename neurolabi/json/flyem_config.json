@@ -66,7 +66,7 @@
       "label_block": "pb-seg-np0.2-conservative-stitch",
       "synapse": "rough_PB26_syn_flt_nms_unq",
       "comment": "central complex",
-      "user_name": ["takemuras"]
+      "user_name": []
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -321,6 +321,7 @@
       "label_block": "labels",
       "synapse": "mb6_synapses",
       "roi": "mb_subtracted",
+      "multires_tile": "tiles",
       "user_name": ["zhaot", "test"]
     },
     {

@@ -65,6 +65,7 @@ class FlyEmMvcDialogManager;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmBookmark;
 class ZFlyEmBookmarkListModel;
+class ZDvidEnv;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -80,7 +81,7 @@ public:
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
       neutu::EAxis axis = neutu::EAxis::Z, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
-      const ZDvidTarget &target, ERole role = ERole::ROLE_WIDGET);
+      const ZDvidEnv &env, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
@@ -95,10 +96,14 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   const ZDvidInfo& getDvidInfo() const;
-  const ZDvidInfo& getGrayScaleInfo() const;
+//  const ZDvidInfo& getGrayScaleInfo() const;
 
-  virtual void setDvidTarget(const ZDvidTarget &target);
+//  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
+  void setDvidFromJson(const std::string &filePath);
+  void setDvidFromJsonObject(const std::string &str);
+  void setDvidFromUrl(const QString &url);
+  virtual void setDvid(const ZDvidEnv &env);
 
   void clear();
 
@@ -114,7 +119,8 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
-  virtual ZDvidTarget getDvidTarget() const;
+  ZDvidEnv getDvidEnv() const;
+  ZDvidTarget getDvidTarget() const;
   std::string getDvidTargetUuid() const;
 
   void setDvidDialog(ZDvidTargetProviderDialog *dlg);
@@ -363,6 +369,9 @@ public slots:
   void uncheckSelectedBookmark();
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
+  void copyBookmarkUrl(int x, int y, int z);
+
   void processSelectionChange(const ZStackObjectSelector &selector);
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
@@ -411,6 +420,8 @@ public slots:
   void testBodySplit();
 
   void endTestTask();
+
+  void configureRecorder();
 
 protected slots:
   void detachCoarseBodyWindow();
