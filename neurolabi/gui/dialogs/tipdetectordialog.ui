@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>475</width>
-    <height>352</height>
+    <height>406</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>When &quot;Run&quot; is clicked, a script will be run that finds unexamined tips on the selected body. A To do item will be placed on each tip, overwriting any existing todo at the same position. Existing todos located off the detected tips will NOT be affected.</string>
+      <string>When &quot;Run&quot; is clicked, a script will be run that finds unexamined tips on the selected body. A To do item will be placed on each tip. Existing to do items will NOT be replaced. If an RoI is chosen, to do items will only be placed in the RoI.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -27,7 +27,7 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Note: the tip detection script may take a few minutes to run. NeuTu will be unresponsive during that time.</string>
+      <string>Note: the tip detection script may take a few minutes to run. Larger bodies with more tips will take longer than smaller bodies.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

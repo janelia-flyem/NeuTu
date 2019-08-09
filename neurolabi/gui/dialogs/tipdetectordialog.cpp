@@ -129,6 +129,8 @@ void TipDetectorDialog::setRoiList(QStringList roiList) {
 void TipDetectorDialog::applicationQuitting() {
     // this isn't 100% necessary...the Python process won't block the application
     //  from quitting
+    // you could even argue that you *don't* want the Python process to die
+    //  when NeuTu does...maybe you want tip detection to continue for next time
     if (m_process.state() != QProcess::NotRunning) {
         m_process.kill();
     }

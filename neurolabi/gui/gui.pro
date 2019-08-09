@@ -593,7 +593,6 @@ HEADERS += mainwindow.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/todosearcher.h \
-    tipdetectorrunner.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -1099,7 +1098,6 @@ SOURCES += main.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/todosearcher.cpp \
-    tipdetectorrunner.cpp \    
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
