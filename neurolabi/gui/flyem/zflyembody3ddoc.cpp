@@ -2269,7 +2269,9 @@ void ZFlyEmBody3dDoc::makeKeyProcessor()
 void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
-    ZOUT(LTRACE(), 5) << "Update todo";
+#ifdef _DEBUG_
+    std::cout << "Updating todo\n";
+#endif
 
     bodyId = decode(bodyId);
 
@@ -2290,6 +2292,10 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         ZFlyEmToDoItem *item = *iter;
         item->setRadius(30);
         item->setSource(source);
+#ifdef _DEBUG_
+        std::cout << "Todo: " << item->getPosition().toString()
+                  << " " << item->isChecked() << std::endl;
+#endif
         getDataBuffer()->addUpdate(
               item, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
       }
