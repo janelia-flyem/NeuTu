@@ -74,7 +74,7 @@ requirements:
     - xorg-libxrandr 1.5.1* # [linux64]
     - xorg-libxcursor 1.2.0* # [linux64]
     - xorg-libxtst 1.2.3* # [linux64]
-    - marktips >=0.1
+    - marktips 0.2*
 
 about:
   home: http://github.com/janelia-flyem/NeuTu
