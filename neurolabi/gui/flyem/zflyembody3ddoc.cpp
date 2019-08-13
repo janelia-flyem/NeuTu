@@ -2277,9 +2277,21 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
 
+    getDataBuffer()->removeObjectUpdate([&](ZStackDocObjectUpdate *u) {
+      if (u->getObject()) {
+        return ((u->getAction() == ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE) ||
+            (u->getAction() == ZStackDocObjectUpdate::EAction::ADD_UNIQUE)) &&
+            (u->getObject()->getSource() == source);
+      }
+
+      return true;
+    });
     TStackObjectList objList = getObjectGroup().findSameSource(source);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
+#ifdef _DEBUG_
+        std::cout << "Todo to remove: " << *iter << std::endl;
+#endif
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
     }
 
@@ -2293,7 +2305,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         item->setRadius(30);
         item->setSource(source);
 #ifdef _DEBUG_
-        std::cout << "Todo: " << item->getPosition().toString()
+        std::cout << "Todo to add: " << item << item->getPosition().toString()
                   << " " << item->isChecked() << std::endl;
 #endif
         getDataBuffer()->addUpdate(

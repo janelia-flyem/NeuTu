@@ -65,6 +65,9 @@ public:
 
   int getActionCount(ZStackDocObjectUpdate::EAction action) const;
 
+  void removeObjectUpdate(
+      std::function<bool(ZStackDocObjectUpdate*)> pred);
+
   void print() const;
 
 signals:

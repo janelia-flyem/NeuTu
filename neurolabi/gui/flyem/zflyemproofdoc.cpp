@@ -1578,7 +1578,7 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
   if (m_mainGrayscaleReader) {
-    getMainGrayscaleInfo();
+    return getMainGrayscaleInfo();
     /*
     if (m_mainGrayscaleReader->isReady()) {
       return m_grayScaleInfo;

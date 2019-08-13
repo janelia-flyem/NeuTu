@@ -381,7 +381,7 @@ void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
     addItem(const_cast<ZFlyEmToDoItem*>(*iter));
 
 #ifdef _DEBUG_
-    std::cout << "3D Todo: " << (*iter)->getPosition().toString()
+    std::cout << "3D Todo: " << *iter << " " << (*iter)->getPosition().toString()
               << " " << (*iter)->isChecked() << std::endl;
 #endif
   }

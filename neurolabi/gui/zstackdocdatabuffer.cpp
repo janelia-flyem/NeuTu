@@ -93,6 +93,23 @@ void ZStackDocDataBuffer::addUpdate(
   }
 }
 
+void ZStackDocDataBuffer::removeObjectUpdate(
+    std::function<bool (ZStackDocObjectUpdate*)> pred)
+{
+  QMutexLocker locker(&m_mutex);
+
+  for (QList<ZStackDocObjectUpdate*>::iterator iter = m_updateList.begin();
+       iter != m_updateList.end(); /*++iter*/) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (pred(u)) {
+      iter = m_updateList.erase(iter);
+      delete u;
+    } else {
+      ++iter;
+    }
+  }
+}
+
 void ZStackDocDataBuffer::deliver()
 {
   emit delivering();
