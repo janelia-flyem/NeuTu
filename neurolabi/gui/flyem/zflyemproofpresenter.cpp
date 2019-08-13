@@ -962,7 +962,7 @@ void ZFlyEmProofPresenter::runTipDetection() {
     ZPoint pt = event.getDataPosition();
     uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
 
-    getCompleteDocument()->executeRunTipDetectionCommand(pt.toIntPoint(), bodyId);
+    emit tipDetectRequested(pt.toIntPoint(), bodyId);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const

@@ -292,6 +292,7 @@ public slots:
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
+  void showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId);
 
   void closeSkeletonWindow();
 

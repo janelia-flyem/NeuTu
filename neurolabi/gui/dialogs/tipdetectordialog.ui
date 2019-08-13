@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>475</width>
-    <height>328</height>
+    <height>406</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>When &quot;Run&quot; is clicked, a script will be run that finds unexamined tips on the selected body. A To do item will be placed on each tip, overwriting any existing todo at the same position. Existing todos located off the detected tips will NOT be affected.</string>
+      <string>When &quot;Run&quot; is clicked, a script will be run that finds unexamined tips on the selected body. A To do item will be placed on each tip. Existing to do items will NOT be replaced. If an RoI is chosen, to do items will only be placed in the RoI.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -27,7 +27,7 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Note: the tip detection script may take a few minutes to run. NeuTu will be unresponsive during that time.</string>
+      <string>Note: the tip detection script may take a few minutes to run. Larger bodies with more tips will take longer than smaller bodies.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -36,18 +36,21 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_7">
+     <item row="1" column="1">
+      <widget class="QComboBox" name="roiMenu"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Elapsed time:</string>
+        <string>Tips found:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="todoLabel">
+     <item row="5" column="1">
+      <widget class="QLabel" name="locationsLabel">
        <property name="text">
         <string/>
        </property>
@@ -63,17 +66,17 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_5">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Status:</string>
+        <string>Elapsed time:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>To do items placed:</string>
@@ -83,27 +86,54 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="runButton">
-       <property name="text">
-        <string>Run</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="statusLabel">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Script control:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="timeLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="statusLabel">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Status:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QTextEdit" name="messageText">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="todoLabel">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>
@@ -115,13 +145,13 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLabel" name="timeLabel">
+      <widget class="QPushButton" name="runButton">
        <property name="text">
-        <string/>
+        <string>Run</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_9">
        <property name="text">
         <string>Message:</string>
@@ -131,10 +161,30 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QTextEdit" name="messageText">
-       <property name="readOnly">
-        <bool>true</bool>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>RoI:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Tips found (RoI):</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="locationsRoiLabel">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>

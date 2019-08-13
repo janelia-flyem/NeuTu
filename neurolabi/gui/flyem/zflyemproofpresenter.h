@@ -115,6 +115,7 @@ signals:
   void showingSupervoxelList();
   void togglingBodyColorMap();
   void refreshingData();
+  void tipDetectRequested(ZIntPoint point, uint64_t bodyID);
 
 public slots:
   void deleteSelectedSynapse();

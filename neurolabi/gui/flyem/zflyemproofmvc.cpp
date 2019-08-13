@@ -125,6 +125,7 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
+#include "dialogs/tipdetectordialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -619,6 +620,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(showSupervoxelList()));
   connect(getCompletePresenter(), SIGNAL(refreshingData()),
           this, SLOT(refreshData()));
+  connect(getCompletePresenter(), SIGNAL(tipDetectRequested(ZIntPoint,uint64_t)),
+          this, SLOT(showTipDetectorWindow(ZIntPoint,uint64_t)));
 
   connect(getDocument().get(), SIGNAL(updatingLatency(int)),
           this, SLOT(updateLatencyWidget(int)));
@@ -4819,6 +4822,14 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
+void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId) {
+    TipDetectorDialog * inputDialog = m_dlgManager->getTipDetectorDlg();
+    inputDialog->setBodyID(bodyId);
+    inputDialog->setRoiList(getCompleteDocument()->getRoiList());
+    inputDialog->setDvidTarget(getDvidTarget());
+    // inputDialog->exec();
+    inputDialog->show();
+}
 
 void ZFlyEmProofMvc::closeSkeletonWindow()
 {

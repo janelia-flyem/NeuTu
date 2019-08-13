@@ -593,8 +593,7 @@ HEADERS += mainwindow.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/todosearcher.h \
-    tipdetectorrunner.h \
-    tipdetectordialog.h \
+    dialogs/tipdetectordialog.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -795,7 +794,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/protocoldialog.ui \
-    tipdetectordialog.ui \
+    dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
@@ -1099,8 +1098,7 @@ SOURCES += main.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/todosearcher.cpp \
-    tipdetectorrunner.cpp \    
-    tipdetectordialog.cpp \
+    dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \

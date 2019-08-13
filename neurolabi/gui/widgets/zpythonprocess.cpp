@@ -100,6 +100,11 @@ QString ZPythonProcess::getRawOutput() {
     return output;
 }
 
+QString ZPythonProcess::getErrorOutput() {
+    QString output = m_process.readAllStandardError();
+    return output;
+}
+
 bool ZPythonProcess::findPython()
 {
   return false;
