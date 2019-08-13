@@ -29985,6 +29985,33 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZFileList fileList;
+  fileList.load(
+        GET_FLYEM_DATA_DIR + "/roi/2019AugDiffused/Diffused_50_0.2_30", "json",
+        ZFileList::SORT_BY_LAST_NUMBER);
+
+  std::vector<std::string> fileArray(fileList.size());
+  for (int i = 0; i < fileList.size(); ++i) {
+    fileArray[i] = fileList.getFilePath(i);
+  }
+
+  for (const std::string inputPath : fileArray) {
+    if (ZString(inputPath).endsWith("29.part.json")) {
+      ZObject3dScan obj;
+      flyem::LoadRoiFromJson(inputPath, &obj);
+
+      obj.save(inputPath + ".sobj");
+
+      ZStack *stack = ZStackFactory::MakeZeroStack(1088, 1280, 1344);
+      obj.upSample(3, 3, 3);
+      obj.drawStack(stack, 255);
+      stack->save(inputPath + ".tif");
+      delete stack;
+    }
+  }
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
 
   std::vector<std::string> roiList = { "(L)NO1", "(L)NO2", "(L)NO3" };
@@ -30269,9 +30296,6 @@ void ZTest::test(MainWindow *host)
   uint64_t svId = 1877429256;
   std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
   std::cout<< url << std::endl;
-#endif
-
-#if 1
 #endif
 
   std::cout << "Done." << std::endl;

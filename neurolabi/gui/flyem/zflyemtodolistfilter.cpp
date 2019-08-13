@@ -372,9 +372,18 @@ void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   for (QList<ZFlyEmToDoItem *>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     addItem(const_cast<ZFlyEmToDoItem*>(*iter));
+
+#ifdef _DEBUG_
+    std::cout << "3D Todo: " << (*iter)->getPosition().toString()
+              << " " << (*iter)->isChecked() << std::endl;
+#endif
   }
   m_dataIsInvalid = true;
   invalidateResult();
@@ -414,11 +423,19 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   ZFlyEmToDoList::ItemIterator iterator(&todoList);
 //  ZCuboid nodeBox;
   while (iterator.hasNext()) {
     ZFlyEmToDoItem &item = iterator.next();
     addItem(&item);
+#ifdef _DEBUG_
+    std::cout << "3D Todo: " << item.getPosition().toString()
+              << " " << item.isChecked() << std::endl;
+#endif
   }
 
   m_dataIsInvalid = true;

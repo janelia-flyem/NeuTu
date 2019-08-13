@@ -48,6 +48,11 @@ QString ZNeuroglancerPathFactory::MakePath(
     const ZDvidTarget &target, const ZIntPoint &voxelSize,
     const ZPoint &position, const QList<ZFlyEmBookmark*> bookmarkList)
 {
+  ZDvidEnv env;
+  env.setMainTarget(target);
+  return MakePath(env, voxelSize, position, bookmarkList);
+
+  /*
   ZNeuroglancerPath gpath;
 
   ZNeuroglancerNavigation nav;
@@ -79,6 +84,7 @@ QString ZNeuroglancerPathFactory::MakePath(
   }
 
   return QString(QUrl(gpath.getPath().c_str()).toEncoded());
+  */
 }
 
 QString ZNeuroglancerPathFactory::MakePath(

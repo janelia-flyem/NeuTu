@@ -910,6 +910,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             std::cout << "populating body info dialog:" << std::endl;
             std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
             std::cout << "    # body annotation keys = " << keyList.size() << std::endl;
+            std::cout << "    # body anntations = " << bodyAnnotationList.size() << std::endl;
         #endif
 
 

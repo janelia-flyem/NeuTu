@@ -3884,6 +3884,27 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   return synapse;
 }
 
+std::string ZFlyEmProofDoc::getPartnerProperty(const ZDvidSynapse &synapse) const
+{
+  std::string prop;
+
+  ZJsonArray jsonArray = synapse.getRelationJson();
+  for (size_t i = 0; i < jsonArray.size(); ++i) {
+    ZJsonObject jsonObj(jsonArray.value(i));
+    if (jsonObj.hasKey("To")) {
+      ZJsonArray ptJson(jsonObj.value("To"));
+      ZIntPoint pt;
+      pt.set(ZJsonParser::integerValue(ptJson.at(0)),
+             ZJsonParser::integerValue(ptJson.at(1)),
+             ZJsonParser::integerValue(ptJson.at(2)));
+      uint64_t tbarId = m_synapseReader.readBodyIdAt(pt);
+      prop += "_" + std::to_string(tbarId);
+    }
+  }
+
+  return prop;
+}
+
 std::string ZFlyEmProofDoc::getSynapseName(const ZDvidSynapse &synapse) const
 {
   std::string name;
@@ -3894,17 +3915,7 @@ std::string ZFlyEmProofDoc::getSynapseName(const ZDvidSynapse &synapse) const
     name = std::to_string(synapse.getBodyId());
     if (GET_FLYEM_CONFIG.psdNameDetail()) {
       if (synapse.getKind() == ZDvidSynapse::EKind::KIND_POST_SYN) {
-        ZJsonArray jsonArray = synapse.getRelationJson();
-        ZJsonObject jsonObj(jsonArray.value(0));
-        if (jsonObj.hasKey("To")) {
-          ZJsonArray ptJson(jsonObj.value("To"));
-          ZIntPoint pt;
-          pt.set(ZJsonParser::integerValue(ptJson.at(0)),
-                 ZJsonParser::integerValue(ptJson.at(1)),
-                 ZJsonParser::integerValue(ptJson.at(2)));
-          uint64_t tbarId = m_synapseReader.readBodyIdAt(pt);
-          name = name + "<-" + std::to_string(tbarId);
-        }
+        name += "<-" + getPartnerProperty(synapse);
       }
     }
   }

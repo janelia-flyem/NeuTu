@@ -68,10 +68,13 @@ ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(const ZDvidTarget &targe
   layer->setName("annotation");
   layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
   layer->setLinkedSegmentation(linkedSegmentationLayer);
-  layer->setTool("annotatePoint");
-  layer->setSource(
-        "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
-        "/" + target.getBookmarkName());
+  layer->setTool("annotateIntPoint");
+  std::string source = "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
+      "/" + target.getBookmarkName();
+  if (!target.getSegmentationName().empty()) {
+    source += "?label=" + target.getSegmentationName();
+  }
+  layer->setSource(source);
 
   return layer;
 }

@@ -1303,19 +1303,19 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
 
-    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
+//    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
 
     ZDvidInfo dvidInfo = getCompleteDocument()->getDvidInfo();
     ZResolution res = dvidInfo.getVoxelResolution();
 
 
-    QList<ZFlyEmBookmark*> bookmarkList =
-        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
+//    QList<ZFlyEmBookmark*> bookmarkList =
+//        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
     QString path = ZNeuroglancerPathFactory::MakePath(
           getCompleteDocument()->getDvidEnv(),
           ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
-          pt, bookmarkList);
+          pt/*, bookmarkList*/);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
   }
