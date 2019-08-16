@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QDebug>
 
 TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
     QDialog(parent),
@@ -48,6 +49,10 @@ void TipDetectorDialog::onRunButton() {
 
     disableRunUI();
     setStatus(RUNNING);
+
+#ifdef _DEBUG_
+    qDebug() << "marktips" << args;
+#endif
 
     m_process.start("marktips", args);
 }
