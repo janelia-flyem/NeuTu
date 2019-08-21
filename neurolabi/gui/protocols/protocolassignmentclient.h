@@ -37,6 +37,7 @@ private:
     QNetworkReply * m_datasetReply = nullptr;
 
     QJsonObject get(QString url);
+    QJsonObject post(QString url, QJsonObject data);
 
     void showError(QString title, QString message);
 

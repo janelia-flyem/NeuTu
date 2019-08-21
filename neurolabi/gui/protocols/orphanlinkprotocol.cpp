@@ -37,6 +37,7 @@ bool OrphanLinkProtocol::initialize() {
     // Qt really really wants network calls to be asynchronous, which is a real pain
     //  for me;
 
+
     QMap<QString, int> projects = m_assignments.getProjectsForProtocol(ProtocolAssignmentClient::ORPHAN_LINK);
 
     if (projects.size() == 0) {
@@ -52,6 +53,9 @@ bool OrphanLinkProtocol::initialize() {
 
 
     // get the user's chosen project; generate the assignment and start it
+    QString projectName = inputDialog.getProject();
+    int projectID = projects[projectName];
+
 
     // assignment = annmgr.generate assignment (project)
     // annmgr.start assignment (assigment)

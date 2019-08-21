@@ -595,6 +595,7 @@ HEADERS += mainwindow.h \
     protocols/orphanlinkprotocol.h \
     protocols/orphanlinkinputdialog.h \
     protocols/protocolassignmentclient.h \
+    protocols/protocolassignmenturl.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -1105,6 +1106,7 @@ SOURCES += main.cpp \
     protocols/orphanlinkprotocol.cpp \
     protocols/orphanlinkinputdialog.cpp \
     protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenturl.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
@@ -1223,7 +1225,7 @@ SOURCES += main.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dialogs/neuprintsetupdialog.cpp \
     dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp 
+    dvid/zdvidenv.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

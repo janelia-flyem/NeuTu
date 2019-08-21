@@ -45,58 +45,32 @@ void ProtocolAssignmentClient::setServer(QString server) {
 
 QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentProtocols protocol) {
 
-    // get all projects for the input protocol
+    QMap<QString, int> projects;
 
 
-    // url: http://flyem-assignment.int.janelia.org/projects?protocol=orphan_link
-    /*
-    {
-      "rest": {
-        "requester": "172.31.19.4",
-        "url": "http://flyem-assignment.int.janelia.org/projects?protocol=orphan_link",
-        "endpoint": "get_project_info",
-        "error": false,
-        "elapsed_time": "0:00:00.006644",
-        "row_count": 3,
-        "pid": 18,
-        "sql_statement": "SELECT * FROM project_vw WHERE protocol=('orphan_link')"
-      },
-      "data": [
-        {
-          "id": 1,
-          "name": "Project 1",
-          "protocol": "orphan_link",
-          "priority": 3,
-          "disposition": null,
-          "note": null,
-          "create_date": "Tue, 20 Aug 2019 11:21:00"
-        },
-        ...
-        ]
-        }
-    */
 
-    // construct url
-    // inlined for testing; I expect to break this out later:
+    // this call needs to restrict the returned list to those the user is allowed to generate;
+    //  /projects/eligible is the endpoint for that, returning list of projects (name or id?)
+
+    // currently that endpoint needs an auth token (that's where it gets the username from),
+    //  so we can't do that yet
+
+
+    // construct url; inlined for now; I expect to put url construction in its own class later
     QString url = m_server;
     if (protocol == ORPHAN_LINK) {
         url += "projects?protocol=orphan_link";
     } else {
-
-        // not supported yet
-
+        showError("Unknown protocol", "Unknown protocol!");
+        return projects;
     }
-
 
     // make call
     QJsonObject result = get(url);
-
-
-    // check for errors; parse
-    QMap<QString, int> projects;
     QJsonObject restData = result["rest"].toObject();
+
     if (restData["error"].toBool()) {
-        showError("error getting projects", "Error in retrieving projects: " + restData["message"].toString());
+        showError("Error getting projects", "Error in retrieving projects: " + restData["message"].toString());
     } else {
         QJsonArray data = result["data"].toArray();
         for (QJsonValue val: data) {
@@ -108,16 +82,13 @@ QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentPro
 }
 
 QJsonObject ProtocolAssignmentClient::get(QString url) {
-
-    // see comments at top as to why this has been implemented synchronously
-
-    // url is correct here:
-    qDebug() << "ProtocolAssignmentClient::get url = " << url;
+    qDebug() << "ProtocolAssignmentClient::get: url = " << url;
 
     QUrl requestUrl;
     requestUrl.setUrl(url);
     QNetworkReply *reply = m_networkManager->get(QNetworkRequest(requestUrl));
 
+    // see comments at top as to why this has been implemented synchronously
     // Qt synchronous network call requires mini-event loop, ugh; from examples online:
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
@@ -125,20 +96,51 @@ QJsonObject ProtocolAssignmentClient::get(QString url) {
     loop.exec();
 
     if (reply->error() != QNetworkReply::NoError) {
-        qDebug() << "get error (number below?)";
-        qDebug() << reply->error();
+        // this mimics the form of the return from the assignment manager
         QJsonObject errorObject;
         errorObject["error"] = true;
         errorObject["url"] = url;
         errorObject["message"] = "QNetworkReply error code: " + QString::number(reply->error());
         return errorObject;
     } else {
-        qDebug() << "get success (reply below?):";
         QString stringReply = (QString) reply->readAll();
-        qDebug() << stringReply;
         QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
         return jsonResponse.object();
     }
+}
+
+QJsonObject ProtocolAssignmentClient::post(QString url, QJsonObject data) {
+    // see general comments in get(), above
+
+    qDebug() << "ProtocolAssignmentClient::put: url = " << url;
+
+    QUrl requestUrl;
+    requestUrl.setUrl(url);
+
+    // add data
+
+
+    // will be ->put()
+    QNetworkReply *reply = m_networkManager->get(QNetworkRequest(requestUrl));
+
+
+    QEventLoop loop;
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &loop, SLOT(quit()));
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        QJsonObject errorObject;
+        errorObject["error"] = true;
+        errorObject["url"] = url;
+        errorObject["message"] = "QNetworkReply error code: " + QString::number(reply->error());
+        return errorObject;
+    } else {
+        QString stringReply = (QString) reply->readAll();
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
+        return jsonResponse.object();
+    }
+
 }
 
 /*
