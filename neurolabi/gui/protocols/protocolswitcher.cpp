@@ -13,6 +13,7 @@
 #include "protocolmetadata.h"
 #include "synapsepredictionprotocol.h"
 #include "synapsereviewprotocol.h"
+#include "orphanlinkprotocol.h"
 #include "todoreviewprotocol.h"
 
 #include "doNthingsprotocol.h"
@@ -76,7 +77,8 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
         // << "doNthings"
 
         << "synapse_prediction_body"
-        << "synapse_prediction_region";
+        << "synapse_prediction_region"
+        << "orphan_link";
 
         // started but deferred for now
         // << "todo_review";
@@ -356,6 +358,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(
               m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    } else if (protocolName == "orphan_link") {
+        m_activeProtocol = new OrphanLinkProtocol(m_parent);
+    } else if (protocolName == "todo_review") {
+        m_activeProtocol = new ToDoReviewProtocol(m_parent);
 
     // started, deferred for now
     // } else if (protocolName == "todo_review") {

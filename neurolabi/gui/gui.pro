@@ -592,6 +592,9 @@ HEADERS += mainwindow.h \
     protocols/synapsereviewinputdialog.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
+    protocols/orphanlinkprotocol.h \
+    protocols/orphanlinkinputdialog.h \
+    protocols/protocolassignmentclient.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -793,6 +796,8 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
+    protocols/orphanlinkprotocol.ui \
+    protocols/orphanlinkinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
@@ -1097,6 +1102,9 @@ SOURCES += main.cpp \
     protocols/synapsereviewinputdialog.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
+    protocols/orphanlinkprotocol.cpp \
+    protocols/orphanlinkinputdialog.cpp \
+    protocols/protocolassignmentclient.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
@@ -1215,7 +1223,7 @@ SOURCES += main.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dialogs/neuprintsetupdialog.cpp \
     dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp
+    dvid/zdvidenv.cpp 
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
