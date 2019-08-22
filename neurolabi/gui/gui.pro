@@ -591,7 +591,6 @@ HEADERS += mainwindow.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
     protocols/connectionvalidationprotocol.h \ 
-    protocols/connectionvalidationinputdialog.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/todosearcher.h \
@@ -794,7 +793,6 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/connectionvalidationprotocol.ui \
-    protocols/connectionvalidationinputdialog.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -1100,7 +1098,6 @@ SOURCES += main.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
     protocols/connectionvalidationprotocol.cpp \
-    protocols/connectionvalidationinputdialog.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/todosearcher.cpp \
