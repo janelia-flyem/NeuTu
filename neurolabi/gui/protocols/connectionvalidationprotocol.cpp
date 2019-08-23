@@ -256,7 +256,7 @@ void ConnectionValidationProtocol::updateProgressLabel() {
                 nReviewed++;
             }
         }
-        float percent = float(nReviewed) / m_points.size();
+        float percent = 100 * float(nReviewed) / m_points.size();
         ui->progressLabel->setText(QString("%1/%2 (%3%)").arg(nReviewed).arg(m_points.size()).arg(percent, 1, 'f', 1));
     }
 }
