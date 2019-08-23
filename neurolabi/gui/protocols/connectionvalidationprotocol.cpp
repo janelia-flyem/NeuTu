@@ -255,17 +255,37 @@ void ConnectionValidationProtocol::saveState() {
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), fileVersion);
 
+    // save data; all the keys are hard-coded here for now as I'm
+    //  in a hurry; make them constants later
 
+    // describe the arrays we'll be adding:
+    ZJsonArray fields;
+    fields.append("PSD location x");
+    fields.append("PSD location y");
+    fields.append("PSD location z");
+    fields.append("reviewed");
+    fields.append("T-bar good");
+    fields.append("T-bar segmentation good");
+    fields.append("PSD good");
+    fields.append("PSD segmentation good");
+    data.setEntry("fields", fields);
 
-    // save data
-
-
-
-    // progress:
-
-
-
-
+    // and the items themselves:
+    ZJsonArray connections;
+    for (ZIntPoint p: m_points) {
+        PointData pd = m_pointData[p];
+        ZJsonArray c;
+        c.append(p.getX());
+        c.append(p.getY());
+        c.append(p.getZ());
+        c.append(pd.reviewed);
+        c.append(pd.tbarGood);
+        c.append(pd.tbarSegGood);
+        c.append(pd.psdGood);
+        c.append(pd.psdSegGood);
+        connections.append(c);
+    }
+    data.setEntry("connections", connections);
 
     emit requestSaveProtocol(data);
 }

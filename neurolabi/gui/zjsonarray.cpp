@@ -106,6 +106,10 @@ void ZJsonArray::append(uint64_t v)
   append(json_integer(v));
 }
 
+void ZJsonArray::append(bool v) {
+    append(json_boolean(v));
+}
+
 void ZJsonArray::append(double v)
 {
   append(json_real(v));
