@@ -449,6 +449,28 @@ void ConnectionValidationProtocol::onExitButton() {
 }
 
 void ConnectionValidationProtocol::onCompleteButton() {
+    // warn if not all connections reviewed; you can easily totally disalow it instead
+    bool complete = true;
+    for (ZIntPoint p: m_points) {
+        if (!m_pointData[p].reviewed) {
+            complete = false;
+            break;
+        }
+    }
+    if (!complete) {
+        QMessageBox incompleteBox;
+        incompleteBox.setText("Unreviewed connections!");
+        incompleteBox.setInformativeText("There are unreviewed connections! Complete the protocol anyway?\n\nContinue completing or cancel?");
+        incompleteBox.setIcon(QMessageBox::Warning);
+        incompleteBox.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+        incompleteBox.setDefaultButton(QMessageBox::Cancel);
+        int ans = incompleteBox.exec();
+        if (ans == QMessageBox::Cancel) {
+            return;
+        }
+    }
+
+
     QMessageBox mb;
     mb.setText("Complete protocol");
     mb.setInformativeText("When you complete the protocol, it will save and exit immediately.  You will not be able to reopen it.\n\nComplete protocol now?");
