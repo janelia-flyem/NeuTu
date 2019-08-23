@@ -92,6 +92,7 @@ private:
 
     int findFirstUnreviewed();
     int findNextUnreviewed();
+    void setCurrentReviewed();
 
     void updateLabels();
     void updateCurrentLabel();

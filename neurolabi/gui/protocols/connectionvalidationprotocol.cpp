@@ -124,7 +124,7 @@ int ConnectionValidationProtocol::findNextUnreviewed() {
     for (int i=m_currentIndex+1; i<m_points.size(); i++) {
         indices << i;
     }
-    for (int i=0; i<m_currentIndex; i++) {
+    for (int i=0; i<=m_currentIndex; i++) {
         indices << i;
     }
 
@@ -136,6 +136,11 @@ int ConnectionValidationProtocol::findNextUnreviewed() {
         }
     }
     return found;
+}
+
+void ConnectionValidationProtocol::setCurrentReviewed() {
+    ui->reviewedBox->setChecked(true);
+    onReviewedChanged();
 }
 
 void ConnectionValidationProtocol::onFirstButton() {
@@ -157,7 +162,8 @@ void ConnectionValidationProtocol::onNextButton() {
 }
 
 void ConnectionValidationProtocol::onMarkAndNextButton() {
-
+    setCurrentReviewed();
+    onNextButton();
 }
 
 void ConnectionValidationProtocol::onGotoButton() {
@@ -168,6 +174,8 @@ void ConnectionValidationProtocol::onReviewedChanged() {
     m_pointData[m_points[m_currentIndex]].reviewed = ui->reviewedBox->isChecked();
     saveState();
     updateTable();
+    // reviewed change affects progress
+    updateProgressLabel();
 }
 
 void ConnectionValidationProtocol::onTbarGoodChanged() {
@@ -249,7 +257,7 @@ void ConnectionValidationProtocol::updateProgressLabel() {
             }
         }
         float percent = float(nReviewed) / m_points.size();
-        ui->progressLabel->setText(QString("%1/%2 (%3%)").arg(nReviewed).arg(m_points.size()).arg(percent));
+        ui->progressLabel->setText(QString("%1/%2 (%3%)").arg(nReviewed).arg(m_points.size()).arg(percent, 1, 'f', 1));
     }
 }
 
