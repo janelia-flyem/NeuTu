@@ -43,6 +43,7 @@ private slots:
     void onMarkAndNextButton();
     void onGotoButton();
 
+    void onReviewedChanged();
     void onTbarGoodChanged();
     void onTbarSegGoodChanged();
     void onPSDGoodCanged();

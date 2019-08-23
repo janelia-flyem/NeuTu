@@ -37,6 +37,7 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
+    connect(ui->reviewedBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewedChanged()));
     connect(ui->tbarCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onTbarGoodChanged()));
     connect(ui->tbarSegCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onTbarSegGoodChanged()));
     connect(ui->psdCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onPSDGoodCanged()));
@@ -134,20 +135,29 @@ void ConnectionValidationProtocol::onGotoButton() {
     gotoCurrentPoint();
 }
 
-void ConnectionValidationProtocol::onTbarGoodChanged() {
+void ConnectionValidationProtocol::onReviewedChanged() {
+    m_pointData[m_points[m_currentIndex]].reviewed = ui->reviewedBox->isChecked();
+    saveState();
+}
 
+void ConnectionValidationProtocol::onTbarGoodChanged() {
+    m_pointData[m_points[m_currentIndex]].tbarGood = ui->tbarCheckBox->isChecked();
+    saveState();
 }
 
 void ConnectionValidationProtocol::onTbarSegGoodChanged() {
-
+    m_pointData[m_points[m_currentIndex]].tbarSegGood = ui->tbarSegCheckBox->isChecked();
+    saveState();
 }
 
 void ConnectionValidationProtocol::onPSDGoodCanged() {
-
+    m_pointData[m_points[m_currentIndex]].psdGood = ui->psdCheckBox->isChecked();
+    saveState();
 }
 
 void ConnectionValidationProtocol::onPSDSegGoodChanged() {
-
+    m_pointData[m_points[m_currentIndex]].psdSegGood = ui->psdSegCheckBox->isChecked();
+    saveState();
 }
 
 void ConnectionValidationProtocol::onClickedTable(QModelIndex tableIndex) {
@@ -168,7 +178,8 @@ void ConnectionValidationProtocol::updateLabels() {
 
 void ConnectionValidationProtocol::updateCurrentLabel() {
     if (m_currentIndex < 0) {
-        ui->currentLabel->setText("(n/a)");
+        // extra spaces keep the layout from shifting as much when the label changes
+        ui->currentLabel->setText("(n/a)                    ");
     } else {
         ui->currentLabel->setText(QString::fromStdString(m_points[m_currentIndex].toString()));
     }
@@ -190,7 +201,32 @@ void ConnectionValidationProtocol::updateProgressLabel() {
 }
 
 void ConnectionValidationProtocol::updateCheckBoxes() {
-
+    PointData pd = m_pointData[m_points[m_currentIndex]];
+    if (pd.reviewed) {
+        ui->reviewedBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->reviewedBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+    if (pd.tbarGood) {
+        ui->tbarCheckBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->tbarCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+    if (pd.tbarSegGood) {
+        ui->tbarSegCheckBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->tbarSegCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+    if (pd.psdGood) {
+        ui->psdCheckBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->psdCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+    if (pd.psdSegGood) {
+        ui->psdSegCheckBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->psdSegCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
 }
 
 void ConnectionValidationProtocol::updateTable() {
@@ -335,7 +371,10 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
     // if, in the future, you need to update to a new save version,
     //  remember to do a save here
 
+
     // start work
+
+    // probably should just call a more generic routine?  eg, go to first?
     updateTable();
     updateLabels();
 

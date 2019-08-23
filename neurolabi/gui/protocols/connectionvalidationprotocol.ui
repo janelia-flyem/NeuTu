@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Connection Validation Protocol</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0">
    <item>
@@ -111,6 +111,13 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="reviewedBox">
+         <property name="text">
+          <string>Reviewed</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="tbarCheckBox">
