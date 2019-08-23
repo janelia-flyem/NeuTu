@@ -37,11 +37,13 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
-    connect(ui->reviewedBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewedChanged()));
-    connect(ui->tbarCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onTbarGoodChanged()));
-    connect(ui->tbarSegCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onTbarSegGoodChanged()));
-    connect(ui->psdCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onPSDGoodCanged()));
-    connect(ui->psdSegCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onPSDSegGoodChanged()));
+    // note that connecting clicked() on check boxes will only signal on user clicks,
+    //  not programmatic toggles, which is what I want
+    connect(ui->reviewedBox, SIGNAL(clicked(bool)), this, SLOT(onReviewedChanged()));
+    connect(ui->tbarCheckBox, SIGNAL(clicked(bool)), this, SLOT(onTbarGoodChanged()));
+    connect(ui->tbarSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onTbarSegGoodChanged()));
+    connect(ui->psdCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDGoodCanged()));
+    connect(ui->psdSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDSegGoodChanged()));
 
     connect(ui->sitesTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -138,26 +140,31 @@ void ConnectionValidationProtocol::onGotoButton() {
 void ConnectionValidationProtocol::onReviewedChanged() {
     m_pointData[m_points[m_currentIndex]].reviewed = ui->reviewedBox->isChecked();
     saveState();
+    updateTable();
 }
 
 void ConnectionValidationProtocol::onTbarGoodChanged() {
     m_pointData[m_points[m_currentIndex]].tbarGood = ui->tbarCheckBox->isChecked();
     saveState();
+    updateTable();
 }
 
 void ConnectionValidationProtocol::onTbarSegGoodChanged() {
     m_pointData[m_points[m_currentIndex]].tbarSegGood = ui->tbarSegCheckBox->isChecked();
     saveState();
+    updateTable();
 }
 
 void ConnectionValidationProtocol::onPSDGoodCanged() {
     m_pointData[m_points[m_currentIndex]].psdGood = ui->psdCheckBox->isChecked();
     saveState();
+    updateTable();
 }
 
 void ConnectionValidationProtocol::onPSDSegGoodChanged() {
     m_pointData[m_points[m_currentIndex]].psdSegGood = ui->psdSegCheckBox->isChecked();
     saveState();
+    updateTable();
 }
 
 void ConnectionValidationProtocol::onClickedTable(QModelIndex tableIndex) {
@@ -268,6 +275,11 @@ void ConnectionValidationProtocol::updateTable() {
     ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->sitesTableView->horizontalHeader()->setResizeMode(POINT_COLUMN, QHeaderView::Stretch);
 #endif
+
+    // reselect current point:
+    QModelIndex index = m_sitesModel->index(m_currentIndex, 0);
+    ui->sitesTableView->setCurrentIndex(index);
+    ui->sitesTableView->scrollTo(index);
 }
 
 void ConnectionValidationProtocol::loadPoints(QJsonArray array) { // get point data into internal data structures
