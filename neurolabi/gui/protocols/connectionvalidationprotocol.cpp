@@ -168,7 +168,7 @@ void ConnectionValidationProtocol::updateLabels() {
 
 void ConnectionValidationProtocol::updateCurrentLabel() {
     if (m_currentIndex < 0) {
-        ui->currentLabel->setText("n/a)");
+        ui->currentLabel->setText("(n/a)");
     } else {
         ui->currentLabel->setText(QString::fromStdString(m_points[m_currentIndex].toString()));
     }
@@ -293,18 +293,12 @@ void ConnectionValidationProtocol::saveState() {
 void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
     // check version of saved data here
     if (!data.hasKey(KEY_VERSION.c_str())) {
-
-        // report error
-
+        showError("Can't find version!", "Can't find saved data version key!");
         return;
     }
     int version = ZJsonParser::integerValue(data[KEY_VERSION.c_str()]);
     if (version > fileVersion) {
-
-
-        // report error
-
-
+        showError("Wrong version!", "Can't load this data version; you probably need to update NeuTu!");
         return;
     }
 
@@ -313,16 +307,38 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
 
     // load data here
 
+    // we ignore the "fields" entry; that's for human use only; as long as the
+    //  file version is correct, we know the order of items in the arrays
 
+    // and unfortunately we can't use loadPoints(), because that's QJson, not ZJson
 
-
+    m_points.clear();
+    m_pointData.clear();
+    ZJsonArray connections(data.value("connections"));
+    for (size_t i=0; i<connections.size(); i++) {
+        ZJsonArray pointData(connections.value(i));
+        ZIntPoint p;
+        PointData pd;
+        p.setX(ZJsonParser::integerValue(pointData.at(0)));
+        p.setY(ZJsonParser::integerValue(pointData.at(1)));
+        p.setZ(ZJsonParser::integerValue(pointData.at(2)));
+        pd.reviewed = ZJsonParser::booleanValue(pointData.at(3));
+        pd.tbarGood= ZJsonParser::booleanValue(pointData.at(4));
+        pd.tbarSegGood  = ZJsonParser::booleanValue(pointData.at(5));
+        pd.psdGood = ZJsonParser::booleanValue(pointData.at(6));
+        pd.psdSegGood = ZJsonParser::booleanValue(pointData.at(7));
+        m_points << p;
+        m_pointData[p] = pd;
+    }
 
 
     // if, in the future, you need to update to a new save version,
     //  remember to do a save here
 
-
     // start work
+    updateTable();
+    updateLabels();
+
 
 }
 
