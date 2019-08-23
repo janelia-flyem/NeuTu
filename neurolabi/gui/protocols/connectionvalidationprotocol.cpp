@@ -30,7 +30,6 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     // UI connections
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
-    connect(ui->markButton, SIGNAL(clicked(bool)), this, SLOT(onMarkButton()));
     connect(ui->markAndNextButton, SIGNAL(clicked(bool)), this, SLOT(onMarkAndNextButton()));
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
 
@@ -98,14 +97,9 @@ bool ConnectionValidationProtocol::initialize() {
     updateTable();
     updateLabels();
 
-
-
-
-
-
-
     // save initial data and get going
     saveState();
+    onFirstButton();
 
     return true;
 }
@@ -117,15 +111,28 @@ void ConnectionValidationProtocol::gotoCurrentPoint() {
     }
 }
 
-void ConnectionValidationProtocol::onFirstButton() {
+int ConnectionValidationProtocol::findFirstUnreviewed() {
+    int found = -1;
+    for (int i=0; i<m_points.size(); i++) {
+        if (!m_pointData[m_points[i]].reviewed) {
+            found = i;
+            break;
+        }
+    }
+    return found;
+}
 
+void ConnectionValidationProtocol::onFirstButton() {
+    int first = findFirstUnreviewed();
+    if (first >= 0) {
+        setCurrentPoint(first);
+        selectCurrentRow();
+    } else {
+        showMessage("Done!", "No unreviewed connections!");
+    }
 }
 
 void ConnectionValidationProtocol::onNextButton() {
-
-}
-
-void ConnectionValidationProtocol::onMarkButton() {
 
 }
 
@@ -176,6 +183,12 @@ void ConnectionValidationProtocol::setCurrentPoint(int index) {
     m_currentIndex = index;
     updateCurrentLabel();
     updateCheckBoxes();
+}
+
+void ConnectionValidationProtocol::selectCurrentRow() {
+    QModelIndex index = m_sitesModel->index(m_currentIndex, 0);
+    ui->sitesTableView->setCurrentIndex(index);
+    ui->sitesTableView->scrollTo(index);
 }
 
 void ConnectionValidationProtocol::updateLabels() {
@@ -277,9 +290,7 @@ void ConnectionValidationProtocol::updateTable() {
 #endif
 
     // reselect current point:
-    QModelIndex index = m_sitesModel->index(m_currentIndex, 0);
-    ui->sitesTableView->setCurrentIndex(index);
-    ui->sitesTableView->scrollTo(index);
+    selectCurrentRow();
 }
 
 void ConnectionValidationProtocol::loadPoints(QJsonArray array) { // get point data into internal data structures
@@ -381,16 +392,14 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
 
 
     // if, in the future, you need to update to a new save version,
-    //  remember to do a save here
+    //  remember to do a saveState() here
 
 
-    // start work
-
-    // probably should just call a more generic routine?  eg, go to first?
     updateTable();
     updateLabels();
 
-
+    // start work
+    onFirstButton();
 }
 
 void ConnectionValidationProtocol::onExitButton() {
@@ -428,6 +437,16 @@ void ConnectionValidationProtocol::clearSitesTable() {
 }
 
 void ConnectionValidationProtocol::showError(QString title, QString message) {
+    QMessageBox mb;
+    mb.setText(title);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setInformativeText(message);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
+}
+
+void ConnectionValidationProtocol::showMessage(QString title, QString message) {
     QMessageBox mb;
     mb.setText(title);
     mb.setInformativeText(message);

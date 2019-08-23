@@ -39,7 +39,6 @@ private slots:
 
     void onFirstButton();
     void onNextButton();
-    void onMarkButton();
     void onMarkAndNextButton();
     void onGotoButton();
 
@@ -80,12 +79,15 @@ private:
 
 
     void saveState();
+    void showMessage(QString title, QString message);
     void showError(QString title, QString message);
     void loadPoints(QJsonArray array);
     void setSitesHeaders(QStandardItemModel *model);
     void clearSitesTable();
 
     void setCurrentPoint(int index);
+    void selectCurrentRow();
+    int findFirstUnreviewed();
 
     void updateLabels();
     void updateCurrentLabel();

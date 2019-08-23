@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
-    <height>525</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,16 +59,16 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QPushButton" name="markButton">
+          <widget class="QPushButton" name="markAndNextButton">
            <property name="text">
-            <string>Mark reviewed</string>
+            <string>Mark reviewed/go to next</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="markAndNextButton">
+          <widget class="QPushButton" name="gotoButton">
            <property name="text">
-            <string>Mark and go to next</string>
+            <string>Go to current</string>
            </property>
           </widget>
          </item>
@@ -102,13 +102,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="gotoButton">
-           <property name="text">
-            <string>Go to </string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
