@@ -516,6 +516,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_PUNCTA_SHOW_SELECTED:
     action = new QAction("Show Selected Puncta", parent);
     break;
+  case ACTION_PUNCTA_ADD_SELECTION:
+    action = new QAction("Add Puncta Selection", parent);
+    break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite Segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "

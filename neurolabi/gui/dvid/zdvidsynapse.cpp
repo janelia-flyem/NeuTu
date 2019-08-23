@@ -585,6 +585,32 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   }
 }
 
+std::string ZDvidSynapse::getConnString(
+    const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const
+{
+  std::string name = std::to_string(getBodyId());
+  switch (getKind()) {
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
+    name += "->";
+    break;
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
+    name += "<-";
+    break;
+  default:
+    name += "-";
+    break;
+  }
+
+  for (const ZIntPoint &pt : m_partnerHint) {
+    auto iter = labelMap.find(pt);
+    if (iter != labelMap.end()) {
+      name += "[" + std::to_string(iter->second) + "]";
+    }
+  }
+
+  return name;
+}
+
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 
 

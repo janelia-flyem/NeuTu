@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <QColor>
+#include <unordered_map>
 
 #include "zstackobject.h"
 #include "geometry/zintpoint.h"
@@ -50,31 +51,12 @@ public:
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapse &synapse);
 
-  /*
-  class Relation {
-  public:
-    enum ERelation {
-      RELATION_UNKNOWN, RELATION_POSTSYN_TO, RELATION_PRESYN_TO,
-      RELATION_CONVERGENT_TO, RELATION_GROUPED_WITH
-    };
-
-    Relation(const ZIntPoint &to, ERelation relation) :
-      m_to(to), m_relation(relation) {
-    }
-
-    static std::string GetName(ERelation rel);
-
-    ZJsonObject toJsonObject() const;
-
-  private:
-    ZIntPoint m_to;
-    ERelation m_relation;
-  };
-  */
-
 
   static void SetConfidenceProp(ZJsonObject &propJson, double conf);
   static void SetConfidence(ZJsonObject &json, double conf);
+
+  std::string getConnString(
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
 #if 0
 public: //Json APIs

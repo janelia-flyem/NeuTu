@@ -857,6 +857,10 @@ void ZStackDoc::processDataBuffer()
 
   QList<ZStackObject*> selected;
   QList<ZStackObject*> deselected;
+
+  QList<ZPunctum*> punctumSelected;
+  QList<ZPunctum*> punctumDeselected;
+
   QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap =
       ZStackDocObjectUpdate::MakeActionMap(updateList);
 
@@ -898,7 +902,14 @@ void ZStackDoc::processDataBuffer()
         if (hasObject(obj)) {
           if (!obj->isSelected()) {
             setSelected(obj, true);
-            selected.append(obj);
+            if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+              ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+              if (p) {
+                punctumSelected.append(p);
+              }
+            } else {
+              selected.append(obj);
+            }
           }
         }
         break;
@@ -906,7 +917,14 @@ void ZStackDoc::processDataBuffer()
         if (hasObject(obj)) {
           if (obj->isSelected()) {
             setSelected(obj, false);
-            deselected.append(obj);
+            if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+              ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+              if (p) {
+                punctumDeselected.append(p);
+              }
+            } else {
+              deselected.append(obj);
+            }
           }
         }
         break;
@@ -926,7 +944,9 @@ void ZStackDoc::processDataBuffer()
   endObjectModifiedMode();
   processObjectModified();
 
-  emit objectSelectionChanged(selected, deselected);
+  notifySelectionChanged(punctumSelected, punctumDeselected);
+  notifySelectionChanged(selected, deselected);
+//  emit objectSelectionChanged(selected, deselected);
 }
 
 bool ZStackDoc::isSavingRequired() const

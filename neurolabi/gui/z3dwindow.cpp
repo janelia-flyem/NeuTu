@@ -595,6 +595,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_ADD_SELECTION:
+    action = m_actionLibrary->getAction(item, this, SLOT(addPunctaSelection()));
+    break;
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
@@ -3484,6 +3487,18 @@ void Z3DWindow::changeSelectedPunctaColor()
       m_doc->processObjectModified();
 
 //      m_doc->notifyPunctumModified();
+    }
+  }
+}
+
+void Z3DWindow::addPunctaSelection()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    QString filterString = QInputDialog::getText(
+          this, "Add Puncta Selection", "Condition");
+    if (!filterString.isEmpty()) {
+      doc->addSynapseSelection(filterString);
     }
   }
 }

@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "flyem/zflyemtodoitem.h"
+#include "dvid/zdvidsynapse.h"
 
 #ifdef _USE_GTEST_
 
@@ -187,6 +188,27 @@ TEST(ZDvidAnnotation, Radius)
         ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::EKind::KIND_POST_SYN),
         ZDvidAnnotation::GetDefaultRadius(
           ZDvidAnnotation::EKind::KIND_POST_SYN, resolution));
+}
+
+TEST(ZDvidSynapse, Basic)
+{
+  ZDvidSynapse synapse;
+  synapse.setBodyId(1);
+  synapse.addPartner(1, 2, 3);
+  synapse.addPartner(4, 5, 6);
+
+  std::unordered_map<ZIntPoint, uint64_t> labelMap;
+  labelMap[ZIntPoint(1, 2, 3)] = 10;
+  labelMap[ZIntPoint(4, 5, 6)] = 20;
+
+  ASSERT_EQ("1-10,20,", synapse.getConnString(labelMap));
+
+  synapse.setKind(ZDvidAnnotation::EKind::KIND_PRE_SYN);
+  ASSERT_EQ("1->10,20,", synapse.getConnString(labelMap));
+
+  synapse.setKind(ZDvidAnnotation::EKind::KIND_POST_SYN);
+  ASSERT_EQ("1<-10,20,", synapse.getConnString(labelMap));
+
 }
 
 #endif

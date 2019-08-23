@@ -30298,6 +30298,11 @@ void ZTest::test(MainWindow *host)
   std::cout<< url << std::endl;
 #endif
 
+#if 0
+  QString str = "123->456";
+  qDebug() << str.split("->", QString::SkipEmptyParts);
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

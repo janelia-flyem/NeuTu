@@ -2289,7 +2289,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
     TStackObjectList objList = getObjectGroup().findSameSource(source);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Todo to remove: " << *iter << std::endl;
 #endif
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
@@ -2304,7 +2304,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         ZFlyEmToDoItem *item = *iter;
         item->setRadius(30);
         item->setSource(source);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Todo to add: " << item << item->getPosition().toString()
                   << " " << item->isChecked() << std::endl;
 #endif
@@ -4689,6 +4689,50 @@ void ZFlyEmBody3dDoc::diagnose() const
 ZStackDoc3dHelper* ZFlyEmBody3dDoc::getHelper() const
 {
   return m_helper.get();
+}
+
+struct SynapseConnFilter {
+  uint64_t m_input = 0;
+  uint64_t m_output = 0;
+  neutu::EBiDirection m_direction = neutu::EBiDirection::FORWARD;
+
+  void parse(const QString &str) {
+    m_input = 0;
+    m_output = 0;
+    if (str.contains("->")) {
+      m_direction = neutu::EBiDirection::FORWARD;
+      QStringList tokens = str.split("->", QString::SkipEmptyParts);
+      if (tokens.size() > 1) {
+        m_input = ZString(tokens[0].toStdString()).firstUint64();
+        m_output = ZString(tokens[1].toStdString()).firstUint64();
+      }
+    } else if (str.contains("<-")) {
+      m_direction = neutu::EBiDirection::BACKWARD;
+      QStringList tokens = str.split("<-", QString::SkipEmptyParts);
+      if (tokens.size() > 1) {
+        m_input = ZString(tokens[1].toStdString()).firstUint64();
+        m_output = ZString(tokens[0].toStdString()).firstUint64();
+      }
+    }
+  }
+};
+
+void ZFlyEmBody3dDoc::addSynapseSelection(const QString &filter)
+{
+  SynapseConnFilter sf;
+  sf.parse(filter);
+
+  if (sf.m_input > 0 && sf.m_output > 0) {
+    ZStackDocAccessor::SetObjectSelection(
+          this, ZStackObject::EType::PUNCTUM, [&](const ZStackObject *obj) {
+      const ZPunctum *p = dynamic_cast<const ZPunctum*>(obj);
+      if (p) {
+        return flyem::HasConnecion(
+              p->name(), sf.m_input, sf.m_output, sf.m_direction);
+      }
+      return false;
+    }, true);
+  }
 }
 
 bool ZFlyEmBody3dDoc::_loadFile(const QString &filePath)

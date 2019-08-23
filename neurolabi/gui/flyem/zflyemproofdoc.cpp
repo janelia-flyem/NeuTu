@@ -3851,17 +3851,24 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
-  QElapsedTimer timer;
-  timer.start();
-
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
 //  reader.setVerbose(false);
   const double radius = 50.0;
   QMutexLocker locker(&m_synapseReaderMutex);
   ZDvidReader &reader = m_synapseReader;
   if (reader.isReady()) {
+    QElapsedTimer timer;
+    timer.start();
     std::vector<ZDvidSynapse> synapseArray =
-        reader.readSynapse(bodyId, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+        reader.readSynapse(bodyId, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
+    KINFO << "Synapse loading time: " + std::to_string(timer.restart());
+
+    std::unordered_map<ZIntPoint, uint64_t> labelMap =
+        FlyEmDataReader::ReadSynapseLabel(reader, synapseArray);
+#ifdef _DEBUG_
+    KINFO << "Synapse label reading time: " + std::to_string(timer.restart());
+    std::cout << "Label map size: " << labelMap.size() << std::endl;
+#endif
 
     std::vector<ZPunctum*> &tbar = synapse.first;
     std::vector<ZPunctum*> &psd = synapse.second;
@@ -3870,7 +3877,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
          iter != synapseArray.end(); ++iter) {
       const ZDvidSynapse &synapse = *iter;
       ZPunctum *punctum = new ZPunctum(synapse.getPosition(), radius);
-      punctum->setName(getSynapseName(synapse).c_str());
+      punctum->setName(getSynapseName(synapse, labelMap).c_str());
 
       if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
         tbar.push_back(punctum);
@@ -3878,7 +3885,6 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
         psd.push_back(punctum);
       }
     }
-    ZOUT(LTRACE(), 5) << "Synapse loading time: " << timer.restart();
   }
 
   return synapse;
@@ -3903,6 +3909,37 @@ std::string ZFlyEmProofDoc::getPartnerProperty(const ZDvidSynapse &synapse) cons
   }
 
   return prop;
+}
+
+std::string ZFlyEmProofDoc::getSynapseName(
+    const ZDvidSynapse &synapse,
+    const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const
+{
+  return synapse.getConnString(labelMap);
+  /*
+  std::string name = std::to_string(synapse.getBodyId());
+  switch (synapse.getKind()) {
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
+    name += "->";
+    break;
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
+    name += "<-";
+    break;
+  default:
+    name += "-";
+    break;
+  }
+
+  std::vector<ZIntPoint> partners = synapse.getPartners();
+  for (const ZIntPoint &pt : partners) {
+    auto iter = labelMap.find(pt);
+    if (iter != labelMap.end()) {
+      name += std::to_string(iter->second) + ",";
+    }
+  }
+
+  return name;
+  */
 }
 
 std::string ZFlyEmProofDoc::getSynapseName(const ZDvidSynapse &synapse) const

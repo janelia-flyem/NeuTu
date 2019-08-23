@@ -5425,8 +5425,9 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
+  bool readingRelation = (mode != dvid::EAnnotationLoadMode::NO_PARTNER);
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != dvid::EAnnotationLoadMode::NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, readingRelation));
 
   std::vector<ZDvidSynapse> synapseArray(obj.size());
 

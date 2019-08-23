@@ -23,10 +23,9 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidsynapse.h"
 
 #include "zdvidutil.h"
-//#include "dvid/zdvidsynapse.h"
-//#include "dvid/zdvidroi.h"
 
 #include "flyemdataconfig.h"
 #include "zflyemneuronbodyinfo.h"
@@ -277,6 +276,37 @@ ZDvidSparseStack* FlyEmDataReader::ReadDvidSparseStack(
   }
 
   return spStack;
+}
+
+std::unordered_map<ZIntPoint, uint64_t> FlyEmDataReader::ReadSynapseLabel(
+      const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray)
+{
+  std::unordered_map<ZIntPoint, uint64_t> result;
+  for (const ZDvidSynapse &synapse : synapseArray) {
+    if (synapse.getBodyId() > 0) {
+      result[synapse.getPosition()] = synapse.getBodyId();
+    }
+  }
+
+  std::vector<ZIntPoint> posArray;
+  for (const ZDvidSynapse &synapse : synapseArray) {
+    if (result.count(synapse.getPosition()) == 0) {
+      posArray.push_back(synapse.getPosition());
+    }
+    const std::vector<ZIntPoint> &ptArray = synapse.getPartners();
+    for (const ZIntPoint &pt : ptArray) {
+      if (result.count(pt) == 0) {
+        posArray.push_back(pt);
+      }
+    }
+  }
+
+  std::vector<uint64_t> labelArray = reader.readBodyIdAt(posArray);
+  for (size_t i = 0; i < labelArray.size(); ++i) {
+    result[posArray[i]] = labelArray[i];
+  }
+
+  return result;
 }
 
 #if 0

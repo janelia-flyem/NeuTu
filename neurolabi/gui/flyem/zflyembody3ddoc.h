@@ -341,6 +341,8 @@ public:
 
   ZStackDoc3dHelper* getHelper() const;
 
+  void addSynapseSelection(const QString &filter);
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;

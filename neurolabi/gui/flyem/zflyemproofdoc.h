@@ -736,6 +736,9 @@ private:
 
   std::string getSynapseName(const ZDvidSynapse &synapse) const;
   std::string getPartnerProperty(const ZDvidSynapse &synapse) const;
+  std::string getSynapseName(
+      const ZDvidSynapse &synapse,
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,

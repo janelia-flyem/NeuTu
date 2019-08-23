@@ -1505,6 +1505,24 @@ ZObject3dScan* flyem::LoadRoiFromJson(
   return result;
 }
 
+bool flyem::HasConnecion(const QString &name, uint64_t input, uint64_t output, neutu::EBiDirection d)
+{
+  switch (d) {
+  case neutu::EBiDirection::FORWARD:
+    if (name.startsWith(QString("%1->").arg(input))) {
+      return name.contains(QString("[%1]").arg(output));
+    }
+    break;
+  case neutu::EBiDirection::BACKWARD:
+    if (name.startsWith(QString("%1<-").arg(output))) {
+      return name.contains(QString("[%1]").arg(input));
+    }
+    break;
+  }
+
+  return false;
+}
+
 /*
 void flyem::UpdateBodyStatus(
     const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer)

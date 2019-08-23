@@ -156,6 +156,27 @@ void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
   RemoveObject(doc, ZStackObject::EType::SWC, deleteObject);
 }
 
+void ZStackDocAccessor::SetObjectSelection(
+    ZStackDoc *doc, ZStackObject::EType type,
+    std::function<bool (const ZStackObject *)> pred, bool on)
+{
+  if (doc != NULL) {
+    QMutexLocker locker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
+    if (!objList.isEmpty()) {
+      ZStackDocObjectUpdate::EAction action =
+          on ? ZStackDocObjectUpdate::EAction::SELECT :
+               ZStackDocObjectUpdate::EAction::DESELECT;
+      for (ZStackObject *obj : objList) {
+        if (pred(obj)) {
+          doc->getDataBuffer()->addUpdate(obj, action);
+        }
+      }
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
 void ZStackDocAccessor::SetObjectVisible(
     ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
 {

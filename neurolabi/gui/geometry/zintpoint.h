@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 
+#include <boost/functional/hash.hpp>
+
 #include "common/neutube_def.h"
 
 class ZPoint;
@@ -143,5 +145,24 @@ public:
   int m_y;
   int m_z;
 };
+
+
+namespace std
+{
+template<> struct hash<ZIntPoint>
+{
+  typedef std::size_t result_type;
+  result_type operator()(ZIntPoint const& s) const noexcept
+  {
+    result_type seed = 0;
+
+    boost::hash_combine(seed, s.getX());
+    boost::hash_combine(seed, s.getY());
+    boost::hash_combine(seed, s.getZ());
+
+    return seed;
+  }
+};
+}
 
 #endif // ZINTPOINT_H

@@ -8,6 +8,7 @@
 #include <QColor>
 #include <QRectF>
 #include <QVector>
+#include <QString>
 
 #include "common/neutube_def.h"
 #include "dvid/libdvidheader.h"
@@ -146,6 +147,13 @@ std::vector<uint64_t> LoadBodyList(const std::string &input);
 
 ZObject3dScan* LoadRoiFromJson(
     const std::string &filePath, ZObject3dScan *result = nullptr);
+
+/*!
+ * \brief For checking connection from a punctum name
+ */
+bool HasConnecion(
+    const QString &name, uint64_t input, uint64_t output,
+    neutu::EBiDirection d);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
