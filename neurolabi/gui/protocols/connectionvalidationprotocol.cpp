@@ -104,13 +104,6 @@ bool ConnectionValidationProtocol::initialize() {
     return true;
 }
 
-void ConnectionValidationProtocol::gotoCurrentPoint() {
-    if (m_currentIndex >= 0) {
-        ZIntPoint p = m_points[m_currentIndex];
-        emit requestDisplayPoint(p.getX(), p.getY(), p.getZ());
-    }
-}
-
 int ConnectionValidationProtocol::findFirstUnreviewed() {
     int found = -1;
     for (int i=0; i<m_points.size(); i++) {
@@ -122,18 +115,45 @@ int ConnectionValidationProtocol::findFirstUnreviewed() {
     return found;
 }
 
+int ConnectionValidationProtocol::findNextUnreviewed() {
+    // finding a next element in a list including restarting
+    //  from the top is a pain and I've found to be error-prone;
+    //  let's try this variation
+
+    QList<int> indices;
+    for (int i=m_currentIndex+1; i<m_points.size(); i++) {
+        indices << i;
+    }
+    for (int i=0; i<m_currentIndex; i++) {
+        indices << i;
+    }
+
+    int found = -1;
+    for (int i: indices) {
+        if (!m_pointData[m_points[i]].reviewed) {
+            found = i;
+            break;
+        }
+    }
+    return found;
+}
+
 void ConnectionValidationProtocol::onFirstButton() {
     int first = findFirstUnreviewed();
     if (first >= 0) {
-        setCurrentPoint(first);
-        selectCurrentRow();
+        setSelectGotoCurrentPoint(first);
     } else {
-        showMessage("Done!", "No unreviewed connections!");
+        showMessage("Done!", "No unreviewed connections! You may complete this protocol.");
     }
 }
 
 void ConnectionValidationProtocol::onNextButton() {
-
+    int next = findNextUnreviewed();
+    if (next >= 0) {
+        setSelectGotoCurrentPoint(next);
+    } else {
+        showMessage("Done!", "No unreviewed connections! You may complete this protocol.");
+    }
 }
 
 void ConnectionValidationProtocol::onMarkAndNextButton() {
@@ -189,6 +209,19 @@ void ConnectionValidationProtocol::selectCurrentRow() {
     QModelIndex index = m_sitesModel->index(m_currentIndex, 0);
     ui->sitesTableView->setCurrentIndex(index);
     ui->sitesTableView->scrollTo(index);
+}
+
+void ConnectionValidationProtocol::gotoCurrentPoint() {
+    if (m_currentIndex >= 0) {
+        ZIntPoint p = m_points[m_currentIndex];
+        emit requestDisplayPoint(p.getX(), p.getY(), p.getZ());
+    }
+}
+
+void ConnectionValidationProtocol::setSelectGotoCurrentPoint(int index) {
+    setCurrentPoint(index);
+    selectCurrentRow();
+    gotoCurrentPoint();
 }
 
 void ConnectionValidationProtocol::updateLabels() {

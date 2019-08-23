@@ -87,14 +87,17 @@ private:
 
     void setCurrentPoint(int index);
     void selectCurrentRow();
+    void gotoCurrentPoint();
+    void setSelectGotoCurrentPoint(int index);
+
     int findFirstUnreviewed();
+    int findNextUnreviewed();
 
     void updateLabels();
     void updateCurrentLabel();
     void updateProgressLabel();
     void updateCheckBoxes();
     void updateTable();
-    void gotoCurrentPoint();
 };
 
 #endif // CONNECTIONVALIDATIONPROTOCOL_H
