@@ -590,6 +590,7 @@ HEADERS += mainwindow.h \
     protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
+    protocols/connectionvalidationprotocol.h \ 
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/todosearcher.h \
@@ -791,6 +792,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
+    protocols/connectionvalidationprotocol.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -823,7 +825,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui
+    dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1095,6 +1097,7 @@ SOURCES += main.cpp \
     protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
+    protocols/connectionvalidationprotocol.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/todosearcher.cpp \
