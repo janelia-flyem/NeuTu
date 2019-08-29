@@ -20,7 +20,7 @@ namespace Z3DCameraUtils
 
   void tightenZoom(Z3DCamera &camera,
                    const std::vector<std::vector<glm::vec3>> &vertices,
-                   size_t only = SIZE_T_MAX);
+                   size_t only = SIZE_MAX);
 
 };
 

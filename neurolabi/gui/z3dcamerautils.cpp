@@ -176,7 +176,7 @@ namespace Z3DCameraUtils
 
     glm::vec3 view = glm::normalize(camera.center() - camera.eye());
     for (size_t i = 0; i < vertices.size(); i++) {
-      if ((only != SIZE_T_MAX) && (i != only)) {
+      if ((only != SIZE_MAX) && (i != only)) {
           continue;
       }
 
@@ -204,7 +204,7 @@ namespace Z3DCameraUtils
       ZBBox<glm::vec2> bbox;
 
       for (size_t i = 0; i < vertices.size(); i++) {
-        if ((only != SIZE_T_MAX) && (i != only)) {
+        if ((only != SIZE_MAX) && (i != only)) {
             continue;
         }
 
