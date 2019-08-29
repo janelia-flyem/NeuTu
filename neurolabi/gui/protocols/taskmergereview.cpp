@@ -9,8 +9,9 @@
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
-#include "zdvidutil.h"
+#include "protocols/taskutils.h"
 #include "qt/network/znetbufferreader.h"
+#include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dcamerautils.h"
@@ -49,8 +50,25 @@ namespace {
   static const QString KEY_TASKTYPE = "task type";
   static const QString VALUE_TASKTYPE = "merge review";
   static const QString KEY_TASK_ID = "task id";
+
+  static const QString KEY_SUPERVOXEL_IDS_A = "supervoxel IDs A";
+  static const QString KEY_SUPERVOXEL_IDS_B = "supervoxel IDs B";
+
+  // The old form of KEY_SUPERVOXEL_IDS_A and KEY_SUPERVOXEL_IDS_B,
+  // retained only for backwards compatibility.
   static const QString KEY_SUPERVOXEL_IDS = "supervoxel IDs";
-  static const QString KEY_MAJOR_SUPERVOXEL_IDS = "supervoxel IDs 0.5";
+
+  // Optional.
+  static const QString KEY_SUPERVOXEL_POINTS_A = "supervoxel points A";
+  static const QString KEY_SUPERVOXEL_POINTS_B = "supervoxel points B";
+
+  // Note that "boi" stands for "body of interest".
+  static const QString KEY_SUPERVOXEL_IDS_OF_INTEREST = "boi supervoxel IDs";
+
+  // The old form of KEY_SUPERVOXEL_IDS_OF_INTEREST,
+  // retained only for backwards compatibility.
+  static const QString KEY_SUPERVOXEL_IDS_05 = "supervoxel IDs 0.5";
+
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
   // For the result JSON.
@@ -531,7 +549,7 @@ void TaskMergeReview::onToggleShowSupervoxels()
 
 void TaskMergeReview::zoomOutToShowAll()
 {
-  zoomToFitMeshes();
+  zoomToFitMeshes(false);
 }
 
 void TaskMergeReview::onHideSelected()
@@ -607,8 +625,9 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
   }
 
   std::string payloadStr = jsonBody.dumpString(0);
+  unsigned int length = static_cast<unsigned int>(payloadStr.size());
   libdvid::BinaryDataPtr payload =
-      libdvid::BinaryData::create_binary_data(payloadStr.c_str(), payloadStr.size());
+      libdvid::BinaryData::create_binary_data(payloadStr.c_str(), length);
   int statusCode;
 
   m_bodyIds.clear();
@@ -621,12 +640,12 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
       for (int i = 0; i < responseArray.size(); i++) {
         QJsonValue responseElem = responseArray.at(i);
         if (!responseElem.isUndefined()) {
-          uint64_t bodyId = responseElem.toDouble();
+          uint64_t bodyId = uint64_t(responseElem.toDouble());
           if (bodyId == 0) {
             return SetBodiesResult::FAILED_MAPPING;
           }
           m_bodyIds.insert(bodyId);
-          uint64_t svId = jsonBody.value(i).toReal();
+          uint64_t svId = uint64_t(jsonBody.value(size_t(i)).toReal());
           if (m_majorSuperVoxelIds.find(svId) != m_majorSuperVoxelIds.end()) {
             m_majorBodyIds.insert(bodyId);
           }
@@ -661,7 +680,7 @@ TaskMergeReview::SetBodiesResult TaskMergeReview::setBodiesFromSuperVoxels()
       QJsonArray responseArray = responseDoc.array();
       for (QJsonValue responseElem : responseArray) {
         if (!responseElem.isUndefined()) {
-          if (responseElem.toDouble() == 0) {
+          if (uint64_t(responseElem.toDouble()) == 0) {
             return SetBodiesResult::FAILED_SIZES;
           }
         }
@@ -834,7 +853,7 @@ void TaskMergeReview::updateColors()
     for (uint64_t id : m_bodyIds) {
       std::size_t index = m_bodyIdToColorIndex[id];
       glm::vec4 color = INDEX_COLORS[index] * 255.0f;
-      idToColor[id] = QColor(color.x, color.y, color.z);
+      idToColor[id] = QColor(int(color.x), int(color.y), int(color.z));
     }
 
     emit updateGrayscaleColor(idToColor);
@@ -879,7 +898,7 @@ void TaskMergeReview::updateSelectCurrentBodyButton()
   QSize iconSize = iconSizeDefault * 0.8;
   QPixmap pixmap(iconSize);
   glm::vec4 color = 255.0f * INDEX_COLORS[m_bodyIdToColorIndex[id]];
-  pixmap.fill(QColor(color.r, color.g, color.b, color.a));
+  pixmap.fill(QColor(int(color.r), int(color.g), int(color.b), int(color.a)));
   QIcon icon(pixmap);
   m_selectCurrentBodyButton->setIcon(icon);
 
@@ -947,57 +966,41 @@ void TaskMergeReview::updateVisibility()
   m_bodyDoc->processObjectModified();
 }
 
-void TaskMergeReview::zoomToFitMeshes()
+void TaskMergeReview::zoomToFitMeshes(bool onlySmaller)
 {
-  Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc);
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
 
-  ZBBox<glm::dvec3> bbox;
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
-    if (m_bodyIds.find(tarBodyId) != m_bodyIds.end()) {
-      bbox.expand(mesh->boundBox());
+  ZPoint center;
+  if (m_superVoxelPointsA.size() > 0) {
+    ZPoint sum;
+    for (ZPoint point : m_superVoxelPointsA) {
+      sum += point;
     }
-  }
-  glm::dvec3 c = (bbox.minCorner() + bbox.maxCorner()) / 2.0;
-  ZPoint center(c.x, c.y, c.z);
-
-  double radius = 0;
-  std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>() };
-
-  const size_t stride = 5;
-
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
-    if (m_bodyIds.find(tarBodyId) != m_bodyIds.end()) {
-      for (size_t i = 0; i < mesh->vertices().size(); i++) {
-        glm::vec3 vertex = mesh->vertices()[i];
-        double r = center.distanceTo(vertex.x, vertex.y, vertex.z);
-        radius = std::max(r, radius);
-
-        // To improve performance, use only a fraction of the vertices
-        // when determining the zoom.
-
-        if (i % stride == 0) {
-          vertices.back().push_back(vertex);
-        }
+    for (ZPoint point : m_superVoxelPointsB) {
+      sum += point;
+    }
+    center = sum / (m_superVoxelPointsA.size() + m_superVoxelPointsB.size());
+  } else {
+    ZBBox<glm::dvec3> bbox;
+    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+      ZMesh *mesh = *it;
+      uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+      if (m_bodyIds.find(tarBodyId) != m_bodyIds.end()) {
+        bbox.expand(mesh->boundBox());
       }
     }
+    glm::dvec3 c = (bbox.minCorner() + bbox.maxCorner()) / 2.0;
+    center = ZPoint(c.x, c.y, c.z);
   }
 
-  Z3DCameraUtils::resetCamera(center, radius, filter->camera());
-  Z3DCameraUtils::tightenZoom(vertices, filter->camera());
+  std::vector<Z3DMeshFilter*> filters { getMeshFilter(m_bodyDoc) };
 
-  // Adjust the near clipping plane to accomodate all the meshes, then rerender.
-
-  filter->camera().resetCameraNearFarPlane(bbox);
-  filter->invalidate();
+  size_t stride = 3;
+  TaskUtils::zoomToMeshes(m_bodyDoc, m_bodyIds, center, filters, onlySmaller, stride);
 }
 
 void TaskMergeReview::displayWarning(const QString &title, const QString &text,
-                                          const QString& details, bool allowSuppression)
+                                     const QString& details, bool allowSuppression)
 {
   // Display the warning at idle time, after the rendering event has been processed.
 
@@ -1029,6 +1032,65 @@ void TaskMergeReview::displayWarning(const QString &title, const QString &text,
 std::string TaskMergeReview::outputKey() const
 {
   return m_taskId.toStdString();
+}
+
+namespace  {
+  bool loadIds(QJsonObject json, QString key, std::vector<uint64_t> &destination)
+  {
+    if (json.contains(key)) {
+      QJsonValue value = json[key];
+      if (value.isArray()) {
+        QJsonArray array = value.toArray();
+        for (QJsonValue idValue : array) {
+          if (idValue.isDouble()) {
+            uint64_t id = uint64_t(idValue.toDouble());
+            destination.push_back(id);
+          }
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void saveIds(QJsonObject json, QString key, const std::vector<uint64_t> &source)
+  {
+    QJsonArray idsArray;
+    for (uint64_t id : source) {
+      idsArray.append(static_cast<double>(id));
+    }
+    json[key] = idsArray;
+  }
+
+  void loadPoints(QJsonObject json, QString key, std::vector<ZPoint> &destination)
+  {
+    if (json.contains(key)) {
+      QJsonValue value = json[key];
+      if (value.isArray()) {
+        QJsonArray array = value.toArray();
+        for (QJsonValue pointValue : array) {
+          ZPoint point;
+          if (TaskUtils::pointFromJSON(pointValue, point)) {
+            destination.push_back(point);
+          }
+        }
+      }
+    }
+  }
+
+  void savePoints(QJsonObject json, QString key, const std::vector<ZPoint> &source)
+  {
+    if (!source.empty()) {
+      QJsonArray pointsArray;
+      for (ZPoint point : source) {
+        pointsArray.append(point.x());
+        pointsArray.append(point.y());
+        pointsArray.append(point.z());
+      }
+      json[key] = pointsArray;
+    }
+  }
 }
 
 void TaskMergeReview::writeOutput()
@@ -1101,11 +1163,13 @@ void TaskMergeReview::writeOutput()
   if (const char* user = std::getenv("USER")) {
     json[KEY_USER] = user;
   }
-  QJsonArray array;
-  for (uint64_t id : m_superVoxelIds) {
-    array.append(static_cast<double>(id));
-  }
-  json[KEY_SUPERVOXEL_IDS] = array;
+
+  saveIds(json, KEY_SUPERVOXEL_IDS_A, m_superVoxelIdsA);
+  saveIds(json, KEY_SUPERVOXEL_IDS_B, m_superVoxelIdsB);
+
+  savePoints(json, KEY_SUPERVOXEL_POINTS_A, m_superVoxelPointsA);
+  savePoints(json, KEY_SUPERVOXEL_POINTS_B, m_superVoxelPointsB);
+
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
   json[KEY_SOURCE] = jsonSource();
@@ -1189,31 +1253,40 @@ void TaskMergeReview::restoreResult(QString result)
 
 bool TaskMergeReview::loadSpecific(QJsonObject json)
 {
-  if (json.contains(KEY_SUPERVOXEL_IDS)) {
-    QJsonValue value = json[KEY_SUPERVOXEL_IDS];
-    if (value.isArray()) {
-      QJsonArray array = value.toArray();
-      for (QJsonValue idValue : array) {
-        if (idValue.isDouble()) {
-          m_superVoxelIds.insert(idValue.toDouble());
-        }
-      }
-    }
+  bool loadedA = loadIds(json, KEY_SUPERVOXEL_IDS_A, m_superVoxelIdsA);
+  bool loadedB = loadIds(json, KEY_SUPERVOXEL_IDS_B, m_superVoxelIdsB);
+  if (loadedA && loadedB) {
+    std::set<uint64_t> s;
+    s.insert(m_superVoxelIdsA.begin(), m_superVoxelIdsA.end());
+    s.insert(m_superVoxelIdsB.begin(), m_superVoxelIdsB.end());
+    m_superVoxelIds.insert(m_superVoxelIds.end(), s.begin(), s.end());
   } else {
-    return false;
+    // Backwards compatibilty.
+    if (!loadIds(json, KEY_SUPERVOXEL_IDS, m_superVoxelIds)) {
+      return false;
+    }
   }
 
-  if (json.contains(KEY_MAJOR_SUPERVOXEL_IDS)) {
-    QJsonValue value = json[KEY_MAJOR_SUPERVOXEL_IDS];
+  QString majorKey = KEY_SUPERVOXEL_IDS_OF_INTEREST;
+  if (!json.contains(majorKey)) {
+    // Backwards compatibilty.
+    majorKey = KEY_SUPERVOXEL_IDS_05;
+  }
+  if (json.contains(majorKey)) {
+    QJsonValue value = json[majorKey];
     if (value.isArray()) {
       QJsonArray array = value.toArray();
       for (QJsonValue idValue : array) {
         if (idValue.isDouble()) {
-          m_majorSuperVoxelIds.insert(idValue.toDouble());
+          m_majorSuperVoxelIds.insert(uint64_t(idValue.toDouble()));
         }
       }
     }
   }
+
+  // Optional.
+  loadPoints(json, KEY_SUPERVOXEL_POINTS_A, m_superVoxelPointsA);
+  loadPoints(json, KEY_SUPERVOXEL_POINTS_B, m_superVoxelPointsB);
 
   if (json.contains(KEY_TASK_ID)) {
     QJsonValue value = json[KEY_TASK_ID];
@@ -1236,19 +1309,19 @@ QJsonObject TaskMergeReview::addToJson(QJsonObject taskJson)
 {
   taskJson[KEY_TASK_ID] = m_taskId;
 
-  QJsonArray idsArray;
-  for (uint64_t id : m_superVoxelIds) {
-    idsArray.append(static_cast<double>(id));
-  }
-  taskJson[KEY_SUPERVOXEL_IDS] = idsArray;
+  saveIds(taskJson, KEY_SUPERVOXEL_IDS_A, m_superVoxelIdsA);
+  saveIds(taskJson, KEY_SUPERVOXEL_IDS_B, m_superVoxelIdsB);
 
   if (!m_majorSuperVoxelIds.empty()) {
     QJsonArray majorIdsArray;
     for (uint64_t id : m_majorSuperVoxelIds) {
       majorIdsArray.append(static_cast<double>(id));
     }
-    taskJson[KEY_MAJOR_SUPERVOXEL_IDS] = majorIdsArray;
+    taskJson[KEY_SUPERVOXEL_IDS_OF_INTEREST] = majorIdsArray;
   }
+
+  savePoints(taskJson, KEY_SUPERVOXEL_POINTS_A, m_superVoxelPointsA);
+  savePoints(taskJson, KEY_SUPERVOXEL_POINTS_B, m_superVoxelPointsB);
 
   taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
 
@@ -1269,7 +1342,29 @@ void TaskMergeReview::onLoaded()
   bool showingSupervoxels = m_showSupervoxelsCheckBox->isChecked();
   applyColorMode(showingSupervoxels);
 
-  zoomToFitMeshes();
+  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+    if (Z3DMeshFilter *filter =
+        dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+      if ((m_superVoxelPointsA.size() == 1) && (m_superVoxelPointsB.size() == 1)) {
+
+        // If there is just one pair of bodies (i.e., one point in each of the lists),
+        // then replicate what TaskBodyMerge ("focused merging") does.
+
+        ZPoint zp0 = m_superVoxelPointsA[0];
+        glm::vec3 p0(zp0.x(), zp0.y(), zp0.z());
+        ZPoint zp1 = m_superVoxelPointsB[0];
+        glm::vec3 p1(zp1.x(), zp1.y(), zp1.z());
+
+        Z3DCamera &camera = filter->camera();
+        glm::vec3 eye;
+        Z3DCameraUtils::eyeNormalToPoints(p0, p1, camera.upVector(), camera, eye);
+        camera.setEye(eye);
+      }
+    }
+  }
+
+  bool onlySmaller = !m_superVoxelPointsA.empty();
+  zoomToFitMeshes(onlySmaller);
 }
 
 bool TaskMergeReview::allowCompletion()
