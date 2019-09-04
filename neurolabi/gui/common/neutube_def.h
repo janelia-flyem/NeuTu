@@ -148,6 +148,10 @@ enum class EServerStatus {
   NORMAL, OFFLINE, NOAUTH, NOSUPPORT
 };
 
+enum class EConfigSource {
+  UNKNOWN, CONFILG_FILE, QSETTINGS, ENV_VAR, RUNTIME
+};
+
 namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;

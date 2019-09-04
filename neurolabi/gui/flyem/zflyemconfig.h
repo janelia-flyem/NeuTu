@@ -200,7 +200,12 @@ private:
   bool m_usingDefaultConfig;
   std::string m_defaultLibrarian;
   std::string m_userName;
+//  std::string m_defaultNeuroglancerServer;
+//  std::string m_janeliaNeuroglancerServer;
   std::string m_neuroglancerServer;
+  neutu::EConfigSource m_neuroglancerServerConfigSource =
+      neutu::EConfigSource::UNKNOWN;
+
   bool m_usingDefaultNeuTuServer = true;
   std::string m_defaultNeuTuServer;
   bool m_usingDefaultTaskServer = true;

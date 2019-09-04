@@ -33,6 +33,7 @@ public:
     NEUPRINT_AUTH
   };
 
+
   static NeutubeConfig& getInstance() {
     static NeutubeConfig config;
 

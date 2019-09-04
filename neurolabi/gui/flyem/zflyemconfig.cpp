@@ -3,10 +3,10 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
-#include "neutubeconfig.h"
 #include "dvid/zdvidurl.h"
 #include "zstring.h"
 
@@ -143,9 +143,13 @@ void ZFlyEmConfig::loadConfig()
 
       if (const char* setting = std::getenv("NEUROGLANCER_SERVER")) {
         m_neuroglancerServer = setting;
+        m_neuroglancerServerConfigSource = neutu::EConfigSource::ENV_VAR;
       } else {
         if (obj.hasKey(NEUROGLANCER_KEY)) {
-          m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+          m_neuroglancerServer =
+              ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+//          m_neuroglancerServer = m_defaultNeuroglancerServer;
+          m_neuroglancerServerConfigSource = neutu::EConfigSource::CONFILG_FILE;
         }
       }
 

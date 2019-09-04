@@ -178,7 +178,8 @@ QStringList NeuPrintReader::getDatasetList() const
 }
 
 namespace {
-const char* BODY_QUERY_RETURN = "n.bodyId, n.type, n.name, n.status, n.pre, n.post";
+const char* BODY_QUERY_RETURN =
+    "n.bodyId, n.type, n.name, n.status, n.pre, n.post, n.primaryNeurite";
 
 //Assuming the following order: ID, type name, status, pre, post
 ZJsonArray extract_body_info(const QByteArray &response)
@@ -209,8 +210,15 @@ ZJsonArray extract_body_info(const QByteArray &response)
         if (!status.empty()) {
           bodyData.setEntry("body status", status);
         }
+
         bodyData.setEntry("body T-bars", ZJsonParser::integerValue(data.at(i), index++));
         bodyData.setEntry("body PSDs", ZJsonParser::integerValue(data.at(i), index++));
+
+        std::string pn = ZJsonParser::stringValue(data.at(i), index++);
+        if (!pn.empty()) {
+          bodyData.setEntry("primary neurite", pn);
+        }
+
         bodies.append(bodyData);
       }
     }

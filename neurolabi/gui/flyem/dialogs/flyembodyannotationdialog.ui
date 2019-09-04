@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>474</height>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -295,6 +295,34 @@
         <widget class="QLineEdit" name="SynonymLineEdit"/>
        </item>
       </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Clonal unit</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="clonalUnitLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Auto-type</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="autoTypeLineEdit"/>
      </item>
     </layout>
    </item>

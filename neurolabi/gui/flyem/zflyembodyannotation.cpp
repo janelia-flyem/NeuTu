@@ -24,6 +24,8 @@ const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
 const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
 const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
 const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
+const char *ZFlyEmBodyAnnotation::KEY_CLONAL_UNIT = "clonal unit";
+const char *ZFlyEmBodyAnnotation::KEY_AUTO_TYPE = "auto-type";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
@@ -48,6 +50,8 @@ void ZFlyEmBodyAnnotation::clear()
   m_crossMidline = false;
   m_neurotransmitter.clear();
   m_synonym.clear();
+  m_clonalUnit.clear();
+  m_autoType.clear();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -100,7 +104,8 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
     obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
     obj.setNonEmptyEntry(KEY_SYNONYM, m_synonym);
-
+    obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
+    obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
   }
 
   return obj;
@@ -212,6 +217,14 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
     }
 
+    if (obj.hasKey(KEY_CLONAL_UNIT)) {
+      setClonalUnit(ZJsonParser::stringValue(obj[KEY_CLONAL_UNIT]));
+    }
+
+    if (obj.hasKey(KEY_AUTO_TYPE)) {
+      setAutoType(ZJsonParser::stringValue(obj[KEY_AUTO_TYPE]));
+    }
+
     /*
     process_annotation_key<std::string>(
           obj, KEY_MAJOR_OUTPUT,
@@ -260,6 +273,11 @@ std::string ZFlyEmBodyAnnotation::getSynonym() const
   return m_synonym;
 }
 
+std::string ZFlyEmBodyAnnotation::getClonalUnit() const
+{
+  return m_clonalUnit;
+}
+
 std::string ZFlyEmBodyAnnotation::getName() const
 {
   if (!m_name.empty()) {
@@ -282,7 +300,7 @@ std::string ZFlyEmBodyAnnotation::getType() const
 //  return getAutoType();
 }
 
-std::string ZFlyEmBodyAnnotation::getAutoType() const
+std::string ZFlyEmBodyAnnotation::getInferredType() const
 {
   std::string type = m_majorInput + m_majorOutput;
   if (!m_primaryNeurite.empty()) {
@@ -290,6 +308,11 @@ std::string ZFlyEmBodyAnnotation::getAutoType() const
   }
 
   return  type;
+}
+
+std::string ZFlyEmBodyAnnotation::getAutoType() const
+{
+  return m_autoType;
 }
 
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
@@ -330,6 +353,16 @@ void ZFlyEmBodyAnnotation::setNeurotransmitter(const std::string &v)
 void ZFlyEmBodyAnnotation::setSynonym(const std::string &v)
 {
   m_synonym = v;
+}
+
+void ZFlyEmBodyAnnotation::setClonalUnit(const std::string &v)
+{
+  m_clonalUnit = v;
+}
+
+void ZFlyEmBodyAnnotation::setAutoType(const std::string &v)
+{
+  m_autoType = v;
 }
 
 /*member dependent*/
