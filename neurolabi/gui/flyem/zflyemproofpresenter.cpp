@@ -1430,7 +1430,7 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
 
   ZPoint pos = currentStackPos;
 //  pos.shiftSliceAxis(buddyView()->getSliceAxis());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Update stroke: " << this << " " << pos.x() << ", " << pos.y()
             << std::endl;
 #endif

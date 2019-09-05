@@ -2509,7 +2509,7 @@ namespace {
 bool is_readable(const std::string &url)
 {
   ZNetBufferReaderThread thread;
-  thread.setOperation(ZNetBufferReaderThread::EOperation::IS_READABLE);
+  thread.setOperation(znetwork::EOperation::IS_READABLE);
   thread.setUrl(url.c_str());
   thread.start();
   thread.wait();
@@ -4258,7 +4258,7 @@ ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 bool ZDvidReader::hasSparseVolume(uint64_t bodyId) const
 {
   ZNetBufferReaderThread thread;
-  thread.setOperation(ZNetBufferReaderThread::EOperation::IS_READABLE);
+  thread.setOperation(znetwork::EOperation::IS_READABLE);
   ZDvidUrl dvidUrl(m_dvidTarget);
   thread.setUrl(dvidUrl.getSparsevolUrl(
                   bodyId, getDvidTarget().getBodyLabelName()).c_str());
@@ -4279,7 +4279,7 @@ bool ZDvidReader::hasCoarseSparseVolume(uint64_t bodyId) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZNetBufferReaderThread thread;
-  thread.setOperation(ZNetBufferReaderThread::EOperation::READ_PARTIAL);
+  thread.setOperation(znetwork::EOperation::READ_PARTIAL);
   thread.setUrl(dvidUrl.getCoarseSparsevolUrl(
                   bodyId, getDvidTarget().getBodyLabelName()).c_str());
   thread.start();

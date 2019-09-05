@@ -2252,9 +2252,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
       ZDvidSynapse synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
-      dlg->setOption(synapse.getKind());
-      dlg->setConfidence(synapse.getConfidence());
-      dlg->setAnnotation(synapse.getAnnotation().c_str());
+      dlg->set(synapse);
       if (dlg->exec()) {
         annotateSynapse(pt, dlg->getPropJson(), axis);
       }

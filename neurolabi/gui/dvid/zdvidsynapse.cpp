@@ -18,6 +18,8 @@
 #include "zvaa3dmarker.h"
 #include "flyem/zflyemmisc.h"
 
+const double ZDvidSynapse::DEFAULT_CONFIDENCE = 1.0;
+
 ZDvidSynapse::ZDvidSynapse()
 {
   init();
@@ -32,21 +34,43 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+bool ZDvidSynapse::hasConfidenceProperty() const
+{
+  return (m_propertyJson.hasKey("confidence")) || m_propertyJson.hasKey("conf");
+}
+
+void ZDvidSynapse::removeConfidenceProperty()
+{
+  RemoveConfidenceProp(m_propertyJson);
+}
+
 double ZDvidSynapse::getConfidence() const
 {
-  double c = 1.0;
+  double c = DEFAULT_CONFIDENCE;
 
-  if (m_propertyJson.hasKey("confidence")) {
-    std::string confStr =
-        ZJsonParser::stringValue(m_propertyJson["confidence"]);
-    c = std::atof(confStr.c_str());
-  } else if (m_propertyJson.hasKey("conf")) {
-    std::string confStr =
-        ZJsonParser::stringValue(m_propertyJson["conf"]);
+  std::string confStr = getConfidenceStr();
+  if (!confStr.empty()) {
     c = std::atof(confStr.c_str());
   }
 
   return c;
+}
+
+std::string ZDvidSynapse::getConfidenceStr() const
+{
+  std::string confStr;
+  if (m_propertyJson.hasKey("confidence")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["confidence"]);
+  } else if (m_propertyJson.hasKey("conf")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["conf"]);
+  }
+
+  return confStr;
+}
+
+void ZDvidSynapse::setConfidence(const std::string str)
+{
+  SetConfidenceProp(m_propertyJson, str);
 }
 
 std::string ZDvidSynapse::getAnnotation() const
@@ -75,19 +99,41 @@ void ZDvidSynapse::setConfidence(double c)
   SetConfidenceProp(m_propertyJson, c);
 }
 
+void ZDvidSynapse::RemoveConfidenceProp(ZJsonObject &json)
+{
+  json.removeKey("confidence");
+  json.removeKey("conf");
+}
+
+void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, std::string conf)
+{
+  propJson.removeKey("confidence");
+
+  if (!conf.empty()) {
+    propJson.setEntry("conf", conf);
+  } else {
+    propJson.removeKey("conf");
+  }
+}
+
 void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, double conf)
 {
-  if (propJson.hasKey("confidence")) {
-    propJson.removeKey("confidence");
-  }
-
   // remember, store props as strings!
   std::ostringstream stream;
   stream << conf;
-  propJson.setEntry("conf", stream.str());
+  SetConfidenceProp(propJson, stream.str());
 }
 
 void ZDvidSynapse::SetConfidence(ZJsonObject &json, double conf)
+{
+  ZJsonObject propJson = json.value("Prop");
+  SetConfidenceProp(propJson, conf);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+void ZDvidSynapse::SetConfidence(ZJsonObject &json, std::string conf)
 {
   ZJsonObject propJson = json.value("Prop");
   SetConfidenceProp(propJson, conf);
@@ -609,6 +655,28 @@ std::string ZDvidSynapse::getConnString(
   }
 
   return name;
+}
+
+void ZDvidSynapse::updateProperty(const ZJsonObject &propJson)
+{
+  removeConfidenceProperty();
+
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap(false);
+  for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
+       iter != entryMap.end(); ++iter) {
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (ZJsonParser::stringValue(iter->second).empty()) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
+    }
+  }
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

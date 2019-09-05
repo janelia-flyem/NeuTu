@@ -4822,7 +4822,7 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
-void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId) {
+void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &/*pt*/, uint64_t bodyId) {
     TipDetectorDialog * inputDialog = m_dlgManager->getTipDetectorDlg();
     inputDialog->setBodyID(bodyId);
     inputDialog->setRoiList(getCompleteDocument()->getRoiList());

@@ -1200,6 +1200,8 @@ SOURCES += main.cpp \
     dvid/zdviddataslicetask.cpp \
     dvid/zdvidstackblockfactory.cpp \
     dvid/zdvidblockstream.cpp \
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
@@ -1216,9 +1218,7 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dialogs/neuprintsetupdialog.cpp \
-    dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp
+    dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
