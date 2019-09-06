@@ -368,31 +368,21 @@ void ConnectionValidationProtocol::saveState() {
     data.setEntry("assignment ID", m_assignmentID.toStdString());
     data.setEntry("username", neutu::GetCurrentUserName());
 
-    // describe the arrays we'll be adding:
-    ZJsonArray fields;
-    fields.append("PSD location x");
-    fields.append("PSD location y");
-    fields.append("PSD location z");
-    fields.append("reviewed");
-    fields.append("T-bar good");
-    fields.append("T-bar segmentation good");
-    fields.append("PSD good");
-    fields.append("PSD segmentation good");
-    data.setEntry("fields", fields);
-
     // and the items themselves:
     ZJsonArray connections;
     for (ZIntPoint p: m_points) {
         PointData pd = m_pointData[p];
-        ZJsonArray c;
-        c.append(p.getX());
-        c.append(p.getY());
-        c.append(p.getZ());
-        c.append(pd.reviewed);
-        c.append(pd.tbarGood);
-        c.append(pd.tbarSegGood);
-        c.append(pd.psdGood);
-        c.append(pd.psdSegGood);
+        ZJsonObject c;
+        ZJsonArray location;
+        location.append(p.getX());
+        location.append(p.getY());
+        location.append(p.getZ());
+        c.setEntry("location", location);
+        c.setEntry("reviewed", pd.reviewed);
+        c.setEntry("T-bar good", pd.tbarGood);
+        c.setEntry("T-bar segmentation good", pd.tbarSegGood);
+        c.setEntry("PSD good", pd.psdGood);
+        c.setEntry("PSD segmentation good", pd.psdSegGood);
         connections.append(c);
     }
     data.setEntry("connections", connections);
@@ -417,9 +407,6 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
 
     // load data here
 
-    // we ignore the "fields" entry; that's for human use only; as long as the
-    //  file version is correct, we know the order of items in the arrays
-
     // metadata
     // load assignment ID, which might be empty or absent
     if (data.hasKey("assignment ID")) {
@@ -428,23 +415,18 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
         m_assignmentID = "";
     }
 
-    // and unfortunately we can't use loadPoints(), because that's QJson, not ZJson
-
     m_points.clear();
     m_pointData.clear();
     ZJsonArray connections(data.value("connections"));
     for (size_t i=0; i<connections.size(); i++) {
-        ZJsonArray pointData(connections.value(i));
-        ZIntPoint p;
+        ZJsonObject pointData(connections.value(i));
+        ZIntPoint p = ZJsonParser::toIntPoint(pointData["location"]);
         PointData pd;
-        p.setX(ZJsonParser::integerValue(pointData.at(0)));
-        p.setY(ZJsonParser::integerValue(pointData.at(1)));
-        p.setZ(ZJsonParser::integerValue(pointData.at(2)));
-        pd.reviewed = ZJsonParser::booleanValue(pointData.at(3));
-        pd.tbarGood= ZJsonParser::booleanValue(pointData.at(4));
-        pd.tbarSegGood  = ZJsonParser::booleanValue(pointData.at(5));
-        pd.psdGood = ZJsonParser::booleanValue(pointData.at(6));
-        pd.psdSegGood = ZJsonParser::booleanValue(pointData.at(7));
+        pd.reviewed = ZJsonParser::booleanValue(pointData["reviewed"]);
+        pd.tbarGood= ZJsonParser::booleanValue(pointData["T-bar good"]);
+        pd.tbarSegGood  = ZJsonParser::booleanValue(pointData["T-bar segmentation good"]);
+        pd.psdGood = ZJsonParser::booleanValue(pointData["PSD good"]);
+        pd.psdSegGood = ZJsonParser::booleanValue(pointData["PSD segmentation good"]);
         m_points << p;
         m_pointData[p] = pd;
     }
