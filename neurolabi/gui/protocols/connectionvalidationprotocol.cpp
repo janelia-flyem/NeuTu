@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+#include "neutube.h"
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -93,6 +94,11 @@ bool ConnectionValidationProtocol::initialize() {
     // get point data into internal data structures
     QJsonArray jsonArray = data["points"].toArray();
     loadPoints(jsonArray);
+
+    // we carry along an optional assignment ID:
+    if (data.contains("assignment ID")) {
+        m_assignmentID = data["assignment ID"].toString();
+    }
 
     updateTable();
     updateLabels();
@@ -358,6 +364,10 @@ void ConnectionValidationProtocol::saveState() {
     // save data; all the keys are hard-coded here for now as I'm
     //  in a hurry; make them constants later
 
+    // metadata, mostly for assignment tracking purposes:
+    data.setEntry("assignment ID", m_assignmentID.toStdString());
+    data.setEntry("username", neutu::GetCurrentUserName());
+
     // describe the arrays we'll be adding:
     ZJsonArray fields;
     fields.append("PSD location x");
@@ -409,6 +419,14 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
 
     // we ignore the "fields" entry; that's for human use only; as long as the
     //  file version is correct, we know the order of items in the arrays
+
+    // metadata
+    // load assignment ID, which might be empty or absent
+    if (data.hasKey("assignment ID")) {
+        m_assignmentID = QString::fromStdString(ZJsonParser::stringValue(data["assignment ID"]));
+    } else {
+        m_assignmentID = "";
+    }
 
     // and unfortunately we can't use loadPoints(), because that's QJson, not ZJson
 

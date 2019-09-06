@@ -76,6 +76,7 @@ private:
     QMap<ZIntPoint, PointData> m_pointData;
     QStandardItemModel * m_sitesModel;
     int m_currentIndex;
+    QString m_assignmentID;
 
 
     void saveState();
