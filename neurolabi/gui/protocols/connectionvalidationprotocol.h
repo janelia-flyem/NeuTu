@@ -48,6 +48,8 @@ private slots:
     void onPSDGoodCanged();
     void onPSDSegGoodChanged();
 
+    void onSetComment();
+
     void onClickedTable(QModelIndex index);
 
 private:
@@ -60,6 +62,7 @@ private:
         bool tbarSegGood = false;
         bool psdGood = false;
         bool psdSegGood = false;
+        QString comment;
     };
 
     enum SitesTableColumns {
@@ -68,7 +71,8 @@ private:
         TBAR_GOOD_COLUMN,
         TBAR_SEG_GOOD_COLUMN,
         PSD_GOOD_COLUMN,
-        PSD_SEG_GOOD_COLUMN
+        PSD_SEG_GOOD_COLUMN,
+        HAS_COMMENT_COLUMN
     };
 
     Ui::ConnectionValidationProtocol *ui;
@@ -99,6 +103,7 @@ private:
     void updateCurrentLabel();
     void updateProgressLabel();
     void updateCheckBoxes();
+    void updateComment();
     void updateTable();
 };
 

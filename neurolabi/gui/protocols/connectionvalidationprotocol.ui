@@ -141,6 +141,20 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLineEdit" name="commentEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="setCommentButton">
+           <property name="text">
+            <string>Set comment</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QLabel" name="label_4">

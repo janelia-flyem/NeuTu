@@ -27,7 +27,7 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     ui->setupUi(this);
 
     // sites table
-    m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
+    m_sitesModel = new QStandardItemModel(0, 6, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
     ui->sitesTableView->setModel(m_sitesModel);
 
@@ -47,6 +47,8 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     connect(ui->tbarSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onTbarSegGoodChanged()));
     connect(ui->psdCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDGoodCanged()));
     connect(ui->psdSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDSegGoodChanged()));
+
+    connect(ui->setCommentButton, SIGNAL(clicked(bool)), this, SLOT(onSetComment()));
 
     connect(ui->sitesTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -211,6 +213,12 @@ void ConnectionValidationProtocol::onPSDSegGoodChanged() {
     updateTable();
 }
 
+void ConnectionValidationProtocol::onSetComment() {
+    m_pointData[m_points[m_currentIndex]].comment = ui->commentEdit->text();
+    saveState();
+    updateTable();
+}
+
 void ConnectionValidationProtocol::onClickedTable(QModelIndex tableIndex) {
     // we don't have a sort proxy, so the table index = model index at this point
     setCurrentPoint(tableIndex.row());
@@ -220,6 +228,7 @@ void ConnectionValidationProtocol::setCurrentPoint(int index) {
     m_currentIndex = index;
     updateCurrentLabel();
     updateCheckBoxes();
+    updateComment();
 }
 
 void ConnectionValidationProtocol::selectCurrentRow() {
@@ -299,6 +308,11 @@ void ConnectionValidationProtocol::updateCheckBoxes() {
     }
 }
 
+void ConnectionValidationProtocol::updateComment() {
+    PointData pd = m_pointData[m_points[m_currentIndex]];
+    ui->commentEdit->setText(pd.comment);
+}
+
 void ConnectionValidationProtocol::updateTable() {
     clearSitesTable();
 
@@ -310,11 +324,16 @@ void ConnectionValidationProtocol::updateTable() {
 
         PointData pd = m_pointData[p];
 
-        // for "reviewed", use a text check mark
+        // for "reviewed" and "comment", use a text check mark
         if (pd.reviewed) {
             QStandardItem * revItem = new QStandardItem();
             revItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
             m_sitesModel->setItem(row, REVIEWED_COLUMN, revItem);
+        }
+        if (!pd.comment.isEmpty()) {
+            QStandardItem * commentItem = new QStandardItem();
+            commentItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
+            m_sitesModel->setItem(row, HAS_COMMENT_COLUMN, commentItem);
         }
 
         // for the various statuses, use icons; note that the code for
@@ -322,6 +341,7 @@ void ConnectionValidationProtocol::updateTable() {
         //  interestingly, you can use both (icon ends up to left of text)
         QIcon goodIcon(":/images/verify.png");      // green check mark
         QIcon badIcon(":/images/delete.png");       // red X
+        QIcon notsureIcon(":/images/help2.png");    // question mark
 
         QStandardItem * tbarGoodItem = new QStandardItem();
         // tbarGoodItem->setData(QVariant(pd.tbarGood), Qt::DisplayRole);
@@ -417,6 +437,7 @@ void ConnectionValidationProtocol::saveState() {
         c.setEntry("T-bar segmentation good", pd.tbarSegGood);
         c.setEntry("PSD good", pd.psdGood);
         c.setEntry("PSD segmentation good", pd.psdSegGood);
+        c.setEntry("comment", pd.comment.toStdString());
         connections.append(c);
     }
     data.setEntry("connections", connections);
@@ -461,6 +482,7 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
         pd.tbarSegGood  = ZJsonParser::booleanValue(pointData["T-bar segmentation good"]);
         pd.psdGood = ZJsonParser::booleanValue(pointData["PSD good"]);
         pd.psdSegGood = ZJsonParser::booleanValue(pointData["PSD segmentation good"]);
+        pd.comment = QString::fromStdString(ZJsonParser::stringValue(pointData["comment"]));
         m_points << p;
         m_pointData[p] = pd;
     }
@@ -526,6 +548,7 @@ void ConnectionValidationProtocol::setSitesHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(TBAR_SEG_GOOD_COLUMN, new QStandardItem(QString("T-seg")));
     model->setHorizontalHeaderItem(PSD_GOOD_COLUMN, new QStandardItem(QString("PSD")));
     model->setHorizontalHeaderItem(PSD_SEG_GOOD_COLUMN, new QStandardItem(QString("P-seg")));
+    model->setHorizontalHeaderItem(HAS_COMMENT_COLUMN, new QStandardItem(QString("comment")));
 }
 
 void ConnectionValidationProtocol::clearSitesTable() {
