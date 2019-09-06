@@ -7,6 +7,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include <QTableWidgetItem>
+#include <QIcon>
+
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -307,22 +310,53 @@ void ConnectionValidationProtocol::updateTable() {
 
         PointData pd = m_pointData[p];
 
-        // later I'd like these to be graphics/icons; check mark for reviewed,
-        //  and white plus on green circle/white minus on red circle for the others
-        QStandardItem * revItem = new QStandardItem();
+        // for "reviewed", use a text check mark
+        if (pd.reviewed) {
+            QStandardItem * revItem = new QStandardItem();
+            revItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
+            m_sitesModel->setItem(row, REVIEWED_COLUMN, revItem);
+        }
+
+        // for the various statuses, use icons; note that the code for
+        //  for using text instead is still present but commented out;
+        //  interestingly, you can use both (icon ends up to left of text)
+        QIcon goodIcon(":/images/verify.png");      // green check mark
+        QIcon badIcon(":/images/delete.png");       // red X
+
         QStandardItem * tbarGoodItem = new QStandardItem();
-        QStandardItem * tbarSegGoodItem = new QStandardItem();
-        QStandardItem * psdGoodItem = new QStandardItem();
-        QStandardItem * psdSegGoodItem = new QStandardItem();
-        revItem->setData(QVariant(pd.reviewed), Qt::DisplayRole);
-        tbarGoodItem->setData(QVariant(pd.tbarGood), Qt::DisplayRole);
-        tbarSegGoodItem->setData(QVariant(pd.tbarSegGood), Qt::DisplayRole);
-        psdGoodItem->setData(QVariant(pd.psdGood), Qt::DisplayRole);
-        psdSegGoodItem->setData(QVariant(pd.psdSegGood), Qt::DisplayRole);
-        m_sitesModel->setItem(row, REVIEWED_COLUMN, revItem);
+        // tbarGoodItem->setData(QVariant(pd.tbarGood), Qt::DisplayRole);
+        if (pd.tbarGood) {
+            tbarGoodItem->setIcon(goodIcon);
+        } else {
+            tbarGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, TBAR_GOOD_COLUMN, tbarGoodItem);
+
+        QStandardItem * tbarSegGoodItem = new QStandardItem();
+        // tbarSegGoodItem->setData(QVariant(pd.tbarSegGood), Qt::DisplayRole);
+        if (pd.tbarSegGood) {
+            tbarSegGoodItem->setIcon(goodIcon);
+        } else {
+            tbarSegGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, TBAR_SEG_GOOD_COLUMN, tbarSegGoodItem);
+
+        QStandardItem * psdGoodItem = new QStandardItem();
+        // psdGoodItem->setData(QVariant(pd.psdGood), Qt::DisplayRole);
+        if (pd.psdGood) {
+            psdGoodItem->setIcon(goodIcon);
+        } else {
+            psdGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, PSD_GOOD_COLUMN, psdGoodItem);
+
+        QStandardItem * psdSegGoodItem = new QStandardItem();
+        // psdSegGoodItem->setData(QVariant(pd.psdSegGood), Qt::DisplayRole);
+        if (pd.psdSegGood) {
+            psdSegGoodItem->setIcon(goodIcon);
+        } else {
+            psdSegGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, PSD_SEG_GOOD_COLUMN, psdSegGoodItem);
 
         row++;
