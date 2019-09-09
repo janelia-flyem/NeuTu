@@ -1561,7 +1561,7 @@ void FlyEmBodyInfoDialog::onMoveUp() {
     }
 
     // update scheme (table should update itself)
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onMoveDown() {
@@ -1586,7 +1586,7 @@ void FlyEmBodyInfoDialog::onMoveDown() {
     }
 
     // update scheme (table should update itself)
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onSaveColorMap() {
@@ -1676,7 +1676,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     ui->filterTableView->resizeColumnsToContents();
     ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
 
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*/) {
@@ -1700,7 +1700,7 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
 
     // activate the tab, and dispatch the changed info
     ui->tabWidget->setCurrentIndex(COLORS_TAB);
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex) {
@@ -1717,7 +1717,7 @@ void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
             setFilterTableModelColor(newColor, modelIndex.row());
-            updateColorScheme();
+            updateColorSchemeWithFilterCache();
         }
     }
 }
@@ -1738,10 +1738,11 @@ void FlyEmBodyInfoDialog::onDeleteButton() {
         logInfo("Remove selected color filter");
         // we only allow single row selections; get the filter string
         //  from the selected row; only one, so take the first index thereof:
-        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QModelIndex viewIndex =
+            ui->filterTableView->selectionModel()->selectedRows(0).at(0);
         QModelIndex modelIndex = m_filterProxy->mapToSource(viewIndex);
         m_filterModel->removeRow(modelIndex.row());
-        updateColorScheme();
+        updateColorSchemeWithFilterCache();
     }
 }
 
@@ -1756,21 +1757,75 @@ void FlyEmBodyInfoDialog::moveToBodyList() {
         }
     }
 
+void FlyEmBodyInfoDialog::updateFilterColorScheme(
+    const QString &filterString, const QColor &color)
+{
+#ifdef _DEBUG_
+  qint64 t = 0;
+  QElapsedTimer timer;
+  timer.start();
+#endif
+  m_schemeBuilderProxy->setFilterFixedString(filterString);
+#ifdef _DEBUG_
+  t += timer.elapsed();
+  qDebug() << filterString << "setFilterFixedString time" << t << "ms";
+#endif
+
+  QList<uint64_t> bodyList;
+  for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
+    qulonglong bodyId = m_schemeBuilderProxy->data(
+          m_schemeBuilderProxy->index(j, BODY_ID_COLUMN)).toLongLong();
+    m_colorScheme.setBodyColor(bodyId, color);
+    bodyList.append(bodyId);
+  }
+  m_filteredIdMap[filterString] = bodyList;
+}
+
+void FlyEmBodyInfoDialog::updateColorSchemeWithFilterCache()
+{
+  m_colorScheme.clear();
+  for (int i=0; i<m_filterProxy->rowCount(); i++) {
+      QString filterString = m_filterProxy->data(
+            m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
+
+      QColor color = m_filterProxy->data(
+            m_filterProxy->index(i, FILTER_COLOR_COLUMN),
+            Qt::BackgroundRole).value<QColor>();
+      bool cached = false;
+      if (m_filteredIdMap.contains(filterString)) {
+        cached = true;
+      }
+
+      if (cached) {
+        QList<uint64_t> bodyList = m_filteredIdMap.value(filterString);
+        for (uint64_t bodyId : bodyList) {
+          m_colorScheme.setBodyColor(bodyId, color);
+        }
+      } else {
+        updateFilterColorScheme(filterString, color);
+      }
+  }
+  m_colorScheme.buildColorTable();
+
+  emit colorMapChanged(m_colorScheme);
+}
+
 void FlyEmBodyInfoDialog::updateColorScheme() {
     // loop over filters in filter table; attach filter to our scheme builder
     //  proxy; loop over the filtered body IDs and throw them and the color into
     //  the color scheme
 
+    m_filteredIdMap.clear();
+
     m_colorScheme.clear();
     for (int i=0; i<m_filterProxy->rowCount(); i++) {
-        QString filterString = m_filterProxy->data(m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
-        m_schemeBuilderProxy->setFilterFixedString(filterString);
+        QString filterString = m_filterProxy->data(
+              m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
+        QColor color = m_filterProxy->data(
+              m_filterProxy->index(i, FILTER_COLOR_COLUMN),
+              Qt::BackgroundRole).value<QColor>();
 
-        QColor color = m_filterProxy->data(m_filterProxy->index(i, FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
-        for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
-            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, BODY_ID_COLUMN)).toLongLong();
-            m_colorScheme.setBodyColor(bodyId, color);
-        }
+        updateFilterColorScheme(filterString, color);
     }
     m_colorScheme.buildColorTable();
 

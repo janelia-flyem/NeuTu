@@ -172,6 +172,7 @@ private:
     QSet<uint64_t> m_namelessBodies;
     QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
+    QMap<QString, QList<uint64_t>> m_filteredIdMap;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
@@ -234,6 +235,9 @@ private:
 //    void setNeuPrintReader(std::unique_ptr<NeuPrintReader> reader);
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
     void prepareQuery();
+    void updateColorSchemeWithFilterCache();
+    void updateFilterColorScheme(
+        const QString &filterString, const QColor &color);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
