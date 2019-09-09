@@ -74,9 +74,13 @@ void SubtractBodyWithBlock(
 
 void MakeTriangle(const QRectF &rect, QPointF *ptArray,
                   neutu::ECardinalDirection direction);
-void MakeStar(const QRectF &rect, QPointF *ptArray);
-void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
-QVector<QPointF> MakeCrossKey(const QPointF &center, double radius);
+//void MakeStar(const QRectF &rect, QPointF *ptArray);
+void MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
+std::vector<QPointF> MakeStar(
+    const QPointF &center, double radius, double shapeFactor = 0.25);
+std::vector<QPointF> MakeCrossKey(
+    const QPointF &center, double radius, double spanRatio);
 
 void PrepareBodyStatus(QComboBox *box);
 QList<QString> GetDefaultBodyStatus();
