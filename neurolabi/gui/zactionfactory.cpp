@@ -455,6 +455,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_DIAGNOSTIC:
     action = new QAction("Diagnostic here", parent);
     break;
+  case ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC:
+    action = new QAction("Segmentation-Diagnostic here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;
