@@ -27,7 +27,7 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     ui->setupUi(this);
 
     // sites table
-    m_sitesModel = new QStandardItemModel(0, 6, ui->sitesTableView);
+    m_sitesModel = new QStandardItemModel(0, 7, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
     ui->sitesTableView->setModel(m_sitesModel);
 
@@ -47,6 +47,7 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     connect(ui->tbarSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onTbarSegGoodChanged()));
     connect(ui->psdCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDGoodCanged()));
     connect(ui->psdSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDSegGoodChanged()));
+    connect(ui->notSureBox, SIGNAL(clicked(bool)), this, SLOT(onNotSureChanged()));
 
     connect(ui->setCommentButton, SIGNAL(clicked(bool)), this, SLOT(onSetComment()));
 
@@ -213,6 +214,12 @@ void ConnectionValidationProtocol::onPSDSegGoodChanged() {
     updateTable();
 }
 
+void ConnectionValidationProtocol::onNotSureChanged() {
+    m_pointData[m_points[m_currentIndex]].notSure = ui->notSureBox->isChecked();
+    saveState();
+    updateTable();
+}
+
 void ConnectionValidationProtocol::onSetComment() {
     m_pointData[m_points[m_currentIndex]].comment = ui->commentEdit->text();
     saveState();
@@ -306,6 +313,11 @@ void ConnectionValidationProtocol::updateCheckBoxes() {
     } else {
         ui->psdSegCheckBox->setCheckState(Qt::CheckState::Unchecked);
     }
+    if (pd.notSure) {
+        ui->notSureBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->notSureBox->setCheckState(Qt::CheckState::Unchecked);
+    }
 }
 
 void ConnectionValidationProtocol::updateComment() {
@@ -324,7 +336,7 @@ void ConnectionValidationProtocol::updateTable() {
 
         PointData pd = m_pointData[p];
 
-        // for "reviewed" and "comment", use a text check mark
+        // for "reviewed", "has comment", use a text check mark
         if (pd.reviewed) {
             QStandardItem * revItem = new QStandardItem();
             revItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
@@ -378,6 +390,15 @@ void ConnectionValidationProtocol::updateTable() {
             psdSegGoodItem->setIcon(badIcon);
         }
         m_sitesModel->setItem(row, PSD_SEG_GOOD_COLUMN, psdSegGoodItem);
+
+        QStandardItem * notSureItem = new QStandardItem();
+        // notSureItem->setData(QVariant(pd.notSure), Qt::DisplayRole);
+        if (pd.notSure) {
+            notSureItem->setIcon(notsureIcon);
+        } else {
+            // no icon if we are sure
+        }
+        m_sitesModel->setItem(row, NOT_SURE_COLUMN, notSureItem);
 
         row++;
 
@@ -438,6 +459,7 @@ void ConnectionValidationProtocol::saveState() {
         c.setEntry("PSD good", pd.psdGood);
         c.setEntry("PSD segmentation good", pd.psdSegGood);
         c.setEntry("comment", pd.comment.toStdString());
+        c.setEntry("not sure", pd.notSure);
         connections.append(c);
     }
     data.setEntry("connections", connections);
@@ -483,6 +505,7 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
         pd.psdGood = ZJsonParser::booleanValue(pointData["PSD good"]);
         pd.psdSegGood = ZJsonParser::booleanValue(pointData["PSD segmentation good"]);
         pd.comment = QString::fromStdString(ZJsonParser::stringValue(pointData["comment"]));
+        pd.notSure = ZJsonParser::booleanValue(pointData["not sure"]);
         m_points << p;
         m_pointData[p] = pd;
     }
@@ -549,6 +572,7 @@ void ConnectionValidationProtocol::setSitesHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(PSD_GOOD_COLUMN, new QStandardItem(QString("PSD")));
     model->setHorizontalHeaderItem(PSD_SEG_GOOD_COLUMN, new QStandardItem(QString("P-seg")));
     model->setHorizontalHeaderItem(HAS_COMMENT_COLUMN, new QStandardItem(QString("comment")));
+    model->setHorizontalHeaderItem(NOT_SURE_COLUMN, new QStandardItem(QString("not sure")));
 }
 
 void ConnectionValidationProtocol::clearSitesTable() {

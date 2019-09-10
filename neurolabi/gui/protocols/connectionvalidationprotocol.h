@@ -47,6 +47,7 @@ private slots:
     void onTbarSegGoodChanged();
     void onPSDGoodCanged();
     void onPSDSegGoodChanged();
+    void onNotSureChanged();
 
     void onSetComment();
 
@@ -62,6 +63,7 @@ private:
         bool tbarSegGood = false;
         bool psdGood = false;
         bool psdSegGood = false;
+        bool notSure = false;
         QString comment;
     };
 
@@ -72,6 +74,7 @@ private:
         TBAR_SEG_GOOD_COLUMN,
         PSD_GOOD_COLUMN,
         PSD_SEG_GOOD_COLUMN,
+        NOT_SURE_COLUMN,
         HAS_COMMENT_COLUMN
     };
 
