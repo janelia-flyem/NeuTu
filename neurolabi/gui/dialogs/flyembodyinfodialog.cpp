@@ -19,10 +19,12 @@
 #include <QtConcurrentRun>
 #endif
 
+#include "zstring.h"
+
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zstring.h"
+#include "zjsonobjectparser.h"
 
 #include "zglobal.h"
 
@@ -37,6 +39,7 @@
 #include "zdialogfactory.h"
 #include "service/neuprintreader.h"
 #include "neuprintquerydialog.h"
+#include "flyem/zflyembodyannotation.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -80,7 +83,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // top body list stuff
 
     // first table manages list of bodies
-    m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
+    m_bodyModel = new QStandardItemModel(
+          0, BODY_TABLE_COLUMN_COUNT, ui->bodyTableView);
     setBodyHeaders(m_bodyModel);
 
     m_bodyProxy = new QSortFilterProxyModel(this);
@@ -239,6 +243,13 @@ void FlyEmBodyInfoDialog::prepareWidget()
 }
 
 namespace {
+
+std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
+{
+  ZJsonObjectParser parser;
+  return
+      parser.getValue(bodyData, ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "");
+}
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
 {
@@ -638,6 +649,8 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
+    model->setHorizontalHeaderItem(
+          BODY_PRIMARY_NEURITE, new QStandardItem("primary neurite"));
     model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
     model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("instance"));
     model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
@@ -1160,6 +1173,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                     entry.setEntry("body status", bodyData["status"]);
                   }
                 }
+
+                entry.setNonEmptyEntry(
+                      ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE,
+                      get_annotation_primary_neurite(bodyData));
             }
 
             // synapse info
@@ -1371,6 +1388,12 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   QStandardItem * bodyIDItem = new QStandardItem();
   bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
+
+  std::string primaryNeurite = get_annotation_primary_neurite(bkmk);
+  if (!primaryNeurite.empty()) {
+    itemArray[BODY_PRIMARY_NEURITE] =
+        new QStandardItem(QString::fromStdString(primaryNeurite));
+  }
 
   std::string type = get_annotation_type(bkmk);
   if (!type.empty()) {

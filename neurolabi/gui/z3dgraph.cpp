@@ -193,6 +193,12 @@ void Z3DGraphEdge::setConnection(int vs, int vt)
   m_vt = vt;
 }
 
+void Z3DGraphEdge::setRelativeConnection(int startIndex, int vs, int vt)
+{
+  m_vs = startIndex + vs;
+  m_vt = startIndex + vt;
+}
+
 void Z3DGraphEdge::set(int vs, int vt, double width, bool usingNodeColor,
                        const QColor &startColor, const QColor &endColor,
                        EGraphShape shape)

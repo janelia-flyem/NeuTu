@@ -83,5 +83,6 @@
 #include "test/flyembodyannotationdialogtest.h"
 #include "test/qtcoretest.h"
 #include "test/zflyemmisctest.h"
+#include "test/zdvidsynapseannotationdialogtest.h"
 
 #endif // ZTESTALL_H

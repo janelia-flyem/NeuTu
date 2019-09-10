@@ -657,7 +657,7 @@ void ZDvidSynapseEnsemble::annotateSynapseUnsync(
   }
   ZDvidSynapse &synapse = getSynapseUnsync(x, y, z, scope);
   if (synapse.isValid()) {
-    synapse.setProperty(propJson);
+    synapse.updateProperty(propJson);
     if (scope == EDataScope::GLOBAL || scope == EDataScope::SYNC) {
       ZDvidWriter &writer = m_writer;
       if (writer.good()) {

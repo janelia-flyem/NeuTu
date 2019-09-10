@@ -85,6 +85,7 @@ public:
            const QColor &startColor, const QColor &endColor,
            EGraphShape shape);
   void setConnection(int vs, int vt);
+  void setRelativeConnection(int startIndex, int vs, int vt);
   inline void setShape(EGraphShape shape) { m_shape = shape; }
   inline void setShape(const std::string &shape);
   inline void setWidth(double width) { m_width = width; }

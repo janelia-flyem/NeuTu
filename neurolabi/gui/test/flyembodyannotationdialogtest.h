@@ -61,6 +61,25 @@ TEST(FlyEmBodyAnnotationDialog, Basic)
   dlg.loadBodyAnnotation(annotation);
   ASSERT_EQ(annotation, dlg.getBodyAnnotation());
   ASSERT_TRUE(annotation.hasSameUserStatus(dlg.getBodyAnnotation()));
+
+  annotation.loadJsonString(
+        "{"
+           "\"body ID\": 5901214961,"
+           "\"instance\": \"test3\","
+           "\"naming user\": \"zhaot\","
+           "\"status\": \"Traced\","
+           "\"user\": \"zhaot\","
+           "\"clonal unit\": \"cu test\","
+           "\"auto-type\": \"at test\""
+        "}");
+  std::cout << annotation.getAutoType() << std::endl;
+  dlg.loadBodyAnnotation(annotation);
+  ASSERT_EQ("cu test", dlg.getClonalUnit());
+  ASSERT_EQ("at test", dlg.getAutoType());
+
+  ZFlyEmBodyAnnotation annot2 = dlg.getBodyAnnotation();
+  ASSERT_EQ("cu test", annot2.getClonalUnit());
+  ASSERT_EQ("at test", annot2.getAutoType());
 }
 
 #endif

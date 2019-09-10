@@ -6,6 +6,7 @@
 #include "zjsonobject.h"
 #include "flyem/zflyembodyannotationmerger.h"
 #include "neutubeconfig.h"
+#include "zjsonobjectparser.h"
 
 #ifdef _USE_GTEST_
 
@@ -22,6 +23,8 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json.setEntry("class", "neuron");
   json.setEntry("user", "zhaot");
   json.setEntry("naming user", "mock");
+  json.setEntry("clonal unit", "clonal unit test");
+  json.setEntry("auto-type", "auto type test");
 
   annot.loadJsonObject(json);
 
@@ -32,6 +35,13 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("neuron", annot.getType());
   ASSERT_EQ("zhaot", annot.getUser());
   ASSERT_EQ("mock", annot.getNamingUser());
+  ASSERT_EQ("clonal unit test", annot.getClonalUnit());
+  ASSERT_EQ("auto type test", annot.getAutoType());
+
+  ZJsonObject json2 = annot.toJsonObject();
+  ZJsonObjectParser parser;
+  ASSERT_EQ("clonal unit test", parser.getValue(json2, "clonal unit", ""));
+  ASSERT_EQ("auto type test", parser.getValue(json2, "auto-type", ""));
 
   annot.clear();
   ASSERT_EQ(uint64_t(0), annot.getBodyId());
