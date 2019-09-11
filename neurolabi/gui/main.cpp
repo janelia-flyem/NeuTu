@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
 
 #if defined(__APPLE__)
     QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QSplashScreen splash(pixmap);
     splash.show();
     splash.showMessage("Preparing user environment ...");
