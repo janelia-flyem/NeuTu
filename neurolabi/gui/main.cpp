@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
 #include "tz_utilities.h"
 
+#include "qfonticon.h"
 #include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
@@ -99,6 +100,8 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+    QFontIcon::addFont(":/fontawesome.ttf");
+
 #if defined(__APPLE__)
     QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));
     QSplashScreen splash(pixmap);

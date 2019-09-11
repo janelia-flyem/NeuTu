@@ -297,7 +297,7 @@ unix {
   }
 }
 
-RESOURCES = gui.qrc
+RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
     zimage.h \

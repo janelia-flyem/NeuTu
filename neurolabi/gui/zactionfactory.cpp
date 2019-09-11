@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUndoStack>
 
+#include "qfonticon.h"
 //#include "zstackdoc.h"
 //#include "zactionactivator.h"
 //#include "zstackpresenter.h"
@@ -418,6 +419,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::red));
     break;
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
@@ -436,27 +438,35 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::green));
     break;
   case ACTION_ADD_TODO_MERGE:
     action = new QAction("To merge here", parent);
+    action->setIcon(QFontIcon::icon(0x26ad, Qt::red));
     break;
   case ACTION_ADD_TODO_SPLIT:
     action = new QAction("To split here", parent);
+    action->setIcon(QFontIcon::icon(0x26ae, Qt::red));
     break;
   case ACTION_ADD_TODO_SVSPLIT:
     action = new QAction("To split supervoxel here", parent);
+    action->setIcon(QFontIcon::icon(0x262f, Qt::red));
     break;
   case ACTION_ADD_TODO_TRACE_TO_SOMA:
     action = new QAction("Trace to soma here", parent);
+    action->setIcon(QFontIcon::icon(0x26b2, Qt::red));
     break;
   case ACTION_ADD_TODO_NO_SOMA:
     action = new QAction("No soma here", parent);
+    action->setIcon(QFontIcon::icon(0x2640, Qt::red));
     break;
   case ACTION_ADD_TODO_DIAGNOSTIC:
     action = new QAction("Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x002B, Qt::red));
     break;
   case ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC:
     action = new QAction("Segmentation-Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x271B, Qt::red));
     break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
