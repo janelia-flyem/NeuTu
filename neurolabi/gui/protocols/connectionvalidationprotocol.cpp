@@ -7,11 +7,15 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include <QTableWidgetItem>
+#include <QIcon>
+
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
 
+#include "neutube.h"
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -23,7 +27,7 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     ui->setupUi(this);
 
     // sites table
-    m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
+    m_sitesModel = new QStandardItemModel(0, 7, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
     ui->sitesTableView->setModel(m_sitesModel);
 
@@ -43,6 +47,9 @@ ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
     connect(ui->tbarSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onTbarSegGoodChanged()));
     connect(ui->psdCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDGoodCanged()));
     connect(ui->psdSegCheckBox, SIGNAL(clicked(bool)), this, SLOT(onPSDSegGoodChanged()));
+    connect(ui->notSureBox, SIGNAL(clicked(bool)), this, SLOT(onNotSureChanged()));
+
+    connect(ui->setCommentButton, SIGNAL(clicked(bool)), this, SLOT(onSetComment()));
 
     connect(ui->sitesTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -93,6 +100,11 @@ bool ConnectionValidationProtocol::initialize() {
     // get point data into internal data structures
     QJsonArray jsonArray = data["points"].toArray();
     loadPoints(jsonArray);
+
+    // we carry along an optional assignment ID:
+    if (data.contains("assignment ID")) {
+        m_assignmentID = data["assignment ID"].toString();
+    }
 
     updateTable();
     updateLabels();
@@ -202,6 +214,18 @@ void ConnectionValidationProtocol::onPSDSegGoodChanged() {
     updateTable();
 }
 
+void ConnectionValidationProtocol::onNotSureChanged() {
+    m_pointData[m_points[m_currentIndex]].notSure = ui->notSureBox->isChecked();
+    saveState();
+    updateTable();
+}
+
+void ConnectionValidationProtocol::onSetComment() {
+    m_pointData[m_points[m_currentIndex]].comment = ui->commentEdit->text();
+    saveState();
+    updateTable();
+}
+
 void ConnectionValidationProtocol::onClickedTable(QModelIndex tableIndex) {
     // we don't have a sort proxy, so the table index = model index at this point
     setCurrentPoint(tableIndex.row());
@@ -211,6 +235,7 @@ void ConnectionValidationProtocol::setCurrentPoint(int index) {
     m_currentIndex = index;
     updateCurrentLabel();
     updateCheckBoxes();
+    updateComment();
 }
 
 void ConnectionValidationProtocol::selectCurrentRow() {
@@ -288,6 +313,16 @@ void ConnectionValidationProtocol::updateCheckBoxes() {
     } else {
         ui->psdSegCheckBox->setCheckState(Qt::CheckState::Unchecked);
     }
+    if (pd.notSure) {
+        ui->notSureBox->setCheckState(Qt::CheckState::Checked);
+    } else {
+        ui->notSureBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+}
+
+void ConnectionValidationProtocol::updateComment() {
+    PointData pd = m_pointData[m_points[m_currentIndex]];
+    ui->commentEdit->setText(pd.comment);
 }
 
 void ConnectionValidationProtocol::updateTable() {
@@ -301,23 +336,69 @@ void ConnectionValidationProtocol::updateTable() {
 
         PointData pd = m_pointData[p];
 
-        // later I'd like these to be graphics/icons; check mark for reviewed,
-        //  and white plus on green circle/white minus on red circle for the others
-        QStandardItem * revItem = new QStandardItem();
+        // for "reviewed", "has comment", use a text check mark
+        if (pd.reviewed) {
+            QStandardItem * revItem = new QStandardItem();
+            revItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
+            m_sitesModel->setItem(row, REVIEWED_COLUMN, revItem);
+        }
+        if (!pd.comment.isEmpty()) {
+            QStandardItem * commentItem = new QStandardItem();
+            commentItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
+            m_sitesModel->setItem(row, HAS_COMMENT_COLUMN, commentItem);
+        }
+
+        // for the various statuses, use icons; note that the code for
+        //  for using text instead is still present but commented out;
+        //  interestingly, you can use both (icon ends up to left of text)
+        QIcon goodIcon(":/images/verify.png");      // green check mark
+        QIcon badIcon(":/images/delete.png");       // red X
+        QIcon notsureIcon(":/images/help2.png");    // question mark
+
         QStandardItem * tbarGoodItem = new QStandardItem();
-        QStandardItem * tbarSegGoodItem = new QStandardItem();
-        QStandardItem * psdGoodItem = new QStandardItem();
-        QStandardItem * psdSegGoodItem = new QStandardItem();
-        revItem->setData(QVariant(pd.reviewed), Qt::DisplayRole);
-        tbarGoodItem->setData(QVariant(pd.tbarGood), Qt::DisplayRole);
-        tbarSegGoodItem->setData(QVariant(pd.tbarSegGood), Qt::DisplayRole);
-        psdGoodItem->setData(QVariant(pd.psdGood), Qt::DisplayRole);
-        psdSegGoodItem->setData(QVariant(pd.psdSegGood), Qt::DisplayRole);
-        m_sitesModel->setItem(row, REVIEWED_COLUMN, revItem);
+        // tbarGoodItem->setData(QVariant(pd.tbarGood), Qt::DisplayRole);
+        if (pd.tbarGood) {
+            tbarGoodItem->setIcon(goodIcon);
+        } else {
+            tbarGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, TBAR_GOOD_COLUMN, tbarGoodItem);
+
+        QStandardItem * tbarSegGoodItem = new QStandardItem();
+        // tbarSegGoodItem->setData(QVariant(pd.tbarSegGood), Qt::DisplayRole);
+        if (pd.tbarSegGood) {
+            tbarSegGoodItem->setIcon(goodIcon);
+        } else {
+            tbarSegGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, TBAR_SEG_GOOD_COLUMN, tbarSegGoodItem);
+
+        QStandardItem * psdGoodItem = new QStandardItem();
+        // psdGoodItem->setData(QVariant(pd.psdGood), Qt::DisplayRole);
+        if (pd.psdGood) {
+            psdGoodItem->setIcon(goodIcon);
+        } else {
+            psdGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, PSD_GOOD_COLUMN, psdGoodItem);
+
+        QStandardItem * psdSegGoodItem = new QStandardItem();
+        // psdSegGoodItem->setData(QVariant(pd.psdSegGood), Qt::DisplayRole);
+        if (pd.psdSegGood) {
+            psdSegGoodItem->setIcon(goodIcon);
+        } else {
+            psdSegGoodItem->setIcon(badIcon);
+        }
         m_sitesModel->setItem(row, PSD_SEG_GOOD_COLUMN, psdSegGoodItem);
+
+        QStandardItem * notSureItem = new QStandardItem();
+        // notSureItem->setData(QVariant(pd.notSure), Qt::DisplayRole);
+        if (pd.notSure) {
+            notSureItem->setIcon(notsureIcon);
+        } else {
+            // no icon if we are sure
+        }
+        m_sitesModel->setItem(row, NOT_SURE_COLUMN, notSureItem);
 
         row++;
 
@@ -358,31 +439,27 @@ void ConnectionValidationProtocol::saveState() {
     // save data; all the keys are hard-coded here for now as I'm
     //  in a hurry; make them constants later
 
-    // describe the arrays we'll be adding:
-    ZJsonArray fields;
-    fields.append("PSD location x");
-    fields.append("PSD location y");
-    fields.append("PSD location z");
-    fields.append("reviewed");
-    fields.append("T-bar good");
-    fields.append("T-bar segmentation good");
-    fields.append("PSD good");
-    fields.append("PSD segmentation good");
-    data.setEntry("fields", fields);
+    // metadata, mostly for assignment tracking purposes:
+    data.setEntry("assignment ID", m_assignmentID.toStdString());
+    data.setEntry("username", neutu::GetCurrentUserName());
 
     // and the items themselves:
     ZJsonArray connections;
     for (ZIntPoint p: m_points) {
         PointData pd = m_pointData[p];
-        ZJsonArray c;
-        c.append(p.getX());
-        c.append(p.getY());
-        c.append(p.getZ());
-        c.append(pd.reviewed);
-        c.append(pd.tbarGood);
-        c.append(pd.tbarSegGood);
-        c.append(pd.psdGood);
-        c.append(pd.psdSegGood);
+        ZJsonObject c;
+        ZJsonArray location;
+        location.append(p.getX());
+        location.append(p.getY());
+        location.append(p.getZ());
+        c.setEntry("location", location);
+        c.setEntry("reviewed", pd.reviewed);
+        c.setEntry("T-bar good", pd.tbarGood);
+        c.setEntry("T-bar segmentation good", pd.tbarSegGood);
+        c.setEntry("PSD good", pd.psdGood);
+        c.setEntry("PSD segmentation good", pd.psdSegGood);
+        c.setEntry("comment", pd.comment.toStdString());
+        c.setEntry("not sure", pd.notSure);
         connections.append(c);
     }
     data.setEntry("connections", connections);
@@ -407,26 +484,28 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
 
     // load data here
 
-    // we ignore the "fields" entry; that's for human use only; as long as the
-    //  file version is correct, we know the order of items in the arrays
-
-    // and unfortunately we can't use loadPoints(), because that's QJson, not ZJson
+    // metadata
+    // load assignment ID, which might be empty or absent
+    if (data.hasKey("assignment ID")) {
+        m_assignmentID = QString::fromStdString(ZJsonParser::stringValue(data["assignment ID"]));
+    } else {
+        m_assignmentID = "";
+    }
 
     m_points.clear();
     m_pointData.clear();
     ZJsonArray connections(data.value("connections"));
     for (size_t i=0; i<connections.size(); i++) {
-        ZJsonArray pointData(connections.value(i));
-        ZIntPoint p;
+        ZJsonObject pointData(connections.value(i));
+        ZIntPoint p = ZJsonParser::toIntPoint(pointData["location"]);
         PointData pd;
-        p.setX(ZJsonParser::integerValue(pointData.at(0)));
-        p.setY(ZJsonParser::integerValue(pointData.at(1)));
-        p.setZ(ZJsonParser::integerValue(pointData.at(2)));
-        pd.reviewed = ZJsonParser::booleanValue(pointData.at(3));
-        pd.tbarGood= ZJsonParser::booleanValue(pointData.at(4));
-        pd.tbarSegGood  = ZJsonParser::booleanValue(pointData.at(5));
-        pd.psdGood = ZJsonParser::booleanValue(pointData.at(6));
-        pd.psdSegGood = ZJsonParser::booleanValue(pointData.at(7));
+        pd.reviewed = ZJsonParser::booleanValue(pointData["reviewed"]);
+        pd.tbarGood= ZJsonParser::booleanValue(pointData["T-bar good"]);
+        pd.tbarSegGood  = ZJsonParser::booleanValue(pointData["T-bar segmentation good"]);
+        pd.psdGood = ZJsonParser::booleanValue(pointData["PSD good"]);
+        pd.psdSegGood = ZJsonParser::booleanValue(pointData["PSD segmentation good"]);
+        pd.comment = QString::fromStdString(ZJsonParser::stringValue(pointData["comment"]));
+        pd.notSure = ZJsonParser::booleanValue(pointData["not sure"]);
         m_points << p;
         m_pointData[p] = pd;
     }
@@ -492,6 +571,8 @@ void ConnectionValidationProtocol::setSitesHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(TBAR_SEG_GOOD_COLUMN, new QStandardItem(QString("T-seg")));
     model->setHorizontalHeaderItem(PSD_GOOD_COLUMN, new QStandardItem(QString("PSD")));
     model->setHorizontalHeaderItem(PSD_SEG_GOOD_COLUMN, new QStandardItem(QString("P-seg")));
+    model->setHorizontalHeaderItem(HAS_COMMENT_COLUMN, new QStandardItem(QString("comment")));
+    model->setHorizontalHeaderItem(NOT_SURE_COLUMN, new QStandardItem(QString("not sure")));
 }
 
 void ConnectionValidationProtocol::clearSitesTable() {
