@@ -6,24 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>900</width>
     <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Connection Validation Protocol</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Connection validation protocol</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
      <item>
@@ -139,6 +129,27 @@
           <string>PSD segmentation correct</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="notSureBox">
+         <property name="text">
+          <string>Not sure (explain in comment)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLineEdit" name="commentEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="setCommentButton">
+           <property name="text">
+            <string>Set comment</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
