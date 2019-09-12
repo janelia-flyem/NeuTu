@@ -971,6 +971,7 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
     m_bodyMeshesAddedExpected = 0;
     m_bodyMeshesAddedReceived = 0;
 
+    m_bodyMeshLoadedExpected = 0;
     bool usingTars = false;
     foreach (uint64_t bodyID, visibleOrSelected) {
         if (ZFlyEmBodyManager::encodesTar(bodyID)) {
@@ -981,13 +982,14 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
 
                 m_bodyMeshesAddedExpected++;
             }
-        }
-    }
+        } else {
+          if (!toRemove.contains(bodyID)) {
 
-    if (usingTars) {
-        m_bodyMeshLoadedExpected = 0;
-    } else {
-        m_bodyMeshLoadedExpected = (visible + selected).size();
+              // Only if an added body was not just removed should the expected count change.
+
+              m_bodyMeshLoadedExpected++;
+          }
+        }
     }
 
     m_bodyMeshLoadedReceived = 0;
