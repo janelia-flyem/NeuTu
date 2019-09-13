@@ -36,6 +36,14 @@ void TipDetectorDialog::enableRunUI() {
     ui->excludeRoiMenu->setEnabled(true);
 }
 
+void TipDetectorDialog::clearOutput() {
+    ui->timeLabel->clear();
+    ui->todoLabel->clear();
+    ui->locationsLabel->clear();
+    ui->locationsRoiLabel->clear();
+    ui->messageText->clear();
+}
+
 void TipDetectorDialog::onRunButton() {
     QStringList args;
     args << QString::fromStdString(m_target.getAddressWithPort());
@@ -55,6 +63,7 @@ void TipDetectorDialog::onRunButton() {
         args << excludeRoi;
     }
 
+    clearOutput();
     disableRunUI();
     setStatus(RUNNING);
 

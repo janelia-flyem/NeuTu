@@ -47,6 +47,7 @@ private:
     ScriptStatus getStatus();
     void updateStatus();
     void setMessage(QString message);
+    void clearOutput();
     void disableRunUI();
     void enableRunUI();
 };
