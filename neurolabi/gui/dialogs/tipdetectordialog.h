@@ -50,6 +50,7 @@ private:
     void clearOutput();
     void disableRunUI();
     void enableRunUI();
+    void resetRoiMenus();
 };
 
 #endif // TIPDETECTORDIALOG_H

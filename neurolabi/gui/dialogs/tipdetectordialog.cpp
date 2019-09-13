@@ -163,10 +163,16 @@ void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
 }
 
 void TipDetectorDialog::setBodyID(uint64_t bodyID) {
-    // don't change things while we're running!
+    // this is called when the user selects a new body and chooses "Tip
+    //  Detection Dialog" from the right-click menu
+
+    // reset the UI to the new body, unless we're running!
     if (getStatus() != RUNNING) {
         m_bodyID = bodyID;
         ui->bodyIDLabel->setText(QString::number(bodyID));
+        setStatus(NOT_RUNNING);
+        clearOutput();
+        resetRoiMenus();
     }
 }
 
@@ -176,7 +182,13 @@ void TipDetectorDialog::setRoiList(QStringList roiList) {
         roiList.insert(0, "(none)");
         ui->roiMenu->addItems(roiList);
         ui->excludeRoiMenu->addItems(roiList);
+        resetRoiMenus();
     }
+}
+
+void TipDetectorDialog::resetRoiMenus() {
+    ui->roiMenu->setCurrentIndex(0);
+    ui->excludeRoiMenu->setCurrentIndex(0);
 }
 
 void TipDetectorDialog::applicationQuitting() {
