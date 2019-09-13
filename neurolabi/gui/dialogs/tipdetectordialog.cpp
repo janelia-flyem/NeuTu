@@ -27,11 +27,13 @@ TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
 void TipDetectorDialog::disableRunUI() {
     ui->runButton->setEnabled(false);
     ui->roiMenu->setEnabled(false);
+    ui->excludeRoiMenu->setEnabled(false);
 }
 
 void TipDetectorDialog::enableRunUI() {
     ui->runButton->setEnabled(true);
     ui->roiMenu->setEnabled(true);
+    ui->excludeRoiMenu->setEnabled(true);
 }
 
 void TipDetectorDialog::onRunButton() {
@@ -45,6 +47,12 @@ void TipDetectorDialog::onRunButton() {
     if (currentRoi != "(none)") {
         args << "--roi";
         args << currentRoi;
+    }
+
+    QString excludeRoi = ui->excludeRoiMenu->currentText();
+    if (excludeRoi != "(none)") {
+        args << "--excluded-roi";
+        args << excludeRoi;
     }
 
     disableRunUI();
