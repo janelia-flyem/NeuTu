@@ -166,6 +166,7 @@ void TipDetectorDialog::setRoiList(QStringList roiList) {
     if (getStatus() != RUNNING) {
         roiList.insert(0, "(none)");
         ui->roiMenu->addItems(roiList);
+        ui->excludeRoiMenu->addItems(roiList);
     }
 }
 
