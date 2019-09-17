@@ -70,6 +70,14 @@ void FlyEmTodoDialog::uncheckSelected()
 void FlyEmTodoDialog::updateTable()
 {
   m_model->update();
+
+  // control column widths explicitly; all of them should resize to contents, and
+  //    comments column should take all the extra space
+  for (int i=0; i<m_model->columnCount(); i++) {
+      ui->todoTableView->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+  }
+  ui->todoTableView->horizontalHeader()->setSectionResizeMode(ZFlyEmTodoPresenter::TODO_COMMENT_COLUMN,
+                                                              QHeaderView::Stretch);
 }
 
 void FlyEmTodoDialog::updateVisibility(bool on)
