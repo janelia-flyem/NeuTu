@@ -174,7 +174,7 @@ private:
 private:
   QVector<ItemSlice> m_itemList;
 //  QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;
-  static ZFlyEmToDoItem m_emptySynapse;
+  static ZFlyEmToDoItem m_emptyTodo;
   static ItemSlice m_emptySlice;
 
   int m_startZ;

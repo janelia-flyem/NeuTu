@@ -1197,7 +1197,7 @@ void ZDvidWriter::uploadRoiMesh(
     refJson.setEntry("key", key.toStdString());
     writeJson(ZDvidData::GetName(ZDvidData::ERole::ROI_KEY), name, roiJson);
   } else {
-    LKWARN << "Failed to upload mesh. No data found.";
+    LKWARN << "Failed to upload mesh. No data found in " + meshPath;
   }
 }
 

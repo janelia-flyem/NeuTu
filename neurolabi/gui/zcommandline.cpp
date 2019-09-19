@@ -57,6 +57,7 @@
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
 #include "command/zstackfiltercommand.h"
+#include "command/zuploadroicommand.h"
 
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
@@ -106,6 +107,7 @@ void ZCommandLine::registerModule()
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
   registerModule<ZStackFilterCommand>("filter_stack");
+  registerModule<ZUploadRoiCommand>("upload_roi");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif

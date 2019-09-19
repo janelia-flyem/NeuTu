@@ -18,6 +18,7 @@ class ZNeuroglancerLayerSpec
 {
 public:
   ZNeuroglancerLayerSpec();
+  virtual ~ZNeuroglancerLayerSpec() {}
 
   std::string getName() const {
     return m_name;

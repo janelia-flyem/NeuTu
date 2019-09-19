@@ -354,7 +354,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemAction(neutu::EToDoAction action, bool checked);
-  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> f,
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> process,
                         std::function<bool(const ZFlyEmToDoItem&)> pred);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();

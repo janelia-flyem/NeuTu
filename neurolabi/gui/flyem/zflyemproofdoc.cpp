@@ -2034,7 +2034,10 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *td = *iter;
-    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_LOCAL);
+
+    //It's possible that the todo has not been loaded
+    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_GLOBAL);
+
     if (item.isValid()) {
       if (checking != item.isChecked()) {
         item.setChecked(checking);
@@ -2051,47 +2054,8 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
   }
 }
 
-void ZFlyEmProofDoc::checkTodoItem(bool checking)
-{ //Duplicated code with setTodoItemAction
-  KINFO << "Check to do items";
-
-  annotateTodoItem(
-        [checking](ZFlyEmToDoItem &item) {
-              item.setChecked(checking);},
-        [checking](const ZFlyEmToDoItem &item) -> bool {
-              return checking != item.isChecked(); }
-  );
-#if 0
-  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
-
-  std::vector<ZIntPoint> ptArray;
-  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
-       iter != todoList.end(); ++iter) {
-    ZFlyEmToDoList *td = *iter;
-    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
-    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
-         iter != selectedSet.end(); ++iter) {
-      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
-      if (item.isValid()) {
-        if (checking != item.isChecked()) {
-          item.setChecked(checking);
-          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
-          ptArray.push_back(item.getPosition());
-        }
-      }
-    }
-    if (!selectedSet.empty()) {
-      processObjectModified(td);
-      notifyTodoItemModified(ptArray, true);
-    }
-  }
-
-  processObjectModified();
-#endif
-}
-
 void ZFlyEmProofDoc::annotateTodoItem(
-    std::function<void (ZFlyEmToDoItem &)> f,
+    std::function<void (ZFlyEmToDoItem &)> process,
     std::function<bool(const ZFlyEmToDoItem&)> pred)
 {
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
@@ -2106,7 +2070,7 @@ void ZFlyEmProofDoc::annotateTodoItem(
       ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
       if (item.isValid()) {
         if (pred(item)) {
-          f(item);
+          process(item);
           td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
           ptArray.push_back(item.getPosition());
         }
@@ -2119,6 +2083,18 @@ void ZFlyEmProofDoc::annotateTodoItem(
   }
 
   processObjectModified();
+}
+
+void ZFlyEmProofDoc::checkTodoItem(bool checking)
+{
+  KINFO << "Check to do items";
+
+  annotateTodoItem(
+        [checking](ZFlyEmToDoItem &item) {
+              item.setChecked(checking);},
+        [checking](const ZFlyEmToDoItem &item) -> bool {
+              return checking != item.isChecked(); }
+  );
 }
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
@@ -3487,7 +3463,7 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
       bool good =
-          (bookmark->getUserName().length() == (int) currentUserName.length());
+          (bookmark->getUserName().length() == int(currentUserName.length()));
       if (good) {
         ZJsonObject checkJson =
             getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
@@ -4056,7 +4032,7 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
     }
 
     std::vector<uint64_t> idArray = getDvidReader().readBodyIdAt(ptArray);
-    if (bookmarkArray.size() == (int) idArray.size()) {
+    if (bookmarkArray.size() == int(idArray.size())) {
       for (int i = 0; i < bookmarkArray.size(); ++i) {
         ZFlyEmBookmark *bookmark = bookmarkArray[i];
         bookmark->setBodyId(idArray[i]);

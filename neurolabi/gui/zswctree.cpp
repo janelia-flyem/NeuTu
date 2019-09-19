@@ -195,6 +195,7 @@ void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
       free(m_tree);
       m_tree = NULL;
     }
+    break;
   default:
     break;
   }

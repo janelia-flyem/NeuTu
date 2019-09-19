@@ -425,7 +425,7 @@ void ZTest::test(MainWindow *host)
 {
   std::cout << "Start testing ..." << std::endl;
 
-  UNUSED_PARAMETER(host);
+  std::cout << host << std::endl;
 
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
@@ -30301,6 +30301,57 @@ void ZTest::test(MainWindow *host)
 #if 0
   QString str = "123->456";
   qDebug() << str.split("->", QString::SkipEmptyParts);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-test");
+  QStringList roiList = writer->getDvidReader().readKeys("rois");
+  qDebug() << roiList.size();
+
+  QStringList preservedList;
+  preservedList << "AL-DC3" << "FB07" << "FB08v";
+//  for (const QString &preserved : preservedList) {
+//    qDebug() << roiList.indexOf(preserved);
+//  }
+
+  for (const QString &roi : roiList) {
+    if (preservedList.indexOf(roi) >= 0) {
+      qDebug() << "Preserved: " << roi;
+    } else {
+      writer->deleteKey("rois", roi);
+    }
+  }
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-test");
+
+  QDir dir((GET_FLYEM_DATA_DIR + "/roi/element").c_str());
+
+  qDebug() << dir;
+
+  QStringList fileList = dir.entryList(QStringList() << "*.obj");
+  qDebug() << fileList;
+  for (const QString &meshFilename : fileList) {
+    qDebug() << dir.filePath(meshFilename);
+    QString roiName = meshFilename.left(
+          meshFilename.length() - QString(".tif.obj").length());
+    qDebug() << roiName;
+    QString meshFilePath = dir.filePath(meshFilename);
+    QString roiFilePath = dir.filePath(roiName + ".tif.sobj");
+    if (!QFileInfo(meshFilePath).exists()) {
+      qDebug() << meshFilePath << " does not exist. Abort!";
+      break;
+    }
+    if (!QFileInfo(roiFilePath).exists()) {
+      qDebug() << roiFilePath << " does not exist. Abort!";
+      break;
+    }
+    FlyEmDataWriter::UploadRoi(
+          *writer, roiName.toStdString(),
+          roiFilePath.toStdString(),
+          meshFilePath.toStdString());
+  }
 #endif
 
   std::cout << "Done." << std::endl;
