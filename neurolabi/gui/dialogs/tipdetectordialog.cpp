@@ -51,6 +51,9 @@ void TipDetectorDialog::onRunButton() {
     args << QString::number(m_bodyID);
     args << QString::fromStdString(m_target.getTodoListName());
 
+    // we always want the run parameters saved:
+    args << "--save-parameters";
+
     QString currentRoi = ui->roiMenu->currentText();
     if (currentRoi != "(none)") {
         args << "--roi";
