@@ -1,4 +1,6 @@
 HEADERS += \
+    $$PWD/commontest.h \
+    $$PWD/znetworkutilstest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \

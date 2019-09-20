@@ -525,7 +525,7 @@ private:
 
 #if defined(_QT_GUI_USED_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
-#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
+//#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
 #endif
 
 #define ZOUT(out, level) \

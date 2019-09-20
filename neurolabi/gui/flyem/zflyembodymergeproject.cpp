@@ -710,29 +710,47 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray,
     ZWidgetMessage &warnMsg)
 {
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
+  /*
+  if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
+        ZNeutuService::REQUEST_FAILED) {
+      warnMsg.setMessage("Computing service failed");
+    }
+
+    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
+        ZNeutuService::REQUEST_FAILED) {
+      warnMsg.setMessage("Computing service failed");
+    }
+  } else {
     for (uint64_t bodyId : bodyArray) {
       m_writer.deleteBodyAnnotation(bodyId);
       m_writer.deleteSkeleton(bodyId);
     }
 
+    if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
+      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+            "skeletonize", getDvidTarget(), targetId, true);
+      task.setPriority(5);
+      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+    }
+  }
+  */
+
+  for (uint64_t bodyId : bodyArray) {
+    m_writer.deleteBodyAnnotation(bodyId);
+    m_writer.deleteSkeleton(bodyId);
+  }
+
+  if (GET_FLYEM_CONFIG.neutuseAvailable(
+        neutu::UsingLocalHost(getDvidTarget().getAddress()))) {
     neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
           "skeletonize", getDvidTarget(), targetId, true);
     task.setPriority(5);
     GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-  } else {
-    if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-      if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-            getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-          ZNeutuService::REQUEST_FAILED) {
-        warnMsg.setMessage("Computing service failed");
-      }
-
-      if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-            getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
-          ZNeutuService::REQUEST_FAILED) {
-        warnMsg.setMessage("Computing service failed");
-      }
+    if (GET_FLYEM_CONFIG.getNeutuseWriter().getStatusCode() != 200) {
+      warnMsg.setMessage("Failed to upload skeletonization task");
     }
   }
 

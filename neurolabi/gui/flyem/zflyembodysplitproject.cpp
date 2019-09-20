@@ -1277,6 +1277,15 @@ void ZFlyEmBodySplitProject::updateBodyDep(
     const std::vector<uint64_t> &bodyArray)
 {
 #if defined(_FLYEM_)
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
+    for (uint64_t bodyId : bodyArray) {
+      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+            "skeletonize", getDvidTarget(), bodyId, true);
+      task.setPriority(5);
+      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+    }
+  }
+  /*
     if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
       for (uint64_t bodyId : bodyArray) {
         neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -1288,6 +1297,7 @@ void ZFlyEmBodySplitProject::updateBodyDep(
       GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
             getDvidTarget(), bodyArray, ZNeutuService::UPDATE_ALL);
     }
+    */
 #endif
 }
 

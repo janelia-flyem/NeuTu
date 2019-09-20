@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <regex>
 
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -358,11 +360,24 @@ std::string ZFlyEmConfig::getNeuTuServer() const
 void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)
 {
 #ifdef _QT_GUI_USED_
-  NeutubeConfig::SetNeuTuServer(server.c_str());;
+  NeutubeConfig::SetNeuTuServer(server.c_str());
 #endif
 }
 
 #ifdef _QT_GUI_USED_
+
+ZFlyEmConfig::EServiceStatus ZFlyEmConfig::getNeutuseStatus() const
+{
+  return m_neutuseStatus;
+}
+
+bool ZFlyEmConfig::isNeutuseOnline() const
+{
+  return (getNeutuseStatus() == EServiceStatus::ONLINE_NET) ||
+      (getNeutuseStatus() == EServiceStatus::ONLINE_LOCAL);
+}
+
+/*
 bool ZFlyEmConfig::hasNormalService() const
 {
   if (getNeutuService().isNormal() || m_neutuseWriter.ready()) {
@@ -371,43 +386,89 @@ bool ZFlyEmConfig::hasNormalService() const
 
   return false;
 }
+*/
 
-void ZFlyEmConfig::updateServiceStatus()
+void ZFlyEmConfig::updateCheckedNeutuseStatus()
 {
-  GET_FLYEM_CONFIG.getNeutuService().updateStatus();
-  GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
-}
-
-void ZFlyEmConfig::activateNeuTuServer()
-{
-  if (!m_neutuServerChecked) {
-    activateNeuTuServerForce();
+  if (m_neutuseWriter.ready()) {
+    m_neutuseStatus =
+        neutu::UsingLocalHost(m_neutuseWriter.getServerAddress())
+          ? EServiceStatus::ONLINE_LOCAL
+          : EServiceStatus::ONLINE_NET;
+//    neutuseOpened = true;
+  } else {
+    m_neutuseStatus = EServiceStatus::OFFLINE;
   }
 }
 
-void ZFlyEmConfig::activateNeuTuServerForce()
+void ZFlyEmConfig::updateNeutuseStatus()
+{
+//  GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+
+  m_neutuseWriter.testConnection();
+  updateCheckedNeutuseStatus();
+}
+
+void ZFlyEmConfig::activateNeutuse(bool forLocalTarget)
+{
+  if (m_neutuseStatus == EServiceStatus::UNCHECKED) {
+    activateNeutuseForce(forLocalTarget);
+  }
+}
+
+bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget) const
+{
+  if (forLocalTarget) {
+    return m_neutuseStatus == EServiceStatus::ONLINE_LOCAL;
+  }
+
+  return isNeutuseOnline();
+}
+
+bool ZFlyEmConfig::neutuseAvailable(const ZDvidTarget &target) const
+{
+  return neutuseAvailable(neutu::UsingLocalHost(target.getAddress()));
+}
+
+void ZFlyEmConfig::activateNeutuseForce(bool forLocalTarget)
 {
   std::string server = getNeuTuServer();
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
-  bool neutuseOpened = false;
-  bool serviceOpened = false;
+//  bool neutuseOpened = false;
+//  bool serviceOpened = false;
   m_neutuseWriter.reset();
-  getNeutuService().reset();
+//  getNeutuService().reset();
   for (const std::string &server : serverList) {
+    bool isLocalService = neutu::UsingLocalHost(server);
     if (ZString(server).startsWith("neutuse:")) {
-      if (!neutuseOpened) {
-        m_neutuseWriter.open(server.substr(8));
-        neutuseOpened = m_neutuseWriter.ready();
+      bool needOpen = false;
+      if (forLocalTarget) {
+        if (isLocalService) {
+          needOpen = true;
+        }
+      } else {
+        needOpen = true;
       }
-    } else {
-      if (!serviceOpened) {
-        getNeutuService().setServer(server);
-        serviceOpened = getNeutuService().isNormal();
+
+      if (needOpen) {
+        m_neutuseWriter.open(server.substr(8));
+        updateCheckedNeutuseStatus();
       }
     }
-  }
 
-  m_neutuServerChecked = true;
+      /* else { //obsolete
+      if (!serviceOpened && !forLocalTarget) {
+        getNeutuService().setServer(server);
+        if (getNeutuService().isNormal()) {
+          m_neutuServerStatus =
+              isLocalService ? EServiceStatus::ONLINE_LOCAL
+                             : EServiceStatus::ONLINE_NET;
+        }
+//        serviceOpened = getNeutuService().isNormal();
+//        m_neutuServerChecked = true;
+      }
+    }*/
+  }
 }
 
 /*

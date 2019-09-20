@@ -85,6 +85,8 @@ uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
 
+bool UsingLocalHost(const std::string &url);
+
 template<size_t N>
 size_t Length(const char (&)[N])
 {

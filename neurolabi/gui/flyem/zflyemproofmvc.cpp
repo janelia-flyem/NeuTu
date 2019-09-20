@@ -2477,9 +2477,11 @@ void ZFlyEmProofMvc::diagnose()
 void ZFlyEmProofMvc::setDvidTarget()
 {
   if (getDvidDialog()->exec()) {
-    GET_FLYEM_CONFIG.activateNeuTuServer();
-
     const ZDvidTarget &target = getDvidDialog()->getDvidTarget();
+
+    GET_FLYEM_CONFIG.activateNeutuse(
+          neutu::UsingLocalHost(target.getAddress()));
+
     setDvid(ZDvidEnv(target));
     /*
     const QString threadId = "setDvidTarget";
@@ -3995,12 +3997,25 @@ void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
   }
 }
 
+QString ZFlyEmProofMvc::makeSkeletonizationServiceMissingMessage() const
+{
+  QString msg = "Skeletonization failed: No ";
+  if (GET_FLYEM_CONFIG.getNeutuseStatus() ==
+      ZFlyEmConfig::EServiceStatus::ONLINE_NET) {
+    msg += "local ";
+  }
+
+  msg += " skeletonization service is available";
+
+  return msg;
+}
+
 void ZFlyEmProofMvc::skeletonizeBodyList()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
 
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     QString bodyFile = ZDialogFactory::GetOpenFileName("Body File", "", this);
 
     if (!bodyFile.isEmpty()) {
@@ -4008,7 +4023,8 @@ void ZFlyEmProofMvc::skeletonizeBodyList()
       if (stream.good()) {
         ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
         dlg->setComputingServer(
-              GET_NETU_SERVICE.getServer().c_str());
+              GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
+//              GET_NETU_SERVICE.getServer().c_str());
         dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::FILE);
         if (dlg->exec()) {
           int count = 0;
@@ -4032,8 +4048,7 @@ void ZFlyEmProofMvc::skeletonizeBodyList()
       }
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {
@@ -4045,9 +4060,11 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
-    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
+    dlg->setComputingServer(
+          GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
+//    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
     dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::TOP);
     if (dlg->exec()) {
       ZJsonArray thresholdData =
@@ -4056,7 +4073,8 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 
       for (size_t i = 0; i < thresholdData.size(); ++i) {
         ZJsonObject labelJson(thresholdData.value(i));
-        uint64_t bodyId = ZJsonParser::integerValue(labelJson["Label"]);
+        uint64_t bodyId =
+            uint64_t(ZJsonParser::integerValue(labelJson["Label"]));
 
         if (bodyId > 0) {
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -4069,8 +4087,7 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
       }
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {
@@ -4082,14 +4099,25 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
-  if (GET_FLYEM_CONFIG.hasNormalService()) {
+
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
-    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
+    dlg->setComputingServer(
+          GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
     dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::SELECTED);
     if (dlg->exec()) {
       const std::set<uint64_t> &bodySet =
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
+      for (uint64_t bodyId : bodySet) {
+        neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+              "skeletonize", getDvidTarget(), bodyId,
+              dlg->isOverwriting());
+        task.setPriority(dlg->getPriority());
+
+        GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+      }
+      /*
       if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
         for (uint64_t bodyId : bodySet) {
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -4114,10 +4142,10 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
           }
         }
       }
+      */
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {

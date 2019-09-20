@@ -84,5 +84,7 @@
 #include "test/qtcoretest.h"
 #include "test/zflyemmisctest.h"
 #include "test/zdvidsynapseannotationdialogtest.h"
+#include "test/znetworkutilstest.h"
+#include "test/commontest.h"
 
 #endif // ZTESTALL_H

@@ -630,6 +630,8 @@ private:
 
   void updateRoiWidget(Z3DWindow *win) const;
 
+  QString makeSkeletonizationServiceMissingMessage() const;
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
