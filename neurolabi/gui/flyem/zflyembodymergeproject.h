@@ -136,6 +136,7 @@ public:
   bool isFinalStatus(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
   bool isMergableStatus(const std::string &status) const;
+  bool preservingId(const std::string &status) const;
 
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
@@ -221,6 +222,8 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
   void removeMerge(uint64_t bodyId);
   void removeMerge(const std::vector<uint64_t> &bodyArray);
+  bool preserved(uint64_t bodyId) const;
+  bool hasName(uint64_t bodyId) const;
 
   void clearUndoStack();
 

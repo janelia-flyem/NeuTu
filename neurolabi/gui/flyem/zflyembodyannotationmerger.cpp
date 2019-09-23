@@ -158,6 +158,11 @@ bool ZFlyEmBodyAnnotationMerger::isExpertStatus(const std::string &status) const
   return getBodyStatus(status).isExpertStatus();
 }
 
+bool ZFlyEmBodyAnnotationMerger::preservingId(const std::string &status) const
+{
+  return getBodyStatus(status).presevingId();
+}
+
 std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationMerger::getConflictBody(
     const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
 {

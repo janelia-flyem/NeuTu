@@ -1,5 +1,6 @@
 HEADERS += \
     $$PWD/commontest.h \
+    $$PWD/zflyembodyannotationmergertest.h \
     $$PWD/znetworkutilstest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \

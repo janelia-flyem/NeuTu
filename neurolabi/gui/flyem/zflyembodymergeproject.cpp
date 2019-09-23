@@ -541,6 +541,11 @@ bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
   return m_bodyStatusProtocol.isMergable(status);
 }
 
+bool ZFlyEmBodyMergeProject::preservingId(const std::string &status) const
+{
+  return m_bodyStatusProtocol.preservingId(status);
+}
+
 namespace {
 
 QString compose_body_status_message(
@@ -602,26 +607,6 @@ QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
     if (itemCount >= 5) {
       break;
     }
-
-    /*
-    if (!bodyArray.empty()) {
-      msg += "<ul>";
-      for (uint64_t bodyId : bodyArray) {
-        msg += QString("<li>%1: %2</li>").
-            arg(bodyId).arg(annotMap[bodyId].getStatus().c_str());
-        ++itemCount;
-        if (itemCount >= 5) {
-          msg += "<li>...</li>";
-          break;
-        }
-      }
-      msg += "</ul>";
-      msg += "<br>";
-      if (itemCount >= 5) {
-        break;
-      }
-    }
-    */
   }
 
   if (!msg.isEmpty()) {
@@ -821,8 +806,14 @@ void ZFlyEmBodyMergeProject::removeMerge(const std::vector<uint64_t> &bodyArray)
   }
 }
 
+bool ZFlyEmBodyMergeProject::preserved(uint64_t bodyId) const
+{
+  return (preservingId(m_annotationCache.value(bodyId).getStatus()));
+}
+
 namespace {
-bool HasName(uint64_t bodyId,
+
+bool has_name(uint64_t bodyId,
              const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotationCache)
 {
   if (annotationCache.contains(bodyId)) {
@@ -833,23 +824,74 @@ bool HasName(uint64_t bodyId,
 
   return false;
 }
+
+}
+
+bool ZFlyEmBodyMergeProject::hasName(uint64_t bodyId) const
+{
+  return has_name(bodyId, m_annotationCache);
 }
 
 bool ZFlyEmBodyMergeProject::mergeVerified(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray) const
 {
-  if (!HasName(targetId, m_annotationCache)) {
+  QString msg;
+
+  QString bodyStatusMsg;
+  QString bodyNameMsg;
+  if (!bodyArray.empty()) {
+    if (!hasName(targetId) && hasName(bodyArray.front())) {
+      msg += QString("The name of ID %1 will be transfered to ID %2\n").
+          arg(bodyArray.front()).arg(targetId);
+    }
+
     for (uint64_t bodyId : bodyArray) {
-      if (HasName(bodyId, m_annotationCache)) {
-        return ZDialogFactory::Ask(
-              "Confirming Merge",
-              QString("The ID (%1)) of a named body (%2) will be changed after merging. "
-              "Do you want to continue?").arg(bodyId).
-              arg(m_annotationCache.value(bodyId).getName().c_str()), NULL);
+      if (preserved(bodyId)) {
+        bodyStatusMsg += QString("ID: %1, Status: %2;\n").
+            arg(bodyId).
+            arg(m_annotationCache.value(bodyId).getStatus().c_str());
+      }
+
+      if (hasName(bodyId)) {
+        bodyNameMsg += QString("ID: %1, Name: %2;\n").
+            arg(bodyId).
+            arg(m_annotationCache.value(bodyId).getName().c_str());
       }
     }
   }
-  return true;
+
+  bool okToContinue = true;
+
+  if (!bodyStatusMsg.isEmpty()) {
+    if (neutu::IsAdminUser()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Confirming Merge",
+            "The following preserved IDs will be changed after merging\n" +
+             bodyStatusMsg + "\nDo you want to continue?", nullptr);
+    } else {
+      ZDialogFactory::Warn(
+            "Merge Forbidden",
+            "The bodies cannot be merges because the following IDs "
+            "need to be preserved:\n" + bodyStatusMsg +
+            "\nPlease contact admin if you do want to merge the bodies.",
+            nullptr);
+      okToContinue = false;
+    }
+  }
+
+  if (okToContinue) {
+    if (!bodyNameMsg.isEmpty()) {
+      msg += "The following named bodies will be gone after merging\n"
+          + bodyNameMsg;
+    }
+
+    if (!msg.isEmpty()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Confirming Merge", msg + "\nDo you want to continue?", NULL);
+    }
+  }
+
+  return okToContinue;
 }
 
 void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
