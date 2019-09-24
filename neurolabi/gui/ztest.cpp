@@ -316,7 +316,7 @@
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
 #include "flyem/zflyembodystatus.h"
-#include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 #include "flyem/zflyemroimanager.h"
 #include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"

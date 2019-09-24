@@ -31,7 +31,7 @@ HEADERS += \
     $$PWD/zflyembody3ddockeyprocessor.h \
     $$PWD/zflyembody3ddocmenufactory.h \
     $$PWD/zflyembodyannotationdialog.h \
-    $$PWD/zflyembodyannotationmerger.h \
+    $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
     $$PWD/zflyembodyconfig.h \
@@ -150,7 +150,7 @@ SOURCES += \
     $$PWD/zflyembody3ddockeyprocessor.cpp \
     $$PWD/zflyembody3ddocmenufactory.cpp \
     $$PWD/zflyembodyannotationdialog.cpp \
-    $$PWD/zflyembodyannotationmerger.cpp \
+    $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \
     $$PWD/zflyembodyconfig.cpp \

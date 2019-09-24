@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QMutex>
+#include <QVector>
 
 #include <set>
 
@@ -14,6 +15,7 @@
 #include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -33,7 +35,7 @@ class ZFlyEmBodySplitProject : public QObject
   Q_OBJECT
 
 public:
-  explicit ZFlyEmBodySplitProject(QObject *parent = 0);
+  explicit ZFlyEmBodySplitProject(QObject *parent = nullptr);
   virtual ~ZFlyEmBodySplitProject();
 
   /*!
@@ -187,6 +189,8 @@ public:
 
   void waitResultQuickView();
 
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+
 signals:
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
@@ -267,9 +271,9 @@ private:
   void quitResultUpdate();
   void cancelResultUpdate();
   void uploadSplitListFunc();
-  bool splitSizeChecked() const;
+  bool splitVerified() const;
 
-  int getMinObjSize() const { return m_minObjSize; }
+  size_t getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
 
   ZJsonArray getSeedJson() const;
@@ -282,6 +286,14 @@ private:
   void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
       QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
       const ZObject3dScan *obj, size_t minIsolationSize);
+  void isolateSmallObjects(
+      ZObject3dScan &body, ZObject3dScan&smallBodyGroup, size_t minObjSize);
+  void prepareSplitList(
+      const std::vector<ZObject3dScan *> &objArray,
+      ZObject3dScan &body, ZObject3dScan &mainBody,
+      bool checkingIsolation,  size_t minIsolationSize, double dp);
+  void regroupSplit(ZObject3dScan &body, const ZObject3dScan &mainBody,
+                    ZObject3dScan &smallBodyGroup, size_t minObjSize);
 
   const ZDvidReader &getMainReader() const {
     return m_reader;
@@ -297,7 +309,10 @@ private:
 
   void updateBodyDep(uint64_t bodyId);
   void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
-  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const QVector<uint64_t> &bodyArray);
+  template<template<class...> class C>
+  void updateBodyDep(const C<uint64_t> &bodyArray);
 
 
 private:
@@ -305,6 +320,8 @@ private:
   ZDvidWriter m_writer;
   ZDvidReader m_commitReader;
   ZDvidWriter m_commitWriter;
+
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
 //  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;

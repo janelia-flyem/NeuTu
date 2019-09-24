@@ -86,5 +86,6 @@
 #include "test/zdvidsynapseannotationdialogtest.h"
 #include "test/znetworkutilstest.h"
 #include "test/commontest.h"
+#include "test/zflyembodyannotationprotocaltest.h"
 
 #endif // ZTESTALL_H

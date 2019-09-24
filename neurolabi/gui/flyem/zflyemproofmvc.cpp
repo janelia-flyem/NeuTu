@@ -1964,6 +1964,8 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 
   m_splitProject.setDvidTarget(getDvidTarget());
   m_splitProject.setDvidInfo(getDvidInfo());
+  m_splitProject.setBodyStatusProtocol(
+        getCompleteDocument()->getBodyStatusProtocol());
   getCompleteDocument()->syncMergeWithDvid();
   //    m_mergeProject.setDvidTarget(getDvidTarget());
   //    m_mergeProject.syncWithDvid()

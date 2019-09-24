@@ -871,7 +871,7 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
     } else {
       ZDialogFactory::Warn(
             "Merge Forbidden",
-            "The bodies cannot be merges because the following IDs "
+            "The bodies cannot be merged because the following IDs "
             "need to be preserved:\n" + bodyStatusMsg +
             "\nPlease contact admin if you do want to merge the bodies.",
             nullptr);
@@ -1643,7 +1643,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 #endif
 
 void ZFlyEmBodyMergeProject::setBodyStatusProtocol(
-    const ZFlyEmBodyAnnotationMerger &protocol)
+    const ZFlyEmBodyAnnotationProtocal &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }

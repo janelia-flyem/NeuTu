@@ -15,7 +15,7 @@
 
 #include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
-#include "zflyembodyannotationmerger.h"
+#include "zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -74,7 +74,7 @@ public:
     return m_dataFrame;
   }
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationMerger &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -142,7 +142,7 @@ public:
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
-  const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
+  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
     return m_bodyStatusProtocol;
   }
 
@@ -236,7 +236,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
   bool m_isAdmin = false;
