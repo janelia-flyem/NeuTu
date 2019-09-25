@@ -1378,8 +1378,8 @@ protected:
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
   virtual ZStackArray createWatershedMask(bool selectedOnly) const;
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
-  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
+//  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+//  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);

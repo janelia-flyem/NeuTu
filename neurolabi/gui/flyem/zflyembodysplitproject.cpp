@@ -340,14 +340,13 @@ void ZFlyEmBodySplitProject::startResultQuickView()
 void ZFlyEmBodySplitProject::updateSplitQuick()
 {
   if (!m_splitUpdated) {
-    m_splitUpdated = true;
-    const QString threadId = THREAD_RESULT_QUICK;
-    if (!m_futureMap.isAlive(threadId)) {
+    if (!m_futureMap.isAlive(THREAD_RESULT_QUICK)) {
       m_futureMap.removeDeadThread();
       m_cancelSplitQuick = false;
       QFuture<void> future =
           QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateSplitQuickFunc);
-      m_futureMap[threadId] = future;
+      m_futureMap[THREAD_RESULT_QUICK] = future;
+      m_splitUpdated = true;
     }
   }
 }
@@ -1538,12 +1537,14 @@ bool ZFlyEmBodySplitProject::splitVerified() const
   ZObject3dScan *wholeBody = getDocument()->getSparseStackMask();
   size_t mainBodySize = wholeBody->getVoxelNumber();
   size_t maxSplitSize = 0;
+  uint64_t maxSplitLabel = 0;
 //  std::vector<size_t> splitSizeList(m_splitList.size(), 0);
   for (int i = 0; i < m_splitList.size(); ++i) {
     const ZObject3dScan &obj = m_splitList[i];
     size_t splitSize = obj.getVoxelNumber();
     if (maxSplitSize < splitSize) {
       maxSplitSize = splitSize;
+      maxSplitLabel = m_oldBodyIdList[i];
     }
 //    splitSizeList[i] = obj.getVoxelNumber();
     mainBodySize -= splitSize;
@@ -1557,8 +1558,9 @@ bool ZFlyEmBodySplitProject::splitVerified() const
       if (m_bodyStatusProtocol.preservingId(annot.getStatus())) {
         ZDialogFactory::Warn(
               "Split Forbidden",
-              "You cannot split off a big part from this body because "
-              "its ID should be preserved.", nullptr);
+              QString("You cannot split off a big part (label=%1) "
+                      "from this body because its ID should be preserved.")
+              .arg(maxSplitLabel), nullptr);
         return false;
       }
     }
@@ -2349,7 +2351,7 @@ void ZFlyEmBodySplitProject::recoverSeed()
 void ZFlyEmBodySplitProject::loadSeed(const ZJsonObject &obj)
 {
   if (obj.hasKey("seeds")) {
-    ZLabelColorTable colorTable;
+//    ZLabelColorTable colorTable;
 
     ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < jsonArray.size(); ++i) {
@@ -2369,7 +2371,7 @@ void ZFlyEmBodySplitProject::loadSeed(const ZJsonObject &obj)
       } else if (seedJson.hasKey("obj3d")) {
         ZObject3d *obj3d = new ZObject3d;
         obj3d->loadJsonObject(seedJson);
-        obj3d->setColor(colorTable.getColor(obj3d->getLabel()));
+        obj3d->setColor(ZStroke2d::GetLabelColor(obj3d->getLabel()));
 
         if (!obj3d->isEmpty()) {
           obj3d->setRole(ZStackObjectRole::ROLE_SEED |

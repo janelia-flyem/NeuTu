@@ -58,48 +58,12 @@ public:
     return m_reader.getDvidTarget(); }
   void setDvidInfo(const ZDvidInfo &info);
 
-  ZFlyEmNeuron getFlyEmNeuron() const;
-
-  bool hasDataFrame() const;
-  void setDataFrame(ZStackFrame *frame);
-  inline ZStackFrame* getDataFrame() const {
-    return m_dataFrame;
-  }
-
   void setDocument(ZSharedPointer<ZStackDoc> doc);
   ZStackDoc* getDocument() const;
   ZSharedPointer<ZStackDoc> getSharedDocument() const;
 
   template<typename T>
   T* getDocument() const;
-
-  void loadBookmark(const QString &filePath);
-  std::set<int> getBookmarkBodySet() const;
-
-  /*
-  const ZFlyEmBookmarkArray* getBookmarkArray() const {
-    return m_bookmarkArray;
-  }
-  */
-
-  bool hasBookmark() const;
-  int getBookmarkCount() const;
-
-  void locateBookmark(const ZFlyEmBookmark &bookmark);
-
-//  void clearBookmarkDecoration();
-  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-//  void updateBookmarkDecoration();
-
-  void setBookmarkVisible(bool visible);
-//  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-
-//  void removeAllBookmark();
-
-//  void showSkeleton(ZSwcTree *tree);
-//  void showBodyQuickView();
-
-//  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
@@ -117,8 +81,6 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
-      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitResultFunc(
       ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
       size_t minObjSize, bool checkingIsolation);
@@ -130,17 +92,6 @@ public:
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
-
-  void viewPreviousSlice();
-  void viewNextSlice();
-  void viewFullGrayscale();
-  void viewFullGrayscale(bool viewing);
-  void updateBodyMask();
-//  void downloadBodyMask();
-
-  void setShowingBodyMask(bool state){
-    m_showingBodyMask = state;
-  }
 
   void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
@@ -159,9 +110,8 @@ public:
 
   std::string getSeedKey(uint64_t bodyId) const;
   std::string getBackupSeedKey(uint64_t bodyId) const;
-  bool isSeedProcessed(uint64_t bodyId) const;
-  void setSeedProcessed(uint64_t bodyId);
 
+  /*
   class ThreadManager {
   public:
     enum EThreadName {
@@ -174,8 +124,9 @@ public:
   private:
     ZThreadFutureMap m_futureMap;
   };
+  */
 
-  void closeBodyWindow();
+//  void closeBodyWindow();
 
   bool isReadyForSplit(const ZDvidTarget &target);
 
@@ -185,11 +136,48 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
-  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
-
-  void waitResultQuickView();
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
   void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+
+public: //Obsolete functions
+  ZFlyEmNeuron getFlyEmNeuron() const;
+
+  bool hasDataFrame() const;
+  void setDataFrame(ZStackFrame *frame);
+  inline ZStackFrame* getDataFrame() const {
+    return m_dataFrame;
+  }
+
+  bool hasBookmark() const;
+  int getBookmarkCount() const;
+
+  void locateBookmark(const ZFlyEmBookmark &bookmark);
+
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void setBookmarkVisible(bool visible);
+
+//  void loadBookmark(const QString &filePath);
+  std::set<int> getBookmarkBodySet() const;
+
+  void setShowingBodyMask(bool state){
+    m_showingBodyMask = state;
+  }
+
+  void viewPreviousSlice();
+  void viewNextSlice();
+  void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
+  void updateBodyMask();
+
+  bool isSeedProcessed(uint64_t bodyId) const;
+  void setSeedProcessed(uint64_t bodyId);
+
+  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
+      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
+
+  void waitResultQuickView();
+//  void downloadBodyMask();
 
 signals:
   void messageGenerated(QString, bool appending = true);
