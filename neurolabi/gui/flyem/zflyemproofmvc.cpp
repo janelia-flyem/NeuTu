@@ -102,6 +102,7 @@
 #include "zflyemcoordinateconverter.h"
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
+#include "zflyemproofutil.h"
 
 #include "neuroglancer/zneuroglancerpathparser.h"
 
@@ -3535,8 +3536,9 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
         ZFlyEmBodyAnnotation annotation =
             FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+        ZFlyEmBodyAnnotation oldAnnotation = annotation;
         annotation.setStatus(status);
-        annotateBody(bodyId, annotation);
+        annotateBody(bodyId, annotation, oldAnnotation);
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
       } else {
         warnAbouBodyLockFail(bodyId);
@@ -3550,12 +3552,25 @@ void ZFlyEmProofMvc::setExpertBodyStatus()
   setSelectedBodyStatus(ZFlyEmBodyStatus::GetExpertStatus());
 }
 
+/*
 void ZFlyEmProofMvc::annotateBody(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
   getCompleteDocument()->annotateBody(bodyId, annotation);
   updateBodyMessage(bodyId, annotation);
   updateViewButton();
+}
+*/
+
+void ZFlyEmProofMvc::annotateBody(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
+    const ZFlyEmBodyAnnotation &oldAnnotation)
+{
+  if (ZFlyEmProofUtil::AnnotateBody(
+        bodyId, annotation, oldAnnotation, getCompleteDocument(), this)) {
+    updateBodyMessage(bodyId, annotation);
+    updateViewButton();
+  }
 }
 
 void ZFlyEmProofMvc::warn(const QString &msg)
@@ -3596,14 +3611,15 @@ void ZFlyEmProofMvc::annotateSelectedBody()
         dlg->updateStatusBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        ZFlyEmBodyAnnotation annotation;
         if (reader.isReady()) {
-          ZFlyEmBodyAnnotation annotation =
+          annotation =
               FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
           dlg->loadBodyAnnotation(annotation);
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          annotateBody(bodyId, dlg->getBodyAnnotation());
+          annotateBody(bodyId, dlg->getBodyAnnotation(), annotation);
         }
 
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);

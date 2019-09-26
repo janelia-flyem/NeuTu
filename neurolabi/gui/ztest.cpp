@@ -49,30 +49,32 @@
 #include <draco/compression/decode.h>
 #include <draco/compression/encode.h>
 
+#include "tz_sp_grow.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_stat.h"
+#include "tz_stack_attribute.h"
+#include "tz_graph_defs.h"
+#include "tz_graph_utils.h"
+#include "tz_workspace.h"
+#include "tz_graph.h"
+#include "tz_stack_objlabel.h"
+#include "tz_stack_threshold.h"
+#include "tz_color.h"
+
 #include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
 #include "neutube.h"
 #include "imgproc/zstackprocessor.h"
 #include "zfilelist.h"
-#include "tz_sp_grow.h"
-#include "tz_stack_bwmorph.h"
-#include "tz_stack_stat.h"
-#include "tz_stack_attribute.h"
 #include "zspgrowparser.h"
 //#include "zvoxelarray.h"
-#include "tz_stack_objlabel.h"
-#include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
 #include "zsegmentmaparray.h"
 //#include "tz_xml_utils.h"
 #include "zswctree.h"
 #include "zswcforest.h"
 #include "znormcolormap.h"
-#include "tz_graph_defs.h"
-#include "tz_graph_utils.h"
-#include "tz_workspace.h"
-#include "tz_graph.h"
 #include "dialogs/flyemskeletonizationdialog.h"
 //#include "zstackaccessor.h"
 #include "zmatrix.h"
@@ -30352,6 +30354,21 @@ void ZTest::test(MainWindow *host)
           roiFilePath.toStdString(),
           meshFilePath.toStdString());
   }
+#endif
+
+#if 1
+  Rgb_Color color;
+  color.r = 255;
+  color.g = 0;
+  color.b = 0;
+
+  double h = 0.0;
+  double s = 0.0;
+  double v = 0.0;
+
+  Rgb_Color_To_Hsv(&color, &h, &s, &v);
+  std::cout << h << " " << s << " " << v << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

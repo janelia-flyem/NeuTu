@@ -136,6 +136,20 @@ void process_annotation_key(
 }
 */
 
+void ZFlyEmBodyAnnotation::setBodyId(int64_t bodyId)
+{
+  if (bodyId < 0) {
+    setBodyId(0);
+  } else {
+    setBodyId(uint64_t(bodyId));
+  }
+}
+
+void ZFlyEmBodyAnnotation::setBodyId(int bodyId)
+{
+  setBodyId(int64_t(bodyId));
+}
+
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 {

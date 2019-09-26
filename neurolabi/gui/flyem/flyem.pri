@@ -87,6 +87,7 @@ HEADERS += \
     $$PWD/zflyemproofmvc.h \
     $$PWD/zflyemproofmvccontroller.h \
     $$PWD/zflyemproofpresenter.h \
+    $$PWD/zflyemproofutil.h \
     $$PWD/zflyemqualityanalyzertask.h \
     $$PWD/zflyemqualityanalyzertaskmanager.h \
     $$PWD/zflyemroimanager.h \
@@ -206,6 +207,7 @@ SOURCES += \
     $$PWD/zflyemproofmvc.cpp \
     $$PWD/zflyemproofmvccontroller.cpp \
     $$PWD/zflyemproofpresenter.cpp \
+    $$PWD/zflyemproofutil.cpp \
     $$PWD/zflyemqualityanalyzertask.cpp \
     $$PWD/zflyemqualityanalyzertaskmanager.cpp \
     $$PWD/zflyemroimanager.cpp \

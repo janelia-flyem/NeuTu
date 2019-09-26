@@ -74,8 +74,8 @@ class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofMvc(QWidget *parent = 0);
-  ~ZFlyEmProofMvc();
+  explicit ZFlyEmProofMvc(QWidget *parent = nullptr);
+  ~ZFlyEmProofMvc() override;
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
@@ -614,7 +614,10 @@ private:
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
   void updateSupervoxelMessge(uint64_t bodyId);
   void setSelectedBodyStatus(const std::string &status);
-  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+//  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
+      const ZFlyEmBodyAnnotation &oldAnnotation);
   void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
 

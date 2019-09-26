@@ -42,6 +42,8 @@ public:
 //  std::string getAutoName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
+  void setBodyId(int bodyId);
+  void setBodyId(int64_t bodyId);
   inline void setStatus(const std::string &status) {
     m_status = status;
   }

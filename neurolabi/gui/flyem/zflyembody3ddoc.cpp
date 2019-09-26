@@ -64,6 +64,7 @@
 #include "zpunctum.h"
 #include "flyemdatareader.h"
 #include "zflyemproofdocutil.h"
+#include "zflyemproofutil.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
@@ -4396,7 +4397,10 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
           }
 
           if (dlg->exec() && dlg->getBodyId() == bodyId) {
-            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+            ZFlyEmProofUtil::AnnotateBody(
+                            bodyId, dlg->getBodyAnnotation(), annotation,
+                            getDataDocument(), getParent3DWindow());
+//            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
           }
           getDataDocument()->checkInBodyWithMessage(
                 bodyId, neutu::EBodySplitMode::NONE);
