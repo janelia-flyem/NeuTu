@@ -31,6 +31,8 @@ void FlyEmTodoDialog::init()
   connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(updateTable()));
   connect(ui->todoTableView, SIGNAL(doubleClicked(QModelIndex)),
           m_model, SLOT(processDoubleClick(QModelIndex)));
+  connect(ui->todoTableView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(onDoubleClicked(QModelIndex)));
   connect(ui->filterLineEdit, &QLineEdit::textChanged,
           this, &FlyEmTodoDialog::updateTextFilter);
   connect(ui->allRadioButton, &QRadioButton::toggled,
@@ -43,6 +45,8 @@ void FlyEmTodoDialog::init()
           this, &FlyEmTodoDialog::checkSelected);
   connect(ui->uncheckPushButton, &QPushButton::clicked,
           this, &FlyEmTodoDialog::uncheckSelected);
+  connect(ui->autoCheckedCheckBox, SIGNAL(stateChanged(int)), this,
+          SLOT(onAutoCheckedChanged(int)));
   connect(m_model, &ZFlyEmTodoListModel::checkingTodoItem,
           this, &FlyEmTodoDialog::checkingTodoItem);
 }
@@ -65,6 +69,14 @@ void FlyEmTodoDialog::checkSelected()
 void FlyEmTodoDialog::uncheckSelected()
 {
   setChecked(false);
+}
+
+void FlyEmTodoDialog::onDoubleClicked(QModelIndex index) {
+  if (ui->autoCheckedCheckBox->isChecked()) {
+    // if the setting is enabled, also set the to do checked state when
+    //  double-clicking; this makes it faster to move through the items
+    checkSelected();
+  }
 }
 
 void FlyEmTodoDialog::updateTable()

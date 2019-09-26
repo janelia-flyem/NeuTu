@@ -2,6 +2,7 @@
 #define FLYEMTODODIALOG_H
 
 #include <QDialog>
+#include <QModelIndex>
 
 #include "common/zsharedpointer.h"
 
@@ -37,6 +38,7 @@ private slots:
   void updateVisibility(bool on);
   void checkSelected();
   void uncheckSelected();
+  void onDoubleClicked(QModelIndex index);
 
 private:
   Ui::FlyEmTodoDialog *ui;
