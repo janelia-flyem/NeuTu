@@ -42,6 +42,31 @@ std::ostream& operator << (
   return stream << static_cast<typename std::underlying_type<T>::type>(v);
 }
 
+template<typename T>
+struct ToUnsignedType {
+};
+
+template<>
+struct ToUnsignedType<int>
+{
+  using type = unsigned int;
+};
+
+template<>
+struct ToUnsignedType<int64_t>
+{
+  using type = uint64_t;
+};
+
+template <typename T>
+typename ToUnsignedType<T>::type UnsignedCrop(const T &v)
+{
+  if (v < 0) {
+    return typename ToUnsignedType<T>::type(0);
+  }
+
+  return typename ToUnsignedType<T>::type(v);
+}
 
 template<typename T>
 void assign(T *out, const T &v);
@@ -75,6 +100,16 @@ int numDigits(T number)
     digits++;
   }
   return digits;
+}
+
+template<typename U, typename T>
+U UnsignedCrop(T v)
+{
+  if (v < 0) {
+    v = 0;
+  }
+
+  return U(v);
 }
 
 bool HasEnv(const std::string &name, const std::string &value);

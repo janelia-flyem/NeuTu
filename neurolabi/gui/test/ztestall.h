@@ -87,5 +87,6 @@
 #include "test/znetworkutilstest.h"
 #include "test/commontest.h"
 #include "test/zflyembodyannotationprotocaltest.h"
+#include "test/taskprotocoltasktest.h"
 
 #endif // ZTESTALL_H

@@ -49,6 +49,9 @@ public:
   static void Warn(const QString &title, const QString &msg, QWidget *parent);
   static void Error(const QString &title, const QString &msg, QWidget *parent);
 
+  static bool WarningAskForContinue(
+      const QString &title, const QString &msg, QWidget *parent);
+
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
   static QString GetOpenFileName(
@@ -65,6 +68,9 @@ public:
   static ZIntPoint AskForIntPoint(QWidget *parent);
   static ZIntPoint AskForIntPoint(
       const ZIntPoint &defaultPos, QWidget *parent);
+
+  static uint64_t GetUint64(
+      const QString &title, const QString &label, QWidget *parent);
 
 private:
 

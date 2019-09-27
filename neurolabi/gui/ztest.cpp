@@ -30356,7 +30356,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   Rgb_Color color;
   color.r = 255;
   color.g = 0;
@@ -30369,6 +30369,31 @@ void ZTest::test(MainWindow *host)
   Rgb_Color_To_Hsv(&color, &h, &s, &v);
   std::cout << h << " " << s << " " << v << std::endl;
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_test");
+  std::vector<uint64_t> bodyArray({1011728599, 1817893929, 1946108371});
+  auto result = reader->readBodySize(
+        bodyArray, neutu::EBodyLabelType::SUPERVOXEL);
+  for (size_t i = 0; i < result.size(); ++i) {
+    std::cout << reader->readBodySize(
+                   bodyArray[i], neutu::EBodyLabelType::SUPERVOXEL) << " == ";
+    std::cout << result[i] << std::endl;
+  }
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_test");
+  std::vector<uint64_t> bodyArray(
+    {703282980, 767123688, 1011728599, 1011996877, 1162081064 });
+  auto result = reader->readBodySize(
+        bodyArray, neutu::EBodyLabelType::BODY);
+  for (size_t i = 0; i < result.size(); ++i) {
+    std::cout << reader->readBodySize(
+                   bodyArray[i], neutu::EBodyLabelType::BODY) << " == ";
+    std::cout << result[i] << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

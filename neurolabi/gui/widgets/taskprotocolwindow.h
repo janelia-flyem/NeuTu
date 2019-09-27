@@ -42,7 +42,7 @@ public:
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
-    //#Review-TZ: It might be better to replace allBodiesRemoved with the name removingAllBodie
+    //#Review-TZ: It might be better to replace allBodiesRemoved with the name removingAllBodies
     //because it is used to trigger the operation of removing all bodies?
     //Similarly, bodyAdded can be addingBody
     void bodyAdded(uint64_t bodyId);

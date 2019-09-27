@@ -4165,6 +4165,45 @@ size_t ZDvidReader::readBodySize(
   return s;
 }
 
+std::vector<size_t> ZDvidReader::readBodySize(
+    const std::vector<uint64_t> &bodyArray, neutu::EBodyLabelType type) const
+{
+  std::vector<size_t> result;
+  if (!bodyArray.empty()) {
+    QString queryForm="[";
+    for (size_t i = 0; i< bodyArray.size(); ++i) {
+      if (i == 0) {
+        queryForm += std::to_string(bodyArray[i]).c_str();
+      } else {
+        queryForm += ("," + std::to_string(bodyArray[i])).c_str();
+      }
+    }
+    queryForm += "]";
+
+#ifdef _DEBUG_
+    std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+    QByteArray payload;
+    payload.append(queryForm);
+
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    m_bufferReader.read(
+          dvidUrl.getBodySizeUrl(type).data(), payload, "GET", true);
+    setStatusCode(m_bufferReader.getStatusCode());
+
+    ZJsonArray infoJson;
+    infoJson.decodeString(m_bufferReader.getBuffer().data());
+
+    for (size_t i = 0; i < infoJson.size(); ++i) {
+      size_t bodySize = size_t(ZJsonParser::integerValue(infoJson.at(i)));
+      result.push_back(bodySize);
+    }
+  }
+
+  return result;
+}
+
 std::tuple<size_t, size_t, ZIntCuboid> ZDvidReader::readBodySizeInfo(
     uint64_t bodyId, neutu::EBodyLabelType type) const
 {

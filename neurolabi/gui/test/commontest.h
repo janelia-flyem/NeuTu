@@ -29,6 +29,12 @@ TEST(common, utilities)
 
   ASSERT_FALSE(neutu::UsingLocalHost("http://localhost2/127.0.0.11"));
   ASSERT_FALSE(neutu::UsingLocalHost("http://127.0.0.2/localhost"));
+
+  ASSERT_EQ(0, neutu::UnsignedCrop(-1));
+  ASSERT_EQ(1, neutu::UnsignedCrop(1));
+
+  ASSERT_EQ(0, neutu::UnsignedCrop(int64_t(-1)));
+  ASSERT_EQ(214748364789llu, neutu::UnsignedCrop(214748364789ll));
 }
 
 #endif

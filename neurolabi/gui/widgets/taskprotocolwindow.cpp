@@ -486,11 +486,8 @@ void TaskProtocolWindow::onCompletedAndNext()
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
-        if (ui->reviewCheckBox->isChecked()) {
-            m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
-        } else {
-            m_taskList[m_currentTaskIndex]->removeTag(TAG_NEEDS_REVIEW);
-        }
+       m_taskList[m_currentTaskIndex]->toggleTag(
+             TAG_NEEDS_REVIEW, ui->reviewCheckBox->isChecked());
         saveState();
         updateLabel();
     }

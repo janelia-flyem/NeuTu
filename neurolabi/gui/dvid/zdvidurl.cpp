@@ -1156,6 +1156,20 @@ std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId) const
   return getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getBodySizeUrl(neutu::EBodyLabelType type) const
+{
+  std::string url;
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
+    url = GetFullUrl(getDataUrl(m_dvidTarget.getSegmentationName()),
+                      "sizes");
+    if (type == neutu::EBodyLabelType::SUPERVOXEL) {
+      url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
+    }
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
 {
   if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
