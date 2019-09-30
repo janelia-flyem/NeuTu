@@ -481,6 +481,18 @@ void ZStackDoc::updateSwcNodeAction()
   m_singleSwcNodeActionActivator.update(this);
 }
 
+void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
+{
+  ZFunctionTask *task = new ZFunctionTask([msg, this]() {
+    if (msg.hasTarget(ZWidgetMessage::ETarget::TARGET_STATUS_BAR)) {
+      this->notifyStatusMessageUpdated(msg.toPlainString());
+    }
+    this->notify(msg);
+  });
+
+  addTask(task);
+}
+
 void ZStackDoc::addTask(ZTask *task)
 {
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();

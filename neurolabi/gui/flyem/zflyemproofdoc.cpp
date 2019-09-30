@@ -506,7 +506,7 @@ void ZFlyEmProofDoc::recordAnnotation(
   m_annotationMap[bodyId] = anno;
 }
 
-void ZFlyEmProofDoc::cleanBodyAnnotationMap()
+void ZFlyEmProofDoc::clearBodyAnnotationMap()
 {
   std::set<uint64_t> selected = getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
   std::vector<uint64_t> keysToRemove;
@@ -560,7 +560,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
@@ -680,7 +680,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
 //  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
@@ -3415,7 +3415,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
   endObjectModifiedMode();
   processObjectModified();
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 }
 
 void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)

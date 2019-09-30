@@ -230,13 +230,16 @@ signals:
   void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
+//  void undo();
+//  void redo();
+
+  void setDvidTarget();
+
   void mergeSelected();
   void unmergeSelected();
-  void undo();
-  void redo();
 
   void setSegmentationVisible(bool visible);
-  void setDvidTarget();
+
   void launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
@@ -316,7 +319,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody(bool asking);
+  void deselectAllBody(bool asking = false);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
@@ -471,6 +474,8 @@ protected slots:
   void syncBodySelectionFromOrthoWindow();
   void syncBodySelectionToOrthoWindow();
 
+  void processMergeUploaded();
+
   void zoomToAssigned(int x, int y, int z);
 
   void refreshData();
@@ -552,6 +557,8 @@ private:
 
   void updateBodyWindow(Z3DWindow *window);
   void updateBodyWindowDeep(Z3DWindow *window);
+
+  void updateAllBodyWindow(std::function<void(Z3DWindow*)> updateFunc);
 
   ZWindowFactory makeExternalWindowFactory(neutu3d::EWindowType windowType);
 

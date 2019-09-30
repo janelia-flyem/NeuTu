@@ -910,13 +910,15 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           */
 
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateCoarseMeshWindowDeep()));
-  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
-          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
+          this, SLOT(processMergeUploaded()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateBodyWindowDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateCoarseBodyWindowDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateCoarseMeshWindowDeep()));
+//  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
+//          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBookmarkTable()));
 
@@ -1741,6 +1743,7 @@ void ZFlyEmProofMvc::unmergeSelected()
   }
 }
 
+/*
 void ZFlyEmProofMvc::undo()
 {
   if (getCompleteDocument() != NULL) {
@@ -1754,6 +1757,7 @@ void ZFlyEmProofMvc::redo()
     getCompleteDocument()->undoStack()->redo();
   }
 }
+*/
 
 void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
 {
@@ -5593,6 +5597,32 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
 #endif
     }
   }
+}
+
+void ZFlyEmProofMvc::updateAllBodyWindow(
+    std::function<void (Z3DWindow *)> updateFunc)
+{
+  updateFunc(m_bodyWindow);
+  updateFunc(m_coarseBodyWindow);
+  updateFunc(m_meshWindow);
+  updateFunc(m_coarseMeshWindow);
+}
+
+void ZFlyEmProofMvc::processMergeUploaded()
+{
+  auto processWindow = [](Z3DWindow *window) {
+    if (window) {
+      ZFlyEmBody3dDoc *doc =
+          qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
+      if (doc) {
+        doc->invalidateSelectedBodyCache();
+      }
+    }
+  };
+
+  updateAllBodyWindow(processWindow);
+
+  deselectAllBody();
 }
 
 void ZFlyEmProofMvc::deselectAllBody(bool asking)

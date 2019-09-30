@@ -46,8 +46,8 @@ class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofDoc(QObject *parent = 0);
-  ~ZFlyEmProofDoc();
+  explicit ZFlyEmProofDoc(QObject *parent = nullptr);
+  ~ZFlyEmProofDoc() override;
 
   static ZFlyEmProofDoc* Make();
 
@@ -250,7 +250,7 @@ public:
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void cleanBodyAnnotationMap();
+  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
@@ -633,7 +633,6 @@ public slots:
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
   QString getBodyLockFailMessage(uint64_t bodyId);
-
 
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);

@@ -341,6 +341,8 @@ public:
   size_t getSupervoxelSize(uint64_t svId) const;
   void cacheSupervoxelSize(std::vector<uint64_t> svIdArray) const;
 
+  void invalidateSelectedBodyCache();
+
   void diagnose() const override;
 
   ZStackDoc3dHelper* getHelper() const;
@@ -563,6 +565,9 @@ private:
   void dumpObject(ZStackObject *obj, bool recycling);
 
   void invalidateSupervoxelCache(uint64_t svId);
+  void invalidateBodyCache(uint64_t bodyId);
+  template<typename InputIterator>
+  void invalidateBodyCache(InputIterator first, InputIterator last);
 
 private:
   ZFlyEmBodyManager m_bodyManager;

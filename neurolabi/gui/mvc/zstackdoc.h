@@ -277,6 +277,8 @@ public: //attributes
     return &(m_objectGroup.getObjectList());
   }
 
+  void startWorkThread();
+
 //  inline QList<ZSwcTree*>* swcList();
 
   QList<ZSwcTree*> getSwcList() const;
@@ -1290,6 +1292,8 @@ public slots:
   virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
+  void addMessageTask(const ZWidgetMessage &msg);
+
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
@@ -1384,7 +1388,6 @@ protected:
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
-  void startWorkThread();
 
   virtual bool _loadFile(const QString &filePath);
 

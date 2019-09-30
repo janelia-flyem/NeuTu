@@ -2070,6 +2070,26 @@ void ZFlyEmBody3dDoc::invalidateSupervoxelCache(uint64_t svId)
   m_supervoxelSizeCache.remove(svId);
 }
 
+void ZFlyEmBody3dDoc::invalidateBodyCache(uint64_t bodyId)
+{
+  setUnrecycable(QSet<uint64_t>({bodyId}));
+}
+
+template<typename InputIterator>
+void ZFlyEmBody3dDoc::invalidateBodyCache(InputIterator first, InputIterator last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    invalidateBodyCache(*iter);
+  }
+}
+
+void ZFlyEmBody3dDoc::invalidateSelectedBodyCache()
+{
+  std::set<uint64_t> bodySet =
+      getDataDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+  invalidateBodyCache(bodySet.begin(), bodySet.end());
+}
+
 uint64_t ZFlyEmBody3dDoc::getBodyId(const ZStackObject *obj) const
 {
   if (obj->getType() == ZStackObject::EType::MESH ||

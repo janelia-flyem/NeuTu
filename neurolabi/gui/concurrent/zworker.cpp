@@ -68,10 +68,10 @@ void ZWorker::scheduleTask(ZTask *task)
 
 void ZWorker::addTask(ZTask *task)
 {
-  if (m_taskQueue != NULL) {
+  if (m_taskQueue != nullptr) {
     m_taskQueue->add(task);
   } else {
-    if (task != NULL) {
+    if (task != nullptr) {
       task->moveToThread(thread());
       task->setParent(this);
 //      task->moveToThread(thread());
