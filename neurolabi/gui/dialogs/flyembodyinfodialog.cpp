@@ -147,9 +147,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
-    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
+//    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
     connect(ui->queryNamePushButton, SIGNAL(clicked()),
             this, SLOT(onQueryByNameButton()));
+    connect(ui->queryTypePushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByTypeButton()));
     connect(ui->queryRoiPushButton, SIGNAL(clicked()),
             this, SLOT(onQueryByRoiButton()));
     connect(ui->queryStatusPushButton, SIGNAL(clicked()),
@@ -239,7 +241,7 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->findSimilarPushButton->hide();
     ui->queryRoiPushButton->hide();
   }
-  ui->allNamedPushButton->hide(); //obsolete
+//  ui->allNamedPushButton->hide(); //obsolete
 }
 
 namespace {
@@ -1083,7 +1085,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         QList<uint64_t> bodyIDs;
         for (size_t i=0; i<thresholdData.size(); i++) {
             ZJsonObject thresholdEntry(thresholdData.value(i));
-            uint64_t bodyID = ZJsonParser::integerValue(thresholdEntry["Label"]);
+            uint64_t bodyID =
+                uint64_t(ZJsonParser::integerValue(thresholdEntry["Label"]));
             bodyIDs.append(bodyID);
             QString bodyIDstring = QString::number(bodyID);
             if (bodyAnnotationKeys.contains(bodyIDstring)) {
@@ -1105,8 +1108,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         int64_t storedSynapseTime = 0;
         storedSynapseTime = dvidTime;
         dvidTimer.restart();
-        QList<int> preCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::PRE_SYN);
-        QList<int> postCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::POST_SYN);
+        QList<int> preCounts = reader.readSynapseLabelszBodies(
+              bodyIDs, dvid::ELabelIndexType::PRE_SYN);
+        QList<int> postCounts = reader.readSynapseLabelszBodies(
+              bodyIDs, dvid::ELabelIndexType::POST_SYN);
         dvidTime += dvidTimer.elapsed();
         storedSynapseTime = dvidTime - storedSynapseTime;
 
@@ -1280,6 +1285,25 @@ void FlyEmBodyInfoDialog::onQueryByNameButton()
         prepareQuery();
 
         setBodyList(reader->queryNeuronByName(text));
+      }
+    }
+  }
+}
+
+void FlyEmBodyInfoDialog::onQueryByTypeButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                         tr("Type:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        prepareQuery();
+
+        setBodyList(reader->queryNeuronByType(text));
       }
     }
   }

@@ -8,7 +8,7 @@
 
 #include "tz_stdint.h"
 
-#define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
+#define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
 namespace neutu {
 

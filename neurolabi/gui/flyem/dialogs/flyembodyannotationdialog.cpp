@@ -23,6 +23,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
   if (!m_isAdmin) {
     ui->typeLineEdit->hide();
     ui->generatePushButton->hide();
+    ui->primaryNeuriteLineEdit->setEnabled(false);
+    ui->clonalUnitLineEdit->setEnabled(false);
 //    neutu::HideLayout(ui->typeLayout, false);
   }
 }

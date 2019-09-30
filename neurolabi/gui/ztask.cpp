@@ -53,6 +53,19 @@ void ZTask::slotTest()
   LDEBUG() << "slot test";
 }
 
+//////////////////////////////
+
+ZFunctionTask::ZFunctionTask(QObject *parent) : ZTask(parent)
+{
+
+}
+
+ZFunctionTask::ZFunctionTask(
+    std::function<void()> f, std::function<void()> dispose, QObject *parent) :
+  ZTask(parent), m_f(f), m_dispose(dispose)
+{
+}
+
 /////////////Moc class for testing//////////////
 ZSquareTask::ZSquareTask(QObject *parent) :
   ZTask(parent), m_value(0), m_result(0)

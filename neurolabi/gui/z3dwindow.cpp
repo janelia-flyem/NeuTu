@@ -2249,6 +2249,8 @@ static void AddTodoMarker(
       case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
         LWARN() << "TO_SUPERVOXEL_SPLIT not available";
         break;
+      default:
+        break;
       }
     }
   }
@@ -3960,7 +3962,7 @@ void Z3DWindow::saveSelectedSwc()
 
     fileName =
         QFileDialog::getSaveFileName(this, tr("Save SWC"), fileName,
-                                     tr("SWC File"), 0);
+                                     tr("SWC File"), nullptr);
 
     if (!fileName.isEmpty()) {
       if (!fileName.endsWith(".swc", Qt::CaseInsensitive)) {

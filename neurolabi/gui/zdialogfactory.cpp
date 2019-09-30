@@ -1,4 +1,5 @@
 #include "zdialogfactory.h"
+
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
@@ -238,6 +239,14 @@ void ZDialogFactory::Error(
   QMessageBox::critical(parent, title, msg);
 }
 
+bool ZDialogFactory::WarningAskForContinue(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  return Ask(
+        title, "<font color=\"#FF0000\">WARNING</font>: " + msg +
+        "<br><br>Do you want to continue?", parent);
+}
+
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {
   ZSpinBoxGroupDialog *dlg = new ZSpinBoxGroupDialog(parent);
@@ -410,4 +419,18 @@ ZIntPoint ZDialogFactory::AskForIntPoint(
   }
 
   return pt;
+}
+
+uint64_t ZDialogFactory::GetUint64(
+    const QString &title, const QString &label, QWidget *parent)
+{
+  uint64_t value = 0;
+  QString text = QInputDialog::getText(parent, title, label);
+  try {
+    value = std::stoull(text.toStdString());
+  } catch (std::exception &/*e*/) {
+    //ignore
+  }
+
+  return value;
 }

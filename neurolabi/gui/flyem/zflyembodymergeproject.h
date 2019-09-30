@@ -15,7 +15,7 @@
 
 #include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
-#include "zflyembodyannotationmerger.h"
+#include "zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -74,7 +74,7 @@ public:
     return m_dataFrame;
   }
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationMerger &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -136,12 +136,13 @@ public:
   bool isFinalStatus(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
   bool isMergableStatus(const std::string &status) const;
+  bool preservingId(const std::string &status) const;
 
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
-  const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
+  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
     return m_bodyStatusProtocol;
   }
 
@@ -221,6 +222,8 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
   void removeMerge(uint64_t bodyId);
   void removeMerge(const std::vector<uint64_t> &bodyArray);
+  bool preserved(uint64_t bodyId) const;
+  bool hasName(uint64_t bodyId) const;
 
   void clearUndoStack();
 
@@ -233,7 +236,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
   bool m_isAdmin = false;

@@ -23,7 +23,7 @@ class FlyEmProofControlForm : public QWidget
   Q_OBJECT
 
 public:
-  explicit FlyEmProofControlForm(QWidget *parent = 0);
+  explicit FlyEmProofControlForm(QWidget *parent = Q_NULLPTR);
   ~FlyEmProofControlForm();
 
   ZFlyEmBookmarkView* getUserBookmarkView() const;

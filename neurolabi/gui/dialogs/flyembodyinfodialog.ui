@@ -147,13 +147,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QPushButton" name="allNamedPushButton">
-       <property name="text">
-        <string>All Named</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="findSimilarPushButton">
        <property name="text">
         <string>Find Similar</string>
@@ -164,6 +157,13 @@
       <widget class="QPushButton" name="queryNamePushButton">
        <property name="text">
         <string>Query by Name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="queryTypePushButton">
+       <property name="text">
+        <string>Query by Type</string>
        </property>
       </widget>
      </item>

@@ -1,4 +1,5 @@
-HEADERS += \  
+HEADERS += \
+    $$PWD/zuploadroicommand.h \
     $$PWD/zcommandmodule.h \
     $$PWD/zstackdownsamplecommand.h \
     $$PWD/zbodysplitcommand.h \
@@ -9,7 +10,8 @@ HEADERS += \
     $$PWD/zsparsestackcommandmodule.h \
     $$PWD/zstackfiltercommand.h
 
-SOURCES += \ 
+SOURCES += \
+    $$PWD/zuploadroicommand.cpp \
     $$PWD/zcommandmodule.cpp \
     $$PWD/zstackdownsamplecommand.cpp \
     $$PWD/zbodysplitcommand.cpp \

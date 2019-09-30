@@ -10,7 +10,7 @@
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);
-ZFlyEmToDoItem ZFlyEmToDoList::m_emptySynapse;
+ZFlyEmToDoItem ZFlyEmToDoList::m_emptyTodo;
 
 
 ZFlyEmToDoList::ZFlyEmToDoList()
@@ -448,7 +448,7 @@ ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     return getSlice(sz).getMap(sy)[sx];
   } else {
     if (scope == DATA_LOCAL) {
-      return m_emptySynapse;
+      return m_emptyTodo;
     } else if (scope == DATA_GLOBAL) {
       update(x, y, z);
     }

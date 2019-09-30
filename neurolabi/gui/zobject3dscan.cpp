@@ -502,7 +502,8 @@ const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegme
   return m_indexSegmentMap;
 }
 
-bool ZObject3dScan::getSegment(size_t index, int *z, int *y, int *x1, int *x2)
+bool ZObject3dScan::getSegment(
+    size_t index, int *z, int *y, int *x1, int *x2) const
 {
   const auto& segMap = getIndexSegmentMap();
   if (segMap.count(index) > 0) {
@@ -1486,7 +1487,7 @@ bool ZObject3dScan::isAdjacentTo(
 
 #ifdef _DEBUG_
   if (nbr == neutu::EStackNeighborhood::D1) {
-    TZ_ASSERT(adjacent == isAdjacentTo_Old(obj), "Incompatible value.");
+    TZ_ASSERT(adjacent == isAdjacentToOld(obj), "Incompatible value.");
   }
 #endif
 
@@ -1494,7 +1495,7 @@ bool ZObject3dScan::isAdjacentTo(
 }
 
 #if 1
-bool ZObject3dScan::isAdjacentTo_Old(const ZObject3dScan &obj) const
+bool ZObject3dScan::isAdjacentToOld(const ZObject3dScan &obj) const
 {
   canonizeConst();
   obj.canonizeConst();
@@ -3215,7 +3216,7 @@ ZObject3dScan ZObject3dScan::getPlaneSurface(int z) const
   result.addStripeFast(slice.getStripe(0));
 
 
-  int count = slice.getStripeArray().size() - 1;
+  int count = int(slice.getStripeArray().size()) - 1;
 
   for (int i = 1; i < count; ++i) {
     ZObject3dStripe upStripe = slice.getStripe(i - 1);
@@ -4036,23 +4037,6 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
         remained.concat(diff);
         subtracted.concat(slice - diff);
       }
-#if 0
-      ZStack *plane = slice.toStackObject();
-      slice2.addForegroundSlice8(plane); //1: remained; 2: subtracted
-
-      std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
-      for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
-           iter != objArray.end(); ++iter) {
-        ZObject3dScan *obj = *iter;
-        if (obj->getLabel() == 1) {
-          remained.concat(*obj);
-        } else if (obj->getLabel() == 2) {
-          subtracted.concat(*obj);
-        }
-        delete obj;
-      }
-      delete plane;
-#endif
     }
   }
 
@@ -4066,6 +4050,42 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   subtracted.setLabel(getLabel());
 
   return subtracted;
+}
+
+ZObject3dScan ZObject3dScan::counterSubtract(const ZObject3dScan &obj)
+{
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  ZObject3dScan subtracted;
+  ZObject3dScan remained;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+    if (slice2.isEmpty()) {
+      remained.concat(slice);
+    } else {
+      ZObject3dScan diff = slice - slice2;
+      if (diff.isEmpty()) {
+        subtracted.concat(slice);
+      } else {
+        remained.concat(diff);
+        subtracted.concat(slice - diff);
+      }
+    }
+  }
+
+  remained.canonize();
+  subtracted.canonize();
+
+  remained.copyAttributeFrom(*this);
+  subtracted.copyAttributeFrom(*this);
+
+  this->copyDataFrom(subtracted);
+  remained.setLabel(getLabel());
+
+  return remained;
 }
 
 ZObject3dScan operator - (

@@ -481,6 +481,18 @@ void ZStackDoc::updateSwcNodeAction()
   m_singleSwcNodeActionActivator.update(this);
 }
 
+void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
+{
+  ZFunctionTask *task = new ZFunctionTask([msg, this]() {
+    if (msg.hasTarget(ZWidgetMessage::ETarget::TARGET_STATUS_BAR)) {
+      this->notifyStatusMessageUpdated(msg.toPlainString());
+    }
+    this->notify(msg);
+  });
+
+  addTask(task);
+}
+
 void ZStackDoc::addTask(ZTask *task)
 {
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
@@ -5698,8 +5710,9 @@ void ZStackDoc::test(QProgressBar *pb)
     m_connList.at(i)->print();
   }
 #endif
-  UNUSED_PARAMETER(pb);
+  Q_UNUSED(pb)
 
+#if 0
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
 //    mainStack->enhanceLine();
@@ -5733,6 +5746,7 @@ void ZStackDoc::test(QProgressBar *pb)
     m_dataBuffer->deliver();
     std::cout << getObjectGroup().size() << std::endl;
   }
+#endif
 }
 
 const char* ZStackDoc::tubePrefix()
@@ -9760,6 +9774,7 @@ void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
   processObjectModified();
 }
 
+#if 0
 void ZStackDoc::updateWatershedBoundaryObject(ZIntPoint dsIntv)
 {
   QMutexLocker locker(&m_labelFieldMutex);
@@ -9814,6 +9829,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
     }
   }
 }
+#endif
 
 ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 {

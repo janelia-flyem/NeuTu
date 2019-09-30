@@ -249,9 +249,12 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
     if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
-      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
     config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    if (doc->getDvidTarget().hasSupervoxel()) {
+      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
+    }
 
     config.appendSeparator();
 

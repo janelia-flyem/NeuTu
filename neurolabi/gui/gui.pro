@@ -297,9 +297,10 @@ unix {
   }
 }
 
-RESOURCES = gui.qrc
+RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
     plotsettings.h \
@@ -829,6 +830,7 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
     dialogs/settingdialog.cpp \

@@ -1,13 +1,16 @@
 #ifndef TASKBODYCLEAVE_H
 #define TASKBODYCLEAVE_H
 
-#include "protocols/taskprotocoltask.h"
-#include "zjsonarray.h"
-#include "geometry/zpoint.h"
+#include <set>
+
 #include <QObject>
 #include <QTime>
 #include <QVector>
-#include <set>
+#include <QMutex>
+
+#include "protocols/taskprotocoltask.h"
+#include "zjsonarray.h"
+#include "geometry/zpoint.h"
 
 class ZDvidReader;
 class ZDvidWriter;
@@ -28,7 +31,7 @@ class TaskBodyCleave : public TaskProtocolTask
   Q_OBJECT
 public:
   TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
-  virtual ~TaskBodyCleave();
+  ~TaskBodyCleave() override;
 
   // For use with TaskProtocolTaskFactory.
   static QString taskTypeStatic();
@@ -81,6 +84,16 @@ private slots:
   void onChooseCleaveMethod();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
+
+private:
+  bool cleaveVerified(
+      const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+      size_t indexNotCleavedOff) const;
+  size_t getSupervoxelSize(uint64_t svId) const;
+  void boostSupervoxelSizeRetrieval(
+      const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+      size_t indexNotCleavedOff)
+  const;
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;

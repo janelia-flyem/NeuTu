@@ -31,7 +31,7 @@ HEADERS += \
     $$PWD/zflyembody3ddockeyprocessor.h \
     $$PWD/zflyembody3ddocmenufactory.h \
     $$PWD/zflyembodyannotationdialog.h \
-    $$PWD/zflyembodyannotationmerger.h \
+    $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
     $$PWD/zflyembodyconfig.h \
@@ -87,6 +87,7 @@ HEADERS += \
     $$PWD/zflyemproofmvc.h \
     $$PWD/zflyemproofmvccontroller.h \
     $$PWD/zflyemproofpresenter.h \
+    $$PWD/zflyemproofutil.h \
     $$PWD/zflyemqualityanalyzertask.h \
     $$PWD/zflyemqualityanalyzertaskmanager.h \
     $$PWD/zflyemroimanager.h \
@@ -150,7 +151,7 @@ SOURCES += \
     $$PWD/zflyembody3ddockeyprocessor.cpp \
     $$PWD/zflyembody3ddocmenufactory.cpp \
     $$PWD/zflyembodyannotationdialog.cpp \
-    $$PWD/zflyembodyannotationmerger.cpp \
+    $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \
     $$PWD/zflyembodyconfig.cpp \
@@ -206,6 +207,7 @@ SOURCES += \
     $$PWD/zflyemproofmvc.cpp \
     $$PWD/zflyemproofmvccontroller.cpp \
     $$PWD/zflyemproofpresenter.cpp \
+    $$PWD/zflyemproofutil.cpp \
     $$PWD/zflyemqualityanalyzertask.cpp \
     $$PWD/zflyemqualityanalyzertaskmanager.cpp \
     $$PWD/zflyemroimanager.cpp \

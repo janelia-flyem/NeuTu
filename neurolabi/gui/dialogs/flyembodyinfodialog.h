@@ -79,6 +79,7 @@ private slots:
     void onRefreshButton();
     void onAllNamedButton();
     void onQueryByNameButton();
+    void onQueryByTypeButton();
     void onQueryByRoiButton();
     void onQueryByStatusButton();
     void onFindSimilarButton();

@@ -127,8 +127,8 @@ public:
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
 
-  virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+//  void save(const char *filePath);
+//  void load(const char *filePath);
 
   static inline double minimalDistance() { return MIN_DIST; }
 

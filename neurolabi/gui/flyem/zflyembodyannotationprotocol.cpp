@@ -1,4 +1,4 @@
-#include "zflyembodyannotationmerger.h"
+#include "zflyembodyannotationprotocol.h"
 
 #include <iostream>
 #include <algorithm>
@@ -9,26 +9,26 @@
 #include "zflyembodyannotation.h"
 #include "zstring.h"
 
-const char* ZFlyEmBodyAnnotationMerger::KEY_STATUS = "status";
-const char* ZFlyEmBodyAnnotationMerger::KEY_CONFILICT = "conflict";
+const char* ZFlyEmBodyAnnotationProtocal::KEY_STATUS = "status";
+const char* ZFlyEmBodyAnnotationProtocal::KEY_CONFILICT = "conflict";
 
-ZFlyEmBodyAnnotationMerger::ZFlyEmBodyAnnotationMerger()
+ZFlyEmBodyAnnotationProtocal::ZFlyEmBodyAnnotationProtocal()
 {
 }
 
-void ZFlyEmBodyAnnotationMerger::reset()
+void ZFlyEmBodyAnnotationProtocal::reset()
 {
   m_statusList.clear();
   m_statusMap.clear();
   m_conflictStatus.clear();
 }
 
-bool ZFlyEmBodyAnnotationMerger::isEmpty() const
+bool ZFlyEmBodyAnnotationProtocal::isEmpty() const
 {
   return m_statusList.empty();
 }
 
-ZJsonObject ZFlyEmBodyAnnotationMerger::toJsonObject() const
+ZJsonObject ZFlyEmBodyAnnotationProtocal::toJsonObject() const
 {
   ZJsonObject obj;
 
@@ -54,7 +54,7 @@ ZJsonObject ZFlyEmBodyAnnotationMerger::toJsonObject() const
   return obj;
 }
 
-void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
+void ZFlyEmBodyAnnotationProtocal::loadJsonObject(const ZJsonObject &statusJson)
 {
   reset();
 
@@ -84,7 +84,7 @@ void ZFlyEmBodyAnnotationMerger::loadJsonObject(const ZJsonObject &statusJson)
   }
 }
 
-const ZFlyEmBodyStatus& ZFlyEmBodyAnnotationMerger::getBodyStatus(
+const ZFlyEmBodyStatus& ZFlyEmBodyAnnotationProtocal::getBodyStatus(
     const std::string &name) const
 {
   std::string nameKey = ZString(name).lower();
@@ -96,7 +96,7 @@ const ZFlyEmBodyStatus& ZFlyEmBodyAnnotationMerger::getBodyStatus(
   return m_emptyStatus;
 }
 
-void ZFlyEmBodyAnnotationMerger::print() const
+void ZFlyEmBodyAnnotationProtocal::print() const
 {
   std::cout << "Statuses: " << std::endl;
   for (const auto &status : m_statusList) {
@@ -112,12 +112,12 @@ void ZFlyEmBodyAnnotationMerger::print() const
   }
 }
 
-const std::vector<ZFlyEmBodyStatus>& ZFlyEmBodyAnnotationMerger::getStatusList() const
+const std::vector<ZFlyEmBodyStatus>& ZFlyEmBodyAnnotationProtocal::getStatusList() const
 {
   return m_statusList;
 }
 
-int ZFlyEmBodyAnnotationMerger::getStatusRank(const std::string &status) const
+int ZFlyEmBodyAnnotationProtocal::getStatusRank(const std::string &status) const
 {
   if (status.empty()) {
     return 9999;
@@ -138,27 +138,32 @@ int ZFlyEmBodyAnnotationMerger::getStatusRank(const std::string &status) const
   */
 }
 
-bool ZFlyEmBodyAnnotationMerger::isFinal(const std::string &status) const
+bool ZFlyEmBodyAnnotationProtocal::isFinal(const std::string &status) const
 {
   return getBodyStatus(status).isFinal();
 }
 
-bool ZFlyEmBodyAnnotationMerger::isMergable(const std::string &status) const
+bool ZFlyEmBodyAnnotationProtocal::isMergable(const std::string &status) const
 {
   return getBodyStatus(status).isMergable();
 }
 
-bool ZFlyEmBodyAnnotationMerger::isAdminAccessible(const std::string &status) const
+bool ZFlyEmBodyAnnotationProtocal::isAdminAccessible(const std::string &status) const
 {
   return getBodyStatus(status).isAdminAccessible();
 }
 
-bool ZFlyEmBodyAnnotationMerger::isExpertStatus(const std::string &status) const
+bool ZFlyEmBodyAnnotationProtocal::isExpertStatus(const std::string &status) const
 {
   return getBodyStatus(status).isExpertStatus();
 }
 
-std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationMerger::getConflictBody(
+bool ZFlyEmBodyAnnotationProtocal::preservingId(const std::string &status) const
+{
+  return getBodyStatus(status).presevingId();
+}
+
+std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationProtocal::getConflictBody(
     const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
 {
   std::vector<std::vector<uint64_t>> potentialConflict(m_conflictStatus.size());

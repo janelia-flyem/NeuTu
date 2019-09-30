@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUndoStack>
 
+#include "qfonticon.h"
 //#include "zstackdoc.h"
 //#include "zactionactivator.h"
 //#include "zstackpresenter.h"
@@ -42,10 +43,10 @@ static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
 
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
-  QAction *action = NULL;
+  QAction *action = nullptr;
 
   if ((actionKey == ACTION_UNDO || actionKey == ACTION_REDO) &&
-      m_undoStack != NULL) {
+      m_undoStack != nullptr) {
     switch (actionKey) {
     case ACTION_UNDO:
       action = m_undoStack->createUndoAction(parent, "&Undo");
@@ -62,7 +63,7 @@ QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
     }
   }
 
-  if (action == NULL) {
+  if (action == nullptr) {
     action = MakeAction(actionKey, parent);
   }
 
@@ -71,12 +72,12 @@ QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 
 QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
 {
-  QAction *action = NULL;
+  QAction *action = nullptr;
   switch (actionKey) {
   case ACTION_UNDO:
   {
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
-    if (undoStack != NULL) {
+    if (undoStack != nullptr) {
       action = undoStack->createUndoAction(parent, "&Undo");
       action->setIcon(QIcon(":/images/undo.png"));
       action->setShortcuts(QKeySequence::Undo);
@@ -86,7 +87,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_REDO:
   {
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
-    if (undoStack != NULL) {
+    if (undoStack != nullptr) {
       action = undoStack->createRedoAction(parent, "&Redo");
       action->setIcon(QIcon(":/images/redo.png"));
       action->setShortcuts(QKeySequence::Redo);
@@ -381,6 +382,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show Orthogonal View", parent);
+    action->setIcon(QFontIcon::icon(10065, Qt::red));
     break;
   case ACTION_SHOW_ORTHO_BIG:
     action = new QAction("Show Orthogonal View (1024)", parent);
@@ -392,18 +394,22 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy Position", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_SHOW_SUPERVOXEL_LIST:
     action = new QAction("Show Supervoxel List", parent);
     break;
   case ACTION_COPY_SUPERVOXEL_ID:
     action = new QAction("Copy Supervoxel ID", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_NEUROGLANCER_LINK:
     action = new QAction("Copy Neuroglancer Link", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
@@ -418,6 +424,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::red));
     break;
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
@@ -436,27 +443,35 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::green));
     break;
   case ACTION_ADD_TODO_MERGE:
     action = new QAction("To merge here", parent);
+    action->setIcon(QFontIcon::icon(0x26ad, Qt::red));
     break;
   case ACTION_ADD_TODO_SPLIT:
     action = new QAction("To split here", parent);
+    action->setIcon(QFontIcon::icon(0x26ae, Qt::red));
     break;
   case ACTION_ADD_TODO_SVSPLIT:
     action = new QAction("To split supervoxel here", parent);
+    action->setIcon(QFontIcon::icon(0x262f, Qt::red));
     break;
   case ACTION_ADD_TODO_TRACE_TO_SOMA:
     action = new QAction("Trace to soma here", parent);
+    action->setIcon(QFontIcon::icon(0x26b2, Qt::red));
     break;
   case ACTION_ADD_TODO_NO_SOMA:
     action = new QAction("No soma here", parent);
+    action->setIcon(QFontIcon::icon(0x2640, Qt::red));
     break;
   case ACTION_ADD_TODO_DIAGNOSTIC:
     action = new QAction("Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x002B, Qt::red));
     break;
   case ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC:
     action = new QAction("Segmentation-Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x271B, Qt::red));
     break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
@@ -530,10 +545,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_REFRESH_SEGMENTATION:
     action = new QAction("Refresh Segmentation", parent);
     action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    action->setIcon(QFontIcon::icon(0x21bb));
     break;
   case ACTION_REFRESH_DATA:
     action = new QAction("Refresh Data", parent);
     action->setToolTip("Try to fetch the latest data from DVID");
+    action->setIcon(QFontIcon::icon(0x21bb));
     break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
@@ -580,7 +597,6 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/binoculars.png"));
     action->setToolTip("View grayscale/segmentation");
     action->setCheckable(true);
-    break;
     break;
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);

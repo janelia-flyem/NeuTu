@@ -2,7 +2,7 @@
 #define FLYEMDATACONFIG_H
 
 #include "zcontrastprotocol.h"
-#include "zflyembodyannotationmerger.h"
+#include "zflyembodyannotationprotocol.h"
 
 class ZJsonObject;
 
@@ -22,7 +22,7 @@ public:
     return m_contrastProtocol;
   }
 
-  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const {
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const {
     return m_bodyStatusProtocol;
   }
 
@@ -34,7 +34,7 @@ public:
 
 private:
   ZContrastProtocol m_contrastProtocol;
-  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
 };
 

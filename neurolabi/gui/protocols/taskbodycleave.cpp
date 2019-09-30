@@ -23,20 +23,27 @@
 #include <QUndoCommand>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QMutexLocker>
 
 #include "logging/zlog.h"
 #include "logging/utilities.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidurl.h"
-#include "flyem/zflyembody3ddoc.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemsupervisor.h"
-#include "flyem/logging.h"
+
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
+#include "zdialogfactory.h"
+
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemsupervisor.h"
+#include "flyem/logging.h"
+#include "flyem/zflyembodyannotationprotocol.h"
+#include "flyem/flyemdatareader.h"
 
 namespace {
 
@@ -573,6 +580,7 @@ void TaskBodyCleave::beforeNext()
   m_hiddenIds.clear();
 }
 
+//#Review-TZ: It duplicates code from askBodyCleave::beforeNext
 void TaskBodyCleave::beforePrev()
 {
   if (m_checkedOut) {
@@ -1162,6 +1170,85 @@ bool TaskBodyCleave::allowCompletion()
   return allow;
 }
 
+size_t TaskBodyCleave::getSupervoxelSize(uint64_t svId) const
+{
+  return m_bodyDoc->getSupervoxelSize(svId);
+}
+
+void TaskBodyCleave::boostSupervoxelSizeRetrieval(
+    const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+    size_t indexNotCleavedOff)
+const
+{
+  std::vector<uint64_t> supervoxelList;
+
+  for (const auto &element : cleaveIndexToMeshIds) {
+    for (const uint64_t svId : element.second){
+      if (element.first != indexNotCleavedOff) {
+        supervoxelList.push_back(svId);
+      }
+    }
+  }
+
+  m_bodyDoc->cacheSupervoxelSize(supervoxelList);
+}
+
+bool TaskBodyCleave::cleaveVerified(
+    const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
+    size_t indexNotCleavedOff) const
+{
+  ZFlyEmBodyAnnotation annot = FlyEmDataReader::ReadBodyAnnotation(
+        m_bodyDoc->getMainDvidReader(), m_bodyId);
+
+  if (!annot.isEmpty()) {
+//    size_t mainSize = 0;
+    size_t cleaveSize = 0;
+
+    boostSupervoxelSizeRetrieval(cleaveIndexToMeshIds, indexNotCleavedOff);
+
+    for (const auto &element : cleaveIndexToMeshIds) {
+      for (const uint64_t svId : element.second){
+        if (element.first != indexNotCleavedOff) {
+          size_t svSize = getSupervoxelSize(svId);
+          cleaveSize += svSize;
+        }
+//        size_t svSize = getSupervoxelSize(svId);
+//        if (element.first == indexNotCleavedOff) {
+//          mainSize += svSize;
+//        } else {
+//          cleaveSize += svSize;
+//        }
+      }
+    }
+
+    size_t bodySize = m_bodyDoc->getMainDvidReader().readBodySize(
+          m_bodyId, neutu::EBodyLabelType::BODY);
+
+    if (cleaveSize + cleaveSize > bodySize) {
+      const ZFlyEmBodyAnnotationProtocal &bodyStatusProtocol =
+          m_bodyDoc->getBodyStatusProtocol();
+      if (!bodyStatusProtocol.isEmpty()) {
+        if (bodyStatusProtocol.preservingId(annot.getStatus())) {
+          ZDialogFactory::Warn(
+                "Cleave Forbidden",
+                QString("You cannot cleave off a large portion "
+                        "of this body because its ID should be preserved."),
+                m_bodyDoc->getParent3DWindow());
+
+          return false;
+        }
+      }
+
+      return ZDialogFactory::WarningAskForContinue(
+            "Confirm Cleaving",
+            "You are about to cleave off a large portion of an annotated body.",
+            m_bodyDoc->getParent3DWindow());
+    }
+  }
+
+  return true;
+}
+
 void TaskBodyCleave::onCompleted()
 {
   m_usageTimes.push_back(m_usageTimer.elapsed());
@@ -1219,7 +1306,11 @@ void TaskBodyCleave::onCompleted()
   }
   bool succeeded = false;
   if (doWriteOutput) {
-    succeeded = writeOutput(writer, cleaveIndexToMeshIds, indexNotCleavedOff, responseLabels, mutationIds);
+    if (cleaveVerified(cleaveIndexToMeshIds, indexNotCleavedOff)) {
+      succeeded = writeOutput(
+            writer, cleaveIndexToMeshIds, indexNotCleavedOff,
+            responseLabels, mutationIds);
+    }
   }
   writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
 

@@ -10,7 +10,7 @@ public:
   ZVaa3dApo();
 
 public:
-  virtual std::string toString() const;
+  std::string toString() const;
 
   inline void setId(int id) { m_id = id; }
 

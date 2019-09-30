@@ -7,6 +7,7 @@ class ZDvidDataSliceTaskFactory
 {
 public:
   ZDvidDataSliceTaskFactory();
+  virtual ~ZDvidDataSliceTaskFactory();
 
   virtual ZDvidDataSliceTask* makeTask() = 0;
 
