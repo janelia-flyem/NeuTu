@@ -1,6 +1,8 @@
 #ifndef ZTASK_H
 #define ZTASK_H
 
+#include <functional>
+
 #include <QObject>
 #include <QRunnable>
 

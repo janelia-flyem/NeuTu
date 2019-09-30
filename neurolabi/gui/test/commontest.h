@@ -34,7 +34,7 @@ TEST(common, utilities)
   ASSERT_EQ(1, neutu::UnsignedCrop(1));
 
   ASSERT_EQ(0, neutu::UnsignedCrop(int64_t(-1)));
-  ASSERT_EQ(214748364789llu, neutu::UnsignedCrop(214748364789ll));
+  ASSERT_EQ(214748364789llu, neutu::UnsignedCrop(int64_t(214748364789ll)));
 }
 
 #endif
