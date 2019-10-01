@@ -58,6 +58,8 @@ private slots:
   void onToggleIsolation();
 
 private:
+  QJsonObject m_taskJson;
+
   ZFlyEmBody3dDoc *m_bodyDoc;
   QString m_taskId;
   std::vector<uint64_t> m_superVoxelIdsA;

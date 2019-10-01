@@ -91,6 +91,7 @@ namespace {
   static const QString KEY_BUILD_VERSION = "build version";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
   static const QString KEY_TODO_COUNT = "split todo count";
+  static const QString KEY_TASK_JSON = "task JSON";
 
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
@@ -237,6 +238,9 @@ namespace {
 
 TaskMergeReview::TaskMergeReview(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 {
+  // Save the orignal task JSON to include in the output, for debugging.
+  m_taskJson = json;
+
   m_bodyDoc = bodyDoc;
 
   applyOverallSettings(bodyDoc);
@@ -1187,6 +1191,8 @@ void TaskMergeReview::writeOutput()
     });
   }
   json[KEY_TODO_COUNT] = QJsonValue(allTodoCount);
+
+  json[KEY_TASK_JSON] = m_taskJson;
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
