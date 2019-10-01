@@ -4,6 +4,29 @@
 namespace Z3DCameraUtils
 {
 
+  bool eyeNormalToPoints(glm::vec3 point1, glm::vec3 point2, glm::vec3 up, const Z3DCamera &camera,
+                         glm::vec3 &eye)
+  {
+    glm::vec3 p1ToP2 = glm::normalize(point2 - point1);
+    glm::vec3 toEye = glm::cross(p1ToP2, up);
+    float toEyeLength = glm::length(toEye);
+
+    bool changed = true;
+    if (toEyeLength > 1e-5f) {
+      toEye /= toEyeLength;
+    } else {
+
+      // The vector between the two supervoxel points is parallel to the up vector.
+      // So the camera is already giving a good view of the supervoxel points.
+
+      toEye = glm::normalize(camera.eye() - camera.center());
+      changed = false;
+    }
+    eye = camera.center() + toEye;
+
+    return changed;
+  }
+
   void resetCamera(ZPoint pos, double radius, Z3DCamera &camera)
   {
     glm::vec3 center = glm::vec3(pos.x(), pos.y(), pos.z());
@@ -138,12 +161,13 @@ namespace Z3DCameraUtils
     return true;
   }
 
-  void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
-                   Z3DCamera &camera)
+  void tightenZoom(Z3DCamera &camera,
+                   const std::vector<std::vector<glm::vec3>> &vertices,
+                   size_t only)
   {
     float closestDist = std::numeric_limits<float>::max();
-    size_t iClosestMesh;
-    size_t iClosestVertex;
+    size_t iClosestMesh = 0;
+    size_t iClosestVertex = 0;
     bool found = false;
 
     // The algorithm iterqtively moves the eye point, and at each iteration it must
@@ -152,6 +176,10 @@ namespace Z3DCameraUtils
 
     glm::vec3 view = glm::normalize(camera.center() - camera.eye());
     for (size_t i = 0; i < vertices.size(); i++) {
+      if ((only != SIZE_MAX) && (i != only)) {
+          continue;
+      }
+
       for (size_t j = 0; j < vertices[i].size(); j++) {
         glm::vec3 eyeToVert = vertices[i][j] - camera.eye();
         float dist = glm::dot(eyeToVert, view);
@@ -176,6 +204,10 @@ namespace Z3DCameraUtils
       ZBBox<glm::vec2> bbox;
 
       for (size_t i = 0; i < vertices.size(); i++) {
+        if ((only != SIZE_MAX) && (i != only)) {
+            continue;
+        }
+
         std::vector<glm::vec3> onViewPlane3D;
         projectToViewPlane3D(vertices[i], camera, onViewPlane3D);
 
@@ -203,7 +235,7 @@ namespace Z3DCameraUtils
         // far clipping plane, then stop the iteration.  The definition of "too small"
         // matches that in Z3DCamera.
 
-        float nearClippingPlaneTolerance = 0.001;
+        float nearClippingPlaneTolerance = 0.001f;
         float minNear = nearClippingPlaneTolerance * camera.farDist();
         if (near < minNear) {
           glm::vec3 eye = camera.eye() + near * view;

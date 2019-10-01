@@ -719,7 +719,8 @@ HEADERS += mainwindow.h \
     dialogs/zstackframesettingdialog.h \
     dialogs/neuprintsetupdialog.h \
     dvid/zdvidgraysliceensemble.h \
-    dvid/zdvidenv.h
+    dvid/zdvidenv.h \
+    protocols/taskutils.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1220,6 +1221,7 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
+    protocols/taskutils.cpp \
     dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \

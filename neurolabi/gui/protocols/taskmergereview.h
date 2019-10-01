@@ -3,6 +3,7 @@
 
 #include "protocols/taskprotocoltask.h"
 #include "geometry/zpoint.h"
+#include "zglmutils.h"
 #include <QObject>
 #include <QTime>
 #include <QVector>
@@ -57,9 +58,15 @@ private slots:
   void onToggleIsolation();
 
 private:
+  QJsonObject m_taskJson;
+
   ZFlyEmBody3dDoc *m_bodyDoc;
   QString m_taskId;
-  std::set<uint64_t> m_superVoxelIds;
+  std::vector<uint64_t> m_superVoxelIdsA;
+  std::vector<uint64_t> m_superVoxelIdsB;
+  std::vector<uint64_t> m_superVoxelIds;
+  std::vector<ZPoint> m_superVoxelPointsA;
+  std::vector<ZPoint> m_superVoxelPointsB;
   std::set<uint64_t> m_majorSuperVoxelIds;
   std::set<uint64_t> m_bodyIds;
   std::set<uint64_t> m_majorBodyIds;
@@ -112,7 +119,7 @@ private:
   void applyColorMode(bool showingCleaving);
 
   void updateVisibility();
-  void zoomToFitMeshes();
+  void zoomToFitMeshes(bool onlySmaller);
 
   void displayWarning(const QString& title, const QString& text,
                       const QString& details = "",
