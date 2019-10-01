@@ -7067,11 +7067,13 @@ void MainWindow::on_actionProof_triggered()
 void MainWindow::runRoutineCheckFunc()
 {
 #if defined(_FLYEM_)
+  /*
     if (!GET_FLYEM_CONFIG.hasNormalService()) {
       GET_FLYEM_CONFIG.updateServiceStatus();
 //      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
 //      GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
     }
+    */
 #endif
 }
 
@@ -7320,7 +7322,11 @@ void MainWindow::MessageProcessor::processMessage(
 
 void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 {
-#if defined(_FLYEM_)
+  ZDialogFactory::Warn(
+        "Function Under Maintainenace", "This function is not available now.",
+        this);
+
+#if 0
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {

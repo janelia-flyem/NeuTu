@@ -83,5 +83,10 @@
 #include "test/flyembodyannotationdialogtest.h"
 #include "test/qtcoretest.h"
 #include "test/zflyemmisctest.h"
+#include "test/zdvidsynapseannotationdialogtest.h"
+#include "test/znetworkutilstest.h"
+#include "test/commontest.h"
+#include "test/zflyembodyannotationprotocaltest.h"
+#include "test/taskprotocoltasktest.h"
 
 #endif // ZTESTALL_H

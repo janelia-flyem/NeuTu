@@ -8,7 +8,7 @@
 
 #include "tz_stdint.h"
 
-#define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
+#define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
 namespace neutu {
 
@@ -137,7 +137,7 @@ enum class EReadStatus {
 
 enum class EToDoAction {
   TO_DO = 0, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT,
-  TO_TRACE_TO_SOMA, NO_SOMA, DIAGNOSTIC
+  TO_TRACE_TO_SOMA, NO_SOMA, DIAGNOSTIC, SEGMENTATION_DIAGNOSIC, TIP_DETECTOR
 };
 
 enum class EStackNeighborhood {
@@ -146,6 +146,10 @@ enum class EStackNeighborhood {
 
 enum class EServerStatus {
   NORMAL, OFFLINE, NOAUTH, NOSUPPORT
+};
+
+enum class EConfigSource {
+  UNKNOWN, CONFILG_FILE, QSETTINGS, ENV_VAR, RUNTIME
 };
 
 namespace display {

@@ -47,6 +47,9 @@ private slots:
     void onTbarSegGoodChanged();
     void onPSDGoodCanged();
     void onPSDSegGoodChanged();
+    void onNotSureChanged();
+
+    void onSetComment();
 
     void onClickedTable(QModelIndex index);
 
@@ -60,6 +63,8 @@ private:
         bool tbarSegGood = false;
         bool psdGood = false;
         bool psdSegGood = false;
+        bool notSure = false;
+        QString comment;
     };
 
     enum SitesTableColumns {
@@ -68,7 +73,9 @@ private:
         TBAR_GOOD_COLUMN,
         TBAR_SEG_GOOD_COLUMN,
         PSD_GOOD_COLUMN,
-        PSD_SEG_GOOD_COLUMN
+        PSD_SEG_GOOD_COLUMN,
+        NOT_SURE_COLUMN,
+        HAS_COMMENT_COLUMN
     };
 
     Ui::ConnectionValidationProtocol *ui;
@@ -76,6 +83,7 @@ private:
     QMap<ZIntPoint, PointData> m_pointData;
     QStandardItemModel * m_sitesModel;
     int m_currentIndex;
+    QString m_assignmentID;
 
 
     void saveState();
@@ -98,6 +106,7 @@ private:
     void updateCurrentLabel();
     void updateProgressLabel();
     void updateCheckBoxes();
+    void updateComment();
     void updateTable();
 };
 

@@ -32,14 +32,18 @@ public:
   bool getCrossMidline() const;
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
+  std::string getClonalUnit() const;
 
   std::string getName() const;
 
   std::string getType() const;
+  std::string getInferredType() const;
   std::string getAutoType() const;
 //  std::string getAutoName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
+  void setBodyId(int bodyId);
+  void setBodyId(int64_t bodyId);
   inline void setStatus(const std::string &status) {
     m_status = status;
   }
@@ -57,6 +61,8 @@ public:
   void setCrossMidline(bool v);
   void setNeurotransmitter(const std::string &v);
   void setSynonym(const std::string &v);
+  void setClonalUnit(const std::string &v);
+  void setAutoType(const std::string &v);
 
   /*!
    * \brief Load the data from a json string
@@ -98,6 +104,25 @@ public:
 public:
   static int GetStatusRank(const std::string &status);
 
+  static const char *KEY_BODY_ID;
+  static const char *KEY_STATUS;
+  static const char *KEY_NAME;
+  static const char *KEY_TYPE;
+  static const char *KEY_COMMENT;
+  static const char *KEY_USER;
+  static const char *KEY_NAMING_USER;
+  static const char *KEY_INSTANCE;
+  static const char *KEY_MAJOR_INPUT;
+  static const char *KEY_MAJOR_OUTPUT;
+  static const char *KEY_PRIMARY_NEURITE;
+  static const char *KEY_LOCATION;
+  static const char *KEY_OUT_OF_BOUNDS;
+  static const char *KEY_CROSS_MIDLINE;
+  static const char *KEY_NEURONTRANSMITTER;
+  static const char *KEY_SYNONYM;
+  static const char *KEY_CLONAL_UNIT;
+  static const char *KEY_AUTO_TYPE;
+
 private:
   static std::string GetOldFormatKey(const ZJsonObject &obj);
 
@@ -119,23 +144,8 @@ private:
   bool m_crossMidline = false;
   std::string m_neurotransmitter;
   std::string m_synonym;
-
-  static const char *KEY_BODY_ID;
-  static const char *KEY_STATUS;
-  static const char *KEY_NAME;
-  static const char *KEY_TYPE;
-  static const char *KEY_COMMENT;
-  static const char *KEY_USER;
-  static const char *KEY_NAMING_USER;
-  static const char *KEY_INSTANCE;
-  static const char *KEY_MAJOR_INPUT;
-  static const char *KEY_MAJOR_OUTPUT;
-  static const char *KEY_PRIMARY_NEURITE;
-  static const char *KEY_LOCATION;
-  static const char *KEY_OUT_OF_BOUNDS;
-  static const char *KEY_CROSS_MIDLINE;
-  static const char *KEY_NEURONTRANSMITTER;
-  static const char *KEY_SYNONYM;
+  std::string m_clonalUnit;
+  std::string m_autoType;
 };
 
 #endif // ZFLYEMBODYANNOTATION_H

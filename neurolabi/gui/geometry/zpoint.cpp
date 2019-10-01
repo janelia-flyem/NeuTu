@@ -58,6 +58,7 @@ void ZPoint::display(ZPainter &painter, int n, Display_Style style) const
 }
 #endif
 
+/*
 void ZPoint::save(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
@@ -67,6 +68,7 @@ void ZPoint::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
 }
+*/
 
 double ZPoint::distanceTo(const ZPoint &pt) const
 {

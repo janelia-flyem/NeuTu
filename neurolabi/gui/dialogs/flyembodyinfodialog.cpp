@@ -19,10 +19,12 @@
 #include <QtConcurrentRun>
 #endif
 
+#include "zstring.h"
+
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zstring.h"
+#include "zjsonobjectparser.h"
 
 #include "zglobal.h"
 
@@ -37,6 +39,7 @@
 #include "zdialogfactory.h"
 #include "service/neuprintreader.h"
 #include "neuprintquerydialog.h"
+#include "flyem/zflyembodyannotation.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -80,7 +83,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // top body list stuff
 
     // first table manages list of bodies
-    m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
+    m_bodyModel = new QStandardItemModel(
+          0, BODY_TABLE_COLUMN_COUNT, ui->bodyTableView);
     setBodyHeaders(m_bodyModel);
 
     m_bodyProxy = new QSortFilterProxyModel(this);
@@ -143,9 +147,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
-    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
+//    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
     connect(ui->queryNamePushButton, SIGNAL(clicked()),
             this, SLOT(onQueryByNameButton()));
+    connect(ui->queryTypePushButton, SIGNAL(clicked()),
+            this, SLOT(onQueryByTypeButton()));
     connect(ui->queryRoiPushButton, SIGNAL(clicked()),
             this, SLOT(onQueryByRoiButton()));
     connect(ui->queryStatusPushButton, SIGNAL(clicked()),
@@ -235,10 +241,17 @@ void FlyEmBodyInfoDialog::prepareWidget()
     ui->findSimilarPushButton->hide();
     ui->queryRoiPushButton->hide();
   }
-  ui->allNamedPushButton->hide(); //obsolete
+//  ui->allNamedPushButton->hide(); //obsolete
 }
 
 namespace {
+
+std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
+{
+  ZJsonObjectParser parser;
+  return
+      parser.getValue(bodyData, ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "");
+}
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
 {
@@ -638,6 +651,8 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
+    model->setHorizontalHeaderItem(
+          BODY_PRIMARY_NEURITE, new QStandardItem("primary neurite"));
     model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
     model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("instance"));
     model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
@@ -1070,7 +1085,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         QList<uint64_t> bodyIDs;
         for (size_t i=0; i<thresholdData.size(); i++) {
             ZJsonObject thresholdEntry(thresholdData.value(i));
-            uint64_t bodyID = ZJsonParser::integerValue(thresholdEntry["Label"]);
+            uint64_t bodyID =
+                uint64_t(ZJsonParser::integerValue(thresholdEntry["Label"]));
             bodyIDs.append(bodyID);
             QString bodyIDstring = QString::number(bodyID);
             if (bodyAnnotationKeys.contains(bodyIDstring)) {
@@ -1092,8 +1108,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
         int64_t storedSynapseTime = 0;
         storedSynapseTime = dvidTime;
         dvidTimer.restart();
-        QList<int> preCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::PRE_SYN);
-        QList<int> postCounts = reader.readSynapseLabelszBodies(bodyIDs, dvid::ELabelIndexType::POST_SYN);
+        QList<int> preCounts = reader.readSynapseLabelszBodies(
+              bodyIDs, dvid::ELabelIndexType::PRE_SYN);
+        QList<int> postCounts = reader.readSynapseLabelszBodies(
+              bodyIDs, dvid::ELabelIndexType::POST_SYN);
         dvidTime += dvidTimer.elapsed();
         storedSynapseTime = dvidTime - storedSynapseTime;
 
@@ -1160,6 +1178,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                     entry.setEntry("body status", bodyData["status"]);
                   }
                 }
+
+                entry.setNonEmptyEntry(
+                      ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE,
+                      get_annotation_primary_neurite(bodyData));
             }
 
             // synapse info
@@ -1268,6 +1290,25 @@ void FlyEmBodyInfoDialog::onQueryByNameButton()
   }
 }
 
+void FlyEmBodyInfoDialog::onQueryByTypeButton()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getText(this, tr("Find Neurons"),
+                                         tr("Type:"), QLineEdit::Normal,
+                                         "", &ok);
+    if (ok) {
+      if (!text.isEmpty()) {
+        prepareQuery();
+
+        setBodyList(reader->queryNeuronByType(text));
+      }
+    }
+  }
+}
+
 void FlyEmBodyInfoDialog::onQueryByStatusButton()
 {
   NeuPrintReader *reader = getNeuPrintReader();
@@ -1371,6 +1412,12 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   QStandardItem * bodyIDItem = new QStandardItem();
   bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
+
+  std::string primaryNeurite = get_annotation_primary_neurite(bkmk);
+  if (!primaryNeurite.empty()) {
+    itemArray[BODY_PRIMARY_NEURITE] =
+        new QStandardItem(QString::fromStdString(primaryNeurite));
+  }
 
   std::string type = get_annotation_type(bkmk);
   if (!type.empty()) {
@@ -1538,7 +1585,7 @@ void FlyEmBodyInfoDialog::onMoveUp() {
     }
 
     // update scheme (table should update itself)
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onMoveDown() {
@@ -1563,7 +1610,7 @@ void FlyEmBodyInfoDialog::onMoveDown() {
     }
 
     // update scheme (table should update itself)
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onSaveColorMap() {
@@ -1653,7 +1700,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     ui->filterTableView->resizeColumnsToContents();
     ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
 
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*/) {
@@ -1677,7 +1724,7 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
 
     // activate the tab, and dispatch the changed info
     ui->tabWidget->setCurrentIndex(COLORS_TAB);
-    updateColorScheme();
+    updateColorSchemeWithFilterCache();
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex) {
@@ -1694,7 +1741,7 @@ void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
             setFilterTableModelColor(newColor, modelIndex.row());
-            updateColorScheme();
+            updateColorSchemeWithFilterCache();
         }
     }
 }
@@ -1715,10 +1762,11 @@ void FlyEmBodyInfoDialog::onDeleteButton() {
         logInfo("Remove selected color filter");
         // we only allow single row selections; get the filter string
         //  from the selected row; only one, so take the first index thereof:
-        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QModelIndex viewIndex =
+            ui->filterTableView->selectionModel()->selectedRows(0).at(0);
         QModelIndex modelIndex = m_filterProxy->mapToSource(viewIndex);
         m_filterModel->removeRow(modelIndex.row());
-        updateColorScheme();
+        updateColorSchemeWithFilterCache();
     }
 }
 
@@ -1733,21 +1781,75 @@ void FlyEmBodyInfoDialog::moveToBodyList() {
         }
     }
 
+void FlyEmBodyInfoDialog::updateFilterColorScheme(
+    const QString &filterString, const QColor &color)
+{
+#ifdef _DEBUG_
+  qint64 t = 0;
+  QElapsedTimer timer;
+  timer.start();
+#endif
+  m_schemeBuilderProxy->setFilterFixedString(filterString);
+#ifdef _DEBUG_
+  t += timer.elapsed();
+  qDebug() << filterString << "setFilterFixedString time" << t << "ms";
+#endif
+
+  QList<uint64_t> bodyList;
+  for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
+    qulonglong bodyId = m_schemeBuilderProxy->data(
+          m_schemeBuilderProxy->index(j, BODY_ID_COLUMN)).toLongLong();
+    m_colorScheme.setBodyColor(bodyId, color);
+    bodyList.append(bodyId);
+  }
+  m_filteredIdMap[filterString] = bodyList;
+}
+
+void FlyEmBodyInfoDialog::updateColorSchemeWithFilterCache()
+{
+  m_colorScheme.clear();
+  for (int i=0; i<m_filterProxy->rowCount(); i++) {
+      QString filterString = m_filterProxy->data(
+            m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
+
+      QColor color = m_filterProxy->data(
+            m_filterProxy->index(i, FILTER_COLOR_COLUMN),
+            Qt::BackgroundRole).value<QColor>();
+      bool cached = false;
+      if (m_filteredIdMap.contains(filterString)) {
+        cached = true;
+      }
+
+      if (cached) {
+        QList<uint64_t> bodyList = m_filteredIdMap.value(filterString);
+        for (uint64_t bodyId : bodyList) {
+          m_colorScheme.setBodyColor(bodyId, color);
+        }
+      } else {
+        updateFilterColorScheme(filterString, color);
+      }
+  }
+  m_colorScheme.buildColorTable();
+
+  emit colorMapChanged(m_colorScheme);
+}
+
 void FlyEmBodyInfoDialog::updateColorScheme() {
     // loop over filters in filter table; attach filter to our scheme builder
     //  proxy; loop over the filtered body IDs and throw them and the color into
     //  the color scheme
 
+    m_filteredIdMap.clear();
+
     m_colorScheme.clear();
     for (int i=0; i<m_filterProxy->rowCount(); i++) {
-        QString filterString = m_filterProxy->data(m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
-        m_schemeBuilderProxy->setFilterFixedString(filterString);
+        QString filterString = m_filterProxy->data(
+              m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
+        QColor color = m_filterProxy->data(
+              m_filterProxy->index(i, FILTER_COLOR_COLUMN),
+              Qt::BackgroundRole).value<QColor>();
 
-        QColor color = m_filterProxy->data(m_filterProxy->index(i, FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
-        for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
-            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, BODY_ID_COLUMN)).toLongLong();
-            m_colorScheme.setBodyColor(bodyId, color);
-        }
+        updateFilterColorScheme(filterString, color);
     }
     m_colorScheme.buildColorTable();
 

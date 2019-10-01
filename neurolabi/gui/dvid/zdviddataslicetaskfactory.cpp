@@ -4,3 +4,8 @@ ZDvidDataSliceTaskFactory::ZDvidDataSliceTaskFactory()
 {
 
 }
+
+ZDvidDataSliceTaskFactory::~ZDvidDataSliceTaskFactory()
+{
+
+}

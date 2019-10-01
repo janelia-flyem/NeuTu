@@ -1,4 +1,8 @@
 HEADERS += \
+    $$PWD/commontest.h \
+    $$PWD/taskprotocoltasktest.h \
+    $$PWD/zflyembodyannotationprotocaltest.h \
+    $$PWD/znetworkutilstest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \
@@ -87,7 +91,8 @@ HEADERS += \
     $$PWD/zdvidsparsestacktest.h \
     $$PWD/flyembodyannotationdialogtest.h \
     $$PWD/qtcoretest.h \
-    $$PWD/zflyemmisctest.h
+    $$PWD/zflyemmisctest.h \
+    $$PWD/zdvidsynapseannotationdialogtest.h
 
 SOURCES += \
     $$PWD/zunittest.cpp

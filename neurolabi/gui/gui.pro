@@ -297,9 +297,10 @@ unix {
   }
 }
 
-RESOURCES = gui.qrc
+RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
     plotsettings.h \
@@ -830,6 +831,7 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
     dialogs/settingdialog.cpp \
@@ -1201,6 +1203,8 @@ SOURCES += main.cpp \
     dvid/zdviddataslicetask.cpp \
     dvid/zdvidstackblockfactory.cpp \
     dvid/zdvidblockstream.cpp \
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
@@ -1217,10 +1221,8 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dialogs/neuprintsetupdialog.cpp \
-    dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp \
-    protocols/taskutils.cpp
+    protocols/taskutils.cpp \
+    dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

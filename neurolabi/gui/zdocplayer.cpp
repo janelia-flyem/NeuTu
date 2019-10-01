@@ -576,6 +576,9 @@ void ZObject3dPlayer::setLabel(int label)
 
   if (obj != NULL) {
     obj->setLabel(label);
+    if (hasRole(ZStackObjectRole::ROLE_SEED)) {
+      obj->setColor(ZStroke2d::GetLabelColor(label));
+    }
   }
 }
 

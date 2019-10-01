@@ -49,30 +49,32 @@
 #include <draco/compression/decode.h>
 #include <draco/compression/encode.h>
 
+#include "tz_sp_grow.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_stat.h"
+#include "tz_stack_attribute.h"
+#include "tz_graph_defs.h"
+#include "tz_graph_utils.h"
+#include "tz_workspace.h"
+#include "tz_graph.h"
+#include "tz_stack_objlabel.h"
+#include "tz_stack_threshold.h"
+#include "tz_color.h"
+
 #include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
 #include "neutube.h"
 #include "imgproc/zstackprocessor.h"
 #include "zfilelist.h"
-#include "tz_sp_grow.h"
-#include "tz_stack_bwmorph.h"
-#include "tz_stack_stat.h"
-#include "tz_stack_attribute.h"
 #include "zspgrowparser.h"
 //#include "zvoxelarray.h"
-#include "tz_stack_objlabel.h"
-#include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
 #include "zsegmentmaparray.h"
 //#include "tz_xml_utils.h"
 #include "zswctree.h"
 #include "zswcforest.h"
 #include "znormcolormap.h"
-#include "tz_graph_defs.h"
-#include "tz_graph_utils.h"
-#include "tz_workspace.h"
-#include "tz_graph.h"
 #include "dialogs/flyemskeletonizationdialog.h"
 //#include "zstackaccessor.h"
 #include "zmatrix.h"
@@ -316,7 +318,7 @@
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
 #include "flyem/zflyembodystatus.h"
-#include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 #include "flyem/zflyemroimanager.h"
 #include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
@@ -425,7 +427,7 @@ void ZTest::test(MainWindow *host)
 {
   std::cout << "Start testing ..." << std::endl;
 
-  UNUSED_PARAMETER(host);
+  std::cout << host << std::endl;
 
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
@@ -30301,6 +30303,97 @@ void ZTest::test(MainWindow *host)
 #if 0
   QString str = "123->456";
   qDebug() << str.split("->", QString::SkipEmptyParts);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-test");
+  QStringList roiList = writer->getDvidReader().readKeys("rois");
+  qDebug() << roiList.size();
+
+  QStringList preservedList;
+  preservedList << "AL-DC3" << "FB07" << "FB08v";
+//  for (const QString &preserved : preservedList) {
+//    qDebug() << roiList.indexOf(preserved);
+//  }
+
+  for (const QString &roi : roiList) {
+    if (preservedList.indexOf(roi) >= 0) {
+      qDebug() << "Preserved: " << roi;
+    } else {
+      writer->deleteKey("rois", roi);
+    }
+  }
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemibrain-test");
+
+  QDir dir((GET_FLYEM_DATA_DIR + "/roi/element").c_str());
+
+  qDebug() << dir;
+
+  QStringList fileList = dir.entryList(QStringList() << "*.obj");
+  qDebug() << fileList;
+  for (const QString &meshFilename : fileList) {
+    qDebug() << dir.filePath(meshFilename);
+    QString roiName = meshFilename.left(
+          meshFilename.length() - QString(".tif.obj").length());
+    qDebug() << roiName;
+    QString meshFilePath = dir.filePath(meshFilename);
+    QString roiFilePath = dir.filePath(roiName + ".tif.sobj");
+    if (!QFileInfo(meshFilePath).exists()) {
+      qDebug() << meshFilePath << " does not exist. Abort!";
+      break;
+    }
+    if (!QFileInfo(roiFilePath).exists()) {
+      qDebug() << roiFilePath << " does not exist. Abort!";
+      break;
+    }
+    FlyEmDataWriter::UploadRoi(
+          *writer, roiName.toStdString(),
+          roiFilePath.toStdString(),
+          meshFilePath.toStdString());
+  }
+#endif
+
+#if 0
+  Rgb_Color color;
+  color.r = 255;
+  color.g = 0;
+  color.b = 0;
+
+  double h = 0.0;
+  double s = 0.0;
+  double v = 0.0;
+
+  Rgb_Color_To_Hsv(&color, &h, &s, &v);
+  std::cout << h << " " << s << " " << v << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_test");
+  std::vector<uint64_t> bodyArray({1011728599, 1817893929, 1946108371});
+  auto result = reader->readBodySize(
+        bodyArray, neutu::EBodyLabelType::SUPERVOXEL);
+  for (size_t i = 0; i < result.size(); ++i) {
+    std::cout << reader->readBodySize(
+                   bodyArray[i], neutu::EBodyLabelType::SUPERVOXEL) << " == ";
+    std::cout << result[i] << std::endl;
+  }
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_test");
+  std::vector<uint64_t> bodyArray(
+    {703282980, 767123688, 1011728599, 1011996877, 1162081064 });
+  auto result = reader->readBodySize(
+        bodyArray, neutu::EBodyLabelType::BODY);
+  for (size_t i = 0; i < result.size(); ++i) {
+    std::cout << reader->readBodySize(
+                   bodyArray[i], neutu::EBodyLabelType::BODY) << " == ";
+    std::cout << result[i] << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

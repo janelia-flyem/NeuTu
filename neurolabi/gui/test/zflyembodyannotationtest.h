@@ -4,8 +4,9 @@
 #include "ztestheader.h"
 #include "flyem/zflyembodyannotation.h"
 #include "zjsonobject.h"
-#include "flyem/zflyembodyannotationmerger.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 #include "neutubeconfig.h"
+#include "zjsonobjectparser.h"
 
 #ifdef _USE_GTEST_
 
@@ -22,6 +23,8 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json.setEntry("class", "neuron");
   json.setEntry("user", "zhaot");
   json.setEntry("naming user", "mock");
+  json.setEntry("clonal unit", "clonal unit test");
+  json.setEntry("auto-type", "auto type test");
 
   annot.loadJsonObject(json);
 
@@ -32,6 +35,13 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("neuron", annot.getType());
   ASSERT_EQ("zhaot", annot.getUser());
   ASSERT_EQ("mock", annot.getNamingUser());
+  ASSERT_EQ("clonal unit test", annot.getClonalUnit());
+  ASSERT_EQ("auto type test", annot.getAutoType());
+
+  ZJsonObject json2 = annot.toJsonObject();
+  ZJsonObjectParser parser;
+  ASSERT_EQ("clonal unit test", parser.getValue(json2, "clonal unit", ""));
+  ASSERT_EQ("auto type test", parser.getValue(json2, "auto-type", ""));
 
   annot.clear();
   ASSERT_EQ(uint64_t(0), annot.getBodyId());
@@ -103,47 +113,10 @@ TEST(ZFlyEmBodyAnnotation, merge)
 
 TEST(ZFlyEmBodyAnnotation, Merger)
 {
-  ZFlyEmBodyAnnotationMerger annotMerger;
+  ZFlyEmBodyAnnotationProtocal annotMerger;
   ZJsonObject jsonObj;
   jsonObj.load(GET_BENCHMARK_DIR + "/body_status.json");
   annotMerger.loadJsonObject(jsonObj);
-
-  QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
-
-  {
-    ZFlyEmBodyAnnotation annot;
-    annot.setStatus("anchor");
-    annotMap[1] = annot;
-  }
-
-  {
-    ZFlyEmBodyAnnotation annot;
-    annot.setStatus("Anchor");
-    annotMap[2] = annot;
-  }
-
-  {
-    ZFlyEmBodyAnnotation annot;
-    annot.setStatus("Finalized");
-    annotMap[3] = annot;
-  }
-
-  {
-    ZFlyEmBodyAnnotation annot;
-    annot.setStatus("Roughly traced");
-    annotMap[4] = annot;
-  }
-
-  std::vector<std::vector<uint64_t>> bodySet =
-      annotMerger.getConflictBody(annotMap);
-  ASSERT_EQ(1, int(bodySet.size()));
-
-  std::vector<uint64_t> bodyArray = bodySet[0];
-  ASSERT_EQ(3, int(bodyArray.size()));
-
-  ASSERT_EQ(1, int(bodyArray[0]));
-  ASSERT_EQ(2, int(bodyArray[1]));
-  ASSERT_EQ(4, int(bodyArray[2]));
 
   ASSERT_EQ(9999, annotMerger.getStatusRank(""));
   ASSERT_EQ(999, annotMerger.getStatusRank("test"));

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <sstream>
+#include <regex>
 
 #include "common/neutube_def.h"
 
@@ -33,4 +34,11 @@ std::string neutu::ToString(const void *p)
   std::ostringstream stream;
   stream << p;
   return stream.str();
+}
+
+bool neutu::UsingLocalHost(const std::string &url)
+{
+  std::regex reg("^([^\\s\\/]+:\\/\\/)?(127\\.0\\.0\\.1|localhost)([:\\/].*|\\s*)$");
+
+  return std::regex_match(url, reg);
 }

@@ -277,6 +277,8 @@ public: //attributes
     return &(m_objectGroup.getObjectList());
   }
 
+  void startWorkThread();
+
 //  inline QList<ZSwcTree*>* swcList();
 
   QList<ZSwcTree*> getSwcList() const;
@@ -1290,6 +1292,8 @@ public slots:
   virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
+  void addMessageTask(const ZWidgetMessage &msg);
+
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
@@ -1378,13 +1382,12 @@ protected:
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
   virtual ZStackArray createWatershedMask(bool selectedOnly) const;
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
-  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
+//  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+//  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
-  void startWorkThread();
 
   virtual bool _loadFile(const QString &filePath);
 

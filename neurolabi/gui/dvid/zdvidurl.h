@@ -166,6 +166,7 @@ public:
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId) const;
 
+  std::string getBodySizeUrl(neutu::EBodyLabelType type) const;
   std::string getBodySizeUrl(uint64_t bodyId) const;
   std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 

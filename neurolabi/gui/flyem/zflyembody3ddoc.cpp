@@ -64,6 +64,7 @@
 #include "zpunctum.h"
 #include "flyemdatareader.h"
 #include "zflyemproofdocutil.h"
+#include "zflyemproofutil.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
@@ -503,6 +504,11 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 bool ZFlyEmBody3dDoc::isAdmin() const
 {
   return getDataDocument()->isAdmin();
+}
+
+const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
+{
+  return getDataDocument()->getBodyStatusProtocol();
 }
 
 void ZFlyEmBody3dDoc::initArbGraySlice()
@@ -2019,6 +2025,69 @@ bool ZFlyEmBody3dDoc::isSupervoxel(const ZStackObject *obj) const
 bool ZFlyEmBody3dDoc::isSupervoxel(uint64_t bodyId)
 {
   return getBodyManager().isSupervoxel(bodyId);
+}
+
+void ZFlyEmBody3dDoc::cacheSupervoxelSize(std::vector<uint64_t> svIdArray) const
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  std::vector<uint64_t> sizeToUpdate;
+  for (uint64_t bodyId : svIdArray) {
+    if (!m_supervoxelSizeCache.contains(bodyId)) {
+      sizeToUpdate.push_back(bodyId);
+    }
+  }
+
+  if (!sizeToUpdate.empty()) {
+    std::vector<size_t> bodySize = getMainDvidReader().readBodySize(
+          sizeToUpdate, neutu::EBodyLabelType::SUPERVOXEL);
+    if (sizeToUpdate.size() == bodySize.size()) {
+      for (size_t i = 0; i < sizeToUpdate.size(); ++i) {
+        m_supervoxelSizeCache[sizeToUpdate[i]] = bodySize[i];
+      }
+    }
+  }
+}
+
+size_t ZFlyEmBody3dDoc::getSupervoxelSize(uint64_t svId) const
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  auto iter = m_supervoxelSizeCache.find(svId);
+  size_t svSize = 0;
+  if (iter == m_supervoxelSizeCache.end()) {
+    svSize = getMainDvidReader().readBodySize(
+          svId, neutu::EBodyLabelType::SUPERVOXEL);
+    m_supervoxelSizeCache[svId] = svSize;
+  } else {
+    svSize = iter.value();
+  }
+
+  return svSize;
+}
+
+void ZFlyEmBody3dDoc::invalidateSupervoxelCache(uint64_t svId)
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  m_supervoxelSizeCache.remove(svId);
+}
+
+void ZFlyEmBody3dDoc::invalidateBodyCache(uint64_t bodyId)
+{
+  setUnrecycable(QSet<uint64_t>({bodyId}));
+}
+
+template<typename InputIterator>
+void ZFlyEmBody3dDoc::invalidateBodyCache(InputIterator first, InputIterator last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    invalidateBodyCache(*iter);
+  }
+}
+
+void ZFlyEmBody3dDoc::invalidateSelectedBodyCache()
+{
+  std::set<uint64_t> bodySet =
+      getDataDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+  invalidateBodyCache(bodySet.begin(), bodySet.end());
 }
 
 uint64_t ZFlyEmBody3dDoc::getBodyId(const ZStackObject *obj) const
@@ -4204,6 +4273,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
         } else {
           QElapsedTimer timer;
           timer.start();
+          invalidateSupervoxelCache(m_splitter->getBodyId());
           std::pair<uint64_t, uint64_t> idPair =
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
           uploadingTime += timer.elapsed();
@@ -4396,7 +4466,10 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
           }
 
           if (dlg->exec() && dlg->getBodyId() == bodyId) {
-            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+            ZFlyEmProofUtil::AnnotateBody(
+                            bodyId, dlg->getBodyAnnotation(), annotation,
+                            getDataDocument(), getParent3DWindow());
+//            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
           }
           getDataDocument()->checkInBodyWithMessage(
                 bodyId, neutu::EBodySplitMode::NONE);

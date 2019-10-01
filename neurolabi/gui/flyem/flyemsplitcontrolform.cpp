@@ -10,6 +10,7 @@
 #include "flyemdef.h"
 #include "widgets/zflyembookmarkwidget.h"
 #include "widgets/zflyembookmarkview.h"
+#include "widgets/zflyemicon.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
@@ -22,9 +23,13 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  ui->coarseBodyViewPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
+  ui->quickViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
+  ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
+
+//  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
   neutu::SetHtmlIcon(ui->viewResultQuickPushButton,
                      "<font color=red>&#9700;</font><font color=green>&#9701;</font>");
 

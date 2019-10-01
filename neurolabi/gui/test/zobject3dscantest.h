@@ -2233,37 +2233,89 @@ TEST(ZObject3dScan, Unify)
 
 TEST(ZObject3dScan, subtract)
 {
-  ZObject3dScan obj;
-  obj.addSegment(0, 0, 0, 5);
+  {
+    ZObject3dScan obj;
+    obj.addSegment(0, 0, 0, 5);
 
-  ZObject3dScan obj2;
-  obj2.addSegment(0, 0, 2, 3);
+    ZObject3dScan obj2;
+    obj2.addSegment(0, 0, 2, 3);
 
-  ZObject3dScan obj1 = obj;
+    ZObject3dScan obj1 = obj;
 
-  ZObject3dScan subtracted = obj1.subtract(obj2);
-  ASSERT_EQ(4, (int) obj1.getVoxelNumber());
-  ASSERT_EQ(2, (int) obj2.getVoxelNumber());
+    ZObject3dScan subtracted = obj1.subtract(obj2);
+    ASSERT_EQ(4, (int) obj1.getVoxelNumber());
+    ASSERT_EQ(2, (int) obj2.getVoxelNumber());
 
-  ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
-  obj1.unify(subtracted);
-  ASSERT_TRUE(obj.equalsLiterally(obj1));
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
 
-  obj.addSegment(0, 1, 4, 7);
-  obj1 = obj;
-  subtracted = obj1.subtract(obj2);
-  ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
-  obj1.unify(subtracted);
-  ASSERT_TRUE(obj.equalsLiterally(obj1));
+    obj.addSegment(0, 1, 4, 7);
+    obj1 = obj;
+    subtracted = obj1.subtract(obj2);
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
 
-  obj1 = obj;
-  obj2.addSegment(0, 1, 2, 3);
-  obj2.addSegment(0, 1, 5, 7);
-  obj2.addSegment(0, 2, 2, 3);
-  subtracted = obj1.subtract(obj2);
-  ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
-  obj1.unify(subtracted);
-  ASSERT_TRUE(obj.equalsLiterally(obj1));
+    obj1 = obj;
+    obj2.addSegment(0, 1, 2, 3);
+    obj2.addSegment(0, 1, 5, 7);
+    obj2.addSegment(0, 2, 2, 3);
+    subtracted = obj1.subtract(obj2);
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
+  }
+
+  {
+    ZObject3dScan obj;
+    obj.addSegment(0, 0, 0, 5);
+
+    ZObject3dScan obj2;
+    obj2.addSegment(0, 0, 2, 3);
+
+    ZObject3dScan obj1 = obj;
+
+    ZObject3dScan subtracted = obj1.counterSubtract(obj2);
+    ASSERT_EQ(4, int(subtracted.getVoxelNumber()));
+    ASSERT_EQ(2, int(obj2.getVoxelNumber()));
+
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
+
+    obj.addSegment(0, 1, 4, 7);
+    obj1 = obj;
+    subtracted = obj1.counterSubtract(obj2);
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
+
+    obj1 = obj;
+    obj2.addSegment(0, 1, 2, 3);
+    obj2.addSegment(0, 1, 5, 7);
+    obj2.addSegment(0, 2, 2, 3);
+    subtracted = obj1.counterSubtract(obj2);
+    ASSERT_TRUE(obj1.intersect(subtracted).isEmpty());
+    obj1.unify(subtracted);
+    ASSERT_TRUE(obj.equalsLiterally(obj1));
+  }
+
+  {
+    ZObject3dScan obj;
+    obj.addSegment(0, 0, 0, 5);
+
+    ZObject3dScan obj2;
+    obj2.addSegment(0, 0, 2, 3);
+
+    ZObject3dScan obj3 = obj;
+
+    ZObject3dScan subtracted1 = obj.subtract(obj2);
+    ZObject3dScan subtracted2 = obj3.counterSubtract(obj2);
+
+    ASSERT_TRUE(subtracted1.equalsLiterally(obj3));
+    ASSERT_TRUE(subtracted2.equalsLiterally(obj));
+  }
 
 //  obj.print();
 //  subtracted.print();

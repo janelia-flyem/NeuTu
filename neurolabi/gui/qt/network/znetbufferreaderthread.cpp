@@ -13,7 +13,7 @@ ZNetBufferReaderThread::~ZNetBufferReaderThread()
   m_reader = nullptr;
 }
 
-void ZNetBufferReaderThread::setOperation(EOperation op)
+void ZNetBufferReaderThread::setOperation(znetwork::EOperation op)
 {
   m_op = op;
 }
@@ -67,22 +67,22 @@ void ZNetBufferReaderThread::run()
   if (!m_url.isEmpty()) {
     m_reader = new ZNetBufferReader;
     switch (m_op) {
-    case EOperation::HAS_HEAD:
+    case znetwork::EOperation::HAS_HEAD:
       m_status = m_reader->hasHead(m_url);
       break;
-    case EOperation::IS_READABLE:
+    case znetwork::EOperation::IS_READABLE:
       m_status = m_reader->isReadable(m_url);
       break;
-    case EOperation::POST:
+    case znetwork::EOperation::POST:
       m_reader->post(m_url, m_payload);
       break;
-    case EOperation::READ:
+    case znetwork::EOperation::READ:
       m_reader->read(m_url, false);
       break;
-    case EOperation::READ_HEAD:
+    case znetwork::EOperation::READ_HEAD:
       m_reader->readHead(m_url);
       break;
-    case EOperation::READ_PARTIAL:
+    case znetwork::EOperation::READ_PARTIAL:
       m_reader->readPartial(m_url, m_partialReadSize, false);
       break;
     default:

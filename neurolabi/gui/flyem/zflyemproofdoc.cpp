@@ -506,7 +506,7 @@ void ZFlyEmProofDoc::recordAnnotation(
   m_annotationMap[bodyId] = anno;
 }
 
-void ZFlyEmProofDoc::cleanBodyAnnotationMap()
+void ZFlyEmProofDoc::clearBodyAnnotationMap()
 {
   std::set<uint64_t> selected = getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
   std::vector<uint64_t> keysToRemove;
@@ -560,7 +560,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
@@ -680,7 +680,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
 //  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
@@ -1429,7 +1429,7 @@ void ZFlyEmProofDoc::uploadUserDataConfig()
   FlyEmDataWriter::UploadUserDataConfig(getDvidWriter(), m_dataConfig);
 }
 
-const ZFlyEmBodyAnnotationMerger& ZFlyEmProofDoc::getBodyStatusProtocol() const
+const ZFlyEmBodyAnnotationProtocal& ZFlyEmProofDoc::getBodyStatusProtocol() const
 {
   return m_dataConfig.getBodyStatusProtocol();
 }
@@ -2034,7 +2034,10 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *td = *iter;
-    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_LOCAL);
+
+    //It's possible that the todo has not been loaded
+    ZFlyEmToDoItem item = td->getItem(x, y, z, ZFlyEmToDoList::DATA_GLOBAL);
+
     if (item.isValid()) {
       if (checking != item.isChecked()) {
         item.setChecked(checking);
@@ -2051,47 +2054,8 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
   }
 }
 
-void ZFlyEmProofDoc::checkTodoItem(bool checking)
-{ //Duplicated code with setTodoItemAction
-  KINFO << "Check to do items";
-
-  annotateTodoItem(
-        [checking](ZFlyEmToDoItem &item) {
-              item.setChecked(checking);},
-        [checking](const ZFlyEmToDoItem &item) -> bool {
-              return checking != item.isChecked(); }
-  );
-#if 0
-  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
-
-  std::vector<ZIntPoint> ptArray;
-  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
-       iter != todoList.end(); ++iter) {
-    ZFlyEmToDoList *td = *iter;
-    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
-    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
-         iter != selectedSet.end(); ++iter) {
-      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
-      if (item.isValid()) {
-        if (checking != item.isChecked()) {
-          item.setChecked(checking);
-          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
-          ptArray.push_back(item.getPosition());
-        }
-      }
-    }
-    if (!selectedSet.empty()) {
-      processObjectModified(td);
-      notifyTodoItemModified(ptArray, true);
-    }
-  }
-
-  processObjectModified();
-#endif
-}
-
 void ZFlyEmProofDoc::annotateTodoItem(
-    std::function<void (ZFlyEmToDoItem &)> f,
+    std::function<void (ZFlyEmToDoItem &)> process,
     std::function<bool(const ZFlyEmToDoItem&)> pred)
 {
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
@@ -2106,7 +2070,7 @@ void ZFlyEmProofDoc::annotateTodoItem(
       ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
       if (item.isValid()) {
         if (pred(item)) {
-          f(item);
+          process(item);
           td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
           ptArray.push_back(item.getPosition());
         }
@@ -2119,6 +2083,18 @@ void ZFlyEmProofDoc::annotateTodoItem(
   }
 
   processObjectModified();
+}
+
+void ZFlyEmProofDoc::checkTodoItem(bool checking)
+{
+  KINFO << "Check to do items";
+
+  annotateTodoItem(
+        [checking](ZFlyEmToDoItem &item) {
+              item.setChecked(checking);},
+        [checking](const ZFlyEmToDoItem &item) -> bool {
+              return checking != item.isChecked(); }
+  );
 }
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
@@ -2252,9 +2228,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
       ZDvidSynapse synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
-      dlg->setOption(synapse.getKind());
-      dlg->setConfidence(synapse.getConfidence());
-      dlg->setAnnotation(synapse.getAnnotation().c_str());
+      dlg->set(synapse);
       if (dlg->exec()) {
         annotateSynapse(pt, dlg->getPropJson(), axis);
       }
@@ -3441,7 +3415,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
   endObjectModifiedMode();
   processObjectModified();
 
-  cleanBodyAnnotationMap();
+  clearBodyAnnotationMap();
 }
 
 void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
@@ -3489,7 +3463,7 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
       bool good =
-          (bookmark->getUserName().length() == (int) currentUserName.length());
+          (bookmark->getUserName().length() == int(currentUserName.length()));
       if (good) {
         ZJsonObject checkJson =
             getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
@@ -4058,7 +4032,7 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
     }
 
     std::vector<uint64_t> idArray = getDvidReader().readBodyIdAt(ptArray);
-    if (bookmarkArray.size() == (int) idArray.size()) {
+    if (bookmarkArray.size() == int(idArray.size())) {
       for (int i = 0; i < bookmarkArray.size(); ++i) {
         ZFlyEmBookmark *bookmark = bookmarkArray[i];
         bookmark->setBodyId(idArray[i]);
