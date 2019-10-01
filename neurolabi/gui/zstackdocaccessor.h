@@ -28,6 +28,10 @@ public:
       ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
       bool on);
 
+  static void SetObjectSelection(
+      ZStackDoc *doc, ZStackObject::EType type,
+      std::function<bool(const ZStackObject*)> pred, bool on);
+
   static void RemoveObject(
       ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);
   static void RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject);

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QMutex>
+#include <QVector>
 
 #include <set>
 
@@ -14,6 +15,7 @@
 #include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -33,7 +35,7 @@ class ZFlyEmBodySplitProject : public QObject
   Q_OBJECT
 
 public:
-  explicit ZFlyEmBodySplitProject(QObject *parent = 0);
+  explicit ZFlyEmBodySplitProject(QObject *parent = nullptr);
   virtual ~ZFlyEmBodySplitProject();
 
   /*!
@@ -56,48 +58,12 @@ public:
     return m_reader.getDvidTarget(); }
   void setDvidInfo(const ZDvidInfo &info);
 
-  ZFlyEmNeuron getFlyEmNeuron() const;
-
-  bool hasDataFrame() const;
-  void setDataFrame(ZStackFrame *frame);
-  inline ZStackFrame* getDataFrame() const {
-    return m_dataFrame;
-  }
-
   void setDocument(ZSharedPointer<ZStackDoc> doc);
   ZStackDoc* getDocument() const;
   ZSharedPointer<ZStackDoc> getSharedDocument() const;
 
   template<typename T>
   T* getDocument() const;
-
-  void loadBookmark(const QString &filePath);
-  std::set<int> getBookmarkBodySet() const;
-
-  /*
-  const ZFlyEmBookmarkArray* getBookmarkArray() const {
-    return m_bookmarkArray;
-  }
-  */
-
-  bool hasBookmark() const;
-  int getBookmarkCount() const;
-
-  void locateBookmark(const ZFlyEmBookmark &bookmark);
-
-//  void clearBookmarkDecoration();
-  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-//  void updateBookmarkDecoration();
-
-  void setBookmarkVisible(bool visible);
-//  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-
-//  void removeAllBookmark();
-
-//  void showSkeleton(ZSwcTree *tree);
-//  void showBodyQuickView();
-
-//  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
@@ -115,8 +81,6 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
-      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitResultFunc(
       ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
       size_t minObjSize, bool checkingIsolation);
@@ -128,17 +92,6 @@ public:
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
-
-  void viewPreviousSlice();
-  void viewNextSlice();
-  void viewFullGrayscale();
-  void viewFullGrayscale(bool viewing);
-  void updateBodyMask();
-//  void downloadBodyMask();
-
-  void setShowingBodyMask(bool state){
-    m_showingBodyMask = state;
-  }
 
   void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
@@ -157,9 +110,8 @@ public:
 
   std::string getSeedKey(uint64_t bodyId) const;
   std::string getBackupSeedKey(uint64_t bodyId) const;
-  bool isSeedProcessed(uint64_t bodyId) const;
-  void setSeedProcessed(uint64_t bodyId);
 
+  /*
   class ThreadManager {
   public:
     enum EThreadName {
@@ -172,8 +124,9 @@ public:
   private:
     ZThreadFutureMap m_futureMap;
   };
+  */
 
-  void closeBodyWindow();
+//  void closeBodyWindow();
 
   bool isReadyForSplit(const ZDvidTarget &target);
 
@@ -183,9 +136,48 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
-  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+
+public: //Obsolete functions
+  ZFlyEmNeuron getFlyEmNeuron() const;
+
+  bool hasDataFrame() const;
+  void setDataFrame(ZStackFrame *frame);
+  inline ZStackFrame* getDataFrame() const {
+    return m_dataFrame;
+  }
+
+  bool hasBookmark() const;
+  int getBookmarkCount() const;
+
+  void locateBookmark(const ZFlyEmBookmark &bookmark);
+
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void setBookmarkVisible(bool visible);
+
+//  void loadBookmark(const QString &filePath);
+  std::set<int> getBookmarkBodySet() const;
+
+  void setShowingBodyMask(bool state){
+    m_showingBodyMask = state;
+  }
+
+  void viewPreviousSlice();
+  void viewNextSlice();
+  void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
+  void updateBodyMask();
+
+  bool isSeedProcessed(uint64_t bodyId) const;
+  void setSeedProcessed(uint64_t bodyId);
+
+  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
+      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
 
   void waitResultQuickView();
+//  void downloadBodyMask();
 
 signals:
   void messageGenerated(QString, bool appending = true);
@@ -267,9 +259,9 @@ private:
   void quitResultUpdate();
   void cancelResultUpdate();
   void uploadSplitListFunc();
-  bool splitSizeChecked() const;
+  bool splitVerified() const;
 
-  int getMinObjSize() const { return m_minObjSize; }
+  size_t getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
 
   ZJsonArray getSeedJson() const;
@@ -282,6 +274,14 @@ private:
   void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
       QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
       const ZObject3dScan *obj, size_t minIsolationSize);
+  void isolateSmallObjects(
+      ZObject3dScan &body, ZObject3dScan&smallBodyGroup, size_t minObjSize);
+  void prepareSplitList(
+      const std::vector<ZObject3dScan *> &objArray,
+      ZObject3dScan &body, ZObject3dScan &mainBody,
+      bool checkingIsolation,  size_t minIsolationSize, double dp);
+  void regroupSplit(ZObject3dScan &body, const ZObject3dScan &mainBody,
+                    ZObject3dScan &smallBodyGroup, size_t minObjSize);
 
   const ZDvidReader &getMainReader() const {
     return m_reader;
@@ -297,7 +297,10 @@ private:
 
   void updateBodyDep(uint64_t bodyId);
   void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
-  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const QVector<uint64_t> &bodyArray);
+  template<template<class...> class C>
+  void updateBodyDep(const C<uint64_t> &bodyArray);
 
 
 private:
@@ -305,6 +308,8 @@ private:
   ZDvidWriter m_writer;
   ZDvidReader m_commitReader;
   ZDvidWriter m_commitWriter;
+
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
 //  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;

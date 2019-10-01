@@ -23,6 +23,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
   if (!m_isAdmin) {
     ui->typeLineEdit->hide();
     ui->generatePushButton->hide();
+    ui->primaryNeuriteLineEdit->setEnabled(false);
+    ui->clonalUnitLineEdit->setEnabled(false);
 //    neutu::HideLayout(ui->typeLayout, false);
   }
 }
@@ -111,6 +113,16 @@ void FlyEmBodyAnnotationDialog::setSynonym(const std::string &v)
   ui->SynonymLineEdit->setText(QString::fromStdString(v));
 }
 
+void FlyEmBodyAnnotationDialog::setClonalUnit(const std::string &v)
+{
+  ui->clonalUnitLineEdit->setText(QString::fromStdString(v));
+}
+
+void FlyEmBodyAnnotationDialog::setAutoType(const std::string &v)
+{
+  ui->autoTypeLineEdit->setText(QString::fromStdString(v));
+}
+
 uint64_t FlyEmBodyAnnotationDialog::getBodyId() const
 {
   return m_bodyId;
@@ -188,6 +200,16 @@ std::string FlyEmBodyAnnotationDialog::getStatus() const
   return "";
 }
 
+std::string FlyEmBodyAnnotationDialog::getAutoType() const
+{
+  return ui->autoTypeLineEdit->text().toStdString();
+}
+
+std::string FlyEmBodyAnnotationDialog::getClonalUnit() const
+{
+  return ui->clonalUnitLineEdit->text().toStdString();
+}
+
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
@@ -209,6 +231,8 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setCrossMidline(annotation.getCrossMidline());
   setNeurotransmitter(annotation.getNeurotransmitter());
   setSynonym(annotation.getSynonym());
+  setClonalUnit(annotation.getClonalUnit());
+  setAutoType(annotation.getAutoType());
 //  setInstance(annotation.get);
 }
 
@@ -235,6 +259,8 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setCrossMidline(getCrossMidline());
   annotation.setNeurotransmitter(getNeurotransmitter());
   annotation.setSynonym(getSynonym());
+  annotation.setClonalUnit(getClonalUnit());
+  annotation.setAutoType(getAutoType());
 
   return annotation;
 }
@@ -350,5 +376,5 @@ void FlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)
 void FlyEmBodyAnnotationDialog::fillType()
 {
   ZFlyEmBodyAnnotation annot = getBodyAnnotation();
-  ui->typeLineEdit->setText(QString::fromStdString(annot.getAutoType()));
+  ui->typeLineEdit->setText(QString::fromStdString(annot.getInferredType()));
 }

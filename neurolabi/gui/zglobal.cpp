@@ -21,7 +21,6 @@
 #include "logging/neuopentracing.h"
 
 class ZGlobalData {
-
 public:
   ZGlobalData();
   ~ZGlobalData();

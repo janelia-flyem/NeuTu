@@ -62,7 +62,7 @@ bool ZDvidNode::isMock() const
   return m_isMocked;
 }
 
-std::string ZDvidNode::getSourceString(bool withHttpPrefix, int uuidBrief) const
+std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) const
 {
   std::string source;
 
@@ -353,7 +353,7 @@ std::string ZDvidNode::getUrl() const
     url += "/api/node/" + m_uuid;
   }
 
-  return url;
+  return std::move(url);
 }
 
 
@@ -372,7 +372,7 @@ void ZDvidNode::loadJsonObject(const ZJsonObject &obj)
   if (isValidJson) {
     setServer(ZJsonParser::stringValue(obj[m_addressKey]));
     if (obj.hasKey(m_portKey)) {
-      setPort(ZJsonParser::integerValue(obj[m_portKey]));
+      setPort(int(ZJsonParser::integerValue(obj[m_portKey])));
     } else {
       setPort(-1);
     }

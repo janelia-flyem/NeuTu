@@ -1,6 +1,8 @@
 #ifndef ZPOINTTEST_H
 #define ZPOINTTEST_H
 
+#include <unordered_map>
+
 #include "ztestheader.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
@@ -173,6 +175,19 @@ TEST(ZIntPoint, Operator)
   ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 0)));
   ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 2)));
   ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 2, 2)));
+}
+
+TEST(ZIntPoint, Hash)
+{
+  std::unordered_map<ZIntPoint, int> pointMap;
+  pointMap[ZIntPoint(1, 2, 3)]  = 1;
+  pointMap[ZIntPoint(4, 5, 6)]  = 2;
+
+  ASSERT_EQ(1, pointMap.at(ZIntPoint(1, 2, 3)));
+  ASSERT_EQ(2, pointMap.at(ZIntPoint(4, 5, 6)));
+
+  pointMap[ZIntPoint(1, 2, 3)]  = 3;
+  ASSERT_EQ(3, pointMap.at(ZIntPoint(1, 2, 3)));
 }
 
 #endif

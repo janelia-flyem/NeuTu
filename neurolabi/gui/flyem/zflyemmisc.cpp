@@ -1005,10 +1005,39 @@ void flyem::SubtractBodyWithBlock(
   }
 }
 
-void flyem::MakeStar(
-    const QPointF &center, double radius, QPointF *ptArray)
+/*
+namespace {
+
+void make_star(
+    double cx, double cy, double left, double right, double top, double bottom,
+    double sw, double sh, QPointF *ptArray)
 {
-  const double shapeFactor = 0.25;
+  ptArray[0] = QPointF(cx, top);
+  ptArray[1] = QPointF(cx + sw, cy- sh);
+  ptArray[2] = QPointF(right, cy);
+  ptArray[3] = QPointF(cx + sw, cy + sh);
+  ptArray[4] = QPointF(cx, bottom);
+  ptArray[5] = QPointF(cx - sw, cy + sh);
+  ptArray[6] = QPointF(left, cy);
+  ptArray[7] = QPointF(cx - sw, cy - sh);
+  ptArray[8] = ptArray[0];
+}
+
+}
+*/
+
+std::vector<QPointF> flyem::MakeStar(
+    const QPointF &center, double radius, double shapeFactor)
+{
+  std::vector<QPointF> ptArray(9);
+  MakeStar(center, radius, ptArray.data(), shapeFactor);
+
+  return ptArray;
+}
+
+void flyem::MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor)
+{
   double sw = radius * shapeFactor;
   double left = center.x() - radius;
   double right = center.x() + radius;
@@ -1026,6 +1055,7 @@ void flyem::MakeStar(
   ptArray[8] = ptArray[0];
 }
 
+/*
 void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
 {
   QPointF center = rect.center();
@@ -1044,24 +1074,26 @@ void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[7] = QPointF(center.x() - sw, center.y() - sh);
   ptArray[8] = ptArray[0];
 }
+*/
 
-QVector<QPointF> flyem::MakeCrossKey(const QPointF &center, double radius)
+std::vector<QPointF> flyem::MakeCrossKey(
+    const QPointF &center, double radius, double spanRatio)
 {
-  QVector<QPointF> ptArray;
-  double dr = radius * 0.2;
-  ptArray.append(center + QPointF(radius, dr));
-  ptArray.append(center + QPointF(dr, dr));
-  ptArray.append(center + QPointF(dr, radius));
-  ptArray.append(center + QPointF(-dr, radius));
-  ptArray.append(center + QPointF(-dr, dr));
-  ptArray.append(center + QPointF(-radius, dr));
-  ptArray.append(center + QPointF(-radius, -dr));
-  ptArray.append(center + QPointF(-dr, -dr));
-  ptArray.append(center + QPointF(-dr, -radius));
-  ptArray.append(center + QPointF(dr, -radius));
-  ptArray.append(center + QPointF(dr, -dr));
-  ptArray.append(center + QPointF(radius, -dr));
-  ptArray.append(center + QPointF(radius, dr));
+  std::vector<QPointF> ptArray;
+  double dr = radius * spanRatio;
+  ptArray.push_back(center + QPointF(radius, dr));
+  ptArray.push_back(center + QPointF(dr, dr));
+  ptArray.push_back(center + QPointF(dr, radius));
+  ptArray.push_back(center + QPointF(-dr, radius));
+  ptArray.push_back(center + QPointF(-dr, dr));
+  ptArray.push_back(center + QPointF(-radius, dr));
+  ptArray.push_back(center + QPointF(-radius, -dr));
+  ptArray.push_back(center + QPointF(-dr, -dr));
+  ptArray.push_back(center + QPointF(-dr, -radius));
+  ptArray.push_back(center + QPointF(dr, -radius));
+  ptArray.push_back(center + QPointF(dr, -dr));
+  ptArray.push_back(center + QPointF(radius, -dr));
+  ptArray.push_back(center + QPointF(radius, dr));
 
   return ptArray;
 }
@@ -1503,6 +1535,24 @@ ZObject3dScan* flyem::LoadRoiFromJson(
   }
 
   return result;
+}
+
+bool flyem::HasConnecion(const QString &name, uint64_t input, uint64_t output, neutu::EBiDirection d)
+{
+  switch (d) {
+  case neutu::EBiDirection::FORWARD:
+    if (name.startsWith(QString("%1->").arg(input))) {
+      return name.contains(QString("[%1]").arg(output));
+    }
+    break;
+  case neutu::EBiDirection::BACKWARD:
+    if (name.startsWith(QString("%1<-").arg(output))) {
+      return name.contains(QString("[%1]").arg(input));
+    }
+    break;
+  }
+
+  return false;
 }
 
 /*

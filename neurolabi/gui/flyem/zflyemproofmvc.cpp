@@ -102,6 +102,7 @@
 #include "zflyemcoordinateconverter.h"
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
+#include "zflyemproofutil.h"
 
 #include "neuroglancer/zneuroglancerpathparser.h"
 
@@ -909,13 +910,15 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
           */
 
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(updateCoarseMeshWindowDeep()));
-  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
-          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
+          this, SLOT(processMergeUploaded()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateBodyWindowDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateCoarseBodyWindowDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+//          this, SLOT(updateCoarseMeshWindowDeep()));
+//  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploaded,
+//          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBookmarkTable()));
 
@@ -1740,6 +1743,7 @@ void ZFlyEmProofMvc::unmergeSelected()
   }
 }
 
+/*
 void ZFlyEmProofMvc::undo()
 {
   if (getCompleteDocument() != NULL) {
@@ -1753,6 +1757,7 @@ void ZFlyEmProofMvc::redo()
     getCompleteDocument()->undoStack()->redo();
   }
 }
+*/
 
 void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
 {
@@ -1964,6 +1969,8 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 
   m_splitProject.setDvidTarget(getDvidTarget());
   m_splitProject.setDvidInfo(getDvidInfo());
+  m_splitProject.setBodyStatusProtocol(
+        getCompleteDocument()->getBodyStatusProtocol());
   getCompleteDocument()->syncMergeWithDvid();
   //    m_mergeProject.setDvidTarget(getDvidTarget());
   //    m_mergeProject.syncWithDvid()
@@ -2477,9 +2484,11 @@ void ZFlyEmProofMvc::diagnose()
 void ZFlyEmProofMvc::setDvidTarget()
 {
   if (getDvidDialog()->exec()) {
-    GET_FLYEM_CONFIG.activateNeuTuServer();
-
     const ZDvidTarget &target = getDvidDialog()->getDvidTarget();
+
+    GET_FLYEM_CONFIG.activateNeutuse(
+          neutu::UsingLocalHost(target.getAddress()));
+
     setDvid(ZDvidEnv(target));
     /*
     const QString threadId = "setDvidTarget";
@@ -3531,8 +3540,9 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
         ZFlyEmBodyAnnotation annotation =
             FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+        ZFlyEmBodyAnnotation oldAnnotation = annotation;
         annotation.setStatus(status);
-        annotateBody(bodyId, annotation);
+        annotateBody(bodyId, annotation, oldAnnotation);
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
       } else {
         warnAbouBodyLockFail(bodyId);
@@ -3546,12 +3556,25 @@ void ZFlyEmProofMvc::setExpertBodyStatus()
   setSelectedBodyStatus(ZFlyEmBodyStatus::GetExpertStatus());
 }
 
+/*
 void ZFlyEmProofMvc::annotateBody(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
   getCompleteDocument()->annotateBody(bodyId, annotation);
   updateBodyMessage(bodyId, annotation);
   updateViewButton();
+}
+*/
+
+void ZFlyEmProofMvc::annotateBody(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
+    const ZFlyEmBodyAnnotation &oldAnnotation)
+{
+  if (ZFlyEmProofUtil::AnnotateBody(
+        bodyId, annotation, oldAnnotation, getCompleteDocument(), this)) {
+    updateBodyMessage(bodyId, annotation);
+    updateViewButton();
+  }
 }
 
 void ZFlyEmProofMvc::warn(const QString &msg)
@@ -3592,14 +3615,15 @@ void ZFlyEmProofMvc::annotateSelectedBody()
         dlg->updateStatusBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        ZFlyEmBodyAnnotation annotation;
         if (reader.isReady()) {
-          ZFlyEmBodyAnnotation annotation =
+          annotation =
               FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
           dlg->loadBodyAnnotation(annotation);
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          annotateBody(bodyId, dlg->getBodyAnnotation());
+          annotateBody(bodyId, dlg->getBodyAnnotation(), annotation);
         }
 
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
@@ -3995,12 +4019,25 @@ void ZFlyEmProofMvc::submitSkeletonizationTask(uint64_t bodyId)
   }
 }
 
+QString ZFlyEmProofMvc::makeSkeletonizationServiceMissingMessage() const
+{
+  QString msg = "Skeletonization failed: No ";
+  if (GET_FLYEM_CONFIG.getNeutuseStatus() ==
+      ZFlyEmConfig::EServiceStatus::ONLINE_NET) {
+    msg += "local ";
+  }
+
+  msg += " skeletonization service is available";
+
+  return msg;
+}
+
 void ZFlyEmProofMvc::skeletonizeBodyList()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
 
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     QString bodyFile = ZDialogFactory::GetOpenFileName("Body File", "", this);
 
     if (!bodyFile.isEmpty()) {
@@ -4008,7 +4045,8 @@ void ZFlyEmProofMvc::skeletonizeBodyList()
       if (stream.good()) {
         ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
         dlg->setComputingServer(
-              GET_NETU_SERVICE.getServer().c_str());
+              GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
+//              GET_NETU_SERVICE.getServer().c_str());
         dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::FILE);
         if (dlg->exec()) {
           int count = 0;
@@ -4032,8 +4070,7 @@ void ZFlyEmProofMvc::skeletonizeBodyList()
       }
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {
@@ -4045,9 +4082,11 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
-    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
+    dlg->setComputingServer(
+          GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
+//    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
     dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::TOP);
     if (dlg->exec()) {
       ZJsonArray thresholdData =
@@ -4056,7 +4095,8 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
 
       for (size_t i = 0; i < thresholdData.size(); ++i) {
         ZJsonObject labelJson(thresholdData.value(i));
-        uint64_t bodyId = ZJsonParser::integerValue(labelJson["Label"]);
+        uint64_t bodyId =
+            uint64_t(ZJsonParser::integerValue(labelJson["Label"]));
 
         if (bodyId > 0) {
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -4069,8 +4109,7 @@ void ZFlyEmProofMvc::skeletonizeSynapseTopBody()
       }
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {
@@ -4082,14 +4121,25 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 {
   ZWidgetMessage warnMsg;
   warnMsg.setType(neutu::EMessageType::WARNING);
-  if (GET_FLYEM_CONFIG.hasNormalService()) {
+
+  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     ZFlyEmSkeletonUpdateDialog *dlg = m_dlgManager->getSkeletonUpdateDlg();
-    dlg->setComputingServer(GET_NETU_SERVICE.getServer().c_str());
+    dlg->setComputingServer(
+          GET_FLYEM_CONFIG.getNeutuseWriter().getServerAddress().c_str());
     dlg->setMode(ZFlyEmSkeletonUpdateDialog::EMode::SELECTED);
     if (dlg->exec()) {
       const std::set<uint64_t> &bodySet =
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
+      for (uint64_t bodyId : bodySet) {
+        neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+              "skeletonize", getDvidTarget(), bodyId,
+              dlg->isOverwriting());
+        task.setPriority(dlg->getPriority());
+
+        GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+      }
+      /*
       if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) {
         for (uint64_t bodyId : bodySet) {
           neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -4114,10 +4164,10 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
           }
         }
       }
+      */
     }
   } else {
-    warnMsg.setMessage(
-          "Skeletonization failed: The skeletonization service is not available.");
+    warnMsg.setMessage(makeSkeletonizationServiceMissingMessage());
   }
 
   if (warnMsg.hasMessage()) {
@@ -4822,7 +4872,7 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
-void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId) {
+void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &/*pt*/, uint64_t bodyId) {
     TipDetectorDialog * inputDialog = m_dlgManager->getTipDetectorDlg();
     inputDialog->setBodyID(bodyId);
     inputDialog->setRoiList(getCompleteDocument()->getRoiList());
@@ -5547,6 +5597,32 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
 #endif
     }
   }
+}
+
+void ZFlyEmProofMvc::updateAllBodyWindow(
+    std::function<void (Z3DWindow *)> updateFunc)
+{
+  updateFunc(m_bodyWindow);
+  updateFunc(m_coarseBodyWindow);
+  updateFunc(m_meshWindow);
+  updateFunc(m_coarseMeshWindow);
+}
+
+void ZFlyEmProofMvc::processMergeUploaded()
+{
+  auto processWindow = [](Z3DWindow *window) {
+    if (window) {
+      ZFlyEmBody3dDoc *doc =
+          qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
+      if (doc) {
+        doc->invalidateSelectedBodyCache();
+      }
+    }
+  };
+
+  updateAllBodyWindow(processWindow);
+
+  deselectAllBody();
 }
 
 void ZFlyEmProofMvc::deselectAllBody(bool asking)

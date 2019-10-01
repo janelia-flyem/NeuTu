@@ -39,6 +39,8 @@ public:
   void setCrossMidline(bool v);
   void setNeurotransmitter(const std::string &v);
   void setSynonym(const std::string &v);
+  void setClonalUnit(const std::string &v);
+  void setAutoType(const std::string &v);
 
   void setStatus(const std::string &status);
 
@@ -55,6 +57,8 @@ public:
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
   std::string getStatus() const;
+  std::string getAutoType() const;
+  std::string getClonalUnit() const;
   bool isInstanceChanged() const;
 
   void setDefaultStatusList(const QList<QString> statusList);

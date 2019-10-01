@@ -300,6 +300,14 @@ public:
   ZObject3dScan subtract(const ZObject3dScan &obj);
   void subtractSliently(const ZObject3dScan &obj);
 
+  /*!
+   * \brief Subtraction with result swapping.
+   *
+   * The current object will become the subtracted part and the returned result
+   * is the difference.
+   */
+  ZObject3dScan counterSubtract(const ZObject3dScan &obj);
+
   friend ZObject3dScan operator - (
       const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 
@@ -430,7 +438,7 @@ public:
 
   const std::map<size_t, std::pair<size_t, size_t> >&
   getIndexSegmentMap() const;
-  bool getSegment(size_t index, int *z, int *y, int *x1, int *x2);
+  bool getSegment(size_t index, int *z, int *y, int *x1, int *x2) const;
   size_t getSegmentNumber() const;
 
   void translate(int dx, int dy, int dz);
@@ -851,15 +859,10 @@ private:
 
   void canonizeConst() const;
 
-  bool isAdjacentTo_Old(const ZObject3dScan &obj) const;
+  bool isAdjacentToOld(const ZObject3dScan &obj) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
-  bool m_isCanonized;
-//  uint64_t m_label;
-  bool m_blockingEvent;
-  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
-//  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
@@ -876,6 +879,10 @@ protected:
   const static TEvent EVENT_OBJECT_VIEW_CHANGED;
   const static TEvent EVENT_NULL;
 #endif
+
+  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
+  bool m_isCanonized = true;
+  bool m_blockingEvent = false;
 };
 
 #include "zobject3dscan.hpp"

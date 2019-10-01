@@ -17,7 +17,7 @@ class FlyEmTodoDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit FlyEmTodoDialog(QWidget *parent = 0);
+  explicit FlyEmTodoDialog(QWidget *parent = nullptr);
   ~FlyEmTodoDialog();
 
   void setDocument(ZSharedPointer<ZStackDoc> doc);

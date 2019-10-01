@@ -27,6 +27,11 @@ void ZFlyEmTodoAnnotationDialog::initActionBox()
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_NO_SOMA);
   ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_DIAGNOSTIC);
+  ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_SEGMENTATION_DIAGNOSTIC);
+#ifdef _DEBUG_
+  //For debugging only
+  ui->actionComboBox->addItem(ZFlyEmToDoItem::ACTION_TIP_DETECTOR);
+#endif
 
   connect(ui->actionComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(updateWidget()));

@@ -297,9 +297,10 @@ unix {
   }
 }
 
-RESOURCES = gui.qrc
+RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
     plotsettings.h \
@@ -590,6 +591,7 @@ HEADERS += mainwindow.h \
     protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
+    protocols/connectionvalidationprotocol.h \ 
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/orphanlinkprotocol.h \
@@ -795,6 +797,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
+    protocols/connectionvalidationprotocol.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/orphanlinkprotocol.ui \
@@ -829,10 +832,11 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui
+    dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
     dialogs/settingdialog.cpp \
@@ -1101,6 +1105,7 @@ SOURCES += main.cpp \
     protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
+    protocols/connectionvalidationprotocol.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/orphanlinkprotocol.cpp \
@@ -1207,6 +1212,8 @@ SOURCES += main.cpp \
     dvid/zdviddataslicetask.cpp \
     dvid/zdvidstackblockfactory.cpp \
     dvid/zdvidblockstream.cpp \
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
@@ -1223,9 +1230,7 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dialogs/neuprintsetupdialog.cpp \
-    dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp
+    dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

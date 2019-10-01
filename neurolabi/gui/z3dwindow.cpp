@@ -595,6 +595,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_ADD_SELECTION:
+    action = m_actionLibrary->getAction(item, this, SLOT(addPunctaSelection()));
+    break;
   case ZActionFactory::ACTION_START_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(startBodySplit()));
     break;
@@ -2246,6 +2249,8 @@ static void AddTodoMarker(
       case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT: //Ignored
         LWARN() << "TO_SUPERVOXEL_SPLIT not available";
         break;
+      default:
+        break;
       }
     }
   }
@@ -3488,6 +3493,18 @@ void Z3DWindow::changeSelectedPunctaColor()
   }
 }
 
+void Z3DWindow::addPunctaSelection()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    QString filterString = QInputDialog::getText(
+          this, "Add Puncta Selection", "Condition");
+    if (!filterString.isEmpty()) {
+      doc->addSynapseSelection(filterString);
+    }
+  }
+}
+
 void Z3DWindow::transformAllPuncta()
 {
   QList<ZPunctum*> punctaSet = m_doc->getPunctumList();
@@ -3945,7 +3962,7 @@ void Z3DWindow::saveSelectedSwc()
 
     fileName =
         QFileDialog::getSaveFileName(this, tr("Save SWC"), fileName,
-                                     tr("SWC File"), 0);
+                                     tr("SWC File"), nullptr);
 
     if (!fileName.isEmpty()) {
       if (!fileName.endsWith(".swc", Qt::CaseInsensitive)) {

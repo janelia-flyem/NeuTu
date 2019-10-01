@@ -17,6 +17,7 @@ public:
   bool isExpertStatus() const;
   bool isFinal() const;
   bool isMergable() const;
+  bool presevingId() const;
   int getProtectionLevel() const;
   int getPriority() const;
 
@@ -25,6 +26,7 @@ public:
   void setExpert(bool on);
   void setFinal(bool on);
   void setMergable(bool on);
+  void preseveId(bool on);
 
   std::string getStatusKey() const;
 
@@ -45,6 +47,7 @@ public:
   static const char *KEY_FINAL;
   static const char *KEY_MERGABLE;
   static const char *KEY_ADMIN_LEVEL;
+  static const char *KEY_PRESERVING_ID;
 
 private:
   std::string m_status;
@@ -53,6 +56,7 @@ private:
   bool m_isExpertStatus = false;
   bool m_isFinal = false;
   bool m_isMergable = true;
+  bool m_preservingId = false;
   int m_adminLevel = 0;
 };
 

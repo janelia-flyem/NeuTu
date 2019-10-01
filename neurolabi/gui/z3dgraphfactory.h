@@ -15,17 +15,19 @@ class Z3DGraphFactory
 public:
   Z3DGraphFactory();
 
-  static Z3DGraph* MakeBox(const ZCuboid &box, double radius = 1.0);
+  static Z3DGraph* MakeBox(
+      const ZCuboid &box, double radius, Z3DGraph *graph = nullptr);
   static Z3DGraph* MakeGrid(const ZRect2d &rect, int ntick, double lineWidth);
 
   static Z3DGraph* MakeBox(const ZIntCuboid &box, double radius = 1.0);
   static Z3DGraph* MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
-                                const ZPoint &pt3, const ZPoint &pt4);
+      const ZPoint &pt3, const ZPoint &pt4,
+      Z3DGraph *graph = nullptr);
   static Z3DGraph* MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
                                  const ZPoint &pt3, const ZPoint &pt4);
 
-  Z3DGraph* makeBox(const ZIntCuboid &box);
-  Z3DGraph* makeBox(const ZCuboid &box);
+  Z3DGraph* makeBox(const ZIntCuboid &box, Z3DGraph *graph = nullptr);
+  Z3DGraph* makeBox(const ZCuboid &box, Z3DGraph *graph = nullptr);
   Z3DGraph* makeBoundingBox(const ZIntCuboid &box,
                             const std::vector<int> &faceArray);
 
@@ -33,6 +35,10 @@ public:
       const ZCuboid &box, const std::vector<int> &faceArray);
   Z3DGraph* makeFaceGraph(
       const ZIntCuboid &box, const std::vector<int> &faceArray);
+
+  Z3DGraph* makeQuadrilateral(const ZPoint &pt1, const ZPoint &pt2,
+                              const ZPoint &pt3, const ZPoint &pt4,
+                              Z3DGraph *graph = nullptr);
 
   void setShapeHint(EGraphShape shape) { m_shapeHint = shape; }
   void setNodeRadiusHint(double r) { m_nodeRadiusHint = r; }

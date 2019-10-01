@@ -411,6 +411,9 @@ public:
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId, neutu::EBodyLabelType type) const;
+  std::vector<size_t> readBodySize(
+      const std::vector<uint64_t> &bodyArray, neutu::EBodyLabelType type) const;
+
   std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
       uint64_t bodyId, neutu::EBodyLabelType type) const;
 

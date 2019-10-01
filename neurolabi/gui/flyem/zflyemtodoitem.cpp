@@ -25,6 +25,12 @@ const char* ZFlyEmToDoItem::ACTION_NO_SOMA = "no soma";
 const char* ZFlyEmToDoItem::ACTION_NO_SOMA_TAG = "no_soma";
 const char* ZFlyEmToDoItem::ACTION_DIAGNOSTIC = "diagnostic";
 const char* ZFlyEmToDoItem::ACTION_DIAGNOSTIC_TAG = "diagnostic";
+const char* ZFlyEmToDoItem::ACTION_SEGMENTATION_DIAGNOSTIC =
+    "segmentation-diagnostic";
+const char* ZFlyEmToDoItem::ACTION_SEGMENTATION_DIAGNOSTIC_TAG =
+    "segmentation_diagnostic";
+const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR = "tip detector";
+const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR_TAG = "tip_detector";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
@@ -34,7 +40,10 @@ const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_IRRELEVANT, neutu::EToDoAction::TO_DO_IRRELEVANT},
   {ZFlyEmToDoItem::ACTION_TRACE_TO_SOMA, neutu::EToDoAction::TO_TRACE_TO_SOMA},
   {ZFlyEmToDoItem::ACTION_NO_SOMA, neutu::EToDoAction::NO_SOMA},
-  {ZFlyEmToDoItem::ACTION_DIAGNOSTIC, neutu::EToDoAction::DIAGNOSTIC}
+  {ZFlyEmToDoItem::ACTION_DIAGNOSTIC, neutu::EToDoAction::DIAGNOSTIC},
+  {ZFlyEmToDoItem::ACTION_SEGMENTATION_DIAGNOSTIC,
+   neutu::EToDoAction::SEGMENTATION_DIAGNOSIC},
+  {ZFlyEmToDoItem::ACTION_TIP_DETECTOR, neutu::EToDoAction::TIP_DETECTOR}
 };
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
@@ -117,7 +126,11 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
       color.setRgb(160, 80, 0, 192);
       break;
     case neutu::EToDoAction::DIAGNOSTIC:
+    case neutu::EToDoAction::SEGMENTATION_DIAGNOSIC:
       color.setRgb(128, 0, 128, 192);
+      break;
+    case neutu::EToDoAction::TIP_DETECTOR:
+      color.setRgb(255, 128, 128, 192);
       break;
     case neutu::EToDoAction::NO_SOMA:
       break;
@@ -230,6 +243,12 @@ std::string ZFlyEmToDoItem::GetActionTag(neutu::EToDoAction action)
   case neutu::EToDoAction::DIAGNOSTIC:
     tag = make_tag(ACTION_DIAGNOSTIC_TAG);
     break;
+  case neutu::EToDoAction::SEGMENTATION_DIAGNOSIC:
+    tag = make_tag(ACTION_SEGMENTATION_DIAGNOSTIC_TAG);
+    break;
+  case neutu::EToDoAction::TIP_DETECTOR:
+    tag = make_tag(ACTION_TIP_DETECTOR_TAG);
+    break;
   }
 
   return tag;
@@ -259,6 +278,44 @@ void ZFlyEmToDoItem::removeActionTag()
     } else {
       ++iter;
     }
+  }
+}
+
+QList<std::vector<QPointF> > ZFlyEmToDoItem::makeOutlineDecoration(double x, double y, double radius) const
+{
+  QList<std::vector<QPointF> > outlineArray;
+
+  switch (getAction()) {
+  case neutu::EToDoAction::DIAGNOSTIC:
+    outlineArray.append(flyem::MakeCrossKey(QPointF(x, y), radius, 0.2));
+    break;
+  case neutu::EToDoAction::SEGMENTATION_DIAGNOSIC:
+  {
+    outlineArray.append(flyem::MakeCrossKey(QPointF(x, y), radius, 0.2));
+    double dr1 = radius * 0.2;
+    double dr2 = radius - dr1;
+    outlineArray.append({QPointF(x - dr1, y - dr2), QPointF(x + dr1, y - dr2)});
+    outlineArray.append({QPointF(x - dr1, y + dr2), QPointF(x + dr1, y + dr2)});
+    outlineArray.append({QPointF(x - dr2, y - dr1), QPointF(x - dr2, y + dr1)});
+    outlineArray.append({QPointF(x + dr2, y - dr1), QPointF(x + dr2, y + dr1)});
+  }
+    break;
+  case neutu::EToDoAction::TIP_DETECTOR:
+    outlineArray.append(flyem::MakeStar(QPointF(x, y), radius, 0.1));
+    break;
+  default:
+    outlineArray.append(flyem::MakeStar(QPointF(x, y), radius, 0.25));
+    break;
+  }
+
+  return outlineArray;
+}
+
+void ZFlyEmToDoItem::PaintOutline(
+    ZPainter &painter, const QList<std::vector<QPointF> > &outline)
+{
+  for(const auto &polyline : outline) {
+    painter.drawPolyline(polyline);
   }
 }
 
@@ -318,6 +375,14 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
 
+      QList<std::vector<QPointF>> outline = makeOutlineDecoration(x, y, radius);
+      if (hasSomaAction()) {
+        outline.append(vertexArray);
+      }
+
+      PaintOutline(painter, outline);
+
+      /*
       if (getAction() != neutu::EToDoAction::DIAGNOSTIC) {
         QPointF ptArray[9];
         flyem::MakeStar(QPointF(x, y), radius, ptArray);
@@ -326,10 +391,13 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
         QVector<QPointF> ptArray = flyem::MakeCrossKey(QPointF(x, y), radius);
         painter.drawPolyline(ptArray.constData(), ptArray.size());
       }
+      */
 
+      /*
       if (hasSomaAction()) {
         painter.drawPolyline(vertexArray);
       }
+      */
 
       if (getPriority() > 0) {
         painter.save();

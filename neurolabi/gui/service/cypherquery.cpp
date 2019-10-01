@@ -38,12 +38,16 @@ void CypherQuery::appendWith(const QString &preAs, const QString &postAs)
 
 void CypherQuery::appendOrderDesc(const QString &pattern)
 {
-  m_postProc +=  " " + QString(KW_ORDER_BY) + " " + pattern + " " + KW_DESC;
+  if (!pattern.isEmpty()) {
+    m_postProc +=  " " + QString(KW_ORDER_BY) + " " + pattern + " " + KW_DESC;
+  }
 }
 
 void CypherQuery::appendLimit(int n)
 {
-  m_postProc += " " + QString(KW_LIMIT) + " " + QString::number(n);
+  if (n > 0) {
+    m_postProc += " " + QString(KW_LIMIT) + " " + QString::number(n);
+  }
 }
 
 void CypherQuery::setReturn(const QString &pattern)

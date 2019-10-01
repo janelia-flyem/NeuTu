@@ -64,6 +64,7 @@
 #include "zpunctum.h"
 #include "flyemdatareader.h"
 #include "zflyemproofdocutil.h"
+#include "zflyemproofutil.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
@@ -503,6 +504,11 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 bool ZFlyEmBody3dDoc::isAdmin() const
 {
   return getDataDocument()->isAdmin();
+}
+
+const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
+{
+  return getDataDocument()->getBodyStatusProtocol();
 }
 
 void ZFlyEmBody3dDoc::initArbGraySlice()
@@ -2021,6 +2027,69 @@ bool ZFlyEmBody3dDoc::isSupervoxel(uint64_t bodyId)
   return getBodyManager().isSupervoxel(bodyId);
 }
 
+void ZFlyEmBody3dDoc::cacheSupervoxelSize(std::vector<uint64_t> svIdArray) const
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  std::vector<uint64_t> sizeToUpdate;
+  for (uint64_t bodyId : svIdArray) {
+    if (!m_supervoxelSizeCache.contains(bodyId)) {
+      sizeToUpdate.push_back(bodyId);
+    }
+  }
+
+  if (!sizeToUpdate.empty()) {
+    std::vector<size_t> bodySize = getMainDvidReader().readBodySize(
+          sizeToUpdate, neutu::EBodyLabelType::SUPERVOXEL);
+    if (sizeToUpdate.size() == bodySize.size()) {
+      for (size_t i = 0; i < sizeToUpdate.size(); ++i) {
+        m_supervoxelSizeCache[sizeToUpdate[i]] = bodySize[i];
+      }
+    }
+  }
+}
+
+size_t ZFlyEmBody3dDoc::getSupervoxelSize(uint64_t svId) const
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  auto iter = m_supervoxelSizeCache.find(svId);
+  size_t svSize = 0;
+  if (iter == m_supervoxelSizeCache.end()) {
+    svSize = getMainDvidReader().readBodySize(
+          svId, neutu::EBodyLabelType::SUPERVOXEL);
+    m_supervoxelSizeCache[svId] = svSize;
+  } else {
+    svSize = iter.value();
+  }
+
+  return svSize;
+}
+
+void ZFlyEmBody3dDoc::invalidateSupervoxelCache(uint64_t svId)
+{
+  QMutexLocker locker(&m_supervoxelSizeCacheMutex);
+  m_supervoxelSizeCache.remove(svId);
+}
+
+void ZFlyEmBody3dDoc::invalidateBodyCache(uint64_t bodyId)
+{
+  setUnrecycable(QSet<uint64_t>({bodyId}));
+}
+
+template<typename InputIterator>
+void ZFlyEmBody3dDoc::invalidateBodyCache(InputIterator first, InputIterator last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    invalidateBodyCache(*iter);
+  }
+}
+
+void ZFlyEmBody3dDoc::invalidateSelectedBodyCache()
+{
+  std::set<uint64_t> bodySet =
+      getDataDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+  invalidateBodyCache(bodySet.begin(), bodySet.end());
+}
+
 uint64_t ZFlyEmBody3dDoc::getBodyId(const ZStackObject *obj) const
 {
   if (obj->getType() == ZStackObject::EType::MESH ||
@@ -2289,7 +2358,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
     TStackObjectList objList = getObjectGroup().findSameSource(source);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Todo to remove: " << *iter << std::endl;
 #endif
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
@@ -2304,7 +2373,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         ZFlyEmToDoItem *item = *iter;
         item->setRadius(30);
         item->setSource(source);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Todo to add: " << item << item->getPosition().toString()
                   << " " << item->isChecked() << std::endl;
 #endif
@@ -4204,6 +4273,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
         } else {
           QElapsedTimer timer;
           timer.start();
+          invalidateSupervoxelCache(m_splitter->getBodyId());
           std::pair<uint64_t, uint64_t> idPair =
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
           uploadingTime += timer.elapsed();
@@ -4396,7 +4466,10 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
           }
 
           if (dlg->exec() && dlg->getBodyId() == bodyId) {
-            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+            ZFlyEmProofUtil::AnnotateBody(
+                            bodyId, dlg->getBodyAnnotation(), annotation,
+                            getDataDocument(), getParent3DWindow());
+//            getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
           }
           getDataDocument()->checkInBodyWithMessage(
                 bodyId, neutu::EBodySplitMode::NONE);
@@ -4689,6 +4762,50 @@ void ZFlyEmBody3dDoc::diagnose() const
 ZStackDoc3dHelper* ZFlyEmBody3dDoc::getHelper() const
 {
   return m_helper.get();
+}
+
+struct SynapseConnFilter {
+  uint64_t m_input = 0;
+  uint64_t m_output = 0;
+  neutu::EBiDirection m_direction = neutu::EBiDirection::FORWARD;
+
+  void parse(const QString &str) {
+    m_input = 0;
+    m_output = 0;
+    if (str.contains("->")) {
+      m_direction = neutu::EBiDirection::FORWARD;
+      QStringList tokens = str.split("->", QString::SkipEmptyParts);
+      if (tokens.size() > 1) {
+        m_input = ZString(tokens[0].toStdString()).firstUint64();
+        m_output = ZString(tokens[1].toStdString()).firstUint64();
+      }
+    } else if (str.contains("<-")) {
+      m_direction = neutu::EBiDirection::BACKWARD;
+      QStringList tokens = str.split("<-", QString::SkipEmptyParts);
+      if (tokens.size() > 1) {
+        m_input = ZString(tokens[1].toStdString()).firstUint64();
+        m_output = ZString(tokens[0].toStdString()).firstUint64();
+      }
+    }
+  }
+};
+
+void ZFlyEmBody3dDoc::addSynapseSelection(const QString &filter)
+{
+  SynapseConnFilter sf;
+  sf.parse(filter);
+
+  if (sf.m_input > 0 && sf.m_output > 0) {
+    ZStackDocAccessor::SetObjectSelection(
+          this, ZStackObject::EType::PUNCTUM, [&](const ZStackObject *obj) {
+      const ZPunctum *p = dynamic_cast<const ZPunctum*>(obj);
+      if (p) {
+        return flyem::HasConnecion(
+              p->name(), sf.m_input, sf.m_output, sf.m_direction);
+      }
+      return false;
+    }, true);
+  }
 }
 
 bool ZFlyEmBody3dDoc::_loadFile(const QString &filePath)

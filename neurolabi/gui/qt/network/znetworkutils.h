@@ -9,6 +9,8 @@ public:
   ZNetworkUtils();
 
   static bool HasHead(const QString &url);
+  static QByteArray Get(const QString &url);
+  static QByteArray Post(const QString &url, const QByteArray &payload);
 };
 
 #endif // ZNETWORKUTILS_H

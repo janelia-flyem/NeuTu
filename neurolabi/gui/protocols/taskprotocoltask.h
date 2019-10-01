@@ -39,6 +39,7 @@ public:
 
     void addTag(QString tag);
     void removeTag(QString tag);
+    void toggleTag(QString tag, bool on);
     bool hasTag(QString tag);
     QStringList getTags();
     void clearTags();

@@ -46,8 +46,8 @@ class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofDoc(QObject *parent = 0);
-  ~ZFlyEmProofDoc();
+  explicit ZFlyEmProofDoc(QObject *parent = nullptr);
+  ~ZFlyEmProofDoc() override;
 
   static ZFlyEmProofDoc* Make();
 
@@ -250,7 +250,7 @@ public:
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void cleanBodyAnnotationMap();
+  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
@@ -354,7 +354,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemAction(neutu::EToDoAction action, bool checked);
-  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> f,
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> process,
                         std::function<bool(const ZFlyEmToDoItem&)> pred);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
@@ -495,7 +495,7 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -634,7 +634,6 @@ public slots:
 
   QString getBodyLockFailMessage(uint64_t bodyId);
 
-
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
 
@@ -736,6 +735,9 @@ private:
 
   std::string getSynapseName(const ZDvidSynapse &synapse) const;
   std::string getPartnerProperty(const ZDvidSynapse &synapse) const;
+  std::string getSynapseName(
+      const ZDvidSynapse &synapse,
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,

@@ -26,6 +26,7 @@ public:
       const QList<QString> &inputRoiList, const QList<QString> &outputRoiList);
   ZJsonArray findSimilarNeuron(const uint64_t bodyId);
   ZJsonArray queryNeuronByName(const QString &name);
+  ZJsonArray queryNeuronByType(const QString &type);
   ZJsonArray queryAllNamedNeuron();
   ZJsonArray queryNeuronByStatus(const QString &status);
   ZJsonArray queryTopNeuron(int n);
@@ -48,6 +49,9 @@ public:
 private:
   QString getNeuronLabel(char quote = '\0') const;
   QString getUuidKey(const QString &uuid);
+  QString getCustomUrl() const;
+  ZJsonObject getQueryJsonObject(const QString &query);
+  ZJsonArray queryNeuron(const QString &query);
 
 private:
   QString m_server;

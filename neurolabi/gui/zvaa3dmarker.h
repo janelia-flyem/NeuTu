@@ -52,7 +52,7 @@ public:
   void adjustForBaseOne();
   void moveToSurface(Swc_Tree *tree);
 
-  virtual std::string toString() const;
+  std::string toString() const;
 
 protected:
   ZPoint m_center;

@@ -346,6 +346,7 @@ public slots:
   void hideSelectedPuncta();
   void showSelectedPuncta();
   void setSelectPunctaVisible(bool on);
+  void addPunctaSelection();
 
   void saveSplitTask();
   void deleteSplitSeed();

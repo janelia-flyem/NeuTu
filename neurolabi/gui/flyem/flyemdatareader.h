@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 
 #include "dvid/zdviddef.h"
 #include "zflyemtodoitem.h"
@@ -16,6 +17,7 @@ class ZMesh;
 class ZObject3dScan;
 class ZDvidSparseStack;
 class ZDvidTarget;
+class ZDvidSynapse;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -55,6 +57,9 @@ public:
   static ZDvidSparseStack* ReadDvidSparseStack(
       const ZDvidTarget &target, ZDvidReader *grayscaleReader,
       uint64_t bodyId, neutu::EBodyLabelType labelType, bool async);
+
+  static std::unordered_map<ZIntPoint, uint64_t> ReadSynapseLabel(
+      const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray);
 
 private:
   static ZMesh* LoadRoi(

@@ -9,28 +9,32 @@
     <h2>3D Window Shortcut</h2>
     <table border="1">
       <caption>Neuron Node Selection</caption>
-      <tr><td>Ctrl/Cmd+A</td><td>Select all SWC nodes</td></tr>
-      <tr><td rowspan="6">H</td><td>Turn on selection mode</td></tr>
-      <tr><td>1: select downstream nodes</td></tr>
-      <tr><td>2: select upstream nodes</td></tr>
-      <tr><td>3: select connected nodes</td></tr>
-      <tr><td>4: inverse selection</td></tr>
-      <tr><td>5: select small trees</td></tr>
-      <tr><td rowspan="3">Shift+R</td><td>Paint selection rectangle</td></tr>
-      <tr><td>S: select nodes in the rectangle</td></tr>
-      <tr><td>T: select trees in the rectangle</td></tr>
+      <tr><td><b>Shortcut</b></td><td colspan="2">Function</td><td>Comment</td></tr>
+      <tr><td><b>Ctrl/Cmd+A</b></td><td colspan="2">Select all SWC nodes</td></tr>
+      <tr><td rowspan="8">H</td><td colspan="2">Turn on selection mode (show hints too)</td><td rowspan="8">Use [Shift] to trigger a selection directly.<br>For example, [Shift+1] selects downstream nodes directly.</td></tr>
+      <tr><td><b>1</b></td><td>select downstream nodes</td></tr>
+      <tr><td><b>2</b></td><td>select upstream nodes</td></tr>
+      <tr><td><b>3</b></td><td>select neighboring nodes</td></tr>
+      <tr><td><b>4</b></td><td>select passing branches</td></tr>
+      <tr><td><b>5</b></td><td>select connected nodes</td></tr>
+      <tr><td><b>6</b></td><td>inverse selection</td></tr>
+      <tr><td><b>7</b></td><td>select small trees</td></tr>
+      <tr><td rowspan="3"><b>Shift+R</b></td><td colspan="2">Paint selection rectangle</td></tr>
+      <tr><td><b>S</b></td><td>select nodes in the rectangle</td></tr>
+      <tr><td><b>T</b></td><td>select trees in the rectangle</td></tr>
     </table>
     <br>
     <table border="1">
       <caption>Neuron Editing (When nodes are selected) </caption>
-      <tr><td>Backspace/Delete</td><td>Delete selected objects</td></tr>
-      <tr><td>C</td><td>Connect selected SWC nodes</td></tr>
-      <tr><td>N</td><td>Connect to the nearest SWC nodes (only work for a single selected node)</td></tr>
+      <tr><td><b>Backspace/Delete/X</b></td><td>Delete selected objects</td></tr>
+      <tr><td><b>C</b></td><td>Connect selected SWC nodes</td></tr>
+      <tr><td><b>N</b></td><td>Connect to the nearest SWC nodes (only work for a single selected node)</td></tr>
       <tr><td>B</td><td>Break SWC node connections</td></tr>
-      <tr><td> &lt; </td><td>Decrease radius</td></tr>
-      <tr><td> &gt; </td><td>Increase radius</td></tr>
-      <tr><td>Ctrl/Cmd+Z</td><td>Undo</td></tr>
-      <tr><td>Ctrl/Cmd+Shift+Z</td><td>Redo</td></tr>
+      <tr><td>I</td><td>Insert between selected nodes</td></tr>
+      <tr><td> <b>&lt;</b> </td><td>Decrease radius</td></tr>
+      <tr><td> <b>&gt;</b> </td><td>Increase radius</td></tr>
+      <tr><td><b>Ctrl/Cmd+Z</b></td><td>Undo</td></tr>
+      <tr><td><b>Ctrl/Cmd+Shift+Z</b></td><td>Redo</td></tr>
     </table>
     <br>
     <table border="1">
@@ -43,7 +47,7 @@
       <tr><td>Ctrl/Cmd + S</td><td>Save SWC</td></tr>
       <tr><td>Ctrl/Cmd + Plus</td><td>Increase SWC Size Scale</td></tr>
       <tr><td>Ctrl/Cmd + Minus</td><td>Decrease SWC Size Scale</td></tr>
-      <tr><td>Ctrl/Cmd + M</td><td>Change SWC Display Mode</td></tr>
+      <tr><td>Ctrl/Cmd + G</td><td>Change SWC Display Mode</td></tr>
       <tr><td>Ctrl/Cmd + B</td><td>Toggle the mode of displaying neurons in the tile box only</td></tr>
     </table>
   </body>

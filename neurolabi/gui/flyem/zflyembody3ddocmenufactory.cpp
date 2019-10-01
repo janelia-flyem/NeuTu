@@ -196,6 +196,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       config.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
     }
 
+    config.append(ZActionFactory::ACTION_PUNCTA_ADD_SELECTION);
+
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {
         config.append(ZActionFactory::ACTION_BODY_ANNOTATION);

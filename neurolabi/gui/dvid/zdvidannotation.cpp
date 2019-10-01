@@ -228,6 +228,7 @@ bool ZDvidAnnotation::hit(double x, double y, neutu::EAxis axis)
   return d2 <= m_radius * m_radius;
 }
 
+/*
 void ZDvidAnnotation::setProperty(ZJsonObject propJson)
 {
   if (propJson.hasKey("conf") && m_propertyJson.hasKey("confidence")) {
@@ -251,6 +252,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
     }
   }
 }
+*/
 
 void ZDvidAnnotation::clear()
 {
@@ -494,18 +496,20 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
   obj.setEntry("Pos", posJson);
   obj.setEntry("Kind", GetKindName(getKind()));
-  ZJsonValue relJson = m_relJson.clone();
+
+  ZJsonArray relJson = ZJsonArray(
+        C_Json::clone(m_relJson.getData()), ZJsonValue::SET_AS_IT_IS);
   obj.setEntry("Rels", relJson);
 
+  ZJsonArray tagJson;
   if (!m_tagSet.empty()) {
-    ZJsonArray tagJson;
     for (std::set<std::string>::const_iterator iter = m_tagSet.begin();
          iter != m_tagSet.end(); ++iter) {
       const std::string &tag = *iter;
       tagJson.append(tag);
     }
-    obj.setEntry("Tags", tagJson);
   }
+  obj.setEntry("Tags", tagJson);
 
   if (!m_propertyJson.isEmpty()) {
     ZJsonValue propJson = m_propertyJson.clone();
