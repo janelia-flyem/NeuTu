@@ -79,7 +79,7 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
 
         << "synapse_prediction_body"
         << "synapse_prediction_region"
-        << "orphan_link";
+        << "orphan_link"
         << "connection_validation";
 
 

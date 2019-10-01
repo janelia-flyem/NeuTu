@@ -30,7 +30,7 @@ QString ProtocolAssignmentUrl::AddParameters(QString url, QMap<QString, QString>
     while (iter.hasNext()) {
         iter.next();
         QString temp;
-        temp << iter.key() << "=" << iter.value();
+        temp = iter.key() + "=" + iter.value();
         paramList << temp;
     }
     url += paramList.join("&");
