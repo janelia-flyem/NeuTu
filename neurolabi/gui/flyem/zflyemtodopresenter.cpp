@@ -4,6 +4,7 @@
 
 ZFlyEmTodoPresenter::ZFlyEmTodoPresenter()
 {
+  // keep this in sync with the TodoTableColumns enum in .h!
   m_fieldList << " Body ID " << "Action" << "Comment" << "Priority"
               << "  Z   " << "  X  " << "  Y  " << "  User  ";
 }
@@ -21,26 +22,26 @@ QVariant ZFlyEmTodoPresenter::data(
     switch(role) {
     case Qt::DisplayRole:
       switch (index) {
-      case 0:
+      case TODO_BODYID_COLUMN:
         return QString("%1").arg(item.getBodyId());
-      case 1:
+      case TODO_ACTION_COLUMN:
         return QString::fromStdString(item.getActionName());
-      case 2:
+      case TODO_COMMENT_COLUMN:
         return QString::fromStdString(item.getComment());
-      case 3:
+      case TODO_PRIORITY_COLUMN:
         if (item.getPriority() > 0) {
           return QString::number(item.getPriority()) + "-"
               + item.getPriorityName().c_str();
         } else {
           return item.getPriorityName().c_str();
         }
-      case 4:
+      case TODO_Z_COLUMN:
         return item.getPosition().getZ();
-      case 5:
+      case TODO_X_COLUMN:
         return item.getPosition().getX();
-      case 6:
+      case TODO_Y_COLUMN:
         return item.getPosition().getY();
-      case 7:
+      case TODO_USERNAME_COLUMN:
         return item.getUserName().c_str();
       }
       break;

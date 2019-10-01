@@ -47,8 +47,10 @@ private:
     ScriptStatus getStatus();
     void updateStatus();
     void setMessage(QString message);
+    void clearOutput();
     void disableRunUI();
     void enableRunUI();
+    void resetRoiMenus();
 };
 
 #endif // TIPDETECTORDIALOG_H

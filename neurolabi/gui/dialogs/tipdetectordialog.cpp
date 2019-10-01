@@ -27,11 +27,21 @@ TipDetectorDialog::TipDetectorDialog(QWidget *parent) :
 void TipDetectorDialog::disableRunUI() {
     ui->runButton->setEnabled(false);
     ui->roiMenu->setEnabled(false);
+    ui->excludeRoiMenu->setEnabled(false);
 }
 
 void TipDetectorDialog::enableRunUI() {
     ui->runButton->setEnabled(true);
     ui->roiMenu->setEnabled(true);
+    ui->excludeRoiMenu->setEnabled(true);
+}
+
+void TipDetectorDialog::clearOutput() {
+    ui->timeLabel->clear();
+    ui->todoLabel->clear();
+    ui->locationsLabel->clear();
+    ui->locationsRoiLabel->clear();
+    ui->messageText->clear();
 }
 
 void TipDetectorDialog::onRunButton() {
@@ -41,12 +51,22 @@ void TipDetectorDialog::onRunButton() {
     args << QString::number(m_bodyID);
     args << QString::fromStdString(m_target.getTodoListName());
 
+    // we always want the run parameters saved:
+    args << "--save-parameters";
+
     QString currentRoi = ui->roiMenu->currentText();
     if (currentRoi != "(none)") {
         args << "--roi";
         args << currentRoi;
     }
 
+    QString excludeRoi = ui->excludeRoiMenu->currentText();
+    if (excludeRoi != "(none)") {
+        args << "--excluded-roi";
+        args << excludeRoi;
+    }
+
+    clearOutput();
     disableRunUI();
     setStatus(RUNNING);
 
@@ -146,10 +166,16 @@ void TipDetectorDialog::setDvidTarget(ZDvidTarget target) {
 }
 
 void TipDetectorDialog::setBodyID(uint64_t bodyID) {
-    // don't change things while we're running!
+    // this is called when the user selects a new body and chooses "Tip
+    //  Detection Dialog" from the right-click menu
+
+    // reset the UI to the new body, unless we're running!
     if (getStatus() != RUNNING) {
         m_bodyID = bodyID;
         ui->bodyIDLabel->setText(QString::number(bodyID));
+        setStatus(NOT_RUNNING);
+        clearOutput();
+        resetRoiMenus();
     }
 }
 
@@ -158,7 +184,14 @@ void TipDetectorDialog::setRoiList(QStringList roiList) {
     if (getStatus() != RUNNING) {
         roiList.insert(0, "(none)");
         ui->roiMenu->addItems(roiList);
+        ui->excludeRoiMenu->addItems(roiList);
+        resetRoiMenus();
     }
+}
+
+void TipDetectorDialog::resetRoiMenus() {
+    ui->roiMenu->setCurrentIndex(0);
+    ui->excludeRoiMenu->setCurrentIndex(0);
 }
 
 void TipDetectorDialog::applicationQuitting() {
