@@ -7,7 +7,7 @@ class ProtocolAssignmentUrl
 {
 public:
     static QString GetProjects(QString server);
-    static QString GetProjectsFiltered(QString server, QMap<QString, QString> filters);
+    static QString GetProjectsForProtocol(QString server, QString protocol);
 
 private:
     ProtocolAssignmentUrl();

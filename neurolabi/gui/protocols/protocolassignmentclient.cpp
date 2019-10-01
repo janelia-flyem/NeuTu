@@ -10,6 +10,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include "protocolassignmenturl.h"
+
 
 /**
  * this class is designed to interface with Rob's assignment manager
@@ -56,10 +58,10 @@ QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentPro
     //  so we can't do that yet
 
 
-    // construct url; inlined for now; I expect to put url construction in its own class later
-    QString url = m_server;
+    // construct url
+    QString url;
     if (protocol == ORPHAN_LINK) {
-        url += "projects?protocol=orphan_link";
+        url = ProtocolAssignmentUrl::GetProjectsForProtocol(m_server, "orphan_link");
     } else {
         showError("Unknown protocol", "Unknown protocol!");
         return projects;

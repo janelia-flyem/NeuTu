@@ -1,15 +1,21 @@
 #include "protocolassignmenturl.h"
 
+#include <QMap>
 #include <QMapIterator>
 
 QString ProtocolAssignmentUrl::GetProjects(QString server)
 {
-
+    if (!server.endsWith('/')) {
+        server += '/';
+    }
+    return server + "projects";
 }
 
-QString ProtocolAssignmentUrl::GetProjectsFiltered(QString server, QMap<QString, QString> filters)
-{
-
+QString ProtocolAssignmentUrl::GetProjectsForProtocol(QString server, QString protocol)
+{    
+    QMap<QString, QString> filter;
+    filter["protocol"] = protocol;
+    return AddParameters(GetProjects(server), filter);
 }
 
 ProtocolAssignmentUrl::ProtocolAssignmentUrl()
@@ -19,6 +25,10 @@ ProtocolAssignmentUrl::ProtocolAssignmentUrl()
 
 QString ProtocolAssignmentUrl::AddParameters(QString url, QMap<QString, QString> params)
 {
+    if (params.size() == 0) {
+        return url;
+    }
+
     if (!url.contains("?")) {
         url += "?";
     } else {
