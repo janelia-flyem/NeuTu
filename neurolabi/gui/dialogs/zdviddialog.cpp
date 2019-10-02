@@ -6,14 +6,15 @@
 #include "neutube.h"
 #include "ui_zdviddialog.h"
 #include "zdvidtargetproviderdialog.h"
-#include "dvid/zdvidtarget.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
 #include "dialogs/zdvidadvanceddialog.h"
-#include "dvid/zdvidreader.h"
 #include "zdialogfactory.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidenv.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -479,8 +480,12 @@ void ZDvidDialog::load()
   if (!fileName.isEmpty()) {
     ZJsonObject dvidJson;
     dvidJson.load(fileName.toStdString());
-    ZDvidTarget target;
-    target.loadJsonObject(dvidJson);
+
+    ZDvidEnv env;
+    env.loadJsonObject(dvidJson);
+    ZDvidTarget target = env.getFullMainTarget();
+//    ZDvidTarget target;
+//    target.loadJsonObject(dvidJson);
     if (target.isValid()) {
       setServer(target, 1);
     }
