@@ -99,7 +99,7 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
     path += (!query.empty()) ? "?" + query : "";
     statusCode =
         connection.make_request("/.." + path, connMethod, payload, results, error_msg, type);
-  } catch (libdvid::DVIDException &e) {
+  } catch (libdvid::DVIDException &e)  {
     std::cout << e.what() << std::endl;
     statusCode = e.getStatus();
   }

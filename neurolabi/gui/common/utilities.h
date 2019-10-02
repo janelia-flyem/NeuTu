@@ -102,16 +102,6 @@ int numDigits(T number)
   return digits;
 }
 
-template<typename U, typename T>
-U UnsignedCrop(T v)
-{
-  if (v < 0) {
-    v = 0;
-  }
-
-  return U(v);
-}
-
 bool HasEnv(const std::string &name, const std::string &value);
 
 std::string GetVersionString();

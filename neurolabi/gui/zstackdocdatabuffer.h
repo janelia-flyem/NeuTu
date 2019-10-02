@@ -47,7 +47,7 @@ class ZStackDocDataBuffer : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZStackDocDataBuffer(QObject *parent = 0);
+  explicit ZStackDocDataBuffer(QObject *parent = nullptr);
   ~ZStackDocDataBuffer();
 
   void clearList();
