@@ -7,6 +7,7 @@
 
 #include <set>
 #include <memory>
+#include <functional>
 
 #include <QString>
 #include <QList>
@@ -110,6 +111,9 @@ struct ZRescaleSwcSetting;
  *
  * Each document has at most one main stack, which defines some context of other
  * data (e.g. resolution).
+ *
+ * For any derived class, it is highly recommended to call dispose() in its
+ * destructor.
  */
 class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 {
@@ -352,6 +356,10 @@ public: //attributes
 
   const ZUndoCommand* getLastUndoCommand() const;
   //const ZUndoCommand* getLastCommand() const;
+
+  using Clearance = std::function<void()>;
+
+  void addClearance(const Clearance &disposer);
 
 public: //swc tree edit
   // move soma (first root) to new location
@@ -1388,6 +1396,7 @@ protected:
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
+  void clearToDestroy();
 
   virtual bool _loadFile(const QString &filePath);
 
@@ -1471,11 +1480,6 @@ private:
   //Actions
   //  Undo/Redo
   QUndoStack *m_undoStack;
-//  QAction *m_undoAction;
-//  QAction *m_redoAction;
-
-  //  Action map
-//  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1504,12 +1508,6 @@ private:
   ZStackObjectInfoSet m_objectModifiedBuffer;
   QMutex m_objectModifiedBufferMutex;
 
-//  QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
-//  QMutex m_objectModifiedTargetBufferMutex;
-//  QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
-//  QMutex m_objectModifiedTypeBufferMutex;
-//  ZStackObjectRole m_objectModifiedRoleBuffer;
-//  QMutex m_objectModifiedRoleBufferMutex;
 
   QStack<EObjectModifiedMode> m_objectModifiedMode;
   QMutex m_objectModifiedModeMutex;
@@ -1522,6 +1520,8 @@ private:
 
   ZWorker *m_worker = NULL;
   ZWorkThread *m_workThread = NULL;
+
+  QList<Clearance> m_clearanceList;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

@@ -153,10 +153,6 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
   exitCurrentDoc();
 
   closeAllAssociatedWindow();
-//  m_bodyViewWindow->close();
-//  delete m_coarseBodyWindow;
-//  delete m_bodyWindow;
-//  delete m_splitWindow;
 }
 
 void ZFlyEmProofMvc::init()
@@ -6675,6 +6671,9 @@ void ZFlyEmProofMvc::loadROIFunc()
           ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str());
     if (!keyList.isEmpty()) {
       foreach (const QString &key, keyList) {
+        if (m_quitting) {
+          return;
+        }
         loadRoiFromRefData(reader, key.toStdString());
       }
     } else {

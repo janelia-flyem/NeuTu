@@ -49,13 +49,18 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // prefetch queue, setup
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
-    m_prefetchThread = new QThread();
+
+    //Let m_body3dDoc manage the life cycle of prefetching thread
+    //because it needs to wait for the thread to quit
+    m_prefetchThread = new QThread(m_body3dDoc);
     m_prefetchQueue->setDocument(m_body3dDoc);
+    m_body3dDoc->addClearance([&]() {
+      m_prefetchThread->quit();
+    });
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
-    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
 
     // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));

@@ -91,8 +91,10 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
-  m_futureMap.waitForFinished();
-  endWorkThread();
+//  m_futureMap.waitForFinished();
+//  endWorkThread();
+
+  clearToDestroy();
 
   for (auto &p: m_grayscaleReaderMap) {
     delete p.second;

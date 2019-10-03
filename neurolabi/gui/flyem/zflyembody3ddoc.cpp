@@ -135,11 +135,13 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 {
   m_quitting = true;
 
+  clearToDestroy();
+
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
   locker.unlock();
 
-  m_futureMap.waitForFinished();
+//  m_futureMap.waitForFinished();
 
   m_garbageJustDumped = false;
 //  clearGarbage();

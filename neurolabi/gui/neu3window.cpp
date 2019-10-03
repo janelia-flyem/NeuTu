@@ -485,8 +485,8 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 
   QDockWidget *dockWidget = new QDockWidget("Tasks", this);
-    m_taskProtocolWidget =
-        new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+  m_taskProtocolWidget =
+      new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     /*
     m_taskProtocolWidget->setWindowFlags(

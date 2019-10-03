@@ -171,10 +171,11 @@ ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent)
 
 ZStackDoc::~ZStackDoc()
 {
-  if (m_futureMap.hasThreadAlive()) {
-    m_futureMap.waitForFinished();
-  }
-  endWorkThread();
+//  if (m_futureMap.hasThreadAlive()) {
+//    m_futureMap.waitForFinished();
+//  }
+//  endWorkThread();
+  clearToDestroy();
 
   deprecate(EComponent::STACK);
   deprecate(EComponent::SPARSE_STACK);
@@ -201,6 +202,19 @@ ZStackDoc::~ZStackDoc()
   LDEBUG() << "ZStackDoc destroyed";
 }
 
+void ZStackDoc::clearToDestroy()
+{
+  for (auto clearToProceed : m_clearanceList) {
+    clearToProceed();
+  }
+  m_clearanceList.clear();
+}
+
+void ZStackDoc::addClearance(const Clearance &disposer)
+{
+  m_clearanceList.append(disposer);
+}
+
 void ZStackDoc::endWorkThread()
 {
   if (m_worker != NULL) {
@@ -221,6 +235,10 @@ void ZStackDoc::startWorkThread()
     m_workThread = new ZWorkThread(m_worker);
     connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
     m_workThread->start();
+
+    m_clearanceList.append([this]() {
+      this->endWorkThread();
+    });
   }
 }
 
@@ -293,6 +311,12 @@ void ZStackDoc::init()
 //  shortcut->setEnabled(false);
   connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
 #endif
+
+  m_clearanceList.append([&]() {
+    if (m_futureMap.hasThreadAlive()) {
+      m_futureMap.waitForFinished();
+    }
+  });
 
 //  startWorkThread();
 }
