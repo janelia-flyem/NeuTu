@@ -18,6 +18,8 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 
 
     // currently hard-coded, but we expect to get from some config source later
+
+    // must not end with / character!  enforce that when we un-hard-code it
     m_assignments.setServer("http://flyem-assignment.int.janelia.org");
 
 
@@ -54,11 +56,25 @@ bool OrphanLinkProtocol::initialize() {
 
     // get the user's chosen project; generate the assignment and start it
     QString projectName = inputDialog.getProject();
-    int projectID = projects[projectName];
 
 
-    // assignment = annmgr.generate assignment (project)
-    // annmgr.start assignment (assigment)
+    int assignmentID = m_assignments.generateAssignment(projectName);
+
+    // what's the error condition?  ID < 0?
+    if (assignmentID <= 0) {
+        showError("Assignment generation failed!", "Could not generate an assignment for project " + projectName);
+        return false;
+    }
+
+
+    bool status = m_assignments.startAssignment(assignmentID);
+
+
+    if (!status) {
+        showError("Assignment start failed!", "Assigment ID " + QString::number(assignmentID) + " did not start correctly!");
+        return false;
+    }
+
 
     // get all the tasks?  or just the number of tasks and the next one?  not
     //  clear what we intend at this point

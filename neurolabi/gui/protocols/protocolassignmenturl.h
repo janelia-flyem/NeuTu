@@ -9,6 +9,9 @@ public:
     static QString GetProjects(QString server);
     static QString GetProjectsForProtocol(QString server, QString protocol);
 
+    static QString GenerateAssignment(QString server, QString projectName);
+    static QString StartAssignment(QString server, int assignmentID);
+
 private:
     ProtocolAssignmentUrl();
 

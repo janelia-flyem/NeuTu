@@ -21,8 +21,9 @@ public:
     void setServer(QString server);
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
 
-    // QJsonObject generateAssignment(QString project);
-    // QJsonObject startAssignment(QString assignmentormaybeid);
+    int generateAssignment(QString projectName);
+    bool startAssignment(int assignmentID);
+
 
 
 signals:
@@ -38,6 +39,7 @@ private:
 
     QJsonObject get(QString url);
     QJsonObject post(QString url, QJsonObject data);
+    QJsonObject call(QNetworkReply * reply);
 
     void showError(QString title, QString message);
 

@@ -3,12 +3,14 @@
 #include <QMap>
 #include <QMapIterator>
 
+ProtocolAssignmentUrl::ProtocolAssignmentUrl()
+{
+
+}
+
 QString ProtocolAssignmentUrl::GetProjects(QString server)
 {
-    if (!server.endsWith('/')) {
-        server += '/';
-    }
-    return server + "projects";
+    return server + "/projects";
 }
 
 QString ProtocolAssignmentUrl::GetProjectsForProtocol(QString server, QString protocol)
@@ -18,9 +20,12 @@ QString ProtocolAssignmentUrl::GetProjectsForProtocol(QString server, QString pr
     return AddParameters(GetProjects(server), filter);
 }
 
-ProtocolAssignmentUrl::ProtocolAssignmentUrl()
-{
+QString ProtocolAssignmentUrl::GenerateAssignment(QString server, QString projectName) {
+    return server + "/assignment/" + projectName;
+}
 
+QString ProtocolAssignmentUrl::StartAssignment(QString server, int assignmentID) {
+    return server + "/assignment/" + QString::number(assignmentID) + "/start";
 }
 
 QString ProtocolAssignmentUrl::AddParameters(QString url, QMap<QString, QString> params)
