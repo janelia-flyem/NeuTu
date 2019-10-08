@@ -106,6 +106,7 @@
 #include "flyem/zflyembodyenv.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
+#include "zstackdocaccessor.h"
 
 /*
 class Sleeper : public QThread
@@ -591,6 +592,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(hideSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_HIDE_UNSELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(hideUnselectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_SHOW_UNSELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(showUnselectedPuncta()));
     break;
   case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
     action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
@@ -3446,8 +3453,40 @@ void Z3DWindow::transformSelectedPuncta()
   }
 }
 
+void Z3DWindow::setUnselectPunctaVisible(bool on)
+{
+  ZStackDocAccessor::SetObjectVisible(
+        m_doc.get(), ZStackObject::EType::PUNCTUM,
+        [](const ZStackObject *obj) {
+          return !obj->isSelected();
+        }, on
+  );
+  /*
+  m_doc->setVisible(ZStackObject::EType::PUNCTUM, on);
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::EType::PUNCTUM);
+  if (!punctaSet.empty()) {
+    for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+         iter != punctaSet.end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setVisible(!on);
+      m_doc->bufferObjectModified(
+            punctum, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    }
+    m_doc->processObjectModified();
+  }
+  */
+}
+
 void Z3DWindow::setSelectPunctaVisible(bool on)
 {
+  ZStackDocAccessor::SetObjectVisible(
+        m_doc.get(), ZStackObject::EType::PUNCTUM,
+        [](const ZStackObject *obj) {
+          return obj->isSelected();
+        }, on
+  );
+  /*
   std::set<ZPunctum*> punctaSet =
       m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::EType::PUNCTUM);
   if (!punctaSet.empty()) {
@@ -3459,12 +3498,22 @@ void Z3DWindow::setSelectPunctaVisible(bool on)
             punctum, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
     }
     m_doc->processObjectModified();
-  }
+  }*/
 }
 
 void Z3DWindow::hideSelectedPuncta()
 {
   setSelectPunctaVisible(false);
+}
+
+void Z3DWindow::hideUnselectedPuncta()
+{
+  setUnselectPunctaVisible(false);
+}
+
+void Z3DWindow::showUnselectedPuncta()
+{
+  setUnselectPunctaVisible(true);
 }
 
 void Z3DWindow::showSelectedPuncta()

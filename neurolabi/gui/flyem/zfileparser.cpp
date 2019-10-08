@@ -13,16 +13,16 @@ ZFileParser::ZFileParser()
 {
 }
 
-map<int, string> ZFileParser::loadBodyList(string filePath, string workDir)
+map<uint64_t, string> ZFileParser::loadBodyList(string filePath, string workDir)
 {
-  map<int, string> bodyIdMap;
+  map<uint64_t, string> bodyIdMap;
 
   FILE *fp = fopen(filePath.c_str(), "r");
 
   if (fp != NULL) {
     ZString line;
     while (line.readLine(fp)) {
-      int bodyId = line.firstInteger();
+      uint64_t bodyId = line.firstUint64();
       if (bodyId > 0) {
         line.replace(bodyId, "");
         line.replace(" ", "");

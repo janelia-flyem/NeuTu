@@ -1894,7 +1894,7 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
 #endif
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     objArray[0].save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
   }

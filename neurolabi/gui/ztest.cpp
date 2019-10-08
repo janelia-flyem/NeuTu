@@ -207,6 +207,7 @@
 #include "zrect2d.h"
 #include "z3dmainwindow.h"
 #include "misc/zvtkutil.h"
+#include "flyem/zfileparser.h"
 
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
@@ -30383,7 +30384,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cleave_test");
   std::vector<uint64_t> bodyArray(
     {703282980, 767123688, 1011728599, 1011996877, 1162081064 });
@@ -30393,6 +30394,61 @@ void ZTest::test(MainWindow *host)
     std::cout << reader->readBodySize(
                    bodyArray[i], neutu::EBodyLabelType::BODY) << " == ";
     std::cout << result[i] << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+
+  flyem::ZFileParser parser;
+
+  uint64_t bodyId = 5813026514;
+  ZObject3dScan obj;
+  reader->readCoarseBody(bodyId, &obj);
+  auto sizeArray = obj.getConnectedObjectSize();
+  if (sizeArray.size() > 1) {
+    int bigPartCount = 0;
+    for (auto s : sizeArray) {
+      if (s > 10000) {
+        ++bigPartCount;
+      }
+    }
+    if (bigPartCount > 1) {
+      for (auto s : sizeArray) {
+        std::cout << s << " ";
+      }
+      std::cout << std::endl;
+    }
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+
+  std::ofstream outStream("/Users/zhaot/Work/neutu/neurolabi/data/badbody.txt");
+  flyem::ZFileParser parser;
+  map<uint64_t, string> bodyMap =
+      parser.loadBodyList("/Users/zhaot/Work/neutu/neurolabi/data/test.txt");
+  for (auto p : bodyMap) {
+    uint64_t bodyId = p.first;
+    ZObject3dScan obj;
+    reader->readCoarseBody(bodyId, &obj);
+    auto sizeArray = obj.getConnectedObjectSize();
+    if (sizeArray.size() > 1) {
+      int bigPartCount = 0;
+      for (auto s : sizeArray) {
+        if (s > 5000) {
+          ++bigPartCount;
+        }
+      }
+      if (bigPartCount > 1) {
+        outStream << bodyId << ": ";
+        for (auto s : sizeArray) {
+          outStream << s << " ";
+        }
+        outStream << std::endl;
+      }
+    }
   }
 #endif
 

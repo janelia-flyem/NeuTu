@@ -1167,7 +1167,7 @@ SOURCES += main.cpp \
     zmeshfactory.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
-    dialogs/zflyemproofsettingdialog.cpp \
+    protocols/taskbodymerge.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
     zstackdocproxy.cpp \
@@ -1184,7 +1184,6 @@ SOURCES += main.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
     zmenuconfig.cpp \
-    protocols/taskbodymerge.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
     concurrent/zworkthread.cpp \
@@ -1207,6 +1206,7 @@ SOURCES += main.cpp \
     dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
+    dialogs/zflyemproofsettingdialog.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
     dialogs/neuprintquerydialog.cpp \
     dialogs/zflyemtodofilterdialog.cpp \

@@ -25,6 +25,11 @@ void ZStackDocObjectUpdate::reset()
   m_action = EAction::NONE;
 }
 
+void ZStackDocObjectUpdate::callback() const
+{
+  m_callback(m_obj);
+}
+
 void ZStackDocObjectUpdate::print() const
 {
   switch (m_action) {
@@ -57,6 +62,9 @@ void ZStackDocObjectUpdate::print() const
     break;
   case EAction::ADD_BUFFER:
     std::cout << "Add to buffer";
+    break;
+  case EAction::CALLBACK:
+    std::cout << "Callback";
     break;
   default:
     std::cout << "Unknown action:";

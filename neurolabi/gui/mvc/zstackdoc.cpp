@@ -210,9 +210,9 @@ void ZStackDoc::clearToDestroy()
   m_clearanceList.clear();
 }
 
-void ZStackDoc::addClearance(const Clearance &disposer)
+void ZStackDoc::addClearance(const Clearance &c)
 {
-  m_clearanceList.append(disposer);
+  m_clearanceList.append(c);
 }
 
 void ZStackDoc::endWorkThread()
@@ -236,7 +236,7 @@ void ZStackDoc::startWorkThread()
     connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
     m_workThread->start();
 
-    m_clearanceList.append([this]() {
+    addClearance([this]() {
       this->endWorkThread();
     });
   }
@@ -887,6 +887,72 @@ void ZStackDoc::killObject(ZStackObject *obj)
   removeObject(obj, true);
 }
 
+namespace {
+
+void apply_update(
+    ZStackDoc *doc, ZStackObject *obj, ZStackDocObjectUpdate::EAction action,
+    std::function<void(ZStackObject *obj)> applySelection,
+    std::function<void(ZStackObject *obj)> applyDeselection)
+{
+  if (obj) {
+    switch (action) {
+    case ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE:
+      doc->addObject(obj, false);
+      break;
+    case ZStackDocObjectUpdate::EAction::ADD_UNIQUE:
+      doc->addObject(obj, true);
+      break;
+    case ZStackDocObjectUpdate::EAction::EXPEL:
+      doc->removeObject(obj, false);
+      break;
+    case ZStackDocObjectUpdate::EAction::ADD_BUFFER:
+      doc->addBufferObject(obj);
+      break;
+    case ZStackDocObjectUpdate::EAction::KILL:
+      doc->killObject(obj);
+      break;
+    case ZStackDocObjectUpdate::EAction::RECYCLE:
+      doc->recycleObject(obj);
+      break;
+    case ZStackDocObjectUpdate::EAction::UPDATE:
+      doc->processObjectModified(obj);
+      break;
+    case ZStackDocObjectUpdate::EAction::SELECT:
+      if (doc->hasObject(obj)) {
+        if (!obj->isSelected()) {
+          doc->setSelected(obj, true);
+          applySelection(obj);
+        }
+      }
+      break;
+    case ZStackDocObjectUpdate::EAction::DESELECT:
+      if (doc->hasObject(obj)) {
+        if (obj->isSelected()) {
+          doc->setSelected(obj, false);
+          applyDeselection(obj);
+        }
+      }
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void apply_update(ZStackDoc *doc, const ZStackDocObjectUpdate &update,
+                  std::function<void(ZStackObject *obj)> applySelection,
+                  std::function<void(ZStackObject *obj)> applyDeselection)
+{
+  if (update.getAction() == ZStackDocObjectUpdate::EAction::CALLBACK) {
+    update.callback();
+  } else {
+    apply_update(doc, update.getObject(), update.getAction(),
+                 applySelection, applyDeselection);
+  }
+}
+
+}
+
 void ZStackDoc::processDataBuffer()
 {
   QList<ZStackDocObjectUpdate*> updateList = m_dataBuffer->take();
@@ -911,6 +977,26 @@ void ZStackDoc::processDataBuffer()
 
     ZStackObject *obj = iter.key();
     ZStackDocObjectUpdate::EAction action = iter.value();
+    apply_update(this, obj, action, [&](ZStackObject *obj) {
+      if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+        ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+        if (p) {
+          punctumSelected.append(p);
+        }
+      } else {
+        selected.append(obj);
+      }
+    }, [&](ZStackObject *obj) {
+      if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+        ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+        if (p) {
+          punctumDeselected.append(p);
+        }
+      } else {
+        deselected.append(obj);
+      }
+    });
+#if 0
     if (obj != NULL) {
       switch (action) {
       case ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE:
@@ -968,6 +1054,7 @@ void ZStackDoc::processDataBuffer()
         break;
       }
     }
+#endif
 //    u->reset();
 //    delete u;
   }
@@ -10696,7 +10783,7 @@ void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
        iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     obj->setVisible(visible);
-    bufferObjectModified(obj->getTarget());
+    bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
   }
 
   processObjectModified();

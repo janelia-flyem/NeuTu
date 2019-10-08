@@ -61,10 +61,10 @@ TEST(ZObject3dStripe, TestGetProperty) {
     ASSERT_EQ(stripe.getMinX(), 0);
     ASSERT_EQ(stripe.getMaxX(), 5);
     ASSERT_EQ(stripe.getSegmentNumber(), 2);
-    ASSERT_EQ((int) stripe.getSize(), 2);
+    ASSERT_EQ(2, int(stripe.getSize()));
     ASSERT_EQ(stripe.getY(), 3);
     ASSERT_EQ(stripe.getZ(), 5);
-    ASSERT_EQ((int) stripe.getVoxelNumber(), 5);
+    ASSERT_EQ(5, int(stripe.getVoxelNumber()));
     ASSERT_EQ(24, (int) stripe.getByteCount());
 
     createStripe2(&stripe);
@@ -138,7 +138,7 @@ TEST(ZObject3dStripe, TestUnify) {
   ASSERT_EQ(1, stripe.getSegmentNumber());
   ASSERT_EQ(3, stripe.getMinX());
   ASSERT_EQ(7, stripe.getMaxX());
-  ASSERT_EQ(5, (int) stripe.getVoxelNumber());
+  ASSERT_EQ(5, int(stripe.getVoxelNumber()));
 
   stripe2.setY(4);
   EXPECT_FALSE(stripe.unify(stripe2));

@@ -443,7 +443,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
-    action->setIcon(QFontIcon::icon(0x2727, Qt::green));
+    action->setIcon(QFontIcon::icon(0x2727, Qt::darkGreen));
     break;
   case ACTION_ADD_TODO_MERGE:
     action = new QAction("To merge here", parent);
@@ -530,12 +530,23 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_HIDE_SELECTED:
     action = new QAction("Hide Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8863, Qt::darkGreen));
     break;
   case ACTION_PUNCTA_SHOW_SELECTED:
     action = new QAction("Show Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10695, Qt::darkGreen));
+    break;
+  case ACTION_PUNCTA_HIDE_UNSELECTED:
+    action = new QAction("Hide Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8861, Qt::darkGreen));
+    break;
+  case ACTION_PUNCTA_SHOW_UNSELECTED:
+    action = new QAction("Show Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10686, Qt::darkGreen));
     break;
   case ACTION_PUNCTA_ADD_SELECTION:
     action = new QAction("Add Puncta Selection", parent);
+    action->setIcon(QFontIcon::icon(9754, Qt::darkGreen));
     break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite Segmentation", parent);

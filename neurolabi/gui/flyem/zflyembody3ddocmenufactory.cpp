@@ -194,6 +194,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       config.append(ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR);
       config.append(ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED);
       config.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
+      config.append(ZActionFactory::ACTION_PUNCTA_HIDE_UNSELECTED);
+      config.append(ZActionFactory::ACTION_PUNCTA_SHOW_UNSELECTED);
     }
 
     config.append(ZActionFactory::ACTION_PUNCTA_ADD_SELECTION);

@@ -359,7 +359,7 @@ public: //attributes
 
   using Clearance = std::function<void()>;
 
-  void addClearance(const Clearance &disposer);
+  void addClearance(const Clearance &c);
 
 public: //swc tree edit
   // move soma (first root) to new location

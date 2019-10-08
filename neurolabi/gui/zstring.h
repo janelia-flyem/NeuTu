@@ -70,6 +70,7 @@ public:
   bool containsDigit();
   ZString& replace(const std::string &from, const std::string &to);
   ZString &replace(int from, const std::string &to);
+  ZString &replace(uint64_t from, const std::string &to);
 
   /*!
    * \brief Test if a string starts with another string.

@@ -12,7 +12,7 @@ public:
   enum class EAction {
     NONE, ADD_NONUNIQUE, ADD_UNIQUE,
     UPDATE, SELECT, DESELECT,
-    RECYCLE, EXPEL, KILL, ADD_BUFFER
+    RECYCLE, EXPEL, KILL, ADD_BUFFER, CALLBACK
   };
 
   ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);
@@ -32,6 +32,7 @@ public:
     m_action = action;
   }
 
+  void callback() const;
   void print() const;
 
   static QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
@@ -40,6 +41,7 @@ public:
 private:
   ZStackObject *m_obj = nullptr;
   EAction m_action;
+  std::function<void(ZStackObject*obj)> m_callback;
 };
 
 

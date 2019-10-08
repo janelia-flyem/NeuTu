@@ -181,13 +181,34 @@ void ZStackDocAccessor::SetObjectVisible(
     ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
 {
   if (doc != NULL) {
-    QMutexLocker locker(doc->getObjectGroup().getMutex());
-    TStackObjectList objList =
-        doc->getObjectGroup().findSameSourceUnsync(type, source);
-    for (ZStackObject *obj : objList) {
-      if (obj->isVisible() != on) {
-        obj->setVisible(on);
-        doc->bufferObjectVisibilityChanged(obj);
+    { //Enclose mutex to avoid dead lock
+      QMutexLocker locker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList =
+          doc->getObjectGroup().findSameSourceUnsync(type, source);
+      for (ZStackObject *obj : objList) {
+        if (obj->isVisible() != on) {
+          obj->setVisible(on);
+          doc->bufferObjectVisibilityChanged(obj);
+        }
+      }
+    }
+    doc->processObjectModified();
+  }
+}
+
+void ZStackDocAccessor::SetObjectVisible(
+    ZStackDoc *doc, ZStackObject::EType type,
+    std::function<bool (const ZStackObject *)> pred, bool on)
+{
+  if (doc != NULL) {
+    {
+      QMutexLocker locker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
+      for (ZStackObject *obj : objList) {
+        if ((obj->isVisible() != on) && pred(obj)) {
+          obj->setVisible(on);
+          doc->bufferObjectVisibilityChanged(obj);
+        }
       }
     }
     doc->processObjectModified();

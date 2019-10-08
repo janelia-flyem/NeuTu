@@ -7,6 +7,8 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 
+const int ZFlyEmNeuronBodyInfo::VERSION = 1;
+
 ZFlyEmNeuronBodyInfo::ZFlyEmNeuronBodyInfo()
 {
 }
@@ -41,10 +43,30 @@ ZJsonObject ZFlyEmNeuronBodyInfo::toJsonObject() const
   return obj;
 }
 
-void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
+void ZFlyEmNeuronBodyInfo::clear()
 {
   m_bodySize = 0;
   m_boundBox.reset();
+  m_connSize.clear();
+  m_mutationId = 0;
+  m_version = 0;
+}
+
+void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
+{
+  clear();
+
+  if (obj.hasKey("version")) {
+    m_version = ZJsonParser::integerValue(obj["version"]);
+  }
+
+  if (obj.hasKey("mutation_id")) {
+    m_mutationId = ZJsonParser::integerValue(obj["mutation_id"]);
+  }
+
+  if (obj.hasKey("conn_size")) {
+    m_connSize = ZJsonParser::integerArray(obj["conn_size"]);
+  }
 
   if (obj.hasKey("volume")) {
     if (ZJsonParser::IsInteger(obj["volume"])) {
