@@ -5,45 +5,7 @@
 #include <QList>
 #include <QMutex>
 
-class ZStackObject;
-
-class ZStackDocObjectUpdate {
-public:
-  enum class EAction {
-    NONE, ADD_NONUNIQUE, ADD_UNIQUE,
-    UPDATE, SELECT, DESELECT,
-    RECYCLE, EXPEL, KILL, ADD_BUFFER, CALLBACK
-  };
-
-  ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);
-  ~ZStackDocObjectUpdate();
-
-  void reset();
-
-  EAction getAction() const {
-    return m_action;
-  }
-
-  ZStackObject* getObject() const {
-    return m_obj;
-  }
-
-  void setAction(EAction action) {
-    m_action = action;
-  }
-
-  void callback() const;
-  void print() const;
-
-  static QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
-  MakeActionMap(QList<ZStackDocObjectUpdate*> updateList);
-
-private:
-  ZStackObject *m_obj = nullptr;
-  EAction m_action;
-  std::function<void(ZStackObject*obj)> m_callback;
-};
-
+#include "zstackdocobjectupdate.h"
 
 class ZStackDocDataBuffer : public QObject
 {

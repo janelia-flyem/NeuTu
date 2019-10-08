@@ -939,17 +939,100 @@ void apply_update(
   }
 }
 
-void apply_update(ZStackDoc *doc, const ZStackDocObjectUpdate &update,
+void apply_update(ZStackDoc *doc, ZStackDocObjectUpdate &update,
                   std::function<void(ZStackObject *obj)> applySelection,
                   std::function<void(ZStackObject *obj)> applyDeselection)
 {
   if (update.getAction() == ZStackDocObjectUpdate::EAction::CALLBACK) {
-    update.callback();
+    update.apply();
   } else {
-    apply_update(doc, update.getObject(), update.getAction(),
-                 applySelection, applyDeselection);
+    update.apply([&](ZStackObject *obj, ZStackDocObjectUpdate::EAction action) {
+      apply_update(doc, obj, action, applySelection, applyDeselection);
+    });
   }
 }
+
+QList<ZStackDocObjectUpdate *>::iterator
+get_mergable_action_list(QList<ZStackDocObjectUpdate *>::iterator firstIter,
+                         QList<ZStackDocObjectUpdate *>::iterator lastIter)
+{
+  auto iter = firstIter;
+  for (; iter != lastIter; ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (!u->isMergable()) {
+      break;
+    }
+  }
+
+  return iter;
+}
+
+QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
+make_action_map(QList<ZStackDocObjectUpdate *>::iterator firstIter,
+                QList<ZStackDocObjectUpdate *>::iterator lastIter)
+{
+  //Rules for processing actions of the same object:
+  //  If the last action is delete, then all the other actions will be invalidated
+  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap;
+  for (QList<ZStackDocObjectUpdate*>::iterator iter = firstIter;
+       iter != lastIter; ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (!actionMap.contains(u->getObject())) {
+      actionMap[u->getObject()] = u->getAction();
+    } else {
+      ZStackDocObjectUpdate::EAction laterAction = actionMap[u->getObject()];
+      if (laterAction == ZStackDocObjectUpdate::EAction::RECYCLE ||
+          laterAction == ZStackDocObjectUpdate::EAction::EXPEL ||
+          laterAction == ZStackDocObjectUpdate::EAction::KILL) {
+        if (laterAction > u->getAction()) {
+          u->setAction(ZStackDocObjectUpdate::EAction::NONE);
+        }
+      }
+    }
+    u->reset();
+  }
+
+  return actionMap;
+}
+
+void process_action_map(
+    ZStackDoc *doc,
+    const QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> &actionMap,
+    QList<ZStackObject*> &selected,
+    QList<ZStackObject*> &deselected,
+    QList<ZPunctum*> &punctumSelected,
+    QList<ZPunctum*> &punctumDeselected)
+{
+  for (auto iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
+//    ZStackDocObjectUpdate *u = *iter;
+
+//    std::cout << "Doc update: ";
+//    u->print();
+
+    ZStackObject *obj = iter.key();
+    ZStackDocObjectUpdate::EAction action = iter.value();
+    apply_update(doc, obj, action, [&](ZStackObject *obj) {
+      if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+        ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+        if (p) {
+          punctumSelected.append(p);
+        }
+      } else {
+        selected.append(obj);
+      }
+    }, [&](ZStackObject *obj) {
+      if (obj->getType() == ZStackObject::EType::PUNCTUM) {
+        ZPunctum *p = dynamic_cast<ZPunctum*>(obj);
+        if (p) {
+          punctumDeselected.append(p);
+        }
+      } else {
+        deselected.append(obj);
+      }
+    });
+  }
+}
+
 
 }
 
@@ -963,10 +1046,26 @@ void ZStackDoc::processDataBuffer()
   QList<ZPunctum*> punctumSelected;
   QList<ZPunctum*> punctumDeselected;
 
-  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap =
-      ZStackDocObjectUpdate::MakeActionMap(updateList);
+//  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap =
+//      ZStackDocObjectUpdate::MakeActionMap(updateList);
 
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+
+  auto startIter = updateList.begin();
+  while (startIter != updateList.end()) {
+    auto endIter = get_mergable_action_list(startIter, updateList.end());
+    QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap =
+        make_action_map(startIter, endIter);
+    process_action_map(
+          this, actionMap, selected, deselected,
+          punctumSelected, punctumDeselected);
+    if (endIter != updateList.end()) {
+      apply_update(this, *(*endIter), [](ZStackObject*){}, [](ZStackObject*){});
+    }
+    startIter = endIter;
+  }
+
+ #if 0
 //  for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
 //       iter != updateList.end(); ++iter) {
   for (auto iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
@@ -1058,9 +1157,9 @@ void ZStackDoc::processDataBuffer()
 //    u->reset();
 //    delete u;
   }
-
+#endif
   foreach (ZStackDocObjectUpdate *u, updateList) {
-    u->reset();
+//    u->reset();
     delete u;
   }
 

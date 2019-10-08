@@ -89,5 +89,6 @@
 #include "test/zflyembodyannotationprotocaltest.h"
 #include "test/taskprotocoltasktest.h"
 #include "test/zstringbuildtest.h"
+#include "test/zstackdocobjectupdatetest.h"
 
 #endif // ZTESTALL_H

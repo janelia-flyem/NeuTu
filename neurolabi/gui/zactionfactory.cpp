@@ -530,7 +530,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_HIDE_SELECTED:
     action = new QAction("Hide Selected Puncta", parent);
-    action->setIcon(QFontIcon::icon(8863, Qt::darkGreen));
+    action->setIcon(QFontIcon::icon(8863, Qt::red));
     break;
   case ACTION_PUNCTA_SHOW_SELECTED:
     action = new QAction("Show Selected Puncta", parent);
@@ -538,7 +538,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_HIDE_UNSELECTED:
     action = new QAction("Hide Unselected Puncta", parent);
-    action->setIcon(QFontIcon::icon(8861, Qt::darkGreen));
+    action->setIcon(QFontIcon::icon(8861, Qt::red));
     break;
   case ACTION_PUNCTA_SHOW_UNSELECTED:
     action = new QAction("Show Unselected Puncta", parent);

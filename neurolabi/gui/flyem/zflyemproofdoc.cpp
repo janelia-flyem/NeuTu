@@ -22,7 +22,6 @@
 #include "zsleeper.h"
 #include "zstroke2d.h"
 #include "zwidgetmessage.h"
-#include "flyem/zflyemsupervisor.h"
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
 
@@ -53,18 +52,18 @@
 #include "zflyembodymanager.h"
 #include "zflyembodystatus.h"
 #include "zflyemroimanager.h"
+#include "zflyemsupervisor.h"
+#include "zflyemmisc.h"
 
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
 
-#include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
 #include "imgproc/zstackwatershed.h"
 
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
 #include "zdvidutil.h"
-#include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
@@ -73,6 +72,7 @@
 
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
 #include "flyemdatareader.h"

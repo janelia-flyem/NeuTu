@@ -32,7 +32,6 @@
 #include "zfiletype.h"
 #include "neutubeconfig.h"
 #include "z3dwindow.h"
-#include "zstackdocdatabuffer.h"
 
 #include "zswcutil.h"
 #include "zflyembody3ddockeyprocessor.h"
@@ -46,6 +45,7 @@
 #include "zstackdocaccessor.h"
 #include "zstackwatershedcontainer.h"
 #include "zstackobjectaccessor.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "flyem/zflyembodysplitter.h"
 #include "zactionlibrary.h"
 #include "dvid/zdvidgrayslice.h"

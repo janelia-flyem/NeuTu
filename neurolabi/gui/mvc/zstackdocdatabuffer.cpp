@@ -2,79 +2,6 @@
 
 #include <iostream>
 
-#include "zstackobject.h"
-
-ZStackDocObjectUpdate::ZStackDocObjectUpdate(ZStackObject *obj, EAction action)
-{
-  m_obj = obj;
-  m_action = action;
-}
-
-ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
-{
-  if (m_action == EAction::ADD_NONUNIQUE ||
-      m_action == EAction::ADD_UNIQUE ||
-      m_action == EAction::ADD_BUFFER) { //leftover objects
-    delete m_obj;
-  }
-}
-
-void ZStackDocObjectUpdate::reset()
-{
-  m_obj = NULL;
-  m_action = EAction::NONE;
-}
-
-void ZStackDocObjectUpdate::callback() const
-{
-  m_callback(m_obj);
-}
-
-void ZStackDocObjectUpdate::print() const
-{
-  switch (m_action) {
-  case EAction::ADD_NONUNIQUE:
-    std::cout << "Add nonunique";
-    break;
-  case EAction::ADD_UNIQUE:
-    std::cout << "Add unique";
-    break;
-  case EAction::EXPEL:
-    std::cout << "Expel";
-    break;
-  case EAction::KILL:
-    std::cout << "Kill";
-    break;
-  case EAction::NONE:
-    std::cout << "No action on";
-    break;
-  case EAction::RECYCLE:
-    std::cout << "Recycle";
-    break;
-  case EAction::UPDATE:
-    std::cout << "Update";
-    break;
-  case EAction::SELECT:
-    std::cout << "Select";
-    break;
-  case EAction::DESELECT:
-    std::cout << "Deselect";
-    break;
-  case EAction::ADD_BUFFER:
-    std::cout << "Add to buffer";
-    break;
-  case EAction::CALLBACK:
-    std::cout << "Callback";
-    break;
-  default:
-    std::cout << "Unknown action:";
-    break;
-  }
-
-  std::cout << " " << ZStackObject::GetTypeName(m_obj->getType()) << " "
-            << m_obj->getSource() << " " << m_obj << std::endl;
-}
-
 ZStackDocDataBuffer::ZStackDocDataBuffer(QObject *parent) : QObject(parent)
 {
 }
@@ -175,7 +102,7 @@ void ZStackDocDataBuffer::print() const
     u->print();
   }
 }
-
+/*
 QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
 ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
 {
@@ -201,3 +128,4 @@ ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
 
   return actionMap;
 }
+*/

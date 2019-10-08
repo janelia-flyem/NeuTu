@@ -2,7 +2,7 @@
 #define ZSTACKDOCACCESSOR_H
 
 #include "zstackobject.h"
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 
 class ZStackDoc;
 class ZStackWatershedContainer;

@@ -614,7 +614,6 @@ HEADERS += mainwindow.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
     zcubearraymovieactor.h \
-    zstackdocdatabuffer.h \
     dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
@@ -679,7 +678,6 @@ HEADERS += mainwindow.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
-    mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
     zmenuconfig.h \
@@ -1122,7 +1120,6 @@ SOURCES += main.cpp \
     zcubearraymovieactor.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
     dialogs/zflyembodychopdialog.cpp \
-    zstackdocdatabuffer.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
