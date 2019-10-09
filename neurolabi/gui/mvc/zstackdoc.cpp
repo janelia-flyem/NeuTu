@@ -952,6 +952,7 @@ void apply_update(ZStackDoc *doc, ZStackDocObjectUpdate &update,
   }
 }
 
+#if 0
 void merge_update(QList<ZStackDocObjectUpdate *>::reverse_iterator firstIter,
                   QList<ZStackDocObjectUpdate *>::reverse_iterator lastIter)
 {
@@ -976,6 +977,7 @@ void merge_update(QList<ZStackDocObjectUpdate *>::reverse_iterator firstIter,
     }
   }
 }
+#endif
 
 void process_update_list(
     ZStackDoc *doc,
@@ -1025,7 +1027,8 @@ void ZStackDoc::processDataBuffer()
 
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
 
-  merge_update(updateList.rbegin(), updateList.rend());
+  //Merging might not help much. Just make it simple.
+//  merge_update(updateList.rbegin(), updateList.rend());
   process_update_list(this, updateList, selected, deselected,
                       punctumSelected, punctumDeselected);
 
@@ -3834,7 +3837,7 @@ void ZStackDoc::removeTakenObject(ZStackObject *obj, bool deleteObject)
 
   m_playerList.removePlayer(obj);
 
-  bufferObjectModified(obj);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_REMOVED);
 
   if (deleteObject) {
     delete obj;

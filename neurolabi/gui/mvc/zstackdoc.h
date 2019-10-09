@@ -465,6 +465,7 @@ public:
       ZStackObject::EType type, bool deleteObject = false);
   void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
   void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -1434,8 +1435,6 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
-
-  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
 private slots:
   void shortcutTest();

@@ -23,6 +23,7 @@ public:
   template<typename InputIterator>
   void addUpdate(const InputIterator &first, const InputIterator &last,
                  ZStackDocObjectUpdate::EAction action);
+  void addUpdate(ZStackDocObjectUpdate *u);
 
   QList<ZStackDocObjectUpdate *> take();
   void deliver();

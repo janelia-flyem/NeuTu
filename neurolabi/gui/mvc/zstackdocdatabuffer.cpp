@@ -11,6 +11,12 @@ ZStackDocDataBuffer::~ZStackDocDataBuffer()
   clear();
 }
 
+void ZStackDocDataBuffer::addUpdate(ZStackDocObjectUpdate *u)
+{
+  QMutexLocker locker(&m_mutex);
+  m_updateList.append(u);
+}
+
 void ZStackDocDataBuffer::addUpdate(
     ZStackObject *obj, ZStackDocObjectUpdate::EAction action)
 {

@@ -228,7 +228,7 @@ QList<ZPunctum*> ZFlyEmRoiProject::makePunctumList(bool dsScaled) const
 void ZFlyEmRoiProject::updateSynapse()
 {
   int z = getDataZ();
-  int range = m_defaultSynapseRadius;
+  int range = iround(m_defaultSynapseRadius);
 
   ZPunctum markPunctum;
   markPunctum.setZ(z - range);

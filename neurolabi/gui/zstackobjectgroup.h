@@ -1,6 +1,8 @@
 #ifndef ZSTACKOBJECTGROUP_H
 #define ZSTACKOBJECTGROUP_H
 
+#include <functional>
+
 #include <QList>
 #include <QSet>
 #include <QMap>
@@ -20,7 +22,8 @@
  */
 typedef QSet<ZStackObject*> TStackObjectSet;
 typedef QList<ZStackObject*> TStackObjectList;
-typedef bool (*TObjectTest)(const ZStackObject*);
+//typedef bool (*TObjectTest)(const ZStackObject*);
+typedef std::function<bool(const ZStackObject*)> TObjectTest;
 
 class ZStackObjectGroup
 {

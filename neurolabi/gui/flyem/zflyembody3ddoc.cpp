@@ -574,14 +574,31 @@ int ZFlyEmBody3dDoc::getMaxDsLevel() const
 
 void ZFlyEmBody3dDoc::removeDiffBody()
 {
-  QList<ZSwcTree*> treeList = getSwcList();
-  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter) {
-    ZSwcTree *tree = *iter;
-    if (ZStackObjectSourceFactory::IsBodyDiffSource(tree->getSource())) {
-      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::EAction::KILL);
+  ZStackDocObjectUpdate *u = new ZStackDocObjectUpdate(
+        nullptr, ZStackDocObjectUpdate::EAction::CALLBACK);
+  u->setCallback([this](ZStackObject*) {
+    QMutexLocker locker(this->getObjectGroup().getMutex());
+    auto pred = [](const ZStackObject *obj) {
+      return ZStackObjectSourceFactory::IsBodyDiffSource(obj->getSource());
+    };
+    TStackObjectList objList = this->getObjectGroup().takeUnsync(
+          ZStackObject::EType::SWC, pred);
+    for (ZStackObject *obj : objList) {
+      this->removeTakenObject(obj, true);
     }
-  }
+    this->processObjectModified();
+  });
+
+  getDataBuffer()->addUpdate(u);
+
+//  QList<ZSwcTree*> treeList = getSwcList();
+//  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+//       iter != treeList.end(); ++iter) {
+//    ZSwcTree *tree = *iter;
+//    if (ZStackObjectSourceFactory::IsBodyDiffSource(tree->getSource())) {
+//      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::EAction::KILL);
+//    }
+//  }
   getDataBuffer()->deliver();
 }
 
@@ -3697,7 +3714,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
   // It is challenging to emit progress updates as m_dvidReader reads the data for the
   // tar archive, so just initialize the progress meter to show ani ntermediate status.
 
-  const float PROGRESS_FRACTION_START = 1 / 3.0;
+  const float PROGRESS_FRACTION_START = 1.0f / 3.0f;
   if (showProgress) {
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
   }
