@@ -6,7 +6,7 @@
 #if defined(_QT_GUI_USED_)
 #include "neutube.h"
 #else
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #endif
 #include "neutubeconfig.h"
 #include "zstring.h"

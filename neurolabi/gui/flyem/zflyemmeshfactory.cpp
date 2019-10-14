@@ -1,6 +1,6 @@
 #include "zflyemmeshfactory.h"
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #include "zobject3dscan.h"
 #include "zmesh.h"

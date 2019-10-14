@@ -3,7 +3,7 @@
 
 #include <QColor>
 #include "tz_stdint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "flyemdef.h"
 #include "geometry/zintcuboid.h"
 

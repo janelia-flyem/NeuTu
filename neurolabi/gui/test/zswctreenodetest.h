@@ -2,7 +2,7 @@
 #define ZSWCTREENODETEST_H
 
 #include "ztestheader.h"
-#include "tz_utilities.h"
+
 #include "tz_math.h"
 #include "tz_constant.h"
 #include "swctreenode.h"

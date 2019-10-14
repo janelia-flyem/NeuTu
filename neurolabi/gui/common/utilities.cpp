@@ -3,9 +3,28 @@
 #include <cstdlib>
 #include <chrono>
 #include <sstream>
+#include <fstream>
 #include <regex>
+#include <cstdio>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
+
+/*
+bool neutu::FileExists(const std::string &path)
+{
+  if (path.empty()) {
+    return false;
+  }
+
+  FILE* fp = fopen(path.c_str(), "r");
+  if (fp != NULL) {
+    fclose(fp);
+    return true;
+  }
+
+  return false;
+}
+*/
 
 bool neutu::HasEnv(const std::string &name, const std::string &value)
 {

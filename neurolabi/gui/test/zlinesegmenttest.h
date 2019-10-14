@@ -25,6 +25,18 @@ TEST(ZLineSegment, basic)
   ASSERT_DOUBLE_EQ(1.5, pt.x());
 }
 
+TEST(ZLineSegment, Flip)
+{
+  ZLineSegment seg(1, 2, 3, 4, 5, 6);
+  seg.invert();
+  ASSERT_EQ(ZPoint(4, 5, 6), seg.getStartPoint());
+  ASSERT_EQ(ZPoint(1, 2, 3), seg.getEndPoint());
+
+  seg.flip();
+  ASSERT_EQ(ZPoint(4, 5, 6), seg.getEndPoint());
+  ASSERT_EQ(ZPoint(1, 2, 3), seg.getStartPoint());
+}
+
 #endif
 
 

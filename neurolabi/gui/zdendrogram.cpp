@@ -1,6 +1,5 @@
 #include "zdendrogram.h"
 
-#include "tz_utilities.h"
 #include "ztree.h"
 #include "zstring.h"
 #include "tz_math.h"
@@ -63,8 +62,9 @@ void ZDendrogram::importCsv(string filePath)
     vector<double> entry = str.toDoubleArray();
     if (entry.size() == 3) {
       if (entry[0] > entry[1]) {
-        double tmp;
-        SWAP2(entry[0], entry[1], tmp);
+        std::swap(entry[0], entry[1]);
+//        double tmp;
+//        SWAP2(entry[0], entry[1], tmp);
       }
       addLink(iround(entry[0]), iround(entry[1]), entry[2]);
     }

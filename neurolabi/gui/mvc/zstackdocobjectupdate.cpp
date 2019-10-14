@@ -110,3 +110,28 @@ bool ZStackDocObjectUpdate::isMergable() const
 {
   return  getAction() != EAction::CALLBACK;
 }
+
+
+//////////////////ZStackDocObjectUpdateFactory///////////////////////
+
+ZStackDocObjectUpdate* ZStackDocObjectUpdateFactory::Make(
+    std::function<void (ZStackObject *)> f)
+{
+  ZStackDocObjectUpdate *u = new ZStackDocObjectUpdate(
+        nullptr, ZStackDocObjectUpdate::EAction::CALLBACK);
+  u->setCallback(f);
+
+  return u;
+}
+
+ZStackDocObjectUpdate* ZStackDocObjectUpdateFactory::Make(
+    std::function<void()> f)
+{
+  ZStackDocObjectUpdate *u = new ZStackDocObjectUpdate(
+        nullptr, ZStackDocObjectUpdate::EAction::CALLBACK);
+  u->setCallback([f](ZStackObject*) {
+    f();
+  });
+
+  return u;
+}

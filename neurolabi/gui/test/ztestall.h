@@ -90,5 +90,6 @@
 #include "test/taskprotocoltasktest.h"
 #include "test/zstringbuildtest.h"
 #include "test/zstackdocobjectupdatetest.h"
+#include "test/zinteractivecontexttest.h"
 
 #endif // ZTESTALL_H

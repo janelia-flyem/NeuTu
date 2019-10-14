@@ -198,16 +198,6 @@ public: //frame parameters
   double xReconstructScale();
   double zReconstructScale();
   char unit();
-//  int traceEffort();
-//  double autoTraceMinScore();
-//  double manualTraceMinScore();
-//  bool traceMasked();
-//  double reconstructDistThre();
-//  bool crossoverTest();
-//  bool singleTree();
-//  bool removeOvershoot();
-//  int reconstructRootOption();
-//  BOOL reconstructSpTest();
   void synchronizeSetting();
   void synchronizeDocument();
 

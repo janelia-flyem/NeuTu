@@ -12,7 +12,7 @@
 #include <QTime>
 #include <QThreadStorage>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"

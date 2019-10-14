@@ -8,8 +8,7 @@
 #include <stdio.h>
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
-#include "tz_utilities.h"
-#include "tz_error.h"
+//#include "tz_error.h"
 #include "tz_math.h"
 #include "tz_darray.h"
 #include "tz_u8array.h"
@@ -1097,7 +1096,7 @@ void ZEditSwcDialog::runOperations()
     int total = 0;
     if (Swc_Tree_Node_Is_Virtual(tn)) {
       Swc_Tree_Node *child = tn->first_child;
-      TZ_ASSERT(Swc_Tree_Node_Is_Regular(child), "virtual");
+//      TZ_ASSERT(Swc_Tree_Node_Is_Regular(child), "virtual");
       tn = child;
       while (tn != NULL) {
         total++;
@@ -1218,7 +1217,7 @@ void ZEditSwcDialog::runOperations()
       Swc_Tree_Node *tn = tree->root;
       int index = 0;
       char filepath1[500];
-      BOOL start = TRUE;
+      bool start = true;
       int length = 0;
       FILE *fp = NULL;
       while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -1300,7 +1299,8 @@ void ZEditSwcDialog::runOperations()
 
           if ((soma_tree != NULL) && (ws->puncta != NULL)) {
             if (ws->puncta->size > 0) {
-              GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, BOOL);
+              Swc_Tree_Svg_Workspace_Adjust_OnRoot_Size(ws);
+//              GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, BOOL);
               Swc_Tree_Identify_Puncta(soma_tree, ws->puncta, 1, ws->on_root);
             }
           }

@@ -8,7 +8,6 @@
 #include <cctype>
 
 #include "tz_error.h"
-#include "tz_utilities.h"
 #include "zstring.h"
 
 using namespace std;
@@ -855,10 +854,12 @@ vector<string> ZString::decomposePath(const std::string &str)
   return parts;
 }
 
+/*
 ZString ZString::toFileExt()
 {
   return ZString(fextn(c_str()));
 }
+*/
 
 ZString ZString::toFileName()
 {

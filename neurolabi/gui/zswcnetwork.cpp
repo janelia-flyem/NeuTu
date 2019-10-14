@@ -5,7 +5,6 @@
 
 #include "tz_error.h"
 #include "zstring.h"
-#include "tz_utilities.h"
 #include "geometry/zcuboid.h"
 #include "tz_darray.h"
 #include "zpointnetwork.h"

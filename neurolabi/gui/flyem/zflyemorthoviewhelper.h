@@ -1,7 +1,7 @@
 #ifndef ZFLYEMORTHOVIEWHELPER_H
 #define ZFLYEMORTHOVIEWHELPER_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZFlyEmOrthoMvc;
 class ZFlyEmOrthoDoc;

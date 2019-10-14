@@ -12,7 +12,7 @@
 #include <QShortcut>
 
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "logging/zlog.h"

@@ -10,7 +10,7 @@
 #include <QSharedPointer>
 #include <QMap>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zthreadfuturemap.h"
 #include "zwindowfactory.h"
 #include "zactionfactory.h"

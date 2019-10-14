@@ -182,6 +182,8 @@ typedef struct _Swc_Tree_Svg_Workspace {
 } Swc_Tree_Svg_Workspace;
 
 DECLARE_ZOBJECT_INTERFACE(Swc_Tree_Svg_Workspace)
+
+void Swc_Tree_Svg_Workspace_Adjust_OnRoot_Size(Swc_Tree_Svg_Workspace *ws);
   
 __END_DECLS
 

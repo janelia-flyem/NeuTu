@@ -1157,7 +1157,7 @@ void ZStackPresenter::updateLeftMenu()
     traceOnFlag = true;
   }
 
-  if (interactiveContext().markPuncta()) {
+  if (interactiveContext().markingPuncta()) {
     if (traceOnFlag) {
       updateLeftMenu(getAction(ZActionFactory::ACTION_PUNCTA_MARK), false);
     } else {
@@ -1835,7 +1835,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 
   case Qt::Key_M:
     if (m_interactiveContext.isStackSliceView()) {
-      if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
+      if (interactiveContext().markingPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->getStack()->isVirtual())) {
         QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),

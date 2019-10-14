@@ -408,4 +408,9 @@ void Print_Swc_Tree_Svg_Workspace(Swc_Tree_Svg_Workspace *ws)
   printf("Workspace for swc->svg\n");
 }
 
+void Swc_Tree_Svg_Workspace_Adjust_OnRoot_Size(Swc_Tree_Svg_Workspace *ws)
+{
+  GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, BOOL);
+}
+
 DEFINE_ZOBJECT_INTERFACE(Swc_Tree_Svg_Workspace)

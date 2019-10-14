@@ -34,6 +34,16 @@ void ZStackDocDataBuffer::addUpdate(
   }
 }
 
+void ZStackDocDataBuffer::addUpdate(std::function<void(ZStackObject*obj)> f)
+{
+  addUpdate(ZStackDocObjectUpdateFactory::Make(f));
+}
+
+void ZStackDocDataBuffer::addUpdate(std::function<void()> f)
+{
+  addUpdate(ZStackDocObjectUpdateFactory::Make(f));
+}
+
 void ZStackDocDataBuffer::removeObjectUpdate(
     std::function<bool (ZStackDocObjectUpdate*)> pred)
 {

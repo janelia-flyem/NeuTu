@@ -1,7 +1,7 @@
 #ifndef ZLOGGABLE_H
 #define ZLOGGABLE_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 /*!
  * \brief The interace class for logging

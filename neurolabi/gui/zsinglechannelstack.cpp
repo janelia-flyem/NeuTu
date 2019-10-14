@@ -1,6 +1,6 @@
 #include "zsinglechannelstack.h"
 #include <string.h>
-#include "tz_utilities.h"
+
 #include "tz_image_io.h"
 #include "tz_stack_lib.h"
 #include "tz_int_histogram.h"

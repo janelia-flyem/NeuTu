@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
+#include "zstring.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidtarget.h"
@@ -60,13 +61,14 @@ TEST(ZDvidReader, basic)
     if (reader.open("127.0.0.1", "4280", 1600)) {
       ASSERT_TRUE(reader.isReady());
 
-      ASSERT_EQ(dvid::ENodeStatus::NORMAL, reader.getNodeStatus());
+      ASSERT_EQ(dvid::ENodeStatus::LOCKED, reader.getNodeStatus())
+          << "Actual status: " + std::to_string(neutu::EnumValue(reader.getNodeStatus()));
       ASSERT_TRUE(reader.hasData("grayscale"));
       ASSERT_TRUE(reader.hasData("segmentation"));
 
       ZDvidReader reader2 = reader;
       ASSERT_TRUE(reader2.isReady());
-      ASSERT_EQ(dvid::ENodeStatus::NORMAL, reader2.getNodeStatus());
+      ASSERT_EQ(dvid::ENodeStatus::LOCKED, reader2.getNodeStatus());
       ASSERT_TRUE(reader2.hasData("grayscale"));
       ASSERT_TRUE(reader2.hasData("segmentation"));
 
@@ -78,7 +80,7 @@ TEST(ZDvidReader, basic)
 
   {
     ZDvidReader reader;
-    ZDvidTarget target("127.0.0.1", "4280", 1600);
+    ZDvidTarget target("127.0.0.1", "c315", 1600);
     target.setGrayScaleName("grayscale");
     if (reader.open(target)) {
       ASSERT_TRUE(reader.isReady());

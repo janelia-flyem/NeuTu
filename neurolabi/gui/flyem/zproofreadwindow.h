@@ -5,7 +5,7 @@
 #include <QPalette>
 
 #include "tz_stdint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;

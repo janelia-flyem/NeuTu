@@ -15,7 +15,7 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
-#include "tz_error.h"
+//#include "tz_error.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"

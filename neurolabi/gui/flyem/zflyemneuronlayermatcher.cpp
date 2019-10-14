@@ -3,7 +3,6 @@
 #include "zdynamicprogrammer.h"
 #include "zobject3dscan.h"
 #include "zflyemneuron.h"
-#include "tz_utilities.h"
 #include "zswctreematcher.h"
 
 ZFlyEmLayerFeatureSequence::ZFlyEmLayerFeatureSequence()

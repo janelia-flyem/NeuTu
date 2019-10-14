@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/zdvidtarget.h"
 #include "common/zsharedpointer.h"
 

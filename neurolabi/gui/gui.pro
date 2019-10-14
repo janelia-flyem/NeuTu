@@ -856,6 +856,8 @@ SOURCES += main.cpp \
     dialogs/diffusiondialog.cpp \
     dialogs/connectedthresholddialog.cpp \
     dialogs/zrescaleswcdialog.cpp \
+    dialogs/mexicanhatdialog.cpp \
+    dialogs/informationdialog.cpp \
     z3dwindow.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
@@ -879,8 +881,6 @@ SOURCES += main.cpp \
     dialogs/swcsizedialog.cpp \
     dialogs/swcskeletontransformdialog.cpp \
     zprocessprogressbase.cpp \
-    dialogs/mexicanhatdialog.cpp \
-    dialogs/informationdialog.cpp \
     zmoviescene.cpp \
     zmovieactor.cpp \
     zswcmovieactor.cpp \

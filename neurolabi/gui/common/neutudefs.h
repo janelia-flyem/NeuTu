@@ -234,4 +234,10 @@ using TProgressFunc = std::function<void(size_t, size_t)>;
 #  define DEBUG_OUT if (1) {} else std::cout
 #endif
 
+#if defined(__clang__) || defined (__GNUC__)
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS
+#endif
+
 #endif // NEUTUBE_DEF_H

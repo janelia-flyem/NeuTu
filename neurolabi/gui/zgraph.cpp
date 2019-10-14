@@ -4,9 +4,8 @@
 #include <fstream>
 #include <algorithm>
 
-#include "tz_utilities.h"
 #include "zstring.h"
-#include "tz_math.h"
+//#include "tz_math.h"
 #include "tz_u8array.h"
 #include "zinttree.h"
 #include "tz_error.h"
@@ -443,11 +442,11 @@ void ZGraph::importTxtFile(const string &filePath)
     ZString str;
     while (str.readLine(fp)) {
       vector<double> edge = str.toDoubleArray();
-      if (edge[0] != edge[1] && edge[0] >= 0 && edge[1] >= 0) {
+      if (int(edge[0]) != int(edge[1]) && edge[0] >= 0 && edge[1] >= 0) {
         if (edge.size() == 3) {
-          addEdge(iround(edge[0]), iround(edge[1]), edge[2]);
+          addEdge(int(edge[0]), int(edge[1]), edge[2]);
         } else {
-          addEdge(iround(edge[0]), iround(edge[1]));
+          addEdge(int(edge[0]), int(edge[1]));
         }
       } else {
         RECORD_WARNING_UNCOND("Skip invalid edge");

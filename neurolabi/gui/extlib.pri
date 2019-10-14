@@ -118,8 +118,9 @@ CONFIG(debug, debug|release) {
 message("rpath")
 message($$QMAKE_RPATHDIR)
 
+LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
-    LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
+    LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
         LIBS *= -llowtis
 #        CONFIG(debug, debug|release) {

@@ -32,7 +32,7 @@ TEST(flyemmisc, HasConnecion)
           "123<-[345][789]", 789, 123, neutu::EBiDirection::BACKWARD));
   ASSERT_TRUE(
         flyem::HasConnecion(
-          "123<-[345][789]", 345, 123, neutu::EBiDirection::FORWARD));
+          "123<-[345][789]", 345, 123, neutu::EBiDirection::BACKWARD));
   ASSERT_FALSE(
         flyem::HasConnecion(
           "123<-[345][789]", 123, 789, neutu::EBiDirection::FORWARD));

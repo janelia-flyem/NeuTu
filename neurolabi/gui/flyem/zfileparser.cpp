@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include "zstring.h"
-#include "tz_error.h"
+//#include "tz_error.h"
 #include "zerror.h"
 
 using namespace flyem;

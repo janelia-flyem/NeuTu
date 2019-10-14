@@ -29,9 +29,6 @@ int main(int argc, char *argv[])
 #include "neu3window.h"
 
 #include "ztest.h"
-
-#include "tz_utilities.h"
-
 #include "qfonticon.h"
 #include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"

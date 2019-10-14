@@ -35,6 +35,21 @@ TEST(common, utilities)
 
   ASSERT_EQ(0, neutu::UnsignedCrop(int64_t(-1)));
   ASSERT_EQ(214748364789llu, neutu::UnsignedCrop(int64_t(214748364789ll)));
+
+  ASSERT_TRUE(neutu::IsIntegerValue(0.0));
+  ASSERT_TRUE(neutu::IsIntegerValue(10.0));
+  ASSERT_TRUE(neutu::IsIntegerValue(100.0f));
+  ASSERT_FALSE(neutu::IsIntegerValue(0.9));
+  ASSERT_FALSE(neutu::IsIntegerValue(10.000001));
+  ASSERT_FALSE(neutu::IsIntegerValue(100.1f));
+
+  ASSERT_TRUE(neutu::WithinOpenRange(2, 1, 3));
+  ASSERT_FALSE(neutu::WithinOpenRange(1, 1, 3));
+  ASSERT_TRUE(neutu::WithinOpenRange(2.0, 1.9, 3.0));
+
+  ASSERT_EQ(2, neutu::ClipValue(2, 1, 3));
+  ASSERT_EQ(1.0, neutu::ClipValue(0.0, 1.0, 3.0));
+  ASSERT_EQ(3.0, neutu::ClipValue(4.0, 1.0, 3.0));
 }
 
 #endif

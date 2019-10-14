@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"

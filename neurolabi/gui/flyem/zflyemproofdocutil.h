@@ -5,7 +5,7 @@
 #include <QString>
 #include <QList>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZDvidLabelSlice;
 class ZFlyEmProofDoc;

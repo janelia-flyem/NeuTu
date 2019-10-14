@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "neurolabi_config.h"
 #include "tz_json.h"
 #include "zjsonobject.h"

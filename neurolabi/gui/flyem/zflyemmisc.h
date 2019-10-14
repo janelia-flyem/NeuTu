@@ -10,7 +10,7 @@
 #include <QVector>
 #include <QString>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/libdvidheader.h"
 #include "common/zsharedpointer.h"
 

@@ -10,7 +10,6 @@
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
-#include "tz_utilities.h"
 #include "zswctree.h"
 #include "zclosedcurve.h"
 #include "geometry/zintcuboid.h"

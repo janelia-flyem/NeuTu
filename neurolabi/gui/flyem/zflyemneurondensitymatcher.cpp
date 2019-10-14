@@ -6,7 +6,6 @@
 #include "zhistogram.h"
 #include "zmatrix.h"
 #include "tz_math.h"
-#include "tz_utilities.h"
 
 ZFlyemNeuronDensityMatcher::ZFlyemNeuronDensityMatcher() : m_gapPenalty(0.1),
   m_layerBaseFactor(1.0), m_layerScale(100.0), m_layerMargin(100.0)
@@ -58,8 +57,8 @@ double ZFlyemNeuronDensityMatcher::computeSimilarity(
 
   double layerDiff = fabs(z1 - z2);
 
-  double s2 = dmax2(v1, v2);
-  double s1 = dmin2(v1, v2);
+  double s2 = std::max(v1, v2);
+  double s1 = std::min(v1, v2);
 
 //  TZ_ASSERT(s1 > 0.0, "Invalid number");
 

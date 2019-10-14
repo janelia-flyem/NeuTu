@@ -1,6 +1,6 @@
 #include "zswcdeepanglemetric.h"
 #include "zerror.h"
-#include "tz_error.h"
+//#include "tz_error.h"
 #include "zswctree.h"
 
 ZSwcDeepAngleMetric::ZSwcDeepAngleMetric() : m_level(1), m_minDist(100.0)
@@ -125,7 +125,7 @@ double ZSwcDeepAngleMetric::measureDistance(
 std::vector<const Swc_Tree_Node*> ZSwcDeepAngleMetric::extractLeafSegment(
     const Swc_Tree_Node *tn)
 {
-  TZ_ASSERT(SwcTreeNode::isRegular(tn), "Invalid node");
+//  TZ_ASSERT(SwcTreeNode::isRegular(tn), "Invalid node");
 
   std::vector<const Swc_Tree_Node*> nodeArray;
   nodeArray.push_back(tn);

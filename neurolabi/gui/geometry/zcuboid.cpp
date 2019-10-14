@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "tz_error.h"
-#include "tz_utilities.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
 #include "zlinesegment.h"

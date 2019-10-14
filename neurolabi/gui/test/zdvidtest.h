@@ -550,7 +550,7 @@ TEST(ZDvidTest, Reader)
   ASSERT_FALSE(reader.open("", "uuid", 1));
   ASSERT_FALSE(reader.open("server", "", 1));
 
-
+#if 0
 //  ASSERT_TRUE(reader.open("http://emdata2.int.janelia.org:9000:2ad1"));
   if (reader.open("http://emdata2.int.janelia.org:9000:2ad1")) {
     std::cout << "Connected to " << reader.getDvidTarget().getAddressWithPort()
@@ -564,6 +564,7 @@ TEST(ZDvidTest, Reader)
     ASSERT_FALSE(reader2.open("", reader.getDvidTarget().getUuid().c_str(),
                               reader.getDvidTarget().getPort()));
   }
+#endif
 }
 
 TEST(ZDvidTest, ZDvidNode)

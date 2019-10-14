@@ -1,6 +1,6 @@
 HEADERS += \
     $$PWD/memorystream.h \
-    $$PWD/neutube_def.h \
+    $$PWD/neutudefs.h \
     $$PWD/userinfo.h \
     $$PWD/utilities.h \
     $$PWD/zsharedpointer.h \
@@ -9,7 +9,7 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/memorystream.cpp \
-    $$PWD/neutube_def.cpp \
+    $$PWD/neutudefs.cpp \
     $$PWD/userinfo.cpp \
     $$PWD/utilities.cpp \
     $$PWD/zcolor.cpp \

@@ -70,8 +70,14 @@ private:
 private:
   ZStackObject *m_obj = nullptr;
   EAction m_action;
-  std::function<void(ZStackObject*obj)> m_callback = nullptr;
-  std::function<void()> m_dispose = nullptr;
+  std::function<void(ZStackObject*obj)> m_callback;
+  std::function<void()> m_dispose;
+};
+
+class ZStackDocObjectUpdateFactory {
+public:
+  static ZStackDocObjectUpdate* Make(std::function<void(ZStackObject*obj)> f);
+  static ZStackDocObjectUpdate* Make(std::function<void()> f);
 };
 
 

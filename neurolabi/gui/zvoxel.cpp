@@ -1,10 +1,9 @@
 #include "zvoxel.h"
 #include <assert.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include "tz_stack_utils.h"
 #include "tz_stack_lib.h"
-#include "tz_utilities.h"
 #include "tz_math.h"
 #include "tz_stack_attribute.h"
 #include "geometry/zgeometry.h"

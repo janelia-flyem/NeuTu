@@ -1978,7 +1978,6 @@ std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(
         matching.insert(std::map<Swc_Tree_Node*, Swc_Tree_Node*>::value_type(
                           nbrArray[iter->first], nbrArray[iter->second]));
       }
-      //BOOL **matched = Graph_Hungarian_Match();
     }
   }
 

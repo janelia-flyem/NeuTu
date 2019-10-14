@@ -78,8 +78,8 @@ void Biocytin::SwcProcessor::AssignZ(ZSwcTree *tree, const Stack &depthImage)
   tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
   for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
     if (SwcTreeNode::isRegular(tn)) {
-      int x = iround(SwcTreeNode::x(tn));
-      int y = iround(SwcTreeNode::y(tn));
+      int x = std::lrint(SwcTreeNode::x(tn));
+      int y = std::lrint(SwcTreeNode::y(tn));
 
       CLIP_VALUE(x, 0, C_Stack::width(&depthImage) - 1);
       CLIP_VALUE(y, 0, C_Stack::height(&depthImage) - 1);

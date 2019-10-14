@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include "tz_utilities.h"
 #include "tz_math.h"
+#include "common/utilities.h"
 
 ZStackViewLocator::ZStackViewLocator() : m_sceneRatio(0.1), m_minZoomRatio(2)
 {
@@ -17,7 +17,7 @@ void ZStackViewLocator::setCanvasSize(int w, int h)
 
 void ZStackViewLocator::setSceneRatio(double ratio)
 {
-  m_sceneRatio = Clip_Value(ratio, 0.01, 1.0);
+  m_sceneRatio = neutu::ClipValue(ratio, 0.01, 1.0);
 }
 
 int ZStackViewLocator::getZoomRatio(int viewPortWidth, int viewPortHeight) const

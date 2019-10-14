@@ -7,7 +7,7 @@
 
 #include "zstackobject.h"
 #include "geometry/zpoint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZIntPoint;
 

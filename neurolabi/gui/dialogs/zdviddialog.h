@@ -21,7 +21,7 @@ class ZDvidDialog : public ZDvidTargetProviderDialog
   Q_OBJECT
 
 public:
-  explicit ZDvidDialog(QWidget *parent = 0);
+  explicit ZDvidDialog(QWidget *parent = nullptr);
   ~ZDvidDialog();
 
 

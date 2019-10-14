@@ -16,6 +16,7 @@
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
+#include "filesystem/utilities.h"
 
 using namespace std;
 
@@ -461,7 +462,7 @@ ZFileList* ZStackFile::toFileList() const
     break;
   case IMAGE_SERIES:
     fileList = new ZFileList;
-    fileList->load(filePath.dirPath(), filePath.toFileExt(),
+    fileList->load(filePath.dirPath(), neutu::FileExtension(filePath),
                    ZFileList::SORT_BY_LAST_NUMBER);
     break;
   case FILE_BUNDLE:
@@ -592,7 +593,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       ZFileList fileList;
       ZString str(m_urlList[0]);
-      fileList.load(str.dirPath(), str.toFileExt(),
+      fileList.load(str.dirPath(), neutu::FileExtension(str),
                     ZFileList::SORT_BY_LAST_NUMBER);
 
       if (fileList.size() > 0) {

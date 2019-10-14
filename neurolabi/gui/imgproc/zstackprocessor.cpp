@@ -6,7 +6,6 @@
 #include "tz_stack_stat.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
-#include "tz_utilities.h"
 #include "tz_math.h"
 #if _QS_LOG_AVAILABLE_
 #  include "logging/zqslog.h"

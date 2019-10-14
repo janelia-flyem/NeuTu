@@ -4,12 +4,16 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
 
 namespace neutu
 {
+
+//bool FileExists(const std::string &path);
+
 template<typename T>
 void read(std::istream &stream, T &v)
 {
@@ -134,6 +138,25 @@ ValueType GetValue(const Container<KeyType, ValueType> &m,
   }
 
   return defaultValue;
+}
+
+template<typename T,
+         typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+inline bool IsIntegerValue(T v)
+{
+  return v == std::floor(v);
+}
+
+template<typename T>
+inline bool WithinOpenRange(const T &x, const T &minv, const T &maxv)
+{
+  return (x > minv) && (x < maxv);
+}
+
+template<typename T>
+inline T ClipValue(const T &v, const T &lower, const T&upper)
+{
+  return (v < lower) ? lower : (v > upper) ? upper : v;
 }
 
 }

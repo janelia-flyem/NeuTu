@@ -4,7 +4,7 @@
 #include <QString>
 #include <QThread>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "znetworkdefs.h"
 
 class ZNetBufferReader;

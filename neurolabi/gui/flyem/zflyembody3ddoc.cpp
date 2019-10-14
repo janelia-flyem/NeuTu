@@ -42,14 +42,15 @@
 #include "zstroke2d.h"
 #include "zobject3d.h"
 #include "zmeshfactory.h"
+#include "zpunctum.h"
 #include "zstackdocaccessor.h"
 #include "zstackwatershedcontainer.h"
 #include "zstackobjectaccessor.h"
 #include "mvc/zstackdocdatabuffer.h"
-#include "flyem/zflyembodysplitter.h"
+
 #include "zactionlibrary.h"
 #include "dvid/zdvidgrayslice.h"
-#include "flyem/zflyemtodoitem.h"
+
 #include "misc/miscutility.h"
 #include "dvid/zdvidbodyhelper.h"
 #include "data3d/zstackobjecthelper.h"
@@ -59,12 +60,14 @@
 #include "protocols/protocoltaskfactory.h"
 #include "zstackdoc3dhelper.h"
 #include "zstackobjectarray.h"
+
 #include "zflyembodyenv.h"
 #include "zflyembodystatus.h"
-#include "zpunctum.h"
 #include "flyemdatareader.h"
 #include "zflyemproofdocutil.h"
 #include "zflyemproofutil.h"
+#include "zflyemtodoitem.h"
+#include "zflyembodysplitter.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
@@ -675,54 +678,12 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
   }
 }
 
-/*
-void ZFlyEmBody3dDoc::processEvent(const ZFlyEmBodyEvent &event)
-{
-  switch (event.getAction()) {
-  case ZFlyEmBodyEvent::EAction::REMOVE:
-    removeBody(event.getBodyId());
-    break;
-  case ZFlyEmBodyEvent::EAction::ADD:
-    addBody(event.getBodyConfig());
-    break;
-  case ZFlyEmBodyEvent::EAction::UPDATE:
-    if (event.updating(ZFlyEmBodyEvent::UPDATE_CHANGE_COLOR)) {
-      updateBody(event.getBodyId(), event.getBodyColor());
-    }
-    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_SYNAPSE)) {
-      addSynapse(event.getBodyId());
-    }
-    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_TODO_ITEM)) {
-      addTodo(event.getBodyId());
-    }
-    break;
-  default:
-    break;
-  }
-}
-*/
 void ZFlyEmBody3dDoc::setTodoItemSelected(
     ZFlyEmToDoItem *item, bool select)
 {
   getObjectGroup().setSelected(item, select);
 }
 
-#if 0
-void ZFlyEmProofDoc::setTodoVisible(
-    ZFlyEmToDoItem::EToDoAction action, bool visible)
-{
-  QList<ZFlyEmToDoItem*> objList = getObjectList<ZFlyEmToDoItem>();
-  for (QList<ZFlyEmToDoItem*>::iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    ZFlyEmToDoItem *item = *iter;
-    if (item->getAction() == action) {
-      item->setVisible(visible);
-    }
-  }
-
-  emit todoVisibleChanged();
-}
-#endif
 
 void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
 {
@@ -785,29 +746,6 @@ void ZFlyEmBody3dDoc::setTodoItemAction(neutu::EToDoAction action)
         [action](const ZFlyEmToDoItem* item) -> bool{
             return action != item->getAction();}
   );
-
-#if 0
-  std::vector<ZIntPoint> ptArray;
-
-  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
-        ZStackObject::EType::FLYEM_TODO_ITEM);
-  for (TStackObjectSet::const_iterator iter = objSet.begin();
-       iter != objSet.end(); ++iter) {
-    ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
-    if (item != NULL) {
-      if (action != item->getAction()) {
-        item->setAction(action);
-        m_mainDvidWriter.writeToDoItem(*item);
-        ptArray.push_back(item->getPosition());
-        bufferObjectModified(item);
-      }
-    }
-  }
-
-  getDataDocument()->downloadTodo(ptArray);
-
-  processObjectModified();
-#endif
 }
 
 void ZFlyEmBody3dDoc::annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj)
@@ -1532,22 +1470,6 @@ ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack(
   return body;
 }
 
-#if 0
-ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack()
-{
-//  return getDataDocument()->getDvidSparseStack();
-
-  ZDvidSparseStack *stack = NULL;
-
-  if (m_bodySet.size() == 1) {
-    uint64_t bodyId = *(m_bodySet.begin());
-    stack = loadDvidSparseStack(bodyId, );
-  }
-
-  return stack;
-}
-#endif
-
 ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStackForSplit()
 {
   ZDvidSparseStack *stack = NULL;
@@ -1829,36 +1751,6 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
 
   return tree;
 }
-
-#if 0
-ZFlyEmBodyEvent ZFlyEmBody3dDoc::makeHighResBodyEvent(
-    const ZFlyEmBodyConfig &config)
-{
-  ZFlyEmBodyEvent bodyEvent =
-      ZFlyEmBodyEvent::MakeHighResEvent(config, getMinDsLevel());
-  bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
-
-  return bodyEvent;
-
-  /*
-  ZFlyEmBodyEvent bodyEvent(ZFlyEmBodyEvent::EAction::ACTION_ADD, config);
-
-//  bodyEvent.setMaxDsLevel(getDvidTarget().getMaxLabelZoom());
-  bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
-
-  return bodyEvent;
-  */
-}
-
-ZFlyEmBodyEvent ZFlyEmBody3dDoc::makeHighResBodyEvent(
-    const ZFlyEmBodyConfig &config, const ZIntCuboid &range)
-{
-  ZFlyEmBodyEvent bodyEvent = makeHighResBodyEvent(config);
-  bodyEvent.setRange(range);
-
-  return bodyEvent;
-}
-#endif
 
 void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
 {
@@ -2324,6 +2216,8 @@ void ZFlyEmBody3dDoc::addSynapse(
     }
     getDataBuffer()->addUpdate(
           punctum, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
+  }
+  if (!puncta.empty()) {
     getDataBuffer()->deliver();
   }
 }
@@ -2331,21 +2225,18 @@ void ZFlyEmBody3dDoc::addSynapse(
 void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
 {
   if (m_showingSynapse && !synapseLoaded(bodyId)) {
-      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
-          getDataDocument()->getSynapse(bodyId);
-      addSynapse(
-            synapse.first, bodyId,
-            ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId),
-            30, QColor(255, 255, 0));
-      addSynapse(
-            synapse.second, bodyId,
-            ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId),
-            30, QColor(128, 128, 128));
+    std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
+        getDataDocument()->getSynapse(bodyId);
+    addSynapse(
+          synapse.first, bodyId,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId),
+          30, QColor(255, 255, 0));
+    addSynapse(
+          synapse.second, bodyId,
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId),
+          30, QColor(128, 128, 128));
 
-      getDataBuffer()->deliver();
-      getBodyManager().setSynapseLoaded(bodyId);
-      //      endObjectModifiedMode();
-      //      notifyObjectModified();
+    getBodyManager().setSynapseLoaded(bodyId);
   }
 }
 
@@ -2365,6 +2256,13 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
 
+    ZStackDocObjectUpdate *u = new ZStackDocObjectUpdate(
+          nullptr, ZStackDocObjectUpdate::EAction::CALLBACK);
+    u->setCallback([source, this](ZStackObject*) {
+      this->removeObject(source, true);
+    });
+    getDataBuffer()->addUpdate(u);
+#if 0
     getDataBuffer()->removeObjectUpdate([&](ZStackDocObjectUpdate *u) {
       if (u->getObject()) {
         return ((u->getAction() == ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE) ||
@@ -2382,6 +2280,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 #endif
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
     }
+#endif
 
     if (getBodyManager().contains(bodyId)) {
       std::vector<ZFlyEmToDoItem*> itemList =
@@ -2412,6 +2311,15 @@ void ZFlyEmBody3dDoc::updateSynapse(uint64_t bodyId)
 
     bodyId = decode(bodyId);
 
+    getDataBuffer()->addUpdate([bodyId, this]() {
+      this->removeObject(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+    });
+
+    getDataBuffer()->addUpdate([bodyId, this]() {
+      this->removeObject(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+    });
+
+/*
     {
       TStackObjectList objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
@@ -2429,6 +2337,7 @@ void ZFlyEmBody3dDoc::updateSynapse(uint64_t bodyId)
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::KILL);
       }
     }
+    */
 
     getBodyManager().setSynapseLoaded(bodyId, false);
     getDataBuffer()->deliver();

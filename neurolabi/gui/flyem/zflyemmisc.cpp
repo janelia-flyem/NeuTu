@@ -10,7 +10,6 @@
 #include <QJsonDocument>
 
 #include "tz_math.h"
-#include "tz_utilities.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
 

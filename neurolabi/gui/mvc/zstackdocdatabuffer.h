@@ -25,6 +25,9 @@ public:
                  ZStackDocObjectUpdate::EAction action);
   void addUpdate(ZStackDocObjectUpdate *u);
 
+  void addUpdate(std::function<void(ZStackObject*obj)> f);
+  void addUpdate(std::function<void()> f);
+
   QList<ZStackDocObjectUpdate *> take();
   void deliver();
 

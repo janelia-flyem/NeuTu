@@ -2,7 +2,6 @@
 #include <QtConcurrentRun>
 #endif
 
-#include "tz_utilities.h"
 #include "tz_math.h"
 #include "zlocalneuroseg.h"
 #include "tz_voxel_graphics.h"

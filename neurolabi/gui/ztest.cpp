@@ -22,6 +22,7 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+//#include <boost/filesystem.hpp>
 #if defined(_USE_WEBENGINE_)
 #include <QWebEngineView>
 #endif
@@ -61,6 +62,7 @@
 #include "tz_stack_threshold.h"
 #include "tz_color.h"
 
+#include "filesystem/utilities.h"
 #include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
@@ -30450,6 +30452,40 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+#endif
+
+#if 1
+  std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice.tif") << std::endl;
+  std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice_nonexisting.tif") << std::endl;
+  std::cout << neutu::FileExists(GET_BENCHMARK_DIR) << std::endl;
+
+  std::vector<double> array({1, 2});
+  std::swap(array[0], array[1]);
+  std::cout << array[0] << " " << array[1] << std::endl;
+
+  std::ifstream s(GET_BENCHMARK_DIR);
+  std::cout << s.good() << std::endl;
+
+  {
+    ZFileList fileList(3);
+    std::cout << fileList.size() << std::endl;
+  }
+
+  {
+    ZFileList fileList;
+    fileList.load(
+          GET_BENCHMARK_DIR, neutu::FileExtension("test.tif"),
+          ZFileList::SORT_ALPHABETICALLY);
+    std::cout << fileList.size() << std::endl;
+    for (int i = 0; i < fileList.size(); ++i) {
+      std::cout << fileList.getFilePath(i) << " "
+                << neutu::FileSize(fileList.getFilePath(i))
+                << std::endl;
+    }
+  }
+
+  std::cout << neutu::FileExtension("test.tif") << std::endl;
+  std::cout << neutu::Join({"test1", "test2"}) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

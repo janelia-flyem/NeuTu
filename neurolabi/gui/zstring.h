@@ -145,7 +145,7 @@ public:
   std::vector<std::string> decomposePath() const;
   static std::vector<std::string> decomposePath(const std::string &str);
 
-  ZString toFileExt();
+//  ZString toFileExt();
   ZString toFileName();
 
   ZString &operator= (const ZString &str);

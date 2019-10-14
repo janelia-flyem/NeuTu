@@ -1,6 +1,5 @@
 #include "znormcolormap.h"
 #include "tz_color.h"
-#include "tz_utilities.h"
 #include "tz_math.h"
 
 ZNormColorMap::ZNormColorMap()
