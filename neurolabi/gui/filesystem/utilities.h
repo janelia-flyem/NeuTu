@@ -2,6 +2,7 @@
 #define ZFILESYSTEM_H
 
 #include <string>
+#include <vector>
 
 namespace neutu
 {

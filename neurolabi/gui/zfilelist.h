@@ -2,6 +2,8 @@
 #define ZFILELIST_H
 
 #include <string>
+#include <functional>
+
 #include "tz_file_list.h"
 
 class ZFileList
