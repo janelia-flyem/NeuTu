@@ -21,7 +21,7 @@ typedef struct _Optimize_Workspace {
   double scores[OPTIMIZE_CYCLE];    /* scores from one cycle */
   int phase;                        /* number of iterations within a cycle */
   double max_score;                 /* maximum score found so far */
-  BOOL is_improved;                 /* if the score is improved in this cycle */
+  _BOOL_ is_improved;                 /* if the score is improved in this cycle */
   int nvar;                         /* number of variables */
   double *best_var;                 /* optimal variables found so far */
 } Optimize_Workspace;
@@ -54,14 +54,14 @@ int Line_Search_Var(double *var, const int *var_index, int nvar,
 		    const void *param, const Continuous_Function *cf,
 		    const double *direction, double step);
 
-BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
+_BOOL_ Line_Search_Var_Backtrack(Variable_Set *vs,
 			       const void *param, 
 			       const Continuous_Function *cf,
 			       const double *delta, const double *weight,
 			       double *direction,
 			       Line_Search_Workspace *lsw);
 
-BOOL Line_Search_Var_Golden_Bracket(Variable_Set *vs,
+_BOOL_ Line_Search_Var_Golden_Bracket(Variable_Set *vs,
 				    const void *param, 
 				    const Continuous_Function *cf,
 				    const double *delta, const double *weight,
@@ -73,7 +73,7 @@ void Conjugate_Update_Direction(int nvar, const double *grad,
 void Conjugate_Update_Direction_W(int nvar, const double *grad, 
     const double *prev_grad, const double *weight, double *direction);
 
-BOOL Optimize_Update_Variable(Variable_Set *vs, const void *param, 
+_BOOL_ Optimize_Update_Variable(Variable_Set *vs, const void *param, 
 			      const Continuous_Function *cf,
 			      const double *delta, double *update_direction, 
 			      Line_Search_Workspace *lsw,

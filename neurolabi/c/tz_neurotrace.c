@@ -164,8 +164,8 @@ Neurochain *Trace_Neuron2(const Stack *stack, Neurochain *chain, Direction_e d,
   }
 
   /* start tracing */
-  BOOL is_valid = TRUE;
-  BOOL hit_traced[nseg];
+  _BOOL_ is_valid = TRUE;
+  _BOOL_ hit_traced[nseg];
   double theta[nseg];
   double psi[nseg];
 
@@ -200,9 +200,9 @@ Neurochain *Trace_Neuron2(const Stack *stack, Neurochain *chain, Direction_e d,
 
   int invalid_code = 0;
   int length = 1;
-  BOOL stop = FALSE;
+  _BOOL_ stop = FALSE;
   Local_Neuroseg *sensor_seg = New_Local_Neuroseg();
-  BOOL add_sensor_seg = FALSE;
+  _BOOL_ add_sensor_seg = FALSE;
   Trace_History *hist = New_Trace_History();
 
   invalid_code = 0;
@@ -375,7 +375,7 @@ Neurochain *Object_To_Neurochain(Object_3d *obj, Neurochain *chain,
   return chain;
 }
 
-BOOL Neuroseg_Hit_Traced(const Local_Neuroseg *locseg, const Stack *mask, 
+_BOOL_ Neuroseg_Hit_Traced(const Local_Neuroseg *locseg, const Stack *mask, 
 			 double z_scale)
 {
   if (Neuroseg_Hit_At(locseg, mask, z_scale) >=0) {

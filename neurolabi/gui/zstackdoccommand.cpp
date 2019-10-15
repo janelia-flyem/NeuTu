@@ -1642,8 +1642,8 @@ ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     //Swc_Tree_Node_Detach_Parent(buffer1);
 
     //weight[0] = buffer1->weight;
-    while (Swc_Tree_Node_Is_Regular(buffer1) == TRUE) {
-      if (Swc_Tree_Node_Is_Regular(buffer2) == TRUE) {
+    while (Swc_Tree_Node_Is_Regular(buffer1) == _TRUE_) {
+      if (Swc_Tree_Node_Is_Regular(buffer2) == _TRUE_) {
         //weight[1] = buffer2->weight;
         buffer3 = buffer2->parent;
         //buffer2->weight = weight[0];

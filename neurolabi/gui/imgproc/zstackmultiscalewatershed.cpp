@@ -34,8 +34,8 @@
 
 #undef ASCII
 #undef BOOL
-#undef TRUE
-#undef FALSE
+#undef _TRUE_
+#undef _FALSE_
 
 #if defined(_ENABLE_SURFRECON_)
 #include "surfrecon.h"

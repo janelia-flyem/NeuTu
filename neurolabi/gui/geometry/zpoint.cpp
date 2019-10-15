@@ -388,7 +388,7 @@ ZIntPoint ZPoint::toIntPoint() const
 void ZPoint::rotate(double theta, double psi)
 {
   Geo3d_Rotate_Coordinate(&(m_x), &(m_y), &(m_z),
-                          theta, psi, FALSE);
+                          theta, psi, _FALSE_);
 }
 
 void ZPoint::translate(const ZPoint &dp)

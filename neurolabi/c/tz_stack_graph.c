@@ -48,7 +48,7 @@ void Default_Stack_Graph_Workspace(Stack_Graph_Workspace *sgw)
     sgw->sp_option = 0;
     sgw->intensity = NULL;
     sgw->virtualVertex = -1;
-    sgw->including_signal_border = FALSE;
+    sgw->including_signal_border = _FALSE_;
     sgw->greyFactor = 1.0;
     sgw->greyOffset = 0.0;
   }
@@ -375,7 +375,7 @@ Graph* Stack_Graph(const Stack *stack, int conn, const int *range,
   
   int nvertex = (cwidth + 1) * (cheight + 1) * (cdepth + 1);
 
-  Graph *graph = Make_Graph(nvertex, nvertex, TRUE);
+  Graph *graph = Make_Graph(nvertex, nvertex, _TRUE_);
 
   int neighbor[26];
   int scan_mask[26];
@@ -490,9 +490,9 @@ Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw)
   int nvertex = (cwidth + 1) * (cheight + 1) * (cdepth + 1);
   sgw->virtualVertex = nvertex;
 
-  BOOL weighted = TRUE;
+  _BOOL_ weighted = _TRUE_;
   if (sgw->sp_option == 1) {
-    weighted = FALSE;
+    weighted = _FALSE_;
     sgw->intensity = darray_malloc(nvertex + 1);
     sgw->intensity[nvertex] = Infinity;
   }
@@ -573,7 +573,7 @@ Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw)
         }
 #endif
 
-        if (sgw->including_signal_border == TRUE) {
+        if (sgw->including_signal_border == _TRUE_) {
           if (nbound == sgw->conn) {
             STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && 
                 (sgw->signal_mask == NULL ? 1 : 

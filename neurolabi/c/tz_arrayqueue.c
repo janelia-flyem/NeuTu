@@ -230,11 +230,11 @@ void Arrayqueue_Enqueue(Arrayqueue *aq, int index)
   Arrayqueue_Add_Last(aq, index);
 }
 
-BOOL Arrayqueue_Is_Empty(Arrayqueue *aq)
+_BOOL_ Arrayqueue_Is_Empty(Arrayqueue *aq)
 {
   if (aq->head < 0) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }

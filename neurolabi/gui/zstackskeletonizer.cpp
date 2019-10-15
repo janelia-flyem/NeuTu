@@ -586,8 +586,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
   Default_Objlabel_Workspace(&ow);
   ow.conn = 26;
   ow.chord = NULL;
-  ow.init_chord = TRUE;
-  ow.inc_label = TRUE;
+  ow.init_chord = _TRUE_;
+  ow.inc_label = _TRUE_;
 
   int nobj = Stack_Label_Large_Objects_W(stackData, 1, 2, minObjSize, &ow);
   /*

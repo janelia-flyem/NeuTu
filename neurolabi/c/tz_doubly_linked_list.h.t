@@ -118,7 +118,7 @@ void <1T>_Dlist_Insert(<1T>_Dlist *p, <2T> data);
  * <1T>_Dlist_Is_Empty() returns TRUE if <p> is empty; otherwise it returns 
  * FALSE.
  */
-BOOL <1T>_Dlist_Is_Empty(const <1T>_Dlist *p);
+_BOOL_ <1T>_Dlist_Is_Empty(const <1T>_Dlist *p);
 
 /**@brief Turn a list to an array.
  *

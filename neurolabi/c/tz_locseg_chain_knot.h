@@ -28,7 +28,7 @@ typedef struct _Locseg_Chain_Knot_Array {
 Locseg_Chain_Knot* New_Locseg_Chain_Knot();
 Locseg_Chain_Knot* Make_Locseg_Chain_Knot(int id, double offset);
 void Print_Locseg_Chain_Knot(const Locseg_Chain_Knot *knot);
-BOOL Locseg_Chain_Knot_Is_Equal(const Locseg_Chain_Knot *knot1, 
+_BOOL_ Locseg_Chain_Knot_Is_Equal(const Locseg_Chain_Knot *knot1, 
 				const Locseg_Chain_Knot *knot2);
 
 Locseg_Chain_Knot_Array* New_Locseg_Chain_Knot_Array();

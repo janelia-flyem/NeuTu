@@ -29,7 +29,7 @@ void Print_Locseg_Chain_Knot(const Locseg_Chain_Knot *knot)
 
 #define LOCSEG_CHAIN_IS_EQUAL_EPS 1e-5
 
-BOOL Locseg_Chain_Knot_Is_Equal(const Locseg_Chain_Knot *knot1, 
+_BOOL_ Locseg_Chain_Knot_Is_Equal(const Locseg_Chain_Knot *knot1, 
 				const Locseg_Chain_Knot *knot2) 
 {
   return ((knot1->id == knot2->id) && 
@@ -92,7 +92,7 @@ void Locseg_Chain_Knot_Array_Append_U(Locseg_Chain_Knot_Array *ka,
 				      Locseg_Chain_Knot *knot)
 {
   if (Locseg_Chain_Knot_Is_Equal(Locseg_Chain_Knot_Array_Last(ka), knot) 
-      == FALSE) {
+      == _FALSE_) {
     Unipointer_Arraylist_Add(ka->knot, knot);
   }
 }

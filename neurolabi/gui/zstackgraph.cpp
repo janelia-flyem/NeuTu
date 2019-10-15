@@ -351,9 +351,9 @@ ZGraph* ZStackGraph::buildGraph(const Stack *stack, const Stack *mask)
 
   int nvertex = (cwidth + 1) * (cheight + 1) * (cdepth + 1);
 
-  BOOL weighted = TRUE;
+  BOOL weighted = _TRUE_;
   if (m_workspace.sp_option == 1) {
-    weighted = FALSE;
+    weighted = _FALSE_;
     m_workspace.intensity = darray_malloc(nvertex + 1);
     m_workspace.intensity[nvertex] = Infinity;
   }

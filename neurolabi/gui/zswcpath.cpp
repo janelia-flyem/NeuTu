@@ -244,7 +244,7 @@ void ZSwcPath::labelStackAcrossZ(Stack *stack, int value)
   if (!empty()) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
-    workspace.z_proj = TRUE;
+    workspace.z_proj = _TRUE_;
     workspace.sdw.color.r = value;
 
     workspace.label_mode = SWC_TREE_LABEL_NODE;

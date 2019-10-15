@@ -115,12 +115,12 @@ void ZFileList::importFromXml(const string &/*filePath*/)
 
   cur = root->xmlChildrenNode;
   while (cur != NULL) {
-    if (Xml_Node_Is_Element(cur, "url") == TRUE) {
+    if (Xml_Node_Is_Element(cur, "url") == _TRUE_) {
       filePathArray.push_back(Xml_Node_String_Value(doc, cur));
     } else {
       xmlNodePtr child = cur->xmlChildrenNode;
       while (child != NULL) {
-        if (Xml_Node_Is_Element(child, "url") == TRUE) {
+        if (Xml_Node_Is_Element(child, "url") == _TRUE_) {
           filePathArray.push_back(Xml_Node_String_Value(doc, child));
         }
       }

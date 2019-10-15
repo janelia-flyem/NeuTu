@@ -138,7 +138,7 @@ void ZSwcNetwork::layoutSwc()
 
 Graph* ZSwcNetwork::toGraph()
 {
-  Graph *graph = Make_Graph(0, 1, TRUE);
+  Graph *graph = Make_Graph(0, 1, _TRUE_);
 
   for (size_t i = 0; i < m_connectionArray.size(); i++) {
     Graph_Add_Weighted_Edge(graph, m_treeIndexMap[m_connectionArray[i].first],

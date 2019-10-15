@@ -121,7 +121,7 @@ void Object_3d_Orientation_Zscale(const Object_3d *obj, double *vec,
  * Object_3d_Has_Overlap() returns TRUE if <objs1> and <obj2> has any common
  * voxel; otherwise it returns FALSE.
  */
-BOOL Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2);
+_BOOL_ Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2);
 
 /*
  * Object_3d_Central_Points() extracts central points from an object.
@@ -196,7 +196,7 @@ void Print_Prolog(const mylib_Prolog *prolog);
 
 int Get_Region_Dimensionality(const mylib_Region *region);
 mylib_Dimn_Type *Get_Region_Dimensions(const mylib_Region *region);
-BOOL Region_Same_Dimensions(const mylib_Region *r1, const mylib_Region *r2);
+_BOOL_ Region_Same_Dimensions(const mylib_Region *r1, const mylib_Region *r2);
 size_t Region_Size(const mylib_Region *region);
 void Region_Stack_Size(const mylib_Region *region, int *width, int *height, int *depth);
 void Kill_Region(mylib_Region *region);

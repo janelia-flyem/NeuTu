@@ -18,18 +18,18 @@ ZGraph::ZGraph(EGraphType type)
   switch (type) {
   case DIRECTED_WITH_WEIGHT:
   case UNDIRECTED_WITH_WEIGHT:
-    m_graph = Make_Graph(0, 1, TRUE);
+    m_graph = Make_Graph(0, 1, _TRUE_);
     break;
   case DIRECTED_WITHOUT_WEIGHT:
   case UNDIRECTED_WITHOUT_WEIGHT:
-    m_graph = Make_Graph(0, 1, FALSE);
+    m_graph = Make_Graph(0, 1, _FALSE_);
     break;
   default:
     break;
   }
 
   if (type == DIRECTED_WITH_WEIGHT || type == DIRECTED_WITHOUT_WEIGHT) {
-    Graph_Set_Directed(m_graph, TRUE);
+    Graph_Set_Directed(m_graph, _TRUE_);
   }
 
   initWorkspace();
@@ -84,31 +84,31 @@ void ZGraph::deprecate(EComponent component)
   deprecateDependent(component);
   switch (component) {
   case PARENT_LIST:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_PARENT, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_PARENT, _FALSE_);
     break;
   case CHILD_LIST:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CHILD, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CHILD, _FALSE_);
     break;
   case WEIGHT_MATRIX:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_WEIGHT, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_WEIGHT, _FALSE_);
     break;
   case DEGREE:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_DEGREE, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_DEGREE, _FALSE_);
     break;
   case IN_DEGREE:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_IN_DEGREE, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_IN_DEGREE, _FALSE_);
     break;
   case OUT_DEGREE:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_OUT_DEGREE, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_OUT_DEGREE, _FALSE_);
     break;
   case EDGE_TABLE:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_TABLE, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_TABLE, _FALSE_);
     break;
   case EDGE_MAP:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_MAP, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_MAP, _FALSE_);
     break;
   case NEIGHBOR_LIST:
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, _FALSE_);
     break;
   case BFS_TREE:
     break;
@@ -142,51 +142,40 @@ bool ZGraph::isDeprecated(EComponent component) const
   switch (component) {
   case NEIGHBOR_LIST:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_CONNECTION)
-        == FALSE;
-    break;
+        == _FALSE_;
   case PARENT_LIST:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_PARENT)
-        == FALSE;
-    break;
+        == _FALSE_;
   case CHILD_LIST:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_CHILD)
-        == FALSE;
-    break;
+        == _FALSE_;
   case WEIGHT_MATRIX:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_WEIGHT)
-        == FALSE;
-    break;
+        == _FALSE_;
   case DEGREE:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_DEGREE)
-        == FALSE;
-    break;
+        == _FALSE_;
   case IN_DEGREE:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_IN_DEGREE)
-        == FALSE;
-    break;
+        == _FALSE_;
   case OUT_DEGREE:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_OUT_DEGREE)
-        == FALSE;
-    break;
+        == _FALSE_;
   case EDGE_TABLE:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_EDGE_TABLE)
-        == FALSE;
-    break;
+        == _FALSE_;
   case EDGE_MAP:
     return Graph_Workspace_Ready(m_workspace, GRAPH_WORKSPACE_EDGE_MAP)
-        == FALSE;
-    break;
+        == _FALSE_;
   case BFS_TREE:
-    return FALSE;
-    break;
+    return false;
   case CONNECTED_SUBGRAPH:
     return m_connectedSubgraph.empty();
   case ALL_COMPONENT:
-    return TRUE;
-    break;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 double ZGraph::getEdgeWeight(int edgeIndex) const
@@ -225,7 +214,7 @@ int** ZGraph::getNeighborList() const
     Graph_Workspace_Load(m_workspace, m_graph);
   }
   int** list = Graph_Neighbor_List(m_graph, m_workspace);
-  Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, TRUE);
+  Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, _TRUE_);
 
   return list;
 }
@@ -474,7 +463,7 @@ const Hash_Table *ZGraph::getEdgeTable() const
   if (isDeprecated(EDGE_TABLE)) {
     Graph_Workspace_Load(m_workspace, m_graph);
     Graph_Update_Edge_Table(m_graph, m_workspace);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_TABLE, TRUE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_EDGE_TABLE, _TRUE_);
   }
 
   return m_workspace->edge_table;
@@ -509,7 +498,7 @@ int* ZGraph::getDegree() const
     Graph_Workspace_Load(m_workspace, m_graph);
   }
   int* degree = Graph_Degree(m_graph, m_workspace);
-  Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_DEGREE, TRUE);
+  Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_DEGREE, _TRUE_);
 
   return degree;
 }
@@ -835,10 +824,10 @@ const std::vector<ZGraph*>& ZGraph::getConnectedSubgraph() const
     m_connectedSubgraph.push_back(new ZGraph(subgraph));
 
     /* This is necessary to extract subgraph one by one */
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, TRUE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, TRUE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, TRUE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, TRUE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, _TRUE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, _TRUE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, _TRUE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, _TRUE_);
 
 
     for (int i = 1; i < getEdgeNumber(); i++) {
@@ -849,10 +838,10 @@ const std::vector<ZGraph*>& ZGraph::getConnectedSubgraph() const
       }
     }
 
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, FALSE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, FALSE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, FALSE);
-    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, _FALSE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, _FALSE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, _FALSE_);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, _FALSE_);
   }
 
   return m_connectedSubgraph;
@@ -901,11 +890,11 @@ std::map<int, int> ZGraph::runMinWeightSumMatch()
     if (getEdgeNumber() > 0) {
       int nvertex = getVertexNumber();
 
-      BOOL **match = Graph_Hungarian_Match(m_graph, m_workspace);
+      _BOOL_ **match = Graph_Hungarian_Match(m_graph, m_workspace);
 
       for (int i = 0; i < nvertex; ++i) {
         for (int j = i + 1; j < nvertex; ++j) {
-          if (match[i][j] == TRUE || match[j][i] == TRUE) {
+          if (match[i][j] == _TRUE_ || match[j][i] == _TRUE_) {
             if (getEdgeIndex(i, j) >= 0) {
               matchMap[i] = j;
             }

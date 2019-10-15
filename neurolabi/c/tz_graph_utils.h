@@ -29,12 +29,12 @@ void Graph_Print_Path(int *path, int nvertex, int end);
 int Graph_Mst_From_Adjmat(double **weight, Graph_Edge_t *min_span_tree, int n,
 			  int *p_num_of_edges, double *p_sum_of_edges);
 
-BOOL Is_Adjmat_Connected(int **conn, int n);
+_BOOL_ Is_Adjmat_Connected(int **conn, int n);
 
 int* Adjmat_Isolate(int **conn, int n, int *nnbr);
 
 /* assign n jobs to m workers */
-double Adjmat_Hungarian(double **weight, int m, int n, BOOL **result);
+double Adjmat_Hungarian(double **weight, int m, int n, _BOOL_ **result);
 
 __END_DECLS
 

@@ -118,7 +118,7 @@ int Intpair_Map_Value(const Intpair_Map *map, int x, int y)
   return -1;
 }
 
-BOOL Intpair_Map_Add_Value(const Intpair_Map *map, int x, int y, int dv)
+_BOOL_ Intpair_Map_Add_Value(const Intpair_Map *map, int x, int y, int dv)
 {
   if (map->length > 0) {
     int index = intpair_map_code(map, x, y);
@@ -127,13 +127,13 @@ BOOL Intpair_Map_Add_Value(const Intpair_Map *map, int x, int y, int dv)
     while (entry != NULL) {
       if ((entry->pair[0] == x) && (entry->pair[1] == y)) {
         entry->value += dv;
-        return TRUE;
+        return _TRUE_;
       }
       entry = entry->next;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 int Intpair_Map_Add(Intpair_Map *map, int x, int y, int value)

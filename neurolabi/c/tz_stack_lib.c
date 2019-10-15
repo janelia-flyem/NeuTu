@@ -466,7 +466,7 @@ void Stack_Set_Constant(Stack  *stack, const void *value)
  */
 void Copy_Stack_Array(Stack *dst, const Stack *src)
 {
-  if (Stack_Same_Attribute(dst, src) == FALSE) {
+  if (Stack_Same_Attribute(dst, src) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -2806,7 +2806,7 @@ Stack* Stack_Channel_Extraction(const Stack *stack, int channel, Stack *out)
       if (out == NULL) {
         return Copy_Stack((Stack *) stack);
       } else {
-        if (Stack_Same_Attribute(stack, out) == FALSE) {
+        if (Stack_Same_Attribute(stack, out) == _FALSE_) {
           TZ_ERROR(ERROR_DATA_TYPE);
         } else {
           Copy_Stack_Array(out, stack);
@@ -2826,7 +2826,7 @@ Stack* Stack_Channel_Extraction(const Stack *stack, int channel, Stack *out)
 	TZ_ERROR(ERROR_DATA_TYPE);
       }
 
-      if (Stack_Same_Size(stack, out) == FALSE) {
+      if (Stack_Same_Size(stack, out) == _FALSE_) {
 	TZ_ERROR(ERROR_DATA_TYPE);
       }
     }
@@ -2864,7 +2864,7 @@ void Empty_Stack(Stack *stack)
   stack->array = NULL;
 }
 
-BOOL Is_Stack_Empty(const Stack *stack)
+_BOOL_ Is_Stack_Empty(const Stack *stack)
 {
   return Stack_Is_Empty(stack);
 }
@@ -2953,7 +2953,7 @@ void Stack_Invert_Value(Stack *stack)
 
 double Stack_Pixel(const Stack *stack, int x, int y, int z, int c)
 {
-  if (Stack_Contain_Point(stack, x, y, z) == FALSE) {
+  if (Stack_Contain_Point(stack, x, y, z) == _FALSE_) {
     return -1.0;
   }
 
@@ -3479,7 +3479,7 @@ Tiff_Image* Stack_Tiff_Image(const Stack *stack, int s, Tiff_Image *image)
 	  } else {							\
 	    int j;							\
 	    for (j = 0; j < n_nbr; j++) {				\
-	      if (is_in_bound[j] == TRUE) {				\
+	      if (is_in_bound[j] == _TRUE_) {				\
 		/*value += stack_array[center + neighbor[j]];*/		\
 		if (value < stack_array[center + neighbor[j]]) {	\
 		  value = stack_array[center + neighbor[j]];		\
@@ -3507,10 +3507,10 @@ Stack* Stack_Locmax_Enhance(Stack *stack, Stack *out)
     out = Make_Stack(stack->kind, stack->width, stack->height, stack->depth);
   }
 
-  BOOL in_place = FALSE;
+  _BOOL_ in_place = _FALSE_;
   if (stack == out) {
     stack = Copy_Stack_T(out);    
-    in_place = TRUE;
+    in_place = _TRUE_;
   }
 
   /*Stack *locmax = Stack_Local_Max(stack, NULL, STACK_LOCMAX_NONFLAT);*/
@@ -3567,7 +3567,7 @@ Stack* Stack_Locmax_Enhance(Stack *stack, Stack *out)
   
   //Kill_Stack(locmax);
   
-  if (in_place == TRUE) {
+  if (in_place == _TRUE_) {
     Kill_Stack(stack);
   }
 
@@ -3919,12 +3919,12 @@ void Stack_Bound_Box_F_M(File_List *list, Cuboid_I *bound_box)
       size_t nvoxel = Stack_Voxel_Number(mip);
 
       for (i = 1; i < list->file_number; i++) {
-        BOOL all_zero = TRUE;
+        _BOOL_ all_zero = _TRUE_;
         Stack *stack = Read_Stack_U(list->file_path[i]);
         size_t offset = 0;
         for (offset = 0; offset < nvoxel; offset++) {
           if (stack->array[offset] != 0) {
-            all_zero = FALSE;
+            all_zero = _FALSE_;
             
             if (stack->array[offset] > mip->array[offset]) {
               mip->array[offset] = stack->array[offset];
@@ -3932,7 +3932,7 @@ void Stack_Bound_Box_F_M(File_List *list, Cuboid_I *bound_box)
           }
         }
         
-        if (all_zero == FALSE) {
+        if (all_zero == _FALSE_) {
           if (front < 0) {
             front = i;
           }

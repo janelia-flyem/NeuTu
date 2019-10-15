@@ -26,25 +26,25 @@ void Print_Bitmask(Bitmask_t mask)
   printf("\n");
 }
 
-void Bitmask_Set_Bit(int bit, BOOL value, Bitmask_t *mask)
+void Bitmask_Set_Bit(int bit, _BOOL_ value, Bitmask_t *mask)
 {
   Bitmask_t switch_mask = FIRST_BIT_MASK;
   switch_mask <<= bit;
 
-  if (value == TRUE) {    
+  if (value == _TRUE_) {    
     *mask |= switch_mask;
   } else {
     *mask &= ~switch_mask;
   }
 }
 
-BOOL Bitmask_Get_Bit(Bitmask_t mask, int bit)
+_BOOL_ Bitmask_Get_Bit(Bitmask_t mask, int bit)
 {
   mask >>= bit;
   if ((mask & FIRST_BIT_MASK) > 0) {
-    return TRUE;
+    return _TRUE_;
   } else {
-    return FALSE;
+    return _FALSE_;
   }
 }
 
@@ -72,7 +72,7 @@ Bitmask_t Index_To_Bitmask(const int index[], int length)
   Bitmask_t mask = ZERO_BIT_MASK;
 
   for (i = 0; i < length; i++) {
-    Bitmask_Set_Bit(index[i], TRUE, &mask);
+    Bitmask_Set_Bit(index[i], _TRUE_, &mask);
   }
   
   return mask;

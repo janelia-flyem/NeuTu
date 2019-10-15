@@ -36,7 +36,7 @@ void ZSynapseAnnotationAnalyzer::set(const vector<int> bodyIdList,
     m_bodyIdMap[bodyIdList[i]] = i;
     m_swcTreeList[i] = Read_Swc_Tree(m_swcFileList[i].c_str());
     Swc_Tree_Iterator_Start(m_swcTreeList[i], SWC_TREE_ITERATOR_DEPTH_FIRST,
-                            FALSE);
+                            _FALSE_);
   }
 
 }

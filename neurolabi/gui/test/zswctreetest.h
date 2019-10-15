@@ -38,14 +38,14 @@ static void testTreeIterator(ZSwcTree &tree,
   int count = -1;
 
   if (config.start == NULL && config.blocker == NULL) {
-    count = tree.updateIterator(config.option, TRUE);
+    count = tree.updateIterator(config.option, _TRUE_);
   } else if (config.blocker == NULL) {
-    count = tree.updateIterator(config.option, config.start, TRUE);
+    count = tree.updateIterator(config.option, config.start, _TRUE_);
   } else if (config.start == NULL) {
-    count = tree.updateIterator(config.option, *(config.blocker), TRUE);
+    count = tree.updateIterator(config.option, *(config.blocker), _TRUE_);
   } else {
     count = tree.updateIterator(config.option, config.start, *(config.blocker),
-                                TRUE);
+                                _TRUE_);
   }
 
   ASSERT_EQ(count, truthCount);

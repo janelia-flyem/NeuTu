@@ -19,7 +19,7 @@ double* Locne_Chain_Area_Array(Locne_Chain *chain, double *a, int *length);
 
 /* Hit test for a locne chain. The chain must have a constant orientaion,
  * i.e. all ellipses are parallel. */
-BOOL Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point);
+_BOOL_ Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point);
 
 double Locne_Chain_Span(Locne_Chain *chain);
 

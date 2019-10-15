@@ -680,7 +680,7 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Translate(raw_tree2, offset2[0], offset2[1], offset2[2]);
   Swc_Tree_Translate(raw_tree3, offset3[0], offset3[1], offset3[2]);
 
-  connect_tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  connect_tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   for (Swc_Tree_Node *tn = connect_tree.begin(); tn != NULL;
        tn = connect_tree.next()) {
@@ -788,7 +788,7 @@ void ZTest::test(MainWindow *host)
   ZSwcBranch *branch = tree.extractFurthestBranch();
   branch->label(1);
 
-  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   //For every node in the tree
   Swc_Tree_Node *tn;
@@ -2544,7 +2544,7 @@ void ZTest::test(MainWindow *host)
     //double vec[3];
     double angle;
     for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
-      if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+      if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
         ZPoint vec = SwcTreeNode::localDirection(tn, 5);
         //cout << vec[0] << " " << vec[1] << " " << vec[2] << endl;
         angle = Vector_Angle(vec.x(), vec.y());
@@ -16100,7 +16100,7 @@ void ZTest::test(MainWindow *host)
   pt.set(-0.164321, -0.138413, 0.976647);
   double theta, psi;
   Geo3d_Normal_Orientation(-0.164321, -0.138413, 0.976647, &theta, &psi);
-  Geo3d_Rotate_Coordinate(pt.xRef(), pt.yRef(), pt.zRef(), theta, psi, TRUE);
+  Geo3d_Rotate_Coordinate(pt.xRef(), pt.yRef(), pt.zRef(), theta, psi, _TRUE_);
   pt.print();
 #endif
 
