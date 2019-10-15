@@ -1551,11 +1551,11 @@ bool ZSynapseAnnotationArray::isDeprecated(EComponent component) const
   case CONNECTION_GRAPH:
     return m_connectionGraph == NULL;
   case ALL_COMPONENT:
-    return TRUE;
+    return _TRUE_;
     break;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 

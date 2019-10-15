@@ -100,7 +100,7 @@ static Struct_Element* se_dilate(const Struct_Element *se)
  *       length - number fo the neighbor pixels;
  *       stack_size - array to store the result.
  *
- * Return: TRUE or FALSE.
+ * Return: _TRUE_ or _FALSE_.
  */
 static inline int hit_out(Coordinate coord, Coordinate *nb_coord, 
 			  int length, int stack_size[3])
@@ -115,11 +115,11 @@ static inline int hit_out(Coordinate coord, Coordinate *nb_coord,
       printf("coord[%d]: %d\n", j, tmp_coord);
 #endif
       if ((tmp_coord < 0) || (tmp_coord >= stack_size[j])) {
-	return TRUE;
+	return _TRUE_;
       }
     }
   }
     
-  return FALSE;
+  return _FALSE_;
 }
 

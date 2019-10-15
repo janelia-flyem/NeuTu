@@ -87,11 +87,11 @@ Object_3d* Stack_Grow_Object_N(Stack *stack, IMatrix *chord, int flag,
     return NULL;
   }
 
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   if (chord == NULL) {
     chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);
-    is_owner = TRUE;
+    is_owner = _TRUE_;
   }
   
   int label = flag + 1;
@@ -101,7 +101,7 @@ Object_3d* Stack_Grow_Object_N(Stack *stack, IMatrix *chord, int flag,
 
   extract_object(chord, index, obj);
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -121,7 +121,7 @@ Object_3d* Stack_Grow_Object_Constraint(Stack *stack, int flag,
     return NULL;
   }
 
-  BOOL owner = FALSE;
+  _BOOL_ owner = _FALSE_;
 
   if (chord == NULL) {
     dim_type dim[3];
@@ -130,7 +130,7 @@ Object_3d* Stack_Grow_Object_Constraint(Stack *stack, int flag,
     dim[2] = stack->depth;
 
     chord = Make_IMatrix(dim, 3);
-    owner = TRUE;
+    owner = _TRUE_;
   }
   
 
@@ -141,7 +141,7 @@ Object_3d* Stack_Grow_Object_Constraint(Stack *stack, int flag,
 
   extract_object(chord, index, obj);
 
-  if (owner == TRUE) {
+  if (owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -271,18 +271,18 @@ Object_3d_List* Stack_Find_Object_N(Stack *stack, IMatrix *chord, int flag,
     int i;
     int label = flag + 1;
     
-    BOOL is_owner = FALSE;
+    _BOOL_ is_owner = _FALSE_;
     
     if (chord == NULL) {
       chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);
-      is_owner = TRUE;
+      is_owner = _TRUE_;
     }
     
     Objlabel_Workspace ow;
     ow.conn = n_nbr;
     ow.chord = chord;
-    ow.init_chord = FALSE;
-    ow.recover_chord = FALSE;
+    ow.init_chord = _FALSE_;
+    ow.recover_chord = _FALSE_;
 
     for (i = 0; i < nvoxel; i++) {
       ow.chord->array[i] = -1;
@@ -312,7 +312,7 @@ Object_3d_List* Stack_Find_Object_N(Stack *stack, IMatrix *chord, int flag,
     
     PROGRESS_END("done");
 
-    if (is_owner == TRUE) {
+    if (is_owner == _TRUE_) {
       Kill_IMatrix(chord);
     }
   } 
@@ -370,17 +370,17 @@ Object_3d_List* Stack_Find_Object_Level(Stack *stack, IMatrix *chord, int flag,
     int i;
     int label = flag + 1;
     
-    BOOL is_owner = FALSE;
+    _BOOL_ is_owner = _FALSE_;
     
     if (chord == NULL) {
       chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);
-      is_owner = TRUE;
+      is_owner = _TRUE_;
     }
     
     Objlabel_Workspace ow;
     ow.conn = n_nbr;
     ow.chord = chord;
-    ow.init_chord = FALSE;
+    ow.init_chord = _FALSE_;
     
     for (i = 0; i < nvoxel; i++) {
       ow.chord->array[i] = -1;
@@ -411,7 +411,7 @@ Object_3d_List* Stack_Find_Object_Level(Stack *stack, IMatrix *chord, int flag,
     
     PROGRESS_END("done");
 
-    if (is_owner == TRUE) {
+    if (is_owner == _TRUE_) {
       Kill_IMatrix(chord);
     }
   } 
@@ -424,7 +424,7 @@ Object_3d* Stack_Find_Largest_Object_N(Stack *stack, IMatrix *chord, int flag,
   Objlabel_Workspace ow;
   ow.chord = chord;
   ow.conn = conn;
-  ow.init_chord = TRUE;
+  ow.init_chord = _TRUE_;
   STACK_OBJLABEL_OPEN_WORKSPACE(stack, (&ow));
 
   int obj_size = Stack_Label_Largest_Object_W(stack, flag, flag + 1, &ow);
@@ -537,7 +537,7 @@ void Stack_Label_Background_N(Stack *stack, int label, int conn,
     return;
   }
 
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   if (chord == NULL) {
     dim_type dim[3];
@@ -545,7 +545,7 @@ void Stack_Label_Background_N(Stack *stack, int label, int conn,
     dim[1] = stack->height;
     dim[2] = stack->depth;
     chord = Make_IMatrix(dim, 3);
-    is_owner = TRUE;
+    is_owner = _TRUE_;
   }
 
   int i, j, k;
@@ -560,7 +560,7 @@ void Stack_Label_Background_N(Stack *stack, int label, int conn,
   Objlabel_Workspace ow;
   ow.conn = conn;
   ow.chord = chord;
-  ow.init_chord = FALSE;
+  ow.init_chord = _FALSE_;
 
   int nvoxel = Stack_Voxel_Number(stack);
 
@@ -621,7 +621,7 @@ void Stack_Label_Background_N(Stack *stack, int label, int conn,
     }
   }
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);  
   }
 }
@@ -650,7 +650,7 @@ Object_3d_List* Stack_Find_2dhole(Stack *stack, int iscon1)
 
 Object_3d_List* Stack_Find_Hole_N(Stack *stack, int conn, IMatrix *chord)
 {
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   if (chord == NULL) {
     dim_type dim[3];
@@ -658,13 +658,13 @@ Object_3d_List* Stack_Find_Hole_N(Stack *stack, int conn, IMatrix *chord)
     dim[1] = stack->height;
     dim[2] = stack->depth;
     chord = Make_IMatrix(dim, 3);
-    is_owner = TRUE;
+    is_owner = _TRUE_;
   }
 
   Stack_Label_Background_N(stack, 1, conn, chord);
   Object_3d_List *objs = Stack_Find_Object_N(stack, chord, 0, 0, conn);
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 

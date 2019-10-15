@@ -1578,7 +1578,7 @@ void ZStackDoc::selectConnectedNode()
   std::vector<Swc_Tree_Node*> treeNodes;
   for (std::set<Swc_Tree_Node*>::iterator iter = regularRoots.begin(); iter != regularRoots.end(); ++iter) {
     ZSwcTree* tree = nodeToSwcTree(*iter);
-    tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, *iter, FALSE);
+    tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, *iter, _FALSE_);
     for (Swc_Tree_Node *tn = tree->begin(); tn != tree->end(); tn = tn->next)
       treeNodes.push_back(tn);
   }
@@ -4833,7 +4833,7 @@ void ZStackDoc::setReceptor(int option, bool cone)
   ((Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace)->sws->field_func =
       Neuroseg_Slice_Field_Func(option);
 
-  if (cone == TRUE) {
+  if (cone == _TRUE_) {
     Locseg_Fit_Workspace_Enable_Cone(
         (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace);
   } else {
@@ -4870,7 +4870,7 @@ void ZStackDoc::mergeAllChain()
 
      /* reconstruct neuron */
      Connection_Test_Workspace ctw = *getConnectionTestWorkspace();
-     ctw.sp_test = FALSE;
+     ctw.sp_test = _FALSE_;
 
      double zscale = chainList.at(0)->zScale();
 
@@ -9302,7 +9302,7 @@ bool ZStackDoc::executeConnectIsolatedSwc()
       //tree.setDataFromNode(masterRoot);
       Swc_Tree tmpTree;
       tmpTree.root = masterRoot;
-      Swc_Tree_Iterator_Start(&tmpTree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+      Swc_Tree_Iterator_Start(&tmpTree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
       //tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
       bool isConnected = false;
@@ -10012,7 +10012,7 @@ void ZStackDoc::localSeededWatershed()
 //      QApplication::processEvents();
 
       //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
-      //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+      //objData = Stack_Region_Border(out->c_stack(), 6, _TRUE_);
 
       ZOUT(LINFO(), 3) << "Updating boundary object";
       updateWatershedBoundaryObject(out, dsIntv);

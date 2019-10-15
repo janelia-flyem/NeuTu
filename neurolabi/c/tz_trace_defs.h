@@ -25,10 +25,10 @@ typedef int Trace_Test_f(void *argv[]);
  */
 typedef struct _Trace_Workspace {
   int length;      /**< maximum length to trace */
-  BOOL fit_first;  /**< fit the first node or not */
-  BOOL refit;      /**< refit or not */
-  BOOL break_refit; /**< break refit or not */
-  BOOL tune_end; /**< tune ends or not */
+  _BOOL_ fit_first;  /**< fit the first node or not */
+  _BOOL_ refit;      /**< refit or not */
+  _BOOL_ break_refit; /**< break refit or not */
+  _BOOL_ tune_end; /**< tune ends or not */
   int tscore_option; /**< option of thresholding score */
   double min_score;  /**< minimal score */
   double min_chain_length; /**< the minimal length to be valid*/
@@ -41,9 +41,9 @@ typedef struct _Trace_Workspace {
   double trace_range[6];  /**< range to trace */
   Stack *sup_stack; /**< supervising stack */
   Stack *trace_mask;  /**< tracing mask */
-  BOOL trace_mask_updating; /**< update tracing mask or not */
+  _BOOL_ trace_mask_updating; /**< update tracing mask or not */
   Stack *swc_mask;  /**< mask for swc */
-  BOOL canvas_updating; /**< update canvas or not */
+  _BOOL_ canvas_updating; /**< update canvas or not */
   Stack *canvas;  /**< canvas for drawing the result */
   double dyvar[5]; /**< reserved field, which has different meanings for
 		      different routines. */
@@ -52,7 +52,7 @@ typedef struct _Trace_Workspace {
   char save_path[256]; /**< place to save the chain(s) */
   char save_prefix[256]; /**< prefix for the chain files */
   void *fit_workspace; /**< additional parameters for fitting */
-  BOOL add_hit; /**< Add hit or not. Default: TRUE */
+  _BOOL_ add_hit; /**< Add hit or not. Default: TRUE */
 
   FMatrix *Ixx;
   FMatrix *Iyy;
@@ -114,15 +114,15 @@ typedef struct _Connection_Test_Workspace {
   double cos1;
   double cos2;
   double dist_thre;
-  BOOL good_dist;
+  _BOOL_ good_dist;
   double resolution[3];
   char unit; /* 'p' for pixel; 'u' for um */
   Stack *mask;
   double big_euc;
   double big_planar;
-  BOOL sp_test;
-  BOOL interpolate;
-  BOOL crossover_test;
+  _BOOL_ sp_test;
+  _BOOL_ interpolate;
+  _BOOL_ crossover_test;
 } Connection_Test_Workspace;
 
 __END_DECLS

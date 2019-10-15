@@ -353,7 +353,7 @@ void ZLocsegChain::fixTerminal(const Stack *stack, const Trace_Workspace *tw)
   memcpy(&tmptw, tw, sizeof(Trace_Workspace));
   tmptw.trace_status[0] = TRACE_NORMAL;
   tmptw.trace_status[1] = TRACE_NORMAL;
-  tmptw.refit = FALSE;
+  tmptw.refit = _FALSE_;
 
   if (Locseg_Chain_Length(m_chain) > 1) {
     Local_Neuroseg *locseg = Locseg_Chain_Head_Seg(m_chain);
@@ -619,7 +619,7 @@ void ZLocsegChain::refineEnd(Dlist_End_e end, Stack *signal,
   int oldRefit = tw->refit;
 
   tw->trace_step = 0.1;
-  tw->refit = FALSE;
+  tw->refit = _FALSE_;
 
   eraseTraceMask(tw->trace_mask);
 

@@ -39,7 +39,7 @@ void Clean_<1T>_Node(<1T>_Node *p);
 
 <1T>_Node* Copy_<1T>_Node(const <1T>_Node *p);
 
-BOOL <1T>_Node_Is_Identical(const <1T>_Node *p1, const <1T>_Node *p2);
+_BOOL_ <1T>_Node_Is_Identical(const <1T>_Node *p1, const <1T>_Node *p2);
 
 void Print_<1T>_Node(const <1T>_Node *p);
 void Print_<1T>_Node_Info(const <1T>_Node *p);
@@ -55,12 +55,12 @@ void <1T>_Node_Copy_Trace_Record(<1T>_Node *p, const Trace_Record *tr);
 void <1T>_Node_Set_Score(<1T>_Node *p, const Stack_Fit_Score *fs);
 void <1T>_Node_Set_Hit_Region(<1T>_Node *p, int hit_region);
 void <1T>_Node_Set_Index(<1T>_Node *p, int index);
-void <1T>_Node_Set_Refit(<1T>_Node *p, BOOL is_refit);
+void <1T>_Node_Set_Refit(<1T>_Node *p, _BOOL_ is_refit);
 void <1T>_Node_Set_Direction(<1T>_Node *p, Dlist_Direction_e direction);
 void <1T>_Node_Set_Fit_Height(<1T>_Node *p, int index, int value);
 void <1T>_Node_Set_Fix_Point(<1T>_Node *p, double value);
 
-BOOL <1T>_Node_Fix_Pos(<1T>_Node *p, double *pos);
+_BOOL_ <1T>_Node_Fix_Pos(<1T>_Node *p, double *pos);
 
 __END_DECLS
 

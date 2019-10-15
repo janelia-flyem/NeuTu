@@ -75,7 +75,7 @@ void Trace_Neuron_All(const Stack *stack, Neurochain *chain[],
  *
  * <z_scale> is the Z-axis scale of the stack.
  */
-BOOL Neuroseg_Hit_Traced(const Local_Neuroseg *locseg, const Stack *mask, 
+_BOOL_ Neuroseg_Hit_Traced(const Local_Neuroseg *locseg, const Stack *mask, 
 			 double z_scale);
 int Neuroseg_Hit_At(const Local_Neuroseg *locseg, const Stack *mask,
 		    double z_scale);

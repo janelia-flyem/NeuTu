@@ -271,7 +271,7 @@ int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
   ZSwcTree tree;
   tree.setDataFromNodeRoot(tn);
   int count =
-      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, FALSE);
+      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, _FALSE_);
   tree.setData(NULL, ZSwcTree::FREE_WRAPPER);
 
   return count;
@@ -285,12 +285,12 @@ int SwcTreeNode::singleTreeSize(Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isRegular(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Regular(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Regular(tn) == _TRUE_);
 }
 
 bool SwcTreeNode::isVirtual(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Virtual(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Virtual(tn) == _TRUE_);
 }
 
 Swc_Tree_Node* SwcTreeNode::regularRoot(Swc_Tree_Node *tn)

@@ -11,9 +11,9 @@ Trace_Workspace* ZWorkspaceFactory::createTraceWorkspace(
 {
   Trace_Workspace *ws = New_Trace_Workspace();
   Locseg_Chain_Default_Trace_Workspace(ws, stack);
-  ws->refit = FALSE;
-  ws->tune_end = TRUE;
-  ws->add_hit = FALSE;
+  ws->refit = _FALSE_;
+  ws->tune_end = _TRUE_;
+  ws->add_hit = _FALSE_;
   ws->fit_workspace = New_Locseg_Fit_Workspace();
   ws->min_chain_length = 15;
 

@@ -60,37 +60,37 @@ void Kill_<1T>_Node(<1T>_Node *p)
 			Copy_Trace_Record(p->tr));
 }
 
-BOOL <1T>_Node_Is_Identical(const <1T>_Node *p1, const <1T>_Node *p2)
+_BOOL_ <1T>_Node_Is_Identical(const <1T>_Node *p1, const <1T>_Node *p2)
 {
   if (p1 == p2) {
-    return TRUE;
+    return _TRUE_;
   }
 
   if ((p1 == NULL) || (p2 == NULL)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (p1->tr != p2->tr) {
     if ((p1->tr == NULL) || (p2->tr == NULL)) {
-      return FALSE;
+      return _FALSE_;
     }
     
     if (memcmp(p1->tr, p2->tr, sizeof(Trace_Record)) != 0) {
-      return FALSE;
+      return _FALSE_;
     }
   }
 
   if (p1->locseg != p2->locseg) {
     if ((p1->locseg == NULL) || (p2->locseg == NULL)) {
-      return FALSE;
+      return _FALSE_;
     }
 
     if (memcmp(p1->locseg, p2->locseg, sizeof(<2T>)) != 0) {
-      return FALSE;
+      return _FALSE_;
     }
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 void Print_<1T>_Node(const <1T>_Node *p)
@@ -130,22 +130,22 @@ void <1T>_Node_Fwrite_V(const <1T>_Node *p, FILE *stream, double version)
     return NULL;
   }
   
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (p == NULL) {
     p = New_<1T>_Node();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
   
   if ((p->locseg = <2T>_Fread(p->locseg, stream)) == NULL) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_<1T>_Node(p);
     }
     p = NULL;
   } else {
     if ((p->tr = Trace_Record_Fread(p->tr, stream)) == NULL) {
       if (feof(stream)) {
-	if (is_local_alloc == TRUE) {
+	if (is_local_alloc == _TRUE_) {
 	  Delete_<1T>_Node(p);
 	}
 	p = NULL;
@@ -164,22 +164,22 @@ void <1T>_Node_Fwrite_V(const <1T>_Node *p, FILE *stream, double version)
     return NULL;
   }
   
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (p == NULL) {
     p = New_<1T>_Node();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
   
   if ((p->locseg = <2T>_Fread(p->locseg, stream)) == NULL) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_<1T>_Node(p);
     }
     p = NULL;
   } else {
     if ((p->tr = Trace_Record_Fread_V(p->tr, stream, version)) == NULL) {
       if (feof(stream)) {
-	if (is_local_alloc == TRUE) {
+	if (is_local_alloc == _TRUE_) {
 	  Delete_<1T>_Node(p);
 	}
 	p = NULL;
@@ -226,7 +226,7 @@ void <1T>_Node_Set_Index(<1T>_Node *p, int index)
   Trace_Record_Set_Index(p->tr, index);
 }
 
-void <1T>_Node_Set_Refit(<1T>_Node *p, BOOL is_refit)
+void <1T>_Node_Set_Refit(<1T>_Node *p, _BOOL_ is_refit)
 {
   if (p->tr == NULL) {
     p->tr = New_Trace_Record();
@@ -284,15 +284,15 @@ double <1T>_Node_Fix_Point(<1T>_Node *p)
   return t;
 }
 
-BOOL <1T>_Node_Fix_Pos(<1T>_Node *p, double *pos)
+_BOOL_ <1T>_Node_Fix_Pos(<1T>_Node *p, double *pos)
 {
 <2T=Local_Neuroseg>
   double t = <1T>_Node_Fix_Point(p);
   if (t >= 0.0) {
     Local_Neuroseg_Axis_Coord_N(p->locseg, t, pos);
-    return TRUE;
+    return _TRUE_;
   }
 </T>
 
-   return FALSE;
+   return _FALSE_;
 }

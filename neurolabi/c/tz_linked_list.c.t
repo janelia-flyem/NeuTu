@@ -183,12 +183,12 @@ void <1T>_List_Remove_Last(<1T>_List *p)
   return prev;
 }
 
-BOOL <1T>_List_Is_Empty(const <1T>_List *p)
+_BOOL_ <1T>_List_Is_Empty(const <1T>_List *p)
 {
   if (p == NULL) {
-    return TRUE;
+    return _TRUE_;
   } else {
-    return FALSE;
+    return _FALSE_;
   }
 }
 

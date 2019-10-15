@@ -172,7 +172,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
     Process_Neuron_Structure(ns);
 
-    if (m_connWorkspace->crossover_test == TRUE) {
+    if (m_connWorkspace->crossover_test == _FALSE_) {
       Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
@@ -272,7 +272,7 @@ void ZNeuronTracer::configure()
 }
 
 #define NT_OUTPUT_VALUE(v) \
-  stream << #v << ": " << t.v << std::endl;
+  stream << #v << ": " << t.v << std::endl
 
 std::ostream& operator << (std::ostream &stream, const ZNeuronTracer &t)
 {
@@ -1095,9 +1095,9 @@ std::vector<Locseg_Chain*> ZNeuronTracer::recover(const Stack *stack)
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", leftover);
 #endif
 
-    if (Stack_Is_Dark(leftover) == FALSE) {
+    if (Stack_Is_Dark(leftover) == _FALSE_) {
       double originalMinLength = m_traceWorkspace->min_chain_length;
-      if (m_traceWorkspace->refit == FALSE) {
+      if (m_traceWorkspace->refit == _FALSE_) {
         m_traceWorkspace->min_chain_length =
             (NEUROSEG_DEFAULT_H  - 1.0) * 2.0 - 1.0;
       } else {
@@ -1723,11 +1723,11 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   //Create neuron structure
 
-  BOOL oldSpTest = m_connWorkspace->sp_test;
+  _BOOL_ oldSpTest = m_connWorkspace->sp_test;
   if (chainArray.size() > 500) {
     log("Too many chains: " + std::to_string(chainArray.size()));
     log("Turn off shortest path test");
-    m_connWorkspace->sp_test = FALSE;
+    m_connWorkspace->sp_test = _FALSE_;
     m_diag.setInfo("sp test", "off");
   }
 
@@ -1870,7 +1870,7 @@ void ZNeuronTracer::initTraceWorkspace(Stack *stack)
 
   //m_traceWorkspace->min_score = 0.35;
   m_traceWorkspace->tune_end = m_config.tuningEnd();
-  m_traceWorkspace->add_hit = TRUE;
+  m_traceWorkspace->add_hit = _TRUE_;
   m_traceWorkspace->trace_mask_updating = m_maskTracing;
 
   if (stack != NULL) {
@@ -1911,9 +1911,9 @@ void ZNeuronTracer::updateTraceWorkspace(
 {
   if (m_traceWorkspace) {
     if (traceEffort > 0) {
-      m_traceWorkspace->refit = FALSE;
+      m_traceWorkspace->refit = _FALSE_;
     } else {
-      m_traceWorkspace->refit = TRUE;
+      m_traceWorkspace->refit = _TRUE_;
     }
 
     updateTraceWorkspaceResolution(xRes, yRes, zRes);
@@ -1982,11 +1982,11 @@ void ZNeuronTracer::setTraceLevel(int level)
     initConnectionTestWorkspace();
   }
 
-//  m_traceWorkspace->tune_end = FALSE;
-  m_traceWorkspace->refit = FALSE;
-  m_connWorkspace->sp_test = FALSE;
-  m_connWorkspace->crossover_test = FALSE;
-  m_traceWorkspace->tune_end = TRUE;
+//  m_traceWorkspace->tune_end = _FALSE_;
+  m_traceWorkspace->refit = _FALSE_;
+  m_connWorkspace->sp_test = _FALSE_;
+  m_connWorkspace->crossover_test = _FALSE_;
+  m_traceWorkspace->tune_end = _TRUE_;
   m_enhancingMask = false;
   m_seedingMethod = 1;
   m_recover = 0;
@@ -1996,7 +1996,7 @@ void ZNeuronTracer::setTraceLevel(int level)
   }
 
   if (level >= 3) {
-    m_connWorkspace->sp_test = TRUE;
+    m_connWorkspace->sp_test = _TRUE_;
   }
 
   if (level >= 4) {
@@ -2008,7 +2008,7 @@ void ZNeuronTracer::setTraceLevel(int level)
   }
 
   if (level >= 6) {
-    m_traceWorkspace->refit = TRUE;
+    m_traceWorkspace->refit = _TRUE_;
   }
 #endif
 }

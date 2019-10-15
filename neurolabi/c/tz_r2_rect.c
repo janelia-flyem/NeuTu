@@ -527,7 +527,7 @@ Local_Neuroseg* Local_R2_Rect_To_Local_Neuroseg(const Local_R2_Rect *rseg,
   return locseg;
 }
 
-BOOL Local_R2_Rect_Hit_Test(const Local_R2_Rect *rect, double x, double y,
+_BOOL_ Local_R2_Rect_Hit_Test(const Local_R2_Rect *rect, double x, double y,
     double z)
 {
   if (z == rect->base.z) {
@@ -538,11 +538,11 @@ BOOL Local_R2_Rect_Hit_Test(const Local_R2_Rect *rect, double x, double y,
     Scale_X_Rotate_Z(pt, pt, 1 , rect->transform.r, rect->transform.theta, 1);
     if ((fabs(pt[0]) <= 1.0) && 
         ((pt[1] >= -0.5) && (pt[1] <= rect->transform.h - 0.5))) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 void Local_R2_Rect_Bottom(const Local_R2_Rect *rect, double pos[])

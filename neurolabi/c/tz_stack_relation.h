@@ -19,14 +19,14 @@ __BEGIN_DECLS
  * Stack_Same_Size() returns TRUE if the dimensions of <stack1> and <stack2> 
  * are the same, otherwise it returns FASLE.
  */
-BOOL Stack_Same_Size(const Stack *stack1, const Stack *stack2);
+_BOOL_ Stack_Same_Size(const Stack *stack1, const Stack *stack2);
 
 /**@brief Test if two stacks have the same kind.
  *
  * Stack_Same_Kind() returns TRUE if the kinds of <stack1> and <stack2> are the
  * same, otherwise it returns FASLE.
  */
-BOOL Stack_Same_Kind(const Stack *stack1, const Stack *stack2);
+_BOOL_ Stack_Same_Kind(const Stack *stack1, const Stack *stack2);
 
 /**@brief Test if two stacks have the same attributes.
  *
@@ -34,14 +34,14 @@ BOOL Stack_Same_Kind(const Stack *stack1, const Stack *stack2);
  * voxel values) of <stack1> and <stack2> are the same, otherwise it returns 
  * FASLE.
  */
-BOOL Stack_Same_Attribute(const Stack *stack1, const Stack *stack2);
+_BOOL_ Stack_Same_Attribute(const Stack *stack1, const Stack *stack2);
 
 /**@brief Test if two stacks are identical.
  *
  * Stack_Identical() returns TRUE if <stack1> and <stack2> have exactly the same
  * attributes and voxel values, otherwise it returns FALSE.
  */
-BOOL Stack_Identical(const Stack *stack1, const Stack *stack2);
+_BOOL_ Stack_Identical(const Stack *stack1, const Stack *stack2);
 
 __END_DECLS
 

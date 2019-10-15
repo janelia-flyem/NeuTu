@@ -131,36 +131,36 @@ size_t Stack_Array_Bsize(const Stack *stack)
   return Stack_Voxel_Number(stack) * Stack_Voxel_Bsize(stack);
 }
 
-BOOL Stack_Contain_Point(const Stack *stack, int x, int y, int z)
+_BOOL_ Stack_Contain_Point(const Stack *stack, int x, int y, int z)
 {
   if ((x < 0) || (y < 0) || (z < 0) || (x >= stack->width) ||
       (y >= stack->height) || (z >= stack->depth)) {
-    return FALSE;
+    return _FALSE_;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Stack_Is_Empty(const Stack *stack)
+_BOOL_ Stack_Is_Empty(const Stack *stack)
 {
   if (stack != NULL) {
     if ((stack->array == NULL) || (stack->kind == 0) || (stack->width == 0) ||
 	(stack->height == 0)) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 #define STACK_IS_DARK(stack_array)		\
   for (i = 0; i < nvoxel; i++) {		\
     if (stack_array[i] > 0) {			\
-      return FALSE;				\
+      return _FALSE_;				\
     }						\
   }
 
-BOOL Stack_Is_Dark(const Stack *stack)
+_BOOL_ Stack_Is_Dark(const Stack *stack)
 {
   int nvoxel = Stack_Voxel_Number(stack);
   size_t i;
@@ -170,5 +170,5 @@ BOOL Stack_Is_Dark(const Stack *stack)
 
   STACK_ARRAY_OPERATION(ima, STACK_IS_DARK);
 
-  return TRUE;
+  return _TRUE_;
 }

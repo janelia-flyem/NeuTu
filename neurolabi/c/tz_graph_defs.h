@@ -32,7 +32,7 @@ const static int Max_Edge_Capacity = 1073741824; /* 1G */
  * Graph data structure
  */
 typedef struct _Graph {
-  BOOL directed;          /**< TRUE for directed graph, FALSE for undirected*/
+  _BOOL_ directed;          /**< TRUE for directed graph, FALSE for undirected*/
   Graph_Structure_e type; /**< Type of the graph */
   int nvertex;            /**< Number of vertices */
   int nedge;              /**< Number of edges */

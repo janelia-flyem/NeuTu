@@ -149,12 +149,12 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
 
   darraycpy(update_direction, lsw->start_grad, 0, perceptor->vs->nvar);
     
-  BOOL stop = FALSE;
+  _BOOL_ stop = _FALSE_;
   int iter = 0;
-  BOOL succ = TRUE;
+  _BOOL_ succ = _TRUE_;
 
 
-  while (stop == FALSE) {  
+  while (stop == _FALSE_) {  
 #ifdef _DEBUG_
     darray_print2(lsw->start_grad, perceptor->vs->nvar, 1);
     darray_print2(perceptor->vs->var, perceptor->vs->nvar, 1);
@@ -163,7 +163,7 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
     double direction_length = darray_norm(update_direction, 
         perceptor->vs->nvar);
     if (direction_length < lsw->min_direction) {
-      succ = FALSE;
+      succ = _FALSE_;
     } else {
 #if GRADESC_METHOD == 1
       //darray_divc(update_direction, direction_length, perceptor->vs->nvar);
@@ -174,7 +174,7 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
           update_direction, lsw);
     }
 
-    if (succ == FALSE) {
+    if (succ == _FALSE_) {
       direction_length = darray_norm(lsw->start_grad, perceptor->vs->nvar);
       if (direction_length > perceptor->min_gradient) {
 #if GRADESC_METHOD == 1
@@ -187,7 +187,7 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
       }
     }
 
-    if (succ == TRUE) {
+    if (succ == _TRUE_) {
       iter++;
 #ifdef _DEBUG_
       //darray_print2(lsw->grad, perceptor->vs->nvar, 1);
@@ -195,7 +195,7 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
       //darray_print2(update_direction, perceptor->vs->nvar, 1);
 #endif
       if (iter >= FIT_PERCEPTOR_MAXITER) {
-        stop = TRUE;
+        stop = _TRUE_;
       } else {
         Perceptor_Gradient(perceptor, stack, lsw->grad);
 
@@ -216,7 +216,7 @@ double Fit_Perceptor(Perceptor *perceptor, const Stack *stack)
         darraycpy(lsw->start_grad, lsw->grad, 0, perceptor->vs->nvar);
       }
     } else {
-      stop = TRUE;
+      stop = _TRUE_;
     }
   }
  

@@ -59,7 +59,7 @@ static void stack_label_object_by_chord(Stack *stack, const IMatrix *chord,
 #define STACK_OBJLABEL_CHECK_CHORD(stack, chord, is_owner)		\
   if (chord == NULL) {							\
     chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);	\
-    is_owner = TRUE;							\
+    is_owner = _TRUE_;							\
   } else {								\
     if (chord->ndim != 3) {						\
       THROW(ERROR_DATA_TYPE);						\
@@ -85,9 +85,9 @@ void Default_Objlabel_Workspace(Objlabel_Workspace *ow)
   ow->conn = 26;
   ow->seed = -1;
   ow->max_label = 65535;
-  ow->init_chord = TRUE;
-  ow->recover_chord = FALSE;
-  ow->inc_label = TRUE;
+  ow->init_chord = _TRUE_;
+  ow->recover_chord = _FALSE_;
+  ow->inc_label = _TRUE_;
   ow->chord = NULL;
   ow->u = NULL;
 }
@@ -125,7 +125,7 @@ int Stack_Label_Object_N(Stack *stack, IMatrix *chord, int seed, int flag,
   Default_Objlabel_Workspace(&ow);
   ow.conn = n_nbr;
   ow.chord = chord;
-  ow.init_chord = TRUE;
+  ow.init_chord = _TRUE_;
 
   return Stack_Label_Object_W(stack, seed, flag, label, &ow);
 }
@@ -161,7 +161,7 @@ int Stack_Label_Object_W(Stack *stack, int seed, int flag, int label,
   int c = seed; /* center pixel */
   int nb;       /* neighobr pixel */
   
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < npixel; i++) {
       ow->chord->array[i] = -1;
     }
@@ -258,21 +258,21 @@ int Stack_Label_Object_W(Stack *stack, int seed, int flag, int label,
 
 #define STACK_LABEL_OBJECT_CONSTRAINT_N_UPDATE_QUEUE(stack_array)	\
     nb = c + neighbor[i];						\
-    do_label = TRUE;							\
+    do_label = _TRUE_;							\
     if ((stack_array[nb] == flag) && (chord->array[nb] == -1)) {	\
       /*process unlabeled white neighbors*/				\
       if (code != NULL) {						\
 	if (code_array[c] + 1 > max) {					\
-	  do_label = FALSE;						\
+	  do_label = _FALSE_;						\
 	} else {							\
-	  do_label = TRUE;						\
+	  do_label = _TRUE_;						\
 	}								\
       }									\
     } else {								\
-      do_label = FALSE;							\
+      do_label = _FALSE_;							\
     }									\
 									\
-    if (do_label == TRUE) {						\
+    if (do_label == _TRUE_) {						\
       code_array[nb] = code_array[c] + 1;				\
       chord->array[next] = nb;						\
       next = nb;							\
@@ -283,11 +283,11 @@ int Stack_Label_Object_Level_N(Stack *stack, IMatrix *chord, int seed,
 			       int flag, int label, Stack *code, int max,
 			       int n_nbr)
 {
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   if (chord == NULL) {
     chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);
-    is_owner = TRUE;
+    is_owner = _TRUE_;
   } else {
     if (chord->ndim != 3) {
       THROW(ERROR_DATA_TYPE);
@@ -318,7 +318,7 @@ int Stack_Label_Object_Level_N(Stack *stack, IMatrix *chord, int seed,
   int obj_size = 0;
   int next = c;
   uint16 *code_array = NULL;
-  BOOL do_label = TRUE;
+  _BOOL_ do_label = _TRUE_;
 
   if (code != NULL) {
     code_array = (uint16 *)code->array;
@@ -364,7 +364,7 @@ int Stack_Label_Object_Level_N(Stack *stack, IMatrix *chord, int seed,
     }
   } while (c >= 0);
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -398,7 +398,7 @@ int Stack_Label_Object_Level_Nw(Stack *stack, int seed,
   int obj_size = 0;
   int next = c;
   uint16 *code_array = NULL;
-  BOOL do_label = TRUE;
+  _BOOL_ do_label = _TRUE_;
 
   if (code != NULL) {
     code_array = (uint16 *)code->array;
@@ -455,11 +455,11 @@ int Stack_Label_Object_Dist_N(Stack *stack, IMatrix *chord, int seed,
 			      int flag, int label, double max_dist,
 			      int n_nbr)
 {
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   if (chord == NULL) {
     chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);
-    is_owner = TRUE;
+    is_owner = _TRUE_;
   } else {
     if (chord->ndim != 3) {
       THROW(ERROR_DATA_TYPE);
@@ -491,7 +491,7 @@ int Stack_Label_Object_Dist_N(Stack *stack, IMatrix *chord, int seed,
  
   int obj_size = 0;
   int next = c;
-  BOOL do_label = TRUE;
+  _BOOL_ do_label = _TRUE_;
   double max_dist_square = max_dist * max_dist;
 
   stack->array[seed] = label;
@@ -508,14 +508,14 @@ int Stack_Label_Object_Dist_N(Stack *stack, IMatrix *chord, int seed,
     dy = ny - cy;							\
     dz = nz - cz;							\
     if (dx * dx + dy * dy + dz * dz > max_dist_square) {		\
-      do_label = FALSE;							\
+      do_label = _FALSE_;							\
     } else {								\
-      do_label = TRUE;							\
+      do_label = _TRUE_;							\
     }									\
     									\
     if ((((flag < 0) && (stack->array[nb] != label)) ||			\
 	(stack->array[nb] == flag)) &&					\
-	(chord->array[nb] == -1) && (do_label == TRUE)) {		\
+	(chord->array[nb] == -1) && (do_label == _TRUE_)) {		\
       chord->array[next] = nb;						\
       next = nb;							\
       stack->array[nb] = label;						\
@@ -556,7 +556,7 @@ int Stack_Label_Object_Dist_N(Stack *stack, IMatrix *chord, int seed,
     obj_size++;
   } while (c >= 0);
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -570,7 +570,7 @@ int Stack_Label_Objects_N(Stack *stack, IMatrix *chord,
 
   int start_label = label;
 
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   STACK_OBJLABEL_CHECK_CHORD(stack, chord, is_owner);
 
@@ -582,7 +582,7 @@ int Stack_Label_Objects_N(Stack *stack, IMatrix *chord,
   Default_Objlabel_Workspace(&ow);
   ow.conn = n_nbr;
   ow.chord = chord;
-  ow.init_chord = FALSE;
+  ow.init_chord = _FALSE_;
   
   for (i = 0; i < nvoxel; i++) {
     ow.chord->array[i] = -1;
@@ -592,14 +592,14 @@ int Stack_Label_Objects_N(Stack *stack, IMatrix *chord,
   uint16_t *array16 = (uint16_t*) stack->array;
   uint8_t *array8 = (uint8_t*) stack->array;
   for (i = 0; i < nvoxel; i++) {
-    BOOL is_flag = FALSE;
+    _BOOL_ is_flag = _FALSE_;
     if (stack->kind == GREY) {
       is_flag = (array8[i] == flag);
     } else {
       is_flag = (array16[i] == flag);
     }
 
-    if (is_flag == TRUE) {
+    if (is_flag == _TRUE_) {
       if (label > 255) {
         if (stack->kind == GREY) {
           Translate_Stack(stack, GREY16, 1);
@@ -619,7 +619,7 @@ int Stack_Label_Objects_N(Stack *stack, IMatrix *chord,
   }
   PROGRESS_END("done");
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -632,7 +632,7 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
   TZ_ASSERT(stack->kind == GREY, "Unsupported kind.");
   TZ_ASSERT(slabel <= 255, "Invalid lable");
 
-  BOOL is_owner = FALSE;
+  _BOOL_ is_owner = _FALSE_;
 
   STACK_OBJLABEL_CHECK_CHORD(stack, chord, is_owner);
 
@@ -644,7 +644,7 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
   Default_Objlabel_Workspace(&ow);
   ow.conn = n_nbr;
   ow.chord = chord;
-  ow.init_chord = FALSE;
+  ow.init_chord = _FALSE_;
   
   for (i = 0; i < nvoxel; i++) {
     ow.chord->array[i] = -1;
@@ -662,7 +662,7 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
   }
   PROGRESS_END("done");
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     Kill_IMatrix(chord);
   }
 
@@ -679,7 +679,7 @@ int Stack_Label_Large_Objects_N(Stack *stack, IMatrix *chord,
   Default_Objlabel_Workspace(&ow);
   ow.conn = n_nbr;
   ow.chord = chord;
-  ow.init_chord = TRUE;
+  ow.init_chord = _TRUE_;
 
   return Stack_Label_Large_Objects_W(stack, flag, label, minsize, &ow);  
 }
@@ -695,7 +695,7 @@ int Stack_Label_Large_Objects_G(Stack *stack, IMatrix *chord,
   ow.conn = n_nbr;
   ow.max_label = 255;
   ow.chord = chord;
-  ow.init_chord = TRUE;
+  ow.init_chord = _TRUE_;
 
   return Stack_Label_Large_Objects_W(stack, flag, label, minsize, &ow);
 }
@@ -707,7 +707,7 @@ int Stack_Label_Largest_Object_N(Stack *stack, IMatrix *chord,
   Default_Objlabel_Workspace(&ow);
   ow.conn = n_nbr;
   ow.chord = chord;
-  ow.init_chord = TRUE;
+  ow.init_chord = _TRUE_;
 
   return Stack_Label_Largest_Object_W(stack, flag, label, &ow);  
 }
@@ -725,11 +725,11 @@ int Stack_Label_Large_Objects_W(Stack *stack, int flag, int label, int minsize,
   int nvoxel = Stack_Voxel_Number(stack);
   int i;
 
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
-    ow->init_chord = FALSE;
+    ow->init_chord = _FALSE_;
   }
 
   int obj_size = 0;
@@ -740,14 +740,14 @@ int Stack_Label_Large_Objects_W(Stack *stack, int flag, int label, int minsize,
 
   PROGRESS_BEGIN("Labeling object");
   for (i = 0; i < nvoxel; i++) {
-    BOOL is_flag = FALSE;
+    _BOOL_ is_flag = _FALSE_;
     if (stack->kind == GREY) {
       is_flag = (array8[i] == flag);
     } else {
       is_flag = (array16[i] == flag);
     }
 
-    if (is_flag == TRUE) {
+    if (is_flag == _TRUE_) {
       PROGRESS_STATUS(i / (nvoxel / 100 + 1));
       if (large_label > 255) {
         if (stack->kind == GREY) {
@@ -760,7 +760,7 @@ int Stack_Label_Large_Objects_W(Stack *stack, int flag, int label, int minsize,
         stack_label_object_by_chord(stack, ow->chord, small_label, i);
       } else {
         large_object_number++;
-        if (ow->inc_label == TRUE) {
+        if (ow->inc_label == _TRUE_) {
           ++large_label;
         }
         if (large_label > ow->max_label) {
@@ -792,11 +792,11 @@ int Stack_Label_Largest_Object_W(Stack *stack, int flag, int label,
   int nvoxel = Stack_Voxel_Number(stack);
   int i;
 
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
-    ow->init_chord = FALSE;
+    ow->init_chord = _FALSE_;
   }
 
   int obj_size = 0;
@@ -870,7 +870,7 @@ void Stack_Grow_Object_S(Stack *seed, Stack *mask, Objlabel_Workspace *ow)
   
   int i;
   int nvoxel = Stack_Voxel_Number(seed);
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
@@ -963,7 +963,7 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
   int i, j, k;
   int nvoxel = Stack_Voxel_Number(stack);
 
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
@@ -993,7 +993,7 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
   int cheight = stack->height - 1;
   int cdepth = stack->depth - 1;
 
-  BOOL stop = FALSE;
+  _BOOL_ stop = _FALSE_;
   int x, y, z;
 
   Stack_Neighbor_Offset(conn, stack->width, stack->height, neighbor);
@@ -1019,8 +1019,8 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
     }									\
   }
 
-  while (stop == FALSE) {
-    stop = TRUE;
+  while (stop == _FALSE_) {
+    stop = _TRUE_;
     for (i = 0; i < nseed; i++) {
       if (queue_length[i] > 0) {
 	int label = i + 2;
@@ -1058,7 +1058,7 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
 	}
 	queue_head[i] = ow->chord->array[queue_head[i]];
 	queue_length[i]--;
-	stop = FALSE;
+	stop = _FALSE_;
       }
     }
   }
@@ -1071,7 +1071,7 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
 }
 
 Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
-				BOOL weighted, Objlabel_Workspace *ow)
+				_BOOL_ weighted, Objlabel_Workspace *ow)
 {
   if (stack->kind != GREY16) {
     PRINT_EXCEPTION("Unsupported stack kind", "The stack must be GREY16");
@@ -1083,7 +1083,7 @@ Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
   int i, j, k;
   int nvoxel = Stack_Voxel_Number(stack);
 
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
@@ -1113,7 +1113,7 @@ Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
   int cheight = stack->height - 1;
   int cdepth = stack->depth - 1;
 
-  BOOL stop = FALSE;
+  _BOOL_ stop = _FALSE_;
   int x, y, z;
 
   Stack_Neighbor_Offset(conn, stack->width, stack->height, neighbor);
@@ -1137,7 +1137,7 @@ Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
 	    SWAP2(v1, v2, tmp);						\
 	  }								\
 	  if (Graph_Edge_Index(v1, v2, gw) < 0) {			\
-	    if (weighted == TRUE) {					\
+	    if (weighted == _TRUE_) {					\
 	      double dist = Stack_Util_Voxel_Distance(seed[v1], seed[v2], stack->width, stack->height); \
 	      Graph_Add_Weighted_Edge(graph, v1, v2, dist);		\
 	    } else {							\
@@ -1153,8 +1153,8 @@ Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
   Graph *graph = Make_Graph(nseed, nseed, weighted);
   Graph_Workspace *gw = New_Graph_Workspace();
 
-  while (stop == FALSE) {
-    stop = TRUE;
+  while (stop == _FALSE_) {
+    stop = _TRUE_;
     for (i = 0; i < nseed; i++) {
       if (queue_length[i] > 0) {
 	int label = i + 2;
@@ -1171,7 +1171,7 @@ Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed,
 	}
 	queue_head[i] = ow->chord->array[queue_head[i]];
 	queue_length[i]--;
-	stop = FALSE;
+	stop = _FALSE_;
       }
     }
   }
@@ -1218,7 +1218,7 @@ void Init_Objlabel_Workspace_Gg(Objlabel_Workspace *ow)
  * if necessary.
  */
 Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
-				BOOL weighted, Objlabel_Workspace *ow)
+				_BOOL_ weighted, Objlabel_Workspace *ow)
 {
   if (stack->kind != GREY16) {
     PRINT_EXCEPTION("Unsupported stack kind", "The stack must be GREY16");
@@ -1252,7 +1252,7 @@ Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
   int cheight = stack->height - 1;
   int cdepth = stack->depth - 1;
 
-  BOOL stop = FALSE;
+  _BOOL_ stop = _FALSE_;
   int x, y, z;
 
   Stack_Neighbor_Offset(conn, stack->width, stack->height, neighbor);
@@ -1277,7 +1277,7 @@ Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
 	    SWAP2(v1, v2, tmp);						\
 	  }								\
 	  if (Graph_Edge_Index(v1, v2, gw) < 0) {			\
-	    if (weighted == TRUE) {					\
+	    if (weighted == _TRUE_) {					\
 	      /*double dist = Stack_Util_Voxel_Distance(seed[v1], seed[v2], stack->width, stack->height);*/ \
 	      double dist = level[checking_voxel] + level[queue_head[i]]; \
 	      Graph_Add_Weighted_Edge(graph, v1, v2, dist);		\
@@ -1294,8 +1294,8 @@ Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
   Graph *graph = Make_Graph(nseed, nseed, weighted);
   Graph_Workspace *gw = New_Graph_Workspace();
 
-  while (stop == FALSE) {
-    stop = TRUE;
+  while (stop == _FALSE_) {
+    stop = _TRUE_;
     for (i = 0; i < nseed; i++) {
       if (queue_length[i] > 0) {
 	int label = i + 2;
@@ -1312,7 +1312,7 @@ Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
 	}
 	queue_head[i] = ow->chord->array[queue_head[i]];
 	queue_length[i]--;
-	stop = FALSE;
+	stop = _FALSE_;
       }
     }
   }
@@ -1324,11 +1324,11 @@ Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
   return graph;
 }
 
-static BOOL is_border_voxel(uint16_t *signal_array, size_t index, int conn, 
+static _BOOL_ is_border_voxel(uint16_t *signal_array, size_t index, int conn, 
     int *neighbor_offset, int *is_in_bound, int nbound)
 {
   if (signal_array[index] == 0) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int j;
@@ -1336,12 +1336,12 @@ static BOOL is_border_voxel(uint16_t *signal_array, size_t index, int conn,
     if (nbound == conn || is_in_bound[j]) {
       size_t neighbor_index = index + neighbor_offset[j];
       if (signal_array[neighbor_index] != signal_array[index]) {
-        return TRUE;
+        return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
@@ -1351,7 +1351,7 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
   STACK_OBJLABEL_OPEN_WORKSPACE(stack, ow);
 
 
-  Graph *graph = Make_Graph(0, 1, TRUE);
+  Graph *graph = Make_Graph(0, 1, _TRUE_);
   graph->nvertex = Stack_Max(stack, NULL) + 1;
 
   Graph_Workspace *gw = New_Graph_Workspace();
@@ -1378,7 +1378,7 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
       object_number = signal_array[index];
     }
 
-    if (ow->init_chord == TRUE) {
+    if (ow->init_chord == _TRUE_) {
       ow->chord->array[index] = -1;
     }
 
@@ -1408,7 +1408,7 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
     int nbound = Stack_Neighbor_Bound_Test_I(ow->conn, width, height, depth,
         index, is_in_bound);
     if (is_border_voxel(signal_array, index, ow->conn,
-          neighbor_offset, is_in_bound, nbound) == TRUE) { 
+          neighbor_offset, is_in_bound, nbound) == _TRUE_) { 
       //visited[index] = 1;
       if (*current_seed_head < 0) {
         *current_seed_head = index;
@@ -1489,7 +1489,7 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
 
 
 
-Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, BOOL ignoring_bg)
+Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, _BOOL_ ignoring_bg)
 {
   int x, y, z;
   int is_in_bound[26];

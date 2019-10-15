@@ -21,7 +21,7 @@ typedef void* png_infop;
 Stack* Read_Png(const char *file_path);
 Mc_Stack* Read_Png_M(const char *file_path);
 png_infop Read_Png_Info(const char *file_path);
-BOOL Is_Png(const char *file_path);
+_BOOL_ Is_Png(const char *file_path);
 
 void Png_Attribute(const char *file_path, int *kind, int *width, int *height);
 

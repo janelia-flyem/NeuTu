@@ -170,11 +170,11 @@ enum { SWC_SVG_COLOR_CODE_NONE = 0, SWC_SVG_COLOR_CODE_Z = 1,
 
 typedef struct _Swc_Tree_Svg_Workspace {
   Geo3d_Scalar_Field *puncta;
-  BOOL *on_root;
+  _BOOL_ *on_root;
   int *puncta_type;
-  BOOL shuffling;
-  BOOL showing_count;
-  BOOL showing_length;
+  _BOOL_ shuffling;
+  _BOOL_ showing_count;
+  _BOOL_ showing_length;
   int color_code;
   int max_vx;
   int max_vy;

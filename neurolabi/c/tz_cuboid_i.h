@@ -25,7 +25,7 @@ DECLARE_ZOBJECT_INTERFACE(Cuboid_I)
  * Cuboid_I_Is_Valid() returns true only when the last corner of <cuboid> is not
  * less than its first corner in any dimension.
  */
-BOOL Cuboid_I_Is_Valid(const Cuboid_I *cuboid);
+_BOOL_ Cuboid_I_Is_Valid(const Cuboid_I *cuboid);
 
 /**@brief Size of a cuboid.
  *
@@ -78,11 +78,11 @@ void Cuboid_I_Expand_P(Cuboid_I *cuboid, const int *pt);
 
 void Cuboid_I_Label_Stack(const Cuboid_I *cuboid, int v, Stack *stack);
 
-BOOL Cuboid_I_Hit(const Cuboid_I *cuboid, int x, int y, int z);
+_BOOL_ Cuboid_I_Hit(const Cuboid_I *cuboid, int x, int y, int z);
 
 /**@brief Test if a point hit the internal of the cuboid
  */
-BOOL Cuboid_I_Hit_Internal(const Cuboid_I *cuboid, int x, int y, int z);
+_BOOL_ Cuboid_I_Hit_Internal(const Cuboid_I *cuboid, int x, int y, int z);
 
 /**@brief Translate a cuboid.
  */

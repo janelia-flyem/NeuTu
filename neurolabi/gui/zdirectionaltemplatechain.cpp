@@ -115,7 +115,7 @@ ZLocsegChain* ZDirectionalTemplateChain::toLocsegChain()
 int ZDirectionalTemplateChain::hitTest(double x, double y, double z)
 {
   for (int i = 0; i < m_chain.size(); i++) {
-    if (m_chain.at(i)->hitTest(x, y, z) == TRUE) {
+    if (m_chain.at(i)->hitTest(x, y, z) == _TRUE_) {
       return i + 1;
     }
   }

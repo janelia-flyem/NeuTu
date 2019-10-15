@@ -1840,7 +1840,7 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
       tmp_stack.text = (char*) "";
     }
 
-    BOOL is_written = FALSE;
+    _BOOL_ is_written = _FALSE_;
     if (metafile != NULL) {
       if (String_Starts_With(metafile, "@offset ")) {
         int n = 0;
@@ -1848,7 +1848,7 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
         if (n >= 3) {
           Write_Stack_With_Offset(filepath, &tmp_stack,
               offset[0], offset[1], offset[2], compress);
-          is_written = TRUE;
+          is_written = _TRUE_;
         }
         free(offset);
       } else if (String_Starts_With(metafile, "@transform ")) {
@@ -1857,13 +1857,13 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
         if (n >= 6) {
           Write_Stack_With_Transform(filepath, &tmp_stack,
               offset[0], offset[1], offset[2], offset[3], offset[4], offset[5], compress);
-          is_written = TRUE;
+          is_written = _TRUE_;
         }
         free(offset);
       }
     }
 
-    if (is_written == FALSE) {
+    if (is_written == _FALSE_) {
       Write_Stack((char*) filepath, &tmp_stack);
     }
   }
@@ -3924,18 +3924,18 @@ Stack* Read_Image_List_Bounded_M(File_List *list, Stack *mask)
 
       int i;
       for (i = 0; i < list->file_number; i++) {
-        BOOL all_zero = TRUE;
+        _BOOL_ all_zero = _TRUE_;
         Stack *stack = Read_Stack_U(list->file_path[i]);
         Stack_And(stack, mask, stack);
         size_t offset = 0;
         for (offset = 0; offset < nvoxel; offset++) {
           if (stack->array[offset] != 0) {
-            all_zero = FALSE;
+            all_zero = _FALSE_;
             break;
           }
         }
 
-        if (all_zero == FALSE) {
+        if (all_zero == _FALSE_) {
           if (front < 0) {
             front = i;
           }

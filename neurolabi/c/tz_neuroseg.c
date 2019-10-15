@@ -140,15 +140,15 @@ Neuroseg* Neuroseg_Fread(Neuroseg *seg, FILE *fp)
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (seg == NULL) {
     seg = New_Neuroseg();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
   
   if (fread(seg, sizeof(Neuroseg), 1, fp) != 1) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Neuroseg(seg);
     }
     seg = NULL;
@@ -551,18 +551,18 @@ double Neuroseg_Theta_Offset(const Neuroseg *seg1, const Neuroseg *seg2)
   return diff;
 }
 
-BOOL Neuroseg_Hit_Test(const Neuroseg *seg, double x, double y, double z)
+_BOOL_ Neuroseg_Hit_Test(const Neuroseg *seg, double x, double y, double z)
 {
   if ((z >= -0.5) && (z <= seg->h - 0.5)) {
     double d2 = (x * x) / (seg->scale * seg->scale) + y * y;
     /* double r = seg->r1 + (seg->r2 - seg->r1) * z / seg->h; */
     double r = NEUROSEG_RADIUS(seg, z);
     if (d2 <= r * r) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 int Neuroseg_Hit_Test_A(const Neuroseg *seg, coordinate_3d_t *pts, int n)

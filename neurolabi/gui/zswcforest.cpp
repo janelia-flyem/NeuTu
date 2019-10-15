@@ -42,7 +42,7 @@ Graph* ZSwcForest::buildConnectionGraph(bool mst, double distThre)
   }
   m_workspace = New_Graph_Workspace();
   m_connection.clear();
-  m_graph = Make_Graph(size(), 1, TRUE);
+  m_graph = Make_Graph(size(), 1, _TRUE_);
 
   for (size_t i = 0; i < size(); i++) {
     for (size_t j = 0; j < size(); j++) {
