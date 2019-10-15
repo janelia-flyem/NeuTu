@@ -9,7 +9,12 @@ bool neutu::FileExists(const std::string &path)
 
 uint64_t neutu::FileSize(const std::string &path)
 {
-  return boost::filesystem::file_size(path);
+  try {
+    return boost::filesystem::file_size(path);
+  }
+  catch (...) {
+    return 0;
+  }
 }
 
 std::string neutu::FileExtension(const std::string &path)
