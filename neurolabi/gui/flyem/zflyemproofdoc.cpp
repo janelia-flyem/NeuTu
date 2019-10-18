@@ -4,6 +4,7 @@
 #include <QList>
 #include <QTimer>
 #include <QDir>
+#include <QDateTime>
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QElapsedTimer>
@@ -2043,6 +2044,8 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
     if (item.isValid()) {
       if (checking != item.isChecked()) {
         item.setChecked(checking);
+        item.addProperty("checked updated by", neutu::GetCurrentUserName());
+        item.addProperty("checked updated at", QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString());
         td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
         bufferObjectModified(td);
         modified = true;
