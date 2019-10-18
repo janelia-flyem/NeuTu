@@ -436,36 +436,17 @@ ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
       ret(BODY_QUERY_RETURN);
 
   return queryNeuron(query.getQueryString());
+}
 
-#if 0
-  QString url = m_server + "/api/custom/custom";
-  ZJsonObject dataObj;
-  dataObj.setEntry("dataset", m_currentDataset.toStdString());
-
+ZJsonArray NeuPrintReader::queryNeuronCustom(const QString &condition)
+{
   CypherQuery query = CypherQueryBuilder().
-      match(QString("(n:%1)").arg(getNeuronLabel('`'))).
-      where(QString("LOWER(n.status) = LOWER(\"%1\")").arg(status)).
+      init(condition).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
       ret(BODY_QUERY_RETURN);
-  QString queryString = query.getQueryString();
 
-  if (m_numberLimit > 0) {
-     queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1")
-         .arg(m_numberLimit);
-  }
-  dataObj.setEntry("cypher", queryString.toStdString());
-
-//  KINFO << queryString;
-
-#ifdef _DEBUG_2
-  std::cout << "Query:" << std::endl;
-  dataObj.print();
-#endif
-  KINFO << "Query:" << dataObj.dumpString(0);
-
-  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
-
-  return extract_body_info(m_bufferReader.getBuffer());
-#endif
+  return queryNeuron(query.getQueryString());
 }
 
 ZJsonObject NeuPrintReader::customQuery(const QString &query)

@@ -12,7 +12,7 @@ class NeuPrintQueryDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit NeuPrintQueryDialog(QWidget *parent = 0);
+  explicit NeuPrintQueryDialog(QWidget *parent = nullptr);
   ~NeuPrintQueryDialog();
 
   void setRoiList(const QStringList roiList);

@@ -83,6 +83,7 @@ private slots:
     void onQueryByRoiButton();
     void onQueryByStatusButton();
     void onFindSimilarButton();
+    void onCustomQuery();
 
     void onDoubleClickBodyTable(QModelIndex modelIndex);
     void activateBody(QModelIndex modelIndex);

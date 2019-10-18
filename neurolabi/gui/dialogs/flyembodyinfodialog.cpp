@@ -158,6 +158,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
             this, SLOT(onQueryByStatusButton()));
     connect(ui->findSimilarPushButton, SIGNAL(clicked()),
             this, SLOT(onFindSimilarButton()));
+    connect(ui->customQueryPushButton, SIGNAL(clicked()),
+            this, SLOT(onCustomQuery()));
 
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
@@ -1323,6 +1325,31 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
         prepareQuery();
 
         setBodyList(reader->queryNeuronByStatus(text));
+      }
+    }
+  }
+}
+
+namespace { //To be removed when the custom query dialog is ready
+QString last_query = "MATCH (n:`hemibrain-Neuron` \n";
+}
+
+void FlyEmBodyInfoDialog::onCustomQuery()
+{
+  NeuPrintReader *reader = getNeuPrintReader();
+  if (reader) {
+    bool ok;
+
+    QString text = QInputDialog::getMultiLineText(
+          this, tr("Find Bodies"),
+          tr("Cypher Query:\n(n:`hemibrain-Neuron` must exist in MATCH)"),
+          last_query, &ok);
+    if (ok) {
+      last_query = text;
+      if (!text.isEmpty()) {
+        prepareQuery();
+
+        setBodyList(reader->queryNeuronCustom(text));
       }
     }
   }

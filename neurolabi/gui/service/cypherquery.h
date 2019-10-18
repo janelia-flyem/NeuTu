@@ -19,6 +19,7 @@ public:
   void appendOrderDesc(const QString &pattern);
   void appendLimit(int n);
   void setReturn(const QString &pattern);
+  void setPrefix(const QString &prefix);
 
 public:
   static const char *KW_MATCH;
@@ -39,12 +40,14 @@ private:
 
 private:
   QList<QueryPair> m_query;
+  QString m_prefix;
   QString m_return;
   QString m_postProc;
 };
 
 struct CypherQueryBuilder {
   operator CypherQuery() const;
+  CypherQueryBuilder& init(const QString &startString);
   CypherQueryBuilder& match(const QString &pattern, const QString &where = "");
   CypherQueryBuilder& matchNode(const QString &label);
   CypherQueryBuilder& where(const QString &pattern);
