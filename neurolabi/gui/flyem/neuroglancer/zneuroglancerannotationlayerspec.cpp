@@ -1,6 +1,7 @@
 #include "zneuroglancerannotationlayerspec.h"
 
 #include "zjsonarray.h"
+#include "geometry/zintpoint.h"
 
 ZNeuroglancerAnnotationLayerSpec::ZNeuroglancerAnnotationLayerSpec()
 {
@@ -41,6 +42,11 @@ void ZNeuroglancerAnnotationLayerSpec::setVoxelSize(int x, int y, int z)
   m_voxelSize[0] = x;
   m_voxelSize[1] = y;
   m_voxelSize[2] = z;
+}
+
+void ZNeuroglancerAnnotationLayerSpec::setVoxelSize(const ZIntPoint &s)
+{
+  setVoxelSize(s.getX(), s.getY(), s.getZ());
 }
 
 void ZNeuroglancerAnnotationLayerSpec::addAnnotation(const ZJsonObject &obj)

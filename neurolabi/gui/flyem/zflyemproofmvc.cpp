@@ -5957,11 +5957,11 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 
 void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
 {
-  TStackObjectSet &selected = getCompleteDocument()->getSelected(
+  TStackObjectSet selected = getCompleteDocument()->getSelected(
         ZStackObject::EType::FLYEM_BOOKMARK);
   bool userBookmarkUpdated = false;
   bool assignedBookmarkUpdated = false;
-  for (TStackObjectSet::iterator iter = selected.begin();
+  for (TStackObjectSet::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
     bookmark->setChecked(checking);

@@ -594,14 +594,6 @@ void ZFlyEmBody3dDoc::removeDiffBody()
 
   getDataBuffer()->addUpdate(u);
 
-//  QList<ZSwcTree*> treeList = getSwcList();
-//  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
-//       iter != treeList.end(); ++iter) {
-//    ZSwcTree *tree = *iter;
-//    if (ZStackObjectSourceFactory::IsBodyDiffSource(tree->getSource())) {
-//      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::EAction::KILL);
-//    }
-//  }
   getDataBuffer()->deliver();
 }
 
@@ -678,12 +670,13 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
   }
 }
 
+/*
 void ZFlyEmBody3dDoc::setTodoItemSelected(
     ZFlyEmToDoItem *item, bool select)
 {
-  getObjectGroup().setSelected(item, select);
+  setSelected(item, select);
 }
-
+*/
 
 void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
 {
@@ -1485,6 +1478,47 @@ ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStackForSplit()
 
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
 {
+#if 0
+  auto updateBodyModelSelectionFunc = [this]() {
+    QMutexLocker locker(this->getObjectGroup().getMutex());
+    auto objList = this->getObjectGroup().getObjectListUnsync(
+          ZStackObject::EType::SWC);
+    auto meshList = this->getObjectGroup().getObjectListUnsync(
+          ZStackObject::EType::MESH);
+
+    objList.append(meshList);
+
+    for (ZStackObject *obj : objList) {
+      if (m_selectedBodySet.contains(obj->getLabel())) {
+        if (!obj->isSelected()) {
+          setSelected(obj, true);
+        }
+      }
+    }
+
+    foreach (ZSwcTree *tree, swcList) {
+      if (m_selectedBodySet.contains(tree->getLabel())) {
+        if (!tree->isSelected()) {
+          getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::EAction::SELECT);
+        }
+      } else if (tree->isSelected()) {
+        getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::EAction::DESELECT);
+      }
+    }
+
+    QList<ZMesh*> meshList = getMeshList();
+    foreach (ZMesh *mesh, meshList) {
+      if (m_selectedBodySet.contains(mesh->getLabel())) {
+        if (!mesh->isSelected()) {
+          getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::SELECT);
+        }
+      } else if (mesh->isSelected()) {
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::EAction::DESELECT);
+      }
+    }
+  };
+#endif
+
   QList<ZSwcTree*> swcList = getSwcList();
   foreach (ZSwcTree *tree, swcList) {
     if (m_selectedBodySet.contains(tree->getLabel())) {

@@ -277,7 +277,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
-    TStackObjectSet& bookmarkSet =
+    const TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       QString groupName("Bookmarks");

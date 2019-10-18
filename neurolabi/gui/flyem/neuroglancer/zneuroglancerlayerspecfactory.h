@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include "dvid/zdviddata.h"
+
 class ZDvidTarget;
 class ZNeuroglancerLayerSpec;
 class ZNeuroglancerAnnotationLayerSpec;
@@ -20,7 +22,8 @@ public:
       const ZDvidTarget &target);
   static std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
   MakePointAnnotationLayer(
-      const ZDvidTarget &target, const std::string &linkedSegmentationLayer);
+      const ZDvidTarget &target, ZDvidData::ERole dataRole,
+      const std::string &linkedSegmentationLayer);
 
 };
 

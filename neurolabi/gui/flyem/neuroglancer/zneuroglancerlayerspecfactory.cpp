@@ -59,22 +59,40 @@ ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(const ZDvidTarget &target)
 }
 
 std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
-ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(const ZDvidTarget &target,
+ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+    const ZDvidTarget &target, ZDvidData::ERole dataRole,
     const std::string &linkedSegmentationLayer)
 {
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> layer;
 
-  layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
-  layer->setName("annotation");
-  layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
-  layer->setLinkedSegmentation(linkedSegmentationLayer);
-  layer->setTool("annotatePoint");
-  std::string source = "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
-      "/" + target.getBookmarkName();
-//  if (!target.getSegmentationName().empty()) {
-//    source += "?label=" + target.getSegmentationName();
-//  }
-  layer->setSource(source);
+  if (dataRole == ZDvidData::ERole::BOOKMARK ||
+      dataRole == ZDvidData::ERole::SYNAPSE) {
+    layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
+    layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
+    layer->setLinkedSegmentation(linkedSegmentationLayer);
+    std::string dataName = target.getBookmarkName();
+    std::string queryString;
+
+    switch (dataRole) {
+    case ZDvidData::ERole::BOOKMARK:
+      layer->setName("annotation");
+      layer->setTool("annotatePoint");
+      queryString = "?usertag=true";
+      break;
+    case ZDvidData::ERole::SYNAPSE:
+      dataName = target.getSynapseName();
+      layer->setName("synapse");
+      break;
+    default:
+      break;
+    }
+
+    std::string source =
+        "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
+        "/" + dataName + queryString;
+
+    layer->setSource(source);
+  }
 
   return layer;
 }

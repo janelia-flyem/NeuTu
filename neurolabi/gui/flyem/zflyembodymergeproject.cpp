@@ -377,8 +377,8 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
   connect(m_dataFrame->presenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplit()));
 
-  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
-          this, SLOT(update3DBodyView(ZStackObjectSelector)));
+//  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
+//          this, SLOT(update3DBodyView(ZStackObjectSelector)));
 //  connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
   //connect(this, SIGNAL())
 }

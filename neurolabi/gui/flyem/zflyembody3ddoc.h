@@ -178,7 +178,7 @@ public:
   void processEventFunc();
   void cancelEventThread();
 
-  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 //  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;

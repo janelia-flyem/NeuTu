@@ -4185,7 +4185,6 @@ void ZStackDoc::setPunctumSelected(ZPunctum *punctum, bool select)
       deselected.push_back(punctum);
     }
     notifySelectionChanged(selected, deselected);
-    //emit punctaSelectionChanged(selected, deselected);
   }
 }
 
@@ -4230,7 +4229,6 @@ void ZStackDoc::setMeshSelected(ZMesh* mesh, bool select)
       deselected.push_back(mesh);
     }
     notifySelectionChanged(selected, deselected);
-    //emit punctaSelectionChanged(selected, deselected);
   }
 }
 
@@ -5023,17 +5021,19 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
 {
   if (obj != NULL) {
     if (obj->isSelectable()) {
-      ZStackObject::EType type = obj->getType();
-      TStackObjectSet &selectedSet = getSelected(type);
+//      ZStackObject::EType type = obj->getType();
+//      TStackObjectSet &selectedSet = getSelected(type);
 
       m_objectGroup.setSelected(obj, selecting);
       //obj->setSelected(selecting);
 
+      /*
       if (selecting) {
         selectedSet.insert(obj);
       } else {
         selectedSet.remove(obj);
       }
+      */
     }
   }
 }
@@ -5085,7 +5085,7 @@ bool ZStackDoc::hasSelectedObject() const
   return m_objectGroup.hasSelected();
 }
 
-TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
+TStackObjectSet ZStackDoc::getSelected(ZStackObject::EType type) const
 {
   return m_objectGroup.getSelectedSet(type);
   /*
@@ -5096,12 +5096,13 @@ TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
   return m_selectedObjectMap[type];
   */
 }
-
+/*
 const TStackObjectSet &ZStackDoc::getSelected(
     ZStackObject::EType type) const
 {
   return const_cast<ZStackDoc&>(*this).getSelected(type);
 }
+*/
 
 bool ZStackDoc::binarize(int threshold)
 {

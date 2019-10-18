@@ -173,8 +173,8 @@ public:
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
-  TStackObjectSet& getSelectedSet(ZStackObject::EType type);
-  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
+  TStackObjectSet getSelectedSet(ZStackObject::EType type) const;
+//  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
 
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 

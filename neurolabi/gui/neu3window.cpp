@@ -1081,7 +1081,7 @@ void Neu3Window::processSwcChangeFrom3D(
     QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
     foreach (uint64_t label, labelSet) {
       if (label > 0) {
-        emit bodySelected(label);
+        emit bodyDeselected(label);
       }
     }
   }

@@ -30,6 +30,7 @@ class ZSelector
 {
 public:
   ZSelector();
+  virtual ~ZSelector() {}
 
   /*!
    * \brief Reset to initial state

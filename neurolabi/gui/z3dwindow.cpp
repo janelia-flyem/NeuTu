@@ -1284,10 +1284,10 @@ void Z3DWindow::saveAllVisibleMesh()
 
 void Z3DWindow::zoomToSelectedMeshes()
 {
-  TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::EType::MESH);
+  const TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::EType::MESH);
   ZBBox<glm::dvec3> boundingBox;
-  for (ZStackObject *obj : meshSet) {
-    if (ZMesh* mesh = dynamic_cast<ZMesh*>(obj)) {
+  for (const ZStackObject *obj : meshSet) {
+    if (const ZMesh* mesh = dynamic_cast<const ZMesh*>(obj)) {
       boundingBox.expand(getMeshFilter()->meshBound(mesh));
     }
   }
@@ -2087,7 +2087,7 @@ void Z3DWindow::removeSelectedObject()
 
 void Z3DWindow::markSelectedPunctaProperty1()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("true");
@@ -2098,7 +2098,7 @@ void Z3DWindow::markSelectedPunctaProperty1()
 
 void Z3DWindow::markSelectedPunctaProperty2()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("true");
@@ -2109,7 +2109,7 @@ void Z3DWindow::markSelectedPunctaProperty2()
 
 void Z3DWindow::markSelectedPunctaProperty3()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("true");
@@ -2119,7 +2119,7 @@ void Z3DWindow::markSelectedPunctaProperty3()
 
 void Z3DWindow::unmarkSelectedPunctaProperty1()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("");
@@ -2129,7 +2129,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty1()
 
 void Z3DWindow::unmarkSelectedPunctaProperty2()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("");
@@ -2139,7 +2139,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty2()
 
 void Z3DWindow::unmarkSelectedPunctaProperty3()
 {
-  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
+  TStackObjectSet objSet = m_doc->getSelected(ZStackObject::EType::PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("");

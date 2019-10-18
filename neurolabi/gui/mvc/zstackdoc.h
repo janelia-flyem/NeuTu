@@ -830,8 +830,8 @@ public:
   void selectObject(ZStackObject *obj, bool appending);
   void selectObject(ZStackObject *obj, neutu::ESelectOption option);
 
-  const TStackObjectSet& getSelected(ZStackObject::EType type) const;
-  TStackObjectSet &getSelected(ZStackObject::EType type);
+//  const TStackObjectSet& getSelected(ZStackObject::EType type) const;
+  TStackObjectSet getSelected(ZStackObject::EType type) const;
 
   bool hasSelectedObject() const;
 
@@ -1670,7 +1670,7 @@ template <typename T>
 QList<T*> ZStackDoc::getSelectedObjectList(ZStackObject::EType type) const
 {
   QList<T*> objList;
-  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+  TStackObjectSet objSet = getSelected(type);
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
@@ -1688,7 +1688,7 @@ template <typename T>
 std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
 {
   std::set<T*> objList;
-  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+  TStackObjectSet objSet = getSelected(type);
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
