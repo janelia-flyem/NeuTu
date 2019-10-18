@@ -21,6 +21,8 @@ public:
     TODO_Z_COLUMN,
     TODO_X_COLUMN,
     TODO_Y_COLUMN,
+    TODO_TIP_INDEX_COLUMN,
+    TODO_TIP_ROI_COLUMN,
     TODO_USERNAME_COLUMN
   };
 
@@ -32,8 +34,12 @@ public:
   void setVisibleTest(std::function<bool(const ZFlyEmToDoItem&)> f);
 
 private:
+  static const std::string KEY_TIPQC_INDEX;
+  static const std::string KEY_TIPQC_ROI;
   std::function<bool(const ZFlyEmToDoItem&)> m_visible =
-      [](const ZFlyEmToDoItem&) {return true;};
+          [](const ZFlyEmToDoItem&) {return true;};
+  QString getTipRoi(const ZFlyEmToDoItem &item) const;
+  QVariant getTipIndex(const ZFlyEmToDoItem &item) const;
 };
 
 #endif // ZFLYEMTODOPRESENTER_H
