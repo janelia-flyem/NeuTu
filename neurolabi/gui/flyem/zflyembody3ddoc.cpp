@@ -4413,6 +4413,7 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
 {
   if (isDvidMutable()) {
     dlg->updateStatusBox();
+    dlg->updatePropertyBox();
 
     uint64_t bodyId = getSelectedSingleNormalBodyId();
     if (bodyId > 0 && getDataDocument() != NULL) {

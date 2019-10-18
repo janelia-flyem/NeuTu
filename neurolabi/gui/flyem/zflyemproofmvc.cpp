@@ -3609,6 +3609,7 @@ void ZFlyEmProofMvc::annotateSelectedBody()
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
         FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
         dlg->updateStatusBox();
+        dlg->updatePropertyBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         ZFlyEmBodyAnnotation annotation;

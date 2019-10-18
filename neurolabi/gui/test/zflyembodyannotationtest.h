@@ -25,6 +25,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json.setEntry("naming user", "mock");
   json.setEntry("clonal unit", "clonal unit test");
   json.setEntry("auto-type", "auto type test");
+  json.setEntry("property", "Distinct");
 
   annot.loadJsonObject(json);
 
@@ -37,6 +38,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("mock", annot.getNamingUser());
   ASSERT_EQ("clonal unit test", annot.getClonalUnit());
   ASSERT_EQ("auto type test", annot.getAutoType());
+  ASSERT_EQ("Distinct", annot.getProperty());
 
   ZJsonObject json2 = annot.toJsonObject();
   ZJsonObjectParser parser;
@@ -51,6 +53,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("", annot.getType());
   ASSERT_EQ("", annot.getUser());
   ASSERT_EQ("", annot.getNamingUser());
+  ASSERT_EQ("", annot.getProperty());
 }
 
 TEST(ZFlyEmBodyAnnotation, merge)
