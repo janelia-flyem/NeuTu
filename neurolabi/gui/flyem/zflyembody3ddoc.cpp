@@ -2718,6 +2718,34 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
 }
 
+bool ZFlyEmBody3dDoc::executeDeleteSwcNodeCommand()
+{
+  if (getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
+    return ZStackDoc::executeDeleteSwcNodeCommand();
+  }
+
+  return false;
+}
+
+bool ZFlyEmBody3dDoc::executeConnectSwcNodeCommand()
+{
+  if (getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
+    return ZStackDoc::executeConnectSwcNodeCommand();
+  }
+
+  return false;
+}
+
+bool ZFlyEmBody3dDoc::executeBreakSwcConnectionCommand()
+{
+  if (getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
+    return ZStackDoc::executeBreakSwcConnectionCommand();
+  }
+
+  return false;
+}
+
+
 void ZFlyEmBody3dDoc::executeAddTodoCommand(
     int x, int y, int z, bool checked, uint64_t bodyId)
 {

@@ -617,6 +617,18 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_SAVE_ALL_MESH:
     action = m_actionLibrary->getAction(item, this, SLOT(saveAllVisibleMesh()));
     break;
+  case ZActionFactory::ACTION_CONNECT_SWC_NODE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(connectSelectedSwcNode()));
+    break;
+  case ZActionFactory::ACTION_BREAK_SWC_NODE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(breakSelectedSwcNode()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SWC_NODE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(deleteSelectedSwcNode()));
+    break;
 //  case ZActionFactory::ACTION_SHOW_SPLIT_MESH_ONLY:
 //    action = m_actionLibrary->getAction(item, this, SLOT(showMeshForSplitOnly(bool)));
 //    break;

@@ -265,15 +265,11 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
-  virtual bool executeDeleteSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeDeleteSwcNodeCommand() override;
   virtual bool executeDeleteUnselectedSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeConnectSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeConnectSwcNodeCommand() override;
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
     return false;
   }
@@ -288,9 +284,7 @@ public:
   virtual bool executeSmartConnectSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeBreakSwcConnectionCommand() override {
-    return false;
-  }
+  virtual bool executeBreakSwcConnectionCommand() override;
   virtual bool executeMergeSwcNodeCommand() override {
     return false;
   }

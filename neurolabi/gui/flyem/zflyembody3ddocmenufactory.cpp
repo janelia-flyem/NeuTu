@@ -138,6 +138,18 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         }
       }
 
+      if (swcNodeCount >= 1) {
+        if (doc->getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
+          config.append(ZActionFactory::ACTION_SEPARATOR);
+          config.append(ZActionFactory::ACTION_DELETE_SWC_NODE);
+          if (swcNodeCount > 1) {
+            config.append(ZActionFactory::ACTION_CONNECT_SWC_NODE);
+            config.append(ZActionFactory::ACTION_BREAK_SWC_NODE);
+          }
+          config.append(ZActionFactory::ACTION_SEPARATOR);
+        }
+      }
+
       if (swcNodeCount == 1) {
         if (isMutable) {
           config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
