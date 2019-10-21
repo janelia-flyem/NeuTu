@@ -2,11 +2,11 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "tz_darray.h"
-#include "tz_error.h"
 #include "tz_sp_grow.h"
 #include "zspgrowparser.h"
 #include "tz_math.h"
@@ -238,8 +238,8 @@ void ZSwcPath::labelStack(Stack *stack, int value)
 
 void ZSwcPath::labelStackAcrossZ(Stack *stack, int value)
 {
-  TZ_ASSERT(stack != NULL, "NULL pointer");
-  TZ_ASSERT(C_Stack::kind(stack) == GREY, "Only GREY stack supported");
+  assert(stack != NULL);
+  assert(C_Stack::kind(stack) == GREY);
 
   if (!empty()) {
     Swc_Tree_Node_Label_Workspace workspace;

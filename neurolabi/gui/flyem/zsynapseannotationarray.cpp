@@ -11,7 +11,7 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zsynapselocationmatcher.h"
-#include "tz_error.h"
+
 #include "zgraph.h"
 #ifdef _QT_GUI_USED_
 #include "zpunctum.h"
@@ -64,8 +64,9 @@ bool ZSynapseAnnotationArray::loadJson(const ZJsonObject &jsonObject,
     resize(dataArray.size() + size());
     break;
   default:
-    TZ_ERROR(ERROR_DATA_VALUE);
-    break;
+    throw std::logic_error("Invalid mode.");
+//    TZ_ERROR(ERROR_DATA_VALUE);
+//    break;
   }
 
   int tbarNumber = 0;
@@ -1073,7 +1074,10 @@ flyem::ZSynapseAnnotationArray::findDuplicatedTBar(double minDist)
       SynapseLocation *firstTBar = getTBarRef(i);
       SynapseLocation *secondTBar = getTBarRef(j);
 
-      TZ_ASSERT(firstTBar != secondTBar, "Same pointer");
+      if (firstTBar == secondTBar) {
+        throw std::logic_error("Unexpected identical pointer.");
+      }
+//      TZ_ASSERT(firstTBar != secondTBar, "Same pointer");
 
       double dist = firstTBar->pos().distanceTo(secondTBar->pos());
       if (dist < minDist) {

@@ -154,9 +154,33 @@ inline bool WithinOpenRange(const T &x, const T &minv, const T &maxv)
 }
 
 template<typename T>
+inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
+{
+  return (x >= minv) && (x <= maxv);
+}
+
+template<typename T>
 inline T ClipValue(const T &v, const T &lower, const T&upper)
 {
   return (v < lower) ? lower : (v > upper) ? upper : v;
+}
+
+template<typename T>
+inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
+{
+  if (x0 <= x1) {
+    if (x0 <= upper && x1 >= lower) {
+      if (x0 < lower) {
+        x0 = lower;
+      }
+      if (x1 > upper) {
+        x1 = upper;
+      }
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }

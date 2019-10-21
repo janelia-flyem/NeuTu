@@ -10,8 +10,9 @@
 #include <stack>
 #include <cmath>
 #include <fstream>
+#include <stdexcept>
+#include <cassert>
 
-#include "tz_error.h"
 #include "zswctree.h"
 #include "tz_voxel_graphics.h"
 #include "tz_math.h"
@@ -1123,8 +1124,9 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
       break;
 
   default:
-    TZ_ERROR(ERROR_DATA_VALUE);
-    break;
+    throw std::invalid_argument("Invalid option");
+//    TZ_ERROR(ERROR_DATA_VALUE);
+//    break;
   }
 
   return count;
@@ -1215,7 +1217,7 @@ void ZSwcTree::print(int iterOption) const
 
 int ZSwcTree::saveAsLocsegChains(const char *prefix, int startNum)
 {
-  TZ_ASSERT(m_iteratorReady == false, "Iterator must be on");
+  assert(m_iteratorReady == false);
 
   int idx = startNum;
 
@@ -1484,7 +1486,7 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
        iter = REGULAR_SWC_NODE_BEGIN(nodeArray[0], nodeArray.begin());
        iter != nodeArray.end(); ++iter) {
     const Swc_Tree_Node *tn = *iter;
-    TZ_ASSERT(SwcTreeNode::isRegular(tn), "Unexpected virtual node.");
+    assert(SwcTreeNode::isRegular(tn));
     if (ZStackBall::isCuttingPlane(
           SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z, 1.0)) {
       double dist = SwcTreeNode::distance(tn, x, y, z);
@@ -2057,7 +2059,7 @@ ZSwcBranch* ZSwcTree::extractBranch(int beginId, int endId)
 
 ZSwcBranch* ZSwcTree::extractBranch(int label)
 {
-  TZ_ASSERT(m_iteratorReady == _FALSE_, "Iterator must be activated");
+  assert(m_iteratorReady == _FALSE_);
 
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
   Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_REVERSE, _FALSE_);
@@ -2106,7 +2108,9 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
 {
   //TZ_ASSERT(_FALSE_, "Under development");
 
-  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
+  if (regularRootNumber() != 1) {
+    throw std::domain_error("Multi-tree computation is not supported.");
+  }
 
   updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 

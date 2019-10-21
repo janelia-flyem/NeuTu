@@ -14,7 +14,6 @@
 #include <QFutureWatcher>
 
 #include "neutubeconfig.h"
-#include "tz_error.h"
 #include "zswctree.h"
 #include "mvc/zstackdoc.h"
 #include "ui_flyemdataform.h"

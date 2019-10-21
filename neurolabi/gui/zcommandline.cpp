@@ -15,7 +15,6 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
-//#include "tz_error.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"
@@ -172,8 +171,6 @@ int ZCommandLine::runObjectMarker()
       std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
       json_t *arrayObj = json_array();
 
-      TZ_ASSERT(voxel.x() >= 0, "invalid point");
-
       json_array_append(arrayObj, json_integer(voxel.x()));
       json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
       json_array_append(arrayObj, json_integer(voxel.z() + 1490));
@@ -277,7 +274,7 @@ int ZCommandLine::runBoundaryOrphan()
         std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
         json_t *arrayObj = json_array();
 
-        TZ_ASSERT(voxel.x() >= 0, "invalid point");
+//        TZ_ASSERT(voxel.x() >= 0, "invalid point");
 
         json_array_append(arrayObj, json_integer(voxel.x()));
         json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));

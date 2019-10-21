@@ -2,17 +2,14 @@
 
 #include <iostream>
 #include <fstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
 #include <sstream>
 #include <cmath>
 #include <cstring>
-#if _QT_GUI_USED_
-
-#endif
+#include <cassert>
 
 #include "zobject3d.h"
-#include "tz_error.h"
 #include "zgraph.h"
 #include "tz_stack_objlabel.h"
 #include "zerror.h"
@@ -1487,7 +1484,7 @@ bool ZObject3dScan::isAdjacentTo(
 
 #ifdef _DEBUG_
   if (nbr == neutu::EStackNeighborhood::D1) {
-    TZ_ASSERT(adjacent == isAdjacentToOld(obj), "Incompatible value.");
+    assert(adjacent == isAdjacentToOld(obj));
   }
 #endif
 

@@ -1,7 +1,7 @@
 #include "zflyemstackdoc.h"
 
 #include <set>
-#include "tz_error.h"
+
 #include "tz_math.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "zstackfile.h"
@@ -33,7 +33,7 @@ void ZFlyEmStackDoc::setSuperpixelMap(const ZSuperpixelMapArray &superpixelMap)
 
 void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
 {
-  TZ_ASSERT(selected != NULL, "null poiner");
+//  TZ_ASSERT(selected != NULL, "null poiner");
 
   ZGraph *graph = getBodyGraph();
 
@@ -70,7 +70,7 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutu::EAxis axis
   ZStack *segmentation = getSegmentation();
 
   if (segmentation != NULL) {
-    TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
+//    TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
     int wx = iround(x);

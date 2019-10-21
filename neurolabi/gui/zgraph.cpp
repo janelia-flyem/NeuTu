@@ -8,7 +8,6 @@
 //#include "tz_math.h"
 #include "tz_u8array.h"
 #include "zinttree.h"
-#include "tz_error.h"
 #include "zerror.h"
 
 using namespace std;
@@ -180,7 +179,7 @@ bool ZGraph::isDeprecated(EComponent component) const
 
 double ZGraph::getEdgeWeight(int edgeIndex) const
 {
-  TZ_ASSERT(edgeIndex >= 0 && edgeIndex < getEdgeNumber(), "Invalide edge index");
+  assert(edgeIndex >= 0 && edgeIndex < getEdgeNumber());
 
   if (isWeighted()) {
     return edgeWeight(edgeIndex);
@@ -521,7 +520,7 @@ int ZGraph::getDegree(int v) const
 //At least one edge of any cycle is unique
 std::vector<std::vector<int> > ZGraph::getCycle(int root) const
 {
-  TZ_ASSERT(!isDirected(), "Directed graph not supported yet");
+  assert(!isDirected());
 
   std::vector<std::vector<int> > cycleArray;
 
@@ -792,7 +791,7 @@ void ZGraph::removeDuplicatedEdge()
 
 void ZGraph::setEdge(int index, int v1, int v2)
 {
-  TZ_ASSERT(index >= 0 && index < getEdgeNumber(), "Invalide edge index");
+  assert(index >= 0 && index < getEdgeNumber());
 
   if (m_graph->edges[index][0] != v1 ||
       m_graph->edges[index][1] != v2) {

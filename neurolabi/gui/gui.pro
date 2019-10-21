@@ -64,6 +64,7 @@ CONFIG(debug, debug|release) {
 #    CONFIG(debug_info) {
 #      QMAKE_CXXFLAGS += -g
 #    }
+    DEFINES += NDEBUG
     app_name = neuTube
     CONFIG(neu3) {
       app_name = neu3

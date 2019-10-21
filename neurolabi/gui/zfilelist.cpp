@@ -6,7 +6,6 @@
 
 //#include "neurolabi_config.h"
 #include "zstring.h"
-#include "tz_error.h"
 //#include "zhdf5reader.h"
 
 using namespace std;

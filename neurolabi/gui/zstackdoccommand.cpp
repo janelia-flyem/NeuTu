@@ -1,12 +1,13 @@
 #include "zstackdoccommand.h"
 
 #include <iostream>
+#include <cassert>
+
 #include <QMutableListIterator>
 #include <QMessageBox>
 #include <QApplication>
 
 #include "zswctree.h"
-#include "tz_error.h"
 #include "zlocsegchainconn.h"
 #include "zlocsegchain.h"
 #include "zstack.hxx"
@@ -673,7 +674,7 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
 
     for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
-      TZ_ASSERT(*iter != NULL, "Null swc node");
+      assert(*iter != NULL);
 
       if (SwcTreeNode::isRegular(SwcTreeNode::parent(*iter))) {
         if (nodeSet.count(SwcTreeNode::parent(*iter)) == 0) {
@@ -1329,7 +1330,7 @@ ZStackDocCommand::SwcEdit::DeleteSwcNode::DeleteSwcNode(
   CompositeCommand(doc, parent), m_node(node), m_root(root),
   m_nodeInDoc(true)
 {
-  TZ_ASSERT(m_root != NULL, "Null root");
+  assert(m_root != NULL);
   setText(QObject::tr("Delete swc node"));
 
   new SetParent(doc, m_node, NULL, false, this);
@@ -1738,7 +1739,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
       if (graph->edgeWeight(i) > 0.0) {
         int e1 = graph->edgeStart(i);
         int e2 = graph->edgeEnd(i);
-        TZ_ASSERT(e1 != e2, "Invalid edge");
+        assert(e1 != e2);
 
         Swc_Tree_Node *upNode = nodeArray[e1];
         Swc_Tree_Node *downNode = nodeArray[e2];

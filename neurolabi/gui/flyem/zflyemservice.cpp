@@ -1,6 +1,6 @@
 #include "zflyemservice.h"
 #include "tz_math.h"
-#include "tz_error.h"
+
 #include "zstring.h"
 #include "geometry/zintcuboid.h"
 #include "zintpairmap.h"
@@ -296,8 +296,8 @@ ZIntPairMap flyem::Service::FaceOrphanOverlap::countVoxelTouch(
         int x2 = x + tx1 - tx2;
         if (x2 >= 0 && x2 < tstack2->width()) {
           offset2 = y2 * tstack2->width() + x2;
-          TZ_ASSERT(array1[offset1] <= MAX_INT32, "too large label");
-          TZ_ASSERT(array2[offset2] <= MAX_INT32, "too large label");
+//          TZ_ASSERT(array1[offset1] <= MAX_INT32, "too large label");
+//          TZ_ASSERT(array2[offset2] <= MAX_INT32, "too large label");
           int label1 = (int) array1[offset1];
           int label2 = (int) array2[offset2];
           if (label1 == sourceBodyId && label2 > 0) {

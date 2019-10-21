@@ -6,7 +6,7 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "flyem/zsegmentationanalyzer.h"
-#include "tz_error.h"
+
 #include "tz_stack_utils.h"
 #include "tz_iarray.h"
 
@@ -146,7 +146,10 @@ void flyem::ZSegmentationBundle::trimSuperpixelMap()
   if (superpixelMap != NULL) {
     ZStack *superpixelStack = getSuperpixelStack();
     if (superpixelStack != NULL) {
-      TZ_ASSERT(superpixelStack->kind() == GREY, "Unsupported stack kind");
+//      TZ_ASSERT(superpixelStack->kind() == GREY, "Unsupported stack kind");
+      if (superpixelStack->kind() != GREY) {
+        throw std::runtime_error("Unsupported stack kind");
+      }
 
       int minPlaneId = superpixelMap->minPlaneId();
 
@@ -181,7 +184,7 @@ void flyem::ZSegmentationBundle::trimSuperpixelMap()
 
       if (count < superpixelMap->size() - 1) {
         if (count == 0) {
-          TZ_WARN(ERROR_DATA_VALUE);
+//          TZ_WARN(ERROR_DATA_VALUE);
           superpixelMap->clear();
         } else {
           size_t lastIndex = 0;
@@ -190,7 +193,10 @@ void flyem::ZSegmentationBundle::trimSuperpixelMap()
               (*superpixelMap)[lastIndex++] = (*superpixelMap)[i];
             }
           }
-          TZ_ASSERT(lastIndex == count, "Inconsistent value.");
+          if (lastIndex != count) {
+            throw std::logic_error("Inconsistent value.");
+          }
+//          TZ_ASSERT(lastIndex == count, "Inconsistent value.");
           superpixelMap->resize(count);
         }
         deprecateDependent(SUPERPIXEL_MAP);
@@ -623,7 +629,10 @@ vector<int>* flyem::ZSegmentationBundle::getBodyList()
 {
   if (isDeprecated(BODY_LIST)) {
     m_bodyList = new vector<int>;
-    TZ_ASSERT(m_bodyIndexMap == NULL, "Invalid pointer.");
+    if (m_bodyIndexMap == nullptr) {
+      throw std::logic_error("Unexpected null pointer");
+    }
+//    TZ_ASSERT(m_bodyIndexMap == NULL, "Invalid pointer.");
     m_bodyIndexMap = new map<int, size_t>;
     ZStack *bodyStack = getBodyStack();
     size_t volume = bodyStack->getVoxelNumber();
@@ -1171,7 +1180,10 @@ void flyem::ZSegmentationBundle::loadGroundLabel()
   if (fp != NULL) {
     deprecate(GROUND_LABEL);
 
-    TZ_ASSERT(m_groundLabel.empty(), "The array must be empty.");
+    if (!m_groundLabel.empty()) {
+      throw std::logic_error("Unexpected non-empty array.");
+    }
+//    TZ_ASSERT(m_groundLabel.empty(), "The array must be empty.");
 
     ZString str;
     while (str.readLine(fp)) {

@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cmath>
 
-#include "tz_error.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_graph.h"
 #include "tz_stack_threshold.h"
@@ -82,24 +81,24 @@ void C_Stack::copyChannelValue(Mc_Stack *mc_stack, int chan, const Stack *stack)
 void C_Stack::setAttribute(
     Mc_Stack *stack, int kind, int width, int height, int depth, int channel)
 {
-  TZ_ASSERT(stack != NULL, "Null stack.");
-
-  stack->kind = kind;
-  stack->width = width;
-  stack->depth = depth;
-  stack->height = height;
-  stack->nchannel = channel;
+  if (stack) {
+    stack->kind = kind;
+    stack->width = width;
+    stack->depth = depth;
+    stack->height = height;
+    stack->nchannel = channel;
+  }
 }
 
 void C_Stack::setAttribute(
     Stack *stack, int kind, int width, int height, int depth)
 {
-  TZ_ASSERT(stack != NULL, "Null stack.");
-
-  stack->kind = kind;
-  stack->width = width;
-  stack->depth = depth;
-  stack->height = height;
+  if (stack) {
+    stack->kind = kind;
+    stack->width = width;
+    stack->depth = depth;
+    stack->height = height;
+  }
 }
 
 Stack* C_Stack::crop(const Stack* stack, int left, int top, int front,
@@ -765,9 +764,9 @@ Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelN
 
 void C_Stack::setChannelNumber(Mc_Stack *stack, int nchannel)
 {
-  TZ_ASSERT(stack != NULL, "Null stack.");
-
-  stack->nchannel = nchannel;
+  if (stack) {
+    stack->nchannel = nchannel;
+  }
 }
 
 void C_Stack::systemKill(Mc_Stack *stack)
@@ -827,39 +826,44 @@ int C_Stack::McStackUsage()
 
 void C_Stack::view(const Stack *src, Mc_Stack *dst)
 {
-  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
-
-  dst->array = src->array;
-  setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
-               C_Stack::height(src), C_Stack::depth(src), 1);
+  if (src && dst) {
+    dst->array = src->array;
+    setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
+                 C_Stack::height(src), C_Stack::depth(src), 1);
+  }
 }
 
 void C_Stack::view(const Mc_Stack *src, Stack *dst, int channel)
 {
-  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
-  TZ_ASSERT(channel >= 0 && channel < C_Stack::channelNumber(src),
-            "Invalide channel");
-
-  dst->array = src->array + volumeByteNumber(src) * channel;
-  setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
-               C_Stack::height(src), C_Stack::depth(src));
+  if (src && dst) {
+    if (channel >= 0 && channel < C_Stack::channelNumber(src)) {
+      dst->array = src->array + volumeByteNumber(src) * channel;
+      setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
+                   C_Stack::height(src), C_Stack::depth(src));
+    } else {
+      throw std::range_error("Invalid channel: " + std::to_string(channel));
+    }
+  }
 }
 
 void C_Stack::view(const Mc_Stack *src, Mc_Stack *dst, int channel)
 {
-  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
-  TZ_ASSERT(channel >= 0 && channel < C_Stack::channelNumber(src),
-            "Invalide channel");
-
-  dst->array = src->array + volumeByteNumber(src) * channel;
-  setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
-               C_Stack::height(src), C_Stack::depth(src), 1);
+  if (src && dst) {
+    if(channel >= 0 && channel < C_Stack::channelNumber(src)) {
+      dst->array = src->array + volumeByteNumber(src) * channel;
+      setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
+                   C_Stack::height(src), C_Stack::depth(src), 1);
+    } else {
+      throw std::range_error("Invalid channel: " + std::to_string(channel));
+    }
+  }
 }
 
 void C_Stack::view(const Stack *src, Image_Array *dst)
 {
-  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
-  dst->array = src->array;
+  if (src && dst) {
+    dst->array = src->array;
+  }
 }
 
 bool C_Stack::hasSameValue(Mc_Stack *stack, size_t index1, size_t index2,
@@ -922,21 +926,23 @@ bool C_Stack::hasValue(
 int C_Stack::neighborTest(int conn, int width, int height, int depth,
                           size_t index, int *isInBound)
 {
-  TZ_ASSERT(isInBound != NULL, "null pointer");
+  if (isInBound) {
+    int nnbr = Stack_Neighbor_Bound_Test_I(conn, width, height, depth,
+                                           index, isInBound);
+    if (nnbr == 0) {
+      for (int i = 0; i < conn; ++i) {
+        isInBound[i] = 0;
+      }
+    } else if (nnbr == conn) {
+      for (int i = 0; i < conn; ++i) {
+        isInBound[i] = 1;
+      }
+    }
 
-  int nnbr = Stack_Neighbor_Bound_Test_I(conn, width, height, depth,
-                                         index, isInBound);
-  if (nnbr == 0) {
-    for (int i = 0; i < conn; ++i) {
-      isInBound[i] = 0;
-    }
-  } else if (nnbr == conn) {
-    for (int i = 0; i < conn; ++i) {
-      isInBound[i] = 1;
-    }
+    return nnbr;
+  } else {
+    throw std::runtime_error("C_Stack::neighborTest: unexpected null pointer");
   }
-
-  return nnbr;
 }
 
 void C_Stack::neighborOffset(int conn, int width, int height, int neighbor[])
@@ -947,21 +953,23 @@ void C_Stack::neighborOffset(int conn, int width, int height, int neighbor[])
 int C_Stack::neighborTest(int conn, int width, int height, int depth,
                           int x, int y, int z, int *isInBound)
 {
-  TZ_ASSERT(isInBound != NULL, "null pointer");
+  if (isInBound) {
+    int nnbr = Stack_Neighbor_Bound_Test_S(conn, width - 1, height - 1, depth - 1,
+                                           x, y, z, isInBound);
+    if (nnbr == 0) {
+      for (int i = 0; i < conn; ++i) {
+        isInBound[i] = 0;
+      }
+    } else if (nnbr == conn) {
+      for (int i = 0; i < conn; ++i) {
+        isInBound[i] = 1;
+      }
+    }
 
-  int nnbr = Stack_Neighbor_Bound_Test_S(conn, width - 1, height - 1, depth - 1,
-                                         x, y, z, isInBound);
-  if (nnbr == 0) {
-    for (int i = 0; i < conn; ++i) {
-      isInBound[i] = 0;
-    }
-  } else if (nnbr == conn) {
-    for (int i = 0; i < conn; ++i) {
-      isInBound[i] = 1;
-    }
+    return nnbr;
+  } else {
+    throw std::runtime_error("C_Stack::neighborTest: unexpected null pointer");
   }
-
-  return nnbr;
 }
 
 void C_Stack::write(
@@ -1254,28 +1262,34 @@ Stack* C_Stack::readSc(const string &filePath)
 
 Stack* C_Stack::extractChannel(const Stack *stack, int c)
 {
-  TZ_ASSERT(kind(stack) == COLOR, "unsupported format");
+  if (kind(stack) == COLOR) {
+    Stack *out = make(GREY, width(stack), height(stack), depth(stack));
 
-  Stack *out = make(GREY, width(stack), height(stack), depth(stack));
+    color_t *arrayc = (color_t*) stack->array;
+    size_t nvoxel = Stack_Voxel_Number(stack);
 
-  color_t *arrayc = (color_t*) stack->array;
-  size_t nvoxel = Stack_Voxel_Number(stack);
+    for (size_t i = 0; i < nvoxel; ++i) {
+      out->array[i] = arrayc[i][c];
+    }
 
-  for (size_t i = 0; i < nvoxel; ++i) {
-    out->array[i] = arrayc[i][c];
+    return out;
+  } else {
+    throw std::invalid_argument(
+          "C_Stack::extractChannel: Unsuppported input kind");
   }
-
-  return out;
 }
 
 void C_Stack::setStackValue(Stack *stack, const std::vector<size_t> &indexArray,
                             double value)
 {
-  TZ_ASSERT(kind(stack) == GREY, "Unsupported stack kind");
-
-  for (std::vector<size_t>::const_iterator iter = indexArray.begin();
-       iter != indexArray.end(); ++iter) {
-    stack->array[*iter] = value;
+  if (kind(stack) == GREY) {
+    for (std::vector<size_t>::const_iterator iter = indexArray.begin();
+         iter != indexArray.end(); ++iter) {
+      stack->array[*iter] = value;
+    }
+  } else {
+    throw std::invalid_argument(
+          "C_Stack::setStackValue: Unsuppported input kind");
   }
 }
 
@@ -1337,7 +1351,10 @@ vector<size_t> C_Stack::getNeighborIndices(const Stack *stack,
                                            const vector<size_t> &indexArray,
                                            int conn, double value)
 {
-  TZ_ASSERT(kind(stack) == GREY, "Unsupported stack kind");
+  if (kind(stack) != GREY) {
+    throw std::invalid_argument(
+          "C_Stack::getNeighborIndices: Unsuppported input kind");
+  }
 
   int inBound[26];
   int neighborOffset[26];
@@ -1368,10 +1385,6 @@ vector<size_t> C_Stack::getNeighborIndices(const Stack *stack,
   }
 
   kill(mask);
-
-#ifdef _DEBUG_2
-  cout << neighborList.size() << endl;
-#endif
 
   return neighborList;
 }
@@ -1432,7 +1445,8 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         }
         break;
       default:
-        TZ_ERROR(ERROR_DATA_TYPE);
+        throw std::invalid_argument(
+              "C_Stack::translate: Unsuppported input kind");
       }
       break;
     case GREY16:
@@ -1455,7 +1469,8 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         }
         break;
       default:
-        TZ_ERROR(ERROR_DATA_TYPE);
+        throw std::invalid_argument(
+              "C_Stack::translate: Unsuppported input kind");
       }
       break;
     case FLOAT32:
@@ -1476,7 +1491,8 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         }
         break;
       default:
-        TZ_ERROR(ERROR_DATA_TYPE);
+        throw std::invalid_argument(
+              "C_Stack::translate: Unsuppported input kind");
       }
       break;
     case FLOAT64:
@@ -1497,11 +1513,13 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         }
         break;
       default:
-        TZ_ERROR(ERROR_DATA_TYPE);
+        throw std::invalid_argument(
+              "C_Stack::translate: Unsuppported input kind");
       }
       break;
     default:
-      TZ_ERROR(ERROR_DATA_TYPE);
+      throw std::invalid_argument(
+            "C_Stack::translate: Unsuppported target kind");
     }
   }
 
@@ -1555,10 +1573,15 @@ double C_Stack::max(const Mc_Stack *stack)
 void C_Stack::drawPatch(Stack *canvas, const Stack *patch,
                int dx, int dy, int dz, int transparentValue)
 {
-  TZ_ASSERT(canvas->kind == GREY, "unsupported kind");
-  TZ_ASSERT(patch->kind == GREY, "unsupported kind");
-  TZ_ASSERT(canvas->depth == 1, "unsupported depth");
-  TZ_ASSERT(patch->depth == 1, "unsupported depth");
+  if (canvas->kind != GREY || patch->kind != GREY) {
+    throw std::invalid_argument(
+          "C_Stack::drawPatch: Unsuppported input kind");
+  }
+
+  if (canvas->depth != 1 || patch->depth != 1) {
+    throw std::invalid_argument(
+          "C_Stack::drawPatch: Unsuppported depth");
+  }
 
   size_t offset1 = 0;
   size_t offset2 = 0;
@@ -1671,19 +1694,24 @@ Stack C_Stack::sliceView(const Mc_Stack *stack, int slice, int channel)
 
 Stack C_Stack::sliceView(const Stack *stack, int slice)
 {
-  TZ_ASSERT(slice >= 0 && slice < C_Stack::depth(stack), "Invalide slice");
-  Stack stackSlice = *stack;
-  stackSlice.array = array8(stack) + C_Stack::planeByteNumber(stack) * slice;
-  setDepth(&stackSlice, 1);
+  if (slice >= 0 && slice < C_Stack::depth(stack)) {
+    Stack stackSlice = *stack;
+    stackSlice.array = array8(stack) + C_Stack::planeByteNumber(stack) * slice;
+    setDepth(&stackSlice, 1);
 
-  return stackSlice;
+    return stackSlice;
+  } else {
+    throw std::range_error("Invalid slice: " + std::to_string(slice));
+  }
 }
 
 Stack C_Stack::sliceView(const Stack *stack, int startPlane, int endPlane)
 {
-  TZ_ASSERT(startPlane <= endPlane, "Invalide slice");
-  TZ_ASSERT(endPlane >= 0, "Invalide slice");
-  TZ_ASSERT(startPlane < C_Stack::depth(stack), "Invalide slice");
+  if (startPlane > endPlane || endPlane < 0 ||
+      startPlane >= C_Stack::depth(stack)) {
+    throw std::invalid_argument(
+          "C_Stack::sliceView: invalid plane argument");
+  }
 
   if (startPlane < 0) {
     startPlane = 0;

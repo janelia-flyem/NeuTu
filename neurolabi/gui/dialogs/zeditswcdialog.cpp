@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
-//#include "tz_error.h"
 #include "tz_math.h"
 #include "tz_darray.h"
 #include "tz_u8array.h"

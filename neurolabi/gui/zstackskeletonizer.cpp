@@ -14,7 +14,6 @@
 #include "zswcforest.h"
 #include "swctreenode.h"
 #include "zswcgenerator.h"
-#include "tz_error.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "zerror.h"
@@ -809,7 +808,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
         Swc_Tree_Node *tmptn = NULL;
         while ((tmptn = Swc_Tree_Next(subtree)) != NULL) {
           if (!SwcTreeNode::isRoot(tmptn)) {
-            TZ_ASSERT(SwcTreeNode::length(tmptn) > 0.0, "duplicating nodes");
+            assert(SwcTreeNode::length(tmptn) > 0.0);
           }
         }
 

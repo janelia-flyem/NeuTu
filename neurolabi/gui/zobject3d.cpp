@@ -7,7 +7,6 @@
 #include <fstream>
 #include <algorithm>
 #include "tz_stack_attribute.h"
-#include "tz_error.h"
 #include "tz_voxel_graphics.h"
 #include "tz_tvoxel.h"
 #include "tz_math.h"
@@ -288,7 +287,8 @@ void ZObject3d::labelStack(Stack *stack, int label) const
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 
@@ -340,7 +340,8 @@ void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) cons
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 
@@ -386,7 +387,8 @@ void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz,
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 

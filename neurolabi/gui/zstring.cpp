@@ -6,8 +6,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <exception>
 
-#include "tz_error.h"
 #include "zstring.h"
 
 using namespace std;
@@ -47,7 +47,7 @@ ZString::ZString(const QString &str) : string(str.toStdString())
 
 ZString::~ZString()
 {
-  if (m_workspace != NULL) {
+  if (m_workspace) {
     Kill_String_Workspace(m_workspace);
   }
 }
@@ -100,7 +100,7 @@ vector<int> ZString::toIntegerArray()
     valueArray[i] = array[i];
   }
 
-  if (array != NULL) {
+  if (array) {
     free(array);
   }
 
@@ -127,8 +127,7 @@ size_t count_integer(const char *str)
       }
       break;
     default:
-      TZ_ERROR(ERROR_DATA_VALUE);
-      break;
+      throw std::logic_error("count_integer: Invalid state");
     }
     str++;
   }
@@ -166,8 +165,7 @@ uint64_t *string_to_uint64_array(const char *str, uint64_t *array, size_t *n)
       }
       break;
     default:
-      TZ_ERROR(ERROR_DATA_VALUE);
-      break;
+      throw std::logic_error("string_to_uint64_array: Invalid state");
     }
     str++;
   }
@@ -561,14 +559,12 @@ void ZString::appendNumber(uint64_t num, int pad)
 {
   static const int kMaxPadSize = 100;
 
-  TZ_ASSERT(pad >= 0 && pad <= kMaxPadSize, "Invalid padding");
-
   if (pad >= 0 && pad <= kMaxPadSize) {
     char numStr[50];
 
     sprintf(numStr, "%llu", num);
 
-    int zeroNumber = pad - strlen(numStr);
+    int zeroNumber = pad - int(strlen(numStr));
     for (int i = 0; i < zeroNumber; i++) {
       (*this) += '0';
     }

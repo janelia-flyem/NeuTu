@@ -14,7 +14,6 @@
 #include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
-#include "tz_error.h"
 #include "tz_geo3d_utils.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
@@ -242,7 +241,7 @@ ZPoint ZPoint::getNormalized() const
 
 const double& ZPoint::operator [](int index) const
 {
-  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
+//  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
 
   switch (index) {
   case 0:
@@ -252,7 +251,8 @@ const double& ZPoint::operator [](int index) const
   case 2:
     return m_z;
   default:
-    break;
+    throw std::invalid_argument("Invalid input index");
+//    break;
   }
 
   std::cerr << "Index out of bound" << std::endl;

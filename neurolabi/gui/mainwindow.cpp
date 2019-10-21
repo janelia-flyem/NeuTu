@@ -31,9 +31,7 @@
 
 #include "zinteractivecontext.h"
 
-//itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "imgproc/zstackprocessor.h"
-//#include "tz_error.h"
 
 #include "zstack.hxx"
 
@@ -1997,11 +1995,12 @@ void MainWindow::importImageSequence()
     qApp->processEvents();
     //m_progress->repaint();
 
-
-    if (frame->importImageSequence(fileName.toStdString().c_str()) == SUCCESS) {
+    try {
+      frame->importImageSequence(fileName.toStdString().c_str());
       addStackFrame(frame);
       presentStackFrame(frame);
-    } else{
+    } catch (std::exception &e) {
+      frame->notifyUser(e.what());
       delete frame;
     }
 
@@ -6267,20 +6266,24 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
 
             if (grayStack != NULL) {
-              TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
-              if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
-                size_t voxelNumber = stack->getVoxelNumber();
-                uint8_t *maskArray = stack->array8();
-                uint8_t *signalArray = grayStack->array8();
-                for (size_t i = 0; i < voxelNumber; ++i) {
-                  if (maskArray[i] > 0) {
-                    if (signalArray[i] < 255) {
-                      maskArray[i] = signalArray[i] + 1;
-                    } else {
-                      maskArray[i] = 255;
+              if (grayStack->kind() == GREY) {
+//              TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+                if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+                  size_t voxelNumber = stack->getVoxelNumber();
+                  uint8_t *maskArray = stack->array8();
+                  uint8_t *signalArray = grayStack->array8();
+                  for (size_t i = 0; i < voxelNumber; ++i) {
+                    if (maskArray[i] > 0) {
+                      if (signalArray[i] < 255) {
+                        maskArray[i] = signalArray[i] + 1;
+                      } else {
+                        maskArray[i] = 255;
+                      }
                     }
                   }
                 }
+              } else {
+                ZDialogFactory::Warn("Data Error", "Unexpected grayscale type", this);
               }
               //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
               delete grayStack;

@@ -1,6 +1,5 @@
 #include "zswcdeepanglemetric.h"
 #include "zerror.h"
-//#include "tz_error.h"
 #include "zswctree.h"
 
 ZSwcDeepAngleMetric::ZSwcDeepAngleMetric() : m_level(1), m_minDist(100.0)

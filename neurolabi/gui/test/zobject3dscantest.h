@@ -121,6 +121,46 @@ TEST(ZObject3dStripe, TestGetProperty) {
   }
 }
 
+TEST(ZObject3dStripe, drawStack)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(0);
+  stripe.setZ(0);
+  stripe.addSegment(0, 1);
+  stripe.addSegment(3, 5);
+
+  int offset[3] = {0, -1, -1};
+
+  Stack *stack = C_Stack::make(COLOR, 1, 1, 1);
+  C_Stack::setZero(stack);
+
+  stripe.drawStack(stack, 1, 2, 3, offset);
+  ASSERT_EQ(0, int(C_Stack::value(stack, 0, 0, 0, 0)));
+  ASSERT_EQ(0, int(C_Stack::value(stack, 0, 0, 0, 1)));
+  ASSERT_EQ(0, int(C_Stack::value(stack, 0, 0, 0, 2)));
+
+ offset[1] = 0;
+ offset[2] = 0;
+ stripe.drawStack(stack, 1, 2, 3, offset);
+
+ ASSERT_EQ(1, int(C_Stack::value(stack, 0, 0, 0, 0)));
+ ASSERT_EQ(2, int(C_Stack::value(stack, 0, 0, 0, 1)));
+ ASSERT_EQ(3, int(C_Stack::value(stack, 0, 0, 0, 2)));
+
+ stripe.setY(1);
+ stripe.drawStack(stack, 4, 5, 6, offset);
+ ASSERT_EQ(1, int(C_Stack::value(stack, 0, 0, 0, 0)));
+ ASSERT_EQ(2, int(C_Stack::value(stack, 0, 0, 0, 1)));
+ ASSERT_EQ(3, int(C_Stack::value(stack, 0, 0, 0, 2)));
+
+ stripe.setY(0);
+ stripe.drawStack(stack, 4, 5, 6, offset);
+ ASSERT_EQ(4, int(C_Stack::value(stack, 0, 0, 0, 0)));
+ ASSERT_EQ(5, int(C_Stack::value(stack, 0, 0, 0, 1)));
+ ASSERT_EQ(6, int(C_Stack::value(stack, 0, 0, 0, 2)));
+
+}
+
 TEST(ZObject3dStripe, TestUnify) {
   ZObject3dStripe stripe;
   stripe.setY(3);

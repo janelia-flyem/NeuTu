@@ -8,6 +8,7 @@
 #include <set>
 #include <memory>
 #include <functional>
+#include <cassert>
 
 #include <QString>
 #include <QList>
@@ -30,7 +31,6 @@
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-#include "tz_error.h"
 
 #include "zprogressreporter.h"
 #include "zreportable.h"
@@ -907,8 +907,8 @@ public:
 
 public:
   void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg);
-  void emitMessage(const QString &msg, neutu::EMessageType type);
+  void emitWarning(const QString &msg) const;
+  void emitMessage(const QString &msg, neutu::EMessageType type) const;
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1305,9 +1305,9 @@ public slots:
 
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
-  void messageGenerated(const QString &message, bool appending = true);
+  void messageGenerated(const QString &message, bool appending = true) const;
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&);
+  void messageGenerated(const ZWidgetMessage&) const;
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -1675,7 +1675,7 @@ QList<T*> ZStackDoc::getSelectedObjectList(ZStackObject::EType type) const
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     T *obj = dynamic_cast<T*>(*iter);
-    TZ_ASSERT(obj != NULL, "Unmatched type");
+//    TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.append(obj);
     }
@@ -1693,7 +1693,8 @@ std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     T *obj = dynamic_cast<T*>(*iter);
-    TZ_ASSERT(obj != NULL, "Unmatched type");
+    assert(obj != nullptr);
+//    TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.insert(obj);
     }

@@ -1,8 +1,9 @@
+#include "zimage.h"
+
 #include <iostream>
+#include <stdexcept>
 #include <QImageWriter>
 
-#include "tz_error.h"
-#include "zimage.h"
 #include "tz_stack_neighborhood.h"
 #include "zstack.hxx"
 #include "zfiletype.h"
@@ -986,8 +987,8 @@ void ZImage::drawRaster(const void *data, int kind, double scale,
     setData(ima.arrayc);
     break;
   default:
-    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
-    throw std::exception();
+//    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
+    throw std::invalid_argument("Unsupported stack kind");
   }
 }
 

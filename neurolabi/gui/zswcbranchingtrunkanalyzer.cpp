@@ -1,8 +1,9 @@
 #include "zswcbranchingtrunkanalyzer.h"
 
+#include <stdexcept>
+
 #include "zswctree.h"
 #include "swctreenode.h"
-#include "tz_error.h"
 
 ZSwcBranchingTrunkAnalyzer::ZSwcBranchingTrunkAnalyzer()
 {
@@ -82,13 +83,10 @@ ZSwcPath ZSwcBranchingTrunkAnalyzer::extractMainTrunk(ZSwcTree *tree)
   return ZSwcPath(growingEnd[0], growingEnd[1]);
 }
 
-ZSwcPath ZSwcBranchingTrunkAnalyzer::extractTrunk(ZSwcTree *tree,
-                                                  Swc_Tree_Node *start)
+ZSwcPath ZSwcBranchingTrunkAnalyzer::extractTrunk(ZSwcTree */*tree*/,
+                                                  Swc_Tree_Node */*start*/)
 {
-  TZ_ERROR(ERROR_PART_FUNC);
-
-  UNUSED_PARAMETER(tree);
-  UNUSED_PARAMETER(start);
+  throw std::runtime_error("Function to be implemented");
 
   return ZSwcPath(NULL, NULL);
 }

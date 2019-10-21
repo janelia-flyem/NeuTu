@@ -1,10 +1,10 @@
 #include "zintpoint.h"
 #include <iostream>
 #include <climits>
+#include <stdexcept>
 
 #include "tz_stdint.h"
 
-#include "tz_error.h"
 #include "zerror.h"
 #include "zpoint.h"
 #include "tz_geo3d_utils.h"
@@ -51,7 +51,7 @@ int ZIntPoint::getValue(neutu::EAxis axis) const
 
 const int& ZIntPoint::operator [](int index) const
 {
-  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
+//  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
 
   switch (index) {
   case 0:
@@ -61,12 +61,13 @@ const int& ZIntPoint::operator [](int index) const
   case 2:
     return m_z;
   default:
-    break;
+    throw std::range_error("Invalid input index");
+//    break;
   }
 
-  std::cerr << "Index out of bound" << std::endl;
+//  std::cerr << "Index out of bound" << std::endl;
 
-  return m_x;
+//  return m_x;
 }
 
 int& ZIntPoint::operator[] (int index)
@@ -79,7 +80,8 @@ void ZIntPoint::set(const std::vector<int> &pt)
   if (pt.size() == 3) {
     set(pt[0], pt[1], pt[2]);
   } else {
-    RECORD_WARNING_UNCOND("Unexpected array size.");
+    throw std::invalid_argument("Invalid array length");
+//    RECORD_WARNING_UNCOND("Unexpected array size.");
   }
 }
 

@@ -1,15 +1,17 @@
 #include "zmatrix.h"
-#if defined(_QT_GUI_USED_)
-#include <QDebug>
-#endif
+
 #include <ostream>
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <string>
+#include <stdexcept>
 
-#include "tz_error.h"
+#if defined(_QT_GUI_USED_)
+#include <QDebug>
+#endif
+
 #include "tz_darray.h"
 
 using namespace std;
@@ -39,8 +41,13 @@ ZMatrix::~ZMatrix()
 
 void ZMatrix::resize(int rowNumber, int columnNumber)
 {
-  TZ_ASSERT(rowNumber >= 0, "Invalid row number");
-  TZ_ASSERT(columnNumber >= 0, "Invalid column number");
+  if (rowNumber < 0 || columnNumber < 0) {
+    throw std::invalid_argument(
+          "Invalid row or colum number: " + std::to_string(rowNumber) + "x" +
+          std::to_string(columnNumber));
+  }
+//  TZ_ASSERT(rowNumber >= 0, "Invalid row number");
+//  TZ_ASSERT(columnNumber >= 0, "Invalid column number");
 
   if (rowNumber == getRowNumber() && columnNumber == getColumnNumber()) {
     return;

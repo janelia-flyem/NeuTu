@@ -1,5 +1,5 @@
 #include "zflyemneuronlayermatcher.h"
-#include "tz_error.h"
+
 #include "zdynamicprogrammer.h"
 #include "zobject3dscan.h"
 #include "zflyemneuron.h"
@@ -58,7 +58,9 @@ double ZFlyEmNeuronLayerMatcher::computeSimilarity(
   double s2 = dmax2(value1, value2);
   double s1 = dmin2(value1, value2);
 
-  TZ_ASSERT(s1 > 0.0, "Invalid number");
+  if (s1 <= 0.0) {
+    throw std::invalid_argument("Invalid s1");
+  }
 
   return sqrt(s1) * s1 / s2 /
       (layerDiff / m_layerScale + m_layerBaseFactor);

@@ -45,7 +45,6 @@
 #include "tz_workspace.h"
 #include "tz_r2_ellipse.h"
 #include "tz_stack_stat.h"
-#include "tz_error.h"
 
 #include "zlocsegchainconn.h"
 #include "zstackframe.h"
@@ -10235,7 +10234,11 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
     }
   }
 
-  TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
+  if (signalStack->kind() != GREY) {
+    emitWarning("Only GREY kind is supported.");
+    return nullptr;
+  }
+//  TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
 
   const ZStack* labelField = getLabelFieldUnsync();
 
@@ -10886,7 +10889,7 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
-void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type) const
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -10899,7 +10902,7 @@ void ZStackDoc::emitInfo(const QString &msg)
   emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
-void ZStackDoc::emitWarning(const QString &msg)
+void ZStackDoc::emitWarning(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
 }

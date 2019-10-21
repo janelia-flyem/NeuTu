@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "tz_error.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
 #include "zlinesegment.h"
@@ -282,7 +281,7 @@ void ZCuboid::expand(double margin)
 
 ZPoint ZCuboid::corner(int index) const
 {
-  TZ_ASSERT(index >= 0 && index <= 7, "invalid index.");
+//  TZ_ASSERT(index >= 0 && index <= 7, "invalid index.");
 
   switch (index) {
   case 0:
@@ -302,7 +301,8 @@ ZPoint ZCuboid::corner(int index) const
   case 6:
     return ZPoint(m_firstCorner.x(), m_lastCorner.y(), m_lastCorner.z());
   default:
-    break;
+    throw std::invalid_argument("Invalid corner index");
+//    break;
   }
 
   return ZPoint(0, 0, 0);

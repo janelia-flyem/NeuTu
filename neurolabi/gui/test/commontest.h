@@ -50,6 +50,49 @@ TEST(common, utilities)
   ASSERT_EQ(2, neutu::ClipValue(2, 1, 3));
   ASSERT_EQ(1.0, neutu::ClipValue(0.0, 1.0, 3.0));
   ASSERT_EQ(3.0, neutu::ClipValue(4.0, 1.0, 3.0));
+
+  int x0 = -1;
+  int x1 = 5;
+  ASSERT_TRUE(neutu::ClipRange(1, 3, x0, x1));
+  ASSERT_EQ(1, x0);
+  ASSERT_EQ(3, x1);
+
+
+  x0 = -1;
+  x1 = 2;
+  ASSERT_TRUE(neutu::ClipRange(1, 3, x0, x1));
+  ASSERT_EQ(1, x0);
+  ASSERT_EQ(2, x1);
+
+  x0 = 1;
+  x1 = 5;
+  ASSERT_TRUE(neutu::ClipRange(1, 3, x0, x1));
+  ASSERT_EQ(1, x0);
+  ASSERT_EQ(3, x1);
+
+  x0 = 1;
+  x1 = 3;
+  ASSERT_TRUE(neutu::ClipRange(1, 3, x0, x1));
+  ASSERT_EQ(1, x0);
+  ASSERT_EQ(3, x1);
+
+  x0 = 1;
+  x1 = 2;
+  ASSERT_TRUE(neutu::ClipRange(1, 3, x0, x1));
+  ASSERT_EQ(1, x0);
+  ASSERT_EQ(2, x1);
+
+  x0 = 5;
+  x1 = -1;
+  ASSERT_FALSE(neutu::ClipRange(1, 3, x0, x1));
+
+  x0 = -5;
+  x1 = -1;
+  ASSERT_FALSE(neutu::ClipRange(1, 3, x0, x1));
+
+  x0 = 5;
+  x1 = 10;
+  ASSERT_FALSE(neutu::ClipRange(1, 3, x0, x1));
 }
 
 #endif

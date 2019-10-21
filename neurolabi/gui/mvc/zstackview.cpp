@@ -20,7 +20,6 @@
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
 #include "zclickablelabel.h"
-#include "tz_error.h"
 #include "zstackball.h"
 #include "swctreenode.h"
 #include "zstroke2d.h"

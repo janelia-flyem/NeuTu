@@ -1,8 +1,9 @@
 #include <sstream>
 #include <cmath>
+#include <cassert>
 
 #include "zswcbranch.h"
-#include "tz_error.h"
+
 #include "tz_geo3d_utils.h"
 #include "tz_math.h"
 #include "swctreenode.h"
@@ -184,7 +185,7 @@ bool ZSwcBranch::contains(Swc_Tree_Node *tn)
 
 int ZSwcBranch::nodeNumber()
 {
-  TZ_ASSERT(!(m_end == NULL && m_begin != NULL), "Invalid branch.");
+  assert(!(m_end == NULL && m_begin != NULL));
   int n = 0;
 
   Swc_Tree_Node *tn = m_end;
@@ -582,7 +583,7 @@ void ZSwcBranch::resample(double step)
 
       Swc_Tree_Node *tn = m_end;
 
-      TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
+      assert(pointArray.size() > 1);
 
       size_t startIndex = nseg - 1;
 

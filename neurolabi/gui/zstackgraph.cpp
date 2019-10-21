@@ -1,7 +1,7 @@
 #include "zstackgraph.h"
 
 #include "zgraph.h"
-#include "tz_error.h"
+
 #include "c_stack.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_darray.h"

@@ -1,11 +1,13 @@
 #include "zstackframe.h"
-#include <QUndoCommand>
+
 #include <iostream>
+#include <stdexcept>
+
+#include <QUndoCommand>
 #include <QTimer>
 #include <QtConcurrentRun>
 #include <QProgressDialog>
 
-#include "tz_error.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
@@ -585,6 +587,7 @@ void ZStackFrame::setSizeHintOption(neutu::ESizeHintOption option)
   }
 }
 
+#if 0
 int ZStackFrame::readStack(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
@@ -638,15 +641,16 @@ int ZStackFrame::readStack(const char *filePath)
 
   return SUCCESS;
 }
+#endif
 
-int ZStackFrame::importImageSequence(const char *filePath)
+void ZStackFrame::importImageSequence(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
 
-  if (m_doc->importImageSequence(filePath)) {
-    if (!m_doc->hasStackData()) {
-      return ERROR_IO_READ;
-    }
+  m_doc->importImageSequence(filePath);
+
+  if (!m_doc->hasStackData()) {
+    throw ios_base::failure(std::string("Cannot import images from ") + filePath);
   }
 
   setWindowTitle(filePath);
@@ -655,8 +659,6 @@ int ZStackFrame::importImageSequence(const char *filePath)
     m_presenter->optimizeStackBc();
   }
   m_view->reset();
-
-  return SUCCESS;
 }
 
 Z3DWindow* ZStackFrame::viewSegmentationMesh()

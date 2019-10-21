@@ -5,8 +5,8 @@
 #include <set>
 #include <list>
 #include <stack>
+#include <cassert>
 
-#include "tz_error.h"
 #include "zswctree.h"
 #include "zgraph.h"
 #include "zstring.h"
@@ -181,7 +181,7 @@ int SwcTreeNode::childNumber(const Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isParentIdConsistent(const Swc_Tree_Node *tn)
 {
-  TZ_ASSERT(tn != NULL, "null pointer");
+  assert(tn != NULL);
 
   if (tn->parent == NULL) {
     return (SwcTreeNode::parentId(tn) == -1);
@@ -653,7 +653,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
     double dx = x(tn1) - x(tn2);
     double dy = y(tn1) - y(tn2);
     dist = sqrt(dx * dx + dy * dy);
-    break;
   }
     break;
   case SwcTreeNode::GEODESIC:
@@ -666,9 +665,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
       dist = 0;
     }
     */
-    break;
-  default:
-    TZ_ERROR(ERROR_DATA_TYPE);
     break;
   }
 
@@ -692,8 +688,7 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
     dist = distance(tn, x, y, z, SwcTreeNode::EUCLIDEAN) - radius(tn);
     break;
   default:
-    TZ_WARN(ERROR_DATA_TYPE);
-    break;
+    throw std::invalid_argument("invalid distance type");
   }
 
   return dist;
@@ -994,7 +989,7 @@ Swc_Tree_Node *SwcTreeNode::prevSibling(Swc_Tree_Node *tn)
     sibling = SwcTreeNode::nextSibling(sibling);
   }
 
-  TZ_ASSERT(sibling != NULL, "null pointer should not happen here.");
+  assert(sibling != NULL);
 
   return sibling;
 }
@@ -1169,7 +1164,7 @@ bool SwcTreeNode::connect(const vector<Swc_Tree_Node *> &nodeArray)
       if (graph.edgeWeight(i) > 0.0) {
         int e1 = graph.edgeStart(i);
         int e2 = graph.edgeEnd(i);
-        TZ_ASSERT(e1 != e2, "Invalid edge");
+        assert(e1 != e2);
         if (SwcTreeNode::regularRoot(nodeArray[e1]) !=
             SwcTreeNode::regularRoot(nodeArray[e2])) {
           SwcTreeNode::setAsRoot(nodeArray[e2]);
@@ -1306,7 +1301,7 @@ Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
 
     for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
-      TZ_ASSERT(*iter != NULL, "Null swc node");
+      assert(*iter != NULL);
 
       if (isRegular(parent(*iter))) {
         if (nodeSet.count(parent(*iter)) == 0) {

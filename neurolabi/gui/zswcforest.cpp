@@ -1,7 +1,6 @@
 #include "zswcforest.h"
 #include <iostream>
 
-#include "tz_error.h"
 #include "zswctree.h"
 
 using namespace std;

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string.h>
+#include <cassert>
 
 #include "zstack.hxx"
 #include "tz_image_io.h"
@@ -12,7 +13,7 @@
 #if defined(_QT_GUI_USED_)
 #include "zxmldoc.h"
 #endif
-#include "tz_error.h"
+
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
@@ -40,7 +41,7 @@ ZStackFile::ZStackFile(const ZStackFile &file)
 */
 void ZStackFile::loadStackDocument(const Stack_Document *doc)
 {
-  TZ_ASSERT(doc != NULL, "Null pointer");
+  assert(doc != NULL);
 
 #ifdef _DEBUG_
   cout << "Loading stack document ..." << endl;
@@ -112,8 +113,7 @@ string ZStackFile::firstUrl() const
 void ZStackFile::retrieveAttribute(
     int *kind, int *width, int *height, int *depth) const
 {
-  TZ_ASSERT(kind != NULL && width != NULL && height != NULL && depth != NULL,
-            "Null pointer");
+  assert(kind != NULL && width != NULL && height != NULL && depth != NULL);
 
   std::string filePath = firstUrl();
 
