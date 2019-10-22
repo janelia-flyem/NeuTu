@@ -3558,10 +3558,17 @@ void Z3DWindow::addPunctaSelection()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    QString filterString = QInputDialog::getText(
-          this, "Add Puncta Selection", "Condition");
+//    QString filterString = QInputDialog::getText(
+//          this, "Add Puncta Selection", "Condition");
+    QString filterString = QInputDialog::getMultiLineText(
+          this, "Add Puncta Selection",
+          "Condition (one connection pattern per line)\n"
+          "Pairwise TBar pattern: id1, id2, ... -> id3, id4, ...\n"
+          "Pairwise PSD  pattern: id1, id2, ... <- id3, id4, ...\n");
     if (!filterString.isEmpty()) {
-      doc->addSynapseSelection(filterString);
+      QStringList strList = filterString.replace('\r', '\n').
+          split("\n", QString::SkipEmptyParts);
+      doc->addSynapseSelection(strList);
     }
   }
 }

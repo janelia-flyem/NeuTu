@@ -52,6 +52,8 @@ signals:
   void jsonLoadBookmarksError(QString message);
   void jsonLoadColorMapError(QString message);
   void loadCompleted();
+  void filterIdMapUpdated();
+  void groupIdMapUpdated();
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
   void ioBodiesLoaded();
@@ -73,6 +75,10 @@ private:
   void logInfo(const QString &msg) const;
   static QString ToString(EMode mode);
   ZDvidReader& getIoBodyReader();
+  bool hasColorName(const QString &name) const;
+  QColor makeRandomColor() const;
+  bool isFilterColorName(QString &name) const;
+  bool isGroupColorName(const QString &name) const;
 
 private slots:
     void onCloseButton();
@@ -94,9 +100,11 @@ private slots:
     void updateStatusLabel();
     void updateStatusAfterLoading();
     void updateBodyFilterAfterLoading();
+    void updateFilterIdMap();
     void bodyFilterUpdated(QString filterText);
     void applicationQuitting();    
     void onSaveColorFilter();
+    void onAddGroupColorMap();
     void onDoubleClickFilterTable(const QModelIndex &index);
     void moveToBodyList();
     void onDeleteButton();
@@ -174,7 +182,8 @@ private:
     QSet<uint64_t> m_namelessBodies;
     QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
-    QMap<QString, QList<uint64_t>> m_filteredIdMap;
+    QMap<QString, QList<uint64_t>> m_filterIdMap;
+    QMap<QString, QList<uint64_t>> m_groupIdMap;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
@@ -213,6 +222,7 @@ private:
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
+    void addGroupColor(const QString &name);
     void updateColorFilter(QString filter, QString oldFilter = "");
     void exportBodies(QString filename);
     void exportConnections(QString filename);
@@ -237,9 +247,14 @@ private:
 //    void setNeuPrintReader(std::unique_ptr<NeuPrintReader> reader);
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
     void prepareQuery();
-    void updateColorSchemeWithFilterCache();
+//    void updateColorSchemeWithFilterCache();
     void updateFilterColorScheme(
         const QString &filterString, const QColor &color);
+    void updateGroupIdMap(const QString &name);
+    void updateFilterIdMap(const QString &filterString);
+    void updateGroupColorScheme(
+        const QString &name, const QColor &color, bool updatingMap);
+    void updateColorScheme(const QString &name, const QColor &color);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

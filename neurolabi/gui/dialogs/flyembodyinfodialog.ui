@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
+    <width>654</width>
     <height>843</height>
    </rect>
   </property>
@@ -58,6 +58,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="addColorMapPushButton">
+       <property name="text">
+        <string>Add color map</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

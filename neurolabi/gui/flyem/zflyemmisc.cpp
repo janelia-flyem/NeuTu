@@ -3,6 +3,8 @@
 
 #include <unistd.h>
 #include <iostream>
+#include <utility>
+
 #include <QString>
 #include <QProcess>
 #include <QJsonObject>
@@ -1536,7 +1538,57 @@ ZObject3dScan* flyem::LoadRoiFromJson(
   return result;
 }
 
-bool flyem::HasConnecion(const QString &name, uint64_t input, uint64_t output, neutu::EBiDirection d)
+namespace {
+
+std::pair<uint64_t, std::vector<uint64_t>> extract_connection(
+    const QString &name, const QString &splitter) {
+  QStringList tokens = name.split(splitter);
+  std::pair<uint64_t, std::vector<uint64_t>> result;
+  if (tokens.size() > 1) {
+    result.first = ZString(tokens[0]).firstUint64();
+    result.second = ZString(tokens[1]).toUint64Array();
+  }
+
+  return result;
+}
+
+}
+
+bool flyem::HasConnecion(
+    const QString &name, const QString &splitter,
+    const std::unordered_set<uint64_t> &first,
+    const std::unordered_set<uint64_t> &second)
+{
+  auto connection = extract_connection(name, splitter);
+  if (first.count(connection.first) > 0) {
+    for (uint64_t body : connection.second) {
+      if (second.count(body) > 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool flyem::HasConnecion(
+    const QString &name,
+    const std::unordered_set<uint64_t> &input,
+    const std::unordered_set<uint64_t> &output,
+    neutu::EBiDirection d)
+{
+  switch (d) {
+  case neutu::EBiDirection::FORWARD:
+    return HasConnecion(name, "->", input, output);
+  case neutu::EBiDirection::BACKWARD:
+    return HasConnecion(name, "<-", output, input);
+  }
+
+  return false;
+}
+
+bool flyem::HasConnecion(
+    const QString &name, uint64_t input, uint64_t output, neutu::EBiDirection d)
 {
   switch (d) {
   case neutu::EBiDirection::FORWARD:

@@ -2,6 +2,8 @@
 #include "zflyembody3ddoc.h"
 
 #include <algorithm>
+#include <unordered_set>
+
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <QElapsedTimer>
@@ -4756,26 +4758,33 @@ ZStackDoc3dHelper* ZFlyEmBody3dDoc::getHelper() const
 }
 
 struct SynapseConnFilter {
-  uint64_t m_input = 0;
-  uint64_t m_output = 0;
+  std::unordered_set<uint64_t> m_input;
+  std::unordered_set<uint64_t> m_output;
   neutu::EBiDirection m_direction = neutu::EBiDirection::FORWARD;
 
+  static std::unordered_set<uint64_t> CreateBodySet(const QString &str) {
+    std::unordered_set<uint64_t> bodySet;
+    auto bodyArray = ZString(str.toStdString()).toUint64Array();
+    bodySet.insert(bodyArray.begin(), bodyArray.end());
+    return bodySet;
+  }
+
   void parse(const QString &str) {
-    m_input = 0;
-    m_output = 0;
+//    m_input = 0;
+//    m_output = 0;
     if (str.contains("->")) {
       m_direction = neutu::EBiDirection::FORWARD;
       QStringList tokens = str.split("->", QString::SkipEmptyParts);
       if (tokens.size() > 1) {
-        m_input = ZString(tokens[0].toStdString()).firstUint64();
-        m_output = ZString(tokens[1].toStdString()).firstUint64();
+        m_input = CreateBodySet(tokens[0]);
+        m_output = CreateBodySet(tokens[1]);
       }
     } else if (str.contains("<-")) {
       m_direction = neutu::EBiDirection::BACKWARD;
       QStringList tokens = str.split("<-", QString::SkipEmptyParts);
       if (tokens.size() > 1) {
-        m_input = ZString(tokens[1].toStdString()).firstUint64();
-        m_output = ZString(tokens[0].toStdString()).firstUint64();
+        m_input = CreateBodySet(tokens[1]);
+        m_output = CreateBodySet(tokens[0]);
       }
     }
   }
@@ -4786,7 +4795,7 @@ void ZFlyEmBody3dDoc::addSynapseSelection(const QString &filter)
   SynapseConnFilter sf;
   sf.parse(filter);
 
-  if (sf.m_input > 0 && sf.m_output > 0) {
+  if (!sf.m_input.empty() && !sf.m_output.empty()) {
     ZStackDocAccessor::SetObjectSelection(
           this, ZStackObject::EType::PUNCTUM, [&](const ZStackObject *obj) {
       const ZPunctum *p = dynamic_cast<const ZPunctum*>(obj);
@@ -4796,6 +4805,13 @@ void ZFlyEmBody3dDoc::addSynapseSelection(const QString &filter)
       }
       return false;
     }, true);
+  }
+}
+
+void ZFlyEmBody3dDoc::addSynapseSelection(const QStringList &filter)
+{
+  for (const QString &f : filter) {
+    addSynapseSelection(f);
   }
 }
 
