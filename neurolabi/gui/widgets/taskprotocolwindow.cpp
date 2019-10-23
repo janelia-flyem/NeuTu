@@ -1012,12 +1012,12 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
-  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
-           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
-           << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
-           << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
-           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
-           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
+    LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+             << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+             << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
+             << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
+             << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+             << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
     if ((m_bodyRecycledExpected <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected <= m_bodyMeshLoadedReceived)) {
@@ -1046,10 +1046,10 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
         //  as long as there is one and it's not the current one
         // and start prefetching when control returns to the UI after reenabling it
         QTimer::singleShot(0, this, [=]() {
-          int nextTaskIndex = getNext();
-          if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-              prefetchForTaskIndex(nextTaskIndex);
-          }
+            int nextTaskIndex = getNext();
+            if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+                prefetchForTaskIndex(nextTaskIndex);
+            }
         });
     }
 }
