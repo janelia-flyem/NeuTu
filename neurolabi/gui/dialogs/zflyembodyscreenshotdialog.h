@@ -1,9 +1,9 @@
 #ifndef ZFLYEMBODYSCREENSHOTDIALOG_H
 #define ZFLYEMBODYSCREENSHOTDIALOG_H
 
-#include <QDialog>
+#include <cstdint>
 
-#include "tz_stdint.h"
+#include <QDialog>
 
 namespace Ui {
 class ZFlyEmBodyScreenshotDialog;

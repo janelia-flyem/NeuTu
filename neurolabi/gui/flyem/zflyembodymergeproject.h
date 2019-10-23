@@ -1,13 +1,14 @@
 #ifndef ZFLYEMBODYMERGEPROJECT_H
 #define ZFLYEMBODYMERGEPROJECT_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
 
 #include "neutube.h"
 #include "common/zsharedpointer.h"
-#include "tz_stdint.h"
 #include "zstackobjectselector.h"
 //#include "zstackviewparam.h"
 

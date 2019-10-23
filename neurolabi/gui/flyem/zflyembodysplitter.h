@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-#include "tz_stdint.h"
 #include "common/neutudefs.h"
 #include "dvid/zdvidreader.h"
 #include "flyemdef.h"

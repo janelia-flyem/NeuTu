@@ -1,8 +1,10 @@
 #ifndef ZFLYEMBODYCONFIG_H
 #define ZFLYEMBODYCONFIG_H
 
+#include <cstdint>
+
 #include <QColor>
-#include "tz_stdint.h"
+
 #include "common/neutudefs.h"
 #include "flyemdef.h"
 #include "geometry/zintcuboid.h"

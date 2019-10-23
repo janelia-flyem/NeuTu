@@ -1,10 +1,10 @@
 #ifndef ZCOLORSCHEME_H
 #define ZCOLORSCHEME_H
 
+#include <cstdint>
+
 #include <QColor>
 #include <QVector>
-
-#include "tz_stdint.h"
 
 class ZColorScheme
 {

@@ -1,8 +1,9 @@
 #ifndef ZDVIDTILEUPDATETASKMANAGER_H
 #define ZDVIDTILEUPDATETASKMANAGER_H
 
+#include <cstdint>
+
 #include "zmultitaskmanager.h"
-#include "tz_stdint.h"
 #include "ztask.h"
 #include "dvid/zdvidreader.h"
 

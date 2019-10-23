@@ -1,11 +1,11 @@
 #include "zflyemsequencercolorscheme.h"
 
+#include <cstdint>
 #include <iostream>
 
 #include <QColor>
 #include <QHash>
 
-#include "tz_stdint.h"
 
 ZFlyEmSequencerColorScheme::ZFlyEmSequencerColorScheme()
 {

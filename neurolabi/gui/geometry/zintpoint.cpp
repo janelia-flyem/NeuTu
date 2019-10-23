@@ -3,8 +3,6 @@
 #include <climits>
 #include <stdexcept>
 
-#include "tz_stdint.h"
-
 #include "zerror.h"
 #include "zpoint.h"
 #include "tz_geo3d_utils.h"

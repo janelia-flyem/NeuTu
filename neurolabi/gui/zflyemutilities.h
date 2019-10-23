@@ -3,8 +3,7 @@
 
 #include <string>
 #include <set>
-
-#include "tz_stdint.h"
+#include <cstdint>
 
 class ZIntPoint;
 class ZStack;

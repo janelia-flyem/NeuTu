@@ -1,9 +1,8 @@
 #ifndef ZFLYEMMESHFACTORY_H
 #define ZFLYEMMESHFACTORY_H
 
+#include <cstdint>
 #include <string>
-
-#include "tz_stdint.h"
 
 #include "zmeshfactory.h"
 

@@ -1,13 +1,13 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
+#include <cstdint>
 #include <string>
 #if defined(_QT_GUI_USED_)
 #include <QString>
 #endif
 #include <vector>
 
-#include "tz_stdint.h"
 #include "tz_string.h"
 
 class ZString : public std::string

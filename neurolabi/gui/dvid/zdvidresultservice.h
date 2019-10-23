@@ -1,10 +1,10 @@
 #ifndef ZDVIDRESULTSERVICE_H
 #define ZDVIDRESULTSERVICE_H
 
+#include <cstdint>
+
 #include <QMutex>
 #include <QList>
-
-#include "tz_stdint.h"
 
 class QByteArray;
 class QString;

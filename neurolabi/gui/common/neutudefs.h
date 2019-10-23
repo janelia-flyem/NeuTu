@@ -4,9 +4,7 @@
 #include <limits>
 #include <functional>
 #include <string>
-
-
-#include "tz_stdint.h"
+#include <cstdint>
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 

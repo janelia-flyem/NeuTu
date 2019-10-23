@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstring>
 #include <cassert>
+#include <cstdint>
 
 #include "zobject3d.h"
 #include "zgraph.h"
@@ -19,7 +20,6 @@
 #include "c_stack.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
-#include "include/tz_stdint.h"
 #include "zfiletype.h"
 #include "zeigensolver.h"
 #include "zdoublevector.h"

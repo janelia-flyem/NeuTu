@@ -1,10 +1,11 @@
 #ifndef ZSERVICECONSUMER_H
 #define ZSERVICECONSUMER_H
 
+#include <cstdint>
+
 #include <QMutex>
 #include <QList>
 
-#include "tz_stdint.h"
 
 class QByteArray;
 class QString;

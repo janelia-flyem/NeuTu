@@ -2,7 +2,7 @@
 #define ZSTACKOBJECTSOURCEFACTORY_H
 
 #include <string>
-#include "tz_stdint.h"
+
 #include "common/neutudefs.h"
 #include "flyem/flyemdef.h"
 

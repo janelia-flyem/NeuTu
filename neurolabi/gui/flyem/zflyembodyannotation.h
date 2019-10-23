@@ -1,10 +1,9 @@
 #ifndef ZFLYEMBODYANNOTATION_H
 #define ZFLYEMBODYANNOTATION_H
 
+#include <cstdint>
 #include <string>
 #include <functional>
-
-#include "tz_stdint.h"
 
 class ZJsonObject;
 

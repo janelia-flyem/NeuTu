@@ -1,7 +1,7 @@
 #ifndef ZCONTRASTPROTOCOL_H
 #define ZCONTRASTPROTOCOL_H
 
-#include "tz_stdint.h"
+#include <cstdint>
 
 class ZJsonObject;
 

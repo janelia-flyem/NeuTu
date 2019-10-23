@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QPalette>
 
-#include "tz_stdint.h"
 #include "common/neutudefs.h"
 
 class ZFlyEmProofMvc;

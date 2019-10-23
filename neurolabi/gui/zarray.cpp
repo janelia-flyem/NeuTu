@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <cstdlib>
+#include <cstdint>
 #include <cstring>
 
 #include "geometry/zintcuboid.h"
