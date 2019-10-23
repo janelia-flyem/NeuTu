@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdlib>
+#include <cstdint>
 
 #include "mylib/array.h"
 

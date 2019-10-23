@@ -1,7 +1,9 @@
 #include "zswclayerfeatureanalyzer.h"
 
+#include <cassert>
+
 #include "swctreenode.h"
-#include "tz_unipointer_linked_list.h"
+//#include "tz_unipointer_linked_list.h"
 
 using namespace std;
 
