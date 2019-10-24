@@ -1,14 +1,18 @@
+#include "zeditswcdialog.h"
+
+#include <cmath>
+
 #ifdef _QT5_
 #include <QtWidgets>
 #else
 #include <QtGui>
 #endif
-#include "zeditswcdialog.h"
+
 
 #include <stdio.h>
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
-#include "tz_math.h"
+
 #include "tz_darray.h"
 #include "tz_u8array.h"
 #include "tz_iarray.h"
@@ -16,6 +20,7 @@
 #include "tz_random.h"
 #include "tz_geo3d_utils.h"
 
+#include "common/math.h"
 #include "zswctree.h"
 
 ZEditSwcDialog::ZEditSwcDialog(QWidget *parent) : QDialog(parent)
@@ -892,7 +897,7 @@ void ZEditSwcDialog::runOperations()
         tmp_node.z = field->points[i][2];
         tmp_node.id = i + 1;
         tmp_node.parent_id = -1;
-        tmp_node.d = Cube_Root(0.75 / TZ_PI * field->values[i]);
+        tmp_node.d = std::cbrt(0.75 / TZ_PI * field->values[i]);
         Swc_Node_Fprint(fp, &tmp_node);
       }
       fclose(fp);
@@ -1338,7 +1343,7 @@ void ZEditSwcDialog::runOperations()
           int color_map[] = { 1, 3, 5, 7, 6, 8, 2 };
           Swc_Tree_Node *tn = NULL;
           while ((tn = Swc_Tree_Next(tree)) != NULL) {
-            int new_type = iround(tn->feature);
+            int new_type = neutu::iround(tn->feature);
             if (new_type > 6) {
               new_type = 6;
             }
@@ -1359,7 +1364,7 @@ void ZEditSwcDialog::runOperations()
           int color_map[] = { 1, 3, 5, 7, 6, 8, 2 };
           Swc_Tree_Node *tn = NULL;
           while ((tn = Swc_Tree_Next(tree)) != NULL) {
-            int new_type = iround((tn->feature - fmin) / (fmax - fmin) * 6.0);
+            int new_type = neutu::iround((tn->feature - fmin) / (fmax - fmin) * 6.0);
             if (new_type > 6) {
               new_type = 6;
             }

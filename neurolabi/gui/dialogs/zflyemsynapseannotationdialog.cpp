@@ -6,7 +6,7 @@
 #include <QPainter>
 
 #include "ui_zflyemsynapseannotationdialog.h"
-#include "tz_math.h"
+
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 

@@ -6,7 +6,8 @@
 #include "tz_fimage_lib.h"
 #include "zstackstatistics.h"
 #include "tz_color.h"
-#include "tz_math.h"
+//#include "tz_math.h"
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "tz_stack_lib.h"
 #include "zstring.h"
@@ -24,9 +25,9 @@ double Biocytin::ZStackProjector::colorToValueH(
   //return sg;
 
   Rgb_Color color;
-  int ir = iround(sr);
-  int ig = iround(sg);
-  int ib = iround(sb);
+  int ir = neutu::iround(sr);
+  int ig = neutu::iround(sg);
+  int ib = neutu::iround(sb);
 
   if (ir < 0) {
     color.r = 0;
@@ -389,7 +390,7 @@ std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
   } else {
     const double overlapRatio = 0.1;
     int subDepth = depth / m_slabCount;
-    int overlapDepth = iround(subDepth * overlapRatio);
+    int overlapDepth = neutu::iround(subDepth * overlapRatio);
     int marginDepth = overlapDepth / 2;
     range.first = slabIndex * subDepth;
     range.second = range.first + subDepth;

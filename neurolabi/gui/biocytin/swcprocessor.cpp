@@ -1,4 +1,4 @@
-#include "tz_math.h"
+//#include "tz_math.h"
 #include "swcprocessor.h"
 #include "zswctree.h"
 #include "swctreenode.h"
