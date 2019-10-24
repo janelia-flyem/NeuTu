@@ -171,6 +171,11 @@ namespace {
 
   static bool s_showHybridMeshes = true;
 
+  // See the comments in showHybridMeshes().
+
+  static uint64_t s_lastHybridMeshBodyId1 = 0;
+  static uint64_t s_lastHybridMeshBodyId2 = 0;
+
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
   // to some settings until all of them are done.  This code manages making those
   // changes and restore the changed values when the tasks are done.
@@ -244,6 +249,9 @@ namespace {
       ZFlyEmProofMvc::showAnnotations(showingAnnotations);
 
       ZFlyEmProofDoc::enableBodySelectionMessage(bodySelectionMessageEnabled);
+
+      s_lastHybridMeshBodyId1 = 0;
+      s_lastHybridMeshBodyId2 = 0;
     }
   }
 
@@ -1039,29 +1047,44 @@ void TaskBodyMerge::showHybridMeshes(bool show)
     }
   }
 
-  // The asynchronous creation of the hybrid meshes can cause problems if the user
-  // is able to move to another task before the creation is finished.  So disable the
-  // user interface that allows changing of the task until signals indicate the
-  // hybrid meshes are complete.
-
-  allowNextPrev(false);
-
-  // And evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
   // so make them mutually exclusive.
 
   m_showHiResCheckBox->setEnabled(false);
 
-  m_hybridLoadedCount = 0;
-  connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
-    if (++m_hybridLoadedCount == 2) {
-      disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, nullptr);
-      allowNextPrev(true);
+  // The asynchronous creation of the hybrid meshes can cause problems if the user
+  // is able to move to another task before the creation is finished.  So use
+  // allowNextPrev(false) to disable the user interface that allows changing of the
+  // task until signals indicate the hybrid meshes are complete.
 
-      if (!show) {
-        configureShowHiRes();
+  // But if this task tries to generate hybrid meshes for the same body IDs as the
+  // previous task, then some oddness in the ZFlyEmBody3dDoc event processing prevents
+  // the necessary signals from being generated, and allowNextPrev(true) won't be called
+  // to re-enable the user interface.  As an expedient work-around, keep track of the
+  // body IDs for which hybrid meshes were last generated, to adjust the number of
+  // signals that are expected.
+
+  m_hybridLoadedCount = 0;
+  m_hybridExpectedCount = 0;
+  m_hybridExpectedCount += ((m_bodyId1 != s_lastHybridMeshBodyId1) &&
+                            (m_bodyId1 != s_lastHybridMeshBodyId2));
+  m_hybridExpectedCount += ((m_bodyId2 != s_lastHybridMeshBodyId1) &&
+                            (m_bodyId2 != s_lastHybridMeshBodyId2));
+  s_lastHybridMeshBodyId1 = m_bodyId1;
+  s_lastHybridMeshBodyId2 = m_bodyId2;
+  if (m_hybridExpectedCount > 0) {
+    allowNextPrev(false);
+
+    connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
+      if (++m_hybridLoadedCount == m_hybridExpectedCount) {
+        disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, nullptr);
+        allowNextPrev(true);
+        if (!show) {
+          configureShowHiRes();
+        }
       }
-    }
-  });
+    });
+  }
 
   // Trigger asynchronous creation of hybrid meshes for the region.
 
