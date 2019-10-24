@@ -92,6 +92,7 @@
 #include "protocols/taskbodyhistory.h"
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskcelltypevalidation.h"
 #include "protocols/taskfalsesplitreview.h"
 #include "protocols/taskmergereview.h"
 #include "protocols/tasksplitseeds.h"
@@ -479,6 +480,7 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskBodyHistory::taskTypeStatic(), TaskBodyHistory::createFromJson);
   factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
   factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
+  factory.registerJsonCreator(TaskCellTypeValidation::taskTypeStatic(), TaskCellTypeValidation::createFromJson);
   factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
   factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
   factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);

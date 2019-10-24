@@ -719,7 +719,9 @@ HEADERS += mainwindow.h \
     dialogs/neuprintsetupdialog.h \
     dvid/zdvidgraysliceensemble.h \
     dvid/zdvidenv.h \
-    protocols/taskutils.h
+    protocols/taskutils.h \
+    protocols/taskcelltypevalidation.h \
+    protocols/taskreview.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1220,7 +1222,9 @@ SOURCES += main.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     protocols/taskutils.cpp \
-    dialogs/neuprintsetupdialog.cpp
+    dialogs/neuprintsetupdialog.cpp \
+    protocols/taskcelltypevalidation.cpp \
+    protocols/taskreview.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
