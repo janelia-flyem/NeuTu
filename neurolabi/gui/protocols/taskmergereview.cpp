@@ -55,7 +55,6 @@ QString TaskMergeReview::labelForDoMajorButton() const
   return "Merge major only";
 }
 
-
 QString TaskMergeReview::valueResultDo() const
 {
   return "merge";

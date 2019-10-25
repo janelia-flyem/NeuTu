@@ -14,6 +14,7 @@ class ZDvidTarget;
 class ZMesh;
 class QAction;
 class QCheckBox;
+class QLayout;
 class QPushButton;
 class QRadioButton;
 class QShortcut;
@@ -52,6 +53,11 @@ protected:
   virtual QString valueResultDo() const = 0;
   virtual QString valueResultDont() const = 0;
   virtual QString valueResultDoMajor() const;
+
+  virtual QLayout *customBottomWidgets(QWidget *parent);
+
+  void hideBody(std::size_t which);
+  void hideNone();
 
 private slots:
   void onCycleAnswer();

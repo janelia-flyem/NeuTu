@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -438,6 +439,41 @@ QString TaskReview::valueResultDoMajor() const
   return "";
 }
 
+QLayout *TaskReview:: customBottomWidgets(QWidget *)
+{
+  return nullptr;
+}
+
+void TaskReview::hideBody(std::size_t which)
+{
+  uint64_t bodyId = 0;
+  size_t i = 0;
+  for (uint64_t id : m_bodyIds) {
+    if (i++ == which) {
+      bodyId = id;
+      break;
+    }
+  }
+  if (bodyId != 0) {
+    m_hiddenIds.clear();
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+      ZMesh *mesh = *it;
+      uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+      if (tarBodyId == bodyId) {
+        m_hiddenIds.insert(mesh->getLabel());
+      }
+    }
+    updateVisibility();
+  }
+}
+
+void TaskReview::hideNone()
+{
+  m_hiddenIds.clear();
+  updateVisibility();
+}
+
 void TaskReview::onCycleAnswer()
 {
   if (m_dontButton->isChecked()) {
@@ -747,14 +783,22 @@ void TaskReview::buildTaskWidget()
   QHBoxLayout *radioBottomLayout = nullptr;
   radioTopLayout->addWidget(m_dontButton);
   radioTopLayout->addWidget(m_doButton);
+  QButtonGroup *radioGroup = new QButtonGroup(m_widget);
+  radioGroup->addButton(m_dontButton);
+  radioGroup->addButton(m_doButton);
   if (includeExtendedResults()) {
     radioTopLayout->addWidget(m_doMajorButton);
     radioBottomLayout = new QHBoxLayout;
     radioBottomLayout->addWidget(m_processFurtherButton);
     radioBottomLayout->addWidget(m_irrelevantButton);
     radioBottomLayout->addWidget(m_dontKnowButton);
+    radioGroup->addButton(m_doMajorButton);
+    radioGroup->addButton(m_processFurtherButton);
+    radioGroup->addButton(m_irrelevantButton);
+    radioGroup->addButton(m_dontKnowButton);
   } else {
     radioTopLayout->addWidget(m_dontKnowButton);
+    radioGroup->addButton(m_dontKnowButton);
   }
 
   m_selectCurrentBodyButton = new QPushButton("Select", m_widget);
@@ -840,6 +884,10 @@ void TaskReview::buildTaskWidget()
   isolateAction->setShortcut(Qt::Key_F3);
   m_menu->addAction(isolateAction);
   connect(isolateAction, SIGNAL(triggered()), this, SLOT(onToggleIsolation()));
+
+  if (QLayout *custom =  customBottomWidgets(m_widget)) {
+    layout->addLayout(custom);
+  }
 }
 
 void TaskReview::updateColors()

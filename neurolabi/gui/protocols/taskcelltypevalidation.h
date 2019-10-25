@@ -5,6 +5,7 @@
 
 class TaskCellTypeValidation : public TaskReview
 {
+  Q_OBJECT
 public:
   TaskCellTypeValidation(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
 
@@ -26,6 +27,19 @@ protected:
 
   virtual QString valueResultDo() const override;
   virtual QString valueResultDont() const override;
+
+  virtual QLayout *customBottomWidgets(QWidget *parent) override;
+
+private slots:
+  void onShowBody();
+  void onShowAllBodies();
+  void onCycleShowBody();
+  void onCycleShowAllBodies();
+
+private:
+  QRadioButton *m_showBothButton;
+  QRadioButton *m_showAButton;
+  QRadioButton *m_showBButton;
 };
 
 #endif // TASKCELLTYPEVALIDATION_H
