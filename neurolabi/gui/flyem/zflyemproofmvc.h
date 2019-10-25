@@ -115,6 +115,8 @@ public:
 
   void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 
+  void recordEnd();
+
   ZFlyEmSupervisor* getSupervisor() const;
 
 //  bool checkInBody(uint64_t bodyId);

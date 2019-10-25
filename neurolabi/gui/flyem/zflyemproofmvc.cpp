@@ -140,13 +140,7 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
-  if (getDvidTarget().isValid()) {
-    LKLOG << ZLog::Info()
-          << ZLog::Description(
-               QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
-               arg(getDvidTarget().getAddressWithPort().c_str()).toStdString())
-          << ZLog::Duration(m_sessionTimer.elapsed());
-  }
+  recordEnd();
 
   delete m_dlgManager;
   delete m_actionLibrary;
@@ -243,6 +237,17 @@ void ZFlyEmProofMvc::init()
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
 #endif
+}
+
+void ZFlyEmProofMvc::recordEnd()
+{
+  if (getDvidTarget().isValid()) {
+    LKLOG << ZLog::Info()
+          << ZLog::Description(
+               QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
+               arg(getDvidTarget().getAddressWithPort().c_str()).toStdString())
+          << ZLog::Duration(m_sessionTimer.elapsed());
+  }
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidTargetProviderDialog *dlg)

@@ -138,6 +138,7 @@ Neu3Window::~Neu3Window()
 {
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
+    m_dataContainer->recordEnd();
   }
 //  delete m_webView;
 
