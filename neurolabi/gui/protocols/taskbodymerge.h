@@ -64,6 +64,7 @@ private:
   size_t m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
+  size_t m_hybridExpectedCount;
   size_t m_hybridLoadedCount;
 
   QWidget *m_widget;

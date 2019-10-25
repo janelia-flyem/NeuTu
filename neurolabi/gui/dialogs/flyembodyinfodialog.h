@@ -206,6 +206,7 @@ private:
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;
 
+private:
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     void loadData();
@@ -248,13 +249,15 @@ private:
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
     void prepareQuery();
 //    void updateColorSchemeWithFilterCache();
-    void updateFilterColorScheme(
-        const QString &filterString, const QColor &color);
+    void updateFilterColorMap(
+        const QString &filterString);
     void updateGroupIdMap(const QString &name);
     void updateFilterIdMap(const QString &filterString);
     void updateGroupColorScheme(
         const QString &name, const QColor &color, bool updatingMap);
     void updateColorScheme(const QString &name, const QColor &color);
+    QString getTableColorName(int index) const;
+    QColor getTableColor(int index) const;
 };
 
 #endif // FLYEMBODYINFODIALOG_H

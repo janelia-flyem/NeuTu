@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>654</width>
+    <width>742</width>
     <height>843</height>
    </rect>
   </property>
@@ -58,13 +58,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="addColorMapPushButton">
-       <property name="text">
-        <string>Add color map</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -296,7 +289,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="colorTab">
       <attribute name="title">
@@ -358,6 +351,13 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
+         <item>
+          <widget class="QPushButton" name="addColorMapPushButton">
+           <property name="text">
+            <string>Add Color</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">

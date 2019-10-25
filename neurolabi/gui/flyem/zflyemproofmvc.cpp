@@ -10,7 +10,6 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QMimeData>
-#include <QElapsedTimer>
 
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
@@ -141,10 +140,7 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
-  if (getDvidTarget().isValid()) {
-    KINFO << QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
-             arg(getDvidTarget().getAddressWithPort().c_str());
-  }
+  recordEnd();
 
   delete m_dlgManager;
   delete m_actionLibrary;
@@ -241,6 +237,17 @@ void ZFlyEmProofMvc::init()
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
 #endif
+}
+
+void ZFlyEmProofMvc::recordEnd()
+{
+  if (getDvidTarget().isValid()) {
+    LKLOG << ZLog::Info()
+          << ZLog::Description(
+               QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
+               arg(getDvidTarget().getAddressWithPort().c_str()).toStdString())
+          << ZLog::Duration(m_sessionTimer.elapsed());
+  }
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidTargetProviderDialog *dlg)
@@ -2018,6 +2025,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
           ZWidgetMessage::TARGET_STATUS_BAR));
 
   KINFO << "DVID Ready";
+  m_sessionTimer.start();
   emit dvidReady();
 
   if (getRole() == ERole::ROLE_WIDGET) {
