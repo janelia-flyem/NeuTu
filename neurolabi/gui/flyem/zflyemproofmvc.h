@@ -9,6 +9,7 @@
 #include <QMetaType>
 #include <QSharedPointer>
 #include <QMap>
+#include <QElapsedTimer>
 
 #include "common/neutudefs.h"
 #include "zthreadfuturemap.h"
@@ -730,6 +731,7 @@ protected:
   bool m_3dEnabled = true;
 
   QTimer *m_profileTimer = nullptr;
+  QElapsedTimer m_sessionTimer;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
