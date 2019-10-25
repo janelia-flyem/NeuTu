@@ -3832,7 +3832,9 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 
 void ZStackDoc::removeTakenObject(ZStackObject *obj, bool deleteObject)
 {
+#ifdef _DEBUG_
   neutu::LogObjectOperation("remove", obj);
+#endif
 
   m_playerList.removePlayer(obj);
 
@@ -8155,7 +8157,9 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
     return;
   }
 
+#ifdef _DEBUG_
   neutu::LogObjectOperation("add", obj);
+#endif
 
   if (obj->isSelected()) {
     setSelected(obj, true);
