@@ -16,6 +16,9 @@ public:
   virtual QString taskType() const override;
   virtual QString actionString() override;
 
+  virtual void beforeNext() override;
+  virtual void beforePrev() override;
+
 protected:
   virtual bool includeExtendedResults() const override;
   virtual bool onLoadedZoomToFitSmaller() const override;
