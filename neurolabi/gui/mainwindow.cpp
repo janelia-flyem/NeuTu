@@ -21,8 +21,7 @@
 #include "ui_mainwindow.h"
 
 #include "logging/zlog.h"
-#include "tz_darray.h"
-#include "tz_math.h"
+
 #include "mvc/zstackframe.h"
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackview.h"
@@ -1515,7 +1514,7 @@ void MainWindow::advanceProgress(double dp)
 {
   if (m_progress->value() < m_progress->maximum()) {
     int range = m_progress->maximum() - m_progress->minimum();
-    m_progress->setValue(m_progress->value() + iround(dp * range));
+    m_progress->setValue(m_progress->value() + neutu::iround(dp * range));
   }
 }
 
@@ -2486,11 +2485,11 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
         ZOUT(LTRACE(), 5) << frame->document()->getStack()->min(i) <<
                     ' ' << frame->document()->getStack()->max(i) << "\n";
 
-        m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
-                          iround(frame->displayGreyMax(i)), i);
+        m_bcDlg->setValue(neutu::iround(frame->displayGreyMin(i)),
+                          neutu::iround(frame->displayGreyMax(i)), i);
 
         ZOUT(LTRACE(), 5) << frame->displayGreyMin(i) << ' ' <<
-                    iround(frame->displayGreyMax(i)) << "\n";
+                    neutu::iround(frame->displayGreyMax(i)) << "\n";
       }
     }
   }
@@ -3992,7 +3991,7 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
     int layerArray[11];
     for (int i = 0; i < 11; ++i) {
       layerArray[i] = mLayerStart +
-          iround(layerPercent[i] * (mLayerEnd - mLayerStart) / 100.0);
+          neutu::iround(layerPercent[i] * (mLayerEnd - mLayerStart) / 100.0);
     }
     //input.resize(5);
 
@@ -6719,7 +6718,7 @@ void MainWindow::on_actionOne_Column_triggered()
 
       ZJsonObject tbarJson(
             synapseJson["T-bar"], ZJsonObject::SET_INCREASE_REF_COUNT);
-      json_array_set(tbarJson["location"], 1, json_integer(iround(y)));
+      json_array_set(tbarJson["location"], 1, json_integer(neutu::iround(y)));
 //      ZJsonArray tbarLocationJson(
 //            tbarJson["location"], ZJsonObject::SET_INCREASE_REF_COUNT);
 
@@ -6752,7 +6751,8 @@ void MainWindow::on_actionOne_Column_triggered()
           bodyIdSet.insert(partner.getBodyId());
 
           ZJsonObject partnerJson = partner.toJsonObject();
-          json_array_set(partnerJson["location"], 1, json_integer(iround(y)));
+          json_array_set(
+                partnerJson["location"], 1, json_integer(neutu::iround(y)));
 
           newPartnerArrayJson.append(partnerJson);
         }

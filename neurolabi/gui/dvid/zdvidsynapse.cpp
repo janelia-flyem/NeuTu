@@ -2,13 +2,13 @@
 #include <QtCore>
 #include <QPen>
 
+#include "common/math.h"
 #include "logging/zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
-#include "tz_math.h"
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
@@ -331,7 +331,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double y = center.getY();
 
       int startAngle = 0;
-      int spanAngle = iround((1.0 - conf) * 180) * 16;
+      int spanAngle = neutu::iround((1.0 - conf) * 180) * 16;
       painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
                              QPointF(x + lineWidth, y + lineWidth)),
                       startAngle, spanAngle);

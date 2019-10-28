@@ -1,12 +1,13 @@
+#include "zlocalneuroseg.h"
+
 #if defined(_QT_GUI_USED_)
 #include <QtConcurrentRun>
 #endif
 
-#include "tz_math.h"
-#include "zlocalneuroseg.h"
 #include "tz_voxel_graphics.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_attribute.h"
+#include "common/math.h"
 #include "zpainter.h"
 #include "c_stack.h"
 
@@ -223,8 +224,8 @@ void ZLocalNeuroseg::display(
       Local_Neuroseg_Top(m_locseg, top_position);
       voxel_t start, end;
       for (int i = 0; i < 3; i++) {
-        start[i] = iround(bottom_position[i]);
-        end[i] = iround(top_position[i]);
+        start[i] = neutu::iround(bottom_position[i]);
+        end[i] = neutu::iround(top_position[i]);
       }
 
       Object_3d *obj = Line_To_Object_3d(start, end);
@@ -418,8 +419,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
       Local_Neuroseg_Top(m_locseg, top_position);
       voxel_t start, end;
       for (int i = 0; i < 3; i++) {
-        start[i] = iround(bottom_position[i]);
-        end[i] = iround(top_position[i]);
+        start[i] = neutu::iround(bottom_position[i]);
+        end[i] = neutu::iround(top_position[i]);
       }
 
       Object_3d *obj = Line_To_Object_3d(start, end);

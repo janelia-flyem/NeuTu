@@ -6,6 +6,7 @@
 #include <QImageWriter>
 #include <QJsonObject>
 
+#include "common/math.h"
 #include "logging/zlog.h"
 #include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
@@ -1330,8 +1331,8 @@ void ZStackView::takeScreenshot(const QString &filename)
   QImageWriter writer(filename);
   writer.setCompression(1);
 
-  QImage image(iround(m_imageWidget->width()),
-               iround(m_imageWidget->height()),
+  QImage image(m_imageWidget->width(),
+               m_imageWidget->height(),
                QImage::Format_ARGB32);
 
   m_imageWidget->setViewHintVisible(false);
@@ -1547,9 +1548,9 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
     ZIntCuboid box = getViewBoundBox();
     if (canvas->width() != box.getWidth() ||
         canvas->height() != box.getHeight() ||
-        iround(canvas->getTransform().getTx()) !=
+        neutu::iround(canvas->getTransform().getTx()) !=
         -box.getFirstCorner().getX() ||
-        iround(canvas->getTransform().getTy()) !=
+        neutu::iround(canvas->getTransform().getTy()) !=
         -box.getFirstCorner().getY()) {
       if (painter != NULL) {
         painter->end();

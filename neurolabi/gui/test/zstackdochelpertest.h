@@ -2,6 +2,7 @@
 #define ZSTACKDOCHELPERTEST_H
 
 #include "ztestheader.h"
+#include "common/math.h"
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackdochelper.h"
 #include "mvc/zstackdocutil.h"
@@ -33,9 +34,9 @@ TEST(ZStackDocUtil, Range)
   ASSERT_EQ(ZIntPoint(109, 329, 219), box.getLastCorner());
 
   box = ZStackDocUtil::GetStackSpaceRange(doc, neutu::EAxis::ARB);
-  ASSERT_EQ(iround(range.getDiagonalLength()), box.getWidth());
-  ASSERT_EQ(iround(range.getDiagonalLength()), box.getHeight());
-  ASSERT_EQ(iround(range.getDiagonalLength()), box.getDepth());
+  ASSERT_EQ(neutu::iround(range.getDiagonalLength()), box.getWidth());
+  ASSERT_EQ(neutu::iround(range.getDiagonalLength()), box.getHeight());
+  ASSERT_EQ(neutu::iround(range.getDiagonalLength()), box.getDepth());
   ASSERT_EQ(range.getCenter(), box.getCenter());
 }
 

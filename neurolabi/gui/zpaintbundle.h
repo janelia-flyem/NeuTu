@@ -2,19 +2,19 @@
 #define ZPAINTBUNDLE_H
 
 #include <QList>
-#include "common/neutudefs.h"
-//#include "zstackdrawable.h"
-#include "swctreenode.h"
-#include "zstackball.h"
-#include "tz_math.h"
-#include "geometry/zpoint.h"
-#include "zswctree.h"
-#include "geometry/zintpoint.h"
-#include "zstackobjectsourcefactory.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/utility/enable_if.hpp>
+
+#include "common/neutudefs.h"
+#include "swctreenode.h"
+#include "zstackball.h"
+
+#include "geometry/zpoint.h"
+#include "zswctree.h"
+#include "geometry/zintpoint.h"
+#include "zstackobjectsourcefactory.h"
 
 namespace impl {
 

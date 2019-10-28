@@ -6,7 +6,6 @@
 #include "tz_fimage_lib.h"
 #include "zstackstatistics.h"
 #include "tz_color.h"
-//#include "tz_math.h"
 #include "common/math.h"
 #include "neutubeconfig.h"
 #include "tz_stack_lib.h"

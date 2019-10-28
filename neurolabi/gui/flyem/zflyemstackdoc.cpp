@@ -2,7 +2,7 @@
 
 #include <set>
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "zstackfile.h"
 #include "tz_stack_neighborhood.h"
@@ -73,8 +73,8 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutu::EAxis axis
 //    TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
-    int wx = iround(x);
-    int wy = iround(y);
+    int wx = neutu::iround(x);
+    int wy = neutu::iround(y);
     int wz = z;
     zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);

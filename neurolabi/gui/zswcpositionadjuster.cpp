@@ -1,8 +1,9 @@
 #include "zswcpositionadjuster.h"
+
+#include "common/math.h"
 #include "zvoxelarray.h"
 #include "swctreenode.h"
 #include "c_stack.h"
-#include "tz_math.h"
 #include "zstackgraph.h"
 #include "neutubeconfig.h"
 
@@ -24,11 +25,11 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
     return;
   }
 
-  int sourceX = iround(SwcTreeNode::x(swcPath.front()));
-  int sourceY = iround(SwcTreeNode::y(swcPath.front()));
+  int sourceX = neutu::iround(SwcTreeNode::x(swcPath.front()));
+  int sourceY = neutu::iround(SwcTreeNode::y(swcPath.front()));
 
-  int targetX = iround(SwcTreeNode::x(swcPath.back()));
-  int targetY = iround(SwcTreeNode::y(swcPath.back()));
+  int targetX = neutu::iround(SwcTreeNode::x(swcPath.back()));
+  int targetY = neutu::iround(SwcTreeNode::y(swcPath.back()));
 
   if (sourceX != targetX || sourceY != targetY) {
     Stack *mask = C_Stack::make(

@@ -28,7 +28,6 @@
 #include "zhdf5reader.h"
 #include "zhdf5writer.h"
 #include "zstringarray.h"
-#include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "zstackfactory.h"
 #include "tz_stack_bwmorph.h"
@@ -2255,7 +2254,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
     }
   }
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
 
@@ -2572,8 +2571,8 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
 
         slice.loadStack(*newStack);
 
-        slice.translate(iround((c2.getX() - c1.getX()) * beta),
-                        iround((c2.getY() - c1.getY()) * beta), 0 );
+        slice.translate(neutu::iround((c2.getX() - c1.getX()) * beta),
+                        neutu::iround((c2.getY() - c1.getY()) * beta), 0 );
 
         delete stack1;
         delete stack2;
@@ -2790,9 +2789,9 @@ bool ZObject3dScan::hit(double x, double y, double z)
   }
 
   m_hitPoint.set(0, 0, 0);
-  int tx = iround(x);
-  int ty = iround(y);
-  int tz = iround(z);
+  int tx = neutu::iround(x);
+  int ty = neutu::iround(y);
+  int tz = neutu::iround(z);
   zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
@@ -2801,7 +2800,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.contains(tx, ty, tz)) {
-      m_hitPoint.set(iround(x), iround(y), iround(z));
+      m_hitPoint.set(neutu::iround(x), neutu::iround(y), neutu::iround(z));
       return true;
     }
   }
@@ -2817,14 +2816,14 @@ bool ZObject3dScan::hit(double x, double y, neutu::EAxis axis)
 
   m_hitPoint.set(0, 0, 0);
 
-  int tx = iround(x) / (getDsIntv().getX() + 1);
-  int ty = iround(y) / (getDsIntv().getY() + 1);
+  int tx = neutu::iround(x) / (getDsIntv().getX() + 1);
+  int ty = neutu::iround(y) / (getDsIntv().getY() + 1);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     int tz = stripe.getZ() / (getDsIntv().getZ() + 1);
     if (stripe.contains(tx, ty, tz)) {
-      m_hitPoint.set(iround(x), iround(y), stripe.getZ());
+      m_hitPoint.set(neutu::iround(x), neutu::iround(y), stripe.getZ());
       return true;
     }
   }
@@ -3746,7 +3745,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   bool newStripe = true;
   */
 
-  int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
+  int intv = neutu::iround(std::cbrt((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
   if (intv < 0) {
     intv = 0;
   }

@@ -13,8 +13,6 @@
 #include "zobject3dfactory.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
-#include "tz_math.h"
-//#include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "zstackfactory.h"

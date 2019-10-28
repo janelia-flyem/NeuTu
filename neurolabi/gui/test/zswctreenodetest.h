@@ -3,7 +3,6 @@
 
 #include "ztestheader.h"
 
-#include "tz_math.h"
 #include "tz_constant.h"
 #include "swctreenode.h"
 

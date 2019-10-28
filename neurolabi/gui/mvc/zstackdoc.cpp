@@ -17,7 +17,6 @@
 #include "mvc/logging.h"
 
 #include "tz_image_io.h"
-#include "tz_math.h"
 #include "zstackdoc.h"
 #include "tz_stack_lib.h"
 #include "tz_trace_defs.h"
@@ -3677,7 +3676,7 @@ int ZStackDoc::selectLocsegChain(int id, int x, int y, int z, bool showProfile)
       found = -1;
 
       if (x > 0) {
-        found = iround(chain->holdClosestSeg(x, y, z)) + 1;
+        found = neutu::iround(chain->holdClosestSeg(x, y, z)) + 1;
 
 #if defined _ADVANCED_2
         Local_Neuroseg *locseg = chain->heldNeuroseg();
@@ -9619,9 +9618,9 @@ void ZStackDoc::setStackOffset(const ZIntPoint &offset)
 void ZStackDoc::setStackOffset(const ZPoint &offset)
 {
   if (stackRef() != NULL) {
-    stackRef()->setOffset(iround(offset.x()),
-                          iround(offset.y()),
-                          iround(offset.z()));
+    stackRef()->setOffset(neutu::iround(offset.x()),
+                          neutu::iround(offset.y()),
+                          neutu::iround(offset.z()));
     emit stackBoundBoxChanged();
   }
 }
@@ -10662,7 +10661,7 @@ void ZStackDoc::notifyZoomingToSelectedSwcNode()
 
 void ZStackDoc::notifyZoomingTo(double x, double y, double z)
 {
-  emit zoomingTo(iround(x), iround(y), iround(z));
+  emit zoomingTo(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 }
 
 void ZStackDoc::notifyZoomingTo(const ZIntPoint &pt)

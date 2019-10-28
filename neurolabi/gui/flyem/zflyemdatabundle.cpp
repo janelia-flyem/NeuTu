@@ -4,8 +4,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 
-#include "tz_math.h"
 #include "zjsonparser.h"
 #include "zstring.h"
 
@@ -695,7 +695,7 @@ void ZFlyEmDataBundle::updateNeuronConnection()
 namespace {
 double ComputeOverallResultion(const double *res)
 {
-  return Cube_Root(res[0] * res[1] * res[2]);
+  return std::cbrt(res[0] * res[1] * res[2]);
 }
 }
 

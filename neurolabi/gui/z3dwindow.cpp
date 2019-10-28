@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QApplication>
 
+#include "common/math.h"
 #include "zstack.hxx"
 #include "mvc/zstackdoc.h"
 #include "zstackdocproxy.h"
@@ -3194,10 +3195,10 @@ void Z3DWindow::locateSwcNodeIn2DView()
       int cx, cy, cz;
 
       //-= document()->getStackOffset();
-      cx = iround(center.x());
-      cy = iround(center.y());
-      cz = iround(center.z());
-      int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+      cx = neutu::iround(center.x());
+      cy = neutu::iround(center.y());
+      cz = neutu::iround(center.z());
+      int radius = neutu::iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       const int minRadius = 400;
       if (radius < minRadius) {
         radius = minRadius;
@@ -3211,7 +3212,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
 
 void Z3DWindow::locate2DView(const ZPoint &center, double radius)
 {
-  int width = iround(radius * 2 + 1);
+  int width = neutu::iround(radius * 2 + 1);
 
   const int minWidth = 800;
 
@@ -3223,7 +3224,8 @@ void Z3DWindow::locate2DView(const ZPoint &center, double radius)
   double cy = center.getY();
   double cz = center.getZ();
 
-  emit locating2DViewTriggered(iround(cx), iround(cy), iround(cz), width);
+  emit locating2DViewTriggered(
+        neutu::iround(cx), neutu::iround(cy), neutu::iround(cz), width);
 }
 
 void Z3DWindow::locatePunctumIn2DView()
@@ -4316,7 +4318,7 @@ void Z3DWindow::browseWithRay(int x, int y)
     emit messageGenerated(
           ZWidgetMessage(
             QString("Checking (%1, %2, %3)").
-            arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
+            arg(neutu::iround(pt.x())).arg(neutu::iround(pt.y())).arg(neutu::iround(pt.z()))));
 #if defined(_NEU3_)
     emit browsing(pt.x(), pt.y(), pt.z());
 #else
@@ -4356,9 +4358,9 @@ void Z3DWindow::shootTodo(int x, int y)
     if (parentId > 0) {
       if (!intersection.empty()) {
         ZPoint &pt = intersection.front();
-        int cx = iround(pt.x());
-        int cy = iround(pt.y());
-        int cz = iround(pt.z());
+        int cx = neutu::iround(pt.x());
+        int cy = neutu::iround(pt.y());
+        int cz = neutu::iround(pt.z());
         doc->executeAddTodoCommand(cx, cy, cz, false, parentId);
       }
     }
@@ -4569,8 +4571,7 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
   ZCuboid rbox = getRayBoundbox();
 
   if (m_doc->hasStack()) {
-    ZLineSegment seg = getVolumeFilter()->getScreenRay(
-          iround(x), iround(y), w, h);
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(x, y, w, h);
     stackSeg = getStackSeg(seg, rbox);
     source = "";
   } else if (m_doc->hasMesh()){
@@ -4588,8 +4589,7 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
       }
 #endif
 
-      ZLineSegment seg = getMeshFilter()->getScreenRay(
-            iround(x), iround(y), w, h);
+      ZLineSegment seg = getMeshFilter()->getScreenRay(x, y, w, h);
       stackSeg = getStackSeg(seg, rbox);
 
       if (stackSeg.isValid()) {
@@ -4623,7 +4623,8 @@ std::string Z3DWindow::updatePolyLinePairList(
     double y = 0.0;
     stroke->getPoint(&x, &y, i);
 
-    ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
+    ZLineSegment stackSeg = getRaySegment(
+          neutu::iround(x), neutu::iround(y), source);
 
     if (stackSeg.isValid()) {
       if (!polyline1) {
@@ -4655,7 +4656,7 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
 
-      ptArray.emplace_back(iround(x), iround(y));
+      ptArray.emplace_back(neutu::iround(x), neutu::iround(y));
     }
     getCanvas()->getGLFocus();
     std::vector<bool> hitTest = getMeshFilter()->hitObject(ptArray);

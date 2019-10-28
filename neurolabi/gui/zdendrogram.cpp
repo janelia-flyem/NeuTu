@@ -1,8 +1,8 @@
 #include "zdendrogram.h"
 
+#include <common/math.h>
 #include "ztree.h"
 #include "zstring.h"
-#include "tz_math.h"
 #include "zsvggenerator.h"
 
 using namespace std;
@@ -66,7 +66,7 @@ void ZDendrogram::importCsv(string filePath)
 //        double tmp;
 //        SWAP2(entry[0], entry[1], tmp);
       }
-      addLink(iround(entry[0]), iround(entry[1]), entry[2]);
+      addLink(neutu::iround(entry[0]), neutu::iround(entry[1]), entry[2]);
     }
   }
 

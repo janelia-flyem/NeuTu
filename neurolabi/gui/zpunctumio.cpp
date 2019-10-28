@@ -1,4 +1,4 @@
-#define _USE_MATH_DEFINES
+//#define _USE_MATH_DEFINES
 #include <cmath>
 #include "zpunctumio.h"
 
@@ -131,7 +131,7 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
           }
         }
       }
-      punctum->setRadius(Cube_Root(0.75 / M_PI * punctum->volSize()));
+      punctum->setRadius(std::cbrt(0.75 / M_PI * punctum->volSize()));
       punctaList.push_back(punctum);
     }
   }

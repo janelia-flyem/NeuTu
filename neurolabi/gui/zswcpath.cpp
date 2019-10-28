@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <cassert>
 
+#include "common/math.h"
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "tz_darray.h"
 #include "tz_sp_grow.h"
 #include "zspgrowparser.h"
-#include "tz_math.h"
 #include "tz_int_arraylist.h"
 
 using namespace std;
@@ -287,11 +287,11 @@ void ZSwcPath::labelStackAcrossZ(Stack *stack, int value)
 
 void ZSwcPath::resetPositionFromStack(const Stack *stack)
 {
-  int sourceX = iround(SwcTreeNode::x(front()));
-  int sourceY = iround(SwcTreeNode::y(front()));
+  int sourceX = neutu::iround(SwcTreeNode::x(front()));
+  int sourceY = neutu::iround(SwcTreeNode::y(front()));
 
-  int targetX = iround(SwcTreeNode::x(back()));
-  int targetY = iround(SwcTreeNode::y(back()));
+  int targetX = neutu::iround(SwcTreeNode::x(back()));
+  int targetY = neutu::iround(SwcTreeNode::y(back()));
 
   if (sourceX != targetX || sourceY != targetY) {
 

@@ -13,9 +13,9 @@
 #include <stdexcept>
 #include <cassert>
 
+#include "common/math.h"
 #include "zswctree.h"
 #include "tz_voxel_graphics.h"
-#include "tz_math.h"
 #include "tz_apo.h"
 #include "tz_geo3d_utils.h"
 #include "tz_locseg_chain_com.h"
@@ -332,12 +332,12 @@ void ZSwcTree::parseComment(istream &stream)
     if (value != NULL) {
       int alpha = 255;
       if (ZJsonParser::arraySize(value) == 4) {
-        alpha = iround(ZJsonParser::numberValue(value, 3) * 255.0);
+        alpha = neutu::iround(ZJsonParser::numberValue(value, 3) * 255.0);
       }
 
-      setColor(iround(ZJsonParser::numberValue(value, 0) * 255.0),
-               iround(ZJsonParser::numberValue(value, 1) * 255.0),
-               iround(ZJsonParser::numberValue(value, 2) * 255.0),
+      setColor(neutu::iround(ZJsonParser::numberValue(value, 0) * 255.0),
+               neutu::iround(ZJsonParser::numberValue(value, 1) * 255.0),
+               neutu::iround(ZJsonParser::numberValue(value, 2) * 255.0),
                alpha);
     }
 

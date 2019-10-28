@@ -1,11 +1,12 @@
 #include "zslicedpuncta.h"
+
+#include "common/math.h"
 #include "zpainter.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zfiletype.h"
 #include "zstring.h"
 #include "zcolorscheme.h"
 #include "zstackball.h"
-#include "tz_math.h"
 
 const int ZSlicedPuncta::m_visibleRange = 5.0;
 
@@ -24,7 +25,7 @@ ZSlicedPuncta::~ZSlicedPuncta()
 void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 {
   if (p != NULL || ignoreNull) {
-    int z = iround(p->getZ()) - m_zStart;
+    int z = neutu::iround(p->getZ()) - m_zStart;
 
 #ifdef _DEBUG_2
     if (z == 9447) {

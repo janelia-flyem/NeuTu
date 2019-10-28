@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "common/utilities.h"
 
 ZStackViewLocator::ZStackViewLocator() : m_sceneRatio(0.1), m_minZoomRatio(2)
@@ -39,11 +39,11 @@ QRect ZStackViewLocator::getRectViewPort(double cx, double cy, double width) con
 {
   QRect port;
 
-  int left = iround(cx - width / 2);
+  int left = neutu::iround(cx - width / 2);
   if (left < 0) {
     left = 0;
   }
-  int top = iround(cy - width / 2);
+  int top = neutu::iround(cy - width / 2);
   if (top < 0) {
     top = 0;
   }
@@ -51,11 +51,11 @@ QRect ZStackViewLocator::getRectViewPort(double cx, double cy, double width) con
   port.setTop(top);
   port.setLeft(left);
 
-  int right = iround(cx + width / 2);
+  int right = neutu::iround(cx + width / 2);
   if (right >= m_canvasSize.width()) {
     right = m_canvasSize.width() - 1;
   }
-  int bottom = iround(cy + width / 2);
+  int bottom = neutu::iround(cy + width / 2);
   if (bottom >= m_canvasSize.height()) {
     bottom = m_canvasSize.height() - 1;
   }

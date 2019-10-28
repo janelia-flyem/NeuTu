@@ -9,6 +9,7 @@
 #include <QShortcut>
 
 #include "neutubeconfig.h"
+#include "common/math.h"
 #include "logging/zlog.h"
 
 //#include "zstackdoc.h"
@@ -533,7 +534,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 
     int x0 = viewProj.getX0();
     int cy = center.getZ();
-    int y0 = cy - iround(
+    int y0 = cy - neutu::iround(
           double(getView()->getViewProj().getWidgetCenter().y()) / zoom);
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
@@ -567,7 +568,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
     int y0 = viewProj.getY0();
     int cx = center.getZ();
-    int x0 = cx - iround(
+    int x0 = cx - neutu::iround(
           double(getView()->getViewProj().getWidgetCenter().x()) / zoom);
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());

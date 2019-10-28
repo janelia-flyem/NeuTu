@@ -1,4 +1,8 @@
 #include "zswcgenerator.h"
+
+#include <cmath>
+
+#include "common/math.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
@@ -15,7 +19,6 @@
 #include "zstack.hxx"
 #include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
-#include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
 #include "geometry/zintcuboid.h"
@@ -493,7 +496,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
 
   int intv = 0;
   if (volume > MAX_INT32) {
-    intv = iround(Cube_Root((double) volume / MAX_INT32));
+    intv = neutu::iround(std::cbrt((double) volume / MAX_INT32));
   }
 
   ZStack *stack = NULL;

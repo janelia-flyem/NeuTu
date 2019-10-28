@@ -2,24 +2,27 @@
 
 #include <iostream>
 #include <string.h>
-#include "c_stack.h"
-#include "zswctree.h"
+#include <cmath>
+
 #include "tz_stack_lib.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_objlabel.h"
-#include "zspgrowparser.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
+#include "tz_stack_threshold.h"
+
+#include "common/math.h"
+#include "c_stack.h"
+#include "zswctree.h"
+#include "zspgrowparser.h"
 #include "zswcforest.h"
 #include "swctreenode.h"
 #include "zswcgenerator.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "zerror.h"
-#include "tz_math.h"
 #include "swc/zswcresampler.h"
-#include "tz_stack_threshold.h"
 #include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 
@@ -275,7 +278,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
         m_downsampleInterval[1] == m_downsampleInterval[2]) {
       linScale = m_downsampleInterval[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
     double lengthThreshold = m_lengthThreshold / linScale;
@@ -524,9 +527,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     int thre = 0;
     if (m_autoGrayThreshold) {
       int thre1 =
-          Stack_Find_Threshold_RC(stackData, 0, iround(maxMaskIntensity));
+          Stack_Find_Threshold_RC(stackData, 0, neutu::iround(maxMaskIntensity));
       int thre2 = Stack_Find_Threshold_Locmax(
-            stackData, 0, iround(maxMaskIntensity));
+            stackData, 0, neutu::iround(maxMaskIntensity));
 
       thre = imax2(thre1, thre2);
     }
@@ -652,7 +655,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     if (dsIntv[0] == dsIntv[1] && dsIntv[1] == dsIntv[2]) {
       linScale = dsIntv[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
     double lengthThreshold = m_lengthThreshold / linScale;

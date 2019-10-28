@@ -1,4 +1,6 @@
 #include "zpunctamovieactor.h"
+
+#include "common/math.h"
 #include "zpunctum.h"
 #include "zmoviestage.h"
 
@@ -70,8 +72,9 @@ void ZPunctaMovieActor::pushColor()
 {
   for (std::vector<ZPunctum *>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    (*iter)->setColor(iround(m_red * 255.0), iround(m_green * 255.0),
-                      iround(m_blue * 255.0));
+    (*iter)->setColor(neutu::iround(m_red * 255.0),
+                      neutu::iround(m_green * 255.0),
+                      neutu::iround(m_blue * 255.0));
     getStage()->setPunctaChanged(true);
   }
 }
@@ -80,7 +83,7 @@ void ZPunctaMovieActor::pushAlpha()
 {
   for (std::vector<ZPunctum *>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    (*iter)->setAlpha(iround(m_alpha * 255.0));
+    (*iter)->setAlpha(neutu::iround(m_alpha * 255.0));
     getStage()->setPunctaChanged(true);
   }
 }

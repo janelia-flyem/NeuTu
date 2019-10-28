@@ -2808,10 +2808,8 @@ ZStack* ZDvidReader::readBodyLabel(
 #endif
 
 std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
-    int x0, int y0, int z0, int width, int height, int depth)
+    int /*x0*/, int /*y0*/, int z0, int width, int height, int depth)
 {
-  UNUSED_PARAMETER(x0);
-  UNUSED_PARAMETER(y0);
   std::vector<std::pair<int, int> > partition;
   size_t voxelNumber = (size_t) width * height * depth;
   size_t dvidSizeLimit = MAX_INT32 / 2;
