@@ -108,6 +108,7 @@ private slots:
     void onDoubleClickFilterTable(const QModelIndex &index);
     void moveToBodyList();
     void onDeleteButton();
+    void onImportBodies();
     void onExportBodies();
     void onExportConnections();
     void onSaveColorMap();
@@ -226,6 +227,7 @@ private:
     void addGroupColor(const QString &name);
     void updateColorFilter(QString filter, QString oldFilter = "");
     void exportBodies(QString filename);
+    void importBodies(QString filename);
     void exportConnections(QString filename);
     void saveColorMapDisk(QString filename);
     ZJsonArray getColorMapAsJson(ZJsonArray colors);

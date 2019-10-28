@@ -68,8 +68,8 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
-ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
-ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
 ZIntPoint GetFirstCorner(const ZArray *array);
 ZIntCuboid GetBoundBox(const ZArray *array);

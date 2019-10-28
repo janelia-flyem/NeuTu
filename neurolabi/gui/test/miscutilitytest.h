@@ -30,7 +30,35 @@ TEST(miscutility, getDsIntv)
     ASSERT_EQ(4, misc::getIsoDsIntvFor3DVolume(125.0, false));
     ASSERT_EQ(7, misc::getIsoDsIntvFor3DVolume(125.0, true));
   }
+
+  {
+    ASSERT_EQ(4.0, misc::GetExpansionScale(64, 1));
+    ASSERT_EQ(5.0, misc::GetExpansionScale(125, 1));
+  }
 }
+
+TEST(miscutility, GetBoundBox)
+{
+  mylib::Dimn_Type dims[3] = {3, 4, 5};
+  ZArray array(mylib::INT8_TYPE, 3, dims);
+  array.setStartCoordinate(1, 2, 3);
+
+  ZIntCuboid box = misc::GetBoundBox(&array);
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getFirstCorner());
+  ASSERT_EQ(ZIntPoint(3, 5, 7), box.getLastCorner());
+}
+
+TEST(miscutility, EstimateSplitRoi)
+{
+  ZIntCuboid box = misc::EstimateSplitRoi(
+        ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(512, 512, 128)));
+  std::cout << box.toString() << std::endl;
+  std::cout << box.getVolume() << std::endl;
+  ASSERT_EQ(ZIntPoint(-314, -314, -101), box.getFirstCorner());
+  ASSERT_EQ(ZIntPoint(826, 826, 229), box.getLastCorner());
+}
+
+
 
 #endif
 

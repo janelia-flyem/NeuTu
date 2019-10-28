@@ -164,6 +164,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->addColorMapPushButton, SIGNAL(clicked()),
             this, SLOT(onAddGroupColorMap()));
+    connect(ui->importBodiesPushButton, SIGNAL(clicked()),
+            this, SLOT(onImportBodies()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
@@ -193,6 +195,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
     connect(this, SIGNAL(appendingData(ZJsonValue, int)),
             this, SLOT(appendModel(ZJsonValue, int)));
+    //Review-TZ: consider merging these two in onLoadCompleted()
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
 //    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateColorScheme()));
@@ -1240,11 +1243,6 @@ void FlyEmBodyInfoDialog::prepareQuery()
 {
   ui->bodyFilterField->clear();
   ui->maxBodiesMenu->setCurrentIndex(0);
-  /* Requires toggling signal to work, which can result in some response hickup
-  if (ui->namedCheckBox->isChecked()) {
-    ui->namedCheckBox->toggle();
-  }
-  */
   ui->namedCheckBox->setChecked(false);
   ui->maxBodiesMenu->setEnabled(true);
   setStatusLabel("Loading...");
@@ -1525,7 +1523,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
     logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
 
-    m_bodyModel->setRowCount(bookmarks.size());
+    m_bodyModel->setRowCount(int(bookmarks.size()));
     m_bodyModel->blockSignals(true);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -1533,13 +1531,17 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         QList<QStandardItem*> itemList = getBodyItemList(bkmk);
         for (int j = 0; j < itemList.size(); ++j) {
           m_bodyModel->setItem(i, j, itemList[j]);
+          /* //Doesn't seem necessary here (TZ)
           if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
             m_bodyModel->blockSignals(false);
           }
+          */
         }
     }
     m_bodyModel->blockSignals(false);
 
+    //Review-TZ: Consider moving this to updateBodyTableView() to reduce
+    //           code redundancy.
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();
     ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
@@ -1547,6 +1549,9 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     // currently initially sorting on # pre-synaptic sites
     ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
 
+    //Review-TZ: loadCompleted() signal seems unnecessary unless there's a
+    //           possiblity of calling updateModel in a separate thread.
+    //           Consider calling sth like onLoadCompleted() directly.
     emit loadCompleted();
 }
 
@@ -1602,10 +1607,16 @@ void FlyEmBodyInfoDialog::onAddGroupColorMap()
   }
 }
 
+void FlyEmBodyInfoDialog::onImportBodies()
+{
+  importBodies(ZDialogFactory::GetOpenFileName("Import Bodies", "", this));
+}
+
 void FlyEmBodyInfoDialog::onExportBodies() {
     if (m_bodyProxy->rowCount() > 0) {
-        QString filename = QFileDialog::getSaveFileName(this, "Export bodies");
-        if (!filename.isNull()) {
+        QString filename = ZDialogFactory::GetSaveFileName(
+              "Export Bodies", "", this);
+        if (!filename.isEmpty()) {
             exportBodies(filename);
         }
     }
@@ -2137,6 +2148,30 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
   // test: print it out
   // m_colorScheme.print();
 
+}
+
+void FlyEmBodyInfoDialog::importBodies(QString filename)
+{
+  if (!filename.isEmpty()) {
+    std::ifstream stream(filename.toStdString());
+    if (stream.good()) {
+      prepareQuery();
+      ZJsonArray bodyArray;
+      std::string line;
+      while (std::getline(stream, line)) {
+        uint64_t bodyId = ZString(line).firstUint64();
+        if (bodyId > 0) {
+          ZJsonObject bodyData;
+          bodyData.setEntry("body ID", bodyId);
+          bodyArray.append(bodyData);
+        }
+      }
+      setBodyList(bodyArray);
+    } else {
+      ZDialogFactory::Warn(
+            "Open File Failed", "Cannot open the file " + filename, this);
+    }
+  }
 }
 
 void FlyEmBodyInfoDialog::exportBodies(QString filename) {

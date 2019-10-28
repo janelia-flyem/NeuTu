@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>742</width>
+    <width>744</width>
     <height>843</height>
    </rect>
   </property>
@@ -58,6 +58,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="gotoBodiesButton">
+       <property name="text">
+        <string>Goto</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -129,16 +136,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="exportBodiesButton">
+      <widget class="QPushButton" name="importBodiesPushButton">
        <property name="text">
-        <string>Export bodies...</string>
+        <string>Import bodies...</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="gotoBodiesButton">
+      <widget class="QPushButton" name="exportBodiesButton">
        <property name="text">
-        <string>Goto</string>
+        <string>Export bodies...</string>
        </property>
       </widget>
      </item>
@@ -289,7 +296,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="colorTab">
       <attribute name="title">
@@ -354,7 +361,7 @@
          <item>
           <widget class="QPushButton" name="addColorMapPushButton">
            <property name="text">
-            <string>Add Color</string>
+            <string>Add Static</string>
            </property>
           </widget>
          </item>

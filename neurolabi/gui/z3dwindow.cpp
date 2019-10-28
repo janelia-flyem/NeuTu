@@ -68,7 +68,7 @@
 #include "zstring.h"
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
-#include "misc/miscutility.h"
+//#include "misc/miscutility.h"
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
@@ -4532,6 +4532,21 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   return intersection;
 }
 
+namespace {
+ZCuboid cut_box(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result;
+
+  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
+                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
+                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+
+  result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
+
+  return result;
+}
+}
+
 ZCuboid Z3DWindow::getRayBoundbox() const
 {
   ZCuboid rbox;
@@ -4549,7 +4564,7 @@ ZCuboid Z3DWindow::getRayBoundbox() const
     } else {
       ZIntCuboid cutBox = getVolumeFilter()->cutBox();
       //      cutBox.translate(m_doc->getStackOffset());
-      rbox = misc::CutBox(rbox, cutBox);
+      rbox = cut_box(rbox, cutBox);
     }
   } else {
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();

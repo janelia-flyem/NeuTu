@@ -644,6 +644,7 @@ ZIntCuboid misc::GetBoundBox(const ZArray *array)
   return box;
 }
 
+/*
 ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result;
@@ -656,7 +657,9 @@ ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
 
   return result;
 }
+*/
 
+/*
 ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result = box1;
@@ -668,6 +671,7 @@ ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
 
   return result;
 }
+*/
 
 double misc::SampleStack(
     const Stack *stack, double x, double y, double z, ESampleStackOption option)
@@ -798,7 +802,7 @@ ZIntCuboid misc::EstimateSplitRoi(const ZIntCuboid &boundBox)
 
 //  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
   double s = std::cbrt(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
-  if (s > 1) {
+  if (s > 1.0) {
     double ds = s - 1.0;
     int dw = neutu::iround(newBox.getWidth() * ds);
     int dh = neutu::iround(newBox.getHeight() * ds);
