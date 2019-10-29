@@ -146,6 +146,7 @@ private:
     };
     enum FilterTableColumns {
         FILTER_NAME_COLUMN,
+        FILTER_COUNT_COLUMN,
         FILTER_COLOR_COLUMN
     };
     enum IOBodyTableColumns {
@@ -225,6 +226,7 @@ private:
     void clearStatusLabel();
     void init();
     void addGroupColor(const QString &name);
+    void addBodyCountItem(int row, int count);
     void updateColorFilter(QString filter, QString oldFilter = "");
     void exportBodies(QString filename);
     void importBodies(QString filename);

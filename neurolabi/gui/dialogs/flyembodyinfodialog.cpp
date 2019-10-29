@@ -65,6 +65,21 @@
  * djo, 7/15
  *
  */
+
+namespace {
+
+const QString COLOR_GROUP_TAG = " " + QString(QChar(9636));
+QString tag_name(const QString &name)
+{
+  return name + COLOR_GROUP_TAG;
+}
+
+QString untag_name(const QString &name) {
+  return name.left(name.length() - COLOR_GROUP_TAG.length());
+}
+
+}
+
 FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FlyEmBodyInfoDialog)
@@ -671,8 +686,12 @@ void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(FILTER_NAME_COLUMN, new QStandardItem(QString("Filter")));
-    model->setHorizontalHeaderItem(FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
+    model->setHorizontalHeaderItem(
+          FILTER_NAME_COLUMN, new QStandardItem(QString("Filter")));
+    model->setHorizontalHeaderItem(
+          FILTER_COUNT_COLUMN, new QStandardItem(QString("#Bodies")));
+    model->setHorizontalHeaderItem(
+          FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
 }
 
 void FlyEmBodyInfoDialog::setIOBodyHeaders(QStandardItemModel * model) {
@@ -1595,7 +1614,7 @@ void FlyEmBodyInfoDialog::onAddGroupColorMap()
 {
   QString name = QInputDialog::getText(this, "Color Map", "Name");
   if (!name.isEmpty()) {
-    name = "${" + name + "}";
+    name = tag_name(name);
     if (hasColorName(name)) {
       ZDialogFactory::Warn(
             "Name Conflict",
@@ -1768,7 +1787,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors)
     bool isGroup = entry.hasKey("group");
 
     if (isGroup) {
-      name = ZJsonParser::stringValue(entry["group"]).c_str();
+      name = tag_name(ZJsonParser::stringValue(entry["group"]).c_str());
     } else {
       name = ZJsonParser::stringValue(entry["filter"]).c_str();
     }
@@ -1780,7 +1799,9 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors)
 
       std::vector<int64_t> rgba = ZJsonParser::integerArray(entry["color"]);
       QColor color = QColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-      setFilterTableModelColor(color, m_filterModel->rowCount() - 1);
+      int lastRow = m_filterModel->rowCount() - 1;
+      setFilterTableModelColor(color, lastRow);
+      int bodyCount = -1;
 
       if (isGroup) {
         QList<uint64_t> bodyList;
@@ -1789,12 +1810,14 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors)
           bodyList.append(uint64_t(bodyId));
         }
         m_groupIdMap[name] = bodyList;
+        bodyCount = bodyList.size();
       } else {
         if (!m_filterIdMap.contains(name)) {
           updateFilterColorMap(name);
         }
         m_filterStringSet.append(name);
       }
+      addBodyCountItem(lastRow, bodyCount);
     }
   }
 
@@ -1839,15 +1862,28 @@ QColor FlyEmBodyInfoDialog::makeRandomColor() const
   return QColor::fromHsv(randomH, randomS, randomV);
 }
 
+void FlyEmBodyInfoDialog::addBodyCountItem(int row, int count)
+{
+  QStandardItem *countItem = new QStandardItem();
+  countItem->setSelectable(false);
+  if (count >= 0) {
+    countItem->setData(count, Qt::DisplayRole);
+  }
+  m_filterModel->setItem(row, FILTER_COUNT_COLUMN, countItem);
+}
+
 void FlyEmBodyInfoDialog::addGroupColor(const QString &name)
 {
   logInfo("Update color map");
 
   QStandardItem * filterTextItem = new QStandardItem(name);
   m_filterModel->appendRow(filterTextItem);
+  int lastRow = m_filterModel->rowCount() - 1;
+
+  addBodyCountItem(lastRow, m_bodyProxy->rowCount());
 
   QColor color = makeRandomColor();
-  setFilterTableModelColor(color, m_filterModel->rowCount() - 1);
+  setFilterTableModelColor(color, lastRow);
 
   ui->filterTableView->resizeColumnsToContents();
   ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
@@ -1877,6 +1913,7 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
     QStandardItem * filterTextItem = new QStandardItem(filter);
     m_filterModel->appendRow(filterTextItem);
 
+    addBodyCountItem(m_filterModel->rowCount() - 1, -1);
     setFilterTableModelColor(makeRandomColor(), m_filterModel->rowCount() - 1);
 
     ui->filterTableView->resizeColumnsToContents();
@@ -2005,11 +2042,18 @@ void FlyEmBodyInfoDialog::updateColorScheme(
 void FlyEmBodyInfoDialog::updateGroupIdMap(const QString &name)
 {
   QList<uint64_t> bodyList;
+  for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+    uint64_t bodyId = uint64_t(m_bodyProxy->data(
+          m_bodyProxy->index(j, BODY_ID_COLUMN)).toLongLong());
+    bodyList.append(bodyId);
+  }
+  /*
   for (int j=0; j<m_bodyModel->rowCount(); j++) {
     uint64_t bodyId = uint64_t(m_bodyModel->data(
           m_bodyModel->index(j, BODY_ID_COLUMN)).toLongLong());
     bodyList.append(bodyId);
   }
+  */
 
   m_groupIdMap[name] = bodyList;
 
@@ -2287,7 +2331,8 @@ ZJsonArray FlyEmBodyInfoDialog::getColorMapAsJson(ZJsonArray colors)
     entry.setEntry("color", rgba);
 
     if (isGroupColorName(filterString)) {
-      entry.setEntry("group", filterString.toStdString());
+      QString name = untag_name(filterString);
+      entry.setEntry("group", name.toStdString());
       const auto &idList = m_groupIdMap.value(filterString);
       ZJsonArray idArray;
       for (uint64_t id : idList) {

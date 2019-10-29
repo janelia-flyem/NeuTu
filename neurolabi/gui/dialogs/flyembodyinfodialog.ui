@@ -296,7 +296,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="colorTab">
       <attribute name="title">
@@ -360,8 +360,11 @@
          </property>
          <item>
           <widget class="QPushButton" name="addColorMapPushButton">
+           <property name="toolTip">
+            <string>Add a color for the current list of bodies </string>
+           </property>
            <property name="text">
-            <string>Add Static</string>
+            <string>Add*</string>
            </property>
           </widget>
          </item>
