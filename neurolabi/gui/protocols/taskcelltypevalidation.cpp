@@ -22,6 +22,13 @@ TaskCellTypeValidation::TaskCellTypeValidation(QJsonObject json, ZFlyEmBody3dDoc
   init();
 }
 
+QString TaskCellTypeValidation::targetString()
+{
+  QString label = TaskReview::targetString();
+  label.replace("_", "_<br>");
+  return label;
+}
+
 QString TaskCellTypeValidation::taskTypeStatic()
 {
   return VALUE_TASKTYPE;
@@ -56,6 +63,11 @@ void TaskCellTypeValidation::beforePrev()
     m_showBothButton->setChecked(true);
     TaskReview::beforePrev();
   }
+}
+
+QString TaskCellTypeValidation::keyTaskId() const
+{
+  return "task result id";
 }
 
 bool TaskCellTypeValidation::includeExtendedResults() const

@@ -23,6 +23,9 @@ class TaskReview : public TaskProtocolTask
 {
   Q_OBJECT
 public:
+  // Note that this constructor does not actually parse 'json'.
+  // A derived class must call 'init(json)' to do the parsing, to support
+  // virtual functions like 'keyTaskId()'.
   TaskReview(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
 
   virtual QString targetString() override;
@@ -40,6 +43,8 @@ public:
 
 protected:
   void init();
+
+  virtual QString keyTaskId() const;
 
   virtual bool includeExtendedResults() const;
   virtual bool onLoadedZoomToFitSmaller() const;

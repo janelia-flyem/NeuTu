@@ -48,7 +48,6 @@
 namespace {
 
   static const QString KEY_TASKTYPE = "task type";
-  static const QString KEY_TASK_ID = "task id";
 
   // One input format takes body IDs directly.
 
@@ -243,7 +242,7 @@ TaskReview::TaskReview(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 
   applyOverallSettings(bodyDoc);
 
-  loadJson(json);
+  // The init() function, called by a derived class, calls loadJson(json).
 }
 
 QString TaskReview::targetString()
@@ -416,7 +415,13 @@ const std::set<uint64_t>& TaskReview::getBodyIds() const
 
 void TaskReview::init()
 {
+  loadJson(m_taskJson);
   buildTaskWidget();
+}
+
+QString TaskReview::keyTaskId() const
+{
+  return "task id";
 }
 
 bool TaskReview::includeExtendedResults() const
@@ -1200,7 +1205,7 @@ void TaskReview::writeOutput()
     m_lastSavedButton->setStyleSheet("");
   }
 
-  json[KEY_TASK_ID] = m_taskId;
+  json[keyTaskId()] = m_taskId;
 
   switch (m_skip) {
     case Skip::SKIPPED_MAJOR:
@@ -1346,8 +1351,8 @@ void TaskReview::restoreResult(QString result)
 
 bool TaskReview::loadSpecific(QJsonObject json)
 {
-  if (json.contains(KEY_TASK_ID)) {
-    QJsonValue value = json[KEY_TASK_ID];
+  if (json.contains(keyTaskId())) {
+    QJsonValue value = json[keyTaskId()];
     if (value.isString()) {
         m_taskId = value.toString();
     }
@@ -1423,7 +1428,7 @@ bool TaskReview::loadSpecific(QJsonObject json)
 QJsonObject TaskReview::addToJson(QJsonObject taskJson)
 {
   taskJson[KEY_TASKTYPE] = taskType();
-  taskJson[KEY_TASK_ID] = m_taskId;
+  taskJson[keyTaskId()] = m_taskId;
 
   if (!m_bodyIdsA.empty() && !m_bodyIdsB.empty()) {
     saveIds(taskJson, KEY_BODY_ID_A, m_bodyIdsA);

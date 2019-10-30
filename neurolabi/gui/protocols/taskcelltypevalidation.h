@@ -9,6 +9,8 @@ class TaskCellTypeValidation : public TaskReview
 public:
   TaskCellTypeValidation(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
 
+  virtual QString targetString() override;
+
   // For use with TaskProtocolTaskFactory.
   static QString taskTypeStatic();
   static TaskCellTypeValidation* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
@@ -20,6 +22,8 @@ public:
   virtual void beforePrev() override;
 
 protected:
+  virtual QString keyTaskId() const override;
+
   virtual bool includeExtendedResults() const override;
   virtual bool onLoadedZoomToFitSmaller() const override;
 
