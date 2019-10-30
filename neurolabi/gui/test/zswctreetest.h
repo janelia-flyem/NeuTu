@@ -6,6 +6,8 @@
 #include <set>
 
 
+#include "neurolabi/zdoublevector.h"
+
 #include "zswctree.h"
 #include "swc/zswcmetric.h"
 #include "swc/zswcterminalsurfacemetric.h"
@@ -13,7 +15,6 @@
 #include "swctreenode.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
-#include "zdoublevector.h"
 #include "swc/zswcpruner.h"
 #include "zswcforest.h"
 #include "neutubeconfig.h"

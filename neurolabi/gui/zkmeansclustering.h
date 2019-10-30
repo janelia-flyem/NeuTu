@@ -2,7 +2,7 @@
 #define ZKMEANSCLUSTERING_H
 
 #include <vector>
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zobject3d.h"
 
 class ZKmeansClustering

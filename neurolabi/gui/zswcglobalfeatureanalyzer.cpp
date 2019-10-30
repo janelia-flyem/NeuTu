@@ -5,7 +5,7 @@
 #include "zvectorgenerator.h"
 #include "geometry/zpointarray.h"
 #include "zeigensolver.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 
 
 #define GENERATE_NGF1_FEATURE \

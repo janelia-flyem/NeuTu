@@ -5,9 +5,9 @@
 #include "zobject3dscan.h"
 #include "neutubeconfig.h"
 #include "zgraph.h"
-#include "tz_iarray.h"
+#include "neurolabi/numericarray.h"
 #include "zdebug.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "geometry/zintcuboid.h"
@@ -1640,7 +1640,7 @@ TEST_F(ZObject3dScanTestF1, complement)
 
   int offset[3];
   Stack *stack = obj.toStack(offset);
-  iarray_neg(offset, 3);
+  neutu::array::Negate(offset, 3);
   ASSERT_EQ(0, (int) compObj.countForegroundOverlap(stack, offset));
 
   ASSERT_EQ(obj.getVoxelNumber() + compObj.getVoxelNumber(),

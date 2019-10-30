@@ -7,7 +7,7 @@ ZGeo3dScalarField::ZGeo3dScalarField()
 double* ZGeo3dScalarField::getRawPointArray()
 {
   if (m_pointArray.empty()) {
-    return NULL;
+    return nullptr;
   }
 
   return &(m_pointArray[0]);
@@ -16,7 +16,7 @@ double* ZGeo3dScalarField::getRawPointArray()
 double* ZGeo3dScalarField::getRawWeight()
 {
   if (m_weightArray.empty()) {
-    return NULL;
+    return nullptr;
   }
 
   return &(m_weightArray[0]);

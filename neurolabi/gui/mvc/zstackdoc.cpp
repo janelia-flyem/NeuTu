@@ -36,7 +36,6 @@
 #include "tz_voxel_graphics.h"
 #include "tz_stack_sampling.h"
 #include "tz_stack_utils.h"
-#include "tz_darray.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
 #include "tz_local_rpi_neuroseg.h"

@@ -13,10 +13,7 @@
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
 
-#include "tz_darray.h"
-#include "tz_u8array.h"
 #include "tz_iarray.h"
-//#include "tz_xml_utils.h"
 #include "tz_random.h"
 #include "tz_geo3d_utils.h"
 

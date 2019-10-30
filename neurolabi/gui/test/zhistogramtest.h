@@ -1,9 +1,11 @@
 #ifndef ZHISTOGRAMTEST_H
 #define ZHISTOGRAMTEST_H
 
+#include "ztestheader.h"
+
 #include "zhistogram.h"
 #include "zinthistogram.h"
-#include "tz_iarray.h"
+#include "neurolabi/numericarray.h"
 
 #ifdef _USE_GTEST_
 
@@ -186,7 +188,7 @@ TEST(ZHistogram, Divergence)
 
 TEST(ZIntHistogram, basic)
 {
-  int *hist = iarray_malloc(5);
+  int *hist = neutu::array::IntMalloc(5);
   hist[0] = 3;
   hist[1] = 1;
   hist[2] = 2;

@@ -16,8 +16,8 @@ ZIntHistogram::ZIntHistogram(int *hist) : m_hist(hist)
 ZIntHistogram::ZIntHistogram(const ZIntHistogram &hist)
 {
   const int *histArray = hist.c_hist();
-  if (histArray == NULL) {
-    m_hist = NULL;
+  if (histArray == nullptr) {
+    m_hist = nullptr;
   } else {
     m_hist = iarray_copy(const_cast<int*>(histArray), histArray[0] + 2);
   }

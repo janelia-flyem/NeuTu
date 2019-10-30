@@ -4,7 +4,6 @@
 #include "ztestheader.h"
 #include "zspgrowparser.h"
 #include "c_stack.h"
-#include "tz_darray.h"
 
 #ifdef _USE_GTEST_
 TEST(ZSpGrowParser, Basic)
@@ -23,7 +22,7 @@ TEST(ZSpGrowParser, Basic)
 
   ZSpGrowParser parser(sgw);
 
-  darray_print2(sgw->length, C_Stack::width(stack), C_Stack::height(stack));
+//  darray_print2(sgw->length, C_Stack::width(stack), C_Stack::height(stack));
 
  Stack *distStack =  parser.createDistanceStack();
  C_Stack::printValue(distStack);

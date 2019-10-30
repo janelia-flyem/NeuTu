@@ -6,6 +6,7 @@ include($${PWD}/geometry/geometry.pri)
 include($${PWD}/swc/swc.pri)
 include($${PWD}/interface/interface.pri)
 include($${PWD}/filesystem/filesystem.pri)
+include($${PWD}/neurolabi/neurolabi.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
@@ -49,7 +50,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcfeatureanalyzer.h \
    $${PWD}/zswcsizefeatureanalyzer.h \
    $${PWD}/zobject3darray.h \
-   $${PWD}/zdoublevector.h \
    $${PWD}/zkmeansclustering.h \
    $${PWD}/zswcshollfeatureanalyzer.h \
    $${PWD}/zswcspatialfeatureanalyzer.h \
@@ -257,7 +257,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcfeatureanalyzer.cpp \
    $${PWD}/zswcsizefeatureanalyzer.cpp \
    $${PWD}/zobject3darray.cpp \
-   $${PWD}/zdoublevector.cpp \
    $${PWD}/zneurontracer.cpp \
    $${PWD}/zkmeansclustering.cpp \
    $${PWD}/zswcshollfeatureanalyzer.cpp \
@@ -400,4 +399,7 @@ SOURCES += $${PWD}/zstack.cxx \
    $$PWD/flyem/zflyembodystatus.cpp \
    $$PWD/zgraph.cpp \
    $$PWD/zsegmentationscan.cpp
+
+DISTFILES += \
+  $$PWD/neurolabi/neurolabi.pri
 
