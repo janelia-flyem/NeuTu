@@ -5,31 +5,50 @@
 #include <QClipboard>
 #include <QApplication>
 
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "logging/zqslog.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zstring.h"
-
+#include "zjsonparser.h"
+#include "neutubeconfig.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
 #include "zdvidutil.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zglobaldvidrepo.h"
-
-#include "neutubeconfig.h"
+#include "service/neuprintreader.h"
+#include "logging/neuopentracing.h"
 
 class ZGlobalData {
-
 public:
   ZGlobalData();
+  ~ZGlobalData();
 
   ZIntPoint m_stackPosition;
+  std::string m_3dcamera;
   std::map<std::string, ZDvidReader*> m_dvidReaderMap;
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
+  NeuPrintReader *m_neuprintReader = nullptr;
+  neutu::EServerStatus m_neuprintStatus = neutu::EServerStatus::OFFLINE;
 };
 
 ZGlobalData::ZGlobalData()
 {
   m_stackPosition.invalidate();
+}
+
+ZGlobalData::~ZGlobalData()
+{
+  for (auto &obj : m_dvidReaderMap) {
+    delete obj.second;
+  }
+
+  for (auto &obj : m_dvidWriterMap) {
+    delete obj.second;
+  }
+
+  delete m_neuprintReader;
 }
 
 
@@ -78,6 +97,16 @@ void ZGlobal::clearStackPosition()
   m_data->m_stackPosition.invalidate();
 }
 
+void ZGlobal::set3DCamera(const std::string &config)
+{
+  m_data->m_3dcamera = config;
+}
+
+std::string ZGlobal::get3DCamera() const
+{
+  return m_data->m_3dcamera;
+}
+
 void ZGlobal::setMainWindow(QMainWindow *win)
 {
   m_mainWin = win;
@@ -86,6 +115,99 @@ void ZGlobal::setMainWindow(QMainWindow *win)
 QMainWindow* ZGlobal::getMainWindow() const
 {
   return m_mainWin;
+}
+
+QString ZGlobal::getNeuPrintServer() const
+{
+  return qgetenv("NEUPRINT");
+}
+
+void ZGlobal::setNeuPrintServer(const QString &server)
+{
+  if (getNeuPrintServer() != server) {
+    qputenv("NEUPRINT", QByteArray::fromStdString(server.toStdString()));
+    delete m_data->m_neuprintReader;
+    m_data->m_neuprintReader = nullptr;
+  }
+}
+
+QString ZGlobal::getNeuPrintAuth() const
+{
+  QString authFile = qgetenv("NEUPRINT_AUTH");
+  if (authFile.isEmpty()) {
+    authFile = NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+    LINFO() << "NeuPrint auth path:" << authFile;
+  }
+
+  QString auth;
+
+  QFile f(authFile);
+  if (f.open(QIODevice::ReadOnly)) {
+    QTextStream stream(&f);
+    auth = stream.readAll();
+  }
+
+  return auth;
+}
+
+QString ZGlobal::getNeuPrintToken() const
+{
+//  QString auth = qgetenv("NEUPRINT_AUTH");
+//  if (auth.isEmpty()) {
+//    auth = NeutubeConfig::getInstance().getPath(
+//          NeutubeConfig::EConfigItem::NEUPRINT_AUTH).c_str();
+//    LINFO() << "NeuPrint auth path:" << auth;
+//  }
+
+  ZJsonObject obj;
+  obj.decode(getNeuPrintAuth().toStdString());
+  std::string token = ZJsonParser::stringValue(obj["token"]);
+
+  return QString::fromStdString(token);
+}
+
+NeuPrintReader* ZGlobal::getNeuPrintReader()
+{
+  if (m_data->m_neuprintReader == nullptr) {
+    m_data->m_neuprintReader = makeNeuPrintReader();
+  }
+
+  return m_data->m_neuprintReader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader()
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+  }
+
+  return reader;
+}
+
+NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+{
+  NeuPrintReader *reader = nullptr;
+  QString server = qgetenv("NEUPRINT");
+  if (!server.isEmpty()) {
+    reader = new NeuPrintReader(server);
+    reader->authorize(getNeuPrintToken());
+    reader->updateCurrentDataset(uuid);
+    if (!reader->isReady()) {
+      delete reader;
+      reader = nullptr;
+    }
+  }
+
+  return reader;
+}
+
+ZDvidTarget ZGlobal::getDvidTarget(const std::string &name) const
+{
+  return ZGlobalDvidRepo::GetInstance().getDvidTarget(name);
 }
 
 template<typename T>
@@ -108,22 +230,7 @@ T* ZGlobal::getIODevice(
         }
       }
     }
-/*
-    const std::vector<ZDvidTarget> &dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
-    for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
-         iter != dvidRepo.end(); ++iter) {
-      const ZDvidTarget &target = *iter;
-      if (target.getName() == name) {
-        if (target.isValid()) {
-          io = new T;
-          if (!io->open(target)) {
-            delete io;
-            io = NULL;
-          }
-        }
-      }
-    }
-*/
+
     if (io == NULL) {
       ZDvidTarget target;
       target.setFromSourceString(name);
@@ -167,7 +274,7 @@ T* ZGlobal::getIODeviceFromUrl(
   QUrl url(path.c_str());
   if (url.scheme() == "http" || url.scheme() == "dvid" ||
       url.scheme() == "mock") {
-    ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+    ZDvidTarget target = dvid::MakeTargetFromUrl(path);
     return getIODevice(target, ioMap, key);
 //    device = getIODevice(target.getSourceString(true), ioMap);
   }
@@ -222,7 +329,7 @@ ZDvidSparseStack* ZGlobal::readDvidSparseStack(const std::string &url) const
     if (reader != NULL) {
       if (reader->getDvidTarget().hasBodyLabel()) {
         spStack = reader->readDvidSparseStack(
-              bodyId, flyem::EBodyLabelType::BODY);
+              bodyId, neutu::EBodyLabelType::BODY);
       }
     }
   }
@@ -272,3 +379,48 @@ void ZGlobal::CopyToClipboard(const std::string &str)
   clipboard->setText(str.c_str());
 }
 
+void ZGlobal::InitKafkaTracer(std::string serviceName)
+{
+#if defined(_NEU3_) || defined(_FLYEM_)
+  std::string kafkaBrokers = "";
+
+  if (!NeutubeConfig::GetUserInfo().getOrganization().empty()) {
+    kafkaBrokers = "kafka.int.janelia.org:9092";
+  }
+
+  if (serviceName.empty()) {
+#if defined(_NEU3_)
+    serviceName = "neu3";
+#else
+    serviceName = "neutu";
+#endif
+  }
+
+  std::string envName = "NEUTU_KAFKA_BROKERS";
+#if defined(_NEU3_)
+  envName = "NEU3_KAFKA_BROKERS";
+#endif
+
+  if (const char* kafkaBrokersEnv = std::getenv(envName.c_str())) {
+    // The list of brokers should be separated by commans, per this example:
+    // https://www.npmjs.com/package/node-rdkafka
+    kafkaBrokers = kafkaBrokersEnv;
+  }
+
+//  std::cout << "Kafka broker: " << kafkaBrokers << std::endl;
+
+  if (!kafkaBrokers.empty() && (kafkaBrokers != "none")) {
+    try {
+      auto config = neuopentracing::Config(kafkaBrokers);
+      auto tracer = neuopentracing::Tracer::make(serviceName, config);
+      neuopentracing::Tracer::InitGlobal(tracer);
+      if (tracer) {
+//        std::cout << "Kafka connected" << std::endl;
+        LINFO() << "Kafka connected: " + kafkaBrokers;
+      }
+    } catch (std::exception &e) {
+      LWARN() << "Cannot initialize Kafka tracer:" << e.what();
+    }
+  }
+#endif
+}

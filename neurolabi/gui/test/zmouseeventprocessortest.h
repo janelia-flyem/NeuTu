@@ -3,12 +3,14 @@
 
 #include "ztestheader.h"
 #include "zmouseeventprocessor.h"
-#include "zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zmouseevent.h"
 #include "zviewproj.h"
-#include "zstackdochelper.h"
 #include "zstackfactory.h"
+
+#include "mvc/zstackdocutil.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 
 #ifdef _USE_GTEST_
 TEST(ZMouseEventProcessor, MapPoint)
@@ -17,7 +19,7 @@ TEST(ZMouseEventProcessor, MapPoint)
 
   ZStackDoc doc;
   doc.loadStack(ZStackFactory::MakeVirtualStack(100, 200, 300));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::EAxis::Z);
+  ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),

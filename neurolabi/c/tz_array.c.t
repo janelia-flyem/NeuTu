@@ -127,19 +127,19 @@ void <2t>_warning(const char *msg,const char *arg)
   TZ_ASSERT(d1 != NULL, "Null pointer");
   TZ_ASSERT(length > 0, "Array length is zero");
 
-  BOOL found_first = FALSE;
+  _BOOL_ found_first = _FALSE_;
 
   size_t max_idx = INVALID_ARRAY_INDEX;
   size_t i;
   for (i = 0; i < length; i++) {
     if (mask[i]) {
       max_idx = i;
-      found_first = TRUE;
+      found_first = _TRUE_;
       break;
     }
   }
 
-  if (found_first == TRUE) {    
+  if (found_first == _TRUE_) {    
     for (i = max_idx; i < length; i++) {
       if (mask[i]) {
 	if(d1[i] > d1[max_idx]) {
@@ -153,7 +153,7 @@ void <2t>_warning(const char *msg,const char *arg)
     *idx = max_idx;
   }
   
-  if (found_first == FALSE) {
+  if (found_first == _FALSE_) {
     return 0;
   } else {
     return d1[max_idx];
@@ -166,18 +166,18 @@ void <2t>_warning(const char *msg,const char *arg)
   TZ_ASSERT(d1 != NULL, "Null pointer");
   TZ_ASSERT(length > 0, "Array length is zero");
 
-  BOOL found_first = FALSE;
+  _BOOL_ found_first = _FALSE_;
   size_t max_idx = INVALID_ARRAY_INDEX;
   size_t i;
   for (i = 0; i < length; i++) {
     if (!isnan(d1[i])) {
       max_idx = i;
-      found_first = TRUE;
+      found_first = _TRUE_;
       break;
     }
   }
 
-  if (found_first == TRUE) {
+  if (found_first == _TRUE_) {
     for (i = max_idx; i < length; i++) {
       if (!isnan(d1[i])) {
 	if(d1[i] > d1[max_idx]) {
@@ -191,7 +191,7 @@ void <2t>_warning(const char *msg,const char *arg)
     *idx = max_idx;
   }
   
-  if (found_first == FALSE) {
+  if (found_first == _FALSE_) {
     return 0.0;
   } else {
     return d1[max_idx];
@@ -203,19 +203,19 @@ void <2t>_warning(const char *msg,const char *arg)
 /* last occurrence */
 <1t> <2t>_max_ml(const <1t> *d1, size_t length, const int *mask, size_t *idx)
 {
-  BOOL found_first = FALSE;
+  _BOOL_ found_first = _FALSE_;
 
   size_t max_idx = length;
   size_t i;
   for (i = length; i > 0; i--) {
     if (mask[i - 1] != 0) {
-      found_first = TRUE;
+      found_first = _TRUE_;
       max_idx = i - 1;
       break;
     }
   }
 
-  if (found_first == TRUE) {    
+  if (found_first == _TRUE_) {    
     for (i = max_idx + 1; i > 0; i--) {
       if (mask[i - 1] != 0) {
 	if(d1[i - 1] > d1[max_idx]) {
@@ -229,7 +229,7 @@ void <2t>_warning(const char *msg,const char *arg)
     *idx = max_idx;
   }
   
-  if (found_first == FALSE) {
+  if (found_first == _FALSE_) {
     return 0;
   } else {
     return d1[max_idx];
@@ -238,18 +238,18 @@ void <2t>_warning(const char *msg,const char *arg)
 
 <1t> <2t>_min_m(const <1t> *d1, size_t length, const int *mask, size_t *idx)
 {
-  BOOL found_first = FALSE;
+  _BOOL_ found_first = _FALSE_;
   size_t min_idx = INVALID_ARRAY_INDEX;
   size_t i;
   for (i = 0; i < length; i++) {
     if (mask[i] != 0) {
-      found_first = TRUE;
+      found_first = _TRUE_;
       min_idx = i;
       break;
     }
   }
 
-  if (found_first == TRUE) {    
+  if (found_first == _TRUE_) {    
     for (i = min_idx; i < length; i++) {
       if (mask[i] != 0) {
 	if(d1[i] < d1[min_idx]) {
@@ -263,7 +263,7 @@ void <2t>_warning(const char *msg,const char *arg)
     *idx = min_idx;
   }
   
-  if (found_first == FALSE) {
+  if (found_first == _FALSE_) {
     return 0.0;
   } else {
     return d1[min_idx];
@@ -1363,7 +1363,7 @@ double <2t>_simscore(<1t> *d1, <1t> *d2, size_t length)
   for(j=0;j<height;j++) {
     for(i=0;i<width;i++) {
       temp = d1[offset1];
-      d1[offset1] = d1[offset1];
+      d1[offset1] = d1[offset2];
       d1[offset2] = temp;
       offset1++;
       offset2 += width;
@@ -1976,6 +1976,7 @@ double <2t>_uint8_corrcoef(const <1t> *filter, const tz_uint8 *signal,
   }
 
   if (is_constant == 1) {
+    free(dsignal);
     return 0.0;
   }
 

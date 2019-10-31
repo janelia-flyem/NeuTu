@@ -9,7 +9,7 @@
 #include "dvid/zdvidtarget.h"
 #include "zjsonparser.h"
 #include "dvid/zdvidversiondag.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidreader.h"
 
@@ -21,7 +21,7 @@
  * Note that libdvid::DVIDConnection automatically add '/api' at the beginning
  * of the path.
  */
-libdvid::BinaryDataPtr ZDvid::MakeRequest(
+libdvid::BinaryDataPtr dvid::MakeRequest(
     libdvid::DVIDConnection &connection,
     const std::string &path, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
@@ -57,7 +57,7 @@ libdvid::BinaryDataPtr ZDvid::MakeRequest(
   return results;
 }
 
-libdvid::BinaryDataPtr ZDvid::MakeRequest(
+libdvid::BinaryDataPtr dvid::MakeRequest(
     const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode)
@@ -99,7 +99,7 @@ libdvid::BinaryDataPtr ZDvid::MakeRequest(
     path += (!query.empty()) ? "?" + query : "";
     statusCode =
         connection.make_request("/.." + path, connMethod, payload, results, error_msg, type);
-  } catch (libdvid::DVIDException &e) {
+  } catch (libdvid::DVIDException &e)  {
     std::cout << e.what() << std::endl;
     statusCode = e.getStatus();
   }
@@ -107,14 +107,14 @@ libdvid::BinaryDataPtr ZDvid::MakeRequest(
   return results;
 }
 
-libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
+libdvid::BinaryDataPtr dvid::MakeGetRequest(
     const std::string &url, int &statusCode)
 {
   return MakeRequest(url, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      statusCode);
 }
 
-libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
+libdvid::BinaryDataPtr dvid::MakeGetRequest(
     libdvid::DVIDConnection &connection, const std::string &path,
     int &statusCode)
 {
@@ -123,7 +123,7 @@ libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
         statusCode);
 }
 
-libdvid::BinaryDataPtr ZDvid::MakePostRequest(
+libdvid::BinaryDataPtr dvid::MakePostRequest(
     libdvid::DVIDConnection &connection, const std::string &path,
     const ZJsonObject &obj, int &statusCode)
 {
@@ -140,13 +140,21 @@ libdvid::BinaryDataPtr ZDvid::MakePostRequest(
 }
 
 
-void ZDvid::MakeHeadRequest(const std::string &url, int &statusCode)
+void dvid::MakeHeadRequest(const std::string &url, int &statusCode)
 {
   MakeRequest(url, "HEAD", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
               statusCode);
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+bool dvid::HasHead(const std::string &url)
+{
+  int statusCode = 0;
+  MakeHeadRequest(url, statusCode);
+
+  return (statusCode == 200);
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
   return ZSharedPointer<libdvid::DVIDNodeService>(
@@ -155,14 +163,14 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
           NeutubeConfig::GetSoftwareName()));
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const ZDvidTarget &target)
 {
   return MakeDvidNodeService(target.getAddressWithPort(),
                              target.getUuid());
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const libdvid::DVIDNodeService *service)
 {
   if (service != NULL) {
@@ -173,7 +181,19 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
   return ZSharedPointer<libdvid::DVIDNodeService>();
 }
 
-ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
+ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
+    const std::string &address, const std::string &user, const std::string &app)
+{
+  try {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(address, user, app));
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    return ZSharedPointer<libdvid::DVIDConnection>();
+  }
+}
+
+ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address)
 {
   try {
@@ -187,12 +207,23 @@ ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
   }
 }
 
+ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
+    const libdvid::DVIDConnection *conn)
+{
+  if (conn != NULL) {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(*conn));
+  }
+
+  return ZSharedPointer<libdvid::DVIDConnection>();
+}
+
 
 #if defined(_ENABLE_LOWTIS_)
-ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
+ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &target)
 {
   lowtis::DVIDLabelblkConfig config;
-  config.username = neutube::GetCurrentUserName();
+  config.username = neutu::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
@@ -201,30 +232,30 @@ ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget 
   return ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
 }
 
-lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
+lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 {
   lowtis::DVIDLabelblkConfig config;
-  config.username = neutube::GetCurrentUserName();
+  config.username = neutu::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
-
+  config.supervoxelview = target.isSupervoxelView();
 
   return new lowtis::ImageService(config);
 }
 #endif
 
-libdvid::BinaryDataPtr ZDvid::MakePayload(const char *payload, int length)
+libdvid::BinaryDataPtr dvid::MakePayload(const char *payload, int length)
 {
   return libdvid::BinaryData::create_binary_data(payload, length);
 }
 
-libdvid::BinaryDataPtr ZDvid::MakePayload(const std::string &payload)
+libdvid::BinaryDataPtr dvid::MakePayload(const std::string &payload)
 {
   return MakePayload(payload.c_str(), payload.length());
 }
 
-libdvid::BinaryDataPtr ZDvid::MakePayload(const ZJsonValue &payload)
+libdvid::BinaryDataPtr dvid::MakePayload(const ZJsonValue &payload)
 {
   return MakePayload(payload.dumpString(0));
 }
@@ -295,7 +326,7 @@ libdvid::BinaryDataPtr ZDvid::Post(
 #endif
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
+ZIntCuboid dvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
 {
   ZIntCuboid alignedBox;
   alignedBox.setFirstCorner(
@@ -309,7 +340,7 @@ ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo
 }
 #endif
 
-ZIntCuboid ZDvid::GetZoomBox(const ZIntCuboid &box, int zoom)
+ZIntCuboid dvid::GetZoomBox(const ZIntCuboid &box, int zoom)
 {
   ZIntCuboid zoomBox;
 
@@ -321,7 +352,7 @@ ZIntCuboid ZDvid::GetZoomBox(const ZIntCuboid &box, int zoom)
   return zoomBox;
 }
 
-bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
+bool dvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
                         const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
 {
   bool valid = false;
@@ -359,7 +390,7 @@ bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
   return valid;
 }
 
-bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
+bool dvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
 {
   bool matched = false;
   if (!uuid1.empty() && !uuid2.empty()) {
@@ -374,34 +405,34 @@ bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
 }
 
 struct _DataTypeMap {
-  static std::map<std::string, ZDvid::EDataType> CreateMap()
+  static std::map<std::string, dvid::EDataType> CreateMap()
   {
-    std::map<std::string, ZDvid::EDataType> m;
+    std::map<std::string, dvid::EDataType> m;
 
-    m["labelblk"] = ZDvid::TYPE_LABELBLK;
-    m["annotation"] = ZDvid::TYPE_ANNOTATION;
-    m["imagetile"] = ZDvid::TYPE_IMAGETILE;
-    m["keyvalue"] = ZDvid::TYPE_KEYVALUE;
-    m["labelgraph"] = ZDvid::TYPE_LABELGRAPH;
-    m["labelsz"] = ZDvid::TYPE_LABELSZ;
-    m["labelvol"] = ZDvid::TYPE_LABELVOL;
-    m["roi"] = ZDvid::TYPE_ROI;
-    m["uint8blk"] = ZDvid::TYPE_UINT8BLK;
+    m["labelblk"] = dvid::EDataType::LABELBLK;
+    m["annotation"] = dvid::EDataType::ANNOTATION;
+    m["imagetile"] = dvid::EDataType::IMAGETILE;
+    m["keyvalue"] = dvid::EDataType::KEYVALUE;
+    m["labelgraph"] = dvid::EDataType::LABELGRAPH;
+    m["labelsz"] = dvid::EDataType::LABELSZ;
+    m["labelvol"] = dvid::EDataType::LABELVOL;
+    m["roi"] = dvid::EDataType::ROI;
+    m["uint8blk"] = dvid::EDataType::UINT8BLK;
 
     return m;
   }
 
-  static const std::map<std::string, ZDvid::EDataType> M;
+  static const std::map<std::string, dvid::EDataType> M;
 };
 
-const std::map<std::string, ZDvid::EDataType> _DataTypeMap::M =
+const std::map<std::string, dvid::EDataType> _DataTypeMap::M =
     _DataTypeMap::CreateMap();
 
-ZDvid::EDataType ZDvid::GetDataType(const std::string &typeName)
+dvid::EDataType dvid::GetDataType(const std::string &typeName)
 {
-  ZDvid::EDataType type = ZDvid::TYPE_UNKNOWN;
+  dvid::EDataType type = dvid::EDataType::UNKNOWN;
 
-  std::map<std::string, ZDvid::EDataType>::const_iterator iter =
+  std::map<std::string, dvid::EDataType>::const_iterator iter =
       _DataTypeMap::M.find(typeName);
   if (iter != _DataTypeMap::M.end()) {
     type = iter->second;
@@ -410,9 +441,9 @@ ZDvid::EDataType ZDvid::GetDataType(const std::string &typeName)
   return type;
 }
 
-ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
+dvid::EDataType dvid::GetDataTypeFromInfo(const ZJsonObject &obj)
 {
-  ZDvid::EDataType type = ZDvid::TYPE_UNKNOWN;
+  dvid::EDataType type = dvid::EDataType::UNKNOWN;
 
   if (obj.hasKey("Base")) {
     ZJsonObject baseObj(obj.value("Base"));
@@ -423,7 +454,7 @@ ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
   return type;
 }
 
-bool ZDvid::IsValidDvidUrl(const std::string &url)
+bool dvid::IsValidDvidUrl(const std::string &url)
 {
   ZDvidTarget target;
   target.setFromUrl(url);
@@ -431,7 +462,7 @@ bool ZDvid::IsValidDvidUrl(const std::string &url)
   return target.isValid();
 }
 
-ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
+ZDvidTarget dvid::MakeTargetFromUrl(const std::string path)
 {
   ZDvidTarget target;
   target.setFromUrl(path);
@@ -460,7 +491,7 @@ ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
 }
 
 
-std::string ZDvid::GetBodyIdTag(uint64_t bodyId)
+std::string dvid::GetBodyIdTag(uint64_t bodyId)
 {
   std::ostringstream stream;
   stream << "body:" << bodyId;
@@ -468,7 +499,7 @@ std::string ZDvid::GetBodyIdTag(uint64_t bodyId)
   return stream.str();
 }
 
-std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
+std::pair<uint64_t, std::vector<uint64_t>> dvid::GetMergeConfig(
     const ZDvidReader &reader,
     const std::vector<uint64_t> &bodyIdArray, bool mergingToLargest)
 {
@@ -480,7 +511,8 @@ std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
     if (mergingToLargest) {
       int maxSize = 0;
       for (uint64_t bodyId : bodyIdArray) {
-        const int bodySize = reader.readBodyBlockCount(bodyId);
+        const int bodySize = reader.readBodyBlockCount(
+              bodyId, neutu::EBodyLabelType::BODY);
 
         DEBUG_OUT << bodyId << ": " << bodySize << std::endl;
 
@@ -504,7 +536,7 @@ std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
 }
 
 
-std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
+std::pair<uint64_t, std::vector<uint64_t>> dvid::GetMergeConfig(
     const ZDvidReader &reader, uint64_t defaultTargetId,
     const std::vector<uint64_t> &bodyId, bool mergingToLargest)
 {

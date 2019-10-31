@@ -1,7 +1,8 @@
 #include "zflyemstackdoc.h"
 
 #include <set>
-#include "tz_error.h"
+
+#include "common/math.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "zstackfile.h"
 #include "tz_stack_neighborhood.h"
@@ -9,6 +10,7 @@
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "geometry/zgeometry.h"
+#include "zgraph.h"
 
 using namespace std;
 
@@ -31,7 +33,7 @@ void ZFlyEmStackDoc::setSuperpixelMap(const ZSuperpixelMapArray &superpixelMap)
 
 void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
 {
-  TZ_ASSERT(selected != NULL, "null poiner");
+//  TZ_ASSERT(selected != NULL, "null poiner");
 
   ZGraph *graph = getBodyGraph();
 
@@ -61,18 +63,18 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
   }
 }
 
-QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutube::EAxis axis) const
+QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutu::EAxis axis) const
 {
   QString info = ZStackDoc::rawDataInfo(x, y, z, axis);
 
   ZStack *segmentation = getSegmentation();
 
   if (segmentation != NULL) {
-    TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
+//    TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
-    int wx = iround(x);
-    int wy = iround(y);
+    int wx = neutu::iround(x);
+    int wy = neutu::iround(y);
     int wz = z;
     zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
@@ -331,52 +333,6 @@ vector<ZObject3d*> ZFlyEmStackDoc::getNeighborBodyObject(int id)
 ZObject3d* ZFlyEmStackDoc::getBodyObjectBorder(int id1, int id2)
 {
   return m_segmentationBundle.getBodyBorderObject(id1, id2);
-  /*
-  ZObject3d *obj1 = getBodyObject(id1);
-  ZObject3d *obj2 = getBodyObject(id2);
-
-  ZObject3d *mobj = obj1;
-  ZObject3d *sobj = obj2;
-  int sid = id2;
-  if (obj1->size() > obj2->size()) {
-    mobj = obj2;
-    sobj = obj1;
-    sid = id1;
-  }
-
-  int nnbr = 26;
-  int neighborOffset[26];
-  int isInBound[26];
-  Stack_Neighbor_Offset(nnbr, stack()->width(), stack()->height(),
-                        neighborOffset);
-
-  vector<size_t> voxelIndexArray = mobj->toIndexArray(
-        stack()->width(), stack()->height(), stack()->depth(), 0, 0, 0);
-
-  ZStack *bodyStack = getSegmentation();
-
-  TZ_ASSERT(bodyStack != NULL, "Null segmentation");
-
-  ZObject3d *border = new ZObject3d;
-  for (size_t i = 0; i < voxelIndexArray.size(); ++i) {
-    size_t voxelIndex = voxelIndexArray[i];
-
-    Stack_Neighbor_Bound_Test_I(nnbr, stack()->width(), stack()->height(),
-                                stack()->depth(), voxelIndex, isInBound);
-    for (int neighborIndex = 0; neighborIndex < nnbr; ++neighborIndex) {
-      if (isInBound[neighborIndex]) {
-        size_t neighborVoxelIndex = voxelIndex + neighborOffset[neighborIndex];
-        if (FlyEm::ZSegmentationAnalyzer::
-            channelCodeToId(bodyStack->color(neighborVoxelIndex)) == sid) {
-          border->append(mobj->x(i), mobj->y(i), mobj->z(i));
-          break;
-        }
-      }
-    }
-  }
-
-  return border;
-  */
 }
 
 bool ZFlyEmStackDoc::importAxonExport(const string &filePath)

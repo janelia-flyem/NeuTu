@@ -5,10 +5,11 @@
 
 #include "ui_zflyemsplituploadoptiondialog.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zwidgetfactory.h"
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyemmisc.h"
+#include "flyem/flyemdatareader.h"
 
 ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
   QDialog(parent),
@@ -16,7 +17,7 @@ ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
+  flyem::PrepareBodyStatus(ui->statusComboBox);
   if (ui->statusComboBox->count() > 1) {
     ui->statusComboBox->setCurrentIndex(1);
   }
@@ -56,7 +57,7 @@ ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
   ZFlyEmBodyAnnotation annot;
   if (passingAnnotation()) {
     if (m_dvidReader.isReady()) {
-      annot = m_dvidReader.readBodyAnnotation(bodyId);
+      annot = FlyEmDataReader::ReadBodyAnnotation(m_dvidReader, bodyId);
     }
   }
 

@@ -7,8 +7,8 @@
 #include <QtConcurrent>
 #endif
 
+#include "common/math.h"
 #include "zutils.h"
-#include "tz_math.h"
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
 #include "zobject3dfactory.h"
@@ -18,12 +18,15 @@
 #include "neutubeconfig.h"
 #include "zpixmap.h"
 #include "zstring.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zarbsliceviewparam.h"
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"
 #include "misc/miscutility.h"
-#include "flyem/zdvidlabelslicehighrestask.h"
+#include "zdviddataslicetask.h"
+#include "zdviddataslicetaskfactory.h"
+
+//#include "flyem/zdvidlabelslicehighrestask.h"
 
 /* Implementation details:
  *
@@ -56,16 +59,16 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
   delete m_mappedLabelArray;
 }
 
-void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAxis)
+void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis)
 {
-  setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = 0;
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_LABEL_BLOCK);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::LABEL_BLOCK);
   getHelper()->setMaxSize(maxWidth, maxHeight);
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;
@@ -80,12 +83,12 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_sliceAxis = sliceAxis;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
 
 #define ZDVIDLABELSLICE_MT 1
 
-void ZDvidLabelSlice::setSliceAxis(neutube::EAxis sliceAxis)
+void ZDvidLabelSlice::setSliceAxis(neutu::EAxis sliceAxis)
 {
   m_sliceAxis = sliceAxis;
 }
@@ -96,7 +99,7 @@ void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
   pixmap->setTransform(m_paintBuffer->getTransform());
   pixmap->matchProj();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "label slice pixmap offset: "
             << pixmap->getTransform().getTx() << " "
             << pixmap->getTransform().getTy() << std::endl;
@@ -109,7 +112,7 @@ void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
 
 void ZDvidLabelSlice::display(
     ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (m_sliceAxis != sliceAxis) {
     return;
@@ -154,7 +157,7 @@ void ZDvidLabelSlice::update()
 }
 #endif
 
-void ZDvidLabelSlice::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+void ZDvidLabelSlice::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 {
   getHelper()->setUpdatePolicy(policy);
 }
@@ -169,19 +172,24 @@ bool ZDvidLabelSlice::containedIn(
 
 ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
 {
-  ZDvidLabelSliceHighresTask *task = NULL;
-  const int maxSize = 1024*1024;
-  if (getHelper()->needHighResUpdate()
-      && getHelper()->getViewDataSize() < maxSize) {
-    task = new ZDvidLabelSliceHighresTask;
-    ZStackViewParam viewParam = getHelper()->getViewParam();
-    viewParam.openViewPort();
-    task->setViewParam(viewParam);
-    task->setZoom(getHelper()->getZoom());
-    task->setCenterCut(
-          getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-    task->setDelay(100);
-    task->setDoc(doc);
+  ZDvidDataSliceTask *task = nullptr;
+//  ZDvidLabelSliceHighresTask *task = NULL;
+  if (m_taskFactory) {
+    const int maxSize = 1024*1024;
+    if (getHelper()->needHighResUpdate()
+        && getHelper()->getViewDataSize() < maxSize) {
+      //    task = new ZDvidLabelSliceHighresTask;
+      task = m_taskFactory->makeTask();
+      ZStackViewParam viewParam = getHelper()->getViewParam();
+      viewParam.openViewPort();
+      task->setViewParam(viewParam);
+      task->setZoom(getHelper()->getZoom());
+      task->setCenterCut(
+            getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
+      task->setDelay(100);
+      task->setDoc(doc);
+      task->setSupervoxel(getDvidTarget().isSupervoxelView());
+    }
   }
 
   return task;
@@ -207,6 +215,11 @@ void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
   getHelper()->inferUpdatePolicy(getSliceAxis());
 }
 
+bool ZDvidLabelSlice::isSupervoxel() const
+{
+  return getDvidTarget().isSupervoxelView();
+}
+
 int64_t ZDvidLabelSlice::getReadingTime() const
 {
   return getHelper()->getDvidReader().getReadingTime();
@@ -215,16 +228,22 @@ int64_t ZDvidLabelSlice::getReadingTime() const
 void ZDvidLabelSlice::allowBlinking(bool on)
 {
   if (on) {
-    setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
+    setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy::HIDDEN);
   } else {
-    setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
+    setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy::LOWRES);
   }
 }
 
-void ZDvidLabelSlice::setPreferredUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+void ZDvidLabelSlice::setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 {
   getHelper()->setPreferredUpdatePolicy(policy);
   getHelper()->inferUpdatePolicy(getSliceAxis());
+}
+
+void ZDvidLabelSlice::setTaskFactory(
+    std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory)
+{
+  m_taskFactory = std::move(factory);
 }
 
 /*
@@ -307,7 +326,7 @@ void ZDvidLabelSlice::paintBufferUnsync()
       }
 
       if (labelArray != NULL) {
-        if (getSliceAxis() == neutube::EAxis::X) {
+        if (getSliceAxis() == neutu::EAxis::X) {
           m_paintBuffer->drawLabelFieldTranspose(
                 labelArray, m_rgbTable, 0, 0xFFFFFFFF);
         } else {
@@ -364,13 +383,13 @@ int ZDvidLabelSlice::getFirstZoom(const ZStackViewParam &viewParam) const
   }
 
   switch (getHelper()->getUpdatePolicy()) {
-  case flyem::EDataSliceUpdatePolicy::LOWRES:
+  case neutu::EDataSliceUpdatePolicy::LOWRES:
     if (zoom < getHelper()->getMaxZoom() &&
         ZDvidDataSliceHelper::GetViewDataSize(viewParam, zoom) > 256 * 256) {
       zoom += 1;
     }
     break;
-  case flyem::EDataSliceUpdatePolicy::LOWEST_RES:
+  case neutu::EDataSliceUpdatePolicy::LOWEST_RES:
     zoom = getHelper()->getMaxZoom();
     break;
   default:
@@ -390,11 +409,11 @@ void ZDvidLabelSlice::forceUpdate(
   if ((!ignoringHidden) || isVisible()) {
     getHelper()->setZoom(viewParam.getZoomLevel());
 
-    if (getHelper()->getUpdatePolicy() == flyem::EDataSliceUpdatePolicy::HIDDEN) {
+    if (getHelper()->getUpdatePolicy() == neutu::EDataSliceUpdatePolicy::HIDDEN) {
       clearLabelData();
     } else {
       int zoom = getFirstZoom(viewParam);
-      if (m_sliceAxis == neutube::EAxis::ARB) {
+      if (m_sliceAxis == neutu::EAxis::ARB) {
         forceUpdate(viewParam.getSliceViewParam(), zoom);
       } else {
         QRect viewPort = viewParam.getViewPort();
@@ -404,7 +423,7 @@ void ZDvidLabelSlice::forceUpdate(
   }
 
   getHelper()->setViewParam(viewParam);
-  if (getHelper()->getUpdatePolicy() == flyem::EDataSliceUpdatePolicy::HIDDEN) {
+  if (getHelper()->getUpdatePolicy() == neutu::EDataSliceUpdatePolicy::HIDDEN) {
     getHelper()->closeViewPort();
   }
   updatePaintBuffer();
@@ -412,11 +431,11 @@ void ZDvidLabelSlice::forceUpdate(
 
 void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 {
-  if (getSliceAxis() != neutube::EAxis::ARB) {
+  if (getSliceAxis() != neutu::EAxis::ARB) {
     clearLabelData();
     if (!viewPort.isEmpty()) {
       ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(viewPort, z);
-      if (getSliceAxis() == neutube::EAxis::Z) {
+      if (getSliceAxis() == neutu::EAxis::Z) {
         m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
@@ -448,7 +467,7 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 void ZDvidLabelSlice::forceUpdate(
     const ZArbSliceViewParam &viewParam, int zoom)
 {
-  if (m_sliceAxis == neutube::EAxis::ARB) {
+  if (m_sliceAxis == neutu::EAxis::ARB) {
     clearLabelData();
     if (viewParam.isValid()) {
       m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
@@ -477,12 +496,12 @@ void ZDvidLabelSlice::updatePaintBuffer()
   if (m_labelArray != NULL) {
     int width = m_labelArray->getDim(0);
     int height = m_labelArray->getDim(1);
-    if (getSliceAxis() == neutube::EAxis::X || getSliceAxis() == neutube::EAxis::Y) {
+    if (getSliceAxis() == neutu::EAxis::X || getSliceAxis() == neutu::EAxis::Y) {
       int depth = m_labelArray->getDim(2);
       zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
 #endif
 
@@ -623,7 +642,7 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 }
 
 QColor ZDvidLabelSlice::getLabelColor(
-    uint64_t label, neutube::EBodyLabelType labelType) const
+    uint64_t label, neutu::ELabelSource labelType) const
 {
   QColor color;
   if (hasCustomColorMap()) {
@@ -641,7 +660,7 @@ QColor ZDvidLabelSlice::getLabelColor(
 }
 
 QColor ZDvidLabelSlice::getLabelColor(
-    int64_t label, neutube::EBodyLabelType labelType) const
+    int64_t label, neutu::ELabelSource labelType) const
 {
   return getLabelColor((uint64_t) label, labelType);
 }
@@ -671,7 +690,7 @@ void ZDvidLabelSlice::assignColorMap()
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = **iter;
     //obj.setColor(getColor(obj.getLabel()));
-    obj.setColor(getLabelColor(obj.getLabel(), neutube::EBodyLabelType::ORIGINAL));
+    obj.setColor(getLabelColor(obj.getLabel(), neutu::ELabelSource::ORIGINAL));
   }
 }
 
@@ -695,7 +714,7 @@ void ZDvidLabelSlice::remapId(
 
     idMap = m_customColorScheme->getColorIndexMap();
 
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         array[i] = 0;
       }
@@ -723,7 +742,7 @@ void ZDvidLabelSlice::remapId(
 
     idMap = m_customColorScheme->getColorIndexMap();
 
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         if (selected.count(originalArray[i]) > 0) {
           array[i] = originalArray[i];
@@ -739,7 +758,7 @@ void ZDvidLabelSlice::remapId(
     } else {
       for (size_t i = 0; i < v; ++i) {
         if (selected.count(originalArray[i]) > 0) {
-          array[i] = flyem::LABEL_ID_SELECTION;
+          array[i] = neutu::LABEL_ID_SELECTION;
         } else {
           array[i] = originalArray[i];
           if (idMap.contains(array[i])) {
@@ -751,7 +770,7 @@ void ZDvidLabelSlice::remapId(
       }
     }
   } else {
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         if (selected.count(originalArray[i]) > 0) {
           array[i] = originalArray[i];
@@ -762,7 +781,7 @@ void ZDvidLabelSlice::remapId(
     } else {
       for (size_t i = 0; i < v; ++i) {
         if (selected.count(originalArray[i]) > 0) {
-          array[i] = flyem::LABEL_ID_SELECTION;
+          array[i] = neutu::LABEL_ID_SELECTION;
         } else {
           array[i] = originalArray[i];
         }
@@ -781,7 +800,7 @@ void ZDvidLabelSlice::remapId(
 
     idMap = m_customColorScheme->getColorIndexMap();
 
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       m_paintBuffer->setVisible(false);
     } else {
       for (size_t i = 0; i < v; ++i) {
@@ -798,7 +817,7 @@ void ZDvidLabelSlice::remapId(
       }
     }
   } else {
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       m_paintBuffer->setVisible(false);
     } else {
       for (size_t i = 0; i < v; ++i) {
@@ -824,7 +843,7 @@ void ZDvidLabelSlice::remapId(
 
     std::set<uint64_t> selectedSet = selected;
 
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         if (selectedSet.count(originalArray[i]) > 0) {
           if (bodyMap.count(originalArray[i]) > 0) {
@@ -844,7 +863,7 @@ void ZDvidLabelSlice::remapId(
     } else {
       for (size_t i = 0; i < v; ++i) {
         if (selectedSet.count(originalArray[i]) > 0) {
-          array[i] = flyem::LABEL_ID_SELECTION;
+          array[i] = neutu::LABEL_ID_SELECTION;
         } else if (bodyMap.count(originalArray[i]) > 0) {
           array[i] = bodyMap[originalArray[i]];
           if (idMap.contains(array[i])) {
@@ -865,7 +884,7 @@ void ZDvidLabelSlice::remapId(
   } else {
     std::set<uint64_t> selectedSet = selected;
 
-    if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         if (selectedSet.count(originalArray[i]) > 0) {
           if (bodyMap.count(originalArray[i]) > 0) {
@@ -880,7 +899,7 @@ void ZDvidLabelSlice::remapId(
     } else {
       for (size_t i = 0; i < v; ++i) {
         if (selectedSet.count(originalArray[i]) > 0) {
-          array[i] = flyem::LABEL_ID_SELECTION;
+          array[i] = neutu::LABEL_ID_SELECTION;
         } else if (bodyMap.count(originalArray[i]) > 0) {
           array[i] = bodyMap[originalArray[i]];
         } else {
@@ -914,7 +933,7 @@ void ZDvidLabelSlice::remapId(ZArray *label)
       if (m_customColorScheme.get() != NULL) {
         remapId(array, originalArray, v);
       }
-      if (hasVisualEffect(neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+      if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
         if (m_paintBuffer != NULL) {
           m_paintBuffer->setVisible(false);
         }
@@ -938,9 +957,9 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
       }
     }
   } else {
-    int nx = iround(x);
-    int ny = iround(y);
-    int nz = iround(z);
+    int nx = neutu::iround(x);
+    int ny = neutu::iround(y);
+    int nz = neutu::iround(z);
 
 //    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
 
@@ -948,7 +967,7 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 //        nz == getHelper()->getZ()) {
 //      ZDvidReader reader;
     bool withinRange = true;
-    if (getSliceAxis() != neutube::EAxis::ARB) {
+    if (getSliceAxis() != neutu::EAxis::ARB) {
       zgeom::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
       if (!getHelper()->getViewPort().contains(nx, ny) ||
               nz != getHelper()->getZ()) {
@@ -962,7 +981,7 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 //        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
         m_hitLabel = getMappedLabel(
               getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
-              neutube::EBodyLabelType::ORIGINAL);
+              neutu::ELabelSource::ORIGINAL);
       }
 
       return m_hitLabel > 0;
@@ -1001,7 +1020,7 @@ void ZDvidLabelSlice::selectHit(bool appending)
       clearSelection();
     }
 
-    addSelection(m_hitLabel, neutube::EBodyLabelType::MAPPED);
+    addSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
 //    addSelection(m_hitLabel);
 //    m_selectedOriginal.insert(m_hitLabel);
   }
@@ -1018,13 +1037,13 @@ ZFlyEmBodyMerger::TLabelMap ZDvidLabelSlice::getLabelMap() const
 }
 
 void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
-                                   neutube::EBodyLabelType labelType)
+                                   neutu::ELabelSource labelType)
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     m_selectedOriginal = selected;
     break;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(selected.begin(), selected.end());
@@ -1039,13 +1058,13 @@ void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
 }
 
 void ZDvidLabelSlice::addSelection(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::ELabelSource labelType)
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     m_selectedOriginal.insert(bodyId);
     break;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(bodyId);
@@ -1061,13 +1080,13 @@ void ZDvidLabelSlice::addSelection(
 }
 
 void ZDvidLabelSlice::removeSelection(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::ELabelSource labelType)
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     m_selectedOriginal.erase(bodyId);
     break;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(bodyId);
@@ -1082,24 +1101,24 @@ void ZDvidLabelSlice::removeSelection(
 }
 
 void ZDvidLabelSlice::xorSelection(
-    uint64_t bodyId, neutube::EBodyLabelType labelType)
+    uint64_t bodyId, neutu::ELabelSource labelType)
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     if (m_selectedOriginal.count(bodyId) > 0) {
       m_selectedOriginal.erase(bodyId);
     } else {
       m_selectedOriginal.insert(bodyId);
     }
     break;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(bodyId);
       xorSelectionGroup(selectedOriginal.begin(), selectedOriginal.end(),
-                        neutube::EBodyLabelType::ORIGINAL);
+                        neutu::ELabelSource::ORIGINAL);
     } else {
-      xorSelection(bodyId, neutube::EBodyLabelType::ORIGINAL);
+      xorSelection(bodyId, neutu::ELabelSource::ORIGINAL);
     }
   }
 }
@@ -1110,12 +1129,12 @@ void ZDvidLabelSlice::deselectAll()
 }
 
 bool ZDvidLabelSlice::isBodySelected(
-    uint64_t bodyId, neutube::EBodyLabelType labelType) const
+    uint64_t bodyId, neutu::ELabelSource labelType) const
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     return m_selectedOriginal.count(bodyId) > 0;
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(bodyId);
@@ -1136,14 +1155,14 @@ bool ZDvidLabelSlice::isBodySelected(
 
 void ZDvidLabelSlice::toggleHitSelection(bool appending)
 {
-  bool hasSelected = isBodySelected(m_hitLabel, neutube::EBodyLabelType::MAPPED);
-  xorSelection(m_hitLabel, neutube::EBodyLabelType::MAPPED);
+  bool hasSelected = isBodySelected(m_hitLabel, neutu::ELabelSource::MAPPED);
+  xorSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
 
   if (!appending) {
     clearSelection();
 
     if (!hasSelected) {
-      addSelection(m_hitLabel, neutube::EBodyLabelType::MAPPED);
+      addSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
     }
   }
 
@@ -1232,13 +1251,13 @@ std::set<uint64_t> ZDvidLabelSlice::getOriginalLabelSet(
 
 uint64_t ZDvidLabelSlice::getMappedLabel(const ZObject3dScan &obj) const
 {
-  return getMappedLabel(obj.getLabel(), neutube::EBodyLabelType::ORIGINAL);
+  return getMappedLabel(obj.getLabel(), neutu::ELabelSource::ORIGINAL);
 }
 
 uint64_t ZDvidLabelSlice::getMappedLabel(
-    uint64_t label, neutube::EBodyLabelType labelType) const
+    uint64_t label, neutu::ELabelSource labelType) const
 {
-  if (labelType == neutube::EBodyLabelType::ORIGINAL) {
+  if (labelType == neutu::ELabelSource::ORIGINAL) {
     if (m_bodyMerger != NULL) {
       return m_bodyMerger->getFinalLabel(label);
     }
@@ -1253,12 +1272,12 @@ const ZStackViewParam& ZDvidLabelSlice::getViewParam() const
 }
 */
 std::set<uint64_t> ZDvidLabelSlice::getSelected(
-    neutube::EBodyLabelType labelType) const
+    neutu::ELabelSource labelType) const
 {
   switch (labelType) {
-  case neutube::EBodyLabelType::ORIGINAL:
+  case neutu::ELabelSource::ORIGINAL:
     return getSelectedOriginal();
-  case neutube::EBodyLabelType::MAPPED:
+  case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       return m_bodyMerger->getFinalLabel(getSelectedOriginal());
     } else {
@@ -1272,7 +1291,7 @@ std::set<uint64_t> ZDvidLabelSlice::getSelected(
 
 void ZDvidLabelSlice::mapSelection()
 {
-  m_selectedOriginal = getSelected(neutube::EBodyLabelType::MAPPED);
+  m_selectedOriginal = getSelected(neutu::ELabelSource::MAPPED);
 }
 
 void ZDvidLabelSlice::recordSelection()

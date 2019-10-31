@@ -9,9 +9,9 @@
 
 #include "zhistogram.h"
 #include "zobject3dscan.h"
-#include "neutube_def.h"
-#include "zintcuboidarray.h"
-#include "zpointarray.h"
+#include "common/neutudefs.h"
+#include "geometry/zintcuboidarray.h"
+#include "geometry/zpointarray.h"
 #include "ztree.h"
 #include "zarray.h"
 
@@ -33,7 +33,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 /*!
  * \brief Y normal of a binary stack
  */
-Stack* computeNormal(const Stack *stack, neutube::EAxis axis);
+Stack* computeNormal(const Stack *stack, neutu::EAxis axis);
 
 int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 
@@ -68,8 +68,8 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
-ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
-ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
 ZIntPoint GetFirstCorner(const ZArray *array);
 ZIntCuboid GetBoundBox(const ZArray *array);
@@ -89,6 +89,8 @@ double SampleStack(const Stack *stack, double x, double y, double z,
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
+
+ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 }
 
 //// partial-specialization optimization for 8-bit numbers

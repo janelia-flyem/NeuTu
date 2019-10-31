@@ -253,22 +253,22 @@ void SettingDialog::setUnit(char unit)
   }
 }
 
-neutube::EImageBackground SettingDialog::getBackground() const
+neutu::EImageBackground SettingDialog::getBackground() const
 {
   if (backgroundComboBox->currentIndex() == 0) {
-    return neutube::EImageBackground::DARK;
+    return neutu::EImageBackground::DARK;
   }
 
-  return neutube::EImageBackground::BRIGHT;
+  return neutu::EImageBackground::BRIGHT;
 }
 
-void SettingDialog::setBackground(neutube::EImageBackground bg)
+void SettingDialog::setBackground(neutu::EImageBackground bg)
 {
   switch (bg) {
-  case neutube::EImageBackground::DARK:
+  case neutu::EImageBackground::DARK:
     backgroundComboBox->setCurrentIndex(0);
     break;
-  case neutube::EImageBackground::BRIGHT:
+  case neutu::EImageBackground::BRIGHT:
     backgroundComboBox->setCurrentIndex(1);
   }
 }

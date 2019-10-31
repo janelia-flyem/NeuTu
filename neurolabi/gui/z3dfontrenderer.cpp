@@ -7,7 +7,7 @@
 #include "z3dgpuinfo.h"
 #include "z3dsdfont.h"
 #include "z3dshaderprogram.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 Z3DFontRenderer::Z3DFontRenderer(Z3DRendererBase& rendererBase)
   : Z3DPrimitiveRenderer(rendererBase)

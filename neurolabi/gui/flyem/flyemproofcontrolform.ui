@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>547</width>
-    <height>748</height>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
     <layout class="QHBoxLayout" name="topHorizontalLayout">
      <item>
@@ -26,6 +26,7 @@
          <weight>75</weight>
          <bold>true</bold>
          <underline>false</underline>
+         <kerning>true</kerning>
         </font>
        </property>
        <property name="focusPolicy">
@@ -206,99 +207,59 @@
       <bool>false</bool>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
       <item>
-       <widget class="QGroupBox" name="groupBox_5">
-        <property name="toolTip">
-         <string>A body is rendered as a set of balls resembling its surface</string>
-        </property>
-        <property name="title">
-         <string>Ball Surface</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_11">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>12</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="coarseBodyPushButton">
-           <property name="toolTip">
-            <string>3D body visualization (low resolution)</string>
-           </property>
-           <property name="text">
-            <string>LowRes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="bodyViewPushButton">
-           <property name="toolTip">
-            <string>3D body visualization (high resolution)</string>
-           </property>
-           <property name="text">
-            <string>HighRes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QPushButton" name="bodyViewPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (high resolution ball cloud)</string>
+          </property>
+          <property name="text">
+           <string>(H) Ball Cloud</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="coarseBodyPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (low resolution ball cloud)</string>
+          </property>
+          <property name="text">
+           <string>(L) Ball Cloud</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="toolTip">
-         <string>A body is rendered as a set of balls resembling its surface</string>
-        </property>
-        <property name="title">
-         <string>Mesh</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>12</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="coarseMeshPushButton">
-           <property name="text">
-            <string>LowRes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="meshPushButton">
-           <property name="text">
-            <string>highRes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QPushButton" name="meshPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (high resolution mesh)</string>
+          </property>
+          <property name="text">
+           <string>(H) Mesh</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="coarseMeshPushButton">
+          <property name="toolTip">
+           <string>3D body visualization (low resolution mesh)</string>
+          </property>
+          <property name="text">
+           <string>(L) Mesh</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QPushButton" name="skeletonViewPushButton">
@@ -376,7 +337,13 @@
         <property name="leftMargin">
          <number>5</number>
         </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
         <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="bottomMargin">
          <number>5</number>
         </property>
         <item>
@@ -452,7 +419,13 @@
         <property name="leftMargin">
          <number>5</number>
         </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
         <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="bottomMargin">
          <number>5</number>
         </property>
         <item>
@@ -517,16 +490,13 @@
   </layout>
   <zorder>dataInfoWidget</zorder>
   <zorder>bookmarkWidget</zorder>
-  <zorder></zorder>
-  <zorder></zorder>
   <zorder>groupBox_3</zorder>
-  <zorder></zorder>
  </widget>
  <customwidgets>
   <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
-   <header location="global">flyem/zflyembookmarkwidget.h</header>
+   <header location="global">flyem/widgets/zflyembookmarkwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

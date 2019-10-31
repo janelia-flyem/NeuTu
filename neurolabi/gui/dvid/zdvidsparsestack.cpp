@@ -30,17 +30,17 @@ ZDvidSparseStack::~ZDvidSparseStack()
 
 void ZDvidSparseStack::init()
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_type = GetType();
   m_label = 0;
   setCancelFillValue(false);
 //  m_cancelingValueFill = false;
 }
 
-ZStack* ZDvidSparseStack::getSlice(
+ZStack* ZDvidSparseStack::makeSlice(
     int z, int x0, int y0, int width, int height) const
 {
-  ZStack *slice  = getSlice(z);
+  ZStack *slice  = makeSlice(z);
 
   ZStack *newSlice = NULL;
 
@@ -61,7 +61,7 @@ ZStack* ZDvidSparseStack::getSlice(
   return newSlice;
 }
 
-ZStack* ZDvidSparseStack::getSlice(int z) const
+ZStack* ZDvidSparseStack::makeSlice(int z) const
 {
   ZStack *stack = NULL;
 
@@ -69,23 +69,25 @@ ZStack* ZDvidSparseStack::getSlice(int z) const
       const_cast<ZDvidSparseStack&>(*this).getObjectMask();
   if (objectMask != NULL) {
     ZObject3dScan slice = objectMask->getSlice(z);
-    ZIntCuboid box = slice.getBoundBox();
-    stack = new ZStack(GREY, box, 1);
-    stack->setZero();
+    if (!slice.isEmpty()) {
+      ZIntCuboid box = slice.getBoundBox();
+      stack = new ZStack(GREY, box, 1);
+      stack->setZero();
 
-    size_t stripeNumber = slice.getStripeNumber();
-    for (size_t i = 0; i < stripeNumber; ++i) {
-      const ZObject3dStripe &stripe = slice.getStripe(i);
-      int y = stripe.getY();
-      int z = stripe.getZ();
-      int segmentNumber = stripe.getSegmentNumber();
-      for (int j = 0; j < segmentNumber; ++j) {
-        int x0 = stripe.getSegmentStart(j);
-        int x1 = stripe.getSegmentEnd(j);
+      size_t stripeNumber = slice.getStripeNumber();
+      for (size_t i = 0; i < stripeNumber; ++i) {
+        const ZObject3dStripe &stripe = slice.getStripe(i);
+        int y = stripe.getY();
+        int z = stripe.getZ();
+        int segmentNumber = stripe.getSegmentNumber();
+        for (int j = 0; j < segmentNumber; ++j) {
+          int x0 = stripe.getSegmentStart(j);
+          int x1 = stripe.getSegmentEnd(j);
 
-        for (int x = x0; x <= x1; ++x) {
-          int v = getValue(x, y, z);
-          stack->setIntValue(x, y, z, 0, v);
+          for (int x = x0; x <= x1; ++x) {
+            int v = getValue(x, y, z);
+            stack->setIntValue(x, y, z, 0, v);
+          }
         }
       }
     }
@@ -114,6 +116,27 @@ void ZDvidSparseStack::setDvidTarget(const ZDvidTarget &target)
   initBlockGrid();
 }
 
+void ZDvidSparseStack::setGrayscaleReader(const ZDvidReader *reader)
+{
+  if (reader) {
+    setGrayscaleReader(*reader);
+  }
+}
+
+void ZDvidSparseStack::setGrayscaleReader(const ZDvidReader &reader)
+{
+  cancelFillValueSync();
+
+  if (m_grayScaleReader.getDvidTarget().getGrayscaleSourceString() !=
+      reader.getDvidTarget().getGrayscaleSourceString()) {
+    m_isValueFilled.clear();
+    m_sparseStack.clearGrayscale();
+  }
+
+  m_grayScaleReader = reader;
+  initBlockGrid();
+}
+
 int ZDvidSparseStack::getValue(int x, int y, int z) const
 {
   int v = 0;
@@ -137,18 +160,18 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
   return v;
 }
 
-void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
+void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }
 
 void ZDvidSparseStack::display(
-    ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
+    ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
           getLabel(), getLabelType(), painter.getZ(slice),
-          neutube::EAxis::Z, true, NULL);
+          neutu::EAxis::Z, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -207,8 +230,17 @@ ZDvidReader& ZDvidSparseStack::getMaskReader() const
   return m_maskReader;
 }
 
+const ZDvidInfo& ZDvidSparseStack::getGrayscaleInfo() const
+{
+  getGrayscaleReader();
+
+  return m_grayscaleInfo;
+}
+
 ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
 {
+  QMutexLocker locker(&m_grayscaleReaderMutex);
+
   if (!m_grayScaleReader.isReady()) {
     ZDvidTarget target = getDvidTarget();
     target.prepareGrayScale();
@@ -239,7 +271,7 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  flyem::EBodyLabelType labelType = getLabelType();
+  neutu::EBodyLabelType labelType = getLabelType();
 #ifdef _DEBUG_2
   std::cout << "Label type: " << m_labelType << std::endl;
   std::cout << "Label type: " << getLabelType() << std::endl;
@@ -311,6 +343,7 @@ void ZDvidSparseStack::cancelFillValueSync()
   if (m_futureMap.isAlive(threadId)) {
     setCancelFillValue(true);
     m_futureMap[threadId].waitForFinished();
+    setCancelFillValue(false);
   }
 }
 
@@ -348,9 +381,13 @@ void ZDvidSparseStack::runFillValueFunc(
   }
 }
 
+#if 1
 bool ZDvidSparseStack::fillValue(
     const ZIntCuboid &box, bool cancelable, bool fillingAll)
 {
+//  return fillValue(box, 0, cancelable, fillingAll);
+
+#if 1
   if (!cancelable) {
 //    m_cancelingValueFill = true;
     setCancelFillValue(true);
@@ -485,6 +522,11 @@ bool ZDvidSparseStack::fillValue(
     }
   }
 
+#ifdef _DEBUG_2
+  std::cout << "========> Block grid: " << m_sparseStack.getStackGrid()
+            << " " << m_sparseStack.getStackGrid()->getStackArray().size() << std::endl;
+#endif
+
   if (box.isEmpty()) {
     setValueFilled(0, true);
 //    m_isValueFilled =  true;
@@ -498,6 +540,17 @@ bool ZDvidSparseStack::fillValue(
   }
 
   return (blockCount > 0);
+#endif
+}
+#endif
+
+void ZDvidSparseStack::clearValue()
+{
+  setCancelFillValue(true);
+  m_futureMap.waitForFinished(getFillValueThreadId());
+
+  m_isValueFilled.clear();
+  m_sparseStack.clearGrayscale();
 }
 
 bool ZDvidSparseStack::fillValue(
@@ -516,8 +569,6 @@ bool ZDvidSparseStack::fillValue(
   if (reader.getDvidTarget().getMaxGrayscaleZoom() < zoom) {
     zoom = reader.getDvidTarget().getMaxGrayscaleZoom();
   }
-
-
 
   //  bool changed = false;
   int blockCount = 0;
@@ -610,7 +661,8 @@ bool ZDvidSparseStack::fillValue(
     //          m_cancelingValueFill = false;
               setCancelFillValue(false);
               ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
-              return blockCount > 0;
+              delete grid;
+              return false;
             }
 
 #ifdef _DEBUG_
@@ -732,9 +784,14 @@ bool ZDvidSparseStack::fillValue(bool cancelable)
 
 ZStack* ZDvidSparseStack::getStack()
 {
-
   runFillValueFunc(ZIntCuboid(), true);
   m_sparseStack.deprecate(ZSparseStack::STACK);
+
+#ifdef _DEBUG_2
+  std::cout << __FUNCTION__
+            << "========> Block grid: " << m_sparseStack.getStackGrid()
+            << " " << m_sparseStack.getStackGrid()->getStackArray().size() << std::endl;
+#endif
 
   return m_sparseStack.getStack();
 }
@@ -806,7 +863,7 @@ uint64_t ZDvidSparseStack::getLabel() const
   return m_label;
 }
 
-flyem::EBodyLabelType ZDvidSparseStack::getLabelType() const
+neutu::EBodyLabelType ZDvidSparseStack::getLabelType() const
 {
   return m_labelType;
 }
@@ -889,6 +946,11 @@ ZSparseStack* ZDvidSparseStack::getSparseStack(const ZIntCuboid &box)
   return &m_sparseStack;
 }
 
+const ZSparseStack* ZDvidSparseStack::getSparseStack(const ZIntCuboid &box) const
+{
+  return const_cast<ZDvidSparseStack&>(*this).getSparseStack(box);
+}
+
 bool ZDvidSparseStack::hit(double x, double y, double z)
 {
   ZObject3dScan *objectMask = getObjectMask();
@@ -902,7 +964,7 @@ bool ZDvidSparseStack::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSparseStack::hit(double x, double y, neutube::EAxis axis)
+bool ZDvidSparseStack::hit(double x, double y, neutu::EAxis axis)
 {
   ZObject3dScan *objectMask = getObjectMask();
   if (objectMask != NULL) {
@@ -983,4 +1045,4 @@ void ZDvidSparseStack::pushAttribute()
   pushMaskColor();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

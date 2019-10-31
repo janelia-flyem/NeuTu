@@ -7,8 +7,7 @@
 
 #include "zqtheader.h"
 
-#include "include/tz_stdint.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zstackobject.h"
 
 class ZIntPoint;
@@ -28,22 +27,22 @@ public:
   void set(const ZPoint &center, double r);
   void set(const ZIntPoint &center, double r);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
-  typedef uint32_t TVisualEffect;
+//  typedef uint32_t TVisualEffect;
 
-  const static TVisualEffect VE_NONE;
-  const static TVisualEffect VE_DASH_PATTERN;
-  const static TVisualEffect VE_BOUND_BOX;
-  const static TVisualEffect VE_NO_CIRCLE;
-  const static TVisualEffect VE_NO_FILL;
-  const static TVisualEffect VE_GRADIENT_FILL;
-  const static TVisualEffect VE_OUT_FOCUS_DIM;
+//  const static TVisualEffect VE_NONE;
+//  const static TVisualEffect VE_DASH_PATTERN;
+//  const static TVisualEffect VE_BOUND_BOX;
+//  const static TVisualEffect VE_NO_CIRCLE;
+//  const static TVisualEffect VE_NO_FILL;
+//  const static TVisualEffect VE_GRADIENT_FILL;
+//  const static TVisualEffect VE_OUT_FOCUS_DIM;
 
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   virtual void display(ZPainter &painter, int z,
-                       EDisplayStyle option, neutube::EAxis sliceAxis) const;
+                       EDisplayStyle option, neutu::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
@@ -56,6 +55,7 @@ public:
   static bool isCuttingPlane(double z, double r, double n, double zScale = 1.0);
   bool isCuttingPlane(double n, double zScale = 1.0);
 
+  /*
   using ZStackObject::setVisualEffect; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   inline void setVisualEffect(TVisualEffect effect) {
     m_visualEffect = effect;
@@ -64,6 +64,7 @@ public:
   inline bool hasVisualEffect(TVisualEffect effect) const {
     return effect & m_visualEffect;
   }
+  */
 
 private:
   double getAdjustedRadius(double r) const;
@@ -72,7 +73,7 @@ private:
 private:
   ZPoint m_center;
   double m_r;
-  TVisualEffect m_visualEffect;
+//  TVisualEffect m_visualEffect;
 };
 
 #endif // ZCIRCLE_H

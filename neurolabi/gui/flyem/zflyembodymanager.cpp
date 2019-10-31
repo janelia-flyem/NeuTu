@@ -5,6 +5,14 @@
 /*
  * Impelementation details:
  *
+ * An ID number can be a raw ID, encoded normal body ID, or encoded supervoxel ID.
+ * There is no overlap between two different types of ID. When an ID is
+ * registered in the manager, it is always stored as its decoded form (raw ID).
+ * A body ID can be encoded with a level, but currently we assume that a normal
+ * body has level 0. Therefore its encoding is the same as its raw form, unless
+ * it is encoded additionally with a tar flag, which is mainly used by
+ * ZFlyEmBody3dDoc to determine how to load a body.
+ *
  * The body set mapped from key 0 in m_bodyMap is treated as a set of orphan
  * supervoxels, which are supervoxels that have unknown parents. An orphan
  * supervoxel is decoded in the manager, but always encoded when returned from an
@@ -164,6 +172,24 @@ bool ZFlyEmBodyManager::isSupervoxel(uint64_t bodyId) const
 QSet<uint64_t> ZFlyEmBodyManager::getMappedSet(uint64_t bodyId) const
 {
   return m_bodyMap.value(decode(bodyId));
+}
+
+void ZFlyEmBodyManager::registerBufferedBody(uint64_t id, const QSet<uint64_t> &comp)
+{
+  m_bufferedBodyMap[decode(id)] = comp;
+}
+
+void ZFlyEmBodyManager::deregisterBufferedBody(uint64_t id)
+{
+  if (!encodingSupervoxel(id)) {
+    uint64_t bodyId = decode(id);
+    m_bufferedBodyMap.remove(bodyId);
+  }
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getBufferedMappedSet(uint64_t bodyId) const
+{
+  return m_bufferedBodyMap.value(decode(bodyId));
 }
 
 QSet<uint64_t> ZFlyEmBodyManager::getNormalBodySet() const

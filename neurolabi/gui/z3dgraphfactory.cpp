@@ -1,8 +1,10 @@
 #include "z3dgraphfactory.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "z3dgraph.h"
 #include "zrect2d.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "zswctree.h"
+#include "znormcolormap.h"
 
 Z3DGraphFactory::Z3DGraphFactory()
 {
@@ -95,10 +97,16 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
   return graph;
 }
 
-Z3DGraph* Z3DGraphFactory::MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
-                                        const ZPoint &pt3, const ZPoint &pt4)
+Z3DGraph* Z3DGraphFactory::MakeQuadDiag(
+    const ZPoint &pt1, const ZPoint &pt2,
+    const ZPoint &pt3, const ZPoint &pt4, Z3DGraph *graph)
 {
-  Z3DGraph *graph = new Z3DGraph;
+  if (graph == nullptr) {
+    graph = new Z3DGraph;
+  }
+
+  int startIndex = graph->getNodeNumber();
+
   Z3DGraphNode node(pt1, 0.0);
   node.setColor(QColor(0, 0, 255));
   graph->addNode(node);
@@ -117,22 +125,22 @@ Z3DGraph* Z3DGraphFactory::MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
   edge.setShape(GRAPH_LINE);
   edge.setWidth(2.0);
 
-  edge.setConnection(0, 1);
+  edge.setRelativeConnection(startIndex, 0, 1);
   graph->addEdge(edge);
 
-  edge.setConnection(1, 2);
+  edge.setRelativeConnection(startIndex, 1, 2);
   graph->addEdge(edge);
 
-  edge.setConnection(2, 3);
+  edge.setRelativeConnection(startIndex, 2, 3);
   graph->addEdge(edge);
 
-  edge.setConnection(0, 3);
+  edge.setRelativeConnection(startIndex, 0, 3);
   graph->addEdge(edge);
 
-  edge.setConnection(0, 2);
+  edge.setRelativeConnection(startIndex, 0, 2);
   graph->addEdge(edge);
 
-  edge.setConnection(1, 3);
+  edge.setRelativeConnection(startIndex, 1, 3);
   graph->addEdge(edge);
 
   return graph;
@@ -195,10 +203,57 @@ Z3DGraph* Z3DGraphFactory::MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
   return graph;
 }
 
+namespace {
 
-Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
+void add_box_edge(Z3DGraph *graph, Z3DGraphEdge edge, int startIndex)
 {
-  Z3DGraph *graph = new Z3DGraph;
+  edge.setRelativeConnection(startIndex, 0, 1);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 0, 2);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 2, 3);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 1, 3);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 4, 5);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 5, 7);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 6, 7);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 4, 6);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 0, 4);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 1, 5);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 2, 6);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 3, 7);
+  graph->addEdge(edge);
+}
+
+}
+
+Z3DGraph* Z3DGraphFactory::MakeBox(
+    const ZCuboid &box, double radius, Z3DGraph *graph)
+{
+  if (graph == nullptr) {
+    graph = new Z3DGraph;
+  }
+
+  int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
     Z3DGraphNode node(box.corner(i), radius);
@@ -214,41 +269,7 @@ Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
     //  edge.setEndColor(QColor(128, 128, 0));
     edge.setWidth(radius);
 
-    edge.setConnection(0, 1);
-    graph->addEdge(edge);
-
-    edge.setConnection(0, 2);
-    graph->addEdge(edge);
-
-    edge.setConnection(2, 3);
-    graph->addEdge(edge);
-
-    edge.setConnection(1, 3);
-    graph->addEdge(edge);
-
-    edge.setConnection(4, 5);
-    graph->addEdge(edge);
-
-    edge.setConnection(5, 7);
-    graph->addEdge(edge);
-
-    edge.setConnection(6, 7);
-    graph->addEdge(edge);
-
-    edge.setConnection(4, 6);
-    graph->addEdge(edge);
-
-    edge.setConnection(0, 4);
-    graph->addEdge(edge);
-
-    edge.setConnection(1, 5);
-    graph->addEdge(edge);
-
-    edge.setConnection(2, 6);
-    graph->addEdge(edge);
-
-    edge.setConnection(3, 7);
-    graph->addEdge(edge);
+    add_box_edge(graph, edge, startIndex);
   }
 
   return graph;
@@ -257,6 +278,8 @@ Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
 Z3DGraph* Z3DGraphFactory::MakeBox(const ZIntCuboid &box, double radius)
 {
   Z3DGraph *graph = new Z3DGraph;
+
+  int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
     Z3DGraphNode node(box.getCorner(i).toPoint(), 0);
@@ -272,49 +295,20 @@ Z3DGraph* Z3DGraphFactory::MakeBox(const ZIntCuboid &box, double radius)
     //  edge.setEndColor(QColor(128, 128, 0));
     edge.setWidth(radius);
 
-    edge.setConnection(0, 1);
-    graph->addEdge(edge);
 
-    edge.setConnection(0, 2);
-    graph->addEdge(edge);
-
-    edge.setConnection(2, 3);
-    graph->addEdge(edge);
-
-    edge.setConnection(1, 3);
-    graph->addEdge(edge);
-
-    edge.setConnection(4, 5);
-    graph->addEdge(edge);
-
-    edge.setConnection(5, 7);
-    graph->addEdge(edge);
-
-    edge.setConnection(6, 7);
-    graph->addEdge(edge);
-
-    edge.setConnection(4, 6);
-    graph->addEdge(edge);
-
-    edge.setConnection(0, 4);
-    graph->addEdge(edge);
-
-    edge.setConnection(1, 5);
-    graph->addEdge(edge);
-
-    edge.setConnection(2, 6);
-    graph->addEdge(edge);
-
-    edge.setConnection(3, 7);
-    graph->addEdge(edge);
+    add_box_edge(graph, edge, startIndex);
   }
 
   return graph;
 }
 
-Z3DGraph* Z3DGraphFactory::makeBox(const ZIntCuboid &box)
+Z3DGraph* Z3DGraphFactory::makeBox(const ZIntCuboid &box,  Z3DGraph *graph)
 {
-  Z3DGraph *graph = new Z3DGraph;
+  if (graph == nullptr) {
+    graph = new Z3DGraph;
+  }
+
+  int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
     Z3DGraphNode node(box.getCorner(i).toPoint(), m_nodeRadiusHint);
@@ -327,52 +321,20 @@ Z3DGraph* Z3DGraphFactory::makeBox(const ZIntCuboid &box)
   edge.setShape(m_shapeHint);
   edge.setStartColor(m_edgeColorHint);
   edge.setEndColor(m_edgeColorHint);
-//  edge.setStartColor(QColor(128, 128, 0));
-//  edge.setEndColor(QColor(128, 128, 0));
   edge.setWidth(m_edgeWidthHint);
 
-  edge.setConnection(0, 1);
-  graph->addEdge(edge);
-
-  edge.setConnection(0, 2);
-  graph->addEdge(edge);
-
-  edge.setConnection(2, 3);
-  graph->addEdge(edge);
-
-  edge.setConnection(1, 3);
-  graph->addEdge(edge);
-
-  edge.setConnection(4, 5);
-  graph->addEdge(edge);
-
-  edge.setConnection(5, 7);
-  graph->addEdge(edge);
-
-  edge.setConnection(6, 7);
-  graph->addEdge(edge);
-
-  edge.setConnection(4, 6);
-  graph->addEdge(edge);
-
-  edge.setConnection(0, 4);
-  graph->addEdge(edge);
-
-  edge.setConnection(1, 5);
-  graph->addEdge(edge);
-
-  edge.setConnection(2, 6);
-  graph->addEdge(edge);
-
-  edge.setConnection(3, 7);
-  graph->addEdge(edge);
+  add_box_edge(graph, edge, startIndex);
 
   return graph;
 }
 
-Z3DGraph* Z3DGraphFactory::makeBox(const ZCuboid &box)
+Z3DGraph* Z3DGraphFactory::makeBox(const ZCuboid &box, Z3DGraph *graph)
 {
-  Z3DGraph *graph = new Z3DGraph;
+  if (graph == nullptr) {
+    graph = new Z3DGraph;
+  }
+
+  int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
     Z3DGraphNode node(box.corner(i), m_nodeRadiusHint);
@@ -389,41 +351,7 @@ Z3DGraph* Z3DGraphFactory::makeBox(const ZCuboid &box)
 //  edge.setEndColor(QColor(128, 128, 0));
   edge.setWidth(m_edgeWidthHint);
 
-  edge.setConnection(0, 1);
-  graph->addEdge(edge);
-
-  edge.setConnection(0, 2);
-  graph->addEdge(edge);
-
-  edge.setConnection(2, 3);
-  graph->addEdge(edge);
-
-  edge.setConnection(1, 3);
-  graph->addEdge(edge);
-
-  edge.setConnection(4, 5);
-  graph->addEdge(edge);
-
-  edge.setConnection(5, 7);
-  graph->addEdge(edge);
-
-  edge.setConnection(6, 7);
-  graph->addEdge(edge);
-
-  edge.setConnection(4, 6);
-  graph->addEdge(edge);
-
-  edge.setConnection(0, 4);
-  graph->addEdge(edge);
-
-  edge.setConnection(1, 5);
-  graph->addEdge(edge);
-
-  edge.setConnection(2, 6);
-  graph->addEdge(edge);
-
-  edge.setConnection(3, 7);
-  graph->addEdge(edge);
+  add_box_edge(graph, edge, startIndex);
 
   return graph;
 }
@@ -642,4 +570,107 @@ Z3DGraph* Z3DGraphFactory::makeBoundingBox(const ZIntCuboid &box, const std::vec
     }
 
     return graph;
+}
+
+Z3DGraph Z3DGraphFactory::MakeSwcGraph(const ZSwcTree &tree, double edgeWidth)
+{
+  Z3DGraph graph;
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  treeIter.excludeVirtual(true);
+  std::vector<Swc_Tree_Node*> nodeArray;
+  int index = 0;
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next(), ++index) {
+    nodeArray.push_back(tn);
+    tn->index = index;
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    Z3DGraphNode node(SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+    node.setColor(tree.getColor());
+    graph.addNode(node);
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    if (!SwcTreeNode::isRoot(tn)) {
+      graph.addEdge(tn->parent->index, tn->index, edgeWidth, GRAPH_LINE);
+    }
+  }
+
+  return graph;
+}
+
+Z3DGraph Z3DGraphFactory::MakeSwcFeatureGraph(const ZSwcTree &tree)
+{
+  Z3DGraph graph;
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  treeIter.excludeVirtual(true);
+  std::vector<Swc_Tree_Node*> nodeArray;
+  int index = 0;
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next(), ++index) {
+    nodeArray.push_back(tn);
+    tn->index = index;
+  }
+
+  ZNormColorMap colorMap;
+  for (Swc_Tree_Node *tn : nodeArray) {
+    Z3DGraphNode node(SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+    node.setColor(colorMap.mapColor(SwcTreeNode::feature(tn)));
+    graph.addNode(node);
+  }
+
+  for (Swc_Tree_Node *tn : nodeArray) {
+    if (!SwcTreeNode::isRoot(tn)) {
+      graph.addEdge(tn->parent->index, tn->index, GRAPH_LINE);
+    }
+  }
+
+  return graph;
+}
+
+Z3DGraph* Z3DGraphFactory::makeQuadrilateral(
+    const ZPoint &pt1, const ZPoint &pt2,
+    const ZPoint &pt3, const ZPoint &pt4, Z3DGraph *graph)
+{
+  if (graph == nullptr) {
+    graph = new Z3DGraph;
+  }
+
+  int startIndex = graph->getNodeNumber();
+
+
+  Z3DGraphNode node(pt1, m_nodeRadiusHint);
+  node.setColor(m_nodeColorHint);
+  graph->addNode(node);
+
+  node.setCenter(pt2);
+  graph->addNode(node);
+
+  node.setCenter(pt3);
+  graph->addNode(node);
+
+  node.setCenter(pt4);
+  graph->addNode(node);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(false);
+  edge.setShape(m_shapeHint);
+  edge.setStartColor(m_edgeColorHint);
+  edge.setEndColor(m_edgeColorHint);
+  edge.setWidth(m_edgeWidthHint);
+
+  edge.setRelativeConnection(startIndex, 0, 1);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 1, 2);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 2, 3);
+  graph->addEdge(edge);
+
+  edge.setRelativeConnection(startIndex, 0, 3);
+  graph->addEdge(edge);
+
+  return graph;
 }

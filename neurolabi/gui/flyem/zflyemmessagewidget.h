@@ -22,9 +22,9 @@ public slots:
   void dumpError(const QString &info, bool appending);
   void dump(const QStringList &info);
   void dumpError(const QStringList &info);
-  void dump(const QString &info, neutube::EMessageType type,
+  void dump(const QString &info, neutu::EMessageType type,
             bool appending);
-  void dump(const QStringList &info, neutube::EMessageType type,
+  void dump(const QStringList &info, neutu::EMessageType type,
             bool appending);
 
 private:

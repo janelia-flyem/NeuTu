@@ -1,13 +1,14 @@
 #include "zsparseobject.h"
+
 #include <QPen>
+
 #include "zpainter.h"
-#include "tz_math.h"
 #include "zstack.hxx"
 #include "neutubeconfig.h"
 
 const ZLabelColorTable ZSparseObject::m_colorTable;
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
+//ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
 
 ZSparseObject::ZSparseObject()
 {
@@ -62,7 +63,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
 }
 
 void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
   if (m_stackGrid.isEmpty() || z < 0) {
     ZObject3dScan::display(painter, z, option, sliceAxis);
@@ -71,8 +72,8 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
       return;
     }
 
-    UNUSED_PARAMETER(option);
-    z -= iround(painter.getZOffset());
+//    UNUSED_PARAMETER(option);
+    z -= painter.getZOffset();
     QPen pen(m_color);
     painter.setPen(pen);
 

@@ -3,7 +3,6 @@
 
 #include <vector>
 
-//#include "neutube_def.h"
 #include "zqtheader.h"
 
 #ifdef _QT_GUI_USED_
@@ -11,7 +10,7 @@
 #include <QPaintDevice>
 #endif
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include "zsttransform.h"
 
 class ZIntPoint;
@@ -171,6 +170,8 @@ public:
 
   void drawPolyline(const QPointF * points, int pointCount);
   void drawPolyline(const QPoint * points, int pointCount);
+  void drawPolyline(const std::vector<QPoint> &pointArray);
+  void drawPolyline(const std::vector<QPointF> &pointArray);
 
   void drawText(
       int x, int y, int width, int height, int flags, const QString & text);
@@ -181,6 +182,7 @@ public:
   void setRenderHint(QPainter::RenderHint hint, bool on = true);
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
+  void fillRect(const QRect &r, const QBrush &brush);
   void setOpacity(double alpha);
   void setCanvasRange(const QRectF &r) { m_canvasRange = r; }
 

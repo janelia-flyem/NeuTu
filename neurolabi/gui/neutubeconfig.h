@@ -15,6 +15,7 @@
 #include <QSettings>
 #include <QString>
 #endif
+#include "common/userinfo.h"
 
 class ZXmlNode;
 class ZJsonObject;
@@ -22,14 +23,16 @@ class ZJsonObject;
 class NeutubeConfig
 {
 public:
-  enum EConfigItem {
+  enum class EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
-    FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
+    FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE, CONFIG_DIR,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
     WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
-    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
+    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE,
+    NEUPRINT_AUTH
   };
+
 
   static NeutubeConfig& getInstance() {
     static NeutubeConfig config;
@@ -93,6 +96,12 @@ public:
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
+
+  void set3DCrossWidth(double w);
+  double get3DCrossWidth() const;
+
+  static void Set3DCrossWidth(int w);
+  static int Get3DCrossWidth();
 
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
@@ -159,10 +168,9 @@ public:
   inline const std::string& getApplicatinDir() const {
     return m_applicationDir; }
 
-  inline std::string getConfigPath() const {
-    return getApplicatinDir() + "/config.xml"; }
-  inline std::string getHelpFilePath() const {
-    return getApplicatinDir() + "/doc/shortcut.html"; }
+  std::string getConfigDir() const;
+  std::string getConfigPath() const;
+  std::string getHelpFilePath() const;
 
   inline const std::vector<std::string> &getBodyConnectionFeature() {
     return m_bodyConnectionFeature;
@@ -182,6 +190,7 @@ public:
 
   void setDefaultSoftwareName();
   void setTestSoftwareName();
+  void setCliSoftwareName(const std::string &app);
 
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();
@@ -189,9 +198,12 @@ public:
 
   std::string getUserName() const;
   static std::string GetUserName();
+  neutu::UserInfo getUserInfo() const;
+  static neutu::UserInfo GetUserInfo();
+  void updateUserInfo();
+  static void UpdateUserInfo();
 
-  void setUserName(const std::string &name);
-  static void SetUserName(const std::string &name);
+//  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -439,6 +451,7 @@ private:
   void operator=(const NeutubeConfig&);
 
   void updateLogDir();
+  void setUserName(const std::string &name);
 
 private:
   std::string m_application;
@@ -459,7 +472,8 @@ private:
 
   std::string m_dataPath;
   std::string m_developPath;
-  std::string m_userName;
+//  std::string m_userName;
+  neutu::UserInfo m_userInfo;
 
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;
@@ -479,6 +493,7 @@ private:
   int m_verboseLevel;
   bool m_advancedMode = false;
   size_t m_meshSplitThreshold = 5000000;
+  int m_3dcrossWidth = 5;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 
@@ -488,7 +503,7 @@ private:
 #endif
 };
 
-#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
+#define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::DATA))
 #if defined(PROJECT_PATH)
 #  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
 #endif
@@ -503,13 +518,14 @@ private:
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
+#define GET_CONFIG_DIR (NeutubeConfig::getInstance().getConfigDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 #define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
 #define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
 
 #if defined(_QT_GUI_USED_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
-#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
+//#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
 #endif
 
 #define ZOUT(out, level) \

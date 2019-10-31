@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <fstream>
 
 #include <QMessageBox>
 #include <QApplication>
@@ -16,8 +17,8 @@
 #include "dialogs/informationdialog.h"
 #include "dialogs/parameterdialog.h"
 #include "zstring.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "tz_darray.h"
@@ -25,7 +26,6 @@
 #include "zswcdisttrunkanalyzer.h"
 #include "zswclayerfeatureanalyzer.h"
 #include "zswcshollfeatureanalyzer.h"
-#include "tz_error.h"
 #include "zswclayershollfeatureanalyzer.h"
 #include "zswclayertrunkanalyzer.h"
 #include "neutubeconfig.h"
@@ -36,7 +36,6 @@
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "mainwindow.h"
-#include <fstream>
 #include "swc/zswcterminalsurfacemetric.h"
 #include "dialogs/flyemgeosearchdialog.h"
 #include "dialogs/flyemgeofilterdialog.h"
@@ -57,6 +56,7 @@
 #include "zintset.h"
 #include "zwindowfactory.h"
 #include "flyem/zflyemqualityanalyzertask.h"
+#include "zpunctum.h"
 
 using namespace std;
 
@@ -203,9 +203,9 @@ void ZFlyEmDataFrame::addData(ZFlyEmDataBundle *data)
                                    ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
       m_imageFactory.setDownsampleInterval(7, 7, 7);
       m_imageFactory.setSourceDimension(
-            m_dataArray[0]->getSourceDimension(neutube::EAxis::X),
-          m_dataArray[0]->getSourceDimension(neutube::EAxis::Y),
-          m_dataArray[0]->getSourceDimension(neutube::EAxis::Z)
+            m_dataArray[0]->getSourceDimension(neutu::EAxis::X),
+          m_dataArray[0]->getSourceDimension(neutu::EAxis::Y),
+          m_dataArray[0]->getSourceDimension(neutu::EAxis::Z)
           );
     }
   }
@@ -1156,7 +1156,7 @@ void ZFlyEmDataFrame::process()
 
       ZStackDoc *doc = new ZStackDoc;
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       doc->addObject(originalTree1);
       doc->addObject(originalTree2);
       doc->addObject(matchingSwc);
@@ -1291,7 +1291,7 @@ void ZFlyEmDataFrame::showModel() const
     } else {
       ZSwcTree *model = neuron->getModel();
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 //      doc->blockSignals(true);
       if (model != NULL) {
         const QColor *color = getColor(m_sourceIdArray[i]);
@@ -1380,7 +1380,7 @@ void ZFlyEmDataFrame::showConnection() const
 
   ZStackDoc *doc = new ZStackDoc;
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
     const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
     if (neuron == NULL) {
@@ -2109,7 +2109,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
             ZSharedPointer<ZStackDoc>(new ZStackDoc);
 //        doc->blockSignals(true);
 
-        doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+        doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
         doc->addObject(tree1->clone());
 
         int index = 0;
@@ -2326,8 +2326,8 @@ void ZFlyEmDataFrame::exportThumbnail(
   if (savingToDvid) {
     ZDvidReader reader;
     reader.open(saveDir);
-    if (reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL))) {
-      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL));
+    if (reader.hasData(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL))) {
+      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL));
     }
   }
 
@@ -2435,13 +2435,13 @@ void ZFlyEmDataFrame::updateQualityControl()
 #ifdef _DEBUG_
   double resolution[3];
   int imageSize[3];
-  resolution[0] = m_dataArray[0]->getSwcResolution(neutube::EAxis::X);
-  resolution[1] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Y);
-  resolution[2] = m_dataArray[0]->getSwcResolution(neutube::EAxis::Z);
+  resolution[0] = m_dataArray[0]->getSwcResolution(neutu::EAxis::X);
+  resolution[1] = m_dataArray[0]->getSwcResolution(neutu::EAxis::Y);
+  resolution[2] = m_dataArray[0]->getSwcResolution(neutu::EAxis::Z);
 
-  imageSize[0] = m_dataArray[0]->getSourceDimension(neutube::EAxis::X);
-  imageSize[1] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Y);
-  imageSize[2] = m_dataArray[0]->getSourceDimension(neutube::EAxis::Z);
+  imageSize[0] = m_dataArray[0]->getSourceDimension(neutu::EAxis::X);
+  imageSize[1] = m_dataArray[0]->getSourceDimension(neutu::EAxis::Y);
+  imageSize[2] = m_dataArray[0]->getSourceDimension(neutu::EAxis::Z);
 
   m_qualityManager->getHotSpot().exportRavelerBookmark(
         GET_DATA_DIR + "/test.json", resolution, imageSize);

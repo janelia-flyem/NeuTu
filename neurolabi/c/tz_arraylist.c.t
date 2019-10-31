@@ -456,7 +456,7 @@ void <1T>_Heap_Add(<1T>_Arraylist *h, <2T> item)
   return root;
 }
 
-#define PARENT_INDEX(index) (index / 2)
+#define PARENT_INDEX(index) ((index) / 2)
 
 /*
 static int parent_index(int index)
@@ -465,7 +465,7 @@ static int parent_index(int index)
 }
 */
 
-BOOL Verify_<1T>_Heap(<1T>_Arraylist *h)
+_BOOL_ Verify_<1T>_Heap(<1T>_Arraylist *h)
 {
   int i;
   for (i = h->length - 1; i > 1; i--) {

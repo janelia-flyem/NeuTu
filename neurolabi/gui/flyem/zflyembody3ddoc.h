@@ -1,7 +1,7 @@
 #ifndef ZFLYEMBODY3DDOC_H
 #define ZFLYEMBODY3DDOC_H
 
-#include "zstackdoc.h"
+#include <functional>
 
 #include <QSet>
 #include <QTimer>
@@ -10,16 +10,14 @@
 #include <QColor>
 #include <QList>
 #include <QTime>
+#include <QThreadStorage>
 
-#ifdef _DEBUG_
-#include "zqslog.h"
-#endif
+#include "common/neutudefs.h"
 
-#include "neutube_def.h"
-#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
+#include "mvc/zstackdoc.h"
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
@@ -33,9 +31,12 @@ class ZMesh;
 class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
-class ZFlyEmBodyAnnotationDialog;
+class FlyEmBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
+class ZFlyEmTodoAnnotationDialog;
+class ZFlyEmTodoFilterDialog;
+class ZFlyEmBodyAnnotationProtocal;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -59,8 +60,8 @@ class ZFlyEmBody3dDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmBody3dDoc(QObject *parent = 0);
-  ~ZFlyEmBody3dDoc();
+  explicit ZFlyEmBody3dDoc(QObject *parent = nullptr);
+  ~ZFlyEmBody3dDoc() override;
 
 
   void setDataDoc(ZSharedPointer<ZStackDoc> doc);
@@ -100,6 +101,7 @@ public:
 
   uint64_t getMappedId(uint64_t bodyId) const;
   bool isAgglo(uint64_t bodyId) const;
+  QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -138,7 +140,7 @@ public:
 //  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return getMainDvidReader().getDvidTarget();
   }
 
   const ZDvidReader& getMainDvidReader() const;
@@ -153,6 +155,8 @@ public:
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
+  bool isAdmin() const;
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
@@ -161,7 +165,7 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllBody(bool recycable);
+  void dumpAllBody(bool recycling);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
   void dumpGarbageUnsync(ZStackObject *obj, bool recycable);
@@ -174,7 +178,7 @@ public:
   void processEventFunc();
   void cancelEventThread();
 
-  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 //  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;
@@ -254,22 +258,18 @@ public:
 
 public:
   void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   void executeAddTodoCommand(
       int x, int y, int z, bool checked, uint64_t bodyId);
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
-  virtual bool executeDeleteSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeDeleteSwcNodeCommand() override;
   virtual bool executeDeleteUnselectedSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeConnectSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeConnectSwcNodeCommand() override;
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
     return false;
   }
@@ -284,9 +284,7 @@ public:
   virtual bool executeSmartConnectSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeBreakSwcConnectionCommand() override {
-    return false;
-  }
+  virtual bool executeBreakSwcConnectionCommand() override;
   virtual bool executeMergeSwcNodeCommand() override {
     return false;
   }
@@ -294,7 +292,7 @@ public:
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
   ZDvidSparseStack* loadDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType type);
+      uint64_t bodyId, neutu::EBodyLabelType type);
   ZDvidSparseStack* loadDvidSparseStackForSplit();
 
   /* Disabled for simplifying the splitting workflow. Might be used again in
@@ -302,11 +300,11 @@ public:
   uint64_t protectBodyForSplit();
 
   bool protectBody(uint64_t bodyId);
-  void releaseBody(uint64_t bodyId, flyem::EBodyLabelType labelType);
+  void releaseBody(uint64_t bodyId, neutu::EBodyLabelType labelType);
   bool isBodyProtected(uint64_t bodyId) const;
 
   void activateSplit(uint64_t bodyId);
-  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar);
+  void activateSplit(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar);
   void deactivateSplit();
   bool isSplitActivated() const;
   bool isSplitFinished() const;
@@ -318,8 +316,9 @@ public:
   void showAllMesh();
 
   uint64_t getSelectedSingleNormalBodyId() const;
-  void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
+  void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
 
+  void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
   void registerBody(uint64_t bodyId);
   void deregisterBody(uint64_t bodyId);
@@ -333,10 +332,17 @@ public:
   void addBodyConfig(const ZFlyEmBodyConfig &config);
 
   bool isSupervoxel(uint64_t bodyId);
+  size_t getSupervoxelSize(uint64_t svId) const;
+  void cacheSupervoxelSize(std::vector<uint64_t> svIdArray) const;
+
+  void invalidateSelectedBodyCache();
 
   void diagnose() const override;
 
   ZStackDoc3dHelper* getHelper() const;
+
+  void addSynapseSelection(const QString &filter);
+  void addSynapseSelection(const QStringList &filter);
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -352,7 +358,9 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(neutube::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action);
+  void setTodoItemAction(neutu::EToDoAction action, bool checked);
+  void annotateTodo(ZFlyEmTodoAnnotationDialog *dlg, ZStackObject *obj);
 
   void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
 
@@ -402,6 +410,7 @@ signals:
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  bool _loadFile(const QString &filePath) override;
 
 private:
   ZStackObject* retriveBodyObject(
@@ -422,9 +431,9 @@ private:
 
   std::vector<ZMesh*> getCachedMeshes(uint64_t bodyId, int zoom);
   std::vector<ZMesh *> makeBodyMeshModels(ZFlyEmBodyConfig &config);
-  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t);
+  std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t, bool showProgress = true);
   std::vector<ZMesh*> makeTarMeshModels(
-      const ZDvidReader &reader, uint64_t bodyId, int t);
+      const ZDvidReader &reader, uint64_t bodyId, int t, bool showProgress = true);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -440,6 +449,9 @@ private:
   QColor getBodyColor(uint64_t bodyId);
 
   void updateDvidInfo();
+
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem*)> f,
+                        std::function<bool(const ZFlyEmToDoItem*)> pred);
 
   void addBodyFunc(ZFlyEmBodyConfig &config);
   void addBodyMeshFunc(ZFlyEmBodyConfig &config);
@@ -481,7 +493,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
 
   static bool IsOverSize(const ZStackObject *obj);
 
@@ -510,7 +522,7 @@ signals:
 private slots:
 //  void updateBody();
   void processEvent();
-  void processEvent(const ZFlyEmBodyEvent &event);
+//  void processEvent(const ZFlyEmBodyEvent &event);
 
 private:
   void processEventFunc(const ZFlyEmBodyEvent &event);
@@ -532,15 +544,25 @@ private:
   bool isSupervoxel(const ZStackObject *obj) const;
   uint64_t getBodyId(const ZStackObject *obj) const;
 
-  flyem::EBodyLabelType getLabelType(uint64_t bodyId) const;
+  neutu::EBodyLabelType getLabelType(uint64_t bodyId) const;
 
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
+
+  template <typename T>
+  void removeBodyObject(bool recycling);
+
+  void dumpObject(ZStackObject *obj, bool recycling);
+
+  void invalidateSupervoxelCache(uint64_t svId);
+  void invalidateBodyCache(uint64_t bodyId);
+  template<typename InputIterator>
+  void invalidateBodyCache(InputIterator first, InputIterator last);
 
 private:
   ZFlyEmBodyManager m_bodyManager;
@@ -566,14 +588,22 @@ private:
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
-  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_workDvidReader;
+//  ZDvidTarget m_dvidTarget;
   ZDvidWriter m_mainDvidWriter;
+
+  // Each background "work" thread reading meshes must have its own ZDvidReader.
+  // Currently, there are two such threads (one for standard reading, one for prefetching).
+  const int NUM_WORK_DVID_READERS = 2;
+  std::vector<ZDvidReader> m_workDvidReader;
+  mutable QThreadStorage<int> m_workDvidReaderIndices;
+  mutable int m_workDvidReaderNextIndex = 0;
+  mutable QMutex m_workDvidReaderNextIndexMutex;
+
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;
 
-  ZThreadFutureMap m_futureMap;
+//  ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
   QTime m_objectTime;
@@ -583,6 +613,9 @@ private:
 
   ProtocolTaskConfig m_taskConfig;
 
+  mutable QMutex m_supervoxelSizeCacheMutex;
+  mutable QMap<uint64_t, size_t> m_supervoxelSizeCache;
+
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
   ZStackObjectGroup m_objCache;
@@ -591,7 +624,7 @@ private:
 
   ZFlyEmBodySplitter *m_splitter;
 
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

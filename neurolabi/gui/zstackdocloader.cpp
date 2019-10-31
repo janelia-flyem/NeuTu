@@ -1,6 +1,6 @@
 #include "zstackdocloader.h"
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zstackdocreader.h"
 #include "zstackobjectgroup.h"
 
@@ -19,7 +19,7 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
     for (QList<ZStackObject::EType>::const_iterator iter = typeList.begin();
          iter != typeList.end(); ++iter) {
       ZStackObject::EType type = *iter;
-      if (getLoadMode(type) == LOAD_OVERWRITE) {
+      if (getLoadMode(type) == ELoadMode::OVERWRITE) {
 //        doc->getObjectGroup().remove(type);
         m_typeRemoved.append(type);
       }
@@ -29,7 +29,7 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
     for (QList<ZStackObject*>::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      if (getLoadMode(obj->getType()) == LOAD_OVERWRITE) {
+      if (getLoadMode(obj->getType()) == ELoadMode::OVERWRITE) {
         m_roleRemoved.addRole(obj->getRole().getRole());
         doc->getObjectGroup().removeObject(obj);
       }
@@ -72,11 +72,13 @@ void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
 
 void ZStackDocLoader::processChanged(ZStackDoc *doc)
 {
-  QSet<ZStackObject::EType> changedTypeSet;
-  changedTypeSet.fromList(m_typeRemoved);
-  changedTypeSet += m_typeAdded.toSet();
+  std::set<ZStackObject::EType> changedTypeSet;
+  changedTypeSet.insert(m_typeRemoved.begin(), m_typeRemoved.end());
+  changedTypeSet.insert(m_typeAdded.begin(), m_typeAdded.end());
+//  changedTypeSet.fromList(m_typeRemoved);
+//  changedTypeSet += m_typeAdded.toSet();
 
-  for (QSet<ZStackObject::EType>::const_iterator iter = changedTypeSet.begin();
+  for (auto iter = changedTypeSet.begin();
        iter != changedTypeSet.end(); ++iter) {
     processObjectChanged(doc, *iter);
   }
@@ -91,19 +93,19 @@ void ZStackDocLoader::processObjectChanged(
     ZStackDoc *doc, ZStackObject::EType type)
 {
   switch (type) {
-  case ZStackObject::TYPE_SWC:
+  case ZStackObject::EType::SWC:
     doc->notifySwcModified();
     break;
-  case ZStackObject::TYPE_LOCSEG_CHAIN:
+  case ZStackObject::EType::LOCSEG_CHAIN:
     doc->notifyChainModified();
     break;
-  case ZStackObject::TYPE_PUNCTUM:
+  case ZStackObject::EType::PUNCTUM:
     doc->notifyPunctumModified();
     break;
-  case ZStackObject::TYPE_MESH:
+  case ZStackObject::EType::MESH:
     doc->notifyMeshModified();
     break;
-  case ZStackObject::TYPE_SPARSE_OBJECT:
+  case ZStackObject::EType::SPARSE_OBJECT:
     doc->notifySparseObjectModified();
     break;
   default:
@@ -118,5 +120,5 @@ ZStackDocLoader::ELoadMode ZStackDocLoader::getLoadMode(
     return m_loadType[type];
   }
 
-  return LOAD_OVERWRITE;
+  return ELoadMode::OVERWRITE;
 }

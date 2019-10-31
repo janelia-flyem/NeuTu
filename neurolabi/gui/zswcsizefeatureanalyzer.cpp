@@ -1,6 +1,7 @@
 #include "zswcsizefeatureanalyzer.h"
 
-#include "tz_error.h"
+#include <cassert>
+
 #include "tz_unipointer_linked_list.h"
 #include "swctreenode.h"
 
@@ -14,7 +15,7 @@ ZSwcSizeFeatureAnalyzer::ZSwcSizeFeatureAnalyzer()
 
 void ZSwcSizeFeatureAnalyzer::setParameter(const std::vector<double> &parameterArray)
 {
-  TZ_ASSERT(parameterArray.size() >= 2, "Invalid parameter number");
+  assert(parameterArray.size() >= 2);
 
   m_excludedLabel = parameterArray[0];
   m_includedLabel = parameterArray[0];
@@ -60,7 +61,7 @@ double ZSwcSizeFeatureAnalyzer::computeFeatureSimilarity(
   double s2 = max(featureArray1[0], featureArray2[0]);
   double s1 = min(featureArray1[0], featureArray2[0]);
 
-  TZ_ASSERT(s2 > 0.0, "Invalid number");
+  assert(s2 > 0.0);
 
   return sqrt(s1) * s1 / s2;
 }

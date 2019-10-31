@@ -1,6 +1,6 @@
 #include "zdvidstackblockfactory.h"
 
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 
 ZDvidStackBlockFactory::ZDvidStackBlockFactory()
 {

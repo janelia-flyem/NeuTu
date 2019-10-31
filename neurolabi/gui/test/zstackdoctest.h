@@ -2,10 +2,11 @@
 #define ZSTACKDOCTEST_H
 
 #include "ztestheader.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zobject3d.h"
 #include "zstackdocaccessor.h"
+#include "zswctree.h"
 
 #ifdef _USE_GTEST_
 TEST(ZStackDoc, Basic)
@@ -17,6 +18,15 @@ TEST(ZStackDoc, Basic)
 
   EXPECT_TRUE(doc.stackSourcePath().empty());
 
+}
+
+TEST(ZStackDoc, removeObject)
+{
+  ZStackDoc doc;
+  ZObject3d *obj = new ZObject3d();
+  doc.addObject(obj);
+  ASSERT_TRUE(doc.removeObject(obj, true));
+  ASSERT_FALSE(doc.removeObject(obj, true));
 }
 
 TEST(ZStackDoc, Swc)
@@ -174,7 +184,7 @@ TEST(ZStackDoc, Accessor)
   ZStackDocAccessor::RemoveSideSplitSeed(&doc);
 
   ASSERT_EQ(0, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   {
     ZObject3d *obj = new ZObject3d;
@@ -186,7 +196,7 @@ TEST(ZStackDoc, Accessor)
 
   ZStackDocAccessor::RemoveSideSplitSeed(&doc);
   ASSERT_EQ(1, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   {
     ZObject3d *obj = new ZObject3d;
@@ -200,7 +210,7 @@ TEST(ZStackDoc, Accessor)
 
 
   ASSERT_EQ(3, doc.getDataBuffer()->getActionCount(
-              ZStackDocObjectUpdate::ACTION_KILL));
+              ZStackDocObjectUpdate::EAction::KILL));
 
   doc.processDataBuffer();
   ASSERT_EQ(1, doc.getObjectList(ZStackObjectRole::ROLE_SEED).size());

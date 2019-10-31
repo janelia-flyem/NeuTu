@@ -3,55 +3,121 @@
 #include <QStringList>
 #include <QDateTime>
 
-ZWidgetMessage::ZWidgetMessage(ETarget target) :
-  m_type(neutube::EMessageType::INFORMATION), m_target(target)
+ZWidgetMessage::ZWidgetMessage()
 {
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(FTargets target) : m_targets(target)
 {
-  m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const char *msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(const QString &msg)
 {
   m_message.append(msg);
 }
 
-ZWidgetMessage::ZWidgetMessage(const std::string &msg, neutube::EMessageType type,
-                               ETarget target) :
-  m_type(type), m_target(target)
+ZWidgetMessage::ZWidgetMessage(const char *msg)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const std::string &msg)
+{
+  m_message.append(msg.c_str());
+}
+
+ZWidgetMessage::ZWidgetMessage(const QString &title, const QString &msg) :
+  m_title(title)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const QString &msg, neutu::EMessageType type) :
+  m_type(type)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const char *msg, neutu::EMessageType type) :
+  m_type(type)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const std::string &msg, neutu::EMessageType type) :
+  m_type(type)
 {
   m_message.append(msg.c_str());
 }
 
 ZWidgetMessage::ZWidgetMessage(
-    const QString &title, const QString &msg,
-    neutube::EMessageType type, ETarget target) :
-  m_title(title), m_type(type), m_target(target)
+    const QString &title, const QString &msg, neutu::EMessageType type) :
+  m_title(title), m_type(type)
 {
   m_message.append(msg);
 }
 
+ZWidgetMessage::ZWidgetMessage(
+    const QString &msg, neutu::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const char *msg, neutu::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const std::string &msg, neutu::EMessageType type, FTargets target) :
+  m_type(type), m_targets(target)
+{
+  m_message.append(msg.c_str());
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const QString &title, const QString &msg, neutu::EMessageType type, FTargets target) :
+  m_title(title), m_type(type), m_targets(target)
+{
+  m_message.append(msg);
+}
+
+
+bool ZWidgetMessage::hasTarget(ETarget target) const
+{
+  return (m_targets & target) == target;
+}
+
+bool ZWidgetMessage::hasTarget(FTargets target) const
+{
+  return (m_targets & target) == target;
+}
+
+bool ZWidgetMessage::hasTargetOtherThan(FTargets targets) const
+{
+  return (m_targets & ~targets);
+}
+
+
 QString ZWidgetMessage::ToHtmlString(
-    const QString &msg, neutube::EMessageType type)
+    const QString &msg, neutu::EMessageType type)
 {
   QString output = msg;
 
   if (!output.startsWith("<p>")) {
     switch (type) {
-    case neutube::EMessageType::INFORMATION:
+    case neutu::EMessageType::INFORMATION:
 //      output += "<font color = \"#007700\">test</font>";
 //      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
       break;
-    case neutube::EMessageType::ERROR:
+    case neutu::EMessageType::ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
       break;
-    case neutube::EMessageType::WARNING:
+    case neutu::EMessageType::WARNING:
       output = "<p><font color=\"#777700\">" + output + "</font></p>";
       break;
     default:
@@ -78,7 +144,7 @@ QString ZWidgetMessage::toPlainString() const
 }
 
 QString ZWidgetMessage::ToHtmlString(
-    const QStringList &msgList, neutube::EMessageType type)
+    const QStringList &msgList, neutu::EMessageType type)
 {
   QString output;
 
@@ -135,7 +201,7 @@ ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
   return *this;
 }
 
-ZWidgetMessageFactory& ZWidgetMessageFactory::as(neutube::EMessageType type)
+ZWidgetMessageFactory& ZWidgetMessageFactory::as(neutu::EMessageType type)
 {
   m_message.setType(type);
 

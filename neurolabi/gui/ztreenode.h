@@ -2,7 +2,7 @@
 #define ZTREENODE_H
 
 #include <vector>
-#include "tz_cdefs.h"
+
 #include "zuncopyable.h"
 
 template<typename T>

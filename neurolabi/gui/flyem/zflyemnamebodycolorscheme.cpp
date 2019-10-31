@@ -2,6 +2,8 @@
 
 #include "zflyembodyannotation.h"
 #include "zstring.h"
+#include "zjsonparser.h"
+#include "flyemdatareader.h"
 
 ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
 {
@@ -98,9 +100,9 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap(const ZJsonValue &bodyInfoObj)
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bkmk.hasKey("name")) {
-        const char* name = ZJsonParser::stringValue(bkmk["name"]);
+        std::string name = ZJsonParser::stringValue(bkmk["name"]);
         uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);
-        updateNameMap(bodyId, name);
+        updateNameMap(bodyId, name.c_str());
       }
     }
 
@@ -113,12 +115,13 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap()
   if (!m_isMapReady) {
     if (m_reader.getDvidTarget().isValid()) {
       QStringList annotationList = m_reader.readKeys(
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                               ZDvidData::ROLE_BODY_LABEL,
+            ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                               ZDvidData::ERole::BODY_LABEL,
                                m_reader.getDvidTarget().getBodyLabelName()).c_str());
       foreach (const QString &idStr, annotationList) {
         uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
-        ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(m_reader, bodyId);
         updateNameMap(bodyId, annotation.getName().c_str());
       }
     }

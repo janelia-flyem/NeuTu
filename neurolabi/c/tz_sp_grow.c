@@ -38,7 +38,7 @@ void Default_Sp_Grow_Workspace(Sp_Grow_Workspace *sgw)
   sgw->width = 0;
   sgw->height = 0;
   sgw->depth = 0;
-  sgw->lengthBufferEnabled = FALSE;
+  sgw->lengthBufferEnabled = _FALSE_;
 }
 
 void Clean_Sp_Grow_Workspace(Sp_Grow_Workspace *sgw)
@@ -63,12 +63,12 @@ void Sp_Grow_Workspace_Set_Mask(Sp_Grow_Workspace *sgw, uint8_t *mask)
 
 void Sp_Grow_Workspace_Enable_Eucdist_Buffer(Sp_Grow_Workspace *sgw)
 {
-  sgw->lengthBufferEnabled = TRUE;
+  sgw->lengthBufferEnabled = _TRUE_;
 }
 
 void Sp_Grow_Workspace_Disable_Eucdist_Buffer(Sp_Grow_Workspace *sgw)
 {
-  sgw->lengthBufferEnabled = FALSE;
+  sgw->lengthBufferEnabled = _FALSE_;
   OBJECT_SAFE_FREE(sgw->length, free);
 }
 
@@ -254,7 +254,7 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
   Stack_Neighbor_Offset(sgw->conn, Stack_Width(stack), Stack_Height(stack), 
 			neighbors);			
 
-  BOOL stop = FALSE;
+  _BOOL_ stop = _FALSE_;
 
   /* Check neighbors of seeds */
   int j;
@@ -294,7 +294,7 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
 
   ssize_t last_r = -1;
 
-  while (stop == FALSE) {
+  while (stop == _FALSE_) {
     ssize_t r = extract_min(sgw->dist, sgw->checked, sgw->size, heap);
 
     if (r >= 0) {
@@ -324,7 +324,7 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
         //Verify_Int_Heap_I(heap, sgw->dist);
       } else if (sgw->flag[r] == SP_GROW_TARGET) { /* target reached */
         //Int_Arraylist_Add(result, r);
-        stop = TRUE;
+        stop = _TRUE_;
       } else if (sgw->flag[r] == SP_GROW_CONDUCTOR) { 
         /* 0-distance region (super conductor) */
         int nbound = Stack_Neighbor_Bound_Test_I(sgw->conn, width, height, 
@@ -396,7 +396,7 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
 #endif
       }
     } else {
-      stop = TRUE;
+      stop = _TRUE_;
     }
   }
 
@@ -450,11 +450,11 @@ void Stack_Sp_Grow_Draw_Result(Stack *canvas, const Int_Arraylist *path,
     int i;
     for (i = 0; i < path->length; i++) {
       int index = path->array[i];
-      BOOL drawit = TRUE;
+      _BOOL_ drawit = _TRUE_;
       if (sgw != NULL) {
 	if ((sgw->flag[index] == SP_GROW_SOURCE) || 
 	    (sgw->flag[index] == SP_GROW_TARGET)) {
-	  drawit = FALSE;
+	  drawit = _FALSE_;
 	}
       }
       if (drawit) {

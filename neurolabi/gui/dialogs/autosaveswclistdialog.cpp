@@ -3,8 +3,8 @@
 #include <iostream>
 #include "ui_autosaveswclistdialog.h"
 #include "neutubeconfig.h"
-#include "zstackframe.h"
-#include "tz_error.h"
+#include "mvc/zstackframe.h"
+
 #include "zwindowfactory.h"
 #include "z3dwindow.h"
 #include "zswctree.h"
@@ -30,7 +30,7 @@ AutosaveSwcListDialog::~AutosaveSwcListDialog()
 void AutosaveSwcListDialog::updateFile()
 {
   m_fileList.loadDir(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str(),
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::AUTO_SAVE).c_str(),
         false);
   updateCount();
 }
@@ -71,7 +71,7 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
   if (!fileName.isEmpty()) {
     fileName = "/" + fileName + ".swc";
     fileName =
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str() +
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::AUTO_SAVE).c_str() +
         fileName;
 
     ZStackDoc *doc = new ZStackDoc;

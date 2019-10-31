@@ -42,7 +42,11 @@ public:
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
+    //#Review-TZ: It might be better to replace allBodiesRemoved with the name removingAllBodies
+    //because it is used to trigger the operation of removing all bodies?
+    //Similarly, bodyAdded can be addingBody
     void bodyAdded(uint64_t bodyId);
+    void bodyRemoved(uint64_t bodyId);
     void allBodiesRemoved();
 
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
@@ -55,6 +59,11 @@ signals:
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
     void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 //    void taskUpdated(const QString &type);
+
+protected:
+    void emitInfo(const QString &msg);
+    void emitWarning(const QString &msg);
+    void emitMessage(const QString &msg, neutu::EMessageType type);
 
 private slots:
     void onNextButton();
@@ -140,7 +149,6 @@ private:
     int m_bodyMeshesAddedReceived = 0;
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
-    int m_bodiesReused = 0;
     std::set<int> m_skippedTaskIndices;
     bool m_nextPrevAllowed = true;
 
@@ -164,8 +172,8 @@ private:
     int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
-    void updateBodyWindow();
-    void disableButtonsWhileUpdating();
+    void updateBodyWindow(int taskIdBodiesToRemove = -1);
+    void disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove);
     void enableButtonsAfterUpdating();
     int getNext();
     int getNextUncompleted();

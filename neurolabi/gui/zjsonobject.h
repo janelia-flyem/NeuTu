@@ -1,13 +1,13 @@
 #ifndef ZJSONOBJECT_H
 #define ZJSONOBJECT_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
 #include <initializer_list>
 
 #include "zjsonvalue.h"
-#include "tz_stdint.h"
 
 #define ZJsonObject_foreach(jsonObject, key, value) \
   json_object_foreach(jsonObject.getValue(), key, value)
@@ -27,6 +27,7 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
+  ZJsonValue value(const std::string &key) const;
 #ifndef SWIG
   ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
 #endif
@@ -92,6 +93,11 @@ public:
    */
   void setEntry(const char *key, const std::vector<std::string> &value);
 
+  /*!
+   * \brief Set the entry if the value is not empty
+   *
+   * It does nothing if \a value is empty.
+   */
   void setNonEmptyEntry(const char *key, const std::string &value);
 
   /*!
@@ -116,6 +122,13 @@ public:
    * \brief setEntry Set an entry of the object with a boolean
    */
   void setEntry(const char *key, bool v);
+
+  /*!
+   * \brief Set the entry if the value is true.
+   *
+   * It does nothing if \a v is false.
+   */
+  void setTrueEntry(const char *key, bool v);
 
   /*!
    * \brief setEntry Set an entry of the object with an integer
@@ -165,6 +178,7 @@ public:
    * \return true iff \a key exists in the object (only the first level).
    */
   bool hasKey(const char *key) const;
+  bool hasKey(const std::string &key) const;
 
   /*!
    * \brief Set an entry as an array

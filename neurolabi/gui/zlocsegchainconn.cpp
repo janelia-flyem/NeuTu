@@ -7,8 +7,9 @@
 
 #include <iostream>
 #include <QXmlStreamWriter>
+
+#include "common/math.h"
 #include "zlocsegchainconn.h"
-#include "tz_math.h"
 #include "tz_voxel_graphics.h"
 #include "zlocsegchain.h"
 #include "zpainter.h"
@@ -41,7 +42,7 @@ void ZLocsegChainConn::_init(int hook, int loop, int hookSpot, int loopSpot,
   m_mode = mode;
   m_hookChain = hookChain;
   m_loopChain = loopChain;
-  m_type = ZStackObject::TYPE_CONN;
+  m_type = ZStackObject::EType::CONN;
 }
 
 ZLocsegChainConn::~ZLocsegChainConn()
@@ -113,8 +114,8 @@ void ZLocsegChainConn::display(ZPainter &painter, int z, EDisplayStyle option) c
 
     voxel_t start, end;
     for (int i = 0; i < 3; i++) {
-      start[i] = iround(center1[i]);
-      end[i] = iround(center2[i]);
+      start[i] = neutu::iround(center1[i]);
+      end[i] = neutu::iround(center2[i]);
     }
 
     if (start[2] == z || z < 0 || end[2] == z || z < 0 ||
@@ -217,4 +218,4 @@ void ZLocsegChainConn::translateMode()
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)

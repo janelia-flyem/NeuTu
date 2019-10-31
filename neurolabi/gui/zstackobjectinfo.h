@@ -2,7 +2,7 @@
 #define ZSTACKOBJECTINFO_H
 
 #include <QHash>
-
+#include <set>
 #include "zstackobject.h"
 
 class ZStackObject;
@@ -57,8 +57,8 @@ public:
   std::string toString() const;
 
 private:
-  ZStackObject::EType m_type = ZStackObject::TYPE_UNIDENTIFIED;
-  ZStackObject::ETarget m_target = ZStackObject::TARGET_NULL;
+  ZStackObject::EType m_type = ZStackObject::EType::UNIDENTIFIED;
+  ZStackObject::ETarget m_target = ZStackObject::ETarget::NONE;
   ZStackObjectRole m_role;
 };
 
@@ -74,8 +74,8 @@ public:
   bool contains(ZStackObjectRole::TRole role) const;
   bool contains(const ZStackObjectInfo &info) const;
 
-  QSet<ZStackObject::EType> getType() const;
-  QSet<ZStackObject::ETarget> getTarget() const;
+  std::set<ZStackObject::EType> getType() const;
+  std::set<ZStackObject::ETarget> getTarget() const;
 
   /*!
    * \brief Check if a certain type of object has been modified in a certain way.

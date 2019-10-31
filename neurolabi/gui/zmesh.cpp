@@ -3,7 +3,7 @@
 #include "zmeshio.h"
 #include "zmeshutils.h"
 #include "zbbox.h"
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include "zcubearray.h"
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
@@ -20,8 +20,8 @@
 #include <boost/math/constants/constants.hpp>
 #include <map>
 #include "misc/zvtkutil.h"
-#include "zpoint.h"
-#include "zqslog.h"
+#include "geometry/zpoint.h"
+#include "logging/zqslog.h"
 
 ZMesh::ZMesh(GLenum type)
 {
@@ -47,6 +47,7 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   m_colors.swap(rhs.m_colors);
   m_indices.swap(rhs.m_indices);
 
+  rhs.validateObbTree(false);
   validateObbTree(false);
 }
 
@@ -1803,14 +1804,14 @@ void ZMesh::scale(double sx, double sy, double sz)
 vtkSmartPointer<vtkOBBTree> ZMesh::getObbTree() const
 {
   if (!isObbTreeValid()) {
-    m_obbTree = vtkSmartPointer<vtkOBBTree>::New();
+    m_obbTreeData.m_obbTree = vtkSmartPointer<vtkOBBTree>::New();
     vtkSmartPointer<vtkPolyData> poly = meshToVtkPolyData(*this);
-    m_obbTree->SetDataSet(poly);
-    m_obbTree->BuildLocator();
+    m_obbTreeData.m_obbTree->SetDataSet(poly);
+    m_obbTreeData.m_obbTree->BuildLocator();
     validateObbTree(true);
   }
 
-  return m_obbTree;
+  return m_obbTreeData.m_obbTree;
 }
 std::vector<ZPoint> ZMesh::intersectLineSeg(
     const ZPoint &start, const ZPoint &end) const
@@ -1841,4 +1842,4 @@ std::vector<ZPoint> ZMesh::intersectLineSeg(
 }
 
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)

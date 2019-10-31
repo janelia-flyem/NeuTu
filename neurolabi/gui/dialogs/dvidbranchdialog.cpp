@@ -21,7 +21,7 @@
 #include "dvid/zdvidnode.h"
 #include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 
 /*
  * this class is a drop-in replacement for ZDvidDialog; this version lets you
@@ -271,7 +271,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         return;
     }
     ZJsonObject info = m_reader.readInfo();
-    QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(info.dumpString()).toUtf8());
+    QJsonDocument doc = QJsonDocument::fromJson(
+          QString::fromStdString(info.dumpString()).toUtf8());
     QJsonObject repoJson = doc.object();
 
     // parse out actual branches and populate the model
@@ -309,8 +310,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         //  master branch from a key-value we used to store in some
         //  of the older repos:
         if (m_reader.hasData(INSTANCE_BRANCHES.toStdString())) {
-            if (m_reader.hasKey(INSTANCE_BRANCHES, KEY_MASTER)) {
-                const QByteArray &rawData = m_reader.readKeyValue(INSTANCE_BRANCHES, KEY_MASTER);
+            const QByteArray &rawData = m_reader.readKeyValue(INSTANCE_BRANCHES, KEY_MASTER);
+            if (!rawData.isEmpty()) {
                 QJsonArray UUIDs = QJsonDocument::fromJson(rawData).array();
                 if (UUIDs.size() > 0) {
                     QString masterUUID = UUIDs.first().toString();
@@ -489,7 +490,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
     // later inspection reveals m_dvidTarget could be a local
     //  variable; don't want to mess with it now while I'm
     //  fixing something else, though
-    m_dvidTarget.clear();
+    m_dvidTarget = ZDvidTarget();
 
     m_dvidTarget.setServer(ui->serverBox->text().toStdString());
     m_dvidTarget.setUuid(ui->UUIDBox->text().toStdString());

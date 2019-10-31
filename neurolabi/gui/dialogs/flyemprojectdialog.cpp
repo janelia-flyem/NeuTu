@@ -5,13 +5,13 @@
 #include "mainwindow.h"
 #include "zdvidtargetproviderdialog.h"
 #include "zdialogfactory.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zframefactory.h"
 #include "zprogressreporter.h"
 #include "zdialogfactory.h"
 
 FlyEmProjectDialog::FlyEmProjectDialog(QWidget *parent) :
-  QDialog(parent), m_mainMenu(NULL), m_docTag(neutube::Document::ETag::NORMAL),
+  QDialog(parent), m_mainMenu(NULL), m_docTag(neutu::Document::ETag::NORMAL),
   m_progressReporter(NULL)
 {
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);

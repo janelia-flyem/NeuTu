@@ -9,7 +9,7 @@ ZSwcSignalFitter::ZSwcSignalFitter()
 
 void ZSwcSignalFitter::init()
 {
-  m_background = neutube::EImageBackground::DARK;
+  m_background = neutu::EImageBackground::DARK;
   m_fixingTerminal = false;
 }
 

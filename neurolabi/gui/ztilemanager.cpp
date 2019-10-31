@@ -5,14 +5,16 @@
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zstack.hxx"
+#include "geometry/zpoint.h"
+
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
+
 #include "ztileinfo.h"
 #include "ztilegraphicsitem.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
-#include "zstack.hxx"
-#include "zstackpresenter.h"
-#include "zstackview.h"
-#include "zpoint.h"
 #include "ztiledstackframe.h"
 
 #include <QFileInfo>
@@ -70,7 +72,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
 
     if (obj.hasKey("Tiles")) {
       json_t *value = obj["Tiles"];
-      if (ZJsonParser::isArray(value)) {
+      if (ZJsonParser::IsArray(value)) {
         ZJsonArray array(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         for (size_t i = 0; i < array.size(); ++i) {
           ZJsonObject tileObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -178,7 +180,7 @@ void ZTileManager::updateTileStack()
       frame->document()->setResolution(m_resolution);
 
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+        frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi(true);
 

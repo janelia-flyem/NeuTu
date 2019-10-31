@@ -4,62 +4,15 @@ set -e
 
 if test $# -eq 0
 then
-  echo './neutu_qt_prepare <install_dir>'
+  echo './neutu_qt_prepare <install_dir> [<env>]'
   exit
 fi
 
 install_dir=$1
 
-ENV_NAME=neutu-env
+ENV_NAME=${2-neutu-env}
 ./setup_conda_for_neutu $install_dir $ENV_NAME
 
 CONDA_DIR=$install_dir/miniconda
-cd ..
-./update_library --force-update CONDA_ENV="${CONDA_DIR}/envs/$ENV_NAME"
 
-red=`tput setaf 1`
-green=`tput setaf 2`
-reset=`tput sgr0`
-
-echo ""
-echo "===Instructions for configuring Debug version in QtCreator==="
-
-echo ""
-echo "1. Kit setup"
-echo "  * Add qt version: ${CONDA_DIR}/envs/$ENV_NAME${reset}/bin/qmake"
-echo "  * Add Build & Run kit:"
-if [ `uname` = 'Darwin' ]
-then
-  echo "      Compiler: Clang (x86 64bit)"
-fi
-echo "      Qt version: the one added in the last step"
-echo ""
-echo "2. Build settings"
-echo "  * Change the kit to the one just added."
-echo "  * qmake build configuration: ${green}Debug${reset}"
-echo "  * Additional arguments for qmake:" 
-echo "    ${green}CONFIG+=flyem CONDA_ENV=${CONDA_DIR}/envs/$ENV_NAME${reset}"
-echo "  * 1st make step arguments:"
-echo "    ${green}neurolabi${reset}"
-echo "  * 2nd make step: no/default argument. You can add -j to use multiple processors."
-
-if [ `uname` = 'Darwin' ]
-then
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/neutu_d.app/Contents/MacOS/config.xml${reset}"
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/neutu_d.app/Contents/MacOS/${reset}"
-else
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/config.xml${reset}"
-  echo "  * Custom Process Step: "
-  echo "    Command: ${green}cp${reset}"
-  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/${reset}"
-fi
-echo ""
-echo "============================================================="
-
- 
+./neutu_qt_prepare_post "${CONDA_DIR}/envs/$ENV_NAME"

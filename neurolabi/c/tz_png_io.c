@@ -162,29 +162,29 @@ Stack* Read_Png(const char *file_path)
   return stack;
 }
 
-BOOL Is_Png(const char *file_path)
+_BOOL_ Is_Png(const char *file_path)
 {
 #if defined(HAVE_LIBPNG)
 #define PNG_BYTES_TO_CHECK 4
   FILE *fp = fopen(file_path, "rb");
   if (fp == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
   char buffer[PNG_BYTES_TO_CHECK];
   if (fread(buffer, 1, PNG_BYTES_TO_CHECK, fp) != PNG_BYTES_TO_CHECK) {
     fclose(fp);
-    return FALSE;
+    return _FALSE_;
   }
 
   if (png_sig_cmp((png_const_bytep) buffer, 0, PNG_BYTES_TO_CHECK) == 0) {
     fclose(fp);
-    return TRUE;
+    return _TRUE_;
   }
 
   fclose(fp);
 #endif
-  return FALSE;
+  return _FALSE_;
 }
 
 Mc_Stack* Read_Png_M(const char *file_path)

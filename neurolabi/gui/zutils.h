@@ -1,15 +1,17 @@
 #ifndef ZUTILS_H
 #define ZUTILS_H
 
-#include "zexception.h"
+#include "qt/core/zexception.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <iostream>
 #include <type_traits>
 #include <QtGlobal> // not needed for qt >= 5.7
+#include <QDebug>
 
 #ifdef _MSC_VER
 #define __warn_unused_result _Check_return_
@@ -131,6 +133,10 @@ public:
   template<typename L, typename R>
   bool operator()(const L& l, const R& r) const
   {
+#ifdef _DEBUG_2
+    qDebug() << "Key compare: " << getKey(l) << " " << getKey(r);
+#endif
+
     return getKey(l) < getKey(r);
   }
 };
@@ -153,6 +159,10 @@ public:
   template<typename L, typename R>
   bool operator()(const L& l, const R& r) const
   {
+#ifdef _DEBUG_2
+    qDebug() << "Key compare: " << getKey(l) << " " << getKey(r);
+#endif
+
     return getKey(l) == getKey(r);
   }
 };

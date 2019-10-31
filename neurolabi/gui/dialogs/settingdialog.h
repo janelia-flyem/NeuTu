@@ -44,9 +44,9 @@ public:
   /*!
    * \brief Get backgound setting.
    */
-  neutube::EImageBackground getBackground() const;
+  neutu::EImageBackground getBackground() const;
 
-  void setBackground(neutube::EImageBackground bg);
+  void setBackground(neutu::EImageBackground bg);
 
 public:
   void setResolution(const ZResolution &res);

@@ -114,16 +114,16 @@ void Print_Swc_Tree_Node(const Swc_Tree_Node *tn)
     if (tn->weight > 0.0) {
       printf("weight: %g\n", tn->weight);
     }
-    BOOL id_matched = TRUE;
+    _BOOL_ id_matched = _TRUE_;
     if (Swc_Tree_Node_Parent_Id(tn) >= 0) {
       if (tn->parent == NULL) {
-	id_matched = FALSE;
+	id_matched = _FALSE_;
       } else {
 	if (Swc_Tree_Node_Parent_Id(tn) != Swc_Tree_Node_Id(tn->parent)) {
-	  id_matched = FALSE;
+	  id_matched = _FALSE_;
 	} else {
 	  if (tn->parent->first_child == NULL) {
-	    id_matched = FALSE;
+	    id_matched = _FALSE_;
 	  } else {
 	    Swc_Tree_Node *sibling = tn->parent->first_child;
 	    while (sibling != NULL) {
@@ -134,13 +134,13 @@ void Print_Swc_Tree_Node(const Swc_Tree_Node *tn)
 	      }
 	    }
 	    if (sibling == NULL) {
-	      id_matched = FALSE;
+	      id_matched = _FALSE_;
 	    }
 	  }
 	}
       }
     }
-    if (id_matched == FALSE) {
+    if (id_matched == _FALSE_) {
       printf("ID unmatched.\n");
     }
   }
@@ -531,7 +531,7 @@ Swc_Tree_Node* Swc_Tree_Node_Add_Break(Swc_Tree_Node *tn, double lambda)
     return NULL;
   }
 
-  if (Swc_Tree_Node_Is_Root(tn) == TRUE) {
+  if (Swc_Tree_Node_Is_Root(tn) == _TRUE_) {
     return tn;
   }
 
@@ -654,7 +654,7 @@ void Swc_Tree_Node_Merge_Sibling(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 
 void Swc_Tree_Node_Set_Root(Swc_Tree_Node *tn)
 {
-  if ((tn == NULL) || (Swc_Tree_Node_Is_Root(tn) == TRUE)) {
+  if ((tn == NULL) || (Swc_Tree_Node_Is_Root(tn) == _TRUE_)) {
     return;
   }
 
@@ -663,11 +663,12 @@ void Swc_Tree_Node_Set_Root(Swc_Tree_Node *tn)
   Swc_Tree_Node *buffer1, *buffer2, *buffer3;
   buffer1 = tn;
   buffer2 = buffer1->parent;
+  buffer3 = NULL;
   Swc_Tree_Node_Detach_Parent(buffer1);
 
   weight[0] = buffer1->weight;
-  while (Swc_Tree_Node_Is_Regular(buffer1) == TRUE) {
-    if (Swc_Tree_Node_Is_Regular(buffer2) == TRUE) {
+  while (Swc_Tree_Node_Is_Regular(buffer1) == _TRUE_) {
+    if (Swc_Tree_Node_Is_Regular(buffer2) == _TRUE_) {
       weight[1] = buffer2->weight;
       buffer3 = buffer2->parent;
       buffer2->weight = weight[0];
@@ -714,18 +715,18 @@ void Swc_Tree_Node_Set_Root_A(Swc_Tree_Node *tn)
   Swc_Tree_Node_Set_Parent(tn, buffer1);
 }
 
-BOOL Swc_Tree_Node_Is_Upstream(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
+_BOOL_ Swc_Tree_Node_Is_Upstream(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 {
-  BOOL is_upstream = FALSE;
+  _BOOL_ is_upstream = _FALSE_;
 
   if (tn1 == NULL || tn2 == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
   Swc_Tree_Node *tn = tn2->parent;
   while (tn != NULL) {
     if (tn == tn1) {
-      is_upstream = TRUE;
+      is_upstream = _TRUE_;
       break;
     }
 
@@ -973,7 +974,7 @@ void Swc_Tree_Node_Vector(const Swc_Tree_Node *tn, int direction,
   vec[1] = 0.0;
   vec[2] = 0.0;
 
-  if (Swc_Tree_Node_Is_Regular(tn) == FALSE) {
+  if (Swc_Tree_Node_Is_Regular(tn) == _FALSE_) {
     return;
   }
   
@@ -1037,74 +1038,74 @@ void Swc_Tree_Node_Vector(const Swc_Tree_Node *tn, int direction,
   }
 }
 
-BOOL Swc_Tree_Node_Is_Virtual(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Virtual(const Swc_Tree_Node *tn)
 {
   if (tn != NULL) {
     if (Swc_Tree_Node_Id(tn) < 0) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Regular(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Regular(const Swc_Tree_Node *tn)
 {
   if (tn != NULL) {
-    if (Swc_Tree_Node_Is_Virtual(tn) == FALSE) {
-      return TRUE;
+    if (Swc_Tree_Node_Is_Virtual(tn) == _FALSE_) {
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Root(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Root(const Swc_Tree_Node *tn)
 {
   if (tn == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
   while (tn->parent != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn->parent)) {
-      return FALSE;
+      return _FALSE_;
     }
     tn = tn->parent;
   }
 
-  return TRUE;
+  return _TRUE_;
 
   /* old implementation
   if (tn != NULL) {
-    if (Swc_Tree_Node_Is_Regular(tn->parent) == FALSE) {
-      return TRUE;
+    if (Swc_Tree_Node_Is_Regular(tn->parent) == _FALSE_) {
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
   */
 }
 
-BOOL Swc_Tree_Node_Is_Regular_Root(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Regular_Root(const Swc_Tree_Node *tn)
 {
   if (Swc_Tree_Node_Is_Root(tn) && Swc_Tree_Node_Is_Regular(tn)) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Last_Child(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Last_Child(const Swc_Tree_Node *tn)
 {
   if (tn != NULL) {
     if (tn->parent != NULL) {
       if (tn->next_sibling == NULL) {
-	return TRUE;
+	return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 double Swc_Tree_Node_Dot(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
@@ -1144,17 +1145,17 @@ double Swc_Tree_Node_Dot(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   return d;
 }
 
-BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1, 
+_BOOL_ Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1, 
     const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3)
 {
   if (!Swc_Tree_Node_Is_Regular(tn1) || !Swc_Tree_Node_Is_Regular(tn2) || 
       !Swc_Tree_Node_Is_Regular(tn3)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (!(((tn2->parent == tn1) && (tn3->parent == tn2)) ||
 	((tn2->parent == tn3) && (tn1->parent == tn2)))) {
-    return FALSE;
+    return _FALSE_;
   }
 
   double vec1[3], vec2[3];
@@ -1169,7 +1170,7 @@ BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1,
     Swc_Tree_Node_Const_Data(tn3)->x;
   vec2[1] = Swc_Tree_Node_Const_Data(tn2)->y - 
     Swc_Tree_Node_Const_Data(tn3)->y;
-  vec2[2] = Swc_Tree_Node_Const_Data(tn3)->z - 
+  vec2[2] = Swc_Tree_Node_Const_Data(tn2)->z - 
     Swc_Tree_Node_Const_Data(tn3)->z;
 
   Coordinate_3d_Unitize(vec1);
@@ -1177,113 +1178,113 @@ BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1,
 
   if (Geo3d_Dot_Product(vec1[0], vec1[1], vec1[2], vec2[0], vec2[1], vec2[2])
       > 0.0) {
-    return FALSE;
+    return _FALSE_;
   }
   
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Swc_Tree_Node_Is_Turn(Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Turn(Swc_Tree_Node *tn)
 {
   if (!Swc_Tree_Node_Is_Continuation(tn)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   return Swc_Tree_Node_Forming_Turn(tn->parent, tn, tn->first_child);
 }
 
-BOOL Swc_Tree_Node_Is_Overshoot(Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Overshoot(Swc_Tree_Node *tn)
 {
   if (Swc_Tree_Node_Is_Turn(tn)) {
     if (Swc_Tree_Node_Is_Branch_Point(tn->parent)) {
       if (!Swc_Tree_Node_Is_Branch_Point(tn->first_child)) {
-        return TRUE;
+        return _TRUE_;
       }
     } else {
       if (Swc_Tree_Node_Is_Branch_Point(tn->first_child)) {
-        return TRUE;
+        return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Leaf(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Leaf(const Swc_Tree_Node *tn)
 {
   if (Swc_Tree_Node_Is_Regular(tn)) {
     if (tn->first_child == NULL) {
-      if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
-	return TRUE;
+      if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
+	return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Branch_Point(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Branch_Point(const Swc_Tree_Node *tn)
 {
   if (Swc_Tree_Node_Is_Regular(tn)) {
     if (tn->first_child != NULL) {
       if (tn->first_child->next_sibling != NULL) {
-	return TRUE;
+	return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Branch_Point_S(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Branch_Point_S(const Swc_Tree_Node *tn)
 {
   if (tn == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (tn->first_child != NULL) {
     if (tn->first_child->next_sibling != NULL) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Continuation(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Continuation(const Swc_Tree_Node *tn)
 {
   if (Swc_Tree_Node_Is_Regular(tn)) {
-    if ((Swc_Tree_Node_Is_Root(tn) == FALSE) &&
-	(Swc_Tree_Node_Is_Leaf(tn) == FALSE) &&
-	(Swc_Tree_Node_Is_Branch_Point(tn) == FALSE)) {
-      return TRUE;
+    if ((Swc_Tree_Node_Is_Root(tn) == _FALSE_) &&
+	(Swc_Tree_Node_Is_Leaf(tn) == _FALSE_) &&
+	(Swc_Tree_Node_Is_Branch_Point(tn) == _FALSE_)) {
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Spur(const Swc_Tree_Node *tn)
+_BOOL_ Swc_Tree_Node_Is_Spur(const Swc_Tree_Node *tn)
 {
-  if (Swc_Tree_Node_Is_Leaf(tn) == TRUE) {
-    if (Swc_Tree_Node_Is_Branch_Point(tn->parent) == TRUE) {
-      return TRUE;
+  if (Swc_Tree_Node_Is_Leaf(tn) == _TRUE_) {
+    if (Swc_Tree_Node_Is_Branch_Point(tn->parent) == _TRUE_) {
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Is_Sibling(const Swc_Tree_Node *tn1, 
+_BOOL_ Swc_Tree_Node_Is_Sibling(const Swc_Tree_Node *tn1, 
 			      const Swc_Tree_Node *tn2)
 {
   if ((tn1 != NULL) && (tn2 != NULL)) {
     if (tn1->parent == tn2->parent) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 double Swc_Tree_Node_Dist(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
@@ -1379,7 +1380,7 @@ double Swc_Tree_Node_Length(const Swc_Tree_Node *tn)
 {
   double length = 0.0;
 
-  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == FALSE)) {
+  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == _FALSE_)) {
     Swc_Tree_Node *parent_tn = tn->parent;
     while (!Swc_Tree_Node_Is_Regular(parent_tn)) {
       parent_tn = parent_tn->parent;
@@ -1408,7 +1409,7 @@ double Swc_Tree_Node_Scaled_Length(const Swc_Tree_Node *tn,
 {
   double length = 0.0;
 
-  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == FALSE)) {
+  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == _FALSE_)) {
     Swc_Tree_Node *parent_tn = tn->parent;
     while (!Swc_Tree_Node_Is_Regular(parent_tn)) {
       parent_tn = parent_tn->parent;
@@ -1435,7 +1436,7 @@ double Swc_Tree_Node_Surface_Area(const Swc_Tree_Node *tn)
 {
   double area = 0.0;
 
-  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == FALSE)) {
+  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == _FALSE_)) {
     Swc_Tree_Node *parent_tn = tn->parent;
     while (!Swc_Tree_Node_Is_Regular(parent_tn)) {
       parent_tn = parent_tn->parent;
@@ -1468,7 +1469,7 @@ void Swc_Tree_Node_Radial_Shrink(Swc_Tree_Node *tn)
       tn = Swc_Tree_Node_Merge_To_Parent(tn);
       
       /* Stop shrinking if it's no longer a leaf. */
-      if (Swc_Tree_Node_Is_Leaf(tn) == FALSE) {
+      if (Swc_Tree_Node_Is_Leaf(tn) == _FALSE_) {
 	break;
       }
       radius -= length;
@@ -1587,12 +1588,12 @@ void Swc_Tree_Node_Connect(Swc_Tree_Node *tn, Swc_Tree_Node *tn2)
 Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
 					Local_Neuroseg *locseg)
 {
-  if (Swc_Tree_Node_Is_Root(tn) == TRUE) {
+  if (Swc_Tree_Node_Is_Root(tn) == _TRUE_) {
     return NULL;
   }
 
-  if ((Swc_Tree_Node_Is_Regular(tn) == FALSE) ||
-      (Swc_Tree_Node_Is_Regular(tn->parent) == FALSE)) {
+  if ((Swc_Tree_Node_Is_Regular(tn) == _FALSE_) ||
+      (Swc_Tree_Node_Is_Regular(tn->parent) == _FALSE_)) {
     return NULL;
   }
 
@@ -1629,12 +1630,12 @@ Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
 Local_Neuroseg* Swc_Tree_Node_To_Locseg_P(const Swc_Tree_Node *tn,
     Local_Neuroseg *locseg)
 {
-  if (Swc_Tree_Node_Is_Root(tn) == TRUE) {
+  if (Swc_Tree_Node_Is_Root(tn) == _TRUE_) {
     return NULL;
   }
 
-  if ((Swc_Tree_Node_Is_Regular(tn) == FALSE) ||
-      (Swc_Tree_Node_Is_Regular(tn->parent) == FALSE)) {
+  if ((Swc_Tree_Node_Is_Regular(tn) == _FALSE_) ||
+      (Swc_Tree_Node_Is_Regular(tn->parent) == _FALSE_)) {
     return NULL;
   }
 
@@ -1663,16 +1664,16 @@ Local_Neuroseg* Swc_Tree_Node_To_Locseg_P(const Swc_Tree_Node *tn,
   return locseg;
 }
 
-BOOL Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z)
+_BOOL_ Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z)
 {
-  if (Swc_Tree_Node_Is_Regular(tn) == FALSE) {
-    return FALSE;
+  if (Swc_Tree_Node_Is_Regular(tn) == _FALSE_) {
+    return _FALSE_;
   }
 
   if (Geo3d_Dist_Sqr(Swc_Tree_Node_Data(tn)->x, Swc_Tree_Node_Data(tn)->y,
 		     Swc_Tree_Node_Data(tn)->z, x, y, z) <=
       Swc_Tree_Node_Radius(tn) * Swc_Tree_Node_Radius(tn)) {
-    return TRUE;
+    return _TRUE_;
   }
 
   if (Swc_Tree_Node_Is_Regular(tn->parent)) {  
@@ -1681,7 +1682,7 @@ BOOL Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z)
 		       Swc_Tree_Node_Data(tn->parent)->z, x, y, z) <=
 	Swc_Tree_Node_Radius(tn->parent) * 
 	Swc_Tree_Node_Radius(tn->parent)) {
-      return TRUE;
+      return _TRUE_;
     }
 
     Local_Neuroseg locseg;
@@ -1690,49 +1691,49 @@ BOOL Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z)
     return Local_Neuroseg_Hit_Test(&locseg, x, y, z);
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Hit_Test_N(Swc_Tree_Node *tn, double x, double y, double z)
+_BOOL_ Swc_Tree_Node_Hit_Test_N(Swc_Tree_Node *tn, double x, double y, double z)
 {
-  if (Swc_Tree_Node_Is_Regular(tn) == FALSE) {
-    return FALSE;
+  if (Swc_Tree_Node_Is_Regular(tn) == _FALSE_) {
+    return _FALSE_;
   }
 
   if (Geo3d_Dist_Sqr(Swc_Tree_Node_Data(tn)->x, Swc_Tree_Node_Data(tn)->y,
 		     Swc_Tree_Node_Data(tn)->z, x, y, z) <=
       Swc_Tree_Node_Radius(tn) * Swc_Tree_Node_Radius(tn)) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Hit_Test_P(Swc_Tree_Node *tn, double x, double y)
+_BOOL_ Swc_Tree_Node_Hit_Test_P(Swc_Tree_Node *tn, double x, double y)
 {
-  if (Swc_Tree_Node_Is_Regular(tn) == FALSE) {
-    return FALSE;
+  if (Swc_Tree_Node_Is_Regular(tn) == _FALSE_) {
+    return _FALSE_;
   }
 
   if (Geo3d_Dist_Sqr(Swc_Tree_Node_Data(tn)->x, Swc_Tree_Node_Data(tn)->y,
 		     0.0, x, y, 0.0) <=
       Swc_Tree_Node_Radius(tn) * Swc_Tree_Node_Radius(tn)) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Node_Edge(const Swc_Tree_Node *tn, double *start, double *end)
+_BOOL_ Swc_Tree_Node_Edge(const Swc_Tree_Node *tn, double *start, double *end)
 {
-  if ((Swc_Tree_Node_Is_Root(tn) == TRUE) || (Swc_Tree_Node_Is_Virtual(tn))) {
-    return FALSE;
+  if ((Swc_Tree_Node_Is_Root(tn) == _TRUE_) || (Swc_Tree_Node_Is_Virtual(tn))) {
+    return _FALSE_;
   }
 
   Swc_Tree_Node_Pos(tn->parent, start);
   Swc_Tree_Node_Pos(tn, end);
 
-  return TRUE;
+  return _TRUE_;
 }
 
 void Swc_Tree_Node_Tune_Fork(Swc_Tree_Node *tn)
@@ -1741,7 +1742,7 @@ void Swc_Tree_Node_Tune_Fork(Swc_Tree_Node *tn)
     return;
   }
 
-  if ((Swc_Tree_Node_Is_Root(tn) == TRUE) || 
+  if ((Swc_Tree_Node_Is_Root(tn) == _TRUE_) || 
       (tn->first_child == NULL)) {
     return;
   }
@@ -1771,7 +1772,7 @@ void Swc_Tree_Node_Tune_Fork(Swc_Tree_Node *tn)
 void Swc_Tree_Node_Tune_Branch(Swc_Tree_Node *tn)
 {
   double dist;
-  if ((Swc_Tree_Node_Is_Branch_Point(tn) == FALSE)) {
+  if ((Swc_Tree_Node_Is_Branch_Point(tn) == _FALSE_)) {
     if (Swc_Tree_Node_Is_Branch_Point(tn->parent)) { /* parent is branching */
       if (tn->weight > 0.0) {
 	double mindist = -1.0;
@@ -1779,13 +1780,13 @@ void Swc_Tree_Node_Tune_Branch(Swc_Tree_Node *tn)
 	Swc_Tree_Node *new_tn = tn->parent;
 	/* new_tn->tn->fc(tn) does not form a turn.*/
 	if (Swc_Tree_Node_Forming_Turn(tn->first_child, tn, tn->parent) 
-	    == FALSE) {
+	    == _FALSE_) {
 	  mindist = Swc_Tree_Node_Dist(tn, tn->parent);
 	}
       
 	/* set new_tn to p(p(tn)) if dist(tn, p(p(tn))) < dist(tn, p(tn)) */
 	if (Swc_Tree_Node_Forming_Turn(tn->first_child, tn, tn->parent->parent) 
-	    == FALSE) {
+	    == _FALSE_) {
 	  dist = Swc_Tree_Node_Dist(tn, tn->parent->parent);
 	  if ((mindist < 0.0) || (dist < mindist)) {
 	    mindist = dist;
@@ -1799,7 +1800,7 @@ void Swc_Tree_Node_Tune_Branch(Swc_Tree_Node *tn)
 	while (child != NULL) {
 	  if (child != tn) {
 	    if (Swc_Tree_Node_Forming_Turn(tn->first_child, tn, child)
-		== FALSE) {
+		== _FALSE_) {
 	      dist = Swc_Tree_Node_Dist(tn, child);
 	      if ((mindist < 0.0) || (dist < mindist)) {
 		mindist = dist;
@@ -1823,13 +1824,13 @@ void Swc_Tree_Node_Tune_Branch(Swc_Tree_Node *tn)
 	if (child->weight > 0.0) {
 	  double mindist = -1.0;
 	  Swc_Tree_Node *new_tn = child;
-	  if (Swc_Tree_Node_Forming_Turn(tn->parent, tn, child) == FALSE) {
+	  if (Swc_Tree_Node_Forming_Turn(tn->parent, tn, child) == _FALSE_) {
 	    mindist = Swc_Tree_Node_Dist(tn, child);
 	  }
 	  Swc_Tree_Node *grandchild = child->first_child;
 	  while (grandchild != NULL) {
 	    if (Swc_Tree_Node_Forming_Turn(tn->parent, tn, grandchild)
-		== FALSE) {
+		== _FALSE_) {
 	      dist = Swc_Tree_Node_Dist(tn, grandchild);
 	      if ((mindist < 0.0) || (dist < mindist)) {
 		mindist = dist;
@@ -1855,15 +1856,15 @@ double Swc_Tree_Node_Average_Thickness(const Swc_Tree_Node *start,
 				       const Swc_Tree_Node *end)
 {
   TZ_ASSERT(end != NULL, "Null pointer.");
-  TZ_ASSERT(Swc_Tree_Node_Is_Virtual(end) == FALSE, "Virtual node.");
+  TZ_ASSERT(Swc_Tree_Node_Is_Virtual(end) == _FALSE_, "Virtual node.");
 
 #ifdef _DEBUG_2
   if (start != NULL) {
     const Swc_Tree_Node *test_tn = end;
-    BOOL found = FALSE;
+    _BOOL_ found = _FALSE_;
     while (test_tn != NULL) {
       if (test_tn == start) {
-	found = TRUE;
+	found = _TRUE_;
 	break;
       }
       
@@ -1927,7 +1928,7 @@ void Print_Swc_Tree_Branch(const Swc_Tree_Branch *tb)
   }
 }
 
-void Swc_Tree_Get_Branch(Swc_Tree_Node *tn, BOOL include_bp, 
+void Swc_Tree_Get_Branch(Swc_Tree_Node *tn, _BOOL_ include_bp, 
     Swc_Tree_Branch *tb)
 {
   tb->end = tn;
@@ -1936,7 +1937,7 @@ void Swc_Tree_Get_Branch(Swc_Tree_Node *tn, BOOL include_bp,
   if (tn != NULL) {
     tb->n = 1;
     while (Swc_Tree_Node_Is_Regular(tn->parent) &&
-	(Swc_Tree_Node_Is_Branch_Point(tn->parent) == FALSE)) {
+	(Swc_Tree_Node_Is_Branch_Point(tn->parent) == _FALSE_)) {
       tn = tn->parent;
       tb->n++;
     }
@@ -2037,7 +2038,7 @@ void Default_Swc_Tree(Swc_Tree *tree)
 
 void Clean_Swc_Tree(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *node = NULL;
   while ((node = Swc_Tree_Next(tree)) != NULL) {
 #ifdef _DEBUG_2
@@ -2105,19 +2106,19 @@ static int count_double(const char *str)
   int n = 0;
   int state = 0;
 
-  BOOL has_number = FALSE;
+  _BOOL_ has_number = _FALSE_;
 
   while (*str) {
     switch (state) {
       case 0:
         if (has_number) {
           n++;
-          has_number = FALSE;
+          has_number = _FALSE_;
         }
 
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else if (*str == '+' || *str == '-') {
           state = 1;
         } else if ((*str) == '.') {
@@ -2129,7 +2130,7 @@ static int count_double(const char *str)
       case 1:
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
         } else if ((*str) == '.') {
           state = 8;
@@ -2141,7 +2142,7 @@ static int count_double(const char *str)
       case 8:
         if (isdigit(*str)) {
           state = 3;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
         } else {
           state = 0;
@@ -2162,7 +2163,7 @@ static int count_double(const char *str)
           state = 5;
         } else if (isdigit(*str)) {
           state = 4;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else {
           state = 0;
         }
@@ -2291,19 +2292,19 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
       int field_number;
       int cpos;
       int csize = strlen(line);
-      BOOL commentFound = FALSE;
-      BOOL specialCommentFound = FALSE;
+      _BOOL_ commentFound = _FALSE_;
+      _BOOL_ specialCommentFound = _FALSE_;
       for (cpos = 0; cpos < csize; cpos++) {
         if (commentFound) {
           if (line[cpos] == '@') {
             specialCommentFound = !specialCommentFound;
           }
-          if (specialCommentFound == FALSE) {
+          if (specialCommentFound == _FALSE_) {
             line[cpos] = ' ';
           }
         }
         if (line[cpos] == '#') {
-          commentFound = TRUE;
+          commentFound = _TRUE_;
         }
       }
 
@@ -2356,18 +2357,18 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
   for (i = 1; i <= max_id + 1; i++) {
     Swc_Tree_Node *tn = map[i].tree_node;
     if (tn != NULL) {
-      BOOL is_id_normal = TRUE;
+      _BOOL_ is_id_normal = _TRUE_;
       if (tn->node.id == tn->node.parent_id) {
         printf("WARNING : Node %d has circuilar parent id.\n",
             tn->node.parent_id);
-        is_id_normal = FALSE;
+        is_id_normal = _FALSE_;
       } else if (map[tn->node.parent_id + 1].tree_node == NULL) {
         printf("WARNING : Node %d does not exist.\n",
             tn->node.parent_id);
-        is_id_normal = FALSE;
+        is_id_normal = _FALSE_;
       }
 
-      if (is_id_normal == TRUE) {
+      if (is_id_normal == _TRUE_) {
         tn->parent = map[tn->node.parent_id + 1].tree_node;
       } else {
         tn->parent = tree->root;
@@ -2552,19 +2553,19 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path)
     int field_number;
     int cpos;
     int csize = strlen(line);
-    BOOL commentFound = FALSE;
-    BOOL specialCommentFound = FALSE;
+    _BOOL_ commentFound = _FALSE_;
+    _BOOL_ specialCommentFound = _FALSE_;
     for (cpos = 0; cpos < csize; cpos++) {
       if (commentFound) {
         if (line[cpos] == '@') {
           specialCommentFound = !specialCommentFound;
         }
-        if (specialCommentFound == FALSE) {
+        if (specialCommentFound == _FALSE_) {
           line[cpos] = ' ';
         }
       }
       if (line[cpos] == '#') {
-        commentFound = TRUE;
+        commentFound = _TRUE_;
       }
     }
 
@@ -2642,20 +2643,20 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path)
 }
 #endif
 
-BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
+_BOOL_ Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
 {
   FILE *fp = fopen(file_path, "w");
 
   if (fp == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = NULL;
 
 
 #ifdef _DEBUG_
-  BOOL is_consistent = TRUE;
+  _BOOL_ is_consistent = _TRUE_;
 #endif
 
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -2664,7 +2665,7 @@ BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
       if (tn->parent != NULL) {
         if ((Swc_Tree_Node_Parent_Id(tn) != Swc_Tree_Node_Id(tn->parent)) ||
             (Swc_Tree_Node_Id(tn) == Swc_Tree_Node_Id(tn->parent))) {
-          is_consistent = FALSE;
+          is_consistent = _FALSE_;
         }
       }
 #endif
@@ -2673,7 +2674,7 @@ BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
   }
 
 #ifdef _DEBUG_
-  if (is_consistent == FALSE) {
+  if (is_consistent == _FALSE_) {
     fprintf(stderr, "WARNING: The swc file %s is created from an inconsistent"
         "tree. "
         "Swc_Tree_Resort_Id() can be called to resolve the insconsistency\n",
@@ -2683,24 +2684,24 @@ BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
 
   fclose(fp);
 
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
+_BOOL_ Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
 {
   FILE *fp = fopen(file_path, "w");
 
   if (fp == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
   
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
 
 
 #ifdef _DEBUG_
-  BOOL is_consistent = TRUE;
+  _BOOL_ is_consistent = _TRUE_;
 #endif
 
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -2709,7 +2710,7 @@ BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
       if (tn->parent != NULL) {
         if ((Swc_Tree_Node_Parent_Id(tn) != Swc_Tree_Node_Id(tn->parent)) ||
             (Swc_Tree_Node_Id(tn) == Swc_Tree_Node_Id(tn->parent))) {
-          is_consistent = FALSE;
+          is_consistent = _FALSE_;
         }
       }
 #endif
@@ -2725,7 +2726,7 @@ BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
   }
 
 #ifdef _DEBUG_
-  if (is_consistent == FALSE) {
+  if (is_consistent == _FALSE_) {
     fprintf(stderr, "WARNING: The swc file %s is created from an inconsistent"
         "tree. "
         "Swc_Tree_Resort_Id() can be called to resolve the insconsistency\n",
@@ -2735,17 +2736,17 @@ BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
 
   fclose(fp);
   
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Swc_Tree_Node_Is_Child(const Swc_Tree_Node *parent, 
+_BOOL_ Swc_Tree_Node_Is_Child(const Swc_Tree_Node *parent, 
 			    const Swc_Tree_Node *child)
 {
-  BOOL found = FALSE;
+  _BOOL_ found = _FALSE_;
   Swc_Tree_Node *tn = parent->first_child;
   while (tn != NULL) {
     if (tn == child) {
-      found = TRUE;
+      found = _TRUE_;
       break;
     }
     tn = tn->next_sibling;
@@ -2772,13 +2773,13 @@ int Swc_Tree_Node_Child_Number(const Swc_Tree_Node *tn)
 
 void Print_Swc_Tree(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *node = NULL;
 
   while ((node = Swc_Tree_Next(tree)) != NULL) {
 #ifdef _DEBUG_
     if (node->parent != NULL) {
-      if (Swc_Tree_Node_Is_Child(node->parent, node) == FALSE) {
+      if (Swc_Tree_Node_Is_Child(node->parent, node) == _FALSE_) {
 	printf("bug found\n");
 	break;
       }
@@ -2802,7 +2803,7 @@ Swc_Tree* Copy_Swc_Tree(Swc_Tree *tree)
     new_tree->root = New_Swc_Tree_Node();
     Swc_Tree_Node_Copy_Property(tree->root, new_tree->root);
 
-    int n = Swc_Tree_Iterator_Start(tree, 1, TRUE);
+    int n = Swc_Tree_Iterator_Start(tree, 1, _TRUE_);
   
     if (n > 1) {
       Swc_Tree_Node **tn_array;
@@ -2830,13 +2831,13 @@ Swc_Tree* Copy_Swc_Tree(Swc_Tree *tree)
   return new_tree;
 }
 
-BOOL Swc_Tree_Iterator_Is_Active(int option)
+_BOOL_ Swc_Tree_Iterator_Is_Active(int option)
 {
   return (option != SWC_TREE_ITERATOR_NO_UPDATE && 
       option != SWC_TREE_ITERATOR_VOID);
 }
 
-int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, BOOL indexing)
+int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, _BOOL_ indexing)
 {
   if (tree == NULL) {
     return 0;
@@ -2991,7 +2992,7 @@ int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, BOOL indexing)
       break;
     case SWC_TREE_ITERATOR_LEAF:
       {
-        Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+        Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
         Swc_Tree_Node *current_node = NULL;
         Swc_Tree_Node *tn = NULL;
         tree->begin = NULL;
@@ -3002,12 +3003,12 @@ int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, BOOL indexing)
             if (current_node == NULL) {
               current_node = tn;
               tree->begin = tn;
-              if (indexing == TRUE) {
+              if (indexing == _TRUE_) {
                 current_node->index = 0;
               }
             } else {
               current_node->next = tn;
-              if (indexing == TRUE) {
+              if (indexing == _TRUE_) {
                 tn->index = current_node->index + 1;
               }
               current_node = tn;
@@ -3042,18 +3043,18 @@ void Swc_Tree_Iterator_Path(Swc_Tree *tree, Swc_Tree_Node *begin,
     return;
   }
 
-  BOOL done = FALSE;
+  _BOOL_ done = _FALSE_;
   Swc_Tree_Node *tn = begin;
   do {
     tn->next = tn->parent;
     if (tn->parent == end) {
-      done = TRUE;
+      done = _TRUE_;
       break;
     }
     tn = tn->parent;
   } while (tn != NULL);
 
-  if (done == FALSE) {
+  if (done == _FALSE_) {
     tn = end;
     while (tn->parent != NULL) {
       tn->parent->next = tn;
@@ -3067,7 +3068,7 @@ void Swc_Tree_Iterator_Path(Swc_Tree *tree, Swc_Tree_Node *begin,
 
 void Swc_Tree_Iterator_Leaf(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *leaf_header = NULL;
   Swc_Tree_Node *leaf = NULL;
   Swc_Tree_Node *tn = NULL;
@@ -3117,7 +3118,7 @@ int Swc_Tree_Number(Swc_Tree *tree)
 
 Swc_Tree_Node* Swc_Tree_Query_Node(Swc_Tree *tree, int id, int iter_option)
 {
-  Swc_Tree_Iterator_Start(tree, iter_option, FALSE);
+  Swc_Tree_Iterator_Start(tree, iter_option, _FALSE_);
 
   Swc_Tree_Node *tn = NULL;
 
@@ -3142,7 +3143,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path)
   fprintf(fp, "digraph G {\n");
   
   if (tree != NULL) {
-    Swc_Tree_Iterator_Start(tree, 2, FALSE);
+    Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
     Swc_Tree_Node *tn = NULL;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (tn->node.id >= 0) {
@@ -3169,7 +3170,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path)
 
 int Swc_Tree_Resort_Id(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   int id = 1;
   Swc_Tree_Node *tn = NULL;
 
@@ -3224,21 +3225,22 @@ void Swc_Tree_Node_Set_Pos(Swc_Tree_Node *tn, const double *pos)
 
 void Swc_Tree_Remove_Zigzag(Swc_Tree *tree)
 {
-  BOOL zigzag_found = TRUE;
+  _BOOL_ zigzag_found = _TRUE_;
   while (zigzag_found) {
-    zigzag_found = FALSE;
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    zigzag_found = _FALSE_;
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
 
     Swc_Tree_Node *tn = Swc_Tree_Next(tree);
     Swc_Tree_Node *next = NULL;
     while (tn != NULL) {
-      next = Swc_Tree_Next(tree);
+      next = tn->next;
+//      next = Swc_Tree_Next(tree);
 
       if (Swc_Tree_Node_Is_Turn(tn) && 
 	  Swc_Tree_Node_Is_Turn(tn->first_child)) {
 	next = tn->first_child->next;
 	Swc_Tree_Node_Merge_To_Parent(tn->first_child);
-	zigzag_found = TRUE;
+	zigzag_found = _TRUE_;
       }
 
       tn = next;
@@ -3248,7 +3250,7 @@ void Swc_Tree_Remove_Zigzag(Swc_Tree *tree)
 
 void Swc_Tree_Remove_Overshoot(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   Swc_Tree_Node *next = NULL;
@@ -3266,7 +3268,7 @@ void Swc_Tree_Remove_Overshoot(Swc_Tree *tree)
 double Swc_Tree_Point_Dist(Swc_Tree *tree, double x, double y, double z,
 			   double *cpt, Swc_Tree_Node **ctn)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   //Local_Neuroseg *locseg = New_Local_Neuroseg();
   Local_Neuroseg locseg;
@@ -3307,7 +3309,7 @@ double Swc_Tree_Point_Dist(Swc_Tree *tree, double x, double y, double z,
 double Swc_Tree_Point_Dist_N(Swc_Tree *tree, double x, double y, double z,
     Swc_Tree_Node **ctn)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
 
   Swc_Tree_Node *tn = NULL;
   
@@ -3339,7 +3341,7 @@ double Swc_Tree_Point_Dist_N(Swc_Tree *tree, double x, double y, double z,
 double Swc_Tree_Point_Dist_N_Z(Swc_Tree *tree, double x, double y, double z,
     double z_scale, Swc_Tree_Node **ctn)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
 
   Swc_Tree_Node *tn = NULL;
   
@@ -3371,7 +3373,7 @@ double Swc_Tree_Point_Dist_N_Z(Swc_Tree *tree, double x, double y, double z,
 
 void Swc_Tree_Leaf_Shrink(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   Swc_Tree_Node *next;
   while (tn != NULL) {
@@ -3402,7 +3404,7 @@ void Swc_Tree_Connect_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
     return;
   }
 
-  if (Swc_Tree_Node_Is_Root(tmp_tn) == TRUE) {
+  if (Swc_Tree_Node_Is_Root(tmp_tn) == _TRUE_) {
     Swc_Tree_Node_Set_Parent(tn, tmp_tn);
     return;
   }
@@ -3494,7 +3496,7 @@ Swc_Tree_Node* Swc_Tree_Connect_Branch(Swc_Tree *tree, Swc_Tree_Node *start_tn)
     return tn;
   }
 
-  if (Swc_Tree_Node_Is_Root(tmp_tn) == TRUE) {
+  if (Swc_Tree_Node_Is_Root(tmp_tn) == _TRUE_) {
     Swc_Tree_Node_Set_Parent(tn, tmp_tn);
     return tn;
   }
@@ -3540,7 +3542,7 @@ Swc_Tree_Node* Swc_Tree_Connect_Branch(Swc_Tree *tree, Swc_Tree_Node *start_tn)
 
 void Swc_Tree_Tune_Fork(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   while (tn != NULL) {
     Swc_Tree_Node_Tune_Fork(tn);
@@ -3550,13 +3552,13 @@ void Swc_Tree_Tune_Fork(Swc_Tree *tree)
 
 void Swc_Tree_Remove_Spur(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
-  Swc_Tree_Iterator_Start(tree, -1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
+  Swc_Tree_Iterator_Start(tree, -1, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   Swc_Tree_Node *buffer;
   while (tn != NULL) {
     buffer = tn->next;
-    if (Swc_Tree_Node_Is_Spur(tn) == TRUE) {
+    if (Swc_Tree_Node_Is_Spur(tn) == _TRUE_) {
       Swc_Tree_Node_Merge_To_Parent(tn);
     } 
     tn = buffer;
@@ -3566,7 +3568,7 @@ void Swc_Tree_Remove_Spur(Swc_Tree *tree)
 Swc_Tree_Node* Swc_Tree_Find_Shortest_Terminal_Branch(Swc_Tree *tree,
 						      double *blen)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
  
   double min_len = Infinity;
   Swc_Tree_Node *target = NULL;
@@ -3599,7 +3601,7 @@ Swc_Tree_Node* Swc_Tree_Find_Shortest_Terminal_Branch(Swc_Tree *tree,
 static Swc_Tree_Node* swc_tree_find_shortest_terminal_branch_i(Swc_Tree *tree,
 							       double *blen)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
  
   double min_len = Infinity;
   Swc_Tree_Node *target = NULL;
@@ -3614,7 +3616,7 @@ static Swc_Tree_Node* swc_tree_find_shortest_terminal_branch_i(Swc_Tree *tree,
 	tmp_target = tmp_tn;
 	tmp_tn = tmp_tn->parent;
       }
-      if (Swc_Tree_Node_Is_Root(tmp_tn->parent) == FALSE) {
+      if (Swc_Tree_Node_Is_Root(tmp_tn->parent) == _FALSE_) {
 	if (length < min_len) {
 	  min_len = length;
 	  target = tmp_target;
@@ -3637,7 +3639,7 @@ void Swc_Tree_Remove_Terminal_Branch(Swc_Tree *tree, double thre)
   Swc_Tree_Node *tn = Swc_Tree_Find_Shortest_Terminal_Branch(tree, &min_len);
   while (min_len < thre) {
     /*
-    if (Swc_Tree_Node_Is_Root(tn->parent) == FALSE) {
+    if (Swc_Tree_Node_Is_Root(tn->parent) == _FALSE_) {
       Swc_Tree_Node_Kill_Subtree(tn);
     } else {
       break;
@@ -3684,7 +3686,7 @@ void Swc_Tree_Clean_Root(Swc_Tree *tree)
     next = remain->next_sibling;
   }
   
-  if (Swc_Tree_Node_Is_Virtual(tree->root) == TRUE) {
+  if (Swc_Tree_Node_Is_Virtual(tree->root) == _TRUE_) {
     TZ_ASSERT(tree->root->first_child->next_sibling == NULL, "bug found");
     tree->root = tree->root->first_child;
     Swc_Tree_Node_Detach_Parent(tree->root);
@@ -3695,12 +3697,12 @@ void Swc_Tree_Clean_Root(Swc_Tree *tree)
 
 void Swc_Tree_Merge_Close_Node(Swc_Tree *tree, double thre)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   Swc_Tree_Node *next;
   while (tn != NULL) {
     next = tn->next;
-    if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+    if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
       if (Swc_Tree_Node_Length(tn) < thre) {
         Swc_Tree_Node_Merge_To_Parent(tn);
       } else if (Swc_Tree_Node_Is_Last_Child(tn)) {
@@ -3738,7 +3740,7 @@ Swc_Tree_Node* Swc_Tree_Closest_Node(Swc_Tree *tree, const double *pos)
     return NULL;
   }
 
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   Swc_Tree_Node *close_tn = NULL;
   double mindist = -1.0;
@@ -3786,7 +3788,7 @@ Swc_Tree_Node* Swc_Tree_Closest_Node_I(Swc_Tree *tree, const double *pos,
     return NULL;
   }
 
-  Swc_Tree_Iterator_Start(tree, iterator_option, FALSE);
+  Swc_Tree_Iterator_Start(tree, iterator_option, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   Swc_Tree_Node *close_tn = NULL;
   double mindist = -1.0;
@@ -3814,9 +3816,9 @@ Swc_Tree_Node* Swc_Tree_Closest_Node_I(Swc_Tree *tree, const double *pos,
 
 void Swc_Tree_Bound_Box(Swc_Tree *tree, double *corner)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = NULL;
-  BOOL first = TRUE;
+  _BOOL_ first = _TRUE_;
   int i;
   for (i = 0; i < 6; i++) {
     corner[i] = 0.0;
@@ -3833,7 +3835,7 @@ void Swc_Tree_Bound_Box(Swc_Tree *tree, double *corner)
 	corner[3] = tn_pos[0] + r;
 	corner[4] = tn_pos[1] + r;
 	corner[5] = tn_pos[2] + r;
-	first = FALSE;
+	first = _FALSE_;
       } else {
 	for (i = 0; i < 3; i++) {
 	  if (corner[i] > tn_pos[i] - r) {
@@ -3850,7 +3852,7 @@ void Swc_Tree_Bound_Box(Swc_Tree *tree, double *corner)
 
 void Swc_Tree_Tune_Branch(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     Swc_Tree_Node_Tune_Branch(tn);
@@ -3859,7 +3861,7 @@ void Swc_Tree_Tune_Branch(Swc_Tree *tree)
 
 Swc_Tree_Node* Swc_Tree_Largest_Node(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   Swc_Tree_Node *max_tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -3877,9 +3879,9 @@ Swc_Tree_Node* Swc_Tree_Largest_Node(Swc_Tree *tree)
 
 Swc_Tree_Node* Swc_Tree_Outmost_Leaf(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, TRUE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _TRUE_);
   double *length = Swc_Tree_Accm_Length(tree, NULL);
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, _FALSE_);
   
   double max_length = 0.0;
   Swc_Tree_Node *leaf = NULL;
@@ -3900,16 +3902,16 @@ Swc_Tree_Node* Swc_Tree_Outmost_Leaf(Swc_Tree *tree)
 
 void Swc_Tree_Reduce(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = NULL;
 
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
-    if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+    if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
       tn->weight = Swc_Tree_Node_Length(tn);
     }
   }
 
-  Swc_Tree_Iterator_Start(tree, 0, FALSE);
+  Swc_Tree_Iterator_Start(tree, 0, _FALSE_);
   tn = Swc_Tree_Next(tree);
   Swc_Tree_Node *buffer_tn;
   while (tn != NULL) {
@@ -3925,7 +3927,7 @@ void Swc_Tree_Reduce(Swc_Tree *tree)
   }
 }
 
-BOOL Swc_Tree_Label_Branch(Swc_Tree *tree, int label,
+_BOOL_ Swc_Tree_Label_Branch(Swc_Tree *tree, int label,
 			   const double *pos, double thre)
 {
   Swc_Tree_Node *tn = Swc_Tree_Closest_Node(tree, pos);
@@ -3933,10 +3935,10 @@ BOOL Swc_Tree_Label_Branch(Swc_Tree *tree, int label,
   if (Geo3d_Dist(Swc_Tree_Node_Data(tn)->x, Swc_Tree_Node_Data(tn)->y,
 		 Swc_Tree_Node_Data(tn)->z, pos[0], pos[1], pos[2]) <= thre) {
     Swc_Tree_Node_Label_Branch(tn, label);
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 int Swc_Tree_Label_Branch_All(Swc_Tree *tree)
@@ -3949,7 +3951,7 @@ int Swc_Tree_Label_Branch_All(Swc_Tree *tree)
     return 0;
   }
 
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   int label = 1;
   Swc_Tree_Node *tn = NULL;
   Swc_Tree_Node_Data(tree->root)->label = label;
@@ -3959,8 +3961,8 @@ int Swc_Tree_Label_Branch_All(Swc_Tree *tree)
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (tn->parent != NULL) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
-        if ((Swc_Tree_Node_Is_Branch_Point_S(tn->parent) == FALSE) &&
-            (Swc_Tree_Node_Is_Root(tn->parent) == FALSE)) {
+        if ((Swc_Tree_Node_Is_Branch_Point_S(tn->parent) == _FALSE_) &&
+            (Swc_Tree_Node_Is_Root(tn->parent) == _FALSE_)) {
           Swc_Tree_Node_Data(tn)->label = Swc_Tree_Node_Data(tn->parent)->label;
         } else {
           /* new branch */
@@ -3983,7 +3985,7 @@ int Swc_Tree_Label_Branch_Order(Swc_Tree *tree)
     return 0;
   }
 
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   int label = 0;
   Swc_Tree_Node *tn = NULL;
 
@@ -4010,7 +4012,7 @@ int Swc_Tree_Label_Branch_Order(Swc_Tree *tree)
 void Swc_Tree_Svg_Fprint(Swc_Tree *tree, double scale, FILE *fp)
 {
   tree->root->weight = 0.0;
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   
   Swc_Tree_Node *node = Swc_Tree_Next(tree);
   while ((node = Swc_Tree_Next(tree)) != NULL) {
@@ -4019,7 +4021,7 @@ void Swc_Tree_Svg_Fprint(Swc_Tree *tree, double scale, FILE *fp)
 
   Swc_Tree_Reduce(tree);
 
-  int count = Swc_Tree_Iterator_Start(tree, 1, TRUE);
+  int count = Swc_Tree_Iterator_Start(tree, 1, _TRUE_);
   
   /* alloc <decided> */
   uint8 *decided = u8array_calloc(count);
@@ -4072,8 +4074,8 @@ void Swc_Tree_Svg_Fprint(Swc_Tree *tree, double scale, FILE *fp)
   //ymax = cur_y;
   xmax += dm * 2;
   
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
-  Swc_Tree_Iterator_Start(tree, -1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
+  Swc_Tree_Iterator_Start(tree, -1, _FALSE_);
   while ((node = Swc_Tree_Next(tree)) != NULL) {
     if (decided[node->index] == 0) {
       Swc_Tree_Node *child = node->first_child;
@@ -4089,7 +4091,7 @@ void Swc_Tree_Svg_Fprint(Swc_Tree *tree, double scale, FILE *fp)
     }
   }
 
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
 
   int i;
   for (i = 0; i < count; i++) {
@@ -4119,8 +4121,8 @@ void Swc_Tree_Svg_Fprint(Swc_Tree *tree, double scale, FILE *fp)
       }
     } else if (start_tn != NULL) {
       end_tn = node;
-    } else if ((Swc_Tree_Node_Is_Root(node) == FALSE) && 
-	       (Swc_Tree_Node_Is_Root(node->parent) == FALSE)) {
+    } else if ((Swc_Tree_Node_Is_Root(node) == _FALSE_) && 
+	       (Swc_Tree_Node_Is_Root(node->parent) == _FALSE_)) {
       Print_Swc_Tree_Node(node);
       TZ_ERROR(ERROR_DATA_VALUE);
     }
@@ -4153,7 +4155,7 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
     Swc_Tree_Svg_Workspace *ws)
 {
   tree->root->weight = 0.0;
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
   
   /* Calculating weight (corresponding to length in svg) */
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
@@ -4189,7 +4191,7 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
   /*
   if (Swc_Tree_Node_Is_Regular(reduced_tree->root)) {
     if (Swc_Tree_Node_Child_Number(reduced_tree->root) == 1) {
-      Swc_Tree_Iterator_Start(reduced_tree, 1, FALSE);
+      Swc_Tree_Iterator_Start(reduced_tree, 1, _FALSE_);
       Swc_Tree_Node *tn = Swc_Tree_Next(reduced_tree);
       while ((tn = Swc_Tree_Next(reduced_tree)) != NULL) {
         Swc_Tree_Node_Data(tn)->label++;
@@ -4224,7 +4226,7 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
 #endif
 
   /* assign length array */
-  Swc_Tree_Iterator_Start(reduced_tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(reduced_tree, 1, _FALSE_);
   length[0] = 0.0;
   while ((tn = Swc_Tree_Next(reduced_tree)) != NULL) {
     length[Swc_Tree_Node_Data(tn)->label] = Swc_Tree_Node_Weight(tn);
@@ -4310,7 +4312,7 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
   end_tn = NULL;
   double y1, y2;
   double x1, x2;
-  Swc_Tree_Iterator_Start(reduced_tree, SWC_TREE_ITERATOR_BREADTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(reduced_tree, SWC_TREE_ITERATOR_BREADTH_FIRST, _FALSE_);
   Swc_Tree_Node *node = NULL;
   while ((node = Swc_Tree_Next(reduced_tree)) != NULL) {
     if (node->weight > 0.0) {
@@ -4337,8 +4339,8 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
       }
     } else if (start_tn != NULL) {
       end_tn = node;
-    } else if ((Swc_Tree_Node_Is_Root(node) == FALSE) && 
-        (Swc_Tree_Node_Is_Root(node->parent) == FALSE)) {
+    } else if ((Swc_Tree_Node_Is_Root(node) == _FALSE_) && 
+        (Swc_Tree_Node_Is_Root(node->parent) == _FALSE_)) {
       Print_Swc_Tree_Node(node);
       TZ_ERROR(ERROR_DATA_VALUE);
     }
@@ -4397,7 +4399,7 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
             ws->puncta->points[i][1], ws->puncta->points[i][2], pt, &ctn);
         branch_id[i] = Swc_Tree_Node_Data(ctn)->label;
 
-        if (ws->shuffling == FALSE) {
+        if (ws->shuffling == _FALSE_) {
           int tmp_branch_id = branch_id[i];
           if (ws->on_root != NULL) {
             if (ws->on_root[i]) {
@@ -4445,16 +4447,16 @@ void Swc_Tree_To_Svg_File_W(Swc_Tree *tree, const char *file,
 
         double puncta_pos[2];
 
-        BOOL label_puncta = TRUE;
+        _BOOL_ label_puncta = _TRUE_;
         if (ws->on_root != NULL) {
           if (ws->on_root[i]) {
-            label_puncta = FALSE;
+            label_puncta = _FALSE_;
           }
         }
 
         /* Random shuffling for puncta not on root */
-        if ((ws->shuffling) && (label_puncta == FALSE)) {
-          label_puncta = TRUE;
+        if ((ws->shuffling) && (label_puncta == _FALSE_)) {
+          label_puncta = _TRUE_;
           /* Randomly select a branch index */
           double r = Unifrnd() * cum_length[branch_number-1];
           int bidx = 0;
@@ -4532,8 +4534,8 @@ void
 Swc_Tree_To_Analysis_File(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
     const char *branch_file, const char *puncta_file)
 {
-  BOOL *on_root;
-  GUARDED_MALLOC_ARRAY(on_root, puncta->size, BOOL);
+  _BOOL_ *on_root;
+  GUARDED_MALLOC_ARRAY(on_root, puncta->size, _BOOL_);
   Swc_Tree_Identify_Puncta(tree, puncta, SWC_SOMA, on_root);
 
   Swc_Tree_Merge_Root_Group(tree, SWC_SOMA);
@@ -4546,7 +4548,7 @@ Swc_Tree_To_Analysis_File(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
   /* Total branch number of the tree. */
   int branch_number = Swc_Tree_Label_Branch_All(tree) + 1;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
   FILE *fp = fopen(branch_file, "w");
   fprintf(fp, "# branch id, type, x, y, z, radius, blueness\n");
@@ -4568,7 +4570,7 @@ Swc_Tree_To_Analysis_File(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
   fclose(fp);
 
   tree->root->weight = 0.0;
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
 
   /* Calculating length */
   tn = Swc_Tree_Next(tree);
@@ -4585,7 +4587,7 @@ Swc_Tree_To_Analysis_File(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
   Swc_Tree_Reduce(reduced_tree);
 
   /* assign length array */
-  Swc_Tree_Iterator_Start(reduced_tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(reduced_tree, 1, _FALSE_);
   length[0] = 0.0;
   while ((tn = Swc_Tree_Next(reduced_tree)) != NULL) {
     length[Swc_Tree_Node_Data(tn)->label] = Swc_Tree_Node_Weight(tn);
@@ -4604,7 +4606,7 @@ Swc_Tree_To_Analysis_File(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
   fp = fopen(puncta_file, "w");
   fprintf(fp, "# puncta id, x, y, z, branch id, offset\n");
   for (i = 0; i < puncta->size; i++) {
-    if (on_root[i] == FALSE) {
+    if (on_root[i] == _FALSE_) {
       Swc_Tree_Point_Dist(tree, puncta->points[i][0], puncta->points[i][1],
           puncta->points[i][2], pt, &ctn);
       branch_id[i] = Swc_Tree_Node_Data(ctn)->label;
@@ -4672,13 +4674,13 @@ void Swc_Tree_Merge(Swc_Tree *tree, Swc_Tree *prey)
     tree->root = Make_Virtual_Swc_Tree_Node();
   }
 
-  if (Swc_Tree_Node_Is_Virtual(tree->root) == FALSE) {
+  if (Swc_Tree_Node_Is_Virtual(tree->root) == _FALSE_) {
     Swc_Tree_Node *node = Make_Virtual_Swc_Tree_Node();
     Swc_Tree_Node_Set_Parent(tree->root, node);
     tree->root = node;
   }
 
-  if (Swc_Tree_Node_Is_Virtual(prey->root) == FALSE) {
+  if (Swc_Tree_Node_Is_Virtual(prey->root) == _FALSE_) {
     Swc_Tree_Node_Add_Child(tree->root, prey->root);
     prey->root = NULL;
   } else {
@@ -4700,7 +4702,7 @@ void Swc_Tree_Merge_Node_As_Root(Swc_Tree *tree, Swc_Tree_Node *tn)
     tree->root = Make_Virtual_Swc_Tree_Node();
   }
 
-  if (Swc_Tree_Node_Is_Virtual(tree->root) == FALSE) {
+  if (Swc_Tree_Node_Is_Virtual(tree->root) == _FALSE_) {
     Swc_Tree_Node *node = Make_Virtual_Swc_Tree_Node();
     Swc_Tree_Node_Set_Parent(tree->root, node);
     tree->root = node;
@@ -4782,7 +4784,7 @@ void Swc_Tree_Label_Main_Trunk_L(Swc_Tree *tree, int label,
 				 double length_lower_thre, 
 				 double length_upper_thre)
 {
-  Swc_Tree_Iterator_Start(tree, 1, TRUE);
+  Swc_Tree_Iterator_Start(tree, 1, _TRUE_);
 
   /* alloc <length> */
   double *length = Swc_Tree_Accm_Length(tree, NULL);
@@ -4794,7 +4796,7 @@ void Swc_Tree_Label_Main_Trunk_L(Swc_Tree *tree, int label,
   Swc_Tree_Node *end = NULL;
   Swc_Tree_Node *tn = NULL;
 
-  Swc_Tree_Iterator_Start(tree, 0, FALSE);
+  Swc_Tree_Iterator_Start(tree, 0, _FALSE_);
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Leaf(tn)) {
       if (length[tn->index] >= length_upper_thre) {
@@ -4847,7 +4849,7 @@ void Swc_Tree_Label_Main_Trunk_L(Swc_Tree *tree, int label,
 
 Swc_Tree_Node* Swc_Tree_Thickest_Node(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   Swc_Tree_Node *result = Swc_Tree_Next(tree);
@@ -4872,7 +4874,7 @@ Swc_Tree_Node* Swc_Tree_Grow_Soma(Swc_Tree *tree, int label)
   Swc_Tree_Node_Set_Root(tn);
   Swc_Tree_Node *root = tn;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, _FALSE_);
 
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn->parent)) {
@@ -4960,7 +4962,7 @@ void Swc_Tree_Glue(Swc_Tree *tree, Swc_Tree_Node *tn)
 
 void Swc_Tree_Set_Feature(Swc_Tree *tree, double *feature)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   
@@ -4973,7 +4975,7 @@ int Swc_Tree_Leaf_Number(Swc_Tree *tree)
 {
   Swc_Tree_Iterator_Leaf(tree);
   
-  return Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, TRUE);
+  return Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, _TRUE_);
 }
 
 int Swc_Tree_Branch_Number(Swc_Tree *tree)
@@ -5012,7 +5014,7 @@ int Swc_Tree_Branch_Number(Swc_Tree *tree)
 
 double Swc_Tree_Overall_Length(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   Swc_Tree_Node *tn = tree->begin;
   double length = 0.0;
@@ -5026,7 +5028,7 @@ double Swc_Tree_Overall_Length(Swc_Tree *tree)
 
 double Swc_Tree_Surface_Area(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
 
   Swc_Tree_Node *tn = NULL;
   double area = 0.0;
@@ -5039,7 +5041,7 @@ double Swc_Tree_Surface_Area(Swc_Tree *tree)
 
 double* Swc_Tree_Accm_Length(Swc_Tree *tree, double *length)
 {
-  int n = Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  int n = Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   if (length == NULL) {
     length = darray_calloc(n);
@@ -5060,7 +5062,7 @@ double* Swc_Tree_Accm_Length(Swc_Tree *tree, double *length)
 
 double* Swc_Tree_Accm_Thickness(Swc_Tree *tree, double *th)
 {
-  int n = Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  int n = Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   
   if (th == NULL) {
     th = darray_calloc(n);
@@ -5083,7 +5085,7 @@ double* Swc_Tree_Accm_Thickness(Swc_Tree *tree, double *th)
 
 void Swc_Tree_Regularize(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = tree->begin;
 
   while (tn != NULL) {
@@ -5135,40 +5137,40 @@ Swc_Tree* Swc_Tree_Pull_R(Swc_Tree *tree, const double *root)
   return subtree;
 }
 
-BOOL Swc_Tree_Hit_Test(Swc_Tree *tree, int iter, 
+_BOOL_ Swc_Tree_Hit_Test(Swc_Tree *tree, int iter, 
 		       double x, double y, double z)
 {
-  Swc_Tree_Iterator_Start(tree, iter, FALSE);
+  Swc_Tree_Iterator_Start(tree, iter, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree))) {
     if (Swc_Tree_Node_Hit_Test_N(tn, x, y, z)) {
-      return TRUE;
-    } else if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+      return _TRUE_;
+    } else if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
       Local_Neuroseg locseg;
       Swc_Tree_Node_To_Locseg(tn, &locseg);
       if (Local_Neuroseg_Hit_Test(&locseg, x, y, z)) {
-        return TRUE;
+        return _TRUE_;
       }
     }
   }
   
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Swc_Tree_Hit_Test_N(Swc_Tree *tree, int iter, 
+_BOOL_ Swc_Tree_Hit_Test_N(Swc_Tree *tree, int iter, 
     double x, double y, double z)
 {
-  Swc_Tree_Iterator_Start(tree, iter, FALSE);
+  Swc_Tree_Iterator_Start(tree, iter, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree))) {
     if (Swc_Tree_Node_Hit_Test_N(tn, x, y, z)) {
-      return TRUE;
+      return _TRUE_;
     }
   }
   
-  return FALSE;
+  return _FALSE_;
 }
 
 Swc_Tree_Node* Swc_Tree_Hit_Node(Swc_Tree *tree, double x, double y, double z)
@@ -5178,7 +5180,7 @@ Swc_Tree_Node* Swc_Tree_Hit_Node(Swc_Tree *tree, double x, double y, double z)
 
   static const double Regularize_Number = 0.1;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree))) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -5202,7 +5204,7 @@ Swc_Tree_Node* Swc_Tree_Hit_Node_P(Swc_Tree *tree, double x, double y)
 
   static const double Regularize_Number = 0.1;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree))) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -5219,36 +5221,36 @@ Swc_Tree_Node* Swc_Tree_Hit_Node_P(Swc_Tree *tree, double x, double y)
   return hit;
 }
 
-BOOL Swc_Tree_Hit_Test_E(Swc_Tree *tree, int iter, 
+_BOOL_ Swc_Tree_Hit_Test_E(Swc_Tree *tree, int iter, 
     double x, double y, double z, double scale, double delta)
 {
   Swc_Tree *tmp_tree = Copy_Swc_Tree(tree);
   
-  Swc_Tree_Iterator_Start(tmp_tree, iter, FALSE);
+  Swc_Tree_Iterator_Start(tmp_tree, iter, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tmp_tree))) {
     tn->node.d = tn->node.d * scale + delta;
   }
 
-  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_NO_UPDATE, _FALSE_);
   while ((tn = Swc_Tree_Next(tmp_tree))) {
     if (Swc_Tree_Node_Hit_Test_N(tn, x, y, z)) {
       Kill_Swc_Tree(tmp_tree);
-      return TRUE;
-    } else if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+      return _TRUE_;
+    } else if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
       Local_Neuroseg locseg;
       Swc_Tree_Node_To_Locseg(tn, &locseg);
       if (Local_Neuroseg_Hit_Test(&locseg, x, y, z)) {
         Kill_Swc_Tree(tmp_tree);
-        return TRUE;
+        return _TRUE_;
       }
     }
   }
   
   Kill_Swc_Tree(tmp_tree);
 
-  return FALSE;
+  return _FALSE_;
 }
 
 void Swc_Tree_Cut_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
@@ -5258,7 +5260,7 @@ void Swc_Tree_Cut_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
     Kill_Swc_Tree_Node(tn);
   } else {
     Swc_Tree_Node_Detach_Parent(tn);
-    if (Swc_Tree_Node_Is_Virtual(tree->root) == FALSE) {
+    if (Swc_Tree_Node_Is_Virtual(tree->root) == _FALSE_) {
       Swc_Tree_Node *root = Make_Virtual_Swc_Tree_Node();
       Swc_Tree_Node_Set_Parent(tree->root, root);
       tree->root = root;
@@ -5270,10 +5272,10 @@ void Swc_Tree_Cut_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
 
 void Swc_Tree_Subtract(Swc_Tree *tree1, Swc_Tree *tree2)
 {
-  Swc_Tree_Iterator_Start(tree1, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree1, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree1);
   Swc_Tree_Node *next = NULL;
-  Swc_Tree_Iterator_Start(tree2, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree2, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   if (Swc_Tree_Node_Is_Virtual(tn)) {
     tn = tn->next;
   }
@@ -5308,7 +5310,7 @@ Geo3d_Point_Array* Swc_Tree_Branch_2d_Layout(Swc_Tree *tree, int start_id,
   }
 
   Geo3d_Point_Array *pa = Make_Geo3d_Point_Array(n);
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, _FALSE_);
   tn = Swc_Tree_Next(tree);
   pa->array[0][0] = x1;
   pa->array[0][1] = y1;
@@ -5328,13 +5330,13 @@ Geo3d_Point_Array* Swc_Tree_Branch_2d_Layout(Swc_Tree *tree, int start_id,
 
 void Swc_Tree_Merge_Root_Group(Swc_Tree *tree, int label)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = tree->begin;
   Swc_Tree_Node *next = NULL;
   while (tn != NULL) {
     next = tn->next;
-    if (Swc_Tree_Node_Is_Regular_Root(tn->parent) == TRUE) {
+    if (Swc_Tree_Node_Is_Regular_Root(tn->parent) == _TRUE_) {
       if ((Swc_Tree_Node_Label(tn->parent) == label) && 
 	  (Swc_Tree_Node_Label(tn) == label)) {
 	Swc_Tree_Node_Merge_To_Parent(tn); 
@@ -5348,7 +5350,7 @@ Swc_Tree_Node** Swc_Tree_Iterator_Array(Swc_Tree *tree, int *n)
 {
   Swc_Tree_Node **tn_array = NULL;
   Swc_Tree_Node *tn = NULL;
-  *n = Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, TRUE);
+  *n = Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, _TRUE_);
 
   if (*n > 0) {
     GUARDED_MALLOC_ARRAY(tn_array, *n, Swc_Tree_Node*);
@@ -5368,7 +5370,7 @@ double Swc_Tree_Node_Apical_Score(Swc_Tree_Node *tn)
 
 void Swc_Tree_Label_Nw(Swc_Tree *tree, int label)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, TRUE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _TRUE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Label(tn) == 0) {
@@ -5394,7 +5396,7 @@ void swc_tree_node_set_label_d2(Swc_Tree_Node *tn, int label, int overwrite)
   }
 }
 
-void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, BOOL label_soma, BOOL merge_soma)
+void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, _BOOL_ label_soma, _BOOL_ merge_soma)
 {
   if (label_soma) {
     Swc_Tree_Grow_Soma(tree, 1);
@@ -5424,7 +5426,7 @@ void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, BOOL label_soma, BOOL merge_soma)
     Swc_Tree_Node_Detach_Parent(apical_tn);
     Swc_Tree_Node_Add_Child(root, apical_tn);
   } else {
-    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
     Swc_Tree_Node *tn = NULL;
 
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -5447,7 +5449,7 @@ void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, BOOL label_soma, BOOL merge_soma)
 
 void Swc_Tree_Set_Type_As_Label(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Label(tn) > 0) {
@@ -5458,7 +5460,7 @@ void Swc_Tree_Set_Type_As_Label(Swc_Tree *tree)
 
 void Swc_Tree_Set_Type(Swc_Tree *tree, int type)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     Swc_Tree_Node_Data(tn)->type = type;
@@ -5467,7 +5469,7 @@ void Swc_Tree_Set_Type(Swc_Tree *tree, int type)
 
 void Swc_Tree_Set_Label(Swc_Tree *tree, int label)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     Swc_Tree_Node_Set_Label(tn, label);
@@ -5475,24 +5477,24 @@ void Swc_Tree_Set_Label(Swc_Tree *tree, int label)
 }
 
 void Swc_Tree_Identify_Puncta(Swc_Tree *tree, Geo3d_Scalar_Field *puncta, 
-    int label, BOOL *on_label)
+    int label, _BOOL_ *on_label)
 {
   int i;
   /* Try hit test first */
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   for (i = 0; i < puncta->size; i++) {
-    on_label[i] = FALSE;
-    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+    on_label[i] = _FALSE_;
+    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, _FALSE_);
     Swc_Tree_Node *tn = NULL;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
-      if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+      if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
 	if ((Swc_Tree_Node_Label(tn) == label) &&
 	    (Swc_Tree_Node_Label(tn->parent) == label)) {
 	  Local_Neuroseg locseg;
 	  if (Swc_Tree_Node_To_Locseg(tn, &locseg) != NULL) {
 	    if (Local_Neuroseg_Hit_Test(&locseg, puncta->points[i][0],
-		  puncta->points[i][1], puncta->points[i][2]) == TRUE) {
-	      on_label[i] = TRUE;
+		  puncta->points[i][1], puncta->points[i][2]) == _TRUE_) {
+	      on_label[i] = _TRUE_;
 	    }
 	  }
 	}
@@ -5503,14 +5505,14 @@ void Swc_Tree_Identify_Puncta(Swc_Tree *tree, Geo3d_Scalar_Field *puncta,
   /* Distance check */
   Swc_Tree_Node *ctn = NULL;
   for (i = 0; i < puncta->size; i++) {
-    if (on_label[i] == FALSE) {
+    if (on_label[i] == _FALSE_) {
       Swc_Tree_Point_Dist(tree, puncta->points[i][0], puncta->points[i][1],
 	  puncta->points[i][2], NULL, &ctn);
 
       if (Swc_Tree_Node_Label(ctn) == label) {
-	on_label[i] = TRUE;
+	on_label[i] = _TRUE_;
       } else {
-	on_label[i] = FALSE;
+	on_label[i] = _FALSE_;
       }
     }
   }
@@ -5788,7 +5790,7 @@ Swc_Tree *Swc_Tree_From_Object_3d_M(const Object_3d *obj)
 
 void Swc_Tree_Resort_Main_Trunk(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);
 
   while (tn != NULL) {
@@ -5825,17 +5827,17 @@ double Swc_Tree_Node_Intensity_Distribution_E(Swc_Tree_Node *tn, Stack *signal,
     for (j = 0; j < sheight; j++) {
       for (i = 0; i < swidth; i++) {
         if (offset >= 0) {
-          BOOL signal_on = TRUE;
+          _BOOL_ signal_on = _TRUE_;
           if (mask != NULL) {
             if (mask->array[offset] == 0) {
-              signal_on = FALSE;
+              signal_on = _FALSE_;
             }
           }
 
           /* out of stack range */
           if (!IS_IN_OPEN_RANGE3(x + i, y + j, z + k, -1, Stack_Width(signal),
                 -1, Stack_Height(signal), -1, Stack_Depth(signal))) {
-            signal_on = FALSE;
+            signal_on = _FALSE_;
           }
 
           if (signal_on) {
@@ -5902,11 +5904,11 @@ double Swc_Tree_Node_Intensity_Distribution_Ec(Swc_Tree_Node *tn,
   for (k = 0; k < sdepth; k++) {
     for (j = 0; j < sheight; j++) {
       for (i = 0; i < swidth; i++) {
-        BOOL signal_on = TRUE;
+        _BOOL_ signal_on = _TRUE_;
         /* out of stack range */
         if (!IS_IN_OPEN_RANGE3(x + i, y + j, z + k, -1, Stack_Width(signal),
               -1, Stack_Height(signal), -1, Stack_Depth(signal))) {
-          signal_on = FALSE;
+          signal_on = _FALSE_;
         }
 
         if (signal_on) {
@@ -6037,9 +6039,9 @@ void Swc_Tree_Feature_To_Weight(Swc_Tree *tree)
 
 void Swc_Tree_To_Branch_Feature_File(Swc_Tree *tree, const char *filepath)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = tree->root;
-  BOOL start = TRUE;
+  _BOOL_ start = _TRUE_;
   FILE *fp = fopen(filepath, "w");
   int start_node_id = -1;
   double length = 0;
@@ -6047,7 +6049,7 @@ void Swc_Tree_To_Branch_Feature_File(Swc_Tree *tree, const char *filepath)
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
       if (start) { /* first node of the branch */
-        start = FALSE;
+        start = _FALSE_;
         start_node_id = Swc_Tree_Node_Id(tn);
         length = 0.0;
         surf_area = 0.0;
@@ -6058,11 +6060,11 @@ void Swc_Tree_To_Branch_Feature_File(Swc_Tree *tree, const char *filepath)
 
       /* restart if the end of a branch is reached */
       if (Swc_Tree_Node_Is_Leaf(tn)) {
-        start = TRUE;
+        start = _TRUE_;
       } else {
         if (length > 1) {
           if (Swc_Tree_Node_Is_Branch_Point(tn)) {
-            start = TRUE;
+            start = _TRUE_;
           }
         }
       }
@@ -6079,17 +6081,17 @@ void Swc_Tree_Erase_Stack(Swc_Tree *tree, Stack *stack, double scale,
 {
   Swc_Tree *tmp_tree = Copy_Swc_Tree(tree);
   
-  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tmp_tree))) {
     tn->node.d = tn->node.d * scale + delta;
   }
 
-  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+  Swc_Tree_Iterator_Start(tmp_tree, SWC_TREE_ITERATOR_NO_UPDATE, _FALSE_);
 
   while ((tn = Swc_Tree_Next(tmp_tree))) {
-    if (Swc_Tree_Node_Is_Root(tn) == FALSE) {
+    if (Swc_Tree_Node_Is_Root(tn) == _FALSE_) {
       Local_Neuroseg locseg;
       Swc_Tree_Node_To_Locseg(tn, &locseg);
       Local_Neuroseg_Label_G(&locseg, stack, -1, 0, 1.0);
@@ -6102,7 +6104,7 @@ void Swc_Tree_Erase_Stack(Swc_Tree *tree, Stack *stack, double scale,
     for (j = 0; j < stack->height; j++) {
       for (i = 0; i < stack->width; i++) {
         if (Swc_Tree_Hit_Test_N(tmp_tree, SWC_TREE_ITERATOR_NO_UPDATE, i, j, k)
-            == TRUE) {
+            == _TRUE_) {
           stack->array[offset] = 0;
         }
         offset++;
@@ -6116,7 +6118,7 @@ void Swc_Tree_Erase_Stack(Swc_Tree *tree, Stack *stack, double scale,
 void Swc_Tree_Translate(Swc_Tree *tree, double x, double y, double z)
 {
   if (tree != NULL) {
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
     Swc_Tree_Node *tn = tree->root;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -6131,7 +6133,7 @@ void Swc_Tree_Translate(Swc_Tree *tree, double x, double y, double z)
 void Swc_Tree_Rotate(Swc_Tree *tree, double theta, double psi, 
     double cx, double cy, double cz)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = tree->root;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -6141,9 +6143,9 @@ void Swc_Tree_Rotate(Swc_Tree *tree, double theta, double psi,
 }
 
 void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale, 
-    double z_scale, BOOL change_node_size)
+    double z_scale, _BOOL_ change_node_size)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = tree->root;
   double d_scale = sqrt(x_scale * y_scale);
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -6151,7 +6153,7 @@ void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale,
       Swc_Tree_Node_Data(tn)->x *= x_scale;
       Swc_Tree_Node_Data(tn)->y *= y_scale;
       Swc_Tree_Node_Data(tn)->z *= z_scale;
-      if (change_node_size == TRUE) {
+      if (change_node_size == _TRUE_) {
         Swc_Tree_Node_Data(tn)->d *= d_scale;
       }
     }
@@ -6170,7 +6172,7 @@ double* Swc_Tree_Cross_Talk_Score(Swc_Tree *tree, Swc_Tree *source_tree, int *n)
   *n = Swc_Tree_Label_Branch_All(tree);
 
   /* Relabel the regular roots */
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)&& (Swc_Tree_Node_Is_Regular(tn->parent))) {
@@ -6191,8 +6193,8 @@ double* Swc_Tree_Cross_Talk_Score(Swc_Tree *tree, Swc_Tree *source_tree, int *n)
 
   TZ_ASSERT(darray_iszero(score, *n), "array initialization error");
 
-  Swc_Tree_Iterator_Start(source_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_REVERSE, FALSE);
+  Swc_Tree_Iterator_Start(source_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_REVERSE, _FALSE_);
 
   double s = 0.0;
   double sp = 0.0;
@@ -6203,10 +6205,10 @@ double* Swc_Tree_Cross_Talk_Score(Swc_Tree *tree, Swc_Tree *source_tree, int *n)
 
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
-      BOOL hit = Swc_Tree_Hit_Test(source_tree, SWC_TREE_ITERATOR_NO_UPDATE, 
+      _BOOL_ hit = Swc_Tree_Hit_Test(source_tree, SWC_TREE_ITERATOR_NO_UPDATE, 
           Swc_Tree_Node_X(tn), Swc_Tree_Node_Y(tn), Swc_Tree_Node_Z(tn));
       s = 0.0;
-      if (hit == TRUE) {
+      if (hit == _TRUE_) {
         s = 1.0 + sp * 0.1;
       }
 
@@ -6222,7 +6224,7 @@ double* Swc_Tree_Cross_Talk_Score(Swc_Tree *tree, Swc_Tree *source_tree, int *n)
             node_number++;
             TZ_ASSERT(node_number, "Zero node number");
             score[prev_label - 1] /= node_number;
-            if (hit == TRUE) {
+            if (hit == _TRUE_) {
               s = 1.0;
             } else {
               s = 0.0;
@@ -6260,15 +6262,15 @@ double* Swc_Tree_Cross_Talk_Score(Swc_Tree *tree, Swc_Tree *source_tree, int *n)
 }
 #endif
 
-BOOL Swc_Tree_Has_Branch(Swc_Tree *tree)
+_BOOL_ Swc_Tree_Has_Branch(Swc_Tree *tree)
 {
-  BOOL has_branch = FALSE;
+  _BOOL_ has_branch = _FALSE_;
 
   if (tree != NULL) {
     Swc_Tree_Node *root = Swc_Tree_Regular_Root(tree);
     if (root != NULL) {
       if (root->first_child != NULL) {
-        has_branch = TRUE;
+        has_branch = _TRUE_;
       }
     }
   }
@@ -6278,7 +6280,7 @@ BOOL Swc_Tree_Has_Branch(Swc_Tree *tree)
 
 void Swc_Tree_Remove_Labeled(Swc_Tree *tree, int label)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   Swc_Tree_Node *tn = Swc_Tree_Next(tree);;
   /* For each node */
@@ -6312,7 +6314,7 @@ void Swc_Tree_Node_Rotate(Swc_Tree_Node *tn, double theta, double psi,
 {
   Swc_Tree_Node_Translate(tn, -cx, -cy, -cz);
   Geo3d_Rotate_Coordinate(&(tn->node.x), &(tn->node.y), &(tn->node.z),
-      theta, psi, FALSE);
+      theta, psi, _FALSE_);
   Swc_Tree_Node_Translate(tn, cx, cy, cz);
 }
 
@@ -6325,7 +6327,7 @@ void Swc_Tree_Centroid(Swc_Tree *tree, double *x, double *y, double *z)
 
   if (tree != NULL) {
     Swc_Tree_Node *tn = NULL;
-    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
         double wi = Swc_Tree_Node_Radius(tn);
@@ -6349,7 +6351,7 @@ int Swc_Tree_Sub_Degree(Swc_Tree *tree, int order)
 {
   int degree = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -6371,7 +6373,7 @@ int Swc_Tree_Sub_Size(Swc_Tree *tree, int order)
 {
   int size = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -6389,7 +6391,7 @@ double Swc_Tree_Sub_Length(Swc_Tree *tree, int order)
 {
   double length = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -6413,7 +6415,7 @@ Geo3d_Scalar_Field* Swc_Tree_Sub_To_Scalar_Field(Swc_Tree *tree, int order,
   
   field->size = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   Swc_Tree_Node *tn = NULL;
 
@@ -6563,7 +6565,7 @@ double Swc_Tree_Sub_Box_Volume(Swc_Tree *tree, int order)
 
 double Swc_Tree_Sub_Average_Angle(Swc_Tree *tree, int order)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   double angle = 0.0;
   int n = 0;
@@ -6593,7 +6595,7 @@ double Swc_Tree_Sub_Average_Angle(Swc_Tree *tree, int order)
 
 double Swc_Tree_Sub_Max_Angle(Swc_Tree *tree, int order)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   double max_angle = 0.0;
   Swc_Tree_Node *tn = NULL;
@@ -6627,7 +6629,7 @@ double Swc_Tree_Sub_Average_Branching_Angle(Swc_Tree *tree, int order)
   double angle = 0.0;
   int n = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Branch_Point(tn) && !Swc_Tree_Node_Is_Root(tn)) {
@@ -6689,7 +6691,7 @@ void Default_Swc_Tree_Node_Label_Workspace(Swc_Tree_Node_Label_Workspace *ws)
   ws->offset[0] = 0.0;
   ws->offset[1] = 0.0;
   ws->offset[2] = 0.0;
-  ws->z_proj = FALSE;
+  ws->z_proj = _FALSE_;
 }
 
 void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack, 
@@ -6700,7 +6702,7 @@ void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack,
         ws->label_mode == SWC_TREE_LABEL_CONNECTION) {
       Local_Neuroseg locseg;
       Local_Neuroseg *tmpseg = NULL;
-      if (ws->z_proj == TRUE) {
+      if (ws->z_proj == _TRUE_) {
         tmpseg = Swc_Tree_Node_To_Locseg_P(tn, &locseg);
       } else {
         tmpseg = Swc_Tree_Node_To_Locseg(tn, &locseg);
@@ -6725,7 +6727,7 @@ void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack,
       ball.r = tn->node.d;
       ball.center[0] = tn->node.x + ws->offset[0];
       ball.center[1] = tn->node.y + ws->offset[1];
-      if (ws->z_proj == TRUE) {
+      if (ws->z_proj == _TRUE_) {
         ball.center[2] = 0.0 + ws->offset[2];
       } else {
         ball.center[2] = tn->node.z + ws->offset[2];
@@ -6738,7 +6740,7 @@ void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack,
 void Swc_Tree_Label_Stack(Swc_Tree *tree, Stack *stack,
     Swc_Tree_Node_Label_Workspace *ws)
 {
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     Swc_Tree_Node_Label_Stack(tn, stack, ws);
@@ -6764,7 +6766,7 @@ void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)
   }
 
   int node_number = 
-    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, TRUE);
+    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _TRUE_);
 
   /* alloc <node_array> */
   Swc_Tree_Node **node_array = (Swc_Tree_Node**) Guarded_Malloc(
@@ -6777,14 +6779,14 @@ void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)
 
   int tree_number = Swc_Tree_Label_Forest(tree);
 
-  Graph *graph = Make_Graph(node_number, 1, TRUE);
+  Graph *graph = Make_Graph(node_number, 1, _TRUE_);
   
   int i;
   for (i = 0; i < node_number; ++i) {
     tn = node_array[i];
 
     if (Swc_Tree_Node_Is_Regular(tn) && 
-        (Swc_Tree_Node_Is_Continuation(tn) == FALSE)) {
+        (Swc_Tree_Node_Is_Continuation(tn) == _FALSE_)) {
       double pos[3];
       Swc_Tree_Node_Pos(tn, pos);
       Swc_Tree_Node *root = tree->root->first_child;
@@ -6815,8 +6817,8 @@ void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)
 
   Graph_Remove_Duplicated_Edge(graph);
 
-  Graph *subgraph = Make_Graph(node_number, 1, TRUE);
-  Graph *label_graph = Make_Graph(tree_number + 1, 1, TRUE);
+  Graph *subgraph = Make_Graph(node_number, 1, _TRUE_);
+  Graph *label_graph = Make_Graph(tree_number + 1, 1, _TRUE_);
 
   Graph_Workspace *gw = New_Graph_Workspace();
 
@@ -6881,7 +6883,7 @@ int Swc_Tree_Label_Forest(Swc_Tree *tree)
 {
   int tree_number = 0;
 
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_BREADTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular_Root(tn)) {

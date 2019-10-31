@@ -115,6 +115,7 @@ inline static Neuroseg_Field_f Neuroseg_Slice_Field_Func(int option)
     break;
   case 4:
     f = Neurofield_Rpi;
+    break;
   default:
     printf("The default field is used.");
     break;
@@ -409,7 +410,7 @@ double Neuroseg_Theta_Offset(const Neuroseg *seg1, const Neuroseg *seg2);
  * Neuroseg_Hit_Test returns TRUE is the point (<x>, <y>, <z>) hits <seg>,
  * otherwise it returns FALSE.
  */
-BOOL Neuroseg_Hit_Test(const Neuroseg *seg, double x, double y, double z);
+_BOOL_ Neuroseg_Hit_Test(const Neuroseg *seg, double x, double y, double z);
 
 /**@brief Test if any of a set of points hits a neuroseg.
  *

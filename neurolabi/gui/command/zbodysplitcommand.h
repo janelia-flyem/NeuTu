@@ -3,7 +3,7 @@
 
 #include "zcommandmodule.h"
 
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZDvidReader;
 class ZStack;
@@ -24,7 +24,7 @@ public:
       const ZJsonObject &config);
 
 private:
-  static ZDvidReader* ParseInputPath(
+  ZDvidReader* parseInputPath(
       const std::string &inputPath, ZJsonObject &inputJson,
       std::string &splitTaskKey, std::string &splitResultKey,
       std::string &dataDir, bool &isFile);
@@ -42,9 +42,11 @@ private:
   std::vector<uint64_t> commitResult(
       ZObject3dScanArray *objArray, ZDvidWriter &writer);
 
+  std::string getLabelTypeName() const;
+
 private:
   uint64_t m_bodyId = 0;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
 };
 
 #endif // ZBODYSPLITCOMMAND_H

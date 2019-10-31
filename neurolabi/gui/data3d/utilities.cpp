@@ -3,23 +3,23 @@
 std::string zstackobject::ToString(ZStackObject::ETarget target)
 {
   switch (target) {
-  case ZStackObject::TARGET_NULL:
+  case ZStackObject::ETarget::NONE:
     return "NULL";
-  case ZStackObject::TARGET_OBJECT_CANVAS:
+  case ZStackObject::ETarget::OBJECT_CANVAS:
     return "object canvas";
-  case ZStackObject::TARGET_WIDGET:
+  case ZStackObject::ETarget::WIDGET:
     return "widget";
-  case ZStackObject::TARGET_TILE_CANVAS:
+  case ZStackObject::ETarget::TILE_CANVAS:
     return "tile canvas";
-  case ZStackObject::TARGET_3D_ONLY:
+  case ZStackObject::ETarget::ONLY_3D:
     return "3D";
-  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+  case ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS:
     return "dynamic object canvas";
-  case ZStackObject::TARGET_3D_CANVAS:
+  case ZStackObject::ETarget::CANVAS_3D:
     return "3D canvas";
-  case ZStackObject::TARGET_STACK_CANVAS:
+  case ZStackObject::ETarget::STACK_CANVAS:
     return "stack canvas";
   }
 
-  return std::to_string(target);
+  return std::to_string(neutu::EnumValue(target));
 }

@@ -127,6 +127,40 @@ void ZROIWidget::toggleCheckStatus(int row)
   }
 }
 
+void ZROIWidget::updateRoiTable()
+{
+  tw_ROIs->clear();
+  size_t roiCount = m_roiList.size();
+  for (std::size_t i = 0; i < roiCount; ++i)
+  {
+    QTableWidgetItem *roiNameItem = new QTableWidgetItem(m_roiList[i].c_str());
+    roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
+    roiNameItem->setCheckState(Qt::Unchecked);
+
+    ZColorScheme zcolor;
+    zcolor.setColorScheme(ZColorScheme::RANDOM_COLOR);
+    QBrush brush(zcolor.getColor((uint64_t) i));
+
+    QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
+    colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
+    QFont font;
+    font.setBold(true);
+    colorItem->setFont(font);
+    //colorItem->setBackgroundColor(defaultColor);
+    colorItem->setForeground(brush);
+
+    int row = tw_ROIs->rowCount();
+    tw_ROIs->insertRow(row);
+    tw_ROIs->setItem(row, 0, roiNameItem);
+    tw_ROIs->setItem(row, 1, colorItem);
+
+//    bool checked = false;
+//    m_checkStatus.push_back(checked);
+  }
+  m_checkStatus.resize(roiCount, false);
+}
+
 void ZROIWidget::makeGUI()
 {
     if(m_roiList.empty())
@@ -137,9 +171,10 @@ void ZROIWidget::makeGUI()
     m_selectAll->setChecked(false);
 
     //
-    double alpha = m_window->getFilter(neutube3d::LAYER_ROI)->opacity();
+    double alpha = m_window->getFilter(neutu3d::ERendererLayer::ROI)->opacity();
  //   double alpha = m_window->getSurfaceFilter()->getOpacity();
-    m_opacityLabel = new QLabel(tr(" Opacity: %1").arg(alpha));
+    m_opacityLabel = new QLabel;//(tr(" Opacity: %1").arg(alpha, 0, 'f', 2, '0'));
+    updateOpacityLabel(alpha);
     m_opacitySlider = new QSlider(Qt::Horizontal);
     m_opacitySlider->setRange(0,100);
     m_opacitySlider->setValue(alpha*100);
@@ -174,34 +209,7 @@ void ZROIWidget::makeGUI()
 
     //
     //QBrush brush(defaultColor);
-    size_t roiCount = m_roiList.size();
-    for (std::size_t i = 0; i < roiCount; ++i)
-    {
-        QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(m_roiList[i].c_str()));
-        roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
-        roiNameItem->setCheckState(Qt::Unchecked);
-
-        ZColorScheme zcolor;
-        zcolor.setColorScheme(ZColorScheme::RANDOM_COLOR);
-        QBrush brush(zcolor.getColor((uint64_t) i));
-
-        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
-        colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
-        QFont font;
-        font.setBold(true);
-        colorItem->setFont(font);
-        //colorItem->setBackgroundColor(defaultColor);
-        colorItem->setForeground(brush);
-
-        int row = tw_ROIs->rowCount();
-        tw_ROIs->insertRow(row);
-        tw_ROIs->setItem(row, 0, roiNameItem);
-        tw_ROIs->setItem(row, 1, colorItem);
-
-        bool checked = false;
-        m_checkStatus.push_back(checked);
-    }
+    updateRoiTable();
 
     QVBoxLayout *layout = new QVBoxLayout();
 
@@ -230,7 +238,7 @@ void ZROIWidget::makeGUI()
             this, SLOT(updateROISelections(QModelIndex)));
     connect(m_selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
     connect(m_opacitySlider,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
-    connect(m_window->getFilter(neutube3d::LAYER_ROI), SIGNAL(opacityChanged(double)),
+    connect(m_window->getFilter(neutu3d::ERendererLayer::ROI), SIGNAL(opacityChanged(double)),
             this,SLOT(updateOpacity(double)));
 }
 
@@ -347,7 +355,7 @@ void ZROIWidget::updateROIs()
 #endif
 
       ZStackObject *obj = m_window->getDocument()->getObject(
-            ZStackObject::TYPE_MESH, m_roiSourceList[i]);
+            ZStackObject::EType::MESH, m_roiSourceList[i]);
       ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
       if(it->checkState()==Qt::Checked) { //visible meshes
@@ -453,6 +461,11 @@ void ZROIWidget::updateROIColors(int row, int column)
     }
 }
 
+void ZROIWidget::updateOpacityLabel(double v)
+{
+  m_opacityLabel->setText(tr(" Opacity: %1").arg(v, 0, 'f', 2, '0'));
+}
+
 void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 {
     ZOUT(LTRACE(), 5)<<"to render ROI: "<<item->text()<<item->checkState();
@@ -464,11 +477,12 @@ void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 void ZROIWidget::updateSlider(int v)
 {
     double alpha = double( v / 100.0 );
-    m_opacityLabel->setText(tr(" Opacity: %1").arg(alpha));
+    updateOpacityLabel(alpha);
+//    m_opacityLabel->setText(tr(" Opacity: %1").arg(alpha));
 
     if(m_window)
     {
-      m_window->setOpacityQuietly(neutube3d::LAYER_ROI, alpha);
+      m_window->setOpacityQuietly(neutu3d::ERendererLayer::ROI, alpha);
 //        m_window->get()->setOpacity(alpha);
     }
 }
@@ -477,7 +491,8 @@ void ZROIWidget::updateOpacity(double v)
 {
     int opacityVal = 100*v;
     m_opacitySlider->setValue(opacityVal);
-    m_opacityLabel->setText(tr(" Opacity: %1").arg(v));
+    updateOpacityLabel(v);
+//    m_opacityLabel->setText(tr(" Opacity: %1").arg(v));
 }
 
 

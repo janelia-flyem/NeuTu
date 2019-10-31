@@ -3,15 +3,22 @@
 #include <QMenu>
 
 #include "neutubeconfig.h"
-#include "zstackpresenter.h"
-#include "zactionfactory.h"
-#include "flyem/zflyemproofpresenter.h"
-#include "flyem/zflyemproofdoc.h"
-#include "z3dwindow.h"
+
 #include "zintcuboidobj.h"
+
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackdochelper.h"
+
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
-#include "zstackdochelper.h"
+#include "zactionfactory.h"
+
+#include "zflyemproofpresenter.h"
+#include "zflyemproofdoc.h"
+#include "zflyemproofdocutil.h"
+
+#include "z3dwindow.h"
+
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -126,19 +133,18 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
       std::set<uint64_t> selectedOriginal =
-          doc->getSelectedBodySet(neutube::EBodyLabelType::ORIGINAL);
+          doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
         if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
 
             if (ZStackDocHelper::AllowingBodyAnnotation(doc)) {
-              if (neutube::IsAdminUser()) {
-                config.append(ZActionFactory::ACTION_BODY_EXPERT_STATUS);
-              }
+//              if (neutube::IsAdminUser()) {
+//                config.append(ZActionFactory::ACTION_BODY_EXPERT_STATUS);
+//              }
               config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
-            config.append(ZActionFactory::ACTION_BODY_PROFILE);
 
             config.appendSeparator();
             if (ZStackDocHelper::AllowingBodySplit(doc)) {
@@ -149,7 +155,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           config.appendSeparator();
           if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             std::set<uint64_t> selectedMapped =
-                doc->getSelectedBodySet(neutube::EBodyLabelType::MAPPED);
+                doc->getSelectedBodySet(neutu::ELabelSource::MAPPED);
 
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);
@@ -168,6 +174,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           }
         }
 
+        config.append(ZActionFactory::ACTION_BODY_PROFILE);
+
         if (!doc->getDvidTarget().getSynapseName().empty()) {
           config.append(ZActionFactory::ACTION_BODY_CONNECTION);
           config.appendSeparator();
@@ -184,9 +192,15 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
       config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+      config.append(ZActionFactory::ACTION_ADD_TODO_TRACE_TO_SOMA);
+      config.append(ZActionFactory::ACTION_ADD_TODO_NO_SOMA);
       if (doc->getDvidTarget().hasSupervoxel()) {
         config.append(ZActionFactory::ACTION_ADD_TODO_SVSPLIT);
       }
+      config.append(ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC);
+      config.append(ZActionFactory::ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC);
+      config.append(ZActionFactory::ACTION_SEPARATOR);
+      config.append(ZActionFactory::ACTION_RUN_TIP_DETECTION);
       config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
@@ -194,7 +208,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -216,12 +231,16 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       }
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
       if (NeutubeConfig::IsAdvancedMode()) {
         config.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
+      }
+
+      if (ZFlyEmProofDocUtil::HasSupervoxel(doc)) {
+        config.append(ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
       }
     }
 
@@ -230,8 +249,14 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
     if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
+    }
+    config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
+
+    config.appendSeparator();
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);
@@ -246,13 +271,14 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   }
 
   config.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+  config.append(ZActionFactory::ACTION_REFRESH_DATA);
 
 //  addAction(actionList, presenter, menu);
 
-  if (doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
-    TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    const TStackObjectSet& bookmarkSet =
+        doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       QString groupName("Bookmarks");
       config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
@@ -416,7 +442,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Bookmark actions */
     QList<ZActionFactory::EAction> bookmarkActionList;
     TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getSelected(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
       bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);

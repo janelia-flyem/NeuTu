@@ -1,15 +1,15 @@
 #include "zflyemservice.h"
-#include "dvid/zdvidreader.h"
+
+#include "common/math.h"
+#include "zstring.h"
+#include "geometry/zintcuboid.h"
 #include "zintpairmap.h"
-#include "tz_math.h"
-#include "tz_error.h"
+#include "zstack.hxx"
 #include "neutube.h"
 #include "neutubeconfig.h"
-#include "zstring.h"
+#include "dvid/zdvidreader.h"
 #include "flyem/zsynapseannotation.h"
 #include "flyem/zsynapseannotationarray.h"
-#include "zintcuboid.h"
-#include "zstack.hxx"
 
 flyem::Service::FaceOrphanOverlap::FaceIndex::FaceIndex() :
   m_cuboidIndex(-1), m_faceIndex(-1)
@@ -296,8 +296,8 @@ ZIntPairMap flyem::Service::FaceOrphanOverlap::countVoxelTouch(
         int x2 = x + tx1 - tx2;
         if (x2 >= 0 && x2 < tstack2->width()) {
           offset2 = y2 * tstack2->width() + x2;
-          TZ_ASSERT(array1[offset1] <= MAX_INT32, "too large label");
-          TZ_ASSERT(array2[offset2] <= MAX_INT32, "too large label");
+//          TZ_ASSERT(array1[offset1] <= MAX_INT32, "too large label");
+//          TZ_ASSERT(array2[offset2] <= MAX_INT32, "too large label");
           int label1 = (int) array1[offset1];
           int label2 = (int) array2[offset2];
           if (label1 == sourceBodyId && label2 > 0) {
@@ -583,9 +583,9 @@ void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
 
-    pt.append(iround(x));
-    pt.append(iround(y));
-    pt.append(iround(z));
+    pt.append(neutu::iround(x));
+    pt.append(neutu::iround(y));
+    pt.append(neutu::iround(z));
     obj.setEntry("marker", pt);
 
     ZIntCuboid box = body.getBoundBox();
@@ -622,9 +622,9 @@ void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     double z = m_marker[i].getZ();
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
-    pt.append(iround(x));
-    pt.append(iround(y));
-    pt.append(iround(z));
+    pt.append(neutu::iround(x));
+    pt.append(neutu::iround(y));
+    pt.append(neutu::iround(z));
     obj.setEntry("marker", pt);
     edgeArray.append(obj);
   }

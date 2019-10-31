@@ -1,16 +1,29 @@
+#include "zimage.h"
+
 #include <iostream>
+#include <stdexcept>
 #include <QImageWriter>
 
-#include "tz_error.h"
-#include "zimage.h"
 #include "tz_stack_neighborhood.h"
+
+#include "common/neutudefs.h"
+#include "common/math.h"
 #include "zstack.hxx"
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
-#include "neutube_def.h"
-#include "tz_math.h"
 #include "zjsonobject.h"
+
+/* Implementation details
+ *
+ * ZImage is the class inherited from QImage for displaying image data.
+ * In addition to the APIs in QImage, ZImage provides functions for setting
+ * image data efficiently. Currently ZImage supports two formats:
+ * Format_Indexed8, Format_ARGB32, Format_ARGB32, Format_Premultiplied.
+ *
+ * Setting data in ZImage accesses raw image data pointer directly for speed,
+ * although it has not be well justified.
+ */
 
 ZImage::ZImage() : QImage()
 {
@@ -50,7 +63,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = neutube::DIM_INVALID_INDEX;
+  m_z = neutu::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -348,15 +361,15 @@ void ZImage::setData(const uint8 *data, int threshold)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, neutube::EAxis sliceAxis)
+    int slice, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
   int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -368,7 +381,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -395,7 +408,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 
@@ -430,7 +443,7 @@ void ZImage::setData(
 void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 {
   for (int i = 0; i < 256; ++i) {
-    int value = iround(scale * i + offset);
+    int value = neutu::iround(scale * i + offset);
     if (value <= 0) {
       valueMap[i] = '\0';
     } else if (value >= 255) {
@@ -443,7 +456,7 @@ void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, double scale, double offset, neutube::EAxis sliceAxis)
+    int slice, double scale, double offset, neutu::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
@@ -457,8 +470,8 @@ void ZImage::setData(
   }
 
   switch (sliceAxis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -468,7 +481,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -496,7 +509,7 @@ void ZImage::setData(
     }
   }
     break;
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;
@@ -843,7 +856,7 @@ void ZImage::drawLabelField(
         uint64_t v = *data++;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;
@@ -870,7 +883,7 @@ void ZImage::drawLabelFieldTranspose(
         dataLine += h;
         if (v == 0) {
           *line++ = bgColor;
-        } else if (v == flyem::LABEL_ID_SELECTION) {
+        } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
           *line++ = colorTable[v % colorCount] ;
@@ -975,8 +988,8 @@ void ZImage::drawRaster(const void *data, int kind, double scale,
     setData(ima.arrayc);
     break;
   default:
-    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
-    throw std::exception();
+//    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
+    throw std::invalid_argument("Unsupported stack kind");
   }
 }
 
@@ -1219,7 +1232,7 @@ void ZImage::updateContrast(bool usingContrast)
   enhanceContrast(m_usingContrastProtocal);
 }
 
-void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
+void ZImage::loadContrastProtocal(const ZJsonObject &obj)
 {
   m_contrastProtocol.load(obj);
 #if 0
@@ -1271,25 +1284,7 @@ void ZImage::enhanceContrast(bool highContrast)
         uchar colorTable[256];
 //        double s = m_grayScale;
         for (int i = 0; i < 256; ++i) {
-          int v = m_contrastProtocol.mapGrey(i);
-#if 0
-          double v = (i + m_grayOffset) * s;
-
-          if (m_nonlinear) {
-            if (v < 0.0) {
-              v = 0.0;
-            } else {
-              v = sqrt(v / 255.0) * i;
-            }
-          }
-
-          if (v < 0.0) {
-            v = 0.0;
-          } else if (v > 255.0) {
-            v = 255.0;
-          }
-#endif
-          colorTable[i] = iround(v);
+          colorTable[i] = m_contrastProtocol.mapGrey(i);
         }
 
         for (int j = 0; j < height(); j++) {
@@ -1306,20 +1301,6 @@ void ZImage::enhanceContrast(bool highContrast)
 //      double s = m_grayScale / 255.0;
       for (int i = 0; i < 256; ++i) {
         QColor color;
-#if 0
-        double v = (i + m_grayOffset) * s;
-        if (m_nonlinear) {
-          v = sqrt(v) * i / 255.0;
-        }
-//        v *= sqrt(v);
-//        v = v * 1.5;
-
-        if (v < 0.0) {
-          v = 0.0;
-        } else if (v > 1.0) {
-          v = 1.0;
-        }
-#endif
         int v = m_contrastProtocol.mapGrey(i);
 
         color.setRed(v);
@@ -1384,9 +1365,9 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
       if (i <= threshold) {
         setColor(i, qRgb(255, 0, 0));
       } else {
-        int r = iround(colorMap[i][0] * 255);
-        int g = iround(colorMap[i][1] * 255);
-        int b = iround(colorMap[i][2] * 255);
+        int r = colorMap[i][0] * 255;
+        int g = colorMap[i][1] * 255;
+        int b = colorMap[i][2] * 255;
 
         setColor(i, qRgb(r, g, b));
       }
@@ -1512,9 +1493,9 @@ void ZImage::setDataBlockIndexed8(
     if (i <= threshold) {
       setColor(i, qRgb(255, 0, 0));
     } else {
-      int r = iround(colorMap[i][0] * 255);
-      int g = iround(colorMap[i][1] * 255);
-      int b = iround(colorMap[i][2] * 255);
+      int r = colorMap[i][0] * 255;
+      int g = colorMap[i][1] * 255;
+      int b = colorMap[i][2] * 255;
 
       setColor(i, qRgb(r, g, b));
     }
@@ -1697,9 +1678,9 @@ void ZImage::setDataIndexed8(
   }
 
   for (int i = 0; i < 256; ++i) {
-    int r = iround(colorMap[0][i][0] * 255);
-    int g = iround(colorMap[0][i][1] * 255);
-    int b = iround(colorMap[0][i][2] * 255);
+    int r = colorMap[0][i][0] * 255;
+    int g = colorMap[0][i][1] * 255;
+    int b = colorMap[0][i][2] * 255;
 
     setColor(i, qRgba(r, g, b, alpha));
   }
@@ -1923,7 +1904,7 @@ bool ZImage::writeImage(const QImage &image, const QString &filename)
   if (!writer.write(image)) {
     writer.setCompression(0);
     if (!writer.write(image)) {
-      if (ZFileType::FileType(filename.toStdString()) == ZFileType::FILE_TIFF) {
+      if (ZFileType::FileType(filename.toStdString()) == ZFileType::EFileType::TIFF) {
         Stack *stack = C_Stack::make(COLOR, image.width(), image.height(), 1);
         color_t *arrayc = (color_t*) stack->array;
         size_t index = 0;

@@ -34,7 +34,7 @@ Neuron_Structure* Make_Neuron_Structure(int ncomp)
 {
   Neuron_Structure *ns = New_Neuron_Structure();
 
-  ns->graph = Make_Graph(ncomp, 1, FALSE);
+  ns->graph = Make_Graph(ncomp, 1, _FALSE_);
   ns->conn = New_Neurocomp_Conn(); /* must have the same cacapciaty as graph */
   ns->comp = Make_Neuron_Component_Array(ncomp);
 
@@ -146,7 +146,7 @@ void Neuron_Structure_Set_Component_Array(Neuron_Structure *ns,
   if (ns->graph != NULL) {
     Kill_Graph(ns->graph);
   }
-  ns->graph = Make_Graph(n, 0, FALSE);
+  ns->graph = Make_Graph(n, 0, _FALSE_);
 }
 
 void Neuron_Structure_Set_Component(Neuron_Structure *ns, int index, 
@@ -452,7 +452,7 @@ void Neuron_Structure_To_Swc_File_Circle_Z(const Neuron_Structure *ns,
 	Arrayqueue aq = Graph_Traverse_B(ns->graph, root, gw);
 
 	if (j == 0) {
-	  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, TRUE);
+	  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, _TRUE_);
 	}
 
 	//int n = Arrayqueue_Max(&aq);
@@ -523,7 +523,7 @@ void Neuron_Structure_To_Swc_File_Circle_Z(const Neuron_Structure *ns,
     }
   }
 
-  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, FALSE);
+  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, _FALSE_);
 
   for (i = 0; i < gw->nvertex; i++) {
     if (gw->status[i] == 0) {
@@ -618,7 +618,7 @@ Swc_Tree* Neuron_Structure_To_Swc_Tree_Circle_Z(const Neuron_Structure *ns,
   printf("tree size: %d\n", Swc_Tree_Node_Fsize(tree->root));
 #endif
 
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Data(tn)->d == 0.0) {
@@ -899,7 +899,7 @@ Neuron_Structure_Locseg_Chain_To_Circle(const Neuron_Structure *ns)
     int k;
 
     for (k = 0; k < 2; k++) {
-      BOOL found = FALSE;
+      _BOOL_ found = _FALSE_;
       if (id[k] > 0) {
 	for (j = start_id[index[k]]; j < start_id[index[k]+1]; j++) {
 	  if (locseg_index[j] > id[k]) {
@@ -908,11 +908,11 @@ Neuron_Structure_Locseg_Chain_To_Circle(const Neuron_Structure *ns)
 	    } else {
 	      id[k] = j - 1;
 	    }
-	    found = TRUE;
+	    found = _TRUE_;
 	    break;
 	  }
 	}
-	if (found == FALSE) {
+	if (found == _FALSE_) {
 	  id[k] = start_id[index[k]+1] - 1;
 	}
       } else {
@@ -1137,6 +1137,10 @@ Neuron_Structure_Locseg_Chain_To_Circle_S(const Neuron_Structure *ns,
 
   int ncomp = locseg_chain_ns_circle_number(ns, start_id) * 5;
 
+#ifdef _DEBUG_
+  printf("ncomp after locseg_chain_ns_circle_number: %d\n", ncomp);
+#endif
+
   Neuron_Structure *ns_circle = Make_Neuron_Structure(ncomp);
   
   int i;
@@ -1151,6 +1155,10 @@ Neuron_Structure_Locseg_Chain_To_Circle_S(const Neuron_Structure *ns,
     //chain_length[i] = Locseg_Chain_Length(chain);
     start_id[i + 1] = start_id[i] + n;
   }
+
+#ifdef _DEBUG_
+  printf("ncomp after chain break: %d\n", ncomp);
+#endif
 
   ns_circle->graph->nvertex = ncomp;
 
@@ -1191,7 +1199,7 @@ int Neuron_Structure_Conn_Index(const Neuron_Structure *ns, int comp_index)
   int i;
   for (i = 0; i < ns->graph->nedge; i++) {
     if ((GRAPH_EDGE_NODE(ns->graph, i, 0) == comp_index) ||
-	(GRAPH_EDGE_NODE(ns->graph, i, 0) == comp_index)) {
+	(GRAPH_EDGE_NODE(ns->graph, i, 1) == comp_index)) {
       return i;
     }
   }
@@ -1635,7 +1643,7 @@ Graph* Neuron_Structure_Import_Xml_Graph(const char *file_path)
   
   if (root == NULL) {
     return NULL;
-  } else if (Xml_Node_Is_Element(root, "tubeConn") == FALSE) {
+  } else if (Xml_Node_Is_Element(root, "tubeConn") == _FALSE_) {
     return NULL;
   }
 
@@ -1648,7 +1656,7 @@ Graph* Neuron_Structure_Import_Xml_Graph(const char *file_path)
     cur = cur->next;
   }
 
-  Graph *graph = Make_Graph(n*3, n, FALSE);
+  Graph *graph = Make_Graph(n*3, n, _FALSE_);
   //GUARDED_MALLOC_ARRAY(ns->conn, ns->graph->nedge, Neurocomp_Conn);
   cur = root->xmlChildrenNode;
   while (cur != NULL) {
@@ -1770,15 +1778,15 @@ void Neuron_Structure_Merge_Locseg_Chain(const Neuron_Structure *ns)
   iarray_print2(end_status[1], ncomp, 1);
 #endif
   
-  BOOL merged = TRUE;
+  _BOOL_ merged = _TRUE_;
   
   while (merged) {
-    merged = FALSE;
+    merged = _FALSE_;
     /* for every chain */
     for (i = 0; i < ncomp; i++) {
       Locseg_Chain *chain = NEUROCOMP_LOCSEG_CHAIN(ns->comp + i);
       /* if the chain is not empty */
-      if (Locseg_Chain_Is_Empty(chain) == FALSE) {
+      if (Locseg_Chain_Is_Empty(chain) == _FALSE_) {
 	/* if only one end is paired */
 	if (((end_status[0][i] >= 0) + (end_status[1][i] >= 0)) == 1) {
 	  int idx;
@@ -1796,7 +1804,7 @@ void Neuron_Structure_Merge_Locseg_Chain(const Neuron_Structure *ns)
 	  }
 
 	  Locseg_Chain *master = NEUROCOMP_LOCSEG_CHAIN(ns->comp + nbr_node);
-	  if (Locseg_Chain_Is_Empty(master) == FALSE) {
+	  if (Locseg_Chain_Is_Empty(master) == _FALSE_) {
 #ifdef _DEBUG_
 	    printf("%d ~ %d: ", Locseg_Chain_Length(master), 
 		Locseg_Chain_Length(chain));
@@ -1809,7 +1817,7 @@ void Neuron_Structure_Merge_Locseg_Chain(const Neuron_Structure *ns)
 	    end_status[ns->conn[idx].info[0]][i] = -1;
 	    end_status[ns->conn[idx].info[0]][nbr_node] = -1;
 
-	    merged = TRUE;
+	    merged = _TRUE_;
 	  }
 	}
       }

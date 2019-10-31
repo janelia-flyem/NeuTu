@@ -2,7 +2,7 @@
 #define ZDVIDUTIL_H
 
 #include "dvid/libdvidheader.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 #include "dvid/zdviddef.h"
 
 class ZJsonValue;
@@ -13,9 +13,7 @@ class ZDvidInfo;
 class ZIntCuboid;
 class ZDvidReader;
 
-#define DVID_UUID_COMMON_LENGTH 4
-
-namespace ZDvid {
+namespace dvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
 libdvid::BinaryDataPtr MakeRequest(
     const std::string &address, const std::string &uuid, const std::string &method,
@@ -44,6 +42,7 @@ libdvid::BinaryDataPtr MakePostRequest(
     const ZJsonObject &obj, int &statusCode);
 
 void MakeHeadRequest(const std::string &url, int &statusCode);
+bool HasHead(const std::string &url);
 
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
@@ -53,7 +52,11 @@ ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const libdvid::DVIDNodeService *service);
 
 ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+    const std::string &address, const std::string &user, const std::string &app);
+ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address);
+ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+    const libdvid::DVIDConnection *conn);
 
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
@@ -79,8 +82,8 @@ ZJsonObject GetDataInstances(const std::string &uuid);
 ZJsonObject GetDataInstances(const std::string &type);
 #endif
 
-ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
-ZDvid::EDataType GetDataType(const std::string &typeName);
+dvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
+dvid::EDataType GetDataType(const std::string &typeName);
 
 ZDvidTarget MakeTargetFromUrl(const std::string path);
 

@@ -4,8 +4,8 @@
 #include "z3dgl.h"
 #include <QStringList>
 #include <vector>
+#include "common/neutudefs.h"
 #include "assimp/scene.h"
-#include "tz_cdefs.h"
 
 class QByteArray;
 class ZMesh;

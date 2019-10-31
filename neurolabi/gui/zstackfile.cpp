@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string.h>
+#include <cassert>
 
 #include "zstack.hxx"
 #include "tz_image_io.h"
@@ -12,10 +13,11 @@
 #if defined(_QT_GUI_USED_)
 #include "zxmldoc.h"
 #endif
-#include "tz_error.h"
+
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
+#include "filesystem/utilities.h"
 
 using namespace std;
 
@@ -23,7 +25,7 @@ ZStackFile::ZStackFile() : m_numWidth(0), m_firstNum(0), m_lastNum(0),
   m_channel(-1), m_dimFlip(false)
 {
 }
-
+/*
 ZStackFile::ZStackFile(const ZStackFile &file)
 {
   m_type = file.m_type;
@@ -36,10 +38,10 @@ ZStackFile::ZStackFile(const ZStackFile &file)
   m_channel = file.m_channel;
   m_dimFlip = file.m_dimFlip;
 }
-
+*/
 void ZStackFile::loadStackDocument(const Stack_Document *doc)
 {
-  TZ_ASSERT(doc != NULL, "Null pointer");
+  assert(doc != NULL);
 
 #ifdef _DEBUG_
   cout << "Loading stack document ..." << endl;
@@ -111,19 +113,18 @@ string ZStackFile::firstUrl() const
 void ZStackFile::retrieveAttribute(
     int *kind, int *width, int *height, int *depth) const
 {
-  TZ_ASSERT(kind != NULL && width != NULL && height != NULL && depth != NULL,
-            "Null pointer");
+  assert(kind != NULL && width != NULL && height != NULL && depth != NULL);
 
   std::string filePath = firstUrl();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_TIFF:
+  case ZFileType::EFileType::TIFF:
     Tiff_Attribute(filePath.c_str(), 0, kind, width, height, depth);
     break;
-  case ZFileType::FILE_LSM:
+  case ZFileType::EFileType::LSM:
     Tiff_Attribute(filePath.c_str(), 1, kind, width, height, depth);
     break;
-  case ZFileType::FILE_PNG:
+  case ZFileType::EFileType::PNG:
     Png_Attribute(filePath.c_str(), kind, width, height);
     *depth = 1;
     break;
@@ -160,16 +161,16 @@ void ZStackFile::import(const string &filePath)
   m_urlList.clear();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_TIFF:
-  case ZFileType::FILE_LSM:
-  case ZFileType::FILE_V3D_RAW:
-  case ZFileType::FILE_PNG:
-  case ZFileType::FILE_V3D_PBD:
-  case ZFileType::FILE_MYERS_NSP:
-  case ZFileType::FILE_OBJECT_SCAN:
-  case ZFileType::FILE_DVID_OBJECT:
-  case ZFileType::FILE_JPG:
-  case ZFileType::FILE_MC_STACK_RAW:
+  case ZFileType::EFileType::TIFF:
+  case ZFileType::EFileType::LSM:
+  case ZFileType::EFileType::V3D_RAW:
+  case ZFileType::EFileType::PNG:
+  case ZFileType::EFileType::V3D_PBD:
+  case ZFileType::EFileType::MYERS_NSP:
+  case ZFileType::EFileType::OBJECT_SCAN:
+  case ZFileType::EFileType::DVID_OBJECT:
+  case ZFileType::EFileType::JPG:
+  case ZFileType::EFileType::MC_STACK_RAW:
 #ifdef _DEBUG_2
     cout << filePath << endl;
     cout << filePath.find("*") << endl;
@@ -181,10 +182,10 @@ void ZStackFile::import(const string &filePath)
     }
     m_urlList.push_back(filePath);
     break;
-  case ZFileType::FILE_XML:
+  case ZFileType::EFileType::XML:
     importXmlFile(filePath);
     break;
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
     importJsonFile(filePath);
     break;
   default:
@@ -279,7 +280,6 @@ void ZStackFile::setType(const string &str)
 
 void ZStackFile::loadJsonObject(json_t *obj, const std::string &source)
 {
-  const char *format = NULL;
   m_type = UNIDENTIFIED;
 
   const char *stackKey = NULL;
@@ -289,7 +289,7 @@ void ZStackFile::loadJsonObject(json_t *obj, const std::string &source)
     cout << stackKey << endl;
 #endif
     if (isTypeTag(stackKey)) {
-      format = ZJsonParser::stringValue(stackValue);
+      std::string format = ZJsonParser::stringValue(stackValue);
       setType(format);
     } else if (isUrlTag(stackKey)) {
       if (m_type == FILE_LIST) {
@@ -462,7 +462,7 @@ ZFileList* ZStackFile::toFileList() const
     break;
   case IMAGE_SERIES:
     fileList = new ZFileList;
-    fileList->load(filePath.dirPath(), filePath.toFileExt(),
+    fileList->load(filePath.dirPath(), neutu::FileExtension(filePath),
                    ZFileList::SORT_BY_LAST_NUMBER);
     break;
   case FILE_BUNDLE:
@@ -510,9 +510,9 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       int offset[3] = {0, 0, 0};
       int intv[3] = {0, 0, 0};
       if (ZFileType::FileType(m_urlList[0].c_str()) ==
-          ZFileType::FILE_OBJECT_SCAN ||
+          ZFileType::EFileType::OBJECT_SCAN ||
           ZFileType::FileType(m_urlList[0].c_str()) ==
-                    ZFileType::FILE_DVID_OBJECT) {
+                    ZFileType::EFileType::DVID_OBJECT) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
           data = obj.toStackObject();
@@ -593,7 +593,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       ZFileList fileList;
       ZString str(m_urlList[0]);
-      fileList.load(str.dirPath(), str.toFileExt(),
+      fileList.load(str.dirPath(), neutu::FileExtension(str),
                     ZFileList::SORT_BY_LAST_NUMBER);
 
       if (fileList.size() > 0) {

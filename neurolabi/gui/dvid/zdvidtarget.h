@@ -27,6 +27,9 @@ public:
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
+  void setMappedUuid(const std::string &original, const std::string &mapped);
+
+  bool hasDvidUuid() const;
 
   /*!
    * \brief Set dvid target from source string
@@ -46,7 +49,7 @@ public:
    * \param sourceString Format: http:host:port:node:<dataType>_name.
    */
   void setFromSourceString(
-      const std::string &sourceString, ZDvid::EDataType dataType);
+      const std::string &sourceString, dvid::EDataType dataType);
 
   void setFromUrl(const std::string &url);
 
@@ -104,11 +107,16 @@ public:
    * \brief Get a single string to represent the target
    *
    * \a withHttpPrefix specifies whether the source string contains the "http:"
-   * prefix or not.
+   * prefix or not. \a uuidBrief specifies the max number of characters of the
+   * uuid used in the source string, except when its no greater than 0, the
+   * intrinsic uuid will be used.
    *
    * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
-  std::string getSourceString(bool withHttpPrefix = true) const;
+  std::string getSourceString(
+      bool withHttpPrefix = true, int uuidBrief = 0) const;
+
+  std::string getGrayscaleSourceString() const;
 
   /*!
    * \brief getBodyPath
@@ -131,12 +139,12 @@ public:
    *
    * The status of the node is related to the status of the database.
    */
-  ZDvid::ENodeStatus getNodeStatus() const;
+  dvid::ENodeStatus getNodeStatus() const;
 
   /*!
    * \brief Set the status of the node.
    */
-  void setNodeStatus(ZDvid::ENodeStatus status);
+  void setNodeStatus(dvid::ENodeStatus status);
 
   /*!
    * \brief Load json object
@@ -199,6 +207,10 @@ public:
   bool hasCoarseSplit() const;
 //  void useLabelArray(bool on);
 //  void useLabelMap(bool on);
+
+  bool hasSynapse() const;
+  bool hasSynapseLabelsz() const;
+  void enableSynapseLabelsz(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
@@ -266,7 +278,7 @@ public:
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
-  static bool isDvidTarget(const std::string &source);
+  static bool IsDvidTarget(const std::string &source);
 
   inline bool isSupervised() const { return m_isSupervised; }
   void enableSupervisor(bool on) {
@@ -284,6 +296,13 @@ public:
   void setReadOnly(bool readOnly) {
     m_readOnly = readOnly;
   }
+  bool isSynapseEditable() const {
+    return m_isSynpaseEditable;
+  }
+  void setSynapseReadonly(bool on);
+
+  bool isSupervoxelView() const;
+  void setSupervoxelView(bool on);
 
   int getMaxLabelZoom() const {
     return m_maxLabelZoom;
@@ -305,6 +324,8 @@ public:
 
   bool isInferred() const;
   void setInferred(bool status);
+
+  std::string getOriginalUuid() const;
 
   std::string getSynapseLabelszName() const;
   void setSynapseLabelszName(const std::string &name);
@@ -337,10 +358,13 @@ public:
   ZDvidTarget getGrayScaleTarget() const;
   ZDvidTarget getTileTarget() const;
 
+  std::vector<ZDvidTarget> getGrayScaleTargetList() const;
+  void clearGrayScale();
+
   static bool Test();
 
 private:
-  void init();
+//  void init();
   void setSource(const char *key, const ZDvidNode &node);
   ZDvidNode getSource(const char *key) const;
 
@@ -396,6 +420,7 @@ private:
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
   std::string m_grayScaleName;
+  bool m_hasSynapseLabelsz = true;
   std::string m_synapseLabelszName;
   std::string m_roiName;
   std::string m_todoListName;
@@ -408,24 +433,27 @@ private:
 //  ZJsonObject m_sourceConfig;
 
   std::set<std::string> m_userList;
-  bool m_isSupervised;
+  bool m_isSupervised = true;
   std::string m_supervisorServer;
-  int m_maxLabelZoom;
-  int m_maxGrayscaleZoom;
-  bool m_usingMultresBodyLabel;
-  bool m_usingDefaultSetting;
-  ZDvidData::EType m_segmentationType = ZDvidData::TYPE_LABELBLK;
+  int m_maxLabelZoom = 0;
+  int m_maxGrayscaleZoom = 0;
+  bool m_usingMultresBodyLabel = true;
+  bool m_usingDefaultSetting = false;
+  bool m_isSynpaseEditable = true;
+  ZDvidData::EType m_segmentationType = ZDvidData::EType::LABELBLK;
 //  bool m_usingLabelArray = false;
 //  bool m_usingLabelMap = false;
   bool m_isDefaultBodyLabel = false;
+  bool m_supervoxelView = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 
-  int m_bgValue; //grayscale background
+  int m_bgValue = 255; //grayscale background
 
-  bool m_isEditable; //if the configuration is editable
-  bool m_readOnly; //if the database is readonly
-  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
+  bool m_isEditable = true; //if the configuration is editable
+  bool m_readOnly = false; //if the database is readonly
+  dvid::ENodeStatus m_nodeStatus = dvid::ENodeStatus::OFFLINE; //Status of the node
+//  std::string m_orignalUuid;
   bool m_isInferred = false;
 };
 

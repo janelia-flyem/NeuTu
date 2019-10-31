@@ -1,7 +1,7 @@
 #include "zgeometry.h"
 #include <cmath>
 #include "zpoint.h"
-#include "geometry/zaffinerect.h"
+#include "zaffinerect.h"
 #include "zintcuboid.h"
 #include "zintpoint.h"
 

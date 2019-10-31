@@ -5,7 +5,7 @@
 #include <map>
 #include <QObject>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZIntPoint;
 class ZPoint;
@@ -16,6 +16,7 @@ class ZDvidSparseStack;
 class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
+class NeuPrintReader;
 
 class ZGlobal
 {
@@ -39,6 +40,9 @@ public:
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
 
+  void set3DCamera(const std::string &config);
+  std::string get3DCamera() const;
+
   //! DVID IO with shared readers and writers
   /*!
    * \brief Get DVID reader from a name
@@ -58,11 +62,24 @@ public:
   ZDvidWriter* getDvidWriterFromUrl(
       const std::string &url, const std::string &key = "") const;
 
+  ZDvidTarget getDvidTarget(const std::string &name) const;
+
   void setMainWindow(QMainWindow *win);
   template<typename T>
   T* getMainWindow() const;
 
   QMainWindow* getMainWindow() const;
+
+  NeuPrintReader *getNeuPrintReader();
+  QString getNeuPrintServer() const;
+  void setNeuPrintServer(const QString &server);
+  QString getNeuPrintToken() const;
+  QString getNeuPrintAuth() const;
+
+  NeuPrintReader* makeNeuPrintReader();
+  NeuPrintReader* makeNeuPrintReader(const QString &uuid);
+
+  static void InitKafkaTracer(std::string serviceName = "");
 
 public:
   static ZDvidReader* GetDvidReader(

@@ -1,22 +1,25 @@
 #ifndef ZFLYEMTODOLISTMODEL_H
 #define ZFLYEMTODOLISTMODEL_H
 
-#include <QAbstractTableModel>
+//#include <QAbstractTableModel>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
+#include "qt/core/zsortfilterproxymodel.h"
+#include "qt/core/zsortfiltertablemodel.h"
 #include "flyem/zflyemtodopresenter.h"
 
 class ZStackDoc;
 class ZFlyEmProofDoc;
-class QSortFilterProxyModel;
+class QItemSelectionModel;
 
-class ZFlyEmTodoListModel : public QAbstractTableModel
+class ZFlyEmTodoListModel : public ZSortFilterTableModel
 {
   Q_OBJECT
 public:
   explicit ZFlyEmTodoListModel(QObject *parent = 0);
 
   const ZFlyEmTodoPresenter *getPresenter() const;
+  ZFlyEmTodoPresenter *getPresenter();
 
   int rowCount( const QModelIndex & parent = QModelIndex() ) const;
   int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -35,7 +38,7 @@ public:
   void append(const ZFlyEmToDoItem *item);
   template <typename InputIterator>
   void append(const InputIterator &first, const InputIterator &last);
-  void update(int row);
+//  void update(int row);
 
   const ZFlyEmToDoItem* getItem(const QModelIndex &index) const;
   ZFlyEmToDoItem* getItem(const QModelIndex &index);
@@ -51,13 +54,26 @@ public:
 
   void update();
 
-  QSortFilterProxyModel* getSortProxy() const {
+  /*
+  QSortFilterProxyModel* getProxy() const {
     return m_proxy;
   }
+  */
+
+//  void sortTodoList();
+
+  void setVisibleTest(std::function<bool(const ZFlyEmToDoItem&)> f);
+
+  void setCheckedVisibleOnly();
+  void setUncheckedVisibleOnly();
+  void setAllVisible();
+
+  void setSelectedChecked(QItemSelectionModel *sel, bool checked);
 
 signals:
   void locatingItem(ZFlyEmToDoItem *item);
   void doubleClicked(QModelIndex index);
+  void checkingTodoItem(int x, int y, int z, bool checked);
 
 public slots:
   void processDoubleClick(const QModelIndex &index);
@@ -65,13 +81,18 @@ public slots:
 private:
   void init();
   void connectSignalSlot();
+//  void setChecked(const QModelIndex &index, bool checked);
+  void setChecked(int row, bool checked);
+  void setChecked(const QModelIndexList &indexList, bool checked);
+//  QModelIndexList getSelected(QItemSelectionModel *sel) const;
+//  QModelIndex getMappedIndex(const QModelIndex &index);
 
 private:
   QList<ZFlyEmToDoItem*> m_itemList;
   ZSharedPointer<ZStackDoc> m_doc;
   ZFlyEmTodoPresenter m_defaultPresenter;
   ZSharedPointer<ZFlyEmTodoPresenter> m_presenter;
-  QSortFilterProxyModel* m_proxy;
+//  ZSortFilterProxyModel* m_proxy = nullptr;
 };
 
 template <typename InputIterator>

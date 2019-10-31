@@ -6,8 +6,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "zqslog.h"
-#include "zwidgetsgroup.h"
+#include "logging/zqslog.h"
+#include "widgets/zwidgetsgroup.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonarray.h"
@@ -353,11 +353,13 @@ void Z3DCameraParameter::set(const ZJsonObject &cameraJson)
   }
 
   if (cameraJson.hasKey("projection")) {
-    m_projectionType.select(ZJsonParser::stringValue(cameraJson["projection"]));
+    m_projectionType.select(
+          ZJsonParser::stringValue(cameraJson["projection"]).c_str());
   }
 
   if (cameraJson.hasKey("field_of_view")) {
-    m_fieldOfView.set(ZJsonParser::numberValue(cameraJson["field_of_view"]));
+    m_fieldOfView.set(glm::degrees(ZJsonParser::numberValue(
+                        cameraJson["field_of_view"])));
   }
 
   if (cameraJson.hasKey("near_dist")) {

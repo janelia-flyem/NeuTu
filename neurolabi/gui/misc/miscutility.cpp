@@ -1,21 +1,22 @@
 #include "miscutility.h"
 #include <iostream>
 #include <cmath>
-#include "zerror.h"
-#include "c_stack.h"
-#include "tz_math.h"
+
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
-#include "flyem/zflyemqualityanalyzer.h"
+
+#include "common/math.h"
+#include "zerror.h"
+#include "c_stack.h"
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
-#include "tz_utilities.h"
 #include "zswctree.h"
 #include "zclosedcurve.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstack.hxx"
 #include "zarray.h"
+#include "zstring.h"
 
 using namespace std;
 
@@ -47,7 +48,7 @@ void misc::paintRadialHistogram(
 #ifdef _DEBUG_2
       std::cout << dist << ": " << histForPaint.getDensity(dist) << std::endl;
 #endif
-      int v = iround(histForPaint.getDensity(dist) * 255.0);
+      int v = neutu::iround(histForPaint.getDensity(dist) * 255.0);
       array[offset++] = CLIP_VALUE(v, 0, 255);
     }
   }
@@ -82,7 +83,7 @@ void misc::paintRadialHistogram2D(
 #ifdef _DEBUG_2
       std::cout << dist << ": " << histForPaint.getDensity(dist) << std::endl;
 #endif
-      int v = iround(histForPaint.getDensity(dist) * 255.0);
+      int v = neutu::iround(histForPaint.getDensity(dist) * 255.0);
       array[offset++] = CLIP_VALUE(v, 0, 255);
     }
   }
@@ -150,31 +151,31 @@ static void ComputeGradient(
 
 static int ComputeLightIntensity(
     const Stack *stack, const Stack *innerDist, const Stack *outerDist,
-    int x, int y, int z, neutube::EAxis axis)
+    int x, int y, int z, neutu::EAxis axis)
 {
   double dx, dy, dz;
   ComputeGradient(stack, innerDist, outerDist, x, y, z, &dx, &dy, &dz);
   double norm = 1.0;
   if (dx != 0.0 || dy != 0.0 || dz != 0.0) {
     switch (axis) {
-    case neutube::EAxis::X:
+    case neutu::EAxis::X:
       norm = fabs(dx / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::EAxis::Y:
+    case neutu::EAxis::Y:
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case neutube::EAxis::Z:
-    case neutube::EAxis::ARB:
+    case neutu::EAxis::Z:
+    case neutu::EAxis::ARB:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
   }
 
-  return Clip_Value(iround(norm * 255.0), 0, 255);
+  return Clip_Value(neutu::iround(norm * 255.0), 0, 255);
   //return Clip_Value(1.0 / (1.0 + exp((0.5 - norm) * 5.0)) * 255.0, 0, 255);
 }
 
-Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
+Stack* misc::computeNormal(const Stack *stack, neutu::EAxis axis)
 {
   Stack *tmpStack = C_Stack::clone(stack);
   Stack *innerDist = Stack_Bwdist_L_U16P(tmpStack, NULL, 0);
@@ -192,16 +193,16 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   int outHeight = 0;
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     outWidth = height;
     outHeight = depth;
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     outWidth = width;
     outHeight = depth;
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     outWidth = width;
     outHeight = height;
     break;
@@ -214,7 +215,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
   size_t offset2 = 0;
 
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int y = 0; y < C_Stack::height(stack); ++y) {
       bool hit = false;
@@ -235,7 +236,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -256,8 +257,8 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
-  case neutube::EAxis::ARB:
-  case neutube::EAxis::Z:
+  case neutu::EAxis::ARB:
+  case neutu::EAxis::Z:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -314,9 +315,9 @@ bool misc::exportPointList(
          iter != pointArray.end(); ++iter) {
       const ZPoint &pt = *iter;
       json_t *pointObj = json_array();
-      json_array_append_new(pointObj, json_integer(iround(pt.x())));
-      json_array_append_new(pointObj, json_integer(iround(pt.y())));
-      json_array_append_new(pointObj, json_integer(iround(pt.z())));
+      json_array_append_new(pointObj, json_integer(neutu::iround(pt.x())));
+      json_array_append_new(pointObj, json_integer(neutu::iround(pt.y())));
+      json_array_append_new(pointObj, json_integer(neutu::iround(pt.z())));
 
       json_array_append_new(pointListObj, pointObj);
     }
@@ -348,7 +349,7 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   std::vector<std::string> tokens = ZString(path).tokenize(':');
   std::vector<std::string> pathArray;
   if (tokens.size() > 0) {
-    if (ZFileType::FileType(tokens[0]) == ZFileType::FILE_HDF5) {
+    if (ZFileType::FileType(tokens[0]) == ZFileType::EFileType::HDF5) {
       pathArray = tokens;
     }
   }
@@ -513,7 +514,7 @@ ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
   ZIntPoint dsIntv;
   int s = 0;
   if (box.getVolume() > maxVolume) {
-    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume - 1));
+    s =  neutu::iround(std::cbrt((double(box.getVolume())) / maxVolume - 1));
   }
   dsIntv.set(s, s, s);
 
@@ -522,9 +523,9 @@ ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
 
 double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
 {
-  double ratio = (double) currentVol / maxVol;
+  double ratio = double(currentVol) / maxVol;
 
-  return Cube_Root(ratio);
+  return std::cbrt(ratio);
 }
 
 int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
@@ -536,14 +537,12 @@ int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
   if (powed) {
     if (dsRatio <= 8) {
       return 1;
-    } else if (dsRatio <= 27) {
-      return 2;
     } else if (dsRatio <= 64) {
       return 3;
     }
   }
 
-  int s = int(std::ceil(Cube_Root(dsRatio))); //upper bound of interval
+  int s = int(std::ceil(std::cbrt(dsRatio))); //upper bound of interval
 
   if (powed) {
     int k, m;
@@ -551,7 +550,7 @@ int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
     if (m > 1) {
       ++k;
     }
-    s = iround(std::pow((double) 2, k));
+    s = neutu::iround(std::pow(2.0, k));
 
     if (s * s * s >= dsRatio * 8) { //Dealing with rounding error
       s /= 2;
@@ -583,10 +582,10 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   ZIntPoint dsIntv;
 
   if (dsRatio > 128) {
-    int s = iround(Cube_Root(dsRatio));
+    int s = neutu::iround(std::cbrt(dsRatio));
     int k, m;
     pow2decomp(s, &k, &m);
-    s = iround(std::pow((double) 2, k + 1)) - 1;
+    s = neutu::iround(std::pow((double) 2, k + 1)) - 1;
     dsIntv.set(s, s, s);
   } else if (dsRatio > 64) {
     dsIntv.set(7, 7, 1);
@@ -645,6 +644,7 @@ ZIntCuboid misc::GetBoundBox(const ZArray *array)
   return box;
 }
 
+/*
 ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result;
@@ -657,7 +657,9 @@ ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
 
   return result;
 }
+*/
 
+/*
 ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result = box1;
@@ -669,6 +671,7 @@ ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
 
   return result;
 }
+*/
 
 double misc::SampleStack(
     const Stack *stack, double x, double y, double z, ESampleStackOption option)
@@ -788,4 +791,30 @@ size_t misc::CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan
   obj.dilatePlane();
 
   return CountOverlap(obj, obj2);
+}
+
+ZIntCuboid misc::EstimateSplitRoi(const ZIntCuboid &boundBox)
+{
+  ZIntCuboid newBox = boundBox;
+
+  newBox.expandZ(10);
+  size_t v = newBox.getVolume();
+
+//  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  double s = std::cbrt(neutu::BIG_STACK_VOLUME_HINT / 2 / v);
+  if (s > 1.0) {
+    double ds = s - 1.0;
+    int dw = neutu::iround(newBox.getWidth() * ds);
+    int dh = neutu::iround(newBox.getHeight() * ds);
+    int dd = neutu::iround(newBox.getDepth() * ds);
+
+    const int xMargin = dw / 2;
+    const int yMargin = dh / 2;
+    const int zMargin = dd / 2;
+    newBox.expandX(xMargin);
+    newBox.expandY(yMargin);
+    newBox.expandZ(zMargin);
+  }
+
+  return newBox;
 }

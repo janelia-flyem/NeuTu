@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "common/utilities.h"
+
 ZStackObjectSelector::ZStackObjectSelector()
 {
 }
@@ -67,7 +69,7 @@ void ZStackObjectSelector::print() const
        iter != m_selectedSet.end(); ++iter) {
     std::cout << "  ";
     const ZStackObject *obj = *iter;
-    std::cout << obj->className() << ", " << obj->getSource() << std::endl;
+    std::cout << obj->getTypeName() << ", " << obj->getSource() << std::endl;
   }
 
   std::cout << "De-Selected:" << std::endl;
@@ -75,7 +77,7 @@ void ZStackObjectSelector::print() const
        iter != m_deselectedSet.end(); ++iter) {
     std::cout << "  ";
     const ZStackObject *obj = *iter;
-    std::cout << obj->className() << ", " << obj->getSource() << std::endl;
+    std::cout << obj->getTypeName() << ", " << obj->getSource() << std::endl;
   }
 }
 
@@ -108,6 +110,26 @@ bool ZStackObjectSelector::isEmpty() const
   return m_selectedSet.empty() && m_deselectedSet.empty();
 }
 */
+
+namespace {
+
+void remove_object_from_set(std::set<const ZStackObject*> &s,
+                            std::function<bool(const ZStackObject*)> pred)
+{
+  neutu::setremoveif(s, pred);
+}
+
+}
+
+void ZStackObjectSelector::removeObjectByType(ZStackObject::EType type)
+{
+  auto pred = [&](const ZStackObject* obj) -> bool {
+    return (obj->getType() == type);
+  };
+
+  remove_object_from_set(m_selectedSet, pred);
+  remove_object_from_set(m_deselectedSet, pred);
+}
 
 std::vector<ZStackObject*> ZStackObjectSelector::getSelectedList(
     ZStackObject::EType type) const

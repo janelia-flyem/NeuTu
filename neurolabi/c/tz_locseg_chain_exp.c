@@ -212,7 +212,7 @@ int Locseg_Chain_Trace_Test_Exp(void *argv[])
   ipos[2] = pos[2] * z_scale;
   if (tr != NULL) {
     if (Local_Neuroseg_Good_Score(locseg, tr->fs.scores[tw->tscore_option],
-          tw->min_score) == FALSE) {
+          tw->min_score) == _FALSE_) {
       printf("low score: %g\n", tr->fs.scores[1]);
       return TRACE_LOW_SCORE;
     }
@@ -224,7 +224,7 @@ int Locseg_Chain_Trace_Test_Exp(void *argv[])
       double sup_score = Local_Neuroseg_Score(locseg, tw->sup_stack, z_scale, 
           &fs);
       if (Local_Neuroseg_Good_Score(locseg, sup_score, tw->min_score) 
-          == FALSE) {
+          == _FALSE_) {
         printf("low sup score: %g\n", sup_score);
         return TRACE_LOW_SCORE;
       }
@@ -233,7 +233,7 @@ int Locseg_Chain_Trace_Test_Exp(void *argv[])
 
   /*
      if ((prev_locseg != NULL) && (locseg != NULL)) {
-     if (locseg_overlap(prev_locseg, locseg, trace_direction) == TRUE) {
+     if (locseg_overlap(prev_locseg, locseg, trace_direction) == _TRUE_) {
      printf("trace overlaped\n");
      return TRACE_OVERLAP;
      }
@@ -266,7 +266,7 @@ int Locseg_Chain_Trace_Test_Exp(void *argv[])
   if ((chain != NULL) && (pos[0] >= 0.0)) {
     if ((Locseg_Chain_Hit_Test(chain, DL_BACKWARD, 
             pos[0], pos[1], pos[2]) > 0) ||
-        (Locseg_Chain_Form_Loop(chain, locseg, trace_direction) == TRUE)) {
+        (Locseg_Chain_Form_Loop(chain, locseg, trace_direction) == _TRUE_)) {
       printf("Loop formed\n");
       return TRACE_LOOP_FORMED;
     }
@@ -293,7 +293,7 @@ int Locseg_Chain_Trace_Test_Exp(void *argv[])
   if (locseg != NULL) {
 
 #if 1
-    if (Trace_Workspace_Point_In_Bound(tw, ipos) == FALSE) {
+    if (Trace_Workspace_Point_In_Bound(tw, ipos) == _FALSE_) {
       printf("out of bound\n");
       return TRACE_OUT_OF_BOUND;
     }
@@ -329,7 +329,7 @@ Locseg_Chain_Default_Trace_Workspace_Exp(Trace_Workspace *tw,
   //tw->stop_reason[1] = 0; /* obsolete */
   //tw->trace_status[0] = TRACE_NORMAL;
   //tw->trace_status[1] = TRACE_NORMAL;
-  //tw->canvas_updating = TRUE;
+  //tw->canvas_updating = _TRUE_;
 
   Default_Trace_Workspace(tw);
 

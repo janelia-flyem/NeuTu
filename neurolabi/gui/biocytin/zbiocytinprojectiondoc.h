@@ -1,7 +1,7 @@
 #ifndef ZBIOCYTINPROJECTIONDOC_H
 #define ZBIOCYTINPROJECTIONDOC_H
 
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 class ZBiocytinProjectionDoc : public ZStackDoc
 {

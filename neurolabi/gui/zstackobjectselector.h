@@ -4,8 +4,10 @@
 #include <set>
 #include <vector>
 
-#include "zstackobject.h"
 #include "zselector.h"
+#include "zstackobject.h"
+
+class ZStackObject;
 
 /*!
  * \brief The class of managing object selection
@@ -59,6 +61,8 @@ public:
   void setSelection(ZStackObject *obj, bool selecting);
 
   void deselectAll();
+
+  void removeObjectByType(ZStackObject::EType type);
 
 //  bool isInSelectedSet(const ZStackObject *obj) const;
 //  bool isInDeselectedSet(const ZStackObject *obj) const;

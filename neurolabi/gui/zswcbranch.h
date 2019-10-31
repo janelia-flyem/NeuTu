@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 class ZWeightedPoint;
 

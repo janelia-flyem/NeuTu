@@ -2,15 +2,13 @@
 #include <iostream>
 #include <algorithm>
 
-#include "tz_cdefs.h"
-#include "tz_utilities.h"
 #include "zjsonobject.h"
 #include "neutubeconfig.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zswctree.h"
 #include "swctreenode.h"
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 const ZPoint ZClosedCurve::m_emptyPlaceHolder;
 

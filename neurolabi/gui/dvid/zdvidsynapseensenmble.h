@@ -11,13 +11,13 @@
 
 #include "zdvidtarget.h"
 #include "zstackobject.h"
-#include "zdvidreader.h"
 #include "zdvidinfo.h"
 #include "zdvidsynapse.h"
 #include "zselector.h"
 #include "zjsonarray.h"
-#include "dvid/zdvidwriter.h"
+#include "zdvidwriter.h"
 #include "zresolution.h"
+#include "geometry/zintcuboid.h"
 
 class ZStackView;
 class ZIntCuboid;
@@ -29,12 +29,12 @@ public:
   ZDvidSynapseEnsemble();
   virtual ~ZDvidSynapseEnsemble() {}
 
-  enum EDataScope {
-    DATA_GLOBAL, DATA_LOCAL, DATA_SYNC
+  enum class EDataScope {
+    GLOBAL, LOCAL, SYNC
   };
 
-  enum EDataStatus {
-    STATUS_NORMAL, STATUS_NULL, STATUS_PARTIAL_READY, STATUS_READY
+  enum class EDataStatus {
+    NORMAL, NONE, PARTIAL_READY, READY
   };
 
   enum EAdjustment {
@@ -42,7 +42,7 @@ public:
   };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE;
+    return ZStackObject::EType::DVID_SYNAPE_ENSEMBLE;
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -57,8 +57,8 @@ public:
 
   class SynapseMap : public QMap<int, ZDvidSynapse> {
   public:
-    SynapseMap(EDataStatus status = STATUS_NORMAL);
-    bool isValid() const { return m_status != STATUS_NULL; }
+    SynapseMap(EDataStatus status = EDataStatus::NORMAL);
+    bool isValid() const { return m_status != EDataStatus::NONE; }
 
   private:
     EDataStatus m_status;
@@ -66,15 +66,15 @@ public:
 
   class SynapseSlice : public QVector<SynapseMap> {
   public:
-    SynapseSlice(EDataStatus status = STATUS_NORMAL);
+    SynapseSlice(EDataStatus status = EDataStatus::NORMAL);
 
-    void addSynapse(const ZDvidSynapse &synapse, neutube::EAxis sliceAxis);
+    void addSynapse(const ZDvidSynapse &synapse, neutu::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
 
-    bool isValid() const { return m_status != STATUS_NULL; }
-    bool isReady() const { return m_status == STATUS_READY; }
+    bool isValid() const { return m_status != EDataStatus::NONE; }
+    bool isReady() const { return m_status == EDataStatus::READY; }
     bool isReady(const QRect &rect) const;
     bool isReady(const QRect &rect, const QRect &range) const;
 
@@ -99,7 +99,9 @@ public:
   void setRange(const ZIntCuboid &dataRange);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
+
+  void clearCache();
 
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
@@ -197,7 +199,7 @@ public:
 
   void deselectUnsync(bool recursive);
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
   bool hit(double x, double y, double z);
   bool hit(const ZIntPoint &pt);
@@ -267,7 +269,7 @@ private:
   static ZDvidSynapse m_emptySynapse;
   static SynapseSlice m_emptySlice;
 
-  int m_startZ;
+  int m_startZ = 0;
 //  int m_startY;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
@@ -276,19 +278,19 @@ private:
 
   ZSelector<ZIntPoint> m_selector;
 
-  ZStackView *m_view;
+  ZStackView *m_view = nullptr;
   int m_maxPartialArea;
   bool m_fetchingFullAllowed = false;
 //  int m_maxFetchingArea = 4153344; //2048*2048 by default. 0 means no restriction.
 
 //  NeuTube::EAxis m_sliceAxis;
 
-  bool m_isReady;
+  bool m_isReady = false;
 
   ZIntCuboid m_dataRange;
   ZResolution m_resolution;
 
-  ZFlyEmSynapseDataFetcher *m_dataFetcher;
+  ZFlyEmSynapseDataFetcher *m_dataFetcher = nullptr;
 
   mutable QMutex m_dataMutex;
   mutable QCache<int, SynapseSlice> m_sliceCache;

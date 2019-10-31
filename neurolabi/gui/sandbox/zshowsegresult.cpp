@@ -2,16 +2,18 @@
 #include <iostream>
 #include <QFileDialog>
 #include "zshowsegresult.h"
-#include "zstackdoc.h"
-#include "zstackframe.h"
+
+#include "zstack.hxx"
+#include "zobject3dscan.h"
 #include "zobject3d.h"
 #include "zobject3dfactory.h"
 #include "zcolorscheme.h"
 #include "zsandbox.h"
 #include "mainwindow.h"
-#include "zstackdocdatabuffer.h"
-#include "zstack.hxx"
-#include "zobject3dscan.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdocdatabuffer.h"
+
 
 ZShowSegResultModule::ZShowSegResultModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -51,7 +53,8 @@ void ZShowSegResultModule::execute()
           QColor color = colorScheme.getColor(colorIndex++);
           color.setAlpha(164);
           obj->setColor(color);
-          frame->document()->getDataBuffer()->addUpdate(obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+          frame->document()->getDataBuffer()->addUpdate(
+                obj,ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
           frame->document()->getDataBuffer()->deliver();
         }
       }

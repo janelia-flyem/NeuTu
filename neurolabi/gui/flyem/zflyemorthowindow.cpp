@@ -2,22 +2,24 @@
 
 #include <QStatusBar>
 
+#include "logging/zlog.h"
+
 #include "flyem/zflyemorthowidget.h"
 #include "flyem/zflyemorthodoc.h"
 
-ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent) :
+ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidEnv &env, QWidget *parent) :
   QMainWindow(parent)
 {
-  m_orthoWidget = new ZFlyEmOrthoWidget(target, this);
+  m_orthoWidget = new ZFlyEmOrthoWidget(env, this);
 
   initWidget();
 }
 
 ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(
-    const ZDvidTarget &target, int width, int height, int depth, QWidget *parent) :
+    const ZDvidEnv &env, int width, int height, int depth, QWidget *parent) :
   QMainWindow(parent)
 {
-  m_orthoWidget = new ZFlyEmOrthoWidget(target, width, height, depth, this);
+  m_orthoWidget = new ZFlyEmOrthoWidget(env, width, height, depth, this);
 
   initWidget();
 }

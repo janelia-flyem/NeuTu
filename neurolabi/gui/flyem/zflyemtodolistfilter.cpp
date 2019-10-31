@@ -6,24 +6,33 @@
 
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemtodoitem.h"
+#include "geometry/zcuboid.h"
 #include "z3dsphererenderer.h"
 #include "z3dlinerenderer.h"
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "neutubeconfig.h"
+#include "z3dgraphfactory.h"
 
-ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QObject* parent)
+ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(
+    Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)
   , m_selectItemEvent("Select Todo Item", false)
   , m_lineRenderer(m_rendererBase)
   , m_sphereRenderer(m_rendererBase)
+  , m_fontRenderer(m_rendererBase)
+  , m_sphereRendererForPicking(m_rendererBase)
 {
-  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
-  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                             Qt::NoModifier, QEvent::MouseButtonPress);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                             Qt::NoModifier, QEvent::MouseButtonRelease);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                                 Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                                 Qt::ControlModifier, QEvent::MouseButtonRelease);
+  m_selectItemEvent.listenTo("annotate todo item", Qt::LeftButton, Qt::NoModifier,
+                             QEvent::MouseButtonDblClick);
   connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered,
           this, &ZFlyEmTodoListFilter::selectObject);
   addEventListener(m_selectItemEvent);
@@ -35,6 +44,12 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
 //  m_rendererBase.setOpacity(0.8);
 
   m_rendererBase.setMaterialAmbient(glm::vec4(1.f, 1.f, 1.f, 1.f));
+
+  m_sceneRender.push_back(&m_lineRenderer);
+  m_sceneRender.push_back(&m_sphereRenderer);
+  m_sceneRender.push_back(&m_fontRenderer);
+
+  m_pickingRender.push_back(&m_sphereRendererForPicking);
 }
 
 ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
@@ -48,7 +63,7 @@ void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
     registerPickingObjects();
   }
 
-  m_rendererBase.renderPicking(eye, m_sphereRenderer);
+  m_rendererBase.renderPicking(eye, m_pickingRender);
 }
 
 void ZFlyEmTodoListFilter::registerPickingObjects()
@@ -67,7 +82,7 @@ void ZFlyEmTodoListFilter::registerPickingObjects()
           pickingColor[3]/255.f);
       m_pointPickingColors.push_back(fPickingColor);
     }
-    m_sphereRenderer.setDataPickingColors(&m_pointPickingColors);
+    m_sphereRendererForPicking.setDataPickingColors(&m_pointPickingColors);
   }
 
   m_pickingObjectsRegistered = true;
@@ -138,36 +153,153 @@ void ZFlyEmTodoListFilter::updateGraph()
   invalidateResult();
 }
 
+namespace {
+Z3DGraph* make_todo_graph(const ZFlyEmToDoItem *item)
+{
+  Z3DGraph *graph = NULL;;
+
+  if (item) {
+    ZPoint center = item->getPosition().toPoint();
+    double d = item->getRadius() + item->getRadius();
+
+    graph = new Z3DGraph;
+
+
+    Z3DGraphNode node;
+    node.setColor(item->getDisplayColor());
+    node.setRadius(0);
+
+    double width = 2;
+
+    if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC ||
+        item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC) {
+      Z3DGraphFactory factory;
+      factory.setNodeColorHint(item->getDisplayColor());
+      factory.setEdgeColorHint(item->getDisplayColor());
+      factory.setEdgeWidthHint(width);
+      factory.setNodeRadiusHint(0);
+      double dr = d * 0.1;
+
+      factory.makeBox(
+            ZCuboid(center - ZPoint(dr, d, dr),
+                    center + ZPoint(dr, d, dr)), graph);
+      factory.makeBox(
+            ZCuboid(center - ZPoint(dr, dr, d),
+                    center + ZPoint(dr, dr, d)), graph);
+      factory.makeBox(
+            ZCuboid(center - ZPoint(d, dr, dr),
+                    center + ZPoint(d, dr, dr)), graph);
+      if (item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC) {
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, -dr, d - dr), center + ZPoint(-dr, dr, d - dr),
+              center + ZPoint(dr, dr, d - dr), center + ZPoint(dr, -dr, d - dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, -dr, dr - d), center + ZPoint(-dr, dr, dr - d),
+              center + ZPoint(dr, dr, dr - d), center + ZPoint(dr, -dr, dr - d),
+              graph);
+
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, d - dr, -dr), center + ZPoint(-dr, d - dr, dr),
+              center + ZPoint(dr, d - dr, dr), center + ZPoint(dr, d - dr, -dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, dr - d, -dr), center + ZPoint(-dr, dr - d, dr),
+              center + ZPoint(dr, dr - d, dr), center + ZPoint(dr, dr - d, -dr),
+              graph);
+
+        factory.makeQuadrilateral(
+              center + ZPoint(d - dr, -dr, -dr), center + ZPoint(d - dr, -dr, dr),
+              center + ZPoint(d - dr, dr, dr), center + ZPoint(d - dr, dr, -dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(dr - d, -dr, -dr), center + ZPoint(dr - d, -dr, dr),
+              center + ZPoint(dr - d, dr, dr), center + ZPoint(dr - d, dr, -dr),
+              graph);
+      }
+    } else {
+      node.setCenter(center.getX() - d, center.getY(), center.getZ());
+      graph->addNode(node);
+      node.setCenter(center.getX() + d, center.getY(), center.getZ());
+      graph->addNode(node);
+      graph->addEdge(0, 1, width, GRAPH_LINE);
+
+      node.setCenter(center.getX(), center.getY() - d, center.getZ());
+      graph->addNode(node);
+      node.setCenter(center.getX(), center.getY() + d, center.getZ());
+      graph->addNode(node);
+      graph->addEdge(2, 3, width, GRAPH_LINE);
+
+      node.setCenter(center.getX(), center.getY(), center.getZ() - d);
+      graph->addNode(node);
+      node.setCenter(center.getX(), center.getY(), center.getZ() + d);
+      graph->addNode(node);
+      graph->addEdge(4, 5, width, GRAPH_LINE);
+    }
+  }
+
+  return graph;
+}
+
+}
+
 void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
 {
+//  std::array<int, 6> vertexArray{{0, 0, 0, 0, 0, 0}};
+
   Z3DGraphNode node;
   node.setCenter(item->getPosition());
   node.setRadius(item->getRadius());
   node.setColor(item->getDisplayColor());
+
+//  if (item->getAction() != neutu::EToDoAction::TO_TRACE_TO_SOMA &&
+//      item->getAction() != neutu::EToDoAction::NO_SOMA) {
+  if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC ||
+      item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC ||
+      item->getAction() == neutu::EToDoAction::TIP_DETECTOR) {
+    node.setRadius(item->getRadius() * 0.5);
+  }
   m_graph.addNode(node);
+//  }
+//  }
 
   ZPoint center = node.center();
   double d = node.radius() + node.radius();
 
-  int nodeCount = m_graph.getNodeNumber();
+//  int nodeCount = m_graph.getNodeNumber();
 
-  node.setCenter(center);
-  node.setX(center.getX() - d);
-  node.setColor(item->getDisplayColor());
-  node.setRadius(0);
-  m_graph.addNode(node);
+//  node.setCenter(center);
+//  node.setX(center.getX() - d);
+//  node.setColor(item->getDisplayColor());
+//  node.setRadius(0);
+//  m_graph.addNode(node);
 
-  node.setCenter(center);
-  node.setX(center.getX() + d);
-  m_graph.addNode(node);
 
+  if (QString(item->getComment().c_str()).startsWith('#')) {
+    node.setText(item->getComment().c_str());
+    node.setCenter(center);
+    node.setX(center.getX() + d);
+    node.setRadius(0);
+  }
+//  m_graph.addNode(node);
+//  node.setText(""); //clear text
+
+  Z3DGraph *subgraph = make_todo_graph(item);
+  if (subgraph) {
+    m_graph.append(*subgraph);
+    delete subgraph;
+  }
+
+#if 0
   Z3DGraphEdge edge;
   edge.useNodeColor(true);
   edge.setShape(GRAPH_LINE);
   edge.setWidth(2);
 
-  edge.setConnection(nodeCount, nodeCount + 1);
-  m_graph.addEdge(edge);
+//  edge.setConnection(nodeCount, nodeCount + 1);
+//  m_graph.addEdge(edge);
+  vertexArray[0] = nodeCount;
+  vertexArray[1] = nodeCount + 1;
 
 
   nodeCount = m_graph.getNodeNumber();
@@ -180,12 +312,14 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
   node.setY(center.getY() + d);
   m_graph.addNode(node);
 
-  edge.useNodeColor(true);
-  edge.setShape(GRAPH_LINE);
-  edge.setWidth(2);
+//  edge.useNodeColor(true);
+//  edge.setShape(GRAPH_LINE);
+//  edge.setWidth(2);
 
-  edge.setConnection(nodeCount, nodeCount + 1);
-  m_graph.addEdge(edge);
+//  edge.setConnection(nodeCount, nodeCount + 1);
+//  m_graph.addEdge(edge);
+  vertexArray[2] = nodeCount;
+  vertexArray[3] = nodeCount + 1;
 
   nodeCount = m_graph.getNodeNumber();
 
@@ -197,12 +331,29 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
   node.setZ(center.getZ() + d);
   m_graph.addNode(node);
 
-  edge.useNodeColor(true);
-  edge.setShape(GRAPH_LINE);
-  edge.setWidth(2);
+//  edge.useNodeColor(true);
+//  edge.setShape(GRAPH_LINE);
+//  edge.setWidth(2);
 
-  edge.setConnection(nodeCount, nodeCount + 1);
-  m_graph.addEdge(edge);
+//  edge.setConnection(nodeCount, nodeCount + 1);
+//  m_graph.addEdge(edge);
+  vertexArray[4] = nodeCount;
+  vertexArray[5] = nodeCount + 1;
+
+  if (item->hasSomaAction()) {
+    for (int i = 0; i < 6; ++i) {
+      for (int j = i + 1; j < 6; ++j) {
+        edge.setConnection(vertexArray[i], vertexArray[j]);
+        m_graph.addEdge(edge);
+      }
+    }
+  } else {
+    for (int i = 0; i < 3; ++i) {
+      edge.setConnection(vertexArray[i*2], vertexArray[i*2+1]);
+      m_graph.addEdge(edge);
+    }
+  }
+#endif
 }
 
 void ZFlyEmTodoListFilter::addItem(ZFlyEmToDoItem *item)
@@ -240,9 +391,18 @@ void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_2
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   for (QList<ZFlyEmToDoItem *>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     addItem(const_cast<ZFlyEmToDoItem*>(*iter));
+
+#ifdef _DEBUG_2
+    std::cout << "3D Todo: " << *iter << " " << (*iter)->getPosition().toString()
+              << " " << (*iter)->isChecked() << std::endl;
+#endif
   }
   m_dataIsInvalid = true;
   invalidateResult();
@@ -282,11 +442,19 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   ZFlyEmToDoList::ItemIterator iterator(&todoList);
 //  ZCuboid nodeBox;
   while (iterator.hasNext()) {
     ZFlyEmToDoItem &item = iterator.next();
     addItem(&item);
+#ifdef _DEBUG_
+    std::cout << "3D Todo: " << item.getPosition().toString()
+              << " " << item.isChecked() << std::endl;
+#endif
   }
 
   m_dataIsInvalid = true;
@@ -301,6 +469,8 @@ void ZFlyEmTodoListFilter::prepareData()
 
   m_pointAndRadius.clear();
   m_lines.clear();
+  m_textPosition.clear();
+  m_textList.clear();
 
   std::vector<float> edgeWidth;
 
@@ -316,12 +486,16 @@ void ZFlyEmTodoListFilter::prepareData()
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
     Z3DGraphNode node = m_graph.getNode(i);
 
+    ZPoint nodePos = node.center();
     if (node.radius() > 0.0) {
-      ZPoint nodePos = node.center();
-
       m_pointAndRadius.push_back(
             glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
                       m_graph.getNode(i).radius()));
+    }
+
+    if (!node.getText().isEmpty()) {
+      m_textPosition.push_back(glm::vec3(nodePos.x(), nodePos.y(), nodePos.z()));
+      m_textList.append(node.getText());
     }
   }
 
@@ -332,6 +506,14 @@ void ZFlyEmTodoListFilter::prepareData()
   m_lineRenderer.setLineWidth(3.0);
   m_lineRenderer.setLineWidth(edgeWidth);
   m_sphereRenderer.setData(&m_pointAndRadius);
+  m_fontRenderer.setData(&m_textPosition, m_textList);
+
+  m_pointAndRadiusForPicking.clear();
+  for (const ZFlyEmToDoItem *item : m_itemList) {
+    m_pointAndRadiusForPicking.emplace_back(
+          item->getX(), item->getY(), item->getZ(), item->getRadius());
+  }
+  m_sphereRendererForPicking.setData(&m_pointAndRadiusForPicking);
 
   prepareColor();
 
@@ -348,6 +530,7 @@ void ZFlyEmTodoListFilter::prepareColor()
 
     if (node.radius() > 0) {
       Q_ASSERT(index < m_pointColors.size());
+//      color.setAlpha(0);
       m_pointColors[index++] = glm::vec4(
             color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }
@@ -405,12 +588,12 @@ bool ZFlyEmTodoListFilter::isReady(Z3DEye eye) const
 
 void ZFlyEmTodoListFilter::renderOpaque(Z3DEye eye)
 {
-  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
+  m_rendererBase.render(eye, m_sceneRender);
 }
 
 void ZFlyEmTodoListFilter::renderTransparent(Z3DEye eye)
 {
-  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
+  m_rendererBase.render(eye, m_sceneRender);
 }
 
 void ZFlyEmTodoListFilter::updateGraphVisibleState()
@@ -428,7 +611,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
   e->ignore();
   // Mouse button pressend
   // can not accept the event in button press, because we don't know if it is a selection or interaction
-  if (e->type() == QEvent::MouseButtonPress) {
+  if (e->type() == QEvent::MouseButtonPress || e->type() == QEvent::MouseButtonDblClick) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
@@ -444,11 +627,21 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
 
     // Check if any point was selected...
     for (std::vector<ZFlyEmToDoItem*>::iterator it=m_itemList.begin();
-         it!=m_itemList.end(); ++it)
+         it!=m_itemList.end(); ++it) {
       if (*it == obj) {
         m_pressedItem = *it;
         break;
       }
+    }
+
+    if (e->type() == QEvent::MouseButtonDblClick) {
+      LDEBUG() << "Double click:" << m_pressedItem;
+      emit annotatingObject(m_pressedItem);
+  //    if (m_pressedItem )
+    } else {
+      LDEBUG() << "Press:" << m_pressedItem;
+    }
+
     return;
   }
 
@@ -464,8 +657,13 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
           e->accept();
         }
       }
+
+      LDEBUG() << "Release:" << m_pressedItem;
+
       m_pressedItem = NULL;
 //    }
   }
+
+
 }
 

@@ -5,24 +5,50 @@
 #include <QSortFilterProxyModel>
 
 #include "ui_flyemproofcontrolform.h"
+
+#include "qt/gui/utilities.h"
 #include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
-#include "flyem/zflyembodymergeproject.h"
-#include "zstackdoc.h"
-#include "zflyembookmarkview.h"
+#include "flyemdef.h"
+#include "zflyembodymergeproject.h"
+#include "mvc/zstackdoc.h"
+#include "widgets/zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
+#include "widgets/zflyemicon.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
-#include "flyem/zflyemproofmvc.h"
+#include "qfonticon.h"
+#include "zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::FlyEmProofControlForm)
 {
   ui->setupUi(this);
+
+  ui->coarseBodyPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
+  ui->bodyViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
+  ui->coarseMeshPushButton->setIcon(FLYEM_COARSE_MESH_ICON);
+  ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
+  ui->skeletonViewPushButton->setIcon(FLYEM_SKELETON_ICON);
+
+//  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
+//  ui->coarseBodyPushButton->setIcon(QFontIcon::icon(0x25cf, Qt::red));
+//  ui->coarseBodyPushButton->setText(
+//        "<font color=red>" + QString::fromUtf8("●") + "</font>" + ui->coarseBodyPushButton->text());
+
+//  ui->coarseBodyPushButton->setLayout(layout);
+//  ui->bodyViewPushButton->setIcon(QFontIcon::icon(0x2724, Qt::red));
+//  neutu::SetHtmlIcon(ui->bodyViewPushButton, flyem::FINE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->coarseMeshPushButton, flyem::COARSE_MESH_ICON);
+//  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+//  ui->coarseMeshPushButton->setIcon(QFontIcon::icon(0x25b2, Qt::darkGreen));
+//  ui->meshPushButton->setIcon(QFontIcon::icon(0x2756, Qt::darkGreen));
+//  neutu::SetHtmlIcon(ui->skeletonViewPushButton, "<font color=blue>Y</font>");
+
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
   m_latencyWidget =
@@ -83,22 +109,22 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(coarseMeshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+          this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
 
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
-          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+//          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
@@ -187,6 +213,11 @@ void FlyEmProofControlForm::createColorMenu()
           this, SLOT(changeColorMap(QAction*)));
 }
 
+void FlyEmProofControlForm::setMainMenu(QMenu *menu)
+{
+  ui->menuPushButton->setMenu(menu);
+}
+
 void FlyEmProofControlForm::createMenu()
 {
   m_mainMenu = new QMenu(this);
@@ -197,11 +228,11 @@ void FlyEmProofControlForm::createMenu()
   queryPixelAction->setShortcut(Qt::Key_F3);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
-  QAction *queryBodyAction = new QAction("Go to Body", this);
-  queryBodyAction->setShortcuts(
+  QAction *gotoBodyAction = new QAction("Go to Body", this);
+  gotoBodyAction->setShortcuts(
         QList<QKeySequence>() << Qt::Key_F1 << Qt::SHIFT + Qt::Key_G);
-  m_mainMenu->addAction(queryBodyAction);
-  connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
+  m_mainMenu->addAction(gotoBodyAction);
+  connect(gotoBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 
   QAction *selectBodyAction = new QAction("Select Body", this);
   selectBodyAction->setShortcut(Qt::Key_F2);
@@ -215,6 +246,12 @@ void FlyEmProofControlForm::createMenu()
   connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
 
   QMenu *bodyMenu = m_mainMenu->addMenu("Bodies");
+
+  QAction *queryBodyAction = new QAction("Query", this);
+  connect(queryBodyAction, SIGNAL(triggered()),
+          this, SLOT(queryBody()));
+  bodyMenu->addAction(queryBodyAction);
+
   QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
   connect(exportBodyAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBody()));
@@ -230,6 +267,12 @@ void FlyEmProofControlForm::createMenu()
   connect(skeletonizeTopAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeTopBody()));
   bodyMenu->addAction(skeletonizeTopAction);
+
+  QAction *skeletonizeBodyListAction = new QAction("Skeletonize Body List", this);
+  connect(skeletonizeBodyListAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeBodyList()));
+  bodyMenu->addAction(skeletonizeBodyListAction);
+
 
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
@@ -279,6 +322,11 @@ void FlyEmProofControlForm::exportSelectedBody()
   emit exportingSelectedBody();
 }
 
+void FlyEmProofControlForm::queryBody()
+{
+  emit queryingBody();
+}
+
 void FlyEmProofControlForm::exportSelectedBodyLevel()
 {
   emit exportingSelectedBodyLevel();
@@ -292,6 +340,11 @@ void FlyEmProofControlForm::skeletonizeSelectedBody()
 void FlyEmProofControlForm::skeletonizeTopBody()
 {
   emit skeletonizingTopBody();
+}
+
+void FlyEmProofControlForm::skeletonizeBodyList()
+{
+  emit skeletonizingBodyList();
 }
 
 void FlyEmProofControlForm::updateMeshForSelectedBody()
@@ -457,19 +510,32 @@ void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
   }
 }
 
+void FlyEmProofControlForm::locateAssignedBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingToAssigned(bookmark->getLocation().getX(),
+                           bookmark->getLocation().getY(),
+                           bookmark->getLocation().getZ());
+  }
+}
+
+/*
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getAssignedBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
+/*
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
 }
+*/
 
 void FlyEmProofControlForm::updateLatency(int t)
 {

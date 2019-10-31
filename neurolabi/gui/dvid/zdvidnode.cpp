@@ -5,7 +5,7 @@
 
 #if _QT_APPLICATION_
 #include <QtDebug>
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"
@@ -17,6 +17,20 @@ const char* ZDvidNode::m_addressKey = "address";
 const char* ZDvidNode::m_portKey = "port";
 const char* ZDvidNode::m_uuidKey = "uuid";
 
+/* Implementation details
+ *
+ * The member m_uuid in this class can be
+ *   > explicit, which is just a normal DVID UUID
+ *   > reference, which starts with "ref:", it is
+ *       expected to followed by a link where the actual UUID is stored
+ *   > alias, which starts with "@", referring to the master node of the root
+ *       alias configured in the flyem configuration file.
+ *
+ * setUuid() can take any kind of UUID, but it will only try to translate the
+ * reference one.
+ *
+ */
+
 ZDvidNode::ZDvidNode()
 {
 }
@@ -24,16 +38,18 @@ ZDvidNode::ZDvidNode()
 ZDvidNode::ZDvidNode(
     const std::string &address, const std::string &uuid, int port)
 {
-  init();
-
   set(address, uuid, port);
 }
 
-
-void ZDvidNode::init()
+bool ZDvidNode::hasDvidUuid() const
 {
-  m_port = -1;
-  m_isMocked = false;
+  if (!m_uuid.empty()) {
+    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:")) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void ZDvidNode::setMock(bool on)
@@ -46,12 +62,21 @@ bool ZDvidNode::isMock() const
   return m_isMocked;
 }
 
-std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
+std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) const
 {
   std::string source;
 
   if (!getAddress().empty()) {
-    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
+    std::string uuid = getUuid();
+    if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
+      uuid = uuid.substr(0, uuidBrief);
+    } else if (int(uuid.size()) < uuidBrief) {
+#if defined(_QT_APPLICATION_)
+      LWARN() << "Out-of-bound uuid brief (" << uuidBrief << ") for" << uuid;
+#endif
+    }
+
+    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;
     if (withHttpPrefix) {
       if (isMock()) {
         source = "mock:" + source;
@@ -126,8 +151,11 @@ void ZDvidNode::set(
 
 void ZDvidNode::clear()
 {
+  *this = ZDvidNode();
+  /*
   set("", "", -1);
-  init();
+  m_isMocked = false;
+  */
 }
 
 void ZDvidNode::setServer(const std::string &address)
@@ -169,8 +197,23 @@ void ZDvidNode::setServer(const std::string &address)
   }
 }
 
+void ZDvidNode::setInferredUuid(const std::string &uuid)
+{
+  m_uuid = uuid;
+}
+
+void ZDvidNode::setMappedUuid(
+    const std::string &original, const std::string &mapped)
+{
+  m_originalUuid = original;
+  m_uuid = mapped;
+}
+
 void ZDvidNode::setUuid(const std::string &uuid)
 {
+  m_uuid.clear();
+  m_originalUuid = uuid;
+
   if (ZString(uuid).startsWith("ref:")) {
 #if _QT_APPLICATION_
     std::string uuidLink = uuid.substr(4);
@@ -310,7 +353,7 @@ std::string ZDvidNode::getUrl() const
     url += "/api/node/" + m_uuid;
   }
 
-  return url;
+  return std::move(url);
 }
 
 
@@ -329,7 +372,7 @@ void ZDvidNode::loadJsonObject(const ZJsonObject &obj)
   if (isValidJson) {
     setServer(ZJsonParser::stringValue(obj[m_addressKey]));
     if (obj.hasKey(m_portKey)) {
-      setPort(ZJsonParser::integerValue(obj[m_portKey]));
+      setPort(int(ZJsonParser::integerValue(obj[m_portKey])));
     } else {
       setPort(-1);
     }

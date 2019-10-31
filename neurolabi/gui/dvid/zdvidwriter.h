@@ -1,18 +1,13 @@
 #ifndef ZDVIDWRITER_H
 #define ZDVIDWRITER_H
 
-#include "zqtheader.h"
-
 #include <string>
 #include <vector>
 
-#include "flyem/zflyem.h"
-#include "zsparsestack.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
-#include "flyem/zflyembodyannotation.h"
+#include "c_stack.h"
+
+#include "zqtheader.h"
 #include "zjsonobject.h"
-#include "zsharedpointer.h"
 #include "zdvidreader.h"
 
 namespace libdvid{
@@ -30,6 +25,7 @@ class ZFlyEmToDoItem;
 class ZArray;
 class ZStack;
 class ZObject3dScan;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidWriter /*: public QObject*/
 {
@@ -92,6 +88,7 @@ public:
 
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
+  void deleteData(const std::string &type, const std::string &name);
 
   void syncAnnotationToLabel(
       const std::string &name, const std::string &queryString = "");
@@ -144,7 +141,7 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
-  uint64_t rewriteBody(uint64_t label);
+//  uint64_t rewriteBody(uint64_t label);
 
   //Returns (remainderId, newBodyId)
   std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
@@ -246,7 +243,7 @@ public:
     return m_errorOutput;
   }
 
-  void writeUrl(const std::string &url, const std::string &method = "POST");
+//  void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
 
@@ -281,6 +278,8 @@ public:
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
+  //For the following functions, nothing will be done with an empty string
+  //returned if the input url is empty.
   std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);
   std::string post(const std::string &url, const std::string &payload, bool isJson);
@@ -304,9 +303,9 @@ private:
 
   ZJsonValue getLocMessage(const std::string &message);
 
-  bool runCommand(const QString &command, const QStringList &argList);
-  bool runCommand(const QString &command);
-  bool runCommand(QProcess &process);
+//  bool runCommand(const QString &command, const QStringList &argList);
+//  bool runCommand(const QString &command);
+//  bool runCommand(QProcess &process);
 
   void parseStandardOutput();
   void init();
@@ -325,7 +324,8 @@ private:
   QString m_statusErrorMessage;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDConnection> m_connection;
 #endif
 };
 

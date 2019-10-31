@@ -39,7 +39,7 @@ typedef struct _Trace_History {
   double fit_corr;
   int hit_region;
   int index;
-  BOOL is_refit;
+  _BOOL_ is_refit;
   Direction_e direction;
 } Trace_History;
 
@@ -49,9 +49,9 @@ void Trace_History_Copy(const Trace_History *src, Trace_History *des);
 void Trace_History_Set_Score(Trace_History *th, const Neuroseg_Fit_Score *fs);
 void Trace_History_Set_Hit_Region(Trace_History *th, int hit_region);
 void Trace_History_Set_Index(Trace_History *th, int index);
-void Trace_History_Set_Is_Refit(Trace_History *th, BOOL is_refit);
+void Trace_History_Set_Is_Refit(Trace_History *th, _BOOL_ is_refit);
 void Trace_History_Set_Direction(Trace_History *th, Direction_e direction);
-BOOL Trace_History_Is_Refit(Trace_History *th);
+_BOOL_ Trace_History_Is_Refit(Trace_History *th);
 void Fprint_Trace_History(FILE *fp, const Trace_History *th);
 void Print_Trace_History(const Trace_History *th);
 /******************************************/
@@ -308,7 +308,7 @@ int Neurochain_Hit_Test_Seg(const Neurochain *chain, Direction_e d, int nseg,
 
 void Neurochain_Hit_Stack(const Neurochain *chain, Stack *region, int hit[]);
 
-BOOL Neurochain_Hit_Bound(const Neurochain *chain, int width, int height,
+_BOOL_ Neurochain_Hit_Bound(const Neurochain *chain, int width, int height,
 			  int depth, int margin);
 
 /*

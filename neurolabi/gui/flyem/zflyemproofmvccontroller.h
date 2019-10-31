@@ -1,9 +1,9 @@
 #ifndef ZFLYEMPROOFMVCCONTROLLER_H
 #define ZFLYEMPROOFMVCCONTROLLER_H
 
+#include <cstdint>
 #include <memory>
 #include <QSet>
-#include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
 class ZIntPoint;

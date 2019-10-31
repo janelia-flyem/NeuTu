@@ -2,7 +2,7 @@
 #include "zerror.h"
 #include "zswctree.h"
 #include "swctreenode.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 
 ZFlyEmNeuronAxis::ZFlyEmNeuronAxis()
 {
@@ -88,7 +88,7 @@ ZSwcTree* ZFlyEmNeuronAxis::toSwc(double radius, double sampleRate)
       AxisPoint pt = iter->second;
 
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(pt.first, pt.second, iter->first, radius);
+          SwcTreeNode::MakePointer(pt.first, pt.second, iter->first, radius);
       SwcTreeNode::setParent(tn, parent);
       parent = tn;
     }
@@ -99,13 +99,13 @@ ZSwcTree* ZFlyEmNeuronAxis::toSwc(double radius, double sampleRate)
     for (double z = minZ; z < maxZ; z += sampleRate) {
       ZPoint center = getCenter(z);
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(center, radius);
+          SwcTreeNode::MakePointer(center, radius);
       SwcTreeNode::setParent(tn, parent);
       parent = tn;
     }
 
     ZPoint center = getCenter(maxZ);
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(center, radius);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(center, radius);
     SwcTreeNode::setParent(tn, parent);
   }
 

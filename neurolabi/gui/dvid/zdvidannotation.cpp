@@ -4,15 +4,17 @@
 #include <sstream>
 #include <QColor>
 
-#include "tz_math.h"
+#include "common/math.h"
+#include "geometry/zcuboid.h"
 #include "zjsonarray.h"
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "c_json.h"
-#include "zcuboid.h"
 #include "zresolution.h"
 #include "zdvidutil.h"
+
+const char* ZDvidAnnotation::KEY_COMMENT = "comment";
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -25,7 +27,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = EKind::KIND_INVALID;
   m_bodyId = 0;
-  m_status = STATUS_NORMAL;
+  m_status = EStatus::NORMAL;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -36,7 +38,7 @@ void ZDvidAnnotation::setRadius(double r)
 }
 
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -98,7 +100,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -142,11 +144,11 @@ double ZDvidAnnotation::GetDefaultRadius(
 {
   double r = GetDefaultRadius(kind);
 
-  if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
-    r *= sqrt(resolution.getPlaneVoxelSize(neutube::EPlane::XY));
+  if (resolution.getUnit() == ZResolution::EUnit::UNIT_PIXEL) {
+    r *= sqrt(resolution.getPlaneVoxelSize(neutu::EPlane::XY));
   } else {
     r *= sqrt(resolution.getPlaneVoxelSize(
-                neutube::EPlane::XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+                neutu::EPlane::XY, ZResolution::EUnit::UNIT_NANOMETER)) / 8.0;
   }
 
   return r;
@@ -199,13 +201,13 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
-  if (isSliceVisible(z, neutube::EAxis::Z)) {
+  if (isSliceVisible(z, neutu::EAxis::Z)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z, neutube::EAxis::Z);
+    double radius = getRadius(z, neutu::EAxis::Z);
 
     return d2 <= radius * radius;
   }
@@ -213,7 +215,7 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidAnnotation::hit(double x, double y, neutube::EAxis axis)
+bool ZDvidAnnotation::hit(double x, double y, neutu::EAxis axis)
 {
   ZIntPoint shiftedCenter = m_position;
   shiftedCenter.shiftSliceAxis(axis);
@@ -226,6 +228,7 @@ bool ZDvidAnnotation::hit(double x, double y, neutube::EAxis axis)
   return d2 <= m_radius * m_radius;
 }
 
+/*
 void ZDvidAnnotation::setProperty(ZJsonObject propJson)
 {
   if (propJson.hasKey("conf") && m_propertyJson.hasKey("confidence")) {
@@ -238,7 +241,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
     const std::string &key = iter->first;
     bool goodKey = true;
     if (key == "annotation") {
-      if (strlen(ZJsonParser::stringValue(iter->second)) == 0) {
+      if (ZJsonParser::stringValue(iter->second).empty()) {
         m_propertyJson.removeKey("annotation");
         goodKey = false;
       }
@@ -249,6 +252,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
     }
   }
 }
+*/
 
 void ZDvidAnnotation::clear()
 {
@@ -336,7 +340,7 @@ void ZDvidAnnotation::updatePartner()
 
 void ZDvidAnnotation::loadJsonObject(
     const ZJsonObject &obj,
-    flyem::EDvidAnnotationLoadMode mode)
+    dvid::EAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -358,14 +362,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != flyem::EDvidAnnotationLoadMode::NO_PARTNER) {
+    if (mode != dvid::EAnnotationLoadMode::NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case flyem::EDvidAnnotationLoadMode::PARTNER_RELJSON:
+        case dvid::EAnnotationLoadMode::PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION:
+        case dvid::EAnnotationLoadMode::PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0
@@ -455,7 +459,7 @@ void ZDvidAnnotation::addTag(const std::string &tag)
 
 void ZDvidAnnotation::addBodyIdTag()
 {
-  addTag(ZDvid::GetBodyIdTag(getBodyId()));
+  addTag(dvid::GetBodyIdTag(getBodyId()));
 }
 
 void ZDvidAnnotation::removeTag(const std::string &tag)
@@ -466,6 +470,11 @@ void ZDvidAnnotation::removeTag(const std::string &tag)
 bool ZDvidAnnotation::hasTag(const std::string &tag) const
 {
   return m_tagSet.count(tag) > 0;
+}
+
+std::set<std::string> ZDvidAnnotation::getTagSet() const
+{
+  return m_tagSet;
 }
 
 ZJsonObject ZDvidAnnotation::MakeRelJson(
@@ -487,18 +496,20 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
   obj.setEntry("Pos", posJson);
   obj.setEntry("Kind", GetKindName(getKind()));
-  ZJsonValue relJson = m_relJson.clone();
+
+  ZJsonArray relJson = ZJsonArray(
+        C_Json::clone(m_relJson.getData()), ZJsonValue::SET_AS_IT_IS);
   obj.setEntry("Rels", relJson);
 
+  ZJsonArray tagJson;
   if (!m_tagSet.empty()) {
-    ZJsonArray tagJson;
     for (std::set<std::string>::const_iterator iter = m_tagSet.begin();
          iter != m_tagSet.end(); ++iter) {
       const std::string &tag = *iter;
       tagJson.append(tag);
     }
-    obj.setEntry("Tags", tagJson);
   }
+  obj.setEntry("Tags", tagJson);
 
   if (!m_propertyJson.isEmpty()) {
     ZJsonValue propJson = m_propertyJson.clone();
@@ -508,45 +519,45 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   return obj;
 }
 
-bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZDvidAnnotation::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return false;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }
 
-  return dz < iround(getRadius());
+  return dz < neutu::iround(getRadius());
 }
 
-double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
+double ZDvidAnnotation::getRadius(int z, neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis == neutube::EAxis::ARB) {
+  if (sliceAxis == neutu::EAxis::ARB) {
     return 0.0;
   }
 
   int dz = 0;
   switch (sliceAxis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     dz = abs(getPosition().getX() - z);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     dz = abs(getPosition().getY() - z);
     break;
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     dz = abs(getPosition().getZ() - z);
     break;
   }
@@ -593,6 +604,11 @@ const
   return prop;
 }
 
+bool ZDvidAnnotation::hasProperty(const std::string &key) const
+{
+  return m_propertyJson.hasKey(key.c_str());
+}
+
 void ZDvidAnnotation::addProperty(
     const std::string &key, const std::string &value)
 {
@@ -606,6 +622,20 @@ void ZDvidAnnotation::removeProperty(const std::string &key)
   if (m_propertyJson.hasKey(key.c_str())) {
     m_propertyJson.removeKey(key.c_str());
   }
+}
+
+void ZDvidAnnotation::setComment(const std::string &comment)
+{
+  if (comment.empty()) {
+    removeProperty(KEY_COMMENT);
+  } else {
+    addProperty(KEY_COMMENT, comment);
+  }
+}
+
+std::string ZDvidAnnotation::getComment() const
+{
+  return getProperty<std::string>(KEY_COMMENT);
 }
 
 std::string ZDvidAnnotation::GetKindName(EKind kind)
@@ -669,6 +699,12 @@ void ZDvidAnnotation::Annotate(ZJsonObject &json, const std::string &annot)
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, bool value)
 {
+  if (value) {
+    AddProperty(json, key, "1");
+  } else {
+    AddProperty(json, key, "0");
+  }
+  /*
   ZJsonObject propJson = json.value("Prop");
   if (value == true) {
     propJson.setEntry(key, "1");
@@ -678,6 +714,13 @@ void ZDvidAnnotation::AddProperty(
   if (!propJson.hasKey("Prop")) {
     json.setEntry("Prop", propJson);
   }
+  */
+}
+
+void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, int value)
+{
+  AddProperty(json, key, std::to_string(value));
 }
 
 std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(const ZJsonObject &json)
@@ -961,7 +1004,7 @@ ZCuboid ZDvidAnnotation::getBoundBox() const
   return box;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
 
 ///////////////
 ZJsonObject ZDvidAnnotation::Relation::toJsonObject() const
@@ -973,13 +1016,13 @@ std::string ZDvidAnnotation::Relation::GetName(
     ZDvidAnnotation::Relation::ERelation rel)
 {
   switch (rel) {
-  case RELATION_POSTSYN_TO:
+  case ERelation::POSTSYN_TO:
     return "PostSynTo";
-  case RELATION_PRESYN_TO:
+  case ERelation::PRESYN_TO:
     return "PreSynTo";
-  case RELATION_CONVERGENT_TO:
+  case ERelation::CONVERGENT_TO:
     return "ConvergentTo";
-  case RELATION_GROUPED_WITH:
+  case ERelation::GROUPED_WITH:
     return "GroupedWith";
   default:
     break;

@@ -4,7 +4,8 @@
 #include <QMainWindow>
 
 #include "zactionfactory.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
+#include "common/zsharedpointer.h"
 
 namespace Ui {
 class Neu3Window;
@@ -29,6 +30,7 @@ class ZArbSliceViewParam;
 class ZNeu3SliceViewDialog;
 class ZFlyEmMessageWidget;
 class ZWidgetMessage;
+class ZFlyEmBodyColorScheme;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -55,8 +57,8 @@ public:
   static void enableZoomToLoadedBody(bool enable = true);
   static bool zoomToLoadedBodyEnabled();
 
-  enum EBrowseMode {
-    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER, BROWSE_NEUROGLANCER_EXT
+  enum class EBrowseMode {
+    NONE, NATIVE, NEUROGLANCER, NEUROGLANCER_EXT
   };
 
   QProgressDialog* getProgressDialog();
@@ -139,6 +141,7 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
+  void browse(int x, int y, int z, int);
 //  void browseInPlace(double x, double y, double z);
 
   // Launch a native grayscale browser with a custom color mapping.
@@ -160,6 +163,7 @@ private slots:
   void updateSliceBrowser();
   void updateSliceBrowserSelection();
   void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
+  void applyBrowserColorScheme();
 
 //  void hideGrayscale();
   void processCameraRotation();
@@ -248,7 +252,8 @@ private:
   constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
   int m_browseWidth = DEFAULT_BROWSE_WIDTH;
   int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
-  EBrowseMode m_browseMode = BROWSE_NONE;
+  EBrowseMode m_browseMode = EBrowseMode::NONE;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_browserColorScheme;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
   QTimer *m_testTimer;

@@ -1,8 +1,8 @@
 #ifndef ZSTACKDOCFACTORY_H
 #define ZSTACKDOCFACTORY_H
 
-#include "zsharedpointer.h"
-#include "neutube_def.h"
+#include "common/zsharedpointer.h"
+#include "common/neutudefs.h"
 
 class ZStackDoc;
 
@@ -12,7 +12,7 @@ public:
   ZStackDocFactory();
 
 public:
-  static ZSharedPointer<ZStackDoc> Make(neutube::Document::ETag tag);
+  static ZSharedPointer<ZStackDoc> Make(neutu::Document::ETag tag);
 
 };
 

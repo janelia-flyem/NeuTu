@@ -1715,7 +1715,7 @@
     Kill_Stack(substack1);
     Kill_Stack(substack2);
 
-    <3t> max_value = <2T>_Max(corr_stack,sub);
+    max_value = <2T>_Max(corr_stack,sub);
 
 #ifdef _DEBUG_
     <2T>_Print(corr_stack);
@@ -2560,9 +2560,9 @@ void Correct_Filter_Stack_<4T>(const <2T> *filter, <2T> *stack)
 
   int tmpl_offset = 0;
   int offset = 0;
-  BOOL safe_x, safe_y, safe_z;
-  safe_y = FALSE;
-  safe_z = FALSE;
+  _BOOL_ safe_x, safe_y, safe_z;
+  safe_y = _FALSE_;
+  safe_z = _FALSE_;
   while (k < stack->dim[2]) {
     j = 0;
     while (j < stack->dim[1]) {     

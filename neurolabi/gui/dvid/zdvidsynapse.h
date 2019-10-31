@@ -4,9 +4,10 @@
 
 #include <iostream>
 #include <QColor>
+#include <unordered_map>
 
 #include "zstackobject.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zjsonobject.h"
 #include "zdvidannotation.h"
 
@@ -21,17 +22,29 @@ public:
   ZDvidSynapse();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPSE;
+    return ZStackObject::EType::DVID_SYNAPSE;
   }
 
 //  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
-  const std::string& className() const;
+//  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
+
+  std::string getConfidenceStr() const;
+  void setConfidence(const std::string str);
 
   double getConfidence() const;
+
+  /*!
+   * \brief Set the confidence.
+   *
+   * \param \a c is expected to be in [0.0, 1.0]. Any value out of the range will
+   * be preserved but its meaning is undefined.
+   */
   void setConfidence(double c);
+  bool hasConfidenceProperty() const;
+  void removeConfidenceProperty();
 
   std::string getAnnotation() const;
 
@@ -46,35 +59,21 @@ public:
 
   EKind getParterKind(size_t i) const;
 
+  void updateProperty(const ZJsonObject &propJson);
+
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapse &synapse);
 
-  /*
-  class Relation {
-  public:
-    enum ERelation {
-      RELATION_UNKNOWN, RELATION_POSTSYN_TO, RELATION_PRESYN_TO,
-      RELATION_CONVERGENT_TO, RELATION_GROUPED_WITH
-    };
-
-    Relation(const ZIntPoint &to, ERelation relation) :
-      m_to(to), m_relation(relation) {
-    }
-
-    static std::string GetName(ERelation rel);
-
-    ZJsonObject toJsonObject() const;
-
-  private:
-    ZIntPoint m_to;
-    ERelation m_relation;
-  };
-  */
-
 
   static void SetConfidenceProp(ZJsonObject &propJson, double conf);
+  static void SetConfidenceProp(ZJsonObject &propJson, std::string conf);
   static void SetConfidence(ZJsonObject &json, double conf);
+  static void SetConfidence(ZJsonObject &json, std::string conf);
+  static void RemoveConfidenceProp(ZJsonObject &json);
+
+  std::string getConnString(
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
 #if 0
 public: //Json APIs
@@ -99,15 +98,6 @@ public: //Json APIs
                           const std::string &value);
 #endif
 
-//  std::vector<ZIntPoint> getPartners();
-/*
-public: //Additional properties
-  void setUserName(const std::string &name);
-  std::string getUserName() const;
-*/
-//private:
-//  static ZJsonArray GetRelationJson(ZJsonObject &json);
-
 private:
   void init();
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
@@ -118,6 +108,7 @@ private:
   std::vector<bool> m_isPartnerVerified;
   std::vector<EKind> m_partnerKind;
   std::vector<EStatus> m_partnerStatus;
+  static const double DEFAULT_CONFIDENCE;
 };
 
 #endif // ZDVIDSYNAPSE_H

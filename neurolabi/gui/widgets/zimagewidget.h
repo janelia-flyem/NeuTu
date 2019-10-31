@@ -11,7 +11,7 @@
 #include <QVector>
 #include <QKeyEvent>
 
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 #include "zviewproj.h"
 
 class QPaintEvent;
@@ -76,6 +76,7 @@ public:
    * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
    */
   void setViewPortOffset(int x, int y);
+  void setViewPortCenterQuitely(int cx, int cy);
 
   const ZViewProj& getViewProj() const {
     return m_viewProj;
@@ -201,11 +202,11 @@ public:
     return m_paintBlocked;
   }
 
-  void setSliceAxis(neutube::EAxis axis) {
+  void setSliceAxis(neutu::EAxis axis) {
     m_sliceAxis = axis;
   }
 
-  neutube::EAxis getSliceAxis() const {
+  neutu::EAxis getSliceAxis() const {
     return m_sliceAxis;
   }
 
@@ -290,36 +291,38 @@ private:
   bool isBadView() const;
 
 private:
-  ZImage *m_image;
+  ZImage *m_image = nullptr;
   QVector<ZImage*> m_mask;
-  ZPixmap *m_objectCanvas;
-  ZPixmap *m_tileCanvas;
-  ZPixmap *m_dynamicObjectCanvas;
-  ZPixmap *m_activeDecorationCanvas;
+  ZPixmap *m_objectCanvas = nullptr;
+  ZPixmap *m_tileCanvas = nullptr;
+  ZPixmap *m_dynamicObjectCanvas = nullptr;
+  ZPixmap *m_activeDecorationCanvas = nullptr;
 //  ZPixmap *m_widgetCanvas;
 
 //  QRect m_viewPort; /* viewport, in world coordinates */
 //  QRectF m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;
-  QMenu *m_leftButtonMenu;
-  QMenu *m_rightButtonMenu;
-  ZPaintBundle *m_paintBundle;
-  bool m_isViewHintVisible;
-  bool m_paintBlocked;
+  QMenu *m_leftButtonMenu = nullptr;
+  QMenu *m_rightButtonMenu = nullptr;
+  ZPaintBundle *m_paintBundle = nullptr;
+  bool m_isViewHintVisible = true;
+  bool m_paintBlocked = false;
 //  QRect m_canvasRegion; //Whole canvas region
+
+  Qt::MouseButtons m_pressedButtons = Qt::NoButton;
 
   ZViewProj m_viewProj;
 
-  neutube::EAxis m_sliceAxis;
+  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
 //  QSize m_canvasSize;
 
-  bool m_freeMoving;
-  bool m_hoverFocus;
-  bool m_smoothDisplay;
-  bool m_showingCrossHair;
+  bool m_freeMoving = true;
+  bool m_hoverFocus = false;
+  bool m_smoothDisplay = false;
+  bool m_showingCrossHair= false;
   bool m_showingZoomHint = true;
-  bool m_isReady;
+  bool m_isReady = false;
   bool m_offsetAdjustment = false;
   QPoint m_hairCenter;
 };

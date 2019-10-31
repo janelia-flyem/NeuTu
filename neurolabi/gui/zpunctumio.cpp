@@ -1,4 +1,4 @@
-#define _USE_MATH_DEFINES
+//#define _USE_MATH_DEFINES
 #include <cmath>
 #include "zpunctumio.h"
 
@@ -23,17 +23,21 @@ QList<ZPunctum*> ZPunctumIO::load(const QString &file)
 {
   QList<ZPunctum*> punctaList;
   switch (ZFileType::FileType(file.toStdString())) {
-  case ZFileType::FILE_V3D_APO:
+  case ZFileType::EFileType::V3D_APO:
     readV3DApoFile(file, punctaList);
     break;
-  case ZFileType::FILE_V3D_MARKER:
+  case ZFileType::EFileType::V3D_MARKER:
     readV3DMarkerFile(file, punctaList);
     break;
-  case ZFileType::FILE_RAVELER_BOOKMARK:
+  case ZFileType::EFileType::RAVELER_BOOKMARK:
     readRavelerBookmarkFile(file, punctaList);
     break;
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
     readJsonFile(file, punctaList);
+    break;
+  case ZFileType::EFileType::PUNCTA:
+    readPunctaFile(file, punctaList);
+    break;
   default:
     LWARN() << "Not supported puncta file type:" << file;
     break;
@@ -127,7 +131,7 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
           }
         }
       }
-      punctum->setRadius(Cube_Root(0.75 / M_PI * punctum->volSize()));
+      punctum->setRadius(std::cbrt(0.75 / M_PI * punctum->volSize()));
       punctaList.push_back(punctum);
     }
   }
@@ -212,6 +216,26 @@ void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList
       }
     }
   }
+}
+
+void ZPunctumIO::readPunctaFile(const QString &file, QList<ZPunctum *> &punctaList)
+{
+  FILE *fp = fopen(file.toStdString().c_str(), "r");
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<int> coordinates = str.toIntegerArray();
+      if (coordinates.size() >= 3) {
+        ZPunctum* punctum = new ZPunctum();
+        punctum->setX(coordinates[0]);
+        punctum->setY(coordinates[1]);
+        punctum->setZ(coordinates[2]);
+        punctum->setSource(file.toStdString());
+        punctaList.push_back(punctum);
+      }
+    }
+  }
+  fclose(fp);
 }
 
 

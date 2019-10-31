@@ -5,9 +5,9 @@
 #include <QMutex>
 #include <QVector>
 
-#include "zintcuboid.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidreader.h"
+#include "geometry/zintcuboid.h"
+#include "zdvidtarget.h"
+#include "zdvidreader.h"
 #include "zthreadfuturemap.h"
 
 class ZDvidDataFetcher : public QObject

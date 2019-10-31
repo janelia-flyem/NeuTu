@@ -10,15 +10,15 @@
 #include <cstdlib>
 #include <fstream>
 #include "zmultiscalewatershedmodule.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zsandbox.h"
 #include "mainwindow.h"
 #include "neutubeconfig.h"
 #include "zobject3dscan.hpp"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
-#include "zstackdocdatabuffer.h"
-#include "zstackframe.h"
+#include "mvc/zstackdocdatabuffer.h"
+#include "mvc/zstackframe.h"
 #include "zcolorscheme.h"
 #include "zobject3dscanarray.h"
 #include "zsparsestack.h"
@@ -26,6 +26,8 @@
 #include "zstack.hxx"
 #include "zswctree.h"
 #include "zstroke2d.h"
+#include "imgproc/zstackprocessor.h"
+
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -100,6 +102,14 @@ void ZWaterShedWindow::onOk()
   ZSparseStack* spSrc=doc->getSparseStack();
   if(!src && !spSrc)return;
 
+  /*ZStack* c=src->clone();
+  ZStackProcessor process;
+  process.mexihatFilter(c);
+  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(c);
+  ZSandbox::GetMainWindow()->addStackFrame(frame);
+  ZSandbox::GetMainWindow()->presentStackFrame(frame);*/
+
+
   int scale=spin_step->value();
   doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
   ZStackWatershedContainer container(src,spSrc);
@@ -123,8 +133,8 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
-  container.setDsMethod(ds_method->currentText());
-  container.setAlgorithm(algorithms->currentText());
+  container.setDsMethod(ds_method->currentText().toStdString());
+  container.setAlgorithm(algorithms->currentText().toStdString());
 
   QTime time;
   time.start();
@@ -143,7 +153,7 @@ void ZWaterShedWindow::onOk()
        iter != result.end(); ++iter) {
     ZObject3dScan *obj = *iter;
     doc->getDataBuffer()->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+          obj, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
   doc->getDataBuffer()->deliver();
   result.shallowClear();

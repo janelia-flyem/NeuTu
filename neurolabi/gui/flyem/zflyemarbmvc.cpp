@@ -1,7 +1,7 @@
 #include "zflyemarbmvc.h"
 #include "zflyemarbdoc.h"
 #include "zflyemarbpresenter.h"
-#include "zstackview.h"
+#include "mvc/zstackview.h"
 #include "zarbslicescrollstrategy.h"
 
 ZFlyEmArbMvc::ZFlyEmArbMvc(QWidget *parent) : ZFlyEmProofMvc(parent)
@@ -18,27 +18,28 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
 {
   ZFlyEmArbMvc *frame = new ZFlyEmArbMvc(parent);
 
-  BaseConstruct(frame, doc, neutube::EAxis::ARB);
+  BaseConstruct(frame, doc, neutu::EAxis::ARB);
   frame->getView()->setHoverFocus(true);
   ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(frame->getView());
   frame->getView()->setScrollStrategy(strategy);
-  frame->getView()->configure(ZStackView::MODE_PLAIN_IMAGE);
+  frame->getView()->configure(ZStackView::EMode::PLAIN_IMAGE);
   frame->getView()->setMaxViewPort(1600 * 1600);
 
   return frame;
 }
 
-ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidTarget &target)
+ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidEnv &env)
 {
   ZFlyEmArbDoc *doc = new ZFlyEmArbDoc;
   ZFlyEmArbMvc *mvc =
       ZFlyEmArbMvc::Make(NULL, ZSharedPointer<ZFlyEmArbDoc>(doc));
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
 
+/*
 void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
 {
   ZDvidReader reader;
@@ -48,10 +49,19 @@ void ZFlyEmArbMvc::setDvidTarget(const ZDvidTarget &target)
 //    getCompletePresenter()->allowBlinkingSegmentation(true);
     getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
                                     SLOT(allowBlinkingSegmentation(bool)));
-//    getCompleteDocument()->allowDvidLabelSliceBlinking(
-//          getCompletePresenter()->allowingBlinkingSegmentation());
   }
 }
+*/
+
+void ZFlyEmArbMvc::setDvid(const ZDvidEnv &env)
+{
+  clear();
+  if (getCompleteDocument()->setDvid(env)) {
+    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+                                    SLOT(allowBlinkingSegmentation(bool)));
+  }
+}
+
 
 ZFlyEmArbDoc* ZFlyEmArbMvc::getCompleteDocument() const
 {

@@ -1,7 +1,7 @@
 #ifndef ZLINESEGMENTOBJECT_H
 #define ZLINESEGMENTOBJECT_H
 
-#include "zlinesegment.h"
+#include "geometry/zlinesegment.h"
 
 #include <QPointF>
 #include <QColor>
@@ -13,10 +13,10 @@ class ZLineSegmentObject : public ZStackObject
 public:
   ZLineSegmentObject();
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
 
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
 
 
   double getLowerX() const;
@@ -37,12 +37,12 @@ public:
 
   void setFocusColor(const QColor &color);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 private:
   void computePlaneInersection(QPointF &lineStart, QPointF &lineEnd,
                                bool &visible, int ataFocus,
-                               neutube::EAxis sliceAxis) const;
+                               neutu::EAxis sliceAxis) const;
 
 private:
   ZLineSegment m_segment;

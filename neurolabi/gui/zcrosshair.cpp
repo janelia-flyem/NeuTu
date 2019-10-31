@@ -8,18 +8,18 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::TARGET_WIDGET);
+  setTarget(ZStackObject::ETarget::WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);
   setColor(QColor(255, 255, 255, 128));
-  setHitProtocal(HIT_WIDGET_POS);
+  setHitProtocal(EHitProtocol::HIT_WIDGET_POS);
 }
 
 
 void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                          ZStackObject::EDisplayStyle /*style*/,
-                         neutube::EAxis sliceAxis) const
+                         neutu::EAxis sliceAxis) const
 {
   if (!isVisible() || painter.getCanvasRange().isEmpty()) {
     return;
@@ -68,7 +68,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
 
 }
 
-bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis)
+bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis)
 {
   ZPoint shiftedCenter = m_center;
   shiftedCenter.shiftSliceAxis(axis);
@@ -123,4 +123,4 @@ void ZCrossHair::setCenter(double x, double y, double z)
   m_center.set(x, y, z);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCrossHair)

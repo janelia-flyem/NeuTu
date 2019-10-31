@@ -2,10 +2,12 @@
 
 #include <QElapsedTimer>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
+#include "logging/zlog.h"
 #include "zdvidreader.h"
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
+#include "logging/zlog.h"
 
 ZDvidBodyHelper::ZDvidBodyHelper(const ZDvidReader *reader) : m_reader(reader)
 {
@@ -21,7 +23,7 @@ void ZDvidBodyHelper::setCanonizing(bool on)
   m_canonizing = on;
 }
 
-void ZDvidBodyHelper::setLabelType(flyem::EBodyLabelType type)
+void ZDvidBodyHelper::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }
@@ -126,7 +128,12 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   QElapsedTimer timer;
   timer.start();
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
-  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
+  KLog() << ZLog::Profile()
+         << ZLog::Diagnostic(
+              "High res reading time for " +
+              std::to_string(bodyId) + "@" + std::to_string(m_zoom))
+         << ZLog::Duration(timer.elapsed());
+//  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
 
   if (highResObj != NULL) {
     result.push_back(highResObj);
@@ -147,7 +154,10 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
         lowResHelper.setZoom(m_lowresZoom);
         timer.restart();
         lowResObj = lowResHelper.readBody(bodyId);
-        LINFO() << "Low res reading time:" << timer.elapsed() << "ms";
+        KLOG << ZLog::Profile() << ZLog::Description(
+                  QString("Low res reading time: %1 ms").
+                  arg(timer.elapsed()).toStdString());
+//        LINFO() << "Low res reading time:" << timer.elapsed() << "ms";
         int s = zgeom::GetZoomScale(m_lowresZoom);
         scale = ZIntPoint(s, s, s);
       }
@@ -160,7 +170,10 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       box.expand(-1, -1, -1);
       timer.restart();
       lowResObj->remove(box);
-      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";
+      KLOG << ZLog::Profile() << ZLog::Description(
+                QString("Low res cropping time: %1 ms").
+                arg(timer.elapsed()).toStdString());
+//      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";
       lowResObj->setDsIntv(scale - 1);
 
       result.push_back(lowResObj);

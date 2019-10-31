@@ -3,7 +3,8 @@
 #include <iostream>
 #include <cstring>
 
-#include "tz_utilities.h"
+#include "common/utilities.h"
+#include "filesystem/utilities.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
@@ -75,7 +76,7 @@ void ZNeuronTracerConfig::print() const
 
 void ZNeuronTracerConfig::load(const std::string &configPath)
 {
-  if (fexist(configPath.c_str())) {
+  if (neutu::FileExists(configPath.c_str())) {
     ZJsonObject obj;
     obj.load(configPath);
 
@@ -121,7 +122,7 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
   std::cout << jsonObj.dumpString() << std::endl;
 #endif
   if (jsonObj.hasKey("tag")) {
-    if (eqstr(ZJsonParser::stringValue(jsonObj["tag"]), "trace configuration")) {
+    if (ZJsonParser::stringValue(jsonObj["tag"]) == "trace configuration") {
       if (jsonObj.hasKey("default")) {
         ZJsonObject defaultObj(const_cast<json_t*>(jsonObj["default"]),
             ZJsonValue::SET_INCREASE_REF_COUNT);

@@ -2,24 +2,24 @@
 #include <QMouseEvent>
 
 ZMouseEvent::ZMouseEvent() : m_buttons(Qt::NoButton),
-  m_action(ZMouseEvent::ACTION_NONE), m_modifiers(Qt::NoModifier),
+  m_action(ZMouseEvent::EAction::NONE), m_modifiers(Qt::NoModifier),
   m_isInStack(false)
 {
-  m_sliceAxis = neutube::EAxis::Z;
+  m_sliceAxis = neutu::EAxis::Z;
 }
 
-ZPoint ZMouseEvent::getPosition(neutube::ECoordinateSystem cs) const
+ZPoint ZMouseEvent::getPosition(neutu::ECoordinateSystem cs) const
 {
   switch (cs) {
-  case neutube::ECoordinateSystem::WIDGET:
+  case neutu::ECoordinateSystem::WIDGET:
     return m_widgetPosition.toPoint();
-  case neutube::ECoordinateSystem::STACK:
+  case neutu::ECoordinateSystem::STACK:
     return m_stackPosition;
-  case neutube::ECoordinateSystem::RAW_STACK:
+  case neutu::ECoordinateSystem::RAW_STACK:
     return m_rawStackPosition;
-  case neutube::ECoordinateSystem::SCREEN:
+  case neutu::ECoordinateSystem::SCREEN:
     return m_globalPosition.toPoint();
-  case neutube::ECoordinateSystem::ORGDATA:
+  case neutu::ECoordinateSystem::ORGDATA:
     return m_dataPosition;
   default:
     break;
@@ -52,7 +52,7 @@ void ZMouseEvent::set(QMouseEvent *event, int z)
 {
   //m_button = event->button();
   m_buttons = event->buttons();
-  m_action = ACTION_NONE;
+  m_action = EAction::NONE;
   m_modifiers = event->modifiers();
   m_widgetPosition.set(event->x(), event->y(), z);
   m_globalPosition.set(event->globalX(), event->globalY(), z);
@@ -62,39 +62,39 @@ void ZMouseEvent::set(QMouseEvent *event, EAction action, int z)
 {
   set(event, z);
   m_action = action;
-  if (action == ACTION_RELEASE) {
+  if (action == EAction::RELEASE) {
     m_buttons = event->button();
   }
 }
 
-neutube::EAxis ZMouseEvent::getSliceAxis() const
+neutu::EAxis ZMouseEvent::getSliceAxis() const
 {
   return m_sliceAxis;
 }
 
-void ZMouseEvent::setSliceAxis(neutube::EAxis axis)
+void ZMouseEvent::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
 }
 
 void ZMouseEvent::setPressEvent(QMouseEvent *event, int z)
 {
-  set(event, ACTION_PRESS, z);
+  set(event, EAction::PRESS, z);
 }
 
 void ZMouseEvent::setMoveEvent(QMouseEvent *event, int z)
 {
-  set(event, ACTION_MOVE, z);
+  set(event, EAction::MOVE, z);
 }
 
 void ZMouseEvent::setReleaseEvent(QMouseEvent *event, int z)
 {
-  set(event, ACTION_RELEASE, z);
+  set(event, EAction::RELEASE, z);
 }
 
 bool ZMouseEvent::isNull() const
 {
-  return m_action == ACTION_NONE;
+  return m_action == EAction::NONE;
 }
 
 void ZMouseEvent::print() const
@@ -111,16 +111,16 @@ void ZMouseEvent::print() const
   }
 
   switch (getAction()) {
-  case ACTION_DOUBLE_CLICK:
+  case EAction::DOUBLE_CLICK:
     std::cout << "Double click; ";
     break;
-  case ACTION_MOVE:
+  case EAction::MOVE:
     std::cout << "Move; ";
     break;
-  case ACTION_PRESS:
+  case EAction::PRESS:
     std::cout << "Press; ";
     break;
-  case ACTION_RELEASE:
+  case EAction::RELEASE:
     std::cout << "Release; ";
     break;
   default:

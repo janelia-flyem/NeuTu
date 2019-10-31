@@ -12,18 +12,23 @@
 #include <QShortcut>
 
 
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
+#include "logging/zlog.h"
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemtaskhelper.h"
+
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/tasktesttask.h"
+
 #include "z3dwindow.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
-#include "flyem/zflyemtaskhelper.h"
+
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -44,13 +49,18 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // prefetch queue, setup
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
-    m_prefetchThread = new QThread();
+
+    //Let m_body3dDoc manage the life cycle of prefetching thread
+    //because it needs to wait for the thread to quit
+    m_prefetchThread = new QThread(m_body3dDoc);
     m_prefetchQueue->setDocument(m_body3dDoc);
+    m_body3dDoc->addClearance([&]() {
+      m_prefetchThread->quit();
+    });
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
-    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
 
     // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
@@ -59,14 +69,19 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     // UI connections
-    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()),
+            this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
-    connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
-    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
-    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
-    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
+    connect(ui->loadTasksButton, SIGNAL(clicked(bool)),
+            this, SLOT(onLoadTasksButton()));
+    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onReviewStateChanged(int)));
+    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(onShowCompletedStateChanged(int)));
 
     QMenu *createTasksMenu = new QMenu(ui->loadTasksButton);
     for (QString menuLabel : TaskProtocolTaskFactory::getInstance().registeredGuiMenuLabels()) {
@@ -143,13 +158,13 @@ void TaskProtocolWindow::init() {
     }
     */
 
-    ZDvid::ENodeStatus status = reader.getNodeStatus();
-    if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
+    dvid::ENodeStatus status = reader.getNodeStatus();
+    if (status == dvid::ENodeStatus::INVALID || status == dvid::ENodeStatus::OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
-    if (status == ZDvid::NODE_LOCKED) {
+    if (status == dvid::ENodeStatus::LOCKED) {
         m_nodeLocked = true;
         ui->completedCheckBox->setEnabled(false);
     } else {
@@ -191,10 +206,17 @@ void TaskProtocolWindow::onPrevButton() {
         m_taskList[m_currentTaskIndex]->beforePrev();
     }
 
+    // disable the current task's UI in case finding the next one
+    // takes a noticeable amount of time, probably in the skip() calls
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
+    }
+
     // for now, just clear the body prefetch queue; see
     //  longer note in onNextButton()
     emit clearBodyQueue();
 
+    int taskIndexBodiesToRemove = m_currentTaskIndex;
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -210,7 +232,7 @@ void TaskProtocolWindow::onPrevButton() {
     //  is a debatable position)
 
     updateCurrentTaskLabel();
-    updateBodyWindow();
+    updateBodyWindow(taskIndexBodiesToRemove);
     updateLabel();
 
     updateBody3dDocConfig();
@@ -305,6 +327,12 @@ void TaskProtocolWindow::onNextButton() {
         m_taskList[m_currentTaskIndex]->beforeNext();
     }
 
+    // disable the current task's UI in case finding the next one
+    // takes a noticeable amount of time, probably in the skip() calls
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
+    }
+
     // currently the prefetching is unsophisticated--we only
     //  look one task ahead; so for now, we'll just clear the queue
     //  as we move; in the future, we could get fancier and both
@@ -312,6 +340,7 @@ void TaskProtocolWindow::onNextButton() {
     //  bodies are or aren't needed "soon"
     emit clearBodyQueue();
 
+    int taskIndexBodiesToRemove = m_currentTaskIndex;
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
     } else {
@@ -321,15 +350,8 @@ void TaskProtocolWindow::onNextButton() {
         }
     }
 
-    // for now, simplest possible prefetching: just prefetch for the next task,
-    //  as long as there is one and it's not the current one
-    int nextTaskIndex = getNext();
-    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-        prefetchForTaskIndex(nextTaskIndex);
-    }
-
     updateCurrentTaskLabel();
-    updateBodyWindow();
+    updateBodyWindow(taskIndexBodiesToRemove);
     updateLabel();
 
     updateBody3dDocConfig();
@@ -338,8 +360,8 @@ void TaskProtocolWindow::onNextButton() {
 
 void TaskProtocolWindow::onDoneButton() {
     bool allComplete = true;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (!task->completed()) {
+    for (int i = 0; i < m_taskList.size(); i++) {
+        if (!m_taskList[i]->completed() && !skip(i)) {
             allComplete = false;
             break;
         }
@@ -384,12 +406,16 @@ void TaskProtocolWindow::onDoneButton() {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
         jsonString.toStdString());
 
-    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
-            << "," << key.toStdString();
+//    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+//            << "," << key.toStdString();
+
+    emitInfo(QString("Task protocol: saved completed protocol data to DVID: %1 , %2").
+             arg(PROTOCOL_INSTANCE).arg(key));
 
     // delete old key in either case
     m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
-    LINFO() << "Task protocol: deleted working protocol data from DVID";
+    emitInfo("Task protocol: deleted working protocol data from DVID");
+//    LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
     resetBody3dDocConfig();
@@ -420,7 +446,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
-    updateBodyWindow();
+    updateBodyWindow(m_currentTaskIndex);
 }
 
 void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
@@ -465,11 +491,8 @@ void TaskProtocolWindow::onCompletedAndNext()
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
-        if (ui->reviewCheckBox->isChecked()) {
-            m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
-        } else {
-            m_taskList[m_currentTaskIndex]->removeTag(TAG_NEEDS_REVIEW);
-        }
+       m_taskList[m_currentTaskIndex]->toggleTag(
+             TAG_NEEDS_REVIEW, ui->reviewCheckBox->isChecked());
         saveState();
         updateLabel();
     }
@@ -480,21 +503,23 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     //  to advance away from the current task, if it's completed
     if (!ui->showCompletedCheckBox->isChecked() &&
         m_taskList[m_currentTaskIndex]->completed()) {
+        int taskIndexBodiesToRemove = m_currentTaskIndex;
         m_currentTaskIndex = getNextUncompleted();
         if (m_currentTaskIndex < 0) {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
         updateCurrentTaskLabel();
-        updateBodyWindow();
+        updateBodyWindow(taskIndexBodiesToRemove);
         updateLabel();
     }
     // likewise, if there is nothing showing (all complete) and
     //  we go to "show completed", advance and show something
     if (ui->showCompletedCheckBox->isChecked() &&
         m_currentTaskIndex < 0) {
+        int taskIndexBodiesToRemove = m_currentTaskIndex;
         m_currentTaskIndex = getFirst(true);
         updateCurrentTaskLabel();
-        updateBodyWindow();
+        updateBodyWindow(taskIndexBodiesToRemove);
         updateLabel();
     }
     updateNextPrevButtonsEnabled();
@@ -539,6 +564,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         }
     }
 
+    m_skippedTaskIndices.clear();
+
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
     if (save && (m_currentTaskIndex >= 0)) {
@@ -550,13 +577,6 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
-
-    // first prefetch
-    int nextTaskIndex = getNext();
-    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-        prefetchForTaskIndex(nextTaskIndex);
-    }
-
 
     updateCurrentTaskLabel();
     updateBodyWindow();
@@ -704,7 +724,18 @@ bool TaskProtocolWindow::skip(int taskIndex)
   // might later need to be skipped if it becomes redundant based on the completion of
   // another task).
 
-  if (m_taskList[taskIndex]->skip()) {
+  QString reason;
+  if (m_taskList[taskIndex]->skip(reason)) {
+      if (m_skippedTaskIndices.find(taskIndex) == m_skippedTaskIndices.end()) {
+          QString text = "Auto-skipping: \"" + m_taskList[taskIndex]->actionString() + " " +
+                         m_taskList[taskIndex]->targetString() + "\"";
+          if (!reason.isEmpty()) {
+              text += " Reason: \"" + reason + "\"";
+          }
+          text.replace("<br>", " ");
+          emitInfo(ZWidgetMessage::appendTime(text));
+      }
+
       m_skippedTaskIndices.insert(taskIndex);
       return true;
   } else {
@@ -718,13 +749,18 @@ bool TaskProtocolWindow::skip(int taskIndex)
  */
 void TaskProtocolWindow::prefetchForTaskIndex(int index) {
     if (m_taskList[index]->usePrefetching()) {
-        // each task may have bodies that it wants visible and selected;
-        //  add those, selected first (which are presumably more important?)
-        if (m_taskList[index]->selectedBodies().size() > 0) {
-            prefetch(m_taskList[index]->selectedBodies());
+        const QSet<uint64_t> &selected = m_taskList[index]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[index]->visibleBodies();
+        QSet<uint64_t> toPrefetch = selected + visible;
+        if (m_currentTaskIndex >= 0) {
+
+          // There is no need to prefetch any bodies already loaded by the current task.
+
+          toPrefetch -= m_taskList[m_currentTaskIndex]->selectedBodies();
+          toPrefetch -= m_taskList[m_currentTaskIndex]->visibleBodies();
         }
-        if (m_taskList[index]->visibleBodies().size() > 0) {
-            prefetch(m_taskList[index]->visibleBodies());
+        if (!toPrefetch.empty()) {
+          prefetch(toPrefetch);
         }
     }
 }
@@ -733,6 +769,20 @@ void TaskProtocolWindow::prefetchForTaskIndex(int index) {
  * request prefetch of bodies that you know are coming up next
  */
 void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
+    if (const char* setting = std::getenv("NEU3_USE_PREFETCHING")) {
+        if (std::string(setting) == "no") {
+            return;
+        }
+    }
+
+    QString msg("Starting prefetching ");
+    msg += (bodyIDs.count() == 1) ? "body " : "bodies ";
+    for (uint64_t id : bodyIDs) {
+      msg += QString::number(id) + ", ";
+    }
+    msg.chop(2);
+    emitInfo(msg);
+
     emit prefetchBody(bodyIDs);
 }
 
@@ -746,10 +796,10 @@ void TaskProtocolWindow::prefetch(uint64_t bodyID) {
 /*
  * updates the task label for current index
  */
-void TaskProtocolWindow::updateCurrentTaskLabel() {
+void TaskProtocolWindow::updateCurrentTaskLabel() { //#Review-TZ: It seems it's doing more than updating a label.
     // if there is a current task widget, remove it from the layout:
     if (m_currentTaskWidget != NULL) {
-        ui->verticalLayout_3->removeWidget(m_currentTaskWidget);
+        ui->verticalLayout_3->removeWidget(m_currentTaskWidget); //#Review-TZ: a better name for this layout?
         // ui->horizontalLayout->removeWidget(m_currentTaskWidget);
         m_currentTaskWidget->setVisible(false);
     }
@@ -828,14 +878,24 @@ void TaskProtocolWindow::updateMenu(bool add) {
 /*
  * update the body view window for current index
  */
-void TaskProtocolWindow::updateBodyWindow() {
+void TaskProtocolWindow::updateBodyWindow(int taskIdBodiesToRemove) {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeLoading();
 
-        disableButtonsWhileUpdating();
+        QSet<uint64_t> toRemove;
+        if (taskIdBodiesToRemove != -1) {
+            toRemove = m_taskList[taskIdBodiesToRemove]->visibleBodies();
+            toRemove.unite(m_taskList[taskIdBodiesToRemove]->selectedBodies());
+        } else {
+          emit allBodiesRemoved();
+        }
 
-        emit allBodiesRemoved();
+        disableButtonsWhileUpdating(toRemove);
+
+        for (uint64_t id : toRemove) {
+            emit bodyRemoved(id);
+        }
 
         const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
@@ -874,11 +934,12 @@ void TaskProtocolWindow::updateBodyWindow() {
                 emit bodyAdded(bodyID);
             }
         }
+
         emit bodySelectionChanged(selected);
     }
 }
 
-void TaskProtocolWindow::disableButtonsWhileUpdating()
+void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove)
 {
     // If the user triggers several calls to updateBodyWindow() in rapid succession, by
     // quickly moving between tasks and using controls from the task widget that also change
@@ -889,45 +950,47 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     // slots indicate that all the old meshes have been fully deleted and all the new meshes
     // have been loaded.
 
-    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc);
-    m_bodyRecycledExpected = meshes.size();
+  const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+  const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+  QSet<uint64_t> visibleOrSelected = visible + selected;
+
+    m_bodyRecycledExpected = 0;
+    for (uint64_t id : toRemove) {
+        if (!visibleOrSelected.contains(id)) {
+
+            // Only if a removed body is not being re-added should the expected count change.
+
+            if (ZFlyEmBodyManager::IsEncoded(id)) {
+                QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
+                m_bodyRecycledExpected += mappedIds.size();
+            } else {
+                m_bodyRecycledExpected++;
+            }
+        }
+    }
     m_bodyRecycledReceived = 0;
 
     m_bodyMeshesAddedExpected = 0;
     m_bodyMeshesAddedReceived = 0;
 
+    m_bodyMeshLoadedExpected = 0;
     bool usingTars = false;
-    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-    foreach (uint64_t bodyID, visible) {
+    foreach (uint64_t bodyID, visibleOrSelected) {
         if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
             usingTars = true;
-        }
-    }
+            if (!toRemove.contains(bodyID)) {
 
-    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
-    foreach (uint64_t bodyID, selected) {
-        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            m_bodyMeshesAddedExpected++;
-            usingTars = true;
-        }
-    }
+                // Only if an added body was not just removed should the expected count change.
 
-    m_bodiesReused = 0;
+                m_bodyMeshesAddedExpected++;
+            }
+        } else {
+          if (!toRemove.contains(bodyID)) {
 
-    if (usingTars) {
-        m_bodyMeshLoadedExpected = 0;
-    } else {
-        m_bodyMeshLoadedExpected = (visible + selected).size();
+              // Only if an added body was not just removed should the expected count change.
 
-        // Bodies reused from the previous task may not generate onBodyRecycled amd
-        // onBodyMeshLoaded signals, which needs to be considered when counting
-        // these signals.
-
-        for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-            ZMesh *mesh = *it;
-            uint64_t id = mesh->getLabel();
-            m_bodiesReused += (visible.contains(id) || selected.contains(id));
+              m_bodyMeshLoadedExpected++;
+          }
         }
     }
 
@@ -949,14 +1012,15 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
-  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
-           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
-           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
-           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
-           << "m_bodiesReused =" << m_bodiesReused;
-    if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
+    LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+             << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+             << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
+             << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
+             << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+             << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
+    if ((m_bodyRecycledExpected <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
-        (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
+        (m_bodyMeshLoadedExpected <= m_bodyMeshLoadedReceived)) {
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
@@ -977,29 +1041,45 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
         m_changingTask = false;
         updateNextPrevButtonsEnabled();
+
+        // for now, simplest possible prefetching: just prefetch for the next task,
+        //  as long as there is one and it's not the current one
+        // and start prefetching when control returns to the UI after reenabling it
+        QTimer::singleShot(0, this, [=]() {
+            int nextTaskIndex = getNext();
+            if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+                prefetchForTaskIndex(nextTaskIndex);
+            }
+        });
     }
 }
 
 /*
  * updates any progress labels
  */
-void TaskProtocolWindow::updateLabel() {
+void TaskProtocolWindow::updateLabel() { //#Review-TZ: Change the name to updateProgressLabel()?
     int ncomplete = 0;
-    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
-        if (task->completed()) {
+    int ntasks = 0;
+    for (int i = 0; i < m_taskList.size(); ++i) {
+        if (m_taskList[i]->completed()) {
+            // always count a completed task, even if subsequently it is designated as skipped
+            // (so proofreaders do not worry that their completed total is being decreased)
             ncomplete++;
+            ntasks++;
+        } else if (m_skippedTaskIndices.find(i) == m_skippedTaskIndices.end()) {
+            // uncompleted tasks contribute to the total count only if not skipped
+            ntasks++;
         }
     }
 
-    // the total task count should not include tasks known to be skipped
-    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
-
-    float percent = (100.0 * ncomplete) / ntasks;
+    float percent = (ntasks > 0) ? (100.0 * ncomplete) / ntasks : 100.0;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
     // whenever we update the label, also log the progress; this is not useful as
     //  an activity tracker, as the label gets updated not always in response to user action
-    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+//    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
+    emitInfo(QString("Task protocol: progress updated: %1 / %2").
+             arg(ncomplete).arg(ntasks));
 }
 
 /*
@@ -1045,7 +1125,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
 QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
     QJsonObject emptyResult;
     ZDvidReader reader;
-    if (!reader.open(m_proofDoc->getDvidTarget())) {
+    if (!reader.open(m_proofDoc->getDvidTarget())) { //#Review-TZ: Consider using a shared reader
         return emptyResult;
     }
     if (!reader.hasKey(instance, key)) {
@@ -1062,14 +1142,10 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
         } else {
           QString msg =
               "Task protocol: json loaded from DVID:" + instance + "," + key;
-          LINFO() << msg;
-          emit messageGenerated(ZWidgetMessage(msg));
-#if 0
-          //For testing
-          emit messageGenerated(
-              ZWidgetMessage(
-                "test", msg, neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
-#endif
+          emitInfo(msg);
+//          KINFO << msg;
+//          emit messageGenerated(ZWidgetMessage(msg));
+
           return doc.object();
         }
 }
@@ -1143,7 +1219,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
     }
 
-    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
+    emitInfo(QString("Task protocol: loaded %1 tasks").arg(m_taskList.size()));
+//    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 
 void TaskProtocolWindow::createTask(QString menuLabel)
@@ -1212,7 +1289,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*
@@ -1318,7 +1395,8 @@ void TaskProtocolWindow::showError(QString title, QString message) {
 
     emit messageGenerated(
         ZWidgetMessage(
-          title, message, neutube::EMessageType::WARNING, ZWidgetMessage::TARGET_DIALOG));
+          title, message, neutu::EMessageType::WARNING,
+          ZWidgetMessage::TARGET_DIALOG | ZWidgetMessage::TARGET_KAFKA));
 }
 
 /*
@@ -1332,6 +1410,24 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::emitMessage(const QString &msg, neutu::EMessageType type)
+{
+  emit messageGenerated(ZWidgetMessage(msg, type,
+                                       ZWidgetMessage::TARGET_TEXT_APPENDING |
+                                       ZWidgetMessage::TARGET_LOG_FILE |
+                                       ZWidgetMessage::TARGET_KAFKA));
+}
+
+void TaskProtocolWindow::emitInfo(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::INFORMATION);
+}
+
+void TaskProtocolWindow::emitWarning(const QString &msg)
+{
+  emitMessage(msg, neutu::EMessageType::WARNING);
 }
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
@@ -1389,7 +1485,7 @@ TaskProtocolTask* TaskProtocolWindow::getCurrentTask() const
 void TaskProtocolWindow::resetBody3dDocConfig()
 {
   ProtocolTaskConfig config;
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
   config.setTaskType("");
   m_body3dDoc->configure(config);
 }

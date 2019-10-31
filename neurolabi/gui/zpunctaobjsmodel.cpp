@@ -3,10 +3,10 @@
 #include <QsLog.h>
 #include <QFileInfo>
 
-#include "zstackdoc.h"
+#include "common/utilities.h"
 #include "zpunctum.h"
 #include "zobjsitem.h"
-#include "core/utilities.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zstackobjectinfo.h"
 
@@ -86,10 +86,24 @@ const std::vector<ZPunctum *> *ZPunctaObjsModel::getPuncta(const QModelIndex &in
 
 void ZPunctaObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  if (infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTA) ||
-      infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTUM)) {
+  if (infoSet.hasObjectModified(ZStackObject::EType::PUNCTA) ||
+      infoSet.hasObjectModified(ZStackObject::EType::PUNCTUM)) {
     updateModelData();
   }
+}
+
+void ZPunctaObjsModel::setPropertyName(const QString &key, const QString &value)
+{
+  m_propertyName[key] = value;
+}
+
+QString ZPunctaObjsModel::getPropertyName(const QString &key) const
+{
+  if (m_propertyName.count(key) > 0) {
+    return m_propertyName.at(key);
+  }
+
+  return key;
 }
 
 void ZPunctaObjsModel::updateData(const ZStackObject *obj)
@@ -120,11 +134,12 @@ void ZPunctaObjsModel::updateModelData()
   QList<QVariant> rootData;
   rootData << "puncta" << "score" << "name" << "comment" << "x" << "y" << "z" << "sDev" <<
               "volSize" << "mass" << "radius" << "meanIntensity" << "maxIntensity" <<
-              "property1" << "property2" << "property3" << "color" << "source";
+              getPropertyName("property1") << getPropertyName("property2") <<
+              getPropertyName("property3") << "color" << "source";
 
   ZOUT(LTRACE(), 5) << "Update puncta model";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::PUNCTUM)));
   setupModelData(m_rootItem);
   endResetModel();
 
@@ -142,7 +157,7 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
   m_punctaSeparatedByFile.clear();
   int sourceParentRow = 0;
   QList<ZPunctum*> punctaList = m_doc->getPunctumList();
-  int numDigit = neutube::numDigits(punctaList.size()+1);
+  int numDigit = neutu::numDigits(punctaList.size()+1);
   for (int i=0; i<punctaList.size(); i++) {
     data.clear();
     ZPunctum *p = punctaList.at(i);

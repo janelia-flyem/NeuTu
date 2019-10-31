@@ -2,8 +2,8 @@
 #define ZKEYEVENTMAPPER_H
 
 #include <QMap>
-#include "tz_utilities.h"
-#include "zsharedpointer.h"
+
+#include "common/zsharedpointer.h"
 #include "zstackoperator.h"
 
 //class ZInteractiveContext;
@@ -15,6 +15,7 @@ class ZKeyEventMapper
 {
 public:
   ZKeyEventMapper();
+  virtual ~ZKeyEventMapper() {}
 
   enum EValueConflictResolve { //Same key to different value
     VALUE_KEEP_MASTER, VALUE_KEEP_GUEST,

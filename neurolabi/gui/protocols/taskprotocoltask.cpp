@@ -1,10 +1,10 @@
 #include "taskprotocoltask.h"
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "protocoltaskconfig.h"
 
 /*
- * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your
+ * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; you
  * create a new task by subclassing this class
  *
  * pure virtual methods you must implement:
@@ -31,7 +31,7 @@ TaskProtocolTask::TaskProtocolTask()
 
 }
 
-namespace {
+namespace { //Make it a private member?
 static QString s_jsonSource;
 }
 
@@ -149,7 +149,7 @@ void TaskProtocolTask::beforeDone() {
  * (e.g., because when the task loaded itself it discovered that
  * it was redundant in some sense)
  */
-bool TaskProtocolTask::skip()
+bool TaskProtocolTask::skip(QString &)
 {
   return false;
 }
@@ -178,6 +178,15 @@ void TaskProtocolTask::addTag(QString tag) {
 
 void TaskProtocolTask::removeTag(QString tag) {
     m_tags.remove(tag);
+}
+
+void TaskProtocolTask::toggleTag(QString tag, bool on)
+{
+  if (on) {
+    addTag(tag);
+  } else {
+    removeTag(tag);
+  }
 }
 
 bool TaskProtocolTask::hasTag(QString tag) {
@@ -356,7 +365,7 @@ ProtocolTaskConfig TaskProtocolTask::getTaskConfig() const
 {
   ProtocolTaskConfig config;
   config.setTaskType(taskType());
-  config.setDefaultTodo(neutube::EToDoAction::TO_SPLIT);
+  config.setDefaultTodo(neutu::EToDoAction::TO_SPLIT);
 
   return config;
 }

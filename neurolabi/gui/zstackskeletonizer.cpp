@@ -2,31 +2,33 @@
 
 #include <iostream>
 #include <string.h>
-#include "c_stack.h"
-#include "zswctree.h"
+#include <cmath>
+
 #include "tz_stack_lib.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_objlabel.h"
-#include "zspgrowparser.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
+#include "tz_stack_threshold.h"
+
+#include "common/math.h"
+#include "c_stack.h"
+#include "zswctree.h"
+#include "zspgrowparser.h"
 #include "zswcforest.h"
 #include "swctreenode.h"
 #include "zswcgenerator.h"
-#include "tz_error.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "zerror.h"
-#include "tz_math.h"
 #include "swc/zswcresampler.h"
-#include "tz_stack_threshold.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 
 using namespace std;
 
-const size_t ZStackSkeletonizer::m_sizeLimit = neutube::ONEGIGA;
+const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
@@ -276,7 +278,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
         m_downsampleInterval[1] == m_downsampleInterval[2]) {
       linScale = m_downsampleInterval[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
     double lengthThreshold = m_lengthThreshold / linScale;
@@ -292,7 +294,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
@@ -525,9 +527,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     int thre = 0;
     if (m_autoGrayThreshold) {
       int thre1 =
-          Stack_Find_Threshold_RC(stackData, 0, iround(maxMaskIntensity));
+          Stack_Find_Threshold_RC(stackData, 0, neutu::iround(maxMaskIntensity));
       int thre2 = Stack_Find_Threshold_Locmax(
-            stackData, 0, iround(maxMaskIntensity));
+            stackData, 0, neutu::iround(maxMaskIntensity));
 
       thre = imax2(thre1, thre2);
     }
@@ -586,8 +588,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
   Default_Objlabel_Workspace(&ow);
   ow.conn = 26;
   ow.chord = NULL;
-  ow.init_chord = TRUE;
-  ow.inc_label = TRUE;
+  ow.init_chord = _TRUE_;
+  ow.inc_label = _TRUE_;
 
   int nobj = Stack_Label_Large_Objects_W(stackData, 1, 2, minObjSize, &ow);
   /*
@@ -653,7 +655,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     if (dsIntv[0] == dsIntv[1] && dsIntv[1] == dsIntv[2]) {
       linScale = dsIntv[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
     double lengthThreshold = m_lengthThreshold / linScale;
@@ -669,7 +671,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
               x + objectOffset[0], y + objectOffset[1],
             z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
@@ -809,7 +811,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
         Swc_Tree_Node *tmptn = NULL;
         while ((tmptn = Swc_Tree_Next(subtree)) != NULL) {
           if (!SwcTreeNode::isRoot(tmptn)) {
-            TZ_ASSERT(SwcTreeNode::length(tmptn) > 0.0, "duplicating nodes");
+            assert(SwcTreeNode::length(tmptn) > 0.0);
           }
         }
 
@@ -948,32 +950,32 @@ void ZStackSkeletonizer::configure(const ZJsonObject &config)
   }
 
   const json_t *value = config["minimalLength"];
-  if (ZJsonParser::isNumber(value)) {
+  if (ZJsonParser::IsNumber(value)) {
     setLengthThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["maximalDistance"];
-  if (ZJsonParser::isNumber(value)) {
+  if (ZJsonParser::IsNumber(value)) {
     setDistanceThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["keepingSingleObject"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setKeepingSingleObject(ZJsonParser::booleanValue(value));
   }
 
   value = config["rebase"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setRebase(ZJsonParser::booleanValue(value));
   }
 
   value = config["fillingHole"];
-  if (ZJsonParser::isBoolean(value)) {
+  if (ZJsonParser::IsBoolean(value)) {
     setFillingHole(ZJsonParser::booleanValue(value));
   }
 
   value = config["minimalObjectSize"];
-  if (ZJsonParser::isInteger(value)) {
+  if (ZJsonParser::IsInteger(value)) {
     setMinObjSize(ZJsonParser::integerValue(value));
   }
 }

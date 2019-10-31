@@ -19,6 +19,8 @@
 #include "z3dgl.h"
 #include "z3dcanvaseventlistener.h"
 #include "zflags.h"
+#include "logging/zloggable.h"
+
 #include <QObject>
 #include <map>
 #include <set>
@@ -37,7 +39,8 @@ class Z3DShaderProgram;
 class ZVertexArrayObject;
 class QMouseEvent;
 
-class Z3DFilter : public QObject, public Z3DCanvasEventListener
+class Z3DFilter : public QObject, public Z3DCanvasEventListener,
+    public ZLoggable
 {
 Q_OBJECT
 

@@ -5,10 +5,12 @@
 #include <QString>
 #include <QUndoStack>
 
-#include "zstackdoc.h"
-#include "zactionactivator.h"
-#include "zstackpresenter.h"
-#include "zstackframe.h"
+#include "qfonticon.h"
+//#include "zstackdoc.h"
+//#include "zactionactivator.h"
+//#include "zstackpresenter.h"
+//#include "zstackframe.h"
+#include "flyem/zflyembodycoloroption.h"
 
 ZActionFactory::ZActionFactory()
 {
@@ -25,12 +27,26 @@ bool ZActionFactory::IsRegularAction(EAction actionKey)
       actionKey != ZActionFactory::ACTION_SEPARATOR;
 }
 
+namespace  {
+
+static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
+                                  QObject *parent)
+{
+  QAction *action =
+      new QAction(ZFlyEmBodyColorOption::GetColorMapName(option), parent);
+  action->setCheckable(true);
+
+  return action;
+}
+
+}
+
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
-  QAction *action = NULL;
+  QAction *action = nullptr;
 
   if ((actionKey == ACTION_UNDO || actionKey == ACTION_REDO) &&
-      m_undoStack != NULL) {
+      m_undoStack != nullptr) {
     switch (actionKey) {
     case ACTION_UNDO:
       action = m_undoStack->createUndoAction(parent, "&Undo");
@@ -47,7 +63,7 @@ QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
     }
   }
 
-  if (action == NULL) {
+  if (action == nullptr) {
     action = MakeAction(actionKey, parent);
   }
 
@@ -56,12 +72,12 @@ QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 
 QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
 {
-  QAction *action = NULL;
+  QAction *action = nullptr;
   switch (actionKey) {
   case ACTION_UNDO:
   {
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
-    if (undoStack != NULL) {
+    if (undoStack != nullptr) {
       action = undoStack->createUndoAction(parent, "&Undo");
       action->setIcon(QIcon(":/images/undo.png"));
       action->setShortcuts(QKeySequence::Undo);
@@ -71,7 +87,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_REDO:
   {
     QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
-    if (undoStack != NULL) {
+    if (undoStack != nullptr) {
       action = undoStack->createRedoAction(parent, "&Redo");
       action->setIcon(QIcon(":/images/redo.png"));
       action->setShortcuts(QKeySequence::Redo);
@@ -210,7 +226,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/verify.png"));
     break;
   case ACTION_SYNAPSE_UNVERIFY:
-    action = new QAction("Unverfiy", parent);
+    action = new QAction("Unverify", parent);
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
@@ -366,21 +382,34 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show Orthogonal View", parent);
+    action->setIcon(QFontIcon::icon(10065, Qt::red));
     break;
   case ACTION_SHOW_ORTHO_BIG:
     action = new QAction("Show Orthogonal View (1024)", parent);
     break;
+  case ACTION_TOGGLE_SUPERVOXEL_VIEW:
+    action = new QAction("View Supervoxel", parent);
+    action->setIcon(QIcon(":/images/view_supervoxel.png"));
+    action->setCheckable(true);
+    break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy Position", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_SHOW_SUPERVOXEL_LIST:
     action = new QAction("Show Supervoxel List", parent);
     break;
   case ACTION_COPY_SUPERVOXEL_ID:
     action = new QAction("Copy Supervoxel ID", parent);
+    action->setIcon(QFontIcon::icon(10697));
+    break;
+  case ACTION_COPY_NEUROGLANCER_LINK:
+    action = new QAction("Copy Neuroglancer Link", parent);
+    action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
@@ -395,6 +424,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::red));
     break;
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
@@ -413,15 +443,35 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
+    action->setIcon(QFontIcon::icon(0x2727, Qt::darkGreen));
     break;
   case ACTION_ADD_TODO_MERGE:
     action = new QAction("To merge here", parent);
+    action->setIcon(QFontIcon::icon(0x26ad, Qt::red));
     break;
   case ACTION_ADD_TODO_SPLIT:
     action = new QAction("To split here", parent);
+    action->setIcon(QFontIcon::icon(0x26ae, Qt::red));
     break;
   case ACTION_ADD_TODO_SVSPLIT:
     action = new QAction("To split supervoxel here", parent);
+    action->setIcon(QFontIcon::icon(0x262f, Qt::red));
+    break;
+  case ACTION_ADD_TODO_TRACE_TO_SOMA:
+    action = new QAction("Trace to soma here", parent);
+    action->setIcon(QFontIcon::icon(0x26b2, Qt::red));
+    break;
+  case ACTION_ADD_TODO_NO_SOMA:
+    action = new QAction("No soma here", parent);
+    action->setIcon(QFontIcon::icon(0x2640, Qt::red));
+    break;
+  case ACTION_ADD_TODO_DIAGNOSTIC:
+    action = new QAction("Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x002B, Qt::red));
+    break;
+  case ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC:
+    action = new QAction("Segmentation-Diagnostic here", parent);
+    action->setIcon(QFontIcon::icon(0x271B, Qt::red));
     break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
@@ -433,9 +483,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Set unchecked", parent);
     break;
   case ACTION_SHOW_NORMAL_TODO:
-    action = new QAction("Show Normal Todo", parent);
+    action = new QAction("Show normal todo", parent);
     action->setCheckable(true);
     action->setChecked(true);
+    break;
+  case ACTION_REMOVE_TODO_BATCH:
+    action = new QAction("Remove todo (batch)", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
@@ -448,6 +501,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_TODO_ITEM_ANNOT_SPLIT:
     action = new QAction("To split", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_TRACE_TO_SOMA:
+    action = new QAction("Trace to soma", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_NO_SOMA:
+    action = new QAction("No soma", parent);
     break;
   case ACTION_SELECT_BODY_IN_RECT:
     action = new QAction("Select bodies", parent);
@@ -471,18 +530,38 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_HIDE_SELECTED:
     action = new QAction("Hide Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8863, Qt::red));
     break;
   case ACTION_PUNCTA_SHOW_SELECTED:
     action = new QAction("Show Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10695, Qt::darkGreen));
+    break;
+  case ACTION_PUNCTA_HIDE_UNSELECTED:
+    action = new QAction("Hide Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8861, Qt::red));
+    break;
+  case ACTION_PUNCTA_SHOW_UNSELECTED:
+    action = new QAction("Show Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10686, Qt::darkGreen));
+    break;
+  case ACTION_PUNCTA_ADD_SELECTION:
+    action = new QAction("Add Puncta Selection", parent);
+    action->setIcon(QFontIcon::icon(9754, Qt::darkGreen));
     break;
   case ACTION_REWRITE_SEGMENTATION:
-    action = new QAction("Rewrite segmentation", parent);
+    action = new QAction("Rewrite Segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
   case ACTION_REFRESH_SEGMENTATION:
-    action = new QAction("Refresh segmentation", parent);
+    action = new QAction("Refresh Segmentation", parent);
     action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    action->setIcon(QFontIcon::icon(0x21bb));
+    break;
+  case ACTION_REFRESH_DATA:
+    action = new QAction("Refresh Data", parent);
+    action->setToolTip("Try to fetch the latest data from DVID");
+    action->setIcon(QFontIcon::icon(0x21bb));
     break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
@@ -530,7 +609,6 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("View grayscale/segmentation");
     action->setCheckable(true);
     break;
-    break;
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
     break;
@@ -546,6 +624,101 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_COMMIT_SPLIT:
     action = new QAction("Commit Split", parent);
+    break;
+  case ACTION_GO_TO_BODY:
+    action = new QAction("Go to Body", parent);
+    action->setShortcut(Qt::Key_F3);
+    break;
+  case ACTION_GO_TO_POSITION:
+    action = new QAction("Go to Position", parent);
+    action->setShortcuts(
+          QList<QKeySequence>() << Qt::Key_F1 << Qt::SHIFT + Qt::Key_G);
+    break;
+  case ACTION_SELECT_BODY:
+    action = new QAction("Select Body", parent);
+    action->setShortcut(Qt::Key_F2);
+    break;
+  case ACTION_BODY_COLOR_NORMAL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, parent);
+    break;
+  case ACTION_BODY_COLOR_NAME:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_NAME, parent);
+    break;
+  case ACTION_BODY_COLOR_SEQUENCER:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, parent);
+    break;
+  case ACTION_BODY_COLOR_PROTOCOL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, parent);
+    break;
+  case ACTION_INFORMATION:
+    action = new QAction("Information", parent);
+    break;
+  case ACTION_BODY_QUERY:
+    action = new QAction("Query by ROIs", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_NAME:
+    action = new QAction("Query by Name", parent);
+    break;
+  case ACTION_BODY_QUERY_BY_STATUS:
+    action = new QAction("Query by Status", parent);
+    break;
+  case ACTION_BODY_QUERY_ALL_NAMED:
+    action = new QAction("Find All Named", parent);
+    break;
+  case ACTION_BODY_FIND_SIMILIAR:
+    action = new QAction("Find Similar Neuorns", parent);
+    break;
+  case ACTION_BODY_EXPORT_SELECTED:
+    action = new QAction("Export Selected Bodies", parent);
+    break;
+  case ACTION_BODY_EXPORT_SELECTED_LEVEL:
+    action = new QAction("Export Selected Bodies (leveled)", parent);
+    break;
+  case ACTION_BODY_EXPORT_STACK:
+    action = new QAction("Export Body Stack", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_TOP:
+    action = new QAction("Skeletonize Top Bodies", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_LIST:
+    action = new QAction("Skeletonize Body List", parent);
+    break;
+  case ACTION_BODY_SKELETONIZE_SELECTED:
+    action = new QAction("Skeletonize Selected Bodies", parent);
+    break;
+  case ACTION_BODY_UPDATE_MESH:
+    action = new QAction("Update Meshes for Selected", parent);
+    break;
+  case ACTION_CLEAR_ALL_MERGE:
+    action = new QAction("Clear All Merges", parent);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_SETTING:
+    action = new QAction("Settings", parent);
+    action->setCheckable(true);
+    break;
+  case ACTION_3DWINDOW_TOGGLE_OBJECTS:
+    action = new QAction("Objects", parent);
+    action->setCheckable(true);
+    break;
+  case ACTION_COPY_3DCAMERA:
+    action = new QAction("Copy View", parent);
+    break;
+  case ACTION_PASTE_3DCAMERA:
+    action = new QAction("Paste View", parent);
+    break;
+  case ACTION_RUN_TIP_DETECTION:
+    action = new QAction("Tip detection dialog...", parent);
+    break;
+  case ACTION_SAVE_ALL_MESH:
+    action = new QAction("Save Meshes As", parent);
+    break;
+  case ACTION_VIEW_SCREENSHOT:
+    action = new QAction("Take Screenshot", parent);
+    action->setIcon(QIcon(":/images/screenshot_toolbar.png"));
     break;
   default:
     break;

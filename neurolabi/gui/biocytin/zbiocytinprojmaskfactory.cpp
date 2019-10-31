@@ -1,9 +1,11 @@
 #include "zbiocytinprojmaskfactory.h"
-#include "zstackview.h"
-#include "zstackdoc.h"
+
 #include "zstroke2d.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+
+#include "mvc/zstackview.h"
+#include "mvc/zstackdoc.h"
 
 ZBiocytinProjMaskFactory::ZBiocytinProjMaskFactory()
 {
@@ -25,7 +27,7 @@ ZStack* ZBiocytinProjMaskFactory::MakeMask(ZStackView *view, int label)
         if (player->getLabel() == label) {
           objList.append(obj);
         } else {
-          if (obj->getType() == ZStackObject::TYPE_STROKE) {
+          if (obj->getType() == ZStackObject::EType::STROKE) {
             ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
             if (stroke->isEraser()) {
               objList.append(obj);
@@ -43,13 +45,13 @@ ZStack* ZBiocytinProjMaskFactory::MakeMask(ZStackView *view, int label)
            iter != objList.end(); ++iter) {
         const ZStackObject *obj = *iter;
         switch (obj->getType()) {
-        case ZStackObject::TYPE_STROKE:
+        case ZStackObject::EType::STROKE:
         {
           const ZStroke2d *stroke = dynamic_cast<const ZStroke2d*>(obj);
           stroke->labelStack(mask);
         }
           break;
-        case ZStackObject::TYPE_OBJECT3D_SCAN:
+        case ZStackObject::EType::OBJECT3D_SCAN:
         {
           const ZObject3dScan *sparseObj =
               dynamic_cast<const ZObject3dScan*>(obj);

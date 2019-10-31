@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -473,11 +473,11 @@ void Z3DCamera::set(const ZJsonObject &cameraJson)
   }
 
   if (cameraJson.hasKey("projection")) {
-    if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
-               "Perspective") == 0) {
+    if (ZJsonParser::stringValue(cameraJson["projection"]) ==
+               "Perspective") {
       m_projectionType = ProjectionType::Perspective;
-    } else if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
-                      "Orthographic") == 0) {
+    } else if (ZJsonParser::stringValue(cameraJson["projection"]) ==
+                      "Orthographic") {
       m_projectionType = ProjectionType::Orthographic;
     }
   }

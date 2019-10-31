@@ -13,19 +13,22 @@ public:
 
   static ZFlyEmOrthoMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
-      neutube::EAxis axis = neutube::EAxis::Z);
-  static ZFlyEmOrthoMvc* Make(const ZDvidTarget &target, neutube::EAxis axis);
+      neutu::EAxis axis = neutu::EAxis::Z);
+
+  static ZFlyEmOrthoMvc* Make(const ZDvidEnv &env, neutu::EAxis axis);
   static ZFlyEmOrthoMvc* Make(
-      const ZDvidTarget &target, neutube::EAxis axis,
+      const ZDvidEnv &env, neutu::EAxis axis,
       int width, int height, int depth);
 
   ZFlyEmOrthoDoc* getCompleteDocument() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
-  ZDvidTarget getDvidTarget() const;
+//  void setDvidTarget(const ZDvidTarget &target) override;
+  void setDvid(const ZDvidEnv &env) override;
+//  ZDvidTarget getDvidTarget() const override;
   void updateDvidTargetFromDoc();
 
   void updateStack(const ZIntPoint &center);
+  void updateStackFromCrossHair();
 
 //  void syncView(const ZIntPoint &center, double zoomRatio);
 

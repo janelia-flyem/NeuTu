@@ -9,7 +9,7 @@
 #include "zstackviewparam.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprocessor.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "neutubeconfig.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"
@@ -18,13 +18,13 @@
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TILE_CANVAS);
   m_type = GetType();
 //  m_zoom = 0;
 //  m_maxWidth = 512;
 //  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_GRAY_SCALE);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
   getHelper()->useCenterCut(false);
 }
 
@@ -33,7 +33,7 @@ ZDvidGraySlice::~ZDvidGraySlice()
   clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 
 void ZDvidGraySlice::clear()
 { 
@@ -49,6 +49,11 @@ void ZDvidGraySlice::clear()
 const ZDvidReader& ZDvidGraySlice::getDvidReader() const
 {
   return m_helper->getDvidReader();
+}
+
+const ZDvidReader& ZDvidGraySlice::getWorkDvidReader() const
+{
+  return m_helper->getWorkDvidReader();
 }
 
 const ZDvidTarget& ZDvidGraySlice::getDvidTarget() const
@@ -93,7 +98,7 @@ int ZDvidGraySlice::getZoom() const
 
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -120,13 +125,13 @@ void ZDvidGraySlice::updateContrast(bool highContrast)
 
 void ZDvidGraySlice::updateContrast(const ZJsonObject &obj)
 {
-  m_contrastProtocal.load(obj);
+  m_contrastProtocol.load(obj);
   updateContrast();
 }
 
 void ZDvidGraySlice::updateContrast()
 {
-  m_image.setContrastProtocol(m_contrastProtocal);
+  m_image.setContrastProtocol(m_contrastProtocol);
   m_image.updateContrast(m_usingContrastProtocol);
   invalidatePixmap();
 #if 0
@@ -243,7 +248,7 @@ void ZDvidGraySlice::updatePixmap()
     m_pixmap.setOffset(-getX(), -getY());
     validatePixmap();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "gray slice pixmap offset: "
             << m_pixmap.getTransform().getTx() << " "
             << m_pixmap.getTransform().getTy() << std::endl;
@@ -381,7 +386,7 @@ void ZDvidGraySlice::setZoom(int zoom)
 
 void ZDvidGraySlice::setContrastProtocol(const ZContrastProtocol &cp)
 {
-  m_contrastProtocal = cp;
+  m_contrastProtocol = cp;
 }
 
 int ZDvidGraySlice::getScale() const
@@ -407,7 +412,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
 
   ZStack *stack = NULL;
 
-  if (getSliceAxis() == neutube::EAxis::Z) {
+  if (getSliceAxis() == neutu::EAxis::Z) {
     int zoom = getZoom();
     if (hasLowresRegion()) {
       ++zoom;
@@ -485,6 +490,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->useCenterCut(false);
     task->setDelay(100);
     task->setDoc(doc);
+    task->setHandle(getSource());
   }
 
   return task;
@@ -496,17 +502,17 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  if (m_sliceAxis != neutube::EAxis::Z && m_sliceAxis != neutube::EAxis::ARB) {
+  if (m_sliceAxis != neutu::EAxis::Z && m_sliceAxis != neutu::EAxis::ARB) {
     return;
   }
 
   if (isVisible()) {
     setZoom(viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom()));
 //    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
-    if (m_sliceAxis == neutube::EAxis::Z) {
+    if (m_sliceAxis == neutu::EAxis::Z) {
       QRect viewPort = viewParam.getViewPort();
       forceUpdate(viewPort, viewParam.getZ());
-    } else if (m_sliceAxis == neutube::EAxis::ARB) {
+    } else if (m_sliceAxis == neutu::EAxis::ARB) {
 //      setZoom(0); //Temporary fix for the crashing problem in grayscale retrieval
       forceUpdate(viewParam.getSliceViewParam());
       //Align the image with the view port, which is used by the painter
@@ -523,7 +529,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
 {
-  if (m_sliceAxis != neutube::EAxis::ARB || !viewParam.isValid()) {
+  if (m_sliceAxis != neutu::EAxis::ARB || !viewParam.isValid()) {
     return;
   }
 
@@ -561,7 +567,11 @@ void ZDvidGraySlice::printInfo() const
 void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 {
   getHelper()->setDvidTarget(target);
-  getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  if (target.getMaxGrayscaleZoom() > 0) {
+    getHelper()->setMaxZoom(target.getMaxGrayscaleZoom());
+  } else {
+    getHelper()->updateMaxZoom();
+  }
 //  m_dvidTarget = target;
 //  getDvidReader().open(target);
 }

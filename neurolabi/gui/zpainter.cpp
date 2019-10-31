@@ -6,11 +6,11 @@
 #include <QPaintDevice>
 #include <QStaticText>
 
-#include "QsLog.h"
+//#include "QsLog.h"
+#include "common/math.h"
 #include "neutubeconfig.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zimage.h"
-#include "tz_math.h"
 #include "zpixmap.h"
 #include "zrect2d.h"
 #include "zviewproj.h"
@@ -109,8 +109,8 @@ void ZPainter::updateTransform(ZPixmap *image)
 
     getPainter()->setTransform(t);
 
-    ZOUT(LTRACE(), 5) << t;
-    ZOUT(LTRACE(), 5) << this->getTransform();
+//    ZOUT(LTRACE(), 5) << t;
+//    ZOUT(LTRACE(), 5) << this->getTransform();
   }
 }
 
@@ -163,7 +163,9 @@ void ZPainter::detachPainter()
 
 void ZPainter::setPen(const QColor &color)
 {
-  getPainter()->setPen(color);
+  QPen pen = getPainter()->pen();
+  pen.setColor(color);
+  getPainter()->setPen(pen);
 }
 
 void ZPainter::setPen(const QPen &pen)
@@ -264,8 +266,8 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
 //    x = iround(image.getTransform().transformX(x));
 //    y = iround(image.getTransform().transformY(y));
     QRect targetRect = QRect(
-          x, y, iround(image.width() / image.getTransform().getSx()),
-          iround(image.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(image.width() / image.getTransform().getSx()),
+          neutu::iround(image.height() / image.getTransform().getSy()));
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
     getPainter()->drawImage(targetRect,
                         dynamic_cast<const QImage&>(image), sourceRect);
@@ -315,7 +317,7 @@ void ZPainter::drawActivePixmap(
 
   if (!image.isFullyActive()) {
     newSourceRect =
-        newSourceRect.intersected(image.getActiveArea(neutube::ECoordinateSystem::WORLD_2D));
+        newSourceRect.intersected(image.getActiveArea(neutu::ECoordinateSystem::WORLD_2D));
     if (!newSourceRect.isEmpty()) {
       newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
     }
@@ -332,8 +334,8 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
 
     QRectF targetRect = QRectF(
-          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
-          iround(sourceRect.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(sourceRect.width() / image.getTransform().getSx()),
+          neutu::iround(sourceRect.height() / image.getTransform().getSy()));
 
     getPainter()->drawPixmap(
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
@@ -365,13 +367,13 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
     QRectF sourceRect = QRect(0, 0, image.width(), image.height());
 
     QRectF targetRect = QRectF(
-          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
-          iround(sourceRect.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(sourceRect.width() / image.getTransform().getSx()),
+          neutu::iround(sourceRect.height() / image.getTransform().getSy()));
 
     if (!image.isFullyActive()) {
       QRectF oldSourceRect = sourceRect;
       sourceRect =
-          sourceRect.intersected(image.getActiveArea(neutube::ECoordinateSystem::WORLD_2D));
+          sourceRect.intersected(image.getActiveArea(neutu::ECoordinateSystem::WORLD_2D));
       if (!sourceRect.isEmpty()) {
         targetRect = ZRect2d::CropRect(oldSourceRect, sourceRect, targetRect);
       }
@@ -722,6 +724,17 @@ void ZPainter::drawPolyline(const QPoint * points, int pointCount)
 #endif
 }
 
+void ZPainter::drawPolyline(const std::vector<QPoint> &pointArray)
+{
+  drawPolyline(pointArray.data(), pointArray.size());
+}
+
+void ZPainter::drawPolyline(const std::vector<QPointF> &pointArray)
+{
+  drawPolyline(pointArray.data(), pointArray.size());
+}
+
+
 void ZPainter::save()
 {
   getPainter()->save();
@@ -750,6 +763,11 @@ void ZPainter::setRenderHint(QPainter::RenderHint hint, bool on)
 void ZPainter::fillRect(const QRect &r, Qt::GlobalColor color)
 {
   getPainter()->fillRect(r, color);
+}
+
+void ZPainter::fillRect(const QRect &r, const QBrush &brush)
+{
+  getPainter()->fillRect(r, brush);
 }
 
 void ZPainter::setOpacity(double alpha)

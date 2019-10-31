@@ -3,10 +3,8 @@
 #include <iostream>
 #include <map>
 
-#include "tz_error.h"
 #include "zstring.h"
-#include "tz_utilities.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "tz_darray.h"
 #include "zpointnetwork.h"
 #include "swctreenode.h"
@@ -139,7 +137,7 @@ void ZSwcNetwork::layoutSwc()
 
 Graph* ZSwcNetwork::toGraph()
 {
-  Graph *graph = Make_Graph(0, 1, TRUE);
+  Graph *graph = Make_Graph(0, 1, _TRUE_);
 
   for (size_t i = 0; i < m_connectionArray.size(); i++) {
     Graph_Add_Weighted_Edge(graph, m_treeIndexMap[m_connectionArray[i].first],

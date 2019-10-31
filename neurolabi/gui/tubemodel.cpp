@@ -15,7 +15,7 @@ Swc_Tree_Node* TubeModel::createSwc(Locseg_Chain *chain, int type)
   Swc_Tree_Node *head = NULL;
   Swc_Tree_Node *parent = NULL;
   for (int i = start; i != end; i += step) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
           i, type, circles[i].center[0],
         circles[i].center[1], circles[i].center[2], circles[i].radius, i - 1);
 
@@ -65,25 +65,24 @@ Neuron_Structure *createNeuronStructure(
         Locseg_Chain *chain_j = NEUROCOMP_LOCSEG_CHAIN(ns->comp + j);
 
         if (Locseg_Chain_Connection_Test(
-              chain_i, chain_j, stack, 1.0, &conn, ctw)
-            == TRUE) {
+              chain_i, chain_j, stack, 1.0, &conn, ctw)) {
           Neurocomp_Conn_Translate_Mode(Locseg_Chain_Length(chain_j),
                                         &conn);
-          BOOL conn_existed = FALSE;
+          bool conn_existed = false;
           if (i > j) {
             if (ns->graph->nedge > 0) {
               int edge_idx = Graph_Edge_Index(j, i, gw);
               if (edge_idx >= 0) {
                 if (conn.mode == NEUROCOMP_CONN_LINK) {
                   if (ns->conn[edge_idx].info[0] == conn.info[1]) {
-                    conn_existed = TRUE;
+                    conn_existed = true;
                   }
                 } else if (ns->conn[edge_idx].mode == NEUROCOMP_CONN_LINK) {
                   if (ns->conn[edge_idx].info[1] == conn.info[0]) {
-                    conn_existed = TRUE;
+                    conn_existed = true;
                   }
                 }
-                if (conn_existed == TRUE) {
+                if (conn_existed == true) {
                   if (ns->conn[edge_idx].cost > conn.cost) {
                     Neurocomp_Conn_Copy(ns->conn + edge_idx, &conn);
                     ns->graph->edges[edge_idx][0] = i;
@@ -95,7 +94,7 @@ Neuron_Structure *createNeuronStructure(
             }
           }
 
-          if (conn_existed == FALSE) {
+          if (conn_existed == false) {
             Neuron_Structure_Add_Conn(ns, i, j, &conn);
             Graph_Expand_Edge_Table(i, j, ns->graph->nedge - 1, gw);
           }

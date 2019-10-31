@@ -1,12 +1,13 @@
 #include "zvoxel.h"
 #include <assert.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
+
 #include "tz_stack_utils.h"
 #include "tz_stack_lib.h"
-#include "tz_utilities.h"
-#include "tz_math.h"
 #include "tz_stack_attribute.h"
+
+#include "common/math.h"
 #include "geometry/zgeometry.h"
 
 ZVoxel::ZVoxel()
@@ -68,7 +69,7 @@ void ZVoxel::labelStackWithBall(Stack *stack, int label) const
   assert(Stack_Kind(stack) == GREY);
   assert(isInBound(width, height, depth));
 
-  int r = iround(m_value);
+  int r = neutu::iround(m_value);
   int zRange = r;
   int zStart = imax2(0, m_z - zRange);
   int zEnd = imin2(m_z + zRange, Stack_Depth(stack) - 1);
@@ -81,14 +82,14 @@ void ZVoxel::labelStackWithBall(Stack *stack, int label) const
   for (int z = zStart; z <= zEnd; z++) {
     int dz = abs(z - m_z);
     double y_r = sqrt(m_value * m_value - dz * dz);
-    int yRange = iround(y_r);
+    int yRange = neutu::iround(y_r);
     int yStart = imax2(0, m_y - yRange);
     int yEnd = imin2(m_y + yRange, height - 1);
     uint8_t *yArrayStart = zArrayStart - width * imin2(m_y, yRange);
 
     for (int y = yStart; y <= yEnd; y++) {
       int dy = abs(y - m_y);
-      int xRange = iround(sqrt(y_r * y_r - dy * dy));
+      int xRange = neutu::iround(sqrt(y_r * y_r - dy * dy));
       int xStart = imax2(0, m_x - xRange);
       int xEnd = imin2(m_x + xRange, width - 1);
       uint8_t *xArrayStart = yArrayStart - imin2(m_x, xRange);
@@ -100,13 +101,14 @@ void ZVoxel::labelStackWithBall(Stack *stack, int label) const
     zArrayStart += area;
   }
 }
-
+/*
 ZVoxel& ZVoxel::operator =(const ZVoxel &voxel)
 {
   set(voxel.x(), voxel.y(), voxel.z(), voxel.value());
 
   return *this;
 }
+*/
 
 void ZVoxel::translate(int dx, int dy, int dz)
 {
@@ -121,7 +123,7 @@ void ZVoxel::print() const
             << std::endl;
 }
 
-void ZVoxel::shiftSliceAxis(neutube::EAxis axis)
+void ZVoxel::shiftSliceAxis(neutu::EAxis axis)
 {
   zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }

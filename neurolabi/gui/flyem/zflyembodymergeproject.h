@@ -1,21 +1,22 @@
 #ifndef ZFLYEMBODYMERGEPROJECT_H
 #define ZFLYEMBODYMERGEPROJECT_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
 
-#include "dvid/zdvidtarget.h"
-#include "tz_stdint.h"
-#include "zstackobjectselector.h"
-#include "zsharedpointer.h"
-#include "zstackviewparam.h"
 #include "neutube.h"
-#include "dvid/zdvidinfo.h"
-#include "zflyembookmarkarray.h"
-#include "dvid/zdvidreader.h"
+#include "common/zsharedpointer.h"
+#include "zstackobjectselector.h"
+//#include "zstackviewparam.h"
+
 #include "dvid/zdvidwriter.h"
+
+#include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
+#include "zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -35,6 +36,7 @@ class ZFlyEmBodyMerger;
 class ZWidgetMessage;
 //class ZDvidInfo;
 class ZProgressSignal;
+
 //class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject
@@ -67,10 +69,13 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setAdmin(bool admin);
 
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
   }
+
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -97,7 +102,7 @@ public:
   void updateSelection();
 #endif
 
-  std::set<uint64_t> getSelection(neutube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelection(neutu::ELabelSource labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
@@ -126,6 +131,22 @@ public:
 
   void clearBodyMerger();
 
+  QList<QString> getBodyStatusList() const;
+  QList<QString> getAdminStatusList() const;
+  int getStatusRank(const std::string &status) const;
+  bool isFinalStatus(const std::string &status) const;
+  bool isExpertStatus(const std::string &status) const;
+  bool isMergableStatus(const std::string &status) const;
+  bool preservingId(const std::string &status) const;
+
+  QString composeStatusConflictMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
+    return m_bodyStatusProtocol;
+  }
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -142,7 +163,7 @@ signals:
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
-  void checkingInBody(uint64_t bodyId, flyem::EBodySplitMode mode);
+  void checkingInBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -202,21 +223,24 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
   void removeMerge(uint64_t bodyId);
   void removeMerge(const std::vector<uint64_t> &bodyArray);
+  bool preserved(uint64_t bodyId) const;
+  bool hasName(uint64_t bodyId) const;
 
   void clearUndoStack();
 
-//  uint64_t getTargetId(
-//      uint64_t targetId, const std::vector<uint64_t> &bodyId,
-//      bool mergingToLargest);
+  QList<QString> getBodyStatusList(
+      std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
 
-  //void updateSelection();
+  void logSynapseInfo(uint64_t bodyId);
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
+  bool m_isAdmin = false;
 
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies

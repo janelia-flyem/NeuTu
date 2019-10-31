@@ -1,17 +1,18 @@
 #include "zslicedpuncta.h"
+
+#include "common/math.h"
 #include "zpainter.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zfiletype.h"
 #include "zstring.h"
 #include "zcolorscheme.h"
 #include "zstackball.h"
-#include "tz_math.h"
 
 const int ZSlicedPuncta::m_visibleRange = 5.0;
 
 ZSlicedPuncta::ZSlicedPuncta()
 {
-  m_type = ZStackObject::TYPE_SLICED_PUNCTA;
+  m_type = ZStackObject::EType::SLICED_PUNCTA;
   m_zStart = 0;
 }
 
@@ -24,7 +25,7 @@ ZSlicedPuncta::~ZSlicedPuncta()
 void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 {
   if (p != NULL || ignoreNull) {
-    int z = iround(p->getZ()) - m_zStart;
+    int z = neutu::iround(p->getZ()) - m_zStart;
 
 #ifdef _DEBUG_2
     if (z == 9447) {
@@ -43,9 +44,9 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 }
 
 void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                            neutube::EAxis sliceAxis) const
+                            neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -103,14 +104,14 @@ bool ZSlicedPuncta::load(const std::string &filePath, double radius)
   bool succ = false;
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::FILE_JSON:
+  case ZFileType::EFileType::JSON:
   {
     ZJsonObject obj;
     obj.load(filePath);
     succ = load(obj, radius);
   }
     break;
-  case ZFileType::FILE_TXT:
+  case ZFileType::EFileType::TXT:
   {
     ZColorScheme scheme;
     scheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);
@@ -169,7 +170,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutu::display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
@@ -192,6 +193,6 @@ QList<ZStackBall*> ZSlicedPuncta::getPunctaOnSlice(int z)
   return QList<ZStackBall*>();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
 
 

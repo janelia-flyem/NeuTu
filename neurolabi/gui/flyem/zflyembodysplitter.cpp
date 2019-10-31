@@ -2,9 +2,13 @@
 
 #include <QElapsedTimer>
 
+#include "common/neutudefs.h"
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "neutubeconfig.h"
-#include "zqslog.h"
-#include "zstackdoc.h"
+#include "logging/zqslog.h"
+#include "mvc/zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"
 #include "zstackwatershedcontainer.h"
@@ -36,21 +40,21 @@ void ZFlyEmBodySplitter::setBodyId(uint64_t bodyId)
 {
   if (m_bodyId != bodyId) {
     m_bodyId = bodyId;
-    m_state = STATE_NO_SPLIT;
+    m_state = EState::STATE_NO_SPLIT;
   }
 }
 
-void ZFlyEmBodySplitter::setBody(uint64_t bodyId, flyem::EBodyLabelType type, bool fromTar)
+void ZFlyEmBodySplitter::setBody(uint64_t bodyId, neutu::EBodyLabelType type, bool fromTar)
 {
   if (m_bodyId != bodyId || m_labelType != type) {
     m_bodyId = bodyId;
     m_labelType = type;
-    m_state = STATE_NO_SPLIT;
+    m_state = EState::STATE_NO_SPLIT;
     m_fromTar = fromTar;
   }
 }
 
-flyem::EBodyLabelType ZFlyEmBodySplitter::getLabelType() const
+neutu::EBodyLabelType ZFlyEmBodySplitter::getLabelType() const
 {
   return m_labelType;
 }
@@ -101,6 +105,7 @@ void ZFlyEmBodySplitter::runSplit(
           doc->getObjectList(ZStackObjectRole::ROLE_SEED);
       if (seedList.size() > 1) {
         ZStackWatershedContainer container(NULL, NULL);
+        container.setProfileLogger(&neutu::LogProfileInfo);
         foreach (ZStackObject *seed, seedList) {
           container.addSeed(seed);
         }
@@ -123,7 +128,7 @@ void ZFlyEmBodySplitter::runSplit(
         ZSparseStack *sparseStack = getBodyForSplit();
 //        ZDvidSparseStack *sparseStack =
 //            doc->getDataDocument()->getDvidSparseStack(
-//              dataRange, flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
+//              dataRange, neutu::EBodySplitMode::BODY_SPLIT_ONLINE);
         if (sparseStack != NULL) {
           container.setData(NULL, sparseStack);
 //                NULL, sparseStack->getSparseStack(container.getRange()));
@@ -131,7 +136,7 @@ void ZFlyEmBodySplitter::runSplit(
             std::vector<ZStackWatershedContainer*> containerList =
                 container.makeLocalSeedContainer(256);
 
-            ZOUT(LINFO(), 5) << containerList.size() << "containers";
+            KINFO << QString("%1 watershed containers").arg(containerList.size());
             for (ZStackWatershedContainer *subcontainer : containerList) {
               subcontainer->run();
               ZStackDocAccessor::ParseWatershedContainer(doc, subcontainer);
@@ -158,7 +163,10 @@ void ZFlyEmBodySplitter::runSplit(
     doc->releaseBody(getBodyId(), getLabelType());
   }
 
-  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
+  LKINFO << QString("Splitting time for %1 (%2) with range %3: %4ms")
+            .arg(getBodyId()).arg(neutu::ToString(getLabelType()).c_str())
+            .arg(neutu::EnumValue(rangeOption)).arg(timer.elapsed());
+//  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
 }
 
 ZFlyEmBodySplitter::EState ZFlyEmBodySplitter::getState() const
@@ -180,20 +188,20 @@ void ZFlyEmBodySplitter::updateSplitState(flyem::EBodySplitRange rangeOption)
 {
   switch (rangeOption) {
   case flyem::EBodySplitRange::FULL:
-    m_state = STATE_FULL_SPLIT;
+    m_state = EState::STATE_FULL_SPLIT;
     break;
   case flyem::EBodySplitRange::SEED:
-    m_state = STATE_SPLIT;
+    m_state = EState::STATE_SPLIT;
     break;
   case flyem::EBodySplitRange::LOCAL:
-    m_state = STATE_LOCAL_SPLIT;
+    m_state = EState::STATE_LOCAL_SPLIT;
     break;
   }
 }
 
 void ZFlyEmBodySplitter::resetSplitState()
 {
-  m_state = STATE_NO_SPLIT;
+  m_state = EState::STATE_NO_SPLIT;
 }
 
 void ZFlyEmBodySplitter::invalidateCache()
@@ -201,7 +209,7 @@ void ZFlyEmBodySplitter::invalidateCache()
   delete m_cachedObject;
   m_cachedObject = nullptr;
   m_cachedBodyId = 0;
-  m_cachedLabelType = flyem::EBodyLabelType::BODY;
+  m_cachedLabelType = neutu::EBodyLabelType::BODY;
 }
 
 void ZFlyEmBodySplitter::cacheBody(ZSparseStack *body)
@@ -220,7 +228,14 @@ ZSparseStack* ZFlyEmBodySplitter::getBodyForSplit()
   }
 
   if (spStack == nullptr) {
+    QElapsedTimer timer;
+    timer.start();
     spStack = m_reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
+    neutu::LogProfileInfo(
+          timer.elapsed(),
+          "Load body for split: " + std::to_string(m_bodyId) + " " +
+          neutu::ToString(m_labelType));
+
     cacheBody(spStack);
   }
 
@@ -238,6 +253,6 @@ void ZFlyEmBodySplitter::notifyWindowMessageUpdated(const QString &message)
 {
   emit messageGenerated(
         ZWidgetMessage(
-          message, neutube::EMessageType::INFORMATION,
+          message, neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_CUSTOM_AREA));
 }

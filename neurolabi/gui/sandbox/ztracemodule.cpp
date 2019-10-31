@@ -3,7 +3,7 @@
 #include <QMenu>
 
 #include "zsandbox.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zneurontracer.h"
 #include "zswcfactory.h"
 #include "zswctree.h"
@@ -30,8 +30,8 @@ void ZTraceModule::computeSeed()
 {
   ZStackDoc *doc = ZSandbox::GetCurrentDoc();
   if (doc != NULL) {
-    ZNeuronTracer *tracer = doc->getNeuronTracer();
-    std::vector<ZWeightedPoint> ptArray = tracer->computeSeedPosition();
+    ZNeuronTracer &tracer = doc->getNeuronTracer();
+    std::vector<ZWeightedPoint> ptArray = tracer.computeSeedPosition();
     ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
     tree->setSource("ZTraceModule::computeSeed");
     doc->addObject(tree, true);

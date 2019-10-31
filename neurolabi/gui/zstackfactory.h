@@ -2,8 +2,9 @@
 #define ZSTACKFACTORY_H
 
 #include <vector>
+
+#include "common/math.h"
 #include "zstack.hxx"
-#include "tz_math.h"
 #include "tz_stack_lib.h"
 
 class ZClosedCurve;
@@ -60,12 +61,12 @@ public:
 
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 
-  static ZStack* makeDensityMap(const ZPointArray &ptArray, double sigma);
-  static ZStack* makeDensityMap(
+  static ZStack* MakeDensityMap(const ZPointArray &ptArray, double sigma);
+  static ZStack* MakeDensityMap(
       const ZWeightedPointArray &ptArray, double sigma);
 
-  static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
-  static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
+  static ZStack* MakeSeedStack(const ZWeightedPointArray &ptArray);
+  static ZStack* MakeSeedStack(const ZObject3dScanArray &objArray);
   static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
   static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
 
@@ -100,6 +101,8 @@ public:
       const std::vector<ZArray*> &labelArray, uint64_t v);
   static ZStack* MakeLabelColorStack(const std::vector<ZArray*> &labelArray);
 
+  static ZStack* LoadFromFile(const std::string &path);
+
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
 };
@@ -128,9 +131,9 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   for (InputIterator iter = begin; iter != end; ++iter) {
     ZStack *stack = *iter;
     stackArray[i] = stack->c_stack();
-    offset[i][0] = iround(stack->getOffset().getX());
-    offset[i][1] = iround(stack->getOffset().getY());
-    offset[i][2] = iround(stack->getOffset().getZ());
+    offset[i][0] = stack->getOffset().getX();
+    offset[i][1] = stack->getOffset().getY();
+    offset[i][2] = stack->getOffset().getZ();
     if (i > 0) {
       if (offset[i][0] != offset[i-1][0]) {
         isPilable = false;

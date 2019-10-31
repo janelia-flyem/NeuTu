@@ -53,7 +53,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -116,9 +116,9 @@ void ZLocsegChain::updateBufferChain()
 }
 
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -353,7 +353,7 @@ void ZLocsegChain::fixTerminal(const Stack *stack, const Trace_Workspace *tw)
   memcpy(&tmptw, tw, sizeof(Trace_Workspace));
   tmptw.trace_status[0] = TRACE_NORMAL;
   tmptw.trace_status[1] = TRACE_NORMAL;
-  tmptw.refit = FALSE;
+  tmptw.refit = _FALSE_;
 
   if (Locseg_Chain_Length(m_chain) > 1) {
     Local_Neuroseg *locseg = Locseg_Chain_Head_Seg(m_chain);
@@ -619,7 +619,7 @@ void ZLocsegChain::refineEnd(Dlist_End_e end, Stack *signal,
   int oldRefit = tw->refit;
 
   tw->trace_step = 0.1;
-  tw->refit = FALSE;
+  tw->refit = _FALSE_;
 
   eraseTraceMask(tw->trace_mask);
 
@@ -788,4 +788,4 @@ void ZLocsegChain::tailPosition(double pos[]) const
     m_bufferChain[m_bufferChain.size()-1].bottomPosition(pos);
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)

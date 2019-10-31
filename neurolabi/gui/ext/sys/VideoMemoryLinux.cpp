@@ -1,4 +1,4 @@
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include <QProcess>
 
 uint64_t getDedicatedVideoMemoryMB()

@@ -19,12 +19,12 @@ ZNeu3SliceViewDialog::~ZNeu3SliceViewDialog()
 Neu3Window::EBrowseMode ZNeu3SliceViewDialog::getBrowseMode() const
 {
   if (ui->defaultRadioButton->isChecked()) {
-    return Neu3Window::BROWSE_NATIVE;
+    return Neu3Window::EBrowseMode::NATIVE;
   } else if (ui->neuroglancerRadioButton->isChecked()) {
-    return Neu3Window::BROWSE_NEUROGLANCER;
+    return Neu3Window::EBrowseMode::NEUROGLANCER;
   } else if (ui->extNeuroglancerRadioButton->isChecked()) {
-    return Neu3Window::BROWSE_NEUROGLANCER_EXT;
+    return Neu3Window::EBrowseMode::NEUROGLANCER_EXT;
   }
 
-  return Neu3Window::BROWSE_NONE;
+  return Neu3Window::EBrowseMode::NONE;
 }

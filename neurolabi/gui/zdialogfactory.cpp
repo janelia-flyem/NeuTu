@@ -1,9 +1,13 @@
 #include "zdialogfactory.h"
+
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
+
+#include "geometry/zintpoint.h"
 
 #include "zwidgetfactory.h"
 #include "dialogs/zdviddialog.h"
@@ -11,22 +15,24 @@
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
-#include "zparameterarray.h"
-#include "zstackmvc.h"
-#include "zstackdoc.h"
-#include "zflyemcontrolform.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+#include "widgets/zparameterarray.h"
+
+#include "mvc/zstackmvc.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
+#include "mvc/zstackpresenter.h"
+
+//#include "zflyemcontrolform.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidtile.h"
-#include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
-#include "flyem/zflyembodymergedoc.h"
+//#include "flyem/zflyembodymergedoc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "zstackpresenter.h"
-#include "flyem/flyemproofcontrolform.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
+//#include "flyem/flyemproofcontrolform.h"
+//#include "flyem/zflyemproofmvc.h"
+//#include "flyem/zflyemproofdoc.h"
 #include "zsysteminfo.h"
 #include "zwidgetmessage.h"
 
@@ -49,7 +55,8 @@ ZDialogFactory::~ZDialogFactory()
 
 }
 
-ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
+ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(
+    QWidget *parent, ZDvidDialogType dialogType)
 {
   ZDvidTargetProviderDialog *dlg;
 
@@ -90,7 +97,7 @@ ZSpinBoxDialog* ZDialogFactory::makeSpinBoxDialog(QWidget *parent)
   ZSpinBoxDialog *dlg = new ZSpinBoxDialog(parent);
   return dlg;
 }
-
+#if 0
 QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
@@ -170,7 +177,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
   return dlg;
 }
-
+#endif
 
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {
@@ -179,7 +186,7 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   dlg->setLayout(layout);
 
   layout->addWidget(ZWidgetFactory::MakeLabledEditWidget(
-                      "test", ZWidgetFactory::SPACER_NONE, dlg));
+                      "test", ZWidgetFactory::ESpacerOption::NONE, dlg));
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(dlg);
@@ -226,6 +233,19 @@ void ZDialogFactory::Warn(
   QMessageBox::warning(parent, title, msg);
 }
 
+void ZDialogFactory::Error(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::critical(parent, title, msg);
+}
+
+bool ZDialogFactory::WarningAskForContinue(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  return Ask(
+        title, "<font color=\"#FF0000\">WARNING</font>: " + msg +
+        "<br><br>Do you want to continue?", parent);
+}
 
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {
@@ -271,7 +291,8 @@ QString ZDialogFactory::GetOpenFileName(
 }
 
 QString ZDialogFactory::GetSaveFileName(
-    const QString &caption, const QString &filePath, QWidget *parent)
+    const QString &caption, const QString &filePath, const QString &filter,
+    QWidget *parent)
 {
   QString fileName;
 
@@ -279,10 +300,16 @@ QString ZDialogFactory::GetSaveFileName(
   if (currentPath.isEmpty()) {
     currentPath = m_currentSaveFileName;
   }
-  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath);
+  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath, filter);
   m_currentSaveFileName = fileName;
 
   return fileName;
+}
+
+QString ZDialogFactory::GetSaveFileName(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  return GetSaveFileName(caption, filePath, QString(), parent);
 }
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)
@@ -314,7 +341,7 @@ void ZDialogFactory::About(QWidget *parent)
 
   QString thirdPartyLib = QString(
         "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
-      .arg(GET_APPLICATION_DIR.c_str());
+      .arg(GET_CONFIG_DIR.c_str());
   QMessageBox::about(parent, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
@@ -348,17 +375,69 @@ void ZDialogFactory::About(QWidget *parent)
 
 void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
 {
-  if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
       switch (msg.getType()) {
-      case neutube::EMessageType::INFORMATION:
+      case neutu::EMessageType::INFORMATION:
         QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());
         break;
-      case neutube::EMessageType::WARNING:
-      case neutube::EMessageType::ERROR:
+      case neutu::EMessageType::WARNING:
+      case neutu::EMessageType::ERROR:
         QMessageBox::warning(parent, msg.getTitle(), msg.toHtmlString());
         break;
       default:
         break;
       }
     }
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(QWidget *parent)
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  return AskForIntPoint(pt, parent);
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(
+    const ZIntPoint &defaultPos, QWidget *parent)
+{
+  QString defaultText;
+  if (defaultPos.isValid()) {
+    defaultText = defaultPos.toString().c_str();
+  }
+
+  ZIntPoint pt;
+  pt.invalidate();
+
+  bool ok;
+
+  QString text = QInputDialog::getText(
+        parent, QObject::tr("Go To"),
+        QObject::tr("Coordinates:"), QLineEdit::Normal,
+        defaultText, &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        pt.set(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+
+  return pt;
+}
+
+uint64_t ZDialogFactory::GetUint64(
+    const QString &title, const QString &label, QWidget *parent)
+{
+  uint64_t value = 0;
+  QString text = QInputDialog::getText(parent, title, label);
+  try {
+    value = std::stoull(text.toStdString());
+  } catch (std::exception &/*e*/) {
+    //ignore
+  }
+
+  return value;
 }

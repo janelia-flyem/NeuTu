@@ -1,10 +1,12 @@
 #include "zobject3dstripe.h"
 
 #include <cstring>
+#include <cassert>
+#include <stdexcept>
 
-#include "tz_error.h"
 #include "zerror.h"
-#include "tz_math.h"
+#include "common/math.h"
+#include "common/utilities.h"
 #include "geometry/zgeometry.h"
 
 int ZObject3dStripe::getMinX() const
@@ -37,8 +39,17 @@ void ZObject3dStripe::addSegment(int x1, int x2, bool canonizing)
        m_segmentArray.push_back(x1);
        m_segmentArray.push_back(x2);
      } else {
-       if (x1 >= m_segmentArray[m_segmentArray.size() - 2]) {
+       int &lastStart = m_segmentArray[m_segmentArray.size() - 2];
+       if (x1 >= lastStart) {
          m_segmentArray.back() = imax2(x2, m_segmentArray.back());
+       } else if (x2 >= lastStart - 1){
+         lastStart = x1;
+         m_segmentArray.back() = imax2(x2, m_segmentArray.back());
+         if (m_segmentArray.size() > 2) {
+           if (lastStart - m_segmentArray[m_segmentArray.size() - 3] <= 1) {
+             m_isCanonized = false;
+           }
+         }
        } else {
          m_segmentArray.push_back(x1);
          m_segmentArray.push_back(x2);
@@ -68,6 +79,11 @@ size_t ZObject3dStripe::getVoxelNumber() const
   }
 
   return voxelNumber;
+}
+
+size_t ZObject3dStripe::getByteCount() const
+{
+  return sizeof(int) * (2 + m_segmentArray.size());
 }
 
 bool ZObject3dStripe::hasVoxel() const
@@ -408,16 +424,16 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   }
 }
 
-void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
+void ZObject3dStripe::drawStack(Stack *stack, int v, neutu::EAxis axis,
                                 const int *offset) const
 {
   switch (axis) {
-  case neutube::EAxis::Z:
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::Z:
+  case neutu::EAxis::ARB:
     drawStack(stack, v, offset);
     break;
-  case neutube::EAxis::X:
-  case neutube::EAxis::Y:
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
     if (C_Stack::kind(stack) == GREY || C_Stack::kind(stack) != GREY16) {
       Image_Array ima;
       ima.array = stack->array;
@@ -455,7 +471,7 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
       size_t arrayOffset = 0;
 
       int stride = 1;
-      if (axis == neutube::EAxis::Y) {
+      if (axis == neutu::EAxis::Y) {
         arrayOffset = C_Stack::width(stack) * y + area * z;
       } else {
         arrayOffset = area * y + z;
@@ -531,6 +547,7 @@ void ZObject3dStripe::drawStack(
     z += offset[2];
   }
 
+  /*
   if (y >= C_Stack::height(stack)) {
     RECORD_ERROR(true, "y too large");
     return;
@@ -540,26 +557,35 @@ void ZObject3dStripe::drawStack(
     RECORD_ERROR(true, "z too large");
     return;
   }
+  */
   //TZ_ASSERT(y < C_Stack::height(stack), "y too large");
   //TZ_ASSERT(z < C_Stack::depth(stack), "z too large");
 
-  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
-  size_t arrayOffset = area * z + C_Stack::width(stack) * y;
+  if (neutu::WithinOpenRange(y, -1, C_Stack::height(stack)) &&
+      neutu::WithinOpenRange(z, -1, C_Stack::depth(stack))) {
+    size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+    size_t arrayOffset = area * z + C_Stack::width(stack) * y;
 
-  ima.arrayc += arrayOffset;
-  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-    int x0 = m_segmentArray[i];
-    int x1 = m_segmentArray[i + 1];
-    if (offset != NULL) {
-      x0 += offset[0];
-      x1 += offset[0];
-    }
-    TZ_ASSERT(x0 < C_Stack::width(stack), "x too large");
-    TZ_ASSERT(x1 < C_Stack::width(stack), "x too large");
-    for (int x = x0; x <= x1; ++x) {
-      ima.arrayc[x][0] = red;
-      ima.arrayc[x][1] = green;
-      ima.arrayc[x][2] = blue;
+    ima.arrayc += arrayOffset;
+    int cwidth = C_Stack::width(stack) - 1;
+    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+      int x0 = m_segmentArray[i];
+      int x1 = m_segmentArray[i + 1];
+      if (offset != NULL) {
+        x0 += offset[0];
+        x1 += offset[0];
+      }
+      //      assert(x0 < C_Stack::width(stack));
+      //      assert(x1 < C_Stack::width(stack));
+
+
+      if (neutu::ClipRange(0, cwidth, x0, x1)) {
+        for (int x = x0; x <= x1; ++x) {
+          ima.arrayc[x][0] = red;
+          ima.arrayc[x][1] = green;
+          ima.arrayc[x][2] = blue;
+        }
+      }
     }
   }
 }
@@ -569,8 +595,10 @@ void ZObject3dStripe::drawStack(
     const int *offset) const
 {
   if (C_Stack::kind(stack) != COLOR) {
-    RECORD_ERROR(true, "Unsupported kind");
-    return;
+    throw std::invalid_argument(
+          std::string(__FUNCTION__) + ": Unsupported kind");
+//    RECORD_ERROR(true, "Unsupported kind");
+//    return;
   }
 
   Image_Array ima;
@@ -628,7 +656,7 @@ void ZObject3dStripe::drawStack(
       for (int c = 0; c < 3; ++c) {
 //        if (color[c] != 0) {
           double v = ima.arrayc[x][c] * (1.0 - alpha) + color[c] * alpha;
-          ima.arrayc[x][c] = iround(v);
+          ima.arrayc[x][c] = neutu::iround(v);
 //        }
       }
     }
@@ -964,6 +992,35 @@ void ZObject3dStripe::print(int indent) const
 
 ZObject3dStripe ZObject3dStripe::getComplement(int x0, int x1)
 {
+  /*//New implementation to be tested
+  canonize();
+
+  ZObject3dStripe result;
+
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int s = m_segmentArray[i];
+    int t = m_segmentArray[i+1];
+    if (s > x1) { //All segment out of range
+      break;
+    } else if (t >= x0) {
+      if (s > x0) {
+        result.m_segmentArray.push_back(x0);
+        result.m_segmentArray.push_back(s - 1);
+      }
+      x0 = t + 1;
+    }
+  }
+
+  if (x0 <= x1) {
+    result.m_segmentArray.push_back(x0);
+    result.m_segmentArray.push_back(x1);
+  }
+
+  result.setCanonized(true);
+
+  return result;
+  */
+
   ZObject3dStripe stripe;
   stripe.setY(getY());
   stripe.setZ(getZ());
@@ -1074,15 +1131,15 @@ inline bool HasPotentialOverlap(
 
 inline bool HasPotentialAdjacency(
     const ZObject3dStripe &s1, const ZObject3dStripe &s2,int diffYZ,
-    neutube::EStackNeighborhood nbr)
+    neutu::EStackNeighborhood nbr)
 {
   bool goodDiffYZ = true;
   switch (nbr) {
-  case neutube::EStackNeighborhood::D1:
+  case neutu::EStackNeighborhood::D1:
     goodDiffYZ = (diffYZ <= 1);
     break;
-  case neutube::EStackNeighborhood::D2:
-  case neutube::EStackNeighborhood::D3:
+  case neutu::EStackNeighborhood::D2:
+  case neutu::EStackNeighborhood::D3:
     goodDiffYZ = (diffYZ <= 2);
     break;
   }
@@ -1098,7 +1155,7 @@ inline bool HasPotentialAdjacency(
 
 //6-conn neighborhood
 bool ZObject3dStripe::isAdjacentTo(
-    const ZObject3dStripe &stripe, neutube::EStackNeighborhood nbr) const
+    const ZObject3dStripe &stripe, neutu::EStackNeighborhood nbr) const
 {
   ZObject3dStripe &s1 = const_cast<ZObject3dStripe&>(*this);
   ZObject3dStripe &s2 = const_cast<ZObject3dStripe&>(stripe);
@@ -1116,17 +1173,17 @@ bool ZObject3dStripe::isAdjacentTo(
     int dg = 1;
 
     switch (nbr) {
-    case neutube::EStackNeighborhood::D1:
+    case neutu::EStackNeighborhood::D1:
       dg = 1 - diffYZ;
       break;
-    case neutube::EStackNeighborhood::D2:
+    case neutu::EStackNeighborhood::D2:
       if (diffYZ == 2) { //X must overlap
         dg = 0;
       } else { //X can be adjacent
         dg = 1;
       }
       break;
-    case neutube::EStackNeighborhood::D3:
+    case neutu::EStackNeighborhood::D3:
       break;
     }
 

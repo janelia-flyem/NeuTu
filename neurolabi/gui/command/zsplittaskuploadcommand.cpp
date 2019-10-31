@@ -5,16 +5,17 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidwriter.h"
 #include "zstroke2d.h"
-#include "flyem/zflyemmisc.h"
 #include "zglobal.h"
 #include "zstring.h"
 
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidurl.h"
+
+#include "flyem/zflyemmisc.h"
+
 ZSplitTaskUploadCommand::ZSplitTaskUploadCommand()
 {
-
 }
 
 int ZSplitTaskUploadCommand::run(
@@ -82,17 +83,17 @@ int ZSplitTaskUploadCommand::run(
 
       if (bodyId > 0) {
         ZJsonObject taskJson;
-        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+        flyem::SetSplitTaskSignalUrl(taskJson, bodyId, target);
         for (size_t i = 0; i < markerJson.size(); ++i) {
           ZJsonObject markerObj(markerJson.value(i));
           ZStroke2d stroke =
-              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
-          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+              flyem::SyGlassSeedToStroke(markerObj);
+          flyem::AddSplitTaskSeed(taskJson, stroke);
         }
 
         std::string location = writer->writeServiceTask("split", taskJson);
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::json::REF_KEY, location);
+        entryJson.setEntry(neutu::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
         std::cout << "*    Task for " << bodyId << " is saved @ "

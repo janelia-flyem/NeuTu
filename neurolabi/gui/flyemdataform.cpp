@@ -14,9 +14,8 @@
 #include <QFutureWatcher>
 
 #include "neutubeconfig.h"
-#include "tz_error.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
@@ -36,6 +35,7 @@
 #include "z3ddef.h"
 #include "z3dwindow.h"
 #include "zobject3dscan.h"
+#include "flyem/flyemdatareader.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -123,7 +123,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_swcExportDlg = new SwcExportDialog(this);
   m_3dWindowFactory.setParentWidget(this->parentWidget());
-  m_3dWindowFactory.setVolumeRenderMode(neutube3d::VR_ALPHA_BLENDING);
+  m_3dWindowFactory.setVolumeRenderMode(neutu3d::EVolumeRenderingMode::VR_ALPHA_BLENDING);
 
   connect(&m_thumbnailFutureWatcher, SIGNAL(finished()),
           this, SLOT(slotTest()));
@@ -406,7 +406,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
       //ZStackDoc *doc = frame->document().get();
 //      doc->blockSignals(true);
 
-      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       if (model != NULL) {
         doc->addObject(model->clone(), true);
       }
@@ -892,7 +892,7 @@ Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
 {
   Stack *stack = NULL;
   if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-      ZFileType::FILE_TIFF) {
+      ZFileType::EFileType::TIFF) {
     stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
   } else {
     ZString str(neuron->getThumbnailPath());
@@ -923,7 +923,6 @@ void FlyEmDataForm::generateThumbnailItem(
   bool thumbnailReady = false;
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
@@ -945,6 +944,7 @@ void FlyEmDataForm::generateThumbnailItem(
       }
 
       if (thumbnailReady) {
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
@@ -961,16 +961,16 @@ void FlyEmDataForm::generateThumbnailItem(
         currentItemList.append(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(neutube::EAxis::Z);
+            getMasterData()->getSourceDimension(neutu::EAxis::Z);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(neutube::EAxis::Y);
+            getSourceDimension(neutu::EAxis::Y);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
         ZDvidReader reader;
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
-              reader.readBodyInfo(neuron->getId());
+              FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
           int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
           int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();
@@ -999,9 +999,9 @@ void FlyEmDataForm::generateThumbnailItem(
 //            m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Z);
+                getMasterData()->getSourceOffset(neutu::EAxis::Z);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Y);
+                getMasterData()->getSourceOffset(neutu::EAxis::Y);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,
@@ -1212,14 +1212,13 @@ void FlyEmDataForm::updateThumbnail(
   bool thumbnailReady = false;
   if (neuron != NULL && !isWaiting) {
     if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (pixmap.load(neuron->getThumbnailPath().c_str())) {
         thumbnailReady = true;
       } else {
         Stack *stack = NULL;
         if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-            ZFileType::FILE_TIFF) {
+            ZFileType::EFileType::TIFF) {
           stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
         } else {
           ZString str(neuron->getThumbnailPath());
@@ -1284,6 +1283,7 @@ void FlyEmDataForm::updateThumbnail(
       if (thumbnailReady) {
         m_thumbnailFutureWatcher.cancel();
 //        m_thumbnailFutureWatcher.setFuture(QFuture<uint64_t>());
+        QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
@@ -1300,16 +1300,16 @@ void FlyEmDataForm::updateThumbnail(
         m_thumbnailScene->addItem(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(neutube::EAxis::Z);
+            getMasterData()->getSourceDimension(neutu::EAxis::Z);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(neutube::EAxis::Y);
+            getSourceDimension(neutu::EAxis::Y);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
         ZDvidReader reader;
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
-              reader.readBodyInfo(neuron->getId());
+              FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
           int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
           int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();
@@ -1336,9 +1336,9 @@ void FlyEmDataForm::updateThumbnail(
             m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Z);
+                getMasterData()->getSourceOffset(neutu::EAxis::Z);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(neutube::EAxis::Y);
+                getMasterData()->getSourceOffset(neutu::EAxis::Y);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,
@@ -1409,7 +1409,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     int dataRangeY = (maxY + 1) / (dsIntv + 1);
 
     Z3DWindow *stage = new Z3DWindow(
-          academy, Z3DView::INIT_FULL_RES_VOLUME);
+          academy, Z3DView::EInitMode::FULL_RES_VOLUME);
     stage->getVolumeFilter()->hideBoundBox();
     stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");

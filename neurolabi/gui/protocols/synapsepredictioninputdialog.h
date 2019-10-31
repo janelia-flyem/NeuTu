@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QPalette>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 namespace Ui {
 class SynapsePredictionInputDialog;

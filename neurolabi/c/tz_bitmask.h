@@ -42,14 +42,14 @@ void Print_Bitmask(Bitmask_t mask);
  *
  * Bitmask_Set_Bit() sets a bit in mask to <value>. 
  */
-void Bitmask_Set_Bit(int bit, BOOL value, Bitmask_t *mask);
+void Bitmask_Set_Bit(int bit, _BOOL_ value, Bitmask_t *mask);
 
 /**@brief gets a bit.
  *
  * Bitmask_Get_Bit() returns the value of a bit in <mask>. The value is TRUE 
  * or FALSE.
  */
-BOOL Bitmask_Get_Bit(Bitmask_t mask, int bit);
+_BOOL_ Bitmask_Get_Bit(Bitmask_t mask, int bit);
 
 /**@brief converts a bit mask to an index array.
  *

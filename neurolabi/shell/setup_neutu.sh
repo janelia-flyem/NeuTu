@@ -36,12 +36,12 @@ else
   install_dir=$PWD/$install_dir
 fi
 
-if [ $# -gt 0 ]
+if [ $# -gt 1 ]
 then
   package=$2
 fi
 
-if [ $# -gt 1 ]
+if [ $# -gt 2 ]
 then
   channel=$3
 fi
@@ -87,17 +87,22 @@ then
   channel_arg="-c $channel"
 fi
 
+if [ -z $package ]
+then
+  package=neutu
+fi
+
 envName='neutu-env'
 source $condaDir/bin/activate root
 conda create -n $envName python=3.6 -y
 source $condaDir/bin/activate $envName
-conda install neutu -y $channel_arg
+conda install $package -y $channel_arg
 
 updateFile=$bindir/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
-echo "conda update neutu -y $channel_arg" >> $updateFile
+echo "conda update $package -y $channel_arg" >> $updateFile
 chmod u+x $updateFile
 
 if [ `uname` = 'Darwin' ]
@@ -110,6 +115,13 @@ fi
 run_script=$bindir/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
+echo ''
+echo 'export QT_BEARER_POLL_TIMEOUT=999999999' >> $run_script
+if curl -X HEAD -I http://config.int.janelia.org/config/workday | grep '200 OK'; then
+  echo 'export NEUPRINT=https://emdata1.int.janelia.org:11000' >> $run_script
+  echo 'NEUTU_USER_INFO_ENTRY=http://config.int.janelia.org/config/workday' >> $run_script
+fi
 #echo "source $condaDir/bin/activate $envName" >> $run_script
 echo $neutu_bin_dir'/neutu $*' >> $run_script
 chmod a+x $run_script
+echo "Congratuations! Now you can launch NeuTu by running '$run_script'"

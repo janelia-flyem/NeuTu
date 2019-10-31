@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
-    <height>704</height>
+    <width>744</width>
+    <height>843</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Body information</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
@@ -59,6 +59,13 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QPushButton" name="gotoBodiesButton">
+       <property name="text">
+        <string>Goto</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -91,12 +98,29 @@
      <item>
       <widget class="QLabel" name="maxBodiesLabel">
        <property name="text">
-        <string>Max bodies: </string>
+        <string>Max #bodies: </string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QComboBox" name="maxBodiesMenu"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="roiLabel">
+       <property name="text">
+        <string>ROI:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="roiComboBox"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="namedCheckBox">
+       <property name="text">
+        <string>All named</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_5">
@@ -112,29 +136,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="exportBodiesButton">
+      <widget class="QPushButton" name="importBodiesPushButton">
        <property name="text">
-        <string>Export bodies...</string>
+        <string>Import bodies...</string>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="gotoBodiesButton">
+      <widget class="QPushButton" name="exportBodiesButton">
        <property name="text">
-        <string>Goto</string>
+        <string>Export bodies...</string>
        </property>
       </widget>
      </item>
@@ -143,43 +154,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QLabel" name="avabilityLabel">
+      <widget class="QPushButton" name="findSimilarPushButton">
        <property name="text">
-        <string>Avaibility: </string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::AutoText</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="roiLabel">
-       <property name="text">
-        <string>ROI:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="roiComboBox"/>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="namedCheckBox">
-       <property name="text">
-        <string>All Named Bodies</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <string>Find similar</string>
        </property>
       </widget>
      </item>
@@ -195,6 +172,76 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Query by:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryNamePushButton">
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryTypePushButton">
+            <property name="text">
+             <string> Type</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryStatusPushButton">
+            <property name="text">
+             <string>Status</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryRoiPushButton">
+            <property name="text">
+             <string>ROI</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="customQueryPushButton">
+            <property name="text">
+             <string>Custom</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
@@ -249,7 +296,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="colorTab">
       <attribute name="title">
@@ -271,7 +318,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Color filters</string>
+          <string>Color filters (lower filters override higher filters)</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -312,9 +359,12 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPushButton" name="exportConnectionsButton">
+          <widget class="QPushButton" name="addColorMapPushButton">
+           <property name="toolTip">
+            <string>Add a color for the current list of bodies </string>
+           </property>
            <property name="text">
-            <string>Export connections...</string>
+            <string>Add*</string>
            </property>
           </widget>
          </item>
@@ -330,6 +380,20 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveUpButton">
+           <property name="text">
+            <string>Move Up</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveDownButton">
+           <property name="text">
+            <string>Move Down</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="toBodyListButton">
@@ -367,7 +431,7 @@
       <attribute name="title">
        <string>Connections</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -454,6 +518,33 @@
             </widget>
            </item>
           </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="exportConnectionsButton">
+           <property name="text">
+            <string>Export connections...</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

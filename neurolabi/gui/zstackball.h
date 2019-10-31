@@ -3,10 +3,9 @@
 
 #include "zqtheader.h"
 
-#include "include/tz_stdint.h"
-#include "zpoint.h"
 #include "zstackobject.h"
-#include "neutube_def.h"
+#include "geometry/zpoint.h"
+#include "common/neutudefs.h"
 
 class ZIntPoint;
 
@@ -18,6 +17,7 @@ public:
   ZStackBall();
   ZStackBall(double x, double y, double z, double r);
   ZStackBall(const ZIntPoint &center, double r);
+  ZStackBall(const ZPoint &center, double r);
   virtual ~ZStackBall() {}
 
   void set(double x, double y, double z, double r);
@@ -44,28 +44,28 @@ public:
   inline double z() const { return getZ(); }
   inline double radius() const { return getRadius(); }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   virtual void display(ZPainter &painter, int slice,
-                       EDisplayStyle option, neutube::EAxis sliceAxis) const;
+                       EDisplayStyle option, neutu::EAxis sliceAxis) const;
   virtual bool display(QPainter *painter, int z, EDisplayStyle option,
-                       EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
+                       EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
   void displayHelper(
       ZPainter *painter, int slice, EDisplayStyle style,
-      neutube::EAxis sliceAxis) const;
+      neutu::EAxis sliceAxis) const;
 
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
 
   /*!
    * \brief Test if a circle is cut by a plane.
    */
   static bool isCuttingPlane(double z, double r, double n, double zScale);
-  bool isCuttingPlane(double n, double zScale, neutube::EAxis sliceAxis) const;
+  bool isCuttingPlane(double n, double zScale, neutu::EAxis sliceAxis) const;
 
 
   void translate(double dx, double dy, double dz);
@@ -74,7 +74,7 @@ public:
   void scale(double sx, double sy, double sz);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
 
 private:
   double getAdjustedRadius(double r) const;

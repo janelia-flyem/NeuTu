@@ -3,13 +3,18 @@
 
 #include <string>
 #include <vector>
+#include <unordered_set>
+
 #include <QList>
 #include <QSet>
+#include <QColor>
+#include <QRectF>
+#include <QVector>
+#include <QString>
 
-#include "zcubearray.h"
-
+#include "common/neutudefs.h"
 #include "dvid/libdvidheader.h"
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZMatrix;
 class Z3DGraph;
@@ -31,8 +36,15 @@ class ZMesh;
 class ZArbSliceViewParam;
 class ZDvidWriter;
 class ZAffineRect;
+class ZCubeArray;
+class ZIntCuboid;
+class ZJsonObject;
+class ZJsonArray;
+class ZWeightedPoint;
+class ZIntPoint;
+class ZStackObject;
 
-namespace ZFlyEmMisc {
+namespace flyem {
 void NormalizeSimmat(ZMatrix &simmat);
 
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
@@ -63,9 +75,14 @@ void SubtractBodyWithBlock(
     const ZDvidInfo& dvidInfo);
 
 void MakeTriangle(const QRectF &rect, QPointF *ptArray,
-                  neutube::ECardinalDirection direction);
-void MakeStar(const QRectF &rect, QPointF *ptArray);
-void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
+                  neutu::ECardinalDirection direction);
+//void MakeStar(const QRectF &rect, QPointF *ptArray);
+void MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
+std::vector<QPointF> MakeStar(
+    const QPointF &center, double radius, double shapeFactor = 0.25);
+std::vector<QPointF> MakeCrossKey(
+    const QPointF &center, double radius, double spanRatio);
 
 void PrepareBodyStatus(QComboBox *box);
 QList<QString> GetDefaultBodyStatus();
@@ -81,7 +98,7 @@ ZStack* GenerateExampleStack(const ZJsonObject &obj);
 ZStack* GenerateExampleStack(
     const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range);
 
-ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
+//ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 
 void SetSplitTaskSignalUrl(
     ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target);
@@ -124,9 +141,35 @@ QString GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
     const QSet<uint64_t> &bodySet);
 
-void UploadRoi(const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer);
+void UploadRoi(
+    const QString &dataDir, const QString &roiNameFile, ZDvidWriter *writer);
+
+//void UpdateBodyStatus(
+//    const ZIntPoint &pos, const std::string &newStatus, ZDvidWriter *writer);
 
 void UpdateSupervoxelMesh(ZDvidWriter &writer, uint64_t svId);
+
+std::vector<uint64_t> LoadBodyList(const std::string &input);
+
+ZObject3dScan* LoadRoiFromJson(
+    const std::string &filePath, ZObject3dScan *result = nullptr);
+
+/*!
+ * \brief For checking connection from a punctum name
+ */
+bool HasConnecion(
+    const QString &name, uint64_t input, uint64_t output,
+    neutu::EBiDirection d);
+
+bool HasConnecion(const QString &name, const QString &splitter,
+    const std::unordered_set<uint64_t> &first,
+    const std::unordered_set<uint64_t> &second);
+
+bool HasConnecion(
+    const QString &name,
+    const std::unordered_set<uint64_t> &input,
+    const std::unordered_set<uint64_t> &output,
+    neutu::EBiDirection d);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

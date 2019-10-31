@@ -157,23 +157,23 @@ Local_Neuroseg *Local_Neuroseg_Import_Xml(const char *file_path,
 
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
-    if (Xml_Node_Is_Element(cur, "r1") == TRUE) {
+    if (Xml_Node_Is_Element(cur, "r1") == _TRUE_) {
       locseg->seg.r1 = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "c") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "c") == _TRUE_) {
       locseg->seg.c = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "height") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "height") == _TRUE_) {
       locseg->seg.h = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "theta") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "theta") == _TRUE_) {
       locseg->seg.theta = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "psi") == TRUE){
+    } else if (Xml_Node_Is_Element(cur, "psi") == _TRUE_){
       locseg->seg.psi = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "curvature") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "curvature") == _TRUE_) {
       locseg->seg.curvature = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "alpha") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "alpha") == _TRUE_) {
       locseg->seg.alpha = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "scale") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "scale") == _TRUE_) {
       locseg->seg.scale = Xml_Node_Double_Value(doc, cur);
-    } else if (Xml_Node_Is_Element(cur, "position") == TRUE) {
+    } else if (Xml_Node_Is_Element(cur, "position") == _TRUE_) {
       Xml_Coordinate(doc, cur, locseg->pos);
     }
 
@@ -204,20 +204,20 @@ Local_Neuroseg* Local_Neuroseg_Fread(Local_Neuroseg *locseg, FILE *fp)
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
   if (locseg == NULL) {
     locseg = New_Local_Neuroseg();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
 
   if (Neuroseg_Fread(&(locseg->seg), fp) == NULL) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Local_Neuroseg(locseg);
     }
     locseg = NULL;
   } else {
     if (Neuropos_Fread(locseg->pos, fp) == NULL) {
-      if (is_local_alloc == TRUE) {
+      if (is_local_alloc == _TRUE_) {
 	Delete_Local_Neuroseg(locseg);
       }
       locseg = NULL;
@@ -388,9 +388,9 @@ void Local_Neuroseg_Normal(const Local_Neuroseg *locseg, double *ort)
  * Args: locseg - the local neuron segment for hit test;
  *       x, y, z - the coordinate of the point.
  *
- * Return: TRUE if it's hit. FALSE if it's missed.
+ * Return: _TRUE_ if it's hit. _FALSE_ if it's missed.
  */
-BOOL Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg, 
+_BOOL_ Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg, 
 			     double x, double y, double z)
 {
   double tmp_pos[3];
@@ -411,7 +411,7 @@ BOOL Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg,
   return Neuroseg_Hit_Test(&(locseg->seg), tmp_pos[0], tmp_pos[1], tmp_pos[2]);
 }
 
-BOOL Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
+_BOOL_ Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
 			      const Local_Neuroseg *locseg)
 {
   double center1[3];
@@ -427,7 +427,7 @@ BOOL Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
     dmax3(locseg->seg.h / 2.0, locseg->seg.r1, NEUROSEG_R2(&(target->seg)));
   if ((center1[0] * center1[0] + center1[1] * center1[1] + 
        center1[2] * center1[2]) > max_dist * max_dist) {
-    return FALSE;
+    return _FALSE_;
   }
 
   double pos[3];
@@ -441,17 +441,17 @@ BOOL Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
     pos[1] += bottom[1];
     pos[2] += bottom[2];
     if (Local_Neuroseg_Hit_Test(target, pos[0], pos[1], pos[2])
-	== TRUE) {
-      return TRUE;
+	== _TRUE_) {
+      return _TRUE_;
     }
   }
   
-  return FALSE;
+  return _FALSE_;
 }
 
 const static double Min_Axis_Dist = 1e-3;
 
-BOOL Local_Neuroseg_Axis_Test(const Local_Neuroseg *locseg,
+_BOOL_ Local_Neuroseg_Axis_Test(const Local_Neuroseg *locseg,
 			      double x, double y, double z, double *t)
 {
   double tmp_pos[3];
@@ -473,10 +473,10 @@ BOOL Local_Neuroseg_Axis_Test(const Local_Neuroseg *locseg,
   }
 
   if (dist <= Min_Axis_Dist) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 /*
@@ -489,21 +489,21 @@ int Local_Neuroseg_Axis_Test2(const Local_Neuroseg *locseg,
 }
 */
 
-BOOL Local_Neuroseg_Contain_Axis(const Local_Neuroseg *container,
+_BOOL_ Local_Neuroseg_Contain_Axis(const Local_Neuroseg *container,
 				 const Local_Neuroseg *locseg)
 {
   double pos[3];
   Local_Neuroseg_Bottom(locseg, pos);
-  if (Local_Neuroseg_Hit_Test(container, pos[0], pos[1], pos[2]) == FALSE) {
-    return FALSE;
+  if (Local_Neuroseg_Hit_Test(container, pos[0], pos[1], pos[2]) == _FALSE_) {
+    return _FALSE_;
   }
 
   Local_Neuroseg_Top(locseg, pos);
-  if (Local_Neuroseg_Hit_Test(container, pos[0], pos[1], pos[2]) == FALSE) {
-    return FALSE;
+  if (Local_Neuroseg_Hit_Test(container, pos[0], pos[1], pos[2]) == _FALSE_) {
+    return _FALSE_;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 void Local_Neuroseg_Stack_Position(const double position[3], int c[3], 
@@ -754,7 +754,7 @@ void Local_Neuroseg_Label(const Local_Neuroseg *seg, Stack *stack, int color,
   Kill_Stack(filter_stack);  
 } 
 
-BOOL Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *seg, Stack *stack,
+_BOOL_ Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *seg, Stack *stack,
 				    double z_scale, double value)
 {
   if (stack == NULL) {
@@ -772,7 +772,7 @@ BOOL Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *seg, Stack *stack,
   }
 
   if ((seg->seg.r1 == 0.0) || (seg->seg.scale == 0.0)){
-    return FALSE;
+    return _FALSE_;
   }
 
   double bottom_position[3];
@@ -813,7 +813,7 @@ BOOL Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *seg, Stack *stack,
 	    if (Get_Stack_Pixel(stack, point[0], point[1], point[2], 0) == 
 		value) {
 	      free(filter);
-	      return TRUE;
+	      return _TRUE_;
 	    }
 	  }
 	}
@@ -823,7 +823,7 @@ BOOL Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *seg, Stack *stack,
   }     
   
   free(filter);  
-  return FALSE;
+  return _FALSE_;
 }
 
 /*
@@ -882,7 +882,7 @@ void Local_Neuroseg_Label_G(const Local_Neuroseg *seg, Stack *stack,
   //uint8 pixel[3];
   
   int j, k;
-  BOOL label;
+  _BOOL_ label;
 
   for (k = 0; k < range.size[2]; k++) {
     point[2] = region_corner[2] + k;
@@ -894,15 +894,15 @@ void Local_Neuroseg_Label_G(const Local_Neuroseg *seg, Stack *stack,
 	    (point[1] >= 0) && (point[1] < stack->height) &&
 	    (point[2] >= 0) && (point[2] < stack->depth)) {
 	  if (filter[offset] > 0) {
-	    label = TRUE;
+	    label = _TRUE_;
 	    if (flag >= 0) {
 	      if (iround(Get_Stack_Pixel
 			 (stack, point[0], point[1], point[2], 0)) != flag) {
-		label = FALSE;
+		label = _FALSE_;
 	      }
 	    }
 	    
-	    if (label == TRUE) {
+	    if (label == _TRUE_) {
 	      Set_Stack_Pixel(stack, point[0], point[1], point[2], 0, value);
 	    }
 	  }
@@ -1096,7 +1096,7 @@ void Local_Neuroseg_Label_W(const Local_Neuroseg *seg, Stack *stack,
   }
 
   int j, k;
-  BOOL label;
+  _BOOL_ label;
 
   int point[3];
   for (k = 0; k < range.size[2]; k++) {
@@ -1108,15 +1108,15 @@ void Local_Neuroseg_Label_W(const Local_Neuroseg *seg, Stack *stack,
 	if ((point[0] >= 0) && (point[0] < stack->width) &&
 	    (point[1] >= 0) && (point[1] < stack->height) &&
 	    (point[2] >= 0) && (point[2] < stack->depth)) {
-	  label = TRUE;
+	  label = _TRUE_;
 	  if (ws->flag >= 0) {
 	    if (iround(Get_Stack_Pixel
 		       (stack, point[0], point[1], point[2], 0)) != ws->flag) {
-	      label = FALSE;
+	      label = _FALSE_;
 	    }
 	  }
 
-	  if (label == TRUE) {
+	  if (label == _TRUE_) {
 	    switch (ws->option) {
 	    case 1:
 	    case 10:
@@ -2102,7 +2102,7 @@ int Local_Neuroseg_Height_Search_E(Local_Neuroseg *locseg, int base,
   return 1;
 }
 
-BOOL Local_Neuroseg_Good_Score(Local_Neuroseg *locseg, double score, 
+_BOOL_ Local_Neuroseg_Good_Score(Local_Neuroseg *locseg, double score, 
 			       double min_score)
 {
   double cal_score = min_score * 
@@ -3027,7 +3027,7 @@ int Local_Neuroseg_Stack_Feature(Local_Neuroseg *locseg, Stack *stack,
   field2.values = signal;
 
   double vec[3], ext[3];
-  field2.values = signal;
+  //field2.values = signal;
   Geo3d_Scalar_Field_Ort(&field2, vec, ext);
   free(signal);
 
@@ -3548,12 +3548,12 @@ double Local_Neuroseg_Point_Dist_S(const Local_Neuroseg *locseg,
   double coef = NEUROSEG_COEF(&(locseg->seg));
 
   if (Neuroseg_Hit_Test(&(locseg->seg), tmp_pos[0], tmp_pos[1], tmp_pos[2])
-      == FALSE) {
+      == _FALSE_) {
     double rx, ry;
     ry = locseg->seg.r1;
     rx = ry * locseg->seg.scale;
     if (tmp_pos[2] <= 0.0) { /* below bottom */
-      if (Point_In_Ellipse(tmp_pos[0], tmp_pos[1], rx, ry) == TRUE) {
+      if (Point_In_Ellipse(tmp_pos[0], tmp_pos[1], rx, ry) == _TRUE_) {
 	mindist = -tmp_pos[2];
 	tmp_tx = 0;
 	tmp_ty = 0;
@@ -3575,7 +3575,7 @@ double Local_Neuroseg_Point_Dist_S(const Local_Neuroseg *locseg,
       ry = locseg->seg.r1 + (locseg->seg.h - 1.0) * coef;
       rx = ry * locseg->seg.scale;
       tmp_tz = locseg->seg.h - 1.0;
-      if (Point_In_Ellipse(tmp_pos[0], tmp_pos[1], rx, ry) == TRUE) {
+      if (Point_In_Ellipse(tmp_pos[0], tmp_pos[1], rx, ry) == _TRUE_) {
 	tmp_tx = 0;
 	tmp_ty = 0;
 	mindist = tmp_pos[2] - tmp_tz;
@@ -3661,7 +3661,7 @@ double Local_Neuroseg_Point_Dist_S(const Local_Neuroseg *locseg,
 	y = j - out->height / 2;					\
 	z = k;								\
 	Geo3d_Rotate_Coordinate(&x, &y, &z, locseg->seg.theta,		\
-				locseg->seg.psi, FALSE);		\
+				locseg->seg.psi, _FALSE_);		\
 	Geo3d_Translate_Coordinate(&x, &y, &z, locseg->pos[0],		\
 				   locseg->pos[1], locseg->pos[2]);	\
 	double value = Stack_Point_Sampling(stack, x, y, z);		\
@@ -3717,7 +3717,7 @@ Stack* Local_Neuroseg_Stack(const Local_Neuroseg *locseg, const Stack *stack)
 	y = j - out->height / 2;
 	z = k;
 	Geo3d_Rotate_Coordinate(&x, &y, &z, locseg->seg.theta, locseg->seg.psi,
-				FALSE);
+				_FALSE_);
 	Geo3d_Translate_Coordinate(&x, &y, &z, locseg->pos[0], locseg->pos[1],
 				   locseg->pos[2]);
 	double value = Stack_Point_Sampling(stack, x, y, z);
@@ -3895,9 +3895,6 @@ double *Locseg_Conn_Feature(const Local_Neuroseg *locseg1,
   Local_Neuroseg_Bottom(zlocseg2, zbottom2);
   Local_Neuroseg_Top(zlocseg2, ztop2);
   
-  Delete_Local_Neuroseg(zlocseg1);
-  Delete_Local_Neuroseg(zlocseg2);
-
   /* anisotropic planar distance */
   feat[0] = Geo3d_Line_Line_Dist(zbottom1, ztop1, zbottom2, ztop2);
   //feat[0] *= res[0];
@@ -3931,6 +3928,9 @@ double *Locseg_Conn_Feature(const Local_Neuroseg *locseg1,
 
 /* isotropic surface distance */
   feat[8] = Local_Neuroseg_Lineseg_Dist_S(locseg2, bottom1, top1, NULL);
+
+  Delete_Local_Neuroseg(zlocseg1);
+  Delete_Local_Neuroseg(zlocseg2);
 
   return feat;
 }

@@ -11,29 +11,38 @@
 #include <QStatusBar>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QInputDialog>
 
+#include "common/math.h"
 #include "neutubeconfig.h"
-#include "dialogs/dvidoperatedialog.h"
-#include "flyemsplitcontrolform.h"
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+#include "logging/zqslog.h"
+
+#include "widgets/widgets_def.h"
 #include "dvid/zdvidtarget.h"
-#include "zflyemproofmvc.h"
-#include "flyem/zflyemproofdoc.h"
-#include "flyemproofcontrolform.h"
-#include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
-#include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
-#include "zqslog.h"
-#include "zstackpresenter.h"
-#include "flyem/zflyemproofpresenter.h"
-#include "zflyembookmarkview.h"
-#include "dialogs/flyembodyfilterdialog.h"
+#include "mvc/zstackpresenter.h"
+
+#include "widgets/zflyembookmarkview.h"
 #include "zflyemdataloader.h"
+#include "flyemsplitcontrolform.h"
+#include "zflyemproofmvc.h"
+#include "flyemproofcontrolform.h"
+#include "zflyemmessagewidget.h"
+#include "zflyemproofdoc.h"
+#include "zflyemproofpresenter.h"
+#include "neuroglancer/zneuroglancerpathparser.h"
+
+#include "dialogs/flyembodyfilterdialog.h"
+#include "dialogs/dvidoperatedialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -63,13 +72,15 @@ void ZProofreadWindow::init()
   layout->setMargin(1);
   widget->setLayout(layout);
 
-  ZDvidTarget target;
+//  ZDvidTarget target;
 //  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 
-  m_mainMvc = ZFlyEmProofMvc::Make(target);
+  m_mainMvc = ZFlyEmProofMvc::Make(/*target*/);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
+
+  installEventFilter(m_mainMvc);
 
   QVBoxLayout *controlLayout = new QVBoxLayout;
 
@@ -131,7 +142,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, neutu::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -174,7 +185,11 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(flyem::GROUP_BOX_STYLE);
+  if (GET_FLYEM_CONFIG.getWindowStyleSheet().empty()) {
+    setStyleSheet(neutu::GROUP_BOX_STYLE);
+  } else {
+    setStyleSheet(GET_FLYEM_CONFIG.getWindowStyleSheet().c_str());
+  }
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -271,6 +286,16 @@ void ZProofreadWindow::createMenu()
   QMenu *fileMenu = new QMenu("File", this);
 
   menuBar()->addMenu(fileMenu);
+
+  m_loadDvidAction = new QAction("Import Database", this);
+  connect(m_loadDvidAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabase);
+  fileMenu->addAction(m_loadDvidAction);
+
+  m_loadDvidUrlAction = new QAction("Load Database", this);
+  connect(m_loadDvidUrlAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabaseFromUrl);
+  fileMenu->addAction(m_loadDvidUrlAction);
 
   m_importBookmarkAction = new QAction("Import Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
@@ -401,6 +426,12 @@ void ZProofreadWindow::createMenu()
     m_toolMenu->addAction(m_openSequencerAction);
   }
 
+  m_neuprintAction = new QAction("Open NeuPrint", this);
+  m_neuprintAction->setIcon(QIcon(":/images/neuprint.png"));
+  connect(m_neuprintAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(openNeuPrint()));
+//  m_neuprintAction->setVisible(false);
+
   // temporarily disable sequencer
   // m_toolMenu->addAction(m_openSequencerAction);
 
@@ -420,6 +451,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_tuneContrastAction = new QAction("Tune Contrast", this);
+  connect(m_tuneContrastAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
+  m_toolMenu->addAction(m_tuneContrastAction);
+
   m_bodyExplorerAction = new QAction("Explore Bodies", this);
   m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
   connect(m_bodyExplorerAction, SIGNAL(triggered()),
@@ -433,8 +469,12 @@ void ZProofreadWindow::createMenu()
 
   dvidMenu->addAction(m_dvidOperateAction);
 
-
   m_toolMenu->addMenu(dvidMenu);
+
+  QAction *recorderAction = new QAction("Recorder", this);
+  connect(recorderAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
+  m_toolMenu->addAction(recorderAction);
 
   menuBar()->addMenu(m_toolMenu);
 
@@ -464,12 +504,31 @@ void ZProofreadWindow::createMenu()
 
 //  m_viewMenu->setEnabled(false);
 
-  m_viewSynapseAction->setEnabled(false);
-  m_importBookmarkAction->setEnabled(false);
-  m_viewBookmarkAction->setEnabled(false);
-  m_viewSegmentationAction->setEnabled(false);
-  m_viewRoiAction->setEnabled(false);
-  m_viewTodoAction->setEnabled(false);
+  enableTargetAction(false);
+}
+
+void ZProofreadWindow::enableTargetAction(bool on)
+{
+  m_viewSynapseAction->setEnabled(on);
+  m_importBookmarkAction->setEnabled(on);
+  m_viewBookmarkAction->setEnabled(on);
+  m_viewSegmentationAction->setEnabled(on);
+  m_viewRoiAction->setEnabled(on);
+  m_viewTodoAction->setEnabled(on);
+  if (m_openSequencerAction) {
+    m_openSequencerAction->setEnabled(on);
+  }
+  if (m_neuprintAction) {
+    m_neuprintAction->setEnabled(on);
+  }
+  m_roiToolAction->setEnabled(on);
+  m_contrastAction->setEnabled(on);
+  m_smoothAction->setEnabled(on);
+  m_openTodoAction->setEnabled(on);
+  m_openProtocolsAction->setEnabled(on);
+  m_tuneContrastAction->setEnabled(on);
+  m_loadDvidAction->setEnabled(!on);
+  m_loadDvidUrlAction->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -524,6 +583,11 @@ void ZProofreadWindow::createToolbar()
 
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSegmentationAction);
+  QAction *svAction = m_mainMvc->getCompletePresenter()->getAction(
+        ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
+  m_toolBar->addAction(svAction);
+  svAction->setVisible(false);
+
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
@@ -539,9 +603,14 @@ void ZProofreadWindow::createToolbar()
      m_toolBar->addAction(m_openSequencerAction);
   }
 
+  m_toolBar->addAction(m_neuprintAction);
+
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
+
+  m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+        ZActionFactory::ACTION_VIEW_SCREENSHOT));
 
   addSynapseActionToToolbar();
 }
@@ -552,8 +621,8 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         neutube::EMessageType::INFORMATION,
-         ZWidgetMessage::TARGET_TEXT));
+         neutu::EMessageType::INFORMATION,
+         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
 void ZProofreadWindow::operateDvid()
@@ -562,22 +631,11 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
-//  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
-//  m_progressSignal->advanceProgress(0.1);
-//  advanceProgress(0.1);
-  m_mainMvc->launchSplit(bodyId, mode);
 
-  /*
-  if (m_mainMvc->launchSplit(bodyId)) {
-    m_controlGroup->setCurrentIndex(1);
-    dump(QString("Body %1 loaded for split.").arg(bodyId), true);
-  } else {
-    dumpError(QString("Failed to load %1").arg(bodyId), true);
-  }
-  */
+  m_mainMvc->launchSplit(bodyId, mode);
 }
 
 void ZProofreadWindow::launchSplit()
@@ -587,7 +645,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        neutube::EBodyLabelType::ORIGINAL);
+        neutu::ELabelSource::ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -598,9 +656,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE;
+        neutu::EBodySplitMode mode = neutu::EBodySplitMode::ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = flyem::EBodySplitMode::OFFLINE;
+          mode = neutu::EBodySplitMode::OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
@@ -613,37 +671,60 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from splitting mode.", neutube::EMessageType::INFORMATION,
-         ZWidgetMessage::TARGET_TEXT));
+         "Back from body splitting mode.", neutu::EMessageType::INFORMATION,
+         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA));
 }
 
-void ZProofreadWindow::dump(const QString &message, bool appending,
-                            bool logging)
+void ZProofreadWindow::dump(const QString &message, bool appending)
 {
-//  qDebug() << message;
-  if (logging) {
-    LINFO() << message;
+  ZWidgetMessage msg(message);
+  if (!appending) {
+    msg.setTarget(ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA);
   }
-
-  m_messageWidget->dump(message, appending);
+  dump(msg);
+//  dump(ZWidgetMessage(message, ))
+//  m_messageWidget->dump(message, appending);
 }
 
-void ZProofreadWindow::dumpError(
-    const QString &message, bool appending, bool logging)
+void ZProofreadWindow::dumpError(const QString &message, bool appending)
 {
-  if (logging) {
-    LERROR() << message;
+  ZWidgetMessage msg(message, neutu::EMessageType::ERROR);
+  if (!appending) {
+    msg.setTarget(ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_KAFKA);
   }
-
-  m_messageWidget->dumpError(message, appending);
+  dump(msg);
+//  m_messageWidget->dumpError(message, appending);
 }
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
+  neutu::LogMessage(msg);
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    if (msg.getType() == neutu::EMessageType::ERROR) {
+      m_messageWidget->dumpError(msg.toHtmlString(), msg.isAppending());
+    } else {
+      m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
+    }
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_STATUS_BAR)) {
+    statusBar()->showMessage(msg.toHtmlString());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    m_mainMvc->dump(msg.toHtmlString());
+  }
+
+#if 0
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
-    dump(msg.toHtmlString(), msg.isAppending(), false);
+    dump(msg.toHtmlString(), msg.isAppending(), true);
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
@@ -657,22 +738,25 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   default:
     break;
   }
+#endif
 
+
+//  logMessage(msg);
   //Record message in files
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+//  switch (msg.getType()) {
+//  case neutube::EMessageType::INFORMATION:
+//    LINFO() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::WARNING:
+//    LWARN() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::ERROR:
+//    LERROR() << msg.toPlainString();
+//    break;
+//  case neutube::EMessageType::DEBUG:
+//    LDEBUG() << msg.toPlainString();
+//    break;
+//  }
 }
 
 void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
@@ -686,7 +770,8 @@ void ZProofreadWindow::advanceProgress(double dp)
   if (getProgressDialog()->isVisible()) {
     if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
       int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
-      getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
+      getProgressDialog()->setValue(
+            getProgressDialog()->value() + neutu::iround(dp * range));
     }
   }
 }
@@ -721,16 +806,14 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
-//  removeToolBar(m_toolBar);
+  setWindowTitle(
+        (target.getName() + " @ " + target.getSourceString(false, 5)).c_str());
 
-  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
-
-  m_viewSynapseAction->setEnabled(target.isValid());
-  m_importBookmarkAction->setEnabled(target.isValid());
-  m_viewBookmarkAction->setEnabled(target.isValid());
-  m_viewSegmentationAction->setEnabled(target.isValid());
-  m_viewRoiAction->setEnabled(target.isValid());
-  m_viewTodoAction->setEnabled(target.isValid());
+  enableTargetAction(target.isValid());
+  if (target.hasSupervoxel()) {
+    m_mainMvc->getCompletePresenter()->getAction(
+            ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW)->setVisible(true);
+  }
 
   m_viewMenu->setEnabled(true);
 
@@ -752,6 +835,8 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
   }
 
+//  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
+
 //  m_toolBar->hide();
 //  m_toolBar->show();
 //  addToolBar(Qt::TopToolBarArea, m_toolBar);
@@ -767,25 +852,14 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void ZProofreadWindow::logMessage(const QString &msg)
 {
-  LINFO() << msg;
+  KLog() << ZLog::Info() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
-void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
+void ZProofreadWindow::logError(const QString &msg)
 {
-  switch (msg.getType()) {
-  case neutube::EMessageType::INFORMATION:
-    LINFO() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::WARNING:
-    LWARN() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::ERROR:
-    LERROR() << msg.toPlainString();
-    break;
-  case neutube::EMessageType::DEBUG:
-    LDEBUG() << msg.toPlainString();
-    break;
-  }
+  KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
+//  LINFO() << msg;
 }
 
 void ZProofreadWindow::changeEvent(QEvent *event)
@@ -900,4 +974,39 @@ void ZProofreadWindow::showAndRaise()
   }
   activateWindow();
   raise();
+}
+
+void ZProofreadWindow::loadDatabase()
+{
+  QString filename = ZDialogFactory::GetOpenFileName(
+        "DVID Settings", "", this);
+  if (!filename.isEmpty()) {
+    m_mainMvc->setDvidFromJson(filename.toStdString());
+  }
+}
+
+void ZProofreadWindow::loadDatabaseFromUrl()
+{
+  QString text = QInputDialog::getMultiLineText(
+        this, "Load Database", "URL/JSON").trimmed();
+
+  if (text.startsWith("{")) {
+    m_mainMvc->setDvidFromJsonObject(text.toStdString());
+  } else if (!text.isEmpty()) {
+    m_mainMvc->setDvidFromUrl(text);
+  }
+
+  /*
+  static QInputDialog *dlg = new QInputDialog(this);
+
+  dlg->setOption(QInputDialog::UsePlainTextEditForTextInput);
+  dlg->text
+  if (dlg->exec()) {
+    QString url = dlg->textValue();
+    if (!url.isEmpty()) {
+      m_mainMvc->setDvidFromUrl(url);
+    }
+  }
+  */
+
 }

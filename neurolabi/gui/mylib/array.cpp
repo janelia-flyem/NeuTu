@@ -105,8 +105,8 @@ typedef pthread_t pthread_id;
 
 #define pthread_tag() pthread_self()
 
-static inline int pthread_is_this(pthread_id id)
-{ return (pthread_equal(pthread_self(),id)); }
+//static inline int pthread_is_this(pthread_id id)
+//{ return (pthread_equal(pthread_self(),id)); }
 
 #endif
 
@@ -285,10 +285,10 @@ static inline int allocate_array_dims(mylib::Array *array, int nsize, char *rout
   return (0);
 }
 
-static inline int sizeof_array_dims(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->nsize);
-}
+//static inline int sizeof_array_dims(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->nsize);
+//}
 
 static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
                                       const char *routine)
@@ -302,10 +302,10 @@ static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
   return (0);
 }
 
-static inline mylib::int64  sizeof_array_data(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->dsize);
-}
+//static inline mylib::int64  sizeof_array_data(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->dsize);
+//}
 
 static inline int allocate_array_text(mylib::Array *array, int tsize, char *routine)
 { _Array *object = (_Array *) (((char *) array) - Array_Offset);
@@ -318,10 +318,10 @@ static inline int allocate_array_text(mylib::Array *array, int tsize, char *rout
   return (0);
 }
 
-static inline int sizeof_array_text(mylib::Array *array)
-{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
-  return (object->tsize);
-}
+//static inline int sizeof_array_text(mylib::Array *array)
+//{ _Array *object = (_Array *) (((char *) array) - Array_Offset);
+//  return (object->tsize);
+//}
 
 static inline void kill_array(mylib::Array *array);
 
@@ -624,7 +624,7 @@ static mylib::Array *make_shape(mylib::Array_Kind kind, mylib::Value_Type type,
     a->dims[0] = kind_size[kind];
   for (i = 0; i < ndims; i++)
     a->dims[i+v] = dims[i];
-  if (o & !v)
+  if (o && !v)
     a->dims[ndims] = kind_size[kind];
   a->size = array_size(a);
   return (a);
@@ -1351,10 +1351,10 @@ static inline int allocate_slicer_dnc(Slicer *slicer, int dsize, char *routine)
   return (0);
 }
 
-static inline int sizeof_slicer_dnc(Slicer *slicer)
-{ _Slicer *object = (_Slicer *) (((char *) slicer) - Slicer_Offset);
-  return (object->dsize);
-}
+//static inline int sizeof_slicer_dnc(Slicer *slicer)
+//{ _Slicer *object = (_Slicer *) (((char *) slicer) - Slicer_Offset);
+//  return (object->dsize);
+//}
 
 static inline void kill_slicer(Slicer *slicer);
 
@@ -2029,10 +2029,10 @@ static inline int allocate_framer_offs(Framer *framer, mylib::int64  osize, char
   return (0);
 }
 
-static inline mylib::int64  sizeof_framer_offs(Framer *framer)
-{ _Framer *object = (_Framer *) (((char *) framer) - Framer_Offset);
-  return (object->osize);
-}
+//static inline mylib::int64  sizeof_framer_offs(Framer *framer)
+//{ _Framer *object = (_Framer *) (((char *) framer) - Framer_Offset);
+//  return (object->osize);
+//}
 
 static inline void kill_framer(Framer *framer);
 
@@ -10077,13 +10077,13 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
                     else if (i % x0 == 0)
                       fprintf(output,"\n%*s  ",indent,"");
                     else
-                      fprintf(output,", ");
-                      fprintf(output,format,v[p]);
-                    if (slice)
-                      p = Next_Slice_Index(o);
-                    else
-                      p += 1;
-                  }
+                    fprintf(output,", ");
+                  fprintf(output,format,v[p]);
+                  if (slice)
+                    p = Next_Slice_Index(o);
+                  else
+                    p += 1;
+                }
                 break;
               }
             case mylib::UINT16_TYPE:
@@ -49264,6 +49264,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint8 *) Frame_Values(o2);
+                break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49289,6 +49290,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint16 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49314,6 +49316,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49339,6 +49342,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::uint64  *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49364,6 +49368,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int8 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49389,6 +49394,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int16 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49414,6 +49420,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49439,6 +49446,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::int64 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49464,6 +49472,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::float32 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];
@@ -49489,6 +49498,7 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
                     }
                   else
                     d = (mylib::float64 *) Frame_Values(o2);
+                  break;
                 case mylib::ARRAY_CLASS:
                   for (i = 0; i < v; i++)
                     s += buf[i] * d[q++];

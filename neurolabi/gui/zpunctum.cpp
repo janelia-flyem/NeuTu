@@ -1,10 +1,15 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
+//#define _USE_MATH_DEFINES
 #include "zpunctum.h"
 
+#include <cmath>
 #include <numeric>
 #include <algorithm>
 #include <sstream>
+
+#ifdef _DEBUG_
+#include "common/utilities.h"
+#include "logging/zlog.h"
+#endif
 
 #include "zrandom.h"
 #include "zstackball.h"
@@ -34,6 +39,10 @@ ZPunctum::ZPunctum(const ZIntPoint &center, double r)
 
 ZPunctum::~ZPunctum()
 {
+#ifdef _DEBUG_
+  LKINFO << "Deconstructing " + neutu::ToString(this) + ": " + getTypeName() + ", "
+            + getSource();
+#endif
 }
 
 void ZPunctum::init(double x, double y, double z, double r)
@@ -46,7 +55,7 @@ void ZPunctum::init(double x, double y, double z, double r)
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
-  setVisualEffect(neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+  setVisualEffect(neutu::display::Sphere::VE_OUT_FOCUS_DIM);
   m_type = GetType();
   m_score = 1.0;
 }
@@ -180,8 +189,11 @@ std::string ZPunctum::toString()
 {
   std::ostringstream stream;
 
-  stream << "Puncta(" << m_name.toStdString() << "): "
-         << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
+  stream << "Punctum";
+  if (!m_name.isEmpty()) {
+    stream << " (" << m_name.toStdString() << ")";
+  }
+  stream << ":" << " (" << getX() << ", " << getY() << ", " << getZ() << ")";
 
   return stream.str();
 }
@@ -206,7 +218,7 @@ ZVaa3dMarker ZPunctum::toVaa3dMarker() const
 
 void ZPunctum::updateRadius()
 {
-  setRadius(Cube_Root(0.75 / M_PI * m_volSize));
+  setRadius(std::cbrt(0.75 / M_PI * m_volSize));
 }
 
 void ZPunctum::updateVolSize()
@@ -246,4 +258,4 @@ int ZPunctum::getTypeFromSource() const
   return type;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

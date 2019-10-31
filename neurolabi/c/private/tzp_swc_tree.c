@@ -6,7 +6,7 @@ static void swc_tree_dendrogram_position(Swc_Tree *tree, int max_vx, int max_vy,
 					 double *x, double *y, double *dm,
 					 double *xscale)
 {
-  int count = Swc_Tree_Iterator_Start(tree, 1, TRUE) + 1;
+  int count = Swc_Tree_Iterator_Start(tree, 1, _TRUE_) + 1;
   
   /* alloc <decided> */
   uint8 *decided = u8array_calloc(count);
@@ -63,8 +63,8 @@ static void swc_tree_dendrogram_position(Swc_Tree *tree, int max_vx, int max_vy,
     }
   }
   
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
-  Swc_Tree_Iterator_Start(tree, -1, FALSE);
+  Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
+  Swc_Tree_Iterator_Start(tree, -1, _FALSE_);
   /* Calculate the y positions by traversing backward */
   while ((node = Swc_Tree_Next(tree)) != NULL) {
     double tmp_miny = -1.0;

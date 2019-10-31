@@ -1,6 +1,8 @@
 #ifndef ZDVIDGRAYSLICE_H
 #define ZDVIDGRAYSLICE_H
 
+#include <memory>
+
 #include "zstackobject.h"
 #include "zimage.h"
 //#include "zdvidreader.h"
@@ -28,11 +30,11 @@ public:
   ~ZDvidGraySlice();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_GRAY_SLICE;
+    return ZStackObject::EType::DVID_GRAY_SLICE;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
   void clear();
 
   void update(int z);
@@ -46,13 +48,15 @@ public:
 
 //  void loadDvidSlice(const QByteArray &buffer, int z);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void printInfo() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 
   const ZDvidReader& getDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
+
   const ZDvidTarget& getDvidTarget() const;
   int getX() const;
   int getY() const;
@@ -163,7 +167,7 @@ private:
   bool m_isPixmapValid = false;
 
   bool m_usingContrastProtocol = false;
-  ZContrastProtocol m_contrastProtocal;
+  ZContrastProtocol m_contrastProtocol;
 
   QMutex m_pixmapMutex;
 //  ZStackViewParam m_currentViewParam;

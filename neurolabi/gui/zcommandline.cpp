@@ -15,7 +15,6 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
-#include "tz_error.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"
@@ -44,6 +43,8 @@
 #include "misc/miscutility.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyemutilities.h"
+#include "flyem/zflyembodyannotation.h"
+#include "flyem/flyemdatareader.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -54,6 +55,9 @@
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
+#include "command/zstackfiltercommand.h"
+#include "command/zuploadroicommand.h"
+
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
 #endif
@@ -83,8 +87,6 @@ void ZCommandLine::init()
   for (int i = 0; i < 3; ++i) {
     m_intv[i] = 0;
     m_blockOffset[i] = 0;
-    m_position[i] = 0;
-    m_size[i] = 0;
   }
   m_level = 0;
   m_scale = 1.0;
@@ -103,6 +105,8 @@ void ZCommandLine::registerModule()
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
+  registerModule<ZStackFilterCommand>("filter_stack");
+  registerModule<ZUploadRoiCommand>("upload_roi");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif
@@ -166,8 +170,6 @@ int ZCommandLine::runObjectMarker()
       ZVoxel voxel = obj.getMarker();
       std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
       json_t *arrayObj = json_array();
-
-      TZ_ASSERT(voxel.x() >= 0, "invalid point");
 
       json_array_append(arrayObj, json_integer(voxel.x()));
       json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
@@ -272,7 +274,7 @@ int ZCommandLine::runBoundaryOrphan()
         std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
         json_t *arrayObj = json_array();
 
-        TZ_ASSERT(voxel.x() >= 0, "invalid point");
+//        TZ_ASSERT(voxel.x() >= 0, "invalid point");
 
         json_array_append(arrayObj, json_integer(voxel.x()));
         json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
@@ -445,7 +447,7 @@ int ZCommandLine::runSynapseObjectList()
 
 int ZCommandLine::runOutputClassList()
 {
-  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_JSON) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::JSON) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
     std::map<string, int> classMap = bundle.getClassIdMap();
@@ -501,21 +503,31 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
-ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+ZStack* ZCommandLine::readDvidStack(const ZDvidTarget &target)
 {
   ZStack *stack = NULL;
-  ZDvidTarget target;
-  target.loadJsonObject(dvidConfig);
-  ZDvidReader reader;
-  if (reader.open(target)) {
-    ZIntCuboid box;
-    box.setFirstCorner(m_position[0], m_position[1], m_position[2]);
-    box.setSize(m_size[0], m_size[1], m_size[2]);
-    stack = reader.readGrayScale(box);
+
+  if (m_position.size() == 3 && m_size.size() == 3) {
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      ZIntCuboid box;
+      box.setFirstCorner(m_position[0], m_position[1], m_position[2]);
+      box.setSize(m_size[0], m_size[1], m_size[2]);
+      stack = reader.readGrayScale(box);
+    }
   }
 
   return stack;
 }
+/*
+ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
+{
+  ZDvidTarget target;
+  target.loadJsonObject(dvidConfig);
+
+  return readDvidStack(target);
+}
+*/
 
 bool ZCommandLine::ExportPointArray(
     const std::vector<ZWeightedPoint> &ptArray, const string &outFilePath)
@@ -538,6 +550,21 @@ bool ZCommandLine::ExportPointArray(
   return succ;
 }
 
+ZDvidTarget ZCommandLine::getInputDvidTarget() const
+{
+  ZDvidTarget target;
+
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::JSON) {
+    ZJsonObject dvidConfig;
+    dvidConfig.load(m_input[0]);
+    target.loadJsonObject(dvidConfig);
+  } else {
+    target.setFromSourceString(m_input[0]);
+  }
+
+  return target;
+}
+
 int ZCommandLine::runComputeSeed()
 {
   if (m_input.empty()) {
@@ -550,24 +577,22 @@ int ZCommandLine::runComputeSeed()
     return 1;
   }
 
-  ZJsonObject dvidConfig;
-  dvidConfig.load(m_input[0]);
+  ZDvidTarget target = getInputDvidTarget();
 
-  if (dvidConfig.isEmpty()) {
+  if (!target.isValid()) {
     std::cout << "The input " << m_input[0]
-              << " must be a JSON file with valid DVID configuration. Abort."
+              << " must be a valid DVID configuration. Abort."
               << std::endl;
     return 1;
   }
 
-  loadTraceConfig();
-
-  ZNeuronTracer tracer;
-
   bool saved = false;
 
-  ZStack *stack = readDvidStack(dvidConfig);
+  ZStack *stack = readDvidStack(target);
   if (stack != NULL) {
+    loadTraceConfig();
+
+    ZNeuronTracer tracer;
     tracer.setTraceLevel(m_level);
 
     std::vector<ZWeightedPoint> ptArray = tracer.computeSeedPosition(stack);
@@ -579,7 +604,7 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-    if (ZFileType::FileType(m_output) == ZFileType::FILE_SWC) {
+    if (ZFileType::FileType(m_output) == ZFileType::EFileType::SWC) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
 
       //Unfortunately ZSwcTree::save does not return any status, so we use this
@@ -615,6 +640,56 @@ void ZCommandLine::loadTraceConfig()
   }
 }
 
+void ZCommandLine::loadInputJson()
+{
+  if (m_input[0] == "json") {
+    std::string jsonInput = m_input[1];
+    ZJsonObject obj;
+    if (ZFileType::FileType(jsonInput) == ZFileType::EFileType::JSON) {
+      obj.load(jsonInput);
+    } else {
+      obj.decode(jsonInput);
+    }
+
+    if (obj.hasKey("position")) {
+      ZJsonArray posJson(obj.value("position"));
+      if (posJson.size() == 3) {
+        m_position.resize(3, 0);
+        for (size_t i = 0; i < 3; ++i) {
+          m_position[i] = ZJsonParser::integerValue(posJson.getData(), i);
+        }
+      } else {
+        std::cerr << "ERROR: invalid position input!" <<  std::endl;
+        exit(1);
+      }
+    }
+
+    if (obj.hasKey("size")) {
+      ZJsonArray sizeJson(obj.value("size"));
+      if (sizeJson.size() == 3) {
+        m_size.resize(3);
+        for (size_t i = 0; i < 3; ++i) {
+          m_size[i] = ZJsonParser::integerValue(sizeJson.getData(), i);
+        }
+      } else {
+        std::cerr << "ERROR: invalid size input!" <<  std::endl;
+        exit(1);
+      }
+    }
+
+    if (obj.hasKey("swc")) {
+      m_input[1] = ZJsonParser::stringValue(obj["swc"]);
+    } else {
+      m_input[1].clear();
+    }
+
+    m_input[0].clear();
+    if (obj.hasKey("signal")) {
+      m_input[0] = ZJsonParser::stringValue(obj["signal"]);
+    }
+  }
+}
+
 ZSwcTree* ZCommandLine::traceFile()
 {
   ZStack signal;
@@ -622,34 +697,60 @@ ZSwcTree* ZCommandLine::traceFile()
 
   ZNeuronTracer tracer;
   tracer.setIntensityField(&signal);
-
   tracer.setTraceLevel(m_level);
 
-  ZSwcTree *tree = tracer.trace(&signal);
+  ZSwcTree *tree = nullptr;
 
+  if (m_position.size() == 3) {
+    std::string swcPath;
+    if (m_input.size() > 1) {
+      swcPath = m_input[1];
+    }
+    if (ZFileType::FileType(swcPath) != ZFileType::EFileType::SWC) {
+      ZSwcPath path = tracer.trace(m_position[0], m_position[1], m_position[2]);
+      if (!path.empty()) {
+        tree = new ZSwcTree;
+        tree->setDataFromNodeRoot(path[0]);
+      }
+    } else {
+      tree = new ZSwcTree;
+      tree->load(swcPath);
+      tracer.trace(m_position[0], m_position[1], m_position[2], tree);
+    }
+  } else {
+    tree = tracer.trace(&signal);
+  }
   return tree;
 }
 
-ZSwcTree* ZCommandLine::traceDvid()
+ZSwcTree* ZCommandLine::traceDvid(const ZDvidTarget &target)
 {
-  ZDvidNeuronTracer tracer;
+  if (m_position.size() == 3) {
+    ZDvidNeuronTracer tracer;
 
-  ZDvidTarget target;
-  target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
+//    ZDvidTarget target;
+//    target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
+//    target.setNullSegmentationName();
+    tracer.setDvidTarget(target);
+    tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 
-  target.setNullSegmentationName();
-  tracer.setDvidTarget(target);
-  tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
+    ZSwcTree *tree = tracer.getResult();
 
-  ZSwcTree *tree = tracer.getResult();
+    return tree;
+  }
 
-  return tree;
+  return nullptr;
 }
 
 int ZCommandLine::runTraceNeuron()
 {
   if (m_input.empty()) {
     std::cout << "No input specified. Abort." << std::endl;
+    return 1;
+  }
+
+  if (m_input[0].empty()) {
+    std::cout << "No input data specified. Abort." << std::endl;
     return 1;
   }
 
@@ -663,8 +764,9 @@ int ZCommandLine::runTraceNeuron()
   loadTraceConfig();
 
   ZSwcTree *tree = NULL;
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
-    tree = traceDvid();
+  ZDvidTarget target = getInputDvidTarget();
+  if (target.isValid()) {
+    tree = traceDvid(target);
   } else {
     tree = traceFile();
   }
@@ -776,7 +878,7 @@ int ZCommandLine::runGeneral()
 #endif
 
     ZJsonObject config;
-    if (ZFileType::FileType(m_generalConfig) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::EFileType::JSON) {
       config.load(m_generalConfig);
     } else {
       config.decode(m_generalConfig);
@@ -1021,7 +1123,8 @@ std::vector<uint64_t> ZCommandLine::getSkeletonBodyList(ZDvidReader &reader) con
          iter != bodyIdSet.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (m_namedOnly) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
         if (!annotation.getName().empty()) {
           bodyIdArray.push_back(bodyId);
         }
@@ -1069,7 +1172,8 @@ int ZCommandLine::skeletonizeDvid()
   reader.updateMaxLabelZoom();
 
   ZDvidWriter writer;
-  ZDvidReader bodyReader;
+  ZDvidReader *bodyReader = &reader;
+  ZDvidReader mirrorReader;
 
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
@@ -1094,10 +1198,17 @@ int ZCommandLine::skeletonizeDvid()
     writer.open(reader.getDvidTarget());
     std::string mirror = reader.readMirror();
     ZDvidTarget target = reader.getDvidTarget();
+
     if (!mirror.empty()) {
       target.setServer(mirror);
+      if (mirrorReader.open(target)) {
+        bodyReader = &mirrorReader;
+      } else {
+        LWARN() << "The mirror server" << mirror
+                << "is down. Switched to the main server.";
+      }
     }
-    bodyReader.open(target);
+
 
     ZDvidUrl dvidUrl(reader.getDvidTarget());
 
@@ -1109,8 +1220,8 @@ int ZCommandLine::skeletonizeDvid()
                 << std::endl;
       std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
                    "-d '{\"dataname\": \""
-                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                      ZDvidData::ROLE_BODY_LABEL,
+                << ZDvidData::GetName(ZDvidData::ERole::SKELETON,
+                                      ZDvidData::ERole::BODY_LABEL,
                                       target.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
                 << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
@@ -1161,7 +1272,7 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      const int mid = bodyReader.readBodyMutationId(bodyId);
+      const int mid = bodyReader->readBodyMutationId(bodyId);
       if (!m_forceUpdate || mid > 0) {
         if (savingToFile) {
           if (outputFileInfo.exists()) {
@@ -1189,19 +1300,22 @@ int ZCommandLine::skeletonizeDvid()
         ZObject3dScan obj;
 
         int zoom = 0;
-        if (bodyReader.getDvidTarget().hasMultiscaleSegmentation()) {
-          const int blockCount = bodyReader.readBodyBlockCount(bodyId);
+        if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
+          const int blockCount = bodyReader->readBodyBlockCount(
+                bodyId, neutu::EBodyLabelType::BODY);
           constexpr int maxBlockCount = 3000;
           int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
-          zoom = std::min(zoom, bodyReader.getDvidTarget().getMaxLabelZoom());
+          zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
-        bodyReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+        bodyReader->readMultiscaleBody(bodyId, zoom, true, &obj);
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
+
+
         if (tree != NULL) {
           if (mid > 0) {
             flyem::SetMutationId(tree, mid);
@@ -1209,7 +1323,20 @@ int ZCommandLine::skeletonizeDvid()
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            writer.writeSwc(bodyId, tree);
+            if (mid > 0) {
+              const int latestMid = bodyReader->readBodyMutationId(bodyId);
+
+              if (mid != latestMid) {
+                LWARN() << bodyId << ":" << mid << "->" << latestMid
+                        <<  "The body has been changed during skeletonization. "
+                            "No skeleton will be updated.";
+                delete tree;
+                tree = NULL;
+              }
+            }
+            if (tree != NULL) {
+              writer.writeSwc(bodyId, tree);
+            }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
@@ -1247,7 +1374,7 @@ int ZCommandLine::runSkeletonize()
     tic();
   }
 
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
     stat = skeletonizeDvid();
   } else {
     stat = skeletonizeFile();
@@ -1265,7 +1392,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
     return 1;
   }
 
@@ -1287,11 +1414,11 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.print();
   }
 
-  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_TIFF) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::TIFF) {
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        neutube::EMessageType::ERROR);
+                        neutu::EMessageType::ERROR);
       return 1;
     }
     ZStack stack;
@@ -1302,7 +1429,7 @@ int ZCommandLine::skeletonizeFile()
       stack.binarize();
     }
     tree = skeletonizer.makeSkeleton(stack);
-  } else if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_OBJECT_SCAN) {
+  } else if (ZFileType::FileType(m_input[0]) == ZFileType::EFileType::OBJECT_SCAN) {
     ZObject3dScan obj;
     obj.load(m_input[0]);
     if (m_isVerbose) {
@@ -1313,7 +1440,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        neutube::EMessageType::ERROR);
+        neutu::EMessageType::ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 
@@ -1367,7 +1494,8 @@ int ZCommandLine::run(int argc, char *argv[])
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << "Executable directory: " << applicationDir << std::endl;
-  m_configDir = applicationDir + "/json";
+  m_configDir = NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json";
   std::string configPath = m_configDir + "/command_config.json";
 
   if (Is_Arg_Matched(const_cast<char*>("--config"))) {
@@ -1378,7 +1506,7 @@ int ZCommandLine::run(int argc, char *argv[])
 
   ECommand command = UNKNOWN_COMMAND;
   if (!m_configJson.isEmpty()) {
-    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]));
+    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]).c_str());
     m_input.push_back(ZJsonParser::stringValue(m_configJson["input"]));
     m_output = ZJsonParser::stringValue(m_configJson["output"]);
     if (m_configJson.hasKey("synapse")) {
@@ -1437,7 +1565,9 @@ int ZCommandLine::run(int argc, char *argv[])
     m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);;
     //      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
   }
-//  }
+
+
+  loadInputJson();
 
   if (Is_Arg_Matched(const_cast<char*>("-o"))) {
     m_output = Get_String_Arg(const_cast<char*>("-o"));
@@ -1459,6 +1589,7 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
 //  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
+//    m_position.resize(3, 0);
 //    for (int i = 0; i < 3; ++i) {
 //      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
 //    }
@@ -1547,10 +1678,12 @@ int ZCommandLine::run(int argc, char *argv[])
         std::cout << "More information on: " << std::endl << url << std::endl;
       } else if (m_input[0] == "info") {
         std::cout << "Working directory:"
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::WORKING_DIR)
                   << std::endl;
         std::cout << "Log path: "
-                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << NeutubeConfig::getInstance().getPath(
+                       NeutubeConfig::EConfigItem::LOG_FILE)
                   << std::endl;
       }
     }
@@ -1584,7 +1717,7 @@ std::string ZCommandLine::extractIncludePath(
   ZJsonObject subJson(m_configJson.value(key.c_str()));
 
   if (subJson.hasKey("include")) {
-    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]));
+    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]).c_str());
     if (fileInfo.isRelative()) {
       filePath = configDir.absoluteFilePath(fileInfo.filePath());
     } else {

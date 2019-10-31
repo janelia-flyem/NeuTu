@@ -390,16 +390,16 @@ void Object_3d_Orientation_Zscale(const Object_3d *obj, double *vec,
  * Args: obj1 - the first object;
  *       obj2 - the second object;
  *
- * Return: TRUE if they have overlap or FALSE.
+ * Return: _TRUE_ if they have overlap or _FALSE_.
  */
-BOOL Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2)
+_BOOL_ Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2)
 {
   if ((obj1 == NULL) || (obj2 == NULL)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (obj1 == obj2) {
-    return TRUE;
+    return _TRUE_;
   }
 
   int corner1[6], corner2[6];
@@ -411,7 +411,7 @@ BOOL Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2)
       (corner1[5] < corner2[2]) ||
       (corner2[3] < corner1[0]) || (corner2[4] < corner1[1]) || 
       (corner2[5] < corner1[2])) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int offset[3];
@@ -431,7 +431,7 @@ BOOL Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2)
     if (Is_Valid_Array_Index(indices[i])) {
       if (stack->array[indices[i]] > 0) {
         Kill_Stack(stack);
-        return TRUE;
+        return _TRUE_;
       }
     }
   }
@@ -439,7 +439,7 @@ BOOL Object_3d_Has_Overlap(const Object_3d *obj1, const Object_3d *obj2)
   
   Kill_Stack(stack);
 
-  return FALSE;
+  return _FALSE_;
 }
 
 
@@ -569,7 +569,7 @@ void Object_3d_To_Mst(const Object_3d *obj, Graph *graph, Object_3d *centers)
   double **dist = Object_3d_Distmat(centers, NULL); /* dist created */
 
   /* graph constructed */
-  Construct_Graph(graph, centers->size, centers->size - 1, TRUE); 
+  Construct_Graph(graph, centers->size, centers->size - 1, _TRUE_); 
 
   Graph_Mst_From_Adjmat(dist, graph->edges, graph->nvertex, &(graph->nedge),
 			NULL);
@@ -592,7 +592,7 @@ void Object_3d_To_Mst_S(const Object_3d *obj, Graph *graph, Object_3d *centers,
   double **dist = Object_3d_Distmat_S(centers, NULL, stack); /* dist created */
 
   /* graph constructed */
-  Construct_Graph(graph, centers->size, centers->size - 1, TRUE); 
+  Construct_Graph(graph, centers->size, centers->size - 1, _TRUE_); 
 
   Graph_Mst_From_Adjmat(dist, graph->edges, graph->nvertex, &(graph->nedge),
 			NULL);
@@ -678,7 +678,7 @@ void Object_3d_Bounding_Cuboid(const Object_3d *obj, coordinate_3d_t *axis_vec,
 
 static int voxel_compar(const void *p1, const void *p2)
 {
-  svoxel_t *v1 = (svoxel_t*) v1;
+  svoxel_t *v1 = (svoxel_t*) p1;
   svoxel_t *v2 = (svoxel_t*) p2;
 
   if (v1[2] < v2[2]) {
@@ -1290,10 +1290,10 @@ void Region_Draw_Stack(mylib_Region *region, Stack *canvas,
   }
 }
 
-BOOL Region_Same_Dimensions(const mylib_Region *r1, const mylib_Region *r2)
+_BOOL_ Region_Same_Dimensions(const mylib_Region *r1, const mylib_Region *r2)
 {
   if (Get_Region_Dimensionality(r1) != Get_Region_Dimensionality(r2)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int ndim = Get_Region_Dimensionality(r1);
@@ -1304,11 +1304,11 @@ BOOL Region_Same_Dimensions(const mylib_Region *r1, const mylib_Region *r2)
   int i;
   for (i = 0; i < ndim; ++i) {
     if (dims1[i] != dims2[i]) {
-      return FALSE;
+      return _FALSE_;
     }
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 void merge_rastercon(RasterCon *master, const RasterCon *slave)
@@ -1319,7 +1319,7 @@ void merge_rastercon(RasterCon *master, const RasterCon *slave)
 
   TZ_ASSERT(master != NULL, "Null pointer.");
   TZ_ASSERT(Region_Same_Dimensions((const mylib_Region*)master, 
-        (const mylib_Region*) slave) == TRUE, "Unmatched dimensions");
+        (const mylib_Region*) slave) == _TRUE_, "Unmatched dimensions");
 
   if (slave->surflen > 0) {
     int new_rastlen = master->rastlen + slave->rastlen;
@@ -1366,7 +1366,7 @@ void Region_Merge(mylib_Region *master, const mylib_Region *slave)
   }
 
   TZ_ASSERT(master != NULL, "Null pointer.");
-  TZ_ASSERT(Region_Same_Dimensions(master, slave) == TRUE, "Unmatched dimensions");
+  TZ_ASSERT(Region_Same_Dimensions(master, slave) == _TRUE_, "Unmatched dimensions");
 
   if (slave->rastlen > 0) {
     int newlen = master->rastlen + slave->rastlen;

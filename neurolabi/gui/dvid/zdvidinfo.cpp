@@ -5,10 +5,9 @@
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "tz_math.h"
 #include "zobject3dfactory.h"
-#include "zintcuboidarray.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboidarray.h"
+#include "geometry/zintcuboid.h"
 #include "zobject3dscan.h"
 
 const int ZDvidInfo::m_defaultBlockSize = 32;

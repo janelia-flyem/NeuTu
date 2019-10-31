@@ -100,7 +100,7 @@
      <item>
       <widget class="QLabel" name="grayscaleLabel">
        <property name="text">
-        <string>Gray Scale</string>
+        <string>Grayscale</string>
        </property>
       </widget>
      </item>
@@ -216,6 +216,13 @@
       <widget class="QPushButton" name="advancedPushButton">
        <property name="text">
         <string>Advanced</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="loadPushButton">
+       <property name="text">
+        <string>Load</string>
        </property>
       </widget>
      </item>

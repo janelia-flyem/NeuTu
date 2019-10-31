@@ -9,7 +9,7 @@
 #include "flyem/zflyemroiproject.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zwidgetmessage.h"
-#include "zstackdochelper.h"
+#include "mvc/zstackdocutil.h"
 #include "zswctree.h"
 
 ZFlyEmRoiToolDialog::ZFlyEmRoiToolDialog(QWidget *parent) :
@@ -174,8 +174,7 @@ void ZFlyEmRoiToolDialog::dump(const ZWidgetMessage &msg)
 
 void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
-  dump(ZWidgetMessage(msg, neutube::EMessageType::INFORMATION,
-                      ZWidgetMessage::TARGET_TEXT_APPENDING));
+  dump(ZWidgetMessage(msg, neutu::EMessageType::INFORMATION));
 }
 
 void ZFlyEmRoiToolDialog::processMessage(const ZWidgetMessage &msg)
@@ -199,7 +198,7 @@ bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
         m_projectList.append(project);
         if (getDocument() != NULL) {
           project->setDataRange(
-                ZStackDocHelper::GetDataSpaceRange(getDocument()));
+                ZStackDocUtil::GetDataSpaceRange(getDocument()));
         }
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;
@@ -290,7 +289,7 @@ void ZFlyEmRoiToolDialog::downloadAllProject()
     m_dvidReader.open(doc->getDvidTarget());
     if (m_dvidReader.isReady()) {
       QByteArray value = m_dvidReader.readKeyValue(
-            ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE), "projects");
+            ZDvidData::GetName<QString>(ZDvidData::ERole::ROI_CURVE), "projects");
       ZJsonArray array;
       array.decode(value.constData());
       for (size_t i = 0; i < array.size(); ++i) {
@@ -314,7 +313,7 @@ void ZFlyEmRoiToolDialog::uploadProjectList()
       array.append(proj->getName());
     }
     m_dvidWriter.writeJsonString(
-          ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName(ZDvidData::ERole::ROI_CURVE),
           "projects", array.dumpString(0));
   }
 }

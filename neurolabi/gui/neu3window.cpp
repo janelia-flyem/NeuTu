@@ -10,52 +10,80 @@
 #include <QWebEngineView>
 #endif
 
+#include "common/math.h"
 #include "ui_neu3window.h"
+#include "logging/utilities.h"
+
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackdochelper.h"
+
 #include "z3dwindow.h"
-#include "zstackdoc.h"
 #include "zdialogfactory.h"
 #include "zsysteminfo.h"
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
-#include "widgets/flyembodyinfowidget.h"
-#include "widgets/zdvidserverwidget.h"
+
+
+
 #include "dialogs/flyembodyinfodialog.h"
+
 #include "flyem/zflyemproofmvc.h"
-#include "dialogs/zdviddialog.h"
-#include "z3dpunctafilter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
-#include "zstackdochelper.h"
-#include "dialogs/stringlistdialog.h"
-#include "widgets/zbodylistwidget.h"
-#include "widgets/taskprotocolwindow.h"
 #include "flyem/zflyembodylistmodel.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/zflyemdoc3dbodystateaccessor.h"
+#include "flyem/zflyemproofdocutil.h"
+
+
+#include "z3dpunctafilter.h"
+
+#include "mvc/zstackdochelper.h"
+
 #include "zroiwidget.h"
 #include "zstackdocproxy.h"
 #include "zglobal.h"
 #include "sandbox/zbrowseropener.h"
-#include "flyem/zflyemmisc.h"
-#include "dialogs/flyemsettingdialog.h"
-#include "flyem/zflyemdoc3dbodystateaccessor.h"
+
 #include "zactionlibrary.h"
 #include "zarbsliceviewparam.h"
-#include "flyem/zflyemarbmvc.h"
 #include "zstackdocaccessor.h"
 #include "zstackobjectsourcefactory.h"
-#include "dialogs/zneu3sliceviewdialog.h"
+#include "zstackobjectaccessor.h"
 #include "zrandomgenerator.h"
 #include "zqtbarprogressreporter.h"
-#include "flyem/zflyemmessagewidget.h"
 #include "zwidgetmessage.h"
+
+#include "dvid/zdvidlabelslice.h"
+
+#include "widgets/zbodylistwidget.h"
+#include "widgets/taskprotocolwindow.h"
+#include "widgets/flyembodyinfowidget.h"
+#include "widgets/zdvidserverwidget.h"
+
+#include "dialogs/zdviddialog.h"
+#include "dialogs/flyembodyinfodialog.h"
+#include "dialogs/stringlistdialog.h"
+#include "dialogs/flyemsettingdialog.h"
+#include "dialogs/zneu3sliceviewdialog.h"
+
+//#include "z3dpunctafilter.h"
+
+#include "flyem/zflyemarbmvc.h"
+#include "flyem/zflyemmessagewidget.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvccontroller.h"
-#include "zstackobjectaccessor.h"
 #include "flyem/zflyembodyidcolorscheme.h"
 #include "flyem/zflyemarbdoc.h"
-#include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemtaskhelper.h"
 #include "flyem/zflyembodyenv.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembodylistmodel.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/zflyemdoc3dbodystateaccessor.h"
 
 #include "protocols/taskprotocoltaskfactory.h"
 #include "protocols/taskbodycleave.h"
@@ -63,6 +91,7 @@
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/taskfalsesplitreview.h"
+#include "protocols/taskmergereview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 
@@ -86,12 +115,28 @@ Neu3Window::Neu3Window(QWidget *parent) :
   connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
           Qt::QueuedConnection);
 //  initialize();
+
+  // Set up OpenTracing-style logging (via Kafka).
+
+//  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
+//  if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
+
+//    // The list of brokers should be separated by commans, per this example:
+//    // https://www.npmjs.com/package/node-rdkafka
+
+//    kafkaBrokers = kafkaBrokersEnv;
+//  }
+
+//  auto config = neuopentracing::Config(kafkaBrokers);
+//  auto tracer = neuopentracing::Tracer::make("neu3", config);
+//  neuopentracing::Tracer::InitGlobal(tracer);
 }
 
 Neu3Window::~Neu3Window()
 {
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
+    m_dataContainer->recordEnd();
   }
 //  delete m_webView;
 
@@ -167,7 +212,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     LDEBUG() << "Init grayscale widget";
-    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidEnv());
 //    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
@@ -182,6 +227,8 @@ void Neu3Window::initGrayscaleWidget()
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
     ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
+
+    applyBrowserColorScheme();
   }
 }
 
@@ -192,6 +239,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
+  connect(m_3dwin, SIGNAL(locating2DViewTriggered(int,int,int,int)),
+          this, SLOT(browse(int,int,int,int)));
 //  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
 //          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
@@ -234,13 +283,13 @@ void Neu3Window::updateBodyState()
 #ifdef _DEBUG_
   std::cout << "Update state: "
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
-                 neutube::EBodyLabelType::ORIGINAL).size() << " bodies" << std::endl;
+                 neutu::ELabelSource::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
 #if 0
   if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
         neutube::BODY_LABEL_ORIGINAL).size() == 1) {
-    m_dataContainer->enableSplit(flyem::EBodySplitMode::BODY_SPLIT_ONLINE);
+    m_dataContainer->enableSplit(neutu::EBodySplitMode::BODY_SPLIT_ONLINE);
   } else {
     m_dataContainer->disableSplit();
   }
@@ -282,13 +331,13 @@ bool Neu3Window::loadDvidTarget()
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
   if (dlg->exec()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
-    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
-                      dlg->getDvidTarget());
+    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
+                      ZDvidEnv(dlg->getDvidTarget()));
 //    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
 
     m_dataContainer->hide();
@@ -430,12 +479,13 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
   factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
   factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
+  factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
   factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 
   QDockWidget *dockWidget = new QDockWidget("Tasks", this);
-    m_taskProtocolWidget =
-        new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+  m_taskProtocolWidget =
+      new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     /*
     m_taskProtocolWidget->setWindowFlags(
@@ -445,6 +495,7 @@ void Neu3Window::createTaskWindow() {
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
     connect(m_taskProtocolWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(m_taskProtocolWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
     connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
@@ -509,7 +560,7 @@ void Neu3Window::processSliceDockVisibility(bool on)
 void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 {
   if (param.isValid()) {
-    Z3DGraph *graph = ZFlyEmMisc::MakeSliceViewGraph(param);
+    Z3DGraph *graph = flyem::MakeSliceViewGraph(param);
 
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
@@ -524,13 +575,13 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
 void Neu3Window::removeSliceViewGraph()
 {
   ZStackDocAccessor::RemoveObject(
-        getBodyDocument(), ZStackObject::TYPE_3D_GRAPH,
+        getBodyDocument(), ZStackObject::EType::GRAPH_3D,
         ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
 }
 
 void Neu3Window::updateBrowseSize()
 {
-  if (m_browseMode == BROWSE_NATIVE) {
+  if (m_browseMode == EBrowseMode::NATIVE) {
     if (m_sliceWidget != NULL) {
       QRect rect = m_sliceWidget->getViewPort();
       m_browseWidth = rect.width();
@@ -571,7 +622,7 @@ void Neu3Window::updateSliceWidget()
 void Neu3Window::updateSliceBrowser()
 {
   switch (m_browseMode) {
-  case BROWSE_NATIVE:
+  case EBrowseMode::NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
       LDEBUG() << "m_nativeSliceDock->show called";
@@ -579,7 +630,7 @@ void Neu3Window::updateSliceBrowser()
 //      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
-  case BROWSE_NEUROGLANCER:
+  case EBrowseMode::NEUROGLANCER:
     if (m_webSliceDock != NULL) {
       m_webSliceDock->show();
       updateWebView();
@@ -599,15 +650,23 @@ void Neu3Window::updateSliceBrowserSelection()
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 {
+  m_browserColorScheme =
+      ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyIdColorScheme(idToColor));
   if (m_sliceWidget) {
-    const ZSharedPointer<ZFlyEmBodyColorScheme>
-        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+    applyBrowserColorScheme();
+  }
+}
 
+void Neu3Window::applyBrowserColorScheme()
+{
+  if (m_browserColorScheme) {
     ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::EAxis::ARB);
-    slice->setCustomColorMap(colorMap);
-
-     updateSliceBrowserSelection();
+    ZDvidLabelSlice* slice =
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(doc, neutu::EAxis::ARB);
+    if (slice) {
+      slice->setCustomColorMap(m_browserColorScheme);
+      updateSliceBrowserSelection();
+    }
   }
 }
 
@@ -620,7 +679,7 @@ void Neu3Window::updateWebView()
     rotation.set(r.x, r.y, r.z);
     rotation.setWeight(r.w);
 
-    QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+    QUrl url(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, getBodyDocument()->getNormalBodySet()));
 
@@ -666,7 +725,7 @@ ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) c
 {
   ZArbSliceViewParam viewParam;
   viewParam.setSize(m_browseWidth, m_browseHeight);
-  viewParam.setCenter(iround(x), iround(y), iround(z));
+  viewParam.setCenter(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
   viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
@@ -691,7 +750,7 @@ void Neu3Window::browse(double x, double y, double z)
 {
   m_browsePos.set(x, y, z);
 
-  if (m_browseMode == BROWSE_NONE) {
+  if (m_browseMode == EBrowseMode::NONE) {
     if (m_browseOptionDlg->exec()) {
       startBrowser(m_browseOptionDlg->getBrowseMode());
     }
@@ -700,13 +759,18 @@ void Neu3Window::browse(double x, double y, double z)
   }
 }
 
+void Neu3Window::browse(int x, int y, int z, int)
+{
+  browse(double(x), double(y), double(z));
+}
+
 void Neu3Window::browse(
     double x, double y, double z, const QHash<uint64_t, QColor> &idToColor)
 {
   m_browsePos.set(x, y, z);
 
-  if (m_browseMode == BROWSE_NONE) {
-    m_browseMode = BROWSE_NATIVE;
+  if (m_browseMode == EBrowseMode::NONE) {
+    m_browseMode = EBrowseMode::NATIVE;
     initNativeSliceBrowser();
   }
 
@@ -719,13 +783,13 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   m_browseMode = mode;
 
   switch (mode) {
-  case BROWSE_NATIVE:
+  case EBrowseMode::NATIVE:
   {
     initNativeSliceBrowser();
     updateSliceBrowser();
   }
     break;
-  case BROWSE_NEUROGLANCER:
+  case EBrowseMode::NEUROGLANCER:
   {
   #if defined(_USE_WEBENGINE_)
     initWebView();
@@ -733,9 +797,9 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   #endif
   }
     break;
-  case BROWSE_NEUROGLANCER_EXT:
+  case EBrowseMode::NEUROGLANCER_EXT:
   {
-    m_browseMode = BROWSE_NONE;
+    m_browseMode = EBrowseMode::NONE;
     glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
     ZWeightedPoint rotation;
     rotation.set(r.x, r.y, r.z);
@@ -743,7 +807,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
 
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
-    bo->open(ZFlyEmMisc::GetNeuroglancerPath(
+    bo->open(flyem::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
   }
@@ -755,7 +819,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
 
 void Neu3Window::endBrowse()
 {
-  m_browseMode = BROWSE_NONE;
+  m_browseMode = EBrowseMode::NONE;
   removeSliceViewGraph();
 }
 
@@ -936,7 +1000,7 @@ void Neu3Window::test()
 
 void Neu3Window::testBodyChange()
 {
-  m_3dwin->setColorMode(neutube3d::LAYER_MESH, "Mesh Source");
+  m_3dwin->setColorMode(neutu3d::ERendererLayer::MESH, "Mesh Source");
   static ZRandomGenerator rand;
 
   QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
@@ -979,18 +1043,24 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
   return zoomToLoadedBody;
 }
 
-void Neu3Window::zoomToBodyMesh(int /*numMeshLoaded*/)
+void Neu3Window::zoomToBodyMesh(int numMeshLoaded)
 {
   if (!zoomToLoadedBodyEnabled()) {
     return;
   }
 
-  QList<ZMesh*> meshList =
-      ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  LDEBUG() << "Mesh list size:" << meshList.size();
-  if (!meshList.isEmpty()) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
+  if (numMeshLoaded > 0) {
+    QList<ZMesh*> meshList =
+        ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+    LDEBUG() << "Mesh list size:" << meshList.size();
+    if (numMeshLoaded == meshList.size()) {
+      ZMesh *mesh = meshList.front();
+      ZCuboid box = mesh->getBoundBox();
+      for (int i = 1; i < meshList.size(); ++i) {
+        box.join(meshList[i]->getBoundBox());
+      }
+      m_3dwin->gotoPosition(box);
+    }
   }
 }
 
@@ -1010,7 +1080,7 @@ void Neu3Window::processSwcChangeFrom3D(
     QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
     foreach (uint64_t label, labelSet) {
       if (label > 0) {
-        emit bodySelected(label);
+        emit bodyDeselected(label);
       }
     }
   }
@@ -1018,6 +1088,19 @@ void Neu3Window::processSwcChangeFrom3D(
 
 void Neu3Window::processMessage(const ZWidgetMessage &msg)
 {
+  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+    m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
+  }
+
+  if (msg.hasTarget(ZWidgetMessage::TARGET_DIALOG)) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }
+
+  if (msg.hasTargetOtherThan(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_DIALOG)) {
+    m_3dwin->processMessage(msg);
+  }
+#if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
     m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
@@ -1026,6 +1109,7 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
   } else {
     m_3dwin->processMessage(msg);
   }
+#endif
 }
 
 bool Neu3Window::cleaving() const
@@ -1099,7 +1183,7 @@ void Neu3Window::syncBodyListModel()
   }
   LDEBUG() << "Syncing" << bodyStr;
 #endif
-  dataDoc->setSelectedBody(selected, neutube::EBodyLabelType::MAPPED);
+  dataDoc->setSelectedBody(selected, neutu::ELabelSource::MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;
@@ -1173,7 +1257,7 @@ void Neu3Window::advanceProgress(double dp)
   if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
     int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
     getProgressDialog()->setValue(
-          getProgressDialog()->value() + iround(dp * range));
+          getProgressDialog()->value() + neutu::iround(dp * range));
   }
 }
 
@@ -1187,7 +1271,16 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
-  window->getMainMvc()->setDvidTarget(m_dataContainer->getDvidTarget());
+  ZDvidEnv env = m_dataContainer->getDvidEnv();
+  env.setReadOnly(true);
+
+  window->getMainMvc()->setDvid(env);
+
+  /*
+  ZDvidTarget target = m_dataContainer->getDvidTarget();
+  target.setReadOnly(true);
+  window->getMainMvc()->setDvidTarget(target);
+  */
 //  window->showMaximized();
 }
 

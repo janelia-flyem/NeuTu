@@ -1,9 +1,10 @@
 #include "zflyemqualityanalyzer.h"
+
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
-#include "tz_math.h"
 #include "swctreenode.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 #include "flyem/zhotspotfactory.h"
 #include "swc/zswcdeepanglemetric.h"
 #include "misc/miscutility.h"
@@ -320,9 +321,9 @@ ZFlyEmQualityAnalyzer::computeHotSpot(
       Swc_Tree_Node *tn = *iter;
 
       while (SwcTreeNode::isRegular(tn)) {
-        int x = iround(SwcTreeNode::x(tn) / xRes);
-        int y = iround(SwcTreeNode::y(tn) / yRes);
-        int z = iround(SwcTreeNode::z(tn) / zRes);
+        int x = neutu::iround(SwcTreeNode::x(tn) / xRes);
+        int y = neutu::iround(SwcTreeNode::y(tn) / yRes);
+        int z = neutu::iround(SwcTreeNode::z(tn) / zRes);
 
         if (!m_substackRegion.empty()) {
           if (m_substackRegion.hitTest(x, y, z) < 0) {
@@ -387,9 +388,9 @@ flyem::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                   sourceNode, targetNode, SwcTreeNode::GEODESIC);
             if (!tz_isinf(gdist) && gdist > distThreshold) {
               //Add a hot spot
-              int x = iround(SwcTreeNode::x(sourceNode));
-              int y = iround(SwcTreeNode::y(sourceNode));
-              int z = iround(SwcTreeNode::z(sourceNode));
+              int x = neutu::iround(SwcTreeNode::x(sourceNode));
+              int y = neutu::iround(SwcTreeNode::y(sourceNode));
+              int z = neutu::iround(SwcTreeNode::z(sourceNode));
               isHotNode = true;
 
 #if 0
@@ -422,9 +423,9 @@ flyem::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                 for (ZSwcPath::const_iterator iter = path.begin();
                      iter != path.end(); ++iter) {
                   Swc_Tree_Node *tn = *iter;
-                  guidance->appendPoint(iround(SwcTreeNode::x(tn)),
-                                        iround(SwcTreeNode::y(tn)),
-                                        iround(SwcTreeNode::z(tn)));
+                  guidance->appendPoint(neutu::iround(SwcTreeNode::x(tn)),
+                                        neutu::iround(SwcTreeNode::y(tn)),
+                                        neutu::iround(SwcTreeNode::z(tn)));
                 }
                 hotSpot->setGuidance(guidance);
 
@@ -475,9 +476,9 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 
       ZObject3dScan *obj = neuron.getBody();
       while (SwcTreeNode::isRegular(tn)) {
-        int x = iround(SwcTreeNode::x(tn) / resolution[0]);
-        int y = iround(SwcTreeNode::y(tn) / resolution[1]);
-        int z = iround(SwcTreeNode::z(tn) / resolution[2]);
+        int x = neutu::iround(SwcTreeNode::x(tn) / resolution[0]);
+        int y = neutu::iround(SwcTreeNode::y(tn) / resolution[1]);
+        int z = neutu::iround(SwcTreeNode::z(tn) / resolution[2]);
 
         if (!m_substackRegion.empty()) {
           if (m_substackRegion.hitTest(x, y, z) < 0) {

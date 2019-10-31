@@ -6,7 +6,7 @@
 
 #include "zgeo3dtransform.h"
 #include "zgeo3dscalarfield.h"
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZPoint;
 class ZAffineRect;
@@ -23,9 +23,9 @@ std::vector<ZAffineRect> Partition(const ZAffineRect &rect, int row, int col);
  */
 void transform(ZGeo3dScalarField *field, const ZGeo3dTransform &transform);
 template <typename T>
-void shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis);
+void shiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis);
 template <typename T>
-void shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis);
+void shiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis);
 
 std::vector<ZPoint> LineShpereIntersection(
     const ZPoint &lineStart, const ZPoint &lineNorm,
@@ -48,37 +48,37 @@ void CopyToArray(const ZIntPoint &pt, int v[]);
 
 
 template <typename T>
-void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
 //    std::swap(x, y);
     std::swap(x, z);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     std::swap(y, z);
     break;
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 }
 
 template <typename T>
-void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     std::swap(x, z);
 //    std::swap(x, y);
     break;
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     std::swap(y, z);
     break;
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     break;
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 }

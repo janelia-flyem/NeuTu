@@ -9,7 +9,7 @@
 #include <string.h>
 #include <iostream>
 #include <cmath>
-#include "tz_utilities.h"
+
 #include "neutubeconfig.h"
 #include "tz_stack_lib.h"
 #include "zstack.hxx"
@@ -23,16 +23,12 @@
 #include "tz_int_histogram.h"
 #include "zjsonparser.h"
 #include "zfiletype.h"
-#include "tz_math.h"
-#ifdef _QT_GUI_USED_
-#include "QsLog.h"
-#endif
 #include "zstring.h"
 #include "zstackfactory.h"
-#include "zpoint.h"
-#include "zintcuboid.h"
+#include "geometry/zpoint.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 using namespace std;
 
@@ -307,7 +303,7 @@ void ZStack::shiftLocation(int *offset, int c, int width, int height, int depth)
   singleChannelStack(c)->shiftLocation(offset, width, height, depth);
 }
 
-Mc_Stack *ZStack::makeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3)
+Mc_Stack *ZStack::MakeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3)
 {
   Mc_Stack *out = NULL;
 
@@ -662,9 +658,9 @@ void ZStack::read(std::istream &stream)
   clear();
 
   int kind = GREY;
-  neutube::read(stream, kind);
+  neutu::read(stream, kind);
   int channel = 0;
-  neutube::read(stream, channel);
+  neutu::read(stream, channel);
 
   m_offset.read(stream);
   ZIntPoint dim;
@@ -676,8 +672,8 @@ void ZStack::read(std::istream &stream)
 
 void ZStack::write(std::ostream &stream) const
 {
-  neutube::write(stream, m_stack->kind);
-  neutube::write(stream, m_stack->nchannel);
+  neutu::write(stream, m_stack->kind);
+  neutu::write(stream, m_stack->nchannel);
   m_offset.write(stream);
   ZIntPoint dim(width(), height(), depth());
   dim.write(stream);
@@ -713,10 +709,10 @@ int ZStack::getChannelNumber(const string &filepath)
   int nchannel = 0;
   ZFileType::EFileType type = ZFileType::FileType(filepath);
 
-  if (type == ZFileType::FILE_TIFF ||
-      type == ZFileType::FILE_LSM) {
+  if (type == ZFileType::EFileType::TIFF ||
+      type == ZFileType::EFileType::LSM) {
     Tiff_Reader *reader;
-    if (type == ZFileType::FILE_TIFF) {
+    if (type == ZFileType::EFileType::TIFF) {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 0);
     } else {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 1);
@@ -761,7 +757,7 @@ int ZStack::getChannelNumber(const string &filepath)
     nchannel = image->number_channels;
     Kill_Tiff_Image(image);
     Free_Tiff_Reader(reader);
-  } else if (type == ZFileType::FILE_V3D_RAW) {
+  } else if (type == ZFileType::EFileType::V3D_RAW) {
     FILE *fp = Guarded_Fopen(filepath.c_str(), "rb", "Read_Raw_Stack_C");
 
     char formatkey[] = "raw_image_stack_by_hpeng";
@@ -798,7 +794,7 @@ int ZStack::getChannelNumber(const string &filepath)
 
     nchannel = sz[3];
     fclose(fp);
-  } else if (type == ZFileType::FILE_PNG) {
+  } else if (type == ZFileType::EFileType::PNG) {
     //No support for multi-channel png yet
     return 1;
   }
@@ -814,8 +810,8 @@ std::string ZStack::save(const string &filepath) const
     resultFilePath = filepath;
     if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
         (getVoxelNumber() > 2147483648)) { //save as raw
-      if (ZFileType::FileType(filepath) != ZFileType::FILE_V3D_RAW ||
-          ZFileType::FileType(filepath) != ZFileType::FILE_MC_STACK_RAW) {
+      if (ZFileType::FileType(filepath) != ZFileType::EFileType::V3D_RAW ||
+          ZFileType::FileType(filepath) != ZFileType::EFileType::MC_STACK_RAW) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
         resultFilePath += ".raw";
         std::cout << resultFilePath << " saved instead." << endl;
@@ -832,18 +828,18 @@ std::string ZStack::save(const string &filepath) const
 }
 
 void* ZStack::projection(
-    ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis,
+    ZSingleChannelStack::EProjMode mode, ZSingleChannelStack::Stack_Axis axis,
     int c)
 {
   return singleChannelStack(c)->projection(mode, axis);
 }
 
 void* ZStack::projection(
-    neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+    neutu::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
-  ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
-  if (bg == neutube::EImageBackground::BRIGHT) {
-    mode = ZSingleChannelStack::MIN_PROJ;
+  ZSingleChannelStack::EProjMode mode = ZSingleChannelStack::EProjMode::MAX_PROJ;
+  if (bg == neutu::EImageBackground::BRIGHT) {
+    mode = ZSingleChannelStack::EProjMode::MIN_PROJ;
   }
 
   return projection(mode, axis, c);
@@ -1296,7 +1292,7 @@ bool ZStack::isTracable()
 bool ZStack::isSwc()
 {
   if (isVirtual()) {
-    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::FILE_SWC;
+    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::EFileType::SWC;
     /*
     if (m_source != NULL) {
       if (m_source->type == STACK_DOC_SWC_FILE) {

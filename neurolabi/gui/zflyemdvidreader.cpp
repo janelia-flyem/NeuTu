@@ -2,6 +2,7 @@
 #include <QStringList>
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+#include "zjsonparser.h"
 
 ZFlyEmBodyAnnotation ZFlyEmDvidReader::readAnnotation(int bodyId)
 {
@@ -30,9 +31,9 @@ QStringList ZFlyEmDvidReader::readSynapseList()
     ZJsonArray synapseArrayJson(
           obj["synapses"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < synapseArrayJson.size(); ++i) {
-      const char *value = ZJsonParser::stringValue(synapseArrayJson.at(i));
-      if (value != NULL) {
-        synapseList.append(value);
+      std::string value = ZJsonParser::stringValue(synapseArrayJson.at(i));
+      if (!value.empty()) {
+        synapseList.append(value.c_str());
       }
     }
   }

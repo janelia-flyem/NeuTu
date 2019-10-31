@@ -21,6 +21,7 @@ public:
   ZSwcTree* getResult() const;
 
   void trace(double x, double y, double z, double r);
+//  void tuneChainEnd();
 
   double fit(Local_Neuroseg *locseg);
 
@@ -47,6 +48,9 @@ private:
   std::list<Local_Neuroseg*> m_locsegList;
   Locseg_Fit_Workspace *m_fitWorkspace;
 
+  Local_Neuroseg *m_tailSeg = nullptr;
+  Local_Neuroseg *m_headSeg = nullptr;
+  bool m_tuningEnd = true;
   double m_seedMinScore;
   double m_traceMinScore;
 };

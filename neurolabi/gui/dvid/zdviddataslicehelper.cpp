@@ -1,6 +1,6 @@
 #include "zdviddataslicehelper.h"
 #include "zrect2d.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "zarbsliceviewparam.h"
 
@@ -17,6 +17,7 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
+  m_workReader.openRaw(m_reader.getDvidTarget());
   updateCenterCut();
 }
 
@@ -25,15 +26,30 @@ void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
   m_maxZoom = maxZoom;
 }
 
+void ZDvidDataSliceHelper::updateMaxZoom()
+{
+  switch (m_dataRole) {
+  case ZDvidData::ERole::GRAY_SCALE:
+    m_reader.updateMaxGrayscaleZoom();
+    break;
+  case ZDvidData::ERole::LABEL_BLOCK:
+  case ZDvidData::ERole::BODY_LABEL:
+    m_reader.updateMaxLabelZoom();
+    break;
+  default:
+    break;
+  }
+}
+
 int ZDvidDataSliceHelper::getMaxZoom() const
 {
   switch (m_dataRole) {
-  case ZDvidData::ROLE_GRAY_SCALE:
+  case ZDvidData::ERole::GRAY_SCALE:
     return getDvidTarget().getMaxGrayscaleZoom();
-  case ZDvidData::ROLE_LABEL_BLOCK:
-  case ZDvidData::ROLE_BODY_LABEL:
+  case ZDvidData::ERole::LABEL_BLOCK:
+  case ZDvidData::ERole::BODY_LABEL:
     return getDvidTarget().getMaxLabelZoom();
-  case ZDvidData::ROLE_MULTISCALE_2D:
+  case ZDvidData::ERole::MULTISCALE_2D:
     return m_maxZoom;
   default:
     return 0;
@@ -42,12 +58,12 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   return 0;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
 {
   return m_updatePolicy;
 }
 
-void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+void ZDvidDataSliceHelper::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 {
   m_updatePolicy = policy;
 }
@@ -55,10 +71,10 @@ void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
 void ZDvidDataSliceHelper::updateCenterCut()
 {
   switch (m_dataRole) {
-  case ZDvidData::ROLE_GRAY_SCALE:
+  case ZDvidData::ERole::GRAY_SCALE:
     m_reader.setGrayCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
-  case ZDvidData::ROLE_LABEL_BLOCK:
+  case ZDvidData::ERole::LABEL_BLOCK:
     m_reader.setLabelCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
   default:
@@ -199,7 +215,7 @@ int ZDvidDataSliceHelper::getActualZoom() const
 
 void ZDvidDataSliceHelper::setZoom(int zoom)
 {
-  m_zoom = std::max(0, std::min(zoom, m_maxZoom));
+  m_zoom = std::max(0, std::min(zoom, getMaxZoom()));
 }
 
 int ZDvidDataSliceHelper::getLowresZoom() const
@@ -349,7 +365,7 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 
   if (m_currentViewParam.getViewPort().isEmpty() &&
       !viewParam.getViewPort().isEmpty()) {
-    if (m_currentViewParam.getSliceAxis() == neutube::EAxis::ARB) {
+    if (m_currentViewParam.getSliceAxis() == neutu::EAxis::ARB) {
       //Must be on the same plane to be contained
       if (m_currentViewParam.getSliceViewParam().hasSamePlaneCenter(
             viewParam.getSliceViewParam())) {
@@ -442,29 +458,29 @@ void ZDvidDataSliceHelper::syncActualQuality()
 }
 
 void ZDvidDataSliceHelper::setPreferredUpdatePolicy(
-    flyem::EDataSliceUpdatePolicy policy)
+    neutu::EDataSliceUpdatePolicy policy)
 {
   m_preferredUpdatePolicy = policy;
 }
 
-flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
+neutu::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getPreferredUpdatePolicy() const
 {
   return m_preferredUpdatePolicy;
 }
 
-void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
+void ZDvidDataSliceHelper::inferUpdatePolicy(neutu::EAxis axis)
 {
   if (getMaxZoom() == 0) {
-    if (axis == neutube::EAxis::ARB) {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::HIDDEN);
+    if (axis == neutu::EAxis::ARB) {
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::HIDDEN);
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::SMALL);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::SMALL);
     }
   } else {
-    if (axis == neutube::EAxis::ARB) {
+    if (axis == neutu::EAxis::ARB) {
       setUpdatePolicy(getPreferredUpdatePolicy());
     } else {
-      setUpdatePolicy(flyem::EDataSliceUpdatePolicy::LOWRES);
+      setUpdatePolicy(neutu::EDataSliceUpdatePolicy::LOWRES);
     }
   }
 }

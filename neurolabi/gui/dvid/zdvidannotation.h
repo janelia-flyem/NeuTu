@@ -9,6 +9,7 @@
 #include "zstackobject.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "zdviddef.h"
 
 class ZJsonObject;
 class ZCuboid;
@@ -33,15 +34,14 @@ public:
   enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
 
-  enum EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
+  enum class EStatus { NORMAL, DUPLICATED };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_ANNOTATION;
+    return ZStackObject::EType::DVID_ANNOTATION;
   }
 
-  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -83,12 +83,12 @@ public:
   int getZ() const;
 
   using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      flyem::EDvidAnnotationLoadMode mode);
+      dvid::EAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();
@@ -108,6 +108,7 @@ public:
 
   void removeTag(const std::string &tag);
   bool hasTag(const std::string &tag) const;
+  std::set<std::string> getTagSet() const;
 
   void clear();
 
@@ -119,9 +120,9 @@ public:
 
   class Relation {
   public:
-    enum ERelation {
-      RELATION_UNKNOWN, RELATION_POSTSYN_TO, RELATION_PRESYN_TO,
-      RELATION_CONVERGENT_TO, RELATION_GROUPED_WITH
+    enum class ERelation {
+      UNKNOWN, POSTSYN_TO, PRESYN_TO,
+      CONVERGENT_TO, GROUPED_WITH
     };
 
     Relation(const ZIntPoint &to, ERelation relation) :
@@ -143,7 +144,7 @@ public:
 
   ZCuboid getBoundBox() const;
 
-  void setProperty(ZJsonObject propJson);
+//  void setProperty(ZJsonObject propJson);
 
   void updatePartner();
   void updatePartner(const ZJsonArray &jsonArray);
@@ -158,8 +159,18 @@ public: //Additional properties
 
   void addProperty(const std::string &key, const std::string &value);
   void removeProperty(const std::string &key);
+
+  bool hasProperty(const std::string &key) const;
   template <typename T>
   T getProperty(const std::string &key) const;
+
+  /*!
+   * \brief Set the comment property of the annotation.
+   *
+   * It removes the comment property if \a comment is empty.
+   */
+  void setComment(const std::string &comment);
+  std::string getComment() const;
 
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
@@ -190,6 +201,9 @@ public: //Json APIs
                           const char* value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+  static void AddProperty(ZJsonObject &json, const std::string &key,
+                          int value);
+
   static void Annotate(ZJsonObject &json, const std::string &annot);
 
   static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
@@ -209,11 +223,14 @@ public: //Json APIs
   static EKind GetKind(const ZJsonObject &json);
 
 protected:
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
-  double getRadius(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  double getRadius(int z, neutu::EAxis sliceAxis) const;
 
 private:
   void init();
+
+public:
+  static const char* KEY_COMMENT;
 
 protected:
   ZIntPoint m_position;

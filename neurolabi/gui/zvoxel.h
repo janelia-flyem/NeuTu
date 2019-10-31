@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include "tz_stack_lib.h"
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZVoxel
 {
@@ -36,7 +36,7 @@ public:
 
   void labelStackWithBall(Stack *stack, int label) const;
 
-  ZVoxel& operator=(const ZVoxel &voxel);
+//  ZVoxel& operator=(const ZVoxel &voxel);
 
   /*!
    * \brief Translate a voxel.
@@ -47,7 +47,7 @@ public:
 
   void print() const;
 
-  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxis(neutu::EAxis axis);
 
 private:
   int m_x;

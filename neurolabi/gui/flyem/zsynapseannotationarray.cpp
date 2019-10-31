@@ -11,7 +11,7 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zsynapselocationmatcher.h"
-#include "tz_error.h"
+
 #include "zgraph.h"
 #ifdef _QT_GUI_USED_
 #include "zpunctum.h"
@@ -19,7 +19,7 @@
 #endif
 #include "zstring.h"
 #include "zweightedpointarray.h"
-#include "zpointarray.h"
+#include "geometry/zpointarray.h"
 
 using namespace flyem;
 using namespace std;
@@ -64,8 +64,9 @@ bool ZSynapseAnnotationArray::loadJson(const ZJsonObject &jsonObject,
     resize(dataArray.size() + size());
     break;
   default:
-    TZ_ERROR(ERROR_DATA_VALUE);
-    break;
+    throw std::logic_error("Invalid mode.");
+//    TZ_ERROR(ERROR_DATA_VALUE);
+//    break;
   }
 
   int tbarNumber = 0;
@@ -724,14 +725,14 @@ ZSwcTree* ZSynapseAnnotationArray::toSwcTree()
     int postType = 1;
     double baseRadius = 1.0;
     Swc_Tree_Node *preNode =
-        SwcTreeNode::makePointer(0, preType, startPos,
+        SwcTreeNode::MakePointer(0, preType, startPos,
                                  tBar->confidence() + baseRadius, -1);
     SwcTreeNode::setParent(preNode, root);
 
     for (size_t j = 0; j < partnerArray->size(); j++) {
       endPos = (*partnerArray)[j].pos();
       Swc_Tree_Node *postNode =
-          SwcTreeNode::makePointer(0, postType, endPos,
+          SwcTreeNode::MakePointer(0, postType, endPos,
                                    (*partnerArray)[j].confidence() + baseRadius,
                                    -1);
       SwcTreeNode::setParent(postNode, preNode);
@@ -1073,7 +1074,10 @@ flyem::ZSynapseAnnotationArray::findDuplicatedTBar(double minDist)
       SynapseLocation *firstTBar = getTBarRef(i);
       SynapseLocation *secondTBar = getTBarRef(j);
 
-      TZ_ASSERT(firstTBar != secondTBar, "Same pointer");
+      if (firstTBar == secondTBar) {
+        throw std::logic_error("Unexpected identical pointer.");
+      }
+//      TZ_ASSERT(firstTBar != secondTBar, "Same pointer");
 
       double dist = firstTBar->pos().distanceTo(secondTBar->pos());
       if (dist < minDist) {
@@ -1551,11 +1555,11 @@ bool ZSynapseAnnotationArray::isDeprecated(EComponent component) const
   case CONNECTION_GRAPH:
     return m_connectionGraph == NULL;
   case ALL_COMPONENT:
-    return TRUE;
+    return _TRUE_;
     break;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 

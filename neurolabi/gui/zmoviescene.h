@@ -6,7 +6,7 @@
 #include <utility>
 #include <map>
 
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 //#include "zjsonobject.h"
 #include "z3drotation.h"
 #include "zmoviesceneclipper.h"

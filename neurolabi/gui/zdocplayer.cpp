@@ -8,10 +8,13 @@
 #include "zjsonobject.h"
 #include "zstackball.h"
 #include "swctreenode.h"
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidgraysliceensemble.h"
+
 #include "flyem/zflyemmisc.h"
 
 ZDocPlayer::~ZDocPlayer()
@@ -330,7 +333,7 @@ void ZDocPlayerList::printUnsync() const
   for (QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
        iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
-    std::cout << player->getData()->className() << std::endl;
+    std::cout << player->getData()->getTypeName() << std::endl;
   }
 }
 
@@ -397,7 +400,7 @@ ZJsonObject ZStroke2dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;
@@ -433,6 +436,7 @@ ZSwcTree* ZStroke2dPlayer::getSwcDecoration() const
   ZStroke2d *stroke = getCompleteData();
   if (stroke != NULL) {
     if (!stroke->isEmpty()) {
+      tree = new ZSwcTree;
       tree->forceVirtualRoot();
       Swc_Tree_Node *parent = tree->root();
       double z = stroke->getZ();
@@ -441,7 +445,7 @@ ZSwcTree* ZStroke2dPlayer::getSwcDecoration() const
         double x = 0;
         double y = 0;
         stroke->getPoint(&x, &y, i);
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, radius, parent);
+        Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, radius, parent);
         parent = tn;
       }
     }
@@ -572,6 +576,9 @@ void ZObject3dPlayer::setLabel(int label)
 
   if (obj != NULL) {
     obj->setLabel(label);
+    if (hasRole(ZStackObjectRole::ROLE_SEED)) {
+      obj->setColor(ZStroke2d::GetLabelColor(label));
+    }
   }
 }
 
@@ -611,7 +618,7 @@ ZJsonObject ZObject3dPlayer::toSeedJson() const
 {
   ZJsonObject json;
   if (getCompleteData() != NULL) {
-    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+    json = flyem::MakeSplitSeedJson(*getCompleteData());
   }
 
   return json;
@@ -717,6 +724,45 @@ bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
 ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc) const
 {
   ZDvidGraySlice *obj = getCompleteData();
+  if (obj != NULL) {
+    return obj->makeFutureTask(doc);
+  }
+
+  return NULL;
+}
+
+/////////////////////////////
+
+
+//////////////
+ZDvidGraySliceEnsemblePlayer::ZDvidGraySliceEnsemblePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
+ZDvidGraySliceEnsemble* ZDvidGraySliceEnsemblePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidGraySliceEnsemble*>(m_data);
+}
+
+bool ZDvidGraySliceEnsemblePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidGraySliceEnsemble *obj = getCompleteData();
+    if (obj != NULL) {
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
+    }
+  }
+
+  return updated;
+}
+
+ZTask* ZDvidGraySliceEnsemblePlayer::getFutureTask(ZStackDoc *doc) const
+{
+  ZDvidGraySliceEnsemble *obj = getCompleteData();
   if (obj != NULL) {
     return obj->makeFutureTask(doc);
   }

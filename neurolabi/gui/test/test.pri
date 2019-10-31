@@ -1,4 +1,11 @@
 HEADERS += \
+    $$PWD/commontest.h \
+    $$PWD/miscutilitytest.h \
+    $$PWD/taskprotocoltasktest.h \
+    $$PWD/zflyembodyannotationprotocaltest.h \
+    $$PWD/znetworkutilstest.h \
+    $$PWD/zstackdocobjectupdatetest.h \
+    $$PWD/zstringbuildtest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \
@@ -66,11 +73,29 @@ HEADERS += \
     test/ztestall.h \
     test/zstackobjectinfotest.h \
     test/zglobaltest.h \
-    test/zmouseeventprocessortest.h \
+    $$PWD/zmouseeventprocessortest.h \
     $$PWD/zpositionmappertest.h \
     $$PWD/zstackdochelpertest.h \
     $$PWD/zgeometrytest.h \
     $$PWD/zdviddataslicetest.h \
     $$PWD/zstackviewparamtest.h \
     $$PWD/zflyembodymanagertest.h \
-    $$PWD/zflyemtaskhelpertest.h
+    $$PWD/zflyemtaskhelpertest.h \
+    $$PWD/zflyembodystatustest.h \
+    $$PWD/zunittest.h \
+    $$PWD/cypherquerytest.h \
+    $$PWD/zwidgetmessagetest.h \
+    $$PWD/zstackobjecttest.h \
+    $$PWD/z3dswcfiltertest.h \
+    $$PWD/flyembodyselectionmanagertest.h \
+    $$PWD/zinteractivecontexttest.h \
+    $$PWD/zdvidenvtest.h \
+    $$PWD/zdvidnodetest.h \
+    $$PWD/zdvidsparsestacktest.h \
+    $$PWD/flyembodyannotationdialogtest.h \
+    $$PWD/qtcoretest.h \
+    $$PWD/zflyemmisctest.h \
+    $$PWD/zdvidsynapseannotationdialogtest.h
+
+SOURCES += \
+    $$PWD/zunittest.cpp

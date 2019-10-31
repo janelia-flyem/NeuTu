@@ -2,56 +2,71 @@
 #define ZFLYEMPROOFMVC_H
 
 #include <vector>
+#include <unordered_map>
+#include <map>
+
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
 #include <QMap>
+#include <QElapsedTimer>
 
-#include "neutube_def.h"
-#include "zstackmvc.h"
-#include "flyem/zflyembodysplitproject.h"
-#include "flyem/zflyembodymergeproject.h"
+#include "common/neutudefs.h"
 #include "zthreadfuturemap.h"
-#include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
-#include "neutube_def.h"
+#include "zactionfactory.h"
+#include "zstackviewparam.h"
+#include "mvc/zstackmvc.h"
+#include "flyemdef.h"
+#include "zflyembodysplitproject.h"
+#include "zflyembodymergeproject.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
-class ZDvidTargetProviderDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
-class FlyEmBodyInfoDialog;
 class ProtocolSwitcher;
-class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
-class FlyEmTodoDialog;
 class ZClickableColorLabel;
 class ZColorLabel;
 class ZFlyEmSynapseDataFetcher;
 class ZFlyEmSynapseDataUpdater;
 class ZDvidPatchDataFetcher;
 class ZDvidPatchDataUpdater;
-class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZRandomGenerator;
+class ZFlyEmBody3dDoc;
+class ZDvidLabelSlice;
+class ZROIWidget;
+class ZActionLibrary;
+class NeuPrintReader;
+class NeuprintSetupDialog;
+class ZContrastProtocalDialog;
+class ZFlyEmRoiToolDialog;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
-class ZRandomGenerator;
-class ZFlyEmSkeletonUpdateDialog;
-class ZFlyEmBody3dDoc;
-class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
-class ZROIWidget;
-class ZFlyEmBodyAnnotationDialog;
+class ZFlyEmSkeletonUpdateDialog;
+class FlyEmTodoDialog;
+class ZDvidTargetProviderDialog;
+class FlyEmBodyInfoDialog;
+class ZFlyEmSplitCommitDialog;
+class FlyEmBodyAnnotationDialog;
+class NeuPrintQueryDialog;
+class FlyEmMvcDialogManager;
+class ZFlyEmSequencerColorScheme;
+class ZFlyEmBookmark;
+class ZFlyEmBookmarkListModel;
+class ZDvidEnv;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -60,15 +75,15 @@ class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofMvc(QWidget *parent = 0);
-  ~ZFlyEmProofMvc();
+  explicit ZFlyEmProofMvc(QWidget *parent = nullptr);
+  ~ZFlyEmProofMvc() override;
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
-      neutube::EAxis axis = neutube::EAxis::Z, ERole role = ROLE_WIDGET);
+      neutu::EAxis axis = neutu::EAxis::Z, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
-      const ZDvidTarget &target, ERole role = ROLE_WIDGET);
-  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
+      const ZDvidEnv &env, ERole role = ERole::ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -82,26 +97,34 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   const ZDvidInfo& getDvidInfo() const;
-  const ZDvidInfo& getGrayScaleInfo() const;
+//  const ZDvidInfo& getGrayScaleInfo() const;
 
-  virtual void setDvidTarget(const ZDvidTarget &target);
+//  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
+  void setDvidFromJson(const std::string &filePath);
+  void setDvidFromJsonObject(const std::string &str);
+  void setDvidFromUrl(const QString &url);
+  virtual void setDvid(const ZDvidEnv &env);
 
   void clear();
 
   void exitCurrentDoc();
 
-  void enableSplit(flyem::EBodySplitMode mode);
+  void enableSplit(neutu::EBodySplitMode mode);
   void disableSplit();
 
-  void processViewChangeCustom(const ZStackViewParam &viewParam);
+  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
+
+  void recordEnd();
 
   ZFlyEmSupervisor* getSupervisor() const;
 
 //  bool checkInBody(uint64_t bodyId);
-  bool checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
-  virtual ZDvidTarget getDvidTarget() const;
+  ZDvidEnv getDvidEnv() const;
+  ZDvidTarget getDvidTarget() const;
+  std::string getDvidTargetUuid() const;
 
   void setDvidDialog(ZDvidTargetProviderDialog *dlg);
   ZDvidTargetProviderDialog* getDvidDialog() const;
@@ -120,8 +143,10 @@ public:
     m_quitting = exiting;
   }
 
-  Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
-  Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
+  bool eventFilter(QObject *watched, QEvent *event) override;
+
+  Z3DWindow* makeExternalSkeletonWindow(neutu3d::EWindowType windowType);
+  Z3DWindow* makeExternalMeshWindow(neutu3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
 
 
@@ -132,9 +157,7 @@ public:
 
   uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
 
-  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
-    return m_bodyInfoDlg;
-  }
+  FlyEmBodyInfoDialog *getBodyInfoDlg();
 
   bool is3DEnabled() const {
     return m_3dEnabled;
@@ -144,7 +167,7 @@ public:
     m_3dEnabled = false;
   }
 
-  bool hasSequencer() const;
+  bool hasSequencer();
 
   void disableSequencer();
 
@@ -152,6 +175,8 @@ public:
 
   void configure();
 
+//  bool hasNeuPrint() const;
+  neutu::EServerStatus getNeuPrintStatus() const;
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -190,7 +215,7 @@ signals:
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
-  void splitBodyLoaded(uint64_t bodyId, flyem::EBodySplitMode mode);
+  void splitBodyLoaded(uint64_t bodyId, neutu::EBodySplitMode mode);
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void bookmarkDeleted(ZFlyEmBodyMergeProject *m_project);
@@ -208,36 +233,40 @@ signals:
   void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
+//  void undo();
+//  void redo();
+
+  void setDvidTarget();
+
   void mergeSelected();
   void unmergeSelected();
-  void undo();
-  void redo();
 
   void setSegmentationVisible(bool visible);
-  void setDvidTarget();
-  void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
-  void processMessageSlot(const QString &message);
+
+  void launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode);
+//  void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
-  void annotateBody();
+  void annotateSelectedBody();
   void setExpertBodyStatus();
   void showBodyConnection();
   void showBodyProfile();
   void annotateSynapse();
-  void checkInSelectedBody(flyem::EBodySplitMode mode);
+  void annotateTodo();
+  void checkInSelectedBody(neutu::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody(flyem::EBodySplitMode mode);
+  void checkOutBody(neutu::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::EBodySplitMode::NONE);
+      uint64_t bodyId, neutu::EBodySplitMode mode = neutu::EBodySplitMode::NONE);
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut,
-      flyem::EBodySplitMode mode = flyem::EBodySplitMode::NONE);
+      neutu::EBodySplitMode mode = neutu::EBodySplitMode::NONE);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
   void showSplitQuickView();
-  void presentBodySplit(uint64_t bodyId, flyem::EBodySplitMode mode);
+  void presentBodySplit(uint64_t bodyId, neutu::EBodySplitMode mode);
   void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
@@ -254,6 +283,7 @@ public slots:
   void notifyBodyMergeEdited();
   void updateProtocolRangeGlyph(
       const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
+  void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
 
   void showBody3d();
   void showSplit3d();
@@ -268,12 +298,14 @@ public slots:
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
+  void showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId);
 
   void closeSkeletonWindow();
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
 
+  void tuneGrayscaleContrast();
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
 
@@ -290,7 +322,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody(bool asking);
+  void deselectAllBody(bool asking = false);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
@@ -324,6 +356,7 @@ public slots:
   void openProtocol();
   void openTodo();
   void openRoiTool();
+  void openNeuPrint();
 
   void goToNearestRoi();
   void loadRoiProject();
@@ -342,6 +375,9 @@ public slots:
   void uncheckSelectedBookmark();
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
+  void copyBookmarkUrl(int x, int y, int z);
+
   void processSelectionChange(const ZStackObjectSelector &selector);
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
@@ -357,7 +393,11 @@ public slots:
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
+  void refreshBookmark();
+  void refreshTodo();
+
   void changeColorMap(const QString &option);
+  void changeColorMap(QAction *action);
 
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
   void addLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -386,6 +426,8 @@ public slots:
   void testBodySplit();
 
   void endTestTask();
+
+  void configureRecorder();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -426,6 +468,7 @@ protected slots:
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void skeletonizeSynapseTopBody();
+  void skeletonizeBodyList();
   void updateMeshForSelected();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -433,27 +476,49 @@ protected slots:
 
   void syncBodySelectionFromOrthoWindow();
   void syncBodySelectionToOrthoWindow();
+
+  void processMergeUploaded();
+
+  void zoomToAssigned(int x, int y, int z);
+
+  void refreshData();
 //  void notifyBookmarkDeleted();
 
 protected:
-  void customInit();
-  void createPresenter();
-  virtual void dropEvent(QDropEvent *event);
+  void customInit() override;
+  void createPresenter() override;
+//  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
-  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg) override;
+
+  void warn(const std::string &msg);
+  void warn(const char *msg);
+  void warn(const QString &msg);
 
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
   void setProtocolRangeVisible(bool on);
   void showSupervoxelList();
+  void goToPosition();
+  void enableNameColorMap(bool on);
+  void toggleBodyColorMap();
+  void updateTmpContrast();
+  void resetContrast();
+  void saveTmpContrast();
+
+  void onAnnotationRoughlyTraced();
+  void onAnnotationTraced();
 
 private:
   void init();
   void initBodyWindow();
-  void launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode);
+
+  void updateContrast(const ZJsonObject &protocolJson, bool hc);
+
+  void launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
-  std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutu::ELabelSource type) const;
   void runSplitFunc();
   void runFullSplitFunc();
   void runLocalSplitFunc();
@@ -486,6 +551,8 @@ private:
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
 
+  void log3DWindowEvent(const std::string &windowName, const std::string &action);
+
   void showWindow(Z3DWindow *&window, std::function<void(void)> _makeWindow,
                   int tab, const QString &title);
 
@@ -494,7 +561,9 @@ private:
   void updateBodyWindow(Z3DWindow *window);
   void updateBodyWindowDeep(Z3DWindow *window);
 
-  ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
+  void updateAllBodyWindow(std::function<void(Z3DWindow*)> updateFunc);
+
+  ZWindowFactory makeExternalWindowFactory(neutu3d::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
 
@@ -509,7 +578,7 @@ private:
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
-  ZDvidLabelSlice* getDvidLabelSlice() const;
+//  ZDvidLabelSlice* getDvidLabelSlice() const;
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
@@ -528,10 +597,53 @@ private:
   void endMergeProfile();
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
-  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  FlyEmBodyInfoDialog* getNeuPrintBodyDlg();
+  FlyEmBodyAnnotationDialog *getBodyAnnotationDlg();
+//  NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
+  NeuprintSetupDialog* getNeuPrintSetupDlg();
+  ZContrastProtocalDialog* getContrastDlg();
+  void configureContrastDlg(ZContrastProtocalDialog *dlg);
+  ZFlyEmSplitCommitDialog* getSplitCommitDlg();
+  FlyEmTodoDialog* getTodoDlg();
+  void configureTodoDlg(FlyEmTodoDialog *dlg);
+  void configureSplitUploadDlg(ZFlyEmSplitUploadOptionDialog *dlg);
+
+  bool hasWidgetRole() const;
+
+//  template<typename T>
+//  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
+
+  void submitSkeletonizationTask(uint64_t bodyId);
+
+  QMenu* makeControlPanelMenu();
+  QAction* getAction(ZActionFactory::EAction item);
+  void addBodyColorMenu(QMenu *menu);
+  void addBodyMenu(QMenu *menu);
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
+  void updateSupervoxelMessge(uint64_t bodyId);
+  void setSelectedBodyStatus(const std::string &status);
+//  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
+      const ZFlyEmBodyAnnotation &oldAnnotation);
+  void warnAbouBodyLockFail(uint64_t bodyId);
+//  NeuPrintReader *getNeuPrintReader();
+
+  enum class EViewButton {
+    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+  };
+
+  QPushButton* getViewButton(EViewButton option);
+  void makeViewButton(EViewButton option);
+  void makeViewButton(EViewButton option, const QString &name, const char *slot);
+  void initViewButton();
+  void updateViewButton();
+
+  void updateRoiWidget(Z3DWindow *win) const;
+
+  QString makeSkeletonizationServiceMissingMessage() const;
 
 protected:
   bool m_showSegmentation;
@@ -552,23 +664,37 @@ protected:
 
 //  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
+  ZActionLibrary *m_actionLibrary = nullptr;
 
-  ZDvidTargetProviderDialog *m_dvidDlg;
-  FlyEmBodyInfoDialog *m_bodyInfoDlg;
-  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
-  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
-  FlyEmTodoDialog *m_todoDlg;
-  ZFlyEmRoiToolDialog *m_roiDlg;
-  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
-  ZFlyEmBodyChopDialog *m_bodyChopDlg;
-  ZInfoDialog *m_infoDlg;
-  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
-  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
-  FlyEmBodyIdDialog *m_bodyIdDialog;
-  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
-  ZFlyEmProofSettingDialog *m_settingDlg;
-  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+
+//  std::unique_ptr<FlyEmMvcDialogManager> m_dlgManager; //unique ptr doesn't work well with Qt Creator
+  friend class FlyEmMvcDialogManager;
+
+  FlyEmMvcDialogManager *m_dlgManager = nullptr; //Using raw pointer is fine because it's not exposed anyway
+
+//  ZDvidTargetProviderDialog *m_dvidDlg;
+//  FlyEmBodyInfoDialog *m_bodyInfoDlg;
+//  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
+//  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
+//  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+//  FlyEmTodoDialog *m_todoDlg;
+//  ZFlyEmRoiToolDialog *m_roiDlg;
+//  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
+//  ZFlyEmBodyChopDialog *m_bodyChopDlg;
+//  ZInfoDialog *m_infoDlg;
+//  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
+//  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
+//  FlyEmBodyIdDialog *m_bodyIdDialog;
+//  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
+//  ZFlyEmProofSettingDialog *m_settingDlg;
+//  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+//  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
+//  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
+//  ZContrastProtocalDialog *m_contrastDlg = nullptr;
+
+  QAction *m_prevColorMapAction = nullptr;
+  QAction *m_currentColorMapAction = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -579,7 +705,7 @@ protected:
   Z3DWindow *m_coarseMeshWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
-  Z3DWindow *m_objectWindow;
+  Z3DWindow *m_objectWindow = nullptr;
   Z3DWindow *m_roiWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
 //  ZFlyEmDataFrame *m_queryWindow;
@@ -596,6 +722,8 @@ protected:
 //  std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
 
+  std::map<EViewButton, QPushButton*> m_viewButtons;
+
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
@@ -605,6 +733,7 @@ protected:
   bool m_3dEnabled = true;
 
   QTimer *m_profileTimer = nullptr;
+  QElapsedTimer m_sessionTimer;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
@@ -612,6 +741,8 @@ protected:
 template <typename T>
 void ZFlyEmProofMvc::connectControlPanel(T *panel)
 {
+  panel->setMainMenu(makeControlPanelMenu());
+
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
@@ -640,6 +771,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(zoomingToAssigned(int, int, int)),
+          this, SLOT(zoomToAssigned(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
@@ -663,10 +796,12 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
-  connect(this, SIGNAL(nameColorMapReady(bool)),
-          panel, SLOT(enableNameColorMap(bool)));
+//  connect(this, SIGNAL(nameColorMapReady(bool)),
+//          panel, SLOT(enableNameColorMap(bool)));
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
+//  connect(panel, SIGNAL(queryingBody()),
+//          this, SLOT(queryBodyByRoi()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
   connect(panel, SIGNAL(exportingSelectedBodyLevel()),
@@ -677,6 +812,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(skeletonizeSelectedBody()));
   connect(panel, SIGNAL(skeletonizingTopBody()),
           this, SLOT(skeletonizeSynapseTopBody()));
+  connect(panel, SIGNAL(skeletonizingBodyList()),
+          this, SLOT(skeletonizeBodyList()));
   connect(panel, SIGNAL(updatingMeshForSelectedBody()),
           this, SLOT(updateMeshForSelected()));
   connect(panel, SIGNAL(reportingBodyCorruption()),
@@ -719,7 +856,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
   connect(panel, SIGNAL(exportingSeed()), this, SLOT(exportSeed()));
   connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t, neutu::EBodySplitMode)),
           panel, SLOT(updateBodyWidget(uint64_t)));
   connect(panel, SIGNAL(savingTask()), this, SLOT(saveSplitTask()));
   connect(panel, SIGNAL(loadingSplitResult()), this, SLOT(loadSplitResult()));

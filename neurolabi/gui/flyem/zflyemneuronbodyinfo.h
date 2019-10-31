@@ -1,8 +1,8 @@
 #ifndef ZFLYEMNEURONBODYINFO_H
 #define ZFLYEMNEURONBODYINFO_H
 
-#include "zintcuboid.h"
-#include "zintpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
 
 class ZObject3dScan;
 class ZJsonObject;
@@ -16,7 +16,7 @@ public:
     m_bodySize = bodySize;
   }
 
-  inline int getBodySize() const {
+  inline size_t getBodySize() const {
     return m_bodySize;
   }
 
@@ -31,8 +31,15 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
 
 private:
-  size_t m_bodySize;
+  void clear();
+
+private:
+  size_t m_bodySize = 0;
   ZIntCuboid m_boundBox;
+  std::vector<int64_t> m_connSize;
+  int64_t m_mutationId = 0;
+  int m_version = 0;
+  const static int VERSION;
 };
 
 #endif // ZFLYEMNEURONBODYINFO_H

@@ -3,7 +3,7 @@
 
 #include <QString>
 
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 
 class TaskProtocolTask;
 

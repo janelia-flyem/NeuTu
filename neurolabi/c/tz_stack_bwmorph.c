@@ -141,7 +141,7 @@ uint8_t* Get_Conn26_Topology_Flag()
 #ifdef _DEBUG_
           printf("%d", i);
 #endif
-          if (Stack_Has_Hole_Z3(stack, chord) == TRUE) {
+          if (Stack_Has_Hole_Z3(stack, chord) == _TRUE_) {
             fwrite(&i, sizeof(int), 1, fp); 
 #ifdef _DEBUG_
             printf("***");
@@ -505,10 +505,10 @@ Struct_Element* Make_Rect_Se(int width, int height)
   return se;
 }
 
-Struct_Element *Make_Cross_Se(BOOL is_2d)
+Struct_Element *Make_Cross_Se(_BOOL_ is_2d)
 {
   Struct_Element *se = NULL;
-  if (is_2d == TRUE) {
+  if (is_2d == _TRUE_) {
     se = New_Se(5);
   } else {
     se = New_Se(7);
@@ -530,7 +530,7 @@ Struct_Element *Make_Cross_Se(BOOL is_2d)
   se->offset[4][1] = 1;
   se->offset[4][2] = 0;
 
-  if (is_2d == FALSE) {
+  if (is_2d == _FALSE_) {
     se->offset[5][0] = 0;
     se->offset[5][1] = 0;
     se->offset[5][2] = -1;
@@ -740,7 +740,7 @@ Stack* Stack_Dilate(const Stack *in, Stack *out, const Struct_Element *se)
       for (coord[0] = 0; coord[0] < stack_size[0]; coord[0]++) {
 	if (tmp_stack->array[offset] == 1) {
 	  for (n = 0; n < se2->size; n++) {
-	    if (hit_out(coord, &(se2->offset[n]), 1, stack_size) == FALSE) {
+	    if (hit_out(coord, &(se2->offset[n]), 1, stack_size) == _FALSE_) {
 	      out->array[offset + neighbor[n]] = 1;
 	    }
 	  }
@@ -795,7 +795,7 @@ Stack* Stack_Dilate_Rm(const Stack *in, Stack *out, const Struct_Element *se,
 	if (region_mask->array[offset] == region) {
 	    if (tmp_stack->array[offset] == 1) {
 	      for (n = 0; n < se2->size; n++) {
-		if (hit_out(coord, &(se2->offset[n]), 1, stack_size) == FALSE) {
+		if (hit_out(coord, &(se2->offset[n]), 1, stack_size) == _FALSE_) {
 		  out->array[offset + neighbor[n]] = 1;
 		}
 	      }
@@ -900,7 +900,7 @@ Stack* Stack_Erode_Fast(const Stack *in, Stack *out, const Struct_Element *se)
       for (coord[0] = 0; coord[0] < in->width; coord[0]++) {
 	if (in->array[offset] == 1) {
           if (im->array[offset] < boundBoxVolume) {
-            if (hit_out(coord, se->offset, se->size, stack_size) == FALSE) {
+            if (hit_out(coord, se->offset, se->size, stack_size) == _FALSE_) {
               if ((im->array[offset] >= thre)) {
                     printf("pixel off\n");
                 for (s = 0; s < se->size; s++) {
@@ -919,15 +919,15 @@ Stack* Stack_Erode_Fast(const Stack *in, Stack *out, const Struct_Element *se)
               int tmp_coord;
 
               for (i = 0; i < se->size; i++) {
-                BOOL outside = FALSE;
+                _BOOL_ outside = _FALSE_;
                 for (j = 0; j < 3; j++) {
                   tmp_coord = coord[j] + se->offset[i][j];
                   if ((tmp_coord < 0) || (tmp_coord >= stack_size[j])) {
-                    outside =  TRUE;
+                    outside =  _TRUE_;
                     break;
                   }
                 }
-                if (outside == FALSE) {
+                if (outside == _FALSE_) {
                   if (in->array[offset + neighbor[i]] != se->mask[i]) {
                     out->array[offset] = 0;
                     break;
@@ -1004,7 +1004,7 @@ int Stack_Hitmiss(const Stack *in, Stack *out, const Struct_Element *se)
       for (coord[0] = 0; coord[0] < in->width; coord[0]++) {
 	value = 1;
 
-	if (hit_out(coord, se->offset, se->size, stack_size) == FALSE) {
+	if (hit_out(coord, se->offset, se->size, stack_size) == _FALSE_) {
 	  for (i = 0; i < se->size; i++) {
 	    if (in->array[offset + neighbor[i]] != se->mask[i]) {
 	      value = 0;
@@ -1018,15 +1018,15 @@ int Stack_Hitmiss(const Stack *in, Stack *out, const Struct_Element *se)
           int tmp_coord;
 
           for (i = 0; i < se->size; i++) {
-            BOOL outside = FALSE;
+            _BOOL_ outside = _FALSE_;
             for (j = 0; j < 3; j++) {
               tmp_coord = coord[j] + se->offset[i][j];
               if ((tmp_coord < 0) || (tmp_coord >= stack_size[j])) {
-                outside =  TRUE;
+                outside =  _TRUE_;
                 break;
               }
             }
-            if (outside == FALSE) {
+            if (outside == _FALSE_) {
               if (in->array[offset + neighbor[i]] != se->mask[i]) {
                 value = 0;
                 break;
@@ -1441,7 +1441,7 @@ Stack* Stack_Remove_Small_Object(Stack *in, Stack *out,
   }
 
   if (in != out) {
-    if (Stack_Same_Attribute(in, out) == FALSE) {
+    if (Stack_Same_Attribute(in, out) == _FALSE_) {
       PRINT_EXCEPTION("Unmatched stacks", 
 		      "The two stacks must have the same attributes");
       return NULL;
@@ -1571,7 +1571,7 @@ Stack_Seed_Workspace* New_Stack_Seed_Workspace()
   Stack_Seed_Workspace *ws = (Stack_Seed_Workspace *)Guarded_Malloc(sizeof(Stack_Seed_Workspace),
 					    "New_Stack_Seed_Workspace");
   ws->method = 1;
-  ws->with_boundary = FALSE;
+  ws->with_boundary = _FALSE_;
   ws->seed_mask = NULL;
   ws->seed_dist = NULL;
   ws->weight = NULL;
@@ -1678,12 +1678,12 @@ Geo3d_Scalar_Field* Stack_Seed(Stack *mask, Stack_Seed_Workspace *ws)
   int cheight = ws->seed_mask->height - 1;
   int cdepth = ws->seed_mask->depth - 1;
 
-  if (ws->with_boundary == FALSE) {
+  if (ws->with_boundary == _FALSE_) {
     field->size = 0;
   }
 
   for (i = 0; i < pa->size; i++) {
-    if (ws->with_boundary == FALSE) {
+    if (ws->with_boundary == _FALSE_) {
       if (IS_IN_OPEN_RANGE3(voxel_array[i]->x, voxel_array[i]->y,
 			    voxel_array[i]->z, 0, cwidth,
 			    0, cheight, 0, cdepth)) {
@@ -1904,11 +1904,11 @@ Stack* Stack_Region_Expand(const Stack *stack, int conn, int r, Stack *out)
   int k;
   Int_List *tmp_queue;
   for (k = 0; k < r; k++) {
-    if (Int_List_Is_Empty(queue) == TRUE) {
+    if (Int_List_Is_Empty(queue) == _TRUE_) {
       break;
     }
     
-    while (Int_List_Is_Empty(queue) == FALSE) {
+    while (Int_List_Is_Empty(queue) == _FALSE_) {
       //i = Int_Queue_De(&queue); 
       i = Int_Stack_Pop(&queue);
 
@@ -1984,11 +1984,11 @@ Stack* Stack_Region_Expand_M(const Stack *stack, int conn, int r, Stack *out,
       if (n_in_bound == conn) {
 	for (j = 0; j < conn; j++) {
 	  int nbr = i + neighbor[j];
-          BOOL available = TRUE;
+          _BOOL_ available = _TRUE_;
 
           if (mask != NULL) {
             if (mask->array[nbr] == 0) {
-              available = FALSE;
+              available = _FALSE_;
             }
           }
 
@@ -2002,11 +2002,11 @@ Stack* Stack_Region_Expand_M(const Stack *stack, int conn, int r, Stack *out,
 	for (j = 0; j < conn; j++) {
 	  if (is_in_bound[j]) {
 	    int nbr = i + neighbor[j];
-            BOOL available = TRUE;
+            _BOOL_ available = _TRUE_;
 
             if (mask != NULL) {
               if (mask->array[nbr] == 0) {
-                available = FALSE;
+                available = _FALSE_;
               }
             }
 
@@ -2026,11 +2026,11 @@ Stack* Stack_Region_Expand_M(const Stack *stack, int conn, int r, Stack *out,
   int k;
   Int_List *tmp_queue;
   for (k = 0; k < r; k++) {
-    if (Int_List_Is_Empty(queue) == TRUE) {
+    if (Int_List_Is_Empty(queue) == _TRUE_) {
       break;
     }
     
-    while (Int_List_Is_Empty(queue) == FALSE) {
+    while (Int_List_Is_Empty(queue) == _FALSE_) {
       //i = Int_Queue_De(&queue); 
       i = Int_Stack_Pop(&queue);
 
@@ -2043,11 +2043,11 @@ Stack* Stack_Region_Expand_M(const Stack *stack, int conn, int r, Stack *out,
       if (n_in_bound == conn) {
 	for (j = 0; j < conn; j++) {
 	  int nbr = i + neighbor[j];
-          BOOL available = TRUE;
+          _BOOL_ available = _TRUE_;
 
           if (mask != NULL) {
             if (mask->array[nbr] == 0) {
-              available = FALSE;
+              available = _FALSE_;
             }
           }
 	  if ((out->array[nbr] == 0) && available) {
@@ -2060,11 +2060,11 @@ Stack* Stack_Region_Expand_M(const Stack *stack, int conn, int r, Stack *out,
 	for (j = 0; j < conn; j++) {
 	  if (is_in_bound[j]) {
             int nbr = i + neighbor[j];
-            BOOL available = TRUE;
+            _BOOL_ available = _TRUE_;
 
             if (mask != NULL) {
               if (mask->array[nbr] == 0) {
-                available = FALSE;
+                available = _FALSE_;
               }
             }
             if ((out->array[nbr] == 0) && available) {
@@ -2309,7 +2309,7 @@ Stack* Stack_Bwshrink(const Stack *stack, Stack *out)
       }
     }
 
-    while (Arrayqueue_Is_Empty(seedQueue) == FALSE) {
+    while (Arrayqueue_Is_Empty(seedQueue) == _FALSE_) {
       int seed = Arrayqueue_Dequeue(seedQueue);
 
       if (!is_critical(stack, out, seed, neighbor_offset, neighbor_order,
@@ -2341,7 +2341,7 @@ Stack* Stack_Bwshrink(const Stack *stack, Stack *out)
       }
     }
 
-    while (Arrayqueue_Is_Empty(seedQueue) == FALSE) {
+    while (Arrayqueue_Is_Empty(seedQueue) == _FALSE_) {
       int seed = Arrayqueue_Dequeue(seedQueue);
 
       if (!is_critical(stack, out, seed, neighbor_offset, neighbor_order,
@@ -2369,7 +2369,7 @@ Stack* Stack_Bwshrink(const Stack *stack, Stack *out)
 
 #if 0
   /* while the seed queue is not empty */
-  while (Arrayqueue_Is_Empty(seedQueue) == FALSE) {
+  while (Arrayqueue_Is_Empty(seedQueue) == _FALSE_) {
     int seed = Arrayqueue_Dequeue(seedQueue);
 
     if (!is_critical(stack, out, seed, neighbor_offset, neighbor_order,
@@ -2431,9 +2431,9 @@ Stack* Stack_Bwshrink_Z3(const Stack *stack, Stack *out)
   int code;
 
   /* while the seed queue is not empty */
-  while (Arrayqueue_Is_Empty(seedQueue) == FALSE) {
+  while (Arrayqueue_Is_Empty(seedQueue) == _FALSE_) {
     int count = 0;
-    while (Arrayqueue_Is_Empty(seedQueue) == FALSE) {
+    while (Arrayqueue_Is_Empty(seedQueue) == _FALSE_) {
       int seed = Arrayqueue_Dequeue(seedQueue);
 
       if (!is_critical(stack, out, seed, neighbor_offset, neighbor_order,
@@ -2468,7 +2468,7 @@ Stack* Stack_Bwshrink_Z3(const Stack *stack, Stack *out)
   return out;
 }
 
-BOOL Stack_Has_Hole_Z3(const Stack *stack, Stack *out)
+_BOOL_ Stack_Has_Hole_Z3(const Stack *stack, Stack *out)
 {
   Stack *in_out = out;
   out = Stack_Bwshrink_Z3(stack, out);
@@ -2490,38 +2490,38 @@ BOOL Stack_Has_Hole_Z3(const Stack *stack, Stack *out)
       stack->array[10] + stack->array[16];
 
     if (cross_sum == 6) {
-      return TRUE;
+      return _TRUE_;
     }
 
     if (sum == 4) {
       if (out->array[4] == 1 && out->array[22] == 1 && 
           out->array[10] == 1 && out->array[16] == 1) {
         if (stack->array[12] == 1 || stack->array[14] == 1) {
-          return FALSE;
+          return _FALSE_;
         }
       }
       if (out->array[4] == 1 && out->array[22] == 1 && 
           out->array[12] == 1 && out->array[14] == 1) {
         if (stack->array[10] == 1 || stack->array[16] == 1) {
-          return FALSE;
+          return _FALSE_;
         }
       }
       if (out->array[12] == 1 && out->array[14] == 1 && 
           out->array[10] == 1 && out->array[16] == 1) {
         if (stack->array[4] == 1 || stack->array[22] == 1) {
-          return FALSE;
+          return _FALSE_;
         }
       }
     }
 
-    return TRUE;
+    return _TRUE_;
   }
 
   if (in_out == NULL) {
     Kill_Stack(out);
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 size_t Stack_Foreground_Size(const Stack *stack)
@@ -2560,7 +2560,7 @@ static int Bwthin_Octant[8][7] = {
 static unsigned char Octant_Code[7] = {128, 64, 32, 16, 8, 4, 2};
 
 
-static BOOL stack_bwthin_is_euler_invariant(const int *neighbor)
+static _BOOL_ stack_bwthin_is_euler_invariant(const int *neighbor)
 {
   int euler_number = 0;
   int i, j;
@@ -2872,7 +2872,7 @@ static void stack_bwthin_octree_label(int index, int label,
   }
 }
 
-static BOOL stack_bwthin_is_simple_connect_point(const int *neighbor)
+static _BOOL_ stack_bwthin_is_simple_connect_point(const int *neighbor)
 {
   int label = 2;
   int neighbor_label[26];
@@ -2887,12 +2887,12 @@ static BOOL stack_bwthin_is_simple_connect_point(const int *neighbor)
       stack_bwthin_octree_label(Octant_Index[i], label, neighbor_label);
       ++label;
       if (label >= 4) {
-        return FALSE;
+        return _FALSE_;
       }
     }
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 static void stack_bwthin_neighbor_value(const Stack *stack, size_t index,
@@ -2940,11 +2940,11 @@ static void stack_bwthin_neighbor_value(const Stack *stack, size_t index,
   neighbor_value[25] = stack->array[offset++];
 }
 
-static BOOL stack_bwthin_is_candidate_voxel(const Stack *stack, size_t index,
+static _BOOL_ stack_bwthin_is_candidate_voxel(const Stack *stack, size_t index,
     int x, int y, int z, int border, Stack_Bwpeel_Option_t peeling_option)
 {
   if (stack->array[index] == 0) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int neighbor_value[26];
@@ -2956,7 +2956,7 @@ static BOOL stack_bwthin_is_candidate_voxel(const Stack *stack, size_t index,
       !(border == 2 && neighbor_value[13] == 0 /*&& neighbor_value[12] > 0*/) &&
       !(border == 1 && neighbor_value[15] == 0 /*&& neighbor_value[10] > 0*/) &&
       !(border == 4 && neighbor_value[21] == 0 /*&& neighbor_value[4] > 0)*/)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int offset = 0;
@@ -2970,27 +2970,27 @@ static BOOL stack_bwthin_is_candidate_voxel(const Stack *stack, size_t index,
   switch (peeling_option) {
     case NORMAL_THINNING:
       if (neighborOnNumber <= 1) {
-        return FALSE;
+        return _FALSE_;
       }
       break;
     case REMOVE_ARC:
       if (neighborOnNumber <= 1) {
-        return TRUE;
+        return _TRUE_;
       }
       break;
     default:
       TZ_ERROR(ERROR_DATA_VALUE);
   }
 
-  if (stack_bwthin_is_euler_invariant(neighbor_value) == FALSE) {
-    return FALSE;
+  if (stack_bwthin_is_euler_invariant(neighbor_value) == _FALSE_) {
+    return _FALSE_;
   }
 
-  if (stack_bwthin_is_simple_connect_point(neighbor_value) == FALSE) {
-    return FALSE;
+  if (stack_bwthin_is_simple_connect_point(neighbor_value) == _FALSE_) {
+    return _FALSE_;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 /* Building Skeleton Models via 3-D Medial Surface/Axis Thinning Algorithms, 
@@ -3061,7 +3061,7 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
 
       /* For each point in the checklist */
       int neighbor_value[26];
-      BOOL voxel_removed = FALSE;
+      _BOOL_ voxel_removed = _FALSE_;
       for (index = 0; index < list_length; ++index) {
         offset = checklist[index];
         int has_on_neighbor = 0;
@@ -3077,16 +3077,16 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
         /* If the number of ON neighbor is greater than 1*/
         if (has_on_neighbor) {
           /* If the neighborhood is connected */
-          if (stack_bwthin_is_simple_connect_point(neighbor_value) == TRUE) {
+          if (stack_bwthin_is_simple_connect_point(neighbor_value) == _TRUE_) {
             /* Turn the point back off */
             out->array[offset] = 0;
-            voxel_removed = TRUE;
+            voxel_removed = _TRUE_;
           }
         } else {
           if (option == REMOVE_ARC) {
             /* Turn the point back off */
             out->array[offset] = 0;
-            voxel_removed = TRUE;
+            voxel_removed = _TRUE_;
           }
         }
       }
@@ -3094,7 +3094,7 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
 #ifdef _DEBUG_2
       Print_Stack_Value(out);
 #endif
-      if (voxel_removed == FALSE) {
+      if (voxel_removed == _FALSE_) {
         --changed;
       }
     }

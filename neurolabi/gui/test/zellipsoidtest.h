@@ -3,7 +3,7 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
-#include "zellipsoid.h"
+#include "geometry/zellipsoid.h"
 
 #ifdef _USE_GTEST_
 

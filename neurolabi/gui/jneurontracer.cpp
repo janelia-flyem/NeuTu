@@ -299,6 +299,8 @@ Stack* JNeuronTracer::makeMask(const Stack *stack)
     free(im3dB);
   } else {
     printf("ERROR: The number of channels in the image is currently assumed to be 1 or 3. \n");
+    free(imFlat);
+    free(bw);
     return NULL;
     //      return;
   }
@@ -870,7 +872,7 @@ ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
 
   if (wholeTree != NULL) {
     ZSwcPositionAdjuster adjuster;
-    adjuster.setSignal(const_cast<Stack*>(stack), neutube::EImageBackground::DARK);
+    adjuster.setSignal(const_cast<Stack*>(stack), neutu::EImageBackground::DARK);
     adjuster.adjustPosition(*wholeTree);
 
     Biocytin::SwcProcessor swcProcessor;

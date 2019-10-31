@@ -1,7 +1,6 @@
 #include "zhdf5reader.h"
 
 #include <string>
-#include "tz_utilities.h"
 
 using namespace std;
 
@@ -166,9 +165,9 @@ typedef struct _Hdf5PrintOpData {
   hid_t file_id;
 } Hdf5PrintOpData;
 
+#ifdef _ENABLE_HDF5_
 herr_t ZHdf5Reader::getDataSetName(hid_t loc_id, const char *name, void *opdata)
 {
-#ifdef _ENABLE_HDF5_
   H5G_stat_t statbuf;
 
   H5Gget_objinfo(loc_id, name, 0, &statbuf);
@@ -184,17 +183,19 @@ herr_t ZHdf5Reader::getDataSetName(hid_t loc_id, const char *name, void *opdata)
   default:
        break;
   }
+  return 0;
+}
 #else
-  UNUSED_PARAMETER(loc_id);
-  UNUSED_PARAMETER(opdata);
-  UNUSED_PARAMETER(name);
-#endif
+herr_t ZHdf5Reader::getDataSetName(hid_t /*loc_id*/, const char */*name*/, void */*opdata*/)
+{
   return 0;
 }
 
+#endif
+
+#ifdef _ENABLE_HDF5_
 herr_t ZHdf5Reader::printObjectInfo(hid_t loc_id, const char *name, void *opdata)
 {
-#ifdef _ENABLE_HDF5_
   H5G_stat_t statbuf;
 
   H5Gget_objinfo(loc_id, name, 0, &statbuf);
@@ -231,13 +232,15 @@ herr_t ZHdf5Reader::printObjectInfo(hid_t loc_id, const char *name, void *opdata
   default:
        printf("%*sUnidenfied object: %s\n", indent, "", name);
   }
-#else
-  UNUSED_PARAMETER(loc_id);
-  UNUSED_PARAMETER(opdata);
-  UNUSED_PARAMETER(name);
-#endif
+
   return 0;
 }
+#else
+herr_t ZHdf5Reader::printObjectInfo(hid_t /*loc_id*/, const char */*name*/, void */*opdata*/)
+{
+  return 0;
+}
+#endif
 
 std::vector<std::string> ZHdf5Reader::getAllDatasetName(
     const std::string &group)

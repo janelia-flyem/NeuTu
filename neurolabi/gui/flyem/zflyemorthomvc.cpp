@@ -1,9 +1,14 @@
 #include "zflyemorthomvc.h"
 #include "zflyemorthodoc.h"
-#include "zstackpresenter.h"
-#include "zflyemsupervisor.h"
-#include "zstackview.h"
+
+#include "logging/zlog.h"
+#include "mvc/utilities.h"
+#include "mvc/zstackpresenter.h"
+#include "mvc/zstackview.h"
+
 #include "zwidgetmessage.h"
+
+#include "zflyemsupervisor.h"
 #include "zflyemproofpresenter.h"
 #include "zflyemtodolist.h"
 
@@ -15,29 +20,32 @@ ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
 
 void ZFlyEmOrthoMvc::init()
 {
-  m_dvidDlg = NULL;
-  m_bodyInfoDlg = NULL;
+//  m_dvidDlg = NULL;
+//  m_bodyInfoDlg = NULL;
 //  m_supervisor = new ZFlyEmSupervisor(this);
-  m_splitCommitDlg = NULL;
+//  m_splitCommitDlg = NULL;
 
-  m_objectWindow = NULL;
+//  m_objectWindow = NULL;
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, neutube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, neutu::EAxis axis)
 {
-  ZFlyEmOrthoMvc *frame = new ZFlyEmOrthoMvc(parent);
+  ZFlyEmOrthoMvc *mvc = new ZFlyEmOrthoMvc(parent);
 
-  BaseConstruct(frame, doc, axis);
-  frame->getPresenter()->setObjectStyle(ZStackObject::SOLID);
-  frame->getView()->layout()->setContentsMargins(0, 0, 0, 0);
-  frame->getView()->setContentsMargins(0, 0, 0, 0);
-  frame->getView()->hideThresholdControl();
-  frame->getView()->setHoverFocus(true);
-  frame->updateDvidTargetFromDoc();
-  frame->getPresenter()->useHighContrastProtocal(true);
+  BaseConstruct(mvc, doc, axis);
+  mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
+  mvc->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  mvc->getView()->setContentsMargins(0, 0, 0, 0);
+  mvc->getView()->hideThresholdControl();
+  mvc->getView()->setHoverFocus(true);
+  mvc->getView()->setViewInfoFlag(
+        neutu::mvc::ViewInfoFlags(neutu::mvc::ViewInfoFlag::DATA_COORD) |
+        neutu::mvc::ViewInfoFlag::IMAGE_VALUE);
+  mvc->updateDvidTargetFromDoc();
+  mvc->getPresenter()->useHighContrastProtocal(true);
 
-  ZStackView *view = frame->getView();
+  ZStackView *view = mvc->getView();
 
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
@@ -57,32 +65,31 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
     }
   }
 
-  connect(frame->getPresenter(), SIGNAL(savingStack()),
-          frame, SLOT(saveStack()));
-  connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
-          frame, SIGNAL(highlightModeChanged()));
+  connect(mvc->getPresenter(), SIGNAL(savingStack()),
+          mvc, SLOT(saveStack()));
+  connect(mvc->getCompletePresenter(), SIGNAL(highlightModeChanged()),
+          mvc, SIGNAL(highlightModeChanged()));
 
-  connect(frame->getPresenter(), SIGNAL(movingCrossHairTo(int,int)),
-          frame, SLOT(moveCrossHairTo(int, int)));
+  connect(mvc->getPresenter(), SIGNAL(movingCrossHairTo(int,int)),
+          mvc, SLOT(moveCrossHairTo(int, int)));
 
-  return frame;
+  return mvc;
 }
 
-ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, neutube::EAxis axis)
+ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(const ZDvidEnv &env, neutu::EAxis axis)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc;
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, neutube::EAxis axis,
+    const ZDvidEnv &env, neutu::EAxis axis,
     int width, int height, int depth)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc(width, height, depth);
@@ -90,7 +97,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
 
-  mvc->setDvidTarget(target);
+  mvc->setDvid(env);
 
   return mvc;
 }
@@ -100,11 +107,19 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());
 }
 
+/*
 void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getCompleteDocument()->setDvidTarget(target);
 
   updateDvidTargetFromDoc();
+}*/
+
+void ZFlyEmOrthoMvc::setDvid(const ZDvidEnv &env)
+{
+  if (getCompleteDocument()->setDvid(env)) {
+    updateDvidTargetFromDoc();
+  }
 }
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
@@ -113,8 +128,9 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
   if (doc != NULL) {
     ZDvidReader &reader = doc->getDvidReader();
     if (reader.isReady()) {
-      ZJsonObject contrastObj = reader.readContrastProtocal();
-      getPresenter()->setHighContrastProtocal(contrastObj);
+//      ZJsonObject contrastObj = reader.readContrastProtocal();
+      getPresenter()->setHighContrastProtocal(
+            doc->getContrastProtocol().toJsonObject());
 //      enableSynapseFetcher();
     }
 
@@ -137,20 +153,40 @@ void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
   }
 }
 
+void ZFlyEmOrthoMvc::updateStackFromCrossHair()
+{
+
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    ZPoint pt = doc->getCrossHairCenter();
+    pt.setZ(getView()->sliceIndex());
+    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+    updateStack(dataPos);
+  }
+}
+
 void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
 {
   setCrossHairCenter(x, y);
-  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
+/*
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const
 {
   return getCompleteDocument()->getDvidTarget();
 }
+*/
 
 void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
 {
-  getCompleteDocument()->updateStack(center);
-  getView()->updateViewBox();
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    KINFO << QString("orthogonal view: update data at (%1, %2, %3)").
+             arg(center.getX()).arg(center.getY()).arg(center.getZ());
+
+    doc->updateStack(center);
+    getView()->updateViewBox();
+  }
 }
 

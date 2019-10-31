@@ -9,11 +9,10 @@
 #include <QDebug>
 #endif
 
-#include "tz_utilities.h"
 #include "zswcbranch.h"
 #include "zmatrix.h"
 #include "zswctree.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 //#include "tz_int_arraylist.h"
 #include "zinttree.h"
 #include "zswcfeatureanalyzer.h"

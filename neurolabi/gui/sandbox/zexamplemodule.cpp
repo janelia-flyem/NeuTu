@@ -3,8 +3,9 @@
 #include <QAction>
 
 #include "zsandbox.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "imgproc/zstackprocessor.h"
+#include "zwidgetmessage.h"
 
 ZExampleModule::ZExampleModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -24,9 +25,14 @@ void ZExampleModule::execute()
 {
   ZStackDoc *doc = ZSandbox::GetCurrentDoc();
   if (doc != NULL) {
+    doc->startWorkThread();
     if (doc->hasStackData()) {
       ZStackProcessor::SubtractBackground(doc->getStack());
       doc->notifyStackModified(false);
+      doc->addMessageTask(
+            ZWidgetMessage("Example module executed.",
+                           neutu::EMessageType::INFORMATION,
+                           ZWidgetMessage::TARGET_STATUS_BAR));
     }
   }
 }

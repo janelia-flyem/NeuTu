@@ -1,18 +1,18 @@
 #include "zbiocytinprojectiondoc.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zswctree.h"
 
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)
 {
-  setTag(neutube::Document::ETag::BIOCYTIN_PROJECTION);
+  setTag(neutu::Document::ETag::BIOCYTIN_PROJECTION);
 }
 
 ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()
 {
   disconnect(this, SIGNAL(swcModified()),
           m_parentDoc.get(), SIGNAL(swcModified()));
-  removeObject(ZStackObject::TYPE_SWC, false);
+  removeObject(ZStackObject::EType::SWC, false);
 }
 
 void ZBiocytinProjectionDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
@@ -37,7 +37,7 @@ void ZBiocytinProjectionDoc::updateSwc()
 {
   disconnect(this, SIGNAL(swcModified()),
              m_parentDoc.get(), SIGNAL(swcModified()));
-  removeObject(ZStackObject::TYPE_SWC, false);
+  removeObject(ZStackObject::EType::SWC, false);
   QList<ZSwcTree*> treeList = m_parentDoc->getSwcList();
   for (QList<ZSwcTree*>::iterator iter = treeList.begin();
        iter != treeList.end(); ++iter) {

@@ -1,9 +1,11 @@
 #include "taskio.h"
 
-#include "zqslog.h"
+#include "http/HTTPRequest.hpp"
+#include "logging/zqslog.h"
 #include "zdvidutil.h"
 #include "neutubeconfig.h"
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreader.h"
+#include "qt/network/znetworkutils.h"
 
 namespace neutuse {
 
@@ -50,8 +52,13 @@ void TaskIO::open(const std::string &server)
     testConnection();
   } catch (std::exception &e){
     m_connection.reset();
-    LWARN() << "Failed to connect to" << server;
+    LWARN() << "Failed to connect to" << server << "; " << e.what();
   }
+}
+
+std::string TaskIO::getServerAddress() const
+{
+  return m_address;
 }
 
 bool TaskIO::ready() const
@@ -63,15 +70,25 @@ bool TaskIO::ready() const
 void TaskIO::testConnection()
 {
   if (!m_address.empty() && m_connection) {
-    ZNetBufferReader reader;
-    m_connected = reader.hasHead(m_address.c_str());
+//    m_connected = ZNetworkUtils::HasHead(m_address.c_str());
+
+    try {
+      http::Request request(m_address);
+      http::Response response = request.send("HEAD");
+      m_connected = (response.code == 200);
+    } catch (...) {
+      m_connected = false;
+    }
+
+//    ZNetBufferReader reader;
+//    m_connected = reader.hasHead(m_address.c_str());
   }
 }
 
 void TaskIO::post(const std::string &path, const ZJsonObject &obj)
 {
   if (ready()) {
-    libdvid::BinaryDataPtr response = ZDvid::MakePostRequest(
+    libdvid::BinaryDataPtr response = dvid::MakePostRequest(
           *m_connection, path, obj, m_statusCode);
     m_response = response->get_data();
   }

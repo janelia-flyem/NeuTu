@@ -19,11 +19,10 @@
 #include "zrect2d.h"
 #include "libdvidheader.h"
 
-ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0)
+ZDvidTile::ZDvidTile()
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
   m_type = GetType();
-  m_image = NULL;
 //  m_pixmap.fill();
 //  m_pixmap = NULL;
 //  m_pixmap = new ZPixmap();
@@ -34,7 +33,7 @@ ZDvidTile::~ZDvidTile()
   clear();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
 
 void ZDvidTile::clear()
 {
@@ -43,6 +42,8 @@ void ZDvidTile::clear()
   m_dvidTarget.clear();
   delete m_image;
   m_image = NULL;
+  delete m_originalBackup;
+  m_originalBackup = NULL;
 
 //  delete m_pixmap;
 //  m_pixmap = NULL;
@@ -80,13 +81,18 @@ void ZDvidTile::loadDvidSlice(
     m_z = z;
   }
 
-  if (hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST) != highContrast) {
+  if (hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST) != highContrast) {
     if (highContrast) {
-      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     }
     modified = true;
+  }
+
+  if (modified) {
+    delete m_originalBackup;
+    m_originalBackup = NULL;
   }
 
 #ifdef _DEBUG_2
@@ -94,12 +100,33 @@ void ZDvidTile::loadDvidSlice(
 #endif
 
   if (modified && (m_image != NULL)) {
-    m_image->loadHighContrastProtocal(m_contrastProtocal);
-    m_image->enhanceContrast(
-          hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
+    updateImageContrast();
+//    m_image->loadHighContrastProtocal(m_contrastProtocal);
+//    m_image->enhanceContrast(
+//          hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
 //    m_image->enhanceContrast(highContrast);
     updatePixmap();
   }
+}
+
+void ZDvidTile::updateImageContrast()
+{
+  bool hc = hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
+
+  if (m_originalBackup) {
+    *m_image = *m_originalBackup;
+  } else if (hc) {
+    m_originalBackup = new ZImage;
+    *m_originalBackup = *m_image;
+  }
+
+  m_image->loadContrastProtocal(m_contrastProtocal);
+  m_image->enhanceContrast(hc);
+
+#ifdef _DEBUG_2
+    m_image->save((GET_DATA_DIR + "/_test.tif").c_str());
+//    m_pixmap.save((GET_DATA_DIR + "/test2.tif").c_str());
+#endif
 }
 
 void ZDvidTile::updatePixmap()
@@ -117,23 +144,24 @@ void ZDvidTile::updatePixmap()
 
 void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
 {
-  if (high != hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST)) {
+  if (high != hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST)) {
     if (high) {
-      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
-//      delete m_image;
-//      m_image = NULL;
-//      update(getZ());
+      removeVisualEffect(neutu::display::image::VE_HIGH_CONTRAST);
+      //      delete m_image;
+      //      m_image = NULL;
+      //      update(getZ());
     }
+  }
 
-    if (m_image != NULL) {
-      m_image->loadHighContrastProtocal(m_contrastProtocal);
-      m_image->enhanceContrast(
-            hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
-      if (updatingPixmap) {
-        updatePixmap();
-      }
+  if (m_image != NULL) {
+    updateImageContrast();
+//    m_image->loadHighContrastProtocal(m_contrastProtocal);
+//    m_image->enhanceContrast(
+//          hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
+    if (updatingPixmap) {
+      updatePixmap();
     }
   }
 }
@@ -143,29 +171,7 @@ void ZDvidTile::setContrastProtocal(const ZJsonObject &obj)
   m_contrastProtocal = obj;
 }
 
-/*
-void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
-{
-  if (width <= 0 || height <= 0) {
-    return;
-  }
 
-  if (m_image != NULL) {
-    if (m_image->width() != width || m_image->height() != height) {
-      delete m_image;
-      m_image = NULL;
-    }
-  }
-
-  if (m_image == NULL) {
-    m_image = new ZImage(width, height);
-  }
-
-  m_image->setData(data);
-  m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-  m_image->setOffset(-getX(), -getY());
-}
-*/
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast)
 {
   loadDvidSlice((const uchar *) buffer.data(), buffer.length(), z, highConstrast);
@@ -175,9 +181,9 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstras
 
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
@@ -221,7 +227,7 @@ void ZDvidTile::display(
 //    tic();
 //    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
-    LDEBUG() << "Painting tile:" << m_pixmap.size();
+//    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
@@ -299,7 +305,7 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z,
-                    hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
+                    hasVisualEffect(neutu::display::image::VE_HIGH_CONTRAST));
     }
 #endif
   }

@@ -11,7 +11,7 @@
 
 #ifdef _QT_GUI_USED_
 #include "zglmutils.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #endif
 
 #include "tz_image_lib_defs.h"
@@ -21,8 +21,8 @@
 #include "zstackfile.h"
 #include "tz_image_io.h"
 #include "zresolution.h"
-#include "neutube_def.h"
-#include "zintpoint.h"
+#include "common/neutudefs.h"
+#include "geometry/zintpoint.h"
 
 class ZPoint;
 class ZIntCuboid;
@@ -307,7 +307,7 @@ public: /* attributes */
 
 
   // make mc_stack
-  static Mc_Stack* makeMcStack(
+  static Mc_Stack* MakeMcStack(
       const Stack *stack1, const Stack *stack2, const Stack *stack3);
 
   //Source of the stack. Usually it is the file where the image is originally
@@ -478,12 +478,12 @@ public: /* data operation */
 
 public: /* operations */
 
-  void* projection(ZSingleChannelStack::Proj_Mode mode,
+  void* projection(ZSingleChannelStack::EProjMode mode,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 
 
-  void* projection(neutube::EImageBackground bg,
+  void* projection(neutu::EImageBackground bg,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 

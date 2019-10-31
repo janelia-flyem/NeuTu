@@ -201,7 +201,7 @@ void Trace_Locne(const Stack *stack, double z_scale, Locne_Chain *chain,
     backward_locne = current_ends[0]->locseg;
   }
 
-  if (tw->fit_first == TRUE) {
+  if (tw->fit_first == _TRUE_) {
     if (tw->trace_status[1] == TRACE_NORMAL) {
       Fit_Local_Neuroseg_Ellipse(forward_locne, stack, var_index, nvar, 
 				 z_scale, &(tr.fs));
@@ -280,9 +280,9 @@ double* Locne_Chain_Area_Array(Locne_Chain *chain, double *a, int *length)
   return a;
 }
 
-BOOL Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point)
+_BOOL_ Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point)
 {
-  BOOL hit;
+  _BOOL_ hit = _FALSE_;
 
   int length = Locne_Chain_Length(chain);
   coordinate_3d_t *pos = (coordinate_3d_t *)
@@ -311,7 +311,7 @@ BOOL Locne_Chain_Hittest(Locne_Chain *chain, const coordinate_3d_t point)
   double span = Coordinate_3d_Distance(pos[0], pos[length - 1]);
   
   if ((point_proj < 0) || (point_proj > span)) {
-    hit = FALSE;
+    hit = _FALSE_;
   } else {
     double range[2];
     Local_Neuroseg_Ellipse *checking_locne[2];

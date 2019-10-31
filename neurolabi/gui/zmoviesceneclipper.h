@@ -14,7 +14,7 @@ class ZMovieSceneClipper
 public:
   ZMovieSceneClipper();
 
-  enum ETarget {
+  enum class ETarget {
     VOLUME, SWC, PUNCTA, UNKNOWN_TARGET
   };
   enum EClipAxis {

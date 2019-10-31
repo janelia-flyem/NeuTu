@@ -19,8 +19,6 @@ INIT_EXCEPTION
 
 #define NEIGHBOR_LABEL 65535
 #define BRANCH_LABEL 65534
-#define TRUE 1
-#define FALSE 0
 
 #define STACK_LABEL_OBJECT_RECOVER_CHORD
 #include "private/tz_stack_objlabel.c"
@@ -90,11 +88,11 @@ Image* Image_Level_Code(Image *image, Image *code, int *link,
     return NULL;
   }
 
-  int link_owner = FALSE;
+  int link_owner = _FALSE_;
 
   if (link == NULL) {
     link = (int*)Guarded_Malloc(sizeof(int) * cnpixel, "Image_Level_Code");
-    link_owner = TRUE;
+    link_owner = _TRUE_;
   }
 
   if (code == NULL) {
@@ -107,7 +105,7 @@ Image* Image_Level_Code(Image *image, Image *code, int *link,
   level_code(image->array, code_array, link, image->width, image->height, 1,
 	     seed, nseed, neighbor, 0);
 	     
-  if (link_owner == TRUE) {
+  if (link_owner == _TRUE_) {
     free(link);
   }
 
@@ -143,11 +141,11 @@ Image* Image_Branch_Code(Image *image, Image *code, int *link, uint16 *edge, int
   
   init_imginfo(image->width, image->height, 1);
  
-  int link_owner = FALSE;
+  int link_owner = _FALSE_;
 
   if (link == NULL) {
     link = (int*)Guarded_Malloc(sizeof(int) * cnpixel, "Image_Branch_Code");
-    link_owner = TRUE;
+    link_owner = _TRUE_;
   }
 
   if (code == NULL) {
@@ -160,7 +158,7 @@ Image* Image_Branch_Code(Image *image, Image *code, int *link, uint16 *edge, int
   branch_code(image->array, code_array, link, edge, image->width, image->height, 1,
 	     seed, neighbor);
 
-  if (link_owner == TRUE) {
+  if (link_owner == _TRUE_) {
     free(link);
   }
 
@@ -199,11 +197,11 @@ Stack* Stack_Level_Code(Stack *stack, Stack *code, int *link,
 
   init_imginfo(stack->width, stack->height, stack->depth);
 
-  int link_owner = FALSE;
+  int link_owner = _FALSE_;
 
   if (link == NULL) {
     link = (int*)Guarded_Malloc(sizeof(int) * cnpixel, "Stack_Level_Code");
-    link_owner = TRUE;
+    link_owner = _TRUE_;
   }
 
   if (code == NULL) {
@@ -216,7 +214,7 @@ Stack* Stack_Level_Code(Stack *stack, Stack *code, int *link,
   level_code(stack->array, code_array, link, stack->width, stack->height, 
 	     stack->depth, seed, nseed, neighbor, 0);
 	     
-  if (link_owner == TRUE) {
+  if (link_owner == _TRUE_) {
     free(link);
   }
 
@@ -240,11 +238,11 @@ Stack* Stack_Level_Code_Constraint(Stack *stack, Stack *code, int *link,
 
   init_imginfo(stack->width, stack->height, stack->depth);
 
-  int link_owner = FALSE;
+  int link_owner = _FALSE_;
 
   if (link == NULL) {
     link = (int*)Guarded_Malloc(sizeof(int) * cnpixel, "Stack_Level_Code");
-    link_owner = TRUE;
+    link_owner = _TRUE_;
   }
 
   if (code == NULL) {
@@ -257,7 +255,7 @@ Stack* Stack_Level_Code_Constraint(Stack *stack, Stack *code, int *link,
   level_code(stack->array, code_array, link, stack->width, stack->height, 
 	     stack->depth, seed, nseed, neighbor, max_level);
 	     
-  if (link_owner == TRUE) {
+  if (link_owner == _TRUE_) {
     free(link);
   }
 
@@ -294,11 +292,11 @@ Stack* Stack_Branch_Code(Stack *stack, Stack *code, int *link, uint16 *edge, int
   
   init_imginfo(stack->width, stack->height, stack->depth);
  
-  int link_owner = FALSE;
+  int link_owner = _FALSE_;
 
   if (link == NULL) {
     link = (int*)Guarded_Malloc(sizeof(int) * cnpixel, "Stack_Branch_Code");
-    link_owner = TRUE;
+    link_owner = _TRUE_;
   }
 
   if (code == NULL) {
@@ -311,7 +309,7 @@ Stack* Stack_Branch_Code(Stack *stack, Stack *code, int *link, uint16 *edge, int
   branch_code(stack->array, code_array, link, edge, stack->width, stack->height, stack->depth,
 	     seed, neighbor);
 
-  if (link_owner == TRUE) {
+  if (link_owner == _TRUE_) {
     free(link);
   }
 
@@ -578,7 +576,7 @@ int Stack_Label_Object_Constraint(Stack *stack, IMatrix *chord, int seed,
   int obj_size = 0;
   int next = c;
   uint16 *code_array = NULL;
-  BOOL do_label = TRUE;
+  _BOOL_ do_label = _TRUE_;
 
   if (code != NULL) {
     code_array = (uint16 *)code->array;
@@ -596,16 +594,16 @@ int Stack_Label_Object_Constraint(Stack *stack, IMatrix *chord, int seed,
 	/*process unlabeled white neighbors*/
 	if (code != NULL) {
 	  if (code_array[nb] > max) {
-	    do_label = FALSE;
+	    do_label = _FALSE_;
 	  } else {
-	    do_label = TRUE;
+	    do_label = _TRUE_;
 	  }
 	} else {
-	  do_label = TRUE;
+	  do_label = _TRUE_;
 	}
 
 	if ((stack->array[nb] == flag) && (chord->array[nb] == -1)
-	    && (do_label == TRUE)) {
+	    && (do_label == _TRUE_)) {
 	  chord->array[next] = nb;
 	  next = nb;
 	  stack->array[nb] = label;
@@ -633,7 +631,7 @@ Stack* Stack_Boundary_Code(Stack *stack, Stack *code, Objlabel_Workspace *ow)
   int nvoxel = Stack_Voxel_Number(stack);
   int i;
 
-  if (ow->init_chord == TRUE) {
+  if (ow->init_chord == _TRUE_) {
     for (i = 0; i < nvoxel; i++) {
       ow->chord->array[i] = -1;
     }
@@ -648,7 +646,7 @@ Stack* Stack_Boundary_Code(Stack *stack, Stack *code, Objlabel_Workspace *ow)
   int neighbor[26];
   int is_in_bound[26];
   int nbound;
-  BOOL is_boundary = FALSE;
+  _BOOL_ is_boundary = _FALSE_;
 
   Stack_Neighbor_Offset(ow->conn, stack->width, stack->height, neighbor);
 
@@ -665,22 +663,22 @@ Stack* Stack_Boundary_Code(Stack *stack, Stack *code, Objlabel_Workspace *ow)
   for (z = 0; z < stack->depth; z++) {
     for (y = 0; y < stack->height; y++) {
       for (x = 0; x < stack->width; x++) {
-	is_boundary = FALSE;
+	is_boundary = _FALSE_;
 	if (stack->array[offset] == 1) {
 	  nbound = Stack_Neighbor_Bound_Test(ow->conn, cwidth, cheight,
 					     cdepth, x, y, z, is_in_bound);
 	  if (nbound < ow->conn) {
-	    is_boundary = TRUE;
+	    is_boundary = _TRUE_;
 	  } else {
 	    for (i = 0; i < ow->conn; i++) {
 	      if (stack->array[offset + neighbor[i]] == 0) {
-		is_boundary = TRUE;
+		is_boundary = _TRUE_;
 		break;
 	      }
 	    }
 	  }
 	}
-	if (is_boundary == TRUE) {
+	if (is_boundary == _TRUE_) {
 	  code_array[offset] = 1;
 	  ow->chord->array[offset] = prev_seed;
 	  prev_seed = offset;

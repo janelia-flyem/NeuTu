@@ -2,9 +2,9 @@
 #include "ui_zflyemgrayscaledialog.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvc.h"
-#include "zstackview.h"
-#include "zintpoint.h"
-#include "zintcuboid.h"
+#include "mvc/zstackview.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zintcuboid.h"
 
 ZFlyEmGrayscaleDialog::ZFlyEmGrayscaleDialog(QWidget *parent) :
   QDialog(parent),
@@ -64,6 +64,16 @@ ZIntCuboid ZFlyEmGrayscaleDialog::getBoundBox() const
 
   box.setFirstCorner(getFirstCorner());
   box.setLastCorner(getLastCorner());
+
+  return box;
+}
+
+ZIntCuboid ZFlyEmGrayscaleDialog::getRange() const
+{
+  ZIntCuboid box;
+  if (!isFullRange()) {
+    box = getBoundBox();
+  }
 
   return box;
 }

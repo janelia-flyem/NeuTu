@@ -3,16 +3,17 @@
 #include <QPainter>
 #include <QPen>
 #include <QBitmap>
+
+#include "common/math.h"
 #include "neutubeconfig.h"
-#include "tz_math.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
 #include "tz_geometry.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "tz_geo3d_utils.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
@@ -32,10 +33,10 @@ ZStroke2d::ZStroke2d() :
 {
   setLabel(1);
   m_type = GetType();
-  setSliceAxis(neutube::EAxis::Z);
+  setSliceAxis(neutu::EAxis::Z);
   //setEraser(m_isEraser);
 }
-
+/*
 ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
@@ -52,14 +53,14 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_hideStart = stroke.m_hideStart;
   m_sliceAxis = stroke.m_sliceAxis;
 }
-
+*/
 ZStroke2d::~ZStroke2d()
 {
   ZOUT(LTRACE(), 5) << "Deconstructing " << this << ": ZStroke2d " << ", "
             << getSource();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
 
 void ZStroke2d::save(const char * /*filePath*/)
 {
@@ -150,7 +151,7 @@ void ZStroke2d::setEraser(bool enabled)
 }
 
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
-                        neutube::EAxis sliceAxis) const
+                        neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -159,22 +160,23 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
 
   if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
 
+#ifdef _DEBUG_2
+  if (m_pointArray.size() == 1) {
+    std::cout << "Painting stroke: " << this << " "
+              << m_pointArray[0].x()  << ", " << m_pointArray[0].y()
+              << "; Slice axis: " << neutu::ToString(sliceAxis) << std::endl;
+  }
+#endif
+
   painter.save();
 
   QColor color = m_color;
-//  if (m_z >= 0 && m_z != z) {
-//    if (isEraser()) {
-//      return;
-//    }
-//    //color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
-//    return;
-//  }
   QPen pen(color);
   QBrush brush(color);
 
@@ -247,7 +249,10 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
 
     if (isSelected()) {
-      painter.setPen(QColor(255, 255, 0));
+      QPen pen(QColor(255, 255, 0));
+      pen.setWidth(1);
+      painter.setPen(pen);
+      painter.setBrush(Qt::NoBrush);
       double radius = m_width / 3.0;
       painter.drawEllipse(m_pointArray.front(), radius, radius);
       if (m_pointArray.size() > 1) {
@@ -261,7 +266,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 }
 
 bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-                        EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const
+                        EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return false;
@@ -285,7 +290,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   //z -= iround(painter.getOffset().z());
 
   QColor color = m_color;
-  if (sliceMode == DISPLAY_SLICE_SINGLE && m_z != z) {
+  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_SINGLE && m_z != z) {
     if (isEraser()) {
       return painted;
     }
@@ -363,12 +368,12 @@ ZStack* ZStroke2d::toLabelStack(int label) const
   }
 
   Cuboid_I boundBox;
-  int r = iround(m_width / 2);
-  boundBox.cb[0] = iround(x0) - margin - r;
-  boundBox.cb[1] = iround(y0) - margin - r;
+  int r = neutu::iround(m_width / 2);
+  boundBox.cb[0] = neutu::iround(x0) - margin - r;
+  boundBox.cb[1] = neutu::iround(y0) - margin - r;
   boundBox.cb[2] = m_z;
-  boundBox.ce[0] = iround(x1) + margin + r;
-  boundBox.ce[1] = iround(y1) + margin + r;
+  boundBox.ce[0] = neutu::iround(x1) + margin + r;
+  boundBox.ce[1] = neutu::iround(y1) + margin + r;
   boundBox.ce[2] = m_z;
 
   int width = Cuboid_I_Width(&boundBox);
@@ -565,8 +570,8 @@ bool ZStroke2d::getLastPoint(int *x, int *y) const
     return false;
   }
 
-  *x = iround(m_pointArray.back().x());
-  *y = iround(m_pointArray.back().y());
+  *x = neutu::iround(m_pointArray.back().x());
+  *y = neutu::iround(m_pointArray.back().y());
 
   return true;
 }
@@ -630,7 +635,7 @@ void ZStroke2d::translate(const ZPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.x(), offset.y());
   }
-  m_z += iround(offset.z());
+  m_z += neutu::iround(offset.z());
 }
 
 void ZStroke2d::translate(const ZIntPoint &offset)
@@ -640,7 +645,7 @@ void ZStroke2d::translate(const ZIntPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.getX(), offset.getY());
   }
-  m_z += iround(offset.getZ());
+  m_z += offset.getZ();
 }
 
 void ZStroke2d::scale(double sx, double sy, double sz)
@@ -651,7 +656,7 @@ void ZStroke2d::scale(double sx, double sy, double sz)
     pt.setX(pt.x() * sx);
     pt.setY(pt.y() * sy);
   }
-  m_z = iround(m_z * sz);
+  m_z = neutu::iround(m_z * sz);
   m_width *= std::sqrt(sx * sy);
 }
 
@@ -881,7 +886,7 @@ double ZStroke2d::pointLinesegDistance(
   return Geo3d_Point_Lineseg_Dist(point, lineStart, lineEnd, NULL);
 }
 
-bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
+bool ZStroke2d::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {
   if (isVisible() && !isEmpty() && (sliceAxis == getSliceAxis())) {
     if (m_isPenetrating || (std::fabs(m_z - z) < m_zFadeSpan)) {
@@ -892,7 +897,7 @@ bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
   return false;
 }
 
-bool ZStroke2d::hitTest(double x, double y, neutube::EAxis axis) const
+bool ZStroke2d::hitTest(double x, double y, neutu::EAxis axis) const
 {
   if (axis != getSliceAxis()) {
     return false;
@@ -962,14 +967,14 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 
   zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
-  if (iround(z) == m_z) {
+  if (neutu::iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());
   }
 
   return hit;
 }
 
-bool ZStroke2d::hit(double x, double y, neutube::EAxis axis)
+bool ZStroke2d::hit(double x, double y, neutu::EAxis axis)
 {
   return hitTest(x, y, axis);
 }

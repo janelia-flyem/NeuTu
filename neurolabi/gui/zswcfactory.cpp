@@ -1,13 +1,16 @@
 #include "zswcfactory.h"
 
+#include <cmath>
+
+#include "common/math.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
 #include "zdoublevector.h"
-#include "zpointarray.h"
-#include "zlinesegmentarray.h"
-#include "zintcuboidface.h"
+#include "geometry/zpointarray.h"
+#include "geometry/zlinesegmentarray.h"
+#include "geometry/zintcuboidface.h"
 #if _QT_GUI_USED_
 #include "zstroke2d.h"
 #endif
@@ -16,11 +19,11 @@
 #include "zstack.hxx"
 #include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
-#include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
 #include "zstackfactory.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
+#include "zlocsegchain.h"
 
 ZSwcFactory::ZSwcFactory()
 {
@@ -53,12 +56,12 @@ ZSwcTree* ZSwcFactory::CreateCircleSwc(double cx, double cy, double cz, double r
     y = r * sin(angle) + cy;
     z = cz;
 
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, nodeRadius);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, nodeRadius);
     SwcTreeNode::setParent(tn, parent);
     parent = tn;
   }
 
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
   SwcTreeNode::copyProperty(SwcTreeNode::firstChild(tree->root()), tn);
   SwcTreeNode::setParent(tn, parent);
 
@@ -232,7 +235,7 @@ ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
 
   for (size_t i = 0; i < voxelArray.size(); ++i) {
     if (sampled[i]) {
-      Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+      Swc_Tree_Node *tn = SwcTreeNode::MakePointer();
       SwcTreeNode::setPos(
             tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
       SwcTreeNode::setRadius(
@@ -450,7 +453,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZStroke2d &stroke)
   for (size_t i = 0; i < stroke.getPointNumber(); ++i) {
     double x, y;
     stroke.getPoint(&x, &y, i);
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, r);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(x, y, z, r);
     SwcTreeNode::setParent(tn, parent);
     parent = tn;
   }
@@ -473,7 +476,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(
   tree->forceVirtualRoot();
   Swc_Tree_Node *parent = tree->root();
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
           obj.getX(i), obj.getY(i), obj.getZ(i), radius);
     SwcTreeNode::setId(tn, i + 1);
     SwcTreeNode::setFirstChild(parent, tn);
@@ -504,10 +507,10 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
     int z = stripe.getZ();
     for (int j = 0; j < segNumber; ++j) {
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(stripe.getSegmentStart(j), y, z, 2.0);
+          SwcTreeNode::MakePointer(stripe.getSegmentStart(j), y, z, 2.0);
       SwcTreeNode::setFirstChild(root, tn);
       Swc_Tree_Node *tn2 =
-          SwcTreeNode::makePointer(stripe.getSegmentEnd(j), y, z, 2.0);
+          SwcTreeNode::MakePointer(stripe.getSegmentEnd(j), y, z, 2.0);
       SwcTreeNode::setFirstChild(tn, tn2);
     }
   }
@@ -522,7 +525,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 {
   ZIntCuboid box = obj.getBoundBox();
 
-  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+  int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                     ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
@@ -607,7 +610,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 
               if (isSurface) {
                 if ((count++ % sparseLevel == 0) /*|| nbrCount < 3*/) {
-                  SwcTreeNode::makePointer(
+                  SwcTreeNode::MakePointer(
                         i + stack->getOffset().getX(),
                         j + stack->getOffset().getY(),
                         z, radius, root);
@@ -631,14 +634,14 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
   ZIntCuboid box = obj.getBoundBox();
 //  size_t voxelNumber = obj.getVoxelNumber();
 
-  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
-                                    ZObject3dScan::MAX_SPAN_HINT)));
+  int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
+                                           ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
       ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    intv = (neutu::iround(std::cbrt(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
     /*
     if (intv < 0) {
       intv = 0;
@@ -654,8 +657,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
-    intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
-                                  ZObject3dScan::MAX_SPAN_HINT)));
+    intv = neutu::iround(std::cbrt(round(double(obj2.getSegmentNumber()) /
+                                         ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       obj2.downsampleMax(intv, intv, intv);
     }
@@ -663,7 +666,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
     dsIntv = obj2.getDsIntv();
     stack = obj2.toStackObjectWithMargin(1, 1);
   } else {
-    intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+    intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       ZObject3dScan obj2 = obj;
@@ -751,13 +754,14 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
 
 int ZSwcFactory::GetIntv(int segNumber, const ZIntCuboid &box)
 {
-  int intv = iround(Cube_Root(round(segNumber / ZObject3dScan::MAX_SPAN_HINT)));
+  int intv = neutu::iround(std::cbrt(
+                             round(segNumber / ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
       ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    intv = (neutu::iround(std::cbrt(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
   }
 
   return intv;
@@ -818,7 +822,7 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateLevelSurfaceSwc(
                   result[in_value - 1] = tree;
                 }
 
-                SwcTreeNode::makePointer(
+                SwcTreeNode::MakePointer(
                       (i + stack.getOffset().getX()) * scale.getX(),
                       (j + stack.getOffset().getY()) * scale.getY(),
                       (k + stack.getOffset().getZ()) * scale.getZ(),
@@ -911,7 +915,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 
             if (isSurface) {
               if ((count++ % sparseLevel == 0) /*|| nbrCount < 3*/) {
-                SwcTreeNode::makePointer(
+                SwcTreeNode::MakePointer(
                       (i + stack.getOffset().getX()) * scale.getX(),
                       (j + stack.getOffset().getY()) * scale.getY(),
                       (k + stack.getOffset().getZ()) * scale.getZ(),
@@ -981,7 +985,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcFast(const ZStack &stack, int sparseLevel
 
             if (isSurface) {
               if (count++ % sparseLevel == 0) {
-                SwcTreeNode::makePointer(i + stack.getOffset().getX(),
+                SwcTreeNode::MakePointer(i + stack.getOffset().getX(),
                                          j + stack.getOffset().getY(),
                                          k + stack.getOffset().getZ(),
                                          sparseLevel * 0.7, root);
@@ -1043,11 +1047,11 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZClosedCurve &curve, double radius)
     tree = new ZSwcTree();
     tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     Swc_Tree_Node *parent =
-        SwcTreeNode::makePointer(curve.getLandmark(0), radius);
+        SwcTreeNode::MakePointer(curve.getLandmark(0), radius);
     tree->addRegularRoot(parent);
     for (size_t i = 1; i < curve.getLandmarkNumber(); ++i) {
       Swc_Tree_Node *tn =
-          SwcTreeNode::makePointer(curve.getLandmark(i), radius);
+          SwcTreeNode::MakePointer(curve.getLandmark(i), radius);
       SwcTreeNode::setParent(tn, parent);
       parent = tn;
     }
@@ -1081,9 +1085,75 @@ ZSwcTree* ZSwcFactory::CreateSwc(
 
   return tree;
 #else
-  UNUSED_PARAMETER(&blockObj);
+  UNUSED_PARAMETER(blockObj);
   UNUSED_PARAMETER(z);
-  UNUSED_PARAMETER(&dvidInfo);
+  UNUSED_PARAMETER(dvidInfo);
   return NULL;
 #endif
+}
+
+/*
+void ZSwcFactory::Attach(const ZLocsegChain &chain, Swc_Tree_Node *parent)
+{
+  if (parent) {
+    int n;
+    Geo3d_Circle *circles = Locseg_Chain_To_Geo3d_Circle_Array(
+          chain.data(), NULL, &n);
+
+    if (n > 0) {
+      for (int i = 0; i < n; ++i) {
+        parent = SwcTreeNode::makePointer(
+              circles[i].center[0], circles[i].center[1], circles[i].center[2],
+            circles[i].radius, parent);
+      }
+    }
+
+    if (circles) {
+      free(circles);
+    }
+  }
+}
+*/
+
+ZSwcTree* ZSwcFactory::CreateSwc(Locseg_Chain *chain, ZSwcTree *tree)
+{
+  if (chain) {
+    int n;
+    Geo3d_Circle *circles = Locseg_Chain_To_Geo3d_Circle_Array(chain, NULL, &n);
+
+    if (n > 0) {
+      if (tree == nullptr) {
+        tree = new ZSwcTree;
+      }
+
+      tree->forceVirtualRoot();
+      Swc_Tree_Node *parent = tree->root();
+      for (int i = 0; i < n; ++i) {
+        parent = SwcTreeNode::MakePointer(
+              circles[i].center[0], circles[i].center[1], circles[i].center[2],
+            circles[i].radius, parent);
+      }
+    }
+
+    if (circles) {
+      free(circles);
+    }
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcFactory::CreateSwc(const ZLocsegChain &chain, ZSwcTree *tree)
+{
+  return CreateSwc(chain.data(), tree);
+}
+
+ZSwcTree* ZSwcFactory::CreateSwc(
+      const std::vector<Locseg_Chain*> &chainArray, ZSwcTree *host)
+{
+  for (Locseg_Chain *chain : chainArray) {
+    host = CreateSwc(chain, host);
+  }
+
+  return host;
 }

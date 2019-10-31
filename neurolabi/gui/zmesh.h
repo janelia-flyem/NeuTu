@@ -65,15 +65,15 @@ public:
 
   void swap(ZMesh& rhs) noexcept;
 
-  virtual const std::string& className() const override;
+//  virtual const std::string& className() const override;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_MESH;
+    return ZStackObject::EType::MESH;
   }
 
   virtual void display(
       ZPainter &, int , EDisplayStyle ,
-      neutube::EAxis ) const override
+      neutu::EAxis ) const override
   {}
 
 //  void setLabel(uint64_t label) override;
@@ -356,12 +356,38 @@ private:
   static ZMesh booleanOperation(
       const ZMesh& mesh1, const ZMesh& mesh2, BooleanOperationType type);
 
+  struct ObbTreeData {
+    ObbTreeData() {}
+    ObbTreeData(const ObbTreeData &){
+      reset();
+    }
+    ObbTreeData(const ObbTreeData &&){
+      reset();
+    }
+
+    ObbTreeData& operator =(const ObbTreeData&) {
+      reset();
+      return *this;
+    }
+    ObbTreeData& operator =(const ObbTreeData&&) {
+      reset();
+      return *this;
+    }
+
+    void reset() {
+      m_isObbTreeValid = false;
+    }
+
+    bool m_isObbTreeValid = false;
+    vtkSmartPointer<vtkOBBTree> m_obbTree;
+  };
+
   bool isObbTreeValid() const {
-    return m_isObbTreeValid;
+    return m_obbTreeData.m_isObbTreeValid;
   }
 
   void validateObbTree(bool valid) const {
-    m_isObbTreeValid = valid;
+   m_obbTreeData.m_isObbTreeValid = valid;
   }
 
   vtkSmartPointer<vtkOBBTree> getObbTree() const;
@@ -378,10 +404,11 @@ private:
   std::vector<glm::vec3> m_normals;
   std::vector<glm::vec4> m_colors;
   std::vector<GLuint> m_indices;
-  uint64_t m_label = 0;
+//  uint64_t m_label = 0;
 
-  mutable bool m_isObbTreeValid = false;
-  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
+  mutable ObbTreeData m_obbTreeData;
+//  mutable bool m_isObbTreeValid = false;
+//  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
 };
 
 #endif // ZMESH_H

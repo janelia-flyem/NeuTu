@@ -5,7 +5,7 @@
 #include<QSpinBox>
 #include<QCheckBox>
 #include"qcustomplot.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zsandboxmodule.h"
 
 class ZImageShowWindow:public QWidget

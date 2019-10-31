@@ -9,7 +9,7 @@
 #include "zobject3dscan.h"
 #include "swctreenode.h"
 #include "c_json.h"
-#include "tz_error.h"
+
 #include "zhdf5reader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
@@ -232,7 +232,7 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           ZJsonObject config = reader.readJsonObject(skeletonUrl);
 
           if (config.isEmpty()) {
-            config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+            config.load(NeutubeConfig::getInstance().getConfigDir() +
                         "/json/skeletonize_fib25_len40.json");
           }
           skeletonizer.configure(config);
@@ -760,8 +760,10 @@ ZFlyEmNeuronAxis ZFlyEmNeuron::getAxis() const
           ZSwcTree::Z_SORT_ITERATOR);
 
     if (!nodeArray.empty()) {
-      TZ_ASSERT(SwcTreeNode::isRegular(nodeArray[0]), "Unexpected virtual node");
-
+//      TZ_ASSERT(SwcTreeNode::isRegular(nodeArray[0]), "Unexpected virtual node");
+      if (!SwcTreeNode::isRegular(nodeArray[0])) {
+        throw std::logic_error("Unexpected virtual node");
+      }
       //Build axis
       ZPoint center;
       double currentZ = SwcTreeNode::z(nodeArray[0]);

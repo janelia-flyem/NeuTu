@@ -7,7 +7,7 @@
 #include "zstackobject.h"
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
-#include "dvid/zdvidreader.h"
+#include "zdvidreader.h"
 #include "zthreadfuturemap.h"
 
 class ZIntCuboid;
@@ -19,19 +19,19 @@ public:
   ~ZDvidSparseStack();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+    return ZStackObject::EType::DVID_SPARSE_STACK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
-  const std::string& className() const;
+//  const std::string& className() const;
 
-  ZStack *getSlice(int z) const;
+  ZStack *makeSlice(int z) const;
 
-  ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
+  ZStack* makeSlice(int z, int x0, int y0, int width, int height) const;
 
-  void setLabelType(flyem::EBodyLabelType type);
+  void setLabelType(neutu::EBodyLabelType type);
 
   /*!
    * \brief Set the mask of the sparse stack
@@ -76,6 +76,8 @@ public:
     return m_dvidReader.getDvidTarget();
   }
 
+  const ZDvidInfo& getGrayscaleInfo() const;
+
   bool prefetching() const { return m_prefectching; }
 
   int getValue(int x, int y, int z) const;
@@ -83,11 +85,20 @@ public:
   ZIntPoint getDenseDsIntv() const;
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setGrayscaleReader(const ZDvidReader &reader);
+  void setGrayscaleReader(const ZDvidReader *reader);
 
   ZIntCuboid getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
+  /*!
+   * \brief Load a body into the sparse stack
+   *
+   * It load the body (or supervoxel) with the ID \a bodyId into the sparse
+   * stack without triggering grayscale reading.
+   */
   void loadBody(uint64_t bodyId, bool canonizing = false);
+
   void loadBodyAsync(uint64_t bodyId);
   void setMaskColor(const QColor &color);
   void setLabel(uint64_t bodyId);
@@ -97,7 +108,7 @@ public:
       bool canonizing = false);
 
   uint64_t getLabel() const;
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
@@ -107,11 +118,12 @@ public:
   ZSparseStack *getSparseStack();
 
   ZSparseStack *getSparseStack(const ZIntCuboid &box);
+  const ZSparseStack *getSparseStack(const ZIntCuboid &box) const;
 
 //  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
 
   bool isEmpty() const;
 
@@ -140,6 +152,8 @@ public:
   bool fillValue(const ZIntCuboid &box, int zoom,
                  bool cancelable, bool fillingAll);
 
+  void clearValue();
+
 private:
   void init();
   void initBlockGrid();
@@ -157,7 +171,6 @@ private:
 
   ZDvidReader& getMaskReader() const;
   ZDvidReader& getGrayscaleReader() const;
-
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -169,17 +182,18 @@ private:
   std::vector<bool> m_isValueFilled;
 //  bool m_isValueFilled;
   bool m_prefectching = false;
-  uint64_t m_label;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  uint64_t m_label = 0;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;
   mutable ZDvidInfo m_grayscaleInfo;
 
   ZThreadFutureMap m_futureMap;
-  bool m_cancelingValueFill;
+  bool m_cancelingValueFill = false;
 
   mutable QMutex m_fillValueMutex;
+  mutable QMutex m_grayscaleReaderMutex;
 };
 
 #endif // ZDVIDSPARSESTACK_H

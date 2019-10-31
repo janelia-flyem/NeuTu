@@ -14,9 +14,9 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-//#include "zpoint.h"
+//#include "geometry/zpoint.h"
 #include "zswcpath.h"
-#include "zcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 
@@ -128,10 +128,10 @@ public:
   ~ZSwcTree();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_SWC;
+    return ZStackObject::EType::SWC;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   friend void swap(ZSwcTree& first, ZSwcTree& second);
   ZSwcTree& operator=(const ZSwcTree &other);
@@ -218,7 +218,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis axis) const;
+                       neutu::EAxis axis) const;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -317,9 +317,9 @@ public:
    * \return
    */
   int updateIterator(int option = SWC_TREE_ITERATOR_DEPTH_FIRST,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
   int updateIterator(int option, const std::set<Swc_Tree_Node*> &blocker,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
   /*!
    * \brief Update iterator with a starting node.
    *
@@ -331,7 +331,7 @@ public:
    * \param indexing Indexing the nodes or not.
    * \return
    */
-  int updateIterator(int option, Swc_Tree_Node *start, BOOL indexing) const;
+  int updateIterator(int option, Swc_Tree_Node *start, _BOOL_ indexing) const;
 
   /*!
    * \brief Update iterator with a start and blocked branches.
@@ -348,7 +348,7 @@ public:
    */
   int updateIterator(int option, Swc_Tree_Node *start,
                      const std::set<Swc_Tree_Node*> &blocker,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
 
   inline Swc_Tree_Node* begin() {
     return const_cast<const ZSwcTree*>(this)->begin();
@@ -416,7 +416,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y, neutube::EAxis axis);
+  Swc_Tree_Node* hitTest(double x, double y, neutu::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -431,7 +431,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!
@@ -850,8 +850,8 @@ private:
   void displaySkeleton(
       ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
   void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
-      ZStackObject::EDisplayStyle style, neutube::EAxis axis) const;
-  void displaySelectedNode(ZPainter &painter, int slice, neutube::EAxis axis)
+      ZStackObject::EDisplayStyle style, neutu::EAxis axis) const;
+  void displaySelectedNode(ZPainter &painter, int slice, neutu::EAxis axis)
   const;
 #endif
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,

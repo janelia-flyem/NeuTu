@@ -2,15 +2,15 @@
 #include "zmouseeventrecorder.h"
 #include "zstroke2d.h"
 #include "zswctree.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
-ZStackOperator::ZStackOperator() :
-  m_op(OP_NULL),
-  m_hitObject(NULL),
-  m_punctaIndex(-1), m_togglingStrokeLabel(false),
-  m_buttonPressed(Qt::NoButton),
-  m_mouseEventRecorder(NULL)
+ZStackOperator::ZStackOperator()
 {
+}
+
+ZStackOperator::ZStackOperator(EOperation op) : m_op(op)
+{
+
 }
 
 void ZStackOperator::clear()
@@ -29,7 +29,7 @@ bool ZStackOperator::isNull() const
   return getOperation() == OP_NULL;
 }
 
-ZPoint ZStackOperator::getMouseOffset(neutube::ECoordinateSystem cs) const
+ZPoint ZStackOperator::getMouseOffset(neutu::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
 
@@ -99,10 +99,10 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     }
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
-    if (doc->getTag() != neutube::Document::ETag::NORMAL &&
-        doc->getTag() != neutube::Document::ETag::BIOCYTIN_STACK &&
-        doc->getTag() != neutube::Document::ETag::FLYEM_ROI &&
-        doc->getTag() != neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() != neutu::Document::ETag::NORMAL &&
+        doc->getTag() != neutu::Document::ETag::BIOCYTIN_STACK &&
+        doc->getTag() != neutu::Document::ETag::FLYEM_ROI &&
+        doc->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD) {
       opable = false;
     }
     break;

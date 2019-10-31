@@ -2,8 +2,9 @@
 #define ZSTACKOBJECTSOURCEFACTORY_H
 
 #include <string>
-#include "tz_stdint.h"
-#include "neutube_def.h"
+
+#include "common/neutudefs.h"
+#include "flyem/flyemdef.h"
 
 class ZStackObjectSourceFactory
 {
@@ -39,8 +40,9 @@ public:
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
-  static std::string MakeDvidLabelSliceSource(neutube::EAxis axis);
-  static std::string MakeDvidGraySliceSource(neutube::EAxis axis);
+  static std::string MakeDvidLabelSliceSource(neutu::EAxis axis, bool sv);
+  static std::string MakeDvidGraySliceSource(neutu::EAxis axis);
+  static std::string MakeDvidGraySliceEnsembleSource(neutu::EAxis axis);
   static std::string MakeSplitObjectSource();
   static std::string MakeSplitResultSource();
   static std::string MakeSplitResultSource(int label);
@@ -61,9 +63,9 @@ public:
   static std::string MakeFlyEmExtNeuronClass();
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
-  static std::string MakeDvidSynapseEnsembleSource(neutube::EAxis axis);
+  static std::string MakeDvidSynapseEnsembleSource(neutu::EAxis axis);
   static std::string MakeTodoListEnsembleSource();
-  static std::string MakeTodoListEnsembleSource(neutube::EAxis axis);
+  static std::string MakeTodoListEnsembleSource(neutu::EAxis axis);
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();

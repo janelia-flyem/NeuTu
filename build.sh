@@ -4,11 +4,12 @@
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
 echo "Build args: $*"
+config_options="debug|force_debug_info|release|sanitize"
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
-  echo "Usage: sh build.sh <qt_dir> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
+  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c $config_options]"
+  echo "Usage: sh build.sh <qt_dir> [-d cxx_define] [-e edition] [-c $config_options]"
   echo "Example: "
   echo 'sh build.sh $HOME/local/lib/Trolltech/Qt-4.8.5/bin/qmake $HOME/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++'
   exit 1
@@ -22,7 +23,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize] [-q qmake_flags] [-m make_flags]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c $config_options] [-q qmake_flags] [-m make_flags]"
     exit 1
   fi
   QMAKE_SPEC=$1
@@ -116,6 +117,11 @@ then
   qmake_args="$qmake_args CONFIG+=debug"
 fi
 
+#if [ $debug_config = "debug" ]
+#then
+#  qmake_args="$qmake_args CONFIG+=release"
+#fi
+
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
@@ -177,50 +183,50 @@ echo "qmake done"
 THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
 make -j${THREAD_COUNT}
 
-bin_dir=.
-app_name=neuTube
+#bin_dir=.
+#app_name=neuTube
 
-if [ $edition = "flyem" ]
-then
-  app_name=neutu
-fi
+#if [ $edition = "flyem" ]
+#then
+#  app_name=neutu
+#fi
 
-if [ $edition = "neu3" ]
-then
-  app_name=neu3
-fi
+#if [ $edition = "neu3" ]
+#then
+#  app_name=neu3
+#fi
 
-if [ $debug_config = "debug" ]
-then
-  app_name=${app_name}_d
-fi
+#if [ $debug_config = "debug" ]
+#then
+#  app_name=${app_name}_d
+#fi
 
-if [ -d $bin_dir/$app_name.app ]
-then
-  bin_dir=$bin_dir/$app_name.app/Contents/MacOS
-fi
+#if [ -d $bin_dir/$app_name.app ]
+#then
+#  bin_dir=$bin_dir/$app_name.app/Contents/MacOS
+#fi
 
-if [ ! -d $bin_dir/doc ]
-then
-  cp -r ../gui/doc $bin_dir/
-fi
+#if [ ! -d $bin_dir/doc ]
+#then
+#  cp -r ../gui/doc $bin_dir/
+#fi
 
-if [ $edition = "flyem" ] || [ $edition = "neu3" ]
-then
-  cp ../gui/config_flyem.xml $bin_dir/config.xml
-  cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
-  cp -r ../json $bin_dir
-fi
+#if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+#then
+#  cp ../gui/config_flyem.xml $bin_dir/config.xml
+#  cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
+#  cp -r ../json $bin_dir
+#fi
 
-if [ $edition = "biocytin" ]
-then
-  cp ../gui/biocytin_config.xml $bin_dir/config.xml
-fi
+#if [ $edition = "biocytin" ]
+#then
+#  cp ../gui/biocytin_config.xml $bin_dir/config.xml
+#fi
 
-if [ $edition = "general" ]
-then
-  cp ../gui/config.xml $bin_dir/config.xml
-fi
+#if [ $edition = "general" ]
+#then
+#  cp ../gui/config.xml $bin_dir/config.xml
+#fi
 #echo "Deploying ..."
 
 #if [ -d neuTube.app ]

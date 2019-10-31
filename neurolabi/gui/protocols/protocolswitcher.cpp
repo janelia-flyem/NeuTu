@@ -11,8 +11,10 @@
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
+#include "connectionvalidationprotocol.h"
 #include "synapsepredictionprotocol.h"
 #include "synapsereviewprotocol.h"
+#include "todoreviewprotocol.h"
 
 #include "doNthingsprotocol.h"
 
@@ -73,8 +75,15 @@ const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
+
         << "synapse_prediction_body"
-        << "synapse_prediction_region";
+        << "synapse_prediction_region"
+
+        << "connection_validation";
+
+
+        // started but deferred for now
+        // << "todo_review";
 
         // implemented but never rolled out:
         // << "synapse_review";
@@ -98,7 +107,7 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
         // PROTOCOL_INACTIVE: show the protocol chooser; tell it
         //  to display saved keys for this user
         emit requestDisplaySavedProtocols(
-            getUserProtocolKeys(QString::fromStdString(neutube::GetCurrentUserName()), false));
+            getUserProtocolKeys(QString::fromStdString(neutu::GetCurrentUserName()), false));
 
         m_chooser->show();
         m_chooser->raise();
@@ -351,9 +360,18 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(
               m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    } else if (protocolName == "connection_validation") {
+        m_activeProtocol = new ConnectionValidationProtocol(m_parent);
+
+
+    // started, deferred for now
+    // } else if (protocolName == "todo_review") {
+    //     m_activeProtocol = new ToDoReviewProtocol(m_parent);
+
     // implemented, basically works, but never used
     // } else if (protocolName == "synapse_review") {
     //     m_activeProtocol = new SynapseReviewProtocol(m_parent);
+
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
     } else if (protocolName == "synapse_prediction") {
@@ -365,6 +383,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     }
 
     if (m_activeProtocol != NULL) {
+      if (m_usingParentEventFilter) {
+        m_activeProtocol->installEventFilter(parent());
+      }
+
       m_activeProtocol->setDvidTarget(m_currentDvidTarget);
       connect(m_activeProtocol, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
               this, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)));
@@ -512,7 +534,7 @@ std::string ProtocolSwitcher::generateKey(QString protocolName) {
     if (identifier.empty()) {
         return "";
     } else {
-        return neutube::GetCurrentUserName() + "-" + protocolName.toStdString() + "-" + identifier;
+        return neutu::GetCurrentUserName() + "-" + protocolName.toStdString() + "-" + identifier;
     }
 }
 
@@ -597,6 +619,24 @@ void ProtocolSwitcher::processSynapseMoving(
   }
 }
 
+void ProtocolSwitcher::useParentEventFilter(bool on)
+{
+  m_usingParentEventFilter = on;
+  if (m_usingParentEventFilter) {
+    installEventFilterForProtocol(parent());
+  } else {
+    if (m_activeProtocol) {
+      m_activeProtocol->removeEventFilter(parent());
+    }
+  }
+}
+
+void ProtocolSwitcher::installEventFilterForProtocol(QObject *object)
+{
+  if (m_activeProtocol) {
+    m_activeProtocol->installEventFilter(object);
+  }
+}
 
 
 

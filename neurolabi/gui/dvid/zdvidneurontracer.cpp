@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-#include "zintcuboid.h"
-#include "tz_math.h"
+#include "geometry/zintcuboid.h"
+
 #include "tz_locseg_chain.h"
 #include "zswctree.h"
 #include "zstack.hxx"
@@ -63,11 +63,11 @@ ZSwcTree* ZDvidNeuronTracer::getResult() const
         Locseg_Chain_To_Geo3d_Circle_Array(chain, NULL, &n);
     Delete_Locseg_Chain(chain);
 
-    Swc_Tree_Node *root = SwcTreeNode::makePointer(circles[0].center[0],
+    Swc_Tree_Node *root = SwcTreeNode::MakePointer(circles[0].center[0],
         circles[0].center[1], circles[0].center[2], circles[0].radius);
     Swc_Tree_Node *parent =root;
     for (int i = 1; i < n; ++i) {
-      Swc_Tree_Node *tn = SwcTreeNode::makePointer(circles[i].center[0],
+      Swc_Tree_Node *tn = SwcTreeNode::MakePointer(circles[i].center[0],
           circles[i].center[1], circles[i].center[2], circles[i].radius, parent);
       parent = tn;
     }

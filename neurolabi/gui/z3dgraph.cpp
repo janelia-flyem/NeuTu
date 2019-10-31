@@ -4,7 +4,10 @@
 #include "znormcolormap.h"
 #include "zobject3d.h"
 #include "zstackball.h"
-#include "zintpoint.h"
+#include "geometry/zintpoint.h"
+#include "zstackobjectpainter.h"
+#include "geometry/zlinesegment.h"
+#include "zpainter.h"
 
 using namespace std;
 
@@ -87,6 +90,32 @@ const QString& Z3DGraphNode::getText() const
   return m_text;
 }
 
+void Z3DGraphNode::loadJsonObject(const ZJsonObject &obj)
+{
+  loadJsonObject(obj.getValue());
+}
+
+ZJsonObject Z3DGraphNode::toJsonObject() const
+{
+  ZJsonObject obj;
+  double centerArray[3];
+  centerArray[0] = center().x();
+  centerArray[1] = center().y();
+  centerArray[2] = center().z();
+  obj.setEntry("center", centerArray, 3);
+
+  obj.setEntry("radius", radius());
+
+  int colorArray[4];
+  colorArray[0] = color().red();
+  colorArray[1] = color().green();
+  colorArray[2] = color().blue();
+  colorArray[3] = color().alpha();
+  obj.setEntry("color", colorArray, 4);
+
+  return obj;
+}
+
 void Z3DGraphNode::loadJsonObject(json_t *obj)
 {
   const char *key;
@@ -137,10 +166,18 @@ Z3DGraphEdge::Z3DGraphEdge(int vs, int vt) : m_shape(GRAPH_CYLINDER)
   set(vs, vt, 1.0, false, color, color, GRAPH_LINE);
 }
 
+/*
 Z3DGraphEdge::Z3DGraphEdge(const Z3DGraphEdge &edge)
 {
   set(edge.m_vs, edge.m_vt, edge.m_width, edge.m_usingNodeColor,
       edge.m_startColor, edge.m_endColor, edge.m_shape);
+}
+*/
+
+void Z3DGraphEdge::set(int vs, int vt)
+{
+  m_vs = vs;
+  m_vt = vt;
 }
 
 void Z3DGraphEdge::set(int vs, int vt, double width)
@@ -156,6 +193,12 @@ void Z3DGraphEdge::setConnection(int vs, int vt)
   m_vt = vt;
 }
 
+void Z3DGraphEdge::setRelativeConnection(int startIndex, int vs, int vt)
+{
+  m_vs = startIndex + vs;
+  m_vt = startIndex + vt;
+}
+
 void Z3DGraphEdge::set(int vs, int vt, double width, bool usingNodeColor,
                        const QColor &startColor, const QColor &endColor,
                        EGraphShape shape)
@@ -168,18 +211,65 @@ void Z3DGraphEdge::set(int vs, int vt, double width, bool usingNodeColor,
   m_shape = shape;
 }
 
+void Z3DGraphEdge::loadJsonObject(const ZJsonObject &obj)
+{
+  loadJsonObject(obj.getValue());
+}
+
+ZJsonObject Z3DGraphEdge::toJsonObject() const
+{
+  ZJsonObject obj;
+
+  if (vs() >= 0 && vt() >= 0) {
+    int nodeArray[2];
+    nodeArray[0] = vs();
+    nodeArray[1] = vt();
+    obj.setEntry("node", nodeArray, 2);
+    obj.setEntry("width", m_width);
+    switch (m_shape) {
+    case GRAPH_CYLINDER:
+      obj.setEntry("shape", "cylinder");
+      break;
+    default:
+      obj.setEntry("shape", "line");
+      break;
+    }
+
+    if (!m_usingNodeColor) {
+      int colorArray[4];
+      colorArray[0] = startColor().red();
+      colorArray[1] = startColor().green();
+      colorArray[2] = startColor().blue();
+      colorArray[3] = startColor().alpha();
+      obj.setEntry("color1", colorArray, 4);
+
+      colorArray[0] = endColor().red();
+      colorArray[1] = endColor().green();
+      colorArray[2] = endColor().blue();
+      colorArray[3] = endColor().alpha();
+      obj.setEntry("color2", colorArray, 4);
+    }
+
+    obj.setEntry("color as node", m_usingNodeColor);
+  }
+
+  return obj;
+}
+
 void Z3DGraphEdge::loadJsonObject(json_t *obj)
 {
   const char *key;
   json_t *value;
 
+  std::pair<bool, bool> colorAssigned(false, false);
+  bool usingNodeColorAssigned = false;
   json_object_foreach(obj, key, value) {
     if (eqstr(key, "node")) {
       ZJsonArray node;
       node.set(value, false);
       set(ZJsonParser::integerValue(node.at(0)),
           ZJsonParser::integerValue(node.at(1)));
-    } else if (eqstr(key, "radius")) {
+    } else if (eqstr(key, "radius") || eqstr(key, "width")) {
       m_width = ZJsonParser::numberValue(value);
     } else if (eqstr(key, "color1")) {
       ZJsonArray color;
@@ -190,7 +280,7 @@ void Z3DGraphEdge::loadJsonObject(json_t *obj)
       if (color.size() == 4) {
         m_startColor.setAlpha(ZJsonParser::integerValue(color.at(3)));
       }
-      m_usingNodeColor = false;
+      colorAssigned.first = true;
     } else if (eqstr(key, "color2")) {
       ZJsonArray color;
       color.set(value, false);
@@ -200,10 +290,28 @@ void Z3DGraphEdge::loadJsonObject(json_t *obj)
       if (color.size() == 4) {
         m_endColor.setAlpha(ZJsonParser::integerValue(color.at(3)));
       }
-      m_usingNodeColor = false;
+      colorAssigned.second = true;
     } else if (eqstr(key, "shape")) {
-      const char *shape = ZJsonParser::stringValue(value);
+      std::string shape = ZJsonParser::stringValue(value);
       setShape(shape);
+    } else if (eqstr(key, "color as node")) {
+      m_usingNodeColor = ZJsonParser::booleanValue(value);
+      usingNodeColorAssigned = true;
+    }
+  }
+
+  if (colorAssigned.first || colorAssigned.second) {
+    if (usingNodeColorAssigned == false) {
+      m_usingNodeColor = false;
+    }
+    if (colorAssigned.first == false) {
+      m_startColor = m_endColor;
+    } else if (colorAssigned.second == false) {
+      m_endColor = m_startColor;
+    }
+  } else {
+    if (usingNodeColorAssigned == false) {
+      m_usingNodeColor = true;
     }
   }
 }
@@ -231,7 +339,8 @@ void Z3DGraphEdge::print()
 Z3DGraph::Z3DGraph()
 {
   m_type = GetType();
-  m_target = ZStackObject::TARGET_3D_ONLY;
+  m_target = ZStackObject::ETarget::ONLY_3D;
+  setTarget(ZStackObject::ETarget::WIDGET);
 }
 
 Z3DGraphPtr Z3DGraph::MakePointer()
@@ -323,13 +432,16 @@ void Z3DGraph::importJsonFile(const string &filePath)
           edgeArray.set(graphObject, false         );
           m_edgeArray.resize(edgeArray.size());
           for (size_t i = 0; i < edgeArray.size(); ++i) {
-            m_edgeArray[i].loadJsonObject(edgeArray.at(i));
+            Z3DGraphEdge &edge = m_edgeArray[i];
+            edge.loadJsonObject(edgeArray.at(i));
           }
         }
       }
       break;
     }
   }
+
+  setSource(filePath);
 }
 
 void Z3DGraph::print()
@@ -371,6 +483,11 @@ void Z3DGraph::connectNode(const ZStackBall &ball, EGraphShape shape)
 void Z3DGraph::addNode(double x, double y, double z, double radius)
 {
   m_nodeArray.push_back(Z3DGraphNode(x, y, z, radius));
+}
+
+void Z3DGraph::addNode(const ZPoint &pos, double radius)
+{
+  addNode(pos.x(), pos.y() ,pos.z(), radius);
 }
 
 void Z3DGraph::importObject3d(
@@ -428,9 +545,34 @@ void Z3DGraph::clear()
 }
 
 void Z3DGraph::display(
-    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    neutube::EAxis /*sliceAxis*/) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    neutu::EAxis sliceAxis) const
 {
+  ZStackObjectPainter p;
+  p.setRestoringPainter(false);
+  if (sliceAxis == neutu::EAxis::Z) {
+    if (option != EDisplayStyle::SKELETON) {
+      //Draw nodes
+      for (const Z3DGraphNode &node : m_nodeArray) {
+        ZStackBall ball(node.center(), node.radius());
+        ball.setColor(node.color());
+        ball.display(painter, slice, option, sliceAxis);
+      }
+
+      //Draw edges
+      QPen pen = painter.getPen();
+      pen.setCosmetic(true);
+      painter.setPen(pen);
+      for (const Z3DGraphEdge &edge : m_edgeArray) {
+        ZLineSegment seg(getStartNode(edge).center(), getEndNode(edge).center());
+        QColor color = edge.startColor();
+        if (edge.usingNodeColor()) {
+          color = getStartNode(edge).color();
+        }
+        p.paint(seg, edge.getWidth(), color, painter, slice);
+      }
+    }
+  }
 }
 
 void Z3DGraph::addEdge(const Z3DGraphEdge &edge)
@@ -455,6 +597,23 @@ void Z3DGraph::addEdge(
   edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, weight);
   edge.setShape(shape);
   addEdge(edge);
+}
+
+bool Z3DGraph::isValidNodeIndex(int v) const
+{
+  return (v >= 0) &&  (v < (int) m_nodeArray.size());
+}
+
+void Z3DGraph::addEdge(int vs, int vt, double width, EGraphShape shape)
+{
+  if (isValidNodeIndex(vs) && isValidNodeIndex(vt)) {
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.set(vs, vt);;
+    edge.setShape(shape);
+    edge.setWidth(width);
+    addEdge(edge);
+  }
 }
 
 void Z3DGraph::addEdge(
@@ -500,4 +659,38 @@ void Z3DGraph::syncNodeColor()
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)
+void Z3DGraph::load(const string &filePath)
+{
+  importJsonFile(filePath);
+}
+
+void Z3DGraph::save(const string &filePath)
+{
+  toJsonObject().dump(filePath);
+}
+
+ZJsonObject Z3DGraph::toJsonObject() const
+{
+  ZJsonObject dataJson;
+
+  ZJsonArray nodeArray;
+  for (const Z3DGraphNode &node : m_nodeArray) {
+    nodeArray.append(node.toJsonObject());
+  }
+  dataJson.setEntry("Node", nodeArray);
+
+  if (!nodeArray.isEmpty()) {
+    ZJsonArray edgeArray;
+    for (const Z3DGraphEdge &edge : m_edgeArray) {
+      edgeArray.append(edge.toJsonObject());
+    }
+    dataJson.setEntry("Edge", edgeArray);
+  }
+
+  ZJsonObject obj;
+  obj.setEntry("3DGraph", dataJson);
+
+  return obj;
+}
+
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

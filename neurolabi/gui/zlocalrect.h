@@ -13,9 +13,9 @@ class ZLocalRect : public ZDirectionalTemplate
 public:
   ZLocalRect();
   ZLocalRect(double x, double y, double z, double theta, double r);
-  ZLocalRect(const ZLocalRect &rect);
+//  ZLocalRect(const ZLocalRect &rect);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   void toLocalNeuroseg(Local_Neuroseg *locseg) const;
@@ -23,7 +23,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);
@@ -33,7 +33,7 @@ public:
     virtual ZDirectionalTemplate* extend(Dlist_Direction_e direction = DL_FORWARD,
                                          double step = 0.5);
     virtual void flip();
-    virtual BOOL hitTest(double x, double y, double z);
+    virtual bool hitTest(double x, double y, double z);
     virtual ZPoint bottom();
     virtual ZPoint center();
     virtual ZPoint top();

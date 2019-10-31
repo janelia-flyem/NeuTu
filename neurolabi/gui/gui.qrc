@@ -17,6 +17,7 @@
         <file>images/zoomin.png</file>
         <file>images/zoomout.png</file>
         <file>images/document.png</file>
+        <file>images/neuprint.png</file>
         <file>images/protocol.png</file>
         <file>images/setting.png</file>
         <file>images/hook.png</file>
@@ -24,6 +25,9 @@
         <file>images/merge.png</file>
         <file>images/autotrace.png</file>
         <file>images/app.png</file>
+        <file>images/neutu.png</file>
+        <file>images/neu3.png</file>
+        <file>images/app2.icns</file>
         <file>images/swcpreview.png</file>
         <file>images/extend.png</file>
         <file>images/test.png</file>
@@ -78,6 +82,7 @@
         <file>images/import_bookmark.png</file>
         <file>images/view_bookmark.png</file>
         <file>images/view_segmentation.png</file>
+        <file>images/view_supervoxel.png</file>
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
@@ -159,5 +164,6 @@
         <file>images/add_todo.png</file>
         <file>images/add_todo2.png</file>
         <file>images/add_tosplit.png</file>
+        <file>images/neutu_splash.png</file>
     </qresource>
 </RCC>

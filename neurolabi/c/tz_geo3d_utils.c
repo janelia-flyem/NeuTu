@@ -75,7 +75,7 @@ void Geo3d_Coordinate_Offset(double x1, double y1, double z1,
  * Return: void.
  */
 void Geo3d_Rotate_Coordinate(double *x, double *y, double *z,
-			     double theta, double psi, BOOL reverse)
+			     double theta, double psi, _BOOL_ reverse)
 {
   double p[3] = {*x, *y, *z};
   Rotate_XZ(p, p, 1, theta, psi, reverse);
@@ -411,7 +411,7 @@ double Geo3d_Lineseg_Lineseg_Dist(double line1_start[], double line1_end[],
 #if defined BREAK_IS_IN_RANGE
 #  undef BREAK_IS_IN_RANGE
 #endif
-#define BREAK_IS_IN_RANGE(mu) ((mu >= 0.0) && (mu <= 1.0))
+#define BREAK_IS_IN_RANGE(mu) (((mu) >= 0.0) && ((mu) <= 1.0))
 
     if (BREAK_IS_IN_RANGE(*intersect1) && BREAK_IS_IN_RANGE(*intersect2)) {
       *cond = 0;

@@ -206,7 +206,7 @@ Swc_Tree_Node* Swc_Tree_Node_Last_Child(const Swc_Tree_Node *tn);
  *
  * Swc_Tree_Node_Is_Child() returns TRUE iff <child> is the child of <parent>.
  */
-BOOL Swc_Tree_Node_Is_Child(const Swc_Tree_Node *parent, 
+_BOOL_ Swc_Tree_Node_Is_Child(const Swc_Tree_Node *parent, 
 			    const Swc_Tree_Node *child);
 
 /**@brief Number of children of an SWC node.
@@ -224,33 +224,33 @@ Swc_Tree_Node* Swc_Tree_Node_Prev_Sibling(const Swc_Tree_Node *tn);
  * 
  * A node is virtual if and only if its ID is negative.
  */
-BOOL Swc_Tree_Node_Is_Virtual(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Virtual(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is regular.
  *
  * A node is regular if an only if it is not NULL or virtual.
  */
-BOOL Swc_Tree_Node_Is_Regular(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Regular(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a root.
  *
  * A node is a root if and only if it is not NULL or a descendent of a regular 
  * node. 
  */
-BOOL Swc_Tree_Node_Is_Root(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Root(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a regular root.
  *
  * A node is a regular root if and only if it is a root and regular.
  */
-BOOL Swc_Tree_Node_Is_Regular_Root(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Regular_Root(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is the last child of its parent.
  *
  * A node is the last child if and only if its parent is not NULL and it does
  * not have next sibling.
  */
-BOOL Swc_Tree_Node_Is_Last_Child(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Last_Child(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a leaf.
  *
@@ -259,42 +259,42 @@ BOOL Swc_Tree_Node_Is_Last_Child(const Swc_Tree_Node *tn);
  *   ii) it is not a root and
  *   iii) it has no child
  */
-BOOL Swc_Tree_Node_Is_Leaf(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Leaf(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a branch point.
  *
  * A node is a branching point if and only if it is regular and has more than
  * one child.
  */
-BOOL Swc_Tree_Node_Is_Branch_Point(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Branch_Point(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a structural branch point.
  *
  * A node is a structural branching point if and only if it has more than
  * one child.
  */
-BOOL Swc_Tree_Node_Is_Branch_Point_S(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Branch_Point_S(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a continuation.
  *
  * A node is a continuation if and only if it is regular and is NOT a root,
  * leaf or branch point.
  */
-BOOL Swc_Tree_Node_Is_Continuation(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Continuation(const Swc_Tree_Node *tn);
 
 /**@brief Test if a node is a spur.
  *
  * A node is a spur if and only if it is a leaf and its parent is a branch 
  * point 
  */
-BOOL Swc_Tree_Node_Is_Spur(const Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Spur(const Swc_Tree_Node *tn);
 
 /**@brief Test if two nodes are siblings.
  *
  * Swc_Tree_Node_Is_Sibling() returns TRUE if <tn1> and <tn2> are siblings;
  * otherwise it returns FALSE.
  */
-BOOL Swc_Tree_Node_Is_Sibling(const Swc_Tree_Node *tn1, 
+_BOOL_ Swc_Tree_Node_Is_Sibling(const Swc_Tree_Node *tn1, 
 			      const Swc_Tree_Node *tn2);
 
 /**@brief Add an child to a swc tree node.
@@ -458,7 +458,7 @@ void Swc_Tree_Node_Set_Root_A(Swc_Tree_Node *tn);
  * It returns TRUE iff <tn1> is from the upstream of <tn2>. It returns FALSE if
  * either of the inputs is NULL.
  */
-BOOL Swc_Tree_Node_Is_Upstream(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+_BOOL_ Swc_Tree_Node_Is_Upstream(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
 
 /**@brief The distance from a node to its parent.
  *
@@ -543,7 +543,7 @@ double Swc_Tree_Node_Dot(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
  * 2) the vectors of <tn1>--><tn2> and <tn2>--><tn3> form an 
  *    angle greater than 180 degrees.
  */
-BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1, 
+_BOOL_ Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1, 
     const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3);
 
 /**@brief Test if a node is a turning node.
@@ -552,7 +552,7 @@ BOOL Swc_Tree_Node_Forming_Turn(const Swc_Tree_Node *tn1,
  * 1) <tn> is a continuation; and
  * 2) the parent of <tn>, <tn>, the child of <tn> form a turn.
  */
-BOOL Swc_Tree_Node_Is_Turn(Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Turn(Swc_Tree_Node *tn);
 
 /**@brief Test if a node is an overshoot.
  *
@@ -560,7 +560,7 @@ BOOL Swc_Tree_Node_Is_Turn(Swc_Tree_Node *tn);
  * 1) <tn> is a turn; and
  * 2) One neighbor node of <tn> is a branch point and the other is not.
  */
-BOOL Swc_Tree_Node_Is_Overshoot(Swc_Tree_Node *tn);
+_BOOL_ Swc_Tree_Node_Is_Overshoot(Swc_Tree_Node *tn);
 
 /**@brief Set weight of a node.
  *
@@ -631,14 +631,14 @@ Local_Neuroseg* Swc_Tree_Node_To_Locseg_P(const Swc_Tree_Node *tn,
  * Swc_Tree_Node_Hit_Test() returns TRUE if (<x>, <y>, <z>) hits the segment
  * <tn> and its parent. If <tn> has no regular parent, the ball of <tn> is used.
  */
-BOOL Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z);
+_BOOL_ Swc_Tree_Node_Hit_Test(Swc_Tree_Node *tn, double x, double y, double z);
 
 /**@brief Plane hit test for swc tree node.
  *
  * Swc_Tree_Node_Hit_Test_P() returns TRUE iff (<x>, <y>) hits the projection of
  * <tn> on the X-Y plane.
  */
-BOOL Swc_Tree_Node_Hit_Test_P(Swc_Tree_Node *tn, double x, double y);
+_BOOL_ Swc_Tree_Node_Hit_Test_P(Swc_Tree_Node *tn, double x, double y);
 
 typedef enum {
   SWC_TREE_LABEL_NODE, SWC_TREE_LABEL_CONNECTION, SWC_TREE_LABEL_ALL
@@ -648,7 +648,7 @@ typedef struct _Swc_Tree_Node_Label_Workspace {
   Stack_Draw_Workspace sdw;
   Swc_Tree_Node_Label_Mode_t label_mode;
   double offset[3];
-  BOOL z_proj;
+  _BOOL_ z_proj;
 } Swc_Tree_Node_Label_Workspace;
 
 void Default_Swc_Tree_Node_Label_Workspace(Swc_Tree_Node_Label_Workspace *ws);
@@ -664,7 +664,7 @@ void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack,
  * not be a root or virtual; Otherwise it returns false and the values in
  * <start> and <end> are not valid.
  */
-BOOL Swc_Tree_Node_Edge(const Swc_Tree_Node *tn, double *start, double *end);
+_BOOL_ Swc_Tree_Node_Edge(const Swc_Tree_Node *tn, double *start, double *end);
 
 /**@brief Average thickness of a branch.
  *
@@ -683,7 +683,7 @@ double Swc_Tree_Node_Average_Thickness(const Swc_Tree_Node *start,
  * nearest branch point. If <include_bp> is TRUE, the branch point will also
  * included in <tb>; Otherwise <tb> does not contain the branch point.
  */
-void Swc_Tree_Get_Branch(Swc_Tree_Node *tn, BOOL include_bp, 
+void Swc_Tree_Get_Branch(Swc_Tree_Node *tn, _BOOL_ include_bp, 
     Swc_Tree_Branch *tb);
 
 /**** routines for swc tree branch */
@@ -717,8 +717,8 @@ void Kill_Swc_Tree(Swc_Tree *tree);
 
 Swc_Tree* Read_Swc_Tree(const char *file_path);
 Swc_Tree* Read_Swc_Tree_E(const char *file_path);
-BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree);
-BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree);
+_BOOL_ Write_Swc_Tree(const char *file_path, Swc_Tree *tree);
+_BOOL_ Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree);
 
 /**@brief Create swc from memory.
  */
@@ -768,9 +768,9 @@ enum {
  *   i) <option> is SWC_TREE_ITEARTOR_NO_UPDATE and <indexing> is FALSE;
  *   ii) the iteration failed.
  */
-int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, BOOL indexing);
+int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, _BOOL_ indexing);
 
-BOOL Swc_Tree_Iterator_Is_Active(int option);
+_BOOL_ Swc_Tree_Iterator_Is_Active(int option);
 
 /**@brief Build an iterator for a path.
  *
@@ -809,7 +809,7 @@ int Swc_Tree_Number(Swc_Tree *tree);
  *
  * It returns TRUE iff <tree> has at least two connected regular nodes.
  */
-BOOL Swc_Tree_Has_Branch(Swc_Tree *tree);
+_BOOL_ Swc_Tree_Has_Branch(Swc_Tree *tree);
 
 /**@brief Find a node with a certain ID.
  *
@@ -954,7 +954,7 @@ Swc_Tree_Node* Swc_Tree_Outmost_Leaf(Swc_Tree *tree);
  */
 void Swc_Tree_Reduce(Swc_Tree *tree);
 
-BOOL Swc_Tree_Label_Branch(Swc_Tree *tree, int label,
+_BOOL_ Swc_Tree_Label_Branch(Swc_Tree *tree, int label,
 			   const double *pos, double thre);
 
 /**@brief Label all branches with distinguishable values in a tree.
@@ -1082,7 +1082,7 @@ Swc_Tree* Swc_Tree_Pull_R(Swc_Tree *tree, const double *root);
  * Swc_Tree_Hit_Test() returns TRUE if the point (<x>, <y>, <z>) hits <tree>
  * with the iteration option <iter>.
  */
-BOOL Swc_Tree_Hit_Test(Swc_Tree *tree, int iter, 
+_BOOL_ Swc_Tree_Hit_Test(Swc_Tree *tree, int iter, 
 		       double x, double y, double z);
 
 /**@brief Get the node hit by a point.
@@ -1163,8 +1163,12 @@ void Swc_Tree_Rotate(Swc_Tree *tree, double theta, double psi,
  *
  */
 void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale, 
-    double z_scale, BOOL change_node_size);
+    double z_scale, _BOOL_ change_node_size);
 
+/**@brief Label a stack with an SWC tree.
+ *
+ * The parameters of labeling are specified in \a ws.
+ */
 void Swc_Tree_Label_Stack(Swc_Tree *tree, Stack *stack,
     Swc_Tree_Node_Label_Workspace *ws);
 
@@ -1178,8 +1182,8 @@ void Swc_Tree_Label_Main_Trunk_L(Swc_Tree *tree, int label,
 void Swc_Tree_Label_Soma(Swc_Tree *tree, int label);
 Swc_Tree_Node* Swc_Tree_Grow_Soma(Swc_Tree *tree, int label);
 void Swc_Tree_Label_Apical(Swc_Tree *tree, int label);
-void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, BOOL label_soma, 
-    BOOL merge_soma);
+void Swc_Tree_Resort_Pyramidal(Swc_Tree *tree, _BOOL_ label_soma, 
+    _BOOL_ merge_soma);
 double Swc_Tree_Node_Apical_Score(Swc_Tree_Node *tn);
 
 void Swc_Tree_Set_Type(Swc_Tree *tree, int type);
@@ -1188,7 +1192,7 @@ void Swc_Tree_Set_Type_As_Label(Swc_Tree *tree);
 void Swc_Tree_Set_Label(Swc_Tree *tree, int label);
 
 void Swc_Tree_Identify_Puncta(Swc_Tree *tree, Geo3d_Scalar_Field *puncta, 
-    int label, BOOL *on_label);
+    int label, _BOOL_ *on_label);
 
 /**@brief Make all main trunck nodes as the first child.
  *

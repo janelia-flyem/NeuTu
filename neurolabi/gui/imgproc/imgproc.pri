@@ -3,13 +3,15 @@ HEADERS += $${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
     $$PWD/zstackgradient.h \
     $$PWD/zdownsamplefilter.h \
-    $$PWD/zstackprinter.h
+    $$PWD/zstackprinter.h \
+    $$PWD/zwatershedmst.h
 
 SOURCES += $${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackwatershed.cpp \
     $$PWD/zstackgradient.cpp \
     $$PWD/zdownsamplefilter.cpp \
-    $$PWD/zstackprinter.cpp
+    $$PWD/zstackprinter.cpp \
+    $$PWD/zwatershedmst.cpp
 
 contains(DEFINES, _ENABLE_SURFRECON_) {
   HEADERS +=  \

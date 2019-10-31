@@ -5,12 +5,12 @@
 
 #include "zstack.hxx"
 #include "zstackdocreader.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
 #include "zfiletype.h"
 #include "zlabelcolortable.h"
-#include "zstackview.h"
 #include "zobject3dscanarray.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackview.h"
 
 ZSegmentationProject::ZSegmentationProject(QObject *parent) :
   QObject(parent), m_stack(NULL), m_dataFrame(NULL)
@@ -55,7 +55,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
   ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
   m_labelTree.setRoot(root);
 
-  if (ZFileType::FileType(fileName.toStdString()) == ZFileType::FILE_JSON) {
+  if (ZFileType::FileType(fileName.toStdString()) == ZFileType::EFileType::JSON) {
     ZJsonObject dataJson;
     dataJson.load(fileName.toStdString());
     if (dataJson.hasKey("segmentation")) {
@@ -128,24 +128,25 @@ void ZSegmentationProject::loadSegmentationTarget(
         docReader.setStack(m_stack->clone());
       }
     }
-  }
 
-  //Add child objects
-  ZTreeNode<ZObject3dScan> *child = node->firstChild();
-  ZLabelColorTable colorTable;
-  while (child != NULL) {
-    ZObject3dScan *obj = new ZObject3dScan;
-    *obj = child->data();
-    QColor color = colorTable.getColor(obj->getLabel());
-    color.setAlpha(32);
-    obj->setColor(color);
-    obj->setZOrder(100);
-    docReader.addObject(obj);
-    child = child->nextSibling();
-  }
 
-  if (docReader.hasData()) {
-    setDocData(docReader);
+    //Add child objects
+    ZTreeNode<ZObject3dScan> *child = node->firstChild();
+    ZLabelColorTable colorTable;
+    while (child != NULL) {
+      ZObject3dScan *obj = new ZObject3dScan;
+      *obj = child->data();
+      QColor color = colorTable.getColor(obj->getLabel());
+      color.setAlpha(32);
+      obj->setColor(color);
+      obj->setZOrder(100);
+      docReader.addObject(obj);
+      child = child->nextSibling();
+    }
+
+    if (docReader.hasData()) {
+      setDocData(docReader);
+    }
   }
 }
 
@@ -171,7 +172,7 @@ void ZSegmentationProject::loadJsonNode(
 {
   if (nodeJson.hasKey("source")) {
     ZTreeNode<ZObject3dScan> *node = new ZTreeNode<ZObject3dScan>();
-    QString sourceFile(ZJsonParser::stringValue(nodeJson["source"]));
+    QString sourceFile(ZJsonParser::stringValue(nodeJson["source"]).c_str());
 
     QFileInfo fileInfo(sourceFile);
     if (!fileInfo.isAbsolute()) {

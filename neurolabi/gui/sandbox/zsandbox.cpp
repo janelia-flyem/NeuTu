@@ -2,9 +2,9 @@
 
 #include <QMenu>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "mainwindow.h"
-#include "zstackframe.h"
+#include "mvc/zstackframe.h"
 #include "zsandboxmodule.h"
 
 ZSandbox::ZSandbox()

@@ -2,10 +2,10 @@
 
 #include <iostream>
 #include <string>
-#include <cstdlib>
+#include <cstdint>
 #include <cstring>
 
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZArray::ZArray() : m_data(NULL)
 {
@@ -20,12 +20,7 @@ ZArray::ZArray(ZArray::Value_Type type, int ndims, mylib::Dimn_Type *dims)
 
 ZArray::ZArray(const ZArray &array)
 {
-  if (array.m_data == NULL) {
-    m_data = NULL;
-  } else {
-    m_data = mylib::Copy_Array(array.m_data);
-  }
-  m_startCoordinates = array.m_startCoordinates;
+  *this = array;
 }
 
 ZArray::~ZArray()
@@ -33,6 +28,18 @@ ZArray::~ZArray()
   if (m_data != NULL) {
     mylib::Kill_Array(m_data);
   }
+}
+
+ZArray& ZArray::operator = (const ZArray &array)
+{
+  if (array.m_data == NULL) {
+    m_data = NULL;
+  } else {
+    m_data = mylib::Copy_Array(array.m_data);
+  }
+  m_startCoordinates = array.m_startCoordinates;
+
+  return *this;
 }
 
 void ZArray::printInfo() const
@@ -229,5 +236,12 @@ void ZArray::setStartCoordinate(int index, int x)
 void ZArray::setStartCoordinate(const std::vector<int> &coord)
 {
   m_startCoordinates = coord;
+}
+
+void ZArray::setStartCoordinate(int x, int y, int z)
+{
+  m_startCoordinates[0] = x;
+  m_startCoordinates[1] = y;
+  m_startCoordinates[2] = z;
 }
 

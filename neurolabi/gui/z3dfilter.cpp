@@ -17,14 +17,17 @@
 
 #include <QWidget>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
+#include "logging/zlog.h"
+#include "logging/utilities.h"
+
 #include "neutubeconfig.h"
 #include "zsysteminfo.h"
 #include "z3dport.h"
 #include "z3dinteractionhandler.h"
 #include "z3dshaderprogram.h"
 #include "zeventlistenerparameter.h"
-#include "zparameter.h"
+#include "widgets/zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
 //#include "z3dview.h"
@@ -34,6 +37,7 @@ Z3DFilter::Z3DFilter(QObject* parent)
   , m_state(State::AllResultInvalid)
   , m_invalidationVisited(false)
 {
+  setLogger(neutu::LogMessageF);
 }
 
 ZParameter* Z3DFilter::parameter(const QString& name) const

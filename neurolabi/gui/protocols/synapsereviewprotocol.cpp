@@ -85,7 +85,7 @@ bool SynapseReviewProtocol::initialize() {
             }
 
             bool ok;
-            uint64_t bodyID = bodyIDstring.toLong(&ok);
+            uint64_t bodyID = bodyIDstring.toULongLong(&ok);
             if (!ok) {
                 inputErrorDialog("Couldn't parse body ID!");
                 return false;
@@ -96,13 +96,13 @@ bool SynapseReviewProtocol::initialize() {
             }
 
             // get synapses
-            synapseList = reader.readSynapse(bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(bodyID, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         } else if (option == SynapseReviewInputDialog::BY_VOLUME) {
             // I think volume is foolproof given our widgets; I set minimum
             //  width, etc. to 1, so we'll never get an invalid volume
             ZIntCuboid box = inputDialog.getVolume();
-            synapseList = reader.readSynapse(box, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(box, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         }
 
     } else {
@@ -243,7 +243,7 @@ std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point
     std::vector<ZDvidSynapse> result;
     ZDvidReader &reader = m_dvidReader;
     if (reader.good()) {
-        ZDvidSynapse synapse = reader.readSynapse(point, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        ZDvidSynapse synapse = reader.readSynapse(point, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         if (!synapse.isValid()) {
             return result;
@@ -257,7 +257,7 @@ std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point
         // get all the post-synaptic sites
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], dvid::EAnnotationLoadMode::NO_PARTNER);
             result.push_back(post);
         }
     }

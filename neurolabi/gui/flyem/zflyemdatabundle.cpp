@@ -4,9 +4,11 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cmath>
+
 #include "zjsonparser.h"
 #include "zstring.h"
-#include "tz_error.h"
+
 #include "zgraph.h"
 #include "c_json.h"
 #include "zswctree.h"
@@ -18,11 +20,11 @@
 #include "dvid/zdvidfilter.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
-#include "zintcuboidarray.h"
+#include "geometry/zintcuboidarray.h"
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
-#include "tz_math.h"
+#include "flyemdatareader.h"
 
 using namespace std;
 
@@ -161,8 +163,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
 //  m_synapseAnnotationFile = dvidTarget.getSourceString();
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                           ZDvidData::ROLE_BODY_LABEL,
+        ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
+                           ZDvidData::ERole::BODY_LABEL,
                            dvidTarget.getBodyLabelName()).c_str());
   std::set<uint64_t> annotationSet;
   foreach (const QString &idStr, annotationList) {
@@ -180,7 +182,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         bool traced = false;
 
         if (annotationSet.count(bodyId) > 0) {
-          ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+          ZFlyEmBodyAnnotation annotation =
+              FlyEmDataReader::ReadBodyAnnotation(fdReader, bodyId);
           name = annotation.getName();
 
           if (!annotation.getType().empty()) {
@@ -224,7 +227,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
          iter != annotationSet.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation annotation =
+            FlyEmDataReader::ReadBodyAnnotation(fdReader, bodyId);
         std::string name = annotation.getName();
 
         bool goodNeuron = true;
@@ -299,7 +303,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *sourceOffsetObj = bundleObject[ZFlyEmDataBundle::m_sourceOffsetKey];
     if (sourceOffsetObj != NULL) {
-      if (ZJsonParser::isArray(sourceOffsetObj)) {
+      if (ZJsonParser::IsArray(sourceOffsetObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_sourceOffset[i] = ZJsonParser::integerValue(sourceOffsetObj, i);
         }
@@ -309,7 +313,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     json_t *sourceDimensionObj =
         bundleObject[ZFlyEmDataBundle::m_sourceDimensionKey];
     if (sourceDimensionObj != NULL) {
-      if (ZJsonParser::isArray(sourceDimensionObj)) {
+      if (ZJsonParser::IsArray(sourceDimensionObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_sourceDimension[i] = ZJsonParser::integerValue(sourceDimensionObj, i);
         }
@@ -318,7 +322,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *imgResObj = bundleObject[ZFlyEmDataBundle::m_imageResolutionKey];
     if (imgResObj != NULL) {
-      if (ZJsonParser::isArray(imgResObj)) {
+      if (ZJsonParser::IsArray(imgResObj)) {
         for (size_t i = 0; i < 3; ++i) {
           m_imageResolution[i] = ZJsonParser::numberValue(imgResObj, i);
         }
@@ -341,19 +345,23 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *swcResObj = bundleObject[ZFlyEmDataBundle::m_swcResolutionKey];
     if (swcResObj != NULL) {
-      TZ_ASSERT(ZJsonParser::isArray(swcResObj), "Array object expected.");
-      for (size_t i = 0; i < 3; ++i) {
-        m_swcResolution[i] = ZJsonParser::numberValue(
-              bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
-      }
-      for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
-        m_neuronArray[i].setResolution(m_swcResolution);
+//      TZ_ASSERT(ZJsonParser::IsArray(swcResObj), "Array object expected.");
+      if (ZJsonParser::IsArray(swcResObj)) {
+        for (size_t i = 0; i < 3; ++i) {
+          m_swcResolution[i] = ZJsonParser::numberValue(
+                bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
+        }
+        for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
+          m_neuronArray[i].setResolution(m_swcResolution);
+        }
+      } else {
+        throw std::runtime_error("Unexpected element type, which sould be an array");
       }
     }
 
     json_t *matchThreObj = bundleObject[ZFlyEmDataBundle::m_matchThresholdKey];
     if (matchThreObj != NULL) {
-      FILE *fp = fopen(ZJsonParser::stringValue(matchThreObj), "r");
+      FILE *fp = fopen(ZJsonParser::stringValue(matchThreObj).c_str(), "r");
       if (fp != NULL) {
         ZString line;
         while (line.readLine(fp)) {
@@ -687,68 +695,68 @@ void ZFlyEmDataBundle::updateNeuronConnection()
 namespace {
 double ComputeOverallResultion(const double *res)
 {
-  return Cube_Root(res[0] * res[1] * res[2]);
+  return std::cbrt(res[0] * res[1] * res[2]);
 }
 }
 
-double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
+double ZFlyEmDataBundle::getImageResolution(neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_imageResolution[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_imageResolution[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_imageResolution[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     return ComputeOverallResultion(m_imageResolution);
   }
 
   return 1.0;
 }
 
-double ZFlyEmDataBundle::getSwcResolution(neutube::EAxis axis)
+double ZFlyEmDataBundle::getSwcResolution(neutu::EAxis axis)
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_swcResolution[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_swcResolution[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_swcResolution[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     return ComputeOverallResultion(m_swcResolution);
   }
 
   return 1.0;
 }
 
-int ZFlyEmDataBundle::getSourceDimension(neutube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceDimension(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_sourceDimension[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_sourceDimension[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_sourceDimension[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
   return 0;
 }
 
-int ZFlyEmDataBundle::getSourceOffset(neutube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceOffset(neutu::EAxis axis) const
 {
   switch (axis) {
-  case neutube::EAxis::X:
+  case neutu::EAxis::X:
     return m_sourceOffset[0];
-  case neutube::EAxis::Y:
+  case neutu::EAxis::Y:
     return m_sourceOffset[1];
-  case neutube::EAxis::Z:
+  case neutu::EAxis::Z:
     return m_sourceOffset[2];
-  case neutube::EAxis::ARB:
+  case neutu::EAxis::ARB:
     break;
   }
 
@@ -967,7 +975,7 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
     m_boundBox = NULL;
   }
 
-  if (ZFileType::FileType(filePath) == ZFileType::FILE_SWC) {
+  if (ZFileType::FileType(filePath) == ZFileType::EFileType::SWC) {
     m_boundBox = new ZSwcTree;
     m_boundBox->load(filePath);
   } else {

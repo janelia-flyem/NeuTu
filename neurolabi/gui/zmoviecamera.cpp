@@ -22,7 +22,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
   map<string, json_t*> entryMap = obj.toEntryMap(false);
   if (entryMap.count("rotate") > 0) {
     json_t* rotateObj = entryMap["rotate"];
-    if (ZJsonParser::isObject(rotateObj)) {
+    if (ZJsonParser::IsObject(rotateObj)) {
       m_rotation.loadJsonObject(ZJsonObject(rotateObj, ZJsonValue::SET_INCREASE_REF_COUNT));
     } else {
       cerr << "Invalid rotate object. Skip." << endl;
@@ -34,7 +34,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
     if (!moveObj.isEmpty()) {
       json_t *value = moveObj["center"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           m_movingDirection[1] = DEFINED_AXIS;
           for (int k = 0; k < 3; ++k) {
             m_movingSpeed[1][k] = ZJsonParser::numberValue(value, k);
@@ -47,7 +47,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 
       value = moveObj["eye"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           m_movingDirection[0] = DEFINED_AXIS;
           for (int k = 0; k < 3; ++k) {
             m_movingSpeed[0][k] = ZJsonParser::numberValue(value, k);
@@ -60,7 +60,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 
       value = moveObj["up_vector"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           for (int k = 0; k < 3; ++k) {
             m_movingSpeed[2][k] = ZJsonParser::numberValue(value, k);
           }
@@ -76,7 +76,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
     if (!resetObj.isEmpty()) {
       json_t *value = resetObj["center"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           m_hasReset[1] = true;
           m_resetPosition[1].set(ZJsonParser::numberValue(value, 0),
                                  ZJsonParser::numberValue(value, 1),
@@ -91,7 +91,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 
       value = resetObj["eye"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           m_hasReset[0] = true;
           m_resetPosition[0].set(ZJsonParser::numberValue(value, 0),
                                  ZJsonParser::numberValue(value, 1),
@@ -103,7 +103,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 
       value = resetObj["up_vector"];
       if (value != NULL) {
-        if (ZJsonParser::isArray(value)) {
+        if (ZJsonParser::IsArray(value)) {
           m_hasReset[2] = true;
           m_resetPosition[2].set(ZJsonParser::numberValue(value, 0),
                                  ZJsonParser::numberValue(value, 1),

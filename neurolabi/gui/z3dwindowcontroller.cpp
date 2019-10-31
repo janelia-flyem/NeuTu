@@ -11,13 +11,13 @@ Z3DWindowController::Z3DWindowController()
 
 void Z3DWindowController::SetMeshVisible(Z3DWindow *window, bool on)
 {
-  window->setLayerVisible(neutube3d::LAYER_MESH, on);
+  window->setLayerVisible(neutu3d::ERendererLayer::MESH, on);
 }
 
 void Z3DWindowController::ToggleMeshVisible(Z3DWindow *window)
 {
-  window->setLayerVisible(neutube3d::LAYER_MESH,
-                          !window->isLayerVisible(neutube3d::LAYER_MESH));
+  window->setLayerVisible(neutu3d::ERendererLayer::MESH,
+                          !window->isLayerVisible(neutu3d::ERendererLayer::MESH));
 }
 
 void Z3DWindowController::DeselectAllObject(Z3DWindow *window)

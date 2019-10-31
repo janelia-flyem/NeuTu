@@ -1,7 +1,9 @@
 #include "zwindowfactory.h"
+
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QMessageBox>
+
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
@@ -10,8 +12,8 @@
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
-#include "zstackdoc.h"
-#include "zstackframe.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
 #include "zdialogfactory.h"
 #include "mainwindow.h"
 #include "zsysteminfo.h"
@@ -90,15 +92,15 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getCompositor()->setShowBackground(false);
     }
 
-    if (doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT) {
+    if (doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT) {
       window->getSwcFilter()->setRenderingPrimitive("Sphere");
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
 
-    if (m_volumeMode == neutube3d::VR_AUTO) {
-      if (doc->getTag() == neutube::Document::ETag::FLYEM_BODY ||
-          doc->getTag() == neutube::Document::ETag::FLYEM_SPLIT ||
-          doc->getTag() == neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (m_volumeMode == neutu3d::EVolumeRenderingMode::VR_AUTO) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_SPLIT ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
         window->getVolumeFilter()->setCompositeMode(
               "Direct Volume Rendering");
       } else {
@@ -107,11 +109,11 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       }
     } else {
       window->getVolumeFilter()->setCompositeMode(
-            neutube3d::GetVolumeRenderingModeName(m_volumeMode));
+            neutu3d::GetVolumeRenderingModeName(m_volumeMode));
     }
-    if (doc->getTag() != neutube::Document::ETag::FLYEM_SPLIT &&
-        doc->getTag() != neutube::Document::ETag::SEGMENTATION_TARGET &&
-        doc->getTag() != neutube::Document::ETag::FLYEM_PROOFREAD) {
+    if (doc->getTag() != neutu::Document::ETag::FLYEM_SPLIT &&
+        doc->getTag() != neutu::Document::ETag::SEGMENTATION_TARGET &&
+        doc->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD) {
 //      window->getCanvas()->disableKeyEvent();
     }
 
@@ -130,7 +132,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->setGeometry(m_windowGeometry);
     }
 
-    for (QMap<neutube3d::ERendererLayer, bool>::const_iterator
+    for (QMap<neutu3d::ERendererLayer, bool>::const_iterator
          iter = m_layerVisible.begin(); iter != m_layerVisible.end(); ++iter) {
       window->setLayerVisible(iter.key(), iter.value());
     }
@@ -164,7 +166,7 @@ Z3DWindow* ZWindowFactory::Open3DWindow(
   }
 
   ZSharedPointer<ZStackDoc> doc = frame->document();
-  if (doc->getTag() == neutube::Document::ETag::BIOCYTIN_PROJECTION) {
+  if (doc->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
     doc = doc->getParentDoc();
   }
 
@@ -244,7 +246,7 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
   m_windowGeometry = rect;
 }
 
-void ZWindowFactory::setWindowType(neutube3d::EWindowType type)
+void ZWindowFactory::setWindowType(neutu3d::EWindowType type)
 {
   m_windowType = type;
 }
@@ -255,7 +257,7 @@ void ZWindowFactory::configure(Z3DWindow * /*window*/)
 
 }
 
-void ZWindowFactory::setVisible(neutube3d::ERendererLayer layer, bool visible)
+void ZWindowFactory::setVisible(neutu3d::ERendererLayer layer, bool visible)
 {
   m_layerVisible[layer] = visible;
 }

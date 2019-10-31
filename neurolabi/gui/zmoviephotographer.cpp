@@ -1,5 +1,5 @@
 #include "zmoviephotographer.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zmoviestage.h"
 
 using namespace std;

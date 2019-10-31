@@ -1,7 +1,7 @@
 #ifndef ZFLYEMBODYENV_H
 #define ZFLYEMBODYENV_H
 
-#include "tz_stdint.h"
+#include <cstdint>
 
 class Neu3Window;
 

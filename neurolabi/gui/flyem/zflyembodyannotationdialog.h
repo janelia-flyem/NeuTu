@@ -1,8 +1,11 @@
 #ifndef ZFLYEMBODYANNOTATIONDIALOG_H
 #define ZFLYEMBODYANNOTATIONDIALOG_H
 
+#include <cstdint>
+
 #include <QDialog>
-#include "tz_stdint.h"
+#include <QSet>
+#include <QList>
 
 class ZFlyEmBodyAnnotation;
 
@@ -15,7 +18,7 @@ class ZFlyEmBodyAnnotationDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit ZFlyEmBodyAnnotationDialog(QWidget *parent = 0);
+  explicit ZFlyEmBodyAnnotationDialog(bool admin, QWidget *parent);
   ~ZFlyEmBodyAnnotationDialog();
 
   ZFlyEmBodyAnnotation getBodyAnnotation() const;
@@ -44,6 +47,7 @@ public:
   void processUnknownStatus(const std::string &status);
 
   void setDefaultStatusList(const QList<QString> statusList);
+  void addAdminStatus(const QString &status);
   void updateStatusBox();
 
 public slots:
@@ -56,10 +60,12 @@ private:
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
+  bool m_isAdmin = false;
 
   std::string m_oldName;
 
   QList<QString> m_defaultStatusList;
+  QSet<QString> m_adminSatutsList;
 
   static const QString FINALIZED_TEXT;
 };

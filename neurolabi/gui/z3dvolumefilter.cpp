@@ -7,12 +7,12 @@
 #include "zeventlistenerparameter.h"
 #include "zmesh.h"
 #include "QsLog.h"
-#include "zbenchtimer.h"
+#include "logging/zbenchtimer.h"
 #include "zmeshutils.h"
 #include "zlabelcolortable.h"
 #include "zsparseobject.h"
-#include "zstackdochelper.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdochelper.h"
+#include "mvc/zstackdoc.h"
 #include "misc/miscutility.h"
 
 const size_t Z3DVolumeFilter::m_maxNumOfFullResolutionVolumeSlice = 6;
@@ -205,7 +205,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
       }
     }
   }
-  //LOG(INFO) << img << vols.size();
+  LOG(INFO) << img << vols.size();
   setData(vols, img);
 }
 
@@ -1720,10 +1720,8 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
 
         Z3DVolume *vh = new Z3DVolume(
               stack2, glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
-              glm::vec3(offset.x(), offset.y(),
-                        offset.z()),
-              m_rendererBase.coordTransform()
-                                      /*glm::vec3(.0)*/);
+              glm::vec3(offset.x(), offset.y(), offset.z()),
+              m_rendererBase.coordTransform());
 
         vols.emplace_back(vh);
       } else { //small stack
@@ -1992,8 +1990,9 @@ void Z3DVolumeFilter::readSparseVolumeWithObject(const ZStackDoc* doc, std::vect
 void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::unique_ptr<Z3DVolume> >& vols)
 {
   ZStackDocHelper docHelper;
-  ZStack *stackData = docHelper.getSparseStack(doc);
-
+//  ZStack *stackData = docHelper.getSparseStack(doc);
+  std::unique_ptr<ZStack> stackData =
+      std::unique_ptr<ZStack>(docHelper.makeBoundedSparseStack(doc));
 
 #if 0
   ZSparseStack *spStack = m_doc->getSparseStack();
@@ -2004,7 +2003,7 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
   const ZStack *stackData = spStack->getStack();
 #endif
 
-  if (stackData == NULL) {
+  if (stackData.get() == NULL) {
     return;
   }
 

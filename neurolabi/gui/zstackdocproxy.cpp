@@ -1,6 +1,6 @@
 #include "zstackdocproxy.h"
 
-#include "flyem/zflyembody3ddoc.h"
+#include "mvc/zstackdoc.h"
 #include "zmesh.h"
 
 ZStackDocProxy::ZStackDocProxy()
@@ -17,7 +17,7 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
   if (doc != NULL) {
     switch (dataType) {
     case ZStackDoc::DATA_SWC:
-      objList = doc->getObjectList(ZStackObject::TYPE_SWC);
+      objList = doc->getObjectList(ZStackObject::EType::TYPE_SWC);
       break;
     case ZStackDoc::DATA_TODO:
       objList = doc->getObjectList(ZStackObject::TYPE_FLYEM_TODO_LIST);
@@ -88,19 +88,32 @@ QList<ZMesh*> ZStackDocProxy::GetRoiMeshList(ZStackDoc *doc)
   return filteredMeshList;
 }
 
-ZMesh* ZStackDocProxy::GetMeshForSplit(ZStackDoc *doc)
+void ZStackDocProxy::SaveMesh(
+    ZStackDoc *doc, const QString &fileName,
+    std::function<bool (const ZMesh *)> pred)
 {
-  ZMesh *mesh = NULL;
+  QMutexLocker locker(doc->getObjectGroup().getMutex());
+  QList<ZStackObject*> meshList = doc->getObjectGroup().getObjectListUnsync(
+        ZMesh::GetType());
 
-  ZFlyEmBody3dDoc *bodyDoc = qobject_cast<ZFlyEmBody3dDoc*>(doc);
-  if (bodyDoc != NULL) {
-    mesh = bodyDoc->getMeshForSplit();
-  } else {
-    QList<ZMesh*> meshList = doc->getMeshList();
-    if (!meshList.isEmpty()) {
-      mesh = meshList.front();
+  std::vector<ZMesh*> visibleMeshList;
+  for (ZStackObject *obj : meshList) {
+    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
+    if (mesh) {
+      if (pred(mesh)) {
+        visibleMeshList.push_back(mesh);
+      }
     }
   }
 
-  return mesh;
+  ZMesh mesh = ZMesh::Merge(visibleMeshList);
+  mesh.save(fileName.toStdString());
+}
+
+void ZStackDocProxy::SaveVisibleMesh(
+    ZStackDoc *doc, const QString &fileName)
+{
+  SaveMesh(doc, fileName, [](const ZMesh *mesh) {
+    return mesh->isVisible();
+  });
 }

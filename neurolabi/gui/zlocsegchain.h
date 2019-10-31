@@ -32,14 +32,14 @@ public:
   virtual ~ZLocsegChain();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_LOCSEG_CHAIN;
+    return ZStackObject::EType::LOCSEG_CHAIN;
   }
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutube::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const;
 
 public: // I/O functions
   virtual void save(const char *filePath);
@@ -54,7 +54,7 @@ public: // I/O functions
 public:
   //Detach data from the object
   Locseg_Chain* detachData();
-  inline Locseg_Chain *data() { return m_chain; }
+  inline Locseg_Chain *data() const { return m_chain; }
   void setId(int id) { m_id = id; }
   inline int id() const { return m_id; }
   //inline const QString source() const { return m_source; }

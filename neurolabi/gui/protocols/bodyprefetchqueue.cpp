@@ -2,12 +2,14 @@
 
 #include <QMutexLocker>
 
-#include "zqslog.h"
-#include "flyem/zflyembody3ddoc.h"
+#include "logging/zqslog.h"
 
-#include "zstackdocdatabuffer.h"
 #include "zstackobjectsourcefactory.h"
 #include "zmesh.h"
+
+#include "mvc/zstackdocdatabuffer.h"
+
+#include "flyem/zflyembody3ddoc.h"
 
 /*
  * this queue should be moved into its own thread after creation; see
@@ -57,9 +59,11 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
 
     bool wasEmpty = m_queue.isEmpty();
     foreach (uint64_t bodyID, bodyIDs) {
+      m_queue.enqueue(bodyID);
+      LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+
       if (!ZFlyEmBodyManager::encodesTar(bodyID)) {
-        m_queue.enqueue(bodyID);
-        LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+
         int zoom = 0;
         ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0, &zoom);
 
@@ -69,10 +73,15 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
           mesh->setSource(source);
 
           m_doc->getDataBuffer()->addUpdate(
-                mesh, ZStackDocObjectUpdate::ACTION_ADD_BUFFER);
+                mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
         }
+      } else{
+        ZFlyEmBodyConfig config(bodyID);
+        config.setAddBuffer();
+        m_doc->addBody(config);
       }
     }
+
     if (wasEmpty) {
         m_queueHasItems.wakeAll();
     }

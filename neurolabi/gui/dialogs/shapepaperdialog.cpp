@@ -5,14 +5,15 @@
 #include <QMessageBox>
 #include <QDir>
 #include <fstream>
+
+#include "common/math.h"
 #include "ui_shapepaperdialog.h"
 #include "zdialogfactory.h"
 #include "neutubeconfig.h"
-#include "zparameterarray.h"
+#include "widgets/zparameterarray.h"
 #include "zfilelist.h"
 #include "zstack.hxx"
 #include "zdoublevector.h"
-#include "tz_math.h"
 #include "zstring.h"
 #include "flyem/zflyemdataframe.h"
 #include "zframefactory.h"
@@ -104,7 +105,8 @@ void ShapePaperDialog::on_sparseObjectPushButton_clicked()
         ZDoubleVector vec;
         vec.importTextFile(offsetFilePath);
         if (vec.size() == 3) {
-          stack.setOffset(iround(vec[0]), iround(vec[1]), iround(vec[2]));
+          stack.setOffset(
+                neutu::iround(vec[0]), neutu::iround(vec[1]), neutu::iround(vec[2]));
         }
 
         ZObject3dScan obj;
@@ -733,15 +735,15 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
           if (process.run()) {
             const ZJsonObject &output = process.getOutput();
             if (output.hasKey("cluster_file")) {
-              const char *outputFile =
+              std::string outputFile =
                   ZJsonParser::stringValue(output["cluster_file"]);
-              if (outputFile != NULL) {
+              if (!outputFile.empty()) {
                 QFile file(getPath(RESULT_CLUSTERING));
                 if (file.exists()) {
                   file.remove();
                 }
 
-                QFile::copy(outputFile, getPath(RESULT_CLUSTERING));
+                QFile::copy(outputFile.c_str(), getPath(RESULT_CLUSTERING));
                 dump(getPath(RESULT_CLUSTERING) + " saved.");
 
                 ZMatrix mat;
@@ -757,7 +759,7 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
 
                 ZFlyEmNeuronArray *neuronArray = getNeuronArray();
                 for (int i = 0; i < mat.getRowNumber(); ++i) {
-                  int isExamplar = iround(mat.at(i, 1));
+                  int isExamplar = neutu::iround(mat.at(i, 1));
                   if (isExamplar == 1) {
                     ZFlyEmNeuron &neuron = (*neuronArray)[i];
                     neuron.getModel()->save(examplarDirPath.toStdString() +

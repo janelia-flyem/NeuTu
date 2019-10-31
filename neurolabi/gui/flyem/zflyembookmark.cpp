@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "zqslog.h"
+#include "common/math.h"
+#include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 #include "zjsonobject.h"
-#include "tz_math.h"
 #include "zpainter.h"
 #include "zstring.h"
 #include "zjsonparser.h"
@@ -33,13 +33,13 @@ void ZFlyEmBookmark::init()
   m_type = GetType();
 
   m_bodyId = 0;
-  m_bookmarkType = TYPE_LOCATION;
+  m_bookmarkType = EBookmarkType::LOCATION;
   m_isChecked = false;
   setCustom(false);
 //  m_bookmarkRole = ROLE_ASSIGNED;
   m_isInTable = true;
 
-  m_visualEffect = neutube::display::Sphere::VE_DOT_CENTER;
+  m_visualEffect = neutu::display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
 //  setHittable(false);
@@ -49,7 +49,7 @@ void ZFlyEmBookmark::init()
 void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
-  m_bookmarkType = TYPE_LOCATION;
+  m_bookmarkType = EBookmarkType::LOCATION;
   m_isChecked = false;
   setCustom(false);
 //  m_bookmarkRole = ROLE_USER;
@@ -69,9 +69,9 @@ void ZFlyEmBookmark::print() const
 
 QString ZFlyEmBookmark::getDvidKey() const
 {
-  return QString("%1_%2_%3").arg(iround(getCenter().x())).
-      arg(iround(getCenter().y())).
-      arg(iround(getCenter().z()));
+  return QString("%1_%2_%3").arg(neutu::iround(getCenter().x())).
+      arg(neutu::iround(getCenter().y())).
+      arg(neutu::iround(getCenter().z()));
 }
 
 ZJsonObject ZFlyEmBookmark::toDvidAnnotationJson() const
@@ -89,7 +89,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
   }
 
   if (ZJsonParser::stringValue(jsonObj["Kind"]) == std::string("Note")) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["Pos"]);
 
     if (jsonObj.hasKey("Tags")) {
@@ -107,7 +107,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 
       if (!propJson.isEmpty()) {
         uint64_t bodyId = 0;
-        if (ZJsonParser::isInteger(propJson["body ID"])) {
+        if (ZJsonParser::IsInteger(propJson["body ID"])) {
           bodyId = ZJsonParser::integerValue(propJson["body ID"]);
         } else {
           bodyId = ZString(ZJsonParser::stringValue(propJson["body ID"])).
@@ -122,17 +122,17 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         ZString type = ZJsonParser::stringValue(propJson["type"]);
         if (!type.empty()) {
           if (type == "Merge") {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else if (type == "Split") {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           }
         } else {
           if (text.startsWith("split") || text.startsWith("small split")) {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
           } else {
-            setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
           }
         }
 
@@ -145,7 +145,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
           std::cout << userName << std::endl;
 #endif
-          setUser(userName.c_str());
+          setUser(userName);
         }
 
         setComment(ZJsonParser::stringValue(propJson["comment"]));
@@ -153,7 +153,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         setUser(ZJsonParser::stringValue(propJson["user"]));
 
         if (propJson.hasKey("checked")) {
-          if (ZJsonParser::isBoolean(propJson["checked"])) {
+          if (ZJsonParser::IsBoolean(propJson["checked"])) {
             setChecked(ZJsonParser::booleanValue(propJson["checked"]));
           } else {
             std::string checked = ZJsonParser::stringValue(propJson["checked"]);
@@ -162,7 +162,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         }
 
         if (propJson.hasKey("custom")) {
-          if (ZJsonParser::isBoolean(propJson["custom"])) {
+          if (ZJsonParser::IsBoolean(propJson["custom"])) {
             setCustom(ZJsonParser::booleanValue(propJson["custom"]));
           } else {
             std::string custom = ZJsonParser::stringValue(propJson["custom"]);
@@ -178,10 +178,10 @@ QString ZFlyEmBookmark::getTypeString() const
 {
   QString text;
   switch (m_bookmarkType) {
-  case TYPE_FALSE_MERGE:
+  case EBookmarkType::FALSE_MERGE:
     text = "Split";
     break;
-  case TYPE_FALSE_SPLIT:
+  case EBookmarkType::FALSE_SPLIT:
     text = "Merge";
     break;
   default:
@@ -200,9 +200,9 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
     obj.setEntry("status", m_status.toStdString());
   }
   int location[3];
-  location[0] = iround(getCenter().x());
-  location[1] = iround(getCenter().y());
-  location[2] = iround(getCenter().z());
+  location[0] = neutu::iround(getCenter().x());
+  location[1] = neutu::iround(getCenter().y());
+  location[2] = neutu::iround(getCenter().z());
 
 
   /*
@@ -247,15 +247,15 @@ void ZFlyEmBookmark::setCustom(bool state)
   */
   m_isCustom = state;
   if (state == true) {
-    setHitProtocal(ZStackObject::HIT_DATA_POS);
+    setHitProtocal(ZStackObject::EHitProtocol::HIT_DATA_POS);
   } else {
-    setHitProtocal(ZStackObject::HIT_NONE);
+    setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
   }
 }
 
 void ZFlyEmBookmark::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   ZStackBall::display(painter, slice, option, sliceAxis);
 
@@ -283,13 +283,15 @@ void ZFlyEmBookmark::display(
 
 
 
-void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
+bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 {
+  bool loaded = false;
+
   clear();
 
 #if 1
   if (jsonObj["location"] != NULL) {
-    std::vector<int> coordinates =
+    std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["location"]);
 
     if (coordinates.size() == 3) {
@@ -304,17 +306,17 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       ZString type = ZJsonParser::stringValue(jsonObj["type"]);
       if (!type.empty()) {
         if (type == "Merge") {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
         } else if (type == "Split") {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
         }
       } else {
         if (text.startsWith("split") || text.startsWith("small split")) {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
         } else if (text.startsWith("merge")) {
-          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_SPLIT);
         } else {
-          setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+          setBookmarkType(ZFlyEmBookmark::EBookmarkType::LOCATION);
         }
       }
 
@@ -327,7 +329,7 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 #ifdef _DEBUG_2
         std::cout << userName << std::endl;
 #endif
-        setUser(userName.c_str());
+        setUser(userName);
       }
 
       setComment(ZJsonParser::stringValue(jsonObj["comment"]));
@@ -340,10 +342,13 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       if (jsonObj.hasKey("custom")) {
         setCustom(ZJsonParser::booleanValue(jsonObj["custom"]));
       }
+
+      loaded = true;
     }
   }
 #endif
 
+  return loaded;
 }
 
 std::string ZFlyEmBookmark::toLogString() const
@@ -392,4 +397,4 @@ ZFlyEmBookmark* ZFlyEmBookmark::clone() const
   return bookmark;
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

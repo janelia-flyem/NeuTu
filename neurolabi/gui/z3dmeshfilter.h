@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "z3dgeometryfilter.h"
-#include "zoptionparameter.h"
-#include "zwidgetsgroup.h"
-#include "znumericparameter.h"
+#include "widgets/zoptionparameter.h"
+#include "widgets/zwidgetsgroup.h"
+#include "widgets/znumericparameter.h"
 #include "z3dmeshrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zstringutils.h"
@@ -41,7 +41,7 @@ public:
 
   void updateMeshVisibleState();
 
-  ZBBox<glm::dvec3> meshBound(ZMesh* p);
+  ZBBox<glm::dvec3> meshBound(const ZMesh *p);
 
   void setColorMode(const std::string &mode);
 
@@ -149,7 +149,7 @@ private:
   std::shared_ptr<SelectionStateMachine> m_selectionStateMachine;
 
   // generate and save to speed up bound box rendering for big mesh
-  std::map<ZMesh*, ZBBox<glm::dvec3>> m_meshBoundboxMapper;
+  std::map<const ZMesh*, ZBBox<glm::dvec3>> m_meshBoundboxMapper;
 
   std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   bool m_dataIsInvalid;

@@ -2,9 +2,10 @@
 
 #include <iostream>
 #include <sstream>
+
+#include "common/math.h"
 #include "zstring.h"
 #include "zjsonarray.h"
-#include "tz_math.h"
 #include "flyem/zflyemcoordinateconverter.h"
 
 void flyem::ZGeometry::print() const
@@ -336,7 +337,7 @@ ZJsonObject flyem::ZHotSpot::toRavelerJsonObject(
       converter.convert(&pt, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
                         ZFlyEmCoordinateConverter::RAVELER_SPACE);
       ZJsonArray arrayObj;
-      arrayObj <<  iround(pt.x()) << iround(pt.y()) << iround(pt.z());
+      arrayObj << neutu::iround(pt.x()) << neutu::iround(pt.y()) << neutu::iround(pt.z());
       obj.setEntry("location", arrayObj);
     }
 #if 0

@@ -3,7 +3,7 @@
 
 #include "protocols/taskprotocoltask.h"
 #include "zglmutils.h"
-#include "zpoint.h"
+#include "geometry/zpoint.h"
 #include <QObject>
 #include <QTime>
 
@@ -27,7 +27,7 @@ public:
   QString actionString() override;
   QString targetString() override;
 
-  virtual bool skip() override;
+  virtual bool skip(QString &reason) override;
   virtual void beforeNext() override;
   virtual void beforePrev() override;
   virtual void beforeDone() override;
@@ -64,6 +64,7 @@ private:
   size_t m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
+  size_t m_hybridExpectedCount;
   size_t m_hybridLoadedCount;
 
   QWidget *m_widget;

@@ -1,7 +1,8 @@
 #include "zcubearraymovieactor.h"
+
+#include "common/math.h"
 #include "zcubearray.h"
 #include "zmoviestage.h"
-#include "tz_math.h"
 
 ZCubeArrayMovieActor::ZCubeArrayMovieActor()
 {
@@ -44,8 +45,10 @@ void ZCubeArrayMovieActor::move(double /*t*/)
 void ZCubeArrayMovieActor::pushColor()
 {
   if (m_cubeArray != NULL) {
-    m_cubeArray->setColor(iround(m_red * 255.0), iround(m_green * 255.0),
-                     iround(m_blue * 255.0));
+    m_cubeArray->setColor(
+          neutu::iround(m_red * 255.0),
+          neutu::iround(m_green * 255.0),
+          neutu::iround(m_blue * 255.0));
     m_cubeArray->pushObjectColor();
     getStage()->setCubeArrayChanged(true);
   }
@@ -63,7 +66,7 @@ void ZCubeArrayMovieActor::pullColor()
 void ZCubeArrayMovieActor::pushAlpha()
 {
   if (m_cubeArray != NULL) {
-    m_cubeArray->setAlpha(iround(m_alpha * 255.0));
+    m_cubeArray->setAlpha(neutu::iround(m_alpha * 255.0));
     getStage()->setCubeArrayChanged(true);
   }
 }

@@ -1,11 +1,14 @@
 #ifndef ZFLYEMBOOKMARK_H
 #define ZFLYEMBOOKMARK_H
 
+#include <string>
+#include <cstdint>
+
 #include <QString>
 #include <QStringList>
 
-#include "zintpoint.h"
-#include "tz_stdint.h"
+#include "geometry/zintpoint.h"
+
 #include "zstackball.h"
 #include "zjsonobject.h"
 
@@ -15,8 +18,8 @@ public:
   ZFlyEmBookmark();
   ~ZFlyEmBookmark();
 
-  enum EBookmarkType {
-    TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
+  enum class EBookmarkType {
+    FALSE_MERGE, FALSE_SPLIT, LOCATION
   };
 
   /*
@@ -26,11 +29,11 @@ public:
   */
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+    return ZStackObject::EType::FLYEM_BOOKMARK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
@@ -43,9 +46,17 @@ public:
   QString getTypeString() const;
 
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
+
   inline void setComment(const QString &comment) { m_comment = comment; }
   inline void setUser(const QString &user) { m_userName = user; }
   inline void setStatus(const QString &status) { m_status = status; }
+
+  inline void setComment(const std::string &comment) {
+    setComment(QString::fromStdString(comment)); }
+  inline void setUser(const std::string &user) {
+    setUser(QString::fromStdString(user)); }
+  inline void setStatus(const std::string &status) {
+    setStatus(QString::fromStdString(status)); }
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {
@@ -70,7 +81,7 @@ public:
   QString getDvidKey() const;
 
   ZJsonObject toJsonObject(bool ignoringComment = false) const;
-  void loadJsonObject(const ZJsonObject &jsonObj);
+  bool loadJsonObject(const ZJsonObject &jsonObj);
 
   //For the new annotation API
   ZJsonObject toDvidAnnotationJson() const;
@@ -81,7 +92,7 @@ public:
 
   void setCustom(bool state);
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   void addTag(const char* tag);
   void addTag(const std::string &tag);

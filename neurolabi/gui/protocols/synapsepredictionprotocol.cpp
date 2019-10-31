@@ -8,19 +8,20 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QtAlgorithms>
+#include <QShortcut>
 
 #include "synapsepredictioninputdialog.h"
 #include "synapsepredictionbodyinputdialog.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
-#include "zpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zpoint.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
 
@@ -55,6 +56,15 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
 
+    QShortcut *shortcutNext = new QShortcut(Qt::Key_E, this);
+    connect(shortcutNext, SIGNAL(activated()), this, SLOT(onNextButton()));
+
+    QShortcut *shortcutPrev = new QShortcut(Qt::Key_Q, this);
+    connect(shortcutPrev, SIGNAL(activated()), this, SLOT(onPrevButton()));
+
+    QShortcut *shortcutRefresh = new QShortcut(Qt::Key_R, this);
+    connect(shortcutRefresh, SIGNAL(activated()), this, SLOT(onRefreshButton()));
+
     connect(ui->reviewFirstButton, SIGNAL(clicked(bool)),
             this, SLOT(onReviewFirstButton()));
     connect(ui->reviewPrevButton, SIGNAL(clicked(bool)),
@@ -79,7 +89,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
-    m_currentPendingIndex = 0;
+    initPendingIndex();
+//    m_currentPendingIndex = 0;
     m_currentFinishedIndex = 0;
 }
 
@@ -198,12 +209,17 @@ void SynapsePredictionProtocol::setRange(const ZJsonArray &rangeJson)
   setRange(range);
 }
 
+void SynapsePredictionProtocol::initPendingIndex()
+{
+  if (m_pendingList.size() > 0) {
+    m_currentPendingIndex = 0;
+  } else {
+    m_currentPendingIndex = -1;
+  }
+}
+
 void SynapsePredictionProtocol::onFirstButton() {
-    if (m_pendingList.size() > 0) {
-      m_currentPendingIndex = 0;
-    } else {
-      m_currentPendingIndex = -1;
-    }
+    initPendingIndex();
 
     gotoCurrent();
     updateLabels();
@@ -211,11 +227,14 @@ void SynapsePredictionProtocol::onFirstButton() {
 
 void SynapsePredictionProtocol::onReviewFirstButton()
 {
+  initPendingIndex();
+  /*
   if (m_finishedList.size() > 0) {
     m_currentPendingIndex = 0;
   } else {
     m_currentPendingIndex = -1;
   }
+  */
 
   gotoCurrentFinished();
 }
@@ -540,7 +559,8 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     }
 
     // must get mode before synapse list is retrieved
-    m_currentMode = QString::fromUtf8(ZJsonParser::stringValue(data[KEY_MODE.c_str()]));
+    m_currentMode = QString::fromUtf8(
+          ZJsonParser::stringValue(data[KEY_MODE.c_str()]).c_str());
     ui->modeMenu->setCurrentText(m_currentMode);
 
     // variation specific loading:
@@ -607,7 +627,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
   bool isVerified = true;
   if (reader.good()) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        reader.readSynapse(pt, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN) {
       std::vector<ZIntPoint> psdArray = synapse.getPartners();
@@ -615,7 +635,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
            iter != psdArray.end(); ++iter) {
         const ZIntPoint &pt = *iter;
         ZDvidSynapse synapse =
-            reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+            reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
         if (!synapse.isVerified()) {
           isVerified = false;
           break;
@@ -629,14 +649,14 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
       if (!partnerArray.empty()) {
         targetPoint = partnerArray.front();
         ZDvidSynapse presyn =
-            reader.readSynapse(targetPoint, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            reader.readSynapse(targetPoint, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         std::vector<ZIntPoint> psdArray = presyn.getPartners();
         for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             isVerified = false;
             break;
@@ -658,7 +678,7 @@ void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 
   if (reader.good()) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        reader.readSynapse(pt, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
@@ -827,7 +847,9 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     // I don't *think* there's any way these lists will already be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
-    m_currentPendingIndex = 0;
+
+
+//    m_currentPendingIndex = 0;
 
     ZDvidReader &reader = m_dvidReader;
 //    reader.setVerbose(false);
@@ -841,9 +863,9 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
 
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
-            synapseList = reader.readSynapse(m_protocolRange, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(m_protocolRange, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else if (m_variation == VARIATION_BODY) {
-            synapseList = reader.readSynapse(m_bodyID, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+            synapseList = reader.readSynapse(m_bodyID, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
         } else {
             variationError(m_variation);
         }
@@ -895,6 +917,8 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
 
         progressDialog.setValue(100);
     }
+
+    initPendingIndex();
 }
 
 /*
@@ -1056,13 +1080,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
     std::vector<ZDvidSynapse> result;
 
     if (reader.good()) {
-        ZDvidSynapse synapse = reader.readSynapse(point, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+        ZDvidSynapse synapse = reader.readSynapse(point, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
 
         // find the presynaptic site
         if (!(synapse.getKind() == ZDvidAnnotation::EKind::KIND_PRE_SYN)) {
             if (synapse.getPartners().size() > 0) {
                 ZIntPoint preLocation = synapse.getPartners().front();
-                synapse = reader.readSynapse(preLocation, flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+                synapse = reader.readSynapse(preLocation, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
             } else {
                 // can't find presynaptic site, so give up
                 return result;
@@ -1073,7 +1097,7 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
         // get all the post-synaptic sites
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], dvid::EAnnotationLoadMode::NO_PARTNER);
             // we've been seeing some blank lines in the PSD table; I think
             //  they might be due to unlinked PSDs, and this might catch them:
             if (post.isValid()) {

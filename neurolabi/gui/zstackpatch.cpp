@@ -1,11 +1,11 @@
 #include "zstackpatch.h"
+
 #include "zstack.hxx"
-#include "tz_math.h"
 #include "zpainter.h"
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
 }
 
 ZStackPatch::~ZStackPatch()
@@ -28,14 +28,14 @@ ZPoint ZStackPatch::getFinalOffset() const
 
 void ZStackPatch::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::EAxis::Z) {
+  if (sliceAxis != neutu::EAxis::Z) {
     return;
   }
 
   if (m_stack != NULL) {
-    int dataFocus = iround(painter.getZOffset() + slice);
+    int dataFocus = painter.getZOffset() + slice;
 
     ZImage image = getImage(dataFocus);
 //    ZPoint pt = getFinalOffset() - painter.getOffset();
@@ -106,4 +106,4 @@ void ZStackPatch::setFinalOffset(double dx, double dy)
   m_offset.set(dx, dy, m_offset.z());
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)

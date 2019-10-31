@@ -5,13 +5,15 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
+
 #include "dialogs/zdviddialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
-#include "zparameter.h"
 #include "dialogs/zspinboxgroupdialog.h"
 
+
+class ZIntPoint;
 class QSpacerItem;
 class ZParameterArray;
 class ZWidgetMessage;
@@ -35,7 +37,7 @@ public:
 
   static ZDvidTargetProviderDialog* makeDvidDialog(QWidget *parent = 0, ZDvidDialogType type = DEFAULT);
   static QDialog* makeTestDialog(QWidget *parent = 0);
-  static QDialog* makeStackDialog(QWidget *parent = 0);
+//  static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidTargetProviderDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
@@ -45,6 +47,10 @@ public:
       QWidget *parent);
   static bool Ask(const QString &title, const QString &msg, QWidget *parent);
   static void Warn(const QString &title, const QString &msg, QWidget *parent);
+  static void Error(const QString &title, const QString &msg, QWidget *parent);
+
+  static bool WarningAskForContinue(
+      const QString &title, const QString &msg, QWidget *parent);
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
@@ -52,12 +58,22 @@ public:
       const QString &caption, const QString &filePath, QWidget *parent);
   static QString GetSaveFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetSaveFileName(
+      const QString &caption, const QString &filePath, const QString &filter,
+      QWidget *parent);
 
   static void Notify3DDisabled(QWidget *parent);
 
   static void About(QWidget *parent);
 
   static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
+
+  static ZIntPoint AskForIntPoint(QWidget *parent);
+  static ZIntPoint AskForIntPoint(
+      const ZIntPoint &defaultPos, QWidget *parent);
+
+  static uint64_t GetUint64(
+      const QString &title, const QString &label, QWidget *parent);
 
 private:
 

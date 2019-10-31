@@ -1,7 +1,7 @@
 #include "zflyemsupervisor.h"
 #include "neutube.h"
 #include "neutubeconfig.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "dvid/libdvidheader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
@@ -9,11 +9,12 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 #include "zdvidutil.h"
+#include "zjsonparser.h"
 
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)
 {
-  m_userName = neutube::GetCurrentUserName();
+  m_userName = neutu::GetCurrentUserName();
 //  m_server = "emdata2.int.janelia.org:9100";
 }
 
@@ -36,7 +37,7 @@ int ZFlyEmSupervisor::testServer()
 #if defined(_ENABLE_LIBDVIDCPP_)
   if (!m_server.empty()) {
     if (m_connection.get() != NULL) {
-      ZDvid::MakeRequest(*m_connection, "/", "HEAD",
+      dvid::MakeRequest(*m_connection, "/", "HEAD",
                          libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                          statusCode);
     }
@@ -57,21 +58,21 @@ void ZFlyEmSupervisor::setUserName(const std::string userName)
 }
 
 std::string ZFlyEmSupervisor::GetUserName(
-    const std::string &userName, flyem::EBodySplitMode mode)
+    const std::string &userName, neutu::EBodySplitMode mode)
 {
-  if (mode == flyem::EBodySplitMode::OFFLINE) {
+  if (mode == neutu::EBodySplitMode::OFFLINE) {
     return userName + "-offline";
   }
 
   return userName;
 }
 
-std::string ZFlyEmSupervisor::getUserName(flyem::EBodySplitMode mode) const
+std::string ZFlyEmSupervisor::getUserName(neutu::EBodySplitMode mode) const
 {
   return GetUserName(m_userName, mode);
 }
 
-bool ZFlyEmSupervisor::checkIn(uint64_t bodyId, flyem::EBodySplitMode mode)
+bool ZFlyEmSupervisor::checkIn(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
   if (m_server.empty()) {
     return false;
@@ -98,7 +99,7 @@ bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
   return writer.getStatusCode() == 200;
 }
 
-bool ZFlyEmSupervisor::checkOut(uint64_t bodyId, flyem::EBodySplitMode mode)
+bool ZFlyEmSupervisor::checkOut(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
   ZOUT(LINFO(), 3) << "Checking out body:" << bodyId;
 
@@ -178,27 +179,27 @@ std::string ZFlyEmSupervisor::getCheckinUrl(
 }
 
 std::string ZFlyEmSupervisor::getCheckinUrl(
-    const std::string &uuid, uint64_t bodyId, flyem::EBodySplitMode mode) const
+    const std::string &uuid, uint64_t bodyId, neutu::EBodySplitMode mode) const
 {
   return QString("%1/%2/%3").arg(getCheckinUrl(uuid).c_str()).arg(bodyId).
       arg(getUserName(mode).c_str()).toStdString();
 }
 
 std::string ZFlyEmSupervisor::getCheckoutUrl(
-    const std::string &uuid, uint64_t bodyId, flyem::EBodySplitMode mode) const
+    const std::string &uuid, uint64_t bodyId, neutu::EBodySplitMode mode) const
 {
   return QString("%1/%2/%3").arg(getCheckoutUrl(uuid).c_str()).arg(bodyId).
       arg(getUserName(mode).c_str()).toStdString();
 }
 
 std::string ZFlyEmSupervisor::getCheckinUrl(
-    uint64_t bodyId, flyem::EBodySplitMode mode) const
+    uint64_t bodyId, neutu::EBodySplitMode mode) const
 {
   return getCheckinUrl(getUuid(), bodyId, mode);
 }
 
 std::string ZFlyEmSupervisor::getCheckoutUrl(
-    uint64_t bodyId, flyem::EBodySplitMode mode) const
+    uint64_t bodyId, neutu::EBodySplitMode mode) const
 {
   return getCheckoutUrl(getUuid(), bodyId, mode);
 }
@@ -234,6 +235,6 @@ void ZFlyEmSupervisor::setSever(const std::string &server)
 {
   m_server = server;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  m_connection = ZDvid::MakeDvidConnection(server);
+  m_connection = dvid::MakeDvidConnection(server);
 #endif
 }

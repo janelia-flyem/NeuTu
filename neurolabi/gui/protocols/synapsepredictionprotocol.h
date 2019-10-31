@@ -8,8 +8,8 @@
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
-#include "zintcuboid.h"
-#include "zintpoint.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zintpoint.h"
 
 #include "protocoldialog.h"
 
@@ -132,6 +132,7 @@ private:
     bool keepSynapse(ZDvidSynapse synapse);
     std::vector<uint64_t> getBodiesForSynapse(std::vector<ZDvidSynapse> synapse);
     QString targetBodyStylesheet(QColor color);
+    void initPendingIndex();
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H

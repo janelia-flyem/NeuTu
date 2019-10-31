@@ -1,9 +1,14 @@
 #include "zflyemconfig.h"
+
 #include <iostream>
+#include <cstdlib>
+#include <regex>
+
+#include "common/utilities.h"
+#include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
-#include "neutubeconfig.h"
 #include "dvid/zdvidurl.h"
 #include "zstring.h"
 
@@ -27,6 +32,8 @@ const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
 const char* ZFlyEmConfig::NEUTU_SERVER_KEY = "neutu_server";
 const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
 const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
+const char* ZFlyEmConfig::UI_KEY = "ui";
+const char* ZFlyEmConfig::STYLE_KEY = "style";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -41,7 +48,7 @@ ZFlyEmConfig::~ZFlyEmConfig()
 void ZFlyEmConfig::init()
 {
 #ifdef _QT_GUI_USED_
-  m_userName = neutube::GetCurrentUserName();
+  m_userName = neutu::GetCurrentUserName();
 #endif
 //  m_neutuService.setServer("http://zhaot-ws1:8080");
 //  m_neutuService.updateStatus();
@@ -136,10 +143,17 @@ void ZFlyEmConfig::loadConfig()
         setDefaultNeuTuServer(ZJsonParser::stringValue(obj[NEUTU_SERVER_KEY]));
       }
 
-      if (obj.hasKey(NEUROGLANCER_KEY)) {
-        m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+      if (const char* setting = std::getenv("NEUROGLANCER_SERVER")) {
+        m_neuroglancerServer = setting;
+        m_neuroglancerServerConfigSource = neutu::EConfigSource::ENV_VAR;
+      } else {
+        if (obj.hasKey(NEUROGLANCER_KEY)) {
+          m_neuroglancerServer =
+              ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+//          m_neuroglancerServer = m_defaultNeuroglancerServer;
+          m_neuroglancerServerConfigSource = neutu::EConfigSource::CONFILG_FILE;
+        }
       }
-
 
       if (obj.hasKey(DVID_ROOT_KEY)) {
         ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
@@ -162,7 +176,7 @@ void ZFlyEmConfig::loadConfig()
           target.loadJsonObject(dvidObj);
           if (target.getGrayScaleName().empty()) {
             //Use default name for back compatibility
-            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE));
+            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ERole::GRAY_SCALE));
           }
 //          std::string mapped = getDvidRootNode(target.getUuid());
 //          if (!mapped.empty()) {
@@ -182,6 +196,13 @@ void ZFlyEmConfig::loadConfig()
 
           target.print();
 #endif
+        }
+      }
+
+      if (obj.hasKey(UI_KEY)) {
+        ZJsonObject uiObj(obj.value(UI_KEY));
+        if (uiObj.hasKey(STYLE_KEY)) {
+          m_uiStyleSheet = ZJsonParser::stringValue(uiObj[STYLE_KEY]);
         }
       }
     }
@@ -339,11 +360,24 @@ std::string ZFlyEmConfig::getNeuTuServer() const
 void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)
 {
 #ifdef _QT_GUI_USED_
-  NeutubeConfig::SetNeuTuServer(server.c_str());;
+  NeutubeConfig::SetNeuTuServer(server.c_str());
 #endif
 }
 
 #ifdef _QT_GUI_USED_
+
+ZFlyEmConfig::EServiceStatus ZFlyEmConfig::getNeutuseStatus() const
+{
+  return m_neutuseStatus;
+}
+
+bool ZFlyEmConfig::isNeutuseOnline() const
+{
+  return (getNeutuseStatus() == EServiceStatus::ONLINE_NET) ||
+      (getNeutuseStatus() == EServiceStatus::ONLINE_LOCAL);
+}
+
+/*
 bool ZFlyEmConfig::hasNormalService() const
 {
   if (getNeutuService().isNormal() || m_neutuseWriter.ready()) {
@@ -352,33 +386,88 @@ bool ZFlyEmConfig::hasNormalService() const
 
   return false;
 }
+*/
 
-void ZFlyEmConfig::updateServiceStatus()
+void ZFlyEmConfig::updateCheckedNeutuseStatus()
 {
-  GET_FLYEM_CONFIG.getNeutuService().updateStatus();
-  GET_FLYEM_CONFIG.getNeutuseWriter().testConnection();
+  if (m_neutuseWriter.ready()) {
+    m_neutuseStatus =
+        neutu::UsingLocalHost(m_neutuseWriter.getServerAddress())
+          ? EServiceStatus::ONLINE_LOCAL
+          : EServiceStatus::ONLINE_NET;
+//    neutuseOpened = true;
+  } else {
+    m_neutuseStatus = EServiceStatus::OFFLINE;
+  }
 }
 
-void ZFlyEmConfig::activateNeuTuServer()
+void ZFlyEmConfig::updateNeutuseStatus()
+{
+//  GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+
+  m_neutuseWriter.testConnection();
+  updateCheckedNeutuseStatus();
+}
+
+void ZFlyEmConfig::activateNeutuse(bool forLocalTarget)
+{
+  if (m_neutuseStatus == EServiceStatus::UNCHECKED) {
+    activateNeutuseForce(forLocalTarget);
+  }
+}
+
+bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget) const
+{
+  if (forLocalTarget) {
+    return m_neutuseStatus == EServiceStatus::ONLINE_LOCAL;
+  }
+
+  return isNeutuseOnline();
+}
+
+bool ZFlyEmConfig::neutuseAvailable(const ZDvidTarget &target) const
+{
+  return neutuseAvailable(neutu::UsingLocalHost(target.getAddress()));
+}
+
+void ZFlyEmConfig::activateNeutuseForce(bool forLocalTarget)
 {
   std::string server = getNeuTuServer();
   std::vector<std::string> serverList = ZString::Tokenize(server, ';');
-  bool neutuseOpened = false;
-  bool serviceOpened = false;
+//  bool neutuseOpened = false;
+//  bool serviceOpened = false;
   m_neutuseWriter.reset();
-  getNeutuService().reset();
+//  getNeutuService().reset();
   for (const std::string &server : serverList) {
+    bool isLocalService = neutu::UsingLocalHost(server);
     if (ZString(server).startsWith("neutuse:")) {
-      if (!neutuseOpened) {
-        m_neutuseWriter.open(server.substr(8));
-        neutuseOpened = m_neutuseWriter.ready();
+      bool needOpen = false;
+      if (forLocalTarget) {
+        if (isLocalService) {
+          needOpen = true;
+        }
+      } else {
+        needOpen = true;
       }
-    } else {
-      if (!serviceOpened) {
-        getNeutuService().setServer(server);
-        serviceOpened = getNeutuService().isNormal();
+
+      if (needOpen) {
+        m_neutuseWriter.open(server.substr(8));
+        updateCheckedNeutuseStatus();
       }
     }
+
+      /* else { //obsolete
+      if (!serviceOpened && !forLocalTarget) {
+        getNeutuService().setServer(server);
+        if (getNeutuService().isNormal()) {
+          m_neutuServerStatus =
+              isLocalService ? EServiceStatus::ONLINE_LOCAL
+                             : EServiceStatus::ONLINE_NET;
+        }
+//        serviceOpened = getNeutuService().isNormal();
+//        m_neutuServerChecked = true;
+      }
+    }*/
   }
 }
 

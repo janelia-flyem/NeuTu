@@ -6,9 +6,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <exception>
 
-#include "tz_error.h"
-#include "tz_utilities.h"
 #include "zstring.h"
 
 using namespace std;
@@ -21,45 +20,34 @@ using namespace std;
 
 ZString::ZString() : string()
 {
-  init();
-}
-
-ZString::ZString(const ZString &str) : string(str.c_str())
-{
-  init();
 }
 
 ZString::ZString(const char *s) : string(s)
 {
-  init();
 }
 
 ZString::ZString(const char *s, size_t n) : string(s, n)
 {
-  init();
 }
 
 ZString::ZString(const std::string &str) : string(str)
 {
-  init();
 }
 
 ZString::ZString(const std::string &str, size_t pos, size_t n) :
   string(str, pos, n)
 {
-  init();
 }
 
 #if defined(_QT_GUI_USED_)
 ZString::ZString(const QString &str) : string(str.toStdString())
 {
-  init();
 }
 #endif
 
 ZString::~ZString()
 {
-  if (m_workspace != NULL) {
+  if (m_workspace) {
     Kill_String_Workspace(m_workspace);
   }
 }
@@ -112,25 +100,93 @@ vector<int> ZString::toIntegerArray()
     valueArray[i] = array[i];
   }
 
-  if (array != NULL) {
+  if (array) {
     free(array);
   }
 
   return valueArray;
 }
 
+namespace {
+size_t count_integer(const char *str)
+{
+  size_t n = 0;
+  int state = 0;
+
+  while (*str) {
+    switch (state) {
+    case 0:
+      if (isdigit(*str)) {
+        n++;
+        state = 1;
+      }
+      break;
+    case 1:
+      if (!isdigit(*str)) {
+        state = 0;
+      }
+      break;
+    default:
+      throw std::logic_error("count_integer: Invalid state");
+    }
+    str++;
+  }
+
+  return n;
+}
+uint64_t *string_to_uint64_array(const char *str, uint64_t *array, size_t *n)
+{
+  *n = count_integer(str);
+  if (*n == 0) {
+    return nullptr;
+  }
+
+  if (array == nullptr) {
+    array = new uint64_t[*n];
+  }
+
+  int i = 0;
+  int state = 0;
+
+  while (*str) {
+    switch (state) {
+    case 0:
+      if (isdigit(*str)) {
+        array[i] = uint64_t(*str - '0');
+        state = 1;
+      }
+      break;
+    case 1:
+      if (isdigit(*str)) {
+        array[i] = array[i] * 10 + uint64_t(*str - '0');
+      } else { /* end of the number */
+        state = 0;
+        i++;
+      }
+      break;
+    default:
+      throw std::logic_error("string_to_uint64_array: Invalid state");
+    }
+    str++;
+  }
+
+  return array;
+}
+
+}
+
 vector<uint64_t> ZString::toUint64Array()
 {
-  int n;
-  uint64_t *array = String_To_Uint64_Array(c_str(), NULL, &n);
+  size_t n;
+  uint64_t *array = string_to_uint64_array(c_str(), nullptr, &n);
 
   vector<uint64_t> valueArray(n);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     valueArray[i] = array[i];
   }
 
-  if (array != NULL) {
-    free(array);
+  if (array != nullptr) {
+    delete []array;
   }
 
   return valueArray;
@@ -386,6 +442,27 @@ ZString& ZString::replace(int from, const string &to)
   return *this;
 }
 
+ZString& ZString::replace(uint64_t from, const string &to)
+{
+  ostringstream stream;
+  stream << from;
+  string fromStr = stream.str();
+
+  if (fromStr.size() == 0) {
+    return *this;
+  }
+
+  size_t found = find(fromStr);
+
+  while (found != string::npos) {
+    string::replace(found, fromStr.size(), to);
+    found += to.size();
+    found = find(fromStr, found);
+  }
+
+  return *this;
+}
+
 bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
   if (empty() ||str.empty()) {
@@ -449,6 +526,14 @@ std::string ZString::upper() const
 
 void ZString::appendNumber(int num, int pad)
 {
+  std::ostringstream stream;
+  stream.fill('0');
+  stream.width(pad);
+  stream << num;
+
+  *this += stream.str();
+
+#if 0
   static const int kMaxPadSize = 100;
 
   TZ_ASSERT(pad >= 0 && pad <= kMaxPadSize, "Invalid padding");
@@ -467,20 +552,19 @@ void ZString::appendNumber(int num, int pad)
   } else {
     cerr << "Appending failed" << endl;
   }
+#endif
 }
 
 void ZString::appendNumber(uint64_t num, int pad)
 {
   static const int kMaxPadSize = 100;
 
-  TZ_ASSERT(pad >= 0 && pad <= kMaxPadSize, "Invalid padding");
-
   if (pad >= 0 && pad <= kMaxPadSize) {
     char numStr[50];
 
     sprintf(numStr, "%llu", num);
 
-    int zeroNumber = pad - strlen(numStr);
+    int zeroNumber = pad - int(strlen(numStr));
     for (int i = 0; i < zeroNumber; i++) {
       (*this) += '0';
     }
@@ -548,7 +632,7 @@ string ZString::absolutePath(const string &dir, const string &relative)
 
   fullPath.replace("/./", "/");
 
-  return fullPath;
+  return std::move(fullPath);
 }
 
 bool ZString::isRemotePath() const
@@ -766,10 +850,12 @@ vector<string> ZString::decomposePath(const std::string &str)
   return parts;
 }
 
+/*
 ZString ZString::toFileExt()
 {
   return ZString(fextn(c_str()));
 }
+*/
 
 ZString ZString::toFileName()
 {

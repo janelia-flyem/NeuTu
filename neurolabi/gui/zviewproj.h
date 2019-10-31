@@ -3,6 +3,8 @@
 
 #include <QRect>
 
+class ZJsonObject;
+
 /*!
  * \brief The class of handling view-projection computation
  */
@@ -11,8 +13,8 @@ class ZViewProj
 public:
   ZViewProj();
 
-  enum EReference {
-    REF_LEFTOP, REF_CENTER
+  enum class EReference {
+    LEFTOP, CENTER
   };
 
   void reset();
@@ -38,6 +40,7 @@ public:
 
   QRectF getProjRect() const;
   QRect getViewPort() const;
+  QPoint getViewPortCenter() const;
 
   QPoint getWidgetCenter() const;
 
@@ -53,6 +56,12 @@ public:
   void setZoomWithFixedPoint(double zoom, const QPoint &viewPoint);
 //  void setZoomWithFixedPoint(double zoom, const QPointF &viewPoint);
 
+  /*!
+   * \brief move a viewport position to a widget postion.
+   *
+   * After moving, the viewport position (\a srcX, \a srcY) should be mapped to
+   * the widget position (\a dstX, \a dstY).
+   */
   void move(int srcX, int srcY, double dstX, double dstY);
   void move(const QPoint &src, const QPointF &dst);
   void move(const QPoint &src, const QPoint &dst);
@@ -115,6 +124,7 @@ public:
   void recoverViewPort();
 
   void print() const;
+  ZJsonObject toJsonObject() const;
 
   bool operator ==(const ZViewProj &viewProj) const;
   bool operator !=(const ZViewProj &viewProj) const;

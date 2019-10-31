@@ -1,7 +1,7 @@
 #include "zroilistview.h"
 
 #include "flyem/zflyemroiobjsmodel.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 
 ZRoiListView::ZRoiListView(ZStackDocPtr doc, QWidget *parent) :
   QTreeView(parent)

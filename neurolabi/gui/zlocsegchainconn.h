@@ -34,10 +34,11 @@ public:
                    int hookSpot, int loopSpot, int mode = NEUROCOMP_CONN_HL);
   virtual ~ZLocsegChainConn();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  virtual void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0,
+                       EDisplayStyle option = EDisplayStyle::NORMAL)
   const;
 
   virtual void save(const char *filePath);

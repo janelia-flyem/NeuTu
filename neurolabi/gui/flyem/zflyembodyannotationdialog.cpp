@@ -7,19 +7,22 @@
 
 const QString ZFlyEmBodyAnnotationDialog::FINALIZED_TEXT = "Finalized";
 
-ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
+ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(bool admin, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::ZFlyEmBodyAnnotationDialog)
 {
   ui->setupUi(this);
 
-  ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
+  flyem::PrepareBodyStatus(ui->statusComboBox);
 
-  if (neutube::IsAdminUser()) {
+  m_isAdmin = admin;
+
+  if (m_isAdmin) {
     showFinalizedStatus();
 //    ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
+  ui->nameComboBox->hide();
 
   setWhatsThis("Annotate the selected body. You can specify the name and status"
                "of the body as well as add any comment as you like. "
@@ -126,9 +129,9 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
-  annotation.setUser(neutube::GetCurrentUserName());
+  annotation.setUser(neutu::GetCurrentUserName());
   if (isNameChanged()) {
-    annotation.setNamingUser(neutube::GetCurrentUserName());
+    annotation.setNamingUser(neutu::GetCurrentUserName());
   }
 
   return annotation;
@@ -206,6 +209,11 @@ void ZFlyEmBodyAnnotationDialog::setDefaultStatusList(
   m_defaultStatusList = statusList;
 }
 
+void ZFlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
+{
+  m_adminSatutsList.insert(status);
+}
+
 void ZFlyEmBodyAnnotationDialog::updateStatusBox()
 {
   ui->statusComboBox->clear();
@@ -227,10 +235,13 @@ void ZFlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->addItem(status.c_str());
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
-//    if (!neutube::IsAdminUser()) {
-    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
-      ui->statusComboBox->setEnabled(false);
+    if (m_adminSatutsList.contains(status.c_str())) {
+      ui->statusComboBox->setEnabled(m_isAdmin);
     }
+//    if (!neutube::IsAdminUser()) {
+//    if (!ZFlyEmBodyStatus::IsAccessible(status)) {
+//      ui->statusComboBox->setEnabled(false);
+//    }
   }
 }
 

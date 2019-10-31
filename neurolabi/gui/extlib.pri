@@ -118,8 +118,9 @@ CONFIG(debug, debug|release) {
 message("rpath")
 message($$QMAKE_RPATHDIR)
 
+LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
-    LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
+    LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
         LIBS *= -llowtis
 #        CONFIG(debug, debug|release) {
@@ -144,18 +145,28 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
+VTK_VER = 8.2
+
 #
 exists($${CONDA_ENV}) {
-  VTK_VER = 7.1
+#  VTK_VER = 7.1
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
-  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive
+  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
-  LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} -lvtksys-$${VTK_VER} -lvtkCommonDataModel-$${VTK_VER} -lvtkCommonMath-$${VTK_VER} -lvtkCommonMisc-$${VTK_VER} -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} -lvtkFiltersGeneral-$${VTK_VER}
 } else {
-# todo: add vtk or just use conda?
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
   LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco
+  INCLUDEPATH += vtk-$${VTK_VER}
 }
+
+LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} \
+    -lvtksys-$${VTK_VER} -lvtkCommonDataModel-$${VTK_VER} \
+    -lvtkCommonMath-$${VTK_VER} -lvtkCommonMisc-$${VTK_VER} \
+    -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} \
+    -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} \
+    -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} \
+    -lvtkFiltersGeneral-$${VTK_VER} -lvtkIOCore-$${VTK_VER} -lvtkIOGeometry-$${VTK_VER}
+
 win32 {
   LIBS += -lopengl32 -lglu32
 }
@@ -166,3 +177,12 @@ macx {
 #  LIBS += -lGL -lGLU
 #}
 
+CONFIG(static_gtest) { # gtest from ext folder
+  include($$PWD/ext/gtest.pri)
+}
+
+include(ext/QsLog/QsLog.pri)
+include(ext/libqxt.pri)
+include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
+
+HEADERS += ext/http/HTTPRequest.hpp

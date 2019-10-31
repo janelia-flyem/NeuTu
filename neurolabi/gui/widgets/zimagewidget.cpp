@@ -1,19 +1,27 @@
-#include <QElapsedTimer>
+#include "zimagewidget.h"
 
 #include <cstring>
 #include <cmath>
-#include <QGraphicsBlurEffect>
 
-#include "zqslog.h"
+#include <QGraphicsBlurEffect>
+#include <QMouseEvent>
+#include <QElapsedTimer>
+
+#include "common/math.h"
 #include "tz_rastergeom.h"
-#include "widgets/zimagewidget.h"
+#include "misc/miscutility.h"
+
+#include "logging/zqslog.h"
+#include "logging/zlog.h"
+#include "qt/gui/loghelper.h"
+
 #include "zpainter.h"
 #include "zpaintbundle.h"
 #include "neutubeconfig.h"
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
-#include "misc/miscutility.h"
+
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -22,28 +30,17 @@ ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 
 ZImageWidget::~ZImageWidget()
 {
-  /*
-  if (m_widgetCanvas != NULL) {
-    delete m_widgetCanvas;
-  }
-  */
-
-//  if (m_isowner == true) {
-//    if (m_image != NULL) {
-//      delete m_image;
-//    }
-//  }
 }
 
 void ZImageWidget::init()
 {
-  qDebug() << "ZImageWidget initialization:" << this;
+//  qDebug() << "ZImageWidget initialization:" << this;
 
-  m_isViewHintVisible = true;
-  m_freeMoving = true;
-  m_hoverFocus = false;
-  m_smoothDisplay = false;
-  m_isReady = false;
+//  m_isViewHintVisible = true;
+//  m_freeMoving = true;
+//  m_hoverFocus = false;
+//  m_smoothDisplay = false;
+//  m_isReady = false;
 
 #if 0
   if (image != NULL) {
@@ -57,19 +54,19 @@ void ZImageWidget::init()
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   setAttribute(Qt::WA_OpaquePaintEvent);
   //setAttribute(Qt::WA_NoSystemBackground);
-  setImage(NULL);
+//  setImage(NULL);
   setCursor(Qt::CrossCursor);
   setMouseTracking(true);
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
-  m_paintBundle = NULL;
-  m_tileCanvas = NULL;
-  m_objectCanvas = NULL;
-  m_dynamicObjectCanvas = NULL;
-  m_activeDecorationCanvas = NULL;
+//  m_paintBundle = NULL;
+//  m_tileCanvas = NULL;
+//  m_objectCanvas = NULL;
+//  m_dynamicObjectCanvas = NULL;
+//  m_activeDecorationCanvas = NULL;
 //  m_widgetCanvas = NULL;
 
-  m_sliceAxis = neutube::EAxis::Z;
+//  m_sliceAxis = neutube::EAxis::Z;
 }
 
 void ZImageWidget::maximizeViewPort()
@@ -85,7 +82,9 @@ void ZImageWidget::enableOffsetAdjustment(bool on)
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+#ifdef _DEBUG_2
   LDEBUG() << "ZImageWidget::paintEvent";
+#endif
 
   QWidget::paintEvent(event);
 
@@ -113,14 +112,18 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     }
 
 
-    /* draw gray regions */
+    /* draw background */
+//    painter.save();
+    QBrush bgBrush(QColor(164,164, 164), Qt::CrossPattern);
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
                      Qt::gray);
+    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
+                     bgBrush);
+//    painter.restore();
 //    QSize size = projectSize();
 
     if (m_image != NULL) {
-      painter.drawImage(
-            m_viewProj, *m_image);
+      painter.drawImage(m_viewProj, *m_image);
 #ifdef _DEBUG_2
       m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
@@ -128,7 +131,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 #ifdef _DEBUG_2
@@ -320,6 +323,12 @@ void ZImageWidget::setViewPortOffset(int x, int y)
   updateView();
 }
 
+void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
+{
+  m_viewProj.setOffset(cx - (viewPort().width() - 1) / 2,
+                       cy - (viewPort().height() - 1) / 2);
+}
+
 void ZImageWidget::setZoomRatio(double zoomRatio)
 {
   m_viewProj.setZoom(zoomRatio);
@@ -442,7 +451,7 @@ void ZImageWidget::paintObject()
 
     for (;iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
+      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
@@ -462,11 +471,11 @@ void ZImageWidget::paintObject()
 #ifdef _DEBUG_2
       std::cout << obj << std::endl;
 #endif
-      if (obj->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+      if (obj->getType() == ZStackObject::EType::CROSS_HAIR) {
         ZPainter rawPainter(this);
         rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
         obj->display(rawPainter, m_paintBundle->sliceIndex(),
-                     ZStackObject::NORMAL, m_sliceAxis);
+                     ZStackObject::EDisplayStyle::NORMAL, m_sliceAxis);
       } else {
         paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
                           m_paintBundle->displayStyle(), m_sliceAxis);
@@ -479,7 +488,7 @@ void ZImageWidget::paintObject()
 
     for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
+      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
@@ -736,12 +745,30 @@ bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
-{
+{  
+  neutu::LogMouseReleaseEvent(
+        m_pressedButtons, event->modifiers(), "ZImageWidget");
+
+//  neutu::LogMouseEvent(event, "release", "ZImageWidget");
+//  KINFO << "Mouse released in ZImageWidget";
+
+  m_pressedButtons = Qt::NoButton;
+
   emit mouseReleased(event);
 }
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+//  if (event->buttons() == Qt::LeftButton) {
+//    KINFO << "Mouse (left) dragged in ZImageWidget";
+//  } else if (event->buttons() == Qt::RightButton) {
+//    KINFO << "Mouse (right) dragged in ZImageWidget";
+//  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
+//    KINFO << "Mouse (right+right) dragged in ZImageWidget";
+//  }
+
+  neutu::LogMouseDragEvent(event, "ZImageWidget");
+
   if (!hasFocus() && m_hoverFocus) {
     setFocus();
   }
@@ -750,16 +777,28 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void ZImageWidget::mousePressEvent(QMouseEvent *event)
 {
+//  KINFO << "Mouse pressed in ZImageWidget";
+
+  neutu::LogMouseEvent(event, "press", "ZImageWidget");
+
+  m_pressedButtons = event->buttons();
+
   emit mousePressed(event);
 }
 
 void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+  neutu::LogMouseEvent(event, "double click", "ZImageWidget");
+//  KINFO << "Mouse double clicked in ZImageWidget";
+
   emit mouseDoubleClicked(event);
 }
 
 void ZImageWidget::wheelEvent(QWheelEvent *event)
 {
+  neutu::LogMouseEvent(event, "ZImageWidget");
+//  KINFO << "Mouse scrolled in ZImageWidget";
+
   emit mouseWheelRolled(event);
 }
 
@@ -829,7 +868,7 @@ void ZImageWidget::updateView()
 {
   //View port adjustment
   if (m_offsetAdjustment) {
-    int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
+    int zoom = neutu::iround(std::log2(getViewProj().getZoom())) + 1;
     if (zoom > 0) {
       m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
     }

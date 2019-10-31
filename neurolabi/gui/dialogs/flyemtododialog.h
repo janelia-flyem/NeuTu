@@ -2,8 +2,9 @@
 #define FLYEMTODODIALOG_H
 
 #include <QDialog>
+#include <QModelIndex>
 
-#include "zsharedpointer.h"
+#include "common/zsharedpointer.h"
 
 class ZFlyEmTodoListModel;
 class ZStackDoc;
@@ -17,7 +18,7 @@ class FlyEmTodoDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit FlyEmTodoDialog(QWidget *parent = 0);
+  explicit FlyEmTodoDialog(QWidget *parent = nullptr);
   ~FlyEmTodoDialog();
 
   void setDocument(ZSharedPointer<ZStackDoc> doc);
@@ -25,8 +26,19 @@ public:
 public slots:
   void updateTable();
 
+signals:
+  void checkingTodoItem(int x, int y, int z, bool checked);
+
 private:
   void init();
+  void setChecked(bool checked);
+
+private slots:
+  void updateTextFilter(QString text);
+  void updateVisibility(bool on);
+  void checkSelected();
+  void uncheckSelected();
+  void onDoubleClicked(QModelIndex index);
 
 private:
   Ui::FlyEmTodoDialog *ui;

@@ -7,7 +7,7 @@
 #include "c_stack.h"
 #include "zstack.hxx"
 #include "zdebug.h"
-#include "zintcuboid.h"
+#include "geometry/zintcuboid.h"
 #include "zstackfactory.h"
 #include "zstackutil.h"
 #include "zstackarray.h"
@@ -102,7 +102,7 @@ TEST(ZStack, Basic)
   Stack *s1 = C_Stack::make(GREY16, 3, 4, 5);
   Stack *s2 = C_Stack::make(GREY16, 3, 4, 5);
   Stack *s3 = C_Stack::make(GREY16, 3, 4, 5);
-  Mc_Stack *s4 = ZStack::makeMcStack(s1, s2, s3);
+  Mc_Stack *s4 = ZStack::MakeMcStack(s1, s2, s3);
 
   C_Stack::kill(s1);
   C_Stack::kill(s2);
@@ -436,23 +436,44 @@ TEST(ZStackUtil, Basic)
   ASSERT_FALSE(zstack::DsIntvGreaterThan()(stack1, stack2));
 }
 
-TEST(ZStackArray, Basic)
-{
+class ZStackArrayTest: public ::testing::Test {
+
+public:
   ZStackArray sa;
+  ZStack *stack1 = nullptr;
+  ZStack *stack2 = nullptr;
+  ZStack *stack3 = nullptr;
 
-  ZStack *stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
-  stack1->setDsIntv(1, 1, 1);
+  void SetUp() override;
 
-  ZStack *stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
-  stack1->setDsIntv(0, 1, 1);
+  void TearDown() override {
+  }
+};
 
-  ZStack *stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+void ZStackArrayTest::SetUp()
+{
+  stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
   stack1->setDsIntv(1, 0, 0);
+
+  stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack2->setDsIntv(0, 1, 1);
+
+  stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack3->setDsIntv(1, 1, 1);
 
   sa.append(stack1);
   sa.append(stack2);
   sa.append(stack3);
+}
 
+
+TEST_F(ZStackArrayTest, Basic)
+{
+  ASSERT_EQ(3, int(sa.size()));
+}
+
+TEST_F(ZStackArrayTest, Sort)
+{
   sa.sort(zstack::DsIntvGreaterThan());
   ASSERT_EQ(stack3, sa[0].get());
   ASSERT_EQ(stack2, sa[1].get());

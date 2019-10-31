@@ -1,20 +1,19 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
+#include <cstdint>
 #include <string>
 #if defined(_QT_GUI_USED_)
 #include <QString>
 #endif
 #include <vector>
 
-#include "tz_stdint.h"
 #include "tz_string.h"
 
 class ZString : public std::string
 {
 public:
   ZString();
-  ZString(const ZString &str);
   ZString(const std::string& str);
   ZString ( const std::string& str, size_t pos, size_t n = npos );
   ZString ( const char * s, size_t n );
@@ -26,7 +25,6 @@ public:
   template<class InputIterator> ZString (
       InputIterator begin, InputIterator end) : std::string(begin, end)
   {
-    init();
   }
   ~ZString();
 
@@ -36,8 +34,6 @@ public:
   enum ECaseSensitivity {
     CASE_SENSITIVE, CASE_INSENSITIVE
   };
-
-  inline void init() { m_workspace = NULL; }
 
   static int FirstInteger(const std::string &str);
   int firstInteger();
@@ -74,6 +70,7 @@ public:
   bool containsDigit();
   ZString& replace(const std::string &from, const std::string &to);
   ZString &replace(int from, const std::string &to);
+  ZString &replace(uint64_t from, const std::string &to);
 
   /*!
    * \brief Test if a string starts with another string.
@@ -148,7 +145,7 @@ public:
   std::vector<std::string> decomposePath() const;
   static std::vector<std::string> decomposePath(const std::string &str);
 
-  ZString toFileExt();
+//  ZString toFileExt();
   ZString toFileName();
 
   ZString &operator= (const ZString &str);
@@ -164,7 +161,7 @@ public:
   static std::string num2str(uint64_t n);
 
 private:
-  String_Workspace *m_workspace;
+  String_Workspace *m_workspace = nullptr;
 };
 
 #endif // ZSTRING_H

@@ -94,17 +94,17 @@ int <1T>_Chain_Length(<1T>_Chain *chain)
   return <1T>_Node_Dlist_Length(chain->list, DL_BOTHDIR);
 }
 
-BOOL <1T>_Chain_Is_Empty(<1T>_Chain *chain)
+_BOOL_ <1T>_Chain_Is_Empty(<1T>_Chain *chain)
 {
   if (chain == NULL) {
-    return TRUE;
+    return _TRUE_;
   }
 
   if (chain->list == NULL) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 <1T>_Node_Dlist* <1T>_Chain_Iterator_Start(<1T>_Chain *chain, 
@@ -485,14 +485,14 @@ void <1T>_Chain_Insert(<1T>_Chain *chain, <2T> *<1t>,
 
 void <1T>_Chain_Remove_End(<1T>_Chain *chain, Dlist_End_e end)
 {
-  if (<1T>_Chain_Is_Empty(chain) == FALSE) {
+  if (<1T>_Chain_Is_Empty(chain) == _FALSE_) {
     chain->list = <1T>_Node_Dlist_Remove_End(chain->list, end);
   }
 }
 
 void <1T>_Chain_Remove_Current(<1T>_Chain *chain)
 {
-  if (<1T>_Chain_Is_Empty(chain) == FALSE) {
+  if (<1T>_Chain_Is_Empty(chain) == _FALSE_) {
     if (chain->iterator != NULL) {
       <1T>_Node_Dlist *next = chain->iterator->next;
       chain->list = <1T>_Node_Dlist_Remove_Node(chain->iterator);

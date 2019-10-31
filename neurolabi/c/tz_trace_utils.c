@@ -28,9 +28,9 @@ void Default_Trace_Workspace(Trace_Workspace *tw)
 {
   tw->length = 5000;
   tw->fit_first = 0;
-  tw->refit = TRUE;
-  tw->break_refit = FALSE;
-  tw->tune_end = FALSE;
+  tw->refit = _TRUE_;
+  tw->break_refit = _FALSE_;
+  tw->tune_end = _FALSE_;
   tw->tscore_option = STACK_FIT_CORRCOEF;
   tw->trace_step = 0.5;
   tw->seg_length = NEUROSEG_DEFAULT_H;
@@ -52,8 +52,8 @@ void Default_Trace_Workspace(Trace_Workspace *tw)
   tw->sup_stack = NULL;
   tw->trace_mask = NULL;
   tw->swc_mask = NULL;
-  tw->trace_mask_updating = TRUE;
-  tw->canvas_updating = FALSE;
+  tw->trace_mask_updating = _TRUE_;
+  tw->canvas_updating = _FALSE_;
   tw->canvas = NULL;
   tw->test_func = NULL;
   tw->save_path[0] = '\0';
@@ -62,7 +62,7 @@ void Default_Trace_Workspace(Trace_Workspace *tw)
   tw->resolution[1] = -1.0;
   tw->resolution[2] = -1.0;
   tw->fit_workspace = NULL;
-  tw->add_hit = TRUE;
+  tw->add_hit = _TRUE_;
 }
 
 void Clean_Trace_Workspace(Trace_Workspace *tw) 
@@ -98,25 +98,25 @@ void Print_Trace_Workspace(const Trace_Workspace *tw)
 {
   printf("Maximum length: %d\n", tw->length);
   printf("Fit first? ");
-  if (tw->fit_first == TRUE) {
+  if (tw->fit_first == _TRUE_) {
     printf("Yes.\n");
   } else {
     printf("No.\n");
   }
   printf("Refit? ");
-  if (tw->refit == TRUE) {
+  if (tw->refit == _TRUE_) {
     printf("Yes.\n");
   } else {
     printf("No.\n");
   }
   printf("Break refit? ");
-  if (tw->break_refit == TRUE) {
+  if (tw->break_refit == _TRUE_) {
     printf("Yes.\n");
   } else {
     printf("No.\n");
   }
   printf("Tune ends? ");
-  if (tw->tune_end == TRUE) {
+  if (tw->tune_end == _TRUE_) {
     printf("Yes.\n");
   } else {
     printf("No.\n");
@@ -137,7 +137,7 @@ void Print_Trace_Workspace(const Trace_Workspace *tw)
   printf("Tracing mask: ");
   Print_Stack_Info(tw->trace_mask);
   printf("Update tracing mask? ");
-  if (tw->trace_mask_updating == TRUE) {
+  if (tw->trace_mask_updating == _TRUE_) {
     printf("Yes.\n");
   } else {
     printf("No.\n");
@@ -185,7 +185,7 @@ int Trace_Workspace_Mask_Value_Z(const Trace_Workspace *tw,
   return Trace_Workspace_Mask_Value(tw, pos);
 }
 
-BOOL Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
+_BOOL_ Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
 				    const double pos[3])
 {
   if (pos[0] >= 0 && pos[1] >= 0 && pos[2] >= 0) {
@@ -193,22 +193,22 @@ BOOL Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw,
     for (i = 0; i < 3; i++) {
       if (tw->trace_range[i] >= 0.0) {
 	if (pos[i] < tw->trace_range[i]) {
-	  return FALSE;
+	  return _FALSE_;
 	}
       }
 	
       if (tw->trace_range[i + 3] >= 0.0) {
 	if (pos[i] > tw->trace_range[i + 3]) {
-	  return FALSE;
+	  return _FALSE_;
 	}
       }
     }
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Trace_Workspace_Point_In_Bound_Z(const Trace_Workspace *tw, 
+_BOOL_ Trace_Workspace_Point_In_Bound_Z(const Trace_Workspace *tw, 
 				      double pos[3], double z_scale)
 {
   pos[2] *= z_scale;
@@ -234,18 +234,18 @@ void Trace_Workspace_Set_Fit_Mask(Trace_Workspace *tw, Stack *mask)
   }
 }
 
-BOOL Trace_Workspace_Is_Masked(const Trace_Workspace *tw)
+_BOOL_ Trace_Workspace_Is_Masked(const Trace_Workspace *tw)
 {
   Locseg_Fit_Workspace *fw = (Locseg_Fit_Workspace*) tw->fit_workspace;
   if (fw != NULL) {
     if (fw->sws != NULL) {
       if (fw->sws->mask != NULL) {
-	return TRUE;
+	return _TRUE_;
       }
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 void Print_Trace_Status(int status)
@@ -344,20 +344,20 @@ void Fprint_Trace_Record(FILE *fp, const Trace_Record *tr)
     fprintf(fp, "Tracing history: no information recorded.\n");
   } else {
     fprintf(fp, "Tracing history:\n");
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_FIT_SCORE_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_FIT_SCORE_MASK) == _TRUE_) {
       fprintf(fp, "  ");
       Fprint_Stack_Fit_Score(fp, &(tr->fs));
     }
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_HIT_REGION_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_HIT_REGION_MASK) == _TRUE_) {
       fprintf(fp, "  Hit region: %d\n", tr->hit_region);
     }
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_INDEX_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_INDEX_MASK) == _TRUE_) {
       fprintf(fp, "  Chain index: %d\n", tr->index);
     }
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_REFIT_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_REFIT_MASK) == _TRUE_) {
       fprintf(fp, "  refit: %d\n", tr->refit);
     }
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_FIT_HEIGHT_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_FIT_HEIGHT_MASK) == _TRUE_) {
       if (tr->fit_height[0] == 1) {
 	fprintf(fp, "  height adjusted: backward\n");
       }
@@ -365,7 +365,7 @@ void Fprint_Trace_Record(FILE *fp, const Trace_Record *tr)
 	fprintf(fp, "  height adjusted: forward\n");
       }
     }
-    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_DIRECTION_MASK) == TRUE) {
+    if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_DIRECTION_MASK) == _TRUE_) {
       fprintf(fp, "  Tracing direction: ");
       switch (tr->direction) {
       case DL_FORWARD:
@@ -449,14 +449,14 @@ Trace_Record* Trace_Record_Fread(Trace_Record *tr, FILE *stream)
     return NULL;
   }
   
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (tr == NULL) {
     if (mask == ZERO_BIT_MASK) {
       return NULL;
     } else {
       tr = New_Trace_Record();
-      is_local_alloc = TRUE;
+      is_local_alloc = _TRUE_;
     }
   }
 
@@ -465,7 +465,7 @@ Trace_Record* Trace_Record_Fread(Trace_Record *tr, FILE *stream)
     /*
     if (fread(((void *) tr) + sizeof(Bitmask_t), 
 	      sizeof(Trace_Record) - sizeof(Bitmask_t), 1, stream) != 1) {
-      if (is_local_alloc == TRUE) {
+      if (is_local_alloc == _TRUE_) {
 	Delete_Trace_Record(tr);
       }
       tr = NULL;
@@ -496,14 +496,14 @@ Trace_Record* Trace_Record_Fread_V(Trace_Record *tr, FILE *stream,
       return NULL;
     }
   
-    BOOL is_local_alloc = FALSE;
+    _BOOL_ is_local_alloc = _FALSE_;
 
     if (tr == NULL) {
       if (mask == ZERO_BIT_MASK) {
 	return NULL;
       } else {
 	tr = New_Trace_Record();
-	is_local_alloc = TRUE;
+	is_local_alloc = _TRUE_;
       }
     }
     
@@ -512,7 +512,7 @@ Trace_Record* Trace_Record_Fread_V(Trace_Record *tr, FILE *stream,
       if (fread(BYTE_ARRAY(tr) + sizeof(Bitmask_t), 
                 sizeof(Trace_Record) - sizeof(Bitmask_t) -
                 sizeof(tr->fix_point), 1, stream) != 1) {
-        if (is_local_alloc == TRUE) {
+        if (is_local_alloc == _TRUE_) {
           Delete_Trace_Record(tr);
         }
         tr = NULL;
@@ -542,7 +542,7 @@ Trace_Record* Trace_Record_Fread_V(Trace_Record *tr, FILE *stream,
 void Trace_Record_Set_Score(Trace_Record *tr, const Stack_Fit_Score *fs)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_FIT_SCORE_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_FIT_SCORE_MASK, _TRUE_, &(tr->mask));
     Stack_Fit_Score_Copy(&(tr->fs), fs);
   }
 }
@@ -550,7 +550,7 @@ void Trace_Record_Set_Score(Trace_Record *tr, const Stack_Fit_Score *fs)
 void Trace_Record_Set_Hit_Region(Trace_Record *tr, int hit_region)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_HIT_REGION_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_HIT_REGION_MASK, _TRUE_, &(tr->mask));
     tr->hit_region = hit_region;
   }
 }
@@ -558,7 +558,7 @@ void Trace_Record_Set_Hit_Region(Trace_Record *tr, int hit_region)
 void Trace_Record_Set_Index(Trace_Record *tr, int index)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_INDEX_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_INDEX_MASK, _TRUE_, &(tr->mask));
     tr->index = index;
   }
 }
@@ -566,7 +566,7 @@ void Trace_Record_Set_Index(Trace_Record *tr, int index)
 void Trace_Record_Set_Refit(Trace_Record *tr, int refit)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_REFIT_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_REFIT_MASK, _TRUE_, &(tr->mask));
     tr->refit = refit;
   }
 }
@@ -574,7 +574,7 @@ void Trace_Record_Set_Refit(Trace_Record *tr, int refit)
 void Trace_Record_Set_Fit_Height(Trace_Record *tr, int index, int value)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_FIT_HEIGHT_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_FIT_HEIGHT_MASK, _TRUE_, &(tr->mask));
     tr->fit_height[index] = value;
   }
 }
@@ -582,7 +582,7 @@ void Trace_Record_Set_Fit_Height(Trace_Record *tr, int index, int value)
 void Trace_Record_Set_Direction(Trace_Record *tr, Dlist_Direction_e direction)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_DIRECTION_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_DIRECTION_MASK, _TRUE_, &(tr->mask));
     tr->direction = direction;
   }
 }
@@ -590,7 +590,7 @@ void Trace_Record_Set_Direction(Trace_Record *tr, Dlist_Direction_e direction)
 void Trace_Record_Set_Fix_Point(Trace_Record *tr, double value)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_FIX_POINT_MASK, TRUE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_FIX_POINT_MASK, _TRUE_, &(tr->mask));
     tr->fix_point = value;
   }
 }
@@ -598,7 +598,7 @@ void Trace_Record_Set_Fix_Point(Trace_Record *tr, double value)
 void Trace_Record_Disable_Fix_Point(Trace_Record *tr)
 {
   if (tr != NULL) {
-    Bitmask_Set_Bit(TRACE_RECORD_FIX_POINT_MASK, FALSE, &(tr->mask));
+    Bitmask_Set_Bit(TRACE_RECORD_FIX_POINT_MASK, _FALSE_, &(tr->mask));
   }
 }
 
@@ -667,17 +667,17 @@ double Trace_Record_Fix_Point(const Trace_Record *tr)
   return tr->fix_point;
 }
 
-BOOL Trace_Record_Has_Fix_Point(Trace_Record *tr)
+_BOOL_ Trace_Record_Has_Fix_Point(Trace_Record *tr)
 {
   if (tr == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (Bitmask_Get_Bit(tr->mask, TRACE_RECORD_FIX_POINT_MASK) == 0) {
-    return FALSE;
+    return _FALSE_;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 Trace_Evaluate_Seed_Workspace* New_Trace_Evaluate_Seed_Workspace()
@@ -695,7 +695,7 @@ void Default_Trace_Evaluate_Seed_Workspace(Trace_Evaluate_Seed_Workspace *ws)
 {
   ws->score_option = 1;
   ws->fit_option = 0;
-  ws->zshift = FALSE;
+  ws->zshift = _FALSE_;
   ws->min_score = LOCAL_NEUROSEG_MIN_CORRCOEF;
   ws->nseed = 0;
   ws->base_mask = NULL;
@@ -730,7 +730,7 @@ PRIVATE void stack_adjust_zpos(const Stack *stack, int x, int y, int *z)
   double value[5];
   double points[15];
   int i;
-  for (i = 0; i <= 5; i++) {
+  for (i = 0; i < 5; i++) {
     points[i*3] = x;
     points[i*3+1] = y;
     points[i*3+2] = *z + i - 2;
@@ -900,7 +900,7 @@ void Trace_Evaluate_Seed(const Geo3d_Scalar_Field *seed,
     printf("%g\n", ws->score[i]);
 
     if (Local_Neuroseg_Good_Score(ws->locseg + i, ws->score[i], ws->min_score) 
-	== TRUE) {
+	== _TRUE_) {
       Local_Neuroseg_Label_G(ws->locseg + i, ws->base_mask, -1, 2, z_scale);
     } else {
       Local_Neuroseg_Label_G(ws->locseg + i, ws->base_mask, -1, 1, z_scale);
@@ -937,16 +937,16 @@ void Default_Connection_Test_Workspace(Connection_Test_Workspace *ctw)
   ctw->cos2 = 0.0;
   //ctw->dist_thre = NEUROSEG_DEFAULT_H / 2.0;
   ctw->dist_thre = NEUROSEG_DEFAULT_H;
-  ctw->good_dist = FALSE;
+  ctw->good_dist = _FALSE_;
   ctw->resolution[0] = 1.0;
   ctw->resolution[1] = 1.0;
   ctw->resolution[2] = 1.0;
   ctw->unit = 'p';
   ctw->big_euc = 15.0;
   ctw->big_planar = 10.0;
-  ctw->sp_test = TRUE;
-  ctw->interpolate = TRUE;
-  ctw->crossover_test = FALSE;
+  ctw->sp_test = _TRUE_;
+  ctw->interpolate = _TRUE_;
+  ctw->crossover_test = _FALSE_;
   //ctw->big_euc = 2.0;
   //ctw->big_planar = 2.5;
   ctw->mask = NULL;

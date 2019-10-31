@@ -25,7 +25,7 @@ void FlyEmSettingDialog::updateNeutuseWidget()
   QPalette *palette = new QPalette();
   palette->setColor(
         QPalette::Text,
-        GET_FLYEM_CONFIG.hasNormalService() ? Qt::darkGreen : Qt::darkRed);
+        GET_FLYEM_CONFIG.isNeutuseOnline() ? Qt::darkGreen : Qt::darkRed);
   ui->servicelineEdit->setPalette(*palette);
 }
 
@@ -102,6 +102,7 @@ void FlyEmSettingDialog::loadSetting()
 #endif
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
+  ui->crossWidthSpinBox->setValue(NeutubeConfig::Get3DCrossWidth());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -189,7 +190,7 @@ void FlyEmSettingDialog::update()
     GET_FLYEM_CONFIG.setCustomNeuTuServer(getNeuTuServer());
   }
 
-  GET_FLYEM_CONFIG.activateNeuTuServer();
+  GET_FLYEM_CONFIG.activateNeutuseForce(false);
   updateNeutuseWidget();
 
   /*
@@ -231,6 +232,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetNamingSynapse(namingSynapse());
   NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
+  NeutubeConfig::Set3DCrossWidth(ui->crossWidthSpinBox->value());
 }
 
 QString FlyEmSettingDialog::Shrink(const QString &str, int len)

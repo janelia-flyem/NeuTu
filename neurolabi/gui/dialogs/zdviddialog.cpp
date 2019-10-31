@@ -6,13 +6,15 @@
 #include "neutube.h"
 #include "ui_zdviddialog.h"
 #include "zdvidtargetproviderdialog.h"
-#include "dvid/zdvidtarget.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
 #include "dialogs/zdvidadvanceddialog.h"
+#include "zdialogfactory.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidenv.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -33,7 +35,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 
-  std::string userName = neutube::GetCurrentUserName();
+  std::string userName = neutu::GetCurrentUserName();
 
   for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
            iter != dvidRepo.end(); ++iter) {
@@ -96,6 +98,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
   connect(ui->settingCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(updateWidgetForDefaultSetting()));
+  connect(ui->loadPushButton, SIGNAL(clicked()), this, SLOT(load()));
 
 //  setFixedSize(size());
 
@@ -187,10 +190,8 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
   return target;
 }
 
-void ZDvidDialog::setServer(int index)
+void ZDvidDialog::setServer(const ZDvidTarget &dvidTarget, int index)
 {
-  ZDvidTarget dvidTarget = m_dvidRepo[index];
-
   ui->readOnlyCheckBox->setChecked(dvidTarget.readOnly());
   ui->dvidSourceWidget->setAddress(dvidTarget.getAddress());
   ui->dvidSourceWidget->setPort(dvidTarget.getPort());
@@ -243,6 +244,14 @@ void ZDvidDialog::setServer(int index)
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
   resetAdvancedDlg(dvidTarget);
+}
+
+void ZDvidDialog::setServer(int index)
+{
+  ZDvidTarget dvidTarget = m_dvidRepo[index];
+
+  ui->loadPushButton->setEnabled(index == 0);
+  setServer(dvidTarget, index);
 }
 
 const ZDvidTarget& ZDvidDialog::getDvidTarget(const std::string &name) const
@@ -461,5 +470,24 @@ void ZDvidDialog::editRoiList()
 
     getDvidTarget().setRoiList(roiList);
     ui->roiLabel->setText(QString("%1 ROI").arg(roiList.size()));
+  }
+}
+
+void ZDvidDialog::load()
+{
+  QString fileName =
+      ZDialogFactory::GetOpenFileName("Load DVID Settings", "", this);
+  if (!fileName.isEmpty()) {
+    ZJsonObject dvidJson;
+    dvidJson.load(fileName.toStdString());
+
+    ZDvidEnv env;
+    env.loadJsonObject(dvidJson);
+    ZDvidTarget target = env.getFullMainTarget();
+//    ZDvidTarget target;
+//    target.loadJsonObject(dvidJson);
+    if (target.isValid()) {
+      setServer(target, 1);
+    }
   }
 }

@@ -3,11 +3,11 @@
 #include <QFileInfo>
 
 #include "QsLog.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zcubearray.h"
 #include "zobjsitem.h"
 #include "neutubeconfig.h"
-#include "core/utilities.h"
+#include "common/utilities.h"
 
 ZSurfaceObjsModel::ZSurfaceObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -95,7 +95,7 @@ void ZSurfaceObjsModel::updateModelData()
 
   ZOUT(LTRACE(), 5) << "Update surface object";
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE)));
+        rootData, &(m_doc->getObjectList(ZStackObject::EType::CUBE)));
   setupModelData(m_rootItem);
   endResetModel();
 }
@@ -112,8 +112,8 @@ void ZSurfaceObjsModel::setupModelData(ZObjsItem *parent)
   int sourceParentRow = 0;
   ZOUT(LTRACE(), 5) << "Setup surface model";
   QList<ZStackObject*> surfaceList =
-      m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
-  int numDigit = neutube::numDigits(surfaceList.size()+1);
+      m_doc->getObjectList(ZStackObject::EType::CUBE);
+  int numDigit = neutu::numDigits(surfaceList.size()+1);
   for (int i=0; i<surfaceList.size(); i++) {
     data.clear();
     ZCubeArray *p = dynamic_cast<ZCubeArray*>(surfaceList.at(i));

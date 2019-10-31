@@ -82,6 +82,8 @@ private:
     void makeGUI();
     void setCheckStatus(int row, bool on);
     void toggleCheckStatus(int row);
+    void updateRoiTable();
+    void updateOpacityLabel(double v);
 
 public:
     //

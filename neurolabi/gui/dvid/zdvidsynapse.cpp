@@ -2,13 +2,13 @@
 #include <QtCore>
 #include <QPen>
 
-#include "zqslog.h"
+#include "common/math.h"
+#include "logging/zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
-#include "tz_math.h"
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
@@ -17,6 +17,8 @@
 #include "dvid/zdvidreader.h"
 #include "zvaa3dmarker.h"
 #include "flyem/zflyemmisc.h"
+
+const double ZDvidSynapse::DEFAULT_CONFIDENCE = 1.0;
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -32,21 +34,43 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+bool ZDvidSynapse::hasConfidenceProperty() const
+{
+  return (m_propertyJson.hasKey("confidence")) || m_propertyJson.hasKey("conf");
+}
+
+void ZDvidSynapse::removeConfidenceProperty()
+{
+  RemoveConfidenceProp(m_propertyJson);
+}
+
 double ZDvidSynapse::getConfidence() const
 {
-  double c = 1.0;
+  double c = DEFAULT_CONFIDENCE;
 
-  if (m_propertyJson.hasKey("confidence")) {
-    const char *confStr =
-        ZJsonParser::stringValue(m_propertyJson["confidence"]);
-    c = std::atof(confStr);
-  } else if (m_propertyJson.hasKey("conf")) {
-    const char *confStr =
-        ZJsonParser::stringValue(m_propertyJson["conf"]);
-    c = std::atof(confStr);
+  std::string confStr = getConfidenceStr();
+  if (!confStr.empty()) {
+    c = std::atof(confStr.c_str());
   }
 
   return c;
+}
+
+std::string ZDvidSynapse::getConfidenceStr() const
+{
+  std::string confStr;
+  if (m_propertyJson.hasKey("confidence")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["confidence"]);
+  } else if (m_propertyJson.hasKey("conf")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["conf"]);
+  }
+
+  return confStr;
+}
+
+void ZDvidSynapse::setConfidence(const std::string str)
+{
+  SetConfidenceProp(m_propertyJson, str);
 }
 
 std::string ZDvidSynapse::getAnnotation() const
@@ -75,19 +99,41 @@ void ZDvidSynapse::setConfidence(double c)
   SetConfidenceProp(m_propertyJson, c);
 }
 
+void ZDvidSynapse::RemoveConfidenceProp(ZJsonObject &json)
+{
+  json.removeKey("confidence");
+  json.removeKey("conf");
+}
+
+void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, std::string conf)
+{
+  propJson.removeKey("confidence");
+
+  if (!conf.empty()) {
+    propJson.setEntry("conf", conf);
+  } else {
+    propJson.removeKey("conf");
+  }
+}
+
 void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, double conf)
 {
-  if (propJson.hasKey("confidence")) {
-    propJson.removeKey("confidence");
-  }
-
   // remember, store props as strings!
   std::ostringstream stream;
   stream << conf;
-  propJson.setEntry("conf", stream.str());
+  SetConfidenceProp(propJson, stream.str());
 }
 
 void ZDvidSynapse::SetConfidence(ZJsonObject &json, double conf)
+{
+  ZJsonObject propJson = json.value("Prop");
+  SetConfidenceProp(propJson, conf);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+void ZDvidSynapse::SetConfidence(ZJsonObject &json, std::string conf)
 {
   ZJsonObject propJson = json.value("Prop");
   SetConfidenceProp(propJson, conf);
@@ -125,7 +171,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
+              reader.readSynapse(pt, dvid::EAnnotationLoadMode::NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
@@ -157,7 +203,7 @@ QColor ZDvidSynapse::GetArrowColor(bool verified)
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
-                           neutube::EAxis sliceAxis) const
+                           neutu::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -182,7 +228,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QColor color = getColor();
 
     double alpha = 1.0;
-    if (option == SKELETON) {
+    if (option == EDisplayStyle::SKELETON) {
       alpha = 0.1;
     }
 
@@ -204,7 +250,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
 
-      if (getStatus() == STATUS_DUPLICATED) {
+      if (getStatus() == EStatus::DUPLICATED) {
         painter.drawEllipse(
               QPointF(center.getX(), center.getY()), 1, 1);
       }
@@ -213,7 +259,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double oldWidth = pen.widthF();
       QColor oldColor = pen.color();
       if (getKind() == EKind::KIND_POST_SYN) {
-        if (option != SKELETON) {
+        if (option != EDisplayStyle::SKELETON) {
           pen.setWidthF(oldWidth + 1.0);
         }
         if (isSelected()) {
@@ -283,18 +329,12 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.setPen(color);
       double x = center.getX();
       double y = center.getY();
-      /*
-      painter.drawLine(QPointF(x - lineWidth, y),
-                       QPointF(x + lineWidth, y));
-                       */
+
       int startAngle = 0;
-      int spanAngle = iround((1.0 - conf) * 180) * 16;
+      int spanAngle = neutu::iround((1.0 - conf) * 180) * 16;
       painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
                              QPointF(x + lineWidth, y + lineWidth)),
                       startAngle, spanAngle);
-//      painter.drawEllipse(QPointF(x, y), lineWidth, lineWidth);
-
-//      decorationText += QString(".%1").arg(iround(conf * 10.0));
     }
 
 #if 0
@@ -345,7 +385,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -384,7 +424,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPointF ptArray[4];
     //      double s = 5.0;
     if (z > center.getZ()) {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::NORTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::NORTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
@@ -394,7 +434,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                         rect.top() + rect.height() / s);
 */
     } else {
-      ZFlyEmMisc::MakeTriangle(rect, ptArray, neutube::ECardinalDirection::SOUTH);
+      flyem::MakeTriangle(rect, ptArray, neutu::ECardinalDirection::SOUTH);
       /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);
@@ -453,7 +493,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           partnerSynapse.setDefaultColor();
           partnerSynapse.setDefaultRadius();
           painter.save();
-          partnerSynapse.display(painter, slice, ZStackObject::NORMAL, sliceAxis);
+          partnerSynapse.display(
+                painter, slice, ZStackObject::EDisplayStyle::NORMAL, sliceAxis);
           painter.restore();
         }
       }
@@ -476,7 +517,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         line.setFocusColor(QColor(255, 0, 255));
       }
 
-      line.setVisualEffect(neutube::display::Line::VE_LINE_PROJ);
+      line.setVisualEffect(neutu::display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option, sliceAxis);
 
       /*
@@ -567,12 +608,12 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
   m_partnerKind.resize(m_partnerHint.size(), EKind::KIND_UNKNOWN);
-  m_partnerStatus.resize(m_partnerHint.size(), STATUS_NORMAL);
+  m_partnerStatus.resize(m_partnerHint.size(), EStatus::NORMAL);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], flyem::EDvidAnnotationLoadMode::PARTNER_LOCATION);
+          reader.readSynapse(m_partnerHint[i], dvid::EAnnotationLoadMode::PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();
@@ -590,6 +631,54 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   }
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
+std::string ZDvidSynapse::getConnString(
+    const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const
+{
+  std::string name = std::to_string(getBodyId());
+  switch (getKind()) {
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
+    name += "->";
+    break;
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
+    name += "<-";
+    break;
+  default:
+    name += "-";
+    break;
+  }
+
+  for (const ZIntPoint &pt : m_partnerHint) {
+    auto iter = labelMap.find(pt);
+    if (iter != labelMap.end()) {
+      name += "[" + std::to_string(iter->second) + "]";
+    }
+  }
+
+  return name;
+}
+
+void ZDvidSynapse::updateProperty(const ZJsonObject &propJson)
+{
+  removeConfidenceProperty();
+
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap(false);
+  for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
+       iter != entryMap.end(); ++iter) {
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (ZJsonParser::stringValue(iter->second).empty()) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
+    }
+  }
+}
+
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 
 

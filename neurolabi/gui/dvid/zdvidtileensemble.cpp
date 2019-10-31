@@ -10,8 +10,8 @@
 #endif
 
 #include "neutubeconfig.h"
-#include "zstackview.h"
-#include "dvid/zdvidreader.h"
+#include "mvc/zstackview.h"
+#include "zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"
@@ -22,13 +22,13 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::TARGET_TILE_CANVAS);
+  setTarget(ZStackObject::ETarget::TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
 //  m_view = NULL;
   m_patch = NULL;
   m_dataFetcher = NULL;
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_MULTISCALE_2D);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::MULTISCALE_2D);
 //  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 
@@ -99,16 +99,16 @@ void ZDvidTileEnsemble::updatePatch(
   }
 
   m_patch = new ZImage(*patch);
-  m_patch->loadHighContrastProtocal(m_contrastProtocal);
+  m_patch->loadContrastProtocal(m_contrastProtocal);
   m_patch->enhanceContrast(m_highContrast);
   m_patchRange = region;
 }
 
 void ZDvidTileEnsemble::updateContrast()
 {
-  if (m_highContrast == false) {
-    forceUpdate();
-  }
+//  if (m_highContrast == false) {
+//    forceUpdate();
+//  }
 
   for (std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> >::iterator
        iter = m_tileGroup.begin(); iter != m_tileGroup.end(); ++iter) {
@@ -117,6 +117,7 @@ void ZDvidTileEnsemble::updateContrast()
          tileMap.begin(); tileIter != tileMap.end(); ++tileIter) {
       ZDvidTile *tile = tileIter->second;
       if (tile != NULL) {
+        tile->setContrastProtocal(m_contrastProtocal);
         tile->enhanceContrast(m_highContrast, true);
 //        if (m_highContrast) {
 //          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
@@ -323,9 +324,9 @@ bool ZDvidTileEnsemble::update(
         if (tile != NULL) {
           libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
 
-          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
-          task->setZ(z);
           if (dataPtr.get() != NULL) {
+            ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+            task->setZ(z);
             task->setData(dataPtr->get_raw(), dataPtr->length());
             task->setHighContrast(m_highContrast);
             taskList.append(task);
@@ -434,7 +435,7 @@ void ZDvidTileEnsemble::forceUpdate()
 
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    neutube::EAxis sliceAxis) const
+    neutu::EAxis sliceAxis) const
 {
   /*
   if (m_view == NULL) {
@@ -591,4 +592,4 @@ bool ZDvidTileEnsemble::isEmpty() const
   return m_tileGroup.empty();
 }
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)

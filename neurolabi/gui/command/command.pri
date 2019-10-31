@@ -1,4 +1,5 @@
-HEADERS += \  
+HEADERS += \
+    $$PWD/zuploadroicommand.h \
     $$PWD/zcommandmodule.h \
     $$PWD/zstackdownsamplecommand.h \
     $$PWD/zbodysplitcommand.h \
@@ -6,10 +7,11 @@ HEADERS += \
     $$PWD/zstackdiffcommand.h \
     $$PWD/zmultiscalewatershedcommand.h \
     $$PWD/zbodyexportcommand.h \
-    $$PWD/zsparsestackcommandmodule.h
+    $$PWD/zsparsestackcommandmodule.h \
+    $$PWD/zstackfiltercommand.h
 
-
-SOURCES += \ 
+SOURCES += \
+    $$PWD/zuploadroicommand.cpp \
     $$PWD/zcommandmodule.cpp \
     $$PWD/zstackdownsamplecommand.cpp \
     $$PWD/zbodysplitcommand.cpp \
@@ -17,7 +19,8 @@ SOURCES += \
     $$PWD/zstackdiffcommand.cpp \
     $$PWD/zmultiscalewatershedcommand.cpp \
     $$PWD/zbodyexportcommand.cpp \
-    $$PWD/zsparsestackcommandmodule.cpp
+    $$PWD/zsparsestackcommandmodule.cpp \
+    $$PWD/zstackfiltercommand.cpp
 
 contains(DEFINES, _FLYEM_) {
   message("command.pri")

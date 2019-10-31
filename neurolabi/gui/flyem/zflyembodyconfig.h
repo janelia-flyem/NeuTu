@@ -1,10 +1,13 @@
 #ifndef ZFLYEMBODYCONFIG_H
 #define ZFLYEMBODYCONFIG_H
 
+#include <cstdint>
+
 #include <QColor>
-#include "tz_stdint.h"
-#include "neutube_def.h"
-#include "zintcuboid.h"
+
+#include "common/neutudefs.h"
+#include "flyemdef.h"
+#include "geometry/zintcuboid.h"
 
 /*!
  * \brief The class of configuring a body, mainly for visualization.
@@ -64,22 +67,28 @@ public:
   bool isSupervoxelTar() const;
   int getBodyEncodeLevel() const;
 
-  flyem::EBodyLabelType getLabelType() const;
+  neutu::EBodyLabelType getLabelType() const;
 
 //  void setMaxDsLevel(int level);
 //  void setMinDsLevel(int level);
 
 //  bool usingCoarseSource() const;
 
+  // Indicates that the body meshes should be buffered (for prefetching).
+  void setAddBuffer(bool addBuffer = true);
+  bool getAddBuffer() const;
+
 private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::EBodyType::DEFAULT;
-  flyem::EBodyLabelType m_labelType = flyem::EBodyLabelType::BODY;
+  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;
   int m_localDsLevel = 0;
+
+  bool m_addBuffer = false;
 };
 
 #endif // ZFLYEMBODYCONFIG_H

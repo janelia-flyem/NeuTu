@@ -1,81 +1,90 @@
 #include "zautotracedialog.h"
+#include "ui_zautotracedialog.h"
 
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QPushButton>
-#include <QDialogButtonBox>
-
-#include "zlabeledspinboxwidget.h"
-#include "zlabeledcombowidget.h"
-
-ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
-  : QDialog(parent, f)
+ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent) :
+  QDialog(parent),
+  ui(new Ui::ZAutoTraceDialog)
 {
-  QVBoxLayout *alllayout = new QVBoxLayout;
-  m_resampleCheckbox = new QCheckBox("Resample structure after tracing");
-  m_resampleCheckbox->setToolTip(
-        "The final structure will be sparser when this option is on (recommended).");
-  m_resampleCheckbox->setCheckState(Qt::Checked);
-  alllayout->addWidget(m_resampleCheckbox);
+  ui->setupUi(this);
 
-  m_levelSpinBox = new ZLabeledSpinBoxWidget;
-  m_levelSpinBox->setLabel("Level (0-6)");
-  m_levelSpinBox->setToolTip(
-        "Tracing level: higher value means longer tracing"
-        "time to produce better result (hopefully). "
-        "Level 0 means default parameters.");
-  m_levelSpinBox->setRange(0, 6);
-  alllayout->addWidget(m_levelSpinBox);
-  m_levelSpinBox->hide();
+  setChannelCount(1);
 
+  updateWidget();
 
-  m_channelWidget = new ZLabeledComboWidget;
-  m_channelWidget->setLabel("Signal channel for tracing");
-  m_channelWidget->addSpacer();
-  alllayout->addWidget(m_channelWidget);
-  setChannelNumber(0);
+  connect(ui->defaultLevelCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateWidget()));
+  connect(ui->levelSlider, SIGNAL(valueChanged(int)),
+          this, SLOT(updateWidget()));
 
-  this->setWindowTitle(tr("Automatic Tracing"));
-
-  QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
-                                   | QDialogButtonBox::Cancel);
-
-  connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-  connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-
-  alllayout->addWidget(buttonBox);
-
-  setLayout(alllayout);
+#ifndef _ADVANCED_
+  ui->diagnosisCheckBox->hide();
+  ui->overTraceCheckBox->hide();
+  ui->seedScreenCheckBox->hide();
+#endif
 }
 
 ZAutoTraceDialog::~ZAutoTraceDialog()
 {
+  delete ui;
 }
 
-void ZAutoTraceDialog::setChannelNumber(int count)
+bool ZAutoTraceDialog::usingDefaultLevel() const
 {
-  if (m_channelWidget->getComboBox()->count() != count) {
-    m_channelWidget->getComboBox()->clear();
+  return ui->defaultLevelCheckBox->isChecked();
+}
+
+void ZAutoTraceDialog::setChannelCount(int count)
+{
+  if (ui->channelComboBox->count() != count) {
+    ui->channelComboBox->clear();
     for (int i = 1; i <= count; ++i) {
-      m_channelWidget->getComboBox()->addItem(QString("Ch %1").arg(i));
+      ui->channelComboBox->addItem(QString("Ch %1").arg(i));
     }
   }
 
-  m_channelWidget->setVisible(count > 1);
+  ui->channelComboBox->setEnabled(count > 1);
 }
 
 int ZAutoTraceDialog::getChannel() const
 {
-  return m_channelWidget->getComboBox()->currentIndex();
+  return ui->channelComboBox->currentIndex();
 }
 
-bool ZAutoTraceDialog::getDoResample() const
+bool ZAutoTraceDialog::resampling() const
 {
-  return m_resampleCheckbox->isChecked();
+  return ui->resampleCheckBox->isChecked();
+}
+
+bool ZAutoTraceDialog::diagnosis() const
+{
+  return ui->diagnosisCheckBox->isChecked();
+}
+
+bool ZAutoTraceDialog::overTracing() const
+{
+  return ui->overTraceCheckBox->isChecked();
+}
+
+bool ZAutoTraceDialog::screenSeed() const
+{
+  return ui->seedScreenCheckBox->isChecked();
 }
 
 int ZAutoTraceDialog::getTraceLevel() const
 {
-  return m_levelSpinBox->getValue();
+  if (usingDefaultLevel()) {
+    return 0;
+  }
+
+  return ui->levelSlider->value();
+}
+
+void ZAutoTraceDialog::updateWidget()
+{
+  ui->levelSlider->setDisabled(usingDefaultLevel());
+  if (usingDefaultLevel()) {
+    ui->levelLabel->setText("");
+  } else {
+    ui->levelLabel->setText(QString("<font face=courier>(%1/6)</font>").arg(ui->levelSlider->value()));
+  }
 }

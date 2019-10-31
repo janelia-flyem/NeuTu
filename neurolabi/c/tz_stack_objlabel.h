@@ -22,20 +22,20 @@ typedef struct _Objlabel_Workspace {
   int conn;             /**< connnectivity */
   int seed;             /**< an integer for passing or storing seed */
   int max_label;      /**< depth of the label (8 or 16) */
-  BOOL init_chord;      /**< initialize \a chord (TRUE) or not (FALSE). */
-  BOOL recover_chord;   /**< recover \a chord (TRUE) or not (FALSE). */
-  BOOL inc_label;       /**< Increment labels for new objects */
+  _BOOL_ init_chord;      /**< initialize \a chord (_TRUE_) or not (_FALSE_). */
+  _BOOL_ recover_chord;   /**< recover \a chord (_TRUE_) or not (_FALSE_). */
+  _BOOL_ inc_label;       /**< Increment labels for new objects */
   IMatrix *chord;       /**< space for intermediate result */
   void *u;              /**< undefined space */
 } Objlabel_Workspace;
 
 
 #define STACK_OBJLABEL_OPEN_WORKSPACE(stack, ow)			\
-  BOOL is_chord_owner = FALSE;						\
+  _BOOL_ is_chord_owner = _FALSE_;						\
   if (ow->chord == NULL) {						\
     ow->chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth); \
-    is_chord_owner = TRUE;						\
-    ow->init_chord = TRUE;						\
+    is_chord_owner = _TRUE_;						\
+    ow->init_chord = _TRUE_;						\
   } else {								\
     if (ow->chord->ndim != 3) {						\
       THROW(ERROR_DATA_TYPE);						\
@@ -48,11 +48,11 @@ typedef struct _Objlabel_Workspace {
   }
 
 #define STACK_OBJLABEL_CLOSE_WORKSPACE(ow)			\
-  if (is_chord_owner == TRUE) {					\
+  if (is_chord_owner == _TRUE_) {					\
     Kill_IMatrix(ow->chord);					\
     ow->chord = NULL;						\
   } else {							\
-    if (ow->recover_chord == TRUE) {				\
+    if (ow->recover_chord == _TRUE_) {				\
       stack_label_object_recover_chord(ow->chord, ow->seed);	\
     }								\
   }
@@ -178,7 +178,7 @@ void Stack_Grow_Object_S(Stack *seed, Stack *mask, Objlabel_Workspace *ow);
  * than itself. The background (label = 0) is ignored if ignoring_bg is true.
  */
 Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, 
-    BOOL ignoring_bg);
+    _BOOL_ ignoring_bg);
 
 /*
  * Note: Stack_Build_Seed_Graph_G() is preferred than Stack_Build_Seed_Graph().
@@ -195,14 +195,14 @@ void Stack_Build_Seed_Graph(Stack *stack, int *seed, int nseed,
 
 #include "tz_graph.h"
 Graph* Stack_Build_Seed_Graph_G(Stack *stack, int *seed, int nseed, 
-				BOOL weighted, Objlabel_Workspace *ow);
+				_BOOL_ weighted, Objlabel_Workspace *ow);
 
 
 Objlabel_Workspace* Make_Objlabel_Workspace_Gg(int width, int height, 
 					       int depth);
 
 Graph* Stack_Build_Seed_Graph_Gg(Stack *stack, int *seed, int nseed,
-				 BOOL weighted, Objlabel_Workspace *ow);
+				 _BOOL_ weighted, Objlabel_Workspace *ow);
 
 
 Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,

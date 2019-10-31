@@ -3,10 +3,9 @@
 #include <QDir>
 #include <QTextStream>
 #include <QDebug>
-//#include "tz_xml_utils.h"
-#include "tz_utilities.h"
-#include "zstackframe.h"
-#include "zstackdoc.h"
+
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdoc.h"
 #include "zstack.hxx"
 #include "tz_string.h"
 #include "zfiletype.h"
@@ -72,16 +71,16 @@ void ZTraceProject::save()
   case ZStackFile::SINGLE_FILE:
   {
     switch (ZFileType::FileType(stackSource.firstUrl())) {
-    case ZFileType::FILE_TIFF:
+    case ZFileType::EFileType::TIFF:
       out << "\"tif\">" << endl;
       out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;
       break;
-    case ZFileType::FILE_LSM:
+    case ZFileType::EFileType::LSM:
     //STACK_DOC_LSM_FILE:
       out << "\"lsm\">" << endl;
       out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
       break;
-    case ZFileType::FILE_V3D_RAW:
+    case ZFileType::EFileType::V3D_RAW:
       out << "\"raw\">" << endl;
       out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
       break;

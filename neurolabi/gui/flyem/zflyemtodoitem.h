@@ -1,6 +1,7 @@
 #ifndef ZFLYEMTODOITEM_H
 #define ZFLYEMTODOITEM_H
 
+#include <map>
 #include "dvid/zdvidannotation.h"
 
 class ZFlyEmToDoItem : public ZDvidAnnotation
@@ -21,12 +22,11 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-  const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_FLYEM_TODO_ITEM;
+    return ZStackObject::EType::FLYEM_TODO_ITEM;
   }
 
   friend std::ostream& operator<< (
@@ -34,28 +34,57 @@ public:
 
   bool isChecked() const;
   void setChecked(bool checked);
+  int getPriority() const;
+  std::string getPriorityName() const;
 
-  void setAction(neutube::EToDoAction action);
-  neutube::EToDoAction getAction() const;
+  static std::string GetPriorityName(int p);
+//  bool isCheckable() const;
+
+  void setAction(neutu::EToDoAction action);
+  neutu::EToDoAction getAction() const;
+  std::string getActionName() const;
+
+  void setAction(const std::string &action);
+  bool hasSomaAction() const;
 
   QColor getDisplayColor() const;
 
   void removeActionTag();
 
+  void setPriority(int p);
+
+  static std::string GetActionTag(neutu::EToDoAction action);
+
 private:
   void syncActionTag();
-  static std::string GetActionTag(neutube::EToDoAction action);
+  QList<std::vector<QPointF>> makeOutlineDecoration(
+      double x, double y, double radius) const;
+  static void PaintOutline(
+      ZPainter &painter, const QList<std::vector<QPointF>> &outline);
 
 public:
-  static const char *ACTION_KEY;
+  static const char *KEY_ACTION;
+  static const char *ACTION_GENERAL;
   static const char *ACTION_SPLIT;
   static const char *ACTION_SUPERVOXEL_SPLIT;
   static const char *ACTION_IRRELEVANT;
   static const char *ACTION_MERGE;
+  static const char *ACTION_TRACE_TO_SOMA;
+  static const char *ACTION_NO_SOMA;
+  static const char *ACTION_DIAGNOSTIC;
+  static const char *ACTION_SEGMENTATION_DIAGNOSTIC;
+  static const char *ACTION_SEGMENTATION_DIAGNOSTIC_TAG;
+  static const char *ACTION_TIP_DETECTOR;
+  static const char *ACTION_TIP_DETECTOR_TAG;
   static const char *ACTION_SPLIT_TAG;
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;
   static const char *ACTION_MERGE_TAG;
+  static const char *ACTION_TRACE_TO_SOMA_TAG;
+  static const char *ACTION_NO_SOMA_TAG;
+  static const char *ACTION_DIAGNOSTIC_TAG;
+
+  static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 
 private:
   void init();

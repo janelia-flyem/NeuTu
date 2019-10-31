@@ -18,7 +18,7 @@ public:
   virtual ~ZSingleChannelStack();
 
 public:
-  enum Proj_Mode {
+  enum class EProjMode {
     MAX_PROJ,
     MIN_PROJ
   };
@@ -71,7 +71,7 @@ public:
   ZStack_Stat* getStat() const;
   ZStack_Projection* getMaxProj();
   ZStack_Projection* getMinProj();
-  ZStack_Projection* getProj(Proj_Mode mode);
+  ZStack_Projection* getProj(EProjMode mode);
 
   void setValue(int x, int y, int z, double v);
   void setValue(size_t index, double value);
@@ -100,7 +100,7 @@ public: /* data operation */
                C_Stack::Stack_Deallocator *delloc = C_Stack::kill);
 
 public: /* operations */
-  void *projection(Proj_Mode mode, Stack_Axis axis = Z_AXIS);
+  void *projection(EProjMode mode, Stack_Axis axis = Z_AXIS);
 
   void bcAdjustHint(double *scale, double *offset);
   bool isBinary();
@@ -136,7 +136,7 @@ public:
   m_proj(NULL) { }
   ~ZStack_Projection() {if (m_proj != NULL) { Kill_Image(m_proj); }}
 
-  void update(Stack *stack, ZSingleChannelStack::Proj_Mode mode);
+  void update(Stack *stack, ZSingleChannelStack::EProjMode mode);
   //void update(Stack *stack, int stamp);
   inline void* data() { return (void*)m_proj->array; }
 
@@ -158,10 +158,10 @@ public:
   Stack *m_parent;
   //int m_stamp;
   int *m_hist; /* set to NULL if not available */
-  double m_min;
-  double m_max;
-  double m_greyScale;
-  double m_greyOffset;
+  double m_min = 0.0;
+  double m_max = 0.0;
+  double m_greyScale = 0.0;
+  double m_greyOffset = 0.0;
 };
 
 

@@ -28,27 +28,28 @@ bool ZStackDocReader::readFile(const QString &filePath)
   m_filePath = filePath;
 
   switch (ZFileType::FileType(filePath.toStdString())) {
-  case ZFileType::FILE_SWC:
+  case ZFileType::EFileType::SWC:
     loadSwc(filePath);
     break;
-  case ZFileType::FILE_LOCSEG_CHAIN:
+  case ZFileType::EFileType::LOCSEG_CHAIN:
     loadLocsegChain(filePath);
     break;
-  case ZFileType::FILE_SWC_NETWORK:
+  case ZFileType::EFileType::SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
-  case ZFileType::FILE_OBJECT_SCAN:
-  case ZFileType::FILE_TIFF:
-  case ZFileType::FILE_V3D_PBD:
-  case ZFileType::FILE_LSM:
-  case ZFileType::FILE_V3D_RAW:
-  case ZFileType::FILE_MC_STACK_RAW:
-  case ZFileType::FILE_DVID_OBJECT:
+  case ZFileType::EFileType::OBJECT_SCAN:
+  case ZFileType::EFileType::TIFF:
+  case ZFileType::EFileType::V3D_PBD:
+  case ZFileType::EFileType::LSM:
+  case ZFileType::EFileType::V3D_RAW:
+  case ZFileType::EFileType::MC_STACK_RAW:
+  case ZFileType::EFileType::DVID_OBJECT:
     loadStack(filePath);
     break;
-  case ZFileType::FILE_V3D_APO:
-  case ZFileType::FILE_V3D_MARKER:
-  case ZFileType::FILE_RAVELER_BOOKMARK:
+  case ZFileType::EFileType::V3D_APO:
+  case ZFileType::EFileType::V3D_MARKER:
+  case ZFileType::EFileType::RAVELER_BOOKMARK:
+  case ZFileType::EFileType::PUNCTA:
     loadPuncta(filePath);
     break;
   default:
@@ -96,10 +97,10 @@ void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
 void ZStackDocReader::loadStack(const QString &filePath)
 {
   ZFileType::EFileType type = ZFileType::FileType(filePath.toStdString());
-  if (type == ZFileType::FILE_OBJECT_SCAN ||
-      type == ZFileType::FILE_DVID_OBJECT) {
+  if (type == ZFileType::EFileType::OBJECT_SCAN ||
+      type == ZFileType::EFileType::DVID_OBJECT) {
     ZSparseObject *sobj = new ZSparseObject;
-    if (type == ZFileType::FILE_DVID_OBJECT) {
+    if (type == ZFileType::EFileType::DVID_OBJECT) {
       sobj->importDvidObject(filePath.toStdString());
     } else {
       sobj->load(filePath.toStdString().c_str());
@@ -239,7 +240,7 @@ void ZStackDocReader::addPlayer(ZStackObject *obj)
     if (obj->hasRole()) {
       ZDocPlayer *player = NULL;
       switch (obj->getType()) {
-      case ZStackObject::TYPE_OBJ3D:
+      case ZStackObject::EType::OBJ3D:
         player = new ZObject3dPlayer(obj);
         break;
       default:

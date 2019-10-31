@@ -13,6 +13,12 @@ ZSwcTrunkAnalyzer::ZSwcTrunkAnalyzer()
   m_euclideanWeight = 15.0;
 }
 
+ZSwcTrunkAnalyzer::ZSwcTrunkAnalyzer(double gw, double ew) :
+  m_geodesicWeight(gw), m_euclideanWeight(ew)
+{
+
+}
+
 ZSwcTrunkAnalyzer::~ZSwcTrunkAnalyzer()
 {
 

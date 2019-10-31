@@ -4,8 +4,7 @@
 #include <QMainWindow>
 #include <QPalette>
 
-#include "tz_stdint.h"
-#include "neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
@@ -60,15 +59,14 @@ signals:
 
 public slots:
   void launchSplit(
-      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::EBodySplitMode::ONLINE);
+      uint64_t bodyId, neutu::EBodySplitMode mode = neutu::EBodySplitMode::ONLINE);
   void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);
   void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending = true, bool logging = true);
-  void dumpError(const QString &message, bool appending = true,
-                 bool logging = true);
+  void dump(const QString &message, bool appending = true);
+  void dumpError(const QString &message, bool appending = true);
   void dump(const ZWidgetMessage &msg);
 
   void startProgress();
@@ -93,6 +91,9 @@ public slots:
 
   void showAndRaise();
 
+  void loadDatabase();
+  void loadDatabaseFromUrl();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
@@ -102,6 +103,7 @@ protected:
 private:
   void init();
   void initProgress(int nticks);
+  void enableTargetAction(bool on);
 
   template <typename T>
   void connectMessagePipe(T *source);
@@ -112,7 +114,8 @@ private:
   void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
-  void logMessage(const ZWidgetMessage &msg);
+  void logError(const QString &msg);
+//  void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);
 
@@ -135,10 +138,14 @@ private:
   QAction *m_openSequencerAction = nullptr;
   QAction *m_openProtocolsAction = nullptr;
   QAction *m_contrastAction = nullptr;
+  QAction *m_tuneContrastAction = nullptr;
   QAction *m_smoothAction = nullptr;
   QAction *m_openTodoAction = nullptr;
   QAction *m_roiToolAction = nullptr;
   QAction *m_bodyExplorerAction = nullptr;
+  QAction *m_neuprintAction = nullptr;
+  QAction *m_loadDvidAction = nullptr;
+  QAction *m_loadDvidUrlAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

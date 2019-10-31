@@ -1,9 +1,11 @@
 #include "zsuperpixelmaparray.h"
 
 #include <iostream>
+#include <stdexcept>
+#include <cassert>
+
 #include "tz_string.h"
 #include "tz_intpair_map.h"
-#include "tz_error.h"
 
 using namespace std;
 
@@ -150,7 +152,8 @@ ZStack* ZSuperpixelMapArray::mapStack(ZStack &stack)
       ch_array8[i] = stack.array8() + i;
       stride = 3;
     } else {
-      TZ_ERROR(ERROR_DATA_TYPE);
+      throw std::runtime_error("Invalid stack kind.");
+//      TZ_ERROR(ERROR_DATA_TYPE);
     }
   }
 
@@ -310,7 +313,7 @@ void ZSuperpixelMapArray::append(
 
 void ZSuperpixelMapArray::compressBodyId(int startId)
 {
-  TZ_ASSERT(startId >= 0, "Negative start id");
+  assert(startId >= 0);
 
   map<int, int> bodyIdIndexMap;
 

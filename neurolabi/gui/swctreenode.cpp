@@ -5,12 +5,12 @@
 #include <set>
 #include <list>
 #include <stack>
+#include <cassert>
 
-#include "tz_error.h"
+#include "common/math.h"
 #include "zswctree.h"
 #include "zgraph.h"
 #include "zstring.h"
-#include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "c_stack.h"
 #include "tz_stack_threshold.h"
@@ -27,19 +27,19 @@
 
 using namespace std;
 
-Swc_Tree_Node* SwcTreeNode::makePointer()
+Swc_Tree_Node* SwcTreeNode::MakePointer()
 {
-  return makePointer(0.0, 0.0, 0.0, 1.0);
+  return MakePointer(0.0, 0.0, 0.0, 1.0);
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, const ZPoint &pos,
+Swc_Tree_Node* SwcTreeNode::MakePointer(int id, int type, const ZPoint &pos,
                                         double radius, int parentId)
 {
-  return SwcTreeNode::makePointer(id, type, pos.x(), pos.y(), pos.z(), radius,
+  return SwcTreeNode::MakePointer(id, type, pos.x(), pos.y(), pos.z(), radius,
                                   parentId);
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
+Swc_Tree_Node* SwcTreeNode::MakePointer(int id, int type, double x, double y,
                                         double z, double radius, int parentId)
 {
   Swc_Tree_Node *tn = New_Swc_Tree_Node();
@@ -55,10 +55,10 @@ Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
   return tn;
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(
+Swc_Tree_Node* SwcTreeNode::MakePointer(
     double x, double y, double z, double radius, Swc_Tree_Node *parent)
 {
-  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer(1, 0, x, y, z, radius, -1);
 
   if (parent != NULL) {
     setFirstChild(parent, tn);
@@ -68,9 +68,15 @@ Swc_Tree_Node* SwcTreeNode::makePointer(
   return tn;
 }
 
-Swc_Tree_Node* SwcTreeNode::makePointer(const ZPoint &pos, double radius)
+Swc_Tree_Node* SwcTreeNode::MakePointer(const ZPoint &pos, double radius)
 {
-  return SwcTreeNode::makePointer(1, 0, pos, radius, -1);
+  return SwcTreeNode::MakePointer(1, 0, pos, radius, -1);
+}
+
+Swc_Tree_Node* SwcTreeNode::MakePointer(
+    const ZPoint &pos, double radius, Swc_Tree_Node *parent)
+{
+  return MakePointer(pos.x(), pos.y(), pos.z(), radius, parent);
 }
 
 Swc_Tree_Node* SwcTreeNode::makeVirtualNode()
@@ -175,7 +181,7 @@ int SwcTreeNode::childNumber(const Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isParentIdConsistent(const Swc_Tree_Node *tn)
 {
-  TZ_ASSERT(tn != NULL, "null pointer");
+  assert(tn != NULL);
 
   if (tn->parent == NULL) {
     return (SwcTreeNode::parentId(tn) == -1);
@@ -265,7 +271,7 @@ int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
   ZSwcTree tree;
   tree.setDataFromNodeRoot(tn);
   int count =
-      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, FALSE);
+      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, _FALSE_);
   tree.setData(NULL, ZSwcTree::FREE_WRAPPER);
 
   return count;
@@ -279,12 +285,12 @@ int SwcTreeNode::singleTreeSize(Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isRegular(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Regular(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Regular(tn) == _TRUE_);
 }
 
 bool SwcTreeNode::isVirtual(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Virtual(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Virtual(tn) == _TRUE_);
 }
 
 Swc_Tree_Node* SwcTreeNode::regularRoot(Swc_Tree_Node *tn)
@@ -647,7 +653,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
     double dx = x(tn1) - x(tn2);
     double dy = y(tn1) - y(tn2);
     dist = sqrt(dx * dx + dy * dy);
-    break;
   }
     break;
   case SwcTreeNode::GEODESIC:
@@ -660,9 +665,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
       dist = 0;
     }
     */
-    break;
-  default:
-    TZ_ERROR(ERROR_DATA_TYPE);
     break;
   }
 
@@ -686,8 +688,7 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
     dist = distance(tn, x, y, z, SwcTreeNode::EUCLIDEAN) - radius(tn);
     break;
   default:
-    TZ_WARN(ERROR_DATA_TYPE);
-    break;
+    throw std::invalid_argument("invalid distance type");
   }
 
   return dist;
@@ -988,7 +989,7 @@ Swc_Tree_Node *SwcTreeNode::prevSibling(Swc_Tree_Node *tn)
     sibling = SwcTreeNode::nextSibling(sibling);
   }
 
-  TZ_ASSERT(sibling != NULL, "null pointer should not happen here.");
+  assert(sibling != NULL);
 
   return sibling;
 }
@@ -1163,7 +1164,7 @@ bool SwcTreeNode::connect(const vector<Swc_Tree_Node *> &nodeArray)
       if (graph.edgeWeight(i) > 0.0) {
         int e1 = graph.edgeStart(i);
         int e2 = graph.edgeEnd(i);
-        TZ_ASSERT(e1 != e2, "Invalid edge");
+        assert(e1 != e2);
         if (SwcTreeNode::regularRoot(nodeArray[e1]) !=
             SwcTreeNode::regularRoot(nodeArray[e2])) {
           SwcTreeNode::setAsRoot(nodeArray[e2]);
@@ -1208,9 +1209,9 @@ void SwcTreeNode::paste(Swc_Tree_Node *tn, size_t index)
     vector<double> attribute = str.toDoubleArray();
     setPos(tn, attribute[2], attribute[3], attribute[4]);
     setRadius(tn, attribute[5]);
-    setId(tn, iround(attribute[0]));
-    setType(tn, iround(attribute[2]));
-    setParentId(tn, iround(attribute[6]));
+    setId(tn, neutu::iround(attribute[0]));
+    setType(tn, neutu::iround(attribute[2]));
+    setParentId(tn, neutu::iround(attribute[6]));
   }
 }
 
@@ -1293,14 +1294,14 @@ Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
     ZPoint center = SwcTreeNode::centroid(nodeSet);
     double radius = SwcTreeNode::maxRadius(nodeSet);
 
-    coreNode = makePointer(center, radius);
+    coreNode = MakePointer(center, radius);
 
     set<Swc_Tree_Node*> parentSet;
     //set<Swc_Tree_Node*> childSet;
 
     for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
-      TZ_ASSERT(*iter != NULL, "Null swc node");
+      assert(*iter != NULL);
 
       if (isRegular(parent(*iter))) {
         if (nodeSet.count(parent(*iter)) == 0) {
@@ -1499,15 +1500,15 @@ void SwcTreeNode::interpolate(
 }
 
 double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
-                                   neutube::EImageBackground bg)
+                                   neutu::EImageBackground bg)
 {
 
   //Extract image slice
-  int x1 = iround(x(tn) - radius(tn) * 2);
-  int y1 = iround(y(tn) - radius(tn) * 2);
-  int x2 = iround(x(tn) + radius(tn) * 2);
-  int y2 = iround(y(tn) + radius(tn) * 2);
-  int cz = iround(z(tn));
+  int x1 = neutu::iround(x(tn) - radius(tn) * 2);
+  int y1 = neutu::iround(y(tn) - radius(tn) * 2);
+  int x2 = neutu::iround(x(tn) + radius(tn) * 2);
+  int y2 = neutu::iround(y(tn) + radius(tn) * 2);
+  int cz = neutu::iround(z(tn));
 
   Stack *slice = C_Stack::crop(
         stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
@@ -1518,7 +1519,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   //Seed grow
   Stack_Threshold_Binarize(slice, thre);
 
-  if (bg == neutube::EImageBackground::BRIGHT) {
+  if (bg == neutu::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
@@ -1536,7 +1537,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 }
 
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-                            neutube::EImageBackground bg, int option)
+                            neutu::EImageBackground bg, int option)
 {
   if (tn == NULL || stack == NULL) {
     return false;
@@ -1547,10 +1548,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double expandScale = 2.0;
   double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
-  int x1 = iround(x(tn) - expandRadius);
-  int y1 = iround(y(tn) - expandRadius);
-  int x2 = iround(x(tn) + expandRadius);
-  int y2 = iround(y(tn) + expandRadius);
+  int x1 = neutu::iround(x(tn) - expandRadius);
+  int y1 = neutu::iround(y(tn) - expandRadius);
+  int x2 = neutu::iround(x(tn) + expandRadius);
+  int y2 = neutu::iround(y(tn) + expandRadius);
 
   if (x1 < 0) {
     x1 = 0;
@@ -1565,7 +1566,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     y2 = C_Stack::height(stack) - 1;
   }
 
-  int cz = iround(z(tn));
+  int cz = neutu::iround(z(tn));
 
   if (cz >= C_Stack::depth(stack)) {
     return false;
@@ -1594,7 +1595,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   y1 += 3;
   */
 
-  if (bg == neutube::EImageBackground::BRIGHT) {
+  if (bg == neutu::EImageBackground::BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
@@ -1972,7 +1973,6 @@ std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(
         matching.insert(std::map<Swc_Tree_Node*, Swc_Tree_Node*>::value_type(
                           nbrArray[iter->first], nbrArray[iter->second]));
       }
-      //BOOL **matched = Graph_Hungarian_Match();
     }
   }
 
@@ -2089,3 +2089,15 @@ double SwcTreeNode::maxBendingEnergy(const Swc_Tree_Node *tn)
 
   return e;
 }
+
+double SwcTreeNode::averageIntensity(const Swc_Tree_Node *tn, const Stack *stack)
+{
+  double v = 0.0;
+  if (tn && stack) {
+    return Swc_Tree_Node_Intensity_Distribution_Ec(
+          const_cast<Swc_Tree_Node*>(tn), const_cast<Stack*>(stack), NULL, 0.0);
+  }
+
+  return v;
+}
+

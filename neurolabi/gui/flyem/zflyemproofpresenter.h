@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "zstackpresenter.h"
+#include "mvc/zstackpresenter.h"
 #include "dvid/zdvidsynapse.h"
 
 class QKeyEvent;
@@ -23,7 +23,7 @@ protected:
 public:
   static ZFlyEmProofPresenter* Make(QWidget *parent);
 
-  bool customKeyProcess(QKeyEvent *event);
+  bool customKeyProcess(QKeyEvent *event) override;
 
   void toggleHighlightMode();
   bool isHighlight() const;
@@ -37,45 +37,45 @@ public:
   void showData(bool on);
   bool showingData() const;
 
-  void enableSplit(flyem::EBodySplitMode mode);
+  void enableSplit(neutu::EBodySplitMode mode);
   void disableSplit();
   void setSplitEnabled(bool s);
 
-  bool processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEvent(QKeyEvent *event) override;
   bool processCustomOperator(
-      const ZStackOperator &op, ZInteractionEvent *e = NULL);
+      const ZStackOperator &op, ZInteractionEvent *e = NULL) override;
 
-  flyem::EBodySplitMode getSplitMode() const {
+  neutu::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
   inline bool isSplitWindow() const {
-    return m_splitMode != flyem::EBodySplitMode::NONE;
+    return m_splitMode != neutu::EBodySplitMode::NONE;
 //    return m_splitWindowMode;
   }
 
-  void setSplitMode(flyem::EBodySplitMode mode) {
+  void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
-  void processRectRoiUpdate(ZRect2d *rect, bool appending);
+  void processRectRoiUpdate(ZRect2d *rect, bool appending) override;
 
-  ZKeyOperationConfig* getKeyConfig();
-  void configKeyMap();
+  ZKeyOperationConfig* getKeyConfig() override;
+  void configKeyMap() override;
 
 //  void createBodyContextMenu();
 
-  ZStackDocMenuFactory* getMenuFactory();
+  ZStackDocMenuFactory* getMenuFactory() override;
 
   ZFlyEmProofDoc* getCompleteDocument() const;
 
   void createSynapseContextMenu();
   QMenu* getSynapseContextMenu();
 
-  QMenu* getContextMenu();
+  QMenu* getContextMenu() override;
 
 //  QAction* makeAction(ZActionFactory::EAction item);
-  bool connectAction(QAction *action, ZActionFactory::EAction item);
+  bool connectAction(QAction *action, ZActionFactory::EAction item) override;
 
   void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
 
@@ -104,6 +104,7 @@ signals:
 //  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
+  void annotatingTodo();
   void mergingBody();
   void uploadingMerge();
   void goingToBodyBottom();
@@ -112,6 +113,9 @@ signals:
   void togglingData();
   void highlightModeChanged();
   void showingSupervoxelList();
+  void togglingBodyColorMap();
+  void refreshingData();
+  void tipDetectRequested(ZIntPoint point, uint64_t bodyID);
 
 public slots:
   void deleteSelectedSynapse();
@@ -130,6 +134,10 @@ public slots:
   void tryAddToSplitItem();
   void tryAddToSupervoxelSplitItem();
   void tryAddToMergeItem();
+  void tryAddTraceToSomaItem();
+  void tryAddNoSomaItem();
+  void tryAddDiagnosticItem();
+  void tryAddSegmentationDiagnosticItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
@@ -137,29 +145,41 @@ public slots:
   void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
+  void setTodoItemToTraceToSoma();
+  void setTodoItemToNoSoma();
   void selectBodyInRoi();
   void zoomInRectRoi();
   void refreshSegmentation();
+  void refreshData();
 
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
   void tryAddToMergeItem(const ZIntPoint &pt);
   void tryAddToSplitItem(const ZIntPoint &pt);
   void tryAddToSupervoxelSplitItem(const ZIntPoint &pt);
+  void tryAddTraceToSomaItem(const ZIntPoint &pt);
+  void tryAddNoSomaItem(const ZIntPoint &pt);
+  void tryAddDiagnosticItem(const ZIntPoint &pt);
+  void tryAddSegmentationDiagnosticItem(const ZIntPoint &pt);
+  void runTipDetection();
 
   void showSupervoxelList();
 
   void allowBlinkingSegmentation(bool on);
+  void toggleSupervoxelView(bool on);
+  void takeScreenshot();
 
 protected:
   virtual void tryAddTodoItem(
-      int x, int y, int z, bool checked, neutube::EToDoAction action,
+      int x, int y, int z, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action,
       uint64_t bodyId);
   void tryAddTodoItem(
-      const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
+      const ZIntPoint &pt, bool checked, neutu::EToDoAction action);
+
+  void copyLink(const QString &option) const override;
 
 private:
 //  void connectAction();
@@ -178,9 +198,11 @@ private:
   void updateActiveObjectForSynapseAdd();
   void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
 
+  ZPoint getLastMouseReleasePosition(Qt::MouseButtons buttons) const;
+
 private:
   bool m_isHightlightMode;
-  flyem::EBodySplitMode m_splitMode;
+  neutu::EBodySplitMode m_splitMode;
 //  bool m_splitWindowMode;
   bool m_highTileContrast;
   bool m_smoothTransform;

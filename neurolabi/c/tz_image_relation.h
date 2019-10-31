@@ -21,15 +21,15 @@ __BEGIN_DECLS
  * Image_Same_Attribute() returns TRUE if all the attributes of <image1> and
  * <image2> are the same, otherwise it returns FASLE.
  */
-BOOL Image_Same_Size(const Image *image1, const Image *image2);
-BOOL Image_Same_Kind(const Image *image1, const Image *image2);
-BOOL Image_Same_Attribute(const Image *image1, const Image *image2);
+_BOOL_ Image_Same_Size(const Image *image1, const Image *image2);
+_BOOL_ Image_Same_Kind(const Image *image1, const Image *image2);
+_BOOL_ Image_Same_Attribute(const Image *image1, const Image *image2);
 
 /*
  * Image_Identical() returns TRUE if <image1> and <image2> have exactly the same
  * attributes and voxel values, otherwise it returns FALSE.
  */
-BOOL Image_Identical(const Image *image1, const Image *image2);
+_BOOL_ Image_Identical(const Image *image1, const Image *image2);
 
 __END_DECLS
 

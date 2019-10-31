@@ -1,9 +1,10 @@
 #include "zframefactory.h"
-#include "flyem/zflyemdataframe.h"
+
 #include "zstackdocreader.h"
-#include "zstackframe.h"
-#include "zstackdocreader.h"
+#include "mvc/zstackframe.h"
+
 #include "flyem/zflyembodymergeframe.h"
+#include "flyem/zflyemdataframe.h"
 
 ZFrameFactory::ZFrameFactory()
 {
@@ -29,14 +30,14 @@ ZFrameFactory::MakeFlyEmDataFrame(const QString &bundlePath)
 
 ZStackFrame*
 ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
-    neutube::Document::ETag tag, ZStackFrame *parentFrame)
+    neutu::Document::ETag tag, ZStackFrame *parentFrame)
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case neutube::Document::ETag::FLYEM_MERGE:
+  case neutu::Document::ETag::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
-    frame->setObjectDisplayStyle(ZStackObject::SOLID);
+    frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
+    frame->setObjectDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     break;
   default:
     frame = ZStackFrame::Make(NULL);
@@ -57,13 +58,13 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
 
 ZStackFrame*
 ZFrameFactory::MakeStackFrame(
-    neutube::Document::ETag tag, ZStackFrame *parentFrame)
+    neutu::Document::ETag tag, ZStackFrame *parentFrame)
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case neutube::Document::ETag::FLYEM_MERGE:
+  case neutu::Document::ETag::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(neutube::EImageBackground::BRIGHT);
+    frame->document()->setStackBackground(neutu::EImageBackground::BRIGHT);
     break;
   default:
     frame = ZStackFrame::Make(NULL);

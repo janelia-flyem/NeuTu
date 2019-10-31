@@ -2,7 +2,8 @@
 #define ZRESOLUTION_H
 
 #include <string>
-#include "neutube_def.h"
+#include "common/neutudefs.h"
+#include "geometry/zpoint.h"
 
 class ZJsonObject;
 
@@ -11,7 +12,7 @@ public:
   ZResolution();
 
   inline double voxelSize() const {
-    return m_voxelSize[0] * m_voxelSize[1] * m_voxelSize[2]; }
+    return m_voxelSize.getX() * m_voxelSize.getY() * m_voxelSize.getZ(); }
   inline double voxelSizeX() const { return m_voxelSize[0]; }
   inline double voxelSizeY() const { return m_voxelSize[1]; }
   inline double voxelSizeZ() const { return m_voxelSize[2]; }
@@ -30,7 +31,7 @@ public:
     m_voxelSize[2] = z;
   }
 
-  enum EUnit {
+  enum class EUnit {
     UNIT_PIXEL, UNIT_MICRON, UNIT_NANOMETER
   };
 
@@ -58,7 +59,7 @@ public:
    *
    * \return Voxel size based on the unit.
    */
-  double getVoxelSize(neutube::EAxis axis, EUnit unit) const;
+  double getVoxelSize(neutu::EAxis axis, EUnit unit) const;
 
   /*!
    * \brief Get the unit voxel size after unit conversion
@@ -79,18 +80,20 @@ public:
    *
    * \return area of a voxel on the plane.
    */
-  double getPlaneVoxelSize(neutube::EPlane plane, EUnit unit) const;
+  double getPlaneVoxelSize(neutu::EPlane plane, EUnit unit) const;
 
-  double getPlaneVoxelSize(neutube::EPlane plane) const;
+  double getPlaneVoxelSize(neutu::EPlane plane) const;
 
   /*!
    * \brief Get sqrt(voxel area)
    */
-  double getPlaneVoxelSpan(neutube::EPlane plane, EUnit unit) const;
-  double getPlaneVoxelSpan(neutube::EPlane plane) const;
+  double getPlaneVoxelSpan(neutu::EPlane plane, EUnit unit) const;
+  double getPlaneVoxelSpan(neutu::EPlane plane) const;
+
+  bool isValid() const;
 
 private:
-  double m_voxelSize[3];
+  ZPoint m_voxelSize;
   char m_unit; //'p' for pixel, 'u' for um, 'n' for nm
 };
 

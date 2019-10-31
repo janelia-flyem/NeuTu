@@ -2,12 +2,14 @@
 #include <iostream>
 #include <queue>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zjsonobject.h"
 #include "zstring.h"
 #include "zjsonparser.h"
 #include "zerror.h"
 #include "zdvidutil.h"
+
+#define DVID_UUID_COMMON_LENGTH 4
 
 ZDvidVersionDag::ZDvidVersionDag()
 {
@@ -278,10 +280,10 @@ bool ZDvidVersionDag::isAncester(
   while (iter.hasNext()) {
     ZTreeNode<ZDvidVersionNode> *tn = iter.nextNode();
     ZString currentUuid = tn->data().getUuid();
-    if (ZDvid::IsUuidMatched(currentUuid, uuid)) {
+    if (dvid::IsUuidMatched(currentUuid, uuid)) {
       ZTreeNode<ZDvidVersionNode> *parent = tn->parent();
       while (parent != NULL) {
-        if (ZDvid::IsUuidMatched(parent->data().getUuid(), ancester)) {
+        if (dvid::IsUuidMatched(parent->data().getUuid(), ancester)) {
           result = true;
         }
         parent = parent->parent();
@@ -365,7 +367,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
       uuidQueue.pop();
 
       ZJsonObject uuidJson(allNodeJson.value(nextUuid.c_str()));
-      std::vector<int> versionIdArray =
+      std::vector<int64_t> versionIdArray =
           ZJsonParser::integerArray(uuidJson["Children"]);
       for (size_t i = 0; i < versionIdArray.size(); ++i) {
         int versionId = versionIdArray[i];

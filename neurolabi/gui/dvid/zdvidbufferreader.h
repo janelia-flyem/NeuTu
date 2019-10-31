@@ -1,6 +1,8 @@
 #ifndef ZDVIDBUFFERREADER_H
 #define ZDVIDBUFFERREADER_H
 
+#include <memory>
+
 //#include <QObject>
 #include <QByteArray>
 //#include <QNetworkAccessManager>
@@ -9,8 +11,8 @@
 #include <QString>
 //#include <QNetworkReply>
 
-#include "neutube_def.h"
-#include "zsharedpointer.h"
+#include "common/neutudefs.h"
+//#include "common/zsharedpointer.h"
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -45,7 +47,7 @@ public:
 //  bool isReadable(const QString &url);
 //  bool hasHead(const QString &url);
 
-  neutube::EReadStatus getStatus() const;
+  neutu::EReadStatus getStatus() const;
   int getStatusCode() const {
     return m_statusCode;
   }
@@ -69,7 +71,7 @@ public:
   }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
+  void setService(const std::shared_ptr<libdvid::DVIDNodeService> &service);
   void setService(const ZDvidTarget &target);
 #endif
 
@@ -95,7 +97,7 @@ private:
   void _init();
 
   void startReading();
-  void endReading(neutube::EReadStatus status);
+  void endReading(neutu::EReadStatus status);
 
 
   bool isReadingDone() const;
@@ -107,12 +109,12 @@ private:
 //  QNetworkReply *m_networkReply;
 //  QEventLoop *m_eventLoop;
   bool m_isReadingDone;
-  neutube::EReadStatus m_status;
+  neutu::EReadStatus m_status;
   int m_statusCode;
   bool m_tryingCompress;
   int m_maxSize;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  std::shared_ptr<libdvid::DVIDNodeService> m_service;
 #endif
 //  QTimer *m_timer;
 };

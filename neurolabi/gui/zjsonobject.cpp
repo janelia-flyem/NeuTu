@@ -2,10 +2,9 @@
 
 #include <iostream>
 #include <sstream>
-#include <string.h>
+#include <string>
 #include <cstdarg>
 
-#include "tz_error.h"
 #include "zjsonparser.h"
 #include "c_json.h"
 #include "zerror.h"
@@ -23,7 +22,7 @@ ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
 
 ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
 {
-  if (ZJsonParser::isObject(data)) {
+  if (ZJsonParser::IsObject(data)) {
     set(data, option);
   }
 }
@@ -54,6 +53,11 @@ ZJsonObject::~ZJsonObject()
 bool ZJsonObject::hasKey(const char *key) const
 {
   return (*this)[key] != NULL;
+}
+
+bool ZJsonObject::hasKey(const string &key) const
+{
+  return hasKey(key.c_str());
 }
 
 json_t* ZJsonObject::operator[] (const char *key)
@@ -99,6 +103,11 @@ ZJsonValue ZJsonObject::value(const char *key) const
                     ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
+ZJsonValue ZJsonObject::value(const string &key) const
+{
+  return value(key.c_str());
+}
+
 #ifndef SWIG
 ZJsonValue ZJsonObject::value(
     const std::initializer_list<const char*> &keyList) const
@@ -119,18 +128,26 @@ ZJsonValue ZJsonObject::value(
 bool ZJsonObject::decode(const string &str)
 {
   clear();
+  if (str.empty()) {
+#ifdef _DEBUG_
+      std::cout << "JSON decoding: Nothing to decode." << std::endl;
+#endif
+    return false;
+  }
 
   ZJsonParser parser;
   json_t *obj = parser.decode(str);
 
-  if (ZJsonParser::isObject(obj)) {
+  if (ZJsonParser::IsObject(obj)) {
     set(obj, true);
   } else {
     if (obj == NULL) {
       parser.printError();
     } else {
       json_decref(obj);
-      RECORD_ERROR_UNCOND("Not a json object");
+#ifdef _DEBUG_
+      std::cout << "Not a json object" << std::endl;
+#endif
     }
 
     return false;
@@ -178,7 +195,7 @@ void ZJsonObject::appendEntries(const char *key, json_t *obj,
     (*entryMap)[key] = obj;
   }
 
-  if (ZJsonParser::isObject(obj)) {
+  if (ZJsonParser::IsObject(obj)) {
     const char *subkey = NULL;
     json_t *value = NULL;
     json_object_foreach(obj, subkey, value) {
@@ -332,6 +349,13 @@ void ZJsonObject::setEntry(const char *key, bool v)
   }
 
   setEntryWithoutKeyCheck(key, C_Json::makeBoolean(v));
+}
+
+void ZJsonObject::setTrueEntry(const char *key, bool v)
+{
+  if (v) {
+    setEntry(key, v);
+  }
 }
 
 void ZJsonObject::setEntry(const char *key, int64_t v)

@@ -3,13 +3,18 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <iostream>
-#include "flyem/zflyembookmarkwidget.h"
-#include "flyem/zflyembookmarkview.h"
+
 #include "ui_flyemsplitcontrolform.h"
+
+#include "qt/gui/utilities.h"
+#include "flyemdef.h"
+#include "widgets/zflyembookmarkwidget.h"
+#include "widgets/zflyembookmarkview.h"
+#include "widgets/zflyemicon.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "neutubeconfig.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
@@ -18,11 +23,16 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-//  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
-//  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+  ui->coarseBodyViewPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
+  ui->quickViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
+  ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
 
-//  ui->bookmarkView->setModel(&m_bookmarkList);
-//  ui->bookmarkView->resizeColumnsToContents();
+//  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  neutu::SetHtmlIcon(ui->viewResultQuickPushButton,
+                     "<font color=red>&#9700;</font><font color=green>&#9701;</font>");
+
   setupWidgetBehavior();
 }
 
@@ -69,8 +79,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(changeSplit()));
 //  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
 //          this, SLOT(loadBookmark()));
-  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -80,8 +90,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
 //          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
 
 //  connect(ui->synapsePushButton, SIGNAL(clicked()),
@@ -308,14 +318,14 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       m_assignedBookmarkList.clear();
       m_userBookmarkList.clear();
       const TStackObjectList &objList = project->getDocument()->
-          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+          getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         //        if (bookmark->getBodyId() == project->getBodyId()) {
         if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
-        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::EBookmarkType::TYPE_FALSE_MERGE) {
           if (bookmark->getBodyId() == project->getBodyId()) {
             m_assignedBookmarkList.append(bookmark);
           }
@@ -365,7 +375,7 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
   m_userBookmarkList.clear();
   if (doc != NULL) {
     const TStackObjectList &objList =
-        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+        doc->getObjectList(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);

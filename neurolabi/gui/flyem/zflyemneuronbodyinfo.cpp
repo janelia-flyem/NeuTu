@@ -7,6 +7,8 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 
+const int ZFlyEmNeuronBodyInfo::VERSION = 1;
+
 ZFlyEmNeuronBodyInfo::ZFlyEmNeuronBodyInfo()
 {
 }
@@ -41,13 +43,33 @@ ZJsonObject ZFlyEmNeuronBodyInfo::toJsonObject() const
   return obj;
 }
 
-void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
+void ZFlyEmNeuronBodyInfo::clear()
 {
   m_bodySize = 0;
   m_boundBox.reset();
+  m_connSize.clear();
+  m_mutationId = 0;
+  m_version = 0;
+}
+
+void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
+{
+  clear();
+
+  if (obj.hasKey("version")) {
+    m_version = ZJsonParser::integerValue(obj["version"]);
+  }
+
+  if (obj.hasKey("mutation_id")) {
+    m_mutationId = ZJsonParser::integerValue(obj["mutation_id"]);
+  }
+
+  if (obj.hasKey("conn_size")) {
+    m_connSize = ZJsonParser::integerArray(obj["conn_size"]);
+  }
 
   if (obj.hasKey("volume")) {
-    if (ZJsonParser::isInteger(obj["volume"])) {
+    if (ZJsonParser::IsInteger(obj["volume"])) {
       m_bodySize = ZJsonParser::integerValue(obj["volume"]);
     } else {
       m_bodySize = ZString(ZJsonParser::stringValue(obj["volume"])).firstUint64();
@@ -55,7 +77,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (obj.hasKey("bound_offset")) {
-    std::vector<int> array =
+    std::vector<int64_t> array =
         ZJsonParser::integerArray(obj["bound_offset"]);
     if (array.size() == 3) {
       m_boundBox.setFirstCorner(array[0], array[1], array[2]);
@@ -63,7 +85,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (obj.hasKey("bound_size")) {
-    std::vector<int> array =
+    std::vector<int64_t> array =
         ZJsonParser::integerArray(obj["bound_size"]);
     if (array.size() == 3) {
       m_boundBox.setSize(array[0], array[1], array[2]);

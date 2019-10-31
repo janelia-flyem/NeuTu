@@ -90,7 +90,7 @@ typedef union _Image_Array {
  * Only GREY and GREY16 are supported.
  */
 #define MAXGREY(kind)					\
-  ((kind==GREY16)?MAXVALUE_GREY16:MAXVALUE_GREY)
+  (((kind)==GREY16)?MAXVALUE_GREY16:MAXVALUE_GREY)
 
 /**@brief Maximum pixel value of an image.
  *
@@ -227,10 +227,10 @@ enum {
 };
 
 #define STACK_CHECK_CHORD(stack, chord, is_owner)			\
-  BOOL is_owner = FALSE;						\
+  _BOOL_ is_owner = _FALSE_;						\
   if (chord == NULL) {							\
     chord = Make_3d_IMatrix(stack->width, stack->height, stack->depth);	\
-    is_owner = TRUE;							\
+    is_owner = _TRUE_;							\
   } else {								\
     if (chord->ndim != 3) {						\
       THROW(ERROR_DATA_TYPE);						\
@@ -243,7 +243,7 @@ enum {
   }
 
 #define STACK_CHECK_CHORD_END(chord, is_owner)	\
-  if (is_owner == TRUE) {			\
+  if (is_owner == _TRUE_) {			\
     Kill_IMatrix(chord);			\
   }
 

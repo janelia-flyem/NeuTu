@@ -1,8 +1,10 @@
 #ifndef FLYEMPROOFCONTROLFORM_H
 #define FLYEMPROOFCONTROLFORM_H
 
+#include <cstdint>
+
 #include <QWidget>
-#include "tz_stdint.h"
+
 #include "zflyembookmarklistmodel.h"
 
 class QMenu;
@@ -23,11 +25,13 @@ class FlyEmProofControlForm : public QWidget
   Q_OBJECT
 
 public:
-  explicit FlyEmProofControlForm(QWidget *parent = 0);
+  explicit FlyEmProofControlForm(QWidget *parent = Q_NULLPTR);
   ~FlyEmProofControlForm();
 
   ZFlyEmBookmarkView* getUserBookmarkView() const;
   ZFlyEmBookmarkView* getAssignedBookmarkView() const;
+
+  void setMainMenu(QMenu *menu);
 
 signals:
   void segmentVisibleChanged(bool visible);
@@ -45,6 +49,7 @@ signals:
   void savingMerge();
   void committingMerge();
   void zoomingTo(int x, int y, int z);
+  void zoomingToAssigned(int x, int y, int z);
   void locatingBody(uint64_t);
   void goingToBody();
   void selectingBody();
@@ -56,11 +61,13 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void queryingBody();
   void exportingSelectedBodyLevel();
   void exportingGrayscale();
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
   void skeletonizingTopBody();
+  void skeletonizingBodyList();
   void updatingMeshForSelectedBody();
   void showingInfo();
   void reportingBodyCorruption();
@@ -84,18 +91,22 @@ private slots:
   void goToPosition();
   void goToBody();
   void selectBody();
-  void locateAssignedBookmark(const QModelIndex &index);
-  void locateUserBookmark(const QModelIndex &index);
+//  void locateAssignedBookmark(const QModelIndex &index);
+//  void locateUserBookmark(const QModelIndex &index);
   void locateBookmark(const ZFlyEmBookmark *bookmark);
+  void locateAssignedBookmark(const ZFlyEmBookmark *bookmark);
+
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
 //  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void queryBody();
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void skeletonizeTopBody();
+  void skeletonizeBodyList();
   void updateMeshForSelectedBody();
   void exportGrayscale();
 

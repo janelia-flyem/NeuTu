@@ -27,7 +27,7 @@ public:
    * \brief Register a body
    *
    * Nothing will be done if a body has already been registered. It can also be
-   * used to register an orphan supervoxel whhen \a id is encoded as a supervoxel.
+   * used to register an orphan supervoxel when \a id is encoded as a supervoxel.
    */
   void registerBody(uint64_t id);
 
@@ -42,7 +42,7 @@ public:
   /*!
    * \brief Register a body (usually supervoxel) with its agglomeration ID.
    *
-   * It adds \a bodyId to existing aggloID mapping or creates a new map if
+   * It adds \a bodyId to existing \a aggloID mapping or creates a new map if
    * the mapping doesn't exist.
    */
   void registerBody(uint64_t aggloId, uint64_t bodyId);
@@ -66,6 +66,18 @@ public:
   bool hasMapping(uint64_t id) const;
   uint64_t getAggloId(uint64_t bodyId) const;
   QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
+
+  /*!
+   * \brief Register a body with its subbody composition as being buffered
+   * (for prefetching)
+   *
+   * \a comp will overwrite the old composition of \a id if it has already been
+   * registered. \a id is registered as a normal body if \a comp is empty.
+   */
+
+  void registerBufferedBody(uint64_t id, const QSet<uint64_t> &comp);
+  void deregisterBufferedBody(uint64_t id);
+  QSet<uint64_t> getBufferedMappedSet(uint64_t bodyId) const;
 
   QSet<uint64_t> getNormalBodySet() const;
   QSet<uint64_t> getUnmappedBodySet() const;
@@ -168,7 +180,7 @@ private:
   QMap<uint64_t, ZFlyEmBodyConfig> m_bodyConfigMap; //Hints for body update
   QSet<uint64_t> m_todoLoaded;
   QSet<uint64_t> m_synapseLoaded;
-
+  QMap<uint64_t, QSet<uint64_t>> m_bufferedBodyMap;
 };
 
 #endif // ZFLYEMBODYMANAGER_H

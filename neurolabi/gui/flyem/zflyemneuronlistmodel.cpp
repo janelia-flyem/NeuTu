@@ -1,17 +1,18 @@
 #include "zflyemneuronlistmodel.h"
 #include <QModelIndex>
 #include "zflyemneuron.h"
-#include "zstackdoc.h"
+#include "mvc/zstackdoc.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcobjsmodel.h"
 //#include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
-#include "zqslog.h"
+#include "logging/zqslog.h"
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"
 #include "zscalablestack.h"
 #include "zswctree.h"
+#include "zpunctum.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -208,7 +209,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
 {
 //  doc->blockSignals(true);
 
-  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
 
   QVector<const ZFlyEmNeuron*> neuronArray;
   QMap<std::string, QColor> colorMap;
@@ -295,7 +296,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
 
     if (bodyArray.getBoundBox().getVolume() > maxVolume) {
       int dsIntv =
-          iround(Cube_Root(
+          neutu::iround(std::cbrt(
                    static_cast<double>(bodyArray.getBoundBox().getVolume()) /
                    maxVolume)) - 1;
       bodyArray.downsample(dsIntv, dsIntv, dsIntv);
@@ -355,7 +356,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
     if (bodyArray.getBoundBox().getVolume() > maxVolume) {
       int dsIntv =
-          iround(Cube_Root(
+          neutu::iround(std::cbrt(
                    static_cast<double>(bodyArray.getBoundBox().getVolume()) /
                    maxVolume)) - 1;
       bodyArray.downsample(dsIntv, dsIntv, dsIntv);
@@ -380,7 +381,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
   if (stack != NULL) {
     doc->loadStack(stack);
-    doc->setTag(neutube::Document::ETag::FLYEM_BODY);
+    doc->setTag(neutu::Document::ETag::FLYEM_BODY);
   }
 
   return dsIntvPt;

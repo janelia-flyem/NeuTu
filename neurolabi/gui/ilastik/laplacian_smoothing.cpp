@@ -39,7 +39,7 @@ Adjacency adjacencyList(Mesh& mesh)
 
 
 	//#pragma omp parallel for
-	for (int i = 0; i < faceCount * 3; i += 3)
+    for (size_t i = 0; i < faceCount * 3; i += 3)
 	{
 		//#pragma omp critical
 		{

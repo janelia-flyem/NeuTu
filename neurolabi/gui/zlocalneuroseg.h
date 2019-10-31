@@ -18,20 +18,20 @@ public:
   ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner = true);
   virtual ~ZLocalNeuroseg();
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
 public:
   static ZLocalNeuroseg& instance();
 
   static void display(const Local_Neuroseg *locseg, double z_scale,
-                      QImage *image, int n = 0, Palette_Color color = RED,
-                      EDisplayStyle style = NORMAL, int label = 0);
+                      QImage *image, int n = 0, Palette_Color color = Palette_Color::RED,
+                      EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0);
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis axis) const;
+               neutu::EAxis axis) const;
   void display(QImage *image, int n, Palette_Color color,
-               EDisplayStyle style = NORMAL, int label = 0) const;
+               EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0) const;
   void display(ZPainter &painter, int sliceIndex, EDisplayStyle option,
                const QColor &color) const;
   using ZStackObject::display; // fix warning -Woverloaded-virtual
@@ -45,6 +45,8 @@ public:
   void bottomPosition(double pos[3]) const;
 
   void asyncGenerateFilterStack() const;
+
+  double getFitScore(const Stack *stack);
 
 private:
   void generateFilterStack();

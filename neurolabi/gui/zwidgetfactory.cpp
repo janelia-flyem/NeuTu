@@ -2,7 +2,7 @@
 #include <QDialog>
 #include <QFrame>
 #include "zclickablelabel.h"
-#include "znumericparameter.h"
+#include "widgets/znumericparameter.h"
 #include "widgets/zcolorlabel.h"
 
 ZWidgetFactory::ZWidgetFactory()
@@ -14,7 +14,7 @@ ZLabeledEditWidget* ZWidgetFactory::MakeLabledEditWidget(
 {
   ZLabeledEditWidget *widget = new ZLabeledEditWidget(parentWidget);
   widget->setLabel(label);
-  if (spacerOption == SPACER_RIGHT) {
+  if (spacerOption == ESpacerOption::RIGHT) {
     widget->addSpacer();
   }
 

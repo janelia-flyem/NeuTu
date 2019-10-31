@@ -4,11 +4,13 @@
 #include <QtConcurrentRun>
 #include <QElapsedTimer>
 
-#include "zqslog.h"
+#include "logging/zqslog.h"
+#include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "neutubeconfig.h"
+#include "dvid/zdvidurl.h"
+
 
 ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
   QObject(parent)
@@ -84,9 +86,16 @@ void ZFlyEmSynapseDataFetcher::startFetching()
   }
 }
 
+void ZFlyEmSynapseDataFetcher::clearLastFetching()
+{
+  QMutexLocker locker(&m_lastFetchingRegionMutex);
+  m_lastFetchingRegion.clear();
+}
 
 void ZFlyEmSynapseDataFetcher::fetchFunc()
 {
+  QMutexLocker rlocker(&m_lastFetchingRegionMutex);
+
   QVector<ZIntCuboid> region = takeRegion();
 
   while (!region.isEmpty()) {
@@ -131,8 +140,8 @@ void ZFlyEmSynapseDataFetcher::addSynapse(ZDvidSynapseEnsemble *se)
       ZJsonObject synapseJson(m_data.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, flyem::EDvidAnnotationLoadMode::NO_PARTNER);
-        se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        synapse.loadJsonObject(synapseJson, dvid::EAnnotationLoadMode::NO_PARTNER);
+        se->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       }
     }
 

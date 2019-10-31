@@ -6,8 +6,7 @@
 #include "tz_fimage_lib.h"
 #include "zstackstatistics.h"
 #include "tz_color.h"
-#include "tz_utilities.h"
-#include "tz_math.h"
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "tz_stack_lib.h"
 #include "zstring.h"
@@ -25,9 +24,9 @@ double Biocytin::ZStackProjector::colorToValueH(
   //return sg;
 
   Rgb_Color color;
-  int ir = iround(sr);
-  int ig = iround(sg);
-  int ib = iround(sb);
+  int ir = neutu::iround(sr);
+  int ig = neutu::iround(sg);
+  int ib = neutu::iround(sb);
 
   if (ir < 0) {
     color.r = 0;
@@ -78,7 +77,7 @@ double Biocytin::ZStackProjector::colorToValueH(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, neutube::EImageBackground bg,
+    const ZStack *stack, neutu::EImageBackground bg,
     bool includingDepth, int slabIndex)
 {
 #ifdef _DEBUG_
@@ -111,7 +110,7 @@ ZStack* Biocytin::ZStackProjector::project(
                           stack->channelNumber());
         for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
           Image *projBuffer = NULL;
-          if (bg == neutube::EImageBackground::BRIGHT) {
+          if (bg == neutu::EImageBackground::BRIGHT) {
             projBuffer = C_Stack::makeMinProjZ(
                   stack->c_stack(channel), range.first, range.second);
           } else {
@@ -199,7 +198,7 @@ ZStack* Biocytin::ZStackProjector::project(
 
                 double v = colorToValueH(
                       red, green, blue, regularizer);
-                if (bg == neutube::EImageBackground::BRIGHT) {
+                if (bg == neutu::EImageBackground::BRIGHT) {
                   if (projMat->array[projIndex] > v) {
                     projMat->array[projIndex] = v;
                     m_depthArray[projIndex] = z;
@@ -390,7 +389,7 @@ std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
   } else {
     const double overlapRatio = 0.1;
     int subDepth = depth / m_slabCount;
-    int overlapDepth = iround(subDepth * overlapRatio);
+    int overlapDepth = neutu::iround(subDepth * overlapRatio);
     int marginDepth = overlapDepth / 2;
     range.first = slabIndex * subDepth;
     range.second = range.first + subDepth;
@@ -411,7 +410,7 @@ std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, neutube::EImageBackground bg)
+    const ZStack *stack, neutu::EImageBackground bg)
 {
   if (stack == NULL) {
     return NULL;

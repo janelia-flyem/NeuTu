@@ -10,8 +10,8 @@
 #include "zstackobject.h"
 #include "c_stack.h"
 #include "zlabelcolortable.h"
-#include "zcuboid.h"
-#include "zsharedpointer.h"
+#include "geometry/zcuboid.h"
+#include "common/zsharedpointer.h"
 
 class ZStack;
 class ZObject3d;
@@ -30,19 +30,19 @@ typedef ZSharedPointer<ZStroke2d> ZStroke2dPtr;
 class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
-  ZStroke2d(const ZStroke2d &stroke);
+//  ZStroke2d(const ZStroke2d &stroke);
   virtual ~ZStroke2d();
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_STROKE;
+    return ZStackObject::EType::STROKE;
   }
 
-  enum EOperation {
-    OPERATION_NULL,
-    OPERATION_DELETE, OPERATION_CHANGE_BRUSH_LABEL,
-    OPERATION_BRUSH_ON, OPERATION_BRUSH_OFF,
-    OPERATION_INCREASE_BRUSH_WIDTH,
-    OPERATION_DECREASE_BRUSH_WIDTH,
+  enum class EOperation {
+    NONE,
+    DELETE, CHANGE_BRUSH_LABEL,
+    BRUSH_ON, BRUSH_OFF,
+    INCREASE_BRUSH_WIDTH,
+    DECREASE_BRUSH_WIDTH,
   };
 
 public:
@@ -50,9 +50,9 @@ public:
   virtual bool load(const char *filePath);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutube::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
+               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -71,7 +71,7 @@ public:
   void labelGrey(Stack *stack, int label) const;
   void labelGrey(Stack *stack, int label, int ignoringValue) const;
 
-  virtual const std::string& className() const;
+//  virtual const std::string& className() const;
 
   inline void setWidth(double width) { m_width = width; }
   void append(double x, double y);
@@ -142,7 +142,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
@@ -155,11 +155,11 @@ public:
     m_hideStart = s;
   }
 
-  bool hitTest(double x, double y, neutube::EAxis axis) const;
+  bool hitTest(double x, double y, neutu::EAxis axis) const;
   bool hitTest(double x, double y, double z) const;
 
 //  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   bool hit(double x, double y, double z);
 
   void boundBox(ZIntCuboid *box) const;

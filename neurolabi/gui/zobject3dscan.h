@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 #include <fstream>
+#include <memory>
 
 #ifdef _QT_GUI_USED_
 #include <QByteArray>
@@ -57,7 +58,7 @@ public:
   ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_OBJECT3D_SCAN;
+    return ZStackObject::EType::OBJECT3D_SCAN;
   }
 
   /*!
@@ -89,6 +90,13 @@ public:
    * \param z The slice position.
    */
   size_t getVoxelNumber(int z) const;
+
+  /*!
+   * \brief Count the memory bytes used by the segments
+   *
+   * Meta information is ignored in byte counting.
+   */
+  size_t getByteCount() const;
 
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
@@ -147,7 +155,7 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutube::EAxis axis);
+  bool hit(double x, double y, neutu::EAxis axis);
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
@@ -214,7 +222,7 @@ public:
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width, int dim,
-                int start, neutube::EAxis axis);
+                int start, neutu::EAxis axis);
 
   template<class T>
   int scanArrayShift(
@@ -292,6 +300,14 @@ public:
   ZObject3dScan subtract(const ZObject3dScan &obj);
   void subtractSliently(const ZObject3dScan &obj);
 
+  /*!
+   * \brief Subtraction with result swapping.
+   *
+   * The current object will become the subtracted part and the returned result
+   * is the difference.
+   */
+  ZObject3dScan counterSubtract(const ZObject3dScan &obj);
+
   friend ZObject3dScan operator - (
       const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 
@@ -327,7 +343,7 @@ public:
   ZObject3dScan *chopY(int y, ZObject3dScan *remain, ZObject3dScan *result) const;
 
   ZObject3dScan* chop(
-      int v, neutube::EAxis axis, ZObject3dScan *remain,
+      int v, neutu::EAxis axis, ZObject3dScan *remain,
       ZObject3dScan *result) const;
 
   /*!
@@ -380,11 +396,11 @@ public:
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
-      const T *array, int width, int height, int depth, neutube::EAxis axis);
+      const T *array, int width, int height, int depth, neutu::EAxis axis);
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
@@ -422,7 +438,7 @@ public:
 
   const std::map<size_t, std::pair<size_t, size_t> >&
   getIndexSegmentMap() const;
-  bool getSegment(size_t index, int *z, int *y, int *x1, int *x2);
+  bool getSegment(size_t index, int *z, int *y, int *x1, int *x2) const;
   size_t getSegmentNumber() const;
 
   void translate(int dx, int dy, int dz);
@@ -452,8 +468,8 @@ public:
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutube::EAxis sliceAxis) const;
-  virtual const std::string& className() const;
+      neutu::EAxis sliceAxis) const;
+//  virtual const std::string& className() const;
 
   void dilate();
   void dilatePlane();
@@ -626,7 +642,7 @@ public:
   bool importHdf5(const std::string &filePath, const std::string &key);
 
   /*!
-   * \brief Saven object to an HDF5 file.
+   * \brief Save object to an HDF5 file.
    *
    * If \a filePath exists, the function will try to write the object with the
    * appending mode; otherwise it will try to create a new HDF5 file.
@@ -650,7 +666,7 @@ public:
    * \brief Check if an object is ajacent to another
    */
   bool isAdjacentTo(const ZObject3dScan &obj,
-                    neutube::EStackNeighborhood nbr = neutube::EStackNeighborhood::D1) const;
+                    neutu::EStackNeighborhood nbr = neutu::EStackNeighborhood::D1) const;
 
 
   /*
@@ -843,15 +859,10 @@ private:
 
   void canonizeConst() const;
 
-  bool isAdjacentTo_Old(const ZObject3dScan &obj) const;
+  bool isAdjacentToOld(const ZObject3dScan &obj) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
-  bool m_isCanonized;
-//  uint64_t m_label;
-  bool m_blockingEvent;
-  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
-//  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
@@ -868,6 +879,10 @@ protected:
   const static TEvent EVENT_OBJECT_VIEW_CHANGED;
   const static TEvent EVENT_NULL;
 #endif
+
+  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
+  bool m_isCanonized = true;
+  bool m_blockingEvent = false;
 };
 
 #include "zobject3dscan.hpp"

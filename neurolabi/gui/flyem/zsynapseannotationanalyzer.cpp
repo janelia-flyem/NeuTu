@@ -36,7 +36,7 @@ void ZSynapseAnnotationAnalyzer::set(const vector<int> bodyIdList,
     m_bodyIdMap[bodyIdList[i]] = i;
     m_swcTreeList[i] = Read_Swc_Tree(m_swcFileList[i].c_str());
     Swc_Tree_Iterator_Start(m_swcTreeList[i], SWC_TREE_ITERATOR_DEPTH_FIRST,
-                            FALSE);
+                            _FALSE_);
   }
 
 }
@@ -113,7 +113,7 @@ void ZSynapseAnnotationAnalyzer::loadConfig(string filePath)
   if (fp == NULL) {
     cerr << "Cannot open " << filePath << endl;
   } else {
-    if (ZFileType::FileType(filePath) == ZFileType::FILE_JSON) {
+    if (ZFileType::FileType(filePath) == ZFileType::EFileType::JSON) {
       ZJsonObject jsonObject;
       jsonObject.load(filePath);
       map<string, json_t*> entryMap = jsonObject.toEntryMap(false);

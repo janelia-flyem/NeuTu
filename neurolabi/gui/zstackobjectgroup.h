@@ -1,6 +1,8 @@
 #ifndef ZSTACKOBJECTGROUP_H
 #define ZSTACKOBJECTGROUP_H
 
+#include <functional>
+
 #include <QList>
 #include <QSet>
 #include <QMap>
@@ -9,8 +11,8 @@
 
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
-#include "zsharedpointer.h"
-#include "flyem/zflyemtodoitem.h"
+#include "common/zsharedpointer.h"
+//#include "flyem/zflyemtodoitem.h"
 
 /*!
  * \brief The aggregate class of ZStackObject
@@ -20,7 +22,8 @@
  */
 typedef QSet<ZStackObject*> TStackObjectSet;
 typedef QList<ZStackObject*> TStackObjectList;
-typedef bool (*TObjectTest)(const ZStackObject*);
+//typedef bool (*TObjectTest)(const ZStackObject*);
+typedef std::function<bool(const ZStackObject*)> TObjectTest;
 
 class ZStackObjectGroup
 {
@@ -170,8 +173,8 @@ public:
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
-  TStackObjectSet& getSelectedSet(ZStackObject::EType type);
-  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
+  TStackObjectSet getSelectedSet(ZStackObject::EType type) const;
+//  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
 
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 

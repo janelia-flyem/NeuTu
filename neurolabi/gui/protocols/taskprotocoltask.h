@@ -39,6 +39,7 @@ public:
 
     void addTag(QString tag);
     void removeTag(QString tag);
+    void toggleTag(QString tag, bool on);
     bool hasTag(QString tag);
     QStringList getTags();
     void clearTags();
@@ -46,7 +47,7 @@ public:
     virtual QString taskType() const = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
-    virtual bool skip();
+    virtual bool skip(QString &reason);
     virtual QWidget * getTaskWidget();
     virtual QMenu * getTaskMenu();
     virtual bool usePrefetching();

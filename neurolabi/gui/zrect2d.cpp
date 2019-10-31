@@ -5,9 +5,9 @@
 #include <QRectF>
 #include <QPen>
 
+#include "common/math.h"
 #include "geometry/zgeometry.h"
 #include "zpainter.h"
-#include "tz_math.h"
 #include "zsttransform.h"
 
 ZRect2d::ZRect2d()
@@ -50,7 +50,7 @@ bool ZRect2d::isValid() const
   return m_width > 0 && m_height > 0;
 }
 
-bool ZRect2d::isSliceVisible(int z, neutube::EAxis /*sliceAxis*/) const
+bool ZRect2d::isSliceVisible(int z, neutu::EAxis /*sliceAxis*/) const
 {
   bool visible = isValid();
 
@@ -77,13 +77,13 @@ void ZRect2d::preparePen(QPen &pen) const
 }
 
 void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                      neutube::EAxis sliceAxis) const
+                      neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != m_sliceAxis) {
     return;
   }
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
   if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
@@ -107,7 +107,7 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
 }
 
 bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
-             EDisplaySliceMode /*sliceMode*/, neutube::EAxis sliceAxis) const
+             EDisplaySliceMode /*sliceMode*/, neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != m_sliceAxis) {
     return false;
@@ -210,7 +210,7 @@ bool ZRect2d::contains(double x, double y) const
        x < m_x0 + m_width && y < m_y0 + m_height));
 }
 
-bool ZRect2d::hit(double x, double y, neutube::EAxis axis)
+bool ZRect2d::hit(double x, double y, neutu::EAxis axis)
 {
   if (m_sliceAxis != axis) {
     return false;
@@ -234,7 +234,7 @@ bool ZRect2d::hit(double x, double y, double z)
     return hit(wx, wy, m_sliceAxis);
   }
 
-  if (iround(wz) == m_z) {
+  if (neutu::iround(wz) == m_z) {
     return ((wx >= m_x0 - 5 && wy >= m_y0 - 5 &&
              wx < m_x0 + m_width + 5 && wy < m_y0 + m_height + 5) &&
             !(wx >= m_x0 + 5 && wy >= m_y0 + 5 &&
@@ -284,4 +284,4 @@ QRectF ZRect2d::CropRect(
 }
 
 
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZRect2d)
+//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZRect2d)
