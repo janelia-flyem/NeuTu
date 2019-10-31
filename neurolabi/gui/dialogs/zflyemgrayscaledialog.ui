@@ -31,19 +31,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="fullRangeCheckBox">
+      <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>Full Range</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="sparseCheckBox">
-       <property name="text">
-        <string>Sparse</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
+        <string>1 means full res</string>
        </property>
       </widget>
      </item>
@@ -59,6 +49,23 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="fullRangeCheckBox">
+       <property name="text">
+        <string>Full Range</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="sparseCheckBox">
+       <property name="text">
+        <string>Sparse</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
