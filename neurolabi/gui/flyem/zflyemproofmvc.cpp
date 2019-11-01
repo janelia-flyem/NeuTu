@@ -1089,6 +1089,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
+  connect(window, SIGNAL(settingDoneItemVisible(bool)),
+          doc, SLOT(setDoneItemVisible(bool)));
 //  connect(doc, SIGNAL(todoVisibleChanged()),
 //          window, SLOT(updateTodoVisibility()));
 

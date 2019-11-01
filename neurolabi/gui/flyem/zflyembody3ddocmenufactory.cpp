@@ -1,4 +1,7 @@
 #include "zflyembody3ddocmenufactory.h"
+
+#include <tuple>
+
 #include "z3dwindow.h"
 #include "zflyembody3ddoc.h"
 #include "zmenuconfig.h"
@@ -110,11 +113,14 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         }
       }
 #else
-      Q_UNUSED(bodyEnv);
+      std::ignore = bodyEnv;
 #endif
     }
 
+    config.appendSeparator();
     config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    config.append(ZActionFactory::ACTION_SHOW_DONE);
+    config.appendSeparator();
 
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {
@@ -201,6 +207,8 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NO_SOMA);
       }
     }
+
+    config.appendSeparator();
 
     if (doc->hasSelectedPuncta()) {
       config.append(ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR);
