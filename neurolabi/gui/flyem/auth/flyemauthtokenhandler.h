@@ -3,15 +3,21 @@
 
 #include <QString>
 
+#include "flyemauthserverclient.h"
+
 class FlyEmAuthTokenHandler
 {
 public:
     FlyEmAuthTokenHandler();
 
     QString getServer();
+    void openLoginInBrowser();
+    QString getLoginUrl();
+    void openTokenInBrowser();
+    QString getTokenUrl();
 
 private:
-    static const QString AUTH_SERVER;
+    FlyEmAuthServerClient m_client;
 
 };
 

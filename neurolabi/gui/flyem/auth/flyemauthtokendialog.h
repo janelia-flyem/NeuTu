@@ -17,6 +17,13 @@ public:
     explicit FlyEmAuthTokenDialog(QWidget *parent = nullptr);
     ~FlyEmAuthTokenDialog();
 
+private slots:
+    void onLoginButton();
+    void onCopyLoginUrlButton();
+    void onTokenButton();
+    void onCopyTokenUrlButton();
+
+
 private:
     Ui::FlyEmAuthTokenDialog *ui;
 
