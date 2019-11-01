@@ -36,6 +36,7 @@
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
+#include "flyem/auth/flyemauthtokendialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -216,6 +217,8 @@ void ZProofreadWindow::createDialog()
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
+
+  m_authTokenDlg = new FlyEmAuthTokenDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -451,6 +454,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
+  m_openAuthDialogAction->setIcon(QIcon(":/images/A-for-auth-32x32.png"));
+  connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
+  m_toolMenu->addAction(m_openAuthDialogAction);
+
   m_tuneContrastAction = new QAction("Tune Contrast", this);
   connect(m_tuneContrastAction, &QAction::triggered,
           m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
@@ -529,6 +537,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_tuneContrastAction->setEnabled(on);
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
+  m_openAuthDialogAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -608,6 +617,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
+  m_toolBar->addAction(m_openAuthDialogAction);
 
   m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
@@ -629,6 +639,11 @@ void ZProofreadWindow::operateDvid()
 {
   m_dvidOpDlg->show();
   m_dvidOpDlg->raise();
+}
+
+void ZProofreadWindow::showAuthTokenDialog() {
+    m_authTokenDlg->show();
+    m_authTokenDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
