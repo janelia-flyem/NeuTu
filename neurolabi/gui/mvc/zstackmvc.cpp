@@ -436,8 +436,8 @@ void ZStackMvc::dropEvent(QDropEvent *event)
 void ZStackMvc::saveStack()
 {
   if (getDocument()->hasStackData()) {
-    QString filePath =
-        ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
+    QString filePath = ZDialogFactory::GetSaveFileName(
+          "Save Stack", "", "TIFF files (*.tif)", this);
     if (!filePath.isEmpty()) {
       std::string resultPath =
           ZStackDocUtil::SaveStack(getDocument().get(), filePath.toStdString());

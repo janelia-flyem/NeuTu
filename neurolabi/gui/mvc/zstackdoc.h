@@ -784,6 +784,9 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
+  template<typename T>
+  void processObjectList(std::function<void(T*)> proc);
+
   inline const ZDocPlayerList& getPlayerList() const {
     return m_playerList;
   }
@@ -1664,6 +1667,17 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template<typename T>
+void ZStackDoc::processObjectList(std::function<void(T*)> proc)
+{
+  QList<T*> objList = getObjectList<T>();
+  for (auto obj : objList) {
+    proc(obj);
+  }
+
+  processObjectModified();
 }
 
 template <typename T>

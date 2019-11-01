@@ -5773,6 +5773,24 @@ void ZFlyEmProofDoc::makeKeyProcessor()
   m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
 }
 
+void ZFlyEmProofDoc::exportGrayscale(
+    const ZIntCuboid &box, int dsIntv, const QString &fileName) const
+{
+  if (m_mainGrayscaleReader->hasGrayscale()) {
+    ZStack *stack = m_mainGrayscaleReader->readGrayScale(box);
+
+    if (stack) {
+      stack->downsampleMean(dsIntv, dsIntv, dsIntv);
+      stack->save(fileName.toStdString());
+      delete stack;
+    } else {
+      throw std::runtime_error("Failed to read grayscale from DVID.");
+    }
+  } else {
+    throw std::runtime_error("No grayscale data found.");
+  }
+}
+
 bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
 {
   switch (ZFileType::FileType(filePath.toStdString())) {

@@ -128,6 +128,7 @@ private slots:
     void onNamedOnlyToggled();
     void onIOConnectionsSelectionChanged(
         QItemSelection selected, QItemSelection deselected);
+    void onCopySelectedConnections();
 
 private:
     enum Tabs {

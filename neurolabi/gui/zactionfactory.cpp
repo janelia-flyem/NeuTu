@@ -487,6 +487,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setCheckable(true);
     action->setChecked(true);
     break;
+  case ACTION_SHOW_DONE:
+    action = new QAction("Show done", parent);
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
   case ACTION_REMOVE_TODO_BATCH:
     action = new QAction("Remove todo (batch)", parent);
     break;

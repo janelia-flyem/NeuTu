@@ -730,8 +730,8 @@ void ZFlyEmProofMvc::exportGrayscale()
   ZFlyEmGrayscaleDialog *dlg = m_dlgManager->getGrayscaleDlg();
   dlg->makeGrayscaleExportAppearance();
   if (dlg->exec()) {
-    QString fileName =
-        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
+    QString fileName = ZDialogFactory::GetSaveFileName(
+          "Save Grayscale", "", "TIFF files (*.tif)", this);
     if (!fileName.isEmpty()) {
       exportGrayscale(dlg->getBoundBox(), dlg->getDsIntv(), fileName);
     }
@@ -741,6 +741,15 @@ void ZFlyEmProofMvc::exportGrayscale()
 void ZFlyEmProofMvc::exportGrayscale(
     const ZIntCuboid &box, int dsIntv, const QString &fileName)
 {
+  try {
+    getCompleteDocument()->exportGrayscale(box, dsIntv, fileName);
+  } catch (std::exception &e) {
+    ZDialogFactory::Warn(
+          "Export Failed",
+          QString("Cannot export grayscale.\n Reason: ") + e.what(), this);
+  }
+
+  /*
   ZStack *stack =
       getCompleteDocument()->getDvidReader().readGrayScale(box);
   stack->downsampleMean(dsIntv, dsIntv, dsIntv);
@@ -750,6 +759,7 @@ void ZFlyEmProofMvc::exportGrayscale(
   }
 
   delete stack;
+  */
 }
 
 void ZFlyEmProofMvc::exportNeuronScreenshot(
@@ -1079,6 +1089,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
+  connect(window, SIGNAL(settingDoneItemVisible(bool)),
+          doc, SLOT(setDoneItemVisible(bool)));
 //  connect(doc, SIGNAL(todoVisibleChanged()),
 //          window, SLOT(updateTodoVisibility()));
 

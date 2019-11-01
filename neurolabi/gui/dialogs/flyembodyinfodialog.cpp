@@ -183,6 +183,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
             this, SLOT(onImportBodies()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
+    connect(ui->copyConnectionPushButton, SIGNAL(clicked()),
+            this, SLOT(onCopySelectedConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
     connect(ui->moveUpButton, SIGNAL(clicked(bool)), this, SLOT(onMoveUp()));
@@ -195,7 +197,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
     connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickFilterTable(QModelIndex)));
-    connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
+    connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
     connect(ui->connectionsTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOConnectionsTable(QModelIndex)));
     connect(ui->ioBodyTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
@@ -2693,6 +2696,43 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
     emit pointDisplayRequested(x, y, z);
+}
+
+void FlyEmBodyInfoDialog::onCopySelectedConnections()
+{
+  QString result;
+
+  if (m_connectionsBody > 0) {
+    QString link = "";
+    if (m_connectionsTableState == CT_INPUT) {
+      link = "<-";
+    } else if (m_connectionsTableState == CT_OUTPUT) {
+      link = "->";
+    }
+    if (!link.isEmpty()) {
+      QModelIndexList indexList =
+          ui->ioBodyTableView->selectionModel()->selectedIndexes();
+      QList<uint64_t> connectedBodies;
+      for (const QModelIndex &index : indexList) {
+        QModelIndex modelIndex =  m_ioBodyProxy->mapToSource(index);
+        QStandardItem *item = m_ioBodyModel->item(modelIndex.row());
+        auto bodyId = item->data(Qt::DisplayRole).toULongLong();
+        if (bodyId > 0) {
+          connectedBodies.append(uint64_t(bodyId));
+        }
+      }
+
+      if (!connectedBodies.isEmpty()) {
+        result = QString("%1 ").arg(m_connectionsBody) + link + " [ ";
+        for (uint64_t body : connectedBodies) {
+          result += QString("%1, ").arg(body);
+        }
+        result += "]";
+      }
+    }
+  }
+
+  ZGlobal::CopyToClipboard(result.toStdString());
 }
 
 void FlyEmBodyInfoDialog::onIOConnectionsSelectionChanged(QItemSelection /*selected*/,
