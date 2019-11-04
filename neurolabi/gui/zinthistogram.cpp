@@ -1,8 +1,9 @@
 #include "zinthistogram.h"
 #include <iostream>
 #include <algorithm>
-#include "tz_iarray.h"
+
 #include "tz_int_histogram.h"
+#include "neurolabi/numericarray.h"
 
 ZIntHistogram::ZIntHistogram() : m_hist(NULL)
 {
@@ -19,7 +20,7 @@ ZIntHistogram::ZIntHistogram(const ZIntHistogram &hist)
   if (histArray == nullptr) {
     m_hist = nullptr;
   } else {
-    m_hist = iarray_copy(const_cast<int*>(histArray), histArray[0] + 2);
+    m_hist = neutu::array::Clone(histArray, histArray[0] + 2);
   }
 }
 
@@ -46,11 +47,11 @@ void ZIntHistogram::setData(int *hist)
 ZIntHistogram& ZIntHistogram::operator =(const ZIntHistogram &hist)
 {
   const int *histArray = hist.c_hist();
-  if (histArray == NULL) {
-    m_hist = NULL;
+  if (histArray == nullptr) {
+    m_hist = nullptr;
   } else {
     clear();
-    m_hist = iarray_copy(const_cast<int*>(histArray), histArray[0] + 2);
+    m_hist = neutu::array::Clone(histArray, histArray[0] + 2);
   }
 
   return *this;

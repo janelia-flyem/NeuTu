@@ -131,7 +131,6 @@
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
-#include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
 #include "flyem/zflyembodyannotation.h"

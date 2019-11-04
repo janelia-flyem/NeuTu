@@ -13,10 +13,10 @@
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
 
-#include "tz_iarray.h"
 #include "tz_random.h"
 #include "tz_geo3d_utils.h"
 
+#include "neurolabi/numericarray.h"
 #include "common/math.h"
 #include "zswctree.h"
 
@@ -1266,7 +1266,7 @@ void ZEditSwcDialog::runOperations()
           ws->showing_length = _TRUE_;
         }
         int napo = m_apoFileNames.size();
-        int *puncta_number = iarray_malloc(napo);
+        int *puncta_number = neutu::array::IntMalloc(napo);
         if (napo > 0) {
           QByteArray tmpba = m_apoFileNames[0].toLocal8Bit();
           ws->puncta = Geo3d_Scalar_Field_Import_Apo(tmpba.data());
@@ -1280,7 +1280,7 @@ void ZEditSwcDialog::runOperations()
             Kill_Geo3d_Scalar_Field(puncta);
           }
 
-          ws->puncta_type = iarray_calloc(ws->puncta->size);
+          ws->puncta_type = neutu::array::IntCalloc(ws->puncta->size);
 
           int cur_type = 0;
           for (int i = 0; i < ws->puncta->size; i++) {
