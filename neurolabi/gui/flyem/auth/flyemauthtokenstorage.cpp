@@ -69,9 +69,7 @@ void FlyEmAuthTokenStorage::loadTokensFile() {
         authFile.close();
         QJsonDocument doc = QJsonDocument::fromJson(fileData.toUtf8());
         if (doc.isNull()) {
-            // error; not sure how I want to handle this; just return no data silently?
-
-            // do that for now...
+            // error; not sure how I want to handle this; I think I have to return no data silently
 
         } else {
             m_data = doc.object();
@@ -87,8 +85,8 @@ void FlyEmAuthTokenStorage::saveTokensFile() {
     QFile authFile(authFilePath);
     if (!authFile.open(QIODevice::WriteOnly)) {
 
-
         // error handling
+        return;
 
     }
     QJsonDocument jsonDoc(m_data);

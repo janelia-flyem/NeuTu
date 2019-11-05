@@ -39,10 +39,7 @@ void FlyEmAuthTokenHandler::saveToken(QString token, QString application) {
 
 
             // error
-
-
             return;
-
 
 
         } else {
