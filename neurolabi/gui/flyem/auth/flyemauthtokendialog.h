@@ -31,6 +31,7 @@ private:
     FlyEmAuthTokenHandler m_handler;
 
     void updateServerLabel(QString server);
+    void updateToken();
 };
 
 #endif // FLYEMAUTHTOKENDIALOG_H

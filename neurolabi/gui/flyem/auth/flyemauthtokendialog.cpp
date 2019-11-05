@@ -21,6 +21,7 @@ FlyEmAuthTokenDialog::FlyEmAuthTokenDialog(QWidget *parent) :
     connect(ui->copyTokenUrlButton, SIGNAL(clicked(bool)), this, SLOT(onCopyTokenUrlButton()));
     connect(ui->saveTokenButton, SIGNAL(clicked(bool)), this, SLOT(onSaveTokenButton()));
 
+    updateToken();
     updateServerLabel(m_handler.getServer());
 
 }
@@ -53,6 +54,12 @@ void FlyEmAuthTokenDialog::onSaveTokenButton() {
 
 void FlyEmAuthTokenDialog::updateServerLabel(QString server) {
     ui->serverLabel->setText("Current authentication server: " + server);
+}
+
+void FlyEmAuthTokenDialog::updateToken() {
+    if (m_handler.hasToken()) {
+        ui->tokenText->setText(m_handler.getToken());
+    }
 }
 
 FlyEmAuthTokenDialog::~FlyEmAuthTokenDialog()
