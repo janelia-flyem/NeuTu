@@ -13,6 +13,8 @@
 #include <QMimeData>
 #include <QInputDialog>
 
+#include "qfonticon.h"
+
 #include "common/math.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
@@ -455,7 +457,7 @@ void ZProofreadWindow::createMenu()
   m_toolMenu->addAction(m_openProtocolsAction);
 
   m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
-  m_openAuthDialogAction->setIcon(QIcon(":/images/A-for-auth-32x32.png"));
+  m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::yellow));
   connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
   m_toolMenu->addAction(m_openAuthDialogAction);
 
