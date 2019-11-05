@@ -9,11 +9,9 @@ class FlyEmAuthTokenStorage
 public:
     FlyEmAuthTokenStorage();
 
-    static const QString DEFAULT_APPLICATION;
-
-    bool hasToken(QString server, QString application=DEFAULT_APPLICATION);
-    QString getToken(QString server, QString application=DEFAULT_APPLICATION);
-    void saveToken(QString token, QString server, QString application=DEFAULT_APPLICATION);
+    bool hasToken(QString server, QString application);
+    QString getToken(QString server, QString application);
+    void saveToken(QString token, QString server, QString application);
 
 
 private:

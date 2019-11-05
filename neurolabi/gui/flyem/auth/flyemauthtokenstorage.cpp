@@ -28,8 +28,6 @@ FlyEmAuthTokenStorage::FlyEmAuthTokenStorage()
 
 }
 
-const QString FlyEmAuthTokenStorage::DEFAULT_APPLICATION = "master";
-
 bool FlyEmAuthTokenStorage::hasToken(QString server, QString application) {
     // this is more for convenience anyway...there's no real difference in getting
     //  the token vs. checking if it's there

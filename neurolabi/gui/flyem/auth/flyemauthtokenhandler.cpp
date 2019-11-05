@@ -18,6 +18,8 @@ FlyEmAuthTokenHandler::FlyEmAuthTokenHandler()
 
 }
 
+const QString FlyEmAuthTokenHandler::DEFAULT_APPLICATION = "master";
+
 bool FlyEmAuthTokenHandler::hasToken(QString application) {
     return m_storage.hasToken(getServer(), application);
 }

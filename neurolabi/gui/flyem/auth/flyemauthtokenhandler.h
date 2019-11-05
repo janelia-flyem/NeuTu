@@ -11,15 +11,17 @@ class FlyEmAuthTokenHandler
 public:
     FlyEmAuthTokenHandler();
 
+    static const QString DEFAULT_APPLICATION;
+
     QString getServer();
     void openLoginInBrowser();
     QString getLoginUrl();
     void openTokenInBrowser();
     QString getTokenUrl();
 
-    bool hasToken(QString application=FlyEmAuthTokenStorage::DEFAULT_APPLICATION);
-    QString getToken(QString application=FlyEmAuthTokenStorage::DEFAULT_APPLICATION);
-    void saveToken(QString token, QString application=FlyEmAuthTokenStorage::DEFAULT_APPLICATION);
+    bool hasToken(QString application=DEFAULT_APPLICATION);
+    QString getToken(QString application=DEFAULT_APPLICATION);
+    void saveToken(QString token, QString application=DEFAULT_APPLICATION);
 
 private:
     FlyEmAuthServerClient m_client;
