@@ -3,6 +3,11 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+/*
+ * this class talks to the authentication server; for login
+ * stuff, it opens your browser; for other stuff, it uses
+ * the rest api
+ */
 FlyEmAuthServerClient::FlyEmAuthServerClient()
 {
 

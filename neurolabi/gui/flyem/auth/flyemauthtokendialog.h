@@ -22,6 +22,7 @@ private slots:
     void onCopyLoginUrlButton();
     void onTokenButton();
     void onCopyTokenUrlButton();
+    void onSaveTokenButton();
 
 
 private:

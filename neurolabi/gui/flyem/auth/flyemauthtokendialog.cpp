@@ -3,6 +3,7 @@
 
 #include <QGuiApplication>
 #include <QClipboard>
+
 /*
  * this dialog helps users to log in to the Fly EM authentication service,
  * get their token, and paste it in for use in NeuTu
@@ -18,7 +19,7 @@ FlyEmAuthTokenDialog::FlyEmAuthTokenDialog(QWidget *parent) :
     connect(ui->copyLoginURLButton, SIGNAL(clicked(bool)), this, SLOT(onCopyLoginUrlButton()));
     connect(ui->openTokenButton, SIGNAL(clicked(bool)), this, SLOT(onTokenButton()));
     connect(ui->copyTokenUrlButton, SIGNAL(clicked(bool)), this, SLOT(onCopyTokenUrlButton()));
-
+    connect(ui->saveTokenButton, SIGNAL(clicked(bool)), this, SLOT(onSaveTokenButton()));
 
     updateServerLabel(m_handler.getServer());
 
@@ -40,6 +41,14 @@ void FlyEmAuthTokenDialog::onCopyLoginUrlButton() {
 void FlyEmAuthTokenDialog::onCopyTokenUrlButton() {
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(m_handler.getTokenUrl());
+}
+
+void FlyEmAuthTokenDialog::onSaveTokenButton() {
+    QString token = ui->tokenText->toPlainText();
+    if (!token.isEmpty()) {
+        // note that the token in in json form at this point: {"token": "....."}
+        m_handler.saveToken(token);
+    }
 }
 
 void FlyEmAuthTokenDialog::updateServerLabel(QString server) {
