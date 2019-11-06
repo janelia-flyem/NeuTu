@@ -3,10 +3,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include <QMessageBox>
+
 /*
  * this class is the authentication token middleman; it handles all the tasks
  * involved in getting tokens and handing them around; it talks to the auth server
  * etc. so you don't have to
+ *
  */
 FlyEmAuthTokenHandler::FlyEmAuthTokenHandler()
 {
@@ -61,12 +64,8 @@ void FlyEmAuthTokenHandler::saveToken(QString token, QString application) {
         // it parsed == it's json; extract the token
         QJsonObject obj = doc.object();
         if (!obj.contains("token")) {
-
-
-            // error
+            showError("Token error!", "Couldn't parse token JSON");
             return;
-
-
         } else {
             bareToken = obj["token"].toString();
         }
@@ -75,6 +74,11 @@ void FlyEmAuthTokenHandler::saveToken(QString token, QString application) {
         bareToken = token;
     }
     m_storage.saveToken(bareToken, getServer(), application);
+    if (m_storage.status() != FlyEmAuthTokenStorage::OK) {
+        showError("Token error!", "Token could not be saved to NeuTu settings directory!");
+    } else {
+        showMessage("Token saved!", "Token has been saved to NeuTu settings directory.");
+    }
 }
 
 QString FlyEmAuthTokenHandler::getServer() {
@@ -101,25 +105,33 @@ void FlyEmAuthTokenHandler::openTokenInBrowser() {
 QStringList FlyEmAuthTokenHandler::getApplications() {
     QStringList result;
 
-
-
-    // check that we have token first!
+    // check that we have master token first!
     if (!hasToken()) {
         // really would prefer to bring up the dialog box and let the user retrieve token
         return result;
     }
-
-
     result = m_client.getApplications(getToken());
-    if (result.size() == 0) {
-        // error?
-
-
-
-    }
     return result;
 }
 
+void FlyEmAuthTokenHandler::showError(QString title, QString message) {
+    QMessageBox mb;
+    mb.setText(title);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setInformativeText(message);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
+}
+
+void FlyEmAuthTokenHandler::showMessage(QString title, QString message) {
+    QMessageBox mb;
+    mb.setText(title);
+    mb.setInformativeText(message);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
+}
 
 
 

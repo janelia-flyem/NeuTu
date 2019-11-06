@@ -4,6 +4,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "QsLog.h"
+
 #include "neutubeconfig.h"
 
 /*
@@ -21,11 +23,14 @@
  */
 FlyEmAuthTokenStorage::FlyEmAuthTokenStorage()
 {
+    m_status = NOT_LOADED;
 
     // the tokens file is small, so we'll read it into this object as soon as it's created
     loadTokensFile();
+}
 
-
+FlyEmAuthTokenStorage::StorageStatus FlyEmAuthTokenStorage::status() {
+    return m_status;
 }
 
 bool FlyEmAuthTokenStorage::hasToken(QString server, QString application) {
@@ -69,13 +74,15 @@ void FlyEmAuthTokenStorage::loadTokensFile() {
         authFile.close();
         QJsonDocument doc = QJsonDocument::fromJson(fileData.toUtf8());
         if (doc.isNull()) {
-            // error; not sure how I want to handle this; I think I have to return no data silently
-
+            m_status = NOT_LOADED;
+            LERROR() << "couldn't parse authentication token file";
         } else {
             m_data = doc.object();
+            m_status = OK;
         }
     } else {
         // if file doesn't exist, save empty data to file
+        m_status = OK;
         saveTokensFile();
     }
 }
@@ -84,11 +91,11 @@ void FlyEmAuthTokenStorage::saveTokensFile() {
     QString authFilePath = QString::fromStdString(NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::FLYEM_SERVICES_AUTH));
     QFile authFile(authFilePath);
     if (!authFile.open(QIODevice::WriteOnly)) {
-
-        // error handling
+        m_status = NOT_SAVED;
+        LERROR() << "couldn't save authentication token file";
         return;
-
     }
     QJsonDocument jsonDoc(m_data);
     authFile.write(jsonDoc.toJson());
+    m_status = OK;
 }

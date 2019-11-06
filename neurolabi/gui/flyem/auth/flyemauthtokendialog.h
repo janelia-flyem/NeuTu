@@ -24,7 +24,6 @@ private slots:
     void onCopyTokenUrlButton();
     void onSaveTokenButton();
 
-
 private:
     Ui::FlyEmAuthTokenDialog *ui;
 

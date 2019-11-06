@@ -20,6 +20,8 @@ FlyEmAuthServerClient::FlyEmAuthServerClient()
 {
     m_networkManager = new QNetworkAccessManager(this);
 
+    m_hadError = false;
+    m_lastErrorMessage = "";
 }
 
 QString FlyEmAuthServerClient::getServer() {
@@ -58,6 +60,9 @@ QStringList FlyEmAuthServerClient::getApplications(QString masterToken) {
     QStringList results;
     QNetworkReply * reply = get(getApplicationsUrl(), masterToken);
     if (reply->error() == QNetworkReply::NoError) {
+        m_hadError = false;
+        m_lastErrorMessage = "";
+
         // reply is a json array
         QString stringReply = (QString) reply->readAll();
         QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
@@ -65,31 +70,47 @@ QStringList FlyEmAuthServerClient::getApplications(QString masterToken) {
         for (QJsonValue val: array) {
             results << val.toString();
         }
+    } else {
+        m_hadError = true;
+        m_lastErrorMessage = reply->errorString();
     }
 
     // note that error returns empty list
-
     return results;
 }
 
 QString FlyEmAuthServerClient::getApplicationToken(QString masterToken, QString application) {
     QNetworkReply * reply = get(getApplicationTokenUrl(application), masterToken);
     if (reply->error() == QNetworkReply::NoError) {
-        // reply is a json dict
+        m_hadError = false;
+        m_lastErrorMessage = "";
+
         QString stringReply = (QString) reply->readAll();
         QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
+        if (jsonResponse.isNull()) {
+            m_hadError = true;
+            m_lastErrorMessage = "couldn't parse json response";
+            return "";
+        }
         QJsonObject object = jsonResponse.object();
         if (object.contains("token")) {
-            // if it's an unknown app: {"error":"cannot find provided app"}
-            // (not handled separately yet)
-
-
             return object["token"].toString();
+        } else if (object.contains("error")) {
+            // if it knows the error (probably "unknown application"), let it speak
+            m_hadError = true;
+            m_lastErrorMessage = object["error"].toString();
+            return "";
+        } else {
+            m_hadError = true;
+            m_lastErrorMessage = "token key missing from json";
+            return "";
         }
+    } else {
+        m_hadError = true;
+        m_lastErrorMessage = reply->errorString();
+        return "";
     }
 
-    // error returns empty string
-    return "";
 }
 
 QNetworkReply * FlyEmAuthServerClient::get(QString url, QString token) {
@@ -132,3 +153,10 @@ QNetworkReply * FlyEmAuthServerClient::call(QNetworkReply * reply) {
     return reply;
 }
 
+bool FlyEmAuthServerClient::hadError() {
+    return m_hadError;
+}
+
+QString FlyEmAuthServerClient::lastError() {
+    return m_lastErrorMessage;
+}

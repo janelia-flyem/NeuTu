@@ -14,17 +14,23 @@ public:
     void setServer(QString server);
     QString getServer();
 
+    // calls via browser
     void openLoginInBrowser();
     QString getLoginUrl();
     void openTokenInBrowser();
     QString getTokenUrl();
 
+    // calls to server (which set had/last error calls)
+    bool hadError();
+    QString lastError();
     QString getApplicationToken(QString masterToken, QString application);
     QStringList getApplications(QString masterToken);
 
 private:
     QString m_server;
     QNetworkAccessManager * m_networkManager;
+    bool m_hadError;
+    QString m_lastErrorMessage;
 
     QString getApplicationTokenUrl(QString application);
     QString getApplicationsUrl();

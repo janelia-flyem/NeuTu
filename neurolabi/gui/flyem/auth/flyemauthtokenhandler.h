@@ -29,6 +29,8 @@ private:
     FlyEmAuthServerClient m_client;
     FlyEmAuthTokenStorage m_storage;
 
+    void showError(QString title, QString message);
+    void showMessage(QString title, QString message);
 };
 
 #endif // FLYEMAUTHTOKENHANDLER_H
