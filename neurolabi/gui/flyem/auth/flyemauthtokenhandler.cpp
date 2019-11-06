@@ -21,42 +21,23 @@ FlyEmAuthTokenHandler::FlyEmAuthTokenHandler()
 
 }
 
-const QString FlyEmAuthTokenHandler::DEFAULT_APPLICATION = "master";
+const QString FlyEmAuthTokenHandler::MASTER_TOKEN_APPLICATION = "master";
 
-// is the token present in storage?
-bool FlyEmAuthTokenHandler::hasToken(QString application) {
-    return m_storage.hasToken(getServer(), application);
+bool FlyEmAuthTokenHandler::hasMasterToken() {
+    return m_storage.hasToken(getServer(), MASTER_TOKEN_APPLICATION);
 }
 
-// get the token either from storage or server
-QString FlyEmAuthTokenHandler::getToken(QString application) {
-
-    if (application == DEFAULT_APPLICATION) {
-        if (hasToken()) {
-            return m_storage.getToken(getServer(), application);
-        } else {
-            // if we don't have it, would like to pop up dialog, but not now
-            return "";
-        }
+QString FlyEmAuthTokenHandler::getMasterToken() {
+    if (hasMasterToken()) {
+        return m_storage.getToken(getServer(), MASTER_TOKEN_APPLICATION);
     } else {
-        if (hasToken(application)) {
-            return m_storage.getToken(getServer(), application);
-        } else {
-            // get from server
-            QString token = m_client.getApplicationToken(getToken(), application);
-
-            // if it's empty, it's an error; otherwise, save it
-            if (token.size() > 0) {
-                m_storage.saveToken(token, getServer(), application);
-            }
-
-            return token;
-        }
-
+        // at this point I'd like to pop up the dialog, but that's just
+        //  not going to be ready any time soon
+        return "";
     }
 }
 
-void FlyEmAuthTokenHandler::saveToken(QString token, QString application) {
+void FlyEmAuthTokenHandler::saveMasterToken(QString token) {
     // input could either be a bare token or be in json form {"token": "asfalsjhfdajsf"}
     QString bareToken;
     QJsonDocument doc = QJsonDocument::fromJson(token.toUtf8());
@@ -73,11 +54,33 @@ void FlyEmAuthTokenHandler::saveToken(QString token, QString application) {
         // it didn't parse; it's just the bare token already
         bareToken = token;
     }
-    m_storage.saveToken(bareToken, getServer(), application);
+    m_storage.saveToken(bareToken, getServer(), MASTER_TOKEN_APPLICATION);
     if (m_storage.status() != FlyEmAuthTokenStorage::OK) {
         showError("Token error!", "Token could not be saved to NeuTu settings directory!");
     } else {
         showMessage("Token saved!", "Token has been saved to NeuTu settings directory.");
+    }
+}
+
+// is the token present in storage?
+bool FlyEmAuthTokenHandler::hasApplicationToken(QString application) {
+    return m_storage.hasToken(getServer(), application);
+}
+
+// get the token either from storage or server
+QString FlyEmAuthTokenHandler::getApplicationToken(QString application) {
+    if (hasApplicationToken(application)) {
+        return m_storage.getToken(getServer(), application);
+    } else {
+        // get from server
+        QString token = m_client.getApplicationToken(getMasterToken(), application);
+
+        // if it's empty, it's an error; otherwise, save it
+        if (token.size() > 0) {
+            m_storage.saveToken(token, getServer(), application);
+        }
+
+        return token;
     }
 }
 
@@ -106,11 +109,11 @@ QStringList FlyEmAuthTokenHandler::getApplications() {
     QStringList result;
 
     // check that we have master token first!
-    if (!hasToken()) {
+    if (!hasMasterToken()) {
         // really would prefer to bring up the dialog box and let the user retrieve token
         return result;
     }
-    result = m_client.getApplications(getToken());
+    result = m_client.getApplications(getMasterToken());
     return result;
 }
 

@@ -48,7 +48,7 @@ void FlyEmAuthTokenDialog::onSaveTokenButton() {
     QString token = ui->tokenText->toPlainText();
     if (!token.isEmpty()) {
         // note that the token in in json form at this point: {"token": "....."}
-        m_handler.saveToken(token);
+        m_handler.saveMasterToken(token);
     }
 }
 
@@ -57,8 +57,8 @@ void FlyEmAuthTokenDialog::updateServerLabel(QString server) {
 }
 
 void FlyEmAuthTokenDialog::updateToken() {
-    if (m_handler.hasToken()) {
-        ui->tokenText->setText(m_handler.getToken());
+    if (m_handler.hasMasterToken()) {
+        ui->tokenText->setText(m_handler.getMasterToken());
     }
 }
 
