@@ -3,8 +3,11 @@
 
 #include <QObject>
 
-class FlyEmAuthServerClient
+#include <QNetworkReply>
+
+class FlyEmAuthServerClient : public QObject
 {
+    Q_OBJECT
 public:
     FlyEmAuthServerClient();
 
@@ -16,9 +19,19 @@ public:
     void openTokenInBrowser();
     QString getTokenUrl();
 
+    QString getApplicationToken(QString masterToken, QString application);
+    QStringList getApplications(QString masterToken);
+
 private:
     QString m_server;
+    QNetworkAccessManager * m_networkManager;
 
+    QString getApplicationTokenUrl(QString application);
+    QString getApplicationsUrl();
+
+    QNetworkReply * get(QString url, QString token);
+    QNetworkReply * post(QString url, QJsonObject data, QString token);
+    QNetworkReply * call(QNetworkReply * reply);
 
 };
 

@@ -23,6 +23,8 @@ public:
     QString getToken(QString application=DEFAULT_APPLICATION);
     void saveToken(QString token, QString application=DEFAULT_APPLICATION);
 
+    QStringList getApplications();
+
 private:
     FlyEmAuthServerClient m_client;
     FlyEmAuthTokenStorage m_storage;
