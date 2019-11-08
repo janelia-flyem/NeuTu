@@ -3,6 +3,7 @@
 
 #include <QGuiApplication>
 #include <QClipboard>
+#include <QInputDialog>
 
 /*
  * this dialog helps users to log in to the Fly EM authentication service,
@@ -20,9 +21,10 @@ FlyEmAuthTokenDialog::FlyEmAuthTokenDialog(QWidget *parent) :
     connect(ui->openTokenButton, SIGNAL(clicked(bool)), this, SLOT(onTokenButton()));
     connect(ui->copyTokenUrlButton, SIGNAL(clicked(bool)), this, SLOT(onCopyTokenUrlButton()));
     connect(ui->saveTokenButton, SIGNAL(clicked(bool)), this, SLOT(onSaveTokenButton()));
+    connect(ui->changeServerButton, SIGNAL(clicked(bool)), this, SLOT(onChangeServerButton()));
 
-    updateToken();
-    updateServerLabel(m_handler.getServer());
+    updateTokenText();
+    updateServerLabel();
 
 }
 
@@ -52,11 +54,24 @@ void FlyEmAuthTokenDialog::onSaveTokenButton() {
     }
 }
 
-void FlyEmAuthTokenDialog::updateServerLabel(QString server) {
-    ui->serverLabel->setText("Current authentication server: " + server);
+void FlyEmAuthTokenDialog::onChangeServerButton() {
+    bool ok;
+    QString ans = QInputDialog::getText(this, "Change authentication server",
+        "Enter authentication server name (eg, https://my.auth.server:8080)",
+        QLineEdit::Normal, "", &ok);
+    if (ok && !ans.isEmpty()) {
+        m_handler.setServer(ans);
+        updateServerLabel();
+        updateTokenText();
+    }
 }
 
-void FlyEmAuthTokenDialog::updateToken() {
+void FlyEmAuthTokenDialog::updateServerLabel() {
+    ui->serverLabel->setText("Current authentication server: " + m_handler.getServer());
+}
+
+void FlyEmAuthTokenDialog::updateTokenText() {
+    ui->tokenText->clear();
     if (m_handler.hasMasterToken()) {
         ui->tokenText->setText(m_handler.getMasterToken());
     }

@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>To use the Fly EM authentication service, you must log in with your Google credentials in your browser, get your authentication token, and paste it below. Your token will be shown if NeuTu already has it.</string>
+      <string>To use the Fly EM authentication service, you must log in with your Google credentials in your browser, get your authentication token, and paste it below. &quot;Copy URL&quot; will put the URL on the clipboard if the &quot;Open in browser&quot; button doesn't work. Your token will be shown if NeuTu already has it.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -153,11 +153,38 @@
     <widget class="QTextEdit" name="tokenText"/>
    </item>
    <item>
-    <widget class="QLabel" name="serverLabel">
-     <property name="text">
-      <string>Current authentication server:</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="serverLabel">
+       <property name="text">
+        <string>Current authentication server:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="changeServerButton">
+       <property name="text">
+        <string>Change...</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

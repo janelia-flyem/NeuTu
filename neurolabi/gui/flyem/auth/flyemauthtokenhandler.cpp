@@ -14,9 +14,12 @@
 FlyEmAuthTokenHandler::FlyEmAuthTokenHandler()
 {
 
-    // the handler knows the server name (hardcoded right now, but will
-    //  be retrieved from some kind of config later), but the client
-    //  will do all of the actual talking to the auth server
+    // hard coding this for now; will
+    //  be retrieved from some kind of config later
+    m_server = "https://emdata1.int.janelia.org:15000";
+
+    // the handler knows the auth server name, but the client
+    //  will do all of the actual talking to it
     m_client.setServer(getServer());
 
 }
@@ -85,8 +88,12 @@ QString FlyEmAuthTokenHandler::getApplicationToken(QString application) {
 }
 
 QString FlyEmAuthTokenHandler::getServer() {
-    // hard coding this for now
-    return "https://emdata1.int.janelia.org:15000";
+    return m_server;
+}
+
+void FlyEmAuthTokenHandler::setServer(QString server) {
+    // no convenient way to validate it, alas
+    m_server = server;
 }
 
 QString FlyEmAuthTokenHandler::getLoginUrl() {

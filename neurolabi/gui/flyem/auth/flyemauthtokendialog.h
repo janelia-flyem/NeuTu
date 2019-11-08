@@ -23,14 +23,15 @@ private slots:
     void onTokenButton();
     void onCopyTokenUrlButton();
     void onSaveTokenButton();
+    void onChangeServerButton();
 
 private:
     Ui::FlyEmAuthTokenDialog *ui;
 
     FlyEmAuthTokenHandler m_handler;
 
-    void updateServerLabel(QString server);
-    void updateToken();
+    void updateServerLabel();
+    void updateTokenText();
 };
 
 #endif // FLYEMAUTHTOKENDIALOG_H

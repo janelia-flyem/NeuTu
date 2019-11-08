@@ -14,6 +14,7 @@ public:
     static const QString MASTER_TOKEN_APPLICATION;
 
     QString getServer();
+    void setServer(QString server);
     void openLoginInBrowser();
     QString getLoginUrl();
     void openTokenInBrowser();
@@ -29,6 +30,7 @@ public:
     QStringList getApplications();
 
 private:
+    QString m_server;
     FlyEmAuthServerClient m_client;
     FlyEmAuthTokenStorage m_storage;
 
