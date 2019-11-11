@@ -4831,7 +4831,7 @@ void ZStackDoc::setReceptor(int option, bool cone)
   ((Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace)->sws->field_func =
       Neuroseg_Slice_Field_Func(option);
 
-  if (cone == _TRUE_) {
+  if (cone) {
     Locseg_Fit_Workspace_Enable_Cone(
         (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace);
   } else {

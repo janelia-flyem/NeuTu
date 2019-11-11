@@ -57,6 +57,7 @@
 #include "command/zsparsestackcommandmodule.h"
 #include "command/zstackfiltercommand.h"
 #include "command/zuploadroicommand.h"
+#include "command/zneurontracecommand.h"
 
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
@@ -107,6 +108,7 @@ void ZCommandLine::registerModule()
   registerModule<ZSparseStackCommand>("sparse_stack");
   registerModule<ZStackFilterCommand>("filter_stack");
   registerModule<ZUploadRoiCommand>("upload_roi");
+  registerModule<ZNeuronTraceCommand>("trace_neuron");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 #endif

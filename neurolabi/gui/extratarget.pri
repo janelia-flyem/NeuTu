@@ -17,7 +17,7 @@ exists($${CONDA_ENV}) {
 
 message("Config: " $${CONDA_CONFIG})
 
-neurolabi.target = neurolabi
+neurolabi.target = neurolabi.PHONY
 CONFIG(debug, debug|release) {
     equals(SANITIZE_BUILD, "address") {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"

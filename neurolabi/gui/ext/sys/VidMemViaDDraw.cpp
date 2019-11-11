@@ -49,7 +49,7 @@ BOOL WINAPI DDEnumCallbackEx( GUID FAR* lpGUID, LPSTR lpDriverDescription, LPSTR
         strcpy_s( pDDMatch->strDriverName, 512, lpDriverName );
         memcpy( &pDDMatch->guid, lpGUID, sizeof( GUID ) );
     }
-    return _TRUE_;
+    return TRUE;
 }
 
 

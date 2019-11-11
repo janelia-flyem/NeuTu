@@ -172,7 +172,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
     Process_Neuron_Structure(ns);
 
-    if (m_connWorkspace->crossover_test == _FALSE_) {
+    if (m_connWorkspace->crossover_test) {
       Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
@@ -1546,6 +1546,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   m_diag.saveConfig(*this);
 
   ZSwcTree *tree = NULL;
+
+  initTraceMask(false);
 
   if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);

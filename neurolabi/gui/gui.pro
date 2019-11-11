@@ -80,7 +80,7 @@ include(extratarget.pri)
 message("Neurolabi target: $$neurolabi.target")
 
 CONFIG(force_link) {
-  PRE_TARGETDEPS += neurolabi
+  PRE_TARGETDEPS += neurolabi.PHONY
 }
 
 TARGET = $$app_name

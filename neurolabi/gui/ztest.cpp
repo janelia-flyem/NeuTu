@@ -30453,7 +30453,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice.tif") << std::endl;
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice_nonexisting.tif") << std::endl;
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR) << std::endl;
@@ -30485,6 +30485,59 @@ void ZTest::test(MainWindow *host)
 
   std::cout << neutu::FileExtension("test.tif") << std::endl;
   std::cout << neutu::Join({"test1", "test2"}) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  reader->setVerbose(false);
+  std::ofstream stream(GET_TEST_DATA_DIR + "/bodylist.txt");
+
+  neutuse::TaskWriter neutuseWriter;
+  neutuseWriter.open("http://emdata2.int.janelia.org:2018");
+
+  tic();
+  QStringList keyList =
+      reader->readKeys(reader->getDvidTarget().getBodyAnnotationName().c_str());
+  int index = 0;
+  double totalLength = 0.0;
+  for (const QString &key : keyList) {
+    ++index;
+    uint64_t bodyId = ZString(key.toStdString()).firstUint64();
+    if (bodyId > 0) {
+      ZFlyEmBodyAnnotation annot =
+          FlyEmDataReader::ReadBodyAnnotation(*reader, bodyId);
+      if (annot.getStatus() == "Roughly traced" ||
+          annot.getStatus() == "Traced" ||
+          annot.getStatus() == "Leaves") {
+        std::cout << index << "/" << keyList.size() << ": "
+                  << bodyId << " " << annot.getStatus() << std::endl;
+        ZSwcTree *tree = reader->readSwc(bodyId);
+        double length = 0.0;
+        if (tree) {
+          length = tree->length();
+          totalLength += length;
+        }
+        if (length == 0.0) {
+          size_t bodySize = reader->readBodySize(bodyId);
+          if (bodySize > 30000000 && bodyId != 106979579) {
+            stream << bodyId << std::endl;
+            std::cout << index << "/" << keyList.size()
+                      << " Missing skeleton: " << bodyId << " " << bodySize << std::endl;
+            neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+                  "skeletonize", reader->getDvidTarget(), bodyId, false);
+            task.setPriority(8);
+
+            neutuseWriter.uploadTask(task);
+          }
+        }
+      }
+
+    }
+  }
+  ptoc();
+  std::cout << keyList.size() << " bodies" << std::endl;
+  std::cout << totalLength << std::endl;
+  stream.close();
 #endif
 
   std::cout << "Done." << std::endl;

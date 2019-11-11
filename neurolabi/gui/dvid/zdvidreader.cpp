@@ -949,7 +949,7 @@ QByteArray ZDvidReader::readBuffer(const std::string &url) const
   if (isVerbose()) {
     std::cout << "Reading " << url << std::endl;
   }
-  m_bufferReader.read(url.c_str());
+  m_bufferReader.read(url.c_str(), isVerbose());
 
   return m_bufferReader.getBuffer();
 }
