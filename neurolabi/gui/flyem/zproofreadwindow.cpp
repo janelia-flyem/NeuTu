@@ -39,6 +39,7 @@
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
 #include "flyem/auth/flyemauthtokendialog.h"
+#include "protocols/protocolassignmentdialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -221,6 +222,8 @@ void ZProofreadWindow::createDialog()
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
 
   m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+  m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
+
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -461,6 +464,11 @@ void ZProofreadWindow::createMenu()
   connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
   m_toolMenu->addAction(m_openAuthDialogAction);
 
+  m_openProtocolAssignmentDialogAction = new QAction("Open Assignment Dialog", this);
+  m_openProtocolAssignmentDialogAction->setIcon(QFontIcon::icon(0xf01c, Qt::darkGreen));
+  connect(m_openProtocolAssignmentDialogAction, SIGNAL(triggered()), this, SLOT(showProtocolAssignmentDialog()));
+  m_toolMenu->addAction(m_openProtocolAssignmentDialogAction);
+
   m_tuneContrastAction = new QAction("Tune Contrast", this);
   connect(m_tuneContrastAction, &QAction::triggered,
           m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
@@ -540,6 +548,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
   m_openAuthDialogAction->setEnabled(on);
+  m_openProtocolAssignmentDialogAction->setEnabled(on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -620,6 +629,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
   m_toolBar->addAction(m_openAuthDialogAction);
+  m_toolBar->addAction(m_openProtocolAssignmentDialogAction);
 
   m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
@@ -646,6 +656,11 @@ void ZProofreadWindow::operateDvid()
 void ZProofreadWindow::showAuthTokenDialog() {
     m_authTokenDlg->show();
     m_authTokenDlg->raise();
+}
+
+void ZProofreadWindow::showProtocolAssignmentDialog() {
+    m_protocolAssignmentDlg->show();
+    m_protocolAssignmentDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)

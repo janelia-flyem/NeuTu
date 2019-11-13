@@ -10,6 +10,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include "neutube.h"
+
 #include "protocolassignmenturl.h"
 
 
@@ -27,12 +29,14 @@
  * async would make the logic in callers far, far more convoluted
  *
  * this class is intended to be largely protocol-independent
+ *
+ * for now, the methods in this class try to handle errors internally,
+ * often showing dialogs, then returning empty values if there were errors;
+ * this is not ideal, but it is quick and convenient to implement
  */
 
 ProtocolAssignmentClient::ProtocolAssignmentClient(QObject *parent) : QObject(parent)
 {
-
-    // record username here?
 
     m_networkManager = new QNetworkAccessManager(this);
 
@@ -40,9 +44,13 @@ ProtocolAssignmentClient::ProtocolAssignmentClient(QObject *parent) : QObject(pa
 
 void ProtocolAssignmentClient::setServer(QString server) {
     m_server = server;    
-    if (!m_server.endsWith("/")) {
-        m_server.append("/");
+    if (m_server.endsWith("/")) {
+        m_server.chop(1);
     }
+}
+
+void ProtocolAssignmentClient::setToken(QString token) {
+    m_token = token;
 }
 
 /*
@@ -55,6 +63,12 @@ void ProtocolAssignmentClient::setServer(QString server) {
 QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentProtocols protocol) {
 
     QMap<QString, int> projects;
+
+
+    /*
+
+
+    // not updated for new error handling!
 
 
 
@@ -87,7 +101,62 @@ QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentPro
             projects[valObj["name"].toString()] = valObj["id"].toInt();
         }
     }
+    */
+
     return projects;
+}
+
+/*
+ * retrieve eligible projects for a user
+ *
+ * endpoint: get /projects/eligible
+ * input: none
+ * output: list of project names
+ */
+QStringList ProtocolAssignmentClient::getEligibleProjects() {
+    QStringList projects;
+
+    QString url = ProtocolAssignmentUrl::GetEligibleProjects(m_server);
+    QNetworkReply * reply = get(url);
+
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving eligible projects: " + error);
+        return projects;
+    } else {
+        // you know, I've never seen this succeed...I assume it's a json array...
+
+        QJsonArray data = getReplyDataArray(reply);
+
+        // test data
+        projects << "project 1" << "project 2" << "project 3";
+
+        return projects;
+
+    }
+}
+
+/*
+ * retrieve started assignments for a user
+ *
+ * endpoint: /assignments_started?user=username
+ * input: none
+ * output: array of assignment objects
+ */
+QJsonArray ProtocolAssignmentClient::getStartedAssignments() {
+    QJsonArray array;
+
+    // need to change Janelia username into assignment mgr username
+    QString username = getLocalUsername(QString::fromStdString(neutu::GetCurrentUserName()));
+    QString url = ProtocolAssignmentUrl::GetStartedAssigments(m_server, username);
+    QNetworkReply * reply = get(url);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving started assignments: " + error);
+        return array;
+    } else {
+        return getReplyDataArray(reply);
+    }
 }
 
 /*
@@ -111,7 +180,7 @@ int ProtocolAssignmentClient::generateAssignment(QString projectName) {
 
     // auth goes into the data?
     QJsonObject data;
-    QJsonObject result = post(url, data);
+    QNetworkReply * reply = post(url, data);
 
 
     // error handling
@@ -134,7 +203,7 @@ bool ProtocolAssignmentClient::startAssignment(int assignmentID) {
     QString url = ProtocolAssignmentUrl::StartAssignment(m_server, assignmentID);
 
     QJsonObject data;
-    QJsonObject result = post(url, data);
+    QNetworkReply* reply = post(url, data);
 
 
     // errors, parsing, etc...
@@ -142,18 +211,52 @@ bool ProtocolAssignmentClient::startAssignment(int assignmentID) {
 
 }
 
-QJsonObject ProtocolAssignmentClient::get(QString url) {
+/*
+ * endpoint: /users?janelia_id=username
+ * input: janelia username
+ * output: username in the assignment manager (Google login username);
+ *      returns empty string if it couldn't be determined
+ */
+QString ProtocolAssignmentClient::getLocalUsername(QString janeliaUsername) {
+    QString url = ProtocolAssignmentUrl::GetJaneliaUser(m_server, janeliaUsername);
+    QNetworkReply * reply = get(url);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error determining assignment manager username for Janelia username: " + error);
+        return "";
+    } else {
+        // data should be an array with exactly one object
+        QJsonArray data = getReplyDataArray(reply);
+        if (data.size() == 0) {
+            // I think this never happens; it'll show as an error (404) instead
+            showError("Error!", "Error determining assignment manager username for Janelia username!");
+            return "";
+        } else if (data.size() > 1) {
+            // I really hope this is also impossible
+            showError("Error!", "Error determining assignment manager username for Janelia username! More than one value found@");
+            return "";
+        } else {
+            QJsonObject userData = data[0].toObject();
+            return userData["name"].toString();
+        }
+    }
+}
+
+QNetworkReply * ProtocolAssignmentClient::get(QString url) {
     qDebug() << "ProtocolAssignmentClient::get: url = " << url;
 
     QUrl requestUrl;
-    requestUrl.setUrl(url);
-    QNetworkReply *reply = m_networkManager->get(QNetworkRequest(requestUrl));
+    requestUrl.setUrl(url);    
+    QNetworkRequest request = QNetworkRequest(requestUrl);
+    if (!m_token.isEmpty()) {
+        QString authString = "Bearer " + m_token;
+        request.setRawHeader(QByteArray("Authorization"), authString.toUtf8());
+    }
+    QNetworkReply *reply = m_networkManager->get(request);
     return call(reply);
 }
 
-QJsonObject ProtocolAssignmentClient::post(QString url, QJsonObject jsonData) {
-    // see general comments in get(), above
-
+QNetworkReply * ProtocolAssignmentClient::post(QString url, QJsonObject jsonData) {
     qDebug() << "ProtocolAssignmentClient::put: url = " << url;
 
     QUrl requestUrl;
@@ -162,12 +265,16 @@ QJsonObject ProtocolAssignmentClient::post(QString url, QJsonObject jsonData) {
     QJsonDocument jsonDataDoc(jsonData);
     QByteArray byteData(jsonDataDoc.toJson());
 
-    QNetworkReply *reply = m_networkManager->post(QNetworkRequest(requestUrl), byteData);
+    QNetworkRequest request = QNetworkRequest(requestUrl);
+    if (!m_token.isEmpty()) {
+        QString authString = "Bearer " + m_token;
+        request.setRawHeader(QByteArray("Authorization"), authString.toUtf8());
+    }
+    QNetworkReply *reply = m_networkManager->post(request, byteData);
     return call(reply);
 }
 
-QJsonObject ProtocolAssignmentClient::call(QNetworkReply * reply) {
-
+QNetworkReply * ProtocolAssignmentClient::call(QNetworkReply * reply) {
     // see comments at top as to why this has been implemented synchronously
     // Qt synchronous network call requires mini-event loop, ugh; from examples online:
     QEventLoop loop;
@@ -175,19 +282,71 @@ QJsonObject ProtocolAssignmentClient::call(QNetworkReply * reply) {
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &loop, SLOT(quit()));
     loop.exec();
 
+    qDebug() << "ProtocolAssignmentClient::call: http status = " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     if (reply->error() != QNetworkReply::NoError) {
         // this mimics the form of the return from the assignment manager
-        QJsonObject errorObject;
-        errorObject["error"] = true;
-        errorObject["url"] = reply->request().url().toDisplayString();
-        errorObject["message"] = "QNetworkReply error code: " + QString::number(reply->error());
-        return errorObject;
-    } else {
-        QString stringReply = (QString) reply->readAll();
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
-        return jsonResponse.object();
+        qDebug() << "error reported: " << reply->errorString();
     }
 
+    return reply;
+}
+
+bool ProtocolAssignmentClient::hadError(QNetworkReply *reply) {
+    return reply->error() != QNetworkReply::NoError;
+}
+
+/*
+ * return error string; at worst, it'll be the string Qt returns; if
+ * the call "succeeds" in returning json, it'll return the error string
+ * from there (the error that comes from the server in ["rest"]["error"])
+ */
+QString ProtocolAssignmentClient::getErrorString(QNetworkReply *reply) {
+    // the default is Qt's error string:
+    QString errorString;
+    if (reply->error() == QNetworkReply::NoError) {
+        return errorString;
+    }
+    errorString = reply->errorString();
+
+    // now check the reply; if we can parse it, we'll return that error instead
+    QString stringReply = (QString) reply->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(stringReply.toUtf8());
+    if (!doc.isNull()) {
+        QJsonObject obj = doc.object();
+        QJsonObject restData = obj["rest"].toObject();
+        if (restData["error"].isString()) {
+            errorString = restData["error"].toString();
+        }
+    }
+    return errorString;
+}
+
+int ProtocolAssignmentClient::getReplyStatus(QNetworkReply *reply) {
+    return reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+}
+
+/*
+ * this method gives you all the json from the reply, including both the
+ * "rest" and "data" parts
+ */
+QJsonObject ProtocolAssignmentClient::getReplyJSON(QNetworkReply *reply) {
+    QString stringReply = (QString) reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
+    return jsonResponse.object();
+}
+
+/*
+ * return only the "data" part of the reply if you know it's a JSON object
+ */
+QJsonObject ProtocolAssignmentClient::getReplyDataObject(QNetworkReply *reply) {
+    return getReplyJSON(reply)["data"].toObject();
+}
+
+/*
+ * return only the "data" part of the reply if you know it's a JSON array
+ */
+QJsonArray ProtocolAssignmentClient::getReplyDataArray(QNetworkReply *reply) {
+    return getReplyJSON(reply)["data"].toArray();
 }
 
 /*

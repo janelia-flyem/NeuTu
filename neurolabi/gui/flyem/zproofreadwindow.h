@@ -24,6 +24,7 @@ class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
 class ZFlyEmBodySplitDialog;
 class FlyEmAuthTokenDialog;
+class ProtocolAssignmentDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -96,6 +97,7 @@ public slots:
   void loadDatabaseFromUrl();
 
   void showAuthTokenDialog();
+  void showProtocolAssignmentDialog();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
@@ -150,6 +152,7 @@ private:
   QAction *m_loadDvidAction = nullptr;
   QAction *m_loadDvidUrlAction = nullptr;
   QAction *m_openAuthDialogAction = nullptr;
+  QAction *m_openProtocolAssignmentDialogAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
@@ -179,6 +182,8 @@ private:
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
   ZFlyEmBodySplitDialog *m_bodySplitDlg;
   FlyEmAuthTokenDialog *m_authTokenDlg;
+  ProtocolAssignmentDialog * m_protocolAssignmentDlg;
+
 
 };
 

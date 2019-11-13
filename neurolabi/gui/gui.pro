@@ -301,6 +301,9 @@ unix {
 RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/protocolassignmentdialog.h \
+    protocols/protocolassignmentclient.h \
+    protocols/protocolassignmenturl.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -766,6 +769,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyiddialog.ui \
     dialogs/zdviddialog.ui \
     dialogs/flyembodyfilterdialog.ui \
+    protocols/protocolassignmentdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/zflyemnewbodysplitprojectdialog.ui \
@@ -830,6 +834,9 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/protocolassignmentdialog.cpp \
+    protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenturl.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \

@@ -5,6 +5,7 @@
 
 #include <QNetworkReply>
 
+#include <QJsonArray>
 #include <QJsonObject>
 
 
@@ -19,27 +20,37 @@ public:
     };
 
     void setServer(QString server);
-    QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
+    void setToken(QString token);
 
+    QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
+    QStringList getEligibleProjects();
+
+    QJsonArray getStartedAssignments();
     int generateAssignment(QString projectName);
     bool startAssignment(int assignmentID);
 
-
+    QString getLocalUsername(QString janeliaUsername);
 
 signals:
 
 public slots:
 
 private:
-
-
     QString m_server;
+    QString m_token;
     QNetworkAccessManager * m_networkManager;
     QNetworkReply * m_datasetReply = nullptr;
 
-    QJsonObject get(QString url);
-    QJsonObject post(QString url, QJsonObject data);
-    QJsonObject call(QNetworkReply * reply);
+    QNetworkReply * get(QString url);
+    QNetworkReply * post(QString url, QJsonObject data);
+    QNetworkReply * call(QNetworkReply * reply);
+
+    bool hadError(QNetworkReply * reply);
+    QString getErrorString(QNetworkReply * reply);
+    int getReplyStatus(QNetworkReply * reply);
+    QJsonObject getReplyJSON(QNetworkReply * reply);
+    QJsonObject getReplyDataObject(QNetworkReply * reply);
+    QJsonArray getReplyDataArray(QNetworkReply * reply);
 
     void showError(QString title, QString message);
 
