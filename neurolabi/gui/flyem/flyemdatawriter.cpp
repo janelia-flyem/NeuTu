@@ -3,6 +3,7 @@
 #include "geometry/zintpoint.h"
 #include "zobject3dscan.h"
 #include "zjsonobject.h"
+#include "zjsondef.h"
 #include "zfiletype.h"
 
 #include "neutubeconfig.h"
@@ -107,4 +108,140 @@ void FlyEmDataWriter::UploadRoi(
       }
     }
   }
+}
+
+namespace  {
+
+void process_error_message(
+    const std::string &msg, std::function<void(std::string)> errorMsgHandler)
+{
+  if (!errorMsgHandler) {
+    errorMsgHandler = [](const std::string &msg) {
+      std::cout << msg << std::endl;
+    };
+  }
+  errorMsgHandler(msg);
+}
+
+}
+
+void FlyEmDataWriter::TransferKeyValue(const ZDvidReader &reader, const std::string &sourceDataName,
+    const std::string &sourcekey, ZDvidWriter &writer,
+    const std::string &targetDataName, const std::string &targetKey,
+    std::function<void(std::string)> errorMsgHandler)
+{
+  if (reader.good() && writer.good() && !sourceDataName.empty() &&
+      !sourcekey.empty()) {
+    if (reader.hasKey(sourceDataName.c_str(), sourcekey.c_str())) {
+      QByteArray data = reader.readKeyValue(
+            sourceDataName.c_str(), sourcekey.c_str());
+      writer.writeDataToKeyValue(
+            targetDataName.empty() ? sourceDataName : targetDataName,
+            targetKey.empty() ? sourcekey : targetKey, data);
+      std::cout << sourceDataName << " / " << sourcekey << " transfered."
+                << std::endl;
+    } else {
+      process_error_message(
+            "WARNING: " + sourceDataName + " / " + sourcekey + " not found in " +
+            reader.getDvidTarget().getSourceString(), errorMsgHandler);
+    }
+  }
+}
+
+void FlyEmDataWriter::TransferRoiData(
+    const ZDvidReader &reader, const std::string &sourceRoiName,
+    ZDvidWriter &writer, const std::string &targetRoiName,
+    std::function<void(std::string)> errorMsgHandler)
+{
+  if (reader.good() && writer.good() && !sourceRoiName.empty()) {
+    std::string newTargetRoiName = targetRoiName;
+    if (newTargetRoiName.empty()) {
+      newTargetRoiName = sourceRoiName;
+    }
+
+    ZObject3dScan roi = reader.readRoi(sourceRoiName);
+    if (!roi.isEmpty()) {
+      if (!writer.getDvidReader().hasData(newTargetRoiName)) {
+        writer.createData("roi", newTargetRoiName);
+      } else {
+        writer.deleteData("roi", newTargetRoiName);
+      }
+      std::cout << "Writing " << newTargetRoiName << std::endl;
+      writer.writeRoi(roi, newTargetRoiName);
+    } else {
+      process_error_message(
+            "WARNING: no source ROI data found.", errorMsgHandler);
+    }
+  }
+}
+
+
+void FlyEmDataWriter::TransferRoiRef(
+    const ZDvidReader &reader, const std::string &sourceRoiName,
+    ZDvidWriter &writer, const std::string &targetRoiName,
+    std::function<void(std::string)> errorMsgHandler)
+{
+  if (reader.good() && writer.good() && !sourceRoiName.empty()) {
+    std::string meshRoiEntryDataName =
+        ZDvidData::GetName(ZDvidData::ERole::ROI_KEY);
+    ZJsonObject roiInfo =  reader.readJsonObjectFromKey(
+          meshRoiEntryDataName.c_str(), sourceRoiName.c_str());
+    if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+      std::set<std::string> meshDataKeySet;
+      ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
+      std::string type = ZJsonParser::stringValue(jsonObj["type"]);
+      if (type.empty() || type == "mesh") {
+        if (ZJsonParser::IsArray(jsonObj["key"])) {
+          ZJsonArray arrayJson(jsonObj.value("key"));
+          std::vector<std::string> keyList;
+          for (size_t i = 0; i < arrayJson.size(); ++i) {
+            std::string key = ZJsonParser::stringValue(arrayJson.at(i));
+            if (!key.empty()) {
+              meshDataKeySet.insert(key);
+            }
+          }
+        } else {
+          std::string key = ZJsonParser::stringValue(jsonObj["key"]);
+          if (!key.empty()) {
+            meshDataKeySet.insert(key);
+          }
+        }
+      }
+
+      for (const std::string &key : meshDataKeySet) {
+        std::string roiDataKey =
+            ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY);
+        TransferKeyValue(
+              reader, roiDataKey,
+              key, writer, "", "", errorMsgHandler);
+        std::string meshInfoKey = key + ZDvidUrl::MESH_INFO_SUFFIX;
+        if (reader.hasKey(roiDataKey.c_str(), meshInfoKey.c_str())) {
+#ifdef _DEBUG_
+          std::cout << "Transferring " << meshInfoKey << std::endl;
+#endif
+          TransferKeyValue(
+                reader, roiDataKey, meshInfoKey, writer, "", "",
+                errorMsgHandler);
+        } else {
+          writer.deleteKey(roiDataKey, meshInfoKey);
+        }
+      }
+    }
+
+    TransferKeyValue(
+          reader, meshRoiEntryDataName,
+          sourceRoiName, writer, "", targetRoiName, errorMsgHandler);
+  }
+}
+
+void FlyEmDataWriter::TransferRoi(
+    const ZDvidReader &reader, const std::string &sourceRoiName,
+    ZDvidWriter &writer, const std::string &targetRoiName,
+    std::function<void(std::string)> errorMsgHandler)
+{
+  //Transfer ROI data
+  TransferRoiData(reader, sourceRoiName, writer, targetRoiName, errorMsgHandler);
+
+  //Transfer ROI mesh
+  TransferRoiRef(reader, sourceRoiName, writer, targetRoiName, errorMsgHandler);
 }

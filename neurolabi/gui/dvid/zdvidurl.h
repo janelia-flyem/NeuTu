@@ -370,6 +370,7 @@ private:
 
 public:
   static const std::string SUPERVOXEL_FLAG;
+  static const std::string MESH_INFO_SUFFIX;
 
 private:
   ZDvidTarget m_dvidTarget;

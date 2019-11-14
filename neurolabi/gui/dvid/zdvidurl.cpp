@@ -41,6 +41,7 @@ const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
 const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
 const std::string ZDvidUrl::SUPERVOXEL_FLAG = "supervoxels";
+const std::string ZDvidUrl::MESH_INFO_SUFFIX = "_info";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -253,7 +254,7 @@ std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 {
   //Not a conflict-free of assigning a url, but we'll live with it for now.
-  return meshUrl + "_info";
+  return meshUrl + MESH_INFO_SUFFIX;
 }
 
 std::string ZDvidUrl::getMeshesTarsUrl()
@@ -1948,7 +1949,7 @@ std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
 {
-  return GetMeshKey(bodyId) + "_info";
+  return GetMeshKey(bodyId) + MESH_INFO_SUFFIX;
 }
 
 std::string ZDvidUrl::GetTaskKey()

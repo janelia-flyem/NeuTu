@@ -30540,6 +30540,44 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  FlyEmDataWriter::TransferKeyValue(
+        *reader, "neutu_config", "user_status",
+        *writer, "", "user_status2");
+//  writer->uploadRoiMesh(GET_TEST_DATA_DIR + "/test.obj", "test");
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_roi");
+  reader->setVerbose(false);
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+
+  ZJsonArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
+  ZJsonObjectParser parser;
+  std::vector<std::string> errorMsgList;
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZJsonObject transfer(objArray.value(i));
+    std::string source = parser.getValue(transfer, "source", "");
+    std::string target = parser.getValue(transfer, "target", "");
+    std::cout << source << " --> " << target << std::endl;
+    FlyEmDataWriter::TransferRoi(
+          *reader, source, *writer, target, [&](const std::string &msg) {
+      errorMsgList.push_back(msg);
+    });
+  }
+
+  for (const std::string &msg : errorMsgList) {
+    std::cout << msg << std::endl;
+  }
+
+//  FlyEmDataWriter::TransferRoiData(*reader, "(L)AB", *writer, "");
+//  FlyEmDataWriter::TransferRoiRef(*reader, "(L)AB", *writer, "");
+//  FlyEmDataWriter::TransferRoi(*reader, "(L)AL", *writer, "");
+#endif
+
   std::cout << "Done." << std::endl;
 }
 
