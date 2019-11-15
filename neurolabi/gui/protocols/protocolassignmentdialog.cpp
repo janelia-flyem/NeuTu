@@ -62,25 +62,20 @@ bool ProtocolAssignmentDialog::checkForTokens() {
 
 void ProtocolAssignmentDialog::onLoadStartedButton() {
     if (checkForTokens()) {
+        loadStartedAssignments();
         updateStartedTable();
     }
 }
 
 void ProtocolAssignmentDialog::onGetNewButton() {
     if (checkForTokens()) {
-
-        // not sure how I'm doing errors right now...I suppose the best way
-        //  might be signals and slots?  one for success, one for failure?
-
-
         QStringList projects = m_client.getEligibleProjects();
         if (projects.size() == 0) {
             showMessage("No projects!", "No eligible projects found!");
             return;
         }
 
-        // dialog: user chooses a project
-
+        // now show dialog: user chooses a project
         bool ok;
         QString project = QInputDialog::getItem(this, "Get assignment",
             "Choose a project to get an assignment from:", projects, 0, false, &ok);
@@ -91,6 +86,7 @@ void ProtocolAssignmentDialog::onGetNewButton() {
 
             // check success
             if (true) {
+                loadStartedAssignments();
                 updateStartedTable();
             } else {
                 showMessage("No assignment", "Failed to start an assignment for project " + project);
@@ -99,12 +95,22 @@ void ProtocolAssignmentDialog::onGetNewButton() {
     }
 }
 
+void ProtocolAssignmentDialog::loadStartedAssignments() {
+
+
+    // temporary; would like to have a better data structure;
+    //  probably should sort them by id
+
+    m_assignments = m_client.getStartedAssignments();
+
+
+
+}
+
 void ProtocolAssignmentDialog::updateStartedTable() {
-    // get started assignments from server, then update table
-    QJsonArray assignments = m_client.getStartedAssignments();
     clearStartedTable();
     int row = 0;
-    for (QJsonValue val: assignments) {
+    for (QJsonValue val: m_assignments) {
         QJsonObject a = val.toObject();
 
         QStandardItem * idItem = new QStandardItem();

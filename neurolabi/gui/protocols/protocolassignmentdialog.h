@@ -39,8 +39,12 @@ private:
     QStandardItemModel * m_model;
     ProtocolAssignmentClient m_client;
     QString m_username;
+    QJsonArray m_assignments;
 
     bool checkForTokens();
+
+    void loadStartedAssignments();
+
     void updateStartedTable();
     void clearStartedTable();
 

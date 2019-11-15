@@ -121,7 +121,7 @@
      <item>
       <widget class="QPushButton" name="loadStartedButton">
        <property name="text">
-        <string>Load started assignments</string>
+        <string>Refresh started assignments</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
