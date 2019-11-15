@@ -120,9 +120,14 @@ QStringList ProtocolAssignmentClient::getEligibleProjects() {
     QNetworkReply * reply = get(url);
 
     if (hadError(reply)) {
-        QString error = getErrorString(reply);
-        showError("Error!", "Error retrieving eligible projects: " + error);
-        return projects;
+        // if it's a 404 (with message "No eligible projects"), it's not really an error,
+        //  just an indication of no results; return
+        if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 404) {
+            return projects;
+        } else {
+            showError("Error!", "Error retrieving eligible projects: " + getErrorString(reply));
+            return projects;
+        }
     } else {
         // you know, I've never seen this succeed...I assume it's a json array...
 
@@ -282,10 +287,11 @@ QNetworkReply * ProtocolAssignmentClient::call(QNetworkReply * reply) {
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), &loop, SLOT(quit()));
     loop.exec();
 
-    qDebug() << "ProtocolAssignmentClient::call: http status = " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     if (reply->error() != QNetworkReply::NoError) {
-        // this mimics the form of the return from the assignment manager
-        qDebug() << "error reported: " << reply->errorString();
+        // on error, log some things before returning
+        qDebug() << "ProtocolAssignmentClient::call: http status = " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        qDebug() << "Qt error string: " << reply->errorString();
+        qDebug() << "processed error string: " << getErrorString(reply);
     }
 
     return reply;

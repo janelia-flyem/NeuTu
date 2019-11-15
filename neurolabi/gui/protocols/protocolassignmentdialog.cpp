@@ -38,6 +38,8 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     m_username = QString::fromStdString(neutu::GetCurrentUserName());
 }
 
+const QString ProtocolAssignmentDialog::ASSIGNMENT_APPLICATION_NAME = "assignment-manager";
+
 bool ProtocolAssignmentDialog::checkForTokens() {
     // check for master token
     FlyEmAuthTokenHandler handler;
@@ -48,13 +50,13 @@ bool ProtocolAssignmentDialog::checkForTokens() {
     }
 
     // if present, try to get application token
-    // hardcoded for now
-    QString applicationName = "assignment-manager";
-    m_token = handler.getApplicationToken(applicationName);
-    if (m_token.isEmpty()) {
+    QString applicationName = ASSIGNMENT_APPLICATION_NAME;
+    QString token = handler.getApplicationToken(applicationName);
+    if (token.isEmpty()) {
         showError("No application token!", "Could not retrieve application token for " + applicationName);
         return false;
     }
+    m_client.setToken(token);
     return true;
 }
 

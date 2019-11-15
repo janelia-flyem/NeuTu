@@ -34,9 +34,10 @@ private:
         STARTED_COLUMN
     };
 
+    static const QString ASSIGNMENT_APPLICATION_NAME;
+
     QStandardItemModel * m_model;
     ProtocolAssignmentClient m_client;
-    QString m_token;
     QString m_username;
 
     bool checkForTokens();
