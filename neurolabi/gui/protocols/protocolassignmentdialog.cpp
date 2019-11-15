@@ -23,12 +23,18 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     // sites table
     m_model = new QStandardItemModel(0, 4, ui->startedTableView);
     setHeaders(m_model);
-    ui->startedTableView->setModel(m_model);
+
+    m_proxy = new QSortFilterProxyModel(this);
+    m_proxy->setSourceModel(m_model);
+    ui->startedTableView->setModel(m_proxy);
 
 
     // UI connections
     connect(ui->loadStartedButton, SIGNAL(clicked(bool)), this, SLOT(onLoadStartedButton()));
     connect(ui->getNewButton, SIGNAL(clicked(bool)), this, SLOT(onGetNewButton()));
+    connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+
+    connect(ui->startedTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
 
     // server setup
@@ -95,11 +101,44 @@ void ProtocolAssignmentDialog::onGetNewButton() {
     }
 }
 
+void ProtocolAssignmentDialog::onCompleteButton() {
+
+    if (ui->startedTableView->selectionModel()->hasSelection()) {
+        // single row selection model, so just grab the first/only row:
+        QModelIndexList modelIndexList = ui->startedTableView->selectionModel()->selectedRows(0);
+        // make sure there is a selected index to avoid unexpected crash (?, copied from other code)
+        if (!modelIndexList.isEmpty()) {
+            QModelIndex viewIndex = modelIndexList.at(0);
+            QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
+
+             // modelIndex.row() = assignment to complete; do something with it
+
+
+        }
+    } else {
+        showMessage("No selection!", "Please select an assignment to complete.");
+    }
+}
+
+void ProtocolAssignmentDialog::onClickedTable(QModelIndex index) {
+
+
+    QModelIndex modelIndex = m_proxy->mapToSource(index);
+
+    qDebug() << "table clicked model row " << modelIndex.row();
+
+
+}
+
 void ProtocolAssignmentDialog::loadStartedAssignments() {
 
 
-    // temporary; would like to have a better data structure;
-    //  probably should sort them by id
+    // temporary; would like to have a better data structure,
+    //  maybe a map from id to the structure
+
+    // probably should sort them by id internally?
+    // or instead sort them programmatically by id initially (since I
+    //  hooked up sort-filter proxy)?
 
     m_assignments = m_client.getStartedAssignments();
 

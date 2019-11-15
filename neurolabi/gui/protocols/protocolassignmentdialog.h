@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QModelIndex>
+#include <QSortFilterProxyModel>
 
 #include "protocolassignmentclient.h"
 
@@ -21,6 +23,8 @@ public:
 private slots:
     void onLoadStartedButton();
     void onGetNewButton();
+    void onCompleteButton();
+    void onClickedTable(QModelIndex index);
 
 
 private:
@@ -37,6 +41,7 @@ private:
     static const QString ASSIGNMENT_APPLICATION_NAME;
 
     QStandardItemModel * m_model;
+    QSortFilterProxyModel * m_proxy;
     ProtocolAssignmentClient m_client;
     QString m_username;
     QJsonArray m_assignments;
