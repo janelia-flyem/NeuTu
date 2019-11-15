@@ -154,6 +154,14 @@ void ProtocolAssignmentDialog::setHeaders(QStandardItemModel *model) {
     model->setHorizontalHeaderItem(STARTED_COLUMN, new QStandardItem(QString("Start date")));
 }
 
+void ProtocolAssignmentDialog::showEvent(QShowEvent* event) {
+    QWidget::showEvent(event);
+
+    // refresh the started assignment list when the dialog is shown
+    onLoadStartedButton();
+}
+
+
 void ProtocolAssignmentDialog::showError(QString title, QString message) {
     QMessageBox mb;
     mb.setText(title);

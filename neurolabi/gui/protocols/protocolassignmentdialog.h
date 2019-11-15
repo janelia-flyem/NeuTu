@@ -50,6 +50,8 @@ private:
 
     void setHeaders(QStandardItemModel *model);
 
+    void showEvent(QShowEvent * event);
+
     void showError(QString title, QString message);
     void showMessage(QString title, QString message);
 };
