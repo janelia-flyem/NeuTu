@@ -11,6 +11,7 @@
 #include "zmesh.h"
 
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
@@ -199,13 +200,17 @@ ZMesh* FlyEmDataReader::LoadRoi(
 }
 
 ZMesh* FlyEmDataReader::ReadRoiMesh(
-    const ZDvidReader &reader, const std::string &roiName)
+    const ZDvidReader &reader, const std::string &roiName,
+    std::function<void(std::string)> errorMsgHandler)
 {
   ZMesh *mesh = NULL;
 
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
-  if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+  ZJsonObjectParser parser;
+  bool visible = parser.getValue(roiInfo, "visible", true);
+
+  if (visible && roiInfo.hasKey(neutu::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
@@ -230,6 +235,10 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
         key = roiName;
       }
       mesh = LoadRoi(reader, roiName, key, type);
+    }
+
+    if (mesh == nullptr) {
+      errorMsgHandler("Failed to load ROI " + roiName);
     }
   }
 

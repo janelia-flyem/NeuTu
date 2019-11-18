@@ -6486,12 +6486,6 @@ void ZFlyEmProofMvc::loadRoi(
         ZMeshFactory mf;
         mf.setOffsetAdjust(true);
         mesh = mf.makeMesh(roi);
-//        mesh = ZMeshFactory::MakeMesh(roi);
-
-        //      m_loadedROIs.push_back(roi);
-        //      std::string source =
-        //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-        //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
       QElapsedTimer timer;
@@ -6622,17 +6616,18 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 {
   QElapsedTimer timer;
   timer.start();
-  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
-  KLOG << ZLog::Profile()
-       << ZLog::Description(QString("ROI (%1) mesh loading time")
-                            .arg(roiName.c_str())
-                            .toStdString())
-       << ZLog::Duration(timer.elapsed());
+  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(
+        reader, roiName, [this](const std::string &msg) { this->warn(msg); }
+  );
 
   if (mesh) {
+    KLOG << ZLog::Profile()
+         << ZLog::Description(QString("ROI (%1) mesh loading time")
+                              .arg(roiName.c_str())
+                              .toStdString())
+         << ZLog::Duration(timer.elapsed());
+
     loadRoiMesh(mesh, roiName);
-  } else {
-    warn("Failed to load ROI " + roiName);
   }
 
 #ifdef _DEBUG_2

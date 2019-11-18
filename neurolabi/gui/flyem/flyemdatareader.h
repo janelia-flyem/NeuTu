@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include <functional>
 #include <unordered_map>
 
 #include "dvid/zdviddef.h"
@@ -40,7 +41,8 @@ public:
       const ZDvidReader &reader, int x, int y, int z);
 
   static ZMesh* ReadRoiMesh(
-      const ZDvidReader &reader, const std::string &roiName);
+      const ZDvidReader &reader, const std::string &roiName,
+      std::function<void(std::string)> errorMsgHandler = nullptr);
 
   /*!
    * \brief Read one or more ROIs into a single object
