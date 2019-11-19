@@ -1222,7 +1222,6 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    protocols/taskutils.cpp \
     dialogs/neuprintsetupdialog.cpp \
     protocols/taskcelltypevalidation.cpp \
     protocols/taskreview.cpp
