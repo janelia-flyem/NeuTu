@@ -8,6 +8,7 @@
 #include <QtConcurrentRun>
 #include <QProgressDialog>
 
+#include "common/math.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
@@ -1828,10 +1829,10 @@ void ZStackFrame::zoomToSelectedSwcNodes()
                      -document()->getStackOffset().getZ());
 #endif
     //-= document()->getStackOffset();
-    cx = iround(center.x());
-    cy = iround(center.y());
-    cz = iround(center.z());
-    int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+    cx = neutu::iround(center.x());
+    cy = neutu::iround(center.y());
+    cz = neutu::iround(center.z());
+    int radius = neutu::iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
     viewRoi(cx, cy, cz, radius);
   }
 }

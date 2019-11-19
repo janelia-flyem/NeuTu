@@ -296,7 +296,7 @@ private:
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
-  bool m_maskTracing;
+  bool m_maskTracing = true;
   bool m_diagnosis = false;
   bool m_screeningSeed = true;
 

@@ -209,6 +209,8 @@ public:
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
+  std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
+      const std::string &url) const;
 
   ZMesh* readSupervoxelMesh(uint64_t svId) const;
 

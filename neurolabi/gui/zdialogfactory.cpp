@@ -291,7 +291,8 @@ QString ZDialogFactory::GetOpenFileName(
 }
 
 QString ZDialogFactory::GetSaveFileName(
-    const QString &caption, const QString &filePath, QWidget *parent)
+    const QString &caption, const QString &filePath, const QString &filter,
+    QWidget *parent)
 {
   QString fileName;
 
@@ -299,10 +300,16 @@ QString ZDialogFactory::GetSaveFileName(
   if (currentPath.isEmpty()) {
     currentPath = m_currentSaveFileName;
   }
-  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath);
+  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath, filter);
   m_currentSaveFileName = fileName;
 
   return fileName;
+}
+
+QString ZDialogFactory::GetSaveFileName(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  return GetSaveFileName(caption, filePath, QString(), parent);
 }
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)

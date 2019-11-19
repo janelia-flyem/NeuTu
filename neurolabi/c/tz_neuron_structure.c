@@ -1605,10 +1605,12 @@ double Neuron_Structure_Conn_Angle(Neuron_Structure *ns, int index,
     break;
   }
   
+  double angle = Neuroseg_Angle_Between_Z(&(locseg1->seg), &(locseg2->seg), z_scale);
+
   Delete_Local_Neuroseg(locseg1);
   Delete_Local_Neuroseg(locseg2);
-      
-  return Neuroseg_Angle_Between_Z(&(locseg1->seg), &(locseg2->seg), z_scale);
+
+  return angle;
 }
 
 #ifdef HAVE_LIBXML2

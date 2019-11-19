@@ -4,8 +4,10 @@
 #endif
 
 #include <math.h>
+#include <tuple>
+
+#include "common/math.h"
 #include "zcircle.h"
-#include "tz_math.h"
 #include "geometry/zintpoint.h"
 #include "zpainter.h"
 
@@ -68,7 +70,6 @@ void ZCircle::display(
     return;
   }
 
-  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   painter.save();
 
@@ -113,7 +114,7 @@ bool ZCircle::isCuttingPlane(double z, double r, double n, double zScale)
   double h = fabs(z - n) / zScale;
   if (r > h) {
     return true;
-  } else if (iround(z) == iround(n)) {
+  } else if (neutu::iround(z) == neutu::iround(n)) {
     return true;
   }
 
@@ -137,7 +138,8 @@ double ZCircle::getAdjustedRadius(double r) const
 
 void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle style) const
 {
-  UNUSED_PARAMETER(style);
+  std::ignore = style;
+//  UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
@@ -231,14 +233,14 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
 #endif
 }
 
-void ZCircle::save(const char *filePath)
+void ZCircle::save(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 }
 
-bool ZCircle::load(const char *filePath)
+bool ZCircle::load(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 
   return false;
 }

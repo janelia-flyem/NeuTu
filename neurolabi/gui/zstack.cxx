@@ -23,10 +23,6 @@
 #include "tz_int_histogram.h"
 #include "zjsonparser.h"
 #include "zfiletype.h"
-#include "tz_math.h"
-#ifdef _QT_GUI_USED_
-#include "QsLog.h"
-#endif
 #include "zstring.h"
 #include "zstackfactory.h"
 #include "geometry/zpoint.h"

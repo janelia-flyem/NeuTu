@@ -672,28 +672,25 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
   }
 }
 
-/*
-void ZFlyEmBody3dDoc::setTodoItemSelected(
-    ZFlyEmToDoItem *item, bool select)
+
+void ZFlyEmBody3dDoc::setDoneItemVisible(bool visible)
 {
-  setSelected(item, select);
+  processObjectList<ZFlyEmToDoItem>([visible, this](ZFlyEmToDoItem *item) {
+    if (item->isChecked()) {
+      item->setVisible(visible);
+      bufferObjectVisibilityChanged(item);
+    }
+  });
 }
-*/
 
 void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
 {
-  QList<ZFlyEmToDoItem*> objList = getObjectList<ZFlyEmToDoItem>();
-  for (QList<ZFlyEmToDoItem*>::iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    ZFlyEmToDoItem *item = *iter;
+  processObjectList<ZFlyEmToDoItem>([visible, this](ZFlyEmToDoItem *item) {
     if (item->getAction() == neutu::EToDoAction::TO_DO) {
       item->setVisible(visible);
       bufferObjectVisibilityChanged(item);
     }
-  }
-
-  processObjectModified();
-//  emit todoVisibleChanged();
+  });
 }
 
 void ZFlyEmBody3dDoc::annotateTodoItem(

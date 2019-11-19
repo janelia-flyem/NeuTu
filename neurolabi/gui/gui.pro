@@ -80,7 +80,7 @@ include(extratarget.pri)
 message("Neurolabi target: $$neurolabi.target")
 
 CONFIG(force_link) {
-  PRE_TARGETDEPS += neurolabi
+  PRE_TARGETDEPS += neurolabi.PHONY
 }
 
 TARGET = $$app_name
@@ -1196,6 +1196,8 @@ SOURCES += main.cpp \
     protocols/protocoltaskconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     protocols/taskprotocoltaskfactory.cpp \
+    protocols/taskmergereview.cpp \
+    protocols/taskutils.cpp \
     data3d/zstackobjectconfig.cpp \
     dvid/zdvidbodyhelper.cpp \
     dvid/zdviddataslicetaskfactory.cpp \
@@ -1205,7 +1207,6 @@ SOURCES += main.cpp \
     dvid/zdvidgraysliceensemble.cpp \
     dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
-    protocols/taskmergereview.cpp \
     dialogs/zflyemproofsettingdialog.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
     dialogs/neuprintquerydialog.cpp \

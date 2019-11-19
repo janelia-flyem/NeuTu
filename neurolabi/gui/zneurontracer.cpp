@@ -3,13 +3,13 @@
 #include <fstream>
 #include <sys/stat.h>
 
-#include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_fimage_lib.h"
 #include "tz_voxel_graphics.h"
 #include "tz_stack_sampling.h"
 
+#include "common/math.h"
 #include "c_stack.h"
 
 #include "zvoxelarray.h"
@@ -117,7 +117,7 @@ Stack* ZNeuronTraceSeeder::sortSeed(
       Local_Neuroseg &seg = m_seedArray[i];
       int v = C_Stack::value(
             ws->trace_mask,
-            iround(seg.pos[0]), iround(seg.pos[1]), iround(seg.pos[2]));
+            neutu::iround(seg.pos[0]), neutu::iround(seg.pos[1]), neutu::iround(seg.pos[2]));
       if (v > 0) {
         m_seedScoreArray[i] = 0;
         continue;
@@ -172,7 +172,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
     Process_Neuron_Structure(ns);
 
-    if (m_connWorkspace->crossover_test == _FALSE_) {
+    if (m_connWorkspace->crossover_test) {
       Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
@@ -657,12 +657,12 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   ZPoint targetPos(x2, y2, z2);
 
-  x1 = iround(x1);
-  y1 = iround(y1);
-  z1 = iround(z1);
-  x2 = iround(x2);
-  y2 = iround(y2);
-  z2 = iround(z2);
+  x1 = neutu::iround(x1);
+  y1 = neutu::iround(y1);
+  z1 = neutu::iround(z1);
+  x2 = neutu::iround(x2);
+  y2 = neutu::iround(y2);
+  z2 = neutu::iround(z2);
 
   x1 -= stackOffset.getX();
   y1 -= stackOffset.getY();
@@ -1546,6 +1546,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   m_diag.saveConfig(*this);
 
   ZSwcTree *tree = NULL;
+
+  initTraceMask(false);
 
   if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
     double maxValue = C_Stack::max(stack);

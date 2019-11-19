@@ -355,6 +355,7 @@ public slots:
   void updateSynapse(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();

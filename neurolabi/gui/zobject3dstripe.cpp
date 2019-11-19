@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "zerror.h"
-#include "tz_math.h"
+#include "common/math.h"
 #include "common/utilities.h"
 #include "geometry/zgeometry.h"
 
@@ -656,7 +656,7 @@ void ZObject3dStripe::drawStack(
       for (int c = 0; c < 3; ++c) {
 //        if (color[c] != 0) {
           double v = ima.arrayc[x][c] * (1.0 - alpha) + color[c] * alpha;
-          ima.arrayc[x][c] = iround(v);
+          ima.arrayc[x][c] = neutu::iround(v);
 //        }
       }
     }

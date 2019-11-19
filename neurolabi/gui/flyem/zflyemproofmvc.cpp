@@ -10,7 +10,6 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QMimeData>
-#include <QElapsedTimer>
 
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
@@ -141,10 +140,7 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
-  if (getDvidTarget().isValid()) {
-    KINFO << QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
-             arg(getDvidTarget().getAddressWithPort().c_str());
-  }
+  recordEnd();
 
   delete m_dlgManager;
   delete m_actionLibrary;
@@ -241,6 +237,17 @@ void ZFlyEmProofMvc::init()
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
 #endif
+}
+
+void ZFlyEmProofMvc::recordEnd()
+{
+  if (getDvidTarget().isValid()) {
+    LKLOG << ZLog::Info()
+          << ZLog::Description(
+               QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
+               arg(getDvidTarget().getAddressWithPort().c_str()).toStdString())
+          << ZLog::Duration(m_sessionTimer.elapsed());
+  }
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidTargetProviderDialog *dlg)
@@ -723,8 +730,8 @@ void ZFlyEmProofMvc::exportGrayscale()
   ZFlyEmGrayscaleDialog *dlg = m_dlgManager->getGrayscaleDlg();
   dlg->makeGrayscaleExportAppearance();
   if (dlg->exec()) {
-    QString fileName =
-        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
+    QString fileName = ZDialogFactory::GetSaveFileName(
+          "Save Grayscale", "", "TIFF files (*.tif)", this);
     if (!fileName.isEmpty()) {
       exportGrayscale(dlg->getBoundBox(), dlg->getDsIntv(), fileName);
     }
@@ -734,6 +741,15 @@ void ZFlyEmProofMvc::exportGrayscale()
 void ZFlyEmProofMvc::exportGrayscale(
     const ZIntCuboid &box, int dsIntv, const QString &fileName)
 {
+  try {
+    getCompleteDocument()->exportGrayscale(box, dsIntv, fileName);
+  } catch (std::exception &e) {
+    ZDialogFactory::Warn(
+          "Export Failed",
+          QString("Cannot export grayscale.\n Reason: ") + e.what(), this);
+  }
+
+  /*
   ZStack *stack =
       getCompleteDocument()->getDvidReader().readGrayScale(box);
   stack->downsampleMean(dsIntv, dsIntv, dsIntv);
@@ -743,6 +759,7 @@ void ZFlyEmProofMvc::exportGrayscale(
   }
 
   delete stack;
+  */
 }
 
 void ZFlyEmProofMvc::exportNeuronScreenshot(
@@ -1072,6 +1089,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
+  connect(window, SIGNAL(settingDoneItemVisible(bool)),
+          doc, SLOT(setDoneItemVisible(bool)));
 //  connect(doc, SIGNAL(todoVisibleChanged()),
 //          window, SLOT(updateTodoVisibility()));
 
@@ -2018,6 +2037,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
           ZWidgetMessage::TARGET_STATUS_BAR));
 
   KINFO << "DVID Ready";
+  m_sessionTimer.start();
   emit dvidReady();
 
   if (getRole() == ERole::ROLE_WIDGET) {
@@ -6466,12 +6486,6 @@ void ZFlyEmProofMvc::loadRoi(
         ZMeshFactory mf;
         mf.setOffsetAdjust(true);
         mesh = mf.makeMesh(roi);
-//        mesh = ZMeshFactory::MakeMesh(roi);
-
-        //      m_loadedROIs.push_back(roi);
-        //      std::string source =
-        //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-        //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
       QElapsedTimer timer;
@@ -6602,17 +6616,18 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 {
   QElapsedTimer timer;
   timer.start();
-  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
-  KLOG << ZLog::Profile()
-       << ZLog::Description(QString("ROI (%1) mesh loading time")
-                            .arg(roiName.c_str())
-                            .toStdString())
-       << ZLog::Duration(timer.elapsed());
+  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(
+        reader, roiName, [this](const std::string &msg) { this->warn(msg); }
+  );
 
   if (mesh) {
+    KLOG << ZLog::Profile()
+         << ZLog::Description(QString("ROI (%1) mesh loading time")
+                              .arg(roiName.c_str())
+                              .toStdString())
+         << ZLog::Duration(timer.elapsed());
+
     loadRoiMesh(mesh, roiName);
-  } else {
-    warn("Failed to load ROI " + roiName);
   }
 
 #ifdef _DEBUG_2

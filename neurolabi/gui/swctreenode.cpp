@@ -7,10 +7,10 @@
 #include <stack>
 #include <cassert>
 
+#include "common/math.h"
 #include "zswctree.h"
 #include "zgraph.h"
 #include "zstring.h"
-#include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "c_stack.h"
 #include "tz_stack_threshold.h"
@@ -1209,9 +1209,9 @@ void SwcTreeNode::paste(Swc_Tree_Node *tn, size_t index)
     vector<double> attribute = str.toDoubleArray();
     setPos(tn, attribute[2], attribute[3], attribute[4]);
     setRadius(tn, attribute[5]);
-    setId(tn, iround(attribute[0]));
-    setType(tn, iround(attribute[2]));
-    setParentId(tn, iround(attribute[6]));
+    setId(tn, neutu::iround(attribute[0]));
+    setType(tn, neutu::iround(attribute[2]));
+    setParentId(tn, neutu::iround(attribute[6]));
   }
 }
 
@@ -1504,11 +1504,11 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 {
 
   //Extract image slice
-  int x1 = iround(x(tn) - radius(tn) * 2);
-  int y1 = iround(y(tn) - radius(tn) * 2);
-  int x2 = iround(x(tn) + radius(tn) * 2);
-  int y2 = iround(y(tn) + radius(tn) * 2);
-  int cz = iround(z(tn));
+  int x1 = neutu::iround(x(tn) - radius(tn) * 2);
+  int y1 = neutu::iround(y(tn) - radius(tn) * 2);
+  int x2 = neutu::iround(x(tn) + radius(tn) * 2);
+  int y2 = neutu::iround(y(tn) + radius(tn) * 2);
+  int cz = neutu::iround(z(tn));
 
   Stack *slice = C_Stack::crop(
         stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
@@ -1548,10 +1548,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double expandScale = 2.0;
   double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
-  int x1 = iround(x(tn) - expandRadius);
-  int y1 = iround(y(tn) - expandRadius);
-  int x2 = iround(x(tn) + expandRadius);
-  int y2 = iround(y(tn) + expandRadius);
+  int x1 = neutu::iround(x(tn) - expandRadius);
+  int y1 = neutu::iround(y(tn) - expandRadius);
+  int x2 = neutu::iround(x(tn) + expandRadius);
+  int y2 = neutu::iround(y(tn) + expandRadius);
 
   if (x1 < 0) {
     x1 = 0;
@@ -1566,7 +1566,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     y2 = C_Stack::height(stack) - 1;
   }
 
-  int cz = iround(z(tn));
+  int cz = neutu::iround(z(tn));
 
   if (cz >= C_Stack::depth(stack)) {
     return false;

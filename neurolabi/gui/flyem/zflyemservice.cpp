@@ -1,6 +1,6 @@
 #include "zflyemservice.h"
-#include "tz_math.h"
 
+#include "common/math.h"
 #include "zstring.h"
 #include "geometry/zintcuboid.h"
 #include "zintpairmap.h"
@@ -583,9 +583,9 @@ void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
 
-    pt.append(iround(x));
-    pt.append(iround(y));
-    pt.append(iround(z));
+    pt.append(neutu::iround(x));
+    pt.append(neutu::iround(y));
+    pt.append(neutu::iround(z));
     obj.setEntry("marker", pt);
 
     ZIntCuboid box = body.getBoundBox();
@@ -622,9 +622,9 @@ void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     double z = m_marker[i].getZ();
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
-    pt.append(iround(x));
-    pt.append(iround(y));
-    pt.append(iround(z));
+    pt.append(neutu::iround(x));
+    pt.append(neutu::iround(y));
+    pt.append(neutu::iround(z));
     obj.setEntry("marker", pt);
     edgeArray.append(obj);
   }

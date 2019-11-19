@@ -2,8 +2,9 @@
 #define ZSTACKFACTORY_H
 
 #include <vector>
+
+#include "common/math.h"
 #include "zstack.hxx"
-#include "tz_math.h"
 #include "tz_stack_lib.h"
 
 class ZClosedCurve;
@@ -130,9 +131,9 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   for (InputIterator iter = begin; iter != end; ++iter) {
     ZStack *stack = *iter;
     stackArray[i] = stack->c_stack();
-    offset[i][0] = iround(stack->getOffset().getX());
-    offset[i][1] = iround(stack->getOffset().getY());
-    offset[i][2] = iround(stack->getOffset().getZ());
+    offset[i][0] = stack->getOffset().getX();
+    offset[i][1] = stack->getOffset().getY();
+    offset[i][2] = stack->getOffset().getZ();
     if (i > 0) {
       if (offset[i][0] != offset[i-1][0]) {
         isPilable = false;

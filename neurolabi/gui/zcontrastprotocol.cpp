@@ -1,7 +1,8 @@
 #include "zcontrastprotocol.h"
 
 #include <cmath>
-#include "tz_math.h"
+
+#include "common/math.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 
@@ -95,7 +96,7 @@ uint8_t ZContrastProtocol::mapGrey(uint8_t v)
 
   double nv = mapFloat(v / 255.0);
 
-  return iround(nv * 255.0);
+  return neutu::iround(nv * 255.0);
 }
 
 /*

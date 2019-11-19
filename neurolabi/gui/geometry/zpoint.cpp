@@ -3,18 +3,18 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <stdio.h>
+#include <cstdio>
 
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
 #endif
 
-#include <stdio.h>
-#include <cstdio>
-
-#include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
 #include "tz_geo3d_utils.h"
+
+#include "common/math.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
 
@@ -382,7 +382,7 @@ ZPoint ZPoint::operator - () const
 
 ZIntPoint ZPoint::toIntPoint() const
 {
-  return ZIntPoint(iround(x()), iround(y()), iround(z()));
+  return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
 }
 
 void ZPoint::rotate(double theta, double psi)

@@ -278,6 +278,9 @@ public:
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
 
+  void exportGrayscale(
+      const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
+
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.

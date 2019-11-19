@@ -73,6 +73,12 @@ TEST(ZPoint, Relation)
   ASSERT_FALSE(pt1.isParallelTo(pt2));
 }
 
+TEST(ZPoint, toIntPoint)
+{
+  ZPoint pt(1.0, 2.6, 4.1);
+  ASSERT_EQ(ZIntPoint(1, 3, 4), pt.toIntPoint());
+}
+
 TEST(ZIntPoint, Operator)
 {
   ZIntPoint pt1(0, 1, 2);

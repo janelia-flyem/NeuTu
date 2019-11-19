@@ -296,7 +296,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
 
     if (bodyArray.getBoundBox().getVolume() > maxVolume) {
       int dsIntv =
-          iround(Cube_Root(
+          neutu::iround(std::cbrt(
                    static_cast<double>(bodyArray.getBoundBox().getVolume()) /
                    maxVolume)) - 1;
       bodyArray.downsample(dsIntv, dsIntv, dsIntv);
@@ -356,7 +356,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
     if (bodyArray.getBoundBox().getVolume() > maxVolume) {
       int dsIntv =
-          iround(Cube_Root(
+          neutu::iround(std::cbrt(
                    static_cast<double>(bodyArray.getBoundBox().getVolume()) /
                    maxVolume)) - 1;
       bodyArray.downsample(dsIntv, dsIntv, dsIntv);

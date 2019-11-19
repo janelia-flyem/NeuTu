@@ -19,7 +19,7 @@ class ZFlyEmGrayscaleDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit ZFlyEmGrayscaleDialog(QWidget *parent = 0);
+  explicit ZFlyEmGrayscaleDialog(QWidget *parent = nullptr);
   ~ZFlyEmGrayscaleDialog();
 
   ZProofreadWindow* getMainWindow() const;

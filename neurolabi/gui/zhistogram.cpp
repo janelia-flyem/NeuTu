@@ -1,9 +1,6 @@
 #include "zhistogram.h"
 #include <iostream>
 #include <cmath>
-#include "tz_math.h"
-#include "tz_darray.h"
-
 
 using namespace std;
 

@@ -11,7 +11,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
-#include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
 
@@ -154,7 +153,7 @@ void flyem::HackathonEvaluator::evalulate()
 //  std::vector<int> idArray(matrix.getColumnNumber());
   m_idArray.resize(matrix.getColumnNumber());
   for (int i = 0; i < matrix.getColumnNumber(); ++i) {
-    m_idArray[i] = iround(matrix.getValue(0, i));
+    m_idArray[i] = neutu::iround(matrix.getValue(0, i));
   }
 
   ZMatrix simmat = matrix.makeRowSlice(1, matrix.getRowNumber() - 1);

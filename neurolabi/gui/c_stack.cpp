@@ -19,11 +19,11 @@
 #include "zobject3d.h"
 #include "neutubeconfig.h"
 #include "zerror.h"
-#include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_int_histogram.h"
 #include "tz_iarray.h"
+#include "common/math.h"
 
 
 #if _QT_GUI_USED_
@@ -1881,7 +1881,7 @@ void C_Stack::setZero(
           if ((int) srcArray[offset2] != srcValueIgnored && \
               (int) dstArray[offset] != dstValueIgnored) {\
             double v = alpha * srcArray[offset2] + (1 - alpha) * dstArray[offset];\
-            dstArray[offset] = iround(v);\
+            dstArray[offset] = neutu::iround(v);\
           }\
           offset += p1;\
           offset2 += bp1;\
@@ -2043,7 +2043,7 @@ Stack* C_Stack::computeGradient(const Stack *stack)
               (int) stack->array[offset - 1]);
           int dy = ((int) stack->array[offset + width] -
               (int) stack->array[offset - width]);
-          int v = iround(sqrt((dx * dx + dy * dy) / 8.0));
+          int v = neutu::iround(sqrt((dx * dx + dy * dy) / 8.0));
           out->array[offset++] = v;
         }
         ++offset;
@@ -2061,7 +2061,7 @@ Stack* C_Stack::computeGradient(const Stack *stack)
                 (int) stack->array[offset - width]);
             int dz = ((int) stack->array[offset + area] -
                 (int) stack->array[offset - area]);
-            int v = iround(sqrt((dx * dx + dy * dy + dz * dz) / 12.0));
+            int v = neutu::iround(sqrt((dx * dx + dy * dy + dz * dz) / 12.0));
             out->array[offset++] = v;
           }
           ++offset;

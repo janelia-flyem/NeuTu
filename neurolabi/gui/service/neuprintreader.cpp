@@ -474,7 +474,7 @@ QList<uint64_t> NeuPrintReader::queryNeuron(
   QString url = m_server + "/api/npexplorer/findneurons";
 
   ZJsonObject dataObj;
-  dataObj.setEntry("dataset", "hemibrain");
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
   ZJsonArray inputRoiJson;
   for (const QString &inputRoi : inputRoiList) {
     inputRoiJson.append(inputRoi.toStdString());

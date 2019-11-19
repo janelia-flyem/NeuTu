@@ -1,6 +1,6 @@
 #include "znormcolormap.h"
 #include "tz_color.h"
-#include "tz_math.h"
+#include "common/math.h"
 
 ZNormColorMap::ZNormColorMap()
 {
@@ -17,7 +17,7 @@ QColor ZNormColorMap::mapColor(double v)
     v = 1.0;
   }
 
-  int index = iround(v * maxColor);
+  int index = neutu::iround(v * maxColor);
 
   Set_Color_Jet(&color, index);
 

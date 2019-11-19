@@ -1,6 +1,6 @@
 #include "zflyemtodolist.h"
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
 #include "dvid/zdvidwriter.h"
@@ -529,12 +529,12 @@ bool ZFlyEmToDoList::hit(double x, double y, double z)
 {
   const int sliceRange = 5;
 
-  ZIntPoint hitPoint(iround(x), iround(y), iround(z));
+  ZIntPoint hitPoint(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   hitPoint.shiftSliceAxis(getSliceAxis());
 
   for (int slice = -sliceRange; slice <= sliceRange; ++slice) {
-    int cz = iround(hitPoint.getZ() + slice);
+    int cz = hitPoint.getZ() + slice;
 
     ItemIterator siter(this, cz);
 

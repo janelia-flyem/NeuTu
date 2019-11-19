@@ -5,7 +5,8 @@
 #include "zswcbranch.h"
 
 #include "tz_geo3d_utils.h"
-#include "tz_math.h"
+
+#include "common/math.h"
 #include "swctreenode.h"
 #include "zerror.h"
 #include "zweightedpoint.h"
@@ -563,7 +564,7 @@ void ZSwcBranch::resample(double step)
   double len = computeLength();
 
   if (len > 0) {
-    int nseg = iround(len / step);
+    int nseg = neutu::iround(len / step);
     if (nseg > 1) {
       double realStep = len / nseg;
 

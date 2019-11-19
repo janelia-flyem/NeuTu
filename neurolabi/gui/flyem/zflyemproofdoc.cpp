@@ -4686,8 +4686,8 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 
   if (rect != NULL) {
     if (rect->isValid()) {
-      int sz = iround(sqrt(rect->getWidth() * rect->getWidth() +
-                           rect->getHeight() * rect->getHeight()) / 2.0);
+      int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
+                                  rect->getHeight() * rect->getHeight()) / 2.0);
       roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
       roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
     } else if (appending) {
@@ -5757,9 +5757,9 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   for (QList<ZFlyEmBookmark*>::iterator iter = bookmarkList.begin();
        iter != bookmarkList.end(); ++iter) {
     bookmark = *iter;
-    if (iround(bookmark->getCenter().x()) == x &&
-        iround(bookmark->getCenter().y()) == y &&
-        iround(bookmark->getCenter().z()) == z) {
+    if (neutu::iround(bookmark->getCenter().x()) == x &&
+        neutu::iround(bookmark->getCenter().y()) == y &&
+        neutu::iround(bookmark->getCenter().z()) == z) {
       break;
     }
     bookmark = NULL;
@@ -5771,6 +5771,24 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 void ZFlyEmProofDoc::makeKeyProcessor()
 {
   m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
+}
+
+void ZFlyEmProofDoc::exportGrayscale(
+    const ZIntCuboid &box, int dsIntv, const QString &fileName) const
+{
+  if (m_mainGrayscaleReader->hasGrayscale()) {
+    ZStack *stack = m_mainGrayscaleReader->readGrayScale(box);
+
+    if (stack) {
+      stack->downsampleMean(dsIntv, dsIntv, dsIntv);
+      stack->save(fileName.toStdString());
+      delete stack;
+    } else {
+      throw std::runtime_error("Failed to read grayscale from DVID.");
+    }
+  } else {
+    throw std::runtime_error("No grayscale data found.");
+  }
 }
 
 bool ZFlyEmProofDoc::_loadFile(const QString &filePath)

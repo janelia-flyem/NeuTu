@@ -108,6 +108,7 @@ private slots:
     void onDoubleClickFilterTable(const QModelIndex &index);
     void moveToBodyList();
     void onDeleteButton();
+    void onImportBodies();
     void onExportBodies();
     void onExportConnections();
     void onSaveColorMap();
@@ -127,6 +128,7 @@ private slots:
     void onNamedOnlyToggled();
     void onIOConnectionsSelectionChanged(
         QItemSelection selected, QItemSelection deselected);
+    void onCopySelectedConnections();
 
 private:
     enum Tabs {
@@ -145,6 +147,7 @@ private:
     };
     enum FilterTableColumns {
         FILTER_NAME_COLUMN,
+        FILTER_COUNT_COLUMN,
         FILTER_COLOR_COLUMN
     };
     enum IOBodyTableColumns {
@@ -206,6 +209,7 @@ private:
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;
 
+private:
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     void loadData();
@@ -223,8 +227,10 @@ private:
     void clearStatusLabel();
     void init();
     void addGroupColor(const QString &name);
+    void addBodyCountItem(int row, int count);
     void updateColorFilter(QString filter, QString oldFilter = "");
     void exportBodies(QString filename);
+    void importBodies(QString filename);
     void exportConnections(QString filename);
     void saveColorMapDisk(QString filename);
     ZJsonArray getColorMapAsJson(ZJsonArray colors);
@@ -248,13 +254,15 @@ private:
     NeuPrintQueryDialog* getNeuPrintRoiQueryDlg();
     void prepareQuery();
 //    void updateColorSchemeWithFilterCache();
-    void updateFilterColorScheme(
-        const QString &filterString, const QColor &color);
+    void updateFilterColorMap(
+        const QString &filterString);
     void updateGroupIdMap(const QString &name);
     void updateFilterIdMap(const QString &filterString);
     void updateGroupColorScheme(
         const QString &name, const QColor &color, bool updatingMap);
     void updateColorScheme(const QString &name, const QColor &color);
+    QString getTableColorName(int index) const;
+    QColor getTableColor(int index) const;
 };
 
 #endif // FLYEMBODYINFODIALOG_H

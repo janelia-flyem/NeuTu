@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
 #include <QProcess>
 #include <QDir>
 #include <QSplashScreen>
+#include <QElapsedTimer>
 
 #include "main.h"
 
@@ -97,6 +98,9 @@ int main(int argc, char *argv[])
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+    QElapsedTimer appTimer;
+    appTimer.start();
+
     QFontIcon::addFont(":/fontawesome.ttf");
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -229,7 +233,8 @@ int main(int argc, char *argv[])
 
     KLog() << ZLog::Info()
            << ZLog::Description("END " + get_machine_info())
-           << ZLog::Tag("start_time", timestamp);
+           << ZLog::Tag("start_time", timestamp)
+           << ZLog::Duration(appTimer.elapsed());
     LINFO() << "Exit " + get_machine_info();
 
     return result;
@@ -256,7 +261,6 @@ int main(int argc, char *argv[])
 //      ZTest::test(NULL);
 //    }
 
-    return 1;
   }
 }
 #endif

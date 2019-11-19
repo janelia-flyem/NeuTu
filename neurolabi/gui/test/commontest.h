@@ -4,6 +4,7 @@
 #include "ztestheader.h"
 
 #include "common/utilities.h"
+#include "common/math.h"
 
 #ifdef _USE_GTEST_
 
@@ -93,6 +94,15 @@ TEST(common, utilities)
   x0 = 5;
   x1 = 10;
   ASSERT_FALSE(neutu::ClipRange(1, 3, x0, x1));
+}
+
+TEST(common, math)
+{
+  ASSERT_EQ(0, neutu::iround(0.1));
+  ASSERT_EQ(1, neutu::iround(0.6));
+
+  ASSERT_EQ(1, neutu::iround(1.1));
+  ASSERT_EQ(2, neutu::iround(1.6));
 }
 
 #endif

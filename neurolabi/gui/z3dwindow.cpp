@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QApplication>
 
+#include "common/math.h"
 #include "zstack.hxx"
 #include "mvc/zstackdoc.h"
 #include "zstackdocproxy.h"
@@ -67,7 +68,7 @@
 #include "zstring.h"
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
-#include "misc/miscutility.h"
+//#include "misc/miscutility.h"
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
@@ -476,6 +477,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_SHOW_NORMAL_TODO:
     action = m_actionLibrary->getAction(
           item, this, SLOT(setNormalTodoVisible(bool)));
+    break;
+  case ZActionFactory::ACTION_SHOW_DONE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(setDoneItemVisible(bool)));
     break;
   case ZActionFactory::ACTION_REMOVE_TODO_BATCH:
     action = m_actionLibrary->getAction(
@@ -2280,6 +2285,11 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
   emit settingNormalTodoVisible(visible);
 }
 
+void Z3DWindow::setDoneItemVisible(bool visible)
+{
+  emit settingDoneItemVisible(visible);
+}
+
 /*
 void Z3DWindow::removeAllTodo()
 {
@@ -3194,10 +3204,10 @@ void Z3DWindow::locateSwcNodeIn2DView()
       int cx, cy, cz;
 
       //-= document()->getStackOffset();
-      cx = iround(center.x());
-      cy = iround(center.y());
-      cz = iround(center.z());
-      int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+      cx = neutu::iround(center.x());
+      cy = neutu::iround(center.y());
+      cz = neutu::iround(center.z());
+      int radius = neutu::iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       const int minRadius = 400;
       if (radius < minRadius) {
         radius = minRadius;
@@ -3211,7 +3221,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
 
 void Z3DWindow::locate2DView(const ZPoint &center, double radius)
 {
-  int width = iround(radius * 2 + 1);
+  int width = neutu::iround(radius * 2 + 1);
 
   const int minWidth = 800;
 
@@ -3223,7 +3233,8 @@ void Z3DWindow::locate2DView(const ZPoint &center, double radius)
   double cy = center.getY();
   double cz = center.getZ();
 
-  emit locating2DViewTriggered(iround(cx), iround(cy), iround(cz), width);
+  emit locating2DViewTriggered(
+        neutu::iround(cx), neutu::iround(cy), neutu::iround(cz), width);
 }
 
 void Z3DWindow::locatePunctumIn2DView()
@@ -4297,7 +4308,7 @@ void Z3DWindow::locateWithRay(int x, int y)
   std::vector<ZPoint> intersection = getRayIntersection(x, y);
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
-    m_view->gotoPosition(pt.x(), pt.y(), pt.z());
+    m_view->gotoPosition(pt.x(), pt.y(), pt.z(), 256);
   }
 }
 
@@ -4316,7 +4327,7 @@ void Z3DWindow::browseWithRay(int x, int y)
     emit messageGenerated(
           ZWidgetMessage(
             QString("Checking (%1, %2, %3)").
-            arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
+            arg(neutu::iround(pt.x())).arg(neutu::iround(pt.y())).arg(neutu::iround(pt.z()))));
 #if defined(_NEU3_)
     emit browsing(pt.x(), pt.y(), pt.z());
 #else
@@ -4356,9 +4367,9 @@ void Z3DWindow::shootTodo(int x, int y)
     if (parentId > 0) {
       if (!intersection.empty()) {
         ZPoint &pt = intersection.front();
-        int cx = iround(pt.x());
-        int cy = iround(pt.y());
-        int cz = iround(pt.z());
+        int cx = neutu::iround(pt.x());
+        int cy = neutu::iround(pt.y());
+        int cz = neutu::iround(pt.z());
         doc->executeAddTodoCommand(cx, cy, cz, false, parentId);
       }
     }
@@ -4530,6 +4541,21 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   return intersection;
 }
 
+namespace {
+ZCuboid cut_box(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result;
+
+  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
+                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
+                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+
+  result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
+
+  return result;
+}
+}
+
 ZCuboid Z3DWindow::getRayBoundbox() const
 {
   ZCuboid rbox;
@@ -4547,7 +4573,7 @@ ZCuboid Z3DWindow::getRayBoundbox() const
     } else {
       ZIntCuboid cutBox = getVolumeFilter()->cutBox();
       //      cutBox.translate(m_doc->getStackOffset());
-      rbox = misc::CutBox(rbox, cutBox);
+      rbox = cut_box(rbox, cutBox);
     }
   } else {
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
@@ -4569,8 +4595,7 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
   ZCuboid rbox = getRayBoundbox();
 
   if (m_doc->hasStack()) {
-    ZLineSegment seg = getVolumeFilter()->getScreenRay(
-          iround(x), iround(y), w, h);
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(x, y, w, h);
     stackSeg = getStackSeg(seg, rbox);
     source = "";
   } else if (m_doc->hasMesh()){
@@ -4588,8 +4613,7 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
       }
 #endif
 
-      ZLineSegment seg = getMeshFilter()->getScreenRay(
-            iround(x), iround(y), w, h);
+      ZLineSegment seg = getMeshFilter()->getScreenRay(x, y, w, h);
       stackSeg = getStackSeg(seg, rbox);
 
       if (stackSeg.isValid()) {
@@ -4623,7 +4647,8 @@ std::string Z3DWindow::updatePolyLinePairList(
     double y = 0.0;
     stroke->getPoint(&x, &y, i);
 
-    ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
+    ZLineSegment stackSeg = getRaySegment(
+          neutu::iround(x), neutu::iround(y), source);
 
     if (stackSeg.isValid()) {
       if (!polyline1) {
@@ -4655,7 +4680,7 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
 
-      ptArray.emplace_back(iround(x), iround(y));
+      ptArray.emplace_back(neutu::iround(x), neutu::iround(y));
     }
     getCanvas()->getGLFocus();
     std::vector<bool> hitTest = getMeshFilter()->hitObject(ptArray);

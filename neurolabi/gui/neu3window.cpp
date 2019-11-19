@@ -10,11 +10,9 @@
 #include <QWebEngineView>
 #endif
 
-#include "tz_math.h"
-
+#include "common/math.h"
 #include "ui_neu3window.h"
 #include "logging/utilities.h"
-//#include "logging/neuopentracing.h"
 
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackdochelper.h"
@@ -139,6 +137,7 @@ Neu3Window::~Neu3Window()
 {
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
+    m_dataContainer->recordEnd();
   }
 //  delete m_webView;
 
@@ -728,7 +727,7 @@ ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) c
 {
   ZArbSliceViewParam viewParam;
   viewParam.setSize(m_browseWidth, m_browseHeight);
-  viewParam.setCenter(iround(x), iround(y), iround(z));
+  viewParam.setCenter(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
   viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
@@ -1260,7 +1259,7 @@ void Neu3Window::advanceProgress(double dp)
   if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
     int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
     getProgressDialog()->setValue(
-          getProgressDialog()->value() + iround(dp * range));
+          getProgressDialog()->value() + neutu::iround(dp * range));
   }
 }
 

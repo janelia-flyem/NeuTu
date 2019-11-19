@@ -1,6 +1,6 @@
 #include "zstackdocutil.h"
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "zstackdoc.h"
 #include "zstack.hxx"
 
@@ -40,7 +40,7 @@ ZIntCuboid ZStackDocUtil::GetStackSpaceRange(
     box = doc.getStack()->getBoundBox();
     if (sliceAxis == neutu::EAxis::ARB) {
       ZIntPoint center = box.getCenter();
-      int length = iround(box.getDiagonalLength());
+      int length = neutu::iround(box.getDiagonalLength());
       box.setSize(length, length, length);
       box.setCenter(center);
     } else {
