@@ -640,6 +640,19 @@ void ZFlyEmProofMvc::connectSignalSlot()
           m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(syncBodySelectionToOrthoWindow()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+          this, SLOT(processMergeUploaded()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseMeshWindowDeep()));
+  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploadedExternally,
+          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBookmarkTable()));
 }
 
 void ZFlyEmProofMvc::applySettings()
@@ -921,9 +934,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           doc, SLOT(setUnrecycable(QSet<uint64_t>)));
           */
-
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(processMergeUploaded()));
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBodyWindowDeep()));
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
@@ -934,17 +944,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
 //          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBookmarkTable()));
-
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateCoarseMeshWindowDeep()));
-  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploadedExternally,
-          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateBookmarkTable()));
 
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           doc, SLOT(processBodySelectionChange()));

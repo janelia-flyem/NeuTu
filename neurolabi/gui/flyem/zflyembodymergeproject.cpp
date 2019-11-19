@@ -748,12 +748,13 @@ void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySe
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc) {
     QList<ZDvidLabelSlice*> labelList = doc->getDvidBodySliceList();
+
     foreach (ZDvidLabelSlice *slice, labelList) {
       slice->setSelection(newBodySet, neutu::ELabelSource::ORIGINAL);
-      //            slice->mapSelection();
     }
 
     m_selectedOriginal.clear();
+
     for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
          iter != newBodySet.end(); ++iter) {
       m_selectedOriginal.insert(*iter);
@@ -988,7 +989,6 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         emit dvidLabelChanged();
 
         saveMergeOperation();
-
 
         ZWidgetMessage message(
               "Body merge finalized.", neutu::EMessageType::INFORMATION,
