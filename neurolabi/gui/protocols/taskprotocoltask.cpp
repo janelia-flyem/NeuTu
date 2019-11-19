@@ -220,6 +220,9 @@ bool TaskProtocolTask::loadJson(QJsonObject json) {
         return false;
     }
 
+    // save the original json so toJson() can be sure no fields are dropped
+    m_originalJson = json;
+
     return true;
 }
 
@@ -357,6 +360,14 @@ QJsonObject TaskProtocolTask::toJson() {
 
     // allow subclass to add fields
     taskJson = addToJson(taskJson);
+
+    // preseve any fields from the original json that the subclass
+    // may not know to add (e.g., assignment manager metadata)
+    for (QString key : m_originalJson.keys()) {
+      if (!taskJson.contains(key)) {
+        taskJson.insert(key, m_originalJson.value(key));
+      }
+    }
 
     return taskJson;
 }

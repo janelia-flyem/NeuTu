@@ -73,6 +73,7 @@ protected:
     QSet<uint64_t> m_visibleBodies;
     QSet<uint64_t> m_selectedBodies;
     QSet<QString> m_tags;
+    QJsonObject m_originalJson;
 
     QString objectToString(QJsonObject json);
 
