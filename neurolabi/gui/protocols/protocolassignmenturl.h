@@ -13,6 +13,7 @@ public:
 
     static QString GenerateAssignment(QString server, QString projectName);
     static QString StartAssignment(QString server, int assignmentID);
+    static QString CompleteAssignment(QString server, int assignmentID);
 
     static QString GetUsers(QString server);
     static QString GetJaneliaUser(QString server, QString username);

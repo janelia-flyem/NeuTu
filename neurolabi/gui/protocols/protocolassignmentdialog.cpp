@@ -75,27 +75,39 @@ void ProtocolAssignmentDialog::onLoadStartedButton() {
 
 void ProtocolAssignmentDialog::onGetNewButton() {
     if (checkForTokens()) {
-        QStringList projects = m_client.getEligibleProjects();
+
+        QMap<QString, QString> projects = m_client.getEligibleProjects();
         if (projects.size() == 0) {
             showMessage("No projects!", "No eligible projects found!");
             return;
         }
 
-        // now show dialog: user chooses a project
-        bool ok;
-        QString project = QInputDialog::getItem(this, "Get assignment",
-            "Choose a project to get an assignment from:", projects, 0, false, &ok);
-        if (ok && !project.isEmpty()) {
-            // call endpoint to start assignment
+        // show dialog: user chooses a project from list of "project name (procotol)"
+        QStringList options;
+        QStringList nameList;
+        for (QString projectName: projects.keys()) {
+            nameList << projectName;
+            options << projectName + " (" + projects[projectName] + ")";
+        }
 
-            showMessage("temp", "pretending to start assignment for project " + project);
+        bool ok;
+        QString choice = QInputDialog::getItem(this, "Get assignment",
+            "Choose a project to get an assignment from:", options, 0, false, &ok);
+        if (ok && !choice.isEmpty()) {
+            QString projectName = nameList[options.indexOf(choice)];
+
+            // call endpoint to start assignment?
+            // but recent experience is that these assignments are already started?
+            //  maybe need to check?
+
+            showMessage("temp", "pretending to start assignment for project " + projectName);
 
             // check success
             if (true) {
                 loadStartedAssignments();
                 updateStartedTable();
             } else {
-                showMessage("No assignment", "Failed to start an assignment for project " + project);
+                showMessage("No assignment", "Failed to start an assignment for project " + projectName);
             }
         }
     }
@@ -111,7 +123,12 @@ void ProtocolAssignmentDialog::onCompleteButton() {
             QModelIndex viewIndex = modelIndexList.at(0);
             QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
 
-             // modelIndex.row() = assignment to complete; do something with it
+
+            ProtocolAssignment assignment = m_assignments[modelIndex.row()];
+            qDebug() << "pretending to complete assignment " << assignment.id;
+            // not tested yet!
+            // m_client.completeAssignment(assignment);
+
 
 
         }

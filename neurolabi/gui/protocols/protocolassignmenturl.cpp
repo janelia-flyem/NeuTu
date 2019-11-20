@@ -32,6 +32,10 @@ QString ProtocolAssignmentUrl::StartAssignment(QString server, int assignmentID)
     return server + "/assignment/" + QString::number(assignmentID) + "/start";
 }
 
+QString ProtocolAssignmentUrl::CompleteAssignment(QString server, int assignmentID) {
+    return server + "/assignment/" + QString::number(assignmentID) + "/complete";
+}
+
 /*
  * input: server and username; if username is empty, get URL for started assigments for all users
  */

@@ -24,11 +24,16 @@ public:
     void setToken(QString token);
 
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
-    QStringList getEligibleProjects();
+    QMap<QString, QString> getEligibleProjects();
 
     QList<ProtocolAssignment> getStartedAssignments();
+    bool completeAssignment(ProtocolAssignment assignment);
+
+    // probably will be changed, and not working yet anyway
     int generateAssignment(QString projectName);
     bool startAssignment(int assignmentID);
+
+
 
     QString getLocalUsername(QString janeliaUsername);
 
@@ -50,8 +55,8 @@ private:
     QString getErrorString(QNetworkReply * reply);
     int getReplyStatus(QNetworkReply * reply);
     QJsonObject getReplyJSON(QNetworkReply * reply);
-    QJsonObject getReplyDataObject(QNetworkReply * reply);
-    QJsonArray getReplyDataArray(QNetworkReply * reply);
+    QJsonObject getReplyJsonObject(QNetworkReply * reply, QString key);
+    QJsonArray getReplyJsonArray(QNetworkReply * reply, QString key);
 
     void showError(QString title, QString message);
 

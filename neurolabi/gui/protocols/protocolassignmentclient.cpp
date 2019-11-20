@@ -111,10 +111,10 @@ QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentPro
  *
  * endpoint: get /projects/eligible
  * input: none
- * output: list of project names
+ * output: map of project name: protocol
  */
-QStringList ProtocolAssignmentClient::getEligibleProjects() {
-    QStringList projects;
+QMap<QString, QString> ProtocolAssignmentClient::getEligibleProjects() {
+    QMap<QString, QString> projects;
 
     QString url = ProtocolAssignmentUrl::GetEligibleProjects(m_server);
     QNetworkReply * reply = get(url);
@@ -129,15 +129,12 @@ QStringList ProtocolAssignmentClient::getEligibleProjects() {
             return projects;
         }
     } else {
-        // you know, I've never seen this succeed...I assume it's a json array...
-
-        QJsonArray data = getReplyDataArray(reply);
-
-        // test data
-        projects << "project 1" << "project 2" << "project 3";
-
+        QJsonObject data = getReplyJsonObject(reply, "projects");
+        for (QString key: data.keys()) {
+            QString val = data.value(key).toString();
+            projects[key] = val;
+        }
         return projects;
-
     }
 }
 
@@ -160,7 +157,7 @@ QList<ProtocolAssignment> ProtocolAssignmentClient::getStartedAssignments() {
         showError("Error!", "Error retrieving started assignments: " + error);
         return results;
     } else {
-        QJsonArray array = getReplyDataArray(reply);
+        QJsonArray array = getReplyJsonArray(reply, "data");
         for (QJsonValue val: array) {
             results << ProtocolAssignment(val.toObject());
         }
@@ -221,6 +218,24 @@ bool ProtocolAssignmentClient::startAssignment(int assignmentID) {
 }
 
 /*
+ * endpoint: /assignment/{assignment_id}/complete
+ * input: assignment
+ * output: boolean success
+ */
+bool ProtocolAssignmentClient::completeAssignment(ProtocolAssignment assignment) {
+    QString url = ProtocolAssignmentUrl::CompleteAssignment(m_server, assignment.id);
+    QJsonObject empty;
+    QNetworkReply * reply = post(url, empty);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error completing assignment: " + error);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/*
  * endpoint: /users?janelia_id=username
  * input: janelia username
  * output: username in the assignment manager (Google login username);
@@ -235,7 +250,7 @@ QString ProtocolAssignmentClient::getLocalUsername(QString janeliaUsername) {
         return "";
     } else {
         // data should be an array with exactly one object
-        QJsonArray data = getReplyDataArray(reply);
+        QJsonArray data = getReplyJsonArray(reply, "data");
         if (data.size() == 0) {
             // I think this never happens; it'll show as an error (404) instead
             showError("Error!", "Error determining assignment manager username for Janelia username!");
@@ -346,17 +361,27 @@ QJsonObject ProtocolAssignmentClient::getReplyJSON(QNetworkReply *reply) {
 }
 
 /*
- * return only the "data" part of the reply if you know it's a JSON object
+ * return a JSON object from the reply from the given key
  */
-QJsonObject ProtocolAssignmentClient::getReplyDataObject(QNetworkReply *reply) {
-    return getReplyJSON(reply)["data"].toObject();
+QJsonObject ProtocolAssignmentClient::getReplyJsonObject(QNetworkReply *reply, QString key) {
+    QJsonObject json = getReplyJSON(reply);
+    if (json.contains(key) && json[key].isObject()) {
+        return json[key].toObject();
+    } else {
+        return QJsonObject();
+    }
 }
 
 /*
  * return only the "data" part of the reply if you know it's a JSON array
  */
-QJsonArray ProtocolAssignmentClient::getReplyDataArray(QNetworkReply *reply) {
-    return getReplyJSON(reply)["data"].toArray();
+QJsonArray ProtocolAssignmentClient::getReplyJsonArray(QNetworkReply *reply, QString key) {
+    QJsonObject json = getReplyJSON(reply);
+    if (json.contains(key) && json[key].isArray()) {
+        return json[key].toArray();
+    } else {
+        return QJsonArray();
+    }
 }
 
 /*
