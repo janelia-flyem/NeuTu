@@ -94,9 +94,7 @@ fi
 
 envName='neutu-env'
 source $condaDir/bin/activate root
-conda create -n $envName python=3.6 -y
-source $condaDir/bin/activate $envName
-conda install $package -y $channel_arg
+conda create -n $envName $package -y
 
 updateFile=$bindir/ntupd
 touch $updateFile
