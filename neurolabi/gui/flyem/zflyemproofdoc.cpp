@@ -227,7 +227,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
   connect(this, SIGNAL(bodyUnmerged()),
           this, SLOT(saveMergeOperation()));
   connect(getMergeProject(), SIGNAL(mergeUploaded()),
-          this, SIGNAL(bodyMergeUploaded()));
+          this, SLOT(processBodyMergeUploaded()));
+//          this, SIGNAL(bodyMergeUploaded()));
   connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
 
@@ -2946,7 +2947,8 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 
 void ZFlyEmProofDoc::processExternalBodyMergeUpload()
 {
-  getMergeProject()->clearBodyMerger();
+//  getMergeProject()->clearBodyMerger();
+  clearBodyMerger();
   refreshDvidLabelBuffer(2000);
   updateDvidLabelObjectSliently();
 
@@ -2991,6 +2993,8 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool usingCenterCut, bool sv)
 {
+  QMutexLocker locker(&m_workWriterMutex);
+
   const ZDvidReader *reader = nullptr;
   if (sv) {
     if (!m_supervoxelWorkReader.good()) {
@@ -4341,15 +4345,22 @@ void ZFlyEmProofDoc::notifyBodyLock(uint64_t bodyId, bool locking)
 
 void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
 {
+  QMutexLocker locker(&m_workWriterMutex);
+
   if (delay > 0) {
     ZSleeper::msleep(delay);
   }
+
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
-    if (!slice->refreshReaderBuffer()) {
+    if (slice->refreshReaderBuffer()) {
+      slice->forceUpdate(false);
+    } else {
       notify(ZWidgetMessage("Failed to refresh labels.", neutu::EMessageType::WARNING));
     }
   }
+
+  m_workWriter.getDvidReader().refreshLabelBuffer();
 }
 
 void ZFlyEmProofDoc::updateMeshForSelected()
@@ -5817,6 +5828,14 @@ bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
   }
 
   return false;
+}
+
+void ZFlyEmProofDoc::processBodyMergeUploaded()
+{
+  clearBodyForSplit();
+  refreshDvidLabelBuffer(2000);
+  undoStack()->clear();
+  emit bodyMergeUploaded();
 }
 
 void ZFlyEmProofDoc::diagnose() const

@@ -757,6 +757,9 @@ private:
 
   ZDvidReader& getBookmarkReader();
 
+private slots:
+  void processBodyMergeUploaded();
+
 protected:
   ZDvidEnv m_dvidEnv;
   ZDvidEnv m_originalEnv;
@@ -780,6 +783,7 @@ protected:
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  mutable QMutex m_workWriterMutex;
   ZDvidWriter m_workWriter;
   ZDvidReader m_supervoxelWorkReader;
 //  ZDvidReader m_grayscaleWorkReader;
