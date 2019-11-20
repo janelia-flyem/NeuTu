@@ -53,16 +53,16 @@ void TaskCellTypeValidation::beforeNext()
 {
   if (!m_showBothButton->isChecked()) {
     m_showBothButton->setChecked(true);
-    TaskReview::beforeNext();
   }
+  TaskReview::beforeNext();
 }
 
 void TaskCellTypeValidation::beforePrev()
 {
   if (!m_showBothButton->isChecked()) {
     m_showBothButton->setChecked(true);
-    TaskReview::beforePrev();
   }
+  TaskReview::beforePrev();
 }
 
 QString TaskCellTypeValidation::keyTaskId() const
