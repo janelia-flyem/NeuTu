@@ -7,6 +7,7 @@
 #include <QSortFilterProxyModel>
 
 #include "protocolassignmentclient.h"
+#include "protocolassignment.h"
 
 namespace Ui {
 class ProtocolAssignmentDialog;
@@ -44,7 +45,7 @@ private:
     QSortFilterProxyModel * m_proxy;
     ProtocolAssignmentClient m_client;
     QString m_username;
-    QJsonArray m_assignments;
+    QList<ProtocolAssignment> m_assignments;
 
     bool checkForTokens();
 

@@ -146,10 +146,10 @@ QStringList ProtocolAssignmentClient::getEligibleProjects() {
  *
  * endpoint: /assignments_started?user=username
  * input: none
- * output: array of assignment objects
+ * output: list of assignment objects
  */
-QJsonArray ProtocolAssignmentClient::getStartedAssignments() {
-    QJsonArray array;
+QList<ProtocolAssignment> ProtocolAssignmentClient::getStartedAssignments() {
+    QList<ProtocolAssignment> results;
 
     // need to change Janelia username into assignment mgr username
     QString username = getLocalUsername(QString::fromStdString(neutu::GetCurrentUserName()));
@@ -158,9 +158,13 @@ QJsonArray ProtocolAssignmentClient::getStartedAssignments() {
     if (hadError(reply)) {
         QString error = getErrorString(reply);
         showError("Error!", "Error retrieving started assignments: " + error);
-        return array;
+        return results;
     } else {
-        return getReplyDataArray(reply);
+        QJsonArray array = getReplyDataArray(reply);
+        for (QJsonValue val: array) {
+            results << ProtocolAssignment(val.toObject());
+        }
+        return results;
     }
 }
 

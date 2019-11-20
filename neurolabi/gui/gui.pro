@@ -301,6 +301,7 @@ unix {
 RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
     protocols/protocolassignmenturl.h \
@@ -834,6 +835,7 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/protocolassignment.cpp \
     protocols/protocolassignmentdialog.cpp \
     protocols/protocolassignmentclient.cpp \
     protocols/protocolassignmenturl.cpp \

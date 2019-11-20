@@ -149,27 +149,26 @@ void ProtocolAssignmentDialog::loadStartedAssignments() {
 void ProtocolAssignmentDialog::updateStartedTable() {
     clearStartedTable();
     int row = 0;
-    for (QJsonValue val: m_assignments) {
-        QJsonObject a = val.toObject();
+    for (ProtocolAssignment assignment: m_assignments) {
 
         QStandardItem * idItem = new QStandardItem();
-        idItem->setData(QString::number(a["id"].toInt()), Qt::DisplayRole);
+        idItem->setData(assignment.id, Qt::DisplayRole);
         m_model->setItem(row, ID_COLUMN, idItem);
 
         QStandardItem * projectItem = new QStandardItem();
-        projectItem->setData(a["project"].toString(), Qt::DisplayRole);
+        projectItem->setData(assignment.project, Qt::DisplayRole);
         m_model->setItem(row, PROJECT_COLUMN, projectItem);
 
         QStandardItem * protocolItem = new QStandardItem();
-        protocolItem->setData(a["protocol"].toString(), Qt::DisplayRole);
+        protocolItem->setData(assignment.protocol, Qt::DisplayRole);
         m_model->setItem(row, PROTOCOL_COLUMN, protocolItem);
 
         QStandardItem * nameItem = new QStandardItem();
-        nameItem->setData(a["name"].toString(), Qt::DisplayRole);
+        nameItem->setData(assignment.name, Qt::DisplayRole);
         m_model->setItem(row, NAME_COLUMN, nameItem);
 
         QStandardItem * startedItem = new QStandardItem();
-        startedItem->setData(a["start_date"].toString(), Qt::DisplayRole);
+        startedItem->setData(assignment.start_date, Qt::DisplayRole);
         m_model->setItem(row, STARTED_COLUMN, startedItem);
 
         row++;

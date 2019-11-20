@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include "protocolassignment.h"
 
 class ProtocolAssignmentClient : public QObject
 {
@@ -25,7 +26,7 @@ public:
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
     QStringList getEligibleProjects();
 
-    QJsonArray getStartedAssignments();
+    QList<ProtocolAssignment> getStartedAssignments();
     int generateAssignment(QString projectName);
     bool startAssignment(int assignmentID);
 
