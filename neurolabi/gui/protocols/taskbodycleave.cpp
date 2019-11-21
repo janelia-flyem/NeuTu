@@ -173,7 +173,7 @@ namespace {
   // The timer for roughly measuring the time to load task N must be static,
   // because it starts when the user presses a button to end task N-1.
 
-  QTime s_startupTimer;
+  static QTime s_startupTimer;
 }
 
 //
