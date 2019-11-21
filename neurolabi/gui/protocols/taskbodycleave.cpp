@@ -59,6 +59,7 @@ namespace {
   static const QString KEY_SERVER_REPLY = "latest server reply";
   static const QString KEY_BODY_IDS_CREATED = "new body IDs";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
+  static const QString KEY_STARTUP_TIME = "time to start task (ms)";
 
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
@@ -169,6 +170,10 @@ namespace {
     }
   }
 
+  // The timer for roughly measuring the time to load task N must be static,
+  // because it starts when the user presses a button to end task N-1.
+
+  QTime s_startupTimer;
 }
 
 //
@@ -578,6 +583,8 @@ void TaskBodyCleave::beforeNext()
   m_showBodyCheckBox->setChecked(true);
 
   m_hiddenIds.clear();
+
+  s_startupTimer.start();
 }
 
 //#Review-TZ: It duplicates code from askBodyCleave::beforeNext
@@ -599,10 +606,19 @@ void TaskBodyCleave::beforePrev()
   m_showBodyCheckBox->setChecked(true);
 
   m_hiddenIds.clear();
+
+  s_startupTimer.start();
 }
 
 void TaskBodyCleave::beforeLoading()
 {
+  // For the first task, beforeNext() or beforePrev() will not have been called
+  // to start the timer, so starting it here is the next best choice.
+
+  if (s_startupTimer.isNull()) {
+    s_startupTimer.start();
+  }
+
   KLog::SetOperationName("body_cleaving");
 
   m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
@@ -684,6 +700,8 @@ void TaskBodyCleave::onLoaded()
       }
     }
   }
+
+  m_startupTimes.push_back(s_startupTimer.elapsed());
 }
 
 void TaskBodyCleave::beforeDone()
@@ -1619,7 +1637,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   requestJson["request-number"] = int(requestNumber);
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata3.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -2013,6 +2031,10 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
     QJsonArray jsonTimes;
     std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
     jsonExtra[KEY_USAGE_TIME] = jsonTimes;
+
+    QJsonArray jsonStartupTimes;
+    std::copy(m_startupTimes.begin(), m_startupTimes.end(), std::back_inserter(jsonStartupTimes));
+    jsonExtra[KEY_STARTUP_TIME] = jsonStartupTimes;
   }
 
   json.append(jsonExtra);
