@@ -55,6 +55,9 @@ private:
     void updateAssignmentsTable();
     void clearAssignmentsTable();
 
+    void updateSelectedInfo(ProtocolAssignment assignment);
+    void clearSelectedInfo();
+
     void setHeaders(QStandardItemModel *model);
 
     void showEvent(QShowEvent * event);

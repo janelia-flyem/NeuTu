@@ -143,12 +143,8 @@ void ProtocolAssignmentDialog::onClickedTable(QModelIndex index) {
 
 
     QModelIndex modelIndex = m_proxy->mapToSource(index);
-
-    qDebug() << "table clicked model row " << modelIndex.row();
-
-    // maybe display more assignment info at the side when clicked?  but most info
-    //  is already in the table...
-
+    ProtocolAssignment assignment = m_assignments[modelIndex.row()];
+    updateSelectedInfo(assignment);
 
 
 }
@@ -161,6 +157,9 @@ void ProtocolAssignmentDialog::loadAssignments() {
 
     m_assignments = m_client.getAssignments();
 
+
+
+    clearSelectedInfo();
 
 
 }
@@ -205,6 +204,32 @@ void ProtocolAssignmentDialog::updateAssignmentsTable() {
 
 
 
+}
+
+void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment) {
+    ui->nameLabel->setText(assignment.name);
+    ui->idLabel->setText(QString::number(assignment.id));
+    ui->createdLabel->setText(assignment.create_date);
+    ui->startedLabel->setText(assignment.start_date);
+    ui->completedLabel->setText(assignment.completion_date);
+
+    QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
+    int nCompleted = 0;
+    for (ProtocolAssignmentTask t: tasks) {
+        if (t.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+            nCompleted++;
+        }
+    }
+    ui->tasksLabel->setText(QString::number(nCompleted) + "/" + QString::number(tasks.size()));
+}
+
+void ProtocolAssignmentDialog::clearSelectedInfo() {
+    ui->nameLabel->clear();
+    ui->idLabel->clear();
+    ui->createdLabel->clear();
+    ui->startedLabel->clear();
+    ui->completedLabel->clear();
+    ui->tasksLabel->clear();
 }
 
 void ProtocolAssignmentDialog::clearAssignmentsTable() {

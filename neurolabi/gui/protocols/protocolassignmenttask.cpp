@@ -43,3 +43,7 @@ ProtocolAssignmentTask::ProtocolAssignmentTask(QJsonObject data)
     }
 
 }
+
+const QString ProtocolAssignmentTask::DISPOSITION_SKIPPED = "Skipped";
+const QString ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS = "In progress";
+const QString ProtocolAssignmentTask::DISPOSITION_COMPLETE = "Complete";
