@@ -1,8 +1,11 @@
 #include "protocolassignment.h"
 
 /*
- * this class is just a convenient wrapper for the json data; all the
- * actual functionality will be in the PAClient
+ * this class is just a convenient wrapper for the assignment json data
+ * returned by the assignment manager; all the actual functionality
+ * is in the PAClient
+ *
+ * this class contains all the assignment data fields as of this writing
  */
 ProtocolAssignment::ProtocolAssignment(QJsonObject data)
 {
@@ -82,3 +85,7 @@ ProtocolAssignment::ProtocolAssignment(QJsonObject data)
     }
 
 }
+
+const QString ProtocolAssignment::DISPOSITION_SKIPPED = "Skipped";
+const QString ProtocolAssignment::DISPOSITION_IN_PROGRESS = "In progress";
+const QString ProtocolAssignment::DISPOSITION_COMPLETE = "Complete";

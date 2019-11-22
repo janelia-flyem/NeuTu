@@ -22,7 +22,7 @@ public:
     ~ProtocolAssignmentDialog();
 
 private slots:
-    void onLoadStartedButton();
+    void onRefreshButton();
     void onGetNewButton();
     void onCompleteButton();
     void onClickedTable(QModelIndex index);
@@ -33,6 +33,7 @@ private:
 
     enum TableColumns {
         ID_COLUMN,
+        DISPOSITION_COLUMN,
         PROJECT_COLUMN,
         PROTOCOL_COLUMN,
         NAME_COLUMN,
@@ -49,10 +50,10 @@ private:
 
     bool checkForTokens();
 
-    void loadStartedAssignments();
+    void loadAssignments();
 
-    void updateStartedTable();
-    void clearStartedTable();
+    void updateAssignmentsTable();
+    void clearAssignmentsTable();
 
     void setHeaders(QStandardItemModel *model);
 

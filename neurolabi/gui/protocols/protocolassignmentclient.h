@@ -9,6 +9,7 @@
 #include <QJsonObject>
 
 #include "protocolassignment.h"
+#include "protocolassignmenttask.h"
 
 class ProtocolAssignmentClient : public QObject
 {
@@ -26,6 +27,7 @@ public:
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
     QMap<QString, QString> getEligibleProjects();
 
+    QList<ProtocolAssignment> getAssignments();
     QList<ProtocolAssignment> getStartedAssignments();
     bool completeAssignment(ProtocolAssignment assignment);
 
@@ -33,7 +35,8 @@ public:
     int generateAssignment(QString projectName);
     bool startAssignment(int assignmentID);
 
-
+    QList<ProtocolAssignmentTask> getAssignmentTasks(ProtocolAssignment assignment);
+    bool completeTask(ProtocolAssignmentTask task);
 
     QString getLocalUsername(QString janeliaUsername);
 

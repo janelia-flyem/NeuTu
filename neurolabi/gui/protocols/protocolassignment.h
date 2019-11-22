@@ -8,6 +8,10 @@ class ProtocolAssignment
 public:
     ProtocolAssignment(QJsonObject data);
 
+    static const QString DISPOSITION_IN_PROGRESS;
+    static const QString DISPOSITION_SKIPPED;
+    static const QString DISPOSITION_COMPLETE;
+
     // all of these fields match names in the json
     int id;
     QString name;

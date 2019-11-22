@@ -36,6 +36,15 @@ QString ProtocolAssignmentUrl::CompleteAssignment(QString server, int assignment
     return server + "/assignment/" + QString::number(assignmentID) + "/complete";
 }
 
+QString ProtocolAssignmentUrl::GetAssigments(QString server, QString username) {
+    QString url = server + "/assignments";
+    if (username.isEmpty()) {
+        return url;
+    } else {
+        return AddParameter(url, "user", username);
+    }
+}
+
 /*
  * input: server and username; if username is empty, get URL for started assigments for all users
  */
@@ -46,6 +55,15 @@ QString ProtocolAssignmentUrl::GetStartedAssigments(QString server, QString user
     } else {
         return AddParameter(url, "user", username);
     }
+}
+
+QString ProtocolAssignmentUrl::GetAssignmentTasks(QString server, int assignmentID) {
+    QString url = server + "/tasks";
+    return AddParameter(url, "assignment_id", QString::number(assignmentID));
+}
+
+QString ProtocolAssignmentUrl::CompleteTask(QString server, int taskID) {
+    return server + "/task/" + QString::number(taskID) + "/complete";
 }
 
 QString ProtocolAssignmentUrl::GetUsers(QString server) {

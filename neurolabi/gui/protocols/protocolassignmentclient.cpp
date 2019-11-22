@@ -139,6 +139,33 @@ QMap<QString, QString> ProtocolAssignmentClient::getEligibleProjects() {
 }
 
 /*
+ * retrieve all assignments for a user
+ *
+ * endpoint: /assignments?user=username
+ * input: none
+ * output: list of assignment objects
+ */
+QList<ProtocolAssignment> ProtocolAssignmentClient::getAssignments() {
+    QList<ProtocolAssignment> results;
+
+    // need to change Janelia username into assignment mgr username
+    QString username = getLocalUsername(QString::fromStdString(neutu::GetCurrentUserName()));
+    QString url = ProtocolAssignmentUrl::GetStartedAssigments(m_server, username);
+    QNetworkReply * reply = get(url);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving started assignments: " + error);
+        return results;
+    } else {
+        QJsonArray array = getReplyJsonArray(reply, "data");
+        for (QJsonValue val: array) {
+            results << ProtocolAssignment(val.toObject());
+        }
+        return results;
+    }
+}
+
+/*
  * retrieve started assignments for a user
  *
  * endpoint: /assignments_started?user=username
@@ -229,6 +256,47 @@ bool ProtocolAssignmentClient::completeAssignment(ProtocolAssignment assignment)
     if (hadError(reply)) {
         QString error = getErrorString(reply);
         showError("Error!", "Error completing assignment: " + error);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/*
+ * endpoint: /tasks?assignment_id=12345
+ * input: assignment object
+ * output: list of task objects
+ */
+QList<ProtocolAssignmentTask> ProtocolAssignmentClient::getAssignmentTasks(ProtocolAssignment assignment) {
+    QList<ProtocolAssignmentTask> results;
+
+    QString url = ProtocolAssignmentUrl::GetAssignmentTasks(m_server, assignment.id);
+    QNetworkReply * reply = get(url);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving assignment tasks: " + error);
+        return results;
+    } else {
+        QJsonArray array = getReplyJsonArray(reply, "data");
+        for (QJsonValue val: array) {
+            results << ProtocolAssignmentTask(val.toObject());
+        }
+        return results;
+    }
+}
+
+/*
+ * endpoint: /task/{task_id}/complete
+ * input: task
+ * output: boolean success
+ */
+bool ProtocolAssignmentClient::completeTask(ProtocolAssignmentTask task) {
+    QString url = ProtocolAssignmentUrl::CompleteTask(m_server, task.id);
+    QJsonObject empty;
+    QNetworkReply * reply = post(url, empty);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error completing task: " + error);
         return false;
     } else {
         return true;

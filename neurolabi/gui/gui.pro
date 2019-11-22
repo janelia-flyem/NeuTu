@@ -304,6 +304,7 @@ HEADERS += mainwindow.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
+    protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -838,6 +839,7 @@ SOURCES += main.cpp \
     protocols/protocolassignment.cpp \
     protocols/protocolassignmentdialog.cpp \
     protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenttask.cpp \
     protocols/protocolassignmenturl.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \

@@ -21,20 +21,20 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
 
 
     // sites table
-    m_model = new QStandardItemModel(0, 4, ui->startedTableView);
+    m_model = new QStandardItemModel(0, 5, ui->assignmentTableView);
     setHeaders(m_model);
 
     m_proxy = new QSortFilterProxyModel(this);
     m_proxy->setSourceModel(m_model);
-    ui->startedTableView->setModel(m_proxy);
+    ui->assignmentTableView->setModel(m_proxy);
 
 
     // UI connections
-    connect(ui->loadStartedButton, SIGNAL(clicked(bool)), this, SLOT(onLoadStartedButton()));
+    connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
     connect(ui->getNewButton, SIGNAL(clicked(bool)), this, SLOT(onGetNewButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
-    connect(ui->startedTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
+    connect(ui->assignmentTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
 
     // server setup
@@ -66,10 +66,10 @@ bool ProtocolAssignmentDialog::checkForTokens() {
     return true;
 }
 
-void ProtocolAssignmentDialog::onLoadStartedButton() {
+void ProtocolAssignmentDialog::onRefreshButton() {
     if (checkForTokens()) {
-        loadStartedAssignments();
-        updateStartedTable();
+        loadAssignments();
+        updateAssignmentsTable();
     }
 }
 
@@ -104,8 +104,8 @@ void ProtocolAssignmentDialog::onGetNewButton() {
 
             // check success
             if (true) {
-                loadStartedAssignments();
-                updateStartedTable();
+                loadAssignments();
+                updateAssignmentsTable();
             } else {
                 showMessage("No assignment", "Failed to start an assignment for project " + projectName);
             }
@@ -115,9 +115,9 @@ void ProtocolAssignmentDialog::onGetNewButton() {
 
 void ProtocolAssignmentDialog::onCompleteButton() {
 
-    if (ui->startedTableView->selectionModel()->hasSelection()) {
+    if (ui->assignmentTableView->selectionModel()->hasSelection()) {
         // single row selection model, so just grab the first/only row:
-        QModelIndexList modelIndexList = ui->startedTableView->selectionModel()->selectedRows(0);
+        QModelIndexList modelIndexList = ui->assignmentTableView->selectionModel()->selectedRows(0);
         // make sure there is a selected index to avoid unexpected crash (?, copied from other code)
         if (!modelIndexList.isEmpty()) {
             QModelIndex viewIndex = modelIndexList.at(0);
@@ -127,9 +127,11 @@ void ProtocolAssignmentDialog::onCompleteButton() {
             ProtocolAssignment assignment = m_assignments[modelIndex.row()];
             qDebug() << "pretending to complete assignment " << assignment.id;
             // not tested yet!
-            // m_client.completeAssignment(assignment);
+            bool status = m_client.completeAssignment(assignment);
+            QString statusString = status ? "true" : "false";
 
-
+            showMessage("test", "complete assignment result: " + statusString);
+            // refresh table?
 
         }
     } else {
@@ -144,33 +146,37 @@ void ProtocolAssignmentDialog::onClickedTable(QModelIndex index) {
 
     qDebug() << "table clicked model row " << modelIndex.row();
 
+    // maybe display more assignment info at the side when clicked?  but most info
+    //  is already in the table...
+
+
 
 }
 
-void ProtocolAssignmentDialog::loadStartedAssignments() {
+void ProtocolAssignmentDialog::loadAssignments() {
 
 
     // temporary; would like to have a better data structure,
     //  maybe a map from id to the structure
 
-    // probably should sort them by id internally?
-    // or instead sort them programmatically by id initially (since I
-    //  hooked up sort-filter proxy)?
-
-    m_assignments = m_client.getStartedAssignments();
+    m_assignments = m_client.getAssignments();
 
 
 
 }
 
-void ProtocolAssignmentDialog::updateStartedTable() {
-    clearStartedTable();
+void ProtocolAssignmentDialog::updateAssignmentsTable() {
+    clearAssignmentsTable();
     int row = 0;
     for (ProtocolAssignment assignment: m_assignments) {
 
         QStandardItem * idItem = new QStandardItem();
         idItem->setData(assignment.id, Qt::DisplayRole);
         m_model->setItem(row, ID_COLUMN, idItem);
+
+        QStandardItem * dispositionItem = new QStandardItem();
+        dispositionItem->setData(assignment.disposition, Qt::DisplayRole);
+        m_model->setItem(row, DISPOSITION_COLUMN, dispositionItem);
 
         QStandardItem * projectItem = new QStandardItem();
         projectItem->setData(assignment.project, Qt::DisplayRole);
@@ -190,19 +196,25 @@ void ProtocolAssignmentDialog::updateStartedTable() {
 
         row++;
     }
-    ui->startedTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->assignmentTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // this is a guess; not sure which column will end up needing most space as of yet
-    ui->startedTableView->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::Stretch);
+    ui->assignmentTableView->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::Stretch);
+
+    // sort them by id initially?
+
+
+
 }
 
-void ProtocolAssignmentDialog::clearStartedTable() {
+void ProtocolAssignmentDialog::clearAssignmentsTable() {
     m_model->clear();
     setHeaders(m_model);
 }
 
 void ProtocolAssignmentDialog::setHeaders(QStandardItemModel *model) {
     model->setHorizontalHeaderItem(ID_COLUMN, new QStandardItem(QString("ID")));
+    model->setHorizontalHeaderItem(DISPOSITION_COLUMN, new QStandardItem(QString("Disposition")));
     model->setHorizontalHeaderItem(PROJECT_COLUMN, new QStandardItem(QString("Project")));
     model->setHorizontalHeaderItem(PROTOCOL_COLUMN, new QStandardItem(QString("Protocol")));
     model->setHorizontalHeaderItem(NAME_COLUMN, new QStandardItem(QString("Name")));
@@ -213,7 +225,7 @@ void ProtocolAssignmentDialog::showEvent(QShowEvent* event) {
     QWidget::showEvent(event);
 
     // refresh the started assignment list when the dialog is shown
-    onLoadStartedButton();
+    onRefreshButton();
 }
 
 
