@@ -17,6 +17,7 @@ public:
     static QString CompleteAssignment(QString server, int assignmentID);
 
     static QString GetAssignmentTasks(QString server, int assignmentID);
+    static QString StartTask(QString server, int taskID);
     static QString CompleteTask(QString server, int taskID);
 
     static QString GetUsers(QString server);

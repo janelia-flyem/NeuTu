@@ -286,6 +286,24 @@ QList<ProtocolAssignmentTask> ProtocolAssignmentClient::getAssignmentTasks(Proto
 }
 
 /*
+ * endpoint: /task/{task_id}/start
+ * input: task
+ * output: boolean success
+ */
+bool ProtocolAssignmentClient::startTask(ProtocolAssignmentTask task) {
+    QString url = ProtocolAssignmentUrl::StartTask(m_server, task.id);
+    QJsonObject empty;
+    QNetworkReply * reply = post(url, empty);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error starting task: " + error);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/*
  * endpoint: /task/{task_id}/complete
  * input: task
  * output: boolean success

@@ -51,6 +51,8 @@ private:
     bool checkForTokens();
 
     void loadAssignments();
+    bool completeTask(ProtocolAssignmentTask task);
+    bool completeAllTasks(ProtocolAssignment assignment);
 
     void updateAssignmentsTable();
     void clearAssignmentsTable();

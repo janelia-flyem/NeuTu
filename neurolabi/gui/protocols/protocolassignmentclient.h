@@ -36,6 +36,7 @@ public:
     bool startAssignment(int assignmentID);
 
     QList<ProtocolAssignmentTask> getAssignmentTasks(ProtocolAssignment assignment);
+    bool startTask(ProtocolAssignmentTask task);
     bool completeTask(ProtocolAssignmentTask task);
 
     QString getLocalUsername(QString janeliaUsername);

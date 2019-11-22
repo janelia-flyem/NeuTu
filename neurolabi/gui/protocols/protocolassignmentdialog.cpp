@@ -118,21 +118,65 @@ void ProtocolAssignmentDialog::onCompleteButton() {
     if (ui->assignmentTableView->selectionModel()->hasSelection()) {
         // single row selection model, so just grab the first/only row:
         QModelIndexList modelIndexList = ui->assignmentTableView->selectionModel()->selectedRows(0);
-        // make sure there is a selected index to avoid unexpected crash (?, copied from other code)
+        // make sure there is a selected index to avoid unexpected crash (copied from other code,
+        //      not sure what the issue is)
         if (!modelIndexList.isEmpty()) {
             QModelIndex viewIndex = modelIndexList.at(0);
             QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
-
-
             ProtocolAssignment assignment = m_assignments[modelIndex.row()];
-            qDebug() << "pretending to complete assignment " << assignment.id;
+
+            // are all the tasks complete?
+            QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
+            int nCompleted = 0;
+            for (ProtocolAssignmentTask t: tasks) {
+                if (t.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+                    nCompleted++;
+                }
+            }
+
+            // offer to complete all tasks; right now, this is kind of mandatory,
+            //  as we initially haven't provided a way to complete individual tasks
+            //  as you go (this is planned for the future)
+            if (nCompleted < tasks.size()) {
+
+                int ans = QMessageBox::question(this, "Uncompleted tasks",
+                    QString("There are %1 uncompleted tasks; complete them now?").arg(tasks.size() - nCompleted),
+                    QMessageBox::Ok|QMessageBox::Cancel,
+                    QMessageBox::Cancel);
+                if (ans == QMessageBox::Ok) {
+
+
+                    // complete all tasks
+                    bool status = completeAllTasks(assignment);
+
+
+                    qDebug() << "testing complete assignment " << assignment.id;
+
+
+
+                } else {
+                    return;
+                }
+            }
+
+
+
+
+
+            // complete assignment
+
             // not tested yet!
             bool status = m_client.completeAssignment(assignment);
+
+
             QString statusString = status ? "true" : "false";
-
             showMessage("test", "complete assignment result: " + statusString);
-            // refresh table?
 
+
+
+            // refresh table
+            loadAssignments();
+            updateAssignmentsTable();
         }
     } else {
         showMessage("No selection!", "Please select an assignment to complete.");
@@ -140,26 +184,45 @@ void ProtocolAssignmentDialog::onCompleteButton() {
 }
 
 void ProtocolAssignmentDialog::onClickedTable(QModelIndex index) {
-
-
     QModelIndex modelIndex = m_proxy->mapToSource(index);
     ProtocolAssignment assignment = m_assignments[modelIndex.row()];
     updateSelectedInfo(assignment);
-
-
 }
 
 void ProtocolAssignmentDialog::loadAssignments() {
-
-
-    // temporary; would like to have a better data structure,
-    //  maybe a map from id to the structure
-
     m_assignments = m_client.getAssignments();
-
-
-
     clearSelectedInfo();
+}
+
+bool ProtocolAssignmentDialog::completeTask(ProtocolAssignmentTask task) {
+
+    // tighten up this logic and handle errors better
+
+
+    if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+        qDebug() << "starting task " << task.id;
+
+        // start it up
+        bool status = m_client.startTask(task);
+
+        qDebug() << "task start status = " << status;
+    }
+
+    bool status = m_client.completeTask(task);
+    qDebug() << "task complete status = " << status;
+
+    return true;
+
+}
+
+bool ProtocolAssignmentDialog::completeAllTasks(ProtocolAssignment assignment) {
+
+    // get all tasks
+
+    // loop: complete each one that isn't complete
+
+
+    return true;
 
 
 }
@@ -200,9 +263,7 @@ void ProtocolAssignmentDialog::updateAssignmentsTable() {
     // this is a guess; not sure which column will end up needing most space as of yet
     ui->assignmentTableView->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::Stretch);
 
-    // sort them by id initially?
-
-
+    // maybe sort them by id initially?
 
 }
 

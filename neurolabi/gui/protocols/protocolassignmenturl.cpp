@@ -62,6 +62,10 @@ QString ProtocolAssignmentUrl::GetAssignmentTasks(QString server, int assignment
     return AddParameter(url, "assignment_id", QString::number(assignmentID));
 }
 
+QString ProtocolAssignmentUrl::StartTask(QString server, int taskID) {
+    return server + "/task/" + QString::number(taskID) + "/start";
+}
+
 QString ProtocolAssignmentUrl::CompleteTask(QString server, int taskID) {
     return server + "/task/" + QString::number(taskID) + "/complete";
 }
