@@ -12,6 +12,7 @@ class ZFlyEmProofDoc;
 class ZIntCuboid;
 class ZFlyEmBookmark;
 class ZDvidGraySlice;
+class ZObject3dScan;
 
 class ZFlyEmProofDocUtil
 {

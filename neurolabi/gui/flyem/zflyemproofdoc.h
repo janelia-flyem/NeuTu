@@ -730,6 +730,7 @@ private:
   void runSplitFunc(neutu::EBodySplitMode mode);
   void localSplitFunc(neutu::EBodySplitMode mode);
   void runFullSplitFunc(neutu::EBodySplitMode mode);
+
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();

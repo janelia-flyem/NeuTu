@@ -908,6 +908,8 @@ public:
     m_hadSegmentationDownsampled = on;
   }
 
+  void notifySegmentationUpdated();
+
 public:
   void emitInfo(const QString &msg);
   void emitWarning(const QString &msg) const;

@@ -2881,7 +2881,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
           QCursor oldCursor = getCanvas()->cursor();
           getCanvas()->setCursor(Qt::BusyCursor);
           getDocument()->runSeededWatershed();
-          notifyUser("Body splitted");
+          notifyUser("Body split");
           getCanvas()->setCursor(oldCursor);
         }
       }

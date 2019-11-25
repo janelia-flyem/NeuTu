@@ -128,7 +128,6 @@
 #include "common/zsharedpointer.h"
 #include "zsparseobject.h"
 #include "dialogs/zflyemnewbodysplitprojectdialog.h"
-#include "dialogs/flyembodysplitprojectdialog.h"
 #include "zsparsestack.h"
 #include "ztest.h"
 #include "dialogs/dvidskeletonizedialog.h"
@@ -159,7 +158,6 @@
 #include "dialogs/settingdialog.h"
 
 #include "zstackviewmanager.h"
-#include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
 #include "flyem/zflyemhackathonconfigdlg.h"
 #include "flyem/zflyemmisc.h"
@@ -352,9 +350,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+  /*
   if (m_bodySplitProjectDialog != NULL) {
     m_bodySplitProjectDialog->clear();
   }
+*/
 
   if (m_roiDlg != NULL) {
     m_roiDlg->clear();
@@ -462,11 +462,11 @@ void MainWindow::initDialog()
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  m_flyemProjectManager = new ZFlyEmProjectManager(this);
+//  m_flyemProjectManager = new ZFlyEmProjectManager(this);
 
   //m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
-  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
-  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
+//  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
+//  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
   //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
 //  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
@@ -474,8 +474,8 @@ void MainWindow::initDialog()
 
 //  m_mergeBodyDlg->restoreGeometry(
 //        getSettings().value("BodyMergeProjectGeometry").toByteArray());
-  m_bodySplitProjectDialog->restoreGeometry(
-          getSettings().value("BodySplitProjectGeometry").toByteArray());
+//  m_bodySplitProjectDialog->restoreGeometry(
+//          getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
         getSettings().value("RoiProjectGeometry").toByteArray());
   m_shapePaperDlg->restoreGeometry(
@@ -2162,8 +2162,8 @@ void MainWindow::writeSettings()
 #if defined(_FLYEM_)
 //  getSettings().setValue(
 //        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
-  getSettings().setValue(
-        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
+//  getSettings().setValue(
+//        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
         "RoiProjectGeometry", m_roiDlg->saveGeometry());
   getSettings().setValue("ShapePaperDialogGeometry",
@@ -6513,14 +6513,17 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
 
 void MainWindow::on_actionBody_Split_Project_triggered()
 {
+#if 0
   if (m_newBsProjectDialog->exec()) {
     m_bodySplitProjectDialog->setDvidTarget(
           m_newBsProjectDialog->getDvidTarget());
     m_bodySplitProjectDialog->setBodyId(m_newBsProjectDialog->getBodyId());
     m_bodySplitProjectDialog->show();
   }
+#endif
 }
 
+#if 0
 bool MainWindow::initBodySplitProject()
 {
   bool succ = false;
@@ -6593,6 +6596,7 @@ void MainWindow::on_actionSplit_Body_triggered()
   m_bodySplitProjectDialog->show();
   m_bodySplitProjectDialog->raise();
 }
+#endif
 
 void MainWindow::on_actionCreate_Databundle_triggered()
 {
@@ -7057,10 +7061,13 @@ void MainWindow::showAndRaise()
   raise();
 }
 
+
+/*
 void MainWindow::launchSplit(const QString &str)
 {
   m_bodySplitProjectDialog->startSplit(str);
 }
+*/
 
 void MainWindow::on_actionProof_triggered()
 {

@@ -4542,7 +4542,8 @@ void ZFlyEmProofDoc::runSplitFunc(
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
-  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  ZStackDocAccessor::RemoveObject(this, ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 //  m_isSegmentationReady = false;
   setSegmentationReady(false);
 
@@ -4583,8 +4584,11 @@ void ZFlyEmProofDoc::runSplitFunc(
     container.run();
 
     setHadSegmentationSampled(container.computationDowsampled());
-    ZObject3dScanArray result;
-    container.makeSplitResult(1, &result, NULL);
+    ZObject3dScanArray *result = new ZObject3dScanArray;
+
+    container.makeSplitResult(1, result, NULL);
+    ZStackDocAccessor::ConsumeSplitResult(this, result);
+#if 0
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
@@ -4594,9 +4598,9 @@ void ZFlyEmProofDoc::runSplitFunc(
     getDataBuffer()->deliver();
 
     result.shallowClear();
-
-    setSegmentationReady(true);
-    emit segmentationUpdated();
+#endif
+//    setSegmentationReady(true);
+//    emit segmentationUpdated();
 
     ZOUT(LINFO(), 3) << "Segmentation ready";
 

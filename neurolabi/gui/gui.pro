@@ -459,7 +459,6 @@ HEADERS += mainwindow.h \
     zlinesegmentobject.h \
     openvdb_header.h \
     zopenvdbobject.h \
-    dialogs/flyembodysplitprojectdialog.h \
     dialogs/zflyemnewbodysplitprojectdialog.h \
     zstroke2dobjsmodel.h \
     zdocplayerobjsmodel.h \
@@ -516,7 +515,6 @@ HEADERS += mainwindow.h \
     dialogs/zautotracedialog.h \
     zstackviewmanager.h \
     zstackviewparam.h \
-    zflyemprojectmanager.h \
     zflyemdataloader.h \
     dialogs/swcexportdialog.h \
     zprogressmanager.h \
@@ -768,7 +766,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyfilterdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
-    dialogs/zflyemnewbodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
     dialogs/zflyemroidialog.ui \
     newprojectmainwindow.ui \
@@ -965,7 +962,6 @@ SOURCES += main.cpp \
     zdocplayer.cpp \
     zlinesegmentobject.cpp \
     zopenvdbobject.cpp \
-    dialogs/flyembodysplitprojectdialog.cpp \
     dialogs/zflyemnewbodysplitprojectdialog.cpp \
     zstroke2dobjsmodel.cpp \
     zdocplayerobjsmodel.cpp \
@@ -1022,7 +1018,6 @@ SOURCES += main.cpp \
     dialogs/zautotracedialog.cpp \
     zstackviewmanager.cpp \
     zstackviewparam.cpp \
-    zflyemprojectmanager.cpp \
     zflyemdataloader.cpp \
     dialogs/swcexportdialog.cpp \
     zprogressmanager.cpp \

@@ -30549,7 +30549,7 @@ void ZTest::test(MainWindow *host)
 //  writer->uploadRoiMesh(GET_TEST_DATA_DIR + "/test.obj", "test");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_roi");
   reader->setVerbose(false);
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");

@@ -355,7 +355,7 @@ void FlyEmBodySplitProjectDialog::showResult3d()
 void FlyEmBodySplitProjectDialog::showResult3dQuick()
 {
   dump("Showing splitting result ...", true);
-  m_project.showResultQuickView();
+  m_project.showSplit3d();
   dump("Done.", true);
 }
 

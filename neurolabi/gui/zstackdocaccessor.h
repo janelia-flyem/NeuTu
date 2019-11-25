@@ -1,11 +1,15 @@
 #ifndef ZSTACKDOCACCESSOR_H
 #define ZSTACKDOCACCESSOR_H
 
+#include <QList>
+
 #include "zstackobject.h"
 #include "mvc/zstackdocdatabuffer.h"
 
 class ZStackDoc;
 class ZStackWatershedContainer;
+class ZObject3dScan;
+class ZObject3dScanArray;
 
 /*!
  * \brief The class for accessing data in ZStackDoc in a thread-safe way.
@@ -52,6 +56,18 @@ public:
    * \brief Remove seeds except those with the main label
    */
   static void RemoveSideSplitSeed(ZStackDoc *doc);
+
+  static void UpdateSplitResult(
+      ZStackDoc *doc, const QList<ZObject3dScan *> &result);
+
+  /*!
+   * \brief Consume split result
+   *
+   * \a result will be consumed by the function and should NOT be used after
+   * the call.
+   */
+  static void ConsumeSplitResult(
+      ZStackDoc *doc, ZObject3dScanArray *result);
 
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);

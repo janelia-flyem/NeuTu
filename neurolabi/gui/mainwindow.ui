@@ -442,7 +442,6 @@
      <addaction name="actionSkeletonization"/>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="menuProject"/>
-     <addaction name="actionSplit_Body"/>
      <addaction name="separator"/>
      <addaction name="menuHackathon"/>
      <addaction name="menuTEM_Paper"/>

@@ -272,6 +272,7 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
+  void previewCurrentSplit();
   bool locateBody(uint64_t bodyId, bool appending);
   bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
@@ -645,6 +646,8 @@ private:
 
   QString makeSkeletonizationServiceMissingMessage() const;
 
+  bool requestingSplitResult(const QString &title);
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -839,6 +842,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(changingSplit(uint64_t)), this,
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
+  connect(panel, SIGNAL(previewingResult()), this, SLOT(previewCurrentSplit()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
   connect(panel, SIGNAL(loadingBookmark(QString)),
           this, SLOT(loadBookmark(QString)));

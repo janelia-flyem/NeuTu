@@ -3235,7 +3235,7 @@ void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
   if (rand.rndint(10) % 2 == 0) {
-    m_splitProject.waitResultQuickView();
+    m_splitProject.waitSplitVis3d();
     return;
   }
 
@@ -3280,8 +3280,8 @@ void ZFlyEmProofMvc::testBodySplit()
           }
 
           runSplit();
-          m_splitProject.showResultQuickView();
-          m_splitProject.waitResultQuickView();
+          m_splitProject.showSplit3d();
+          m_splitProject.waitSplitVis3d();
         }
       } else {
         emit exitingSplit();
@@ -4753,7 +4753,7 @@ void ZFlyEmProofMvc::showBodyQuickView()
 
 void ZFlyEmProofMvc::showSplitQuickView()
 {
-  m_splitProject.showResultQuickView();
+  m_splitProject.showSplit3d();
 }
 
 void ZFlyEmProofMvc::showBody3d()
@@ -5083,7 +5083,7 @@ void ZFlyEmProofMvc::commitMerge()
     mergeCoarseBodyWindow();
     getCompleteDocument()->getMergeProject()->uploadResult(
           dlg->mergingToLargest());
-//    m_mergeProject.uploadResult();
+
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {
       getDocument()->getObjectGroup().removeObject(body, true);
@@ -5175,8 +5175,43 @@ void ZFlyEmProofMvc::decomposeBody()
   }
 }
 
-void ZFlyEmProofMvc::commitCurrentSplit()
+bool ZFlyEmProofMvc::requestingSplitResult(const QString &title)
 {
+  if (!getDocument()->isSegmentationReady()) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to generate results: The split has not been updated."
+                         "Please Run full split (shift+space or alt+space) first.",
+                         neutu::EMessageType::ERROR));
+    return false;
+  }
+
+   getSplitCommitDlg()->setWindowTitle(title);
+
+   if (getSplitCommitDlg()->exec()) {
+     m_splitProject.setMinObjSize(getSplitCommitDlg()->getGroupSize());
+     m_splitProject.keepMainSeed(getSplitCommitDlg()->keepingMainSeed());
+     m_splitProject.enableCca(getSplitCommitDlg()->runningCca());
+
+     return true;
+   }
+
+   return false;
+}
+
+void ZFlyEmProofMvc::previewCurrentSplit()
+{
+  if (requestingSplitResult("Preview Results")) {
+    const QString threadId = "ZFlyEmBodySplitProject::previewResult";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::previewResult);
+      m_futureMap[threadId] = future;
+    }
+  }
+
+#if 0
   if (!getDocument()->isSegmentationReady()) {
 //    emit messageGenerated("test");
     emit messageGenerated(
@@ -5186,11 +5221,34 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     return;
   }
 
-
+  getSplitCommitDlg()->setWindowTitle("Preview Results");
   if (getSplitCommitDlg()->exec()) {
     m_splitProject.setMinObjSize(getSplitCommitDlg()->getGroupSize());
     m_splitProject.keepMainSeed(getSplitCommitDlg()->keepingMainSeed());
     m_splitProject.enableCca(getSplitCommitDlg()->runningCca());
+    const QString threadId = "ZFlyEmBodySplitProject::previewResult";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::previewResult);
+      m_futureMap[threadId] = future;
+    }
+  }
+#endif
+}
+
+void ZFlyEmProofMvc::commitCurrentSplit()
+{
+  if (m_splitProject.hasFinalSplitResult()) {
+    if (ZDialogFactory::Ask(
+          "Save Results",
+          "Do you want to save the current preview splits?\n"
+          "Please run split again if you do need the curren preview.",
+          this)) {
+      m_splitProject.uploadSplitList();
+    }
+  } else if (requestingSplitResult("Save Results")) {
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();
@@ -5199,8 +5257,16 @@ void ZFlyEmProofMvc::commitCurrentSplit()
             &m_splitProject, &ZFlyEmBodySplitProject::commitResult);
       m_futureMap[threadId] = future;
     }
-//    m_splitProject.commitResult();
   }
+
+  /*
+  if (!getDocument()->isSegmentationReady()) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to save results: The split has not been updated."
+                         "Please Run full split (shift+space) first.",
+                         neutu::EMessageType::ERROR));
+  }
+  */
 }
 
 void ZFlyEmProofMvc::clearAssignedBookmarkModel()

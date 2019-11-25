@@ -3924,6 +3924,8 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     }
   }
 
+  removeObject(removeSet, deleteObject);
+/*
   if (deleteObject) {
     m_dataBuffer->addUpdate(
           removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::KILL);
@@ -3933,6 +3935,7 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
   }
 
   m_dataBuffer->deliver();
+  */
 //  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
 
 //  notifyObjectModified();
@@ -6041,9 +6044,11 @@ void ZStackDoc::bufferObjectModified(
 
 void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 {
-  ZStackObjectInfo info;
-  info.set(*obj);
-  processObjectModified(info, sync);
+  if (obj) {
+    ZStackObjectInfo info;
+    info.set(*obj);
+    processObjectModified(info, sync);
+  }
 }
 
 void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
@@ -10188,6 +10193,11 @@ void ZStackDoc::runSeededWatershed()
   }
 
 //  seededWatershed();
+}
+
+void ZStackDoc::notifySegmentationUpdated()
+{
+  emit segmentationUpdated();
 }
 
 const ZStack* ZStackDoc::getLabelFieldUnsync() const

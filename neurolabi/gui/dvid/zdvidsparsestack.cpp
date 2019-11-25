@@ -100,12 +100,12 @@ void ZDvidSparseStack::initBlockGrid()
 {
   ZDvidReader &reader = getGrayscaleReader();
   if (reader.good()) {
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    m_grayscaleInfo = reader.readGrayScaleInfo();
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     m_sparseStack.setGreyScale(grid);
 //    grid->setMinPoint(dvidInfo.getStartCoordinates());
-    grid->setBlockSize(dvidInfo.getBlockSize());
-    grid->setGridSize(dvidInfo.getGridSize());
+    grid->setBlockSize(m_grayscaleInfo.getBlockSize());
+    grid->setGridSize(m_grayscaleInfo.getGridSize());
   }
 }
 
