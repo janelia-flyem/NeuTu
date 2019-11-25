@@ -124,6 +124,7 @@ private:
 
   QTime m_usageTimer;
   std::vector<int> m_usageTimes;
+  std::vector<int> m_startupTimes;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;
