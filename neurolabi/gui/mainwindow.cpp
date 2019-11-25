@@ -127,7 +127,7 @@
 #include "zstackdoclabelstackfactory.h"
 #include "common/zsharedpointer.h"
 #include "zsparseobject.h"
-#include "dialogs/zflyemnewbodysplitprojectdialog.h"
+//#include "dialogs/zflyemnewbodysplitprojectdialog.h"
 #include "zsparsestack.h"
 #include "ztest.h"
 #include "dialogs/dvidskeletonizedialog.h"
@@ -459,8 +459,8 @@ void MainWindow::initDialog()
   m_testOptionDlg = new ZTestOptionDialog(this);
 
 #if defined(_FLYEM_)
-  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
-  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
+//  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
+//  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
 //  m_flyemProjectManager = new ZFlyEmProjectManager(this);
 

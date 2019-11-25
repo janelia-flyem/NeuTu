@@ -459,7 +459,6 @@ HEADERS += mainwindow.h \
     zlinesegmentobject.h \
     openvdb_header.h \
     zopenvdbobject.h \
-    dialogs/zflyemnewbodysplitprojectdialog.h \
     zstroke2dobjsmodel.h \
     zdocplayerobjsmodel.h \
     zabstractmodelpresenter.h \
@@ -962,7 +961,6 @@ SOURCES += main.cpp \
     zdocplayer.cpp \
     zlinesegmentobject.cpp \
     zopenvdbobject.cpp \
-    dialogs/zflyemnewbodysplitprojectdialog.cpp \
     zstroke2dobjsmodel.cpp \
     zdocplayerobjsmodel.cpp \
     zabstractmodelpresenter.cpp \
