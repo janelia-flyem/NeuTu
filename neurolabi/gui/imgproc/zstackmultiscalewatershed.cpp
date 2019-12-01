@@ -690,7 +690,9 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     }
     ZPythonProcess python;
     python.setWorkDir(working_dir);
+
     python.setScript(working_dir+"/ffn_skeleton.py");
+
     python.addArg(working_dir+"/data.tif");
     python.addArg(working_dir+"/result.tif");
     python.addArg(working_dir+"/seed.txt");

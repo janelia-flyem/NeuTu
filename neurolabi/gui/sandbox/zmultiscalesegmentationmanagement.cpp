@@ -196,6 +196,7 @@ void ZMultiscaleSegmentationWindow::init()
   QPushButton* merge = new QPushButton("Merge");
   QPushButton* export_leaves = new QPushButton("Export Leaves");
   QPushButton* export_selected = new QPushButton("Export Selected");
+
   //QPushButton* create_super_voxels = new QPushButton("Create Super Voxels");
   m_show_leaves = new QCheckBox("Show Leaves");
   //m_enable_super_voxel = new QCheckBox("Super Voxel");
@@ -215,6 +216,7 @@ void ZMultiscaleSegmentationWindow::init()
   lay->addWidget(open_stack,10,0,1,4);
   lay->addWidget(create_super_voxels,10,4,1,4);
   lay->addWidget(segment,10,8,1,4);
+
   lay->addWidget(grow,10,12,1,4);
   lay->addWidget(merge,10,16,1,4);
 
@@ -222,6 +224,7 @@ void ZMultiscaleSegmentationWindow::init()
   lay->addWidget(export_selected,11,4,1,4);
   lay->addWidget(grow_d,11,8,1,4);
   lay->addWidget(ffn,11,12,1,4);
+
   //lay->addWidget(create_super_voxels,11,0,1,5);
 
   /*lay->addWidget(new QLabel("From:"),11,0,1,2);
@@ -232,12 +235,14 @@ void ZMultiscaleSegmentationWindow::init()
 
   connect(open_stack,SIGNAL(clicked()),this,SLOT(onOpenStack()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
+
   connect(grow,SIGNAL(clicked()),this,SLOT(onGrow()));
   connect(grow_d,SIGNAL(clicked()),this,SLOT(onGrowDownsampled()));
   connect(ffn,SIGNAL(clicked()),this,SLOT(onFFN()));
   connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
   connect(export_leaves,SIGNAL(clicked()),this,SLOT(onExportLeaves()));
   connect(export_selected,SIGNAL(clicked()),this,SLOT(onExportSelected()));
+
   connect(m_view,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onNodeItemClicked(QTreeWidgetItem*,int)));
   connect(m_show_leaves,SIGNAL(stateChanged(int)),this,SLOT(onShowLeaves(int)));
   connect(create_super_voxels,SIGNAL(clicked()),this,SLOT(onCreateSuperVoxels()));
@@ -369,13 +374,16 @@ void ZMultiscaleSegmentationWindow::onCreateSuperVoxels(){
 
   shared_ptr<ZStack> stack = shared_ptr<ZStack>(makeSelectedStack());
   uint start_label = 1;
+
   int stride_x = std::max(1,stack->width()/40);
   int stride_y = std::max(1,stack->height()/40);
   int stride_z = std::max(1,stack->depth()/40);
+
   shared_ptr<ZStack> label_stack = _createSuperVoxel(*stack,start_label,stride_x,stride_y,stride_z);
 
   m_seg_tree->consume(m_selected_id,*label_stack);
 }
+
 
 
 void ZMultiscaleSegmentationWindow::onExportLeaves(){
@@ -393,6 +401,7 @@ void ZMultiscaleSegmentationWindow::onExportLeaves(){
     segmentation->save(file_name.toStdString());
   }
 }
+
 
 
 void ZMultiscaleSegmentationWindow::onExportSelected(){
@@ -413,6 +422,7 @@ void ZMultiscaleSegmentationWindow::onExportSelected(){
 }
 
 
+
 void ZMultiscaleSegmentationWindow::onShowLeaves(int state){
   if(state == Qt::Checked){
     updateMask(m_selected_id);
@@ -426,6 +436,7 @@ void ZMultiscaleSegmentationWindow::onMerge(){
   }
   QList<ZSegmentationNodeWrapper*> list = m_frame->document()->getSelectedObjectList<ZSegmentationNodeWrapper>(
                                           ZStackObject::EType::SEGMENTATION_ENCODER);
+
   vector<string> from_ids;
   string to = m_selected_id;
   for(auto it = list.begin(); it != list.end(); ++it){
@@ -433,6 +444,7 @@ void ZMultiscaleSegmentationWindow::onMerge(){
     from_ids.push_back(from);
   }
   m_seg_tree->merge(from_ids,to);
+
 }
 
 
@@ -454,9 +466,11 @@ void ZMultiscaleSegmentationWindow::onSegment(){
     return;
   }
 
+
   if(m_seg_tree->isLeaf(m_selected_id) ||
     (m_selected_id == m_seg_tree->getRootID() &&
     m_seg_tree->getChildrenIDs(m_selected_id).size() == 0)) {
+
     shared_ptr<ZStack> stack = shared_ptr<ZStack>(makeSelectedStack());
     if(!stack){
       return ;
@@ -467,7 +481,9 @@ void ZMultiscaleSegmentationWindow::onSegment(){
     for(ZStackObject* seed: seeds){
       container.addSeed(seed);
     }
+
     if(stack->getVoxelNumber() > 1e8){
+
       container.setScale(2);
       std::cout<<"Scale: "<<2<<std::endl;
     }
@@ -481,6 +497,7 @@ void ZMultiscaleSegmentationWindow::onSegment(){
       std::cout<<"Mem Usage: "<<m_seg_tree->memUsage()/1024.0/1024.0<<"M"<<std::endl;
     }
     removeSeeds();
+
   } else {
     onSuperVoxel();
   }
@@ -716,7 +733,6 @@ void ZMultiscaleSegmentationWindow::onSuperVoxel(){
   if(!stack){
     return;
   }
-
 
   shared_ptr<ZStack> label = shared_ptr<ZStack>(new ZStack(FLOAT32,stack->getBoundBox(),1));
   vector<string> ids = m_seg_tree->getChildrenIDs(m_selected_id);

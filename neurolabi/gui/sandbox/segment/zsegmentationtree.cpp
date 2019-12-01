@@ -22,8 +22,10 @@ void ZSegmentationTree::consume(const std::string &id, const ZStack &stack){
   ZSegmentationNode* node = m_root->find(id);
   if(node){
     node->consume(stack);
+
     //notify(id);
     notify(m_root->getID());
+
   }
 }
 
@@ -171,6 +173,7 @@ void ZSegmentationTree::merge(const std::string &from_id, const std::string &to_
       from_parent->removeChildByLabel(tmp->getLabel());
     }
     if(!from_parent){
+
       //notify(tmp->getID());
       //notify(m_root->getID());
     }
@@ -221,6 +224,7 @@ void ZSegmentationTree::group(const std::string &id, map<int, vector<int> > &gro
     return;
   }
   node->group(groups);
+
   //notify(id);
   notify(m_root->getID());
 }
