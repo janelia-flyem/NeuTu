@@ -52,6 +52,8 @@ public:
 
   void merge(const string& from_id, const string& to_id);
 
+  void merge(const vector<string>& from_ids, const string& to_id);
+
   double memUsage()const;
 
   shared_ptr<ZSegmentationEncoder> getEncoder(const string& id);

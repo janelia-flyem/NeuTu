@@ -22,7 +22,8 @@ void ZSegmentationTree::consume(const std::string &id, const ZStack &stack){
   ZSegmentationNode* node = m_root->find(id);
   if(node){
     node->consume(stack);
-    notify(id);
+    //notify(id);
+    notify(m_root->getID());
   }
 }
 
@@ -170,11 +171,38 @@ void ZSegmentationTree::merge(const std::string &from_id, const std::string &to_
       from_parent->removeChildByLabel(tmp->getLabel());
     }
     if(!from_parent){
-      notify(tmp->getID());
+      //notify(tmp->getID());
+      //notify(m_root->getID());
     }
   }
 
-  notify(to->getID());
+  //notify(to->getID());
+  notify(m_root->getID());
+}
+
+
+void ZSegmentationTree::merge(const vector<string>& from_ids, const string& to_id){
+  ZSegmentationNode* to = m_root->find(to_id);
+  if(!to){
+    return;
+  }
+
+  for(const string& from_id: from_ids){
+    ZSegmentationNode* from = m_root->find(from_id);
+    if(!from || from == to){
+      continue;
+    }
+    ZSegmentationNode* from_parent = from->getParent();
+    to->merge(from);
+    while(from_parent){//remove empty nodes
+      ZSegmentationNode* tmp = from_parent;
+      from_parent = from_parent->getParent();
+      if(from_parent && tmp->getChildrenLabels().empty()){
+        from_parent->removeChildByLabel(tmp->getLabel());
+      }
+    }
+  }
+  notify(m_root->getID());
 }
 
 
@@ -193,7 +221,8 @@ void ZSegmentationTree::group(const std::string &id, map<int, vector<int> > &gro
     return;
   }
   node->group(groups);
-  notify(id);
+  //notify(id);
+  notify(m_root->getID());
 }
 
 

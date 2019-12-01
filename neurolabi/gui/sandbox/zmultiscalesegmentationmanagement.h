@@ -44,9 +44,13 @@ public:
 private slots:
   void onOpenStack();
   void onSegment();
+  void onGrow();
+  void onFFN();
+  void onGrowDownsampled();
   void onNodeItemClicked(QTreeWidgetItem*,int);
   void onMerge();
-  void onExport();
+  void onExportLeaves();
+  void onExportSelected();
   void onShowLeaves(int state);
   void onSuperVoxel();
   void onCreateSuperVoxels();
@@ -59,6 +63,7 @@ private:
   void test();
   ZStack* makeSelectedStack();
 
+  ZStack* toSeedStack(std::vector<ZObject3d*>& seeds,int width,int height,int depth,ZIntPoint offset);
   shared_ptr<ZStack> _createSuperVoxel(const ZStack& stack, uint& start_label, int sx, int sy, int sz)const;
   std::pair<bool, shared_ptr<ZStack>> _seedsFromLocalMaximum(const ZStack& stack, int sx, int sy, int sz)const;
 

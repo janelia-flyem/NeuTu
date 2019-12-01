@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QComboBox>
+#include <QFileInfo>
 #include <QLineEdit>
 #include <set>
 #include <map>
@@ -24,6 +25,9 @@
 #include "mvc/zstackdoc.h"
 #include "segment/zsegmentationnodewrapper.h"
 #include "mainwindow.h"
+#include "widgets/zpythonprocess.h"
+#include "zstroke2d.h"
+#include "zobject3d.h"
 
 
 using std::queue;
@@ -186,8 +190,12 @@ void ZMultiscaleSegmentationWindow::init()
   QPushButton* open_stack = new QPushButton("Open");
   QPushButton* create_super_voxels = new QPushButton("Create Super Voxels");
   QPushButton* segment = new QPushButton("Segment");
+  QPushButton* grow = new QPushButton("Grow");
+  QPushButton* grow_d = new QPushButton("Grow_d");
+  QPushButton* ffn = new QPushButton("FFN");
   QPushButton* merge = new QPushButton("Merge");
-  QPushButton* _export = new QPushButton("Export");
+  QPushButton* export_leaves = new QPushButton("Export Leaves");
+  QPushButton* export_selected = new QPushButton("Export Selected");
   //QPushButton* create_super_voxels = new QPushButton("Create Super Voxels");
   m_show_leaves = new QCheckBox("Show Leaves");
   //m_enable_super_voxel = new QCheckBox("Super Voxel");
@@ -207,8 +215,13 @@ void ZMultiscaleSegmentationWindow::init()
   lay->addWidget(open_stack,10,0,1,4);
   lay->addWidget(create_super_voxels,10,4,1,4);
   lay->addWidget(segment,10,8,1,4);
-  lay->addWidget(merge,10,12,1,4);
-  lay->addWidget(_export,10,16,1,4);
+  lay->addWidget(grow,10,12,1,4);
+  lay->addWidget(merge,10,16,1,4);
+
+  lay->addWidget(export_leaves,11,0,1,4);
+  lay->addWidget(export_selected,11,4,1,4);
+  lay->addWidget(grow_d,11,8,1,4);
+  lay->addWidget(ffn,11,12,1,4);
   //lay->addWidget(create_super_voxels,11,0,1,5);
 
   /*lay->addWidget(new QLabel("From:"),11,0,1,2);
@@ -219,8 +232,12 @@ void ZMultiscaleSegmentationWindow::init()
 
   connect(open_stack,SIGNAL(clicked()),this,SLOT(onOpenStack()));
   connect(segment,SIGNAL(clicked()),this,SLOT(onSegment()));
+  connect(grow,SIGNAL(clicked()),this,SLOT(onGrow()));
+  connect(grow_d,SIGNAL(clicked()),this,SLOT(onGrowDownsampled()));
+  connect(ffn,SIGNAL(clicked()),this,SLOT(onFFN()));
   connect(merge,SIGNAL(clicked()),this,SLOT(onMerge()));
-  connect(_export,SIGNAL(clicked()),this,SLOT(onExport()));
+  connect(export_leaves,SIGNAL(clicked()),this,SLOT(onExportLeaves()));
+  connect(export_selected,SIGNAL(clicked()),this,SLOT(onExportSelected()));
   connect(m_view,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onNodeItemClicked(QTreeWidgetItem*,int)));
   connect(m_show_leaves,SIGNAL(stateChanged(int)),this,SLOT(onShowLeaves(int)));
   connect(create_super_voxels,SIGNAL(clicked()),this,SLOT(onCreateSuperVoxels()));
@@ -352,16 +369,16 @@ void ZMultiscaleSegmentationWindow::onCreateSuperVoxels(){
 
   shared_ptr<ZStack> stack = shared_ptr<ZStack>(makeSelectedStack());
   uint start_label = 1;
-  int stride_x = std::max(1,stack->width()/30);
-  int stride_y = std::max(1,stack->height()/30);
-  int stride_z = std::max(1,stack->depth()/30);
+  int stride_x = std::max(1,stack->width()/40);
+  int stride_y = std::max(1,stack->height()/40);
+  int stride_z = std::max(1,stack->depth()/40);
   shared_ptr<ZStack> label_stack = _createSuperVoxel(*stack,start_label,stride_x,stride_y,stride_z);
 
   m_seg_tree->consume(m_selected_id,*label_stack);
 }
 
 
-void ZMultiscaleSegmentationWindow::onExport(){
+void ZMultiscaleSegmentationWindow::onExportLeaves(){
   if(!m_stack){
     return;
   }
@@ -373,6 +390,24 @@ void ZMultiscaleSegmentationWindow::onExport(){
   }
   QString file_name = QFileDialog::getSaveFileName(this,"Save Segmentation","","tiff(*.tif)");
   if(file_name != ""){
+    segmentation->save(file_name.toStdString());
+  }
+}
+
+
+void ZMultiscaleSegmentationWindow::onExportSelected(){
+  if(!m_stack){
+    return;
+  }
+  shared_ptr<ZStack> segmentation = shared_ptr<ZStack>(m_stack->clone());
+  //segmentation->setZero();
+  m_seg_tree->maskStack(m_selected_id,segmentation.get());
+
+  QString file_name = QFileDialog::getSaveFileName(this,"Save Segmentation","","tiff(*.tif)");
+  if(file_name != ""){
+    if(!file_name.endsWith(".tif")){
+      file_name = file_name + ".tif";
+    }
     segmentation->save(file_name.toStdString());
   }
 }
@@ -391,13 +426,13 @@ void ZMultiscaleSegmentationWindow::onMerge(){
   }
   QList<ZSegmentationNodeWrapper*> list = m_frame->document()->getSelectedObjectList<ZSegmentationNodeWrapper>(
                                           ZStackObject::EType::SEGMENTATION_ENCODER);
+  vector<string> from_ids;
   string to = m_selected_id;
   for(auto it = list.begin(); it != list.end(); ++it){
     string from = (*it)->getNodeID();
-    if(from != to){
-      m_seg_tree->merge(from,to);
-    }
+    from_ids.push_back(from);
   }
+  m_seg_tree->merge(from_ids,to);
 }
 
 
@@ -419,9 +454,9 @@ void ZMultiscaleSegmentationWindow::onSegment(){
     return;
   }
 
-  if(!m_seg_tree->isLeaf(m_selected_id)){
-    onSuperVoxel();
-  } else {
+  if(m_seg_tree->isLeaf(m_selected_id) ||
+    (m_selected_id == m_seg_tree->getRootID() &&
+    m_seg_tree->getChildrenIDs(m_selected_id).size() == 0)) {
     shared_ptr<ZStack> stack = shared_ptr<ZStack>(makeSelectedStack());
     if(!stack){
       return ;
@@ -432,7 +467,7 @@ void ZMultiscaleSegmentationWindow::onSegment(){
     for(ZStackObject* seed: seeds){
       container.addSeed(seed);
     }
-    if(stack->getVoxelNumber() > 1e7){
+    if(stack->getVoxelNumber() > 1e8){
       container.setScale(2);
       std::cout<<"Scale: "<<2<<std::endl;
     }
@@ -446,7 +481,233 @@ void ZMultiscaleSegmentationWindow::onSegment(){
       std::cout<<"Mem Usage: "<<m_seg_tree->memUsage()/1024.0/1024.0<<"M"<<std::endl;
     }
     removeSeeds();
+  } else {
+    onSuperVoxel();
   }
+}
+
+
+void ZMultiscaleSegmentationWindow::onGrow(){
+  if(!m_frame || !m_stack){
+    return;
+  }
+
+  const QString working_dir = QCoreApplication::applicationDirPath() + "/../python/service/inter_segnet";
+
+  m_stack->save(QString(working_dir + "/data.tif").toStdString());
+
+  std::shared_ptr<ZStack> mask = std::shared_ptr<ZStack>(m_stack->clone());
+  if(m_selected_id == m_seg_tree->getRootID()){
+    mask->setOne();
+  } else {
+    mask->setZero();
+    m_seg_tree->labelStack(m_selected_id,mask.get(),1);
+  }
+  mask->save(QString(working_dir + "/mask.tif").toStdString());
+
+  std::vector<ZObject3d*> rseeds;
+  std::vector<ZObject3d*> bseeds;
+
+  QList<ZStackObject*> objList = m_frame->document()->getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  for (ZStackObject* stroke : objList) {
+    ZStroke2d* p = dynamic_cast<ZStroke2d*>(stroke);
+    if(stroke->getColor().name() == "#ff0000"){
+      stroke->setLabel(1);
+      rseeds.push_back(p->toObject3d());
+    } else if(stroke->getColor().name() == "#00ff00"){
+      stroke->setLabel(1);
+      bseeds.push_back(p->toObject3d());
+    }
+  }
+
+  shared_ptr<ZStack> rseed_stack = shared_ptr<ZStack>(toSeedStack(rseeds,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->getOffset()));
+  shared_ptr<ZStack> bseed_stack = shared_ptr<ZStack>(toSeedStack(bseeds,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->getOffset()));
+
+  rseed_stack->save(QString(working_dir + "/rseeds.tif").toStdString());
+  bseed_stack->save(QString(working_dir + "/bseeds.tif").toStdString());
+
+  ZPythonProcess python;
+  python.setWorkDir(working_dir);
+  python.setScript(working_dir + "/main.py");
+  python.run();
+
+  shared_ptr<ZStack> result = shared_ptr<ZStack>(new ZStack());
+
+  if(QFileInfo(QString(working_dir + "/result.tif")).isFile()){
+    result->load(QString(working_dir + "/result.tif").toStdString());
+    if(result->hasData()){
+      for(uint i = 0; i < result->getVoxelNumber(); ++i){
+        if(mask->array8()[i]){
+          result->array8()[i] += 1;
+        }
+      }
+      result->setOffset(m_stack->getOffset());
+      m_seg_tree->consume(m_selected_id,result.get());//here
+    }
+  }
+  removeSeeds();
+}
+
+
+void ZMultiscaleSegmentationWindow::onFFN(){
+  if(!m_frame || !m_stack){
+    return;
+  }
+  std::shared_ptr<ZStack> mask = std::shared_ptr<ZStack>(m_stack->clone());
+
+  if(m_selected_id == m_seg_tree->getRootID()){
+    mask->setOne();
+  } else {
+    mask->setZero();
+    m_seg_tree->labelStack(m_selected_id,mask.get(),1);
+  }
+
+  std::vector<ZObject3d*> rseeds;
+  QList<ZStackObject*> objList = m_frame->document()->getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  for (ZStackObject* stroke : objList) {
+    ZStroke2d* p = dynamic_cast<ZStroke2d*>(stroke);
+    stroke->setLabel(1);
+    rseeds.push_back(p->toObject3d());
+  }
+  shared_ptr<ZStack> rseed_stack = shared_ptr<ZStack>(toSeedStack(rseeds,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->getOffset()));
+  const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/ffn";
+  m_stack->save(working_dir.toStdString()+"/data.tif");
+  std::ofstream out(working_dir.toStdString()+"/seed.txt");
+  for(int k=0;k<rseed_stack->depth();++k){
+    for(int j=0;j<rseed_stack->height();++j){
+      for(int i=0;i<rseed_stack->width();++i){
+        if(rseed_stack->array8()[i+j*rseed_stack->width()+k*rseed_stack->width()*rseed_stack->height()]){
+            out<<k<<" "<<j<<" "<<i<<std::endl;
+         }
+       }
+     }
+   }
+  ZPythonProcess python;
+  python.setWorkDir(working_dir);
+  python.setScript(working_dir+"/ffn_skeleton.py");
+  python.run();
+
+  std::shared_ptr<ZStack> result = std::shared_ptr<ZStack>(new ZStack());
+  result->load(working_dir.toStdString()+"/result.tif");
+  if(result && result->hasData()){
+    for(uint i = 0; i < mask->getVoxelNumber(); ++i){
+      if(mask->array8()[i]){
+        result->array8()[i] += 1;
+      } else {
+        result->array8()[i] = 0;
+      }
+    }
+    result->setOffset(m_stack->getOffset());
+    m_seg_tree->consume(m_selected_id,result.get());//here
+  }
+  removeSeeds();
+}
+
+
+void ZMultiscaleSegmentationWindow::onGrowDownsampled(){
+  if(!m_frame || !m_stack){
+    return;
+  }
+
+  const QString working_dir = QCoreApplication::applicationDirPath() + "/../python/service/inter_segnet";
+
+
+  shared_ptr<ZStack> dstack = shared_ptr<ZStack>(m_stack->clone());
+  dstack->downsampleMinIgnoreZero(1,1,1);
+  //dstack->downsampleMean(1,1,1);
+  dstack->save(QString(working_dir + "/data.tif").toStdString());
+
+  std::shared_ptr<ZStack> mask = std::shared_ptr<ZStack>(m_stack->clone());
+  if (m_selected_id == m_seg_tree->getRootID()){
+    mask->setOne();
+  } else {
+    mask->setZero();
+    m_seg_tree->labelStack(m_selected_id,mask.get(),1);
+  }
+
+  std::shared_ptr<ZStack> mask_d = std::shared_ptr<ZStack>(mask->clone());
+  mask_d->downsampleMax(1,1,1);
+  mask_d->save(QString(working_dir + "/mask.tif").toStdString());
+
+  std::vector<ZObject3d*> rseeds;
+  std::vector<ZObject3d*> bseeds;
+
+  QList<ZStackObject*> objList = m_frame->document()->getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  for (ZStackObject* stroke : objList) {
+    ZStroke2d* p = dynamic_cast<ZStroke2d*>(stroke);
+    if(stroke->getColor().name() == "#ff0000"){
+      stroke->setLabel(1);
+      rseeds.push_back(p->toObject3d());
+    } else if(stroke->getColor().name() == "#00ff00"){
+      stroke->setLabel(1);
+      bseeds.push_back(p->toObject3d());
+    }
+  }
+
+  shared_ptr<ZStack> rseed_stack = shared_ptr<ZStack>(toSeedStack(rseeds,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->getOffset()));
+  shared_ptr<ZStack> bseed_stack = shared_ptr<ZStack>(toSeedStack(bseeds,m_stack->width(),m_stack->height(),m_stack->depth(),m_stack->getOffset()));
+
+  rseed_stack->downsampleMax(1,1,1);
+  bseed_stack->downsampleMax(1,1,1);
+
+  rseed_stack->save(QString(working_dir + "/rseeds.tif").toStdString());
+  bseed_stack->save(QString(working_dir + "/bseeds.tif").toStdString());
+
+  ZPythonProcess python;
+  python.setWorkDir(working_dir);
+  python.setScript(working_dir + "/main_d.py");
+  python.run();
+
+  shared_ptr<ZStack> result = shared_ptr<ZStack>(new ZStack());
+
+  if(QFileInfo(QString(working_dir + "/result.tif")).isFile()){
+    result->load(QString(working_dir + "/result.tif").toStdString());
+    if(result->hasData()){
+      shared_ptr<ZStack> tmp = shared_ptr<ZStack>(m_stack->clone());
+      Upsample_Stack(result->c_stack(),1,1,1,tmp->c_stack());
+      for(uint i = 0; i < mask->getVoxelNumber(); ++i){
+        if(mask->array8()[i]){
+          tmp->array8()[i] += 1;
+        }
+      }
+      //result->setOffset(stack->getOffset());
+      tmp->setOffset(m_stack->getOffset());
+      //m_seg_tree->consume(m_selected_id,result.get());//here
+      m_seg_tree->consume(m_selected_id,tmp.get());//here
+    }
+  }
+  removeSeeds();
+}
+
+
+ZStack* ZMultiscaleSegmentationWindow::toSeedStack(std::vector<ZObject3d*>& seeds,int width,int height,int depth,ZIntPoint offset){
+  ZStack* mask=new ZStack(GREY,width,height,depth,1);
+  mask->setOffset(offset);
+  for(ZObject3d* seed:seeds){
+    uint8_t label = seed->getLabel();
+    uint8_t *array = mask->array8();
+    size_t area = width*height;
+    for (size_t i = 0; i < seed->size(); ++i){
+      int x = seed->getX(i);
+      int y = seed->getY(i);
+      int z = seed->getZ(i);
+      //x /= m_scale;
+      //y /= m_scale;
+      //z /= m_scale;
+      x -= offset.getX();
+      y -= offset.getY();
+      z -= offset.getZ();
+      if (IS_IN_CLOSE_RANGE(x, 0, width - 1) &&
+          IS_IN_CLOSE_RANGE(y, 0, height - 1) &&
+          IS_IN_CLOSE_RANGE(z, 0, depth - 1)) {
+        array[z * area + y * width + x] = label;
+      }
+    }
+  }
+  return mask;
 }
 
 
@@ -455,12 +716,15 @@ void ZMultiscaleSegmentationWindow::onSuperVoxel(){
   if(!stack){
     return;
   }
+
+
   shared_ptr<ZStack> label = shared_ptr<ZStack>(new ZStack(FLOAT32,stack->getBoundBox(),1));
   vector<string> ids = m_seg_tree->getChildrenIDs(m_selected_id);
 
   if(ids.size() < 2){
     return ;
   }
+
   int index = 1;
   map<int,int> index_to_label;
 
