@@ -126,6 +126,13 @@ struct ZJsonParser::GetValueHelper<std::string> {
 };
 
 template<>
+struct ZJsonParser::GetValueHelper<std::vector<int64_t>> {
+  static std::vector<int64_t> GetValue(const json_t *value) {
+    return integerArray(value);
+  }
+};
+
+template<>
 struct ZJsonParser::GetValueHelper<bool> {
   static bool GetValue(const json_t *value) {
     if (value == NULL) {

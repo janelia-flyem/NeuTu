@@ -8,6 +8,7 @@
 #include "zneurontracerconfig.h"
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
+#include "zstackreader.h"
 
 ZNeuronTraceCommand::ZNeuronTraceCommand()
 {
@@ -58,14 +59,24 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
 
 ZSwcTree* ZNeuronTraceCommand::traceFile(const std::string &filePath)
 {
-  ZStack signal;
-  signal.load(filePath);
+//  ZStack signal;
+//  signal.load(filePath);
 
-  ZNeuronTracer tracer;
-  tracer.setIntensityField(&signal);
-  tracer.setTraceLevel(m_level);
+  ZStack *signal = ZStackReader::Read(filePath);
 
-  ZSwcTree *tree = tracer.trace(&signal);
+  ZSwcTree *tree = nullptr;
+
+  if (signal) {
+    ZNeuronTracer tracer;
+    tracer.setIntensityField(signal);
+    tracer.setTraceLevel(m_level);
+
+    tree = tracer.trace(signal);
+
+    delete signal;
+
+    return tree;
+  }
 
   return tree;
 }

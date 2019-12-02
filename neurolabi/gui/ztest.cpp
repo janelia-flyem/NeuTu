@@ -30578,6 +30578,21 @@ void ZTest::test(MainWindow *host)
 //  FlyEmDataWriter::TransferRoi(*reader, "(L)AL", *writer, "");
 #endif
 
+#if 0
+  ZStackReader reader;
+  ZStack *stack = reader.Read(
+        "dvid://127.0.0.1:1600/c315/"
+        "grayscale?x0=728&y0=706&z0=980&width=512&height=512&depth=1");
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+#endif
+
+#if 1
+  ZStack *stack = ZStackReader::Read(GET_TEST_DATA_DIR + "/_test/stack_block.json");
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+#endif
+
   std::cout << "Done." << std::endl;
 }
 
