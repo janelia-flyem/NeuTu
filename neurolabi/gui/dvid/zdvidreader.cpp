@@ -58,7 +58,7 @@
 #include "zdvidstackblockfactory.h"
 #include "zdvidsynapse.h"
 #include "zdvidpath.h"
-
+#include "zjsonobjectparser.h"
 
 //#include "flyem/zflyemtodoitem.h"
 //#include "zflyemutilities.h"
@@ -4432,13 +4432,15 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 
 int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
 {
-  int64_t mutId = 0;
+  int64_t mutId = -1;
 
   ZDvidUrl dvidUrl(getDvidTarget());
   std::string url = dvidUrl.getSparsevolLastModUrl(bodyId);
   if (!url.empty()) {
     ZJsonObject obj = readJsonObject(url);
-    mutId = ZJsonParser::integerValue(obj["mutation id"]);
+    ZJsonObjectParser parser;
+    mutId = parser.getValue(obj, "mutation id", int64_t(-1));
+//    mutId = ZJsonParser::integerValue(obj["mutation id"]);
   }
 
   return mutId;

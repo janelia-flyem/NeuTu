@@ -41,4 +41,29 @@ Task TaskFactory::MakeDvidSkeletonizeTask(
   return task;
 }
 
+void TaskFactory::setPriority(int p)
+{
+  m_priority = p;
+}
+
+void TaskFactory::setForceUpdate(bool forceUpdate)
+{
+  m_forceUpdate = forceUpdate;
+}
+
+Task TaskFactory::makeDvidTask(
+    const std::string &name, const ZDvidTarget &target, uint64_t bodyId) const
+{
+  Task task = MakeDvidTask(name, target, bodyId, m_forceUpdate);
+  task.setPriority(m_priority);
+
+  return task;
+}
+
+Task TaskFactory::makeDvidSkeletonizeTask(
+    const ZDvidTarget &target, uint64_t bodyId) const
+{
+  return makeDvidTask("skeletonize", target, bodyId);
+}
+
 }

@@ -1,5 +1,6 @@
 #include "flyemdatareader.h"
 
+#include <memory>
 #include <QByteArray>
 
 //#include "geometry/zintpoint.h"
@@ -9,6 +10,7 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zmesh.h"
+#include "zswctree.h"
 
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
@@ -31,6 +33,7 @@
 #include "flyemdataconfig.h"
 #include "zflyemneuronbodyinfo.h"
 #include "zflyembodyannotation.h"
+#include "zflyemutilities.h"
 
 FlyEmDataReader::FlyEmDataReader()
 {
@@ -316,6 +319,29 @@ std::unordered_map<ZIntPoint, uint64_t> FlyEmDataReader::ReadSynapseLabel(
   }
 
   return result;
+}
+
+bool FlyEmDataReader::IsSkeletonSynced(
+    const ZDvidReader &reader, uint64_t bodyId)
+{
+  if (reader.hasBody(bodyId)) {
+    int64_t bodyMod = reader.readBodyMutationId(bodyId);
+    std::unique_ptr<ZSwcTree> tree =
+        std::unique_ptr<ZSwcTree>(reader.readSwc(bodyId));
+    if (!tree) {
+      return false;
+    } else {
+      if (bodyMod < 0) { //no mutation ID exists
+                         //taken as synced as long as the skeleton exists
+          return true;
+      } else {
+        return (bodyMod == flyem::GetMutationId(tree.get()));
+      }
+    }
+
+  }
+
+  return true;
 }
 
 #if 0

@@ -30587,10 +30587,15 @@ void ZTest::test(MainWindow *host)
   writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
 #endif
 
-#if 1
+#if 0
   ZStack *stack = ZStackReader::Read(GET_TEST_DATA_DIR + "/_test/stack_block.json");
   ZStackWriter writer;
   writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  std::cout << FlyEmDataReader::IsSkeletonSynced(*reader, 1198132041) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

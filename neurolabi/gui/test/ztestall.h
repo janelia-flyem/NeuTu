@@ -92,5 +92,6 @@
 #include "test/zstackdocobjectupdatetest.h"
 #include "test/zinteractivecontexttest.h"
 #include "test/miscutilitytest.h"
+#include "test/neutusetest.h"
 
 #endif // ZTESTALL_H

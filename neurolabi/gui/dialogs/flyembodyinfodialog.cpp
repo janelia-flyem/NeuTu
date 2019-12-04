@@ -1345,7 +1345,7 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
     bool ok;
 
     QString text = QInputDialog::getText(this, tr("Find Bodies"),
-                                         tr("Body Name:"), QLineEdit::Normal,
+                                         tr("Body Status:"), QLineEdit::Normal,
                                          "", &ok);
     if (ok) {
       if (!text.isEmpty()) {

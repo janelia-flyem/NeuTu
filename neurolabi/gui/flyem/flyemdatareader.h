@@ -44,6 +44,8 @@ public:
       const ZDvidReader &reader, const std::string &roiName,
       std::function<void(std::string)> errorMsgHandler = nullptr);
 
+  static bool IsSkeletonSynced(const ZDvidReader &reader, uint64_t bodyId);
+
   /*!
    * \brief Read one or more ROIs into a single object
    *

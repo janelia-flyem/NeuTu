@@ -58,6 +58,7 @@
 #include "command/zstackfiltercommand.h"
 #include "command/zuploadroicommand.h"
 #include "command/zneurontracecommand.h"
+#include "command/zsyncskeletoncommand.h"
 
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
@@ -111,6 +112,7 @@ void ZCommandLine::registerModule()
   registerModule<ZNeuronTraceCommand>("trace_neuron");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
+  registerModule<ZSyncSkeletonCommand>("sync_skeleton");
 #endif
 }
 
@@ -644,6 +646,10 @@ void ZCommandLine::loadTraceConfig()
 
 void ZCommandLine::loadInputJson()
 {
+  if (m_input.empty()) {
+    return;
+  }
+
   if (m_input[0] == "json") {
     std::string jsonInput = m_input[1];
     ZJsonObject obj;
@@ -1274,27 +1280,24 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      const int mid = bodyReader->readBodyMutationId(bodyId);
-      if (!m_forceUpdate || mid > 0) {
+      const int64_t mid = bodyReader->readBodyMutationId(bodyId);
+      if (!m_forceUpdate || mid >= 0) { //mutation ID available or no force update
         if (savingToFile) {
           if (outputFileInfo.exists()) {
             tree = new ZSwcTree;
             tree->load(outputFileInfo.absoluteFilePath().toStdString());
-//            if (tree->isEmpty()) {
-//              delete tree;
-//              tree = NULL;
-//            }
-//            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
           }
         } else {
           tree = reader.readSwc(bodyId);
         }
       }
 
-      if (tree != NULL && mid > 0) {
+      if (tree != NULL && mid >= 0) {
         if (flyem::GetMutationId(tree) != mid) {
           delete tree;
           tree = NULL;
+        } else {
+          std::cout << "The skeleton is up to date." << std::endl;
         }
       }
 
@@ -1306,7 +1309,8 @@ int ZCommandLine::skeletonizeDvid()
           const int blockCount = bodyReader->readBodyBlockCount(
                 bodyId, neutu::EBodyLabelType::BODY);
           constexpr int maxBlockCount = 3000;
-          int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+          int scale =
+              int(std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount)));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
           zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
@@ -1319,14 +1323,14 @@ int ZCommandLine::skeletonizeDvid()
 
 
         if (tree != NULL) {
-          if (mid > 0) {
+          if (mid >= 0) {
             flyem::SetMutationId(tree, mid);
           }
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            if (mid > 0) {
-              const int latestMid = bodyReader->readBodyMutationId(bodyId);
+            if (mid >= 0) {
+              const int64_t latestMid = bodyReader->readBodyMutationId(bodyId);
 
               if (mid != latestMid) {
                 LWARN() << bodyId << ":" << mid << "->" << latestMid
