@@ -150,11 +150,11 @@ QList<ProtocolAssignment> ProtocolAssignmentClient::getAssignments() {
 
     // need to change Janelia username into assignment mgr username
     QString username = getLocalUsername(QString::fromStdString(neutu::GetCurrentUserName()));
-    QString url = ProtocolAssignmentUrl::GetStartedAssigments(m_server, username);
+    QString url = ProtocolAssignmentUrl::GetAssigments(m_server, username);
     QNetworkReply * reply = get(url);
     if (hadError(reply)) {
         QString error = getErrorString(reply);
-        showError("Error!", "Error retrieving started assignments: " + error);
+        showError("Error!", "Error retrieving assignments: " + error);
         return results;
     } else {
         QJsonArray array = getReplyJsonArray(reply, "data");
@@ -380,6 +380,7 @@ QNetworkReply * ProtocolAssignmentClient::post(QString url, QJsonObject jsonData
         QString authString = "Bearer " + m_token;
         request.setRawHeader(QByteArray("Authorization"), authString.toUtf8());
     }
+    request.setRawHeader("Content-Type", "application/json");
     QNetworkReply *reply = m_networkManager->post(request, byteData);
     return call(reply);
 }

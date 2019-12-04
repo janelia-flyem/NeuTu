@@ -138,41 +138,30 @@ void ProtocolAssignmentDialog::onCompleteButton() {
             //  as we initially haven't provided a way to complete individual tasks
             //  as you go (this is planned for the future)
             if (nCompleted < tasks.size()) {
-
                 int ans = QMessageBox::question(this, "Uncompleted tasks",
                     QString("There are %1 uncompleted tasks; complete them now?").arg(tasks.size() - nCompleted),
                     QMessageBox::Ok|QMessageBox::Cancel,
                     QMessageBox::Cancel);
                 if (ans == QMessageBox::Ok) {
-
-
-                    // complete all tasks
+                    // complete all tasks; also completes the assignment (happens automatically
+                    //  when the last task is completed)
                     bool status = completeAllTasks(assignment);
-
-
-                    qDebug() << "testing complete assignment " << assignment.id;
-
-
-
+                    if (!status) {
+                        showError("Problem completing tasks", "At least one task could not be completed. Assignment not completed.");
+                        return;
+                    }
                 } else {
                     return;
                 }
+            } else {
+                // complete assignment explicitly; this may never happen, as completing all tasks
+                //  from an assignment completes the assignment automatically
+                bool status = m_client.completeAssignment(assignment);
+                if (!status) {
+                    showError("Problem completing assignment", "There was a problem completing the assignment.");
+                    // don't return here; let the table refresh so the user can look at all the info
+                }
             }
-
-
-
-
-
-            // complete assignment
-
-            // not tested yet!
-            bool status = m_client.completeAssignment(assignment);
-
-
-            QString statusString = status ? "true" : "false";
-            showMessage("test", "complete assignment result: " + statusString);
-
-
 
             // refresh table
             loadAssignments();
@@ -196,35 +185,32 @@ void ProtocolAssignmentDialog::loadAssignments() {
 
 bool ProtocolAssignmentDialog::completeTask(ProtocolAssignmentTask task) {
 
-    // tighten up this logic and handle errors better
-
-
+    // if not started, start it
     if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
-        qDebug() << "starting task " << task.id;
-
-        // start it up
         bool status = m_client.startTask(task);
-
-        qDebug() << "task start status = " << status;
+        if (!status) {
+            return status;
+        }
     }
 
     bool status = m_client.completeTask(task);
-    qDebug() << "task complete status = " << status;
-
-    return true;
+    return status;
 
 }
 
 bool ProtocolAssignmentDialog::completeAllTasks(ProtocolAssignment assignment) {
-
-    // get all tasks
-
-    // loop: complete each one that isn't complete
-
-
+    // NOTE: this has the effect of completing the assignment, too; completing
+    //  the final task of an assignment automatically completes the assignment
+    QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
+    for (ProtocolAssignmentTask t: tasks) {
+        if (t.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+            bool status = completeTask(t);
+            if (!status) {
+                return false;
+            }
+        }
+    }
     return true;
-
-
 }
 
 void ProtocolAssignmentDialog::updateAssignmentsTable() {
