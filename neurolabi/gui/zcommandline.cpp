@@ -1280,24 +1280,43 @@ int ZCommandLine::skeletonizeDvid()
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
+
+//      if (!m_forceUpdate || mid >= 0) { //mutation ID available or no force update
+      if (savingToFile) {
+        if (outputFileInfo.exists()) {
+          tree = new ZSwcTree;
+          tree->load(outputFileInfo.absoluteFilePath().toStdString());
+        }
+      } else {
+        tree = reader.readSwc(bodyId);
+      }
+
       const int64_t mid = bodyReader->readBodyMutationId(bodyId);
-      if (!m_forceUpdate || mid >= 0) { //mutation ID available or no force update
-        if (savingToFile) {
-          if (outputFileInfo.exists()) {
-            tree = new ZSwcTree;
-            tree->load(outputFileInfo.absoluteFilePath().toStdString());
-          }
-        } else {
-          tree = reader.readSwc(bodyId);
+
+      if (tree) {
+        const int64_t sid = flyem::GetMutationId(tree);
+        if (mid >= 0 && mid != sid) {
+          std::cout << "Skeletonization required ("
+                    << sid << "->" << mid << ")" << std::endl;
+          delete tree;
+          tree = NULL;
         }
       }
 
-      if (tree != NULL && mid >= 0) {
-        if (flyem::GetMutationId(tree) != mid) {
-          delete tree;
-          tree = NULL;
-        } else {
-          std::cout << "The skeleton is up to date." << std::endl;
+      if (tree) {
+        if (m_forceUpdate) {
+          if (mid < 0) {
+            std::cout << "Skeletonization forced (no mutation ID)" << std::endl;
+            delete tree;
+            tree = NULL;
+          } else {
+            int vskl = flyem::GetSkeletonVersion(*tree);
+            if (ZStackSkeletonizer::VERSION > vskl) {
+              std::cout << "Skeletonization forced by upgrade" << std::endl;
+              delete tree;
+              tree = NULL;
+            }
+          }
         }
       }
 
@@ -1329,6 +1348,7 @@ int ZCommandLine::skeletonizeDvid()
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
+            /*
             if (mid >= 0) {
               const int64_t latestMid = bodyReader->readBodyMutationId(bodyId);
 
@@ -1340,12 +1360,19 @@ int ZCommandLine::skeletonizeDvid()
                 tree = NULL;
               }
             }
+            */
             if (tree != NULL) {
               writer.writeSwc(bodyId, tree);
             }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
+        }
+      } else {
+        if (m_forceUpdate) {
+          std::cout << "The skeleton is up to date." << std::endl;
+        } else {
+          std::cout << "Skip overwriting existing skeleton." << std::endl;
         }
       }
 
@@ -1358,8 +1385,12 @@ int ZCommandLine::skeletonizeDvid()
           }
         }
       }
+
       delete tree;
-      LINFO() << "Output:" << m_output;
+      if (!m_output.empty()) {
+        LINFO() << "Output:" << m_output;
+      }
+
       LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
     }
   }

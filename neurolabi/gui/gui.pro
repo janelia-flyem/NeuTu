@@ -308,7 +308,6 @@ HEADERS += mainwindow.h \
     plotter.h \
     zinteractivecontext.h \
     ztraceproject.h \
-    dialogs/channeldialog.h \
     zpunctum.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
@@ -330,6 +329,7 @@ HEADERS += mainwindow.h \
     dialogs/swcskeletontransformdialog.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
+    dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \

@@ -28,6 +28,9 @@ std::set<uint64_t> LoadBodySet(const std::string &filePath);
 int64_t GetMutationId(const ZSwcTree *tree);
 int64_t GetMutationId(const ZSwcTree &tree);
 void SetMutationId(ZSwcTree *tree, int64_t mid);
+
+int GetSkeletonVersion(const ZSwcTree &tree);
+
 }
 
 #endif // ZFLYEMUTILITIES_H

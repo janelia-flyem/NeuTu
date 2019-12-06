@@ -87,6 +87,27 @@ ZIntPoint flyem::FindClosestBg(const ZStack *stack, int x, int y, int z)
 
 namespace {
 static const char* mutation_key = "mutation id";
+static const char* version_key = "vskl";
+}
+
+int flyem::GetSkeletonVersion(const ZSwcTree &tree)
+{
+  int version = 0;
+  std::vector<std::string> commentList = tree.getComment();
+  for (const std::string &comment : commentList) {
+    ZString s = comment;
+    s.trim();
+    if (s.startsWith("${") && s.endsWith("}")) {
+      ZJsonObject jsonObj;
+      jsonObj.decodeString(s.substr(1).c_str());
+      if (jsonObj.hasKey(version_key)) {
+        version = int(ZJsonParser::integerValue(jsonObj[version_key]));
+        break;
+      }
+    }
+  }
+
+  return version;
 }
 
 int64_t flyem::GetMutationId(const ZSwcTree &tree)

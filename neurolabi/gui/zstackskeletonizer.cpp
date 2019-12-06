@@ -29,6 +29,7 @@
 using namespace std;
 
 const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
+const int ZStackSkeletonizer::VERSION = 2;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
@@ -146,6 +147,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   return tree;
 }
 
+double ZStackSkeletonizer::getLengthThreshold(double s) const
+{
+  return std::max(m_finalLengthThreshold, m_lengthThreshold / s);
+}
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 {
@@ -281,7 +286,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
       linScale = std::cbrt(dsVol);
     }
 
-    double lengthThreshold = m_lengthThreshold / linScale;
+//    double lengthThreshold = m_lengthThreshold / linScale;
+    double lengthThreshold = getLengthThreshold(linScale);
     if (objSize == 1) {
       if (m_keepingSingleObject || lengthThreshold <= 1) {
         int x = 0;
@@ -658,7 +664,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
       linScale = std::cbrt(dsVol);
     }
 
-    double lengthThreshold = m_lengthThreshold / linScale;
+//    double lengthThreshold = m_lengthThreshold / linScale;
+    double lengthThreshold = getLengthThreshold(linScale);
     if (objSize == 1) {
       if (m_keepingSingleObject || lengthThreshold <= 1) {
         int x = 0;
@@ -887,9 +894,11 @@ std::string ZStackSkeletonizer::toSwcComment(const int *intv) const
       dsJson.append(intv[i]);
     }
     infoJson.setEntry("ds_intv", dsJson);
-    infoJson.setEntry("min_length", m_lengthThreshold);
-    comment = "<json>" + infoJson.dumpString(0) + "</json>";
   }
+  infoJson.setEntry("min_length", m_lengthThreshold);
+  infoJson.setEntry("final_min_length", m_finalLengthThreshold);
+  infoJson.setEntry("vskl", VERSION);
+  comment = "$" + infoJson.dumpString(0);
 
   return comment;
 }
@@ -952,6 +961,11 @@ void ZStackSkeletonizer::configure(const ZJsonObject &config)
   const json_t *value = config["minimalLength"];
   if (ZJsonParser::IsNumber(value)) {
     setLengthThreshold(ZJsonParser::numberValue(value));
+  }
+
+  value = config["finalMinimalLength"];
+  if (ZJsonParser::IsNumber(value)) {
+    setFinalLengthThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["maximalDistance"];

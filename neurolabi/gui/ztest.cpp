@@ -30593,9 +30593,16 @@ void ZTest::test(MainWindow *host)
   writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   std::cout << FlyEmDataReader::IsSkeletonSynced(*reader, 1198132041) << std::endl;
+#endif
+
+#if 0
+  ZString s = "<json>{\"test\": 1}</json>";
+  if (s.startsWith("<json>") && s.endsWith("</json>")) {
+    std::cout << s.substr(6, s.length() - 13).c_str() << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

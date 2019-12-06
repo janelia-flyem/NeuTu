@@ -35,6 +35,10 @@ public:
     m_lengthThreshold = threshold;
   }
 
+  inline void setFinalLengthThreshold(double t) {
+    m_finalLengthThreshold = t;
+  }
+
   inline void setDistanceThreshold(double threshold) {
     m_distanceThreshold = threshold;
   }
@@ -108,6 +112,9 @@ public:
 
   std::string toSwcComment() const;
 
+public:
+  static const int VERSION;
+
 private:
   /*!
    * \a stack will be destroyed after the function call.
@@ -119,10 +126,12 @@ private:
   std::string toSwcComment(const int *intv) const;
   void addSwcComment(ZSwcTree *tree, const int *dsIntv);
   void downsampleToSizeLimit(ZObject3dScan *obj, const ZIntCuboid &box);
+  double getLengthThreshold(double s) const;
 
 
 private:
   double m_lengthThreshold;
+  double m_finalLengthThreshold = 5.0;
   double m_distanceThreshold;
   bool m_rebase;
   bool m_interpolating;
