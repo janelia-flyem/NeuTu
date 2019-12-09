@@ -1277,6 +1277,8 @@ int ZCommandLine::skeletonizeDvid()
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
       std::cout << "Skeletonizing " << bodyId << std::endl;
+      std::cout << "Skeletonizer version: "
+                << ZStackSkeletonizer::VERSION << std::endl;
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 

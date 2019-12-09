@@ -54,7 +54,7 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
   } else {
     ZNeuronTracerConfig::getInstance().loadJsonObject(config);
   }
-  ZNeuronTracerConfig::getInstance().setCrossoverTest(false);
+//  ZNeuronTracerConfig::getInstance().setCrossoverTest(false);
 }
 
 ZSwcTree* ZNeuronTraceCommand::traceFile(const std::string &filePath)
