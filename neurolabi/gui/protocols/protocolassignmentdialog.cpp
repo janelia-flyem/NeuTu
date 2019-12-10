@@ -33,6 +33,7 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
     connect(ui->getNewButton, SIGNAL(clicked(bool)), this, SLOT(onGetNewButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(onStartButton()));
 
     connect(ui->assignmentTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -95,21 +96,49 @@ void ProtocolAssignmentDialog::onGetNewButton() {
             "Choose a project to get an assignment from:", options, 0, false, &ok);
         if (ok && !choice.isEmpty()) {
             QString projectName = nameList[options.indexOf(choice)];
+            int assignmentID = m_client.generateAssignment(projectName);
 
-            // call endpoint to start assignment?
-            // but recent experience is that these assignments are already started?
-            //  maybe need to check?
-
-            showMessage("temp", "pretending to start assignment for project " + projectName);
 
             // check success
-            if (true) {
+            if (assignmentID == -1) {
+                showMessage("No assignment", "Failed to start an assignment for project " + projectName);
+            } else {
                 loadAssignments();
                 updateAssignmentsTable();
-            } else {
-                showMessage("No assignment", "Failed to start an assignment for project " + projectName);
             }
         }
+    }
+}
+
+void ProtocolAssignmentDialog::onStartButton() {
+    if (ui->assignmentTableView->selectionModel()->hasSelection()) {
+        // single row selection model, so just grab the first/only row:
+        QModelIndexList modelIndexList = ui->assignmentTableView->selectionModel()->selectedRows(0);
+        // make sure there is a selected index to avoid unexpected crash (copied from other code,
+        //      not sure what the issue is)
+        if (!modelIndexList.isEmpty()) {
+            QModelIndex viewIndex = modelIndexList.at(0);
+            QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
+            ProtocolAssignment assignment = m_assignments[modelIndex.row()];
+
+            // is it not started?  I wish we had an actual disposition for this...
+            if (assignment.disposition != ProtocolAssignment::DISPOSITION_SKIPPED &&
+                assignment.disposition != ProtocolAssignment::DISPOSITION_COMPLETE &&
+                assignment.disposition != ProtocolAssignment::DISPOSITION_IN_PROGRESS) {
+                bool status = m_client.startAssignment(assignment.id);
+                if (status) {
+                    // refresh table if successful; if not, error should have already
+                    //  been displayed
+                    loadAssignments();
+                    updateAssignmentsTable();
+                }
+            } else {
+                showError("Not eligible!", "Assignment may not be in progress, skipped, or complete to start.");
+                return;
+            }
+        }
+    } else {
+        showMessage("No selection!", "Please select an assignment to start.");
     }
 }
 
@@ -256,9 +285,12 @@ void ProtocolAssignmentDialog::updateAssignmentsTable() {
 void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment) {
     ui->nameLabel->setText(assignment.name);
     ui->idLabel->setText(QString::number(assignment.id));
+    ui->dispositionLabel->setText(assignment.disposition);
     ui->createdLabel->setText(assignment.create_date);
     ui->startedLabel->setText(assignment.start_date);
     ui->completedLabel->setText(assignment.completion_date);
+    ui->noteLabel->setText(assignment.note);
+
 
     QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
     int nCompleted = 0;

@@ -27,11 +27,11 @@ public:
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
     QMap<QString, QString> getEligibleProjects();
 
+    ProtocolAssignment getAssignment(int assignmentID);
     QList<ProtocolAssignment> getAssignments();
     QList<ProtocolAssignment> getStartedAssignments();
     bool completeAssignment(ProtocolAssignment assignment);
 
-    // probably will be changed, and not working yet anyway
     int generateAssignment(QString projectName);
     bool startAssignment(int assignmentID);
 

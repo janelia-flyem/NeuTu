@@ -139,6 +139,33 @@ QMap<QString, QString> ProtocolAssignmentClient::getEligibleProjects() {
 }
 
 /*
+ * retrieve one assignment by id
+ *
+ * endpoint: get /assignment/(assignment id)
+ * input: assignment ID
+ * output: assignment object
+ */
+ProtocolAssignment ProtocolAssignmentClient::getAssignment(int assignmentID) {
+    QString url = ProtocolAssignmentUrl::GetAssignment(m_server, assignmentID);
+    QNetworkReply * reply = get(url);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving assignment: " + error);
+        QJsonObject empty;
+        return ProtocolAssignment(empty);
+    } else {
+        QJsonArray array = getReplyJsonArray(reply, "data");
+        if (array.size() != 1) {
+            showError("Error!", "Retrieved " + QString::number(array.size()) + " assignments instead of one!" );
+            QJsonObject empty;
+            return ProtocolAssignment(empty);
+        }
+        QJsonObject data = array[0].toObject();
+        return ProtocolAssignment(data);
+    }
+}
+
+/*
  * retrieve all assignments for a user
  *
  * endpoint: /assignments?user=username
@@ -200,48 +227,44 @@ QList<ProtocolAssignment> ProtocolAssignmentClient::getStartedAssignments() {
  * output: assigment ID
  */
 int ProtocolAssignmentClient::generateAssignment(QString projectName) {
-
-    // needs authentication, not working yet
-
-    return 123;
-
-
-
-    // in progress:
-
     QString url = ProtocolAssignmentUrl::GenerateAssignment(m_server, projectName);
+    int assignmentID = -1;
 
-    // auth goes into the data?
     QJsonObject data;
     QNetworkReply * reply = post(url, data);
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error retrieving started assignments: " + error);
+        QJsonObject empty;
+        return assignmentID;
+    } else {
+        // parse reply; get ID, then get the full assignment object and return it
 
+        // I'm of two minds whether I should bother returning the object or just the new ID;
+        //  currently, I don't use either, except as a success indicator; the UI
+        //  refreshes and gets the full assignment info itself later
 
-    // error handling
-
-    // parse result and return
-
-
-
+        QJsonObject rest = getReplyJsonObject(reply, "rest");
+        return rest["inserted_id"].toInt();
+    }
 }
 
+/*
+ * endpoint: post /assignment/{assignment_id}/start
+ * input: assignment ID
+ * output: success
+ */
 bool ProtocolAssignmentClient::startAssignment(int assignmentID) {
-
-    // needs auth, not working
-
-    return true;
-
-
-    // in progress:
-
     QString url = ProtocolAssignmentUrl::StartAssignment(m_server, assignmentID);
-
     QJsonObject data;
     QNetworkReply* reply = post(url, data);
-
-
-    // errors, parsing, etc...
-
-
+    if (hadError(reply)) {
+        QString error = getErrorString(reply);
+        showError("Error!", "Error completing assignment: " + error);
+        return false;
+    } else {
+        return true;
+    }
 }
 
 /*
@@ -367,7 +390,7 @@ QNetworkReply * ProtocolAssignmentClient::get(QString url) {
 }
 
 QNetworkReply * ProtocolAssignmentClient::post(QString url, QJsonObject jsonData) {
-    qDebug() << "ProtocolAssignmentClient::put: url = " << url;
+    qDebug() << "ProtocolAssignmentClient::post: url = " << url;
 
     QUrl requestUrl;
     requestUrl.setUrl(url);

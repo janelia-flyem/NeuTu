@@ -24,6 +24,7 @@ public:
 private slots:
     void onRefreshButton();
     void onGetNewButton();
+    void onStartButton();
     void onCompleteButton();
     void onClickedTable(QModelIndex index);
 

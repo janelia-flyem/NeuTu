@@ -36,6 +36,10 @@ QString ProtocolAssignmentUrl::CompleteAssignment(QString server, int assignment
     return server + "/assignment/" + QString::number(assignmentID) + "/complete";
 }
 
+QString ProtocolAssignmentUrl::GetAssignment(QString server, int assignmentID) {
+    return server + "/assignments/" + QString::number(assignmentID);
+}
+
 QString ProtocolAssignmentUrl::GetAssigments(QString server, QString username) {
     QString url = server + "/assignments";
     if (username.isEmpty()) {
