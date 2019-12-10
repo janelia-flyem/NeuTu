@@ -153,6 +153,10 @@ void ProtocolAssignmentDialog::onCompleteButton() {
             QModelIndex viewIndex = modelIndexList.at(0);
             QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
             ProtocolAssignment assignment = m_assignments[modelIndex.row()];
+            if (assignment.disposition == ProtocolAssignment::DISPOSITION_COMPLETE) {
+                showMessage("Already complete!", "Assignment is already complete!");
+                return;
+            }
 
             // are all the tasks complete?
             QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
