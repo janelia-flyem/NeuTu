@@ -8,6 +8,8 @@
 #include "tz_fimage_lib.h"
 #include "tz_voxel_graphics.h"
 #include "tz_stack_sampling.h"
+#include "tz_stack_threshold.h"
+#include "tz_objdetect.h"
 
 #include "common/math.h"
 #include "c_stack.h"
@@ -29,10 +31,8 @@
 #include "zstack.hxx"
 
 #include "zobject3darray.h"
-#include "tz_objdetect.h"
 #include "zjsonobject.h"
 #include "zswctree.h"
-#include "tz_stack_threshold.h"
 
 #include "zweightedpoint.h"
 #include "zswcfactory.h"

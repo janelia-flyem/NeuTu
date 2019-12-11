@@ -89,6 +89,7 @@ int ZSyncSkeletonCommand::run(
       }
 
       QStringList annotList = reader.readKeys(target.getBodyAnnotationName().c_str());
+      int index = 1;
       for (const QString &bodyStr : annotList) {
         uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
         if (bodyId > 0) {
@@ -114,7 +115,8 @@ int ZSyncSkeletonCommand::run(
               }
 
               if (syncing) {
-                std::cout << "To sync: " << bodyId
+                std::cout << "To sync [" << index << "/" << annotList.size()
+                          << "]: " << bodyId
                           << " (" << reason << ")" << std::endl;
                 writer.uploadTask(
                       taskFactory.makeDvidSkeletonizeTask(target, bodyId));
@@ -122,6 +124,7 @@ int ZSyncSkeletonCommand::run(
             }
           }
         }
+        index++;
       }
     } else {
       qWarning() << "Skeleton data store does not exist. Abort!";

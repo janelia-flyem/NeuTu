@@ -131,7 +131,7 @@ private:
 
 private:
   double m_lengthThreshold;
-  double m_finalLengthThreshold = 5.0;
+  double m_finalLengthThreshold = 0.0;
   double m_distanceThreshold;
   bool m_rebase;
   bool m_interpolating;

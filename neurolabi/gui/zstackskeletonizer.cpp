@@ -29,7 +29,7 @@
 using namespace std;
 
 const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
-const int ZStackSkeletonizer::VERSION = 2;
+const int ZStackSkeletonizer::VERSION = 1;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),

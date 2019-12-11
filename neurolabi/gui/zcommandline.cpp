@@ -1601,7 +1601,7 @@ int ZCommandLine::run(int argc, char *argv[])
   //    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
   m_input.resize(inputNumber);
   for (int i = 0; i < inputNumber; ++i) {
-    m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);;
+    m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);
     //      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
   }
 
