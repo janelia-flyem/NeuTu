@@ -28,6 +28,7 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     m_proxy = new QSortFilterProxyModel(this);
     m_proxy->setSourceModel(m_model);
     ui->assignmentTableView->setModel(m_proxy);
+    m_proxy->setFilterKeyColumn(DISPOSITION_COLUMN);
 
 
     // UI connections
@@ -35,6 +36,10 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     connect(ui->getNewButton, SIGNAL(clicked(bool)), this, SLOT(onGetNewButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(onStartButton()));
+
+    connect(ui->allRadioButton, SIGNAL(clicked(bool)), this, SLOT(onClickedFilter()));
+    connect(ui->inprogressRadioButton, SIGNAL(clicked(bool)), this, SLOT(onClickedFilter()));
+    connect(ui->completeRadioButton, SIGNAL(clicked(bool)), this, SLOT(onClickedFilter()));
 
     connect(ui->assignmentTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -211,6 +216,19 @@ void ProtocolAssignmentDialog::onClickedTable(QModelIndex index) {
     updateSelectedInfo(assignment);
 }
 
+void ProtocolAssignmentDialog::onClickedFilter() {
+    // triggers on click = exactly once per user event,
+    //  even though one button toggles off when another toggles on
+
+    if (ui->allRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString("");
+    } else if (ui->inprogressRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_IN_PROGRESS);
+    } else if (ui->completeRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_COMPLETE);
+    }
+}
+
 void ProtocolAssignmentDialog::loadAssignments() {
     m_assignments = m_client.getAssignments();
     clearSelectedInfo();
@@ -294,8 +312,6 @@ void ProtocolAssignmentDialog::updateAssignmentsTable() {
     // this is a guess; not sure which column will end up needing most space as of yet
     ui->assignmentTableView->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::Stretch);
 
-    // maybe sort them by id initially?
-
 }
 
 void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment) {
@@ -306,7 +322,6 @@ void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment)
     ui->startedLabel->setText(assignment.start_date);
     ui->completedLabel->setText(assignment.completion_date);
     ui->noteLabel->setText(assignment.note);
-
 
     QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
     int nCompleted = 0;

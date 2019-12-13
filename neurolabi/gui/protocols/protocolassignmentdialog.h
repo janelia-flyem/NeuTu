@@ -27,6 +27,7 @@ private slots:
     void onStartButton();
     void onCompleteButton();
     void onClickedTable(QModelIndex index);
+    void onClickedFilter();
 
 
 private:
