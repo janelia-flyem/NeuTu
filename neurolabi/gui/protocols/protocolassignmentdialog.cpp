@@ -3,6 +3,7 @@
 
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QProgressDialog>
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -76,7 +77,6 @@ void ProtocolAssignmentDialog::onRefreshButton() {
 
 void ProtocolAssignmentDialog::onGetNewButton() {
     if (checkForTokens()) {
-
         QMap<QString, QString> projects = m_client.getEligibleProjects();
         if (projects.size() == 0) {
             showMessage("No projects!", "No eligible projects found!");
@@ -234,10 +234,22 @@ bool ProtocolAssignmentDialog::completeTask(ProtocolAssignmentTask task) {
 bool ProtocolAssignmentDialog::completeAllTasks(ProtocolAssignment assignment) {
     // NOTE: this has the effect of completing the assignment, too; completing
     //  the final task of an assignment automatically completes the assignment
+
     QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
+
+    QProgressDialog progress("Completing tasks...", "Cancel", 1, tasks.size(), this);
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(500);
+
+    int tasknumber = 1;
     for (ProtocolAssignmentTask t: tasks) {
         if (t.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
             bool status = completeTask(t);
+            tasknumber++;
+            progress.setValue(tasknumber);
+            if (progress.wasCanceled()) {
+                return false;
+            }
             if (!status) {
                 return false;
             }
