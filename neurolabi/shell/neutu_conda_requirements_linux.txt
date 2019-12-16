@@ -1,6 +1,5 @@
 gxx_linux-64
 cmake
-python>=3.6
 qt=5.9*
 fftw=3.3*
 jansson=2.7*
