@@ -493,7 +493,7 @@ void MainWindow::initDialog()
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
-  m_bodySplitProjectDialog = NULL;
+//  m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
 //  m_mergeBodyDlg = NULL;
   m_dvidOpDlg = NULL;

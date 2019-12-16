@@ -88,9 +88,11 @@ CONFIG(neu3) {
   }
 }
 
-splashconfig.target = $${BIN_FOLDER}/$${CONFIG_FOLDER}/splash.png
-splashconfig.depends = FORCE $$configfolder.target $${PWD}/images/$$splash_file
-splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
+!isEmpty(splash_file) {
+  splashconfig.target = $${BIN_FOLDER}/$${CONFIG_FOLDER}/splash.png
+  splashconfig.depends = FORCE $$configfolder.target $${PWD}/images/$$splash_file
+  splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
+}
 
 docconfig.target = docconfig
 docconfig.depends = FORCE $$configfolder.target
