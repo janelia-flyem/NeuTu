@@ -52,6 +52,7 @@ requirements:
     - xorg-libxtst 1.2.3* # [linux64]
 
   run:
+    - python  3.7.3*
     - qt      5.9*
     - fftw    3.3*
     - jansson 2.7*

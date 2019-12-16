@@ -21,4 +21,5 @@ alsa-lib=1.1.5*
 xorg-libxrandr=1.5.1*
 xorg-libxcursor=1.2.0*
 xorg-libxtst=1.2.3*
+python=3.7.3*
 marktips=0.3*

@@ -94,7 +94,7 @@ fi
 
 envName='neutu-env'
 source $condaDir/bin/activate root
-conda create -n $envName $package python=3.7.3 -y
+conda create -n $envName $package -y
 
 updateFile=$bindir/ntupd
 touch $updateFile
