@@ -30,6 +30,8 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     ui->assignmentTableView->setModel(m_proxy);
     m_proxy->setFilterKeyColumn(DISPOSITION_COLUMN);
 
+    m_savedSelectedAssignmentID = -1;
+
 
     // UI connections
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -220,18 +222,11 @@ void ProtocolAssignmentDialog::onClickedFilter() {
     // triggers on click = exactly once per user event,
     //  even though one button toggles off when another toggles on
 
-    if (ui->allRadioButton->isChecked()) {
-        m_proxy->setFilterFixedString("");
-    } else if (ui->inprogressRadioButton->isChecked()) {
-        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_IN_PROGRESS);
-    } else if (ui->completeRadioButton->isChecked()) {
-        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_COMPLETE);
-    }
+    updateFilter();
 }
 
 void ProtocolAssignmentDialog::loadAssignments() {
     m_assignments = m_client.getAssignments();
-    clearSelectedInfo();
 }
 
 bool ProtocolAssignmentDialog::completeTask(ProtocolAssignmentTask task) {
@@ -277,7 +272,9 @@ bool ProtocolAssignmentDialog::completeAllTasks(ProtocolAssignment assignment) {
 }
 
 void ProtocolAssignmentDialog::updateAssignmentsTable() {
+    saveSelection();
     clearAssignmentsTable();
+    clearSelectedInfo();
     int row = 0;
     for (ProtocolAssignment assignment: m_assignments) {
 
@@ -311,7 +308,19 @@ void ProtocolAssignmentDialog::updateAssignmentsTable() {
 
     // this is a guess; not sure which column will end up needing most space as of yet
     ui->assignmentTableView->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::Stretch);
+    restoreSelection();
+}
 
+void ProtocolAssignmentDialog::updateFilter() {
+    saveSelection();
+    if (ui->allRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString("");
+    } else if (ui->inprogressRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_IN_PROGRESS);
+    } else if (ui->completeRadioButton->isChecked()) {
+        m_proxy->setFilterFixedString(ProtocolAssignment::DISPOSITION_COMPLETE);
+    }
+    restoreSelection();
 }
 
 void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment) {
@@ -336,15 +345,66 @@ void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment)
 void ProtocolAssignmentDialog::clearSelectedInfo() {
     ui->nameLabel->clear();
     ui->idLabel->clear();
+    ui->dispositionLabel->clear();
     ui->createdLabel->clear();
     ui->startedLabel->clear();
     ui->completedLabel->clear();
+    ui->noteLabel->clear();
     ui->tasksLabel->clear();
 }
 
 void ProtocolAssignmentDialog::clearAssignmentsTable() {
     m_model->clear();
     setHeaders(m_model);
+}
+
+void ProtocolAssignmentDialog::saveSelection() {
+    if (ui->assignmentTableView->selectionModel()->hasSelection()) {
+        // single row selection model, so just grab the first/only row:
+        QModelIndexList modelIndexList = ui->assignmentTableView->selectionModel()->selectedRows(0);
+        // this is copied from other code I don't fully understand, not sure what the intent is
+        if (!modelIndexList.isEmpty()) {
+            QModelIndex viewIndex = modelIndexList.at(0);
+            QModelIndex modelIndex = m_proxy->mapToSource(viewIndex);
+            ProtocolAssignment assignment = m_assignments[modelIndex.row()];
+            m_savedSelectedAssignmentID = assignment.id;
+        } else {
+            m_savedSelectedAssignmentID = -1;
+        }
+    } else {
+        m_savedSelectedAssignmentID = -1;
+    }
+}
+
+void ProtocolAssignmentDialog::restoreSelection() {
+    ui->assignmentTableView->selectionModel()->clear();
+    if (m_savedSelectedAssignmentID > 0) {
+        // find current index of saved assignment
+        int index = -1;
+        for (int i=0; i<m_assignments.size(); i++) {
+            if (m_assignments[i].id == m_savedSelectedAssignmentID) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            // previously selected item can't be found
+            clearSelectedInfo();
+            return;
+        }
+
+        // is the previous selection still present (not filtered out?)
+        QModelIndex mappedIndex = m_proxy->mapFromSource(m_model->index(index, 0));
+        if(mappedIndex.row() < 0) {
+            clearSelectedInfo();
+            return;
+        }
+
+        // set selected row; note that the side info ought to be already correct,
+        //  as we're restoring a previously selected item
+        ui->assignmentTableView->selectionModel()->select(mappedIndex,
+            QItemSelectionModel::ClearAndSelect|QItemSelectionModel::Rows);
+    }
 }
 
 void ProtocolAssignmentDialog::setHeaders(QStandardItemModel *model) {

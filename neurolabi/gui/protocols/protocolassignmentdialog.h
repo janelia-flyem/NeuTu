@@ -49,6 +49,7 @@ private:
     ProtocolAssignmentClient m_client;
     QString m_username;
     QList<ProtocolAssignment> m_assignments;
+    int m_savedSelectedAssignmentID;
 
     bool checkForTokens();
 
@@ -59,8 +60,13 @@ private:
     void updateAssignmentsTable();
     void clearAssignmentsTable();
 
+    void updateFilter();
+
     void updateSelectedInfo(ProtocolAssignment assignment);
     void clearSelectedInfo();
+
+    void saveSelection();
+    void restoreSelection();
 
     void setHeaders(QStandardItemModel *model);
 
