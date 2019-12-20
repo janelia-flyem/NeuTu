@@ -78,6 +78,18 @@ void FlyEmDataWriter::UploadUserDataConfig(
                    "user_" + userName, obj);
 }
 
+void FlyEmDataWriter::WriteRoiData(
+    ZDvidWriter &writer, const std::string &name, const ZObject3dScan &roi)
+{
+  if (!writer.getDvidReader().hasData(name)) {
+    writer.createData("roi", name);
+  } else {
+    writer.deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer.writeRoi(roi, name);
+}
+
 void FlyEmDataWriter::UploadRoi(
     ZDvidWriter &writer, const std::string &name, const std::string &roiFile,
     const std::string &meshFile)
@@ -174,6 +186,47 @@ void FlyEmDataWriter::TransferRoiData(
     }
   }
 }
+
+void FlyEmDataWriter::TransferRoiData(
+      const ZDvidReader &reader,
+      const std::vector<std::string> &sourceRoiNameList,
+      ZDvidWriter &writer, const std::string &targetRoiName,
+      std::function<void(std::string)> errorMsgHandler)
+{
+  if (reader.good() && writer.good() && !sourceRoiNameList.empty()) {
+    std::string newTargetRoiName = targetRoiName;
+    std::string sourceRoiName = sourceRoiNameList.front();
+    if (!sourceRoiName.empty()) {
+      if (newTargetRoiName.empty()) {
+        newTargetRoiName = sourceRoiName;
+      }
+
+      ZObject3dScan roi = reader.readRoi(sourceRoiName);
+      for (size_t i = 1; i < sourceRoiNameList.size(); ++i) {
+        reader.readRoi(sourceRoiNameList[i], &roi, true);
+      }
+      roi.canonize();
+
+      if (!roi.isEmpty()) {
+        if (!writer.getDvidReader().hasData(newTargetRoiName)) {
+          writer.createData("roi", newTargetRoiName);
+        } else {
+          writer.deleteData("roi", newTargetRoiName);
+        }
+        std::cout << "Writing " << newTargetRoiName << std::endl;
+        writer.writeRoi(roi, newTargetRoiName);
+      } else {
+        process_error_message(
+              "WARNING: no source ROI data found.", errorMsgHandler);
+      }
+    } else {
+      process_error_message("WARNING: empty source ROI name", errorMsgHandler);
+    }
+  } else {
+    process_error_message("WARNING: empty source ROI list", errorMsgHandler);
+  }
+}
+
 
 
 void FlyEmDataWriter::TransferRoiRef(

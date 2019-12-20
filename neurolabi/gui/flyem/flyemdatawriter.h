@@ -8,6 +8,7 @@ class ZDvidWriter;
 class ZDvidReader;
 class ZIntPoint;
 class FlyEmDataConfig;
+class ZObject3dScan;
 
 class FlyEmDataWriter
 {
@@ -22,6 +23,8 @@ public:
   static void UploadRoi(
       ZDvidWriter &writer, const std::string &name, const std::string &roiFile,
       const std::string &meshFile);
+  static void WriteRoiData(
+      ZDvidWriter &writer, const std::string &name, const ZObject3dScan &roi);
 
   /*!
    * \brief Transfer ROI from one node to another
@@ -40,6 +43,12 @@ public:
 
   static void TransferRoiData(
       const ZDvidReader &reader, const std::string &sourceRoiName,
+      ZDvidWriter &writer, const std::string &targetRoiName,
+      std::function<void(std::string)> errorMsgHandler = nullptr);
+
+  static void TransferRoiData(
+      const ZDvidReader &reader,
+      const std::vector<std::string> &sourceRoiNameList,
       ZDvidWriter &writer, const std::string &targetRoiName,
       std::function<void(std::string)> errorMsgHandler = nullptr);
 

@@ -30579,6 +30579,14 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  FlyEmDataWriter::TransferRoiData(*reader, "IPS", *writer, "IPS(R)");
+  FlyEmDataWriter::TransferRoiRef(*reader, "IPS", *writer, "IPS(R)");
+  FlyEmDataWriter::TransferRoi(*reader, "IPS", *writer, "IPS(R)");
+#endif
+
+#if 0
   ZStackReader reader;
   ZStack *stack = reader.Read(
         "dvid://127.0.0.1:1600/c315/"
@@ -30603,6 +30611,78 @@ void ZTest::test(MainWindow *host)
   if (s.startsWith("<json>") && s.endsWith("</json>")) {
     std::cout << s.substr(6, s.length() - 13).c_str() << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidRoi roi;
+  std::string roiName = "FB-column3";
+  reader->readRoi(roiName, &roi);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(*roi.getRoiRef());
+  std::string meshPath = GET_TEST_DATA_DIR + "/_test.drc";
+  mesh->save(meshPath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemi");
+  writer->uploadRoiMesh(meshPath, roiName);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  ZObject3dScan roi;
+  roi.addSegment(2, 3, 3, 10);
+  FlyEmDataWriter::WriteRoiData(*writer, "test2", roi);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  std::vector<std::string> sourceList({"test", "test2"});
+  FlyEmDataWriter::TransferRoiData(
+        writer->getDvidReader(), sourceList, *writer, "test3");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "LAL(R)", *writer, "LAL(-GA)(R)");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "CRE(R)", *writer, "CRE(-ROB,-RUB)(R)");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "SAD", *writer, "SAD(-AMMC)");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  {
+    std::vector<std::string> roiList({"LAL(-GA)(R)", "GA(R)"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "LAL(R)");
+  }
+
+  {
+    std::vector<std::string> roiList({"CRE(-ROB,-RUB)(R)", "ROB(R)", "RUB(R)"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "CRE(R)");
+  }
+
+  {
+    std::vector<std::string> roiList({"SAD(-AMMC)", "AMMC"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "SAD");
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidRoi roi;
+  std::string roiName = "SAD";
+  reader->readRoi(roiName, &roi);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(*roi.getRoiRef());
+  std::string meshPath = GET_TEST_DATA_DIR + "/_test.drc";
+  mesh->save(meshPath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemi");
+  writer->uploadRoiMesh(meshPath, roiName);
+
 #endif
 
   std::cout << "Done." << std::endl;
