@@ -340,6 +340,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
 #include "dvid/zdvidurl.h"
+//#include "neulib/core/utilities.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30629,15 +30630,15 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
   ZObject3dScan roi;
-  roi.addSegment(2, 3, 3, 10);
-  FlyEmDataWriter::WriteRoiData(*writer, "test2", roi);
+  roi.addSegment(2, 4, 3, 10);
+  FlyEmDataWriter::WriteRoiData(*writer, "test3", roi);
 #endif
 
 #if 0
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
-  std::vector<std::string> sourceList({"test", "test2"});
+  std::vector<std::string> sourceList({"test", "test2", "test3"});
   FlyEmDataWriter::TransferRoiData(
-        writer->getDvidReader(), sourceList, *writer, "test3");
+        writer->getDvidReader(), sourceList, *writer, "test4");
 #endif
 
 #if 0
@@ -30683,6 +30684,11 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemi");
   writer->uploadRoiMesh(meshPath, roiName);
 
+#endif
+
+#if 0
+  int x;
+  std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

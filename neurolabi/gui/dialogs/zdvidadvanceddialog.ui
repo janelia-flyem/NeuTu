@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>470</width>
+    <width>479</width>
     <height>341</height>
    </rect>
   </property>
@@ -55,12 +55,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="todoLineEdit"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="todoHintLabel">
-       <property name="text">
-        <string>Leave it empty to use default name</string>
+      <widget class="QLineEdit" name="todoLineEdit">
+       <property name="placeholderText">
+        <string>default</string>
        </property>
       </widget>
      </item>
@@ -76,12 +73,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="bodyLabelLineEdit"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="bodyLabelHintLabel">
-       <property name="text">
-        <string>Leave it empty to use default name</string>
+      <widget class="QLineEdit" name="bodyLabelLineEdit">
+       <property name="placeholderText">
+        <string>default</string>
        </property>
       </widget>
      </item>

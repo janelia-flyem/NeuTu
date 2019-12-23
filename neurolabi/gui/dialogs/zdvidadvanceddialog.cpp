@@ -150,9 +150,9 @@ void ZDvidAdvancedDialog::UpdateWidget(
 void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
 {
   UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos",
-               ui->todoHintLabel);
+               nullptr);
   UpdateWidget(ui->bodyLabel, ui->bodyLabelLineEdit, "Body Label", obj, "bodies",
-               ui->bodyLabelHintLabel);
+               nullptr);
 //  ui->todoHintLabel->setVisible(ui->todoLineEdit->isVisible());
 }
 

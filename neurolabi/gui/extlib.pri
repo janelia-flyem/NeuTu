@@ -173,6 +173,8 @@ win32 {
 macx {
   LIBS += -framework AGL -framework OpenGL
 }
+
+#LIBS += -lneucore
 #unix:!macx {
 #  LIBS += -lGL -lGLU
 #}
