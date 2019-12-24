@@ -47,8 +47,8 @@ class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofDoc(QObject *parent = 0);
-  ~ZFlyEmProofDoc();
+  explicit ZFlyEmProofDoc(QObject *parent = nullptr);
+  ~ZFlyEmProofDoc() override;
 
   static ZFlyEmProofDoc* Make();
 
@@ -251,7 +251,7 @@ public:
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void cleanBodyAnnotationMap();
+  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
@@ -280,6 +280,9 @@ public:
 
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
+
+  void exportGrayscale(
+      const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -357,7 +360,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemAction(neutu::EToDoAction action, bool checked);
-  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> f,
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> process,
                         std::function<bool(const ZFlyEmToDoItem&)> pred);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
@@ -501,7 +504,7 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -589,8 +592,6 @@ public slots: //Commands
 
   void executeRemoveTodoItemCommand();
 
-  void executeRunTipDetectionCommand(const ZIntPoint &pt, uint64_t bodyId);
-
   void executeRotateRoiPlaneCommand(int z, double theta);
   void executeScaleRoiPlaneCommand(int z, double sx, double sy);
 
@@ -641,7 +642,6 @@ public slots:
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
   QString getBodyLockFailMessage(uint64_t bodyId);
-
 
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
@@ -738,6 +738,7 @@ private:
   void runSplitFunc(neutu::EBodySplitMode mode);
   void localSplitFunc(neutu::EBodySplitMode mode);
   void runFullSplitFunc(neutu::EBodySplitMode mode);
+
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
@@ -745,6 +746,10 @@ private:
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
   std::string getSynapseName(const ZDvidSynapse &synapse) const;
+  std::string getPartnerProperty(const ZDvidSynapse &synapse) const;
+  std::string getSynapseName(
+      const ZDvidSynapse &synapse,
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
@@ -760,6 +765,9 @@ private:
   void warnSynapseReadonly();
 
   ZDvidReader& getBookmarkReader();
+
+private slots:
+  void processBodyMergeUploaded();
 
 protected:
   ZDvidEnv m_dvidEnv;
@@ -784,6 +792,7 @@ protected:
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  mutable QMutex m_workWriterMutex;
   ZDvidWriter m_workWriter;
   ZDvidReader m_supervoxelWorkReader;
 //  ZDvidReader m_grayscaleWorkReader;

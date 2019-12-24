@@ -8,6 +8,7 @@
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
+#include "protocols/taskutils.h"
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
@@ -503,7 +504,6 @@ void TaskFalseSplitReview::updateVisibility()
 
 void TaskFalseSplitReview::zoomToFitMeshes()
 {
-  Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc);
   QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
 
   ZBBox<glm::dvec3> bbox;
@@ -517,37 +517,12 @@ void TaskFalseSplitReview::zoomToFitMeshes()
   glm::dvec3 c = (bbox.minCorner() + bbox.maxCorner()) / 2.0;
   ZPoint center(c.x, c.y, c.z);
 
-  double radius = 0;
-  std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>() };
+  std::set<uint64_t> bodyIDs { m_bodyId };
+  std::vector<Z3DMeshFilter*> filters { getMeshFilter(m_bodyDoc) };
 
-  const size_t stride = 3;
-
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
-    if (tarBodyId == m_bodyId) {
-      for (size_t i = 0; i < mesh->vertices().size(); i++) {
-        glm::vec3 vertex = mesh->vertices()[i];
-        double r = center.distanceTo(vertex.x, vertex.y, vertex.z);
-        radius = std::max(r, radius);
-
-        // To improve performance, use only a fraction of the vertices
-        // when determining the zoom.
-
-        if (i % stride == 0) {
-          vertices.back().push_back(vertex);
-        }
-      }
-    }
-  }
-
-  Z3DCameraUtils::resetCamera(center, radius, filter->camera());
-  Z3DCameraUtils::tightenZoom(vertices, filter->camera());
-
-  // Adjust the near clipping plane to accomodate all the meshes, then rerender.
-
-  filter->camera().resetCameraNearFarPlane(bbox);
-  filter->invalidate();
+  bool onlySmaller = false;
+  size_t stride = 3;
+  TaskUtils::zoomToMeshes(m_bodyDoc, bodyIDs, center, filters, onlySmaller, stride);
 }
 
 void TaskFalseSplitReview::displayWarning(const QString &title, const QString &text,

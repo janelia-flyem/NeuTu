@@ -123,7 +123,7 @@ int* Image_Hist_M(Image *image, Image *mask);
  * FALSE. NULL is considered as non-empty.
  */
 void Empty_Image(Image *image);
-BOOL Is_Image_Empty(const Image *image);
+_BOOL_ Is_Image_Empty(const Image *image);
 
 /*
  * Image_Block_Sum() calculates the sum of intensties in a local window and

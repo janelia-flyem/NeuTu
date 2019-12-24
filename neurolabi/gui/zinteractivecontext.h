@@ -6,7 +6,7 @@
 #define ZINTERACTIVECONTEXT_H
 
 #include <QRect>
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -147,12 +147,12 @@ public:
   inline bool isObjectProjectView() const {
     return (m_viewMode == VIEW_OBJECT_PROJECT) || isProjectView(); }
   inline bool isNormalView() const { return m_viewMode == VIEW_NORMAL; }
-  inline bool isStackSliceView() const { return !isNormalView(); }
+  inline bool isStackSliceView() const { return !isProjectView(); }
   inline bool isObjectSliceView() const { return !isObjectProjectView(); }
   //inline bool is3DView() {return m_viewMode == VIEW_3D; }
   inline bool fittingSegment() { return m_traceMode == TRACE_SINGLE; }
   inline bool tracingTube() { return m_traceMode == TRACE_TUBE; }
-  inline bool markPuncta() {return m_markPunctaMode == MARK_PUNCTA;}
+  inline bool markingPuncta() {return m_markPunctaMode == MARK_PUNCTA;}
   inline void backupExploreMode() { m_oldExploreMode = m_exploreMode; }
   inline void restoreExploreMode() { m_exploreMode = m_oldExploreMode; }
   inline bool isStrokeEditModeOff() const {

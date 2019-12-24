@@ -1,15 +1,17 @@
+#include "zimage.h"
+
 #include <iostream>
+#include <stdexcept>
 #include <QImageWriter>
 
-#include "tz_error.h"
-#include "zimage.h"
 #include "tz_stack_neighborhood.h"
+
+#include "common/neutudefs.h"
+#include "common/math.h"
 #include "zstack.hxx"
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
-#include "common/neutube_def.h"
-#include "tz_math.h"
 #include "zjsonobject.h"
 
 /* Implementation details
@@ -441,7 +443,7 @@ void ZImage::setData(
 void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 {
   for (int i = 0; i < 256; ++i) {
-    int value = iround(scale * i + offset);
+    int value = neutu::iround(scale * i + offset);
     if (value <= 0) {
       valueMap[i] = '\0';
     } else if (value >= 255) {
@@ -986,8 +988,8 @@ void ZImage::drawRaster(const void *data, int kind, double scale,
     setData(ima.arrayc);
     break;
   default:
-    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
-    throw std::exception();
+//    PRINT_EXCEPTION("Unknown data type", "The kind of data is not recognized");
+    throw std::invalid_argument("Unsupported stack kind");
   }
 }
 
@@ -1282,8 +1284,7 @@ void ZImage::enhanceContrast(bool highContrast)
         uchar colorTable[256];
 //        double s = m_grayScale;
         for (int i = 0; i < 256; ++i) {
-          int v = m_contrastProtocol.mapGrey(i);
-          colorTable[i] = iround(v);
+          colorTable[i] = m_contrastProtocol.mapGrey(i);
         }
 
         for (int j = 0; j < height(); j++) {
@@ -1364,9 +1365,9 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
       if (i <= threshold) {
         setColor(i, qRgb(255, 0, 0));
       } else {
-        int r = iround(colorMap[i][0] * 255);
-        int g = iround(colorMap[i][1] * 255);
-        int b = iround(colorMap[i][2] * 255);
+        int r = colorMap[i][0] * 255;
+        int g = colorMap[i][1] * 255;
+        int b = colorMap[i][2] * 255;
 
         setColor(i, qRgb(r, g, b));
       }
@@ -1492,9 +1493,9 @@ void ZImage::setDataBlockIndexed8(
     if (i <= threshold) {
       setColor(i, qRgb(255, 0, 0));
     } else {
-      int r = iround(colorMap[i][0] * 255);
-      int g = iround(colorMap[i][1] * 255);
-      int b = iround(colorMap[i][2] * 255);
+      int r = colorMap[i][0] * 255;
+      int g = colorMap[i][1] * 255;
+      int b = colorMap[i][2] * 255;
 
       setColor(i, qRgb(r, g, b));
     }
@@ -1677,9 +1678,9 @@ void ZImage::setDataIndexed8(
   }
 
   for (int i = 0; i < 256; ++i) {
-    int r = iround(colorMap[0][i][0] * 255);
-    int g = iround(colorMap[0][i][1] * 255);
-    int b = iround(colorMap[0][i][2] * 255);
+    int r = colorMap[0][i][0] * 255;
+    int g = colorMap[0][i][1] * 255;
+    int b = colorMap[0][i][2] * 255;
 
     setColor(i, qRgba(r, g, b, alpha));
   }

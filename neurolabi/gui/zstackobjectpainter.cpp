@@ -1,7 +1,7 @@
 #include "zstackobjectpainter.h"
 #include "zpainter.h"
 #include "geometry/zlinesegment.h"
-#include "tz_utilities.h"
+#include "common/utilities.h"
 
 ZStackObjectPainter::ZStackObjectPainter()
 {
@@ -49,8 +49,8 @@ ZLineSegment ZStackObjectPainter::GetFocusSegment(
   double upperZ = dataFocus + 0.5;
   double lowerZ = dataFocus - 0.5;
 
-  if (IS_IN_OPEN_RANGE(seg.getStartPoint().getZ(), lowerZ, upperZ) &&
-      IS_IN_OPEN_RANGE(seg.getEndPoint().getZ(), lowerZ, upperZ)) {
+  if (neutu::WithinOpenRange(seg.getStartPoint().getZ(), lowerZ, upperZ) &&
+      neutu::WithinOpenRange(seg.getEndPoint().getZ(), lowerZ, upperZ)) {
     visible = true;
   } else {
     if (seg.getStartPoint().getZ() > seg.getEndPoint().getZ()) {
@@ -83,7 +83,7 @@ void ZStackObjectPainter::paint(
 {
   double dataFocus = painter.getZ(slice);
   bool visible = false;
-  ZLineSegment cross = GetFocusSegment(seg, visible, dataFocus);
+  ZLineSegment cross = GetFocusSegment(seg, visible, int(std::round(dataFocus)));
   if (visible) {
     if (m_painterConst) {
       painter.save();

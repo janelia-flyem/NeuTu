@@ -204,6 +204,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_ADD_TODO_SVSPLIT);
       }
       config.append(ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC);
+      config.append(ZActionFactory::ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC);
       config.append(ZActionFactory::ACTION_SEPARATOR);
       config.append(ZActionFactory::ACTION_RUN_TIP_DETECTION);
       config.append(ZActionFactory::ACTION_SEPARATOR);
@@ -254,9 +255,12 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
     if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
-      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
     config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    if (doc->getDvidTarget().hasSupervoxel()) {
+      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
+    }
 
     config.appendSeparator();
 
@@ -279,7 +283,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
-    TStackObjectSet& bookmarkSet =
+    const TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       QString groupName("Bookmarks");

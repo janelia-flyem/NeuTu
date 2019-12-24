@@ -10,11 +10,11 @@
 
 #include "zstackball.h"
 #include "tz_swc_cell.h"
-#include "tz_math.h"
-//#include "geometry/zpoint.h"
-#include "zvaa3dmarker.h"
 
-class ZJsonObject;
+#include "zvaa3dmarker.h"
+#include "zjsonobject.h"
+
+//class ZJsonObject;
 class ZIntPoint;
 class ZPoint;
 
@@ -131,6 +131,7 @@ private:
   //QColor m_color;
   //QString m_source;
   double m_score;  // detection score [-1.0 1.0]
+  ZJsonObject m_meta;
 };
 
 #endif // ZPUNCTUM_H

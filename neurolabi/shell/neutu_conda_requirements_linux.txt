@@ -6,7 +6,7 @@ jansson=2.7*
 libpng=1.6*
 hdf5=1.10*
 pango=1.40*
-lowtis=0.1.0.post69*
+lowtis=0.1.0.post71*
 ninja=1.7.2*
 tbb=2019.4*
 tbb-devel=2019.4*
@@ -21,4 +21,5 @@ alsa-lib=1.1.5*
 xorg-libxrandr=1.5.1*
 xorg-libxcursor=1.2.0*
 xorg-libxtst=1.2.3*
-
+python=3.7.3*
+marktips=0.3*

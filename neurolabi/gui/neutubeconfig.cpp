@@ -12,18 +12,18 @@
 #include "qt/network/znetbufferreader.h"
 #include "neutube.h"
 #else
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #endif
 
-#include "tz_cdefs.h"
 #ifdef _QT_GUI_USED_
 #include "zxmldoc.h"
 #endif
+#include "common/utilities.h"
+#include "filesystem/utilities.h"
 #include "zstring.h"
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "tz_utilities.h"
 
 using namespace std;
 
@@ -285,7 +285,7 @@ bool NeutubeConfig::load(const std::string &filePath)
   cout << "Loading configuration ..." << endl;
 #endif
 
-  if (fexist(filePath.c_str())) {
+  if (neutu::FileExists(filePath)) {
     ZXmlDoc doc;
     doc.parseFile(filePath);
 

@@ -236,7 +236,7 @@ void Stack_Label_Bwc(Stack *stack, const Stack *label, Rgb_Color color)
     THROW(ERROR_DATA_TYPE);
   }
 
-  if (Stack_Same_Size(stack, label) == FALSE) {
+  if (Stack_Same_Size(stack, label) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -265,7 +265,7 @@ void Stack_Label_Level(Stack *stack, const Stack *label, uint8 level,
     THROW(ERROR_DATA_TYPE);
   }
 
-  if (Stack_Same_Size(stack, label) == FALSE) {
+  if (Stack_Same_Size(stack, label) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -294,7 +294,7 @@ void Stack_Label_Color(Stack *stack, const Stack *label, double h, double s,
     THROW(ERROR_DATA_TYPE);
   }
 
-  if (Stack_Same_Size(stack, label) == FALSE) {
+  if (Stack_Same_Size(stack, label) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -329,7 +329,7 @@ void Stack_Label_Color_L(Stack *stack, const Stack *label, int level,
     THROW(ERROR_DATA_TYPE);
   }
 
-  if (Stack_Same_Size(stack, label) == FALSE) {
+  if (Stack_Same_Size(stack, label) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -360,7 +360,7 @@ void Stack_Label_Color_L(Stack *stack, const Stack *label, int level,
 }
 
 #define STACK_REPLACE_POINT(array, type, value, min, max)		\
-  if (is_finite == TRUE) {						\
+  if (is_finite == _TRUE_) {						\
     if (value < min) {							\
       value = min;							\
     } else if (value > max) {						\
@@ -540,7 +540,7 @@ void Stack_Draw_Point(Stack *stack, double x, double y, double z, double v,
     TZ_ERROR(ERROR_DATA_TYPE);
   }
 
-  int is_finite = TRUE;
+  int is_finite = _TRUE_;
   double value;
 
   DEFINE_SCALAR_ARRAY_ALL(array, stack);
@@ -555,11 +555,11 @@ void Stack_Draw_Point(Stack *stack, double x, double y, double z, double v,
     STACK_DRAW_POINT(array_grey16, uint16, 0, 65535, mode);
     break;
   case FLOAT32:
-    is_finite = FALSE;
+    is_finite = _FALSE_;
     STACK_DRAW_POINT(array_float32, float32, 0, 0, mode);
     break;
   case FLOAT64:
-    is_finite = FALSE;
+    is_finite = _FALSE_;
     STACK_DRAW_POINT(array_float64, float64, 0, 0, mode);
     break;
   default:

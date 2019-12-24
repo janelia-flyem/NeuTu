@@ -17,7 +17,7 @@
 #include "zobject3dscan.hpp"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "mvc/zstackframe.h"
 #include "zcolorscheme.h"
 #include "zobject3dscanarray.h"

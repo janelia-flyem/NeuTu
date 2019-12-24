@@ -1,10 +1,12 @@
 #include "zobject3dstripe.h"
 
 #include <cstring>
+#include <cassert>
+#include <stdexcept>
 
-#include "tz_error.h"
 #include "zerror.h"
-#include "tz_math.h"
+#include "common/math.h"
+#include "common/utilities.h"
 #include "geometry/zgeometry.h"
 
 int ZObject3dStripe::getMinX() const
@@ -545,6 +547,7 @@ void ZObject3dStripe::drawStack(
     z += offset[2];
   }
 
+  /*
   if (y >= C_Stack::height(stack)) {
     RECORD_ERROR(true, "y too large");
     return;
@@ -554,26 +557,35 @@ void ZObject3dStripe::drawStack(
     RECORD_ERROR(true, "z too large");
     return;
   }
+  */
   //TZ_ASSERT(y < C_Stack::height(stack), "y too large");
   //TZ_ASSERT(z < C_Stack::depth(stack), "z too large");
 
-  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
-  size_t arrayOffset = area * z + C_Stack::width(stack) * y;
+  if (neutu::WithinOpenRange(y, -1, C_Stack::height(stack)) &&
+      neutu::WithinOpenRange(z, -1, C_Stack::depth(stack))) {
+    size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+    size_t arrayOffset = area * z + C_Stack::width(stack) * y;
 
-  ima.arrayc += arrayOffset;
-  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-    int x0 = m_segmentArray[i];
-    int x1 = m_segmentArray[i + 1];
-    if (offset != NULL) {
-      x0 += offset[0];
-      x1 += offset[0];
-    }
-    TZ_ASSERT(x0 < C_Stack::width(stack), "x too large");
-    TZ_ASSERT(x1 < C_Stack::width(stack), "x too large");
-    for (int x = x0; x <= x1; ++x) {
-      ima.arrayc[x][0] = red;
-      ima.arrayc[x][1] = green;
-      ima.arrayc[x][2] = blue;
+    ima.arrayc += arrayOffset;
+    int cwidth = C_Stack::width(stack) - 1;
+    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+      int x0 = m_segmentArray[i];
+      int x1 = m_segmentArray[i + 1];
+      if (offset != NULL) {
+        x0 += offset[0];
+        x1 += offset[0];
+      }
+      //      assert(x0 < C_Stack::width(stack));
+      //      assert(x1 < C_Stack::width(stack));
+
+
+      if (neutu::ClipRange(0, cwidth, x0, x1)) {
+        for (int x = x0; x <= x1; ++x) {
+          ima.arrayc[x][0] = red;
+          ima.arrayc[x][1] = green;
+          ima.arrayc[x][2] = blue;
+        }
+      }
     }
   }
 }
@@ -583,8 +595,10 @@ void ZObject3dStripe::drawStack(
     const int *offset) const
 {
   if (C_Stack::kind(stack) != COLOR) {
-    RECORD_ERROR(true, "Unsupported kind");
-    return;
+    throw std::invalid_argument(
+          std::string(__FUNCTION__) + ": Unsupported kind");
+//    RECORD_ERROR(true, "Unsupported kind");
+//    return;
   }
 
   Image_Array ima;
@@ -642,7 +656,7 @@ void ZObject3dStripe::drawStack(
       for (int c = 0; c < 3; ++c) {
 //        if (color[c] != 0) {
           double v = ima.arrayc[x][c] * (1.0 - alpha) + color[c] * alpha;
-          ima.arrayc[x][c] = iround(v);
+          ima.arrayc[x][c] = neutu::iround(v);
 //        }
       }
     }

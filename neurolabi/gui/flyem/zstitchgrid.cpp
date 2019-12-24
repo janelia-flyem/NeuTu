@@ -1,6 +1,6 @@
 #include "zstitchgrid.h"
+
 #include <math.h>
-#include "tz_math.h"
 
 flyem::ZStitchGrid::ZStitchGrid()
 {

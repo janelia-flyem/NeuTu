@@ -173,6 +173,14 @@ TEST(ZString, appendNumber)
   }
 }
 
+TEST(ZString, number)
+{
+  std::vector<uint64_t> ns = ZString("1 2 12345678910").toUint64Array();
+  ASSERT_EQ(uint64_t(1), ns[0]);
+  ASSERT_EQ(uint64_t(2), ns[1]);
+  ASSERT_EQ(uint64_t(12345678910ull), ns[2]);
+}
+
 #endif
 
 #endif // ZSTRINGTEST_H

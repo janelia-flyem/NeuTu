@@ -95,11 +95,24 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
     return mode;
   }
 
-  if (exploreMode() == EXPLORE_MOVE_IMAGE) {
-    return INTERACT_IMAGE_MOVE;
+  switch (exploreMode()) {
+  case EXPLORE_MOVE_IMAGE:
+    mode = INTERACT_IMAGE_MOVE;
+    break;
+  case  EXPLORE_LOCAL:
+    mode = INTERACT_EXPLORE_LOCAL;
+    break;
+  case EXPLORE_EXTERNALLY:
+    mode = INTERACT_EXPLORE_EXTERNALLY;
+    break;
+  case EXPLORE_DETAIL:
+    mode = INTERACT_EXPLORE_DETAIL;
+    break;
+  default:
+    break;
   }
 
-//  if (isExploreModeOff()) {
+  if (mode == INTERACT_FREE) {
     switch (swcEditMode()) {
     case SWC_EDIT_ADD_NODE:
       mode = INTERACT_SWC_ADD_NODE;
@@ -120,100 +133,71 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
     default:
       break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (strokeEditMode()) {
-      case STROKE_DRAW:
-        mode = INTERACT_STROKE_DRAW;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (strokeEditMode()) {
+    case STROKE_DRAW:
+      mode = INTERACT_STROKE_DRAW;
+      break;
+    default:
+      break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (rectEditMode()) {
-      case RECT_DRAW:
-        mode = INTERACT_RECT_DRAW;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (rectEditMode()) {
+    case RECT_DRAW:
+      mode = INTERACT_RECT_DRAW;
+      break;
+    default:
+      break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (MarkPunctaMode()) {
-      case MARK_PUNCTA:
-        mode = INTERACT_PUNCTA_MARK;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (editPunctaMode()) {
+    case MARK_PUNCTA:
+      mode = INTERACT_PUNCTA_MARK;
+      break;
+    default:
+      break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (bookmarkEditMode()) {
-      case BOOKMARK_ADD:
-        mode = INTERACT_ADD_BOOKMARK;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (bookmarkEditMode()) {
+    case BOOKMARK_ADD:
+      mode = INTERACT_ADD_BOOKMARK;
+      break;
+    default:
+      break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (synapseEditMode()) {
-      case SYNAPSE_ADD_PRE:
-      case SYNAPSE_ADD_POST:
-        mode = INTERACT_ADD_SYNAPSE;
-        break;
-      case SYNAPSE_MOVE:
-        mode = INTERACT_MOVE_SYNAPSE;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (synapseEditMode()) {
+    case SYNAPSE_ADD_PRE:
+    case SYNAPSE_ADD_POST:
+      mode = INTERACT_ADD_SYNAPSE;
+      break;
+    case SYNAPSE_MOVE:
+      mode = INTERACT_MOVE_SYNAPSE;
+      break;
+    default:
+      break;
     }
+  }
 
-    if (mode == INTERACT_FREE) {
-      switch (todoEditMode()) {
-      case TODO_ADD_ITEM:
-        mode = INTERACT_ADD_TODO_ITEM;
-        break;
-      default:
-        break;
-      }
+  if (mode == INTERACT_FREE) {
+    switch (todoEditMode()) {
+    case TODO_ADD_ITEM:
+      mode = INTERACT_ADD_TODO_ITEM;
+      break;
+    default:
+      break;
     }
-
-    if (mode == INTERACT_FREE) {
-      if (exploreMode() == EXPLORE_LOCAL) {
-        mode = INTERACT_EXPLORE_LOCAL;
-      } else if (exploreMode() == EXPLORE_EXTERNALLY) {
-        mode = INTERACT_EXPLORE_EXTERNALLY;
-      } else if (exploreMode() == EXPLORE_DETAIL) {
-        mode = INTERACT_EXPLORE_DETAIL;
-      }
-    }
-
-//  } else {
-//    if (mode == INTERACT_FREE) {
-//    switch (exploreMode()) {
-//    case EXPLORE_MOVE_IMAGE:
-//      mode = INTERACT_IMAGE_MOVE;
-//      break;
-//    case EXPLORE_CAPTURE_MOUSE:
-//      mode = INTERACT_IMAGE_CAPTURE;
-//      break;
-//    case EXPLORE_ZOOM_IN_IMAGE:
-//      mode = INTERACT_IMAGE_ZOOM_IN;
-//      break;
-//    case EXPLORE_ZOOM_OUT_IMAGE:
-//      mode = INTERACT_IMAGE_ZOOM_OUT;
-//      break;
-//    default:
-//      break;
-//    }
-//  }
+  }
 
   return mode;
 }

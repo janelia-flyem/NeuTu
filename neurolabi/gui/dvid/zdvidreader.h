@@ -209,6 +209,8 @@ public:
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
+  std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
+      const std::string &url) const;
 
   ZMesh* readSupervoxelMesh(uint64_t svId) const;
 
@@ -411,6 +413,9 @@ public:
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId, neutu::EBodyLabelType type) const;
+  std::vector<size_t> readBodySize(
+      const std::vector<uint64_t> &bodyArray, neutu::EBodyLabelType type) const;
+
   std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
       uint64_t bodyId, neutu::EBodyLabelType type) const;
 

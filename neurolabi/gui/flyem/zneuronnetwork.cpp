@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "zstring.h"
-#include "tz_utilities.h"
 #include "zsynapseannotationanalyzer.h"
 #include "geometry/zcuboid.h"
 #include "tz_darray.h"
@@ -137,7 +136,7 @@ void ZNeuronNetwork::exportSwcFile(const std::string &filePath, int bodyId,
 
       if (connect_tree != NULL) {
         Swc_Tree_Iterator_Start(connect_tree,
-                                SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+                                SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
         Swc_Tree_Node *tn = NULL;
         while ((tn = Swc_Tree_Next(connect_tree)) != NULL) {
@@ -170,7 +169,7 @@ void ZNeuronNetwork::exportSwcFile(const std::string &filePath, int bodyId,
         //Write_Swc_Tree("/Users/zhaot/Work/neutube/neurolabi/data/test2.swc", connect_tree);
 
         Swc_Tree_Iterator_Start(connect_tree,
-                                SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+                                SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
         while ((tn = Swc_Tree_Next(connect_tree)) != NULL) {
           if (!Swc_Tree_Node_Is_Root(tn)) {

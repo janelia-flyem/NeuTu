@@ -5,7 +5,7 @@
 #include "zswctree.h"
 #include "zswcpath.h"
 #include "tz_sp_grow.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zprogressable.h"
 
 class ZSwcPositionAdjuster : public ZProgressable

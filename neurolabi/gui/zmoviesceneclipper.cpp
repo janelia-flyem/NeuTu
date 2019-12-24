@@ -1,6 +1,7 @@
 #include "zmoviesceneclipper.h"
 
-#include "tz_math.h"
+#include "common/math.h"
+
 #include "z3dwindow.h"
 #include "z3dvolumefilter.h"
 #include "z3dswcfilter.h"
@@ -276,7 +277,7 @@ int ZMovieSceneClipperState::getLowerClip(
   pair<double, double> *clipHandle = getClipHandle(target);
   int index = getClipAxisIndex(axis);
 
-  int clip = iround(clipHandle[index].first);
+  int clip = neutu::iround(clipHandle[index].first);
 
   return clip;
 }
@@ -287,7 +288,7 @@ int ZMovieSceneClipperState::getUpperClip(
   pair<double, double> *clipHandle = getClipHandle(target);
   int index = getClipAxisIndex(axis);
 
-  int clip = iround(clipHandle[index].second);
+  int clip = neutu::iround(clipHandle[index].second);
 
   return clip;
 }

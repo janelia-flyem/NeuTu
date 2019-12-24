@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"
@@ -166,6 +166,7 @@ public:
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId) const;
 
+  std::string getBodySizeUrl(neutu::EBodyLabelType type) const;
   std::string getBodySizeUrl(uint64_t bodyId) const;
   std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
@@ -369,6 +370,7 @@ private:
 
 public:
   static const std::string SUPERVOXEL_FLAG;
+  static const std::string MESH_INFO_SUFFIX;
 
 private:
   ZDvidTarget m_dvidTarget;

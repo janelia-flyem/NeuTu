@@ -1,12 +1,15 @@
 #include "zstackball.h"
 
+#include <tuple>
+
 #include "zqtheader.h"
 
 #include <QRectF>
 #include <QPen>
 
 #include <math.h>
-#include "tz_math.h"
+
+#include "common/math.h"
 #include "geometry/zintpoint.h"
 #include "zpainter.h"
 
@@ -175,7 +178,7 @@ bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
   double h = fabs(z - n) / zScale;
   if (r > h) {
     return true;
-  } else if (iround(z) == iround(n)) {
+  } else if (neutu::iround(z) == neutu::iround(n)) {
     return true;
   }
 
@@ -215,7 +218,8 @@ void ZStackBall::displayHelper(
     ZPainter *painter, int slice, EDisplayStyle style,
     neutu::EAxis sliceAxis) const
 {
-  UNUSED_PARAMETER(style);
+//  UNUSED_PARAMETER(style);
+  std::ignore = style;
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
@@ -374,14 +378,14 @@ void ZStackBall::displayHelper(
 #endif
 }
 
-void ZStackBall::save(const char *filePath)
+void ZStackBall::save(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 }
 
-bool ZStackBall::load(const char *filePath)
+bool ZStackBall::load(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 
   return false;
 }

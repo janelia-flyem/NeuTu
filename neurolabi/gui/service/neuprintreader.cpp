@@ -161,8 +161,26 @@ bool NeuPrintReader::hasDataset(const QString &uuid)
   return !getUuidKey(uuid).isEmpty();
 }
 
+ZJsonObject NeuPrintReader::getDatasetJson() const
+{
+  return m_dataset;
+}
+
+QStringList NeuPrintReader::getDatasetList() const
+{
+  QStringList dataList;
+  std::vector<std::string> keys = getDatasetJson().getAllKey();
+  for (const std::string &key : keys) {
+    dataList.append(key.c_str());
+  }
+
+  return dataList;
+}
+
 namespace {
-const char* BODY_QUERY_RETURN = "n.bodyId, n.type, n.name, n.status, n.pre, n.post";
+const char* BODY_QUERY_RETURN =
+    "n.bodyId, n.type, n.name, n.status, n.pre, n.post, n.primaryNeurite";
+const char* BODY_QUERY_SYNAPSE_COUNT = "(n.pre + n.post)";
 
 //Assuming the following order: ID, type name, status, pre, post
 ZJsonArray extract_body_info(const QByteArray &response)
@@ -174,27 +192,38 @@ ZJsonArray extract_body_info(const QByteArray &response)
 
   if (resultObj.hasKey("data")) {
     ZJsonArray data(resultObj.value("data"));
-    if (data.size() >= 6) {
-      for (size_t i = 0; i < data.size(); ++i) {
-        int index = 0;
-        uint64_t bodyId = ZJsonParser::integerValue(data.at(i), index++);
+    for (size_t i = 0; i < data.size(); ++i) {
+      ZJsonArray entry(data.value(i));
+
+      if (entry.size() > 6) {
+        size_t index = 0;
+        uint64_t bodyId = uint64_t(
+              ZJsonParser::integerValue(entry.getData(), index++));
         ZJsonObject bodyData;
         bodyData.setEntry("body ID", bodyId);
-        std::string type = ZJsonParser::stringValue(data.at(i), index++);
+        std::string type = ZJsonParser::stringValue(entry.getData(), index++);
         if (!type.empty()) {
           bodyData.setEntry("class", type);
         }
 
-        std::string name = ZJsonParser::stringValue(data.at(i), index++);
+        std::string name = ZJsonParser::stringValue(entry.getData(), index++);
         if (!name.empty()) {
           bodyData.setEntry("name", name);
         }
-        std::string status = ZJsonParser::stringValue(data.at(i), index++);
+        std::string status = ZJsonParser::stringValue(entry.getData(), index++);
         if (!status.empty()) {
           bodyData.setEntry("body status", status);
         }
-        bodyData.setEntry("body T-bars", ZJsonParser::integerValue(data.at(i), index++));
-        bodyData.setEntry("body PSDs", ZJsonParser::integerValue(data.at(i), index++));
+
+        bodyData.setEntry(
+              "body T-bars", ZJsonParser::integerValue(entry.getData(), index++));
+        bodyData.setEntry(
+              "body PSDs", ZJsonParser::integerValue(entry.getData(), index++));
+
+        std::string pn = ZJsonParser::stringValue(entry.getData(), index++);
+        if (!pn.empty()) {
+          bodyData.setEntry("primary neurite", pn);
+        }
         bodies.append(bodyData);
       }
     }
@@ -323,8 +352,53 @@ ZJsonArray NeuPrintReader::queryAllNamedNeuron()
   return extract_body_info(m_bufferReader.getBuffer());
 }
 
+QString NeuPrintReader::getCustomUrl() const
+{
+  return m_server + "/api/custom/custom";
+}
+
+ZJsonObject NeuPrintReader::getQueryJsonObject(const QString &query)
+{
+  ZJsonObject dataObj;
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
+  dataObj.setEntry("cypher", query.toStdString());
+
+  return dataObj;
+}
+
+ZJsonArray NeuPrintReader::queryNeuron(const QString &query)
+{
+  ZJsonObject dataObj = getQueryJsonObject(query);
+
+  KINFO << "Query:" << dataObj.dumpString(0);
+
+  m_bufferReader.post(getCustomUrl(), dataObj.dumpString(0).c_str());
+
+  return extract_body_info(m_bufferReader.getBuffer());
+}
+
+ZJsonArray NeuPrintReader::queryNeuronByType(const QString &type)
+{
+  CypherQuery query = CypherQueryBuilder().
+      match(QString("(n:%1 {type:\"%2\"})").arg(getNeuronLabel('`')).arg(type)).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
+      ret(BODY_QUERY_RETURN);
+
+  return queryNeuron(query.getQueryString());
+}
+
 ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
 {
+  CypherQuery query = CypherQueryBuilder().
+      match(QString("(n:%1 {name:\"%2\"})").arg(getNeuronLabel('`')).arg(name)).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
+      ret(BODY_QUERY_RETURN);
+
+  return queryNeuron(query.getQueryString());
+
+#if 0
   QString url = m_server + "/api/custom/custom";
   ZJsonObject dataObj;
   dataObj.setEntry("dataset", m_currentDataset.toStdString());
@@ -349,37 +423,30 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
   m_bufferReader.post(url, dataObj.dumpString(0).c_str());
 
   return extract_body_info(m_bufferReader.getBuffer());
+#endif
 }
 
 ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
 {
-  QString url = m_server + "/api/custom/custom";
-  ZJsonObject dataObj;
-  dataObj.setEntry("dataset", m_currentDataset.toStdString());
-
   CypherQuery query = CypherQueryBuilder().
       match(QString("(n:%1)").arg(getNeuronLabel('`'))).
       where(QString("LOWER(n.status) = LOWER(\"%1\")").arg(status)).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
       ret(BODY_QUERY_RETURN);
-  QString queryString = query.getQueryString();
 
-  if (m_numberLimit > 0) {
-     queryString += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1")
-         .arg(m_numberLimit);
-  }
-  dataObj.setEntry("cypher", queryString.toStdString());
+  return queryNeuron(query.getQueryString());
+}
 
-//  KINFO << queryString;
+ZJsonArray NeuPrintReader::queryNeuronCustom(const QString &condition)
+{
+  CypherQuery query = CypherQueryBuilder().
+      init(condition).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
+      ret(BODY_QUERY_RETURN);
 
-#ifdef _DEBUG_2
-  std::cout << "Query:" << std::endl;
-  dataObj.print();
-#endif
-  KINFO << "Query:" << dataObj.dumpString(0);
-
-  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
-
-  return extract_body_info(m_bufferReader.getBuffer());
+  return queryNeuron(query.getQueryString());
 }
 
 ZJsonObject NeuPrintReader::customQuery(const QString &query)
@@ -407,15 +474,15 @@ QList<uint64_t> NeuPrintReader::queryNeuron(
   QString url = m_server + "/api/npexplorer/findneurons";
 
   ZJsonObject dataObj;
-  dataObj.setEntry("dataset", "hemibrain");
+  dataObj.setEntry("dataset", m_currentDataset.toStdString());
   ZJsonArray inputRoiJson;
-  for (const QString inputRoi : inputRoiList) {
+  for (const QString &inputRoi : inputRoiList) {
     inputRoiJson.append(inputRoi.toStdString());
   }
   dataObj.setEntry("input_ROIs", inputRoiJson);
 
   ZJsonArray outputRoiJson;
-  for (const QString outputRoi : outputRoiList) {
+  for (const QString &outputRoi : outputRoiList) {
     outputRoiJson.append(outputRoi.toStdString());
   }
   dataObj.setEntry("output_ROIs", outputRoiJson);

@@ -214,8 +214,8 @@ void Image_Array_Minmax_Index_M(const void *array, int kind, size_t length,
 
 #define IMAGE_ARRAY_HIST_M(array, length, mask, hist, range, minmax_index, i) \
   IMAGE_ARRAY_MINMAX_INDEX_M(array, length, mask, minmax_index, i);	\
-  if (Is_Valid_Array_Index(minmax_index[0]) == FALSE ||                 \
-      Is_Valid_Array_Index(minmax_index[1]) == FALSE) {			\
+  if (Is_Valid_Array_Index(minmax_index[0]) == _FALSE_ ||                 \
+      Is_Valid_Array_Index(minmax_index[1]) == _FALSE_) {			\
     return NULL;							\
   }									\
   range = array[minmax_index[1]] - array[minmax_index[0]];		\

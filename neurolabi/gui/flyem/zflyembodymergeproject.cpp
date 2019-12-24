@@ -377,8 +377,8 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
   connect(m_dataFrame->presenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplit()));
 
-  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
-          this, SLOT(update3DBodyView(ZStackObjectSelector)));
+//  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
+//          this, SLOT(update3DBodyView(ZStackObjectSelector)));
 //  connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
   //connect(this, SIGNAL())
 }
@@ -433,6 +433,7 @@ void ZFlyEmBodyMergeProject::saveMergeOperation()
   ZOUT(LTRACE(), 5) << "Merge operation saved.";
 }
 
+/*
 void ZFlyEmBodyMergeProject::clearUndoStack()
 {
   ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
@@ -447,6 +448,7 @@ void ZFlyEmBodyMergeProject::clearUndoStack()
 //  m_mergeMap.clear();
 //  m_annotationCache.clear();
 }
+*/
 
 void ZFlyEmBodyMergeProject::clearBodyMerger()
 {
@@ -541,6 +543,11 @@ bool ZFlyEmBodyMergeProject::isMergableStatus(const std::string &status) const
   return m_bodyStatusProtocol.isMergable(status);
 }
 
+bool ZFlyEmBodyMergeProject::preservingId(const std::string &status) const
+{
+  return m_bodyStatusProtocol.preservingId(status);
+}
+
 namespace {
 
 QString compose_body_status_message(
@@ -602,26 +609,6 @@ QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
     if (itemCount >= 5) {
       break;
     }
-
-    /*
-    if (!bodyArray.empty()) {
-      msg += "<ul>";
-      for (uint64_t bodyId : bodyArray) {
-        msg += QString("<li>%1: %2</li>").
-            arg(bodyId).arg(annotMap[bodyId].getStatus().c_str());
-        ++itemCount;
-        if (itemCount >= 5) {
-          msg += "<li>...</li>";
-          break;
-        }
-      }
-      msg += "</ul>";
-      msg += "<br>";
-      if (itemCount >= 5) {
-        break;
-      }
-    }
-    */
   }
 
   if (!msg.isEmpty()) {
@@ -710,29 +697,47 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray,
     ZWidgetMessage &warnMsg)
 {
-  if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
+  /*
+  if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
+        ZNeutuService::REQUEST_FAILED) {
+      warnMsg.setMessage("Computing service failed");
+    }
+
+    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
+        ZNeutuService::REQUEST_FAILED) {
+      warnMsg.setMessage("Computing service failed");
+    }
+  } else {
     for (uint64_t bodyId : bodyArray) {
       m_writer.deleteBodyAnnotation(bodyId);
       m_writer.deleteSkeleton(bodyId);
     }
 
+    if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
+      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+            "skeletonize", getDvidTarget(), targetId, true);
+      task.setPriority(5);
+      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
+    }
+  }
+  */
+
+  for (uint64_t bodyId : bodyArray) {
+    m_writer.deleteBodyAnnotation(bodyId);
+    m_writer.deleteSkeleton(bodyId);
+  }
+
+  if (GET_FLYEM_CONFIG.neutuseAvailable(
+        neutu::UsingLocalHost(getDvidTarget().getAddress()))) {
     neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
           "skeletonize", getDvidTarget(), targetId, true);
     task.setPriority(5);
     GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-  } else {
-    if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-      if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-            getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-          ZNeutuService::REQUEST_FAILED) {
-        warnMsg.setMessage("Computing service failed");
-      }
-
-      if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-            getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
-          ZNeutuService::REQUEST_FAILED) {
-        warnMsg.setMessage("Computing service failed");
-      }
+    if (GET_FLYEM_CONFIG.getNeutuseWriter().getStatusCode() != 200) {
+      warnMsg.setMessage("Failed to upload skeletonization task");
     }
   }
 
@@ -745,12 +750,13 @@ void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySe
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc) {
     QList<ZDvidLabelSlice*> labelList = doc->getDvidBodySliceList();
+
     foreach (ZDvidLabelSlice *slice, labelList) {
       slice->setSelection(newBodySet, neutu::ELabelSource::ORIGINAL);
-      //            slice->mapSelection();
     }
 
     m_selectedOriginal.clear();
+
     for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
          iter != newBodySet.end(); ++iter) {
       m_selectedOriginal.insert(*iter);
@@ -760,6 +766,7 @@ void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySe
   }
 }
 
+/*
 void ZFlyEmBodyMergeProject::refreshSegmentationView()
 {
   ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
@@ -769,6 +776,7 @@ void ZFlyEmBodyMergeProject::refreshSegmentationView()
     ZOUT(LTRACE(), 5) << "Label buffer refreshed";
   }
 }
+*/
 
 void ZFlyEmBodyMergeProject::unlockBody(const std::set<uint64_t> &bodySet)
 {
@@ -803,8 +811,14 @@ void ZFlyEmBodyMergeProject::removeMerge(const std::vector<uint64_t> &bodyArray)
   }
 }
 
+bool ZFlyEmBodyMergeProject::preserved(uint64_t bodyId) const
+{
+  return (preservingId(m_annotationCache.value(bodyId).getStatus()));
+}
+
 namespace {
-bool HasName(uint64_t bodyId,
+
+bool has_name(uint64_t bodyId,
              const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotationCache)
 {
   if (annotationCache.contains(bodyId)) {
@@ -815,23 +829,74 @@ bool HasName(uint64_t bodyId,
 
   return false;
 }
+
+}
+
+bool ZFlyEmBodyMergeProject::hasName(uint64_t bodyId) const
+{
+  return has_name(bodyId, m_annotationCache);
 }
 
 bool ZFlyEmBodyMergeProject::mergeVerified(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray) const
 {
-  if (!HasName(targetId, m_annotationCache)) {
+  QString msg;
+
+  QString bodyStatusMsg;
+  QString bodyNameMsg;
+  if (!bodyArray.empty()) {
+    if (!hasName(targetId) && hasName(bodyArray.front())) {
+      msg += QString("The name of ID %1 will be transfered to ID %2\n").
+          arg(bodyArray.front()).arg(targetId);
+    }
+
     for (uint64_t bodyId : bodyArray) {
-      if (HasName(bodyId, m_annotationCache)) {
-        return ZDialogFactory::Ask(
-              "Confirming Merge",
-              QString("The ID (%1)) of a named body (%2) will be changed after merging. "
-              "Do you want to continue?").arg(bodyId).
-              arg(m_annotationCache.value(bodyId).getName().c_str()), NULL);
+      if (preserved(bodyId)) {
+        bodyStatusMsg += QString("ID: %1, Status: %2;\n").
+            arg(bodyId).
+            arg(m_annotationCache.value(bodyId).getStatus().c_str());
+      }
+
+      if (hasName(bodyId)) {
+        bodyNameMsg += QString("ID: %1, Name: %2;\n").
+            arg(bodyId).
+            arg(m_annotationCache.value(bodyId).getName().c_str());
       }
     }
   }
-  return true;
+
+  bool okToContinue = true;
+
+  if (!bodyStatusMsg.isEmpty()) {
+    if (neutu::IsAdminUser()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Confirming Merge",
+            "The following preserved IDs will be changed after merging\n" +
+             bodyStatusMsg + "\nDo you want to continue?", nullptr);
+    } else {
+      ZDialogFactory::Warn(
+            "Merge Forbidden",
+            "The bodies cannot be merged because the following IDs "
+            "need to be preserved:\n" + bodyStatusMsg +
+            "\nPlease contact admin if you do want to merge the bodies.",
+            nullptr);
+      okToContinue = false;
+    }
+  }
+
+  if (okToContinue) {
+    if (!bodyNameMsg.isEmpty()) {
+      msg += "The following named bodies will be gone after merging\n"
+          + bodyNameMsg;
+    }
+
+    if (!msg.isEmpty()) {
+      okToContinue = ZDialogFactory::Ask(
+            "Confirming Merge", msg + "\nDo you want to continue?", NULL);
+    }
+  }
+
+  return okToContinue;
 }
 
 void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
@@ -852,96 +917,91 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
   if (!m_mergeMap.empty() && m_writer.good()) {
     getProgressSignal()->startProgress("Uploading merge result ...");
 
-    if (m_writer.good()) {
-//      ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
+    ZWidgetMessage warnMsg;
+    warnMsg.setType(neutu::EMessageType::WARNING);
 
-      ZWidgetMessage warnMsg;
-      warnMsg.setType(neutu::EMessageType::WARNING);
+    getProgressSignal()->advanceProgress(0.1);
+
+    //      std::set<uint64_t> bodySet = getSelection(neutube::BODY_LABEL_ORIGINAL);
+    auto oldSelection = getSelection(neutu::ELabelSource::ORIGINAL);
+
+    std::set<uint64_t> newBodySet;
+    getProgressSignal()->startProgress(0.5);
+    int targetUploadedCount = 0;
+    uint64_t lastTarget = 0;
+    foreach (uint64_t targetId, m_mergeMap.keys()) {
+      const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
+      auto mergeConfig = dvid::GetMergeConfig(
+            m_writer.getDvidReader(), targetId, merged, mergingToLargest);
+      const uint64_t &newTargetId = mergeConfig.first;
+      const std::vector<uint64_t> &newMerged = mergeConfig.second;
+
+      if (mergeVerified(newTargetId, newMerged)) {
+        m_writer.mergeBody(newTargetId, newMerged);
+
+        if (m_writer.getStatusCode() != 200) {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to upload merging for %1").arg(newTargetId),
+                  neutu::EMessageType::ERROR,
+                  ZWidgetMessage::TARGET_TEXT_APPENDING |
+                  ZWidgetMessage::TARGET_KAFKA));
+        } else {
+          mergeBodyAnnotation(newTargetId, newMerged);
+
+          updateAffliatedData(newTargetId, newMerged, warnMsg);
+
+          if (oldSelection.count(newTargetId) > 0) {
+            newBodySet.insert(newTargetId);
+          }
+
+          removeMerge(newTargetId);
+          removeMerge(newMerged);
+          ++targetUploadedCount;
+          lastTarget = newTargetId;
+
+          KINFO << QString("%1 bodies are merged into %2")
+                   .arg(merged.size()).arg(newTargetId);
+          //            anyMergeUploaded = true;
+        }
+      }
+      getProgressSignal()->advanceProgress(0.1);
+    }
+    getProgressSignal()->endProgress();
+
+    if (targetUploadedCount > 0) {
+      updateSelection(newBodySet);
 
       getProgressSignal()->advanceProgress(0.1);
 
-//      std::set<uint64_t> bodySet = getSelection(neutube::BODY_LABEL_ORIGINAL);
-      auto oldSelection = getSelection(neutu::ELabelSource::ORIGINAL);
+//      refreshSegmentationView();
 
-      std::set<uint64_t> newBodySet;
-      getProgressSignal()->startProgress(0.5);
-      int targetUploadedCount = 0;
-      uint64_t lastTarget = 0;
-      foreach (uint64_t targetId, m_mergeMap.keys()) {
-        const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
-        auto mergeConfig = dvid::GetMergeConfig(
-              m_writer.getDvidReader(), targetId, merged, mergingToLargest);
-        const uint64_t &newTargetId = mergeConfig.first;
-        const std::vector<uint64_t> &newMerged = mergeConfig.second;
+      ZOUT(LTRACE(), 5) << "Merge uploaded.";
 
-        if (mergeVerified(newTargetId, newMerged)) {
-          m_writer.mergeBody(newTargetId, newMerged);
+      emit mergeUploaded();
 
-          if (m_writer.getStatusCode() != 200) {
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to upload merging for %1").arg(newTargetId),
-                    neutu::EMessageType::ERROR,
-                    ZWidgetMessage::TARGET_TEXT_APPENDING |
-                    ZWidgetMessage::TARGET_KAFKA));
-          } else {
-            mergeBodyAnnotation(newTargetId, newMerged);
+      getProgressSignal()->advanceProgress(0.1);
 
-            updateAffliatedData(newTargetId, newMerged, warnMsg);
+//      clearUndoStack();
+      //      clearBodyMerger();
 
-            if (oldSelection.count(newTargetId) > 0) {
-              newBodySet.insert(newTargetId);
-            }
+      //      ZOUT(LTRACE(), 5) << "Body merger cleared.";
 
-            removeMerge(newTargetId);
-            removeMerge(newMerged);
-            ++targetUploadedCount;
-            lastTarget = newTargetId;
+      emit dvidLabelChanged();
 
-            KINFO << QString("%1 bodies are merged into %2")
-                     .arg(merged.size()).arg(newTargetId);
-//            anyMergeUploaded = true;
-          }
-        }
-        getProgressSignal()->advanceProgress(0.1);
-      }
-      getProgressSignal()->endProgress();
+      saveMergeOperation();
 
-      if (targetUploadedCount > 0) {
-        updateSelection(newBodySet);
+      ZWidgetMessage message(
+            "Body merge finalized.", neutu::EMessageType::INFORMATION,
+            ZWidgetMessage::TARGET_TEXT_APPENDING |
+            ZWidgetMessage::TARGET_KAFKA);
+      emit messageGenerated(message);
 
-        getProgressSignal()->advanceProgress(0.1);
+      logSynapseInfo(lastTarget);
+    }
 
-        refreshSegmentationView();
-
-        ZOUT(LTRACE(), 5) << "Merge uploaded.";
-
-        emit mergeUploaded();
-
-        getProgressSignal()->advanceProgress(0.1);
-
-        clearUndoStack();
-        //      clearBodyMerger();
-
-        //      ZOUT(LTRACE(), 5) << "Body merger cleared.";
-
-        emit dvidLabelChanged();
-
-        saveMergeOperation();
-
-
-        ZWidgetMessage message(
-              "Body merge finalized.", neutu::EMessageType::INFORMATION,
-              ZWidgetMessage::TARGET_TEXT_APPENDING |
-              ZWidgetMessage::TARGET_KAFKA);
-        emit messageGenerated(message);
-
-        logSynapseInfo(lastTarget);
-      }
-
-      if (warnMsg.hasMessage()) {
-        emit messageGenerated(warnMsg);
-      }
+    if (warnMsg.hasMessage()) {
+      emit messageGenerated(warnMsg);
     }
     getProgressSignal()->endProgress();
   }
@@ -1583,7 +1643,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 #endif
 
 void ZFlyEmBodyMergeProject::setBodyStatusProtocol(
-    const ZFlyEmBodyAnnotationMerger &protocol)
+    const ZFlyEmBodyAnnotationProtocal &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }

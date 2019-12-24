@@ -38,12 +38,21 @@ void CypherQuery::appendWith(const QString &preAs, const QString &postAs)
 
 void CypherQuery::appendOrderDesc(const QString &pattern)
 {
-  m_postProc +=  " " + QString(KW_ORDER_BY) + " " + pattern + " " + KW_DESC;
+  if (!pattern.isEmpty()) {
+    m_postProc +=  " " + QString(KW_ORDER_BY) + " " + pattern + " " + KW_DESC;
+  }
 }
 
 void CypherQuery::appendLimit(int n)
 {
-  m_postProc += " " + QString(KW_LIMIT) + " " + QString::number(n);
+  if (n > 0) {
+    m_postProc += " " + QString(KW_LIMIT) + " " + QString::number(n);
+  }
+}
+
+void CypherQuery::setPrefix(const QString &prefix)
+{
+  m_prefix = prefix;
 }
 
 void CypherQuery::setReturn(const QString &pattern)
@@ -71,12 +80,13 @@ void CypherQuery::appendQuery(const QString &keyword, const QString &pattern)
 
 QString CypherQuery::getQueryString() const
 {
-  QString query;
+  QString query = m_prefix;
 
-  if (!m_query.isEmpty()) {
-    for (const auto& p : m_query) {
-      AppendQuery(query, p.first, p.second);
-    }
+  for (const auto& p : m_query) {
+    AppendQuery(query, p.first, p.second);
+  }
+
+  if (!query.isEmpty()) {
     AppendQuery(query, KW_RETURN, m_return);
     if (!m_postProc.isEmpty()) {
       query += " " + m_postProc;
@@ -89,6 +99,13 @@ QString CypherQuery::getQueryString() const
 CypherQueryBuilder::operator CypherQuery() const
 {
   return m_query;
+}
+
+CypherQueryBuilder& CypherQueryBuilder::init(const QString &startString)
+{
+  m_query.setPrefix(startString);
+
+  return *this;
 }
 
 CypherQueryBuilder& CypherQueryBuilder::match(

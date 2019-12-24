@@ -3,19 +3,18 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <stdio.h>
+#include <cstdio>
 
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
 #endif
 
-#include <stdio.h>
-#include <cstdio>
-
-#include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
-#include "tz_error.h"
 #include "tz_geo3d_utils.h"
+
+#include "common/math.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
 
@@ -58,6 +57,7 @@ void ZPoint::display(ZPainter &painter, int n, Display_Style style) const
 }
 #endif
 
+/*
 void ZPoint::save(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
@@ -67,6 +67,7 @@ void ZPoint::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
 }
+*/
 
 double ZPoint::distanceTo(const ZPoint &pt) const
 {
@@ -240,7 +241,7 @@ ZPoint ZPoint::getNormalized() const
 
 const double& ZPoint::operator [](int index) const
 {
-  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
+//  TZ_ASSERT(index >= 0 && index < 3, "Invalid index");
 
   switch (index) {
   case 0:
@@ -250,7 +251,8 @@ const double& ZPoint::operator [](int index) const
   case 2:
     return m_z;
   default:
-    break;
+    throw std::invalid_argument("Invalid input index");
+//    break;
   }
 
   std::cerr << "Index out of bound" << std::endl;
@@ -380,13 +382,13 @@ ZPoint ZPoint::operator - () const
 
 ZIntPoint ZPoint::toIntPoint() const
 {
-  return ZIntPoint(iround(x()), iround(y()), iround(z()));
+  return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
 }
 
 void ZPoint::rotate(double theta, double psi)
 {
   Geo3d_Rotate_Coordinate(&(m_x), &(m_y), &(m_z),
-                          theta, psi, FALSE);
+                          theta, psi, _FALSE_);
 }
 
 void ZPoint::translate(const ZPoint &dp)

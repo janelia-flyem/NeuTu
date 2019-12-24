@@ -33,10 +33,10 @@ Graph* New_Graph();
 void Delete_Graph(Graph *graph);
 
 void Construct_Graph(Graph *graph, int nvertex, int edge_capacity, 
-		     BOOL weighted);
+		     _BOOL_ weighted);
 void Clean_Graph(Graph *graph);
 
-Graph* Make_Graph(int nvertex, int edge_capacity, BOOL weighted);
+Graph* Make_Graph(int nvertex, int edge_capacity, _BOOL_ weighted);
 void Kill_Graph(Graph *graph);
 
 Graph* Copy_Graph(const Graph *graph);
@@ -60,28 +60,28 @@ void Print_Graph_Info(const Graph *graph);
  * Graph_Is_Directed() returns TRUE if <graph> is directed; otherwise, it returns 
  * FALSE.
  */
-BOOL Graph_Is_Directed(const Graph *graph);
+_BOOL_ Graph_Is_Directed(const Graph *graph);
 
 /**@brief Set a graph to be directed or undirected.
  *
  * The routine will perform redundant edge removal when a directed graph is set
  * to undirected graph.
  */
-void Graph_Set_Directed(Graph *graph, BOOL directed);
+void Graph_Set_Directed(Graph *graph, _BOOL_ directed);
 
 /**@brief Test if a graph is weighted.
  * 
  * Graph_Is_Weighted() return TRUE if <graph> is weighted; otherwise it returns
  * FALSE.
  */
-BOOL Graph_Is_Weighted(const Graph *graph);
+_BOOL_ Graph_Is_Weighted(const Graph *graph);
 
 /**@brief Set a graph to weighted or unweighted.
  *
  * Graph_Set_Weighted() sets <graph> to weighted (<weighted> is TRUE) or
  * unweighted (<weighted> is FALSE).
  */
-void Graph_Set_Weighted(Graph *graph, BOOL weighted);
+void Graph_Set_Weighted(Graph *graph, _BOOL_ weighted);
 
 /**@brief add an edge
  *
@@ -320,7 +320,7 @@ Arrayqueue Graph_Traverse_B(Graph *graph, int root, Graph_Workspace *gw);
  */
 Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw);
 
-BOOL Graph_Has_Hole(Graph *graph);
+_BOOL_ Graph_Has_Hole(Graph *graph);
 
 /**@brief Turn a graph to a directed graph by bread-first traversal
  */
@@ -337,7 +337,7 @@ int* Graph_Toposort(Graph *graph, Graph_Workspace *gw);
 
 void Graph_Clean_Root(Graph *graph, int root, Graph_Workspace *gw);
 
-BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw);
+_BOOL_** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw);
 
 /**@brief Layout a graph in a 2d plane
  *
@@ -384,17 +384,18 @@ void Graph_Workspace_Prepare(Graph_Workspace *gw, int field_id);
 void Graph_Workspace_Alloc(Graph_Workspace *gw, int field_id);
 
 /*
- * The following 4 routines are designed for reuse of previous settings. Be 
+ * The following 5 routines are designed for reuse of previous settings. Be
  * cautious while using them, because the mis-usage of them may generate bugs 
  * hard to track.
  */
-BOOL Graph_Workspace_Ready(const Graph_Workspace *gw, int field_id);
+_BOOL_ Graph_Workspace_Ready(const Graph_Workspace *gw, int field_id);
+_BOOL_ Graph_Workspace_Not_Ready(const Graph_Workspace *gw, int field_id);
 void Graph_Workspace_Set_Readiness(Graph_Workspace *gw, int field_id, 
-				   BOOL status);
+				   _BOOL_ status);
 
-BOOL Graph_Workspace_Allocated(const Graph_Workspace *gw, int field_id);
+_BOOL_ Graph_Workspace_Allocated(const Graph_Workspace *gw, int field_id);
 void Graph_Workspace_Set_Allocation(Graph_Workspace *gw, int field_id, 
-				    BOOL status);
+				    _BOOL_ status);
 
 /**@}*/
 

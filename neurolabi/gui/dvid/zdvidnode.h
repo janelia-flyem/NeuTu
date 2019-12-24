@@ -85,7 +85,7 @@ public:
    * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
   std::string getSourceString(
-      bool withHttpPrefix = true, int uuidBrief = 0) const;
+      bool withHttpPrefix = true, size_t uuidBrief = 0) const;
 
 
   /*!

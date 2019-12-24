@@ -1,6 +1,6 @@
 #include "zmoviescriptgenerator.h"
 
-#include "tz_error.h"
+#include <stdexcept>
 
 using namespace std;
 
@@ -78,7 +78,10 @@ void ZMovieScriptGenerator::writeAction(
     stream << thirdLevelIndent << DOUBLE_QUOTE("id") << ": "
            << DOUBLE_QUOTE(iter->first);
 
-    TZ_ASSERT(actions.size() % 2 == 0, "must be pairs");
+    if (actions.size() % 2 != 0) {
+      throw std::runtime_error("invalid action size: must be pairs");
+    }
+//    TZ_ASSERT(actions.size() % 2 == 0, "must be pairs");
 
     for (size_t actionIndex = 0; actionIndex < actions.size();
          actionIndex += 2) {
@@ -103,7 +106,10 @@ void ZMovieScriptGenerator::writeAction(ostream &stream, const string &id,
   stream << secondLevelIndent << DOUBLE_QUOTE("id") << ": "
          << DOUBLE_QUOTE(id);
 
-  TZ_ASSERT(actions.size() % 2 == 0, "must be pairs");
+  if (actions.size() % 2 != 0) {
+    throw std::runtime_error("invalid action size: must be pairs");
+  }
+//  TZ_ASSERT(actions.size() % 2 == 0, "must be pairs");
 
   for (size_t actionIndex = 0; actionIndex < actions.size();
        actionIndex += 2) {
@@ -197,7 +203,10 @@ void ZMovieScriptGenerator::writeCameraReset(
 
   stream << firstLevelIndent << DOUBLE_QUOTE("reset") << ": {" << endl;
 
-  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
+  if (reset.size() % 2 != 0) {
+    throw std::runtime_error("invalid action size: must be pairs");
+  }
+//  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
 
   for (size_t resetIndex = 0; resetIndex < reset.size();
        resetIndex += 2) {
@@ -219,7 +228,10 @@ void ZMovieScriptGenerator::writeCameraMove(
 
   stream << firstLevelIndent << DOUBLE_QUOTE("move") << ": {" << endl;
 
-  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
+  if (reset.size() % 2 != 0) {
+    throw std::runtime_error("invalid action size: must be pairs");
+  }
+//  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
 
   for (size_t resetIndex = 0; resetIndex < reset.size();
        resetIndex += 2) {
@@ -241,7 +253,10 @@ void ZMovieScriptGenerator::writeCameraRotate(
 
   stream << firstLevelIndent << DOUBLE_QUOTE("rotate") << ": {" << endl;
 
-  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
+  if (reset.size() % 2 != 0) {
+    throw std::runtime_error("invalid action size: must be pairs");
+  }
+//  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
 
   for (size_t resetIndex = 0; resetIndex < reset.size();
        resetIndex += 2) {

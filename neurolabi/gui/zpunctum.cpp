@@ -1,7 +1,7 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
+//#define _USE_MATH_DEFINES
 #include "zpunctum.h"
 
+#include <cmath>
 #include <numeric>
 #include <algorithm>
 #include <sstream>
@@ -218,7 +218,7 @@ ZVaa3dMarker ZPunctum::toVaa3dMarker() const
 
 void ZPunctum::updateRadius()
 {
-  setRadius(Cube_Root(0.75 / M_PI * m_volSize));
+  setRadius(std::cbrt(0.75 / M_PI * m_volSize));
 }
 
 void ZPunctum::updateVolSize()

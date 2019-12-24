@@ -1,6 +1,6 @@
 #include "zstackpatch.h"
+
 #include "zstack.hxx"
-#include "tz_math.h"
 #include "zpainter.h"
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
@@ -35,7 +35,7 @@ void ZStackPatch::display(
   }
 
   if (m_stack != NULL) {
-    int dataFocus = iround(painter.getZOffset() + slice);
+    int dataFocus = painter.getZOffset() + slice;
 
     ZImage image = getImage(dataFocus);
 //    ZPoint pt = getFinalOffset() - painter.getOffset();

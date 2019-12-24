@@ -239,7 +239,7 @@ int fcmp(const char *filepath1, const char *filepath2);
 /**@brief Test if two strings are equal.
  * It returns TRUE iff the two strings are equal or both are NULL.
  */
-BOOL eqstr(const char *str1, const char *str2);
+_BOOL_ eqstr(const char *str1, const char *str2);
 
 /**@brief Remove a file or directory.
  *
@@ -339,7 +339,7 @@ int tz_isinf(double x);
 
 /**@brief Test if the value of a real number is an integer.
  */
-BOOL Is_Integer_Value(double x);
+_BOOL_ Is_Integer_Value(double x);
 
 /* in case fgetln is not defined externally */
 extern char* fgetln(FILE *stream, size_t *len);
@@ -400,7 +400,7 @@ void Memset_Pattern4(void *b, const void *pattern4, size_t len);
  * In this library the maximum index value is defined as an invalid index.
  * Is_Valid_Array_Index() returns TRUE iff <index> is valid.
  */
-BOOL Is_Valid_Array_Index(size_t index);
+_BOOL_ Is_Valid_Array_Index(size_t index);
 
 uint16_t Flip_Endian_U16(uint16_t v);
 uint32_t Flip_Endian_U32(uint32_t v);

@@ -23,7 +23,7 @@
 Graph* New_Graph()
 {
   Graph *graph = (Graph *) Guarded_Malloc(sizeof(Graph), "New_Graph");
-  graph->directed = FALSE;
+  graph->directed = _FALSE_;
   graph->type = GENERAL_GRAPH;
   graph->nvertex = 0;
   graph->nedge = 0;
@@ -40,7 +40,7 @@ void Delete_Graph(Graph *graph)
 }
 
 void Construct_Graph(Graph *graph, int nvertex, int edge_capacity, 
-		     BOOL weighted)
+		     _BOOL_ weighted)
 {
   ASSERT(edge_capacity <= Max_Edge_Capacity, "Too many edges.");
 
@@ -57,7 +57,7 @@ void Construct_Graph(Graph *graph, int nvertex, int edge_capacity,
     graph->weights = NULL;
   }
   
-  if (weighted == TRUE) {
+  if (weighted == _TRUE_) {
       graph->weights = (double *) Guarded_Malloc(sizeof(double) * edge_capacity,
               "Construct_Graph");
   }
@@ -80,7 +80,7 @@ void Clean_Graph(Graph *graph)
   graph->nedge = 0;
 }
 
-Graph* Make_Graph(int nvertex, int edge_capacity, BOOL weighted)
+Graph* Make_Graph(int nvertex, int edge_capacity, _BOOL_ weighted)
 {
   Graph *graph = New_Graph();
   Construct_Graph(graph, nvertex, edge_capacity, weighted);
@@ -119,7 +119,7 @@ void Print_Graph(const Graph *graph)
     return;
   }
 
-  if (graph->directed == TRUE) {
+  if (graph->directed == _TRUE_) {
     printf("Directed graph:");
   } else {
     printf("Undirected graph:");
@@ -132,7 +132,7 @@ void Print_Graph(const Graph *graph)
     int i;
     for (i = 0; i < graph->nedge; i++) {
       printf("%d", graph->edges[i][0]);
-      if (graph->directed == TRUE) {
+      if (graph->directed == _TRUE_) {
 	printf(" --> ");
       } else {
 	printf(" -- ");
@@ -148,7 +148,7 @@ void Print_Graph(const Graph *graph)
 
 void Print_Graph_Info(const Graph *graph)
 {
-  if (graph->directed == TRUE) {
+  if (graph->directed == _TRUE_) {
     printf("Directed graph:");
   } else {
     printf("Undirected graph:");
@@ -158,16 +158,16 @@ void Print_Graph_Info(const Graph *graph)
   printf(" %d edges\n", graph->nedge);
 }
 
-BOOL Graph_Is_Directed(const Graph *graph) 
+_BOOL_ Graph_Is_Directed(const Graph *graph) 
 {
   return graph->directed;
 }
 
-void Graph_Set_Directed(Graph *graph, BOOL directed)
+void Graph_Set_Directed(Graph *graph, _BOOL_ directed)
 {
-  BOOL remove_edge = FALSE;
-  if (graph->directed && (directed == FALSE)) {
-    remove_edge = TRUE;
+  _BOOL_ remove_edge = _FALSE_;
+  if (graph->directed && (directed == _FALSE_)) {
+    remove_edge = _TRUE_;
   }
   graph->directed = directed;
   if (remove_edge) {
@@ -175,18 +175,18 @@ void Graph_Set_Directed(Graph *graph, BOOL directed)
   }
 }
 
-BOOL Graph_Is_Weighted(const Graph *graph)
+_BOOL_ Graph_Is_Weighted(const Graph *graph)
 {
   if (graph->weights == NULL) {
-    return FALSE;
+    return _FALSE_;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
-void Graph_Set_Weighted(Graph *graph, BOOL weighted)
+void Graph_Set_Weighted(Graph *graph, _BOOL_ weighted)
 {
-  if (weighted == FALSE) {
+  if (weighted == _FALSE_) {
     if (graph->weights != NULL) {
       free(graph->weights);
       graph->weights = NULL;
@@ -347,7 +347,7 @@ int Graph_Remove_Vertex(Graph *graph, int vertex)
 /* change gw->edge_table and edge_map */
 void Graph_Update_Edge_Table(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_EDGE_TABLE) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_EDGE_TABLE) == _TRUE_) {
     return;
   }
 
@@ -430,7 +430,7 @@ void Graph_Insert_Node(Graph *graph, int v1, int v2, int v,
 
 void Graph_Normalize_Edge(Graph *graph)
 {
-  if (graph->directed == FALSE) {
+  if (graph->directed == _FALSE_) {
     int i;
     int tmp;
     for (i = 0; i < graph->nedge; i++) {
@@ -519,7 +519,7 @@ double** Graph_Weight_Matrix(const Graph *graph, Graph_Workspace *gw)
     }
 
     gw->weight[graph->edges[i][0]][graph->edges[i][1]] = weight;
-    if (graph->directed == FALSE) {
+    if (graph->directed == _FALSE_) {
       gw->weight[graph->edges[i][1]][graph->edges[i][0]] = weight;
     }
   }
@@ -530,7 +530,7 @@ double** Graph_Weight_Matrix(const Graph *graph, Graph_Workspace *gw)
 /* change gw->degree */
 int* Graph_Degree(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_DEGREE) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_DEGREE) == _TRUE_) {
     return gw->degree;
   }
 
@@ -556,11 +556,11 @@ int* Graph_Degree(const Graph *graph, Graph_Workspace *gw)
 
 int* Graph_In_Degree(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Is_Directed(graph) == FALSE) {
+  if (Graph_Is_Directed(graph) == _FALSE_) {
     return Graph_Degree(graph, gw);
   }
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_IN_DEGREE) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_IN_DEGREE) == _TRUE_) {
     return gw->in_degree;
   }
 
@@ -585,11 +585,11 @@ int* Graph_In_Degree(const Graph *graph, Graph_Workspace *gw)
 
 int* Graph_Out_Degree(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Is_Directed(graph) == FALSE) {
+  if (Graph_Is_Directed(graph) == _FALSE_) {
     return Graph_Degree(graph, gw);
   }
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_OUT_DEGREE) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_OUT_DEGREE) == _TRUE_) {
     return gw->out_degree;
   }
 
@@ -617,7 +617,7 @@ int** Graph_Adjmat(const Graph *graph, int diag, Graph_Workspace *gw)
 {
   TZ_ASSERT((diag == 0) || (diag == 1), "Invalid diag value");
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == _TRUE_) {
     return gw->connection;
   }
 
@@ -660,7 +660,7 @@ int** Graph_Adjmat(const Graph *graph, int diag, Graph_Workspace *gw)
 /* change gw->degree, gw->connection, gw->idx */
 int** Graph_Neighbor_List(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == _TRUE_) {
     return gw->connection;
   }
 
@@ -710,7 +710,7 @@ int** Graph_Neighbor_List(const Graph *graph, Graph_Workspace *gw)
 /* change gw->out_degree, gw->connection, gw->idx */
 int** Graph_Child_List(const Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_CONNECTION) == _TRUE_) {
     return gw->connection;
   }
 
@@ -809,7 +809,7 @@ void Graph_Prune(Graph *graph, int n, Graph_Workspace *gw)
 /* change gw->vlist, gw->status, gw->dlist, gw->connection */
 int* Graph_Shortest_Path(const Graph *graph, int start, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == _TRUE_) {
     return gw->vlist;
   }
 
@@ -936,7 +936,7 @@ int* Graph_Shortest_Path(const Graph *graph, int start, Graph_Workspace *gw)
 int* Graph_Shortest_Path_E(const Graph *graph, int start, int end,
 			   Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == _TRUE_) {
     return gw->vlist;
   }
 
@@ -1060,7 +1060,7 @@ int* Graph_Shortest_Path_E(const Graph *graph, int start, int end,
 int* Graph_Shortest_Path_Maxmin(const Graph *graph, int start, int end,
     double *value, Graph_Workspace *gw)
 {
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == TRUE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == _TRUE_) {
     return gw->vlist;
   }
 
@@ -1162,7 +1162,7 @@ int* Graph_Shortest_Path_Maxmin(const Graph *graph, int start, int end,
 
 void Graph_To_Mst(Graph *graph, Graph_Workspace *gw)
 {
-  if (graph->directed == TRUE) {
+  if (graph->directed == _TRUE_) {
     PRINT_EXCEPTION("Unsuppoted graph","The graph must be directed.");
     return;
   }
@@ -1332,19 +1332,19 @@ Graph* Graph_Connected_Subgraph(Graph *graph, Graph_Workspace *gw, int seed)
 
   int i;
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == FALSE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_VLIST) == _FALSE_) {
     for (i = 0; i < gw->nvertex; i++) {
       gw->vlist[i] = -1;
     }
   }
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_STATUS) == FALSE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_STATUS) == _FALSE_) {
     for (i = 0; i < gw->nvertex; i++) {
       gw->status[i] = 0;
     }
   }
 
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_ELIST) == FALSE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_ELIST) == _FALSE_) {
     gw->elist[gw->nedge] = 1;
     for (i = 0; i < gw->nedge; i++) {
       gw->elist[i] = 0;
@@ -1380,7 +1380,7 @@ Graph* Graph_Connected_Subgraph(Graph *graph, Graph_Workspace *gw, int seed)
     checking_vertex = gw->vlist[checking_vertex]; /* next */
   }
 
-  BOOL weighted = (graph->weights != NULL);
+  _BOOL_ weighted = (graph->weights != NULL);
 
   Construct_Graph(subgraph, graph->nvertex, subgraph->nedge, weighted);
   subgraph->nedge = 0;
@@ -1388,7 +1388,7 @@ Graph* Graph_Connected_Subgraph(Graph *graph, Graph_Workspace *gw, int seed)
     if (gw->elist[i] == gw->elist[gw->nedge]) {
       subgraph->edges[subgraph->nedge][0] = graph->edges[i][0];
       subgraph->edges[subgraph->nedge][1] = graph->edges[i][1];
-      if (weighted == TRUE) {
+      if (weighted == _TRUE_) {
 	subgraph->weights[subgraph->nedge] = graph->weights[i];
       }
        subgraph->nedge++;
@@ -1415,7 +1415,7 @@ Graph* Graph_Main_Subgraph(Graph *graph, Graph_Workspace *gw)
     Graph_Connected_Subgraph(graph, gw, graph->edges[0][0]);
   
   if (main_subgraph != NULL) {
-    Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_ELIST, TRUE);
+    Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_ELIST, _TRUE_);
   
     int i;
     for (i = 0; i < graph->nedge; i++) {
@@ -1430,7 +1430,7 @@ Graph* Graph_Main_Subgraph(Graph *graph, Graph_Workspace *gw)
       }
     }
 
-    Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_ELIST, FALSE);
+    Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_ELIST, _FALSE_);
   }
 
 #ifdef _DEBUG_2
@@ -1536,7 +1536,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
 
       /* For each node in the set*/
       int i;
-      BOOL is_replaced = FALSE;
+      _BOOL_ is_replaced = _FALSE_;
       int *iter = s->array;
       int length = s->length;
       int current_index = 0;
@@ -1544,7 +1544,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
         /* If the node is a neighbor of s */
         if (Graph_Edge_Index_U(v, *iter, gw) >= 0) {
           /* if the s is not replaced */
-          if (is_replaced == FALSE) {
+          if (is_replaced == _FALSE_) {
             /* Create a set prior to s */
             Int_Arraylist *news = Make_Int_Arraylist(0, 1);
             Unipointer_List *newnode = Unipointer_List_New();
@@ -1559,7 +1559,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
             prior_set = newnode;
 
             /* set s to replaced */
-            is_replaced = TRUE;
+            is_replaced = _TRUE_;
           }
           /* Move the node the set prior to s */
           int w = Int_Arraylist_Take(s, current_index);
@@ -1583,7 +1583,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
         free(set_node);
         set_node = NULL;
 
-        if (is_replaced == TRUE) {
+        if (is_replaced == _TRUE_) {
           set_node = prior_set;
         }
       }
@@ -1606,7 +1606,7 @@ void Graph_Traverse_Direct(Graph *graph, int root, Graph_Workspace *gw)
     gw->status = u8array_malloc(gw->nedge);
   }
   
-  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_STATUS) == FALSE) {
+  if (Graph_Workspace_Ready(gw, GRAPH_WORKSPACE_STATUS) == _FALSE_) {
     int i;
     for (i = 0; i < gw->nedge; i++) {
       gw->status[i] = 0;
@@ -1670,7 +1670,7 @@ void Graph_To_Dot_File(Graph *graph, const char *file_path)
     int i;
     for (i = 0; i < graph->nedge; i++) {
       fprintf(fp, "%d", graph->edges[i][0]);
-      if (graph->directed == TRUE) {
+      if (graph->directed == _TRUE_) {
 	fprintf(fp, " -> ");
       } else {
 	fprintf(fp, " -- ");
@@ -1692,7 +1692,7 @@ void Graph_To_Dot_File(Graph *graph, const char *file_path)
 
 int* Graph_Toposort(Graph *graph, Graph_Workspace *gw)
 {
-  if (Graph_Is_Directed(graph) == FALSE) {
+  if (Graph_Is_Directed(graph) == _FALSE_) {
     return NULL;
   }
 
@@ -1717,7 +1717,7 @@ int* Graph_Toposort(Graph *graph, Graph_Workspace *gw)
   }
 
   i = 0;
-  while (Arrayqueue_Is_Empty(queue) == FALSE) {
+  while (Arrayqueue_Is_Empty(queue) == _FALSE_) {
     int cur_node = Arrayqueue_Dequeue(queue);
     gw->vlist[i++] = cur_node;
     int j;
@@ -1732,7 +1732,7 @@ int* Graph_Toposort(Graph *graph, Graph_Workspace *gw)
   Kill_Arrayqueue(queue);
 
   /* in_degree is destroyed */
-  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_IN_DEGREE, FALSE);
+  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_IN_DEGREE, _FALSE_);
  
   return gw->vlist;
 }
@@ -1744,7 +1744,7 @@ void Graph_Clean_Root(Graph *graph, int root, Graph_Workspace *gw)
     return;
   }
 
-  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, TRUE);
+  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, _TRUE_);
 
   int *path = Graph_Shortest_Path(graph, root, gw);
   
@@ -1786,7 +1786,7 @@ void Graph_Clean_Root(Graph *graph, int root, Graph_Workspace *gw)
   
   free(remove_list);
 
-  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, FALSE);
+  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_CONNECTION, _FALSE_);
 }
 
 void Graph_Move_Edge(Graph *graph, int dst, int src)
@@ -1895,25 +1895,25 @@ void Graph_Mwt(Graph *graph, Graph_Workspace *gw)
 #define GHM_SUB_TO_IND(i, j) (nvertex * (i) + (j))
 #define GHM_MATRIX_VALUE_FROM_IND(x, idx) ((x)[(idx)/nvertex][(idx)%nvertex])
 
-int construct_edge_loop(BOOL **conn, int nvertex, int i, int j, int *loop)
+int construct_edge_loop(_BOOL_ **conn, int nvertex, int i, int j, int *loop)
 {
   int loop_length = 1;
   loop[0] = GHM_SUB_TO_IND(i, j);
   int k;
-  BOOL opening = TRUE;
+  _BOOL_ opening = _TRUE_;
   while (opening) {
     for (k = 0; k < nvertex; k++) {
-      opening = FALSE;
-      if (conn[j][k] == TRUE) {
+      opening = _FALSE_;
+      if (conn[j][k] == _TRUE_) {
 #ifdef _DEBUG_2
 	if (j == 202 && k == 1110) {
 	  printf("debug here\n");
 	}
 #endif
-	opening = TRUE;
+	opening = _TRUE_;
 	loop[loop_length++] = GHM_SUB_TO_IND(j, k);
 	if (k == i) {
-	  opening = FALSE;
+	  opening = _FALSE_;
 	} else {
 	  j = k;
 	}
@@ -1943,14 +1943,14 @@ void correct_match(int **conn, int nvertex, int *loop, int loop_length, int star
 {
   int i;
   for (i = 0; i < start; i++) {
-    GHM_MATRIX_VALUE_FROM_IND(conn, loop[i]) = FALSE;
+    GHM_MATRIX_VALUE_FROM_IND(conn, loop[i]) = _FALSE_;
   }
   for (i = start+1; i < loop_length; i += 2) {
-    GHM_MATRIX_VALUE_FROM_IND(conn, loop[i]) = FALSE;
+    GHM_MATRIX_VALUE_FROM_IND(conn, loop[i]) = _FALSE_;
   }
   if (start == 0) {
     if (loop_length % 2 == 1) {
-      GHM_MATRIX_VALUE_FROM_IND(conn, loop[loop_length - 1]) = FALSE;
+      GHM_MATRIX_VALUE_FROM_IND(conn, loop[loop_length - 1]) = _FALSE_;
     }
   }
     
@@ -1959,7 +1959,7 @@ void correct_match(int **conn, int nvertex, int *loop, int loop_length, int star
 #define LARGE_WEIGHT 10000.0
 
 /* limited to 1000 nodes. Must be complete graph. */
-BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
+_BOOL_** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
 {
   Graph_Workspace_Prepare(gw, GRAPH_WORKSPACE_WEIGHT);
 
@@ -1983,7 +1983,7 @@ BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
     }
   }
 */
-  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_WEIGHT, FALSE);
+  Graph_Workspace_Set_Readiness(gw, GRAPH_WORKSPACE_WEIGHT, _FALSE_);
   /*
   for (i = 0; i < nvertex; i++) {
     wm[i][i] = Infinity;
@@ -2002,14 +2002,14 @@ BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
     }
   }
 
-  BOOL **conn;
-  MALLOC_2D_ARRAY(conn, nvertex, nvertex, BOOL, i);
+  _BOOL_ **conn;
+  MALLOC_2D_ARRAY(conn, nvertex, nvertex, _BOOL_, i);
   Adjmat_Hungarian(wm, nvertex, nvertex, conn);
 
   wm = Graph_Weight_Matrix(graph, gw);
   for (i = 0; i < nvertex; i++) {
     wm[i][i] = Infinity;
-    conn[i][i] = FALSE;
+    conn[i][i] = _FALSE_;
   }
 #ifdef _DEBUG_2
   return conn;
@@ -2022,9 +2022,9 @@ BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
   int loop_length = 0;
   for (i = 0; i < nvertex; i++) {
     for (j = 0; j < nvertex; j++) {
-      if (conn[i][j] == TRUE) {
-	if (conn[j][i] == TRUE) {
-	  conn[j][i] = FALSE;
+      if (conn[i][j] == _TRUE_) {
+	if (conn[j][i] == _TRUE_) {
+	  conn[j][i] = _FALSE_;
 	} else {
 	  loop_length = construct_edge_loop(conn, nvertex, i, j, loop);
 	  if (loop_length > 1) {
@@ -2057,7 +2057,7 @@ BOOL** Graph_Hungarian_Match(Graph *graph, Graph_Workspace *gw)
   for (i = 0; i < nvertex; i++) {
     for (j = 0; j < nvertex; j++) {
       if (isinf(wm[i][j])) {
-	conn[i][j] = FALSE;
+	conn[i][j] = _FALSE_;
       }
     }
   }
@@ -2143,9 +2143,9 @@ void Graph_Layout(Graph *graph, double *x, double *y, Graph_Workspace *gw)
   }
 }
 
-BOOL Graph_Has_Hole(Graph *graph)
+_BOOL_ Graph_Has_Hole(Graph *graph)
 {
-  BOOL hasHole = FALSE;
+  _BOOL_ hasHole = _FALSE_;
 
   Graph_Workspace *gw = New_Graph_Workspace();
 
@@ -2183,32 +2183,32 @@ BOOL Graph_Has_Hole(Graph *graph)
           int nbr2 = nbr[i][neighborIndex->array[j - 1] + 1];
           if (Graph_Edge_Index_U(nbr1, nbr2, gw) < 0) {
             if (neighborNumber == 2) {
-              hasHole = TRUE;
+              hasHole = _TRUE_;
             } else {
-              hasHole = TRUE;
+              hasHole = _TRUE_;
               if (j - 2 >= 0) {
                 int nbr3 = nbr[i][neighborIndex->array[j - 2] + 1];
                 printf("nbr3: %d\n", nbr3);
 
                 if (Graph_Edge_Index_U(nbr1, nbr3, gw) >= 0 && 
                     Graph_Edge_Index_U(nbr2, nbr3, gw) >= 0) {
-                  hasHole = FALSE;
+                  hasHole = _FALSE_;
                 }
               }
-              if (hasHole == TRUE) {
+              if (hasHole == _TRUE_) {
                 if (j + 1 < neighborNumber) {
                   int nbr3 = nbr[i][neighborIndex->array[j + 1] + 1];
                   printf("nbr3: %d\n", nbr3);
                   if (Graph_Edge_Index_U(nbr1, nbr3, gw) >= 0 && 
                       Graph_Edge_Index_U(nbr2, nbr3, gw) >= 0) {
-                    hasHole = FALSE;
+                    hasHole = _FALSE_;
                   }
                 }
               }
             }
           }
 #ifdef _DEBUG_
-          if (hasHole == TRUE) {
+          if (hasHole == _TRUE_) {
             printf("Hole at: %d - %d, %d\n", i, nbr1, nbr2);
             break;
           }
@@ -2217,7 +2217,7 @@ BOOL Graph_Has_Hole(Graph *graph)
       }
     }
 
-    if (hasHole == TRUE) {
+    if (hasHole == _TRUE_) {
       break;
     }
   }
@@ -2240,13 +2240,13 @@ void Write_Graph(const char *file_path, const Graph *graph)
       return; 
     }
 
-    BOOL has_weight = FALSE;
+    _BOOL_ has_weight = _FALSE_;
     if (graph->weights != NULL) {
-      has_weight = TRUE;
+      has_weight = _TRUE_;
     }
-    fwrite(&has_weight, sizeof(BOOL), 1, fp);
+    fwrite(&has_weight, sizeof(_BOOL_), 1, fp);
     fwrite(&(graph->nvertex), sizeof(int), 1, fp);
-    fwrite(&(graph->directed), sizeof(BOOL), 1, fp);
+    fwrite(&(graph->directed), sizeof(_BOOL_), 1, fp);
     fwrite(&(graph->nedge), sizeof(int), 1, fp);
 
     fwrite(graph->edges, sizeof(graph_edge_t), graph->nedge, fp);
@@ -2269,11 +2269,11 @@ Graph* Read_Graph(const char *file_path)
   
   int nvertex;
   int nedge;
-  BOOL is_directed;
-  BOOL is_weighted;
-  fread(&is_weighted, sizeof(BOOL), 1, fp);
+  _BOOL_ is_directed;
+  _BOOL_ is_weighted;
+  fread(&is_weighted, sizeof(_BOOL_), 1, fp);
   fread(&nvertex, sizeof(int), 1, fp);
-  fread(&is_directed, sizeof(BOOL), 1, fp);
+  fread(&is_directed, sizeof(_BOOL_), 1, fp);
   fread(&nedge, sizeof(int), 1, fp);
 
   Graph *graph = Make_Graph(nvertex, nedge, is_weighted);
@@ -2281,7 +2281,7 @@ Graph* Read_Graph(const char *file_path)
   graph->directed = is_directed;
   graph->nedge = nedge;
   fread(graph->edges, sizeof(graph_edge_t), nedge, fp);
-  if (is_weighted == TRUE){
+  if (is_weighted == _TRUE_){
     fread(graph->weights, sizeof(double), nedge, fp);
   }
 

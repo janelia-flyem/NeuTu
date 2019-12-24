@@ -357,7 +357,7 @@ void Zero_Image(Image *image)
  */
 void Copy_Image_Array(Image *des, const Image *src)
 {
-  if (Image_Same_Attribute(src, des) == FALSE) {
+  if (Image_Same_Attribute(src, des) == _FALSE_) {
     TZ_ERROR(ERROR_DATA_TYPE);
   }
 
@@ -666,7 +666,7 @@ int* Image_Hist_M(Image *image, Image *mask)
       TZ_ERROR(ERROR_DATA_TYPE);
     }
 
-    if (Image_Same_Size(image, mask) == FALSE) {
+    if (Image_Same_Size(image, mask) == _FALSE_) {
       fprintf(stderr, "image and mask have different sizes.");
       TZ_ERROR(ERROR_DATA_VALUE);
     }
@@ -750,16 +750,16 @@ void Empty_Image(Image *image)
   image->array = NULL;
 }
 
-BOOL Is_Image_Empty(const Image *image)
+_BOOL_ Is_Image_Empty(const Image *image)
 {
   if (image != NULL) {
     if ((image->array == NULL) || (image->kind == 0) || (image->width == 0) ||
 	(image->height == 0)) {
-      return TRUE;
+      return _TRUE_;
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 Image* Image_Block_Sum(const Image *image, int w, int h)

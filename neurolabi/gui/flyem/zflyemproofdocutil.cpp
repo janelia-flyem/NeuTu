@@ -4,6 +4,7 @@
 #include "zsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackobjectsourcefactory.h"
+#include "zstackwatershedcontainer.h"
 
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"

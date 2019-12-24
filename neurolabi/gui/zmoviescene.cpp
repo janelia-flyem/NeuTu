@@ -1,8 +1,8 @@
 #include "zmoviescene.h"
 
 #include <map>
+#include <stdexcept>
 
-//#include "tz_error.h"
 #include "mvc/zstackdoc.h"
 #include "z3dwindow.h"
 #include "zjsonparser.h"
@@ -124,7 +124,11 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       m_showingAxis = ZJsonParser::integerValue(iter->second);
     } else if (isActionListTag(iter->first.c_str())) {
       ZJsonArray actionList;
-      TZ_ASSERT(ZJsonParser::IsArray(iter->second), "array");
+
+      if (!ZJsonParser::IsArray(iter->second)) {
+        throw std::logic_error("Unexpected json value.");
+      }
+//      TZ_ASSERT(ZJsonParser::IsArray(iter->second), "array");
 
       actionList.set(iter->second, false);
       for (size_t index = 0; index < actionList.size(); ++index) {

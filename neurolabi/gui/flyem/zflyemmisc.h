@@ -3,13 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <unordered_set>
+
 #include <QList>
 #include <QSet>
 #include <QColor>
 #include <QRectF>
 #include <QVector>
+#include <QString>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/libdvidheader.h"
 #include "common/zsharedpointer.h"
 
@@ -73,9 +76,13 @@ void SubtractBodyWithBlock(
 
 void MakeTriangle(const QRectF &rect, QPointF *ptArray,
                   neutu::ECardinalDirection direction);
-void MakeStar(const QRectF &rect, QPointF *ptArray);
-void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
-QVector<QPointF> MakeCrossKey(const QPointF &center, double radius);
+//void MakeStar(const QRectF &rect, QPointF *ptArray);
+void MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
+std::vector<QPointF> MakeStar(
+    const QPointF &center, double radius, double shapeFactor = 0.25);
+std::vector<QPointF> MakeCrossKey(
+    const QPointF &center, double radius, double spanRatio);
 
 void PrepareBodyStatus(QComboBox *box);
 QList<QString> GetDefaultBodyStatus();
@@ -146,6 +153,23 @@ std::vector<uint64_t> LoadBodyList(const std::string &input);
 
 ZObject3dScan* LoadRoiFromJson(
     const std::string &filePath, ZObject3dScan *result = nullptr);
+
+/*!
+ * \brief For checking connection from a punctum name
+ */
+bool HasConnecion(
+    const QString &name, uint64_t input, uint64_t output,
+    neutu::EBiDirection d);
+
+bool HasConnecion(const QString &name, const QString &splitter,
+    const std::unordered_set<uint64_t> &first,
+    const std::unordered_set<uint64_t> &second);
+
+bool HasConnecion(
+    const QString &name,
+    const std::unordered_set<uint64_t> &input,
+    const std::unordered_set<uint64_t> &output,
+    neutu::EBiDirection d);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

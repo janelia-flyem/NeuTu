@@ -1,6 +1,6 @@
 #include "z3ddef.h"
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 static const char *VolumeName = "Volume";
 

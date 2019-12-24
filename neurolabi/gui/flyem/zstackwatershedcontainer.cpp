@@ -13,8 +13,6 @@
 #include "zobject3dfactory.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
-#include "tz_math.h"
-//#include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "zstackfactory.h"
@@ -491,6 +489,18 @@ void ZStackWatershedContainer::exportMask(const std::string &filePath)
   }
 }
 
+void ZStackWatershedContainer::exportSeedMask(const std::string &filePath)
+{
+  ZStack stack;
+  makeMaskStack(stack);
+  if (stack.hasData()) {
+    for (ZObject3d *seed : m_seedArray) {
+      seed->labelStack(&stack);
+    }
+    stack.save(filePath);
+  }
+}
+
 void ZStackWatershedContainer::exportSource(const std::string &filePath)
 {
   getSourceStack()->save(filePath);
@@ -713,8 +723,9 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
   std::vector<ZObject3dScan> boundaryArray =
       boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
-#if 0
-  boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#ifdef _DEBUG_
+  stack->save(GET_TEST_DATA_DIR + "/_test_stack.tif");
+  boundaryStack->save(GET_TEST_DATA_DIR + "/_test_boundary.tif");
 #endif
   //For each component
   int index = 1;
@@ -741,16 +752,20 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
 #ifdef _DEBUG_2
       for (ZStackPtr stack : newResult) {
         stack->printInfo();
-        stack->save(GET_TEST_DATA_DIR + "/test.tif");
+        stack->save(GET_TEST_DATA_DIR + "/_test4.tif");
       }
 #endif
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
+      subbound.save(GET_TEST_DATA_DIR + "/_test_bound.sobj");
+      container.exportSeedMask(GET_TEST_DATA_DIR + "/_test_mask.tif");
+
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
-      ZStack *labelStack = result.toColorField();
-      labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
-      delete labelStack;
+      result.save(GET_TEST_DATA_DIR + "/_test.soba");
+//      ZStack *labelStack = result.toColorField();
+//      labelStack->save(GET_TEST_DATA_DIR + "/_test5.tif");
+//      delete labelStack;
 #endif
 
       m_result.append(newResult);
@@ -795,8 +810,10 @@ void ZStackWatershedContainer::run()
       Stack *source = getRawSourceStack(sourceStack);
       updateSeedMask();
 
-#ifdef _DEBUG_2
-      exportMask(GET_TEST_DATA_DIR + "/test.tif");
+#ifdef _DEBUG_
+      if (!getSourceStack()->getDsIntv().isZero()) {
+        exportMask(GET_TEST_DATA_DIR + "/_test.tif");
+      }
 #endif
 
 #ifdef _DEBUG_2
@@ -811,6 +828,12 @@ void ZStackWatershedContainer::run()
         stack->setOffset(getSourceOffset());
         stack->setDsIntv(getSourceStack()->getDsIntv());
         m_result.push_back(stack);
+
+#ifdef _DEBUG_
+        if (!getSourceStack()->getDsIntv().isZero()) {
+          stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+        }
+#endif
       }
 
       std::cout << "Downsampling interval: "
@@ -1301,21 +1324,28 @@ void ZStackWatershedContainer::assignComponent(
   }
 }
 
-void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
+void ZStackWatershedContainer::ConfigureResult(ZObject3dScan *obj)
+{
+  if (obj) {
+    obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+    obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
+    obj->setSource(
+          ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
+    obj->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
+    obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
+    obj->setProjectionVisible(false);
+    obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+    obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+  }
+}
+
+void ZStackWatershedContainer::ConfigureResult(ZObject3dScanArray *result)
 {
   if (result != NULL) {
     for (ZObject3dScanArray::iterator iter = result->begin();
          iter != result->end(); ++iter) {
       ZObject3dScan *obj = *iter;
-      obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
-      obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
-      obj->setSource(
-            ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
-      obj->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
-      obj->setVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY);
-      obj->setProjectionVisible(false);
-      obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-      obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+      ConfigureResult(obj);
     }
   }
 }
@@ -1437,7 +1467,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     }
   }
 
-  configureResult(result);
+  ConfigureResult(result);
 
   logProfile(timer.elapsed(), profileMessage.toStdString());
 

@@ -1,4 +1,7 @@
 #include "zflyembody3ddocmenufactory.h"
+
+#include <tuple>
+
 #include "z3dwindow.h"
 #include "zflyembody3ddoc.h"
 #include "zmenuconfig.h"
@@ -110,11 +113,14 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
         }
       }
 #else
-      Q_UNUSED(bodyEnv);
+      std::ignore = bodyEnv;
 #endif
     }
 
+    config.appendSeparator();
     config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    config.append(ZActionFactory::ACTION_SHOW_DONE);
+    config.appendSeparator();
 
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {
@@ -135,6 +141,18 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       if (swcNodeCount >= 2) {
         if (doc->getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
           config.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH);
+        }
+      }
+
+      if (swcNodeCount >= 1) {
+        if (doc->getTag() == neutu::Document::ETag::FLYEM_SKELETON) {
+          config.append(ZActionFactory::ACTION_SEPARATOR);
+          config.append(ZActionFactory::ACTION_DELETE_SWC_NODE);
+          if (swcNodeCount > 1) {
+            config.append(ZActionFactory::ACTION_CONNECT_SWC_NODE);
+            config.append(ZActionFactory::ACTION_BREAK_SWC_NODE);
+          }
+          config.append(ZActionFactory::ACTION_SEPARATOR);
         }
       }
 
@@ -190,11 +208,17 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       }
     }
 
+    config.appendSeparator();
+
     if (doc->hasSelectedPuncta()) {
       config.append(ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR);
       config.append(ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED);
       config.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
+      config.append(ZActionFactory::ACTION_PUNCTA_HIDE_UNSELECTED);
+      config.append(ZActionFactory::ACTION_PUNCTA_SHOW_UNSELECTED);
     }
+
+    config.append(ZActionFactory::ACTION_PUNCTA_ADD_SELECTION);
 
     if (isMutable) {
       if (doc->getSelectedSingleNormalBodyId() > 0) {

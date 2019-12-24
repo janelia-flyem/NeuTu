@@ -29,7 +29,7 @@ public:
   ZVoxelArray extractLongestPath(double *length, bool masked);
   int pathSize(ssize_t index);
   double pathLength(ssize_t index, bool masked);
-  std::vector<ZVoxelArray> extractAllPath(double lengthThreshold,
+  std::vector<ZVoxelArray> extractAllPath(double minLength,
                                           Stack *ballStack = NULL);
 
 private:

@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 #include <QElapsedTimer>
 
+#include "common/math.h"
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
 
@@ -867,7 +868,7 @@ void ZImageWidget::updateView()
 {
   //View port adjustment
   if (m_offsetAdjustment) {
-    int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
+    int zoom = neutu::iround(std::log2(getViewProj().getZoom())) + 1;
     if (zoom > 0) {
       m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
     }

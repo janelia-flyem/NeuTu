@@ -169,7 +169,7 @@ void ZLocalRect::flip()
   m_template.transform.theta += TZ_PI;
 }
 
-BOOL ZLocalRect::hitTest(double x, double y, double z)
+bool ZLocalRect::hitTest(double x, double y, double z)
 {
   return Local_R2_Rect_Hit_Test(&m_template, x, y, z);
 }

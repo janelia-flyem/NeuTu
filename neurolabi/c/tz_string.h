@@ -64,9 +64,9 @@ int String_First_Integer(const char *str);
  */
 int String_Last_Integer(const char *str);
 
-BOOL Is_Integer(const char *str);
-BOOL Is_Float(const char *str);
-BOOL Is_Space(const char *str);
+_BOOL_ Is_Integer(const char *str);
+_BOOL_ Is_Float(const char *str);
+_BOOL_ Is_Space(const char *str);
 
 /**@brief Test if a string ends with a given string
  *
@@ -75,7 +75,7 @@ BOOL Is_Space(const char *str);
  * string and <str> is not NULL. It returns FALSE if either <str> or <end> is
  * NULL.
  */
-BOOL String_Ends_With(const char *str, const char *end);
+_BOOL_ String_Ends_With(const char *str, const char *end);
 
 /**@brief Test if a string starts with a given string
  *
@@ -84,7 +84,7 @@ BOOL String_Ends_With(const char *str, const char *end);
  * string and <str> is not NULL. It returns FALSE if either <str> or <start> is
  * NULL.
  */
-BOOL String_Starts_With(const char *str, const char *start);
+_BOOL_ String_Starts_With(const char *str, const char *start);
 
 /**@brief output spaces  
  *
@@ -156,7 +156,7 @@ char* Read_Line(FILE *fp, String_Workspace *sw);
  * File_Line_Number() returns the number of lines in the file <path>. The empty
  * lines are included if <count_empty> is TRUE. Otherwise they are ignored.
  */
-int File_Line_Number(const char *path, BOOL count_empty);
+int File_Line_Number(const char *path, _BOOL_ count_empty);
 
 /**@}*/
 

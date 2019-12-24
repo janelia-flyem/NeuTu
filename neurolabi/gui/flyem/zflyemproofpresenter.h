@@ -115,6 +115,7 @@ signals:
   void showingSupervoxelList();
   void togglingBodyColorMap();
   void refreshingData();
+  void tipDetectRequested(ZIntPoint point, uint64_t bodyID);
 
 public slots:
   void deleteSelectedSynapse();
@@ -136,6 +137,7 @@ public slots:
   void tryAddTraceToSomaItem();
   void tryAddNoSomaItem();
   void tryAddDiagnosticItem();
+  void tryAddSegmentationDiagnosticItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
@@ -159,6 +161,7 @@ public slots:
   void tryAddTraceToSomaItem(const ZIntPoint &pt);
   void tryAddNoSomaItem(const ZIntPoint &pt);
   void tryAddDiagnosticItem(const ZIntPoint &pt);
+  void tryAddSegmentationDiagnosticItem(const ZIntPoint &pt);
   void runTipDetection();
 
   void showSupervoxelList();

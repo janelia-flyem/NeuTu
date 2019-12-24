@@ -15,7 +15,6 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
-#include "tz_error.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"
@@ -57,6 +56,9 @@
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
 #include "command/zstackfiltercommand.h"
+#include "command/zuploadroicommand.h"
+#include "command/zneurontracecommand.h"
+#include "command/zsyncskeletoncommand.h"
 
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
@@ -106,8 +108,11 @@ void ZCommandLine::registerModule()
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
   registerModule<ZStackFilterCommand>("filter_stack");
+  registerModule<ZUploadRoiCommand>("upload_roi");
+  registerModule<ZNeuronTraceCommand>("trace_neuron");
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
+  registerModule<ZSyncSkeletonCommand>("sync_skeleton");
 #endif
 }
 
@@ -169,8 +174,6 @@ int ZCommandLine::runObjectMarker()
       ZVoxel voxel = obj.getMarker();
       std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
       json_t *arrayObj = json_array();
-
-      TZ_ASSERT(voxel.x() >= 0, "invalid point");
 
       json_array_append(arrayObj, json_integer(voxel.x()));
       json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
@@ -275,7 +278,7 @@ int ZCommandLine::runBoundaryOrphan()
         std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
         json_t *arrayObj = json_array();
 
-        TZ_ASSERT(voxel.x() >= 0, "invalid point");
+//        TZ_ASSERT(voxel.x() >= 0, "invalid point");
 
         json_array_append(arrayObj, json_integer(voxel.x()));
         json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
@@ -643,6 +646,10 @@ void ZCommandLine::loadTraceConfig()
 
 void ZCommandLine::loadInputJson()
 {
+  if (m_input.empty()) {
+    return;
+  }
+
   if (m_input[0] == "json") {
     std::string jsonInput = m_input[1];
     ZJsonObject obj;
@@ -1270,30 +1277,48 @@ int ZCommandLine::skeletonizeDvid()
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
       std::cout << "Skeletonizing " << bodyId << std::endl;
+      std::cout << "Skeletonizer version: "
+                << ZStackSkeletonizer::VERSION << std::endl;
       ZSwcTree *tree = NULL;
       QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
-      const int mid = bodyReader->readBodyMutationId(bodyId);
-      if (!m_forceUpdate || mid > 0) {
-        if (savingToFile) {
-          if (outputFileInfo.exists()) {
-            tree = new ZSwcTree;
-            tree->load(outputFileInfo.absoluteFilePath().toStdString());
-//            if (tree->isEmpty()) {
-//              delete tree;
-//              tree = NULL;
-//            }
-//            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
-          }
-        } else {
-          tree = reader.readSwc(bodyId);
+
+//      if (!m_forceUpdate || mid >= 0) { //mutation ID available or no force update
+      if (savingToFile) {
+        if (outputFileInfo.exists()) {
+          tree = new ZSwcTree;
+          tree->load(outputFileInfo.absoluteFilePath().toStdString());
+        }
+      } else {
+        tree = reader.readSwc(bodyId);
+      }
+
+      const int64_t mid = bodyReader->readBodyMutationId(bodyId);
+
+      if (tree) {
+        const int64_t sid = flyem::GetMutationId(tree);
+        if (mid >= 0 && mid != sid) {
+          std::cout << "Skeletonization required ("
+                    << sid << "->" << mid << ")" << std::endl;
+          delete tree;
+          tree = NULL;
         }
       }
 
-      if (tree != NULL && mid > 0) {
-        if (flyem::GetMutationId(tree) != mid) {
-          delete tree;
-          tree = NULL;
+      if (tree) {
+        if (m_forceUpdate) {
+          if (mid < 0) {
+            std::cout << "Skeletonization forced (no mutation ID)" << std::endl;
+            delete tree;
+            tree = NULL;
+          } else {
+            int vskl = flyem::GetSkeletonVersion(*tree);
+            if (ZStackSkeletonizer::VERSION > vskl) {
+              std::cout << "Skeletonization forced by upgrade" << std::endl;
+              delete tree;
+              tree = NULL;
+            }
+          }
         }
       }
 
@@ -1305,7 +1330,8 @@ int ZCommandLine::skeletonizeDvid()
           const int blockCount = bodyReader->readBodyBlockCount(
                 bodyId, neutu::EBodyLabelType::BODY);
           constexpr int maxBlockCount = 3000;
-          int scale = std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount));
+          int scale =
+              int(std::ceil(misc::GetExpansionScale(blockCount, maxBlockCount)));
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
           zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
@@ -1318,14 +1344,15 @@ int ZCommandLine::skeletonizeDvid()
 
 
         if (tree != NULL) {
-          if (mid > 0) {
+          if (mid >= 0) {
             flyem::SetMutationId(tree, mid);
           }
           if (savingToFile) {
             tree->save(outputFileInfo.absoluteFilePath().toStdString());
           } else {
-            if (mid > 0) {
-              const int latestMid = bodyReader->readBodyMutationId(bodyId);
+            /*
+            if (mid >= 0) {
+              const int64_t latestMid = bodyReader->readBodyMutationId(bodyId);
 
               if (mid != latestMid) {
                 LWARN() << bodyId << ":" << mid << "->" << latestMid
@@ -1335,12 +1362,19 @@ int ZCommandLine::skeletonizeDvid()
                 tree = NULL;
               }
             }
+            */
             if (tree != NULL) {
               writer.writeSwc(bodyId, tree);
             }
           }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
+        }
+      } else {
+        if (m_forceUpdate) {
+          std::cout << "The skeleton is up to date." << std::endl;
+        } else {
+          std::cout << "Skip overwriting existing skeleton." << std::endl;
         }
       }
 
@@ -1353,8 +1387,12 @@ int ZCommandLine::skeletonizeDvid()
           }
         }
       }
+
       delete tree;
-      LINFO() << "Output:" << m_output;
+      if (!m_output.empty()) {
+        LINFO() << "Output:" << m_output;
+      }
+
       LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
     }
   }
@@ -1563,7 +1601,7 @@ int ZCommandLine::run(int argc, char *argv[])
   //    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
   m_input.resize(inputNumber);
   for (int i = 0; i < inputNumber; ++i) {
-    m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);;
+    m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);
     //      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
   }
 

@@ -3,8 +3,28 @@
 #include <cstdlib>
 #include <chrono>
 #include <sstream>
+#include <fstream>
+#include <regex>
+#include <cstdio>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
+
+/*
+bool neutu::FileExists(const std::string &path)
+{
+  if (path.empty()) {
+    return false;
+  }
+
+  FILE* fp = fopen(path.c_str(), "r");
+  if (fp != NULL) {
+    fclose(fp);
+    return true;
+  }
+
+  return false;
+}
+*/
 
 bool neutu::HasEnv(const std::string &name, const std::string &value)
 {
@@ -33,4 +53,11 @@ std::string neutu::ToString(const void *p)
   std::ostringstream stream;
   stream << p;
   return stream.str();
+}
+
+bool neutu::UsingLocalHost(const std::string &url)
+{
+  std::regex reg("^([^\\s\\/]+:\\/\\/)?(127\\.0\\.0\\.1|localhost)([:\\/].*|\\s*)$");
+
+  return std::regex_match(url, reg);
 }

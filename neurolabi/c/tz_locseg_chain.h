@@ -36,7 +36,7 @@ Locseg_Chain* Copy_Locseg_Chain(Locseg_Chain *chain);
  * Locseg_Chain_Is_Identical() returns TRUE if <chain1> and <chain2> have 
  * identical content; otherwise it returns FALSE.
  */
-BOOL Locseg_Chain_Is_Identical(Locseg_Chain *chain1, Locseg_Chain *chain2);
+_BOOL_ Locseg_Chain_Is_Identical(Locseg_Chain *chain1, Locseg_Chain *chain2);
 
 /**@brief Appends a locnp chain to a locseg chain.
  * 
@@ -322,7 +322,7 @@ double Locseg_Chain_Average_Bottom_Radius(Locseg_Chain *chain);
  * Locseg_Chain_Has_Stack_Value() returns TRUE if inside <chain>, a voxel 
  * from <stack> has the intensity <value>; Otherwise it returns FALSE.
  */
-BOOL Locseg_Chain_Has_Stack_Value(Locseg_Chain *chain, Stack *stack,
+_BOOL_ Locseg_Chain_Has_Stack_Value(Locseg_Chain *chain, Stack *stack,
 				  double z_scale, double value);
 
 /**@brief Label a stack with a locseg chain.
@@ -580,7 +580,7 @@ void Locseg_Chain_Translate(Locseg_Chain *chain, const double *offset);
  * returns TRUE if the cut succeeds. When the segment was too short (<=1.5) or
  * <t> is not an internal point, it does nothing and returns FALSE.
  */
-BOOL Locseg_Chain_Break_Node(Locseg_Chain *chain, int index, double t);
+_BOOL_ Locseg_Chain_Break_Node(Locseg_Chain *chain, int index, double t);
 
 /**@brief Remove tracing seeds from a chain.
  *
@@ -596,7 +596,7 @@ int Locseg_Chain_Remove_Seed(Locseg_Chain *chain);
  */
 void Locseg_Chain_Adjust_Seed(Locseg_Chain *chain);
 
-BOOL Locseg_Chain_Form_Loop(Locseg_Chain *chain, Local_Neuroseg *locseg,
+_BOOL_ Locseg_Chain_Form_Loop(Locseg_Chain *chain, Local_Neuroseg *locseg,
 			    Dlist_Direction_e direction);
 
 Local_Neuroseg *Locseg_Chain_Peek_Seg_Nearby(Locseg_Chain *chain, 

@@ -43,6 +43,7 @@ public:
   void printOutputSummary() const;
 
   QString getRawOutput();
+  QString getErrorOutput();
 
   /*!
    * \brief Find the executable path of Python

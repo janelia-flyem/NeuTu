@@ -28,6 +28,10 @@ TEST(ZFlyEmBodyStatus, Property)
   ASSERT_TRUE(status.isMergable());
   status.setMergable(false);
   ASSERT_FALSE(status.isMergable());
+
+  ASSERT_FALSE(status.presevingId());
+  status.preseveId(true);
+  ASSERT_TRUE(status.presevingId());
 }
 
 TEST(ZFlyEmBodyStatus, Json)
@@ -39,12 +43,14 @@ TEST(ZFlyEmBodyStatus, Json)
   json.setEntry(ZFlyEmBodyStatus::KEY_FINAL, true);
   json.setEntry(ZFlyEmBodyStatus::KEY_PRIORITY, 1);
   json.setEntry(ZFlyEmBodyStatus::KEY_MERGABLE, false);
+  json.setEntry(ZFlyEmBodyStatus::KEY_PRESERVING_ID, true);
 
   status.loadJsonObject(json);
   ASSERT_TRUE(status.isExpertStatus());
   ASSERT_TRUE(status.isFinal());
   ASSERT_EQ(1, status.getPriority());
   ASSERT_FALSE(status.isMergable());
+  ASSERT_TRUE(status.presevingId());
 
   status.reset();
   ASSERT_FALSE(status.isExpertStatus());
@@ -52,6 +58,7 @@ TEST(ZFlyEmBodyStatus, Json)
   ASSERT_EQ(999, status.getPriority());
   ASSERT_EQ("", status.getName());
   ASSERT_TRUE(status.isMergable());
+  ASSERT_FALSE(status.presevingId());
 }
 
 #endif

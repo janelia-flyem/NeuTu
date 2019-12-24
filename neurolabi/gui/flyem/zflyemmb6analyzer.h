@@ -1,11 +1,11 @@
 #ifndef ZFLYEMMB6ANALYZER_H
 #define ZFLYEMMB6ANALYZER_H
 
+#include <cstdint>
+
 #include <QMap>
 #include <QVector>
 #include <QSet>
-
-#include "tz_stdint.h"
 
 class ZDvidReader;
 class ZIntPoint;

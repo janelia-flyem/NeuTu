@@ -2,16 +2,18 @@
 #include <iostream>
 #include <QFileDialog>
 #include "zshowsegresult.h"
-#include "mvc/zstackdoc.h"
-#include "mvc/zstackframe.h"
+
+#include "zstack.hxx"
+#include "zobject3dscan.h"
 #include "zobject3d.h"
 #include "zobject3dfactory.h"
 #include "zcolorscheme.h"
 #include "zsandbox.h"
 #include "mainwindow.h"
-#include "zstackdocdatabuffer.h"
-#include "zstack.hxx"
-#include "zobject3dscan.h"
+#include "mvc/zstackdoc.h"
+#include "mvc/zstackframe.h"
+#include "mvc/zstackdocdatabuffer.h"
+
 
 ZShowSegResultModule::ZShowSegResultModule(QObject *parent) :
   ZSandboxModule(parent)

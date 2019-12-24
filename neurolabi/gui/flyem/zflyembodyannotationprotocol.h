@@ -1,5 +1,5 @@
-#ifndef ZFLYEMBODYANNOTATIONMERGER_H
-#define ZFLYEMBODYANNOTATIONMERGER_H
+#ifndef ZFLYEMBODYANNOTATIONPROTOCOL_H
+#define ZFLYEMBODYANNOTATIONPROTOCOL_H
 
 #include <unordered_map>
 #include <string>
@@ -12,10 +12,10 @@
 class ZJsonObject;
 class ZFlyEmBodyAnnotation;
 
-class ZFlyEmBodyAnnotationMerger
+class ZFlyEmBodyAnnotationProtocal
 {
 public:
-  ZFlyEmBodyAnnotationMerger();
+  ZFlyEmBodyAnnotationProtocal();
 
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
@@ -36,6 +36,7 @@ public:
   bool isMergable(const std::string &status) const;
   bool isAdminAccessible(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
+  bool preservingId(const std::string &status) const;
 //  bool hasConflict(const std::string &s1, const std::string &s2) const;
 
   std::vector<std::vector<uint64_t>> getConflictBody(
@@ -53,4 +54,4 @@ private:
   ZFlyEmBodyStatus m_emptyStatus;
 };
 
-#endif // ZFLYEMBODYANNOTATIONMERGER_H
+#endif // ZFLYEMBODYANNOTATIONPROTOCOL_H

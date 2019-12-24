@@ -13,8 +13,7 @@
 #include <QMimeData>
 #include <QInputDialog>
 
-#include "tz_math.h"
-
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -780,7 +779,8 @@ void ZProofreadWindow::advanceProgress(double dp)
   if (getProgressDialog()->isVisible()) {
     if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
       int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
-      getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
+      getProgressDialog()->setValue(
+            getProgressDialog()->value() + neutu::iround(dp * range));
     }
   }
 }

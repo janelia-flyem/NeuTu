@@ -4,11 +4,11 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 
-#include "tz_math.h"
 #include "zjsonparser.h"
 #include "zstring.h"
-#include "tz_error.h"
+
 #include "zgraph.h"
 #include "c_json.h"
 #include "zswctree.h"
@@ -345,13 +345,17 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *swcResObj = bundleObject[ZFlyEmDataBundle::m_swcResolutionKey];
     if (swcResObj != NULL) {
-      TZ_ASSERT(ZJsonParser::IsArray(swcResObj), "Array object expected.");
-      for (size_t i = 0; i < 3; ++i) {
-        m_swcResolution[i] = ZJsonParser::numberValue(
-              bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
-      }
-      for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
-        m_neuronArray[i].setResolution(m_swcResolution);
+//      TZ_ASSERT(ZJsonParser::IsArray(swcResObj), "Array object expected.");
+      if (ZJsonParser::IsArray(swcResObj)) {
+        for (size_t i = 0; i < 3; ++i) {
+          m_swcResolution[i] = ZJsonParser::numberValue(
+                bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
+        }
+        for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
+          m_neuronArray[i].setResolution(m_swcResolution);
+        }
+      } else {
+        throw std::runtime_error("Unexpected element type, which sould be an array");
       }
     }
 
@@ -691,7 +695,7 @@ void ZFlyEmDataBundle::updateNeuronConnection()
 namespace {
 double ComputeOverallResultion(const double *res)
 {
-  return Cube_Root(res[0] * res[1] * res[2]);
+  return std::cbrt(res[0] * res[1] * res[2]);
 }
 }
 

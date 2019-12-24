@@ -39,6 +39,9 @@ public:
   void setCrossMidline(bool v);
   void setNeurotransmitter(const std::string &v);
   void setSynonym(const std::string &v);
+  void setClonalUnit(const std::string &v);
+  void setAutoType(const std::string &v);
+  void setProperty(const std::string &v);
 
   void setStatus(const std::string &status);
 
@@ -55,11 +58,15 @@ public:
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
   std::string getStatus() const;
+  std::string getProperty() const;
+  std::string getAutoType() const;
+  std::string getClonalUnit() const;
   bool isInstanceChanged() const;
 
   void setDefaultStatusList(const QList<QString> statusList);
   void addAdminStatus(const QString &status);
   void updateStatusBox();
+  void updatePropertyBox();
 
 private:
   void hideFinalizedStatus();
@@ -67,6 +74,8 @@ private:
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
   void processUnknownStatus(const std::string &status);
+  void processUnknownProperty(const std::string &property);
+  void initNullStatusItem();
 
 private slots:
   void fillType();
@@ -74,10 +83,13 @@ private slots:
 private:
   Ui::FlyEmBodyAnnotationDialog *ui;
 
-  uint64_t m_bodyId = 0;
   bool m_isAdmin = false;
 
   std::string m_oldInstance;
+
+  //Non-editable fields
+  uint64_t m_bodyId = 0;
+  std::string m_prevNamingUser;
 
   QList<QString> m_defaultStatusList;
   QSet<QString> m_adminSatutsList;

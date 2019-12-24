@@ -92,6 +92,20 @@ void ZPunctaObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
   }
 }
 
+void ZPunctaObjsModel::setPropertyName(const QString &key, const QString &value)
+{
+  m_propertyName[key] = value;
+}
+
+QString ZPunctaObjsModel::getPropertyName(const QString &key) const
+{
+  if (m_propertyName.count(key) > 0) {
+    return m_propertyName.at(key);
+  }
+
+  return key;
+}
+
 void ZPunctaObjsModel::updateData(const ZStackObject *obj)
 {
   const ZPunctum *punctum = dynamic_cast<const ZPunctum*>(obj);
@@ -120,7 +134,8 @@ void ZPunctaObjsModel::updateModelData()
   QList<QVariant> rootData;
   rootData << "puncta" << "score" << "name" << "comment" << "x" << "y" << "z" << "sDev" <<
               "volSize" << "mass" << "radius" << "meanIntensity" << "maxIntensity" <<
-              "property1" << "property2" << "property3" << "color" << "source";
+              getPropertyName("property1") << getPropertyName("property2") <<
+              getPropertyName("property3") << "color" << "source";
 
   ZOUT(LTRACE(), 5) << "Update puncta model";
   m_rootItem = new ZObjsItem(

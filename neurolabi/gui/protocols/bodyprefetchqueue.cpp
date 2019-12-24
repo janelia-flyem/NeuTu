@@ -3,11 +3,13 @@
 #include <QMutexLocker>
 
 #include "logging/zqslog.h"
-#include "flyem/zflyembody3ddoc.h"
 
-#include "zstackdocdatabuffer.h"
 #include "zstackobjectsourcefactory.h"
 #include "zmesh.h"
+
+#include "mvc/zstackdocdatabuffer.h"
+
+#include "flyem/zflyembody3ddoc.h"
 
 /*
  * this queue should be moved into its own thread after creation; see

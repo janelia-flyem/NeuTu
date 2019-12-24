@@ -3,7 +3,7 @@
 
 #include <QFileDialog>
 #include <string>
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZMessageReporter;
 class ZLogMessageReporter;

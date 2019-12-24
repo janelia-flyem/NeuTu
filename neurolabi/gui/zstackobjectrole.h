@@ -1,7 +1,7 @@
 #ifndef ZSTACKOBJECTROLE_H
 #define ZSTACKOBJECTROLE_H
 
-#include "tz_stdint.h"
+#include <cstdint>
 
 class ZStackObjectRole
 {

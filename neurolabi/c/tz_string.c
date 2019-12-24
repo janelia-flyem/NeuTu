@@ -93,50 +93,50 @@ char* strsplit(char *str, char delim, int pos)
   return tail;
 }
 
-BOOL String_Ends_With(const char *str, const char *end)
+_BOOL_ String_Ends_With(const char *str, const char *end)
 {
   if ((str == NULL) || (end == NULL)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int n1 = strlen(str);
   int n2 = strlen(end);
   if (n1 < n2) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (n2 == 0) {
-    return TRUE;
+    return _TRUE_;
   }
 
   if (strcmp(str+(n1-n2), end) == 0) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL String_Starts_With(const char *str, const char *start)
+_BOOL_ String_Starts_With(const char *str, const char *start)
 {
   if ((str == NULL) || (start == NULL)) {
-    return FALSE;
+    return _FALSE_;
   }
 
   int n1 = strlen(str);
   int n2 = strlen(start);
   if (n1 < n2) {
-    return FALSE;
+    return _FALSE_;
   }
 
   if (n2 == 0) {
-    return TRUE;
+    return _TRUE_;
   }
 
   if (strncmp(str, start, n2) == 0) {
-    return TRUE;
+    return _TRUE_;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 void fprint_space(FILE  *fp, int n)
@@ -198,30 +198,30 @@ int String_Last_Integer(const char *str)
   return String_First_Integer(str + index + 1);
 }
 
-BOOL Is_Integer(const char *str)
+_BOOL_ Is_Integer(const char *str)
 {
   if (!isdigit(*str)) {
     if ((*str == '+') || (*str == '-')) {
       if (!isdigit(str[1])) {
-	return FALSE;
+	return _FALSE_;
       }
     } else {
-      return FALSE;
+      return _FALSE_;
     }
   }
 
   str++;
   while (*str) {
     if (!isdigit(*str)) {
-      return FALSE;
+      return _FALSE_;
     }
     str++;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Is_Float(const char *str)
+_BOOL_ Is_Float(const char *str)
 {
   int ndot = 0;
   if (!isdigit(*str)) {
@@ -231,13 +231,13 @@ BOOL Is_Float(const char *str)
 	ndot++;
       } else {
 	if (!isdigit(str[1])) {
-	  return FALSE;
+	  return _FALSE_;
 	}
       }
     } else if (*str == '.') {
       ndot++;
     } else {
-      return FALSE;
+      return _FALSE_;
     }
   }
 
@@ -248,28 +248,28 @@ BOOL Is_Float(const char *str)
 	if (ndot == 0) {
 	  ndot++;
 	} else {
-	  return FALSE;
+	  return _FALSE_;
 	}
       } else {
-	return FALSE;
+	return _FALSE_;
       }
     }
     str++;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
-BOOL Is_Space(const char *str)
+_BOOL_ Is_Space(const char *str)
 {
   while (*str) {
     if (!tz_isspace(*str)) {
-      return FALSE;
+      return _FALSE_;
     }
     str++;
   }
 
-  return TRUE;
+  return _TRUE_;
 }
 
 int tz_isspace(char c)
@@ -608,7 +608,7 @@ int *String_To_Integer_Array(const char *str, int *array, int *n)
 
   int i = 0;
   int state = 0;
-  BOOL is_negative = FALSE;
+  _BOOL_ is_negative = _FALSE_;
 
   while (*str) {
     switch (state) {
@@ -618,10 +618,10 @@ int *String_To_Integer_Array(const char *str, int *array, int *n)
 	state = 1;
       } else if (*str == '-') {
           //array[i] = 0;
-        is_negative = TRUE;
+        is_negative = _TRUE_;
           //state = 1;
       } else {
-        is_negative = FALSE;
+        is_negative = _FALSE_;
       }
       break;
     case 1:
@@ -631,7 +631,7 @@ int *String_To_Integer_Array(const char *str, int *array, int *n)
 	if (is_negative) {
 	  array[i] = -array[i];
 	}
-	is_negative = FALSE;
+	is_negative = _FALSE_;
 	state = 0;
 	i++;
       }
@@ -727,19 +727,19 @@ static int count_double(const char *str)
   int n = 0;
   int state = 0;
 
-  BOOL has_number = FALSE;
+  _BOOL_ has_number = _FALSE_;
 
   while (*str) {
     switch (state) {
       case 0:
         if (has_number) {
           n++;
-          has_number = FALSE;
+          has_number = _FALSE_;
         }
 
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else if (*str == '+' || *str == '-') {
           state = 1;
         } else if ((*str) == '.') {
@@ -751,7 +751,7 @@ static int count_double(const char *str)
       case 1:
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
         } else if ((*str) == '.') {
           state = 8;
@@ -763,7 +763,7 @@ static int count_double(const char *str)
       case 8:
         if (isdigit(*str)) {
           state = 3;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
         } else {
           state = 0;
@@ -784,7 +784,7 @@ static int count_double(const char *str)
           state = 5;
         } else if (isdigit(*str)) {
           state = 4;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else {
           state = 0;
         }
@@ -857,7 +857,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
   char *numstr_end = numstr;
   char *numstr_head = numstr;
 
-  BOOL has_number = FALSE;
+  _BOOL_ has_number = _FALSE_;
 
   while (*str) {
     switch (state) {
@@ -868,14 +868,14 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
 #endif
 
           array[i++] = atof(numstr);
-          has_number = FALSE;
+          has_number = _FALSE_;
         }
 
         numstr = numstr_end;
 
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else if (*str == '+' || *str == '-') {
           state = 1;
         } else if ((*str) == '.') {
@@ -888,7 +888,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
       case 1:
         if (isdigit(*str)) {
           state = 2;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
           ++numstr_end;
         } else if ((*str) == '.') {
@@ -902,7 +902,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
       case 8:
         if (isdigit(*str)) {
           state = 3;
-          has_number = TRUE;
+          has_number = _TRUE_;
           ++str;
           ++numstr_end;
         } else {
@@ -926,7 +926,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
           state = 5;
         } else if (isdigit(*str)) {
           state = 4;
-          has_number = TRUE;
+          has_number = _TRUE_;
         } else {
           *numstr_end = '\0';
           state = 0;
@@ -1003,7 +1003,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
   int i = 0;
   int state = 0;
   int sig = 1;
-  BOOL is_negative = FALSE;
+  _BOOL_ is_negative = _FALSE_;
 
   while (*str) {
     switch (state) {
@@ -1063,7 +1063,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
 }
 #endif
 
-int File_Line_Number(const char *path, BOOL count_empty)
+int File_Line_Number(const char *path, _BOOL_ count_empty)
 {
   FILE *fp = GUARDED_FOPEN(path, "r");
   int n = 0;

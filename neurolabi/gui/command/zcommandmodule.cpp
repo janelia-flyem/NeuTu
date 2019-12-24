@@ -5,7 +5,8 @@ ZCommandModule::ZCommandModule()
   m_forceUpdate = false;
 }
 
-int ZCommandModule::run(const std::vector<std::string> &/*input*/,
+int ZCommandModule::run(
+    const std::vector<std::string> &/*input*/,
     const std::string &/*output*/,
     const ZJsonObject &/*config*/)
 {

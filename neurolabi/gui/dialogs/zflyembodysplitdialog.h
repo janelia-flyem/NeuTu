@@ -1,9 +1,9 @@
 #ifndef ZFLYEMBODYSPLITDIALOG_H
 #define ZFLYEMBODYSPLITDIALOG_H
 
-#include <QDialog>
+#include <cstdint>
 
-#include "tz_stdint.h"
+#include <QDialog>
 
 namespace Ui {
 class ZFlyEmBodySplitDialog;
@@ -14,7 +14,7 @@ class ZFlyEmBodySplitDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit ZFlyEmBodySplitDialog(QWidget *parent = 0);
+  explicit ZFlyEmBodySplitDialog(QWidget *parent = nullptr);
   ~ZFlyEmBodySplitDialog();
 
 public:

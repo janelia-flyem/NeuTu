@@ -1,6 +1,8 @@
 #ifndef ZFLYEMBODYMERGER_H
 #define ZFLYEMBODYMERGER_H
 
+#include <cstdint>
+
 #include <QVector>
 #include <QMap>
 #include <QQueue>
@@ -9,7 +11,6 @@
 #include <QSet>
 #include <set>
 
-#include "tz_stdint.h"
 
 class ZJsonObject;
 class ZJsonArray;

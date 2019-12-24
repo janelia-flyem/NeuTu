@@ -162,7 +162,7 @@ TEST(ZFlyEmProofDoc, SparseStack)
 
     ZDvidSparseStack *body = reader.readDvidSparseStack(
           944729222, neutu::EBodyLabelType::BODY);
-    ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+    ASSERT_EQ("http:127.0.0.1:1600:c315::grayscale",
               body->getDvidTarget().getGrayscaleSourceString());
   }
 
@@ -183,7 +183,7 @@ TEST(ZFlyEmProofDoc, SparseStack)
      reader.open(doc.getDvidTarget());
      ZDvidSparseStack *body = reader.readDvidSparseStack(
            944729222, neutu::EBodyLabelType::BODY);
-     ASSERT_EQ("http:127.0.0.1:1600:4280::grayscale",
+     ASSERT_EQ("http:127.0.0.1:1600:c315::grayscale",
                body->getDvidTarget().getGrayscaleSourceString());
    }
 }
@@ -203,7 +203,7 @@ TEST(ZFlyEmOrthoDoc, Basic)
                      ZDvidEnv::ERole::GRAYSCALE).size()));
 
   ASSERT_EQ("http:127.0.0.1:1600:4280", doc.getDvidTarget().getSourceString());
-  ASSERT_EQ(nullptr, doc.getCurrentGrayscaleReader(neutu::EAxis::Z));
+//  ASSERT_EQ(nullptr, doc.getCurrentGrayscaleReader(neutu::EAxis::Z));
 }
 
 TEST(ZFlyEmArbDoc, Grayscale)

@@ -263,7 +263,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
     ZNetBufferReaderThread thread;
     thread.setUrl(url);
-    thread.setOperation(ZNetBufferReaderThread::EOperation::READ);
+    thread.setOperation(znetwork::EOperation::READ);
     thread.start();
     thread.wait();
     m_statusCode = thread.getStatusCode();

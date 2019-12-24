@@ -1,11 +1,14 @@
 #include "zstackframe.h"
-#include <QUndoCommand>
+
 #include <iostream>
+#include <stdexcept>
+
+#include <QUndoCommand>
 #include <QTimer>
 #include <QtConcurrentRun>
 #include <QProgressDialog>
 
-#include "tz_error.h"
+#include "common/math.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
@@ -585,6 +588,7 @@ void ZStackFrame::setSizeHintOption(neutu::ESizeHintOption option)
   }
 }
 
+#if 0
 int ZStackFrame::readStack(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
@@ -638,15 +642,16 @@ int ZStackFrame::readStack(const char *filePath)
 
   return SUCCESS;
 }
+#endif
 
-int ZStackFrame::importImageSequence(const char *filePath)
+void ZStackFrame::importImageSequence(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
 
-  if (m_doc->importImageSequence(filePath)) {
-    if (!m_doc->hasStackData()) {
-      return ERROR_IO_READ;
-    }
+  m_doc->importImageSequence(filePath);
+
+  if (!m_doc->hasStackData()) {
+    throw ios_base::failure(std::string("Cannot import images from ") + filePath);
   }
 
   setWindowTitle(filePath);
@@ -655,8 +660,6 @@ int ZStackFrame::importImageSequence(const char *filePath)
     m_presenter->optimizeStackBc();
   }
   m_view->reset();
-
-  return SUCCESS;
 }
 
 Z3DWindow* ZStackFrame::viewSegmentationMesh()
@@ -955,72 +958,6 @@ double ZStackFrame::zReconstructScale()
   return m_settingDlg->zScale();
 }
 */
-
-#if 0
-int ZStackFrame::traceEffort()
-{
-  return m_settingDlg->traceEffort();
-}
-
-bool ZStackFrame::traceMasked()
-{
-  return m_settingDlg->traceMasked();
-}
-
-double ZStackFrame::autoTraceMinScore()
-{
-  return m_settingDlg->autoTraceMinScore();
-}
-
-double ZStackFrame::manualTraceMinScore()
-{
-  return m_settingDlg->manualTraceMinScore();
-}
-
-char ZStackFrame::unit()
-{
-  return m_settingDlg->unit();
-}
-
-double ZStackFrame::reconstructDistThre()
-{
-  return m_settingDlg->distThre();
-}
-
-int ZStackFrame::reconstructRootOption()
-{
-  return m_settingDlg->rootOption();
-}
-
-BOOL ZStackFrame::reconstructSpTest()
-{
-  if (m_settingDlg->reconstructEffort() == 0) {
-    return FALSE;
-  } else {
-    return TRUE;
-  }
-}
-
-bool ZStackFrame::crossoverTest()
-{
-  return m_settingDlg->crossoverTest();
-}
-
-bool ZStackFrame::singleTree()
-{
-  return m_settingDlg->singleTree();
-}
-
-bool ZStackFrame::removeOvershoot()
-{
-  return m_settingDlg->removeOvershoot();
-}
-
-void ZStackFrame::setResolution(const double *res)
-{
-  m_settingDlg->setResolution(res[0], res[1], res[2]);
-}
-#endif
 
 void ZStackFrame::addDecoration(ZStackObject *obj)
 {
@@ -1892,10 +1829,10 @@ void ZStackFrame::zoomToSelectedSwcNodes()
                      -document()->getStackOffset().getZ());
 #endif
     //-= document()->getStackOffset();
-    cx = iround(center.x());
-    cy = iround(center.y());
-    cz = iround(center.z());
-    int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+    cx = neutu::iround(center.x());
+    cy = neutu::iround(center.y());
+    cz = neutu::iround(center.z());
+    int radius = neutu::iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
     viewRoi(cx, cy, cz, radius);
   }
 }

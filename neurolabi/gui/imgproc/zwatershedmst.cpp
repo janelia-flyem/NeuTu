@@ -53,7 +53,7 @@ void ZWatershedMST::run(vector<int>& rv, int vertices, const vector<ZEdge>& edge
   }
 
   rv.resize(vertices);
-  for(uint i = 1; i <= vertices; ++i){
+  for(int i = 1; i <= vertices; ++i){
     rv[i-1] = activeset[i]->getLabel();
   }
 }

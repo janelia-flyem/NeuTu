@@ -1,13 +1,13 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
+#include <cstdint>
 #include <string>
 #if defined(_QT_GUI_USED_)
 #include <QString>
 #endif
 #include <vector>
 
-#include "tz_stdint.h"
 #include "tz_string.h"
 
 class ZString : public std::string
@@ -70,6 +70,7 @@ public:
   bool containsDigit();
   ZString& replace(const std::string &from, const std::string &to);
   ZString &replace(int from, const std::string &to);
+  ZString &replace(uint64_t from, const std::string &to);
 
   /*!
    * \brief Test if a string starts with another string.
@@ -144,7 +145,7 @@ public:
   std::vector<std::string> decomposePath() const;
   static std::vector<std::string> decomposePath(const std::string &str);
 
-  ZString toFileExt();
+//  ZString toFileExt();
   ZString toFileName();
 
   ZString &operator= (const ZString &str);

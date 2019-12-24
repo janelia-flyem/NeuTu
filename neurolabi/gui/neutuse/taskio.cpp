@@ -52,8 +52,13 @@ void TaskIO::open(const std::string &server)
     testConnection();
   } catch (std::exception &e){
     m_connection.reset();
-    LWARN() << "Failed to connect to" << server;
+    LWARN() << "Failed to connect to" << server << "; " << e.what();
   }
+}
+
+std::string TaskIO::getServerAddress() const
+{
+  return m_address;
 }
 
 bool TaskIO::ready() const

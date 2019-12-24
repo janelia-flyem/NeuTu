@@ -5,7 +5,7 @@ using namespace std;
 
 ZPointNetwork::ZPointNetwork()
 {
-  m_graph = Make_Graph(0, 1, TRUE);
+  m_graph = Make_Graph(0, 1, _TRUE_);
 }
 
 ZPointNetwork::~ZPointNetwork()

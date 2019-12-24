@@ -1,11 +1,11 @@
 #ifndef ZFLYEMBODYANNOTATIONDIALOG_H
 #define ZFLYEMBODYANNOTATIONDIALOG_H
 
+#include <cstdint>
+
 #include <QDialog>
 #include <QSet>
 #include <QList>
-
-#include "tz_stdint.h"
 
 class ZFlyEmBodyAnnotation;
 

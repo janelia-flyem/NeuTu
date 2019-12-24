@@ -6,6 +6,7 @@
 class ZStack;
 class QUrl;
 class ZIntCuboid;
+class ZJsonObject;
 
 class ZStackReader
 {
@@ -13,7 +14,12 @@ public:
   ZStackReader();
 
 public:
-  ZStack* read(const std::string &path);
+  static ZStack* Read(const std::string &path);
+
+private:
+  static ZStack* ReadDvid(const QUrl &url);
+  static ZStack* ReadSeries(const QUrl &url);
+  static ZStack* ReadJson(const ZJsonObject &obj);
 
 private:
   static ZIntCuboid GetRange(const QUrl &url);

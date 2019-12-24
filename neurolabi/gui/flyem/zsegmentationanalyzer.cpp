@@ -4,7 +4,6 @@
 #include <cmath>
 #include <sys/stat.h>
 
-#include "tz_math.h"
 #include "tz_int_histogram.h"
 #include "tz_iarray.h"
 #include "tz_stack_neighborhood.h"
@@ -12,6 +11,8 @@
 #include "tz_stack_code.h"
 #include "tz_stack_utils.h"
 #include "tz_geo3d_utils.h"
+
+#include "common/math.h"
 #include "c_stack.h"
 #include "tz_constant.h"
 #include "geometry/zpoint.h"
@@ -79,7 +80,7 @@ int flyem::ZSegmentationAnalyzer::channelCodeToId(
   int id = 0;
 
   for (int i = channelCode.size() - 1; i >= 0; --i) {
-    id = id * 256 + iround(channelCode[i]);
+    id = id * 256 + neutu::iround(channelCode[i]);
   }
 
   return id;
@@ -255,7 +256,7 @@ vector<double> flyem::ZSegmentationAnalyzer::computeRayburstDirection(
 #endif
 
         int voxelIndex = Stack_Util_Offset(
-              iround(currX), iround(currY), iround(currZ),
+              neutu::iround(currX), neutu::iround(currY), neutu::iround(currZ),
               width, height, depth);
         if (voxelIndex >= 0) {
           if (array8[voxelIndex] == 0) {
@@ -805,7 +806,7 @@ std::vector<double> flyem::ZSegmentationAnalyzer::computeBoundaryGrowFeature(
   obj[0] = bundle.getBodyBoundaryObject(id1);
   obj[1] = bundle.getBodyBoundaryObject(id2);
 
-  int growLevel = iround(sqrt(border->size() / TZ_PI));
+  int growLevel = neutu::iround(sqrt(border->size() / TZ_PI));
 
   ZPoint vec[2];
   for (int i = 0; i < 2; ++i) {

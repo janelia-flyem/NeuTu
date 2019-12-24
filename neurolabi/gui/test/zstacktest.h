@@ -436,23 +436,44 @@ TEST(ZStackUtil, Basic)
   ASSERT_FALSE(zstack::DsIntvGreaterThan()(stack1, stack2));
 }
 
-TEST(ZStackArray, Basic)
-{
-  ZStackArray sa;
+class ZStackArrayTest: public ::testing::Test {
 
-  ZStack *stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+public:
+  ZStackArray sa;
+  ZStack *stack1 = nullptr;
+  ZStack *stack2 = nullptr;
+  ZStack *stack3 = nullptr;
+
+  void SetUp() override;
+
+  void TearDown() override {
+  }
+};
+
+void ZStackArrayTest::SetUp()
+{
+  stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
   stack1->setDsIntv(1, 0, 0);
 
-  ZStack *stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
   stack2->setDsIntv(0, 1, 1);
 
-  ZStack *stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
   stack3->setDsIntv(1, 1, 1);
 
   sa.append(stack1);
   sa.append(stack2);
   sa.append(stack3);
+}
 
+
+TEST_F(ZStackArrayTest, Basic)
+{
+  ASSERT_EQ(3, int(sa.size()));
+}
+
+TEST_F(ZStackArrayTest, Sort)
+{
   sa.sort(zstack::DsIntvGreaterThan());
   ASSERT_EQ(stack3, sa[0].get());
   ASSERT_EQ(stack2, sa[1].get());

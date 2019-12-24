@@ -2,9 +2,10 @@
 
 #include <iostream>
 
-#include "neutubeconfig.h"
 #include "tz_cuboid_i.h"
-#include "tz_math.h"
+
+#include "neutubeconfig.h"
+
 #include "zstack.hxx"
 #include "geometry/zintcuboid.h"
 #include "zobject3dscan.h"

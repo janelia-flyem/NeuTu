@@ -37,6 +37,7 @@ signals:
   void changingSplit(uint64_t);
   void savingSeed();
   void committingResult();
+  void previewingResult();
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
   void savingTask();
@@ -70,8 +71,8 @@ public slots:
 
 private slots:
   void slotTest();
-  void setSplit(uint64_t bodyId);
-  void changeSplit();
+//  void setSplit(uint64_t bodyId);
+//  void changeSplit();
   void commitResult();
 //  void updateBookmarkTable(ZFlyEmBodySplitProject *project);
 //  void clearBookmarkTable(ZFlyEmBodySplitProject *project);

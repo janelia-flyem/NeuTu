@@ -21,7 +21,7 @@ __BEGIN_DECLS
 
 #define VRML_INDENT 2
 
-typedef BOOL SFBool;
+typedef _BOOL_ SFBool;
 typedef double SFFloat;
 typedef void* SFNode;
 typedef Unipointer_List MFNode;

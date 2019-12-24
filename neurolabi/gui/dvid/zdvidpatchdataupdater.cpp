@@ -1,8 +1,11 @@
 #include "zdvidpatchdataupdater.h"
-#include "zdvidtileensemble.h"
+
 #include "mvc/zstackdoc.h"
+#include "mvc/zstackdocdatabuffer.h"
+
+#include "zdvidtileensemble.h"
 #include "zdvidpatchdatafetcher.h"
-#include "zstackdocdatabuffer.h"
+
 
 ZDvidPatchDataUpdater::ZDvidPatchDataUpdater(QObject *parent) :
   QObject(parent)

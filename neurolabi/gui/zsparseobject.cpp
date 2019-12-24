@@ -1,7 +1,8 @@
 #include "zsparseobject.h"
+
 #include <QPen>
+
 #include "zpainter.h"
-#include "tz_math.h"
 #include "zstack.hxx"
 #include "neutubeconfig.h"
 
@@ -71,8 +72,8 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
       return;
     }
 
-    UNUSED_PARAMETER(option);
-    z -= iround(painter.getZOffset());
+//    UNUSED_PARAMETER(option);
+    z -= painter.getZOffset();
     QPen pen(m_color);
     painter.setPen(pen);
 

@@ -6,8 +6,7 @@
 #include <QMutex>
 
 #include <vector>
-#include "tz_utilities.h"
-#include "tz_cdefs.h"
+
 #include "zstackobject.h"
 #include "c_stack.h"
 #include "zuncopyable.h"
@@ -65,11 +64,11 @@ public:
   virtual void paintStack(
       const std::vector<Stack*> &stackArray,
       const int *offset, int xIntv, int yIntv, int zIntv) const {
-    UNUSED_PARAMETER(stackArray);
-    UNUSED_PARAMETER(offset);
-    UNUSED_PARAMETER(xIntv);
-    UNUSED_PARAMETER(yIntv);
-    UNUSED_PARAMETER(zIntv);
+    UNUSED_PARAMETER(stackArray)
+    UNUSED_PARAMETER(offset)
+    UNUSED_PARAMETER(xIntv)
+    UNUSED_PARAMETER(yIntv)
+    UNUSED_PARAMETER(zIntv)
   }
 
   virtual ZStack* toStack() const { return NULL; }

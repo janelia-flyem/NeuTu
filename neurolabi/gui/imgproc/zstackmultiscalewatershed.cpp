@@ -19,15 +19,14 @@
 #include "zswcforest.h"
 #include "zswctree.h"
 #include "zobject3d.h"
-#include "zstackdocdatabuffer.h"
 #include "zdownsamplefilter.h"
 
 #include "widgets/zpythonprocess.h"
 #include "mvc/zstackframe.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "sandbox/zsandbox.h"
 #include "mainwindow.h"
 
-#include "zstackdocdatabuffer.h"
 #include "neutubeconfig.h"
 #include "zdownsamplefilter.h"
 #include "zwatershedmst.h"
@@ -35,8 +34,8 @@
 
 #undef ASCII
 #undef BOOL
-#undef TRUE
-#undef FALSE
+#undef _TRUE_
+#undef _FALSE_
 
 #if defined(_ENABLE_SURFRECON_)
 #include "surfrecon.h"

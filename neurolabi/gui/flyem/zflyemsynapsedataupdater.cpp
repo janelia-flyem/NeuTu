@@ -1,9 +1,11 @@
 #include "zflyemsynapsedataupdater.h"
 
-#include "zflyemsynapsedatafetcher.h"
 #include "mvc/zstackdoc.h"
+#include "mvc/zstackdocdatabuffer.h"
+
+#include "zflyemsynapsedatafetcher.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "zstackdocdatabuffer.h"
+
 
 ZFlyEmSynapseDataUpdater::ZFlyEmSynapseDataUpdater(QObject *parent) :
   QObject(parent)

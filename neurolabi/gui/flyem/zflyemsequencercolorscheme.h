@@ -1,10 +1,11 @@
 #ifndef ZFLYEMSEQUENCERCOLORSCHEME_H
 #define ZFLYEMSEQUENCERCOLORSCHEME_H
 
+#include <cstdint>
+
 #include <QColor>
 #include <QHash>
 
-#include "tz_stdint.h"
 #include "zflyembodycolorscheme.h"
 
 class ZFlyEmSequencerColorScheme : public ZFlyEmBodyColorScheme

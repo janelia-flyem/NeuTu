@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "neurolabi_config.h"
 #include "tz_json.h"
 #include "zjsonobject.h"
@@ -65,12 +65,12 @@ public:
   }
 
 
-
-
 //  template<>
 //  static std::string getValue<std::string>(const json_t *value);
 
 public:
+  static bool IsObject(const std::string &str);
+
   static bool IsObject(const json_t *value);
   static bool IsArray(const json_t *value);
   static bool IsInteger(const json_t *value);
@@ -122,6 +122,13 @@ template<>
 struct ZJsonParser::GetValueHelper<std::string> {
   static std::string GetValue(const json_t *value) {
     return stringValue(value);
+  }
+};
+
+template<>
+struct ZJsonParser::GetValueHelper<std::vector<int64_t>> {
+  static std::vector<int64_t> GetValue(const json_t *value) {
+    return integerArray(value);
   }
 };
 

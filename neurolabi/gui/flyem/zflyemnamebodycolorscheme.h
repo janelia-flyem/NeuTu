@@ -1,9 +1,9 @@
 #ifndef ZFLYEMNAMEBODYCOLORSCHEME_H
 #define ZFLYEMNAMEBODYCOLORSCHEME_H
 
+#include <cstdint>
 #include <QHash>
 
-#include "tz_stdint.h"
 #include "zobjectcolorscheme.h"
 #include "dvid/zdvidreader.h"
 #include "zflyembodycolorscheme.h"

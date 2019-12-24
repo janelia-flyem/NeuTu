@@ -4,33 +4,35 @@
 #include <vector>
 #include <algorithm>
 
-#include "neurolabi_config.h"
+//#include "neurolabi_config.h"
 #include "zstring.h"
-#include "tz_utilities.h"
-#include "tz_error.h"
-#include "zhdf5reader.h"
+//#include "zhdf5reader.h"
 
 using namespace std;
 
 ZFileList::ZFileList()
 {
   m_fileList.file_number = 0;
-  m_fileList.file_path = NULL;
+  m_fileList.file_path = nullptr;
 }
 
 ZFileList::ZFileList(int n)
 {
   if (n > 0) {
     m_fileList.file_number = n;
-    m_fileList.file_path = (File_Path_String_t*)
-        Guarded_Malloc(sizeof(File_Path_String_t) * n,
-                       "ZFileList");
+    m_fileList.file_path = new File_Path_String_t[n];
+    m_dealloc = [](File_List *p) {
+      if (p) {
+        delete []p->file_path;
+      }
+    };
   }
 }
 
 ZFileList::~ZFileList()
 {
-  Clean_File_List(&m_fileList);
+  m_dealloc(&m_fileList);
+//  Clean_File_List(&m_fileList);
 }
 
 char* ZFileList::getFilePath(int index) const
@@ -51,6 +53,7 @@ struct StringCompare {
 void ZFileList::load(const string &dir, const string &ext, ESortingOption option)
 {
   File_List_Load_Dir(dir.c_str(), ext.c_str(), &m_fileList);
+  m_dealloc = Clean_File_List;
 
   switch (option) {
   case SORT_BY_LAST_NUMBER:
@@ -88,6 +91,7 @@ void ZFileList::setFilePath(int index, string path)
   strcpy(m_fileList.file_path[index], path.c_str());
 }
 
+#if 0
 void ZFileList::importFromXml(const string &/*filePath*/)
 {
 #if 0
@@ -110,12 +114,12 @@ void ZFileList::importFromXml(const string &/*filePath*/)
 
   cur = root->xmlChildrenNode;
   while (cur != NULL) {
-    if (Xml_Node_Is_Element(cur, "url") == TRUE) {
+    if (Xml_Node_Is_Element(cur, "url") == _TRUE_) {
       filePathArray.push_back(Xml_Node_String_Value(doc, cur));
     } else {
       xmlNodePtr child = cur->xmlChildrenNode;
       while (child != NULL) {
-        if (Xml_Node_Is_Element(child, "url") == TRUE) {
+        if (Xml_Node_Is_Element(child, "url") == _TRUE_) {
           filePathArray.push_back(Xml_Node_String_Value(doc, child));
         }
       }
@@ -141,3 +145,4 @@ void ZFileList::importFromXml(const string &/*filePath*/)
 #endif
 #endif
 }
+#endif

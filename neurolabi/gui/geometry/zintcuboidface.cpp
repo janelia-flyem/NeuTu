@@ -2,10 +2,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "tz_utilities.h"
 #include "zintpoint.h"
-//#include "zswcgenerator.h"
-//#include "zswctree.h"
 
 ZIntCuboidFace::ZIntCuboidFace() : m_z(0), m_normalAxis(neutu::EAxis::Z),
   m_isNormalPositive(true)

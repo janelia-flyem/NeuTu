@@ -1,8 +1,9 @@
 #include "zswclayerfeatureanalyzer.h"
 
-#include "tz_error.h"
+#include <cassert>
+
 #include "swctreenode.h"
-#include "tz_unipointer_linked_list.h"
+//#include "tz_unipointer_linked_list.h"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ double ZSwcLayerFeatureAnalyzer::computeFeatureSimilarity(
   double s2 = max(featureArray1[1], featureArray2[1]);
   double s1 = min(featureArray1[1], featureArray2[1]);
 
-  TZ_ASSERT(s1 > 0.0, "Invalid number");
+  assert(s1 > 0.0);
 
   //return maxSize - ((s2 - s1) + s1 * (log(s1 / s2)));
 
@@ -44,7 +45,7 @@ std::vector<double> ZSwcLayerFeatureAnalyzer::computeFeature(Swc_Tree_Node *tn)
 
 void ZSwcLayerFeatureAnalyzer::setParameter(const std::vector<double> &parameterArray)
 {
-  TZ_ASSERT(parameterArray.size() >= 4, "Too few parameters");
+  assert(parameterArray.size() >= 4);
 
   m_sizeFeatureAnalyzer.setParameter(parameterArray);
   m_layerBaseFactor = parameterArray[2];

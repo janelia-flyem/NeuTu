@@ -1,7 +1,7 @@
 #include "zmouseeventmapper.h"
 #include <QMouseEvent>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #include "zinteractivecontext.h"
 #include "geometry/zintpoint.h"
@@ -339,7 +339,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     if (op.isNull()) {
       if (m_context->isStackSliceView()) {
         if (m_context->isContextMenuActivated() &&
-            m_context->markPuncta() &&
+            m_context->markingPuncta() &&
             getDocument()->hasStackData()) {
           op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
         }

@@ -2,17 +2,15 @@
 
 #include <iostream>
 #include <fstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
 #include <sstream>
 #include <cmath>
 #include <cstring>
-#if _QT_GUI_USED_
-
-#endif
+#include <cassert>
+#include <cstdint>
 
 #include "zobject3d.h"
-#include "tz_error.h"
 #include "zgraph.h"
 #include "tz_stack_objlabel.h"
 #include "zerror.h"
@@ -22,7 +20,6 @@
 #include "c_stack.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
-#include "include/tz_stdint.h"
 #include "zfiletype.h"
 #include "zeigensolver.h"
 #include "zdoublevector.h"
@@ -31,7 +28,6 @@
 #include "zhdf5reader.h"
 #include "zhdf5writer.h"
 #include "zstringarray.h"
-#include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "zstackfactory.h"
 #include "tz_stack_bwmorph.h"
@@ -502,7 +498,8 @@ const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegme
   return m_indexSegmentMap;
 }
 
-bool ZObject3dScan::getSegment(size_t index, int *z, int *y, int *x1, int *x2)
+bool ZObject3dScan::getSegment(
+    size_t index, int *z, int *y, int *x1, int *x2) const
 {
   const auto& segMap = getIndexSegmentMap();
   if (segMap.count(index) > 0) {
@@ -1486,7 +1483,7 @@ bool ZObject3dScan::isAdjacentTo(
 
 #ifdef _DEBUG_
   if (nbr == neutu::EStackNeighborhood::D1) {
-    TZ_ASSERT(adjacent == isAdjacentTo_Old(obj), "Incompatible value.");
+    assert(adjacent == isAdjacentToOld(obj));
   }
 #endif
 
@@ -1494,7 +1491,7 @@ bool ZObject3dScan::isAdjacentTo(
 }
 
 #if 1
-bool ZObject3dScan::isAdjacentTo_Old(const ZObject3dScan &obj) const
+bool ZObject3dScan::isAdjacentToOld(const ZObject3dScan &obj) const
 {
   canonizeConst();
   obj.canonizeConst();
@@ -1893,7 +1890,7 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
 #endif
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     objArray[0].save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
   }
@@ -2257,7 +2254,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
     }
   }
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
 
@@ -2574,8 +2571,8 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
 
         slice.loadStack(*newStack);
 
-        slice.translate(iround((c2.getX() - c1.getX()) * beta),
-                        iround((c2.getY() - c1.getY()) * beta), 0 );
+        slice.translate(neutu::iround((c2.getX() - c1.getX()) * beta),
+                        neutu::iround((c2.getY() - c1.getY()) * beta), 0 );
 
         delete stack1;
         delete stack2;
@@ -2792,9 +2789,9 @@ bool ZObject3dScan::hit(double x, double y, double z)
   }
 
   m_hitPoint.set(0, 0, 0);
-  int tx = iround(x);
-  int ty = iround(y);
-  int tz = iround(z);
+  int tx = neutu::iround(x);
+  int ty = neutu::iround(y);
+  int tz = neutu::iround(z);
   zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
@@ -2803,7 +2800,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.contains(tx, ty, tz)) {
-      m_hitPoint.set(iround(x), iround(y), iround(z));
+      m_hitPoint.set(neutu::iround(x), neutu::iround(y), neutu::iround(z));
       return true;
     }
   }
@@ -2819,14 +2816,14 @@ bool ZObject3dScan::hit(double x, double y, neutu::EAxis axis)
 
   m_hitPoint.set(0, 0, 0);
 
-  int tx = iround(x) / (getDsIntv().getX() + 1);
-  int ty = iround(y) / (getDsIntv().getY() + 1);
+  int tx = neutu::iround(x) / (getDsIntv().getX() + 1);
+  int ty = neutu::iround(y) / (getDsIntv().getY() + 1);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     int tz = stripe.getZ() / (getDsIntv().getZ() + 1);
     if (stripe.contains(tx, ty, tz)) {
-      m_hitPoint.set(iround(x), iround(y), stripe.getZ());
+      m_hitPoint.set(neutu::iround(x), neutu::iround(y), stripe.getZ());
       return true;
     }
   }
@@ -3215,7 +3212,7 @@ ZObject3dScan ZObject3dScan::getPlaneSurface(int z) const
   result.addStripeFast(slice.getStripe(0));
 
 
-  int count = slice.getStripeArray().size() - 1;
+  int count = int(slice.getStripeArray().size()) - 1;
 
   for (int i = 1; i < count; ++i) {
     ZObject3dStripe upStripe = slice.getStripe(i - 1);
@@ -3748,7 +3745,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   bool newStripe = true;
   */
 
-  int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
+  int intv = neutu::iround(std::cbrt((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
   if (intv < 0) {
     intv = 0;
   }
@@ -4036,23 +4033,6 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
         remained.concat(diff);
         subtracted.concat(slice - diff);
       }
-#if 0
-      ZStack *plane = slice.toStackObject();
-      slice2.addForegroundSlice8(plane); //1: remained; 2: subtracted
-
-      std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
-      for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
-           iter != objArray.end(); ++iter) {
-        ZObject3dScan *obj = *iter;
-        if (obj->getLabel() == 1) {
-          remained.concat(*obj);
-        } else if (obj->getLabel() == 2) {
-          subtracted.concat(*obj);
-        }
-        delete obj;
-      }
-      delete plane;
-#endif
     }
   }
 
@@ -4066,6 +4046,42 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   subtracted.setLabel(getLabel());
 
   return subtracted;
+}
+
+ZObject3dScan ZObject3dScan::counterSubtract(const ZObject3dScan &obj)
+{
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  ZObject3dScan subtracted;
+  ZObject3dScan remained;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+    if (slice2.isEmpty()) {
+      remained.concat(slice);
+    } else {
+      ZObject3dScan diff = slice - slice2;
+      if (diff.isEmpty()) {
+        subtracted.concat(slice);
+      } else {
+        remained.concat(diff);
+        subtracted.concat(slice - diff);
+      }
+    }
+  }
+
+  remained.canonize();
+  subtracted.canonize();
+
+  remained.copyAttributeFrom(*this);
+  subtracted.copyAttributeFrom(*this);
+
+  this->copyDataFrom(subtracted);
+  remained.setLabel(getLabel());
+
+  return remained;
 }
 
 ZObject3dScan operator - (

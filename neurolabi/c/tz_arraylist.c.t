@@ -465,7 +465,7 @@ static int parent_index(int index)
 }
 */
 
-BOOL Verify_<1T>_Heap(<1T>_Arraylist *h)
+_BOOL_ Verify_<1T>_Heap(<1T>_Arraylist *h)
 {
   int i;
   for (i = h->length - 1; i > 1; i--) {

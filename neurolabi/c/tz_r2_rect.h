@@ -87,7 +87,7 @@ Local_Neuroseg* Local_R2_Rect_To_Local_Neuroseg(const Local_R2_Rect *rseg,
 
 void Local_R2_Rect_Center(const Local_R2_Rect *locseg, double *center);
 void Local_R2_Rect_Set_Center(Local_R2_Rect *locseg, const double *center);
-BOOL Local_R2_Rect_Hit_Test(const Local_R2_Rect *rect, double x, double y,
+_BOOL_ Local_R2_Rect_Hit_Test(const Local_R2_Rect *rect, double x, double y,
     double z);
 
 void Local_R2_Rect_Bottom(const Local_R2_Rect *rect, double pos[]);

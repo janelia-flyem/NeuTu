@@ -39,17 +39,17 @@ char* Xml_Node_Name(const xmlNodePtr node)
 #endif
 }
 
-BOOL Xml_Node_Is_Element(const xmlNodePtr node, const char *str)
+_BOOL_ Xml_Node_Is_Element(const xmlNodePtr node, const char *str)
 {
 #ifdef HAVE_LIBXML2
   if (xmlStrcmp(node->name, CONST_XML_STRING(str)) == 0) {
-    return TRUE;
+    return _TRUE_;
   }
 #else
   TZ_ERROR(ERROR_NA_FUNC);
 #endif
 
-  return FALSE;
+  return _FALSE_;
 }
 
 char* Xml_Node_String_Value(const xmlDocPtr doc, const xmlNodePtr node)
@@ -95,21 +95,21 @@ int Xml_Coordinate(const xmlDocPtr doc, const xmlNodePtr node, double *coord)
   }
 
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "x") == TRUE) {
+    if (Xml_Node_Is_Element(child, "x") == _TRUE_) {
       coord[0] = Xml_Node_Double_Value(doc, child);
       /*
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       coord[0] = atof((const char*) value);
       xmlFree(value);
       */
-    } else if (Xml_Node_Is_Element(child, "y") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "y") == _TRUE_) {
       coord[1] = Xml_Node_Double_Value(doc, child);
       /*
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       coord[1] = atof((const char*) value);
       xmlFree(value);
       */
-    } else if (Xml_Node_Is_Element(child, "z") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "z") == _TRUE_) {
       coord[2] = Xml_Node_Double_Value(doc, child);
       /*
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
@@ -130,7 +130,7 @@ int Xml_Stack_Doc_File_Bundle(const xmlDocPtr doc, const xmlNodePtr node,
 			      File_Bundle_S *bundle)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "image") == FALSE) {
+  if (Xml_Node_Is_Element(node, "image") == _FALSE_) {
     return 1;
   }
 
@@ -209,7 +209,7 @@ int Xml_Stack_Doc_File_Bundle_R(const xmlDocPtr doc, const xmlNodePtr node,
     const char *curdir, File_Bundle_S *bundle)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "image") == FALSE) {
+  if (Xml_Node_Is_Element(node, "image") == _FALSE_) {
     return 1;
   }
 
@@ -278,7 +278,7 @@ int Xml_Stack_Doc_File_Path(const xmlDocPtr doc, const xmlNodePtr node,
 			    char **path)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "image") == FALSE) {
+  if (Xml_Node_Is_Element(node, "image") == _FALSE_) {
     return 1;
   }
 
@@ -287,7 +287,7 @@ int Xml_Stack_Doc_File_Path(const xmlDocPtr doc, const xmlNodePtr node,
   xmlNodePtr child = node->xmlChildrenNode;
   
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "url") == TRUE) {
+    if (Xml_Node_Is_Element(child, "url") == _TRUE_) {
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       *path = Xml_String_To_String(value);
       xmlFree(value);
@@ -306,7 +306,7 @@ int Xml_Stack_Doc_File_List(const xmlDocPtr doc, const xmlNodePtr node,
 			    File_List *file_list)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "image") == FALSE) {
+  if (Xml_Node_Is_Element(node, "image") == _FALSE_) {
     return 1;
   }
 
@@ -316,12 +316,12 @@ int Xml_Stack_Doc_File_List(const xmlDocPtr doc, const xmlNodePtr node,
   xmlNodePtr child = node->xmlChildrenNode;
   
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "url") == TRUE) {
+    if (Xml_Node_Is_Element(child, "url") == _TRUE_) {
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       path = Xml_String_To_String(value);
       xmlFree(value);
     }
-    if (Xml_Node_Is_Element(child, "ext") == TRUE) {
+    if (Xml_Node_Is_Element(child, "ext") == _TRUE_) {
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       ext = Xml_String_To_String(value);
       xmlFree(value);
@@ -347,7 +347,7 @@ int Xml_Stack_Doc_File_Path_R(const xmlDocPtr doc, const xmlNodePtr node,
     const char *curdir, char **path)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "image") == FALSE) {
+  if (Xml_Node_Is_Element(node, "image") == _FALSE_) {
     return 1;
   }
 
@@ -356,7 +356,7 @@ int Xml_Stack_Doc_File_Path_R(const xmlDocPtr doc, const xmlNodePtr node,
   xmlNodePtr child = node->xmlChildrenNode;
   
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "url") == TRUE) {
+    if (Xml_Node_Is_Element(child, "url") == _TRUE_) {
       xmlChar *value = xmlNodeListGetString(doc, child->xmlChildrenNode, 1);
       TZ_ASSERT(xmlStrlen(value) > 1, "File path too short");
 #if defined(_WIN32) || defined(_WIN64)
@@ -388,7 +388,7 @@ Stack_Document* Xml_Stack_Document(const xmlDocPtr doc, const xmlNodePtr node,
 				   Stack_Document *stack_doc)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "data") == FALSE) {
+  if (Xml_Node_Is_Element(node, "data") == _FALSE_) {
     return NULL;
   }
 
@@ -401,7 +401,7 @@ Stack_Document* Xml_Stack_Document(const xmlDocPtr doc, const xmlNodePtr node,
   xmlNodePtr child = node->xmlChildrenNode;
   
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "image") == TRUE) {
+    if (Xml_Node_Is_Element(child, "image") == _TRUE_) {
       xmlChar *image_type = xmlGetProp(child, CONST_XML_STRING("type"));
       void *ci = NULL;
       File_Bundle_S fb;
@@ -441,13 +441,13 @@ Stack_Document* Xml_Stack_Document(const xmlDocPtr doc, const xmlNodePtr node,
           (stack_doc->type != STACK_DOC_FILE_LIST)) {
 	free(ci);
       }
-    } else if (Xml_Node_Is_Element(child, "resolution") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "resolution") == _TRUE_) {
       Xml_Coordinate(doc, child, stack_doc->resolution);
-    } else if (Xml_Node_Is_Element(child, "channel") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "channel") == _TRUE_) {
       stack_doc->channel = Xml_Node_Int_Value(doc, child);
-    } else if (Xml_Node_Is_Element(child, "offset") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "offset") == _TRUE_) {
       Xml_Coordinate(doc, child, stack_doc->offset);
-    } else if (Xml_Node_Is_Element(child, "unit") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "unit") == _TRUE_) {
       stack_doc->unit = Xml_Node_String_Value(doc, child)[0];
     }
 
@@ -464,7 +464,7 @@ Stack_Document* Xml_Stack_Document_R(const xmlDocPtr doc,
     const xmlNodePtr node, const char *curdir, Stack_Document *stack_doc)
 {
 #ifdef HAVE_LIBXML2
-  if (Xml_Node_Is_Element(node, "data") == FALSE) {
+  if (Xml_Node_Is_Element(node, "data") == _FALSE_) {
     return NULL;
   }
 
@@ -477,7 +477,7 @@ Stack_Document* Xml_Stack_Document_R(const xmlDocPtr doc,
   xmlNodePtr child = node->xmlChildrenNode;
   
   while (child != NULL) {
-    if (Xml_Node_Is_Element(child, "image") == TRUE) {
+    if (Xml_Node_Is_Element(child, "image") == _TRUE_) {
       xmlChar *image_type = xmlGetProp(child, CONST_XML_STRING("type"));
       void *ci = NULL;
       File_Bundle_S fb;
@@ -510,13 +510,13 @@ Stack_Document* Xml_Stack_Document_R(const xmlDocPtr doc,
       if (stack_doc->type != STACK_DOC_FILE_BUNDLE) {
 	free(ci);
       }
-    } else if (Xml_Node_Is_Element(child, "resolution") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "resolution") == _TRUE_) {
       Xml_Coordinate(doc, child, stack_doc->resolution);
-    } else if (Xml_Node_Is_Element(child, "channel") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "channel") == _TRUE_) {
       stack_doc->channel = Xml_Node_Int_Value(doc, child);
-    } else if (Xml_Node_Is_Element(child, "offset") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "offset") == _TRUE_) {
       Xml_Coordinate(doc, child, stack_doc->offset);
-    } else if (Xml_Node_Is_Element(child, "unit") == TRUE) {
+    } else if (Xml_Node_Is_Element(child, "unit") == _TRUE_) {
       stack_doc->unit = Xml_Node_String_Value(doc, child)[0];
     }
 
@@ -551,7 +551,7 @@ Stack_Document* Xml_Read_Stack_Document(const char *filePath)
 
   cur = cur->xmlChildrenNode;
   while (cur != NULL) {
-    if (Xml_Node_Is_Element(cur, "data") == TRUE) {
+    if (Xml_Node_Is_Element(cur, "data") == _TRUE_) {
       stack_doc = Xml_Stack_Document(doc, cur, NULL);
       break;
     }

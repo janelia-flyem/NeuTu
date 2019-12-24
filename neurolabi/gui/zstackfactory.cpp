@@ -194,12 +194,12 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
   ZCuboid box = curve.getBoundBox();
   //box.expand(2.0);
 
-  ZIntCuboid stackBox(iround(box.firstCorner().x()),
-                      iround(box.firstCorner().y()),
-                      iround(box.firstCorner().z()),
-                      iround(box.lastCorner().x()),
-                      iround(box.lastCorner().y()),
-                      iround(box.lastCorner().z()));
+  ZIntCuboid stackBox(neutu::iround(box.firstCorner().x()),
+                      neutu::iround(box.firstCorner().y()),
+                      neutu::iround(box.firstCorner().z()),
+                      neutu::iround(box.lastCorner().x()),
+                      neutu::iround(box.lastCorner().y()),
+                      neutu::iround(box.lastCorner().z()));
 
   QPixmap *pix = new QPixmap(stackBox.getWidth(), stackBox.getHeight());
   pix->fill(Qt::black);
@@ -355,7 +355,10 @@ ZStack* ZStackFactory::MakeDensityMap(const ZPointArray &ptArray, double sigma)
     for (ZPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZPoint &pt = *iter;
-      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
+      stack->addIntValue(
+            neutu::iround(pt.x()),
+            neutu::iround(pt.y()),
+            neutu::iround(pt.z()), 0, 1);
     }
 
     Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
@@ -455,8 +458,11 @@ ZStack* ZStackFactory::MakeDensityMap(
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZWeightedPoint &pt = *iter;
-      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
-                         iround(pt.weight()));
+      stack->addIntValue(
+            neutu::iround(pt.x()),
+            neutu::iround(pt.y()),
+            neutu::iround(pt.z()), 0,
+            neutu::iround(pt.weight()));
     }
 
     if (sigma > 0.0) {
@@ -495,10 +501,10 @@ ZStack* ZStackFactory::MakeSeedStack(const ZWeightedPointArray &ptArray)
   for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
        iter != ptArray.end(); ++iter) {
     const ZWeightedPoint &pt = *iter;
-    int x = iround(pt.x());
-    int y = iround(pt.y());
-    int z = iround(pt.z());
-    int v = iround(pt.weight());
+    int x = neutu::iround(pt.x());
+    int y = neutu::iround(pt.y());
+    int z = neutu::iround(pt.z());
+    int v = neutu::iround(pt.weight());
 
     stack->setIntValue(x, y, z, 0, v);
     stack->setIntValue(x - 1, y, z, 0, v);

@@ -11,6 +11,7 @@
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
+#include "connectionvalidationprotocol.h"
 #include "synapsepredictionprotocol.h"
 #include "synapsereviewprotocol.h"
 #include "todoreviewprotocol.h"
@@ -77,7 +78,12 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
 
         << "synapse_prediction_body"
         << "synapse_prediction_region"
-        << "todo_review";
+
+        << "connection_validation";
+
+
+        // started but deferred for now
+        // << "todo_review";
 
         // implemented but never rolled out:
         // << "synapse_review";
@@ -354,8 +360,13 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(
               m_parent, SynapsePredictionProtocol::VARIATION_BODY);
-    } else if (protocolName == "todo_review") {
-        m_activeProtocol = new ToDoReviewProtocol(m_parent);
+    } else if (protocolName == "connection_validation") {
+        m_activeProtocol = new ConnectionValidationProtocol(m_parent);
+
+
+    // started, deferred for now
+    // } else if (protocolName == "todo_review") {
+    //     m_activeProtocol = new ToDoReviewProtocol(m_parent);
 
     // implemented, basically works, but never used
     // } else if (protocolName == "synapse_review") {

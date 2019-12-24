@@ -4,9 +4,13 @@
 
 ZFlyEmTodoPresenter::ZFlyEmTodoPresenter()
 {
+  // keep this in sync with the TodoTableColumns enum in .h!
   m_fieldList << " Body ID " << "Action" << "Comment" << "Priority"
-              << "  Z   " << "  X  " << "  Y  " << "  User  ";
+              << "  Z   " << "  X  " << "  Y  " << "tip index" << "tip RoI" << "  User  ";
 }
+
+const std::string ZFlyEmTodoPresenter::KEY_TIPQC_ROI = "tip qc roi";
+const std::string ZFlyEmTodoPresenter::KEY_TIPQC_INDEX = "tip qc index";
 
 void ZFlyEmTodoPresenter::setVisibleTest(
     std::function<bool (const ZFlyEmToDoItem &)> f)
@@ -21,26 +25,30 @@ QVariant ZFlyEmTodoPresenter::data(
     switch(role) {
     case Qt::DisplayRole:
       switch (index) {
-      case 0:
+      case TODO_BODYID_COLUMN:
         return QString("%1").arg(item.getBodyId());
-      case 1:
+      case TODO_ACTION_COLUMN:
         return QString::fromStdString(item.getActionName());
-      case 2:
+      case TODO_COMMENT_COLUMN:
         return QString::fromStdString(item.getComment());
-      case 3:
+      case TODO_PRIORITY_COLUMN:
         if (item.getPriority() > 0) {
           return QString::number(item.getPriority()) + "-"
               + item.getPriorityName().c_str();
         } else {
           return item.getPriorityName().c_str();
         }
-      case 4:
+      case TODO_Z_COLUMN:
         return item.getPosition().getZ();
-      case 5:
+      case TODO_X_COLUMN:
         return item.getPosition().getX();
-      case 6:
+      case TODO_Y_COLUMN:
         return item.getPosition().getY();
-      case 7:
+      case TODO_TIP_INDEX_COLUMN:
+        return getTipIndex(item);
+      case TODO_TIP_ROI_COLUMN:
+        return getTipRoi(item);
+      case TODO_USERNAME_COLUMN:
         return item.getUserName().c_str();
       }
       break;
@@ -63,4 +71,24 @@ QVariant ZFlyEmTodoPresenter::data(
   }
 
   return QVariant();
+}
+
+QVariant ZFlyEmTodoPresenter::getTipIndex(const ZFlyEmToDoItem &item) const {
+  if (item.hasProperty(KEY_TIPQC_INDEX)) {
+    std::string s = item.getProperty<std::string>(KEY_TIPQC_INDEX);
+    return std::stoi(s);
+  } else {
+    // we want no index to be nothing, not 0 or -1 or anything
+    return QVariant();
+  }
+}
+
+QString ZFlyEmTodoPresenter::getTipRoi(const ZFlyEmToDoItem &item) const {
+  // if the to do item was placed by the tip detector and has an RoI,
+  //  return it
+  QString roi;
+  if (item.hasProperty(KEY_TIPQC_ROI)) {
+    roi = QString::fromStdString(item.getProperty<std::string>(KEY_TIPQC_ROI));
+  }
+  return roi;
 }

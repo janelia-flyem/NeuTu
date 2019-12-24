@@ -23,6 +23,10 @@ public:
   // if index contains many puncta, return them, otherwise return NULL
   const std::vector<ZPunctum *> *getPuncta(const QModelIndex &index) const;
   void updateData(const ZStackObject *obj);
+
+  void setPropertyName(const QString &key, const QString &value);
+  QString getPropertyName(const QString &key) const;
+
 //  void updateData(ZPunctum* punctum);
 
 public:
@@ -45,6 +49,7 @@ protected:
   std::map<QString, int> m_punctaSourceToCount;
   std::map<const ZPunctum*, int> m_punctaToRow;
   std::vector<std::vector<ZPunctum*> > m_punctaSeparatedByFile;
+  std::map<QString, QString> m_propertyName;
   
 };
 

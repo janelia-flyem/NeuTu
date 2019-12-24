@@ -3,7 +3,7 @@
 
 #include <QFlags>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 namespace neutu {
 

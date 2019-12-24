@@ -130,6 +130,10 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddDiagnosticItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryAddSegmentationDiagnosticItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
@@ -783,6 +787,11 @@ void ZFlyEmProofPresenter::tryAddDiagnosticItem(const ZIntPoint &pt)
   tryAddTodoItem(pt, false, neutu::EToDoAction::DIAGNOSTIC);
 }
 
+void ZFlyEmProofPresenter::tryAddSegmentationDiagnosticItem(const ZIntPoint &pt)
+{
+  tryAddTodoItem(pt, false, neutu::EToDoAction::SEGMENTATION_DIAGNOSIC);
+}
+
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem(const ZIntPoint &pt)
 {
   tryAddTodoItem(pt, false, neutu::EToDoAction::TO_SUPERVOXEL_SPLIT);
@@ -915,7 +924,14 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem()
 
 void ZFlyEmProofPresenter::tryAddDiagnosticItem()
 {
-  tryAddDiagnosticItem(getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
+  tryAddDiagnosticItem(
+        getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddSegmentationDiagnosticItem()
+{
+  tryAddSegmentationDiagnosticItem(
+        getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
@@ -974,7 +990,7 @@ void ZFlyEmProofPresenter::runTipDetection() {
     ZPoint pt = event.getDataPosition();
     uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
 
-    getCompleteDocument()->executeRunTipDetectionCommand(pt.toIntPoint(), bodyId);
+    emit tipDetectRequested(pt.toIntPoint(), bodyId);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
@@ -1315,19 +1331,19 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
 
-    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
+//    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
 
     ZDvidInfo dvidInfo = getCompleteDocument()->getDvidInfo();
     ZResolution res = dvidInfo.getVoxelResolution();
 
 
-    QList<ZFlyEmBookmark*> bookmarkList =
-        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
+//    QList<ZFlyEmBookmark*> bookmarkList =
+//        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
     QString path = ZNeuroglancerPathFactory::MakePath(
           getCompleteDocument()->getDvidEnv(),
           ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
-          pt, bookmarkList);
+          pt/*, bookmarkList*/);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
   }
@@ -1442,7 +1458,7 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
 
   ZPoint pos = currentStackPos;
 //  pos.shiftSliceAxis(buddyView()->getSliceAxis());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Update stroke: " << this << " " << pos.x() << ", " << pos.y()
             << std::endl;
 #endif

@@ -10,11 +10,12 @@
 #include <stack>
 #include <cmath>
 #include <fstream>
+#include <stdexcept>
+#include <cassert>
 
-#include "tz_error.h"
+#include "common/math.h"
 #include "zswctree.h"
 #include "tz_voxel_graphics.h"
-#include "tz_math.h"
 #include "tz_apo.h"
 #include "tz_geo3d_utils.h"
 #include "tz_locseg_chain_com.h"
@@ -195,6 +196,7 @@ void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
       free(m_tree);
       m_tree = NULL;
     }
+    break;
   default:
     break;
   }
@@ -330,12 +332,12 @@ void ZSwcTree::parseComment(istream &stream)
     if (value != NULL) {
       int alpha = 255;
       if (ZJsonParser::arraySize(value) == 4) {
-        alpha = iround(ZJsonParser::numberValue(value, 3) * 255.0);
+        alpha = neutu::iround(ZJsonParser::numberValue(value, 3) * 255.0);
       }
 
-      setColor(iround(ZJsonParser::numberValue(value, 0) * 255.0),
-               iround(ZJsonParser::numberValue(value, 1) * 255.0),
-               iround(ZJsonParser::numberValue(value, 2) * 255.0),
+      setColor(neutu::iround(ZJsonParser::numberValue(value, 0) * 255.0),
+               neutu::iround(ZJsonParser::numberValue(value, 1) * 255.0),
+               neutu::iround(ZJsonParser::numberValue(value, 2) * 255.0),
                alpha);
     }
 
@@ -917,12 +919,12 @@ int ZSwcTree::size()
 
 int ZSwcTree::size(Swc_Tree_Node *start)
 {
-  int count = updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, start, FALSE);
+  int count = updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, start, _FALSE_);
 
   return count;
 }
 
-int ZSwcTree::updateIterator(int option, BOOL indexing) const
+int ZSwcTree::updateIterator(int option, _BOOL_ indexing) const
 {
   if (isEmpty()) {
     if (m_tree != NULL) {
@@ -945,13 +947,13 @@ int ZSwcTree::updateIterator(int option, BOOL indexing) const
 }
 
 int ZSwcTree::updateIterator(int option, const set<Swc_Tree_Node*> &blocker,
-                   BOOL indexing) const
+                   _BOOL_ indexing) const
 {
   return updateIterator(option, NULL, blocker, indexing);
 }
 
 int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
-                             BOOL indexing) const
+                             _BOOL_ indexing) const
 {
   set<Swc_Tree_Node*> blocker;
   return updateIterator(option, start, blocker, indexing);
@@ -959,7 +961,7 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
 
 int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
                              const set<Swc_Tree_Node*> &blocker,
-                             BOOL indexing) const
+                             _BOOL_ indexing) const
 {
   if (isEmpty()) {
     if (m_tree->root != NULL) {
@@ -1091,7 +1093,7 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
       break;
     case SWC_TREE_ITERATOR_LEAF:
       {
-        updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, start, blocker, FALSE);
+        updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, start, blocker, _FALSE_);
         Swc_Tree_Node *current_node = NULL;
         Swc_Tree_Node *tn = NULL;
         Swc_Tree_Node *firstLeaf = NULL;
@@ -1103,12 +1105,12 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
             if (current_node == NULL) {
               current_node = tn;
               firstLeaf = tn;
-              if (indexing == TRUE) {
+              if (indexing == _TRUE_) {
                 current_node->index = 0;
               }
             } else {
               current_node->next = tn;
-              if (indexing == TRUE) {
+              if (indexing == _TRUE_) {
                 tn->index = current_node->index + 1;
               }
               current_node = tn;
@@ -1122,8 +1124,9 @@ int ZSwcTree::updateIterator(int option, Swc_Tree_Node *start,
       break;
 
   default:
-    TZ_ERROR(ERROR_DATA_VALUE);
-    break;
+    throw std::invalid_argument("Invalid option");
+//    TZ_ERROR(ERROR_DATA_VALUE);
+//    break;
   }
 
   return count;
@@ -1214,15 +1217,15 @@ void ZSwcTree::print(int iterOption) const
 
 int ZSwcTree::saveAsLocsegChains(const char *prefix, int startNum)
 {
-  TZ_ASSERT(m_iteratorReady == false, "Iterator must be on");
+  assert(m_iteratorReady == false);
 
   int idx = startNum;
 
   ZSwcTree *tree = clone();
 
   Swc_Tree_Node *tn;
-  //Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
-  tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  //Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
+  tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
 
   for (Swc_Tree_Node *tn = tree->begin(); tn != tree->end(); tn = tree->next()) {
     tn->node.label = 0;
@@ -1483,7 +1486,7 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
        iter = REGULAR_SWC_NODE_BEGIN(nodeArray[0], nodeArray.begin());
        iter != nodeArray.end(); ++iter) {
     const Swc_Tree_Node *tn = *iter;
-    TZ_ASSERT(SwcTreeNode::isRegular(tn), "Unexpected virtual node.");
+    assert(SwcTreeNode::isRegular(tn));
     if (ZStackBall::isCuttingPlane(
           SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z, 1.0)) {
       double dist = SwcTreeNode::distance(tn, x, y, z);
@@ -1540,7 +1543,7 @@ void ZSwcTree::translateRootTo(double x, double y, double z)
     offset[1] = y - tn->node.y;
     offset[2] = z - tn->node.z;
   }
-  updateIterator(1, FALSE);
+  updateIterator(1, _FALSE_);
   for (tn = begin(); tn != end(); tn = next()) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
       Swc_Tree_Node_Data(tn)->x += offset[0];
@@ -1558,7 +1561,7 @@ void ZSwcTree::rescale(
   }
 #if 0
   if (scaleX != 1.0 || scaleY != 1.0 || scaleZ != 1.0) {
-    updateIterator(1, FALSE);
+    updateIterator(1, _FALSE_);
     for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
         Swc_Tree_Node_Data(tn)->x *= scaleX;
@@ -1597,8 +1600,8 @@ void ZSwcTree::rescaleRadius(double scale, int startdepth, int enddepth)
   if (enddepth == startdepth)
     enddepth++;
 
-  updateIterator(2, FALSE);
-  //Swc_Tree_Iterator_Start(m_tree, 2, FALSE);
+  updateIterator(2, _FALSE_);
+  //Swc_Tree_Iterator_Start(m_tree, 2, _FALSE_);
   //Swc_Tree_Node *tn = m_tree->root;
   //while ((tn = Swc_Tree_Next(m_tree)) != NULL && swcNodeDepth(tn) < enddepth) {
   for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
@@ -1612,7 +1615,7 @@ void ZSwcTree::rescaleRadius(double scale, int startdepth, int enddepth)
 
 void ZSwcTree::changeRadius(double dr, double scale)
 {
-  updateIterator(2, FALSE);
+  updateIterator(2, _FALSE_);
 
   for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     SwcTreeNode::changeRadius(tn, dr, scale);
@@ -1638,10 +1641,10 @@ int ZSwcTree::swcNodeDepth(Swc_Tree_Node *tn)
 
 void ZSwcTree::reduceNodeNumber(double lengthThre)
 {
-  //Swc_Tree_Iterator_Start(m_tree, 1, FALSE);
+  //Swc_Tree_Iterator_Start(m_tree, 1, _FALSE_);
   //Swc_Tree_Node *tn = m_tree->root;
   //while ((tn = Swc_Tree_Next(m_tree)) != NULL) {
-  updateIterator(1, FALSE);
+  updateIterator(1, _FALSE_);
   for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (Swc_Tree_Node_Is_Continuation(tn) &&
         Swc_Tree_Node_Length(tn) <= lengthThre) {
@@ -1791,7 +1794,7 @@ double ZSwcTree::computeRedundancy(Swc_Tree_Node *leaf)
       Swc_Tree_Node_Detach_Parent(tn);
       int hitCount = 0;
       Swc_Tree_Node *tmptn = leaf;
-      Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+      Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
       while (tmptn != NULL) {
         if (Swc_Tree_Hit_Test(m_tree, SWC_TREE_ITERATOR_NO_UPDATE,
                               Swc_Tree_Node_X(tmptn), Swc_Tree_Node_Y(tmptn),
@@ -1814,7 +1817,7 @@ void ZSwcTree::removeRedundantBranch(double redundacyThreshold)
 {
   double maxRedundancy = 1.0;
   while (maxRedundancy >= redundacyThreshold) {
-    if (Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_LEAF, TRUE) <= 1) {
+    if (Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_LEAF, _TRUE_) <= 1) {
       break;
     }
 
@@ -2056,10 +2059,10 @@ ZSwcBranch* ZSwcTree::extractBranch(int beginId, int endId)
 
 ZSwcBranch* ZSwcTree::extractBranch(int label)
 {
-  TZ_ASSERT(m_iteratorReady == FALSE, "Iterator must be activated");
+  assert(m_iteratorReady == _FALSE_);
 
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_REVERSE, FALSE);
+  Swc_Tree_Iterator_Start(m_tree, SWC_TREE_ITERATOR_REVERSE, _FALSE_);
 
   Swc_Tree_Node *lowerEnd = NULL;
   Swc_Tree_Node *upperEnd = NULL;
@@ -2086,7 +2089,7 @@ ZSwcBranch* ZSwcTree::extractBranch(int label)
 
 vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
 {
-  updateIterator(SWC_TREE_ITERATOR_LEAF, FALSE);
+  updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 
   vector<Swc_Tree_Node*> leafArray;
 
@@ -2103,11 +2106,13 @@ vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
 
 ZSwcBranch* ZSwcTree::extractLongestBranch()
 {
-  //TZ_ASSERT(FALSE, "Under development");
+  //TZ_ASSERT(_FALSE_, "Under development");
 
-  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
+  if (regularRootNumber() != 1) {
+    throw std::domain_error("Multi-tree computation is not supported.");
+  }
 
-  updateIterator(SWC_TREE_ITERATOR_LEAF, FALSE);
+  updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 
   vector<Swc_Tree_Node*> leafArray;
   leafArray.push_back(firstRegularRoot());
@@ -2201,7 +2206,7 @@ ZSwcPath ZSwcTree::getLongestPath()
 
 ZSwcBranch* ZSwcTree::extractFurthestBranch()
 {
-  updateIterator(SWC_TREE_ITERATOR_LEAF, FALSE);
+  updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 
   vector<Swc_Tree_Node*> leafArray;
 
@@ -2501,7 +2506,7 @@ static void GenerateRandomPos(const double *targetVec, double theta,
 
 bool ZSwcTree::isValid()
 {
-  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   for (Swc_Tree_Node *tn = begin(); tn!= end(); tn = next()) {
     if (tn == tn->parent) {
       return false;
@@ -2769,7 +2774,7 @@ vector<Swc_Tree_Node*> ZSwcTree::extractLeaf(Swc_Tree_Node *start)
     Swc_Tree_Node *tn = start->next;
     while (tn != NULL) {
       if (Swc_Tree_Node_Is_Leaf(tn)) {
-        if (Swc_Tree_Node_Is_Upstream(start, tn) == TRUE) {
+        if (Swc_Tree_Node_Is_Upstream(start, tn) == _TRUE_) {
           leafArray.push_back(tn);
         } else {
           break;
@@ -2801,7 +2806,7 @@ void ZSwcTree::translate(const ZIntPoint &offset)
 
 void ZSwcTree::scale(double x, double y, double z)
 {
-  Swc_Tree_Resize(data(), x, y, z, FALSE);
+  Swc_Tree_Resize(data(), x, y, z, _FALSE_);
 }
 
 void ZSwcTree::rotate(double theta, double psi, const ZPoint &center, bool inverse)
@@ -2921,7 +2926,7 @@ void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
     Swc_Tree_Node *root = treeRoots[i];
     double maxRadius = -std::numeric_limits<double>::max();
     Swc_Tree_Node *maxRadiusNode = NULL;
-    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, root, FALSE);
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, root, _FALSE_);
     for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
       if (SwcTreeNode::radius(tn) > maxRadius) {
         maxRadius = SwcTreeNode::radius(tn);
@@ -2930,7 +2935,7 @@ void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
     }
     SwcTreeNode::setAsRoot(maxRadiusNode);
 
-    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, FALSE);
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, _FALSE_);
     for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
       if (maxRadius >= radiusThre &&
           (tn == maxRadiusNode ||
@@ -4013,7 +4018,7 @@ void ZSwcTree::selectConnectedNode()
 
   for (std::set<Swc_Tree_Node*>::iterator iter = regularRoots.begin();
        iter != regularRoots.end(); ++iter) {
-    updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, *iter, FALSE);
+    updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, *iter, _FALSE_);
     for (Swc_Tree_Node *tn = begin(); tn != end(); tn = tn->next) {
       m_selectedNode.insert(tn);
     }

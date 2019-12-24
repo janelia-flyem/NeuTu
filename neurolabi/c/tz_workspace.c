@@ -379,9 +379,9 @@ void Default_Swc_Tree_Svg_Workspace(Swc_Tree_Svg_Workspace *ws)
   ws->puncta = NULL;
   ws->on_root = NULL;
   ws->puncta_type = NULL;
-  ws->shuffling = FALSE;
-  ws->showing_count = FALSE;
-  ws->showing_length = FALSE;
+  ws->shuffling = _FALSE_;
+  ws->showing_count = _FALSE_;
+  ws->showing_length = _FALSE_;
   ws->color_code = SWC_SVG_COLOR_CODE_NONE;
   ws->max_vx = 800;
   ws->max_vy = 600;
@@ -406,6 +406,11 @@ void Clean_Swc_Tree_Svg_Workspace(Swc_Tree_Svg_Workspace *ws)
 void Print_Swc_Tree_Svg_Workspace(Swc_Tree_Svg_Workspace *ws)
 {
   printf("Workspace for swc->svg\n");
+}
+
+void Swc_Tree_Svg_Workspace_Adjust_OnRoot_Size(Swc_Tree_Svg_Workspace *ws)
+{
+  GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, _BOOL_);
 }
 
 DEFINE_ZOBJECT_INTERFACE(Swc_Tree_Svg_Workspace)

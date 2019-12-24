@@ -275,6 +275,8 @@ public:
    * \param name Name of the ROI
    */
   void uploadRoiMesh(const std::string &meshPath, const std::string &name);
+  void uploadRoiMesh(
+      const QByteArray &data, const std::string &format, const std::string &name);
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:

@@ -25,7 +25,7 @@ void FlyEmSettingDialog::updateNeutuseWidget()
   QPalette *palette = new QPalette();
   palette->setColor(
         QPalette::Text,
-        GET_FLYEM_CONFIG.hasNormalService() ? Qt::darkGreen : Qt::darkRed);
+        GET_FLYEM_CONFIG.isNeutuseOnline() ? Qt::darkGreen : Qt::darkRed);
   ui->servicelineEdit->setPalette(*palette);
 }
 
@@ -190,7 +190,7 @@ void FlyEmSettingDialog::update()
     GET_FLYEM_CONFIG.setCustomNeuTuServer(getNeuTuServer());
   }
 
-  GET_FLYEM_CONFIG.activateNeuTuServerForce();
+  GET_FLYEM_CONFIG.activateNeutuseForce(false);
   updateNeutuseWidget();
 
   /*

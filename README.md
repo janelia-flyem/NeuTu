@@ -30,7 +30,7 @@ Once the installation is done, you can launch the program by running
     source <CONDA_ROOT>/bin/activate root
     conda create -n <NAME> -c flyem-forge -c conda-forge neutu-develop
     
-    #For future update, you can run 'conda update -n <NAME> neutu -c flyem-forge -c conda-forge neutu-develop' after activating miniconda.
+    #For future update, you can run 'conda update -n <NAME> -c flyem-forge -c conda-forge neutu-develop' after activating miniconda.
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
@@ -46,6 +46,7 @@ After successful installation, you should be able to lauch the application neutu
     conda create -n <NAME> -c flyem-forge -c conda-forge neutu-develop
     
     #For future update, you can run 'conda update -n <NAME> neutu-develop -c flyem-forge -c conda-forge neutu-develop' after activating miniconda.
+
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 

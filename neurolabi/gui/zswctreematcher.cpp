@@ -9,7 +9,6 @@
 #include <QDebug>
 #endif
 
-#include "tz_utilities.h"
 #include "zswcbranch.h"
 #include "zmatrix.h"
 #include "zswctree.h"

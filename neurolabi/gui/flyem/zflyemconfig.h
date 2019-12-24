@@ -79,6 +79,7 @@ public:
   }
 
 #ifdef _QT_GUI_USED_
+  /*
   ZNeutuService& getNeutuService() {
     return m_neutuService;
   }
@@ -86,6 +87,7 @@ public:
   const ZNeutuService& getNeutuService() const {
     return m_neutuService;
   }
+  */
 
   neutuse::TaskWriter& getNeutuseWriter() {
     return m_neutuseWriter;
@@ -95,11 +97,21 @@ public:
     return m_neutuseWriter;
   }
 
-  bool hasNormalService() const;
-  void updateServiceStatus();
+  enum class EServiceStatus {
+    UNCHECKED, OFFLINE, ONLINE_LOCAL, ONLINE_NET
+  };
 
-  void activateNeuTuServerForce();
-  void activateNeuTuServer();
+  EServiceStatus getNeutuseStatus() const;
+//  bool hasNormalService() const;
+  bool isNeutuseOnline() const;
+  void updateNeutuseStatus();
+  void updateCheckedNeutuseStatus();
+
+  void activateNeutuseForce(bool forLocalTarget);
+  void activateNeutuse(bool forLocalTarget);
+
+  bool neutuseAvailable(bool forLocalTarget) const;
+  bool neutuseAvailable(const ZDvidTarget &target) const;
 
 //  void setRemoteServer(const std::string &server);
 #endif
@@ -190,9 +202,10 @@ private:
   std::map<std::string, std::pair<int,int>> m_centerCut;
 
 #ifdef _QT_GUI_USED_
-  ZNeutuService m_neutuService;
+//  ZNeutuService m_neutuService;
   neutuse::TaskWriter m_neutuseWriter;
-  bool m_neutuServerChecked = false;
+  EServiceStatus m_neutuseStatus = EServiceStatus::UNCHECKED;
+//  bool m_neutuServerChecked = false;
 #endif
 //  std::string m_taskServer;
   std::string m_configPath;
@@ -200,7 +213,12 @@ private:
   bool m_usingDefaultConfig;
   std::string m_defaultLibrarian;
   std::string m_userName;
+//  std::string m_defaultNeuroglancerServer;
+//  std::string m_janeliaNeuroglancerServer;
   std::string m_neuroglancerServer;
+  neutu::EConfigSource m_neuroglancerServerConfigSource =
+      neutu::EConfigSource::UNKNOWN;
+
   bool m_usingDefaultNeuTuServer = true;
   std::string m_defaultNeuTuServer;
   bool m_usingDefaultTaskServer = true;

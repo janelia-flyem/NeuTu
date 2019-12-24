@@ -160,34 +160,34 @@ Ellipse_Point_Distance(double dU, double dV, /* test point (u,v) */
     return fabs(dLength - dA); 
   } 
   // reflect U = -U if necessary, clamp to zero if necessary 
-  BOOL bXReflect; 
+  _BOOL_ bXReflect; 
   if (dU > dEpsilon) { 
-    bXReflect = FALSE; 
+    bXReflect = _FALSE_; 
   } else if (dU < -dEpsilon) { 
-    bXReflect = TRUE; 
+    bXReflect = _TRUE_; 
     dU = -dU; 
   } else { 
-    bXReflect = FALSE; 
+    bXReflect = _FALSE_; 
     dU = 0.0; 
   } 
   // reflect V = -V if necessary, clamp to zero if necessary 
-  BOOL bYReflect; 
+  _BOOL_ bYReflect; 
   if (dV > dEpsilon) { 
-    bYReflect = FALSE; 
+    bYReflect = _FALSE_; 
   } else if (dV < -dEpsilon) { 
-    bYReflect = TRUE; 
+    bYReflect = _TRUE_; 
     dV = -dV; 
   } else { 
-    bYReflect = FALSE; 
+    bYReflect = _FALSE_; 
     dV = 0.0; 
   } 
   // transpose if necessary 
   double dSave; 
-  BOOL bTranspose; 
+  _BOOL_ bTranspose; 
   if (dA >= dB) { 
-    bTranspose = FALSE; 
+    bTranspose = _FALSE_; 
   } else { 
-    bTranspose = TRUE; 
+    bTranspose = _TRUE_; 
     dSave = dA; 
     dA = dB; 
     dB = dSave; 
@@ -238,7 +238,7 @@ Ellipse_Point_Distance(double dU, double dV, /* test point (u,v) */
   return dDistance; 
 }
 
-BOOL Point_In_Ellipse(double x, double y, double a, double b)
+_BOOL_ Point_In_Ellipse(double x, double y, double a, double b)
 {
   x /= a;
   y /= b;
@@ -248,7 +248,7 @@ BOOL Point_In_Ellipse(double x, double y, double a, double b)
 
 #define COORDINATE_EPS 0.00001
 double Vector_Angle2(double x1, double y1, double x2, double y2, 
-    BOOL counter_clockwise)
+    _BOOL_ counter_clockwise)
 {
   if ((fabs(x1) < COORDINATE_EPS && fabs(y1) < COORDINATE_EPS) ||
       (fabs(x2) < COORDINATE_EPS && fabs(y2) < COORDINATE_EPS)) {
@@ -264,7 +264,7 @@ double Vector_Angle2(double x1, double y1, double x2, double y2,
     angle += TZ_2PI;
   }
 
-  if (counter_clockwise == FALSE) {
+  if (counter_clockwise == _FALSE_) {
     angle = TZ_2PI - angle;
   }
 

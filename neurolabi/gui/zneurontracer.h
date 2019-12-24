@@ -8,7 +8,7 @@
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
@@ -296,7 +296,7 @@ private:
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
-  bool m_maskTracing;
+  bool m_maskTracing = true;
   bool m_diagnosis = false;
   bool m_screeningSeed = true;
 

@@ -2693,7 +2693,7 @@ int Stack_Neighbor_Bound_Test_I(int conn, int width, int height, int depth,
     }							\
   } else {						\
     for (i = 0; i < n_nbr; i++) {			\
-      if (is_in_bound[i] == TRUE) {			\
+      if (is_in_bound[i] == _TRUE_) {			\
 	s[i] = stack_array[center + neighbor[i]];	\
       } else {						\
 	s[i] = out_bound_value;				\
@@ -2747,7 +2747,7 @@ void Stack_Neighbor_Sampling(const Stack *stack, int n_nbr,
     }								\
   } else {							\
     for (i = 0; i < n_nbr; i++) {				\
-      if (is_in_bound[i] == TRUE) {				\
+      if (is_in_bound[i] == _TRUE_) {				\
 	s[i] = stack_array[center + neighbor[i]];		\
       } else {							\
 	s[i] = out_bound_value;					\
@@ -2803,7 +2803,7 @@ void Stack_Neighbor_Sampling_I(const Stack *stack, int n_nbr,
     }								\
   } else {							\
     for (i = 0; i < n_nbr; i++) {				\
-      if (is_in_bound[i] == TRUE) {				\
+      if (is_in_bound[i] == _TRUE_) {				\
         if (min_value > stack_array[center + neighbor[i]]) {	\
           min_value = stack_array[center + neighbor[i]];	\
         }							\
@@ -2871,7 +2871,7 @@ double Stack_Neighbor_Min(const Stack *stack, int n_nbr, int x, int y, int z)
     }								\
   } else {							\
     for (i = 0; i < n_nbr; i++) {				\
-      if (is_in_bound[i] == TRUE) {				\
+      if (is_in_bound[i] == _TRUE_) {				\
 	mean_value += stack_array[center + neighbor[i]];	\
       }								\
     }								\
@@ -2936,7 +2936,7 @@ double Stack_Neighbor_Mean(const Stack *stack, int n_nbr, int x, int y, int z)
     }								\
   } else {							\
     for (i = 0; i < n_nbr; i++) {				\
-      if (is_in_bound[i] == TRUE) {				\
+      if (is_in_bound[i] == _TRUE_) {				\
 	stack_array[center + neighbor[i]] = value;		\
       }							\
     }								\

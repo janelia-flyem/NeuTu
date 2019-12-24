@@ -1,7 +1,6 @@
 #include "swc/zswcresampler.h"
 #include "zswctree.h"
 #include "swctreenode.h"
-#include "tz_error.h"
 #include "zswcbranch.h"
 
 
@@ -152,7 +151,8 @@ int ZSwcResampler::optimizeCriticalParent(ZSwcTree *tree)
       }
 
       if (redundant) {
-        TZ_ASSERT(!SwcTreeNode::isRoot(parent), "Invalid node");
+        assert(!SwcTreeNode::isRoot(parent));
+//        TZ_ASSERT(!SwcTreeNode::isRoot(parent), "Invalid node");
         SwcTreeNode::mergeToParent(parent);
         ++count;
       }
@@ -183,7 +183,8 @@ bool ZSwcResampler::isInterRedundant(
       SwcTreeNode::setDefault(&tmpNode);
       SwcTreeNode::interpolate(parent, child, lambda, &tmpNode);
 
-      TZ_ASSERT(SwcTreeNode::isRegular(&tmpNode), "Unexpected virtual node");
+      assert(SwcTreeNode::isRegular(&tmpNode));
+//      TZ_ASSERT(SwcTreeNode::isRegular(&tmpNode), "Unexpected virtual node");
 
 //      double sizeScale = 1.2;
       //More likely to be redundant with smaller distance scale

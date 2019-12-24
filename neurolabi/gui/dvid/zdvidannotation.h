@@ -144,7 +144,7 @@ public:
 
   ZCuboid getBoundBox() const;
 
-  void setProperty(ZJsonObject propJson);
+//  void setProperty(ZJsonObject propJson);
 
   void updatePartner();
   void updatePartner(const ZJsonArray &jsonArray);

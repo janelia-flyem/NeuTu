@@ -33,7 +33,7 @@ public:
     virtual ZDirectionalTemplate* extend(Dlist_Direction_e direction = DL_FORWARD,
                                          double step = 0.5);
     virtual void flip();
-    virtual BOOL hitTest(double x, double y, double z);
+    virtual bool hitTest(double x, double y, double z);
     virtual ZPoint bottom();
     virtual ZPoint center();
     virtual ZPoint top();

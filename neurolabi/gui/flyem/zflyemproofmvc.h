@@ -9,8 +9,9 @@
 #include <QMetaType>
 #include <QSharedPointer>
 #include <QMap>
+#include <QElapsedTimer>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zthreadfuturemap.h"
 #include "zwindowfactory.h"
 #include "zactionfactory.h"
@@ -74,8 +75,8 @@ class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofMvc(QWidget *parent = 0);
-  ~ZFlyEmProofMvc();
+  explicit ZFlyEmProofMvc(QWidget *parent = nullptr);
+  ~ZFlyEmProofMvc() override;
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
@@ -113,6 +114,8 @@ public:
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam) override;
+
+  void recordEnd();
 
   ZFlyEmSupervisor* getSupervisor() const;
 
@@ -230,13 +233,16 @@ signals:
   void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
+//  void undo();
+//  void redo();
+
+  void setDvidTarget();
+
   void mergeSelected();
   void unmergeSelected();
-  void undo();
-  void redo();
 
   void setSegmentationVisible(bool visible);
-  void setDvidTarget();
+
   void launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
@@ -266,6 +272,7 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
+  void previewCurrentSplit();
   bool locateBody(uint64_t bodyId, bool appending);
   bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
@@ -292,6 +299,7 @@ public slots:
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
+  void showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId);
 
   void closeSkeletonWindow();
 
@@ -315,7 +323,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody(bool asking);
+  void deselectAllBody(bool asking = false);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
@@ -472,6 +480,8 @@ protected slots:
   void syncBodySelectionFromOrthoWindow();
   void syncBodySelectionToOrthoWindow();
 
+  void processMergeUploaded();
+
   void zoomToAssigned(int x, int y, int z);
 
   void refreshData();
@@ -554,6 +564,8 @@ private:
   void updateBodyWindow(Z3DWindow *window);
   void updateBodyWindowDeep(Z3DWindow *window);
 
+  void updateAllBodyWindow(std::function<void(Z3DWindow*)> updateFunc);
+
   ZWindowFactory makeExternalWindowFactory(neutu3d::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
@@ -615,7 +627,10 @@ private:
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
   void updateSupervoxelMessge(uint64_t bodyId);
   void setSelectedBodyStatus(const std::string &status);
-  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+//  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
+      const ZFlyEmBodyAnnotation &oldAnnotation);
   void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
 
@@ -630,6 +645,10 @@ private:
   void updateViewButton();
 
   void updateRoiWidget(Z3DWindow *win) const;
+
+  QString makeSkeletonizationServiceMissingMessage() const;
+
+  bool requestingSplitResult(const QString &title);
 
 protected:
   bool m_showSegmentation;
@@ -719,6 +738,7 @@ protected:
   bool m_3dEnabled = true;
 
   QTimer *m_profileTimer = nullptr;
+  QElapsedTimer m_sessionTimer;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
@@ -824,6 +844,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(changingSplit(uint64_t)), this,
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
+  connect(panel, SIGNAL(previewingResult()), this, SLOT(previewCurrentSplit()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
   connect(panel, SIGNAL(loadingBookmark(QString)),
           this, SLOT(loadBookmark(QString)));

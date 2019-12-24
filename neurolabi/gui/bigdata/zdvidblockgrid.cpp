@@ -1,5 +1,4 @@
 #include "zdvidblockgrid.h"
-#include "tz_utilities.h"
 
 ZDvidBlockGrid::ZDvidBlockGrid()
 {
