@@ -231,6 +231,7 @@ public:
 
   void invertStack();
   void subtractBackground();
+  void subtractBackgroundAdaptive();
   void removeChildFrame(ZStackFrame *frame);
   void detachParentFrame();
   void removeAllChildFrame();

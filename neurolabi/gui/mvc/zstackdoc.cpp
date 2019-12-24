@@ -5178,6 +5178,20 @@ bool ZStackDoc::subtractBackground()
   return false;
 }
 
+bool ZStackDoc::subtractBackgroundAdaptive()
+{
+  if (hasStackData()) {
+    ZStack *mainStack = getStack();
+    if (mainStack != NULL) {
+      ZStackProcessor::SubtractBackgroundAdaptive(mainStack, 5, 3);
+      notifyStackModified(false);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackDoc::enhanceLine()
 {
   ZStack *mainStack = getStack();

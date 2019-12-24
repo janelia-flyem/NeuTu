@@ -1286,6 +1286,155 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack)
   }
 }
 
+namespace {
+
+bool has_data(Stack *stack)
+{
+  if (stack) {
+    if (stack->array &&
+        stack->width > 0 && stack->height > 0 && stack->depth > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool has_data(ZStack *stack)
+{
+  if (stack) {
+    return stack->hasData();
+  }
+
+  return false;
+}
+
+//For int type only
+template<typename T>
+void subtract_background_adaptive(T* array, int width, int height, int depth,
+                             int nsample, int stride, T* out)
+{
+  if (nsample > 0 && stride > 0) {
+    size_t area = size_t(width) * height;
+    size_t voxelCount = area * depth;
+
+    bool allocated = false;
+
+    if (array == out) {
+      array = new T[voxelCount];
+      std::memcpy(array, out, voxelCount * sizeof(T));
+      allocated = true;
+    }
+
+    size_t offset = 0;
+    for (int z = 0; z < depth; ++z) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          double backgroundSum = 0;
+          int count = 0;
+          for(int step = 1 ; step <= nsample; ++step) {
+            int dist = stride * step;
+
+            if (x >= dist) { //along -x
+              backgroundSum += array[offset - dist];
+              ++count;
+            }
+
+            if (x + dist < width) { //along x
+              backgroundSum += array[offset + dist];
+              ++count;
+            }
+
+            if (y >= dist) { //along -y
+              backgroundSum += array[offset - dist * width];
+              ++count;
+            }
+
+            if (y + dist < height) { //along y
+              backgroundSum += array[offset + dist * width];
+              ++count;
+            }
+
+            if (z >= dist) { //along -z
+              backgroundSum += array[offset - size_t(dist) * area];
+              ++count;
+            }
+
+            if (z + dist < depth) { //along z
+              backgroundSum += array[offset + size_t(dist) * area];
+              ++count;
+            }
+          }
+
+          if (count > 0) {
+            double diff = array[offset] - backgroundSum / count;
+            if (diff < 0) {
+              out[offset] = 0;
+            } else {
+              out[offset] = neutu::iround(diff);
+            }
+          } else {
+            out[offset] = array[offset];
+          }
+
+          ++offset;
+        }
+      }
+    }
+
+    if (allocated) {
+      delete []array;
+    }
+  }
+}
+
+}
+
+void ZStackProcessor::SubtractBackgroundAdaptive(
+    Stack *stack, int nsample, int stride)
+{
+  if (has_data(stack)) {
+    Image_Array ima;
+    ima.array = stack->array;
+
+    switch (stack->kind) {
+    case GREY:
+      subtract_background_adaptive(
+            ima.array8, stack->width, stack->height, stack->depth,
+            nsample, stride, ima.array8);
+      break;
+    case GREY16:
+      subtract_background_adaptive(
+            ima.array16, stack->width, stack->height, stack->depth,
+            nsample, stride, ima.array16);
+      break;
+    case COLOR:
+      for (size_t c = 0; c < 3; ++c) {
+        size_t voxelCount = Stack_Voxel_Number(stack);
+        uint8_t *array = stack->array + voxelCount * c;
+        subtract_background_adaptive(
+              array, stack->width, stack->height, stack->depth,
+              nsample, stride, array);
+      }
+      break;
+    default:
+      std::cerr << "Unsupported image kind for adaptive image background subtraction: "
+                << stack->kind << std::endl;
+      break;
+    }
+  }
+}
+
+void ZStackProcessor::SubtractBackgroundAdaptive(
+    ZStack *stack, int nsample, int stride)
+{
+  if (has_data(stack)) {
+    for (int c = 0; c < stack->channelNumber(); ++c) {
+      SubtractBackgroundAdaptive(stack->c_stack(c), nsample, stride);
+    }
+  }
+}
+
 /*
 void ZStackProcessor::SubtractBackground(Stack *stack, double minFr, int maxIter)
 {

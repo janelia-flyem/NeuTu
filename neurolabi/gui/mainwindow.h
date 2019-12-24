@@ -522,6 +522,8 @@ private slots:
 
   void on_actionUpdate_Body_Info_triggered();
 
+  void on_actionSubtract_Background_Adaptive_triggered();
+
 private:
   void createActions();
   void createFileActions();

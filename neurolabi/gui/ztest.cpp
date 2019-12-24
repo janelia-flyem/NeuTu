@@ -30612,42 +30612,8 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  ZStack input_stack;
-  input_stack.load("/Users/zhaot/Downloads/test.tif");
-  Stack *signal = C_Stack::clone(input_stack.c_stack(0));
-
-
-  int kind=input_stack.kind();
-  int width=input_stack.width();
-  int height=input_stack.height();
-  int depth=input_stack.depth();
-  int channel=input_stack.channelNumber();
-
-
-  const uint8_t *array1 = input_stack.array8();
-  ZStack *newStack = new ZStack(input_stack.kind(), input_stack.getBoundBox(), 1);
-
-
-  uint8_t *array = newStack->array8();
-
-  size_t volume = input_stack.getVoxelNumber();
-
-  for (size_t i = 0; i < volume; i++) {
-    array[i] = array1[i];
-  }
-
-  ZNeuronTracer test;
-
-  //test.initTraceWorkspace(newStack);
-  //test.setDiagnosis(true);
-  test.setIntensityField(&input_stack);
-  test.setTraceLevel(1);
-  //test.initConnectionTestWorkspace();
-  test.initTraceMask(false);
-
-
-  ZSwcTree *tree;
-  tree = test.trace(&input_stack,true);
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/tracing/30_18_10.tif");
 
 #endif
 
