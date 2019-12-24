@@ -5,7 +5,6 @@
 #include "zstring.h"
 #include "zsynapseannotationanalyzer.h"
 #include "geometry/zcuboid.h"
-#include "tz_darray.h"
 #include "zswcnetwork.h"
 #include "swctreenode.h"
 

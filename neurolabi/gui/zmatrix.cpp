@@ -12,7 +12,7 @@
 #include <QDebug>
 #endif
 
-#include "tz_darray.h"
+#include "neurolabi/numericarray.h"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
   if (columnNumber <= getColumnNumber()) {
     if (columnNumber < getColumnNumber()) {
       //Move data
-      int copyRowNumber = imin2(rowNumber, getRowNumber());
+      int copyRowNumber = std::min(rowNumber, getRowNumber());
       size_t srcOffset = 0;
       size_t dstOffset = 0;
       int dc = getColumnNumber() - columnNumber;
@@ -75,7 +75,7 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
   } else {
     m_data.resize(count, 0);
     ZDoubleVector data(count, 0);
-    int copyRowNumber = imin2(rowNumber, getRowNumber());
+    int copyRowNumber = std::min(rowNumber, getRowNumber());
     size_t srcOffset = 0;
     size_t dstOffset = 0;
     int dc = columnNumber - getColumnNumber();
@@ -332,7 +332,7 @@ double ZMatrix::getRowMax(int row, int *index) const
 {
   size_t arrayIndex = 0;
 
-  double v = darray_max(rowPointer(row), getColumnNumber(), &arrayIndex);
+  double v = neutu::array::Max(rowPointer(row), getColumnNumber(), &arrayIndex);
 
   if (index != NULL) {
     *index = (int) arrayIndex;
@@ -377,8 +377,8 @@ void ZMatrix::importTextFile(const string &filePath)
 {
   clear();
 
-  double *value = darray_load_matrix(filePath.c_str(), NULL, &m_columnNumber,
-                                     &m_rowNumber);
+  double *value = neutu::array::LoadMatrix(
+        filePath.c_str(), NULL, &m_columnNumber, &m_rowNumber);
   m_data.resize(m_rowNumber * m_columnNumber);
 
 //  m_data = (double**) calloc(m_rowNumber, sizeof(double*));
@@ -494,7 +494,7 @@ ZMatrix ZMatrix::makeColumnSlice(int c0, int c1) const
 
 ZDoubleVector ZMatrix::getDiag() const
 {
-  ZDoubleVector vec(imin2(getRowNumber(), getColumnNumber()));
+  ZDoubleVector vec(std::min(getRowNumber(), getColumnNumber()));
   for (size_t i = 0; i < vec.size(); ++i) {
     vec[i] = getValue(i, i);
   }
@@ -504,7 +504,7 @@ ZDoubleVector ZMatrix::getDiag() const
 
 void ZMatrix::setDiag(double v)
 {
-  int n = imin2(getRowNumber(), getColumnNumber());
+  int n = std::min(getRowNumber(), getColumnNumber());
   for (int i = 0; i < n; ++i) {
     set(i, i, v);
   }

@@ -1,5 +1,6 @@
 HEADERS += \
     $$PWD/math.h \
+    $$PWD/mathdefs.h \
     $$PWD/memorystream.h \
     $$PWD/neutudefs.h \
     $$PWD/userinfo.h \

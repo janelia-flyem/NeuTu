@@ -5,7 +5,6 @@
 #include <set>
 
 #include "tz_image_lib_defs.h"
-#include "tz_object_3d.h"
 #include "zglmutils.h"
 #include "geometry/zintpoint.h"
 #include "zsttransform.h"

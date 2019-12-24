@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 
 /**
  * @brief The ZMatrix class

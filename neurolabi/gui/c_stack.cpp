@@ -22,7 +22,6 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_int_histogram.h"
-#include "tz_iarray.h"
 #include "common/math.h"
 
 
