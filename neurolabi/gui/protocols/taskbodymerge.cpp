@@ -11,6 +11,7 @@
 #include "logging/neuopentracing.h"
 #include "neutubeconfig.h"
 #include "neu3window.h"
+#include "protocols/taskutils.h"
 #include "z3dcamera.h"
 #include "z3dcamerautils.h"
 #include "z3dcanvas.h"
@@ -109,22 +110,15 @@ namespace {
       }
     }
 
+    // Method 2 has proven the best in practice.
+    return 2;
+
+#if 0
     static std::random_device r;
     static std::default_random_engine e(r());
     static std::uniform_int_distribution<int> uniform(1, INITIAL_ANGLE_METHOD.size() - 1);
-    return uniform(e);
-  }
-
-  bool pointFromJSON(const QJsonValue &value, ZPoint &result)
-  {
-    if (value.isArray()) {
-      QJsonArray array = value.toArray();
-      if (array.size() == 3) {
-        result = ZPoint(array[0].toDouble(), array[1].toDouble(), array[2].toDouble());
-        return true;
-      }
-    }
-    return false;
+    return size_t(uniform(e));
+#endif
   }
 
   Z3DMeshFilter *getMeshFilter(ZStackDoc *doc)
@@ -176,6 +170,11 @@ namespace {
   }
 
   static bool s_showHybridMeshes = true;
+
+  // See the comments in showHybridMeshes().
+
+  static uint64_t s_lastHybridMeshBodyId1 = 0;
+  static uint64_t s_lastHybridMeshBodyId2 = 0;
 
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
   // to some settings until all of them are done.  This code manages making those
@@ -250,6 +249,9 @@ namespace {
       ZFlyEmProofMvc::showAnnotations(showingAnnotations);
 
       ZFlyEmProofDoc::enableBodySelectionMessage(bodySelectionMessageEnabled);
+
+      s_lastHybridMeshBodyId1 = 0;
+      s_lastHybridMeshBodyId2 = 0;
     }
   }
 
@@ -459,7 +461,7 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
 {
   QSet<uint64_t> visible;
   if (state) {
-    int level = 0;
+    unsigned int level = 0;
     visible.insert(ZFlyEmBodyManager::encode(m_bodyId1, level));
     visible.insert(ZFlyEmBodyManager::encode(m_bodyId2, level));
 
@@ -491,11 +493,11 @@ bool TaskBodyMerge::loadSpecific(QJsonObject json)
     return false;
   }
 
-  m_supervoxelId1 = json[KEY_SUPERVOXEL_ID1].toDouble();
-  m_supervoxelId2 = json[KEY_SUPERVOXEL_ID2].toDouble();
+  m_supervoxelId1 = size_t(json[KEY_SUPERVOXEL_ID1].toDouble());
+  m_supervoxelId2 = size_t(json[KEY_SUPERVOXEL_ID2].toDouble());
   setBodiesFromSuperVoxels();
 
-  if (!pointFromJSON(json[KEY_SUPERVOXEL_POINT1], m_supervoxelPoint1)) {
+  if (!TaskUtils::pointFromJSON(json[KEY_SUPERVOXEL_POINT1], m_supervoxelPoint1)) {
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
       QMessageBox::warning(window, "Task Loading Failed",
                            "For merger " + QString::number(m_supervoxelId1) + " + " +
@@ -504,7 +506,7 @@ bool TaskBodyMerge::loadSpecific(QJsonObject json)
     }
   }
 
-  if (!pointFromJSON(json[KEY_SUPERVOXEL_POINT2], m_supervoxelPoint2)) {
+  if (!TaskUtils::pointFromJSON(json[KEY_SUPERVOXEL_POINT2], m_supervoxelPoint2)) {
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
       QMessageBox::warning(window, "Task Loading Failed",
                            "For merger " + QString::number(m_supervoxelId1) + " + " +
@@ -551,8 +553,9 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
   jsonBody.append(m_supervoxelId2);
 
   std::string payloadStr = jsonBody.dumpString(0);
+  unsigned int length = static_cast<unsigned int>(payloadStr.size());
   libdvid::BinaryDataPtr payload =
-      libdvid::BinaryData::create_binary_data(payloadStr.c_str(), payloadStr.size());
+      libdvid::BinaryData::create_binary_data(payloadStr.c_str(), length);
   int statusCode;
 
   libdvid::BinaryDataPtr response = dvid::MakeRequest(urlMapping, "GET", payload, libdvid::DEFAULT, statusCode);
@@ -563,11 +566,11 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
       if (responseArray.size() == 2) {
         QJsonValue responseElem = responseArray[0];
         if (!responseElem.isUndefined()) {
-          m_bodyId1 = responseElem.toDouble();
+          m_bodyId1 = uint64_t(responseElem.toDouble());
         }
         responseElem = responseArray[1];
         if (!responseElem.isUndefined()) {
-          m_bodyId2 = responseElem.toDouble();
+          m_bodyId2 = uint64_t(responseElem.toDouble());
         }
       }
     }
@@ -599,13 +602,13 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
       if (responseArray.size() == 2) {
         QJsonValue responseElem = responseArray[0];
         if (!responseElem.isUndefined()) {
-          if (responseElem.toDouble() == 0) {
+          if (uint64_t(responseElem.toDouble()) == 0) {
             m_bodyId1 = 0;
           }
         }
         responseElem = responseArray[1];
         if (!responseElem.isUndefined()) {
-          if (responseElem.toDouble() == 0) {
+          if (uint64_t(responseElem.toDouble()) == 0) {
             m_bodyId2 = 0;
           }
         }
@@ -775,9 +778,9 @@ void TaskBodyMerge::updateColors()
 
     QHash<uint64_t, QColor> idToColor;
     glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
-    idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
+    idToColor[m_bodyId1] = QColor(int(color1.x), int(color1.y), int(color1.z));
     glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
-    idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
+    idToColor[m_bodyId2] = QColor(int(color2.x), int(color2.y), int(color2.z));
 
     emit updateGrayscaleColor(idToColor);
   }
@@ -807,7 +810,6 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
         case 2: {
           glm::vec3 p1(m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z());
           glm::vec3 p2(m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z());
-          glm::vec3 p1ToP2 = glm::normalize(p2 - p1);
 
           // TODO: Choose an up vector that gives the best view, in some sense.
           if (justLoaded) {
@@ -815,18 +817,7 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
           }
 
           up = m_initialUp;
-          glm::vec3 toEye = glm::cross(p1ToP2, up);
-          float toEyeLength = glm::length(toEye);
-          if (toEyeLength > 1e-5) {
-            toEye /= toEyeLength;
-          } else {
-
-            // The vector between the two supervoxel points is parellel to the up vector.
-            // So the camera is already giving a good view of the supervoxel points.
-
-            toEye = glm::normalize(filter->camera().eye() - filter->camera().center());
-          }
-          eye = filter->camera().center() + toEye;
+          Z3DCameraUtils::eyeNormalToPoints(p1, p2, up, filter->camera(), eye);
           break;
         }
 
@@ -864,9 +855,9 @@ void TaskBodyMerge::zoomToMergePosition(bool justLoaded)
     std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
     QHash<uint64_t, QColor> idToColor;
     glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
-    idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
+    idToColor[m_bodyId1] = QColor(int(color1.x), int(color1.y), int(color1.z));
     glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
-    idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
+    idToColor[m_bodyId2] = QColor(int(color2.x), int(color2.y), int(color2.z));
 
     QTimer::singleShot(0, this, [=](){
       emit browseGrayscale(pos.x(), pos.y(), pos.z(), idToColor);
@@ -885,69 +876,15 @@ void TaskBodyMerge::zoomOutToShowAll()
 void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
 {
   ZPoint pos = mergePosition();
-  Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc);
 
-  std::vector<double> radii{ 0, 0 };
-  std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>(), std::vector<glm::vec3>() };
-
-  ZBBox<glm::dvec3> bbox;
-
-  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
-    if ((tarBodyId == m_bodyId1) || (tarBodyId == m_bodyId2)) {
-      int i = tarBodyId == m_bodyId1 ? 0 : 1;
-      for (glm::vec3 vertex : mesh->vertices()) {
-        double r = pos.distanceTo(vertex.x, vertex.y, vertex.z);
-        if (r > radii[i]) {
-          radii[i] = r;
-        }
-        vertices[i].push_back(vertex);
-      }
-
-      if (onlySmaller) {
-
-        // The code below will tighten the zoom to the body or bodies of interest.  If it is
-        // only the smaller body, then the near clipping plane might be wrong for two bodies together.
-        // So compute their bounding box for use in a final adjustment.
-
-        bbox.expand(mesh->boundBox());
-      }
-    }
-  }
-
+  std::set<uint64_t> bodyIDs { m_bodyId1, m_bodyId2 };
+  std::vector<Z3DMeshFilter*> filters { getMeshFilter(m_bodyDoc) };
   if (s_birdsEyeView) {
-    Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
-
-    double radius = std::max(radii[0], radii[1]);
-    Z3DCameraUtils::resetCamera(mergePosition(), radius, birdsEyeMeshFilter->camera());
-    Z3DCameraUtils::tightenZoom(vertices, birdsEyeMeshFilter->camera());
-
-    birdsEyeMeshFilter->invalidate();
+    filters.push_back(s_birdsEyeView->getMeshFilter());
   }
 
-  double radius;
-  if (onlySmaller) {
-    size_t iSmaller = (radii[0] < radii[1]) ? 0 : 1;
-    radius = radii[iSmaller];
-    size_t iOther = (iSmaller == 0) ? 1 : 0;
-    vertices.erase(vertices.begin() + iOther);
-  } else {
-    radius = std::max(radii[0], radii[1]);
-  }
-
-  Z3DCameraUtils::resetCamera(mergePosition(), radius, filter->camera());
-  Z3DCameraUtils::tightenZoom(vertices, filter->camera());
-
-  if (onlySmaller) {
-
-    // Adjust the near clipping plane to accomodate both bodies, as mentioned above.
-
-    filter->camera().resetCameraNearFarPlane(bbox);
-  }
-
-  filter->invalidate();
+  size_t stride = 1;
+  TaskUtils::zoomToMeshes(m_bodyDoc, bodyIDs, pos, filters, onlySmaller, stride);
 }
 
 void TaskBodyMerge::updateHiResWidget(QNetworkReply *reply)
@@ -1010,7 +947,7 @@ void TaskBodyMerge::configureShowHiRes()
   // If the DVID query, issued below, returns a JSON object containing the key
   // then the tar archive exists.
 
-  disconnect(s_networkManager.data(), 0, 0, 0);
+  disconnect(s_networkManager.data(), nullptr, nullptr, nullptr);
   connect(s_networkManager.data(), &QNetworkAccessManager::finished,
           this, &TaskBodyMerge::updateHiResWidget);
 
@@ -1020,8 +957,9 @@ void TaskBodyMerge::configureShowHiRes()
 
   std::vector<uint64_t> ids({ m_bodyId1, m_bodyId2 });
   for (uint64_t id : ids) {
-    int level = 0;
+    unsigned int level = 0;
     id = ZFlyEmBodyManager::encode(id, level);
+    // TODO: Check for id in the tarsupervoxels instance, which is the default now.
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     qDebug() << "Mesh tar:" << url;
     QUrl requestUrl(url.c_str());
@@ -1096,42 +1034,57 @@ void TaskBodyMerge::showHybridMeshes(bool show)
     glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
     size_t iMax = (viewAbs[0] > viewAbs[1]) ?
           (viewAbs[0] > viewAbs[2] ? 0 : 2) :
-      (viewAbs[1] > viewAbs[2] ? 1 : 2);
+          (viewAbs[1] > viewAbs[2] ? 1 : 2);
     ZPoint p = mergePosition();
     for (size_t i = 0; i < 3; i++) {
       if (i == iMax) {
-        p1[i] = bbox.minCorner()[i];
-        p2[i] = bbox.maxCorner()[i];
+        p1[int(i)] = int(round(bbox.minCorner()[i]));
+        p2[int(i)] = int(round(bbox.maxCorner()[i]));
       } else {
-        p1[i] = p[i] - halfWidth;
-        p2[i] = p[i] + halfWidth;
+        p1[int(i)] = int(round(p[int(i)])) - halfWidth;
+        p2[int(i)] = int(round(p[int(i)])) + halfWidth;
       }
     }
   }
 
-  // The asynchronous creation of the hybrid meshes can cause problems if the user
-  // is able to move to another task before the creation is finished.  So disable the
-  // user interface that allows changing of the task until signals indicate the
-  // hybrid meshes are complete.
-
-  allowNextPrev(false);
-
-  // And evidence suggests that hybrid meshes and high-res meshes don't work well together,
+  // Evidence suggests that hybrid meshes and high-res meshes don't work well together,
   // so make them mutually exclusive.
 
   m_showHiResCheckBox->setEnabled(false);
 
-  m_hybridLoadedCount = 0;
-  connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
-    if (++m_hybridLoadedCount == 2) {
-      disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, 0);
-      allowNextPrev(true);
+  // The asynchronous creation of the hybrid meshes can cause problems if the user
+  // is able to move to another task before the creation is finished.  So use
+  // allowNextPrev(false) to disable the user interface that allows changing of the
+  // task until signals indicate the hybrid meshes are complete.
 
-      if (!show) {
-        configureShowHiRes();
+  // But if this task tries to generate hybrid meshes for the same body IDs as the
+  // previous task, then some oddness in the ZFlyEmBody3dDoc event processing prevents
+  // the necessary signals from being generated, and allowNextPrev(true) won't be called
+  // to re-enable the user interface.  As an expedient work-around, keep track of the
+  // body IDs for which hybrid meshes were last generated, to adjust the number of
+  // signals that are expected.
+
+  m_hybridLoadedCount = 0;
+  m_hybridExpectedCount = 0;
+  m_hybridExpectedCount += ((m_bodyId1 != s_lastHybridMeshBodyId1) &&
+                            (m_bodyId1 != s_lastHybridMeshBodyId2));
+  m_hybridExpectedCount += ((m_bodyId2 != s_lastHybridMeshBodyId1) &&
+                            (m_bodyId2 != s_lastHybridMeshBodyId2));
+  s_lastHybridMeshBodyId1 = m_bodyId1;
+  s_lastHybridMeshBodyId2 = m_bodyId2;
+  if (m_hybridExpectedCount > 0) {
+    allowNextPrev(false);
+
+    connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
+      if (++m_hybridLoadedCount == m_hybridExpectedCount) {
+        disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, nullptr);
+        allowNextPrev(true);
+        if (!show) {
+          configureShowHiRes();
+        }
       }
-    }
-  });
+    });
+  }
 
   // Trigger asynchronous creation of hybrid meshes for the region.
 

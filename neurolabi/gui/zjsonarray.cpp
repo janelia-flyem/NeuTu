@@ -1,8 +1,10 @@
 #include "zjsonarray.h"
 #include "c_json.h"
-#include "tz_utilities.h"
+
+#include "common/utilities.h"
 #include "zjsonparser.h"
 #include "zerror.h"
+
 
 using namespace std;
 
@@ -106,6 +108,10 @@ void ZJsonArray::append(uint64_t v)
   append(json_integer(v));
 }
 
+void ZJsonArray::append(bool v) {
+    append(json_boolean(v));
+}
+
 void ZJsonArray::append(double v)
 {
   append(json_real(v));
@@ -200,7 +206,7 @@ ZJsonArray& ZJsonArray::operator << (double e)
     m_data = C_Json::makeArray();
   }
 
-  if (Is_Integer_Value(e)) {
+  if (neutu::IsIntegerValue(e)) {
     C_Json::appendArray(m_data, json_integer(e));
   } else {
     C_Json::appendArray(m_data, json_real(e));

@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <limits>
 
-#include "tz_utilities.h"
 #include "zpoint.h"
 #include "zcuboid.h"
 
@@ -46,7 +46,8 @@ public:
 
   bool isEmpty() const;
 
-  ZGraph *computeDistanceGraph(double maxDist = Infinity) const;
+  ZGraph *computeDistanceGraph(
+      double maxDist = std::numeric_limits<double>::infinity()) const;
 };
 
 #endif // ZPOINTARRAY_H

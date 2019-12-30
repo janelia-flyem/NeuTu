@@ -19,7 +19,7 @@
 #include "zobject3dscanarray.h"
 #include "mvc/zstackframe.h"
 #include "zsandbox.h"
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "imgproc/zstackprocessor.h"
 #include "imgproc/zwatershedmst.h"
 #include "mvc/zstackdoc.h"
@@ -63,7 +63,7 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
 
   //ZColorScheme scheme;
   //scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
-  int i = 1;
+//  int i = 1;
 
   queue<string> ids;
   if(m_seg_tree->isLeaf(id)){

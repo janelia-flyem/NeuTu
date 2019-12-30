@@ -31,7 +31,7 @@ Stack *Stack_And(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     Print_Stack_Info(stack1);
     Print_Stack_Info(stack2);
     THROW(ERROR_DATA_COMPTB);
@@ -73,7 +73,7 @@ Stack *Stack_Or(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -113,7 +113,7 @@ Stack *Stack_Xor(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -205,14 +205,14 @@ Stack* Stack_Bsub(Stack *stack1, Stack *stack2, Stack *out)
 Stack *Stack_And_E(Stack *stack1, Stack *stack2, Stack *out)
 {
   ASSERT((stack1 != NULL) && (stack2 != NULL), "null stack");
-  ASSERT(Stack_Same_Attribute(stack1, stack2) == TRUE, "unmatched stack");
+  ASSERT(Stack_Same_Attribute(stack1, stack2) == _TRUE_, "unmatched stack");
   
   if (out == NULL) {
     out = Make_Stack(stack1->kind, 
 		     stack1->width, stack1->height, stack1->depth);
   }
 
-  ASSERT(Stack_Same_Attribute(stack1, out) == TRUE, "unmatched stack");
+  ASSERT(Stack_Same_Attribute(stack1, out) == _TRUE_, "unmatched stack");
   
   Image_Array ima1;
   Image_Array ima2;
@@ -253,14 +253,14 @@ Stack *Stack_And_E(Stack *stack1, Stack *stack2, Stack *out)
 Stack *Stack_Or_E(Stack *stack1, Stack *stack2, Stack *out)
 {
   ASSERT((stack1 != NULL) && (stack2 != NULL), "null stack");
-  ASSERT(Stack_Same_Attribute(stack1, stack2) == TRUE, "unmatched stack");
+  ASSERT(Stack_Same_Attribute(stack1, stack2) == _TRUE_, "unmatched stack");
   
   if (out == NULL) {
     out = Make_Stack(stack1->kind, 
 		     stack1->width, stack1->height, stack1->depth);
   }
 
-  ASSERT(Stack_Same_Attribute(stack1, out) == TRUE, "unmatched stack");
+  ASSERT(Stack_Same_Attribute(stack1, out) == _TRUE_, "unmatched stack");
   
   Image_Array ima1;
   Image_Array ima2;
@@ -316,7 +316,7 @@ Stack *Stack_Mask(Stack *stack1, const Stack *stack2, Stack *out)
 		     stack1->depth);
   }
 
-  if (Stack_Same_Attribute(stack1, out) == FALSE) {
+  if (Stack_Same_Attribute(stack1, out) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -371,7 +371,7 @@ Stack *Stack_Add(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -497,7 +497,7 @@ Stack *Stack_Sub(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -599,7 +599,7 @@ Stack *Stack_Sub(Stack *stack1, Stack *stack2, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -866,7 +866,7 @@ Stack *Stack_Add_R(Stack *stack1, Stack *stack2, const int *range, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 
@@ -995,7 +995,7 @@ Stack *Stack_Sub_R(Stack *stack1, Stack *stack2, const int *range, Stack *out)
     THROW(ERROR_POINTER_NULL);
   }
 
-  if (Stack_Same_Size(stack1, stack2) == FALSE) {
+  if (Stack_Same_Size(stack1, stack2) == _FALSE_) {
     THROW(ERROR_DATA_COMPTB);
   }
 

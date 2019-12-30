@@ -1161,23 +1161,8 @@ void ZDvidWriter::writeRoiRef(
 }
 
 void ZDvidWriter::uploadRoiMesh(
-    const std::string &meshPath, const std::string &name)
+    const QByteArray &data, const std::string &format, const std::string &name)
 {
-  QFile file(meshPath.c_str());
-  std::string format;
-  if (ZString(meshPath).endsWith(".obj", ZString::CASE_INSENSITIVE)) {
-    format = "obj";
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-  } else if (ZString(meshPath).endsWith(".drc", ZString::CASE_INSENSITIVE)) {
-    format = "drc";
-    file.open(QIODevice::ReadOnly);
-  }
-
-  QByteArray data;
-  if (file.isOpen()) {
-    data = file.readAll();
-  }
-
   if (!data.isEmpty()) {
     ZDvidUrl dvidUrl(getDvidTarget());
     QString key = ZDvidPath::GetHashKey(data, false);
@@ -1196,8 +1181,51 @@ void ZDvidWriter::uploadRoiMesh(
     roiJson.setEntry(neutu::json::REF_KEY, refJson);
     refJson.setEntry("key", key.toStdString());
     writeJson(ZDvidData::GetName(ZDvidData::ERole::ROI_KEY), name, roiJson);
+  }
+}
+
+
+void ZDvidWriter::uploadRoiMesh(
+    const std::string &meshPath, const std::string &name)
+{
+  QFile file(meshPath.c_str());
+  std::string format;
+  if (ZString(meshPath).endsWith(".obj", ZString::CASE_INSENSITIVE)) {
+    format = "obj";
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+  } else if (ZString(meshPath).endsWith(".drc", ZString::CASE_INSENSITIVE)) {
+    format = "drc";
+    file.open(QIODevice::ReadOnly);
+  }
+
+  QByteArray data;
+  if (file.isOpen()) {
+    data = file.readAll();
+  }
+
+  if (!data.isEmpty()) {
+    uploadRoiMesh(data, format, name);
+    /*
+    ZDvidUrl dvidUrl(getDvidTarget());
+    QString key = ZDvidPath::GetHashKey(data, false);
+    std::string url = dvidUrl.getKeyUrl(
+          ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key.toStdString());
+    writeData(url, data);
+    if (format == "drc") {
+      ZJsonObject infoJson;
+      infoJson.setEntry("format", "drc");
+      writeJson(ZDvidUrl::GetMeshInfoUrl(url), infoJson);
+    }
+
+    //Write reference
+    ZJsonObject refJson;
+    ZJsonObject roiJson;
+    roiJson.setEntry(neutu::json::REF_KEY, refJson);
+    refJson.setEntry("key", key.toStdString());
+    writeJson(ZDvidData::GetName(ZDvidData::ERole::ROI_KEY), name, roiJson);
+    */
   } else {
-    LKWARN << "Failed to upload mesh. No data found.";
+    LKWARN << "Failed to upload mesh. No data found in " + meshPath;
   }
 }
 

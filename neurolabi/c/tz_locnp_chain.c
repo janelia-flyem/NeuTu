@@ -250,7 +250,7 @@ void Trace_Locnp(const Stack *stack, double z_scale, Locnp_Chain *chain,
     backward_locnp = current_ends[0]->locseg;
   }
 
-  if (tw->fit_first == TRUE) {
+  if (tw->fit_first == _TRUE_) {
     if (tw->trace_status[1] == TRACE_NORMAL) {
       Fit_Local_Neuroseg_Plane(forward_locnp, stack, var_index, nvar, z_scale, 
 			       &(tr.fs));

@@ -118,8 +118,9 @@ CONFIG(debug, debug|release) {
 message("rpath")
 message($$QMAKE_RPATHDIR)
 
+LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
-    LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
+    LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
         LIBS *= -llowtis
 #        CONFIG(debug, debug|release) {
@@ -164,7 +165,7 @@ LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} \
     -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} \
     -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} \
     -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} \
-    -lvtkFiltersGeneral-$${VTK_VER}
+    -lvtkFiltersGeneral-$${VTK_VER} -lvtkIOCore-$${VTK_VER} -lvtkIOGeometry-$${VTK_VER}
 
 win32 {
   LIBS += -lopengl32 -lglu32
@@ -182,5 +183,6 @@ CONFIG(static_gtest) { # gtest from ext folder
 
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
+include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
 
 HEADERS += ext/http/HTTPRequest.hpp

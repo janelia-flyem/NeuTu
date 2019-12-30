@@ -86,9 +86,16 @@ void ZFlyEmSynapseDataFetcher::startFetching()
   }
 }
 
+void ZFlyEmSynapseDataFetcher::clearLastFetching()
+{
+  QMutexLocker locker(&m_lastFetchingRegionMutex);
+  m_lastFetchingRegion.clear();
+}
 
 void ZFlyEmSynapseDataFetcher::fetchFunc()
 {
+  QMutexLocker rlocker(&m_lastFetchingRegionMutex);
+
   QVector<ZIntCuboid> region = takeRegion();
 
   while (!region.isEmpty()) {

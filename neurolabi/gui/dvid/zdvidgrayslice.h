@@ -34,7 +34,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
   void clear();
 
   void update(int z);
@@ -55,6 +55,8 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   const ZDvidReader& getDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
+
   const ZDvidTarget& getDvidTarget() const;
   int getX() const;
   int getY() const;
@@ -165,7 +167,7 @@ private:
   bool m_isPixmapValid = false;
 
   bool m_usingContrastProtocol = false;
-  ZContrastProtocol m_contrastProtocal;
+  ZContrastProtocol m_contrastProtocol;
 
   QMutex m_pixmapMutex;
 //  ZStackViewParam m_currentViewParam;

@@ -11,8 +11,8 @@ NeuTu can be installed on a Mac or Linux machine. Its binary releases are availa
 
 ### Use Script (The Easiest Way)
 
-    curl -X GET https://raw.githubusercontent.com/janelia-flyem/NeuTu/master/neurolabi/shell/setup_neutu.sh > setup_neutu.sh
-    bash setup_neutu.sh <intall_dir>
+    curl -X GET https://raw.githubusercontent.com/janelia-flyem/NeuTu/develop/neurolabi/shell/setup_neutu.sh > setup_neutu.sh
+    bash setup_neutu.sh <install_dir> neutu-develop
     
 Here <install_dir> is the installation directory. 
 
@@ -28,11 +28,9 @@ Once the installation is done, you can launch the program by running
     
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
-    conda config --add channels flyem-forge
-    conda create -n <NAME> -c flyem-forge neutu
+    conda create -n <NAME> -c flyem-forge -c conda-forge neutu-develop
     
-    #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
+    #For future update, you can run 'conda update -n <NAME> -c flyem-forge -c conda-forge neutu-develop' after activating miniconda.
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
@@ -45,11 +43,10 @@ After successful installation, you should be able to lauch the application neutu
     #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
-    conda config --add channels conda-forge
-    conda config --add channels flyem-forge
-    conda create -n <NAME> -c flyem-forge neutu
+    conda create -n <NAME> -c flyem-forge -c conda-forge neutu-develop
     
-    #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
+    #For future update, you can run 'conda update -n <NAME> neutu-develop -c flyem-forge -c conda-forge neutu-develop' after activating miniconda.
+
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 

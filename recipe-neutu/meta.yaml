@@ -28,17 +28,13 @@ requirements:
     - cmake
 
   host:
-    - python >=3.6
-    - qt      5* # [linux64]
-    - qt      5.9* # [osx]
+    - qt      5.9*
     - fftw    3.3*
     - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post65*
-    - libdvid-cpp  0.3.post83* # [osx]
-    - libdvid-cpp  0.3.post85* # [linux64]
+    - lowtis  0.1.0.post71*
     - cmake
     - ninja 1.7.2*
     - tbb 2019.4*
@@ -48,25 +44,22 @@ requirements:
     - glbinding 2.1.3*
     - draco 1.3.4*
     - libarchive 3.3.3*
-    - libiconv >=1.15
-    - librdkafka >=0.11.5
-    - alsa-lib # [linux64]
-    - xorg-libxrandr # [linux64]
-    - xorg-libxcursor # [linux64]
-    - xorg-libxtst # [linux64]
+    - libiconv 1.15*
+    - librdkafka 1.0.1*
+    - alsa-lib 1.1.5* # [linux64]
+    - xorg-libxrandr 1.5.1* # [linux64]
+    - xorg-libxcursor 1.2.0* # [linux64]
+    - xorg-libxtst 1.2.3* # [linux64]
 
   run:
-    - python >=3.6
-    - qt      5* # [linux64]
-    - qt      5.9* # [osx]
+    - python  3.7.3*
+    - qt      5.9*
     - fftw    3.3*
     - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post65*
-    - libdvid-cpp  0.3.post83* # [osx]
-    - libdvid-cpp  0.3.post85* # [linux64]
+    - lowtis  0.1.0.post71*
     - tbb 2019.4*
     - tbb-devel 2019.4*
     - vtk 8.2.*
@@ -74,12 +67,13 @@ requirements:
     - glbinding 2.1.3*
     - draco 1.3.4*
     - libarchive 3.3.3*
-    - libiconv >=1.15
-    - librdkafka >=0.11.5
-    - alsa-lib # [linux64]
-    - xorg-libxrandr # [linux64]
-    - xorg-libxcursor # [linux64]
-    - xorg-libxtst # [linux64]
+    - libiconv 1.15*
+    - librdkafka 1.0.1*
+    - alsa-lib 1.1.5* # [linux64]
+    - xorg-libxrandr 1.5.1* # [linux64]
+    - xorg-libxcursor 1.2.0* # [linux64]
+    - xorg-libxtst 1.2.3* # [linux64]
+    - marktips 0.3*
 
 about:
   home: http://github.com/janelia-flyem/NeuTu

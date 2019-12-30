@@ -5,6 +5,7 @@ include($${PWD}/common/common.pri)
 include($${PWD}/geometry/geometry.pri)
 include($${PWD}/swc/swc.pri)
 include($${PWD}/interface/interface.pri)
+include($${PWD}/filesystem/filesystem.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \

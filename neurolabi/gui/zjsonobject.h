@@ -1,13 +1,13 @@
 #ifndef ZJSONOBJECT_H
 #define ZJSONOBJECT_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
 #include <initializer_list>
 
 #include "zjsonvalue.h"
-#include "tz_stdint.h"
 
 #define ZJsonObject_foreach(jsonObject, key, value) \
   json_object_foreach(jsonObject.getValue(), key, value)

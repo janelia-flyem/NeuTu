@@ -24,20 +24,20 @@
 #include "zflyemproofpresenter.h"
 
 
-ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
+ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidEnv &env, QWidget *parent) :
   QWidget(parent)
 {
-  init(target, 256, 256, 256);
+  init(env, 256, 256, 256);
 }
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(
-    const ZDvidTarget &target, int width, int height, int depth, QWidget *parent) :
+    const ZDvidEnv &env, int width, int height, int depth, QWidget *parent) :
   QWidget(parent)
 {
-  init(target, width, height, depth);
+  init(env, width, height, depth);
 }
 
-void ZFlyEmOrthoWidget::init(const ZDvidTarget &target,
+void ZFlyEmOrthoWidget::init(const ZDvidEnv &env,
                              int width, int height, int depth)
 {
   QGridLayout *layout = new QGridLayout(this);
@@ -45,7 +45,7 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target,
 
   ZSharedPointer<ZFlyEmOrthoDoc> sharedDoc =
       ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc(width, height, depth));
-  sharedDoc->setDvidTarget(target);
+  sharedDoc->setDvid(env);
 
   m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutu::EAxis::Z);
   m_xyMvc->setDvidLabelSliceSize(width, height);

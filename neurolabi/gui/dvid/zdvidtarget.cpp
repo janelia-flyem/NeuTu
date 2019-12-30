@@ -38,23 +38,23 @@ const char* ZDvidTarget::m_proofreadingKey = "proofreading";
 
 ZDvidTarget::ZDvidTarget()
 {
-  init();
+//  init();
 }
 
 ZDvidTarget::ZDvidTarget(
     const std::string &address, const std::string &uuid, int port)
 {
-  init();
+//  init();
 
   set(address, uuid, port);
 }
 
 ZDvidTarget::ZDvidTarget(const ZDvidNode &node)
 {
-  init();
+//  init();
   m_node = node;
 }
-
+/*
 void ZDvidTarget::init()
 {
   m_isSupervised = true;
@@ -72,6 +72,7 @@ void ZDvidTarget::init()
   setSegmentationName("*");
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
+*/
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) const
 {
@@ -91,6 +92,15 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) con
   return source;
 }
 
+std::string ZDvidTarget::getGrayscaleSourceString() const
+{
+  std::string source = getGrayScaleSource().getSourceString(true, 4);
+
+  source += "::" + getGrayScaleName();
+
+  return source;
+}
+
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
@@ -99,12 +109,20 @@ void ZDvidTarget::set(
 
 void ZDvidTarget::clear()
 {
+  *this = ZDvidTarget();
+}
+
+#if 0
+void ZDvidTarget::clear()
+{
   m_node.clear();
-  init();
+//  init();
   m_name = "";
   m_comment = "";
   m_localFolder = "";
   m_bodyLabelName = "*";
+  m_segmentationName.clear();
+  m_multiscale2dName.clear();
   m_grayScaleName = "";
   m_synapseLabelszName = "";
   m_synapseName = "";
@@ -115,7 +133,9 @@ void ZDvidTarget::clear()
   m_supervisorServer.clear();
   m_tileConfig.clear();
   m_sourceConfig.clear();
+  m_isInferred = false;
 }
+#endif
 
 void ZDvidTarget::setServer(const std::string &address)
 {
@@ -173,6 +193,11 @@ void ZDvidTarget::setFromUrl(const std::string &url)
   set(tokens2[0], uuid, port);
 }
 
+bool ZDvidTarget::hasDvidUuid() const
+{
+  return getNode().hasDvidUuid();
+}
+
 void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
   clear();
@@ -223,7 +248,7 @@ void ZDvidTarget::setFromSourceString(
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
+  if (tokens.size() < 4 || (tokens[0] != "http" && tokens[0] != "mock")) {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
@@ -398,7 +423,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
 
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
-  obj.setEntry(m_supervisorServerKey, m_supervisorServer);
+  obj.setNonEmptyEntry(m_supervisorServerKey, m_supervisorServer);
   obj.setEntry(m_defaultSettingKey, usingDefaultDataSetting());
 
   return obj;
@@ -726,17 +751,14 @@ void ZDvidTarget::setInferred(bool status)
 void ZDvidTarget::setMappedUuid(
     const std::string &original, const std::string &mapped)
 {
-  m_orignalUuid = original;
-  setUuid(mapped);
+  m_node.setMappedUuid(original, mapped);
+//  m_orignalUuid = original;
+//  setUuid(mapped);
 }
 
 std::string ZDvidTarget::getOriginalUuid() const
 {
-  if (m_orignalUuid.empty()) {
-    return getUuid();
-  }
-
-  return m_orignalUuid;
+  return m_node.getOriginalUuid();
 }
 
 std::string ZDvidTarget::getBodyLabelName() const
@@ -1262,6 +1284,20 @@ ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
   return target;
 }
 
+std::vector<ZDvidTarget> ZDvidTarget::getGrayScaleTargetList() const
+{
+  std::vector<ZDvidTarget> targetList;
+  targetList.push_back(getGrayScaleTarget());
+
+  return targetList;
+}
+
+void ZDvidTarget::clearGrayScale()
+{
+  setGrayScaleName("");
+  m_sourceConfig.erase(m_grayScaleNameKey);
+}
+
 ZDvidTarget ZDvidTarget::getTileTarget() const
 {
   ZDvidNode node = getTileSource();
@@ -1301,7 +1337,7 @@ void ZDvidTarget::prepareTile()
   }
 }
 
-bool ZDvidTarget::isDvidTarget(const std::string &source)
+bool ZDvidTarget::IsDvidTarget(const std::string &source)
 {
   return ZString(source).startsWith("http:");
 }

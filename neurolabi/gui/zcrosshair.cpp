@@ -13,7 +13,7 @@ void ZCrossHair::init()
   setZOrder(5);
   useCosmeticPen(true);
   setColor(QColor(255, 255, 255, 128));
-  setHitProtocal(EHitProtocal::HIT_WIDGET_POS);
+  setHitProtocal(EHitProtocol::HIT_WIDGET_POS);
 }
 
 

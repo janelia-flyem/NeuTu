@@ -14,7 +14,7 @@
 /*!
  * Two types of stack structure are used:
  *   Stack: single-channel stack
- *   Mc_Stack: Multiple-channel stack
+ *   Mc_Stack: Multi-channel stack
  */
 
 namespace C_Stack {

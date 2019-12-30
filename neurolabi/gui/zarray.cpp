@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <cstdlib>
+#include <cstdint>
 #include <cstring>
 
 #include "geometry/zintcuboid.h"
@@ -236,5 +236,12 @@ void ZArray::setStartCoordinate(int index, int x)
 void ZArray::setStartCoordinate(const std::vector<int> &coord)
 {
   m_startCoordinates = coord;
+}
+
+void ZArray::setStartCoordinate(int x, int y, int z)
+{
+  m_startCoordinates[0] = x;
+  m_startCoordinates[1] = y;
+  m_startCoordinates[2] = z;
 }
 

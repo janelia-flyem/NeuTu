@@ -445,6 +445,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
+      break;
     default:
       connected = false;
       break;
@@ -1154,7 +1157,7 @@ void ZStackPresenter::updateLeftMenu()
     traceOnFlag = true;
   }
 
-  if (interactiveContext().markPuncta()) {
+  if (interactiveContext().markingPuncta()) {
     if (traceOnFlag) {
       updateLeftMenu(getAction(ZActionFactory::ACTION_PUNCTA_MARK), false);
     } else {
@@ -1350,7 +1353,8 @@ void ZStackPresenter::moveImageToMouse(
   moveViewPortTo(iround(x), iround(y));
 #endif
 
-  buddyView()->move(QPoint(iround(srcX), iround(srcY)), QPointF(mouseX, mouseY));
+  buddyView()->move(
+        QPoint(neutu::iround(srcX), neutu::iround(srcY)), QPointF(mouseX, mouseY));
 
   /*
   int x, y;
@@ -1486,8 +1490,11 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   if (op.getHitObject() != NULL) {
-    if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
-      op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+    if (interactiveContext().getUniqueMode() ==
+        ZInteractiveContext::EUniqueMode::INTERACT_FREE) {
+      if (op.getHitObject()->getType() == ZStackObject::EType::CROSS_HAIR) {
+        op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+      }
     }
   }
 
@@ -1829,7 +1836,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 
   case Qt::Key_M:
     if (m_interactiveContext.isStackSliceView()) {
-      if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
+      if (interactiveContext().markingPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->getStack()->isVirtual())) {
         QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
@@ -2541,6 +2548,24 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   updateCursor();
 }
 
+void ZStackPresenter::exitEdit()
+{
+  if (interactiveContext().turnOffEditMode()) {
+    turnOffActiveObject();
+    //  interactiveContext().setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
+    //  interactiveContext().setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA_OFF);
+    //  interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
+    //  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+    //  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_EDIT_OFF);
+    //  interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
+    //  interactiveContext().setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+    //  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+    updateCursor();
+    m_interactiveContext.setExitingEdit(true);
+  }
+}
+
 void ZStackPresenter::exitStrokeEdit()
 {
   turnOffActiveObject(ROLE_STROKE);
@@ -2569,7 +2594,7 @@ void ZStackPresenter::exitRectEdit()
 
     m_interactiveContext.setExitingEdit(true);
 
-    emit exitingRectEdit();
+//    emit exitingRectEdit();
   }
 }
 
@@ -2783,7 +2808,7 @@ void ZStackPresenter::copyLabelId()
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getLabelId(
-        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()));
 
   ZGlobal::CopyToClipboard(std::to_string(id));
 
@@ -2797,11 +2822,21 @@ void ZStackPresenter::copySupervoxelId()
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getSupervoxelId(
-        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()));
 
   ZGlobal::CopyToClipboard(std::to_string(id));
 
   buddyDocument()->notify(QString("%1 copied").arg(id));
+}
+
+void ZStackPresenter::copyLink(const QString &/*option*/) const
+{
+
+}
+
+void ZStackPresenter::copyNeuroglancerLink()
+{
+  copyLink("neuroglancer");
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()
@@ -2995,6 +3030,12 @@ static void SyncDvidLabelSliceSelection(
       buddySlice->setSelection(selectedSet, neutu::ELabelSource::ORIGINAL);
     }
   }
+}
+
+bool ZStackPresenter::process(ZStackOperator::EOperation op)
+{
+  ZStackOperator opr(op);
+  return process(opr);
 }
 
 bool ZStackPresenter::process(ZStackOperator &op)
@@ -3516,6 +3557,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
+#ifdef _DEBUG_
+  std::cout << "======> Grab position: " << grabPosition.toString() << std::endl;
+#endif
 //    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
@@ -3722,7 +3766,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_SWC_LOCATE_FOCUS:
     if (op.getHitObject<Swc_Tree_Node>() != NULL) {
-      int sliceIndex = iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
+      int sliceIndex =
+          neutu::iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
@@ -3806,7 +3851,6 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyDocument()->executeRemoveSelectedObjectCommand();
     }
     break;
-
   default:
     processed = false;
     break;
@@ -3851,8 +3895,8 @@ void ZStackPresenter::acceptActiveStroke()
         int source[3] = {0, 0, 0};
         int target[3] = {0, 0, 0};
         for (int i = 0; i < 3; ++i) {
-          source[i] = iround(start[i]);
-          target[i] = iround(end[i]);
+          source[i] = neutu::iround(start[i]);
+          target[i] = neutu::iround(end[i]);
         }
 
         ZStack *signal = ZStackFactory::makeSlice(

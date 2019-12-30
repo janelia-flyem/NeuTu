@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "flyem/zflyemtodoitem.h"
+#include "dvid/zdvidsynapse.h"
 
 #ifdef _USE_GTEST_
 
@@ -181,12 +182,52 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 TEST(ZDvidAnnotation, Radius)
 {
   ZResolution resolution;
-  resolution.setUnit(ZResolution::UNIT_PIXEL);
+  resolution.setUnit(ZResolution::EUnit::UNIT_PIXEL);
   resolution.setVoxelSize(1.0, 1.0, 1.0);
   ASSERT_DOUBLE_EQ(
         ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::EKind::KIND_POST_SYN),
         ZDvidAnnotation::GetDefaultRadius(
           ZDvidAnnotation::EKind::KIND_POST_SYN, resolution));
+}
+
+TEST(ZDvidSynapse, Basic)
+{
+  ZDvidSynapse synapse;
+  synapse.setBodyId(1);
+  synapse.addPartner(1, 2, 3);
+  synapse.addPartner(4, 5, 6);
+
+  std::unordered_map<ZIntPoint, uint64_t> labelMap;
+  labelMap[ZIntPoint(1, 2, 3)] = 10;
+  labelMap[ZIntPoint(4, 5, 6)] = 20;
+
+  ASSERT_EQ("1-[10][20]", synapse.getConnString(labelMap));
+
+  synapse.setKind(ZDvidAnnotation::EKind::KIND_PRE_SYN);
+  ASSERT_EQ("1->[10][20]", synapse.getConnString(labelMap));
+
+  synapse.setKind(ZDvidAnnotation::EKind::KIND_POST_SYN);
+  ASSERT_EQ("1<-[10][20]", synapse.getConnString(labelMap));
+
+  ASSERT_FALSE(synapse.hasConfidenceProperty());
+
+  synapse.setConfidence(1.0);
+  ASSERT_TRUE(synapse.hasConfidenceProperty());
+
+  synapse.setConfidence(-1.0);
+  ASSERT_DOUBLE_EQ(-1.0, synapse.getConfidence());
+
+  synapse.setConfidence(0.5);
+  ASSERT_DOUBLE_EQ(0.5, synapse.getConfidence());
+
+  synapse.removeConfidenceProperty();
+  ASSERT_FALSE(synapse.hasConfidenceProperty());
+  ASSERT_DOUBLE_EQ(1.0, synapse.getConfidence());
+
+  synapse.setConfidence("0.6");
+  ASSERT_DOUBLE_EQ(0.6, synapse.getConfidence());
+  ASSERT_EQ("0.6", synapse.getConfidenceStr());
+
 }
 
 #endif

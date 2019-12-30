@@ -30,12 +30,12 @@ int Trace_Workspace_Mask_Value(const Trace_Workspace *tw,
 int Trace_Workspace_Mask_Value_Z(const Trace_Workspace *tw, 
 				 double pos[3], double z_scale);
 
-BOOL Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
+_BOOL_ Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
 				    const double pos[3]);
-BOOL Trace_Workspace_Point_In_Bound_Z(const Trace_Workspace *tw, 
+_BOOL_ Trace_Workspace_Point_In_Bound_Z(const Trace_Workspace *tw, 
 				      double pos[3], double z_scale);
 void Trace_Workspace_Set_Fit_Mask(Trace_Workspace *tw, Stack *mask);
-BOOL Trace_Workspace_Is_Masked(const Trace_Workspace *tw);
+_BOOL_ Trace_Workspace_Is_Masked(const Trace_Workspace *tw);
 void Print_Trace_Workspace(const Trace_Workspace *tw);
 
 void Print_Trace_Status(int status);
@@ -63,11 +63,11 @@ void Trace_Record_Copy(Trace_Record *des, const Trace_Record *src);
 void Trace_Record_Set_Score(Trace_Record *tr, const Stack_Fit_Score *fs);
 void Trace_Record_Set_Hit_Region(Trace_Record *tr, int hit_region);
 void Trace_Record_Set_Index(Trace_Record *tr, int index);
-void Trace_Record_Set_Refit(Trace_Record *tr, BOOL is_refit);
+void Trace_Record_Set_Refit(Trace_Record *tr, _BOOL_ is_refit);
 void Trace_Record_Set_Direction(Trace_Record *tr, Dlist_Direction_e direction);
 void Trace_Record_Set_Fit_Height(Trace_Record *tr, int index, int value);
 void Trace_Record_Set_Fix_Point(Trace_Record *tr, double value);
-BOOL Trace_Record_Has_Fix_Point(Trace_Record *tr);
+_BOOL_ Trace_Record_Has_Fix_Point(Trace_Record *tr);
 void Trace_Record_Disable_Fix_Point(Trace_Record *tr);
 int Trace_Record_Index(const Trace_Record *tr);
 int Trace_Record_Refit(const Trace_Record *tr);
@@ -80,7 +80,7 @@ typedef struct _Trace_Evaluate_Seed_Workspace {
   double min_score;
   int nseed;
   int fit_option;
-  BOOL zshift;
+  _BOOL_ zshift;
   Stack *base_mask;
   Stack *trace_mask;
   Locseg_Fit_Workspace *fws;

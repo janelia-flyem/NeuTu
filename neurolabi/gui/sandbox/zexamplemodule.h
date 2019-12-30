@@ -7,7 +7,7 @@ class ZExampleModule : public ZSandboxModule
 {
   Q_OBJECT
 public:
-  explicit ZExampleModule(QObject *parent = 0);
+  explicit ZExampleModule(QObject *parent = nullptr);
 
 signals:
 

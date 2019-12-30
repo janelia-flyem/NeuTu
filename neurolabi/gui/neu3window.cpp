@@ -10,11 +10,9 @@
 #include <QWebEngineView>
 #endif
 
-#include "tz_math.h"
-
+#include "common/math.h"
 #include "ui_neu3window.h"
 #include "logging/utilities.h"
-//#include "logging/neuopentracing.h"
 
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackdochelper.h"
@@ -138,6 +136,7 @@ Neu3Window::~Neu3Window()
 {
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
+    m_dataContainer->recordEnd();
   }
 //  delete m_webView;
 
@@ -213,7 +212,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     LDEBUG() << "Init grayscale widget";
-    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidEnv());
 //    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
@@ -337,8 +336,8 @@ bool Neu3Window::loadDvidTarget()
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
-    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
-                      dlg->getDvidTarget());
+    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
+                      ZDvidEnv(dlg->getDvidTarget()));
 //    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
 
     m_dataContainer->hide();
@@ -485,8 +484,8 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
 
   QDockWidget *dockWidget = new QDockWidget("Tasks", this);
-    m_taskProtocolWidget =
-        new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+  m_taskProtocolWidget =
+      new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     /*
     m_taskProtocolWidget->setWindowFlags(
@@ -726,7 +725,7 @@ ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) c
 {
   ZArbSliceViewParam viewParam;
   viewParam.setSize(m_browseWidth, m_browseHeight);
-  viewParam.setCenter(iround(x), iround(y), iround(z));
+  viewParam.setCenter(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
   viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
@@ -1081,7 +1080,7 @@ void Neu3Window::processSwcChangeFrom3D(
     QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
     foreach (uint64_t label, labelSet) {
       if (label > 0) {
-        emit bodySelected(label);
+        emit bodyDeselected(label);
       }
     }
   }
@@ -1258,7 +1257,7 @@ void Neu3Window::advanceProgress(double dp)
   if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
     int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
     getProgressDialog()->setValue(
-          getProgressDialog()->value() + iround(dp * range));
+          getProgressDialog()->value() + neutu::iround(dp * range));
   }
 }
 
@@ -1272,9 +1271,16 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
+  ZDvidEnv env = m_dataContainer->getDvidEnv();
+  env.setReadOnly(true);
+
+  window->getMainMvc()->setDvid(env);
+
+  /*
   ZDvidTarget target = m_dataContainer->getDvidTarget();
   target.setReadOnly(true);
   window->getMainMvc()->setDvidTarget(target);
+  */
 //  window->showMaximized();
 }
 

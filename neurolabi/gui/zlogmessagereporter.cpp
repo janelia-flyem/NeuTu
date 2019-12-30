@@ -1,7 +1,8 @@
 #include "zlogmessagereporter.h"
 #include <fstream>
 #include <iostream>
-#include "tz_utilities.h"
+
+#include "filesystem/utilities.h"
 
 ZLogMessageReporter::ZLogMessageReporter()
 {
@@ -40,7 +41,8 @@ void ZLogMessageReporter::report(
 void ZLogMessageReporter::setInfoFile(const std::string &f)
 {
    m_infoFile = f;
-   if (fsize(f.c_str()) > m_maxFileSize) {
+   if (neutu::FileSize(f) > m_maxFileSize) {
+//   if (fsize(f.c_str()) > m_maxFileSize) {
      m_infoStream.open(m_infoFile.c_str(), std::ios_base::out);
    } else {
      m_infoStream.open(m_infoFile.c_str(), std::ios_base::app);

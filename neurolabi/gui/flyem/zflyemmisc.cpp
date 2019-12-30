@@ -3,14 +3,14 @@
 
 #include <unistd.h>
 #include <iostream>
+#include <utility>
+
 #include <QString>
 #include <QProcess>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
 
-#include "tz_math.h"
-#include "tz_utilities.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
 
@@ -153,7 +153,7 @@ void flyem::HackathonEvaluator::evalulate()
 //  std::vector<int> idArray(matrix.getColumnNumber());
   m_idArray.resize(matrix.getColumnNumber());
   for (int i = 0; i < matrix.getColumnNumber(); ++i) {
-    m_idArray[i] = iround(matrix.getValue(0, i));
+    m_idArray[i] = neutu::iround(matrix.getValue(0, i));
   }
 
   ZMatrix simmat = matrix.makeRowSlice(1, matrix.getRowNumber() - 1);
@@ -1005,10 +1005,39 @@ void flyem::SubtractBodyWithBlock(
   }
 }
 
-void flyem::MakeStar(
-    const QPointF &center, double radius, QPointF *ptArray)
+/*
+namespace {
+
+void make_star(
+    double cx, double cy, double left, double right, double top, double bottom,
+    double sw, double sh, QPointF *ptArray)
 {
-  const double shapeFactor = 0.25;
+  ptArray[0] = QPointF(cx, top);
+  ptArray[1] = QPointF(cx + sw, cy- sh);
+  ptArray[2] = QPointF(right, cy);
+  ptArray[3] = QPointF(cx + sw, cy + sh);
+  ptArray[4] = QPointF(cx, bottom);
+  ptArray[5] = QPointF(cx - sw, cy + sh);
+  ptArray[6] = QPointF(left, cy);
+  ptArray[7] = QPointF(cx - sw, cy - sh);
+  ptArray[8] = ptArray[0];
+}
+
+}
+*/
+
+std::vector<QPointF> flyem::MakeStar(
+    const QPointF &center, double radius, double shapeFactor)
+{
+  std::vector<QPointF> ptArray(9);
+  MakeStar(center, radius, ptArray.data(), shapeFactor);
+
+  return ptArray;
+}
+
+void flyem::MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor)
+{
   double sw = radius * shapeFactor;
   double left = center.x() - radius;
   double right = center.x() + radius;
@@ -1026,6 +1055,7 @@ void flyem::MakeStar(
   ptArray[8] = ptArray[0];
 }
 
+/*
 void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
 {
   QPointF center = rect.center();
@@ -1044,24 +1074,26 @@ void flyem::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[7] = QPointF(center.x() - sw, center.y() - sh);
   ptArray[8] = ptArray[0];
 }
+*/
 
-QVector<QPointF> flyem::MakeCrossKey(const QPointF &center, double radius)
+std::vector<QPointF> flyem::MakeCrossKey(
+    const QPointF &center, double radius, double spanRatio)
 {
-  QVector<QPointF> ptArray;
-  double dr = radius * 0.2;
-  ptArray.append(center + QPointF(radius, dr));
-  ptArray.append(center + QPointF(dr, dr));
-  ptArray.append(center + QPointF(dr, radius));
-  ptArray.append(center + QPointF(-dr, radius));
-  ptArray.append(center + QPointF(-dr, dr));
-  ptArray.append(center + QPointF(-radius, dr));
-  ptArray.append(center + QPointF(-radius, -dr));
-  ptArray.append(center + QPointF(-dr, -dr));
-  ptArray.append(center + QPointF(-dr, -radius));
-  ptArray.append(center + QPointF(dr, -radius));
-  ptArray.append(center + QPointF(dr, -dr));
-  ptArray.append(center + QPointF(radius, -dr));
-  ptArray.append(center + QPointF(radius, dr));
+  std::vector<QPointF> ptArray;
+  double dr = radius * spanRatio;
+  ptArray.push_back(center + QPointF(radius, dr));
+  ptArray.push_back(center + QPointF(dr, dr));
+  ptArray.push_back(center + QPointF(dr, radius));
+  ptArray.push_back(center + QPointF(-dr, radius));
+  ptArray.push_back(center + QPointF(-dr, dr));
+  ptArray.push_back(center + QPointF(-radius, dr));
+  ptArray.push_back(center + QPointF(-radius, -dr));
+  ptArray.push_back(center + QPointF(-dr, -dr));
+  ptArray.push_back(center + QPointF(-dr, -radius));
+  ptArray.push_back(center + QPointF(dr, -radius));
+  ptArray.push_back(center + QPointF(dr, -dr));
+  ptArray.push_back(center + QPointF(radius, -dr));
+  ptArray.push_back(center + QPointF(radius, dr));
 
   return ptArray;
 }
@@ -1469,10 +1501,9 @@ ZIntPoint load_point_from_json_zyx(const ZJsonArray &v)
 }
 #endif
 
-ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
-{
-  ZObject3dScan *sobj = nullptr;
-
+ZObject3dScan* flyem::LoadRoiFromJson(
+    const std::string &filePath, ZObject3dScan *result)
+{  
   ZJsonObject obj;
   obj.load(filePath);
   if (ZJsonParser::stringValue(obj["type"]) == "points" && obj.hasKey("roi")
@@ -1480,11 +1511,15 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
     if (obj.hasKey("resolution")) {
       int res = ZJsonParser::integerValue(obj["resolution"]);
       if (res > 0) {
-        sobj = new ZObject3dScan;
-        sobj->setSource(filePath);
-        sobj->setDsIntv(res - 1);
+        if (result == nullptr) {
+          result = new ZObject3dScan;
+        } else {
+          result->clear();
+        }
+        result->setSource(filePath);
+        result->setDsIntv(res - 1);
         ZJsonArray roiJson(obj.value("roi"));
-        ZObject3dScan::Appender appender(sobj);
+        ZObject3dScan::Appender appender(result);
         for (size_t i = 0; i < roiJson.size(); ++i) {
           ZJsonArray v(roiJson.value(i));
           if (v.size() == 3) {
@@ -1499,7 +1534,75 @@ ZObject3dScan* flyem::LoadRoiFromJson(const std::string &filePath)
     }
   }
 
-  return sobj;
+  return result;
+}
+
+namespace {
+
+std::pair<uint64_t, std::vector<uint64_t>> extract_connection(
+    const QString &name, const QString &splitter) {
+  QStringList tokens = name.split(splitter);
+  std::pair<uint64_t, std::vector<uint64_t>> result;
+  if (tokens.size() > 1) {
+    result.first = ZString(tokens[0]).firstUint64();
+    result.second = ZString(tokens[1]).toUint64Array();
+  }
+
+  return result;
+}
+
+}
+
+bool flyem::HasConnecion(
+    const QString &name, const QString &splitter,
+    const std::unordered_set<uint64_t> &first,
+    const std::unordered_set<uint64_t> &second)
+{
+  auto connection = extract_connection(name, splitter);
+  if (first.count(connection.first) > 0) {
+    for (uint64_t body : connection.second) {
+      if (second.count(body) > 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool flyem::HasConnecion(
+    const QString &name,
+    const std::unordered_set<uint64_t> &input,
+    const std::unordered_set<uint64_t> &output,
+    neutu::EBiDirection d)
+{
+  switch (d) {
+  case neutu::EBiDirection::FORWARD:
+    return HasConnecion(name, "->", input, output);
+  case neutu::EBiDirection::BACKWARD:
+    return HasConnecion(name, "<-", output, input);
+  }
+
+  return false;
+}
+
+bool flyem::HasConnecion(
+    const QString &name, uint64_t input, uint64_t output, neutu::EBiDirection d)
+{
+  switch (d) {
+  case neutu::EBiDirection::FORWARD:
+    if (name.startsWith(QString("%1->").arg(input))) {
+      return name.contains(QString("[%1]").arg(output));
+    }
+    break;
+  case neutu::EBiDirection::BACKWARD:
+    if (name.startsWith(QString("%1<-").arg(output))) {
+      return name.contains(QString("[%1]").arg(input));
+    }
+    break;
+  }
+
+  return false;
 }
 
 /*

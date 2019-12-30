@@ -2,13 +2,13 @@
 #include <QtCore>
 #include <QPen>
 
+#include "common/math.h"
 #include "logging/zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
-#include "tz_math.h"
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
@@ -17,6 +17,8 @@
 #include "dvid/zdvidreader.h"
 #include "zvaa3dmarker.h"
 #include "flyem/zflyemmisc.h"
+
+const double ZDvidSynapse::DEFAULT_CONFIDENCE = 1.0;
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -32,21 +34,43 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+bool ZDvidSynapse::hasConfidenceProperty() const
+{
+  return (m_propertyJson.hasKey("confidence")) || m_propertyJson.hasKey("conf");
+}
+
+void ZDvidSynapse::removeConfidenceProperty()
+{
+  RemoveConfidenceProp(m_propertyJson);
+}
+
 double ZDvidSynapse::getConfidence() const
 {
-  double c = 1.0;
+  double c = DEFAULT_CONFIDENCE;
 
-  if (m_propertyJson.hasKey("confidence")) {
-    std::string confStr =
-        ZJsonParser::stringValue(m_propertyJson["confidence"]);
-    c = std::atof(confStr.c_str());
-  } else if (m_propertyJson.hasKey("conf")) {
-    std::string confStr =
-        ZJsonParser::stringValue(m_propertyJson["conf"]);
+  std::string confStr = getConfidenceStr();
+  if (!confStr.empty()) {
     c = std::atof(confStr.c_str());
   }
 
   return c;
+}
+
+std::string ZDvidSynapse::getConfidenceStr() const
+{
+  std::string confStr;
+  if (m_propertyJson.hasKey("confidence")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["confidence"]);
+  } else if (m_propertyJson.hasKey("conf")) {
+    confStr = ZJsonParser::stringValue(m_propertyJson["conf"]);
+  }
+
+  return confStr;
+}
+
+void ZDvidSynapse::setConfidence(const std::string str)
+{
+  SetConfidenceProp(m_propertyJson, str);
 }
 
 std::string ZDvidSynapse::getAnnotation() const
@@ -75,19 +99,41 @@ void ZDvidSynapse::setConfidence(double c)
   SetConfidenceProp(m_propertyJson, c);
 }
 
+void ZDvidSynapse::RemoveConfidenceProp(ZJsonObject &json)
+{
+  json.removeKey("confidence");
+  json.removeKey("conf");
+}
+
+void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, std::string conf)
+{
+  propJson.removeKey("confidence");
+
+  if (!conf.empty()) {
+    propJson.setEntry("conf", conf);
+  } else {
+    propJson.removeKey("conf");
+  }
+}
+
 void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, double conf)
 {
-  if (propJson.hasKey("confidence")) {
-    propJson.removeKey("confidence");
-  }
-
   // remember, store props as strings!
   std::ostringstream stream;
   stream << conf;
-  propJson.setEntry("conf", stream.str());
+  SetConfidenceProp(propJson, stream.str());
 }
 
 void ZDvidSynapse::SetConfidence(ZJsonObject &json, double conf)
+{
+  ZJsonObject propJson = json.value("Prop");
+  SetConfidenceProp(propJson, conf);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+void ZDvidSynapse::SetConfidence(ZJsonObject &json, std::string conf)
 {
   ZJsonObject propJson = json.value("Prop");
   SetConfidenceProp(propJson, conf);
@@ -285,7 +331,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double y = center.getY();
 
       int startAngle = 0;
-      int spanAngle = iround((1.0 - conf) * 180) * 16;
+      int spanAngle = neutu::iround((1.0 - conf) * 180) * 16;
       painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
                              QPointF(x + lineWidth, y + lineWidth)),
                       startAngle, spanAngle);
@@ -581,6 +627,54 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
         m_isPartnerVerified[i] = false;
         m_partnerKind[i] = ZDvidSynapse::EKind::KIND_INVALID;
       }
+    }
+  }
+}
+
+std::string ZDvidSynapse::getConnString(
+    const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const
+{
+  std::string name = std::to_string(getBodyId());
+  switch (getKind()) {
+  case ZDvidSynapse::EKind::KIND_PRE_SYN:
+    name += "->";
+    break;
+  case ZDvidSynapse::EKind::KIND_POST_SYN:
+    name += "<-";
+    break;
+  default:
+    name += "-";
+    break;
+  }
+
+  for (const ZIntPoint &pt : m_partnerHint) {
+    auto iter = labelMap.find(pt);
+    if (iter != labelMap.end()) {
+      name += "[" + std::to_string(iter->second) + "]";
+    }
+  }
+
+  return name;
+}
+
+void ZDvidSynapse::updateProperty(const ZJsonObject &propJson)
+{
+  removeConfidenceProperty();
+
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap(false);
+  for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
+       iter != entryMap.end(); ++iter) {
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (ZJsonParser::stringValue(iter->second).empty()) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
     }
   }
 }

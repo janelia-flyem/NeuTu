@@ -1,9 +1,11 @@
 #ifndef ZARRAY_H
 #define ZARRAY_H
 
-#include "mylib/array.h"
 #include <vector>
-#include "tz_stdint.h"
+#include <cstdlib>
+#include <cstdint>
+
+#include "mylib/array.h"
 
 class ZIntCuboid;
 class ZIntPoint;
@@ -87,6 +89,7 @@ public:
 
   void setStartCoordinate(int index, int x);
   void setStartCoordinate(const std::vector<int> &coord);
+  void setStartCoordinate(int x, int y, int z);
 
   ZArray& operator= (const ZArray &array);
 

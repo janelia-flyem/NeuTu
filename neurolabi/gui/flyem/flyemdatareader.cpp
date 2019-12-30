@@ -1,5 +1,6 @@
 #include "flyemdatareader.h"
 
+#include <memory>
 #include <QByteArray>
 
 //#include "geometry/zintpoint.h"
@@ -9,8 +10,10 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zmesh.h"
+#include "zswctree.h"
 
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
@@ -22,13 +25,15 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidsynapse.h"
+
 #include "zdvidutil.h"
-//#include "dvid/zdvidsynapse.h"
-//#include "dvid/zdvidroi.h"
 
 #include "flyemdataconfig.h"
 #include "zflyemneuronbodyinfo.h"
 #include "zflyembodyannotation.h"
+#include "zflyemutilities.h"
 
 FlyEmDataReader::FlyEmDataReader()
 {
@@ -89,6 +94,35 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   }
 
   return annotation;
+}
+
+std::vector<ZFlyEmToDoItem> FlyEmDataReader::ReadToDoItem(
+    const ZDvidReader &reader, const ZIntCuboid &box)
+{
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  ZJsonArray obj = reader.readJsonArray(dvidUrl.getTodoListUrl(box));
+
+  std::vector<ZFlyEmToDoItem> itemArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZFlyEmToDoItem &item = itemArray[i];
+    item.loadJsonObject(itemJson, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  }
+
+  return itemArray;
+}
+
+ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
+      const ZDvidReader &reader, int x, int y, int z)
+{
+  std::vector<ZFlyEmToDoItem> itemArray =
+      ReadToDoItem(reader, ZIntCuboid(x, y, z, x, y, z));
+  if (!itemArray.empty()) {
+    return itemArray[0];
+  }
+
+  return ZFlyEmToDoItem();
 }
 
 ZMesh* FlyEmDataReader::LoadRoi(
@@ -169,13 +203,17 @@ ZMesh* FlyEmDataReader::LoadRoi(
 }
 
 ZMesh* FlyEmDataReader::ReadRoiMesh(
-    const ZDvidReader &reader, const std::string &roiName)
+    const ZDvidReader &reader, const std::string &roiName,
+    std::function<void(std::string)> errorMsgHandler)
 {
   ZMesh *mesh = NULL;
 
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
-  if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+  ZJsonObjectParser parser;
+  bool visible = parser.getValue(roiInfo, "visible", true);
+
+  if (visible && roiInfo.hasKey(neutu::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
@@ -201,11 +239,110 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
       }
       mesh = LoadRoi(reader, roiName, key, type);
     }
+
+    if (mesh == nullptr) {
+      errorMsgHandler("Failed to load ROI " + roiName);
+    }
   }
 
   return mesh;
 }
 
+ZObject3dScan* FlyEmDataReader::ReadRoi(
+      const ZDvidReader &reader, const std::vector<std::string> &roiList,
+      ZObject3dScan *result)
+{
+  if (result) {
+    result->clear();
+  } else {
+    result = new ZObject3dScan;
+  }
+
+  for (const std::string roi : roiList) {
+    reader.readRoi(roi, result, true);
+  }
+
+  return result;
+}
+
+ZDvidSparseStack* FlyEmDataReader::ReadDvidSparseStack(
+    const ZDvidTarget &target, ZDvidReader *grayscaleReader,
+    uint64_t bodyId, neutu::EBodyLabelType labelType, bool async)
+{
+  ZDvidSparseStack *spStack = nullptr;
+  if (target.isValid() && target.hasSegmentation()) {
+    spStack = new ZDvidSparseStack;
+    spStack->setLabelType(labelType);
+    spStack->setLabel(bodyId);
+    if (grayscaleReader) {
+      if (grayscaleReader->isReady()) {
+        spStack->setGrayscaleReader(*grayscaleReader); //Need to set before target
+      }
+    }
+    spStack->setDvidTarget(target);
+    if (async) {
+      spStack->loadBodyAsync(bodyId);
+    } else {
+      spStack->loadBody(bodyId);
+    }
+  }
+
+  return spStack;
+}
+
+std::unordered_map<ZIntPoint, uint64_t> FlyEmDataReader::ReadSynapseLabel(
+      const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray)
+{
+  std::unordered_map<ZIntPoint, uint64_t> result;
+  for (const ZDvidSynapse &synapse : synapseArray) {
+    if (synapse.getBodyId() > 0) {
+      result[synapse.getPosition()] = synapse.getBodyId();
+    }
+  }
+
+  std::vector<ZIntPoint> posArray;
+  for (const ZDvidSynapse &synapse : synapseArray) {
+    if (result.count(synapse.getPosition()) == 0) {
+      posArray.push_back(synapse.getPosition());
+    }
+    const std::vector<ZIntPoint> &ptArray = synapse.getPartners();
+    for (const ZIntPoint &pt : ptArray) {
+      if (result.count(pt) == 0) {
+        posArray.push_back(pt);
+      }
+    }
+  }
+
+  std::vector<uint64_t> labelArray = reader.readBodyIdAt(posArray);
+  for (size_t i = 0; i < labelArray.size(); ++i) {
+    result[posArray[i]] = labelArray[i];
+  }
+
+  return result;
+}
+
+bool FlyEmDataReader::IsSkeletonSynced(
+    const ZDvidReader &reader, uint64_t bodyId)
+{
+  if (reader.hasBody(bodyId)) {
+    int64_t bodyMod = reader.readBodyMutationId(bodyId);
+    std::unique_ptr<ZSwcTree> tree =
+        std::unique_ptr<ZSwcTree>(reader.readSwc(bodyId));
+    if (!tree) {
+      return false;
+    } else {
+      if (bodyMod < 0) { //no mutation ID exists
+                         //taken as synced as long as the skeleton exists
+          return true;
+      } else {
+        return (bodyMod == flyem::GetMutationId(tree.get()));
+      }
+    }
+
+  }
+
+  return true;
+}
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

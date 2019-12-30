@@ -271,7 +271,7 @@ void Local_Neuroseg_Normal(const Local_Neuroseg *locseg, double *ort);
  * Local_Neuroseg_Hit() returns TRUE if a point hits <locseg>, otherwise it
  * returns FALSE.
  */
-BOOL Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg, 
+_BOOL_ Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg, 
 			     double x, double y, double z);
 
 /**@brief Hit test between two local neurosegs
@@ -279,7 +279,7 @@ BOOL Local_Neuroseg_Hit_Test(const Local_Neuroseg *locseg,
  * Local_Neuroseg_Hit_Test2() returns TRUE if the central axis of <locseg>
  * hits <target>.
  */
-BOOL Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
+_BOOL_ Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
 			      const Local_Neuroseg *locseg);
 
 /**@brief Test if a point is close to the axis of a local neuroseg.
@@ -288,7 +288,7 @@ BOOL Local_Neuroseg_Hit_Test2(const Local_Neuroseg *target,
  * enough to the axis of <locseg>. The closest break point is stored in <t> if
  * it is not NULL.
  */
-BOOL Local_Neuroseg_Axis_Test(const Local_Neuroseg *locseg,
+_BOOL_ Local_Neuroseg_Axis_Test(const Local_Neuroseg *locseg,
 			      double x, double y, double z, double *t);
 
 /*
@@ -306,7 +306,7 @@ int Local_Neuroseg_Axis_Test2(const Local_Neuroseg *locseg,
  * Local_Neuroseg_Contain_Axis() returns true if <container> contains the 
  * central axis of <locseg>.
  */
-BOOL Local_Neuroseg_Contain_Axis(const Local_Neuroseg *container,
+_BOOL_ Local_Neuroseg_Contain_Axis(const Local_Neuroseg *container,
 				 const Local_Neuroseg *locseg);
 
 
@@ -553,7 +553,7 @@ int Local_Neuroseg_Height_Search_W(Local_Neuroseg *locseg,
 void Local_Neuroseg_Position_Adjust(Local_Neuroseg *locseg, 
 				    const Stack *stack, double z_scale);
 
-BOOL Local_Neuroseg_Good_Score(Local_Neuroseg *locseg, double score, 
+_BOOL_ Local_Neuroseg_Good_Score(Local_Neuroseg *locseg, double score, 
 			       double min_score);
 
 /* 
@@ -579,7 +579,7 @@ void Flip_Local_Neuroseg(Local_Neuroseg *locseg);
  * Local_Neuroseg_Has_Stack_Value() returns TRUE if inside <locseg>, a voxel 
  * from <stack> has the intensity <value>; Otherwise it returns FALSE.
  */
-BOOL Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *locseg, Stack *stack,
+_BOOL_ Local_Neuroseg_Has_Stack_Value(const Local_Neuroseg *locseg, Stack *stack,
 				    double z_scale, double value);
 
 /*

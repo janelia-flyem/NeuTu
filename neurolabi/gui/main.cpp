@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
 #include <QProcess>
 #include <QDir>
 #include <QSplashScreen>
+#include <QElapsedTimer>
 
 #include "main.h"
 
@@ -29,15 +30,21 @@ int main(int argc, char *argv[])
 #include "neu3window.h"
 
 #include "ztest.h"
-
-#include "tz_utilities.h"
-
+#include "qfonticon.h"
 #include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
 #include "zglobal.h"
 #include "logging/zlog.h"
+
+namespace {
+std::string get_machine_info()
+{
+  return GET_SOFTWARE_NAME + " " + neutu::GetVersionString() +
+      " @{" + QSysInfo::prettyProductName().toStdString() + "}";
+}
+}
 
 int main(int argc, char *argv[])
 {
@@ -62,12 +69,14 @@ int main(int argc, char *argv[])
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
+  // init the logging mechanism
+  init_log();
+
   if (mainConfig.runCommandLine) {
     NeutubeConfig::getInstance().setCliSoftwareName("cli");
-    ZGlobal::InitKafkaTracer();
-    KLog::SetOperationName("cli");
-    LKLOG << ZLog::Info()
-           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME);
+//    ZGlobal::InitKafkaTracer();
+//    KLog::SetOperationName("cli");
+    LINFO() << "BEGIN " + get_machine_info();
     return run_command_line(argc, argv);
   }
 
@@ -83,14 +92,18 @@ int main(int argc, char *argv[])
 
   configure(mainConfig);
 
-  // init the logging mechanism
-  init_log();
-
 //  RECORD_INFORMATION("************* Start ******************");
 
   LINFO() << "Config path: " << mainConfig.configPath;
 
   if (mainConfig.isGuiEnabled()) {
+    QElapsedTimer appTimer;
+    appTimer.start();
+
+    QFontIcon::addFont(":/fontawesome.ttf");
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 #if defined(__APPLE__)
     QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));
     QSplashScreen splash(pixmap);
@@ -108,10 +121,9 @@ int main(int argc, char *argv[])
 
     uint64_t timestamp = neutu::GetTimestamp();
     KLog() << ZLog::Info() //<< ZLog::Time(timestamp)
-           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME)
+           << ZLog::Description("BEGIN " + get_machine_info())
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutu::GetVersionString();
+    LINFO() << "Start " + get_machine_info();
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -219,10 +231,10 @@ int main(int argc, char *argv[])
     }
 
     KLog() << ZLog::Info()
-           << ZLog::Description("END " + GET_SOFTWARE_NAME)
-           << ZLog::Tag("start_time", timestamp);
-    LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME
-            + " " + neutu::GetVersionString();
+           << ZLog::Description("END " + get_machine_info())
+           << ZLog::Tag("start_time", timestamp)
+           << ZLog::Duration(appTimer.elapsed());
+    LINFO() << "Exit " + get_machine_info();
 
     return result;
   } else {
@@ -248,7 +260,6 @@ int main(int argc, char *argv[])
 //      ZTest::test(NULL);
 //    }
 
-    return 1;
   }
 }
 #endif

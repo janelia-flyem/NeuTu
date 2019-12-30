@@ -4,11 +4,9 @@
 #include <limits>
 #include <functional>
 #include <string>
+#include <cstdint>
 
-
-#include "tz_stdint.h"
-
-#define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
+#define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
 namespace neutu {
 
@@ -112,6 +110,7 @@ enum class EBodyLabelType {
 };
 
 std::string ToString(EBodyLabelType type);
+std::string ToString(EAxis axis);
 
 enum class EBodySplitMode {
   NONE, ONLINE, OFFLINE
@@ -136,7 +135,7 @@ enum class EReadStatus {
 
 enum class EToDoAction {
   TO_DO = 0, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT,
-  TO_TRACE_TO_SOMA, NO_SOMA, DIAGNOSTIC
+  TO_TRACE_TO_SOMA, NO_SOMA, DIAGNOSTIC, SEGMENTATION_DIAGNOSIC, TIP_DETECTOR
 };
 
 enum class EStackNeighborhood {
@@ -145,6 +144,10 @@ enum class EStackNeighborhood {
 
 enum class EServerStatus {
   NORMAL, OFFLINE, NOAUTH, NOSUPPORT
+};
+
+enum class EConfigSource {
+  UNKNOWN, CONFILG_FILE, QSETTINGS, ENV_VAR, RUNTIME
 };
 
 namespace display {
@@ -227,6 +230,12 @@ using TProgressFunc = std::function<void(size_t, size_t)>;
 #  define DEBUG_OUT std::cout
 #else
 #  define DEBUG_OUT if (1) {} else std::cout
+#endif
+
+#if defined(__clang__) || defined (__GNUC__)
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS
 #endif
 
 #endif // NEUTUBE_DEF_H

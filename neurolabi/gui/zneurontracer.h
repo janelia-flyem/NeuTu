@@ -8,7 +8,7 @@
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
@@ -67,6 +67,7 @@ public:
 
 public:
   ZSwcPath trace(double x, double y, double z);
+  ZSwcTree* trace(double x, double y, double z, ZSwcTree *host);
   void updateMask(const ZSwcPath &branch);
   void setIntensityField(ZStack *stack);
   Stack* getIntensityData() const;
@@ -120,6 +121,8 @@ public:
   ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing = true);
 
   ZSwcTree* trace(const ZStack *stack, bool doResampleAfterTracing = true);
+
+  ZSwcTree* connectBranch(const ZSwcPath &branch, ZSwcTree *host);
 
   //Autotrace configuration
   //Trace level setup: 1 - 10 (fast -> accurate)
@@ -268,6 +271,8 @@ private:
   neutu::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
+
+  ZSwcTree *m_initialSwc = nullptr;
 //  double m_stackOffset[3];
 
   double m_seedMinScore;
@@ -291,7 +296,7 @@ private:
   double m_greyFactor;
   double m_greyOffset;
   bool m_estimatingRadius;
-  bool m_maskTracing;
+  bool m_maskTracing = true;
   bool m_diagnosis = false;
   bool m_screeningSeed = true;
 

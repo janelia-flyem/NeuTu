@@ -2,8 +2,9 @@
 
 #include <iostream>
 #include <cmath>
+#include <QDebug>
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "zjsonobject.h"
 
 ZViewProj::ZViewProj()
@@ -248,6 +249,11 @@ QRect ZViewProj::getViewPort() const
   return m_viewPort;
 }
 
+QPoint ZViewProj::getViewPortCenter() const
+{
+  return getViewPort().center();
+}
+
 QPoint ZViewProj::getWidgetCenter() const
 {
   return m_widgetRect.center();
@@ -325,8 +331,8 @@ void ZViewProj::setZoom(double zoom, EReference ref)
       update();
       QPoint viewCenter = getViewPort().center();
       QPointF projCenter = getProjRect().center();
-      int cx = iround(projCenter.x() / zoom);
-      int cy = iround(projCenter.y() / zoom);
+      int cx = neutu::iround(projCenter.x() / zoom);
+      int cy = neutu::iround(projCenter.y() / zoom);
 
       setOffset(viewCenter.x() - cx, viewCenter.y() - cy);
     }
@@ -397,8 +403,8 @@ void ZViewProj::setZoomWithFixedPoint(
     double zoom, const QPoint &viewPoint, const QPointF &projPoint)
 {
   if (zoom > 0) {
-    int cx = iround(projPoint.x() / zoom);
-    int cy = iround(projPoint.y() / zoom);
+    int cx = neutu::iround(projPoint.x() / zoom);
+    int cy = neutu::iround(projPoint.y() / zoom);
 
     setOffset(viewPoint.x() - cx, viewPoint.y() - cy);
   }
@@ -414,8 +420,12 @@ void ZViewProj::setZoomWithFixedPoint(double zoom, const QPoint &viewPoint)
 void ZViewProj::move(int srcX, int srcY, double dstX, double dstY)
 {
   if (m_zoom > 0.0) {
-    int x0 = srcX - iround(dstX / m_zoom);
-    int y0 = srcY - iround(dstY / m_zoom);
+#ifdef _DEBUG_2
+    qDebug() << m_widgetRect;
+#endif
+
+    int x0 = srcX - neutu::iround(dstX / m_zoom);
+    int y0 = srcY - neutu::iround(dstY / m_zoom);
 
     setOffset(x0, y0);
   }
@@ -486,8 +496,8 @@ QPoint ZViewProj::mapPointBack(const QPointF &p) const
     return QPoint(0, 0);
   }
 
-  int x = iround(p.x() / m_zoom) + m_x0;
-  int y = iround(p.y() / m_zoom) + m_y0;
+  int x = neutu::iround(p.x() / m_zoom) + m_x0;
+  int y = neutu::iround(p.y() / m_zoom) + m_y0;
 
   return QPoint(x, y);
 }

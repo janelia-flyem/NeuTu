@@ -26,7 +26,9 @@ GradientStrategy<T>::GradientStrategy()
 
 
 template<typename T>
-void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool ignore_background)
+void GradientStrategy<T>::run(
+    const T* in, T* out, uint32_t width, uint32_t height, uint32_t depth,
+    bool ignore_background)
 {
   _width=width;
   _height=height;
@@ -201,7 +203,8 @@ void GradientStrategyContext:: _run
 
 
 template<typename T>
-void GradientStrategySimple<T>::process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end)
+void GradientStrategySimple<T>::process(
+    uint32_t &x, uint32_t &y , uint32_t &z, uint32_t &w, const T* pi, T* p, uint32_t offset, uint32_t end)
 {
   bool ignore_background=this->_ignore_background;
   for(z=0;z<this->_depth;++z)

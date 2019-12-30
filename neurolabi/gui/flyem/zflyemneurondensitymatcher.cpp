@@ -1,12 +1,13 @@
 #include "zflyemneurondensitymatcher.h"
+
 #include <cmath>
+
+#include <common/math.h>
 
 #include "zdynamicprogrammer.h"
 #include "zflyemneurondensity.h"
 #include "zhistogram.h"
 #include "zmatrix.h"
-#include "tz_math.h"
-#include "tz_utilities.h"
 
 ZFlyemNeuronDensityMatcher::ZFlyemNeuronDensityMatcher() : m_gapPenalty(0.1),
   m_layerBaseFactor(1.0), m_layerScale(100.0), m_layerMargin(100.0)
@@ -22,10 +23,10 @@ double ZFlyemNeuronDensityMatcher::match(
   ZMatrix simmat;
 
   double dz = m_layerMargin;
-  double startZ1 = iround(hist1.getBinStart(0) / m_layerMargin) * m_layerMargin;
+  double startZ1 = neutu::iround(hist1.getBinStart(0) / m_layerMargin) * m_layerMargin;
   int count1 = hist1.getBinNumber();
 
-  double startZ2 = iround(hist2.getBinStart(0) / m_layerMargin) * m_layerMargin;
+  double startZ2 = neutu::iround(hist2.getBinStart(0) / m_layerMargin) * m_layerMargin;
   int count2 = hist2.getBinNumber();
 
   simmat.resize(count1, count2);
@@ -58,8 +59,8 @@ double ZFlyemNeuronDensityMatcher::computeSimilarity(
 
   double layerDiff = fabs(z1 - z2);
 
-  double s2 = dmax2(v1, v2);
-  double s1 = dmin2(v1, v2);
+  double s2 = std::max(v1, v2);
+  double s1 = std::min(v1, v2);
 
 //  TZ_ASSERT(s1 > 0.0, "Invalid number");
 

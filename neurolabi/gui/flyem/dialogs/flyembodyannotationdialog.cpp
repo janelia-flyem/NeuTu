@@ -14,6 +14,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
 {
   ui->setupUi(this);
 
+  initNullStatusItem();
+
   connect(ui->generatePushButton, &QPushButton::clicked,
           this, &FlyEmBodyAnnotationDialog::fillType);
 
@@ -21,6 +23,8 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
   if (!m_isAdmin) {
     ui->typeLineEdit->hide();
     ui->generatePushButton->hide();
+    ui->primaryNeuriteLineEdit->setEnabled(false);
+    ui->clonalUnitLineEdit->setEnabled(false);
 //    neutu::HideLayout(ui->typeLayout, false);
   }
 }
@@ -28,6 +32,12 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
 FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
 {
   delete ui;
+}
+
+void FlyEmBodyAnnotationDialog::initNullStatusItem()
+{
+  ui->statusComboBox->clear();
+  ui->statusComboBox->addItem("---");
 }
 
 void FlyEmBodyAnnotationDialog::setType(const std::string &type)
@@ -102,6 +112,17 @@ void FlyEmBodyAnnotationDialog::setSynonym(const std::string &v)
 {
   ui->SynonymLineEdit->setText(QString::fromStdString(v));
 }
+
+void FlyEmBodyAnnotationDialog::setClonalUnit(const std::string &v)
+{
+  ui->clonalUnitLineEdit->setText(QString::fromStdString(v));
+}
+
+void FlyEmBodyAnnotationDialog::setAutoType(const std::string &v)
+{
+  ui->autoTypeLineEdit->setText(QString::fromStdString(v));
+}
+
 
 uint64_t FlyEmBodyAnnotationDialog::getBodyId() const
 {
@@ -180,6 +201,26 @@ std::string FlyEmBodyAnnotationDialog::getStatus() const
   return "";
 }
 
+std::string FlyEmBodyAnnotationDialog::getProperty() const
+{
+  if (ui->propertyComboBox->currentIndex() > 0) {
+    return ui->propertyComboBox->currentText().toStdString();
+  }
+
+  return "";
+}
+
+
+std::string FlyEmBodyAnnotationDialog::getAutoType() const
+{
+  return ui->autoTypeLineEdit->text().toStdString();
+}
+
+std::string FlyEmBodyAnnotationDialog::getClonalUnit() const
+{
+  return ui->clonalUnitLineEdit->text().toStdString();
+}
+
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
@@ -201,6 +242,9 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setCrossMidline(annotation.getCrossMidline());
   setNeurotransmitter(annotation.getNeurotransmitter());
   setSynonym(annotation.getSynonym());
+  setClonalUnit(annotation.getClonalUnit());
+  setAutoType(annotation.getAutoType());
+  setProperty(annotation.getProperty());
 //  setInstance(annotation.get);
 }
 
@@ -216,6 +260,8 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setUser(user);
   if (isInstanceChanged()) {
     annotation.setNamingUser(user);
+  } else {
+    annotation.setNamingUser(m_prevNamingUser);
   }
   annotation.setMajorInput(getMajorInput());
   annotation.setMajorOutput(getMajorOutput());
@@ -225,6 +271,9 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setCrossMidline(getCrossMidline());
   annotation.setNeurotransmitter(getNeurotransmitter());
   annotation.setSynonym(getSynonym());
+  annotation.setClonalUnit(getClonalUnit());
+  annotation.setAutoType(getAutoType());
+  annotation.setProperty(getProperty());
 
   return annotation;
 }
@@ -245,6 +294,7 @@ void FlyEmBodyAnnotationDialog::setPrevNamingUser(const std::string &name)
   } else {
     ui->namingUserLabel->setText("");
   }
+  m_prevNamingUser = name;
 }
 
 void FlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
@@ -281,6 +331,21 @@ void FlyEmBodyAnnotationDialog::setStatus(const std::string &status)
   }
 }
 
+
+void FlyEmBodyAnnotationDialog::setProperty(const std::string &v)
+{
+  int index = 0;
+  if (!v.empty()) {
+    index = ui->propertyComboBox->findText(v.c_str(), Qt::MatchExactly);
+  }
+
+  if (index >= 0) {
+    ui->propertyComboBox->setCurrentIndex(index);
+  } else {
+    processUnknownProperty(v);
+  }
+}
+
 void FlyEmBodyAnnotationDialog::showFinalizedStatus()
 {
   int index = ui->statusComboBox->findText(FINALIZED_TEXT);
@@ -302,9 +367,15 @@ void FlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
 
 void FlyEmBodyAnnotationDialog::updateStatusBox()
 {
-  ui->statusComboBox->clear();
-  ui->statusComboBox->addItem("---");
+  initNullStatusItem();
   ui->statusComboBox->addItems(m_defaultStatusList);
+}
+
+void FlyEmBodyAnnotationDialog::updatePropertyBox()
+{
+  ui->propertyComboBox->clear();
+  ui->propertyComboBox->addItem("---");
+  ui->propertyComboBox->addItem("Distinct");
 }
 
 void FlyEmBodyAnnotationDialog::freezeFinalizedStatus()
@@ -327,6 +398,13 @@ void FlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
   }
 }
 
+void FlyEmBodyAnnotationDialog::processUnknownProperty(
+    const std::string &property)
+{
+  ui->propertyComboBox->addItem(property.c_str());
+  ui->propertyComboBox->setCurrentIndex(ui->propertyComboBox->count() - 1);
+}
+
 void FlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)
 {
   int index = ui->statusComboBox->findText(status.c_str());
@@ -340,5 +418,5 @@ void FlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)
 void FlyEmBodyAnnotationDialog::fillType()
 {
   ZFlyEmBodyAnnotation annot = getBodyAnnotation();
-  ui->typeLineEdit->setText(QString::fromStdString(annot.getAutoType()));
+  ui->typeLineEdit->setText(QString::fromStdString(annot.getInferredType()));
 }

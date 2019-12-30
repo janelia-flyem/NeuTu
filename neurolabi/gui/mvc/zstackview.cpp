@@ -6,6 +6,7 @@
 #include <QImageWriter>
 #include <QJsonObject>
 
+#include "common/math.h"
 #include "logging/zlog.h"
 #include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
@@ -20,7 +21,6 @@
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
 #include "zclickablelabel.h"
-#include "tz_error.h"
 #include "zstackball.h"
 #include "swctreenode.h"
 #include "zstroke2d.h"
@@ -44,9 +44,13 @@
 #include "zscrollslicestrategy.h"
 #include "zarbsliceviewparam.h"
 #include "zstackdocutil.h"
-#include "mvc/zpositionmapper.h"
-#include "mvc/utilities.h"
 #include "data3d/utilities.h"
+#include "dialogs/zstackviewrecorddialog.h"
+
+#include "zstackviewrecorder.h"
+#include "zpositionmapper.h"
+#include "utilities.h"
+
 
 using namespace std;
 
@@ -204,6 +208,9 @@ void ZStackView::init()
   blockViewChangeEvent(false);
 
   m_sliceStrategy = new ZScrollSliceStrategy(this);
+
+  m_recorder = std::shared_ptr<ZStackViewRecorder>(
+        new ZStackViewRecorder);
 }
 
 void ZStackView::addToolButton(QPushButton *button)
@@ -230,6 +237,10 @@ void ZStackView::enableMessageManager()
   }
 }
 
+ZStackViewRecorder* ZStackView::getRecorder()
+{
+  return m_recorder.get();
+}
 
 void ZStackView::hideThresholdControl()
 {
@@ -919,6 +930,8 @@ void ZStackView::updateImageScreen(EUpdateOption option)
     default:
       break;
     }
+
+    tryAutoRecord();
   }
 }
 
@@ -1217,6 +1230,10 @@ void ZStackView::redraw(EUpdateOption option)
              arg(stackPaintTime).arg(tilePaintTime).
              arg(objectPaintTime).toStdString();
   }
+
+//  if (getRecorder()->isAuto()) {
+//    getRecorder()->takeShot(this);
+//  }
 }
 
 
@@ -1300,13 +1317,22 @@ void ZStackView::setThreshold(int thre)
   }
 }
 
+void ZStackView::takeScreenshot()
+{
+  if (getRecorder()->getPrefix().isEmpty()) {
+    configureRecorder();
+  }
+
+  getRecorder()->takeShot(this);
+}
+
 void ZStackView::takeScreenshot(const QString &filename)
 {
   QImageWriter writer(filename);
   writer.setCompression(1);
 
-  QImage image(iround(m_imageWidget->projectSize().width()),
-               iround(m_imageWidget->projectSize().height()),
+  QImage image(m_imageWidget->width(),
+               m_imageWidget->height(),
                QImage::Format_ARGB32);
 
   m_imageWidget->setViewHintVisible(false);
@@ -1522,9 +1548,9 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
     ZIntCuboid box = getViewBoundBox();
     if (canvas->width() != box.getWidth() ||
         canvas->height() != box.getHeight() ||
-        iround(canvas->getTransform().getTx()) !=
+        neutu::iround(canvas->getTransform().getTx()) !=
         -box.getFirstCorner().getX() ||
-        iround(canvas->getTransform().getTy()) !=
+        neutu::iround(canvas->getTransform().getTy()) !=
         -box.getFirstCorner().getY()) {
       if (painter != NULL) {
         painter->end();
@@ -1752,7 +1778,7 @@ void ZStackView::reloadTileCanvas()
 
 void ZStackView::updateObjectCanvas()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating object canvas." << std::endl;
 #endif
 
@@ -2240,6 +2266,17 @@ void ZStackView::paintObjectBuffer()
   } else {
     m_objectCanvasPainter.setPainted(false);
     m_objectCanvas->setVisible(false);
+  }
+}
+
+void ZStackView::configureRecorder()
+{
+  if (m_recordDlg == nullptr) {
+    m_recordDlg = new ZStackViewRecordDialog(this);
+  }
+
+  if (m_recordDlg->exec()) {
+    m_recordDlg->configureRecorder(getRecorder());
   }
 }
 
@@ -2752,6 +2789,13 @@ void ZStackView::setViewProj(const ZViewProj &vp)
   }
 }
 
+void ZStackView::tryAutoRecord()
+{
+  if (getRecorder()->isAuto()) {
+    getRecorder()->takeShot(this);
+  }
+}
+
 void ZStackView::updateViewParam(const ZStackViewParam &param)
 {
   if (param.getSliceAxis() == getSliceAxis()) {
@@ -2792,6 +2836,7 @@ void ZStackView::updateViewParam(const ZArbSliceViewParam &param)
 
 void ZStackView::resetViewParam(const ZArbSliceViewParam &param)
 {
+  syncArbViewCenter();
   ZStackViewParam currentParam = getViewParameter(param);
   updateViewParam(currentParam);
 }
@@ -2877,6 +2922,15 @@ void ZStackView::setViewPortOffset(int x, int y)
 //  notifyViewChanged(NeuTube::View::EXPLORE_MOVE);
 }
 
+void ZStackView::syncArbViewCenter()
+{
+  m_imageWidget->setViewPortCenterQuitely(
+        m_sliceViewParam.getX(), m_sliceViewParam.getY());
+  int z = m_sliceViewParam.getZ() - getZ0();
+  m_depthControl->setValueQuietly(z);
+  m_zSpinBox->setValueQuietly(z);
+}
+
 void ZStackView::updateSliceViewParam()
 {
   if (getSliceAxis() == neutu::EAxis::ARB) {
@@ -2889,10 +2943,19 @@ void ZStackView::updateSliceViewParam()
         int dy = center.y() - oldCenter.y();
         int dz = viewParam.getZ() - m_oldViewParam.getZ();
 
-        m_sliceViewParam.move(dx, dy, dz);
-#ifdef _DEBUG_
-        std::cout << "Updated center: " << m_sliceViewParam.getCenter().toString()
+        if (dx != 0 || dy != 0 || dz != 0) {
+          m_sliceViewParam.move(dx, dy, dz);
+        }
+
+#ifdef _DEBUG_2
+        std::cout << "=======> old center: "
+                  << oldCenter.x() << "," << oldCenter.y() << ","
                   << std::endl;
+        std::cout << "=======> current center: "
+                  << center.x() << "," << center.y() << ","
+                  << std::endl;
+        std::cout << "=======> moving: " << dx << "," << dy << "," << dz << std::endl;
+        std::cout << "=======> Updated center: " << m_sliceViewParam.getCenter().toString()
 #endif
       }
     }
@@ -2903,9 +2966,19 @@ void ZStackView::move(const QPoint &src, const QPointF &dst)
 {  
   recordViewParam();
 
+#ifdef _DEBUG_
+  qDebug() << "=====> Viewport center before moving:"
+           << imageWidget()->viewPort().center();
+#endif
+
   imageWidget()->blockPaint(true);
   imageWidget()->moveViewPort(src, dst);
   imageWidget()->blockPaint(false);
+
+#ifdef _DEBUG_
+  qDebug() << "=====> Viewport center after moving:"
+           << imageWidget()->viewPort().center();
+#endif
 
   updateSliceViewParam();
 
@@ -3208,7 +3281,7 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
-  updateActiveDecorationCanvas();
+//  updateActiveDecorationCanvas();
 //  updateNewTileCanvas();
 
 #ifdef _DEBUG_2

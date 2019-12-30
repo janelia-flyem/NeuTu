@@ -43,7 +43,7 @@ Optimize_Workspace *New_Optimize_Workspace(int nvar)
   ow->nvar = nvar;
   ow->phase = 0;
   ow->max_score = -Infinity;
-  ow->is_improved = FALSE;
+  ow->is_improved = _FALSE_;
   ow->best_var = darray_malloc(nvar);
 
   return ow;
@@ -66,7 +66,7 @@ void Update_Optimize_Workspace(Variable_Set *vs, double score,
     for (i = 0; i < vs->nvar; i++) {
       ow->best_var[i] = vs->var[vs->var_index[i]];
     }
-    ow->is_improved = TRUE;
+    ow->is_improved = _TRUE_;
   }
 
   ow->phase++;
@@ -137,7 +137,7 @@ inline static void validate_var(double *var, double min, double max)
   
 #define STOP_GRADIENT 1e-1
 
-BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
+_BOOL_ Line_Search_Var_Backtrack(Variable_Set *vs,
 			       const void *param, 
 			       const Continuous_Function *cf,
 			       const double *delta, const double *weight,
@@ -153,7 +153,7 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
 
   double direction_length = sqrt(darray_sqsum(direction, vs->nvar));
 
-  BOOL improved = TRUE;
+  _BOOL_ improved = _TRUE_;
 
   if (direction_length > lsw->min_direction) {
 
@@ -193,7 +193,7 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
         }
         Variable_Set_Update_Link(vs);
         lsw->score = start_score;
-        improved = FALSE;
+        improved = _FALSE_;
         break;
       }
 
@@ -207,8 +207,8 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
       // (fabs(darray_dot(lsw->grad, direction, nvar)) > gd_dot_c2));
 #if 0
       alpha = lsw->alpha;
-    improved= TRUE;
-    if (improved == FALSE) {
+    improved= _TRUE_;
+    if (improved == _FALSE_) {
       do {
         for (i = 0; i < nvar; i++) {
           var[var_index[i]] = org_var[i] - alpha * direction[i];
@@ -224,7 +224,7 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
             var[var_index[i]] = org_var[i];
           }
           lsw->score = start_score;
-          improved = FALSE;
+          improved = _FALSE_;
           break;
         }
       } while (lsw->score < start_score);
@@ -232,7 +232,7 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
 #endif
 
 #if 0
-    if (improved == TRUE) {
+    if (improved == _TRUE_) {
       for (i = 0; i < nvar; i++) {					
         tmp_var = vs->var[vs->var_index[i]];		   
         vs->var[var_index[i]] += delta[var_index[i]];			       
@@ -251,7 +251,7 @@ BOOL Line_Search_Var_Backtrack(Variable_Set *vs,
 #endif
     free(org_var);
   } else {
-    improved = FALSE;
+    improved = _FALSE_;
   }
   //printf("%g\n", alpha);
   return improved;
@@ -277,7 +277,7 @@ void line_search_update_variable(Variable_Set *vs,
   Variable_Set_Update_Link(vs);
 }
 
-BOOL Line_Search_Var_Golden_Bracket(Variable_Set *vs,
+_BOOL_ Line_Search_Var_Golden_Bracket(Variable_Set *vs,
 				    const void *param, 
 				    const Continuous_Function *cf,
 				    const double *delta, const double *weight,
@@ -289,7 +289,7 @@ BOOL Line_Search_Var_Golden_Bracket(Variable_Set *vs,
   
   double direction_length = sqrt(darray_sqsum(direction, vs->nvar));
 
-  BOOL improved = TRUE;
+  _BOOL_ improved = _TRUE_;
 
   if (direction_length > lsw->min_direction) {
     double alpha = 0.0;
@@ -339,16 +339,16 @@ BOOL Line_Search_Var_Golden_Bracket(Variable_Set *vs,
     }
 
     if (fmax <= lsw->score) {
-      improved = FALSE;
+      improved = _FALSE_;
       line_search_update_variable(vs, org_var, direction, 0.0, cf, weight);
     } else {
-      improved = TRUE;
+      improved = _TRUE_;
       line_search_update_variable(vs, org_var, direction, xmax, cf, weight);
       lsw->score = fmax;
     }
     free(org_var);
   } else {
-    improved = FALSE;
+    improved = _FALSE_;
   }
 
   return improved;
@@ -528,13 +528,13 @@ static double score_slope(const double *scores, double n)
   }
 }
 
-BOOL Optimize_Update_Variable(Variable_Set *vs, const void *param, 
+_BOOL_ Optimize_Update_Variable(Variable_Set *vs, const void *param, 
 			      const Continuous_Function *cf,
 			      const double *delta, double *update_direction, 
 			      Line_Search_Workspace *lsw,
 			      Optimize_Workspace *ow)
 { 
-  BOOL changed = Line_Search_Var_Backtrack(vs, param, cf, delta, NULL,
+  _BOOL_ changed = Line_Search_Var_Backtrack(vs, param, cf, delta, NULL,
 					   update_direction, lsw);
 
   Update_Optimize_Workspace(vs, lsw->score, ow);
@@ -543,14 +543,14 @@ BOOL Optimize_Update_Variable(Variable_Set *vs, const void *param,
     if (ow->scores[ow->phase - 1] <= ow->scores[0]) {
       double corrcoef = score_slope(ow->scores, ow->phase);
       if (corrcoef < 0.05) {
-	if (ow->is_improved == FALSE) {
-	  changed = FALSE;
+	if (ow->is_improved == _FALSE_) {
+	  changed = _FALSE_;
 	}
       }
     }
 
     ow->phase = 0;
-    ow->is_improved = FALSE;
+    ow->is_improved = _FALSE_;
   }
 
   return changed;

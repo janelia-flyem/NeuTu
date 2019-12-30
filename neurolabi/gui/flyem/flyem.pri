@@ -1,5 +1,6 @@
 include(dialogs/dialogs.pri)
 include(widgets/widgets.pri)
+include(neuroglancer/neuroglancer.pri)
 
 FORMS += \
     $$PWD/flyemdataframeoptiondialog.ui \
@@ -30,7 +31,7 @@ HEADERS += \
     $$PWD/zflyembody3ddockeyprocessor.h \
     $$PWD/zflyembody3ddocmenufactory.h \
     $$PWD/zflyembodyannotationdialog.h \
-    $$PWD/zflyembodyannotationmerger.h \
+    $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
     $$PWD/zflyembodyconfig.h \
@@ -86,6 +87,7 @@ HEADERS += \
     $$PWD/zflyemproofmvc.h \
     $$PWD/zflyemproofmvccontroller.h \
     $$PWD/zflyemproofpresenter.h \
+    $$PWD/zflyemproofutil.h \
     $$PWD/zflyemqualityanalyzertask.h \
     $$PWD/zflyemqualityanalyzertaskmanager.h \
     $$PWD/zflyemroimanager.h \
@@ -128,7 +130,8 @@ HEADERS += \
     $$PWD/zflyembody3ddochelper.h \
     $$PWD/zflyemproofdocutil.h \
     $$PWD/zdvidlabelslicehighrestaskfactory.h \
-    $$PWD/flyembodyselectionmanager.h
+    $$PWD/flyembodyselectionmanager.h \
+    $$PWD/zflyemproofdockeyprocessor.h
 
 SOURCES += \
     $$PWD/flyemdataframeoptiondialog.cpp \
@@ -148,7 +151,7 @@ SOURCES += \
     $$PWD/zflyembody3ddockeyprocessor.cpp \
     $$PWD/zflyembody3ddocmenufactory.cpp \
     $$PWD/zflyembodyannotationdialog.cpp \
-    $$PWD/zflyembodyannotationmerger.cpp \
+    $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \
     $$PWD/zflyembodyconfig.cpp \
@@ -204,6 +207,7 @@ SOURCES += \
     $$PWD/zflyemproofmvc.cpp \
     $$PWD/zflyemproofmvccontroller.cpp \
     $$PWD/zflyemproofpresenter.cpp \
+    $$PWD/zflyemproofutil.cpp \
     $$PWD/zflyemqualityanalyzertask.cpp \
     $$PWD/zflyemqualityanalyzertaskmanager.cpp \
     $$PWD/zflyemroimanager.cpp \
@@ -246,4 +250,5 @@ SOURCES += \
     $$PWD/zflyembody3ddochelper.cpp \
     $$PWD/zflyemproofdocutil.cpp \
     $$PWD/zdvidlabelslicehighrestaskfactory.cpp \
-    $$PWD/flyembodyselectionmanager.cpp
+    $$PWD/flyembodyselectionmanager.cpp \
+    $$PWD/zflyemproofdockeyprocessor.cpp

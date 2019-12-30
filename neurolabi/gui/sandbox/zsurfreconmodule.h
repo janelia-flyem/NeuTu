@@ -8,8 +8,8 @@
 #include <QWidget>
 #undef ASCII
 #undef BOOL
-#undef TRUE
-#undef FALSE
+#undef _TRUE_
+#undef _FALSE_
 //#include <surfrecon.h>
 
 #include "imgproc/surfrecon.h"

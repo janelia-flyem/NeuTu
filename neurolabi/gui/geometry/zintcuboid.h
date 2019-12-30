@@ -3,7 +3,7 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZJsonArray;
 
@@ -98,6 +98,7 @@ public:
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
+  ZIntPoint getSize() const;
 
   double getDiagonalLength() const;
 

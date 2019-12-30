@@ -7,8 +7,8 @@
 #include <QtConcurrent>
 #endif
 
+#include "common/math.h"
 #include "zutils.h"
-#include "tz_math.h"
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
 #include "zobject3dfactory.h"
@@ -99,7 +99,7 @@ void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
   pixmap->setTransform(m_paintBuffer->getTransform());
   pixmap->matchProj();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "label slice pixmap offset: "
             << pixmap->getTransform().getTx() << " "
             << pixmap->getTransform().getTy() << std::endl;
@@ -501,7 +501,7 @@ void ZDvidLabelSlice::updatePaintBuffer()
       zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
 #endif
 
@@ -957,9 +957,9 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
       }
     }
   } else {
-    int nx = iround(x);
-    int ny = iround(y);
-    int nz = iround(z);
+    int nx = neutu::iround(x);
+    int ny = neutu::iround(y);
+    int nz = neutu::iround(z);
 
 //    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
 

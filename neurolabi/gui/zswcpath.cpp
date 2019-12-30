@@ -2,14 +2,14 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
+#include "common/math.h"
 #include "swctreenode.h"
 #include "zswctree.h"
 #include "tz_darray.h"
-#include "tz_error.h"
 #include "tz_sp_grow.h"
 #include "zspgrowparser.h"
-#include "tz_math.h"
 #include "tz_int_arraylist.h"
 
 using namespace std;
@@ -238,13 +238,13 @@ void ZSwcPath::labelStack(Stack *stack, int value)
 
 void ZSwcPath::labelStackAcrossZ(Stack *stack, int value)
 {
-  TZ_ASSERT(stack != NULL, "NULL pointer");
-  TZ_ASSERT(C_Stack::kind(stack) == GREY, "Only GREY stack supported");
+  assert(stack != NULL);
+  assert(C_Stack::kind(stack) == GREY);
 
   if (!empty()) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
-    workspace.z_proj = TRUE;
+    workspace.z_proj = _TRUE_;
     workspace.sdw.color.r = value;
 
     workspace.label_mode = SWC_TREE_LABEL_NODE;
@@ -287,11 +287,11 @@ void ZSwcPath::labelStackAcrossZ(Stack *stack, int value)
 
 void ZSwcPath::resetPositionFromStack(const Stack *stack)
 {
-  int sourceX = iround(SwcTreeNode::x(front()));
-  int sourceY = iround(SwcTreeNode::y(front()));
+  int sourceX = neutu::iround(SwcTreeNode::x(front()));
+  int sourceY = neutu::iround(SwcTreeNode::y(front()));
 
-  int targetX = iround(SwcTreeNode::x(back()));
-  int targetY = iround(SwcTreeNode::y(back()));
+  int targetX = neutu::iround(SwcTreeNode::x(back()));
+  int targetY = neutu::iround(SwcTreeNode::y(back()));
 
   if (sourceX != targetX || sourceY != targetY) {
 

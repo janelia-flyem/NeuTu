@@ -16,7 +16,7 @@ ZTask::ZTask(QObject *parent) : QObject(parent)
 
 ZTask::~ZTask()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZTask destroyed." << std::endl;
 #endif
 }
@@ -51,6 +51,19 @@ int ZTask::getDelay() const
 void ZTask::slotTest()
 {
   LDEBUG() << "slot test";
+}
+
+//////////////////////////////
+
+ZFunctionTask::ZFunctionTask(QObject *parent) : ZTask(parent)
+{
+
+}
+
+ZFunctionTask::ZFunctionTask(
+    std::function<void()> f, std::function<void()> dispose, QObject *parent) :
+  ZTask(parent), m_f(f), m_dispose(dispose)
+{
 }
 
 /////////////Moc class for testing//////////////

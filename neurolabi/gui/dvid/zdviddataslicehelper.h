@@ -26,6 +26,10 @@ public:
     return m_reader;
   }
 
+  const ZDvidReader& getWorkDvidReader() const {
+    return m_workReader;
+  }
+
   bool validateSize(int *width, int *height) const;
   int updateParam(ZStackViewParam *param);
 
@@ -107,6 +111,7 @@ public:
   void clear();
 
   void setMaxZoom(int maxZoom);
+  void updateMaxZoom();
 
   void invalidateViewParam();
   void updateCenterCut();
@@ -159,6 +164,7 @@ public:
   neutu::EDataSliceUpdatePolicy m_preferredUpdatePolicy = neutu::EDataSliceUpdatePolicy::LOWRES;
 
   ZDvidReader m_reader;
+  ZDvidReader m_workReader; //reader for worker thread
 };
 
 #endif // ZDVIDDATASLICEHELPER_H

@@ -4,11 +4,14 @@
 #endif
 
 #include <math.h>
+#include <tuple>
+
+#include "common/math.h"
 #include "zcircle.h"
-#include "tz_math.h"
 #include "geometry/zintpoint.h"
 #include "zpainter.h"
 
+/*
 const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;
 const ZCircle::TVisualEffect ZCircle::VE_DASH_PATTERN = 1;
 const ZCircle::TVisualEffect ZCircle::VE_BOUND_BOX = 2;
@@ -16,14 +19,14 @@ const ZCircle::TVisualEffect ZCircle::VE_NO_CIRCLE = 4;
 const ZCircle::TVisualEffect ZCircle::VE_NO_FILL = 8;
 const ZCircle::TVisualEffect ZCircle::VE_GRADIENT_FILL = 16;
 const ZCircle::TVisualEffect ZCircle::VE_OUT_FOCUS_DIM = 32;
+*/
 
-ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
+ZCircle::ZCircle()
 {
   _init(0, 0, 0, 1);
 }
 
-ZCircle::ZCircle(double x, double y, double z, double r) :
-  m_visualEffect(ZCircle::VE_NONE)
+ZCircle::ZCircle(double x, double y, double z, double r)
 {
   _init(x, y, z, r);
 }
@@ -67,14 +70,13 @@ void ZCircle::display(
     return;
   }
 
-  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   painter.save();
 
   QPen pen(m_color, getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
 
-  if (hasVisualEffect(VE_DASH_PATTERN)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
 
@@ -82,7 +84,7 @@ void ZCircle::display(
 
   //qDebug() << "Internal color: " << m_color;
 //  const QBrush &oldBrush = painter.getBrush();
-  if (hasVisualEffect(VE_GRADIENT_FILL)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL)) {
     QRadialGradient gradient(50, 50, 50, 50, 50);
     gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
     gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
@@ -96,7 +98,7 @@ void ZCircle::display(
     //painter.setBrush(m_color);
     //painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
   } else {
-    if (hasVisualEffect(VE_NO_FILL)) {
+    if (hasVisualEffect(neutu::display::Sphere::VE_NO_FILL)) {
       painter.setBrush(Qt::NoBrush);
     }
   }
@@ -112,7 +114,7 @@ bool ZCircle::isCuttingPlane(double z, double r, double n, double zScale)
   double h = fabs(z - n) / zScale;
   if (r > h) {
     return true;
-  } else if (iround(z) == iround(n)) {
+  } else if (neutu::iround(z) == neutu::iround(n)) {
     return true;
   }
 
@@ -136,7 +138,8 @@ double ZCircle::getAdjustedRadius(double r) const
 
 void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle style) const
 {
-  UNUSED_PARAMETER(style);
+  std::ignore = style;
+//  UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
@@ -165,7 +168,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
         adjustedRadius = getAdjustedRadius(r);
         visible = true;
       }
-      if (hasVisualEffect(VE_OUT_FOCUS_DIM)) {
+      if (hasVisualEffect(neutu::display::Sphere::VE_OUT_FOCUS_DIM)) {
         alpha *= r * r / m_r / m_r;
         //alpha *= alpha;
       }
@@ -173,7 +176,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
   }
 
   if (visible) {
-    if (!hasVisualEffect(VE_NO_CIRCLE)) {
+    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_CIRCLE)) {
       //qDebug() << painter->brush().color();
       QColor color = painter->getPenColor();
       color.setAlphaF(alpha);
@@ -183,7 +186,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
     }
   }
 
-  if (hasVisualEffect(VE_BOUND_BOX)) {
+  if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
     QRectF rect;
     double halfSize = adjustedRadius;
     if (m_usingCosmeticPen) {
@@ -230,14 +233,14 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
 #endif
 }
 
-void ZCircle::save(const char *filePath)
+void ZCircle::save(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 }
 
-bool ZCircle::load(const char *filePath)
+bool ZCircle::load(const char */*filePath*/)
 {
-  UNUSED_PARAMETER(filePath);
+//  UNUSED_PARAMETER(filePath);
 
   return false;
 }

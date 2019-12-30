@@ -45,7 +45,7 @@ void Geo3d_Coordinate_Offset(double x1, double y1, double z1,
  * is FALSE. The unit is radian. If <reverse> is TRUE, it reverse the rotation.
  */
 void Geo3d_Rotate_Coordinate(double *x, double *y, double *z,
-			     double theta, double psi, BOOL reverse);
+			     double theta, double psi, _BOOL_ reverse);
 			     
 /**@brief Orientation to a vector.
  *

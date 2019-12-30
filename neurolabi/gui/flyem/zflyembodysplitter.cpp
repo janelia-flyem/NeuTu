@@ -2,7 +2,7 @@
 
 #include <QElapsedTimer>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 

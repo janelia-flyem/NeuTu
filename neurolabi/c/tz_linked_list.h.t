@@ -78,7 +78,7 @@ void <1T>_List_Remove_Last(<1T>_List *p);
 <1T>_List* <1T>_List_Next(<1T>_List *p);
 <1T>_List* <1T>_List_Last(<1T>_List *p);
 
-BOOL <1T>_List_Is_Empty(const <1T>_List *p);
+_BOOL_ <1T>_List_Is_Empty(const <1T>_List *p);
 int <1T>_List_Length(const <1T>_List *p);
 
 /*

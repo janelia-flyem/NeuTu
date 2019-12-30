@@ -20,6 +20,18 @@ public:
 
     static QStringList protocolNames;
 
+    /*!
+     * \brief Use the event filter of the parent object for the active protocol.
+     *
+     * The using status is set to \a on, of which the true value installs the
+     * parent object of the switcher into the current active protocol or
+     * everytime a new active protocol is created. If \a off is false, the
+     * event filter of the switcher will be removed from the current active
+     * protocol.
+     */
+    void useParentEventFilter(bool on);
+    void installEventFilterForProtocol(QObject *object);
+
 signals:
     void requestLoadProtocol(ZJsonObject data);
     void requestDisplaySavedProtocols(QStringList keyList);
@@ -68,6 +80,7 @@ private:
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;
     ProtocolMetadata m_activeMetadata;
+    bool m_usingParentEventFilter = false;
 
     void connectProtocolSignals();
     void disconnectProtocolSignals();

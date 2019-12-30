@@ -67,24 +67,18 @@
 #endif
 
 #ifdef _MSC_VER
-#include <windows.h>
+#  include <windows.h>
+#  define _BOOL_ int
+#  define _TRUE_  1
+#  define _FALSE_ 0
 #else
-/* The BOOL type is the same as the type of a logical statement, e.g. 2 > 1 */
-#ifndef HAVE_BOOL
-#  ifdef C99
-#    define BOOL bool
-#    define TRUE true
-#    define FALSE false
-#  else
-#    define BOOL  int
-#    ifndef TRUE
-#      define TRUE  1
-#    endif
-#    ifndef FALSE
-#      define FALSE 0
-#    endif
+#  define _BOOL_  int
+#  ifndef _TRUE_
+#    define _TRUE_  1
 #  endif
-#endif
+#  ifndef _FALSE_
+#    define _FALSE_ 0
+#  endif
 #endif
 
 /* typedef enum {FALSE = 0, TRUE} BOOL; */ /* might not work for C++*/

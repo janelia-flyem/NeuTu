@@ -21,11 +21,11 @@ double Vector_Angle(double x, double y);
 /**@brief Angle between two vectors.
  *
  * Vector_Angle2() returns the angle by which (<x1>, <y1>) rotates to 
- * (<x2>, <y2>). The rotation is counter-clockwise if counter_clockwise is TRUE,
+ * (<x2>, <y2>). The rotation is counter-clockwise if counter_clockwise is _TRUE_,
  * otherwise it is clockwise.
  */
 double Vector_Angle2(double x1, double y1, double x2, double y2, 
-    BOOL counter_clockwise);
+    _BOOL_ counter_clockwise);
 
 /**@brief Distance from a point to an ellipse. 
  * 
@@ -39,10 +39,10 @@ double Ellipse_Point_Distance(double x, double y, double a, double b,
 
 /**@brief Test if a point is in ellipse.
  *
- * Point_In_Ellipse() returns TRUE if (<x>, <y>) is in the ellipse
+ * Point_In_Ellipse() returns _TRUE_ if (<x>, <y>) is in the ellipse
  *  $\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1$.
  */
-BOOL Point_In_Ellipse(double x, double y, double a, double b);
+_BOOL_ Point_In_Ellipse(double x, double y, double a, double b);
 
 /**@brief Get uniformly distributed sphere point.
  *

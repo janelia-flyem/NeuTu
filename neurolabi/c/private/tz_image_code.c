@@ -363,7 +363,7 @@ static void branch_code(const uint8 *array, uint16 *code, int *link, uint16 *edg
   int new_branch_head = -1;
   int new_branch_tail = -1;
   int branch_number = 1;
-  int found_new_branch = FALSE;
+  int found_new_branch = _FALSE_;
   int n_nbrs = 0;
   int nb = -1;
   int entrance = seed;
@@ -420,7 +420,7 @@ static void branch_code(const uint8 *array, uint16 *code, int *link, uint16 *edg
     new_branch_tail = c;
     code[c] = BRANCH_LABEL;
 
-    found_new_branch = FALSE;
+    found_new_branch = _FALSE_;
 
     do { /* grow branches from neighbors */
       if (code[c] != BRANCH_LABEL) { /* found new branch */
@@ -433,7 +433,7 @@ static void branch_code(const uint8 *array, uint16 *code, int *link, uint16 *edg
 	new_branch_head = c;
 	branch_tail = new_branch_tail;
 	new_branch_tail = c;
-	found_new_branch = TRUE;
+	found_new_branch = _TRUE_;
       }
       
       b = boundary_pixels(c);
@@ -459,7 +459,7 @@ static void branch_code(const uint8 *array, uint16 *code, int *link, uint16 *edg
       c = link[c];
     } while (c >= 0); /* grow branches from neighbors */
 
-    if (found_new_branch == TRUE) {
+    if (found_new_branch == _TRUE_) {
       edge[++branch_number] = current_branch;
       current_branch = branch_number;
     }

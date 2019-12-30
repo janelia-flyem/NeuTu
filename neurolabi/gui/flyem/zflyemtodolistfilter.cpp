@@ -6,6 +6,7 @@
 
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemtodoitem.h"
+#include "geometry/zcuboid.h"
 #include "z3dsphererenderer.h"
 #include "z3dlinerenderer.h"
 #include "z3dlinewithfixedwidthcolorrenderer.h"
@@ -169,35 +170,52 @@ Z3DGraph* make_todo_graph(const ZFlyEmToDoItem *item)
     node.setRadius(0);
 
     double width = 2;
-    if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC) {
+
+    if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC ||
+        item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC) {
       Z3DGraphFactory factory;
       factory.setNodeColorHint(item->getDisplayColor());
       factory.setEdgeColorHint(item->getDisplayColor());
       factory.setEdgeWidthHint(width);
       factory.setNodeRadiusHint(0);
       double dr = d * 0.1;
-      {
-        Z3DGraph *subgraph =
-            factory.makeBox(ZCuboid(center - ZPoint(dr, d, dr),
-                                    center + ZPoint(dr, d, dr)));
-        graph->append(*subgraph);
-        delete subgraph;
-      }
 
-      {
-        Z3DGraph *subgraph =
-            factory.makeBox(ZCuboid(center - ZPoint(dr, dr, d),
-                                    center + ZPoint(dr, dr, d)));
-        graph->append(*subgraph);
-        delete subgraph;
-      }
+      factory.makeBox(
+            ZCuboid(center - ZPoint(dr, d, dr),
+                    center + ZPoint(dr, d, dr)), graph);
+      factory.makeBox(
+            ZCuboid(center - ZPoint(dr, dr, d),
+                    center + ZPoint(dr, dr, d)), graph);
+      factory.makeBox(
+            ZCuboid(center - ZPoint(d, dr, dr),
+                    center + ZPoint(d, dr, dr)), graph);
+      if (item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC) {
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, -dr, d - dr), center + ZPoint(-dr, dr, d - dr),
+              center + ZPoint(dr, dr, d - dr), center + ZPoint(dr, -dr, d - dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, -dr, dr - d), center + ZPoint(-dr, dr, dr - d),
+              center + ZPoint(dr, dr, dr - d), center + ZPoint(dr, -dr, dr - d),
+              graph);
 
-      {
-        Z3DGraph *subgraph =
-            factory.makeBox(ZCuboid(center - ZPoint(d, dr, dr),
-                                    center + ZPoint(d, dr, dr)));
-        graph->append(*subgraph);
-        delete subgraph;
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, d - dr, -dr), center + ZPoint(-dr, d - dr, dr),
+              center + ZPoint(dr, d - dr, dr), center + ZPoint(dr, d - dr, -dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(-dr, dr - d, -dr), center + ZPoint(-dr, dr - d, dr),
+              center + ZPoint(dr, dr - d, dr), center + ZPoint(dr, dr - d, -dr),
+              graph);
+
+        factory.makeQuadrilateral(
+              center + ZPoint(d - dr, -dr, -dr), center + ZPoint(d - dr, -dr, dr),
+              center + ZPoint(d - dr, dr, dr), center + ZPoint(d - dr, dr, -dr),
+              graph);
+        factory.makeQuadrilateral(
+              center + ZPoint(dr - d, -dr, -dr), center + ZPoint(dr - d, -dr, dr),
+              center + ZPoint(dr - d, dr, dr), center + ZPoint(dr - d, dr, -dr),
+              graph);
       }
     } else {
       node.setCenter(center.getX() - d, center.getY(), center.getZ());
@@ -236,7 +254,9 @@ void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
 
 //  if (item->getAction() != neutu::EToDoAction::TO_TRACE_TO_SOMA &&
 //      item->getAction() != neutu::EToDoAction::NO_SOMA) {
-  if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC) {
+  if (item->getAction() == neutu::EToDoAction::DIAGNOSTIC ||
+      item->getAction() == neutu::EToDoAction::SEGMENTATION_DIAGNOSIC ||
+      item->getAction() == neutu::EToDoAction::TIP_DETECTOR) {
     node.setRadius(item->getRadius() * 0.5);
   }
   m_graph.addNode(node);
@@ -371,9 +391,18 @@ void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_2
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   for (QList<ZFlyEmToDoItem *>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     addItem(const_cast<ZFlyEmToDoItem*>(*iter));
+
+#ifdef _DEBUG_2
+    std::cout << "3D Todo: " << *iter << " " << (*iter)->getPosition().toString()
+              << " " << (*iter)->isChecked() << std::endl;
+#endif
   }
   m_dataIsInvalid = true;
   invalidateResult();
@@ -413,11 +442,19 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
 {
   resetData();
 
+#ifdef _DEBUG_
+  std::cout << __FUNCTION__ << std::endl;
+#endif
+
   ZFlyEmToDoList::ItemIterator iterator(&todoList);
 //  ZCuboid nodeBox;
   while (iterator.hasNext()) {
     ZFlyEmToDoItem &item = iterator.next();
     addItem(&item);
+#ifdef _DEBUG_
+    std::cout << "3D Todo: " << item.getPosition().toString()
+              << " " << item.isChecked() << std::endl;
+#endif
   }
 
   m_dataIsInvalid = true;

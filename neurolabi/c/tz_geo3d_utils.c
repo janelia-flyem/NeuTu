@@ -75,7 +75,7 @@ void Geo3d_Coordinate_Offset(double x1, double y1, double z1,
  * Return: void.
  */
 void Geo3d_Rotate_Coordinate(double *x, double *y, double *z,
-			     double theta, double psi, BOOL reverse)
+			     double theta, double psi, _BOOL_ reverse)
 {
   double p[3] = {*x, *y, *z};
   Rotate_XZ(p, p, 1, theta, psi, reverse);

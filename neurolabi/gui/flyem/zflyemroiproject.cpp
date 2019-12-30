@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <cmath>
 
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "mvc/zstackframe.h"
 #include "zswcgenerator.h"
@@ -228,7 +229,7 @@ QList<ZPunctum*> ZFlyEmRoiProject::makePunctumList(bool dsScaled) const
 void ZFlyEmRoiProject::updateSynapse()
 {
   int z = getDataZ();
-  int range = m_defaultSynapseRadius;
+  int range = neutu::iround(m_defaultSynapseRadius);
 
   ZPunctum markPunctum;
   markPunctum.setZ(z - range);
@@ -1411,7 +1412,7 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree, bool appending)
       }
 
       if (!roiCurve->isEmpty()) {
-        setRoi(roiCurve, iround(z));
+        setRoi(roiCurve, neutu::iround(z));
       } else {
         delete roiCurve;
       }

@@ -1,9 +1,10 @@
 #include "zswclayershollfeatureanalyzer.h"
 
 #include <iostream>
+#include <cassert>
+
 #include "swctreenode.h"
 #include "zswctree.h"
-#include "tz_error.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ ZSwcLayerShollFeatureAnalyzer::ZSwcLayerShollFeatureAnalyzer() :
 std::vector<double> ZSwcLayerShollFeatureAnalyzer::computeFeature(
     Swc_Tree_Node *tn)
 {
-  TZ_ASSERT(tn != NULL, "null pointer");
+  assert(tn != NULL);
 
   std::vector<double> featureArray(2, 0);
 
@@ -79,7 +80,7 @@ double ZSwcLayerShollFeatureAnalyzer::computeFeatureSimilarity(
   double s2 = std::max(featureArray1[1], featureArray2[1]);
   double s1 = std::min(featureArray1[1], featureArray2[1]);
 */
-  TZ_ASSERT(s1 > 0.0, "Invalid number");
+  assert(s1 > 0.0);
 
   return sqrt(s1) * s1 / s2 /
       (layerDiff / m_layerScale + m_layerBaseFactor);
@@ -88,7 +89,7 @@ double ZSwcLayerShollFeatureAnalyzer::computeFeatureSimilarity(
 void ZSwcLayerShollFeatureAnalyzer::setParameter(
     const std::vector<double> &parameterArray)
 {
-  TZ_ASSERT(parameterArray.size() >= 2, "Too few parameters");
+  assert(parameterArray.size() >= 2);
 
   m_layerBaseFactor = parameterArray[0];
   m_layerScale = parameterArray[1];

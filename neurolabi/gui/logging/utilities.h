@@ -7,7 +7,7 @@
 #include <QString>
 #include <QByteArray>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZWidgetMessage;
 
@@ -17,6 +17,7 @@ void LogUrlIO(
     const QString &action, const QString &url, const QByteArray &payload);
 void LogMessage(const ZWidgetMessage &msg);
 void LogProfileInfo(int64_t duration, const std::string &info);
+void LogMessageF(const std::string &str, EMessageType type);
 //void LogBodyOperation(
 //    const QString &action, uint64_t bodyId, neutu::EBodyLabelType labelType);
 }

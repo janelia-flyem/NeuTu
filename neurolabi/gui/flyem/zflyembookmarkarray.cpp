@@ -1,12 +1,14 @@
 #include "zflyembookmarkarray.h"
+
 #include <iostream>
+
+#include "common/math.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zstring.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyemdatainfo.h"
-#include "tz_math.h"
 #include "zpunctum.h"
 
 ZFlyEmBookmarkArray::ZFlyEmBookmarkArray()
@@ -55,7 +57,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
                   &x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
                   ZFlyEmCoordinateConverter::IMAGE_SPACE);
           }
-          bookmark.setLocation(iround(x), iround(y), iround(z));
+          bookmark.setLocation(neutu::iround(x), neutu::iround(y), neutu::iround(z));
           bookmark.setBodyId(bodyId);
           if (text.startsWith("split") || text.startsWith("small split")) {
             bookmark.setBookmarkType(ZFlyEmBookmark::EBookmarkType::FALSE_MERGE);
@@ -122,7 +124,7 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 //      circle->set(bookmark.getLocation(), 5);
     circle->setColor(255, 0, 0);
     circle->setVisible(isVisible);
-    circle->setHitProtocal(ZStackObject::EHitProtocal::HIT_NONE);
+    circle->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
     punctumArray.push_back(circle);
   }
 

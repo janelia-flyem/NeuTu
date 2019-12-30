@@ -1,7 +1,7 @@
 #ifndef ZFLYEMBODYSTATEACCESSOR_H
 #define ZFLYEMBODYSTATEACCESSOR_H
 
-#include "tz_stdint.h"
+#include <cstdint>
 
 /*!
  * \brief The abstract class of accessing body statuses

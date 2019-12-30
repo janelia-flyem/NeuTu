@@ -1,6 +1,7 @@
 #include "zswcmovieactor.h"
+
+#include "common/math.h"
 #include "zswctree.h"
-#include "tz_math.h"
 #include "zmoviestage.h"
 
 ZSwcMovieActor::ZSwcMovieActor()
@@ -46,8 +47,9 @@ void ZSwcMovieActor::move(double t)
 void ZSwcMovieActor::pushColor()
 {
   if (m_tree != NULL) {
-    m_tree->setColor(iround(m_red * 255.0), iround(m_green * 255.0),
-                     iround(m_blue * 255.0));
+    m_tree->setColor(neutu::iround(m_red * 255.0),
+                     neutu::iround(m_green * 255.0),
+                     neutu::iround(m_blue * 255.0));
     getStage()->setSwcChanged(true);
   }
 }
@@ -64,7 +66,7 @@ void ZSwcMovieActor::pullColor()
 void ZSwcMovieActor::pushAlpha()
 {
   if (m_tree != NULL) {
-    m_tree->setAlpha(iround(m_alpha * 255.0));
+    m_tree->setAlpha(neutu::iround(m_alpha * 255.0));
     getStage()->setSwcChanged(true);
   }
 }

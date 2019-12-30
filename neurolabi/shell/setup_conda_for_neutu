@@ -4,11 +4,12 @@ set -e
 
 if test $# -eq 0
 then
-  echo './setup_conda_for_neutu <install_dir>'
+  echo './setup_conda_for_neutu <install_dir> [<neutu_env>]'
   exit 1
 fi
 
 install_dir=$1
+neutu_env=${2:-neutu-env}
 
 echo "Installing miniconda under $install_dir"
 if [ ! -d $install_dir ]
@@ -19,11 +20,9 @@ fi
 condaDir=$install_dir/miniconda
 if [ -d $condaDir ]
 then
-  echo "$condaDir already exists. Abort."
-  exit 0
+  echo "WARNING: $condaDir already exists. I'll assume miniconda has been installed as expected and continue."
 fi
 
-condaDir=$install_dir/miniconda
 if [ ! -d $condaDir ]
 then
   if [ `uname` = 'Darwin' ]
@@ -36,7 +35,7 @@ then
   #rm -f Miniconda-latest-x86_64.sh
 fi
 
-./setup_neutu_env $condaDir neutu-env
+./setup_neutu_env $condaDir $neutu_env
 
 
  

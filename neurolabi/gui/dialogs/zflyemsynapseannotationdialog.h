@@ -5,6 +5,8 @@
 
 #include "dvid/zdvidannotation.h"
 
+class ZDvidSynapse;
+
 namespace Ui {
 class ZFlyEmSynapseAnnotationDialog;
 }
@@ -19,9 +21,11 @@ public:
   explicit ZFlyEmSynapseAnnotationDialog(QWidget *parent = 0);
   ~ZFlyEmSynapseAnnotationDialog();
 
-  double getConfidence() const;
+  bool hasConfidence() const;
+//  double getConfidence() const;
+  std::string getConfidenceStr() const;
 
-  void setConfidence(double c);
+  void setConfidence(std::string c);
 
   ZJsonObject getPropJson() const;
 
@@ -35,6 +39,8 @@ public:
 
   void setOption(ZDvidAnnotation::EKind kind);
 
+  void set(const ZDvidSynapse &synapse);
+
 protected slots:
   void updateAnnotationWidget();
 
@@ -42,12 +48,14 @@ protected:
   void paintEvent(QPaintEvent *);
 
 private:
-  int getConfidenceIndex(double c) const;
+  int getConfidenceIndex(const std::string &cstr) const;
 
 private:
   Ui::ZFlyEmSynapseAnnotationDialog *ui;
 
-  double m_confidence;
+//  double m_confidence = 1.0;
+  std::string m_confidenceStr;
+//  bool m_hasConfidence = false;
 };
 
 #endif // ZFLYEMSYNAPSEANNOTATIONDIALOG_H

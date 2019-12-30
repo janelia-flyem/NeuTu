@@ -1,6 +1,7 @@
 #include "zstackbinarizer.h"
 #include <iostream>
 #include <cmath>
+
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
 #include "c_stack.h"
@@ -9,7 +10,8 @@
 #include "tz_stack_objlabel.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_bwmorph.h"
-#include "tz_math.h"
+
+#include "common/math.h"
 
 ZStackBinarizer::ZStackBinarizer() : m_reference(NULL), m_method(EMethod::MANUAL),
   m_threshold(0), m_lowerBound(-1), m_upperBound(-1), m_retryCount(0),
@@ -101,14 +103,14 @@ bool ZStackBinarizer::binarize(Stack *stack)
     */
       break;
     case EMethod::MEAN:
-      threshold = iround(Stack_Mean(stack));
+      threshold = neutu::iround(Stack_Mean(stack));
       break;
     case EMethod::ONE_SIGMA:
-      threshold = iround(Stack_Mean(stack) + sqrt(Stack_Var(stack)));
+      threshold = neutu::iround(Stack_Mean(stack) + sqrt(Stack_Var(stack)));
       break;
     case EMethod::NSIGMA:
       threshold =
-          iround(Stack_Mean(stack) + m_sigmaScale * sqrt(Stack_Var(stack)));
+          neutu::iround(Stack_Mean(stack) + m_sigmaScale * sqrt(Stack_Var(stack)));
       break;
     default:
       break;

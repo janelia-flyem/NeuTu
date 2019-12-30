@@ -5,9 +5,9 @@
 #include <QRectF>
 #include <QPen>
 
+#include "common/math.h"
 #include "geometry/zgeometry.h"
 #include "zpainter.h"
-#include "tz_math.h"
 #include "zsttransform.h"
 
 ZRect2d::ZRect2d()
@@ -83,7 +83,7 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
     return;
   }
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
   if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
@@ -234,7 +234,7 @@ bool ZRect2d::hit(double x, double y, double z)
     return hit(wx, wy, m_sliceAxis);
   }
 
-  if (iround(wz) == m_z) {
+  if (neutu::iround(wz) == m_z) {
     return ((wx >= m_x0 - 5 && wy >= m_y0 - 5 &&
              wx < m_x0 + m_width + 5 && wy < m_y0 + m_height + 5) &&
             !(wx >= m_x0 + 5 && wy >= m_y0 + 5 &&

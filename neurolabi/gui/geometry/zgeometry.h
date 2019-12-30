@@ -6,7 +6,7 @@
 
 #include "zgeo3dtransform.h"
 #include "zgeo3dscalarfield.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZPoint;
 class ZAffineRect;

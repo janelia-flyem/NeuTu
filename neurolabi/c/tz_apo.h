@@ -43,7 +43,7 @@ double Point_Frustum_Cone_Distance(double x, double y, double z, Swc_Node* tn, S
 double Point_Tree_Distance(double x, double y, double z, Swc_Tree* tree, double zScale, Swc_Tree_Node** refNode);
 
 double Puncta_Tree_Distance(double x, double y, double z, double r, Swc_Tree* tree, double pixelperumxy, double pixelperumz,
-                            BOOL bmask,
+                            _BOOL_ bmask,
                             double maskextendbyum, Swc_Tree_Node** refNode);
 
 Stack* Read_Part_Raw_Stack(const char* stackfilename, int left, int right, int up,

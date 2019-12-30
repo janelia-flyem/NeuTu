@@ -6,11 +6,11 @@
 #include <QPaintDevice>
 #include <QStaticText>
 
-#include "QsLog.h"
+//#include "QsLog.h"
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "geometry/zintpoint.h"
 #include "zimage.h"
-#include "tz_math.h"
 #include "zpixmap.h"
 #include "zrect2d.h"
 #include "zviewproj.h"
@@ -109,8 +109,8 @@ void ZPainter::updateTransform(ZPixmap *image)
 
     getPainter()->setTransform(t);
 
-    ZOUT(LTRACE(), 5) << t;
-    ZOUT(LTRACE(), 5) << this->getTransform();
+//    ZOUT(LTRACE(), 5) << t;
+//    ZOUT(LTRACE(), 5) << this->getTransform();
   }
 }
 
@@ -266,8 +266,8 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
 //    x = iround(image.getTransform().transformX(x));
 //    y = iround(image.getTransform().transformY(y));
     QRect targetRect = QRect(
-          x, y, iround(image.width() / image.getTransform().getSx()),
-          iround(image.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(image.width() / image.getTransform().getSx()),
+          neutu::iround(image.height() / image.getTransform().getSy()));
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
     getPainter()->drawImage(targetRect,
                         dynamic_cast<const QImage&>(image), sourceRect);
@@ -334,8 +334,8 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
 
     QRectF targetRect = QRectF(
-          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
-          iround(sourceRect.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(sourceRect.width() / image.getTransform().getSx()),
+          neutu::iround(sourceRect.height() / image.getTransform().getSy()));
 
     getPainter()->drawPixmap(
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
@@ -367,8 +367,8 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
     QRectF sourceRect = QRect(0, 0, image.width(), image.height());
 
     QRectF targetRect = QRectF(
-          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
-          iround(sourceRect.height() / image.getTransform().getSy()));
+          x, y, neutu::iround(sourceRect.width() / image.getTransform().getSx()),
+          neutu::iround(sourceRect.height() / image.getTransform().getSy()));
 
     if (!image.isFullyActive()) {
       QRectF oldSourceRect = sourceRect;

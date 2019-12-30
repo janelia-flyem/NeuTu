@@ -91,20 +91,20 @@ Local_Neuroseg_Ellipse* Local_Neuroseg_Ellipse_Fread(Local_Neuroseg_Ellipse *loc
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
   if (locnp == NULL) {
     locnp = New_Local_Neuroseg_Ellipse();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
 
   if (Neuroseg_Ellipse_Fread(&(locnp->np), fp) == NULL) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Local_Neuroseg_Ellipse(locnp);
     }
     locnp = NULL;
   } else {
     if (Neuropos_Fread(locnp->pos, fp) == NULL) {
-      if (is_local_alloc == TRUE) {
+      if (is_local_alloc == _TRUE_) {
 	Delete_Local_Neuroseg_Ellipse(locnp);
       }
       locnp = NULL;
@@ -716,7 +716,7 @@ void Local_Neuroseg_Ellipse_Draw_Stack(const Local_Neuroseg_Ellipse *locne,
   Kill_Object_3d(line);
 }
 
-static BOOL is_on_ellipse(coordinate_3d_t pt, double rx, double ry, 
+static _BOOL_ is_on_ellipse(coordinate_3d_t pt, double rx, double ry, 
     coordinate_3d_t normvec, coordinate_3d_t normxvec, 
     coordinate_3d_t normyvec)
 {
@@ -726,12 +726,12 @@ static BOOL is_on_ellipse(coordinate_3d_t pt, double rx, double ry,
     double py = Coordinate_3d_Dot(pt, normyvec);
     if ((px <= rx) && (py <= ry)) {
       if (px*px/rx/rx + py*py/ry/ry <= 1.0) {
-	return TRUE;
+	return _TRUE_;
       }
     }
   } 
 
-  return FALSE;
+  return _FALSE_;
 }
 
 void Local_Neuroseg_Ellipse_Label(const Local_Neuroseg_Ellipse *locne,

@@ -131,6 +131,7 @@ public:
   ZIntCuboid getDataRange() const;
 
   void exportMask(const std::string &filePath);
+  void exportSeedMask(const std::string &filePath);
   void exportSource(const std::string &filePath);
 
   void setFloodFillingZero(bool on) {
@@ -159,7 +160,7 @@ public:
 
   void addResult(const ZStackArray &result);
 
-  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
+//  ZSegmentationScanArray* makeSplitResult(uint64_t minLabel);
   /*!
    * \brief Get the first result stack.
    *
@@ -215,6 +216,9 @@ public:
    */
   bool computationDowsampled();
 
+  static void ConfigureResult(ZObject3dScan *obj);
+  static void ConfigureResult(ZObject3dScanArray *result);
+
 public:
   void setProfileLogger(std::function<void(int64_t, const std::string&)> logger);
 
@@ -255,7 +259,6 @@ private:
   void assignComponent(
       ZObject3dScan &remainBody, ZObject3dScan &mainBody,
       ZObject3dScanArray *result);
-  void configureResult(ZObject3dScanArray *result);
 
   static ZStackPtr MakeBoundaryStack(
       const ZStack &stack, int conn, ZIntCuboid &boundaryBox);

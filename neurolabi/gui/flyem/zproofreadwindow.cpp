@@ -11,9 +11,9 @@
 #include <QStatusBar>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QInputDialog>
 
-#include "tz_math.h"
-
+#include "common/math.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -35,6 +35,7 @@
 #include "zflyemmessagewidget.h"
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
+#include "neuroglancer/zneuroglancerpathparser.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -78,6 +79,8 @@ void ZProofreadWindow::init()
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
+
+  installEventFilter(m_mainMvc);
 
   QVBoxLayout *controlLayout = new QVBoxLayout;
 
@@ -284,6 +287,16 @@ void ZProofreadWindow::createMenu()
 
   menuBar()->addMenu(fileMenu);
 
+  m_loadDvidAction = new QAction("Import Database", this);
+  connect(m_loadDvidAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabase);
+  fileMenu->addAction(m_loadDvidAction);
+
+  m_loadDvidUrlAction = new QAction("Load Database", this);
+  connect(m_loadDvidUrlAction, &QAction::triggered,
+          this, &ZProofreadWindow::loadDatabaseFromUrl);
+  fileMenu->addAction(m_loadDvidUrlAction);
+
   m_importBookmarkAction = new QAction("Import Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
   fileMenu->addAction(m_importBookmarkAction);
@@ -456,8 +469,12 @@ void ZProofreadWindow::createMenu()
 
   dvidMenu->addAction(m_dvidOperateAction);
 
-
   m_toolMenu->addMenu(dvidMenu);
+
+  QAction *recorderAction = new QAction("Recorder", this);
+  connect(recorderAction, &QAction::triggered,
+          m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
+  m_toolMenu->addAction(recorderAction);
 
   menuBar()->addMenu(m_toolMenu);
 
@@ -510,6 +527,8 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_openTodoAction->setEnabled(on);
   m_openProtocolsAction->setEnabled(on);
   m_tuneContrastAction->setEnabled(on);
+  m_loadDvidAction->setEnabled(!on);
+  m_loadDvidUrlAction->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -589,6 +608,9 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
+
+  m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+        ZActionFactory::ACTION_VIEW_SCREENSHOT));
 
   addSynapseActionToToolbar();
 }
@@ -748,7 +770,8 @@ void ZProofreadWindow::advanceProgress(double dp)
   if (getProgressDialog()->isVisible()) {
     if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
       int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
-      getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
+      getProgressDialog()->setValue(
+            getProgressDialog()->value() + neutu::iround(dp * range));
     }
   }
 }
@@ -951,4 +974,39 @@ void ZProofreadWindow::showAndRaise()
   }
   activateWindow();
   raise();
+}
+
+void ZProofreadWindow::loadDatabase()
+{
+  QString filename = ZDialogFactory::GetOpenFileName(
+        "DVID Settings", "", this);
+  if (!filename.isEmpty()) {
+    m_mainMvc->setDvidFromJson(filename.toStdString());
+  }
+}
+
+void ZProofreadWindow::loadDatabaseFromUrl()
+{
+  QString text = QInputDialog::getMultiLineText(
+        this, "Load Database", "URL/JSON").trimmed();
+
+  if (text.startsWith("{")) {
+    m_mainMvc->setDvidFromJsonObject(text.toStdString());
+  } else if (!text.isEmpty()) {
+    m_mainMvc->setDvidFromUrl(text);
+  }
+
+  /*
+  static QInputDialog *dlg = new QInputDialog(this);
+
+  dlg->setOption(QInputDialog::UsePlainTextEditForTextInput);
+  dlg->text
+  if (dlg->exec()) {
+    QString url = dlg->textValue();
+    if (!url.isEmpty()) {
+      m_mainMvc->setDvidFromUrl(url);
+    }
+  }
+  */
+
 }

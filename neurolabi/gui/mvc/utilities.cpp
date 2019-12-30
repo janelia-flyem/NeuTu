@@ -1,12 +1,12 @@
 #include "utilities.h"
 
+#include "common/math.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
 #include "zviewproj.h"
 #include "widgets/zimagewidget.h"
 #include "zpositionmapper.h"
-//#include "zstackdochelper.h"
 #include "zstackdocutil.h"
 #include "zstack.hxx"
 #include "geometry/zgeometry.h"
@@ -132,8 +132,8 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
   if (view->viewingInfo(neutu::mvc::ViewInfoFlag::WINDOW_SCALE)) {
     if (vp.getZoom() > 0.00001) {
       if (doc->getResolution().getUnit() ==
-          ZResolution::UNIT_NANOMETER) {
-        double s = iround(
+          ZResolution::EUnit::UNIT_NANOMETER) {
+        double s = neutu::iround(
               view->imageWidget()->screenSize().width() / vp.getZoom() *
               doc->getResolution().voxelSizeX());
         QString unit = "nm";
@@ -142,13 +142,13 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
           unit = "um";
         }
         if (unit == "nm" || s > 10.0) {
-          info += QString(" Screen Width: ~%1").arg(iround(s)) + unit;
+          info += QString(" Screen Width: ~%1").arg(neutu::iround(s)) + unit;
         } else {
           info += QString(" Screen Width: ~") + QString::number(s, 'g', 2) + unit;
         }
       } else {
         info += QString(" Screen Width: ~%1 pixels").arg(
-              iround(view->imageWidget()->screenSize().width() / vp.getZoom()));
+              neutu::iround(view->imageWidget()->screenSize().width() / vp.getZoom()));
       }
       info += "  ";
     }
@@ -167,10 +167,13 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     ZPoint dataPos;
     if (axis == neutu::EAxis::ARB) {
       if (view->viewingInfo(neutu::mvc::ViewInfoFlag::DATA_COORD)) {
-        dataPos = ZPositionMapper::StackToData(stackPos, view->getAffinePlane());
+        dataPos = ZPositionMapper::StackToData(
+              ZPoint(stackPos.x(), stackPos.y(), view->getZ(neutu::ECoordinateSystem::STACK)),
+              view->getViewCenter().toPoint(), view->getAffinePlane());
         info += QString("(%1, %2, %3)").
-            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-            arg(iround(dataPos.getZ()));
+            arg(neutu::iround(dataPos.getX())).
+            arg(neutu::iround(dataPos.getY())).
+            arg(neutu::iround(dataPos.getZ()));
       }
     } else {
       dataPos = ZPositionMapper::StackToData(

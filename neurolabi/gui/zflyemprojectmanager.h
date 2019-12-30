@@ -14,7 +14,7 @@ public:
   explicit ZFlyEmProjectManager(QWidget *parent = 0);
 
   inline FlyEmBodyMergeProjectDialog* getMergeDialog() { return m_mergeDlg; }
-  inline FlyEmBodySplitProjectDialog* getSplitDialog() { return m_splitDlg; }
+//  inline FlyEmBodySplitProjectDialog* getSplitDialog() { return m_splitDlg; }
 
 signals:
 

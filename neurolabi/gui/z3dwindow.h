@@ -234,6 +234,7 @@ signals:
 
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
+  void settingDoneItemVisible(bool);
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
@@ -268,6 +269,7 @@ public slots:
   void loadView();
   void copyView();
   void pasteView();
+  void saveAllVisibleMesh();
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
@@ -343,8 +345,12 @@ public slots:
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
   void hideSelectedPuncta();
+  void hideUnselectedPuncta();
+  void showUnselectedPuncta();
   void showSelectedPuncta();
   void setSelectPunctaVisible(bool on);
+  void setUnselectPunctaVisible(bool on);
+  void addPunctaSelection();
 
   void saveSplitTask();
   void deleteSplitSeed();
@@ -392,6 +398,7 @@ public slots:
   void deselectBody();
   void copyPosition();
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void updateTodoVisibility();
   void toggleSetting();
   void toggleObjects();

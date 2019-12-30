@@ -5,7 +5,6 @@
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "tz_math.h"
 #include "zobject3dfactory.h"
 #include "geometry/zintcuboidarray.h"
 #include "geometry/zintcuboid.h"

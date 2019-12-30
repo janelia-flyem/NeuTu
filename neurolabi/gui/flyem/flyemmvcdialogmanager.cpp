@@ -29,6 +29,8 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
+#include "dialogs/tipdetectordialog.h"
+//#include "dialogs/zstackviewrecorddialog.h"
 
 /** Implementation details
  *
@@ -220,6 +222,15 @@ ZFlyEmProofSettingDialog* FlyEmMvcDialogManager::getSettingDlg()
   return m_settingDlg;
 }
 
+/*
+ZStackViewRecordDialog* FlyEmMvcDialogManager::getRecordDlg()
+{
+  createIfNecessary(m_recordDlg);
+
+  return m_recordDlg;
+}
+*/
+
 FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()
 {
   if (isNull(m_annotationDlg)) {
@@ -278,6 +289,15 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
   }
 
   return m_bodyInfoDlg;
+}
+
+TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
+    if (isNull(m_tipDetectorDlg)) {
+      KINFO << "Creating tip detector dialog";
+      m_tipDetectorDlg = new TipDetectorDialog(m_parent);
+    }
+
+    return m_tipDetectorDlg;
 }
 
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()

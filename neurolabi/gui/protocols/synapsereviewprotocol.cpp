@@ -85,7 +85,7 @@ bool SynapseReviewProtocol::initialize() {
             }
 
             bool ok;
-            uint64_t bodyID = bodyIDstring.toLong(&ok);
+            uint64_t bodyID = bodyIDstring.toULongLong(&ok);
             if (!ok) {
                 inputErrorDialog("Couldn't parse body ID!");
                 return false;

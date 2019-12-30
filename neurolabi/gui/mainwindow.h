@@ -23,6 +23,7 @@
 #include "zmessageprocessor.h"
 #include "zwindowfactory.h"
 #include "zinteractivecontext.h"
+#include "zthreadfuturemap.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -51,7 +52,6 @@ class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
 class ZDvidTargetProviderDialog;
 class FlyEmBodyFilterDialog;
-class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
 class ZFlyEmRoiDialog;
@@ -62,7 +62,7 @@ class SynapseImportDialog;
 //class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
-class ZFlyEmProjectManager;
+//class ZFlyEmProjectManager;
 class ZFlyEmDataLoader;
 class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
@@ -88,7 +88,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-  MainWindow(QWidget *parent = 0);
+  MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
   /*!
@@ -138,7 +138,7 @@ public: /* File and message dialogs */
   QMenu* getSandboxMenu() const;
 
 public:
-  bool initBodySplitProject();
+//  bool initBodySplitProject();
 
   static void createWorkDir();
 
@@ -215,7 +215,7 @@ public slots:
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
   ZProofreadWindow * startProofread();
-  void launchSplit(const QString &str);
+//  void launchSplit(const QString &str);
 
 private:
   Ui::MainWindow *m_ui;
@@ -431,7 +431,7 @@ private slots:
 
   void on_actionBody_Split_Project_triggered();
 
-  void on_actionSplit_Body_triggered();
+//  void on_actionSplit_Body_triggered();
 
   void on_actionCreate_Databundle_triggered();
 
@@ -596,6 +596,8 @@ private:
   void generateMBONConvCast(const std::string &movieFolder);
   void generateFIB19VsCast(const std::string &movieFolder);
 
+  void runRoutineCheckFunc();
+
 private:
   QMdiArea *mdiArea;
 
@@ -740,7 +742,7 @@ private:
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
-  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
+//  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
   ZFlyEmRoiDialog *m_roiDlg;
@@ -758,7 +760,7 @@ private:
 
 
   ZStackViewManager *m_stackViewManager;
-  ZFlyEmProjectManager *m_flyemProjectManager;
+//  ZFlyEmProjectManager *m_flyemProjectManager;
   ZFlyEmDataLoader *m_flyemDataLoader;
   //new project main window
   NewProjectMainWindow *m_newProject;
@@ -780,6 +782,7 @@ private:
   int m_proofreadWindowCount;
 
   QTimer *m_autoCheckTimer;
+  ZThreadFutureMap m_futureMap;
   //ZStackDocReader *m_docReader;
 };
 

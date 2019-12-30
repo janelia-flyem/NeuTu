@@ -5,7 +5,7 @@
 #include <ostream>
 #include <istream>
 #include "c_stack.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 /*!
  * \brief The class of RLE object stripe

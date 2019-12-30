@@ -1,5 +1,7 @@
 #include "neutube.h"
 
+#include <string>
+
 #include <QtGlobal>
 #include <QByteArray>
 #include <QMetaType>
@@ -21,6 +23,7 @@
 void neutu::RegisterMetaType()
 {
   qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
   qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");

@@ -5,10 +5,9 @@
 #include <QElapsedTimer>
 #include <QSet>
 
-
+#include "common/math.h"
 #include "zdvidurl.h"
 #include "zpainter.h"
-#include "tz_math.h"
 #include "zdvidwriter.h"
 #include "mvc/zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
@@ -42,14 +41,14 @@ void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 
 void ZDvidSynapseEnsemble::init()
 {
-  m_startZ = 0;
+//  m_startZ = 0;
   m_type = EType::DVID_SYNAPE_ENSEMBLE;
-  m_view = NULL;
+//  m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = neutu::EAxis::Z;
   addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
-  m_dataFetcher = NULL;
-  m_isReady = false;
+//  m_dataFetcher = NULL;
+//  m_isReady = false;
 }
 
 ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
@@ -657,7 +656,7 @@ void ZDvidSynapseEnsemble::annotateSynapseUnsync(
   }
   ZDvidSynapse &synapse = getSynapseUnsync(x, y, z, scope);
   if (synapse.isValid()) {
-    synapse.setProperty(propJson);
+    synapse.updateProperty(propJson);
     if (scope == EDataScope::GLOBAL || scope == EDataScope::SYNC) {
       ZDvidWriter &writer = m_writer;
       if (writer.good()) {
@@ -792,6 +791,12 @@ void ZDvidSynapseEnsemble::display(
       synapse.display(painter, slice, option, sliceAxis);
     }
   }
+}
+
+void ZDvidSynapseEnsemble::clearCache()
+{
+  m_synapseEnsemble.clear();
+  m_dataFetcher->clearLastFetching();
 }
 
 void ZDvidSynapseEnsemble::removeSynapseLink(
@@ -1057,12 +1062,12 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 
   const int sliceRange = 5;
 
-  ZIntPoint hitPoint(iround(x), iround(y), iround(z));
+  ZIntPoint hitPoint(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   hitPoint.shiftSliceAxis(getSliceAxis());
 
   for (int slice = -sliceRange; slice <= sliceRange; ++slice) {
-    int cz = iround(hitPoint.getZ() + slice);
+    int cz = hitPoint.getZ() + slice;
 
     SynapseIterator siter(this, cz);
 

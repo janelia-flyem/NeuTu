@@ -11,7 +11,7 @@
 #include "logging/zlog.h"
 
 #include "zsleeper.h"
-#include "znetbufferreader.h"
+#include "qt/network/znetbufferreaderthread.h"
 
 #include "zdvidtarget.h"
 #include "zdvidurl.h"
@@ -261,11 +261,22 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
     waitForReading();
 #endif
 
+    ZNetBufferReaderThread thread;
+    thread.setUrl(url);
+    thread.setOperation(znetwork::EOperation::READ);
+    thread.start();
+    thread.wait();
+    m_statusCode = thread.getStatusCode();
+    m_status = thread.getStatus();
+    m_buffer = thread.getData();
+
+    /*
     ZNetBufferReader bufferReader;
     bufferReader.read(url, false);
     m_statusCode = bufferReader.getStatusCode();
     m_status = bufferReader.getStatus();
     m_buffer = bufferReader.getBuffer();
+    */
   }
 
 #else

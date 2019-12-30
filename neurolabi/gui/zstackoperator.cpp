@@ -4,13 +4,13 @@
 #include "zswctree.h"
 #include "mvc/zstackdoc.h"
 
-ZStackOperator::ZStackOperator() :
-  m_op(OP_NULL),
-  m_hitObject(NULL),
-  m_punctaIndex(-1), m_togglingStrokeLabel(false),
-  m_buttonPressed(Qt::NoButton),
-  m_mouseEventRecorder(NULL)
+ZStackOperator::ZStackOperator()
 {
+}
+
+ZStackOperator::ZStackOperator(EOperation op) : m_op(op)
+{
+
 }
 
 void ZStackOperator::clear()

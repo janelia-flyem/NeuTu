@@ -5,49 +5,13 @@
 #include <QList>
 #include <QMutex>
 
-class ZStackObject;
-
-class ZStackDocObjectUpdate {
-public:
-  enum class EAction {
-    NONE, ADD_NONUNIQUE, ADD_UNIQUE,
-    UPDATE, SELECT, DESELECT,
-    RECYCLE, EXPEL, KILL, ADD_BUFFER
-  };
-
-  ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);
-  ~ZStackDocObjectUpdate();
-
-  void reset();
-
-  EAction getAction() const {
-    return m_action;
-  }
-
-  ZStackObject* getObject() const {
-    return m_obj;
-  }
-
-  void setAction(EAction action) {
-    m_action = action;
-  }
-
-  void print() const;
-
-  static QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
-  MakeActionMap(QList<ZStackDocObjectUpdate*> updateList);
-
-private:
-  ZStackObject *m_obj = nullptr;
-  EAction m_action;
-};
-
+#include "zstackdocobjectupdate.h"
 
 class ZStackDocDataBuffer : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZStackDocDataBuffer(QObject *parent = 0);
+  explicit ZStackDocDataBuffer(QObject *parent = nullptr);
   ~ZStackDocDataBuffer();
 
   void clearList();
@@ -59,11 +23,18 @@ public:
   template<typename InputIterator>
   void addUpdate(const InputIterator &first, const InputIterator &last,
                  ZStackDocObjectUpdate::EAction action);
+  void addUpdate(ZStackDocObjectUpdate *u);
+
+  void addUpdate(std::function<void(ZStackObject*obj)> f);
+  void addUpdate(std::function<void()> f);
 
   QList<ZStackDocObjectUpdate *> take();
   void deliver();
 
   int getActionCount(ZStackDocObjectUpdate::EAction action) const;
+
+  void removeObjectUpdate(
+      std::function<bool(ZStackDocObjectUpdate*)> pred);
 
   void print() const;
 

@@ -57,6 +57,10 @@ public:
 
 private:
   void syncActionTag();
+  QList<std::vector<QPointF>> makeOutlineDecoration(
+      double x, double y, double radius) const;
+  static void PaintOutline(
+      ZPainter &painter, const QList<std::vector<QPointF>> &outline);
 
 public:
   static const char *KEY_ACTION;
@@ -68,6 +72,10 @@ public:
   static const char *ACTION_TRACE_TO_SOMA;
   static const char *ACTION_NO_SOMA;
   static const char *ACTION_DIAGNOSTIC;
+  static const char *ACTION_SEGMENTATION_DIAGNOSTIC;
+  static const char *ACTION_SEGMENTATION_DIAGNOSTIC_TAG;
+  static const char *ACTION_TIP_DETECTOR;
+  static const char *ACTION_TIP_DETECTOR_TAG;
   static const char *ACTION_SPLIT_TAG;
   static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
   static const char *ACTION_IRRELEVANT_TAG;

@@ -239,15 +239,15 @@ Neuroseg_Plane* Neuroseg_Plane_Fread(Neuroseg_Plane *seg, FILE *fp)
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (seg == NULL) {
     seg = New_Neuroseg_Plane();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
   
   if (fread(seg, sizeof(Neuroseg_Plane), 1, fp) != 1) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Neuroseg_Plane(seg);
     }
     seg = NULL;

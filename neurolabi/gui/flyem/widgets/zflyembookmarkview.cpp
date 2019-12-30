@@ -108,6 +108,13 @@ void ZFlyEmBookmarkView::createMenu()
     connect(deleteAction, SIGNAL(triggered()),
             this, SLOT(deleteSelectedBookmark()));
   }
+
+#ifdef _DEBUG_
+  QAction *copyUrlAction = new QAction("Copy URL", this);
+  m_contextMenu->addAction(copyUrlAction);
+  connect(copyUrlAction, SIGNAL(triggered()),
+          this, SLOT(copySelectedBookmarkUrl()));
+#endif
 }
 
 void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
@@ -200,8 +207,27 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
   }
 }
 
+QList<ZFlyEmBookmark*> ZFlyEmBookmarkView::getSelectedBookmark() const
+{
+  QItemSelectionModel *sel = selectionModel();
+  QItemSelection sourceSelection =
+      getProxy()->mapSelectionToSource(sel->selection());
+
+  QModelIndexList selected = sourceSelection.indexes();
+
+  QList<ZFlyEmBookmark*> bookmarkList;
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
+
+    bookmarkList.append(bookmark);
+  }
+
+  return bookmarkList;
+}
+
 void ZFlyEmBookmarkView::deleteSelectedBookmark()
 {
+  /*
   QItemSelectionModel *sel = selectionModel();
   QItemSelection sourceSelection =
       getProxy()->mapSelectionToSource(sel->selection());
@@ -216,9 +242,21 @@ void ZFlyEmBookmarkView::deleteSelectedBookmark()
 //    emit removingBookmark(bookmark);
 //    getModel()->removeRow(index.row());
   }
+  */
 
+  QList<ZFlyEmBookmark*> bookmarkList = getSelectedBookmark();
   if (!bookmarkList.empty()) {
     emit removingBookmark(bookmarkList);
+  }
+}
+
+void ZFlyEmBookmarkView::copySelectedBookmarkUrl()
+{
+  QList<ZFlyEmBookmark*> bookmarkList = getSelectedBookmark();
+  if (!bookmarkList.empty()) {
+    ZFlyEmBookmark *bookmark = bookmarkList.first();
+    ZIntPoint center = bookmark->getLocation();
+    emit copyingBookmarkUrl(center.getX(), center.getY(), center.getZ());
   }
 }
 

@@ -6,7 +6,7 @@
 #if defined(_QT_GUI_USED_)
 #include "neutube.h"
 #else
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #endif
 #include "neutubeconfig.h"
 #include "zstring.h"
@@ -41,6 +41,7 @@ const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
 const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
 const std::string ZDvidUrl::SUPERVOXEL_FLAG = "supervoxels";
+const std::string ZDvidUrl::MESH_INFO_SUFFIX = "_info";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -253,7 +254,7 @@ std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 {
   //Not a conflict-free of assigning a url, but we'll live with it for now.
-  return meshUrl + "_info";
+  return meshUrl + MESH_INFO_SUFFIX;
 }
 
 std::string ZDvidUrl::getMeshesTarsUrl()
@@ -1156,6 +1157,20 @@ std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId) const
   return getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getBodySizeUrl(neutu::EBodyLabelType type) const
+{
+  std::string url;
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
+    url = GetFullUrl(getDataUrl(m_dvidTarget.getSegmentationName()),
+                      "sizes");
+    if (type == neutu::EBodyLabelType::SUPERVOXEL) {
+      url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
+    }
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
 {
   if (m_dvidTarget.getSegmentationType() == ZDvidData::EType::LABELMAP) {
@@ -1383,6 +1398,11 @@ std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
 std::string ZDvidUrl::getBookmarkUrl() const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BOOKMARK));
+}
+
+std::string ZDvidUrl::getBookmarkUrl(int x, int y, int z) const
+{
+  return getBookmarkUrl(x, y, z, 1, 1, 1);
 }
 
 std::string ZDvidUrl::getBookmarkUrl(
@@ -1929,7 +1949,7 @@ std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
 {
-  return GetMeshKey(bodyId) + "_info";
+  return GetMeshKey(bodyId) + MESH_INFO_SUFFIX;
 }
 
 std::string ZDvidUrl::GetTaskKey()

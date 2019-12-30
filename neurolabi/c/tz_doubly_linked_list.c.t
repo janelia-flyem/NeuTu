@@ -331,12 +331,12 @@ void <1T>_Dlist_Insert(<1T>_Dlist *p, <2T> data)
   </t>
 }
 
-BOOL <1T>_Dlist_Is_Empty(const <1T>_Dlist *p)
+_BOOL_ <1T>_Dlist_Is_Empty(const <1T>_Dlist *p)
 {
   if (p == NULL) {
-    return TRUE;
+    return _TRUE_;
   } else {
-    return FALSE;
+    return _FALSE_;
   }
 }
 

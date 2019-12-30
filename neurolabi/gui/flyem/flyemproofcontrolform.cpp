@@ -15,10 +15,12 @@
 #include "mvc/zstackdoc.h"
 #include "widgets/zflyembookmarkview.h"
 #include "widgets/zcolorlabel.h"
+#include "widgets/zflyemicon.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
+#include "qfonticon.h"
 #include "zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
@@ -27,11 +29,25 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->bodyViewPushButton, flyem::FINE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->coarseMeshPushButton, flyem::COARSE_MESH_ICON);
-  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
-  neutu::SetHtmlIcon(ui->skeletonViewPushButton, "<font color=blue>Y</font>");
+  ui->coarseBodyPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
+  ui->bodyViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
+  ui->coarseMeshPushButton->setIcon(FLYEM_COARSE_MESH_ICON);
+  ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
+  ui->skeletonViewPushButton->setIcon(FLYEM_SKELETON_ICON);
+
+//  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
+//  ui->coarseBodyPushButton->setIcon(QFontIcon::icon(0x25cf, Qt::red));
+//  ui->coarseBodyPushButton->setText(
+//        "<font color=red>" + QString::fromUtf8("●") + "</font>" + ui->coarseBodyPushButton->text());
+
+//  ui->coarseBodyPushButton->setLayout(layout);
+//  ui->bodyViewPushButton->setIcon(QFontIcon::icon(0x2724, Qt::red));
+//  neutu::SetHtmlIcon(ui->bodyViewPushButton, flyem::FINE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->coarseMeshPushButton, flyem::COARSE_MESH_ICON);
+//  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+//  ui->coarseMeshPushButton->setIcon(QFontIcon::icon(0x25b2, Qt::darkGreen));
+//  ui->meshPushButton->setIcon(QFontIcon::icon(0x2756, Qt::darkGreen));
+//  neutu::SetHtmlIcon(ui->skeletonViewPushButton, "<font color=blue>Y</font>");
 
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
@@ -94,21 +110,21 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
 
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
-          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+//          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));

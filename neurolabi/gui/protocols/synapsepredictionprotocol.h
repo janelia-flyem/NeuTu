@@ -132,6 +132,7 @@ private:
     bool keepSynapse(ZDvidSynapse synapse);
     std::vector<uint64_t> getBodiesForSynapse(std::vector<ZDvidSynapse> synapse);
     QString targetBodyStylesheet(QColor color);
+    void initPendingIndex();
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H

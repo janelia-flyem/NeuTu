@@ -1,8 +1,10 @@
 #ifndef FLYEMPROOFCONTROLFORM_H
 #define FLYEMPROOFCONTROLFORM_H
 
+#include <cstdint>
+
 #include <QWidget>
-#include "tz_stdint.h"
+
 #include "zflyembookmarklistmodel.h"
 
 class QMenu;
@@ -23,7 +25,7 @@ class FlyEmProofControlForm : public QWidget
   Q_OBJECT
 
 public:
-  explicit FlyEmProofControlForm(QWidget *parent = 0);
+  explicit FlyEmProofControlForm(QWidget *parent = Q_NULLPTR);
   ~FlyEmProofControlForm();
 
   ZFlyEmBookmarkView* getUserBookmarkView() const;

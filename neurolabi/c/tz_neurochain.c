@@ -90,7 +90,7 @@ void Trace_History_Set_Index(Trace_History *th, int index)
   Bitmask_Set_Bit(TRACE_HIST_INDEX_MASK, TRUE, &(th->mask));
 }
 
-void Trace_History_Set_Is_Refit(Trace_History *th, BOOL is_refit)
+void Trace_History_Set_Is_Refit(Trace_History *th, _BOOL_ is_refit)
 {
   if (th == NULL) {
     return;
@@ -100,7 +100,7 @@ void Trace_History_Set_Is_Refit(Trace_History *th, BOOL is_refit)
   Bitmask_Set_Bit(TRACE_HIST_IS_REFIT_MASK, TRUE, &(th->mask));
 }
 
-BOOL Trace_History_Is_Refit(Trace_History *th)
+_BOOL_ Trace_History_Is_Refit(Trace_History *th)
 {
   if (th == NULL) {
     return FALSE;
@@ -1489,7 +1489,7 @@ void Neurochain_Hit_Stack(const Neurochain *chain, Stack *region, int hit[])
   }
 }
 
-BOOL Neurochain_Hit_Bound(const Neurochain *chain, int width, int height,
+_BOOL_ Neurochain_Hit_Bound(const Neurochain *chain, int width, int height,
 			  int depth, int margin)
 {
   Neurochain *head = Neurochain_Head(chain);
@@ -1749,7 +1749,7 @@ Neurochain* Neurochain_Remove_Overlap_Ends(Neurochain *chain)
   return head;
 }
 
-BOOL neuroseg_contain(const Local_Neuroseg *container, 
+_BOOL_ neuroseg_contain(const Local_Neuroseg *container, 
 		     const Local_Neuroseg *seg)
 {
   double top[3];

@@ -1,9 +1,13 @@
 #include "zdialogfactory.h"
+
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
+
+#include "geometry/zintpoint.h"
 
 #include "zwidgetfactory.h"
 #include "dialogs/zdviddialog.h"
@@ -12,6 +16,7 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "widgets/zparameterarray.h"
+
 #include "mvc/zstackmvc.h"
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackview.h"
@@ -234,6 +239,14 @@ void ZDialogFactory::Error(
   QMessageBox::critical(parent, title, msg);
 }
 
+bool ZDialogFactory::WarningAskForContinue(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  return Ask(
+        title, "<font color=\"#FF0000\">WARNING</font>: " + msg +
+        "<br><br>Do you want to continue?", parent);
+}
+
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {
   ZSpinBoxGroupDialog *dlg = new ZSpinBoxGroupDialog(parent);
@@ -278,7 +291,8 @@ QString ZDialogFactory::GetOpenFileName(
 }
 
 QString ZDialogFactory::GetSaveFileName(
-    const QString &caption, const QString &filePath, QWidget *parent)
+    const QString &caption, const QString &filePath, const QString &filter,
+    QWidget *parent)
 {
   QString fileName;
 
@@ -286,10 +300,16 @@ QString ZDialogFactory::GetSaveFileName(
   if (currentPath.isEmpty()) {
     currentPath = m_currentSaveFileName;
   }
-  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath);
+  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath, filter);
   m_currentSaveFileName = fileName;
 
   return fileName;
+}
+
+QString ZDialogFactory::GetSaveFileName(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  return GetSaveFileName(caption, filePath, QString(), parent);
 }
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)
@@ -368,4 +388,56 @@ void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
         break;
       }
     }
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(QWidget *parent)
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  return AskForIntPoint(pt, parent);
+}
+
+ZIntPoint ZDialogFactory::AskForIntPoint(
+    const ZIntPoint &defaultPos, QWidget *parent)
+{
+  QString defaultText;
+  if (defaultPos.isValid()) {
+    defaultText = defaultPos.toString().c_str();
+  }
+
+  ZIntPoint pt;
+  pt.invalidate();
+
+  bool ok;
+
+  QString text = QInputDialog::getText(
+        parent, QObject::tr("Go To"),
+        QObject::tr("Coordinates:"), QLineEdit::Normal,
+        defaultText, &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        pt.set(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+
+  return pt;
+}
+
+uint64_t ZDialogFactory::GetUint64(
+    const QString &title, const QString &label, QWidget *parent)
+{
+  uint64_t value = 0;
+  QString text = QInputDialog::getText(parent, title, label);
+  try {
+    value = std::stoull(text.toStdString());
+  } catch (std::exception &/*e*/) {
+    //ignore
+  }
+
+  return value;
 }

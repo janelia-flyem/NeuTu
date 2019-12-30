@@ -33,7 +33,7 @@ typedef struct _Sp_Grow_Workspace {
   int width;
   int height;
   int depth;
-  BOOL lengthBufferEnabled;
+  _BOOL_ lengthBufferEnabled;
 } Sp_Grow_Workspace;
 
 enum {SP_GROW_TARGET = 1, SP_GROW_SOURCE, SP_GROW_BARRIER, SP_GROW_CONDUCTOR};

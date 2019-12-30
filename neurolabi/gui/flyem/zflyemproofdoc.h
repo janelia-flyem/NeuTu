@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QMap>
+#include <unordered_map>
 
 #include "mvc/zstackdoc.h"
 #include "zstackdoccommand.h"
@@ -14,6 +15,7 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidversiondag.h"
+#include "dvid/zdvidenv.h"
 
 #include "flyemdef.h"
 #include "zflyembodymerger.h"
@@ -38,13 +40,14 @@ class ZFlyEmTodoAnnotationDialog;
 class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
+class ZDvidEnv;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofDoc(QObject *parent = 0);
-  ~ZFlyEmProofDoc();
+  explicit ZFlyEmProofDoc(QObject *parent = nullptr);
+  ~ZFlyEmProofDoc() override;
 
   static ZFlyEmProofDoc* Make();
 
@@ -56,15 +59,22 @@ public:
 
   friend class ZFlyEmProofDocUtil;
 
-  virtual void setDvidTarget(const ZDvidTarget &target);
+//  virtual void setDvidTarget(const ZDvidTarget &target);
+  virtual bool setDvid(const ZDvidEnv &env);
 
 //  virtual void updateTileData();
 
-  const ZDvidTarget& getDvidTarget() const;
+  ZDvidTarget getDvidTarget() const;
+  const ZDvidEnv& getDvidEnv() const;
 
+  /*
   const ZDvidInfo& getGrayScaleInfo() const {
     return m_grayScaleInfo;
   }
+  */
+
+  const ZDvidInfo& getMainGrayscaleInfo() const;
+  const ZDvidInfo& getCurrentGrayscaleInfo() const;
 
   const ZDvidInfo& getLabelInfo() const {
     return m_labelInfo;
@@ -87,8 +97,10 @@ public:
   bool isSupervoxelMode() const;
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
 
-  ZDvidGraySlice* getDvidGraySlice() const;
+//  ZDvidGraySlice* getDvidGraySlice() const;
   ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
+  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble(neutu::EAxis axis) const;
+
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
@@ -100,6 +112,8 @@ public:
 
   const ZSparseStack* getSparseStack() const override;
   ZSparseStack* getSparseStack() override;
+
+  ZSparseStack* getSparseStack(const ZIntCuboid& box) override;
 
   ZStackBlockGrid* getStackGrid();
 
@@ -193,7 +207,7 @@ public:
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
-  void enhanceTileContrast(bool highContrast);
+  void enhanceTileContrast(neutu::EAxis axis, bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
@@ -236,18 +250,13 @@ public:
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void cleanBodyAnnotationMap();
+  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
-  ZDvidReader& getDvidReader() {
-    return m_dvidReader;
-  }
-
-  const ZDvidReader& getDvidReader() const {
-    return m_dvidReader;
-  }
+  ZDvidReader& getDvidReader();
+  const ZDvidReader& getDvidReader() const;
 
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
@@ -268,6 +277,9 @@ public:
 
   int getBodyStatusRank(const std::string &status) const;
   bool isExpertBodyStatus(const std::string &status) const;
+
+  void exportGrayscale(
+      const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -345,7 +357,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemAction(neutu::EToDoAction action, bool checked);
-  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> f,
+  void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> process,
                         std::function<bool(const ZFlyEmToDoItem&)> pred);
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();
@@ -470,12 +482,15 @@ public:
 
   void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
-  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut,
+      const std::string &source);
 
   ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
 
   void downloadTodo(const std::vector<ZIntPoint> &ptArray);
+  void refreshTodo();
 
   QStringList getRoiList() const;
   QString getBodySelectionMessage() const;
@@ -483,10 +498,17 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationMerger& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
+  void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
+
+  //Obsolete. Use getCurrentGrayscaleReader() instead
+  ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
+
+  ZDvidReader* getCurrentGrayscaleReader() const;
+  ZDvidReader* getCurrentBodyGrayscaleReader();
 
   bool test();
 
@@ -495,6 +517,8 @@ public:
       int x, int y, int z, bool checked,  neutu::EToDoAction action,
       uint64_t bodyId) override;
   virtual void executeRemoveTodoCommand() override;
+
+  void toggleGrayscale(neutu::EAxis axis);
 
 signals:
   void bodyMerged();
@@ -528,7 +552,7 @@ signals:
                           bool usingCenterCut);
   void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                          int zoom, int centerCutX, int centerCutY,
-                         bool usingCenterCut);
+                         bool usingCenterCut, const std::string &source);
 
 
 public slots: //Commands
@@ -586,6 +610,8 @@ public slots:
   void downloadTodo(int x, int y, int z);
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
+  void refreshSynapse();
+
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
@@ -611,7 +637,6 @@ public slots:
 
   QString getBodyLockFailMessage(uint64_t bodyId);
 
-
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, neutu::EBodySplitMode mode);
 
@@ -629,7 +654,7 @@ public slots:
                         bool usingCenterCut);
   void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                        int zoom, int centerCutX, int centerCutY,
-                       bool usingCenterCut);
+                       bool usingCenterCut, const std::string &source);
 
   void setTodoItemChecked(int x, int y, int z, bool checking);
 
@@ -638,7 +663,7 @@ protected:
   void customNotifyObjectModified(ZStackObject::EType type) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
-  virtual void prepareDvidData();
+  virtual void prepareDvidData(const ZDvidEnv &env);
   ZDvidLabelSlice *addDvidLabelSlice(neutu::EAxis axis, bool sv);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, neutu::EAxis axis);
@@ -647,7 +672,22 @@ protected:
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareGraySlice(ZDvidGraySliceEnsemble *se);
   void prepareLabelSlice();
+//  void initGrayscaleSlice(neutu::EAxis axis);
+  void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
+
+  void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
+  void setGrayscaleReader(
+      std::unordered_map<std::string, ZDvidReader*> &readerMap,
+      const std::string &key, ZDvidReader *reader, bool updatingMainReader);
+  void prepareGrayscaleReader();
+  void prepareBodyGrayscaleReader();
+  void prepareGrayscaleReader(
+      std::unordered_map<std::string, ZDvidReader*> &readerMap,
+      bool updatingMainReader);
+
+  void makeKeyProcessor() override;
 
   bool _loadFile(const QString &filePath) override;
 
@@ -675,11 +715,9 @@ private:
   void initData(const std::string &type, const std::string &dataName);
 
   void initTileData();
-  void initGrayscaleSlice();
-
 
   void updateMaxLabelZoom();
-  void updateMaxGrayscaleZoom();
+//  void updateMaxGrayscaleZoom();
 
   void updateUserStatus();
 
@@ -692,6 +730,7 @@ private:
   void runSplitFunc(neutu::EBodySplitMode mode);
   void localSplitFunc(neutu::EBodySplitMode mode);
   void runFullSplitFunc(neutu::EBodySplitMode mode);
+
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
@@ -699,6 +738,10 @@ private:
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
   std::string getSynapseName(const ZDvidSynapse &synapse) const;
+  std::string getPartnerProperty(const ZDvidSynapse &synapse) const;
+  std::string getSynapseName(
+      const ZDvidSynapse &synapse,
+      const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
@@ -715,31 +758,50 @@ private:
 
   ZDvidReader& getBookmarkReader();
 
+private slots:
+  void processBodyMergeUploaded();
+
 protected:
+  ZDvidEnv m_dvidEnv;
+  ZDvidEnv m_originalEnv;
   ZFlyEmBodyMerger m_bodyMerger;
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_dvidReader;
+//  ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;
   ZDvidReader m_todoReader;
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
-  ZDvidReader m_grayscaleReader;
+
+  std::unordered_map<std::string, ZDvidReader*> m_grayscaleReaderMap;
+  std::unordered_map<std::string, ZDvidInfo> m_dvidInfoMap;
+  ZDvidInfo m_emptyInfo;
+  std::string m_currentGrayscaleKey;
+
+  ZDvidReader *m_mainGrayscaleReader = nullptr;
+
   ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  mutable QMutex m_workWriterMutex;
   ZDvidWriter m_workWriter;
   ZDvidReader m_supervoxelWorkReader;
-  ZDvidReader m_grayscaleWorkReader;
+//  ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
+
+  //Body grayscale reader (should be used exclusively for body split)
+  //It's added for getCurrentBodyGrayscaleReader() only, do NOT use the
+  //variable directly anywhere else for thread safety.
+  std::unordered_map<std::string, ZDvidReader*> m_bodyGrayscaleReaderMap;
+  mutable QMutex m_bodyGrayscaleReaderMapMutex;
 
   mutable QMutex m_synapseReaderMutex;
   mutable QMutex m_todoReaderMutex;
 
   //Dvid info
-  ZDvidInfo m_grayScaleInfo;
+//  ZDvidInfo m_grayScaleInfo;
   ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
   ZJsonObject m_infoJson;

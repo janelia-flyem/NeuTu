@@ -64,6 +64,7 @@ CONFIG(debug, debug|release) {
 #    CONFIG(debug_info) {
 #      QMAKE_CXXFLAGS += -g
 #    }
+    DEFINES += NDEBUG
     app_name = neuTube
     CONFIG(neu3) {
       app_name = neu3
@@ -79,7 +80,7 @@ include(extratarget.pri)
 message("Neurolabi target: $$neurolabi.target")
 
 CONFIG(force_link) {
-  PRE_TARGETDEPS += neurolabi
+  PRE_TARGETDEPS += neurolabi.PHONY
 }
 
 TARGET = $$app_name
@@ -99,9 +100,11 @@ CONFIG += static_gtest
 include(extlib.pri)
 
 QT += printsupport
-qtHaveModule(webenginewidgets) {
-  QT += webenginewidgets
-  DEFINES += _USE_WEBENGINE_
+CONFIG(WEBENGINE) {
+  qtHaveModule(webenginewidgets) {
+    QT += webenginewidgets
+    DEFINES += _USE_WEBENGINE_
+  }
 }
 
 DEFINES += _QT_GUI_USED_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
@@ -295,16 +298,16 @@ unix {
   }
 }
 
-RESOURCES = gui.qrc
+RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
     plotsettings.h \
     plotter.h \
     zinteractivecontext.h \
     ztraceproject.h \
-    dialogs/channeldialog.h \
     zpunctum.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
@@ -326,6 +329,7 @@ HEADERS += mainwindow.h \
     dialogs/swcskeletontransformdialog.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
+    dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \
@@ -455,8 +459,6 @@ HEADERS += mainwindow.h \
     zlinesegmentobject.h \
     openvdb_header.h \
     zopenvdbobject.h \
-    dialogs/flyembodysplitprojectdialog.h \
-    dialogs/zflyemnewbodysplitprojectdialog.h \
     zstroke2dobjsmodel.h \
     zdocplayerobjsmodel.h \
     zabstractmodelpresenter.h \
@@ -512,7 +514,6 @@ HEADERS += mainwindow.h \
     dialogs/zautotracedialog.h \
     zstackviewmanager.h \
     zstackviewparam.h \
-    zflyemprojectmanager.h \
     zflyemdataloader.h \
     dialogs/swcexportdialog.h \
     zprogressmanager.h \
@@ -528,15 +529,15 @@ HEADERS += mainwindow.h \
     dialogs/ztestdialog2.h \
     zstackdocloader.h \
     zstackwidget.h \
-    dvid/zdvidversiondag.h \
-    dvid/zdvidversion.h \
-    dvid/zdvidversionnode.h \
     zbodysplitbutton.h \
     zmessagefactory.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
     dvid/zdvidtileensemble.h \
     dvid/zdvidlabelslice.h \
+    dvid/zdvidversiondag.h \
+    dvid/zdvidversion.h \
+    dvid/zdvidversionnode.h \
     zsttransform.h \
     zpixmap.h \
     dvid/zdvidgrayslice.h \
@@ -588,6 +589,11 @@ HEADERS += mainwindow.h \
     protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
+    protocols/connectionvalidationprotocol.h \ 
+    protocols/todoreviewprotocol.h \
+    protocols/todoreviewinputdialog.h \
+    protocols/todosearcher.h \
+    dialogs/tipdetectordialog.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -606,7 +612,6 @@ HEADERS += mainwindow.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
     zcubearraymovieactor.h \
-    zstackdocdatabuffer.h \
     dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
@@ -668,11 +673,9 @@ HEADERS += mainwindow.h \
     ilastik/laplacian_smoothing.h \
     zarbsliceviewparam.h \
     dialogs/zneu3sliceviewdialog.h \
-    znetbufferreader.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
-    mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
     zmenuconfig.h \
@@ -710,7 +713,10 @@ HEADERS += mainwindow.h \
     dialogs/neuprintquerydialog.h \
     dialogs/zflyemtodofilterdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h
+    dialogs/neuprintsetupdialog.h \
+    dvid/zdvidgraysliceensemble.h \
+    dvid/zdvidenv.h \
+    protocols/taskutils.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -759,7 +765,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyfilterdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
-    dialogs/zflyemnewbodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
     dialogs/zflyemroidialog.ui \
     newprojectmainwindow.ui \
@@ -784,7 +789,11 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
+    protocols/connectionvalidationprotocol.ui \
+    protocols/todoreviewprotocol.ui \
+    protocols/todoreviewinputdialog.ui \
     protocols/protocoldialog.ui \
+    dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
@@ -813,10 +822,11 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemtodofilterdialog.ui \
     dialogs/zautotracedialog.ui \
     dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui
+    dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
     mainwindow.cpp \
+    protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
     dialogs/settingdialog.cpp \
@@ -843,6 +853,8 @@ SOURCES += main.cpp \
     dialogs/diffusiondialog.cpp \
     dialogs/connectedthresholddialog.cpp \
     dialogs/zrescaleswcdialog.cpp \
+    dialogs/mexicanhatdialog.cpp \
+    dialogs/informationdialog.cpp \
     z3dwindow.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
@@ -866,8 +878,6 @@ SOURCES += main.cpp \
     dialogs/swcsizedialog.cpp \
     dialogs/swcskeletontransformdialog.cpp \
     zprocessprogressbase.cpp \
-    dialogs/mexicanhatdialog.cpp \
-    dialogs/informationdialog.cpp \
     zmoviescene.cpp \
     zmovieactor.cpp \
     zswcmovieactor.cpp \
@@ -951,8 +961,6 @@ SOURCES += main.cpp \
     zdocplayer.cpp \
     zlinesegmentobject.cpp \
     zopenvdbobject.cpp \
-    dialogs/flyembodysplitprojectdialog.cpp \
-    dialogs/zflyemnewbodysplitprojectdialog.cpp \
     zstroke2dobjsmodel.cpp \
     zdocplayerobjsmodel.cpp \
     zabstractmodelpresenter.cpp \
@@ -1008,7 +1016,6 @@ SOURCES += main.cpp \
     dialogs/zautotracedialog.cpp \
     zstackviewmanager.cpp \
     zstackviewparam.cpp \
-    zflyemprojectmanager.cpp \
     zflyemdataloader.cpp \
     dialogs/swcexportdialog.cpp \
     zprogressmanager.cpp \
@@ -1085,6 +1092,11 @@ SOURCES += main.cpp \
     protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
+    protocols/connectionvalidationprotocol.cpp \
+    protocols/todoreviewprotocol.cpp \
+    protocols/todoreviewinputdialog.cpp \
+    protocols/todosearcher.cpp \
+    dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
@@ -1102,14 +1114,6 @@ SOURCES += main.cpp \
     zcubearraymovieactor.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
     dialogs/zflyembodychopdialog.cpp \
-    zstackdocdatabuffer.cpp \
-    dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp \
-    dialogs/zswcisolationdialog.cpp \
-    dialogs/zstresstestoptiondialog.cpp \
-    dialogs/zflyembodyscreenshotdialog.cpp \
-    dialogs/zflyemskeletonupdatedialog.cpp \
-    dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
@@ -1154,7 +1158,7 @@ SOURCES += main.cpp \
     zmeshfactory.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
-    dialogs/zflyemproofsettingdialog.cpp \
+    protocols/taskbodymerge.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
     zstackdocproxy.cpp \
@@ -1165,34 +1169,36 @@ SOURCES += main.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
     zarbsliceviewparam.cpp \
-    znetbufferreader.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
     zstackdocnullmenufactory.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
     zmenuconfig.cpp \
-    protocols/taskbodymerge.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
     concurrent/zworkthread.cpp \
     concurrent/zworker.cpp \
     concurrent/ztaskqueue.cpp \
-    dvid/zdvidbodyhelper.cpp \
-    dvid/zdviddataslicetaskfactory.cpp \
-    dvid/zdviddataslicetask.cpp \
-    dvid/zdvidstackblockfactory.cpp \
     z3dwindowcontroller.cpp \
     zstackblockfactory.cpp \    
     zstackblocksource.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
-    data3d/zstackobjectconfig.cpp \
     protocols/taskfalsesplitreview.cpp \
     protocols/taskprotocoltaskfactory.cpp \
-    dvid/zdvidblockstream.cpp \
-    imgproc/zstackmultiscalewatershed.cpp \
     protocols/taskmergereview.cpp \
+    protocols/taskutils.cpp \
+    data3d/zstackobjectconfig.cpp \
+    dvid/zdvidbodyhelper.cpp \
+    dvid/zdviddataslicetaskfactory.cpp \
+    dvid/zdviddataslicetask.cpp \
+    dvid/zdvidstackblockfactory.cpp \
+    dvid/zdvidblockstream.cpp \
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp \
+    imgproc/zstackmultiscalewatershed.cpp \
+    dialogs/zflyemproofsettingdialog.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
     dialogs/neuprintquerydialog.cpp \
     dialogs/zflyemtodofilterdialog.cpp \
@@ -1200,6 +1206,13 @@ SOURCES += main.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
+    dialogs/ztestoptiondialog.cpp \
+    dialogs/zinfodialog.cpp \
+    dialogs/zswcisolationdialog.cpp \
+    dialogs/zstresstestoptiondialog.cpp \
+    dialogs/zflyembodyscreenshotdialog.cpp \
+    dialogs/zflyemskeletonupdatedialog.cpp \
+    dialogs/zdvidadvanceddialog.cpp \
     dialogs/neuprintsetupdialog.cpp
 
 DISTFILES += \

@@ -60,7 +60,7 @@ HRESULT GetVideoMemoryViaDxDiag( HMONITOR hMonitor, DWORD* pdwDisplayMemory )
         ZeroMemory( &dxDiagInitParam, sizeof( DXDIAG_INIT_PARAMS ) );
         dxDiagInitParam.dwSize = sizeof( DXDIAG_INIT_PARAMS );
         dxDiagInitParam.dwDxDiagHeaderVersion = DXDIAG_DX9_SDK_VERSION;
-        dxDiagInitParam.bAllowWHQLChecks = FALSE;
+        dxDiagInitParam.bAllowWHQLChecks = _FALSE_;
         dxDiagInitParam.pReserved = nullptr;
         pDxDiagProvider->Initialize( &dxDiagInitParam );
 

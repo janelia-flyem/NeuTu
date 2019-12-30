@@ -26,7 +26,6 @@
 #include "zswcdisttrunkanalyzer.h"
 #include "zswclayerfeatureanalyzer.h"
 #include "zswcshollfeatureanalyzer.h"
-#include "tz_error.h"
 #include "zswclayershollfeatureanalyzer.h"
 #include "zswclayertrunkanalyzer.h"
 #include "neutubeconfig.h"

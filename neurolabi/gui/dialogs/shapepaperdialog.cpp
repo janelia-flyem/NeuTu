@@ -5,6 +5,8 @@
 #include <QMessageBox>
 #include <QDir>
 #include <fstream>
+
+#include "common/math.h"
 #include "ui_shapepaperdialog.h"
 #include "zdialogfactory.h"
 #include "neutubeconfig.h"
@@ -12,7 +14,6 @@
 #include "zfilelist.h"
 #include "zstack.hxx"
 #include "zdoublevector.h"
-#include "tz_math.h"
 #include "zstring.h"
 #include "flyem/zflyemdataframe.h"
 #include "zframefactory.h"
@@ -104,7 +105,8 @@ void ShapePaperDialog::on_sparseObjectPushButton_clicked()
         ZDoubleVector vec;
         vec.importTextFile(offsetFilePath);
         if (vec.size() == 3) {
-          stack.setOffset(iround(vec[0]), iround(vec[1]), iround(vec[2]));
+          stack.setOffset(
+                neutu::iround(vec[0]), neutu::iround(vec[1]), neutu::iround(vec[2]));
         }
 
         ZObject3dScan obj;
@@ -757,7 +759,7 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
 
                 ZFlyEmNeuronArray *neuronArray = getNeuronArray();
                 for (int i = 0; i < mat.getRowNumber(); ++i) {
-                  int isExamplar = iround(mat.at(i, 1));
+                  int isExamplar = neutu::iround(mat.at(i, 1));
                   if (isExamplar == 1) {
                     ZFlyEmNeuron &neuron = (*neuronArray)[i];
                     neuron.getModel()->save(examplarDirPath.toStdString() +

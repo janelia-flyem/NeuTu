@@ -242,7 +242,8 @@ void ZObjsManagerWidget::meshSelectionChangedFromTreeView(
   }
 }
 
-void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QList<ZPunctum *> deselected)
+void ZObjsManagerWidget::punctaSelectionChanged(
+    QList<ZPunctum *> selected, QList<ZPunctum *> deselected)
 {
   if (!selected.empty() && m_punctaObjsTreeView != NULL) {
     QItemSelection is;

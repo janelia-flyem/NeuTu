@@ -1,7 +1,7 @@
 #ifndef ZINTCUBOIDFACE_H
 #define ZINTCUBOIDFACE_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include <vector>
 #include "tz_cuboid_i.h"
 #include "geometry/zpoint.h"

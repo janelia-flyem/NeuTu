@@ -73,14 +73,14 @@ void Cuboid_I_Set_S(Cuboid_I *cuboid, int x, int y, int z, int width,
   cuboid->ce[2] = z + depth - 1;
 }
 
-BOOL Cuboid_I_Is_Valid(const Cuboid_I *cuboid)
+_BOOL_ Cuboid_I_Is_Valid(const Cuboid_I *cuboid)
 {
   if ((cuboid->cb[0] <= cuboid->ce[0]) && (cuboid->cb[1] <= cuboid->ce[1]) &&
       (cuboid->cb[2] <= cuboid->ce[2])) {
-    return TRUE;
+    return _TRUE_ ;
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 int Cuboid_I_Volume(const Cuboid_I *cuboid)
@@ -89,7 +89,7 @@ int Cuboid_I_Volume(const Cuboid_I *cuboid)
   Cuboid_I_Size(cuboid, &width, &height, &depth);
   
   int v = width * height *depth;
-  if ((Cuboid_I_Is_Valid(cuboid) == FALSE) && (v > 0)) {
+  if ((Cuboid_I_Is_Valid(cuboid) == _FALSE_) && (v > 0)) {
     v = -v;
   }
 						       
@@ -168,13 +168,13 @@ void Cuboid_I_Label_Stack(const Cuboid_I *cuboid, int v, Stack *stack)
   }
 }
 
-BOOL Cuboid_I_Hit(const Cuboid_I *cuboid, int x, int y, int z)
+_BOOL_ Cuboid_I_Hit(const Cuboid_I *cuboid, int x, int y, int z)
 {
   return IS_IN_CLOSE_RANGE3(x, y, z, cuboid->cb[0], cuboid->ce[0],
       cuboid->cb[1], cuboid->ce[1], cuboid->cb[2], cuboid->ce[2]);
 }
 
-BOOL Cuboid_I_Hit_Internal(const Cuboid_I *cuboid, int x, int y, int z)
+_BOOL_ Cuboid_I_Hit_Internal(const Cuboid_I *cuboid, int x, int y, int z)
 {
   return IS_IN_OPEN_RANGE3(x, y, z, cuboid->cb[0], cuboid->ce[0],
       cuboid->cb[1], cuboid->ce[1], cuboid->cb[2], cuboid->ce[2]);

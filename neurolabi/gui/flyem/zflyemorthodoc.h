@@ -5,6 +5,7 @@
 
 class ZCrossHair;
 class ZIntPoint;
+class ZDvidEnv;
 
 class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
 {
@@ -14,7 +15,7 @@ public:
   explicit ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent = 0);
 
   void updateStack(const ZIntPoint &center);
-  void prepareDvidData();
+  void prepareDvidData(const ZDvidEnv &env);
 
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
 

@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 #include <QElapsedTimer>
 
+#include "common/math.h"
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
 
@@ -130,7 +131,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 #ifdef _DEBUG_2
@@ -320,6 +321,12 @@ void ZImageWidget::setViewPortOffset(int x, int y)
 {
   m_viewProj.setOffset(x, y);
   updateView();
+}
+
+void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
+{
+  m_viewProj.setOffset(cx - (viewPort().width() - 1) / 2,
+                       cy - (viewPort().height() - 1) / 2);
 }
 
 void ZImageWidget::setZoomRatio(double zoomRatio)
@@ -861,7 +868,7 @@ void ZImageWidget::updateView()
 {
   //View port adjustment
   if (m_offsetAdjustment) {
-    int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
+    int zoom = neutu::iround(std::log2(getViewProj().getZoom())) + 1;
     if (zoom > 0) {
       m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
     }

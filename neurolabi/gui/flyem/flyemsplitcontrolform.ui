@@ -78,40 +78,6 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Body ID</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ZSpinBox" name="bodyIdSpinBox">
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>2147483647</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="loadBodyPushButton">
-         <property name="toolTip">
-          <string>Load a body to split</string>
-         </property>
-         <property name="text">
-          <string>Load Body</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="saveSeedPushButton">
          <property name="toolTip">
           <string>Save current seeds</string>
@@ -122,6 +88,17 @@
          <property name="icon">
           <iconset resource="../gui.qrc">
            <normaloff>:/images/save_seed.png</normaloff>:/images/save_seed.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="previewPushButton">
+         <property name="text">
+          <string>Preview Results</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../gui.qrc">
+           <normaloff>:/images/swcpreview.png</normaloff>:/images/swcpreview.png</iconset>
          </property>
         </widget>
        </item>
@@ -337,11 +314,6 @@
    <extends>QWidget</extends>
    <header location="global">flyem/widgets/zflyembookmarkwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ZSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">zspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

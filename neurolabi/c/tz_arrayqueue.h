@@ -110,7 +110,7 @@ int Arrayqueue_To_Array(Arrayqueue *aq, int *array);
 int Arrayqueue_Dequeue(Arrayqueue *aq);
 void Arrayqueue_Enqueue(Arrayqueue *aq, int index);
 
-BOOL Arrayqueue_Is_Empty(Arrayqueue *aq);
+_BOOL_ Arrayqueue_Is_Empty(Arrayqueue *aq);
 
 __END_DECLS
 

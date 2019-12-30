@@ -131,6 +131,8 @@ public:
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
   ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
+  void clearCache();
+
   ZIntCuboid update(const ZIntCuboid &box);
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
@@ -172,7 +174,7 @@ private:
 private:
   QVector<ItemSlice> m_itemList;
 //  QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;
-  static ZFlyEmToDoItem m_emptySynapse;
+  static ZFlyEmToDoItem m_emptyTodo;
   static ItemSlice m_emptySlice;
 
   int m_startZ;

@@ -1,8 +1,6 @@
 #ifndef ZINTHISTOGRAM_H
 #define ZINTHISTOGRAM_H
 
-#include "tz_cdefs.h"
-
 /*!
  * \brief The class of int histogram (integer value and integer count)
  *
@@ -75,7 +73,7 @@ public:
   int getMaxValue() const;
 
   inline bool isEmpty() const {
-    return m_hist == NULL;
+    return m_hist == nullptr;
   }
 
   void print() const;

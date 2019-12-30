@@ -96,12 +96,12 @@ public:
 public:
   void loadStack(Stack *stack, bool isOwner = true);
   void loadStack(ZStack *stack);
-  int readStack(const char *filePath);
+//  int readStack(const char *filePath);
   //int loadTraceProject(const char *filePath, QProgressBar *pb = NULL);
   void saveTraceProject(const QString &filePath, const QString &output,
                         const QString &prefix);
   void readLocsegChain(const char *filePath);
-  int importImageSequence(const char *filePath);
+  void importImageSequence(const char *filePath);
 
   void saveProject();
   void saveProjectAs(const QString &path);
@@ -198,16 +198,6 @@ public: //frame parameters
   double xReconstructScale();
   double zReconstructScale();
   char unit();
-//  int traceEffort();
-//  double autoTraceMinScore();
-//  double manualTraceMinScore();
-//  bool traceMasked();
-//  double reconstructDistThre();
-//  bool crossoverTest();
-//  bool singleTree();
-//  bool removeOvershoot();
-//  int reconstructRootOption();
-//  BOOL reconstructSpTest();
   void synchronizeSetting();
   void synchronizeDocument();
 

@@ -17,7 +17,7 @@ exists($${CONDA_ENV}) {
 
 message("Config: " $${CONDA_CONFIG})
 
-neurolabi.target = neurolabi
+neurolabi.target = neurolabi.PHONY
 CONFIG(debug, debug|release) {
     equals(SANITIZE_BUILD, "address") {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
@@ -73,7 +73,7 @@ xmlconfig.commands = cp $${PWD}/$${CONFIG_SOURCE} $$xmlconfig.target
 
 jsonconfig.target = jsonconfig
 jsonconfig.depends = FORCE $$configfolder.target
-jsonconfig.commands = cp -r $${PWD}/../json $${BIN_FOLDER}/$${CONFIG_FOLDER}/json
+jsonconfig.commands = rm -rf $${BIN_FOLDER}/$${CONFIG_FOLDER}/json; cp -r $${PWD}/../json $${BIN_FOLDER}/$${CONFIG_FOLDER}/json
 
 SPLASH_SOURCE = $${PWD}/images/neutu_splash.png
 CONFIG(neu3) {
@@ -88,9 +88,11 @@ CONFIG(neu3) {
   }
 }
 
-splashconfig.target = $${BIN_FOLDER}/$${CONFIG_FOLDER}/splash.png
-splashconfig.depends = FORCE $$configfolder.target $${PWD}/images/$$splash_file
-splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
+!isEmpty(splash_file) {
+  splashconfig.target = $${BIN_FOLDER}/$${CONFIG_FOLDER}/splash.png
+  splashconfig.depends = FORCE $$configfolder.target $${PWD}/images/$$splash_file
+  splashconfig.commands = cp $${PWD}/images/$$splash_file $$splashconfig.target
+}
 
 docconfig.target = docconfig
 docconfig.depends = FORCE $$configfolder.target

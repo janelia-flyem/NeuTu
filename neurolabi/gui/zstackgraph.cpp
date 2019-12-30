@@ -1,7 +1,7 @@
 #include "zstackgraph.h"
 
 #include "zgraph.h"
-#include "tz_error.h"
+
 #include "c_stack.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_darray.h"
@@ -9,10 +9,11 @@
 #include "tz_stack_lib.h"
 #include "tz_stack_graph.h"
 #include "tz_geo3d_utils.h"
-#include "tz_math.h"
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
 #include "tz_stack_bwmorph.h"
+
+#include "common/math.h"
 #include "geometry/zintcuboid.h"
 
 ZStackGraph::ZStackGraph() : m_zMargin(-1)
@@ -234,10 +235,10 @@ void ZStackGraph::updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
   if (m_workspace.range == NULL) {
     double dist = Geo3d_Dist(x1, y1, z1, x2, y2, z2);
     int margin[3];
-    margin[0] = iround(dist / 2.0 - abs(x2 - x1 + 1));
-    margin[1] = iround(dist / 2.0 - abs(y2 - y1 + 1));
+    margin[0] = neutu::iround(dist / 2.0 - abs(x2 - x1 + 1));
+    margin[1] = neutu::iround(dist / 2.0 - abs(y2 - y1 + 1));
     if (m_zMargin < 0) {
-      margin[2] = iround(dist / 4.0 - abs(z2 - z1 + 1));
+      margin[2] = neutu::iround(dist / 4.0 - abs(z2 - z1 + 1));
     } else {
       margin[2] = m_zMargin;
     }
@@ -351,9 +352,9 @@ ZGraph* ZStackGraph::buildGraph(const Stack *stack, const Stack *mask)
 
   int nvertex = (cwidth + 1) * (cheight + 1) * (cdepth + 1);
 
-  BOOL weighted = TRUE;
+  BOOL weighted = _TRUE_;
   if (m_workspace.sp_option == 1) {
-    weighted = FALSE;
+    weighted = _FALSE_;
     m_workspace.intensity = darray_malloc(nvertex + 1);
     m_workspace.intensity[nvertex] = Infinity;
   }

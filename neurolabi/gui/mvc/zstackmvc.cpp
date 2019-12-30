@@ -9,6 +9,7 @@
 #include <QShortcut>
 
 #include "neutubeconfig.h"
+#include "common/math.h"
 #include "logging/zlog.h"
 
 //#include "zstackdoc.h"
@@ -247,11 +248,13 @@ void ZStackMvc::updateDocument()
   }
 }
 
-void ZStackMvc::processKeyEvent(QKeyEvent *event)
+bool ZStackMvc::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    m_presenter->processKeyPressEvent(event);
+    return m_presenter->processKeyPressEvent(event);
   }
+
+  return false;
 }
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)
@@ -433,8 +436,8 @@ void ZStackMvc::dropEvent(QDropEvent *event)
 void ZStackMvc::saveStack()
 {
   if (getDocument()->hasStackData()) {
-    QString filePath =
-        ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
+    QString filePath = ZDialogFactory::GetSaveFileName(
+          "Save Stack", "", "TIFF files (*.tif)", this);
     if (!filePath.isEmpty()) {
       std::string resultPath =
           ZStackDocUtil::SaveStack(getDocument().get(), filePath.toStdString());
@@ -531,7 +534,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 
     int x0 = viewProj.getX0();
     int cy = center.getZ();
-    int y0 = cy - iround(
+    int y0 = cy - neutu::iround(
           double(getView()->getViewProj().getWidgetCenter().y()) / zoom);
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
@@ -565,7 +568,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
     int y0 = viewProj.getY0();
     int cx = center.getZ();
-    int x0 = cx - iround(
+    int x0 = cx - neutu::iround(
           double(getView()->getViewProj().getWidgetCenter().x()) / zoom);
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());

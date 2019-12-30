@@ -26,6 +26,7 @@
          <weight>75</weight>
          <bold>true</bold>
          <underline>false</underline>
+         <kerning>true</kerning>
         </font>
        </property>
        <property name="focusPolicy">

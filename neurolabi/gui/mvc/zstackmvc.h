@@ -8,7 +8,8 @@
 #include <QThread>
 
 #include "common/zsharedpointer.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
+#include "logging/zloggable.h"
 //#include "zwidgetmessage.h"
 
 class ZStackDoc;
@@ -28,7 +29,7 @@ class ZStressTestOptionDialog;
  * This class encloses stack data, stack view and the data presenter. It is a
  * variant of ZStackFrame, with the flexibity of not using the frame.
  */
-class ZStackMvc : public QWidget
+class ZStackMvc : public QWidget, public ZLoggable
 {
   Q_OBJECT
 public:
@@ -121,7 +122,7 @@ public slots:
 
   void saveStack();
 
-  virtual void processKeyEvent(QKeyEvent *event);
+  virtual bool processKeyEvent(QKeyEvent *event);
 
   virtual void testSlot();
 

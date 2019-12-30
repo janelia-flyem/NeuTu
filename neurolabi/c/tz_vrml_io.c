@@ -35,10 +35,10 @@ void Vrml_SFColor_Fprint(FILE *fp, const SFColor color)
 
 void Vrml_SFBool_Fprint(FILE *fp, SFBool value)
 {
-  if (value == FALSE) {
-    fprintf(fp, "FALSE");
+  if (value == _FALSE_) {
+    fprintf(fp, "_FALSE_");
   } else {
-    fprintf(fp, "TRUE");
+    fprintf(fp, "_TRUE_");
   }
 }
 
@@ -118,7 +118,7 @@ void Vrml_Sphere_Fprint(FILE *fp, const Vrml_Sphere *sphere, int indent)
 {
   Vrml_Node_Begin_Fprint(fp, "Sphere", indent);
 
-  if (Bitmask_Get_Bit(sphere->default_mask, 0) == FALSE) {
+  if (Bitmask_Get_Bit(sphere->default_mask, 0) == _FALSE_) {
     Vrml_SFFloat_Field_Fprintln(fp, "radius", sphere->radius, 
 				indent + VRML_INDENT);
   }
@@ -128,18 +128,18 @@ void Vrml_Sphere_Fprint(FILE *fp, const Vrml_Sphere *sphere, int indent)
 void Vrml_Cone_Fprint(FILE *fp, const Vrml_Cone *cone, int indent)
 {
   Vrml_Node_Begin_Fprint(fp, "Cone", indent);
-  if (Bitmask_Get_Bit(cone->default_mask, 0) == FALSE) {
+  if (Bitmask_Get_Bit(cone->default_mask, 0) == _FALSE_) {
     Vrml_SFFloat_Field_Fprintln(fp, "bottomRadius", cone->bottom_radius,
 				indent + VRML_INDENT);
   }
-  if (Bitmask_Get_Bit(cone->default_mask, 1) == FALSE) {
+  if (Bitmask_Get_Bit(cone->default_mask, 1) == _FALSE_) {
     Vrml_SFFloat_Field_Fprintln(fp, "height", cone->height, 
 				indent + VRML_INDENT);
   }
-  if (Bitmask_Get_Bit(cone->default_mask, 2) == FALSE) {
+  if (Bitmask_Get_Bit(cone->default_mask, 2) == _FALSE_) {
     Vrml_SFBool_Field_Fprintln(fp, "side", cone->side, indent + VRML_INDENT);
   }
-  if (Bitmask_Get_Bit(cone->default_mask, 3) == FALSE) {
+  if (Bitmask_Get_Bit(cone->default_mask, 3) == _FALSE_) {
     Vrml_SFBool_Field_Fprintln(fp, "bottom", cone->bottom, 
 			       indent + VRML_INDENT);
   }
@@ -251,7 +251,7 @@ void Vrml_Polygon_Fprint(FILE *fp, const double *coord, int n, int indent)
     fprint_space(fp, indent);
     fprintf(fp, "geometry IndexedFaceSet {\n");
     fprint_space(fp, indent);
-    fprintf(fp, "  solid FALSE\n");
+    fprintf(fp, "  solid _FALSE_\n");
     fprint_space(fp, indent);
     fprintf(fp, "  coord Coordinate {\n");
     fprint_space(fp, indent);
@@ -363,7 +363,7 @@ void Vrml_Platform_Fprint(FILE *fp, const double *bottom_coord,
   Vrml_Node_End_Fprint(fp, "appearance Appearance", indent + 2);
   Vrml_Node_Begin_Fprint(fp, "geometry IndexedFaceSet", indent + 2);
   fprint_space(fp, indent + 4);
-  fprintf(fp, "solid FALSE\n");
+  fprintf(fp, "solid _FALSE_\n");
   Vrml_Node_Begin_Fprint(fp, "coord Coordinate", indent + 4);
   fprint_space(fp, indent + 6);
   fprintf(fp, "point [");
@@ -470,7 +470,7 @@ void Vrml_Platform_Fprint_M(FILE *fp, const double *bottom_coord,
   Vrml_Node_End_Fprint(fp, "appearance Appearance", indent + 2);
   Vrml_Node_Begin_Fprint(fp, "geometry IndexedFaceSet", indent + 2);
   fprint_space(fp, indent + 4);
-  fprintf(fp, "solid FALSE\n");
+  fprintf(fp, "solid _FALSE_\n");
   Vrml_Node_Begin_Fprint(fp, "coord Coordinate", indent + 4);
   fprint_space(fp, indent + 6);
   fprintf(fp, "point [");
@@ -586,7 +586,7 @@ static void vrml_neurochain_get_locseg(const Neurochain *chain,
   Local_Neuroseg_Copy(locseg, &(chain->locseg));
   if (chain->hist != NULL) {
     if (Bitmask_Get_Bit(chain->hist->mask, TRACE_HIST_DIRECTION_MASK)
-	== TRUE) {
+	== _TRUE_) {
       if (chain->hist->direction == BACKWARD) {
 	Flip_Local_Neuroseg(locseg);
       }
@@ -724,7 +724,7 @@ void Vrml_Neurochain_Fprint_C(FILE *fp, const Neurochain *chain,
   Vrml_Node_Begin_Fprint(fp, "appearance Appearance", indent + 2);
   if (material == NULL) {
     Vrml_Material *material2 = New_Vrml_Material();
-    Bitmask_Set_Bit(DIFFUSE_COLOR, FALSE, &(material2->default_mask));
+    Bitmask_Set_Bit(DIFFUSE_COLOR, _FALSE_, &(material2->default_mask));
     Vrml_Material_Fprint(fp, material2, indent + 4);
     Delete_Vrml_Material(material2);
   } else {
@@ -942,30 +942,30 @@ void Vrml_Material_Fprint(FILE *fp, const Vrml_Material *material, int indent)
 {
   Vrml_Node_Begin_Fprint(fp, "material Material", indent);
   
-  if (Bitmask_Get_Bit(material->default_mask, AMBIENT_INTENSITY) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, AMBIENT_INTENSITY) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "ambientIntensity %g\n", material->ambient_intensity);
   }
-  if (Bitmask_Get_Bit(material->default_mask, DIFFUSE_COLOR) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, DIFFUSE_COLOR) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "diffuseColor %g %g %g\n", material->diffuse_color[0], 
 	    material->diffuse_color[1], material->diffuse_color[2]);
   }
-  if (Bitmask_Get_Bit(material->default_mask, EMISSIVE_COLOR) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, EMISSIVE_COLOR) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "emissiveColor %g %g %g\n", material->emissive_color[0], 
 	    material->emissive_color[1], material->emissive_color[2]);
   }
-  if (Bitmask_Get_Bit(material->default_mask, SHININESS) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, SHININESS) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "shininess %g\n", material->shininess);
   }
-  if (Bitmask_Get_Bit(material->default_mask, SPECULAR_COLOR) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, SPECULAR_COLOR) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "specularColor %g %g %g\n", material->specular_color[0], 
 	    material->specular_color[1], material->specular_color[2]);
   }
-  if (Bitmask_Get_Bit(material->default_mask, TRANSPARENCY) == FALSE) {
+  if (Bitmask_Get_Bit(material->default_mask, TRANSPARENCY) == _FALSE_) {
     fprint_space(fp, indent + 2);
     fprintf(fp, "transparency %g\n", material->transparency);
   }
@@ -977,7 +977,7 @@ void Vrml_Pm_Triangle_Fprint(FILE *fp, const coordinate_3d_t *pts,
 {
   Vrml_Node_Begin_Fprint(fp, "geometry IndexedFaceSet", indent);
   fprint_space(fp, indent + 2);
-  fprintf(fp, "solid FALSE\n");
+  fprintf(fp, "solid _FALSE_\n");
   Vrml_Node_Begin_Fprint(fp, "coord Coordinate", indent + 2);
   int i, j;
   int offset = 0;
@@ -1015,7 +1015,7 @@ void Vrml_Pm_Rectangle_Fprint(FILE *fp, const coordinate_3d_t *pts,
 {
   Vrml_Node_Begin_Fprint(fp, "geometry IndexedFaceSet", indent);
   fprint_space(fp, indent + 2);
-  fprintf(fp, "solid FALSE\n");
+  fprintf(fp, "solid _FALSE_\n");
   Vrml_Node_Begin_Fprint(fp, "coord Coordinate", indent + 2);
   int i, j;
   int offset = 0;

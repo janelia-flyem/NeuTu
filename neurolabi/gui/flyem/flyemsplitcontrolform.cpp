@@ -10,6 +10,7 @@
 #include "flyemdef.h"
 #include "widgets/zflyembookmarkwidget.h"
 #include "widgets/zflyembookmarkview.h"
+#include "widgets/zflyemicon.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
@@ -22,9 +23,13 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
-  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
+  ui->coarseBodyViewPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
+  ui->quickViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
+  ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
+
+//  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
+//  neutu::SetHtmlIcon(ui->meshPushButton, flyem::FINE_MESH_ICON);
   neutu::SetHtmlIcon(ui->viewResultQuickPushButton,
                      "<font color=red>&#9700;</font><font color=green>&#9701;</font>");
 
@@ -63,19 +68,21 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(meshViewTriggered()));
 //  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
 //          this, SIGNAL(splitViewTriggered()));
-  connect(ui->loadBodyPushButton, SIGNAL(clicked()),
-          this, SLOT(changeSplit()));
+//  connect(ui->loadBodyPushButton, SIGNAL(clicked()),
+//          this, SLOT(changeSplit()));
 //  connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
   connect(ui->saveSeedPushButton, SIGNAL(clicked()),
           this, SIGNAL(savingSeed()));
   connect(ui->commitPushButton, SIGNAL(clicked()),
           this, SLOT(commitResult()));
-  connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
-          this, SLOT(changeSplit()));
+  connect(ui->previewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(previewingResult()));
+//  connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
+//          this, SLOT(changeSplit()));
 //  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
 //          this, SLOT(loadBookmark()));
-  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -85,8 +92,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
 //          this, SIGNAL(bookmarkChecked(QString, bool)));
 //  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
 //          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
-          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+//          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
 
 //  connect(ui->synapsePushButton, SIGNAL(clicked()),
@@ -224,7 +231,7 @@ void FlyEmSplitControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
 }
 
 
-
+/*
 void FlyEmSplitControlForm::changeSplit()
 {
   emit changingSplit((uint64_t) ui->bodyIdSpinBox->value());
@@ -235,6 +242,7 @@ void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
   ui->bodyIdSpinBox->setValue(bodyId);
   m_currentBodyId = bodyId;
 }
+*/
 
 void FlyEmSplitControlForm::goToPosition()
 {
@@ -343,7 +351,7 @@ void FlyEmSplitControlForm::loadBookmark()
 
 void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 {
-  setSplit(bodyId);
+//  setSplit(bodyId);
   QString text;
   if (bodyId == 0) {
     text += "<p>No body loaded.</p>";

@@ -198,6 +198,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_ADD_TODO_SVSPLIT);
       }
       config.append(ZActionFactory::ACTION_ADD_TODO_DIAGNOSTIC);
+      config.append(ZActionFactory::ACTION_ADD_TODO_SEGMENTATION_DIAGNOSTIC);
+      config.append(ZActionFactory::ACTION_SEPARATOR);
+      config.append(ZActionFactory::ACTION_RUN_TIP_DETECTION);
       config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
@@ -205,7 +208,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
 
-      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+          doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
         config.appendSeparator();
 
         config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
@@ -245,8 +249,14 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.append(ZActionFactory::ACTION_COPY_BODY_ID);
     if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_COPY_SUPERVOXEL_ID);
+    }
+    config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
+
+    if (doc->getDvidTarget().hasSupervoxel()) {
       config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
     }
+
+    config.appendSeparator();
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);
@@ -261,12 +271,13 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   }
 
   config.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+  config.append(ZActionFactory::ACTION_REFRESH_DATA);
 
 //  addAction(actionList, presenter, menu);
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     /* Bookmark actions */
-    TStackObjectSet& bookmarkSet =
+    const TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
       QString groupName("Bookmarks");

@@ -1,6 +1,6 @@
 #include "zsinglechannelstack.h"
 #include <string.h>
-#include "tz_utilities.h"
+
 #include "tz_image_io.h"
 #include "tz_stack_lib.h"
 #include "tz_int_histogram.h"
@@ -12,7 +12,8 @@
 #include "tz_stack_relation.h"
 #include "tz_stack_attribute.h"
 #include "tz_stack_watershed.h"
-#include "tz_math.h"
+
+#include "common/math.h"
 
 ZSingleChannelStack::ZSingleChannelStack()
 {
@@ -293,7 +294,7 @@ void ZSingleChannelStack::setValue(int x, int y, int z, double v)
     } else if (kind() == COLOR) {
       color_t *array = (color_t*) (m_stack->array + (size_t)z*stride_z +
                                    (size_t)y*stride_y + (size_t)x*stride_x);
-      int value = iround(v);
+      int value = neutu::iround(v);
       (*array)[0] = (uint8_t) (value & 0x000000FF);
       (*array)[1] = (uint8_t) ((value & 0x0000FF00) >> 8);
       (*array)[2] = (uint8_t) ((value & 0x00FF0000) >> 16);

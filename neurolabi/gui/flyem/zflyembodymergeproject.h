@@ -1,13 +1,14 @@
 #ifndef ZFLYEMBODYMERGEPROJECT_H
 #define ZFLYEMBODYMERGEPROJECT_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
 
 #include "neutube.h"
 #include "common/zsharedpointer.h"
-#include "tz_stdint.h"
 #include "zstackobjectselector.h"
 //#include "zstackviewparam.h"
 
@@ -15,7 +16,7 @@
 
 #include "zflyembookmarkarray.h"
 #include "zflyembodyannotation.h"
-#include "zflyembodyannotationmerger.h"
+#include "zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -42,7 +43,7 @@ class ZFlyEmBodyMergeProject : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmBodyMergeProject(QObject *parent = 0);
+  explicit ZFlyEmBodyMergeProject(QObject *parent = nullptr);
   ~ZFlyEmBodyMergeProject();
 
   void test();
@@ -74,7 +75,7 @@ public:
     return m_dataFrame;
   }
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationMerger &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -136,12 +137,13 @@ public:
   bool isFinalStatus(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
   bool isMergableStatus(const std::string &status) const;
+  bool preservingId(const std::string &status) const;
 
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
-  const ZFlyEmBodyAnnotationMerger& getAnnotationMerger() const {
+  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
     return m_bodyStatusProtocol;
   }
 
@@ -213,7 +215,7 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray,
       ZWidgetMessage &warnMsg);
   void updateSelection(const std::set<uint64_t> &newBodySet);
-  void refreshSegmentationView();
+//  void refreshSegmentationView();
   void unlockBody(const std::set<uint64_t> &bodySet);
   void unlockBody(uint64_t bodyId);
   void unlockBody(const std::vector<uint64_t> &bodyArray);
@@ -221,8 +223,10 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
   void removeMerge(uint64_t bodyId);
   void removeMerge(const std::vector<uint64_t> &bodyArray);
+  bool preserved(uint64_t bodyId) const;
+  bool hasName(uint64_t bodyId) const;
 
-  void clearUndoStack();
+//  void clearUndoStack();
 
   QList<QString> getBodyStatusList(
       std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
@@ -233,7 +237,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationMerger m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
   bool m_isAdmin = false;

@@ -5,12 +5,15 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
+
 #include "dialogs/zdviddialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
 #include "dialogs/zspinboxgroupdialog.h"
 
+
+class ZIntPoint;
 class QSpacerItem;
 class ZParameterArray;
 class ZWidgetMessage;
@@ -46,18 +49,31 @@ public:
   static void Warn(const QString &title, const QString &msg, QWidget *parent);
   static void Error(const QString &title, const QString &msg, QWidget *parent);
 
+  static bool WarningAskForContinue(
+      const QString &title, const QString &msg, QWidget *parent);
+
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
   static QString GetOpenFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
   static QString GetSaveFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetSaveFileName(
+      const QString &caption, const QString &filePath, const QString &filter,
+      QWidget *parent);
 
   static void Notify3DDisabled(QWidget *parent);
 
   static void About(QWidget *parent);
 
   static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
+
+  static ZIntPoint AskForIntPoint(QWidget *parent);
+  static ZIntPoint AskForIntPoint(
+      const ZIntPoint &defaultPos, QWidget *parent);
+
+  static uint64_t GetUint64(
+      const QString &title, const QString &label, QWidget *parent);
 
 private:
 

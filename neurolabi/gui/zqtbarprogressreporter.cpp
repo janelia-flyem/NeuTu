@@ -2,7 +2,7 @@
 
 #include <QApplication>
 
-#include "tz_math.h"
+#include "common/math.h"
 
 ZQtBarProgressReporter::ZQtBarProgressReporter()
 {
@@ -32,7 +32,7 @@ void ZQtBarProgressReporter::close()
 
 void ZQtBarProgressReporter::push()
 {
-  m_progressBar->setValue(iround(m_progress * 100.0));
+  m_progressBar->setValue(neutu::iround(m_progress * 100.0));
   //QApplication::processEvents(QEventLoop::AllEvents);
 }
 

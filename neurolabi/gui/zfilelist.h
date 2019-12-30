@@ -2,6 +2,8 @@
 #define ZFILELIST_H
 
 #include <string>
+#include <functional>
+
 #include "tz_file_list.h"
 
 class ZFileList
@@ -18,7 +20,7 @@ public:
 
   void load(const std::string &dir, const std::string &ext,
             ESortingOption option = NO_SORT);
-  void importFromXml(const std::string &filePath);
+//  void importFromXml(const std::string &filePath);
 
   char* getFilePath(int index) const;
   inline int size() const { return m_fileList.file_number; }
@@ -30,6 +32,7 @@ public:
 
 private:
   File_List m_fileList;
+  std::function<void(File_List *p)> m_dealloc = Clean_File_List;
 };
 
 #endif // ZFILELIST_H

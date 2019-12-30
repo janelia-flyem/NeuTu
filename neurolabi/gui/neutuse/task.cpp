@@ -31,6 +31,21 @@ ZJsonObject Task::toJsonObject() const
   return obj;
 }
 
+std::string Task::getType() const
+{
+  return m_type;
+}
+
+std::string Task::getName() const
+{
+  return m_name;
+}
+
+int Task::getPriority() const
+{
+  return m_priority;
+}
+
 void Task::setType(const std::string &type)
 {
   m_type = type;

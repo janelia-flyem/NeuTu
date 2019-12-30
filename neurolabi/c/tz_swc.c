@@ -26,15 +26,15 @@ int* Swc_Arraylist_Queue(const Swc_Arraylist *sc, int *q)
 
 Graph* Swc_Arraylist_Graph(const Swc_Arraylist *sc, int *q)
 {
-  BOOL is_owner = TRUE;
+  _BOOL_ is_owner = _TRUE_;
 
   if (q != NULL) {
-    is_owner = FALSE;
+    is_owner = _FALSE_;
   }
 
   q = Swc_Arraylist_Queue(sc, q);
-  Graph *graph = Make_Graph(sc->length, sc->length - 1, FALSE);
-  Graph_Set_Directed(graph, TRUE);
+  Graph *graph = Make_Graph(sc->length, sc->length - 1, _FALSE_);
+  Graph_Set_Directed(graph, _TRUE_);
 
   int i;
   for (i = 0; i < sc->length; i++) {
@@ -43,7 +43,7 @@ Graph* Swc_Arraylist_Graph(const Swc_Arraylist *sc, int *q)
     }
   }
 
-  if (is_owner == TRUE) {
+  if (is_owner == _TRUE_) {
     free(q);
   }
 

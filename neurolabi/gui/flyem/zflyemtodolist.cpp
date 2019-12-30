@@ -1,15 +1,16 @@
 #include "zflyemtodolist.h"
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
 #include "mvc/zstackview.h"
+#include "flyemdatareader.h"
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);
-ZFlyEmToDoItem ZFlyEmToDoList::m_emptySynapse;
+ZFlyEmToDoItem ZFlyEmToDoList::m_emptyTodo;
 
 
 ZFlyEmToDoList::ZFlyEmToDoList()
@@ -49,6 +50,11 @@ void ZFlyEmToDoList::init()
   m_isReady = false;
 }
 
+void ZFlyEmToDoList::clearCache()
+{
+  m_itemList.clear();
+}
+
 ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 {
   ZIntCuboid dataBox = box;
@@ -75,7 +81,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 
 void ZFlyEmToDoList::update(int x, int y, int z)
 {
-  ZFlyEmToDoItem item = m_reader.readToDoItem(x, y, z);
+  ZFlyEmToDoItem item = FlyEmDataReader::ReadToDoItem(m_reader, x, y, z);
   if (item.isValid()) {
     addItem(item, DATA_LOCAL);
   } else {
@@ -442,7 +448,7 @@ ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     return getSlice(sz).getMap(sy)[sx];
   } else {
     if (scope == DATA_LOCAL) {
-      return m_emptySynapse;
+      return m_emptyTodo;
     } else if (scope == DATA_GLOBAL) {
       update(x, y, z);
     }
@@ -523,12 +529,12 @@ bool ZFlyEmToDoList::hit(double x, double y, double z)
 {
   const int sliceRange = 5;
 
-  ZIntPoint hitPoint(iround(x), iround(y), iround(z));
+  ZIntPoint hitPoint(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
   hitPoint.shiftSliceAxis(getSliceAxis());
 
   for (int slice = -sliceRange; slice <= sliceRange; ++slice) {
-    int cz = iround(hitPoint.getZ() + slice);
+    int cz = hitPoint.getZ() + slice;
 
     ItemIterator siter(this, cz);
 

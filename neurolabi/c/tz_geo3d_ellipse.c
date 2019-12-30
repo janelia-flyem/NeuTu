@@ -88,7 +88,7 @@ double Geo3d_Ellipse_Point_Distance(const Geo3d_Ellipse *ellipse,
   double d = 0.0;
   if (Point_In_Ellipse(tmp_pt[0], tmp_pt[1],
 		       ellipse->radius * ellipse->scale, ellipse->radius)
-      == FALSE) {
+      == _FALSE_) {
     d = Ellipse_Point_Distance(tmp_pt[0], tmp_pt[1],
 			       ellipse->radius * ellipse->scale, 
 			       ellipse->radius, NULL, NULL);

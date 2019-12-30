@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>667</width>
-    <height>850</height>
+    <width>788</width>
+    <height>843</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Body information</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
@@ -91,7 +91,7 @@
      <item>
       <widget class="QLabel" name="maxBodiesLabel">
        <property name="text">
-        <string>Max bodies: </string>
+        <string>Max #bodies: </string>
        </property>
       </widget>
      </item>
@@ -111,7 +111,7 @@
      <item>
       <widget class="QCheckBox" name="namedCheckBox">
        <property name="text">
-        <string>All Named</string>
+        <string>All named</string>
        </property>
       </widget>
      </item>
@@ -127,6 +127,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="importBodiesPushButton">
+       <property name="text">
+        <string>Import bodies...</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="exportBodiesButton">
@@ -147,37 +154,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QPushButton" name="allNamedPushButton">
-       <property name="text">
-        <string>All Named</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="findSimilarPushButton">
        <property name="text">
-        <string>Find Similar</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="queryNamePushButton">
-       <property name="text">
-        <string>Query by Name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="queryStatusPushButton">
-       <property name="text">
-        <string>Query by Status</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="queryRoiPushButton">
-       <property name="text">
-        <string>Query By Roi</string>
+        <string>Find similar</string>
        </property>
       </widget>
      </item>
@@ -193,6 +172,76 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Query by:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryNamePushButton">
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryTypePushButton">
+            <property name="text">
+             <string> Type</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryStatusPushButton">
+            <property name="text">
+             <string>Status</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryRoiPushButton">
+            <property name="text">
+             <string>ROI</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="customQueryPushButton">
+            <property name="text">
+             <string>Custom</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
@@ -309,6 +358,16 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
+         <item>
+          <widget class="QPushButton" name="addColorMapPushButton">
+           <property name="toolTip">
+            <string>Add a color for the current list of bodies </string>
+           </property>
+           <property name="text">
+            <string>Add*</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
@@ -467,6 +526,13 @@
          <property name="topMargin">
           <number>0</number>
          </property>
+         <item>
+          <widget class="QPushButton" name="copyConnectionPushButton">
+           <property name="text">
+            <string>Copy Selected Connections</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer_8">
            <property name="orientation">

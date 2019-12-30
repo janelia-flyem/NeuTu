@@ -10,6 +10,7 @@ class ZMessageProcessor
 {
 public:
   ZMessageProcessor();
+  virtual ~ZMessageProcessor() {}
 
   virtual void processMessage(ZMessage *message, QWidget *host) const;
 

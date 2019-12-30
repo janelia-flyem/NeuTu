@@ -1,18 +1,21 @@
 #include "zstackobject.h"
-#include "tz_cdefs.h"
-//#include "zswctree.h"
+
+#if _QT_APPLICATION_2
+#include <QThread>
+#include <QCoreApplication>
+#endif
+
 #include "geometry/zintcuboid.h"
 #include "common/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_hitProtocal(EHitProtocal::HIT_DATA_POS), m_projectionVisible(true),
+ZStackObject::ZStackObject() : m_hitProtocal(EHitProtocol::HIT_DATA_POS),
   m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
-  m_usingCosmeticPen(false), m_zScale(1.0),
+  m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutu::display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutu::display::VE_NONE)
 {
   m_type = EType::UNIDENTIFIED;
   setSliceAxis(neutu::EAxis::Z);
@@ -22,54 +25,68 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
 
 ZStackObject::~ZStackObject()
 {
+#if _QT_APPLICATION_2
+  if (QCoreApplication::instance()) {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+      if (getType() != ZStackObject::EType::DVID_SYNAPSE &&
+          getType() != ZStackObject::EType::OBJECT3D_SCAN) {
+        std::cout << "Deteleted in separate threads!!!" << std::endl;
+        std::cout << "Deconstructing " << this << ": " << getTypeName() << ", "
+                  << getSource() << std::endl;
+      }
+    }
+  }
+#endif
+
 #ifdef _DEBUG_2
-  std::cout << "Deconstructing " << this << ": " << getType() << ", "
+  std::cout << "Deconstructing " << this << ": " << getTypeName() << ", "
             << getSource() << std::endl;
 #endif
 }
 
-#define GET_TYPE_NAME(v, t) \
+#define RETURN_TYPE_NAME(v, t) \
   if (v == EType::t) { \
     return NT_STR(t); \
   }
 
 std::string ZStackObject::GetTypeName(EType type)
 {
-  GET_TYPE_NAME(type, UNIDENTIFIED);
-  GET_TYPE_NAME(type, SWC);
-  GET_TYPE_NAME(type, PUNCTUM);
-  GET_TYPE_NAME(type, MESH);
-  GET_TYPE_NAME(type, OBJ3D);
-  GET_TYPE_NAME(type, STROKE);
-  GET_TYPE_NAME(type, LOCSEG_CHAIN);
-  GET_TYPE_NAME(type, CONN);
-  GET_TYPE_NAME(type, OBJECT3D_SCAN);
-  GET_TYPE_NAME(type, SPARSE_OBJECT);
-  GET_TYPE_NAME(type, CIRCLE);
-  GET_TYPE_NAME(type, STACK_BALL);
-  GET_TYPE_NAME(type, STACK_PATCH);
-  GET_TYPE_NAME(type, RECT2D);
-  GET_TYPE_NAME(type, DVID_TILE);
-  GET_TYPE_NAME(type, DVID_GRAY_SLICE);
-  GET_TYPE_NAME(type, DVID_TILE_ENSEMBLE);
-  GET_TYPE_NAME(type, DVID_LABEL_SLICE);
-  GET_TYPE_NAME(type, DVID_SPARSE_STACK);
-  GET_TYPE_NAME(type, DVID_SPARSEVOL_SLICE);
-  GET_TYPE_NAME(type, STACK);
-  GET_TYPE_NAME(type, SWC_NODE);
-  GET_TYPE_NAME(type, GRAPH_3D);
-  GET_TYPE_NAME(type, PUNCTA);
-  GET_TYPE_NAME(type, FLYEM_BOOKMARK);
-  GET_TYPE_NAME(type, INT_CUBOID);
-  GET_TYPE_NAME(type, LINE_SEGMENT);
-  GET_TYPE_NAME(type, SLICED_PUNCTA);
-  GET_TYPE_NAME(type, DVID_SYNAPSE);
-  GET_TYPE_NAME(type, DVID_SYNAPE_ENSEMBLE);
-  GET_TYPE_NAME(type, CUBE);
-  GET_TYPE_NAME(type, DVID_ANNOTATION);
-  GET_TYPE_NAME(type, FLYEM_TODO_ITEM);
-  GET_TYPE_NAME(type, FLYEM_TODO_LIST);
-  GET_TYPE_NAME(type, CROSS_HAIR);
+  RETURN_TYPE_NAME(type, UNIDENTIFIED);
+  RETURN_TYPE_NAME(type, SWC);
+  RETURN_TYPE_NAME(type, PUNCTUM);
+  RETURN_TYPE_NAME(type, MESH);
+  RETURN_TYPE_NAME(type, OBJ3D);
+  RETURN_TYPE_NAME(type, STROKE);
+  RETURN_TYPE_NAME(type, LOCSEG_CHAIN);
+  RETURN_TYPE_NAME(type, CONN);
+  RETURN_TYPE_NAME(type, OBJECT3D_SCAN);
+  RETURN_TYPE_NAME(type, SPARSE_OBJECT);
+  RETURN_TYPE_NAME(type, CIRCLE);
+  RETURN_TYPE_NAME(type, STACK_BALL);
+  RETURN_TYPE_NAME(type, STACK_PATCH);
+  RETURN_TYPE_NAME(type, RECT2D);
+  RETURN_TYPE_NAME(type, DVID_TILE);
+  RETURN_TYPE_NAME(type, DVID_GRAY_SLICE);
+  RETURN_TYPE_NAME(type, DVID_GRAY_SLICE_ENSEMBLE);
+  RETURN_TYPE_NAME(type, DVID_TILE_ENSEMBLE);
+  RETURN_TYPE_NAME(type, DVID_LABEL_SLICE);
+  RETURN_TYPE_NAME(type, DVID_SPARSE_STACK);
+  RETURN_TYPE_NAME(type, DVID_SPARSEVOL_SLICE);
+  RETURN_TYPE_NAME(type, STACK);
+  RETURN_TYPE_NAME(type, SWC_NODE);
+  RETURN_TYPE_NAME(type, GRAPH_3D);
+  RETURN_TYPE_NAME(type, PUNCTA);
+  RETURN_TYPE_NAME(type, FLYEM_BOOKMARK);
+  RETURN_TYPE_NAME(type, INT_CUBOID);
+  RETURN_TYPE_NAME(type, LINE_SEGMENT);
+  RETURN_TYPE_NAME(type, SLICED_PUNCTA);
+  RETURN_TYPE_NAME(type, DVID_SYNAPSE);
+  RETURN_TYPE_NAME(type, DVID_SYNAPE_ENSEMBLE);
+  RETURN_TYPE_NAME(type, CUBE);
+  RETURN_TYPE_NAME(type, DVID_ANNOTATION);
+  RETURN_TYPE_NAME(type, FLYEM_TODO_ITEM);
+  RETURN_TYPE_NAME(type, FLYEM_TODO_LIST);
+  RETURN_TYPE_NAME(type, CROSS_HAIR);
 
   return std::to_string(neutu::EnumValue(type));
 }
@@ -249,9 +266,9 @@ bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
                        neutu::EAxis axis)
 {
   switch (m_hitProtocal) {
-  case EHitProtocal::HIT_DATA_POS:
+  case EHitProtocol::HIT_DATA_POS:
     return hit(dataPos);
-  case EHitProtocal::HIT_WIDGET_POS:
+  case EHitProtocol::HIT_WIDGET_POS:
     return hitWidgetPos(widgetPos, axis);
   default:
     break;

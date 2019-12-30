@@ -4,8 +4,7 @@
 #include <QMainWindow>
 #include <QPalette>
 
-#include "tz_stdint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
@@ -92,6 +91,9 @@ public slots:
 
   void showAndRaise();
 
+  void loadDatabase();
+  void loadDatabaseFromUrl();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
@@ -142,6 +144,8 @@ private:
   QAction *m_roiToolAction = nullptr;
   QAction *m_bodyExplorerAction = nullptr;
   QAction *m_neuprintAction = nullptr;
+  QAction *m_loadDvidAction = nullptr;
+  QAction *m_loadDvidUrlAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

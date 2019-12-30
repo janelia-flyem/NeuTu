@@ -1,6 +1,5 @@
 #include "zmessage.h"
 
-#include "tz_utilities.h"
 
 ZMessage::ZMessage(QWidget *source) : m_type(ZMessage::TYPE_NULL),
   m_originalSource(source), m_currentSource(source),

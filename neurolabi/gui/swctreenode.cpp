@@ -5,12 +5,12 @@
 #include <set>
 #include <list>
 #include <stack>
+#include <cassert>
 
-#include "tz_error.h"
+#include "common/math.h"
 #include "zswctree.h"
 #include "zgraph.h"
 #include "zstring.h"
-#include "tz_math.h"
 #include "tz_geo3d_utils.h"
 #include "c_stack.h"
 #include "tz_stack_threshold.h"
@@ -181,7 +181,7 @@ int SwcTreeNode::childNumber(const Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isParentIdConsistent(const Swc_Tree_Node *tn)
 {
-  TZ_ASSERT(tn != NULL, "null pointer");
+  assert(tn != NULL);
 
   if (tn->parent == NULL) {
     return (SwcTreeNode::parentId(tn) == -1);
@@ -271,7 +271,7 @@ int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
   ZSwcTree tree;
   tree.setDataFromNodeRoot(tn);
   int count =
-      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, FALSE);
+      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, tn, blocker, _FALSE_);
   tree.setData(NULL, ZSwcTree::FREE_WRAPPER);
 
   return count;
@@ -285,12 +285,12 @@ int SwcTreeNode::singleTreeSize(Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isRegular(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Regular(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Regular(tn) == _TRUE_);
 }
 
 bool SwcTreeNode::isVirtual(const Swc_Tree_Node *tn)
 {
-  return (Swc_Tree_Node_Is_Virtual(tn) == TRUE);
+  return (Swc_Tree_Node_Is_Virtual(tn) == _TRUE_);
 }
 
 Swc_Tree_Node* SwcTreeNode::regularRoot(Swc_Tree_Node *tn)
@@ -653,7 +653,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
     double dx = x(tn1) - x(tn2);
     double dy = y(tn1) - y(tn2);
     dist = sqrt(dx * dx + dy * dy);
-    break;
   }
     break;
   case SwcTreeNode::GEODESIC:
@@ -666,9 +665,6 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
       dist = 0;
     }
     */
-    break;
-  default:
-    TZ_ERROR(ERROR_DATA_TYPE);
     break;
   }
 
@@ -692,8 +688,7 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
     dist = distance(tn, x, y, z, SwcTreeNode::EUCLIDEAN) - radius(tn);
     break;
   default:
-    TZ_WARN(ERROR_DATA_TYPE);
-    break;
+    throw std::invalid_argument("invalid distance type");
   }
 
   return dist;
@@ -994,7 +989,7 @@ Swc_Tree_Node *SwcTreeNode::prevSibling(Swc_Tree_Node *tn)
     sibling = SwcTreeNode::nextSibling(sibling);
   }
 
-  TZ_ASSERT(sibling != NULL, "null pointer should not happen here.");
+  assert(sibling != NULL);
 
   return sibling;
 }
@@ -1169,7 +1164,7 @@ bool SwcTreeNode::connect(const vector<Swc_Tree_Node *> &nodeArray)
       if (graph.edgeWeight(i) > 0.0) {
         int e1 = graph.edgeStart(i);
         int e2 = graph.edgeEnd(i);
-        TZ_ASSERT(e1 != e2, "Invalid edge");
+        assert(e1 != e2);
         if (SwcTreeNode::regularRoot(nodeArray[e1]) !=
             SwcTreeNode::regularRoot(nodeArray[e2])) {
           SwcTreeNode::setAsRoot(nodeArray[e2]);
@@ -1214,9 +1209,9 @@ void SwcTreeNode::paste(Swc_Tree_Node *tn, size_t index)
     vector<double> attribute = str.toDoubleArray();
     setPos(tn, attribute[2], attribute[3], attribute[4]);
     setRadius(tn, attribute[5]);
-    setId(tn, iround(attribute[0]));
-    setType(tn, iround(attribute[2]));
-    setParentId(tn, iround(attribute[6]));
+    setId(tn, neutu::iround(attribute[0]));
+    setType(tn, neutu::iround(attribute[2]));
+    setParentId(tn, neutu::iround(attribute[6]));
   }
 }
 
@@ -1306,7 +1301,7 @@ Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
 
     for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
-      TZ_ASSERT(*iter != NULL, "Null swc node");
+      assert(*iter != NULL);
 
       if (isRegular(parent(*iter))) {
         if (nodeSet.count(parent(*iter)) == 0) {
@@ -1509,11 +1504,11 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 {
 
   //Extract image slice
-  int x1 = iround(x(tn) - radius(tn) * 2);
-  int y1 = iround(y(tn) - radius(tn) * 2);
-  int x2 = iround(x(tn) + radius(tn) * 2);
-  int y2 = iround(y(tn) + radius(tn) * 2);
-  int cz = iround(z(tn));
+  int x1 = neutu::iround(x(tn) - radius(tn) * 2);
+  int y1 = neutu::iround(y(tn) - radius(tn) * 2);
+  int x2 = neutu::iround(x(tn) + radius(tn) * 2);
+  int y2 = neutu::iround(y(tn) + radius(tn) * 2);
+  int cz = neutu::iround(z(tn));
 
   Stack *slice = C_Stack::crop(
         stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
@@ -1553,10 +1548,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double expandScale = 2.0;
   double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
-  int x1 = iround(x(tn) - expandRadius);
-  int y1 = iround(y(tn) - expandRadius);
-  int x2 = iround(x(tn) + expandRadius);
-  int y2 = iround(y(tn) + expandRadius);
+  int x1 = neutu::iround(x(tn) - expandRadius);
+  int y1 = neutu::iround(y(tn) - expandRadius);
+  int x2 = neutu::iround(x(tn) + expandRadius);
+  int y2 = neutu::iround(y(tn) + expandRadius);
 
   if (x1 < 0) {
     x1 = 0;
@@ -1571,7 +1566,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     y2 = C_Stack::height(stack) - 1;
   }
 
-  int cz = iround(z(tn));
+  int cz = neutu::iround(z(tn));
 
   if (cz >= C_Stack::depth(stack)) {
     return false;
@@ -1978,7 +1973,6 @@ std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(
         matching.insert(std::map<Swc_Tree_Node*, Swc_Tree_Node*>::value_type(
                           nbrArray[iter->first], nbrArray[iter->second]));
       }
-      //BOOL **matched = Graph_Hungarian_Match();
     }
   }
 

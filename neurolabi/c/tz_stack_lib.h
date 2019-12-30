@@ -213,7 +213,7 @@ void Empty_Stack(Stack *stack);
 
 /**@brief Obsolete function (Use \ref Stack_Is_Empty instead).
  */
-BOOL Is_Stack_Empty(const Stack *stack);
+_BOOL_ Is_Stack_Empty(const Stack *stack);
 
 /*
  */

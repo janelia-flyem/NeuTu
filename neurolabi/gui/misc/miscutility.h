@@ -9,7 +9,7 @@
 
 #include "zhistogram.h"
 #include "zobject3dscan.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "geometry/zintcuboidarray.h"
 #include "geometry/zpointarray.h"
 #include "ztree.h"
@@ -68,8 +68,8 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
-ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
-ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+//ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
 ZIntPoint GetFirstCorner(const ZArray *array);
 ZIntCuboid GetBoundBox(const ZArray *array);

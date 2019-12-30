@@ -3,8 +3,7 @@
 
 #include <QObject>
 
-#include "tz_stdint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/zdvidreader.h"
 #include "flyemdef.h"
 

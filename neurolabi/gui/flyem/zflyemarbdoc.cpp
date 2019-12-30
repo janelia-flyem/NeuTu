@@ -3,6 +3,8 @@
 #include "zstackfactory.h"
 #include "dvid/zdvidgrayslice.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidenv.h"
+
 #include "zstackobjectsourcefactory.h"
 
 ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
@@ -10,28 +12,56 @@ ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
   setTag(neutu::Document::ETag::FLYEM_ARBSLICE);
 }
 
-void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
+bool ZFlyEmArbDoc::setDvid(const ZDvidEnv &env)
 {
-  if (m_dvidReader.open(target)) {
-    m_dvidWriter.open(target);
-    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
+  m_originalEnv = env;
+
+  if (m_dvidWriter.open(env.getFullMainTarget())) {
+    m_dvidEnv = env;
+    prepareGrayscaleReader();
+
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
+    m_mergeProject->setDvidTarget(getDvidTarget());
 
     readInfo();
 
-    prepareDvidData();
+    prepareDvidData(env);
+    return true;
+  }else {
+    m_dvidWriter.clear();
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
+  }
+
+  return false;
+}
+
+#if 0
+void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
+{
+  if (m_dvidWriter.open(target)) {
+//    m_dvidWriter.open(target);
+    m_grayscaleReader.openRaw(getDvidTarget().getGrayScaleTarget());
+    m_activeBodyColorMap.reset();
+    m_mergeProject->setDvidTarget(getDvidTarget());
+
+    readInfo();
+
+    ZDvidEnv env;
+    env.set(target);
+    prepareDvidData(env);
   } else {
-    m_dvidReader.clear();
+    m_dvidWriter.clear();
 //    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", neutu::EMessageType::ERROR));
   }
 }
+#endif
 
-void ZFlyEmArbDoc::prepareDvidData()
+void ZFlyEmArbDoc::prepareDvidData(const ZDvidEnv &env)
 {
-  if (m_dvidReader.isReady()) {
+  if (getDvidReader().isReady()) {
     ZDvidInfo dvidInfo = getDvidInfo();
 
     ZIntCuboid boundBox;
@@ -52,6 +82,8 @@ void ZFlyEmArbDoc::prepareDvidData()
     loadStack(stack);
 
     if (getDvidTarget().hasGrayScaleData()) {
+      initGrayscaleSlice(env, neutu::EAxis::ARB);
+      /*
       ZDvidGraySlice *slice = new ZDvidGraySlice;
       slice->setSliceAxis(neutu::EAxis::ARB);
       slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
@@ -60,6 +92,7 @@ void ZFlyEmArbDoc::prepareDvidData()
       slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
       prepareGraySlice(slice);
       addObject(slice, true);
+      */
     }
 
     if (getDvidTarget().hasSegmentation()) {

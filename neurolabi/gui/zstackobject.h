@@ -1,7 +1,7 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
@@ -49,7 +49,7 @@ public:
   ZStackObject();
   virtual ~ZStackObject();
 
-  enum class EType { //#Review-TZ: Consier moving types to a separate file with namespace zstackobject
+  enum class EType { //#Review-TZ: Consider moving types to a separate file with namespace zstackobject
     UNIDENTIFIED = 0, //Unidentified type
     SWC,
     PUNCTUM,
@@ -66,6 +66,7 @@ public:
     RECT2D,
     DVID_TILE,
     DVID_GRAY_SLICE,
+    DVID_GRAY_SLICE_ENSEMBLE,
     DVID_TILE_ENSEMBLE,
     DVID_LABEL_SLICE,
     DVID_SPARSE_STACK,
@@ -109,7 +110,7 @@ public:
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
-  enum class EHitProtocal {
+  enum class EHitProtocol {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
@@ -355,10 +356,10 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_hitProtocal != EHitProtocal::HIT_NONE && isVisible();
+    return m_hitProtocal != EHitProtocol::HIT_NONE && isVisible();
   }
 
-  inline void setHitProtocal(EHitProtocal protocal) {
+  inline void setHitProtocal(EHitProtocol protocal) {
     m_hitProtocal = protocal;
   }
 
@@ -389,18 +390,13 @@ public:
   static T* CastVoidPointer(void *p);
 
 protected:
-  bool m_selected;
-  bool m_isSelectable;
-  bool m_isVisible;
-//  bool m_isHittable;
-  EHitProtocal m_hitProtocal;
-  bool m_projectionVisible;
+  EHitProtocol m_hitProtocal;
   EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
   double m_basePenWidth;
-  bool m_usingCosmeticPen;
+
   double m_zScale;
   std::string m_source;
   std::string m_objectClass;
@@ -416,11 +412,17 @@ protected:
 
   neutu::display::TVisualEffect m_visualEffect;
 
-  mutable int m_prevDisplaySlice;
+  mutable int m_prevDisplaySlice = -1;
 //  static const char *m_nodeAdapterId;
 
   std::vector<CallBack> m_callbacks_on_selection;
   std::vector<CallBack> m_callbacks_on_deselection;
+
+  bool m_selected = false;
+  bool m_isSelectable = true;
+  bool m_isVisible = true;
+  bool m_projectionVisible = true;
+  bool m_usingCosmeticPen = false;
 };
 
 

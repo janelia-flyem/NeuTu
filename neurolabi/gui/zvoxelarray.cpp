@@ -39,6 +39,14 @@ void ZVoxelArray::addValue(double delta)
   }
 }
 
+void ZVoxelArray::multiplyValue(double a)
+{
+  for (vector<ZVoxel>::iterator iter = m_voxelArray.begin();
+       iter != m_voxelArray.end(); ++iter) {
+    (*iter).setValue((*iter).value() * a);
+  }
+}
+
 void ZVoxelArray::minimizeValue(double v)
 {
   for (vector<ZVoxel>::iterator iter = m_voxelArray.begin();

@@ -180,6 +180,15 @@ void TaskProtocolTask::removeTag(QString tag) {
     m_tags.remove(tag);
 }
 
+void TaskProtocolTask::toggleTag(QString tag, bool on)
+{
+  if (on) {
+    addTag(tag);
+  } else {
+    removeTag(tag);
+  }
+}
+
 bool TaskProtocolTask::hasTag(QString tag) {
     return m_tags.contains(tag);
 }

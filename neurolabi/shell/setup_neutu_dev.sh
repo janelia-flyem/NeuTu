@@ -88,7 +88,7 @@ fi
 
 envName='neutu-env'
 source $condaDir/bin/activate root
-conda create -n $envName python=3.6 -y
+conda create -n $envName -y
 source $condaDir/bin/activate $envName
 conda install neutu$suffix -y $channel_arg
 conda install neu3$suffix -y $channel_arg

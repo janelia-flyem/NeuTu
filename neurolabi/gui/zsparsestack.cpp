@@ -779,6 +779,11 @@ bool ZSparseStack::isEmpty() const
   return true;
 }
 
+void ZSparseStack::clearGrayscale()
+{
+  deprecate(GREY_SCALE);
+}
+
 void ZSparseStack::read(std::istream &stream)
 {
   deprecate(ALL_COMPONET);

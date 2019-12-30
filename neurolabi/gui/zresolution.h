@@ -2,7 +2,7 @@
 #define ZRESOLUTION_H
 
 #include <string>
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "geometry/zpoint.h"
 
 class ZJsonObject;
@@ -31,7 +31,7 @@ public:
     m_voxelSize[2] = z;
   }
 
-  enum EUnit {
+  enum class EUnit {
     UNIT_PIXEL, UNIT_MICRON, UNIT_NANOMETER
   };
 

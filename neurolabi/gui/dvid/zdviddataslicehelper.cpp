@@ -17,12 +17,28 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
+  m_workReader.openRaw(m_reader.getDvidTarget());
   updateCenterCut();
 }
 
 void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
 {
   m_maxZoom = maxZoom;
+}
+
+void ZDvidDataSliceHelper::updateMaxZoom()
+{
+  switch (m_dataRole) {
+  case ZDvidData::ERole::GRAY_SCALE:
+    m_reader.updateMaxGrayscaleZoom();
+    break;
+  case ZDvidData::ERole::LABEL_BLOCK:
+  case ZDvidData::ERole::BODY_LABEL:
+    m_reader.updateMaxLabelZoom();
+    break;
+  default:
+    break;
+  }
 }
 
 int ZDvidDataSliceHelper::getMaxZoom() const
@@ -199,7 +215,7 @@ int ZDvidDataSliceHelper::getActualZoom() const
 
 void ZDvidDataSliceHelper::setZoom(int zoom)
 {
-  m_zoom = std::max(0, std::min(zoom, m_maxZoom));
+  m_zoom = std::max(0, std::min(zoom, getMaxZoom()));
 }
 
 int ZDvidDataSliceHelper::getLowresZoom() const

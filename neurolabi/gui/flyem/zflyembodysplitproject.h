@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QMutex>
+#include <QVector>
 
 #include <set>
 
@@ -14,6 +15,7 @@
 #include "common/zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
+#include "flyem/zflyembodyannotationprotocol.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -33,7 +35,7 @@ class ZFlyEmBodySplitProject : public QObject
   Q_OBJECT
 
 public:
-  explicit ZFlyEmBodySplitProject(QObject *parent = 0);
+  explicit ZFlyEmBodySplitProject(QObject *parent = nullptr);
   virtual ~ZFlyEmBodySplitProject();
 
   /*!
@@ -56,48 +58,12 @@ public:
     return m_reader.getDvidTarget(); }
   void setDvidInfo(const ZDvidInfo &info);
 
-  ZFlyEmNeuron getFlyEmNeuron() const;
-
-  bool hasDataFrame() const;
-  void setDataFrame(ZStackFrame *frame);
-  inline ZStackFrame* getDataFrame() const {
-    return m_dataFrame;
-  }
-
   void setDocument(ZSharedPointer<ZStackDoc> doc);
   ZStackDoc* getDocument() const;
   ZSharedPointer<ZStackDoc> getSharedDocument() const;
 
   template<typename T>
   T* getDocument() const;
-
-  void loadBookmark(const QString &filePath);
-  std::set<int> getBookmarkBodySet() const;
-
-  /*
-  const ZFlyEmBookmarkArray* getBookmarkArray() const {
-    return m_bookmarkArray;
-  }
-  */
-
-  bool hasBookmark() const;
-  int getBookmarkCount() const;
-
-  void locateBookmark(const ZFlyEmBookmark &bookmark);
-
-//  void clearBookmarkDecoration();
-  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-//  void updateBookmarkDecoration();
-
-  void setBookmarkVisible(bool visible);
-//  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-
-//  void removeAllBookmark();
-
-//  void showSkeleton(ZSwcTree *tree);
-//  void showBodyQuickView();
-
-//  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
@@ -115,11 +81,10 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
-      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitResultFunc(
       ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
       size_t minObjSize, bool checkingIsolation);
+  void previewResult();
 
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
@@ -128,17 +93,6 @@ public:
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
-
-  void viewPreviousSlice();
-  void viewNextSlice();
-  void viewFullGrayscale();
-  void viewFullGrayscale(bool viewing);
-  void updateBodyMask();
-//  void downloadBodyMask();
-
-  void setShowingBodyMask(bool state){
-    m_showingBodyMask = state;
-  }
 
   void setSplitMode(neutu::EBodySplitMode mode) {
     m_splitMode = mode;
@@ -157,9 +111,8 @@ public:
 
   std::string getSeedKey(uint64_t bodyId) const;
   std::string getBackupSeedKey(uint64_t bodyId) const;
-  bool isSeedProcessed(uint64_t bodyId) const;
-  void setSeedProcessed(uint64_t bodyId);
 
+  /*
   class ThreadManager {
   public:
     enum EThreadName {
@@ -172,8 +125,9 @@ public:
   private:
     ZThreadFutureMap m_futureMap;
   };
+  */
 
-  void closeBodyWindow();
+//  void closeBodyWindow();
 
   bool isReadyForSplit(const ZDvidTarget &target);
 
@@ -183,9 +137,50 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
-  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
-  void waitResultQuickView();
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+
+  bool hasFinalSplitResult() const;
+
+public: //Obsolete functions
+  ZFlyEmNeuron getFlyEmNeuron() const;
+
+  bool hasDataFrame() const;
+  void setDataFrame(ZStackFrame *frame);
+  inline ZStackFrame* getDataFrame() const {
+    return m_dataFrame;
+  }
+
+  bool hasBookmark() const;
+  int getBookmarkCount() const;
+
+  void locateBookmark(const ZFlyEmBookmark &bookmark);
+
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void setBookmarkVisible(bool visible);
+
+//  void loadBookmark(const QString &filePath);
+  std::set<int> getBookmarkBodySet() const;
+
+  void setShowingBodyMask(bool state){
+    m_showingBodyMask = state;
+  }
+
+  void viewPreviousSlice();
+  void viewNextSlice();
+  void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
+  void updateBodyMask();
+
+  bool isSeedProcessed(uint64_t bodyId) const;
+  void setSeedProcessed(uint64_t bodyId);
+
+  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
+      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
+
+  void waitSplitVis3d();
+//  void downloadBodyMask();
 
 signals:
   void messageGenerated(QString, bool appending = true);
@@ -194,6 +189,7 @@ signals:
   void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);
   void resultCommitted();
+  void splitVis3dCanceled();
 
   void progressStarted(const QString &title, int nticks);
   void progressDone();
@@ -204,25 +200,28 @@ signals:
   void rasingResultQuickView();
   void rasingBodyQuickView();
   void splitListGenerated();
+  void proceedingToUpload();
+  void proceedingToPreview();
+  void proceedingToExport();
 
 public slots:
-  void start();
+//  void start();
   void showDataFrame() const;
   void showDataFrame3d();
 //  void showResult3d();
-  void showResultQuickView();
+  void showSplit3d();
 //  void showBookmark(bool visible);
   void runSplit();
   void runFullSplit();
   void runLocalSplit();
-  void updateResult3dQuick();
+//  void updateResult3dQuick();
   void backupSeed();
 //  void startBodyQuickView();
-  void startResultQuickView();
+//  void startResultQuickView();
   void startQuickView(Z3DWindow *window);
 //  void raiseBodyQuickView();
   void raiseResultQuickView();
-  void updateSplitQuick();
+  void updateSplitVis3d();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -239,13 +238,16 @@ public slots:
   void update3DViewPlane();
 
   void updateSplitDocument();
+  void uploadSplitList();
 
 private slots:
   void resetQuickResultWindow();
   void updateSplitQuickFunc();
-  void invalidateSplitQuick();
-  void uploadSplitList();
+  void resetSplitVis3d();
+  void newSplitVis3d();
   void resetStatusAfterUpload();
+  void previewSplitList();
+  void resetSplitCancel();
 
 private:
   QWidget* getParentWidget() const;
@@ -263,13 +265,14 @@ private:
 //  void showBodyQuickView();
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
-  void result3dQuickFunc();
-  void quitResultUpdate();
-  void cancelResultUpdate();
+//  void result3dQuickFunc();
+  void shutdownSplitVis3dUpdate();
+  void cancelSplitVis3d();
   void uploadSplitListFunc();
-  bool splitSizeChecked() const;
+  bool splitVerified() const;
+  void cancelSplitQuick();
 
-  int getMinObjSize() const { return m_minObjSize; }
+  size_t getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
 
   ZJsonArray getSeedJson() const;
@@ -277,11 +280,25 @@ private:
   ZIntCuboid getSeedBoundBox() const;
 
   void updateBodyId();
+
+  void makeFinalResult(
+      ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
+      size_t minObjSize, bool checkingIsolation,
+      std::function<void(double)> progress);
+
   void processSmallBodyGroup(
       ZObject3dScan *body, size_t minObjSize, ZObject3dScan *smallBodyGroup);
   void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
-      QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
+      QVector<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
       const ZObject3dScan *obj, size_t minIsolationSize);
+  void isolateSmallObjects(
+      ZObject3dScan &body, ZObject3dScan&smallBodyGroup, size_t minObjSize);
+  void prepareSplitList(
+      const std::vector<ZObject3dScan *> &objArray,
+      ZObject3dScan &body, ZObject3dScan &mainBody,
+      bool checkingIsolation,  size_t minIsolationSize, double dp);
+  void regroupSplit(ZObject3dScan &body, const ZObject3dScan &mainBody,
+                    ZObject3dScan &smallBodyGroup, size_t minObjSize);
 
   const ZDvidReader &getMainReader() const {
     return m_reader;
@@ -297,7 +314,10 @@ private:
 
   void updateBodyDep(uint64_t bodyId);
   void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
-  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
+//  void updateBodyDep(const QVector<uint64_t> &bodyArray);
+  template<template<class...> class C>
+  void updateBodyDep(const C<uint64_t> &bodyArray);
 
 
 private:
@@ -306,15 +326,17 @@ private:
   ZDvidReader m_commitReader;
   ZDvidWriter m_commitWriter;
 
+  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+
 //  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
-  ZSharedPointer<ZStackDoc> m_quickResultDoc;
+  ZSharedPointer<ZStackDoc> m_splitVis3dDoc;
 //  Z3DWindow *m_bodyWindow;
 //  Z3DWindow *m_resultWindow; //Result window with split volumes * obsolete
-  Z3DWindow *m_quickResultWindow; //Result window with split surfaces
+  Z3DWindow *m_splitVis3dWindow; //Result window with split surfaces
 //  Z3DWindow *m_quickViewWindow; //Obsolete
 
   size_t m_minObjSize;
@@ -333,15 +355,16 @@ private:
   QTimer *m_timer;
 
   QMutex m_splitWindowMutex;
-  bool m_cancelSplitQuick = false;
-  bool m_splitUpdated = false;
+  bool m_cancelSplitVis3d = false;
+  bool m_splitVis3dSyncHandled = false;
+  bool m_splitReady = false;
 
-  QList<ZObject3dScan> m_splitList;
+  QVector<ZObject3dScan> m_splitList;
   QList<uint64_t> m_oldBodyIdList;
 
   ZProgressSignal *m_progressSignal;
 
-  static const char* THREAD_RESULT_QUICK;
+  static const char* THREAD_SPLIT_VIS3D;
 };
 
 template <typename T>

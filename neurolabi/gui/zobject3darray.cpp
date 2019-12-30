@@ -4,7 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include "tz_error.h"
+#include <stdexcept>
+
 #include "zstring.h"
 #include "tz_stack_utils.h"
 #include "c_stack.h"
@@ -63,7 +64,10 @@ void ZObject3dArray::append(const ZObject3d &obj,
   if (!labelArray.empty()) {
     map<int, ZObject3d*> objMap;
 
-    TZ_ASSERT(obj.size() == labelArray.size(), "Unmatched size");
+    if (obj.size() != labelArray.size()) {
+      throw std::invalid_argument("Unmatched size");
+    }
+//    TZ_ASSERT(obj.size() == labelArray.size(), "Unmatched size");
 
     for (size_t i = 0; i < labelArray.size(); i++) {
       if (objMap.count(labelArray[i]) > 0) {

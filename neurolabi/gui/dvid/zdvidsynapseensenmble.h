@@ -101,6 +101,8 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
 
+  void clearCache();
+
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
 
@@ -267,7 +269,7 @@ private:
   static ZDvidSynapse m_emptySynapse;
   static SynapseSlice m_emptySlice;
 
-  int m_startZ;
+  int m_startZ = 0;
 //  int m_startY;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
@@ -276,19 +278,19 @@ private:
 
   ZSelector<ZIntPoint> m_selector;
 
-  ZStackView *m_view;
+  ZStackView *m_view = nullptr;
   int m_maxPartialArea;
   bool m_fetchingFullAllowed = false;
 //  int m_maxFetchingArea = 4153344; //2048*2048 by default. 0 means no restriction.
 
 //  NeuTube::EAxis m_sliceAxis;
 
-  bool m_isReady;
+  bool m_isReady = false;
 
   ZIntCuboid m_dataRange;
   ZResolution m_resolution;
 
-  ZFlyEmSynapseDataFetcher *m_dataFetcher;
+  ZFlyEmSynapseDataFetcher *m_dataFetcher = nullptr;
 
   mutable QMutex m_dataMutex;
   mutable QCache<int, SynapseSlice> m_sliceCache;

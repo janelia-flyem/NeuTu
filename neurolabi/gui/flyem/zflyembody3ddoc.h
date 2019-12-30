@@ -12,7 +12,7 @@
 #include <QTime>
 #include <QThreadStorage>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -36,6 +36,7 @@ class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
 class ZFlyEmTodoFilterDialog;
+class ZFlyEmBodyAnnotationProtocal;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -59,8 +60,8 @@ class ZFlyEmBody3dDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmBody3dDoc(QObject *parent = 0);
-  ~ZFlyEmBody3dDoc();
+  explicit ZFlyEmBody3dDoc(QObject *parent = nullptr);
+  ~ZFlyEmBody3dDoc() override;
 
 
   void setDataDoc(ZSharedPointer<ZStackDoc> doc);
@@ -155,6 +156,7 @@ public:
 
   ZFlyEmProofDoc* getDataDocument() const;
   bool isAdmin() const;
+  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
@@ -176,7 +178,7 @@ public:
   void processEventFunc();
   void cancelEventThread();
 
-  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 //  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;
@@ -263,15 +265,11 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
-  virtual bool executeDeleteSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeDeleteSwcNodeCommand() override;
   virtual bool executeDeleteUnselectedSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeConnectSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeConnectSwcNodeCommand() override;
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
     return false;
   }
@@ -286,9 +284,7 @@ public:
   virtual bool executeSmartConnectSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeBreakSwcConnectionCommand() override {
-    return false;
-  }
+  virtual bool executeBreakSwcConnectionCommand() override;
   virtual bool executeMergeSwcNodeCommand() override {
     return false;
   }
@@ -336,10 +332,17 @@ public:
   void addBodyConfig(const ZFlyEmBodyConfig &config);
 
   bool isSupervoxel(uint64_t bodyId);
+  size_t getSupervoxelSize(uint64_t svId) const;
+  void cacheSupervoxelSize(std::vector<uint64_t> svIdArray) const;
+
+  void invalidateSelectedBodyCache();
 
   void diagnose() const override;
 
   ZStackDoc3dHelper* getHelper() const;
+
+  void addSynapseSelection(const QString &filter);
+  void addSynapseSelection(const QStringList &filter);
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -352,6 +355,7 @@ public slots:
   void updateSynapse(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
@@ -556,6 +560,11 @@ private:
 
   void dumpObject(ZStackObject *obj, bool recycling);
 
+  void invalidateSupervoxelCache(uint64_t svId);
+  void invalidateBodyCache(uint64_t bodyId);
+  template<typename InputIterator>
+  void invalidateBodyCache(InputIterator first, InputIterator last);
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -595,7 +604,7 @@ private:
 
   ZDvidInfo m_dvidInfo;
 
-  ZThreadFutureMap m_futureMap;
+//  ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
   QTime m_objectTime;
@@ -604,6 +613,9 @@ private:
   ZSharedPointer<ZStackDoc3dHelper> m_helper;
 
   ProtocolTaskConfig m_taskConfig;
+
+  mutable QMutex m_supervoxelSizeCacheMutex;
+  mutable QMap<uint64_t, size_t> m_supervoxelSizeCache;
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;

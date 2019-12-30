@@ -1,6 +1,7 @@
 #include "zlinesegment.h"
-#include "tz_utilities.h"
+
 #include <algorithm>
+#include <utility>
 
 ZLineSegment::ZLineSegment()
 {
@@ -58,8 +59,9 @@ double ZLineSegment::getLength() const
 
 void ZLineSegment::invert()
 {
-  ZPoint tmp;
-  SWAP2(m_start, m_end, tmp);
+  std::swap(m_start, m_end);
+//  ZPoint tmp;
+//  SWAP2(m_start, m_end, tmp);
 }
 
 ZPoint ZLineSegment::getDirection() const

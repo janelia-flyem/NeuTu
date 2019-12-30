@@ -13,6 +13,7 @@ const char *ZFlyEmBodyStatus::KEY_EXPERT = "expert";
 const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
 const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
+const char *ZFlyEmBodyStatus::KEY_PRESERVING_ID = "preserving_id";
 
 /** Implementation details
  *
@@ -33,13 +34,7 @@ ZFlyEmBodyStatus::ZFlyEmBodyStatus(const std::string &status) :
 
 void ZFlyEmBodyStatus::reset()
 {
-  m_status.clear();
-  m_priority = 999;
-  m_protection = 0;
-  m_isExpertStatus = false;
-  m_isFinal = false;
-  m_isMergable = true;
-  m_adminLevel = 0;
+  *this = ZFlyEmBodyStatus();
 }
 
 int ZFlyEmBodyStatus::getPriority() const
@@ -72,6 +67,11 @@ void ZFlyEmBodyStatus::setMergable(bool on)
   m_isMergable = on;
 }
 
+void ZFlyEmBodyStatus::preseveId(bool on)
+{
+  m_preservingId = on;
+}
+
 void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
 {
   reset();
@@ -84,6 +84,7 @@ void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
   m_isFinal = parser.getValue(obj, KEY_FINAL, false);
   m_isMergable = parser.getValue(obj, KEY_MERGABLE, true);
   m_adminLevel = parser.getValue<int>(obj, KEY_ADMIN_LEVEL, 0);
+  m_preservingId = parser.getValue(obj, KEY_PRESERVING_ID, false);
 }
 
 ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
@@ -98,6 +99,7 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
    if (m_adminLevel > 0) {
      obj.setEntry(KEY_ADMIN_LEVEL, m_adminLevel);
    }
+   obj.setEntry(KEY_PRESERVING_ID, m_preservingId);
 
    return obj;
 }
@@ -148,6 +150,11 @@ bool ZFlyEmBodyStatus::isMergable() const
 bool ZFlyEmBodyStatus::isExpertStatus() const
 {
   return m_isExpertStatus;
+}
+
+bool ZFlyEmBodyStatus::presevingId() const
+{
+  return m_preservingId;
 }
 
 std::string ZFlyEmBodyStatus::getStatusKey() const

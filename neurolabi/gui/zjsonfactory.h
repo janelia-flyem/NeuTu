@@ -1,13 +1,12 @@
 #ifndef ZJSONFACTORY_H
 #define ZJSONFACTORY_H
 
+#include <cstdint>
 #include <vector>
 
 #if defined(_QT_GUI_USED_)
 #include <QMap>
 #endif
-
-#include "tz_stdint.h"
 
 class ZJsonArray;
 class ZJsonObject;

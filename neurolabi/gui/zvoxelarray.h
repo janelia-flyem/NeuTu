@@ -43,6 +43,8 @@ public:
    */
   void addValue(double delta);
 
+  void multiplyValue(double a);
+
   /*!
    * \brief minimizeValue Set the bound of the voxel values.
    *

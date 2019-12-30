@@ -3,13 +3,14 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
+
 #include "z3dwindow.h"
 #include "zfiletype.h"
 #include "zswcmovieactor.h"
 #include "zswctree.h"
 #include "mvc/zstackdoc.h"
 #include "z3dinteractionhandler.h"
-#include "tz_error.h"
 #include "z3dswcfilter.h"
 #include "zstack.hxx"
 #include "zstackmovieactor.h"
@@ -238,8 +239,12 @@ int ZMovieMaker::make(const std::string &filePath)
     if (takingPicture) {
       ++index;
     }
+
+    if (index >= 10000) {
+      throw std::runtime_error("Too many frames");
+    }
     //cout << "Z cut value after:" << m_stage->getVolumeEntryExitPoints()->zCutLowerValue() << endl;
-    TZ_ASSERT(index < 10000, "Too many frames");
+//    TZ_ASSERT(index < 10000, "Too many frames");
 
     //cout << "Z cut value: :" << m_stage->getVolumeRaycaster()->zCutLowerValue() << endl;
 

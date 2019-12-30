@@ -20,6 +20,8 @@ public:
   virtual ~TaskIO();
 
   void open(const std::string &server);
+  std::string getServerAddress() const;
+
   void setStatusCode(int code);
   int getStatusCode() const;
   std::string getResponse() const;
