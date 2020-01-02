@@ -233,6 +233,19 @@ void ZNeuronTracer::init()
   m_greyOffset = 0.0;
   m_preferredSignalChannel = 0;
 
+  _subtractBackground = [this](Stack *stack) {
+    if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
+      double maxValue = C_Stack::max(stack);
+      Stack_Csub(stack, maxValue);
+      m_diag.setInfo("background", "bright");
+    }
+
+    int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+    m_diag.setInfo("bgsub", bgsub);
+
+    m_diag.save(stack, "bgsub");
+  };
+
   m_config = ZNeuronTracerConfig::getInstance();
 
   configure();
@@ -1527,46 +1540,16 @@ int ZNeuronTracer::getMinSeedObjSize(double seedDensity) const
   int s = 0;
 
   if (m_screeningSeed) {
-    if (seedDensity > 0.00015) {
-      s = 125;
-    } else if (seedDensity > 0.00005) {
-      s = 64;
-    }
+//    if (seedDensity > 0.00005) { //>1 seed in every 20x20x20 block
+    s = int(seedDensity * 1000000); //heuristic threshold estimate
+//    }
   }
 
   return s;
 }
 
-ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
+Stack* ZNeuronTracer::makeMask(const Stack *stack)
 {
-  startProgress();
-
-  m_diag.setDir(getDiagnosisDir());
-//  ZNeuronTracer::Diagnosis diag(getDiagnosisDir());
-  m_diag.saveConfig(*this);
-
-  ZSwcTree *tree = NULL;
-
-  initTraceMask(false);
-
-  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
-    double maxValue = C_Stack::max(stack);
-    Stack_Csub(stack, maxValue);
-    m_diag.setInfo("background", "bright");
-  }
-
-  int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
-  m_diag.setInfo("bgsub", bgsub);
-
-  m_diag.save(stack, "bgsub");
-#ifdef _DEBUG_2
-  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
-#endif
-
-  //Extract seeds
-  //First mask
-  log("Binarizing ...");
-
   /* <bw> allocated */
   Stack *bw = binarize(stack);
   C_Stack::translate(bw, GREY, 1);
@@ -1622,6 +1605,55 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     C_Stack::kill(mask2);
     mask2 = NULL;
   }
+  advanceProgress(0.05);
+
+  return mask;
+}
+
+ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
+{
+  startProgress();
+
+  m_diag.setDir(getDiagnosisDir());
+//  ZNeuronTracer::Diagnosis diag(getDiagnosisDir());
+  m_diag.saveConfig(*this);
+
+  ZSwcTree *tree = NULL;
+
+  initTraceMask(false);
+
+  if (_subtractBackground) {
+    _subtractBackground(stack);
+  }
+
+  /*
+  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
+    double maxValue = C_Stack::max(stack);
+    Stack_Csub(stack, maxValue);
+    m_diag.setInfo("background", "bright");
+  }
+
+  int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+  m_diag.setInfo("bgsub", bgsub);
+
+  m_diag.save(stack, "bgsub");
+  */
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
+
+  //Extract seeds
+  //First mask
+  log("Binarizing ...");
+
+  Stack *mask = nullptr;
+
+  if (_makeMask) {
+    mask = _makeMask(stack);
+  } else {
+    mask = makeMask(stack);
+  }
+
   advanceProgress(0.05);
 
   //Trace each seed

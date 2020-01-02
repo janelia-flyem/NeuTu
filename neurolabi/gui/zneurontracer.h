@@ -230,6 +230,8 @@ private:
   std::vector<Locseg_Chain*> screenChain(const Stack *stack,
                                          std::vector<Locseg_Chain*> &chainArray);
 
+  Stack* makeMask(const Stack *stack);
+
   void clearBuffer();
 
   void init();
@@ -304,6 +306,10 @@ private:
   Diagnosis m_diag;
   std::function<void(const std::string)> m_log =
       [](const std::string &str) { std::cout << str << std::endl; };
+
+  std::function<void(Stack*)> _subtractBackground;
+  std::function<Stack*(Stack*)> _makeMask;
+
   /*
   static const char *m_levelKey;
   static const char *m_minimalScoreKey;
