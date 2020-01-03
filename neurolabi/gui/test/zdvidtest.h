@@ -504,6 +504,11 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
             dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
 
+  box.setFirstX(0);
+  box.setLastX(-1);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2&miny=20&maxy=50&minz=30&maxz=60",
+            dvidUrl4.getSparsevolUrl(1, 2, box));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));

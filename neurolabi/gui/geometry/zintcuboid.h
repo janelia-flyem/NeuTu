@@ -53,6 +53,13 @@ public:
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   //void set(const int *corner);
 
+  int getFirstX() const;
+  int getLastX() const;
+  int getFirstY() const;
+  int getLastY() const;
+  int getFirstZ() const;
+  int getLastZ() const;
+
   void setFirstX(int x);
   void setLastX(int x);
   void setFirstY(int y);

@@ -743,28 +743,30 @@ std::string ZDvidUrl::AppendRangeQuery(
 
 }
 
+namespace {
+
+void append_range_query(
+    std::string &query, const std::string &name, int minv, int maxv)
+{
+  if (minv <= maxv) {
+    query = AppendQuery(query, "min" + name, minv);
+    query = AppendQuery(query, "max" + name, maxv);
+  }
+}
+
+}
+
 std::string ZDvidUrl::AppendRangeQuery(
     const std::string &url, const ZIntCuboid &box)
 {
-  ZString query;
-  if (!url.empty() && !box.isEmpty()) {
-    query += "minx=";
-    query.appendNumber(box.getFirstCorner().getX());
-    query += "&maxx=";
-    query.appendNumber(box.getLastCorner().getX());
-
-    query += "&miny=";
-    query.appendNumber(box.getFirstCorner().getY());
-    query += "&maxy=";
-    query.appendNumber(box.getLastCorner().getY());
-
-    query += "&minz=";
-    query.appendNumber(box.getFirstCorner().getZ());
-    query += "&maxz=";
-    query.appendNumber(box.getLastCorner().getZ());
+  std::string newUrl = url;
+  if (!url.empty()) {
+    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
+    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
+    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
   }
 
-  return AppendQuery(url, query);
+  return newUrl;
 }
 
 std::string ZDvidUrl::getSupervoxelUrl

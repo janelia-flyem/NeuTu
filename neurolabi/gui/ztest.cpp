@@ -30691,6 +30691,49 @@ void ZTest::test(MainWindow *host)
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
 
+#if 0
+  neutu::RangePartitionProcess(1, 10, 1, [](int x0, int x1) {
+    std::cout << "[" << x0 << ", " << x1 << "]" << std::endl;
+  });
+
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  reader->updateMaxLabelZoom();
+
+  ZDvidUrl::SparsevolConfig config;
+  config.bodyId = 425790257;
+//  config.format = "blocks";
+//  config.range = ZIntCuboid(0, 0, 14720, -1, -1, 14800);
+//  config.zoom = 2;
+  config.labelType = neutu::EBodyLabelType::BODY;
+
+  size_t nvoxels = 0;
+  size_t nblocks = 0;
+  ZIntCuboid box;
+  std::tie(nvoxels, nblocks, box) =
+      reader->readBodySizeInfo(config.bodyId, config.labelType);
+  std::cout << "#nblocks: " << nblocks << std::endl;
+  std::cout << "#nvoxels: " << nvoxels << std::endl;
+
+//  config.range.setFirstZ(box.getFirstZ());
+//  config.range.setLastZ(box.getFirstZ() + box.getDepth() / 2);
+
+//  ZDvidUrl dvidUrl(reader->getDvidTarget());
+//  QByteArray buffer = reader->readBuffer(dvidUrl.getSparsevolUrl(config));
+//  std::cout << buffer.size() << std::endl;
+
+  ZObject3dScan obj;
+//  obj.importDvidBlockBuffer(buffer.data(), buffer.size(), true);
+//  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+  reader->readMultiscaleBody(config.bodyId, 2, true, &obj);
+  std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

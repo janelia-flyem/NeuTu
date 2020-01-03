@@ -28,6 +28,7 @@
 
 #include "neutubeconfig.h"
 
+#include "common/utilities.h"
 #include "geometry/zaffinerect.h"
 #include "zarray.h"
 #include "zstring.h"
@@ -753,12 +754,57 @@ ZObject3dScan *ZDvidReader::readBody(
       QElapsedTimer timer;
       timer.start();
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
-      std::cout << "Reading body data with " << buffer.size() << " bytes: "
-                <<  timer.elapsed() << " ms" << std::endl;
 
-      timer.restart();
-      result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-      std::cout << "Parsing body: " << timer.elapsed() << " ms" << std::endl;
+      if (buffer.isEmpty()) {
+        LKINFO << "Failed to read body data.";
+        size_t nvoxels = 0;
+        size_t nblocks = 0;
+        ZIntCuboid box;
+        std::tie(nvoxels, nblocks, box) = readBodySizeInfo(bodyId, labelType);
+
+        if (nvoxels > 0) {
+          LKINFO<< QString("Try to read %1 with partitions").arg(bodyId);
+
+          int zoomScale = zgeom::GetZoomScale(zoom);
+          int npart = nblocks / 1000 / zoomScale / zoomScale / zoomScale;
+
+          neutu::RangePartitionProcess(
+                box.getFirstZ(), box.getLastZ(), npart, [&, this](int z0, int z1) {
+            ZObject3dScan part;
+            config.range.setFirstZ(z0);
+            config.range.setLastZ(z1);
+            buffer = this->readBuffer(dvidUrl.getSparsevolUrl(config));
+            part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+            result->concat(part);
+          });
+//          config.range.setFirstZ(box.getFirstZ());
+//          int zstep = box.getDepth() / npart - 1;
+//          config.range.setLastZ(box.getFirstZ() + zstep);
+//          buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
+//          result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+//          int newFirstZ = config.range.getLastZ() + 1;
+//          for (int i = 1; i < npart; ++i) {
+//            ZObject3dScan part;
+//            config.range.setFirstZ(newFirstZ);
+//            int newLastZ = newFirstZ + zstep;
+//            if (i == npart - 1) {
+//              newLastZ = box.getLastZ();
+//            }
+//            config.range.setLastZ(newLastZ);
+//            buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
+//            part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+//            result->concat(part);
+//            newFirstZ = config.range.getLastZ() + 1;
+//          }
+        }
+      } else {
+        std::cout << "Reading body data with " << buffer.size() << " bytes: "
+                  <<  timer.elapsed() << " ms" << std::endl;
+
+        timer.restart();
+        result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+        std::cout << "Parsing body: " << timer.elapsed() << " ms" << std::endl;
+      }
     } else {
       readBodyRle(bodyId, labelType, zoom, box, canonizing, result);
     }
