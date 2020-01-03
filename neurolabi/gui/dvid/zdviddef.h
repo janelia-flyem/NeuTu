@@ -1,6 +1,9 @@
 #ifndef ZDVIDDEF_H
 #define ZDVIDDEF_H
 
+#include "common/neutudefs.h"
+#include "geometry/zintcuboid.h"
+
 namespace dvid {
 enum class ELabelIndexType {
   POST_SYN, PRE_SYN, GAP, ALL_SYN, NOTE, VOXEL
@@ -20,6 +23,14 @@ enum class EAnnotationLoadMode {
 };
 
 static const int DEFAULT_ROI_BLOCK_SIZE = 32;
+
+struct SparsevolConfig {
+  uint64_t bodyId = 0;
+  ZIntCuboid range;
+  int zoom = 0;
+  neutu::EBodyLabelType labelType;
+  std::string format;
+};
 
 }
 

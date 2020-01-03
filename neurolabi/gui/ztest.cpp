@@ -30698,11 +30698,28 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxLabelZoom();
+  ZObject3dScan obj;
+  dvid::SparsevolConfig config;
+  config.bodyId = 947573616;
+  config.labelType = neutu::EBodyLabelType::BODY;
+  config.format = "blocks";
+  config.zoom = 0;
+  reader->readBodyWithPartition(config, true, 5, &obj);
+  std::cout << obj.isCanonizedActually() << std::endl;
+
+  ZObject3dScan obj2;
+  reader->readBody(config.bodyId, config.labelType, config.zoom, ZIntCuboid(), true, &obj2);
+  std::cout << obj.equalsLiterally(obj2) << std::endl;
+#endif
+
 #if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   reader->updateMaxLabelZoom();
 
-  ZDvidUrl::SparsevolConfig config;
+  dvid::SparsevolConfig config;
   config.bodyId = 425790257;
 //  config.format = "blocks";
 //  config.range = ZIntCuboid(0, 0, 14720, -1, -1, 14800);
@@ -30731,7 +30748,7 @@ void ZTest::test(MainWindow *host)
   reader->readMultiscaleBody(config.bodyId, 2, true, &obj);
   std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
 
-  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

@@ -197,6 +197,9 @@ inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
 void RangePartitionProcess(
     int x0, int x1, int n, std::function<void(int, int)> f);
 
+//void RangePartitionProcess(
+//    int x0, int x1, int block, int n, std::function<void(int, int)> f);
+
 } //namespace neutu
 
 //template<>

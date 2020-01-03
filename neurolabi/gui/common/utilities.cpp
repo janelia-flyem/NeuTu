@@ -89,3 +89,29 @@ void neutu::RangePartitionProcess(
   }
 }
 
+/*
+void neutu::RangePartitionProcess(
+    int x0, int x1, int block, int n, std::function<void(int, int)> f)
+{
+  if (f) {
+    if (x1 >= x0) {
+      if (n > 0) {
+        int currentMin = x0;
+        int length = (x1 - x0 + 1);
+        x0 =
+        int dx = (length / n / block) * block;
+
+        int currentMax = x0 + dx - 1;
+        for (int i = 0; i < n; i++) {
+          if (i < remain) {
+            currentMax += 1;
+          }
+          f(currentMin, currentMax);
+          currentMin = currentMax + 1;
+          currentMax += dx;
+        }
+      }
+    }
+  }
+}
+*/

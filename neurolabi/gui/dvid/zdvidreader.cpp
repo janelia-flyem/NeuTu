@@ -728,6 +728,58 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan* ZDvidReader::readBodyWithPartition(
+    const dvid::SparsevolConfig &config, bool canonizing, int npart,
+    ZObject3dScan *result) const
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    if (npart <= 0) {
+      npart = 1;
+    }
+
+    ZIntCuboid box = config.range;
+    if (box.isEmpty()) {
+      size_t nvoxels = 0;
+      size_t nblocks = 0;
+      std::tie(nvoxels, nblocks, box) =
+          readBodySizeInfo(config.bodyId, config.labelType);
+    }
+
+    ZDvidUrl dvidUrl(getDvidTarget());
+    neutu::RangePartitionProcess(
+          box.getFirstZ(), box.getLastZ(), npart, [&, this](int z0, int z1) {
+      dvid::SparsevolConfig subconfig = config;
+      ZObject3dScan part;
+      subconfig.range.setFirstZ(z0);
+      subconfig.range.setLastZ(z1);
+      if (this->getDvidTarget().hasBlockCoding()) {
+        subconfig.format = "blocks";
+        QByteArray buffer =
+            this->readBuffer(dvidUrl.getSparsevolUrl(subconfig));
+        part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+      } else {
+        this->readBody(
+              subconfig.bodyId, subconfig.labelType, subconfig.zoom,
+              subconfig.range, canonizing, &part);
+      }
+      result->concat(part);
+    });
+    if (canonizing) {
+      result->canonize();
+    }
+  }
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, neutu::EBodyLabelType labelType, int zoom,
     const ZIntCuboid &box, bool canonizing,
@@ -743,7 +795,7 @@ ZObject3dScan *ZDvidReader::readBody(
     }
 
     if (getDvidTarget().hasBlockCoding()) {
-      ZDvidUrl::SparsevolConfig config;
+      dvid::SparsevolConfig config;
       config.bodyId = bodyId;
       config.format = "blocks";
       config.range = box;
@@ -759,43 +811,16 @@ ZObject3dScan *ZDvidReader::readBody(
         LKINFO << "Failed to read body data.";
         size_t nvoxels = 0;
         size_t nblocks = 0;
-        ZIntCuboid box;
-        std::tie(nvoxels, nblocks, box) = readBodySizeInfo(bodyId, labelType);
+        ZIntCuboid newBox;
+        std::tie(nvoxels, nblocks, newBox) = readBodySizeInfo(bodyId, labelType);
 
         if (nvoxels > 0) {
           LKINFO<< QString("Try to read %1 with partitions").arg(bodyId);
 
           int zoomScale = zgeom::GetZoomScale(zoom);
-          int npart = nblocks / 1000 / zoomScale / zoomScale / zoomScale;
-
-          neutu::RangePartitionProcess(
-                box.getFirstZ(), box.getLastZ(), npart, [&, this](int z0, int z1) {
-            ZObject3dScan part;
-            config.range.setFirstZ(z0);
-            config.range.setLastZ(z1);
-            buffer = this->readBuffer(dvidUrl.getSparsevolUrl(config));
-            part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-            result->concat(part);
-          });
-//          config.range.setFirstZ(box.getFirstZ());
-//          int zstep = box.getDepth() / npart - 1;
-//          config.range.setLastZ(box.getFirstZ() + zstep);
-//          buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
-//          result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-//          int newFirstZ = config.range.getLastZ() + 1;
-//          for (int i = 1; i < npart; ++i) {
-//            ZObject3dScan part;
-//            config.range.setFirstZ(newFirstZ);
-//            int newLastZ = newFirstZ + zstep;
-//            if (i == npart - 1) {
-//              newLastZ = box.getLastZ();
-//            }
-//            config.range.setLastZ(newLastZ);
-//            buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
-//            part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-//            result->concat(part);
-//            newFirstZ = config.range.getLastZ() + 1;
-//          }
+          int npart = nblocks / 2000 / zoomScale / zoomScale / zoomScale;
+          config.range = newBox;
+          readBodyWithPartition(config, canonizing, npart, result);
         }
       } else {
         std::cout << "Reading body data with " << buffer.size() << " bytes: "

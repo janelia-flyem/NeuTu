@@ -92,13 +92,6 @@ public:
   std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
 //  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
-  struct SparsevolConfig {
-    uint64_t bodyId = 0;
-    ZIntCuboid range;
-    int zoom = 0;
-    std::string format;
-    neutu::EBodyLabelType labelType;
-  };
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -111,7 +104,7 @@ public:
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
   std::string getSparsevolSizeUrl(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
-  std::string getSparsevolUrl(const SparsevolConfig &config);
+  std::string getSparsevolUrl(const dvid::SparsevolConfig &config);
 
   std::string getSparsevolLastModUrl(uint64_t bodyId);
 
@@ -347,6 +340,8 @@ public:
 
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
+  static std::string AppendRangeQuery(
+      const std::string &url, const ZIntCuboid &box, bool exact);
   static std::string AppendRangeQuery(
       const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact);
 

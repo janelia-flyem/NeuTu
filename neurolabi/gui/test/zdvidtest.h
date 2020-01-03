@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
+#include "dvid/zdviddef.h"
 #include "dvid/zdvidinfo.h"
 //#include "dvid/zdvidbuffer.h"
 #include "dvid/zdvidtarget.h"
@@ -512,6 +513,48 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
+
+  box.setFirstY(0);
+  box.setLastY(-1);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2&minz=30&maxz=60",
+            dvidUrl4.getSparsevolUrl(1, 2, box));
+
+  box.setFirstZ(0);
+  box.setLastZ(-1);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2",
+            dvidUrl4.getSparsevolUrl(1, 2, box));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=0",
+            dvidUrl4.getSparsevolUrl(1, 0, box));
+
+  dvid::SparsevolConfig config;
+  config.bodyId = 1;
+  config.labelType = neutu::EBodyLabelType::BODY;
+  config.format = "blocks";
+  config.zoom = 0;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=0&format=blocks",
+            dvidUrl4.getSparsevolUrl(config));
+
+  config.range.setFirstX(1);
+  config.range.setLastX(10);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=0&format=blocks&minx=1&maxx=10",
+            dvidUrl4.getSparsevolUrl(config));
+
+  config.zoom = 2;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2&format=blocks&minx=1&maxx=10",
+            dvidUrl4.getSparsevolUrl(config));
+
+  config.range.setFirstY(2);
+  config.range.setLastY(20);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2&format=blocks&minx=1&maxx=10&miny=2&maxy=20",
+            dvidUrl4.getSparsevolUrl(config));
 
   ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
