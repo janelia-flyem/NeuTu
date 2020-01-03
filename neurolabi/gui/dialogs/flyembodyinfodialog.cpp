@@ -2783,12 +2783,21 @@ void FlyEmBodyInfoDialog::setNeuPrintReader(
 }
 */
 
+std::string FlyEmBodyInfoDialog::getNeuprintUuid() const {
+  if (m_neuprintUuid.empty()) {
+    return m_reader.getDvidTarget().getUuid();
+  }
+
+  return m_neuprintUuid;
+}
+
+
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
   if (!m_neuPrintReader) {
     m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
-          ZGlobal::GetInstance().makeNeuPrintReader(
-            m_reader.getDvidTarget().getUuid().c_str()));
+          ZGlobal::GetInstance().makeNeuPrintReader(getNeuprintUuid().c_str()));
+//            m_reader.getDvidTarget().getUuid().c_str()));
   }
 
   if (!m_neuPrintReader) {

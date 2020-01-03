@@ -107,7 +107,7 @@ bool NeuPrintReader::isReady()
 
 QString NeuPrintReader::getNeuronLabel(char quote) const
 {
-  QString label =  m_currentDataset + "-Neuron";
+  QString label =  m_currentDataset + "_Neuron";
   if (quote != '\0') {
     label = quote + label + quote;
   }
@@ -179,7 +179,7 @@ QStringList NeuPrintReader::getDatasetList() const
 
 namespace {
 const char* BODY_QUERY_RETURN =
-    "n.bodyId, n.type, n.name, n.status, n.pre, n.post, n.primaryNeurite";
+    "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.primaryNeurite";
 const char* BODY_QUERY_SYNAPSE_COUNT = "(n.pre + n.post)";
 
 //Assuming the following order: ID, type name, status, pre, post
@@ -334,7 +334,7 @@ ZJsonArray NeuPrintReader::queryAllNamedNeuron()
   QString query = "MATCH (n:"
       + getNeuronLabel('`') +
       ") "
-      "WHERE exists(n.name) AND n.name =~ '.*[^\\\\*]' "
+      "WHERE exists(n.instance) AND n.instance =~ '.*[^\\\\*]' "
       "RETURN " + BODY_QUERY_RETURN;
   if (m_numberLimit > 0) {
      query += QString(" ORDER BY (n.pre + n.post) DESC LIMIT %1").arg(m_numberLimit);
@@ -391,7 +391,7 @@ ZJsonArray NeuPrintReader::queryNeuronByType(const QString &type)
 ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
 {
   CypherQuery query = CypherQueryBuilder().
-      match(QString("(n:%1 {name:\"%2\"})").arg(getNeuronLabel('`')).arg(name)).
+      match(QString("(n:%1 {instance:\"%2\"})").arg(getNeuronLabel('`')).arg(name)).
       orderDesc(BODY_QUERY_SYNAPSE_COUNT).
       limit(m_numberLimit).
       ret(BODY_QUERY_RETURN);

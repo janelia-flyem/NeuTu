@@ -247,6 +247,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(const T &flag)
 {
 //  KINFO << "Creating FlyEmBodyInfoDialog";
   FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, m_parent);
+  dlg->setNeuprintUuid(m_neuprintUuid);
   dlg->dvidTargetChanged(m_parent->getDvidTarget());
   QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
                    dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
@@ -271,6 +272,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
     KINFO << "Creating sequencer dialog";
     m_bodyInfoDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
+    m_bodyInfoDlg->setNeuprintUuid(m_neuprintUuid);
 
     QObject::connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
                      m_parent, SLOT(locateBody(uint64_t)));

@@ -92,7 +92,13 @@ ZDvidVersionDag::getAncestorList(const std::string &uuid) const
 {
   std::vector<std::string> uuidList;
   std::queue<std::string> uuidQueue;
-  uuidQueue.push(uuid);
+
+  std::string normalUuid = uuid;
+  if (normalUuid.length() > DVID_UUID_COMMON_LENGTH) {
+    normalUuid = uuid.substr(0, DVID_UUID_COMMON_LENGTH);
+  }
+
+  uuidQueue.push(normalUuid);
 
   while (!uuidQueue.empty()) {
     std::string currentUuid = uuidQueue.front();
