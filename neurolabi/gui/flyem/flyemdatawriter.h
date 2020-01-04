@@ -1,6 +1,7 @@
 #ifndef FLYEMDATAWRITER_H
 #define FLYEMDATAWRITER_H
 
+#include <vector>
 #include <string>
 #include <functional>
 

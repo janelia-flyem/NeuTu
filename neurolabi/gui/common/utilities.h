@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <functional>
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
