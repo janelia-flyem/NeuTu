@@ -94,5 +94,6 @@
 #include "test/miscutilitytest.h"
 #include "test/neutusetest.h"
 #include "test/flyemutilitiestest.h"
+#include "test/zneurontracertest.h"
 
 #endif // ZTESTALL_H

@@ -1121,13 +1121,13 @@ SOURCES += main.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \
     zglobal.cpp \
     dvid/zdvidresultservice.cpp \
     zstackgarbagecollector.cpp \
-    dialogs/zflyembodysplitdialog.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     zstackdockeyprocessor.cpp \

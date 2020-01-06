@@ -40,6 +40,12 @@ public:
 
   int getMaxBodies() const;
 
+  void setNeuprintUuid(const std::string uuid) {
+    m_neuprintUuid = uuid;
+  }
+
+  std::string getNeuprintUuid() const;
+
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
 
@@ -205,6 +211,7 @@ private:
     qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
+    std::string m_neuprintUuid; //temp hack
 
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;

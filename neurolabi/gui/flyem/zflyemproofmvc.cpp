@@ -4400,6 +4400,22 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
     }
 
     if (!reader->hasDataset(getDvidTarget().getUuid().c_str())) {
+      const ZDvidVersionDag &dag = getCompleteDocument()->getVersionDag();
+      auto uuidList = dag.getAncestorList(getDvidTarget().getUuid());
+      for (auto uuid : uuidList) {
+        if (reader->hasDataset(uuid.c_str())) {
+//          ZDialogFactory::Warn(
+//                "Old UUID Used",
+//                "The current DVID node does not have a correspondence in NeuPrint."
+//                "Dataset configured with an old node will be used.",
+//                const_cast<ZFlyEmProofMvc*>(this));
+
+          m_dlgManager->setNeuprintUuid(uuid);
+
+          return neutu::EServerStatus::NORMAL;
+        }
+      }
+
       return neutu::EServerStatus::NOSUPPORT;
     }
 

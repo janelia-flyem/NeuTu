@@ -94,6 +94,99 @@ TEST(common, utilities)
   x0 = 5;
   x1 = 10;
   ASSERT_FALSE(neutu::ClipRange(1, 3, x0, x1));
+
+  std::vector<std::pair<int, int>> partition;
+  neutu::RangePartitionProcess(1, 10, 10, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(10, partition.size());
+  for (size_t i = 1; i <= 10; ++i) {
+    ASSERT_EQ(i, partition[i-1].first);
+    ASSERT_EQ(i, partition[i-1].second);
+  }
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 10, 11, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(10, partition.size());
+  for (size_t i = 1; i <= 10; ++i) {
+    ASSERT_EQ(i, partition[i-1].first);
+    ASSERT_EQ(i, partition[i-1].second);
+  }
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 10, 1, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(1, partition.size());
+  ASSERT_EQ(1, partition[0].first);
+  ASSERT_EQ(10, partition[0].second);
+
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 10, 20, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(10, partition.size());
+  for (size_t i = 1; i <= 10; ++i) {
+    ASSERT_EQ(i, partition[i-1].first);
+    ASSERT_EQ(i, partition[i-1].second);
+  }
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 10, 2, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(2, partition.size());
+  ASSERT_EQ(1, partition[0].first);
+  ASSERT_EQ(5, partition[0].second);
+  ASSERT_EQ(6, partition[1].first);
+  ASSERT_EQ(10, partition[1].second);
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 10, 3, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(3, partition.size());
+  ASSERT_EQ(1, partition[0].first);
+  ASSERT_EQ(4, partition[0].second);
+  ASSERT_EQ(5, partition[1].first);
+  ASSERT_EQ(7, partition[1].second);
+  ASSERT_EQ(8, partition[2].first);
+  ASSERT_EQ(10, partition[2].second);
+
+  partition.clear();
+  neutu::RangePartitionProcess(1, 11, 3, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(3, partition.size());
+  ASSERT_EQ(1, partition[0].first);
+  ASSERT_EQ(4, partition[0].second);
+  ASSERT_EQ(5, partition[1].first);
+  ASSERT_EQ(8, partition[1].second);
+  ASSERT_EQ(9, partition[2].first);
+  ASSERT_EQ(11, partition[2].second);
+
+  partition.clear();
+  neutu::RangePartitionProcess(2345, 2455667, 300, [&](int x0, int x1) {
+    partition.push_back(std::pair<int, int>(x0, x1));
+  });
+
+  ASSERT_EQ(300, partition.size());
+  ASSERT_EQ(2345, partition[0].first);
+  ASSERT_EQ(2455667, partition[partition.size() - 1].second);
+  for (size_t i = 1; i < partition.size(); ++i) {
+    ASSERT_EQ(partition[i-1].second + 1, partition[i].first);
+  }
+
 }
 
 TEST(common, math)

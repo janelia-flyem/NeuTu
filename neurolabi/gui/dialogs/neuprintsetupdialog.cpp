@@ -92,7 +92,7 @@ bool NeuprintSetupDialog::apply()
                   "NeuPrint Not Supported",
                   "Cannot use NeuPrint at " + server +
                   " because this dataset is not supported by the server"
-                  " or th token is wrong.\n\n"
+                  " or the token is wrong.\n\n"
                   "Details: " + details,
                   this);
           }

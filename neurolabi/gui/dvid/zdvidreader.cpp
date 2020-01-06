@@ -28,6 +28,7 @@
 
 #include "neutubeconfig.h"
 
+#include "common/utilities.h"
 #include "geometry/zaffinerect.h"
 #include "zarray.h"
 #include "zstring.h"
@@ -727,6 +728,58 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan* ZDvidReader::readBodyWithPartition(
+    const dvid::SparsevolConfig &config, bool canonizing, int npart,
+    ZObject3dScan *result) const
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    if (npart <= 0) {
+      npart = 1;
+    }
+
+    ZIntCuboid box = config.range;
+    if (box.isEmpty()) {
+      size_t nvoxels = 0;
+      size_t nblocks = 0;
+      std::tie(nvoxels, nblocks, box) =
+          readBodySizeInfo(config.bodyId, config.labelType);
+    }
+
+    ZDvidUrl dvidUrl(getDvidTarget());
+    neutu::RangePartitionProcess(
+          box.getFirstZ(), box.getLastZ(), npart, [&, this](int z0, int z1) {
+      dvid::SparsevolConfig subconfig = config;
+      ZObject3dScan part;
+      subconfig.range.setFirstZ(z0);
+      subconfig.range.setLastZ(z1);
+      if (this->getDvidTarget().hasBlockCoding()) {
+        subconfig.format = "blocks";
+        QByteArray buffer =
+            this->readBuffer(dvidUrl.getSparsevolUrl(subconfig));
+        part.importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+      } else {
+        this->readBody(
+              subconfig.bodyId, subconfig.labelType, subconfig.zoom,
+              subconfig.range, canonizing, &part);
+      }
+      result->concat(part);
+    });
+    if (canonizing) {
+      result->canonize();
+    }
+  }
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, neutu::EBodyLabelType labelType, int zoom,
     const ZIntCuboid &box, bool canonizing,
@@ -742,7 +795,7 @@ ZObject3dScan *ZDvidReader::readBody(
     }
 
     if (getDvidTarget().hasBlockCoding()) {
-      ZDvidUrl::SparsevolConfig config;
+      dvid::SparsevolConfig config;
       config.bodyId = bodyId;
       config.format = "blocks";
       config.range = box;
@@ -753,12 +806,30 @@ ZObject3dScan *ZDvidReader::readBody(
       QElapsedTimer timer;
       timer.start();
       QByteArray buffer = readBuffer(dvidUrl.getSparsevolUrl(config));
-      std::cout << "Reading body data with " << buffer.size() << " bytes: "
-                <<  timer.elapsed() << " ms" << std::endl;
 
-      timer.restart();
-      result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
-      std::cout << "Parsing body: " << timer.elapsed() << " ms" << std::endl;
+      if (buffer.isEmpty()) {
+        LKINFO << "Failed to read body data.";
+        size_t nvoxels = 0;
+        size_t nblocks = 0;
+        ZIntCuboid newBox;
+        std::tie(nvoxels, nblocks, newBox) = readBodySizeInfo(bodyId, labelType);
+
+        if (nvoxels > 0) {
+          LKINFO<< QString("Try to read %1 with partitions").arg(bodyId);
+
+          int zoomScale = zgeom::GetZoomScale(zoom);
+          int npart = nblocks / 2000 / zoomScale / zoomScale / zoomScale;
+          config.range = newBox;
+          readBodyWithPartition(config, canonizing, npart, result);
+        }
+      } else {
+        std::cout << "Reading body data with " << buffer.size() << " bytes: "
+                  <<  timer.elapsed() << " ms" << std::endl;
+
+        timer.restart();
+        result->importDvidBlockBuffer(buffer.data(), buffer.size(), canonizing);
+        std::cout << "Parsing body: " << timer.elapsed() << " ms" << std::endl;
+      }
     } else {
       readBodyRle(bodyId, labelType, zoom, box, canonizing, result);
     }

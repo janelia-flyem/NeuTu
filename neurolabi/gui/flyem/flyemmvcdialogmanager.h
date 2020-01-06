@@ -1,6 +1,8 @@
 #ifndef FLYEMMVCDIALOGMANAGER_H
 #define FLYEMMVCDIALOGMANAGER_H
 
+#include <string>
+
 class ZFlyEmProofMvc;
 class NeuprintSetupDialog;
 class ZContrastProtocalDialog;
@@ -61,6 +63,10 @@ public:
   bool isBodyInfoDlgReady() const;
   bool isSplitUploadDlgReady() const;
 
+  void setNeuprintUuid(const std::string &uuid) {
+    m_neuprintUuid = uuid;
+  }
+
 private:
   inline bool isNull(void *dlg) const {
     return (dlg == nullptr);
@@ -97,6 +103,7 @@ private:
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
+  std::string m_neuprintUuid; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
 };

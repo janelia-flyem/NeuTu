@@ -387,7 +387,7 @@ void ZStackDoc::initNeuronTracer()
     LINFO_NLN() << str;
   });
 
-  getNeuronTracer().initTraceWorkspace(getStack());
+//  getNeuronTracer().initTraceWorkspace(getStack());
   getNeuronTracer().initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {

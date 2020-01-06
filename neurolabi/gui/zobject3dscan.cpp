@@ -3621,6 +3621,11 @@ bool ZObject3dScan::importDvidBlockBuffer(
 
     if (canonizing) {
       sort();
+//      setCanonized(true); //to test
+#ifdef _DEBUG_
+      std::cout << "Canonized: " << isCanonizedActually() << std::endl;
+      std::cout << "Z Range: " << getMinZ() << " -> " << getMaxZ() << std::endl;
+#endif
     }
   } catch (std::exception &e) {
 #ifdef _QT_GUI_USED_

@@ -179,6 +179,16 @@ int* C_Stack::hist(const Stack* stack)
   return Stack_Hist(stack);
 }
 
+bool C_Stack::HasSameSize(const Stack *stack1, const Stack *stack2)
+{
+  if (stack1 && stack2) {
+    return (width(stack1) == width(stack2) && height(stack1) == height(stack2)
+            && depth(stack1) == depth(stack2));
+  }
+
+  return false;
+}
+
 ZIntHistogram* C_Stack::hist(const Stack *stack, ZIntHistogram *out)
 {
   if (out == NULL) {

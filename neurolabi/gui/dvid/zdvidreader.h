@@ -13,6 +13,7 @@
 #include <vector>
 #include <tuple>
 
+#include "zdviddef.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
 #include "zdvidbufferreader.h"
@@ -183,6 +184,10 @@ public:
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *result) const;
+
+  ZObject3dScan* readBodyWithPartition(
+      const dvid::SparsevolConfig &config, bool canonizing, int npart,
+      ZObject3dScan *result) const;
 
   /*!
    * \brief Read a body at a given scale

@@ -456,7 +456,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const
   return url;
 }
 
-std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
+std::string ZDvidUrl::getSparsevolUrl(const dvid::SparsevolConfig &config)
 {
   std::string url = getMultiscaleSparsevolUrl(config.bodyId, config.zoom);
 
@@ -688,7 +688,6 @@ std::string ZDvidUrl::getSparsevolSizeUrl(
   return url;
 }
 
-
 std::string ZDvidUrl::AppendQueryM(
     const std::string &url, const std::vector<std::pair<std::string, int>> &query)
 {
@@ -707,6 +706,47 @@ std::string ZDvidUrl::AppendQueryM(
   return AppendQuery(url, qstr);
 }
 
+namespace {
+
+void append_range_query(
+    std::string &query, const std::string &name, int minv, int maxv)
+{
+  if (minv <= maxv) {
+    query = AppendQuery(query, "min" + name, minv);
+    query = AppendQuery(query, "max" + name, maxv);
+  }
+}
+
+}
+
+std::string ZDvidUrl::AppendRangeQuery(
+    const std::string &url, const ZIntCuboid &box)
+{
+  std::string newUrl = url;
+  if (!url.empty()) {
+    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
+    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
+    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+  }
+
+  return newUrl;
+}
+
+std::string ZDvidUrl::AppendRangeQuery(
+    const std::string &url, const ZIntCuboid &box, bool exact)
+{
+  std::string newUrl = url;
+  if (!url.empty()) {
+    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
+    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
+    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+  }
+
+  newUrl = AppendQuery(newUrl, std::make_pair("exact", exact));
+
+  return newUrl;
+}
+
 std::string ZDvidUrl::AppendRangeQuery(
     const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact)
 {
@@ -718,19 +758,22 @@ std::string ZDvidUrl::AppendRangeQuery(
 
   switch (axis) {
   case neutu::EAxis::Z:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("minz", minZ),
-                std::make_pair("maxz", maxZ)});
+    append_range_query(newUrl, "z", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("minz", minZ),
+//                std::make_pair("maxz", maxZ)});
     break;
   case neutu::EAxis::X:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("minx", minZ),
-                std::make_pair("maxx", maxZ)});
+    append_range_query(newUrl, "x", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("minx", minZ),
+//                std::make_pair("maxx", maxZ)});
     break;
   case neutu::EAxis::Y:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("miny", minZ),
-                std::make_pair("maxy", maxZ)});
+    append_range_query(newUrl, "y", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("miny", minZ),
+//                std::make_pair("maxy", maxZ)});
     break;
   case neutu::EAxis::ARB:
     break;
@@ -741,30 +784,6 @@ std::string ZDvidUrl::AppendRangeQuery(
 
   return newUrl;
 
-}
-
-std::string ZDvidUrl::AppendRangeQuery(
-    const std::string &url, const ZIntCuboid &box)
-{
-  ZString query;
-  if (!url.empty() && !box.isEmpty()) {
-    query += "minx=";
-    query.appendNumber(box.getFirstCorner().getX());
-    query += "&maxx=";
-    query.appendNumber(box.getLastCorner().getX());
-
-    query += "&miny=";
-    query.appendNumber(box.getFirstCorner().getY());
-    query += "&maxy=";
-    query.appendNumber(box.getLastCorner().getY());
-
-    query += "&minz=";
-    query.appendNumber(box.getFirstCorner().getZ());
-    query += "&maxz=";
-    query.appendNumber(box.getLastCorner().getZ());
-  }
-
-  return AppendQuery(url, query);
 }
 
 std::string ZDvidUrl::getSupervoxelUrl
