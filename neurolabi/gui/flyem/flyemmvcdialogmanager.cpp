@@ -328,9 +328,10 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
     default:
       if (status != neutu::EServerStatus::NORMAL) {
         getNeuprintSetupDlg()->exec();
+        status = m_parent->getNeuPrintStatus();
       }
 
-      if (m_parent->getNeuPrintStatus() == neutu::EServerStatus::NORMAL) {
+      if (status == neutu::EServerStatus::NORMAL) {
         KINFO << "Creating NeuPrint dialog";
         m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
       }

@@ -1351,7 +1351,10 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
       if (!text.isEmpty()) {
         prepareQuery();
 
-        setBodyList(reader->queryNeuronByStatus(text));
+        QStringList statusList = text.split(";", QString::SkipEmptyParts);
+        std::transform(statusList.begin(), statusList.end(), statusList.begin(),
+                       [](const QString &str) { return str.trimmed(); });
+        setBodyList(reader->queryNeuronByStatus(statusList));
       }
     }
   }

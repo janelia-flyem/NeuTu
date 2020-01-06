@@ -4399,11 +4399,12 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
       auto uuidList = dag.getAncestorList(getDvidTarget().getUuid());
       for (auto uuid : uuidList) {
         if (reader->hasDataset(uuid.c_str())) {
-//          ZDialogFactory::Warn(
-//                "Old UUID Used",
-//                "The current DVID node does not have a correspondence in NeuPrint."
-//                "Dataset configured with an old node will be used.",
-//                const_cast<ZFlyEmProofMvc*>(this));
+          ZDialogFactory::Warn(
+                "Old UUID Used",
+                "The current DVID node has not been loaded into NeuPrint."
+                "The dataset configured with an old node (" +
+                QString::fromStdString(uuid) + ") will be used.",
+                const_cast<ZFlyEmProofMvc*>(this));
 
           m_dlgManager->setNeuprintUuid(uuid);
 
