@@ -426,6 +426,22 @@ ZJsonArray NeuPrintReader::queryNeuronByName(const QString &name)
 #endif
 }
 
+ZJsonArray NeuPrintReader::queryNeuronByStatus(const QList<QString> &statusList)
+{
+  QList<QString> valueList = statusList;
+  std::transform(valueList.begin(), valueList.end(), valueList.begin(),
+                 [](const QString &str) { return "LOWER(\"" + str + "\")"; });
+
+  CypherQuery query = CypherQueryBuilder().
+      match(QString("(n:%1)").arg(getNeuronLabel('`'))).
+      where(CypherQueryBuilder::OrEqualClause("LOWER(n.status)", valueList)).
+      orderDesc(BODY_QUERY_SYNAPSE_COUNT).
+      limit(m_numberLimit).
+      ret(BODY_QUERY_RETURN);
+
+  return queryNeuron(query.getQueryString());
+}
+
 ZJsonArray NeuPrintReader::queryNeuronByStatus(const QString &status)
 {
   CypherQuery query = CypherQueryBuilder().

@@ -164,3 +164,21 @@ CypherQueryBuilder& CypherQueryBuilder::ret(const QString &pattern)
 
   return *this;
 }
+
+QString CypherQueryBuilder::OrEqualClause(
+    const QString &var, const QList<QString> &valueList)
+{
+  QString clause;
+  if (!var.isEmpty()) {
+    clause = var;
+    if (!valueList.isEmpty()) {
+      clause += " = " + valueList.front();
+    }
+
+    for (int i = 1; i < valueList.size(); ++i) {
+      clause += " OR " + var + " = " + valueList[i];
+    }
+  }
+
+  return clause;
+}
