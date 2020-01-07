@@ -126,6 +126,7 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "dialogs/tipdetectordialog.h"
+#include "dialogs/neuprintdatasetdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -4399,16 +4400,26 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
       auto uuidList = dag.getAncestorList(getDvidTarget().getUuid());
       for (auto uuid : uuidList) {
         if (reader->hasDataset(uuid.c_str())) {
-          ZDialogFactory::Warn(
-                "Old UUID Used",
-                "The current DVID node has not been loaded into NeuPrint."
-                "The dataset configured with an old node (" +
-                QString::fromStdString(uuid) + ") will be used.",
-                const_cast<ZFlyEmProofMvc*>(this));
+          NeuprintDatasetDialog datasetDlg;
+          datasetDlg.setDatasetList(reader->getDatasetList());
+          if (datasetDlg.exec()) {
+            m_dlgManager->setNeuprintDataset(datasetDlg.getDataset().toStdString());
+//            reader->setCurrentDataset(datasetDlg.getDataset());
+            return neutu::EServerStatus::NORMAL;
+          } else {
+            return neutu::EServerStatus::NOSUPPORT;
+          }
 
-          m_dlgManager->setNeuprintUuid(uuid);
+//          ZDialogFactory::Warn(
+//                "Old UUID Used",
+//                "The current DVID node has not been loaded into NeuPrint."
+//                "The dataset configured with an old node (" +
+//                QString::fromStdString(uuid) + ") will be used.",
+//                const_cast<ZFlyEmProofMvc*>(this));
 
-          return neutu::EServerStatus::NORMAL;
+//          m_dlgManager->setNeuprintDataset(uuid);
+
+//          return neutu::EServerStatus::NORMAL;
         }
       }
 

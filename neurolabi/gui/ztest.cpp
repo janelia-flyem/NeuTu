@@ -23357,17 +23357,17 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
-//  QUrl url("/test/test");
+#if 1
+//  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
+  QUrl url("/test/test");
   qDebug() << url.scheme();
   qDebug() << url.path();
-  qDebug() << url.allQueryItemValues("x1");
+//  qDebug() << url.allQueryItemValues("x1");
   qDebug() << url.host();
   qDebug() << url.port();
   qDebug() << url.toLocalFile();
 
-  qDebug() << ZDvidUrl::GetEndPoint(url.path().toStdString());
+//  qDebug() << ZDvidUrl::GetEndPoint(url.path().toStdString());
 #endif
 
 #if 0
@@ -30715,7 +30715,7 @@ void ZTest::test(MainWindow *host)
   std::cout << obj.equalsLiterally(obj2) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   reader->updateMaxLabelZoom();
 

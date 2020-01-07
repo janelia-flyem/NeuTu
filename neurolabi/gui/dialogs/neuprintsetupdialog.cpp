@@ -10,6 +10,7 @@
 #include "zdialogfactory.h"
 #include "zglobal.h"
 #include "service/neuprintreader.h"
+#include "neuprintdatasetdialog.h"
 
 NeuprintSetupDialog::NeuprintSetupDialog(QWidget *parent) :
   QDialog(parent),
@@ -18,6 +19,7 @@ NeuprintSetupDialog::NeuprintSetupDialog(QWidget *parent) :
   ui->setupUi(this);
 
   ui->serverLineEdit->setText(ZGlobal::GetInstance().getNeuPrintServer());
+  ui->tokenTextEdit->setText(ZGlobal::GetInstance().getNeuPrintAuth());
   connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),
           this, SLOT(processButtonClick(QAbstractButton*)));
 }
@@ -80,21 +82,35 @@ bool NeuprintSetupDialog::apply()
 
           reader->connect();
           if (reader->hasDataset(m_uuid)) {
+            m_dataset = reader->getDataset(m_uuid);
             return true;
           } else {
-            QString details;
-            for (const QString &dataset : reader->getDatasetList()) {
-              details += dataset + " ";
-            }
-            details += token;
+            QStringList datasetList = reader->getDatasetList();
+            if (!reader->getDatasetList().isEmpty()) {
+              return true;
+              /*
+              NeuprintDatasetDialog datasetDlg;
+              datasetDlg.setDatasetList(reader->getDatasetList());
+              if (datasetDlg.exec()) {
+                m_dataset = datasetDlg.getDataset();
+                return true;
+              }
+              */
+            } else {
+              QString details;
+              for (const QString &dataset : reader->getDatasetList()) {
+                details += dataset + " ";
+              }
+              details += token;
 
-            ZDialogFactory::Warn(
-                  "NeuPrint Not Supported",
-                  "Cannot use NeuPrint at " + server +
-                  " because this dataset is not supported by the server"
-                  " or the token is wrong.\n\n"
-                  "Details: " + details,
-                  this);
+              ZDialogFactory::Warn(
+                    "NeuPrint Not Supported",
+                    "Cannot use NeuPrint at " + server +
+                    " because no dataset exists on the server"
+                    " or the token is wrong.\n\n"
+                    "Details: " + details,
+                    this);
+            }
           }
         } else {
           ZDialogFactory::Warn(

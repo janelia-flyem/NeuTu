@@ -107,7 +107,12 @@ bool NeuPrintReader::isReady()
 
 QString NeuPrintReader::getNeuronLabel(char quote) const
 {
-  QString label =  m_currentDataset + "_Neuron";
+  QString prefix = m_currentDataset;
+  if (prefix.contains(":")) {
+    prefix = prefix.split(":")[0];
+  }
+
+  QString label =  prefix + "_Neuron";
   if (quote != '\0') {
     label = quote + label + quote;
   }
@@ -151,7 +156,7 @@ QString NeuPrintReader::getUuidKey(const QString &uuid)
   return uuidKey;
 }
 
-void NeuPrintReader::updateCurrentDataset(const QString &uuid)
+void NeuPrintReader::updateCurrentDatasetFromUuid(const QString &uuid)
 {
   m_currentDataset = getUuidKey(uuid);
 }
@@ -159,6 +164,16 @@ void NeuPrintReader::updateCurrentDataset(const QString &uuid)
 bool NeuPrintReader::hasDataset(const QString &uuid)
 {
   return !getUuidKey(uuid).isEmpty();
+}
+
+QString NeuPrintReader::getDataset(const QString &uuid)
+{
+  return getUuidKey(uuid);
+}
+
+void NeuPrintReader::setCurrentDataset(const QString &dataset)
+{
+  m_currentDataset = dataset;
 }
 
 ZJsonObject NeuPrintReader::getDatasetJson() const

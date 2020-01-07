@@ -301,6 +301,7 @@ unix {
 RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    dialogs/neuprintdatasetdialog.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -720,6 +721,7 @@ HEADERS += mainwindow.h \
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
+    dialogs/neuprintdatasetdialog.ui \
     mainwindow.ui \
     dialogs/traceoutputdialog.ui \
     dialogs/bcadjustdialog.ui \
@@ -825,6 +827,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
+    dialogs/neuprintdatasetdialog.cpp \
     mainwindow.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \

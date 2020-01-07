@@ -2787,19 +2787,27 @@ void FlyEmBodyInfoDialog::setNeuPrintReader(
 */
 
 std::string FlyEmBodyInfoDialog::getNeuprintUuid() const {
-  if (m_neuprintUuid.empty()) {
-    return m_reader.getDvidTarget().getUuid();
-  }
-
-  return m_neuprintUuid;
+  return m_reader.getDvidTarget().getUuid();
 }
 
 
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
   if (!m_neuPrintReader) {
-    m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
-          ZGlobal::GetInstance().makeNeuPrintReader(getNeuprintUuid().c_str()));
+    if (!m_neuprintDataset.empty()) {
+      m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+            ZGlobal::GetInstance().makeNeuPrintReader());
+      m_neuPrintReader->setCurrentDataset(m_neuprintDataset.c_str());
+    } else {
+      m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+            ZGlobal::GetInstance().makeNeuPrintReaderFromUuid(
+              getNeuprintUuid().c_str()));
+    }
+
+    setWindowTitle("Body Infomation @ NeuPrint:" +
+                   getNeuPrintReader()->getServer() + ":" +
+                   m_neuprintDataset.c_str());
+
 //            m_reader.getDvidTarget().getUuid().c_str()));
   }
 

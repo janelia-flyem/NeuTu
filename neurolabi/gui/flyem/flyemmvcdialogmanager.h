@@ -63,8 +63,8 @@ public:
   bool isBodyInfoDlgReady() const;
   bool isSplitUploadDlgReady() const;
 
-  void setNeuprintUuid(const std::string &uuid) {
-    m_neuprintUuid = uuid;
+  void setNeuprintDataset(const std::string &dataset) {
+    m_neuprintDataset = dataset;
   }
 
 private:
@@ -103,7 +103,7 @@ private:
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
-  std::string m_neuprintUuid; //temp hack
+  std::string m_neuprintDataset; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
 };

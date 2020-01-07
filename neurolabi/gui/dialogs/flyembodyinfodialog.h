@@ -40,8 +40,8 @@ public:
 
   int getMaxBodies() const;
 
-  void setNeuprintUuid(const std::string uuid) {
-    m_neuprintUuid = uuid;
+  void setNeuprintDataset(const std::string dataset) {
+    m_neuprintDataset = dataset;
   }
 
   std::string getNeuprintUuid() const;
@@ -211,7 +211,7 @@ private:
     qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
-    std::string m_neuprintUuid; //temp hack
+    std::string m_neuprintDataset; //temp hack
 
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;

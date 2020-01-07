@@ -247,7 +247,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(const T &flag)
 {
 //  KINFO << "Creating FlyEmBodyInfoDialog";
   FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, m_parent);
-  dlg->setNeuprintUuid(m_neuprintUuid);
+  dlg->setNeuprintDataset(m_neuprintDataset);
   dlg->dvidTargetChanged(m_parent->getDvidTarget());
   QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
                    dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
@@ -272,7 +272,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
     KINFO << "Creating sequencer dialog";
     m_bodyInfoDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
-    m_bodyInfoDlg->setNeuprintUuid(m_neuprintUuid);
+    m_bodyInfoDlg->setNeuprintDataset(m_neuprintDataset);
 
     QObject::connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
                      m_parent, SLOT(locateBody(uint64_t)));
@@ -317,6 +317,36 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
 {
   if (isNull(m_neuprintBodyDlg)) {
+    getNeuprintSetupDlg()->exec();
+    m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
+    neutu::EServerStatus status = m_parent->getNeuPrintStatus();
+
+    switch (status) {
+    case neutu::EServerStatus::NORMAL:
+      m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+      m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
+      break;
+    case neutu::EServerStatus::NOSUPPORT:
+      ZDialogFactory::Error(
+            "NeuPrint Not Supported",
+            "Cannot use NeuPrint because this dataset is not supported by the server.",
+            m_parent);
+      break;
+    case neutu::EServerStatus::NOAUTH:
+      ZDialogFactory::Error(
+            "NeuPrint Not Authorized",
+            "Cannot use NeuPrint because the token is not accepted.",
+            m_parent);
+      break;
+    case neutu::EServerStatus::OFFLINE:
+      ZDialogFactory::Error(
+            "NeuPrint Not Connected",
+            "Cannot use NeuPrint because the server cannot be connected.",
+            m_parent);
+      break;
+    }
+
+    /*
     neutu::EServerStatus status = m_parent->getNeuPrintStatus();
     switch (status) {
     case neutu::EServerStatus::NOSUPPORT:
@@ -328,15 +358,18 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
     default:
       if (status != neutu::EServerStatus::NORMAL) {
         getNeuprintSetupDlg()->exec();
+        m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
         status = m_parent->getNeuPrintStatus();
       }
 
       if (status == neutu::EServerStatus::NORMAL) {
         KINFO << "Creating NeuPrint dialog";
         m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+        m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
       }
       break;
     }
+    */
   }
 
   return m_neuprintBodyDlg;
