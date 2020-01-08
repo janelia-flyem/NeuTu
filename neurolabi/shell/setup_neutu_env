@@ -18,14 +18,15 @@ then
 fi
 
 source $CONDA_DIR/bin/activate root
-conda create -n $ENV_NAME python=3.6 -y -c flyem-forge -c conda-forge -c defaults
+mkdir $CONDA_DIR/envs/$ENV_NAME
+#conda create -n $ENV_NAME python=3.7.3 -y -c flyem-forge -c conda-forge -c defaults
 
 # Create a special file to tell the conda solver that upgrading/downgrading Qt and Python is forbidden.
 # https://conda.io/docs/user-guide/tasks/manage-pkgs.html?highlight=pinned#preventing-packages-from-updating-pinning
-/bin/cat <<EOF > ${ENV_DIR}/conda-meta/pinned
-python=3*
-qt=5*
-EOF
+#/bin/cat <<EOF > ${ENV_DIR}/conda-meta/pinned
+#python=3*
+#qt=5*
+#EOF
 
 source $CONDA_DIR/bin/activate $ENV_NAME
 if [ `uname` == 'Linux' ]; then

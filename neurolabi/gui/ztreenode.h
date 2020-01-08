@@ -1,6 +1,7 @@
 #ifndef ZTREENODE_H
 #define ZTREENODE_H
 
+#include <cstddef>
 #include <vector>
 
 #include "zuncopyable.h"

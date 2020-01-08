@@ -29,6 +29,7 @@ public:
   ZJsonArray queryNeuronByType(const QString &type);
   ZJsonArray queryAllNamedNeuron();
   ZJsonArray queryNeuronByStatus(const QString &status);
+  ZJsonArray queryNeuronByStatus(const QList<QString> &statusList);
   ZJsonArray queryTopNeuron(int n);
   ZJsonArray queryNeuronCustom(const QString &condition);
 
@@ -40,8 +41,10 @@ public:
   bool hasAuthCode() const;
   bool connect();
 
-  void updateCurrentDataset(const QString &uuid);
+  void updateCurrentDatasetFromUuid(const QString &uuid);
   bool hasDataset(const QString &uuid);
+  QString getDataset(const QString &uuid);
+  void setCurrentDataset(const QString &dataset);
   ZJsonObject getDatasetJson() const;
   QStringList getDatasetList() const;
 

@@ -5,7 +5,8 @@
 #include "flyem/zflyembodyannotation.h"
 
 /*!
- * \brief The class of reading flyem data from DVID
+ * \brief The class of reading flyem data from DVID (Deprecated)
+ *
  */
 class ZFlyEmDvidReader : public ZDvidReader
 {

@@ -188,14 +188,14 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader()
   return reader;
 }
 
-NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+NeuPrintReader* ZGlobal::makeNeuPrintReaderFromUuid(const QString &uuid)
 {
   NeuPrintReader *reader = nullptr;
   QString server = qgetenv("NEUPRINT");
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
     reader->authorize(getNeuPrintToken());
-    reader->updateCurrentDataset(uuid);
+    reader->updateCurrentDatasetFromUuid(uuid);
     if (!reader->isReady()) {
       delete reader;
       reader = nullptr;

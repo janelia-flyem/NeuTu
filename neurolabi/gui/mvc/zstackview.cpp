@@ -1778,7 +1778,7 @@ void ZStackView::reloadTileCanvas()
 
 void ZStackView::updateObjectCanvas()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating object canvas." << std::endl;
 #endif
 

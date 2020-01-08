@@ -13,6 +13,7 @@
 #include <vector>
 #include <tuple>
 
+#include "zdviddef.h"
 #include "zdvidinfo.h"
 #include "zdvidtarget.h"
 #include "zdvidbufferreader.h"
@@ -184,6 +185,10 @@ public:
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, neutu::EBodyLabelType labelType, ZObject3dScan *result) const;
 
+  ZObject3dScan* readBodyWithPartition(
+      const dvid::SparsevolConfig &config, bool canonizing, int npart,
+      ZObject3dScan *result) const;
+
   /*!
    * \brief Read a body at a given scale
    *
@@ -209,6 +214,8 @@ public:
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
+  std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
+      const std::string &url) const;
 
   ZMesh* readSupervoxelMesh(uint64_t svId) const;
 

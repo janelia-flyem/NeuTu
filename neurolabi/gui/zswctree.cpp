@@ -234,10 +234,6 @@ void ZSwcTree::clearComment()
 void ZSwcTree::writeSwc(FILE *fp)
 {
   if (fp != NULL) {
-    for (const std::string &comment : m_comment) {
-      fprintf(fp, "#%s", comment.c_str());
-    }
-
     ZSwcTree::DepthFirstIterator iter(this);
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();

@@ -1,5 +1,6 @@
 #include "flyemdatareader.h"
 
+#include <memory>
 #include <QByteArray>
 
 //#include "geometry/zintpoint.h"
@@ -9,8 +10,10 @@
 #include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zmesh.h"
+#include "zswctree.h"
 
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
@@ -30,6 +33,7 @@
 #include "flyemdataconfig.h"
 #include "zflyemneuronbodyinfo.h"
 #include "zflyembodyannotation.h"
+#include "zflyemutilities.h"
 
 FlyEmDataReader::FlyEmDataReader()
 {
@@ -199,13 +203,17 @@ ZMesh* FlyEmDataReader::LoadRoi(
 }
 
 ZMesh* FlyEmDataReader::ReadRoiMesh(
-    const ZDvidReader &reader, const std::string &roiName)
+    const ZDvidReader &reader, const std::string &roiName,
+    std::function<void(std::string)> errorMsgHandler)
 {
   ZMesh *mesh = NULL;
 
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
-  if (roiInfo.hasKey(neutu::json::REF_KEY)) {
+  ZJsonObjectParser parser;
+  bool visible = parser.getValue(roiInfo, "visible", true);
+
+  if (visible && roiInfo.hasKey(neutu::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
@@ -230,6 +238,10 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
         key = roiName;
       }
       mesh = LoadRoi(reader, roiName, key, type);
+    }
+
+    if (mesh == nullptr) {
+      errorMsgHandler("Failed to load ROI " + roiName);
     }
   }
 
@@ -307,6 +319,29 @@ std::unordered_map<ZIntPoint, uint64_t> FlyEmDataReader::ReadSynapseLabel(
   }
 
   return result;
+}
+
+bool FlyEmDataReader::IsSkeletonSynced(
+    const ZDvidReader &reader, uint64_t bodyId)
+{
+  if (reader.hasBody(bodyId)) {
+    int64_t bodyMod = reader.readBodyMutationId(bodyId);
+    std::unique_ptr<ZSwcTree> tree =
+        std::unique_ptr<ZSwcTree>(reader.readSwc(bodyId));
+    if (!tree) {
+      return false;
+    } else {
+      if (bodyMod < 0) { //no mutation ID exists
+                         //taken as synced as long as the skeleton exists
+          return true;
+      } else {
+        return (bodyMod == flyem::GetMutationId(tree.get()));
+      }
+    }
+
+  }
+
+  return true;
 }
 
 #if 0

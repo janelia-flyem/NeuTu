@@ -478,6 +478,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(setNormalTodoVisible(bool)));
     break;
+  case ZActionFactory::ACTION_SHOW_DONE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(setDoneItemVisible(bool)));
+    break;
   case ZActionFactory::ACTION_REMOVE_TODO_BATCH:
     action = m_actionLibrary->getAction(
           item, this, SLOT(removeTodoBatch()));
@@ -2281,6 +2285,11 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
   emit settingNormalTodoVisible(visible);
 }
 
+void Z3DWindow::setDoneItemVisible(bool visible)
+{
+  emit settingDoneItemVisible(visible);
+}
+
 /*
 void Z3DWindow::removeAllTodo()
 {
@@ -2872,7 +2881,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
           QCursor oldCursor = getCanvas()->cursor();
           getCanvas()->setCursor(Qt::BusyCursor);
           getDocument()->runSeededWatershed();
-          notifyUser("Body splitted");
+          notifyUser("Body split");
           getCanvas()->setCursor(oldCursor);
         }
       }
@@ -4299,7 +4308,7 @@ void Z3DWindow::locateWithRay(int x, int y)
   std::vector<ZPoint> intersection = getRayIntersection(x, y);
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
-    m_view->gotoPosition(pt.x(), pt.y(), pt.z());
+    m_view->gotoPosition(pt.x(), pt.y(), pt.z(), 256);
   }
 }
 

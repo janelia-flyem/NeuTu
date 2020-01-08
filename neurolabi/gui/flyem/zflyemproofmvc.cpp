@@ -126,6 +126,7 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "dialogs/tipdetectordialog.h"
+#include "dialogs/neuprintdatasetdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -640,6 +641,19 @@ void ZFlyEmProofMvc::connectSignalSlot()
           m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(syncBodySelectionToOrthoWindow()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+          this, SLOT(processMergeUploaded()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseMeshWindowDeep()));
+  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploadedExternally,
+          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBookmarkTable()));
 }
 
 void ZFlyEmProofMvc::applySettings()
@@ -921,9 +935,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           doc, SLOT(setUnrecycable(QSet<uint64_t>)));
           */
-
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
-          this, SLOT(processMergeUploaded()));
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBodyWindowDeep()));
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
@@ -934,17 +945,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
 //          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBookmarkTable()));
-
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateCoarseMeshWindowDeep()));
-  connect(getCompleteDocument(), &ZFlyEmProofDoc::bodyMergeUploadedExternally,
-          this, &ZFlyEmProofMvc::updateMeshWindowDeep);
-  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
-          this, SLOT(updateBookmarkTable()));
 
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           doc, SLOT(processBodySelectionChange()));
@@ -1089,6 +1089,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
   connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
+  connect(window, SIGNAL(settingDoneItemVisible(bool)),
+          doc, SLOT(setDoneItemVisible(bool)));
 //  connect(doc, SIGNAL(todoVisibleChanged()),
 //          window, SLOT(updateTodoVisibility()));
 
@@ -3234,7 +3236,7 @@ void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
   if (rand.rndint(10) % 2 == 0) {
-    m_splitProject.waitResultQuickView();
+    m_splitProject.waitSplitVis3d();
     return;
   }
 
@@ -3279,8 +3281,8 @@ void ZFlyEmProofMvc::testBodySplit()
           }
 
           runSplit();
-          m_splitProject.showResultQuickView();
-          m_splitProject.waitResultQuickView();
+          m_splitProject.showSplit3d();
+          m_splitProject.waitSplitVis3d();
         }
       } else {
         emit exitingSplit();
@@ -4394,6 +4396,33 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
     }
 
     if (!reader->hasDataset(getDvidTarget().getUuid().c_str())) {
+      const ZDvidVersionDag &dag = getCompleteDocument()->getVersionDag();
+      auto uuidList = dag.getAncestorList(getDvidTarget().getUuid());
+      for (auto uuid : uuidList) {
+        if (reader->hasDataset(uuid.c_str())) {
+          NeuprintDatasetDialog datasetDlg;
+          datasetDlg.setDatasetList(reader->getDatasetList());
+          if (datasetDlg.exec()) {
+            m_dlgManager->setNeuprintDataset(datasetDlg.getDataset().toStdString());
+//            reader->setCurrentDataset(datasetDlg.getDataset());
+            return neutu::EServerStatus::NORMAL;
+          } else {
+            return neutu::EServerStatus::NOSUPPORT;
+          }
+
+//          ZDialogFactory::Warn(
+//                "Old UUID Used",
+//                "The current DVID node has not been loaded into NeuPrint."
+//                "The dataset configured with an old node (" +
+//                QString::fromStdString(uuid) + ") will be used.",
+//                const_cast<ZFlyEmProofMvc*>(this));
+
+//          m_dlgManager->setNeuprintDataset(uuid);
+
+//          return neutu::EServerStatus::NORMAL;
+        }
+      }
+
       return neutu::EServerStatus::NOSUPPORT;
     }
 
@@ -4752,7 +4781,7 @@ void ZFlyEmProofMvc::showBodyQuickView()
 
 void ZFlyEmProofMvc::showSplitQuickView()
 {
-  m_splitProject.showResultQuickView();
+  m_splitProject.showSplit3d();
 }
 
 void ZFlyEmProofMvc::showBody3d()
@@ -5082,7 +5111,7 @@ void ZFlyEmProofMvc::commitMerge()
     mergeCoarseBodyWindow();
     getCompleteDocument()->getMergeProject()->uploadResult(
           dlg->mergingToLargest());
-//    m_mergeProject.uploadResult();
+
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {
       getDocument()->getObjectGroup().removeObject(body, true);
@@ -5174,8 +5203,43 @@ void ZFlyEmProofMvc::decomposeBody()
   }
 }
 
-void ZFlyEmProofMvc::commitCurrentSplit()
+bool ZFlyEmProofMvc::requestingSplitResult(const QString &title)
 {
+  if (!getDocument()->isSegmentationReady()) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to generate results: The split has not been updated."
+                         "Please Run full split (shift+space or alt+space) first.",
+                         neutu::EMessageType::ERROR));
+    return false;
+  }
+
+   getSplitCommitDlg()->setWindowTitle(title);
+
+   if (getSplitCommitDlg()->exec()) {
+     m_splitProject.setMinObjSize(getSplitCommitDlg()->getGroupSize());
+     m_splitProject.keepMainSeed(getSplitCommitDlg()->keepingMainSeed());
+     m_splitProject.enableCca(getSplitCommitDlg()->runningCca());
+
+     return true;
+   }
+
+   return false;
+}
+
+void ZFlyEmProofMvc::previewCurrentSplit()
+{
+  if (requestingSplitResult("Preview Results")) {
+    const QString threadId = "ZFlyEmBodySplitProject::previewResult";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::previewResult);
+      m_futureMap[threadId] = future;
+    }
+  }
+
+#if 0
   if (!getDocument()->isSegmentationReady()) {
 //    emit messageGenerated("test");
     emit messageGenerated(
@@ -5185,11 +5249,34 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     return;
   }
 
-
+  getSplitCommitDlg()->setWindowTitle("Preview Results");
   if (getSplitCommitDlg()->exec()) {
     m_splitProject.setMinObjSize(getSplitCommitDlg()->getGroupSize());
     m_splitProject.keepMainSeed(getSplitCommitDlg()->keepingMainSeed());
     m_splitProject.enableCca(getSplitCommitDlg()->runningCca());
+    const QString threadId = "ZFlyEmBodySplitProject::previewResult";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::previewResult);
+      m_futureMap[threadId] = future;
+    }
+  }
+#endif
+}
+
+void ZFlyEmProofMvc::commitCurrentSplit()
+{
+  if (m_splitProject.hasFinalSplitResult()) {
+    if (ZDialogFactory::Ask(
+          "Save Results",
+          "Do you want to save the current preview splits?\n"
+          "Please run split again if you do need the curren preview.",
+          this)) {
+      m_splitProject.uploadSplitList();
+    }
+  } else if (requestingSplitResult("Save Results")) {
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();
@@ -5198,8 +5285,16 @@ void ZFlyEmProofMvc::commitCurrentSplit()
             &m_splitProject, &ZFlyEmBodySplitProject::commitResult);
       m_futureMap[threadId] = future;
     }
-//    m_splitProject.commitResult();
   }
+
+  /*
+  if (!getDocument()->isSegmentationReady()) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to save results: The split has not been updated."
+                         "Please Run full split (shift+space) first.",
+                         neutu::EMessageType::ERROR));
+  }
+  */
 }
 
 void ZFlyEmProofMvc::clearAssignedBookmarkModel()
@@ -6484,12 +6579,6 @@ void ZFlyEmProofMvc::loadRoi(
         ZMeshFactory mf;
         mf.setOffsetAdjust(true);
         mesh = mf.makeMesh(roi);
-//        mesh = ZMeshFactory::MakeMesh(roi);
-
-        //      m_loadedROIs.push_back(roi);
-        //      std::string source =
-        //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-        //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
       QElapsedTimer timer;
@@ -6620,17 +6709,18 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 {
   QElapsedTimer timer;
   timer.start();
-  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(reader, roiName);
-  KLOG << ZLog::Profile()
-       << ZLog::Description(QString("ROI (%1) mesh loading time")
-                            .arg(roiName.c_str())
-                            .toStdString())
-       << ZLog::Duration(timer.elapsed());
+  ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(
+        reader, roiName, [this](const std::string &msg) { this->warn(msg); }
+  );
 
   if (mesh) {
+    KLOG << ZLog::Profile()
+         << ZLog::Description(QString("ROI (%1) mesh loading time")
+                              .arg(roiName.c_str())
+                              .toStdString())
+         << ZLog::Duration(timer.elapsed());
+
     loadRoiMesh(mesh, roiName);
-  } else {
-    warn("Failed to load ROI " + roiName);
   }
 
 #ifdef _DEBUG_2

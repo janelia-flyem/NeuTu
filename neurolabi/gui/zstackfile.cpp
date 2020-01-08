@@ -801,7 +801,9 @@ void ZStackFile::print() const
 {
   if (m_urlList.empty()) {
     cout << "No file associated." << endl;
+    return;
   }
+
   switch(m_type) {
   case SINGLE_FILE:
     cout << m_urlList[0] << endl;

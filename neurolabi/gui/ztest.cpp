@@ -340,6 +340,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
 #include "dvid/zdvidurl.h"
+//#include "neulib/core/utilities.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -23356,17 +23357,17 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
-//  QUrl url("/test/test");
+#if 1
+//  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
+  QUrl url("/test/test");
   qDebug() << url.scheme();
   qDebug() << url.path();
-  qDebug() << url.allQueryItemValues("x1");
+//  qDebug() << url.allQueryItemValues("x1");
   qDebug() << url.host();
   qDebug() << url.port();
   qDebug() << url.toLocalFile();
 
-  qDebug() << ZDvidUrl::GetEndPoint(url.path().toStdString());
+//  qDebug() << ZDvidUrl::GetEndPoint(url.path().toStdString());
 #endif
 
 #if 0
@@ -30453,7 +30454,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice.tif") << std::endl;
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR + "/em_slice_nonexisting.tif") << std::endl;
   std::cout << neutu::FileExists(GET_BENCHMARK_DIR) << std::endl;
@@ -30485,6 +30486,269 @@ void ZTest::test(MainWindow *host)
 
   std::cout << neutu::FileExtension("test.tif") << std::endl;
   std::cout << neutu::Join({"test1", "test2"}) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  reader->setVerbose(false);
+  std::ofstream stream(GET_TEST_DATA_DIR + "/bodylist.txt");
+
+  neutuse::TaskWriter neutuseWriter;
+  neutuseWriter.open("http://emdata2.int.janelia.org:2018");
+
+  tic();
+  QStringList keyList =
+      reader->readKeys(reader->getDvidTarget().getBodyAnnotationName().c_str());
+  int index = 0;
+  double totalLength = 0.0;
+  for (const QString &key : keyList) {
+    ++index;
+    uint64_t bodyId = ZString(key.toStdString()).firstUint64();
+    if (bodyId > 0) {
+      ZFlyEmBodyAnnotation annot =
+          FlyEmDataReader::ReadBodyAnnotation(*reader, bodyId);
+      if (annot.getStatus() == "Roughly traced" ||
+          annot.getStatus() == "Traced" ||
+          annot.getStatus() == "Leaves") {
+        std::cout << index << "/" << keyList.size() << ": "
+                  << bodyId << " " << annot.getStatus() << std::endl;
+        ZSwcTree *tree = reader->readSwc(bodyId);
+        double length = 0.0;
+        if (tree) {
+          length = tree->length();
+          totalLength += length;
+        }
+        if (length == 0.0) {
+          size_t bodySize = reader->readBodySize(bodyId);
+          if (bodySize > 30000000 && bodyId != 106979579) {
+            stream << bodyId << std::endl;
+            std::cout << index << "/" << keyList.size()
+                      << " Missing skeleton: " << bodyId << " " << bodySize << std::endl;
+            neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
+                  "skeletonize", reader->getDvidTarget(), bodyId, false);
+            task.setPriority(8);
+
+            neutuseWriter.uploadTask(task);
+          }
+        }
+      }
+
+    }
+  }
+  ptoc();
+  std::cout << keyList.size() << " bodies" << std::endl;
+  std::cout << totalLength << std::endl;
+  stream.close();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  FlyEmDataWriter::TransferKeyValue(
+        *reader, "neutu_config", "user_status",
+        *writer, "", "user_status2");
+//  writer->uploadRoiMesh(GET_TEST_DATA_DIR + "/test.obj", "test");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_roi");
+  reader->setVerbose(false);
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+
+  ZJsonArray objArray;
+  objArray.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
+  ZJsonObjectParser parser;
+  std::vector<std::string> errorMsgList;
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZJsonObject transfer(objArray.value(i));
+    std::string source = parser.getValue(transfer, "source", "");
+    std::string target = parser.getValue(transfer, "target", "");
+    std::cout << source << " --> " << target << std::endl;
+    FlyEmDataWriter::TransferRoi(
+          *reader, source, *writer, target, [&](const std::string &msg) {
+      errorMsgList.push_back(msg);
+    });
+  }
+
+  for (const std::string &msg : errorMsgList) {
+    std::cout << msg << std::endl;
+  }
+
+//  FlyEmDataWriter::TransferRoiData(*reader, "(L)AB", *writer, "");
+//  FlyEmDataWriter::TransferRoiRef(*reader, "(L)AB", *writer, "");
+//  FlyEmDataWriter::TransferRoi(*reader, "(L)AL", *writer, "");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  FlyEmDataWriter::TransferRoiData(*reader, "IPS", *writer, "IPS(R)");
+  FlyEmDataWriter::TransferRoiRef(*reader, "IPS", *writer, "IPS(R)");
+  FlyEmDataWriter::TransferRoi(*reader, "IPS", *writer, "IPS(R)");
+#endif
+
+#if 0
+  ZStackReader reader;
+  ZStack *stack = reader.Read(
+        "dvid://127.0.0.1:1600/c315/"
+        "grayscale?x0=728&y0=706&z0=980&width=512&height=512&depth=1");
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+#endif
+
+#if 0
+  ZStack *stack = ZStackReader::Read(GET_TEST_DATA_DIR + "/_test/stack_block.json");
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  std::cout << FlyEmDataReader::IsSkeletonSynced(*reader, 1198132041) << std::endl;
+#endif
+
+#if 0
+  ZString s = "<json>{\"test\": 1}</json>";
+  if (s.startsWith("<json>") && s.endsWith("</json>")) {
+    std::cout << s.substr(6, s.length() - 13).c_str() << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidRoi roi;
+  std::string roiName = "FB-column3";
+  reader->readRoi(roiName, &roi);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(*roi.getRoiRef());
+  std::string meshPath = GET_TEST_DATA_DIR + "/_test.drc";
+  mesh->save(meshPath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemi");
+  writer->uploadRoiMesh(meshPath, roiName);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  ZObject3dScan roi;
+  roi.addSegment(2, 4, 3, 10);
+  FlyEmDataWriter::WriteRoiData(*writer, "test3", roi);
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  std::vector<std::string> sourceList({"test", "test2", "test3"});
+  FlyEmDataWriter::TransferRoiData(
+        writer->getDvidReader(), sourceList, *writer, "test4");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "LAL(R)", *writer, "LAL(-GA)(R)");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "CRE(R)", *writer, "CRE(-ROB,-RUB)(R)");
+  FlyEmDataWriter::TransferRoi(
+        writer->getDvidReader(), "SAD", *writer, "SAD(-AMMC)");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi");
+  {
+    std::vector<std::string> roiList({"LAL(-GA)(R)", "GA(R)"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "LAL(R)");
+  }
+
+  {
+    std::vector<std::string> roiList({"CRE(-ROB,-RUB)(R)", "ROB(R)", "RUB(R)"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "CRE(R)");
+  }
+
+  {
+    std::vector<std::string> roiList({"SAD(-AMMC)", "AMMC"});
+    FlyEmDataWriter::TransferRoiData(
+          writer->getDvidReader(), roiList, *writer, "SAD");
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZDvidRoi roi;
+  std::string roiName = "SAD";
+  reader->readRoi(roiName, &roi);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(*roi.getRoiRef());
+  std::string meshPath = GET_TEST_DATA_DIR + "/_test.drc";
+  mesh->save(meshPath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().GetDvidWriter("hemi");
+  writer->uploadRoiMesh(meshPath, roiName);
+
+#endif
+
+#if 0
+  int x;
+  std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
+#endif
+
+#if 0
+  neutu::RangePartitionProcess(1, 10, 1, [](int x0, int x1) {
+    std::cout << "[" << x0 << ", " << x1 << "]" << std::endl;
+  });
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxLabelZoom();
+  ZObject3dScan obj;
+  dvid::SparsevolConfig config;
+  config.bodyId = 947573616;
+  config.labelType = neutu::EBodyLabelType::BODY;
+  config.format = "blocks";
+  config.zoom = 0;
+  reader->readBodyWithPartition(config, true, 5, &obj);
+  std::cout << obj.isCanonizedActually() << std::endl;
+
+  ZObject3dScan obj2;
+  reader->readBody(config.bodyId, config.labelType, config.zoom, ZIntCuboid(), true, &obj2);
+  std::cout << obj.equalsLiterally(obj2) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  reader->updateMaxLabelZoom();
+
+  dvid::SparsevolConfig config;
+  config.bodyId = 425790257;
+//  config.format = "blocks";
+//  config.range = ZIntCuboid(0, 0, 14720, -1, -1, 14800);
+//  config.zoom = 2;
+  config.labelType = neutu::EBodyLabelType::BODY;
+
+  size_t nvoxels = 0;
+  size_t nblocks = 0;
+  ZIntCuboid box;
+  std::tie(nvoxels, nblocks, box) =
+      reader->readBodySizeInfo(config.bodyId, config.labelType);
+  std::cout << "#nblocks: " << nblocks << std::endl;
+  std::cout << "#nvoxels: " << nvoxels << std::endl;
+
+//  config.range.setFirstZ(box.getFirstZ());
+//  config.range.setLastZ(box.getFirstZ() + box.getDepth() / 2);
+
+//  ZDvidUrl dvidUrl(reader->getDvidTarget());
+//  QByteArray buffer = reader->readBuffer(dvidUrl.getSparsevolUrl(config));
+//  std::cout << buffer.size() << std::endl;
+
+  ZObject3dScan obj;
+//  obj.importDvidBlockBuffer(buffer.data(), buffer.size(), true);
+//  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+  reader->readMultiscaleBody(config.bodyId, 2, true, &obj);
+  std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

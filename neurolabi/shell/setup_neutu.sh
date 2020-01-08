@@ -76,8 +76,8 @@ fi
 cd $scriptDir
 condarc=$condaDir/.condarc
 echo 'channels:' > $condarc
-echo '  - flyem-forge/label/ff201905' >> $condarc
-echo '  - conda-forge/label/cf201901' >> $condarc
+echo '  - flyem-forge' >> $condarc
+echo '  - conda-forge' >> $condarc
 echo '  - defaults' >> $condarc
 #cp condarc $condarc
 
@@ -94,9 +94,7 @@ fi
 
 envName='neutu-env'
 source $condaDir/bin/activate root
-conda create -n $envName python=3.6 -y
-source $condaDir/bin/activate $envName
-conda install $package -y $channel_arg
+conda create -n $envName $package -y
 
 updateFile=$bindir/ntupd
 touch $updateFile

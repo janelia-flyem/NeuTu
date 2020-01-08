@@ -69,12 +69,14 @@ int main(int argc, char *argv[])
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
+  // init the logging mechanism
+  init_log();
+
   if (mainConfig.runCommandLine) {
     NeutubeConfig::getInstance().setCliSoftwareName("cli");
-    ZGlobal::InitKafkaTracer();
-    KLog::SetOperationName("cli");
-    LKLOG << ZLog::Info()
-           << ZLog::Description("BEGIN " + GET_SOFTWARE_NAME);
+//    ZGlobal::InitKafkaTracer();
+//    KLog::SetOperationName("cli");
+    LINFO() << "BEGIN " + get_machine_info();
     return run_command_line(argc, argv);
   }
 
@@ -89,9 +91,6 @@ int main(int argc, char *argv[])
   neutu::RegisterMetaType();
 
   configure(mainConfig);
-
-  // init the logging mechanism
-  init_log();
 
 //  RECORD_INFORMATION("************* Start ******************");
 

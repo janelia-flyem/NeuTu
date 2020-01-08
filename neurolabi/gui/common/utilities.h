@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <functional>
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
@@ -183,7 +184,24 @@ inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
   return false;
 }
 
-}
+/*!
+ * \brief Process partitions of a range
+ *
+ * The behavior of this function is undefined if x0 > x1 or n <= 0.
+ *
+ * \param x0 Min value of the range.
+ * \param x1 Max value of the range.
+ * \param n Number of partitions.
+ * \param f Function to process the partition. It takes min and max of a partition
+ *          as its parameters.
+ */
+void RangePartitionProcess(
+    int x0, int x1, int n, std::function<void(int, int)> f);
+
+//void RangePartitionProcess(
+//    int x0, int x1, int block, int n, std::function<void(int, int)> f);
+
+} //namespace neutu
 
 //template<>
 //int numDigits(int32_t x);

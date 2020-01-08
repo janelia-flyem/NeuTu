@@ -1,5 +1,6 @@
 #include "zneuroglancerlayerspecfactory.h"
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "zneuroglancerlayerspec.h"
 #include "zneuroglancerannotationlayerspec.h"
@@ -77,10 +78,12 @@ ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
     case ZDvidData::ERole::BOOKMARK:
       layer->setName("annotation");
       layer->setTool("annotatePoint");
-      queryString = "?usertag=true";
+      layer->setColor(255, 0, 0);
+      queryString = "?usertag=true&user=" + NeutubeConfig::GetUserName();
       break;
     case ZDvidData::ERole::SYNAPSE:
       dataName = target.getSynapseName();
+      layer->setColor(255, 255, 0);
       layer->setName("synapse");
       break;
     default:

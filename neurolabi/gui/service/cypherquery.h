@@ -57,6 +57,8 @@ struct CypherQueryBuilder {
   CypherQueryBuilder& limit(int n);
   CypherQueryBuilder& ret(const QString &pattern);
 
+  static QString OrEqualClause(const QString &var, const QList<QString> &valueList);
+
 private:
   CypherQuery m_query;
 };

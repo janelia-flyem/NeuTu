@@ -227,6 +227,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_UNVERIFY:
     action = new QAction("Unverify", parent);
+    action->setIcon(QFontIcon::icon(0xf056, Qt::red));
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
@@ -240,7 +241,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
-    action->setIcon(QIcon(":/images/move.png"));
+//    action->setIcon(QIcon(":/images/move.png"));
+    action->setIcon(QFontIcon::icon(0xf0b2, Qt::darkGreen));
 //    action->setShortcut(Qt::Key_V);
     action->setStatusTip("Move a synapse with mouse click");
     break;
@@ -274,7 +276,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_REPAIR:
     action = new QAction("Repair Synapses", parent);
-    action->setIcon(QIcon(":/images/repair.png"));
+//    action->setIcon(QIcon(":/images/repair.png"));
+    action->setIcon(QFontIcon::icon(0xf0ad, Qt::darkGreen));
     action->setStatusTip("Repair selected synapses");
     break;
   case ACTION_TOGGLE_SWC_SKELETON:
@@ -484,6 +487,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SHOW_NORMAL_TODO:
     action = new QAction("Show normal todo", parent);
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
+  case ACTION_SHOW_DONE:
+    action = new QAction("Show done", parent);
     action->setCheckable(true);
     action->setChecked(true);
     break;

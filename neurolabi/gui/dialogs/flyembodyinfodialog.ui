@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>744</width>
+    <width>788</width>
     <height>843</height>
    </rect>
   </property>
@@ -58,13 +58,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="gotoBodiesButton">
-       <property name="text">
-        <string>Goto</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -146,6 +139,13 @@
       <widget class="QPushButton" name="exportBodiesButton">
        <property name="text">
         <string>Export bodies...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="gotoBodiesButton">
+       <property name="text">
+        <string>Goto</string>
        </property>
       </widget>
      </item>

@@ -288,7 +288,7 @@ static double DistanceWeight(double v)
   return sqrt(v);
 }
 
-vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
+vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double minLength,
                                                   Stack *ballStack)
 {
   bool isPathAvailable = true;
@@ -297,7 +297,7 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
   const double skeletonRadius = 3.0;
 
   //Calibrate
-  lengthThreshold -= maskExpansionRadius;
+  minLength -= maskExpansionRadius;
 
   vector<ZVoxelArray> pathArray;
 
@@ -308,13 +308,13 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
     ZVoxelArray path = extractLongestPath(&length, true);
 
     cout << "Path: length = " << length << "; size = " << path.size()
-         << "; Threshold = " << lengthThreshold << std::endl;
+         << "; Threshold = " << minLength << std::endl;
 //    if (path.size() == 1) {
 //      cout << "Debug here." << endl;
 //    }
 
 
-    if (length < lengthThreshold || path.isEmpty()) {
+    if (length < minLength || path.isEmpty()) {
       isPathAvailable = false;
     } else {
       pathArray.push_back(path);

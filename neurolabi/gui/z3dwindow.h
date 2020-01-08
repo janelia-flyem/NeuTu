@@ -234,6 +234,7 @@ signals:
 
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
+  void settingDoneItemVisible(bool);
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
@@ -397,6 +398,7 @@ public slots:
   void deselectBody();
   void copyPosition();
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void updateTodoVisibility();
   void toggleSetting();
   void toggleObjects();

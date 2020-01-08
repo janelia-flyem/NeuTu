@@ -80,7 +80,7 @@ include(extratarget.pri)
 message("Neurolabi target: $$neurolabi.target")
 
 CONFIG(force_link) {
-  PRE_TARGETDEPS += neurolabi
+  PRE_TARGETDEPS += neurolabi.PHONY
 }
 
 TARGET = $$app_name
@@ -306,6 +306,7 @@ HEADERS += mainwindow.h \
     protocols/protocolassignmentclient.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
+    dialogs/neuprintdatasetdialog.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -313,7 +314,6 @@ HEADERS += mainwindow.h \
     plotter.h \
     zinteractivecontext.h \
     ztraceproject.h \
-    dialogs/channeldialog.h \
     zpunctum.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
@@ -335,6 +335,7 @@ HEADERS += mainwindow.h \
     dialogs/swcskeletontransformdialog.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
+    dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \
@@ -464,8 +465,6 @@ HEADERS += mainwindow.h \
     zlinesegmentobject.h \
     openvdb_header.h \
     zopenvdbobject.h \
-    dialogs/flyembodysplitprojectdialog.h \
-    dialogs/zflyemnewbodysplitprojectdialog.h \
     zstroke2dobjsmodel.h \
     zdocplayerobjsmodel.h \
     zabstractmodelpresenter.h \
@@ -521,7 +520,6 @@ HEADERS += mainwindow.h \
     dialogs/zautotracedialog.h \
     zstackviewmanager.h \
     zstackviewparam.h \
-    zflyemprojectmanager.h \
     zflyemdataloader.h \
     dialogs/swcexportdialog.h \
     zprogressmanager.h \
@@ -728,6 +726,7 @@ HEADERS += mainwindow.h \
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
+    dialogs/neuprintdatasetdialog.ui \
     mainwindow.ui \
     dialogs/traceoutputdialog.ui \
     dialogs/bcadjustdialog.ui \
@@ -774,7 +773,6 @@ FORMS += dialogs/settingdialog.ui \
     protocols/protocolassignmentdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
-    dialogs/zflyemnewbodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
     dialogs/zflyemroidialog.ui \
     newprojectmainwindow.ui \
@@ -835,6 +833,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
+    dialogs/neuprintdatasetdialog.cpp \
     mainwindow.cpp \
     protocols/protocolassignment.cpp \
     protocols/protocolassignmentdialog.cpp \
@@ -976,8 +975,6 @@ SOURCES += main.cpp \
     zdocplayer.cpp \
     zlinesegmentobject.cpp \
     zopenvdbobject.cpp \
-    dialogs/flyembodysplitprojectdialog.cpp \
-    dialogs/zflyemnewbodysplitprojectdialog.cpp \
     zstroke2dobjsmodel.cpp \
     zdocplayerobjsmodel.cpp \
     zabstractmodelpresenter.cpp \
@@ -1033,7 +1030,6 @@ SOURCES += main.cpp \
     dialogs/zautotracedialog.cpp \
     zstackviewmanager.cpp \
     zstackviewparam.cpp \
-    zflyemprojectmanager.cpp \
     zflyemdataloader.cpp \
     dialogs/swcexportdialog.cpp \
     zprogressmanager.cpp \

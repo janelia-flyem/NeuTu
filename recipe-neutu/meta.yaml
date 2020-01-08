@@ -28,14 +28,13 @@ requirements:
     - cmake
 
   host:
-    - python >=3.6
     - qt      5.9*
     - fftw    3.3*
     - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post69*
+    - lowtis  0.1.0.post71*
     - cmake
     - ninja 1.7.2*
     - tbb 2019.4*
@@ -53,14 +52,14 @@ requirements:
     - xorg-libxtst 1.2.3* # [linux64]
 
   run:
-    - python >=3.6
+    - python  3.7.3*
     - qt      5.9*
     - fftw    3.3*
     - jansson 2.7*
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post69*
+    - lowtis  0.1.0.post71*
     - tbb 2019.4*
     - tbb-devel 2019.4*
     - vtk 8.2.*

@@ -1345,13 +1345,16 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
     bool ok;
 
     QString text = QInputDialog::getText(this, tr("Find Bodies"),
-                                         tr("Body Name:"), QLineEdit::Normal,
+                                         tr("Body Status:"), QLineEdit::Normal,
                                          "", &ok);
     if (ok) {
       if (!text.isEmpty()) {
         prepareQuery();
 
-        setBodyList(reader->queryNeuronByStatus(text));
+        QStringList statusList = text.split(";", QString::SkipEmptyParts);
+        std::transform(statusList.begin(), statusList.end(), statusList.begin(),
+                       [](const QString &str) { return str.trimmed(); });
+        setBodyList(reader->queryNeuronByStatus(statusList));
       }
     }
   }
@@ -2783,12 +2786,29 @@ void FlyEmBodyInfoDialog::setNeuPrintReader(
 }
 */
 
+std::string FlyEmBodyInfoDialog::getNeuprintUuid() const {
+  return m_reader.getDvidTarget().getUuid();
+}
+
+
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
   if (!m_neuPrintReader) {
-    m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
-          ZGlobal::GetInstance().makeNeuPrintReader(
-            m_reader.getDvidTarget().getUuid().c_str()));
+    if (!m_neuprintDataset.empty()) {
+      m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+            ZGlobal::GetInstance().makeNeuPrintReader());
+      m_neuPrintReader->setCurrentDataset(m_neuprintDataset.c_str());
+    } else {
+      m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
+            ZGlobal::GetInstance().makeNeuPrintReaderFromUuid(
+              getNeuprintUuid().c_str()));
+    }
+
+    setWindowTitle("Body Infomation @ NeuPrint:" +
+                   getNeuPrintReader()->getServer() + ":" +
+                   m_neuprintDataset.c_str());
+
+//            m_reader.getDvidTarget().getUuid().c_str()));
   }
 
   if (!m_neuPrintReader) {

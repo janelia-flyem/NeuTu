@@ -1,6 +1,8 @@
 HEADERS += \
     $$PWD/commontest.h \
+    $$PWD/flyemutilitiestest.h \
     $$PWD/miscutilitytest.h \
+    $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
     $$PWD/znetworkutilstest.h \

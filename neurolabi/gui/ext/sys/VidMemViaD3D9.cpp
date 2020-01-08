@@ -55,9 +55,9 @@ HRESULT GetVideoMemoryViaD3D9( HMONITOR hMonitor, UINT* pdwAvailableTextureMem )
             pp.MultiSampleQuality = 0;
             pp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             pp.hDeviceWindow = hWnd;
-            pp.Windowed = _TRUE_;
+            pp.Windowed = TRUE;
 
-            pp.EnableAutoDepthStencil = _FALSE_;
+            pp.EnableAutoDepthStencil = FALSE;
             pp.Flags = 0;
             pp.FullScreen_RefreshRateInHz = 0;
             pp.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
