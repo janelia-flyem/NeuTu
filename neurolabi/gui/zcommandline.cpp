@@ -1,12 +1,14 @@
 #include "zcommandline.h"
 
-#include <QFileInfoList>
-#include <QDir>
-#include <QFileInfo>
 #include <ostream>
 #include <fstream>
 #include <set>
+
+#include <QFileInfoList>
+#include <QDir>
+#include <QFileInfo>
 #include <QApplication>
+#include <QUrl>
 
 #include "QsLog.h"
 #include "tz_utilities.h"
@@ -15,6 +17,7 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
+#include "zdvidutil.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"
@@ -98,6 +101,16 @@ void ZCommandLine::init()
   m_intvSpecified = false;
 }
 
+void ZCommandLine::_warn(const std::string &msg, bool formatted) const
+{
+  std::cout << (formatted ? msg : "WARNING: " + msg) << std::endl;
+}
+
+void ZCommandLine::_error(const std::string &msg, bool formatted) const
+{
+  std::cout << (formatted ? msg : "ERROR: " + msg) << std::endl;
+}
+
 void ZCommandLine::registerModule()
 {
   registerModule<ZStackDownsampleCommand>("downsample_stack");
@@ -127,8 +140,7 @@ void ZCommandLine::registerModule(
 {
   if (!name.empty() && module != NULL) {
     if (m_commandMap.count(name) > 0) {
-      std::cout << "WARNING: Cannot overwrite a registered module: " << name
-                << std::endl;
+      _warn("Cannot overwrite a registered module: " + name);
     } else {
       module->setForceUpdate(m_forceUpdate);
       m_commandMap[name] = module;
@@ -152,6 +164,19 @@ ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
   }
 
   return UNKNOWN_COMMAND;
+}
+
+void ZCommandLine::importBodies(const std::string &filePath)
+{
+  std::ifstream stream(filePath);
+  if (stream.is_open()) {
+    ZString line;
+    while (getline(stream, line)) {
+      auto bodyIdArray = line.toUint64Array();
+      m_bodyIdArray.insert(
+            m_bodyIdArray.end(), bodyIdArray.begin(), bodyIdArray.end());
+    }
+  }
 }
 
 int ZCommandLine::runObjectMarker()
@@ -1166,9 +1191,8 @@ ZJsonObject ZCommandLine::getSkeletonizeConfig(ZDvidReader &reader)
 
 int ZCommandLine::skeletonizeDvid()
 {
-  ZDvidTarget target;
-  //target.setBodyLabelName("sp2body");
-  target.setFromSourceString(m_input[0]);
+  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(m_input[0]);
+
   if (!target.isValid()) {
     std::cout << "Invalid DVID settings" << std::endl;
     return 1;
@@ -1186,26 +1210,71 @@ int ZCommandLine::skeletonizeDvid()
   bool savingToFile = false;
   QDir outputDir(m_output.c_str());
 
-  if (!QFileInfo(m_output.c_str()).isDir()) {
-    if (reader.getDvidTarget().readOnly()) {
-      ZDvidVersionDag dag = reader.readVersionDag();
-      std::string childUuid =
-          dag.getFirstLeafNode(reader.getDvidTarget().getUuid());
-      if (!dag.isLocked(childUuid)) {
-        LWARN() << "Switching to unlocked child node:" << childUuid;
-        target.setUuid(childUuid);
-        reader.clear();
-        reader.open(target);
-        reader.updateMaxLabelZoom();
-      } else {
-        LWARN() << "Skipping locked node:" << reader.getDvidTarget().getSourceString();
+  auto save_swc_to_file = [&](ZSwcTree *tree, uint64_t bodyId) {
+    if (tree) {
+      QFileInfo outputFileInfo(
+            outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
+      tree->save(outputFileInfo.absoluteFilePath().toStdString());
+    }
+  };
+
+  auto save_swc_to_dvid = [&](ZSwcTree *tree, uint64_t bodyId) {
+    if (tree) {
+      writer.writeSwc(bodyId, tree);
+    }
+  };
+
+  auto save_swc_ignore = [&](ZSwcTree *, uint64_t) {
+  };
+
+  std::function<void(ZSwcTree*, uint64_t)> saveSwc = save_swc_to_dvid;
+
+  QFileInfo fileInfo(m_output.c_str());
+  if (fileInfo.isDir()) {
+    std::cout << "Output to " << outputDir.absolutePath().toStdString() << std::endl;
+    savingToFile = true;
+    saveSwc = save_swc_to_file;
+  } else {
+    ZDvidTarget outputTarget;
+    if (fileInfo.isFile()) {
+      ZJsonObject obj;
+      obj.load(m_output);
+      if (obj.hasKey("swc_store")) {
+        outputTarget.loadJsonObject(ZJsonObject(obj.value("swc_store")));
+      }
+      if (!outputTarget.isValid()) {
+        _error("Invalid output target. Abort!");
         return 1;
       }
+    } else {
+      outputTarget = dvid::MakeTargetFromUrlSpec(m_output);
     }
 
-    writer.open(reader.getDvidTarget());
+    if (!outputTarget.isValid()) {
+      if (reader.getDvidTarget().readOnly() &&
+          !reader.getDvidTarget().hasAdminToken()) {
+        ZDvidVersionDag dag = reader.readVersionDag();
+        std::string childUuid =
+            dag.getFirstLeafNode(reader.getDvidTarget().getUuid());
+        if (!dag.isLocked(childUuid)) {
+          LWARN() << "Switching to unlocked child node:" << childUuid;
+          target.setUuid(childUuid);
+          reader.clear();
+          reader.open(target);
+          reader.updateMaxLabelZoom();
+        } else {
+          LWARN() << "Skipping locked node:"
+                  << reader.getDvidTarget().getSourceString();
+          return 1;
+        }
+      }
+      outputTarget = reader.getDvidTarget();
+    }
+
+    writer.open(outputTarget);
+    writer.setAdmin(true);
     std::string mirror = reader.readMirror();
-    ZDvidTarget target = reader.getDvidTarget();
+    target = reader.getDvidTarget();
 
     if (!mirror.empty()) {
       target.setServer(mirror);
@@ -1217,30 +1286,26 @@ int ZCommandLine::skeletonizeDvid()
       }
     }
 
-
-    ZDvidUrl dvidUrl(reader.getDvidTarget());
-
     if (!writer.isSwcWrittable()) {
+      ZDvidUrl dvidUrl(outputTarget);
       std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
       std::cout << writer.getStandardOutput().toStdString() << std::endl;
       std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
-      std::cout << "Please create the keyvalue data for skeletons first:"
+      std::cout << "Please create the keyvalue data for skeletons first if it does not exist:"
                 << std::endl;
       std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
                    "-d '{\"dataname\": \""
                 << ZDvidData::GetName(ZDvidData::ERole::SKELETON,
                                       ZDvidData::ERole::BODY_LABEL,
-                                      target.getBodyLabelName())
+                                      outputTarget.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
                 << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
                 << std::endl;
 
       return 1;
     }
-  } else {
-    std::cout << "Output to " << outputDir.absolutePath().toStdString() << std::endl;
-    savingToFile = true;
   }
+
 
   std::vector<uint64_t> bodyIdArray = getSkeletonBodyList(reader);
   if (bodyIdArray.empty()) {
@@ -1273,6 +1338,54 @@ int ZCommandLine::skeletonizeDvid()
     }
   }
 
+  auto validate_swc = [&](ZSwcTree *tree, int64_t mid, bool showingMsg)
+      -> ZSwcTree* {
+    if (tree) {
+      const int64_t sid = flyem::GetMutationId(tree);
+      if (mid >= 0 && sid != mid) {
+        if (showingMsg) {
+          std::cout << "Skeletonization required ("
+                    << sid << "->" << mid << ")" << std::endl;
+        }
+
+        delete tree;
+        tree = NULL;
+      }
+    }
+
+    if (tree) {
+      if (m_forceUpdate) {
+        if (mid < 0) {
+          if (showingMsg) {
+            std::cout << "Skeletonization forced (no mutation ID)" << std::endl;
+          }
+
+          delete tree;
+          tree = NULL;
+        } else {
+          int vskl = flyem::GetSkeletonVersion(*tree);
+          if (ZStackSkeletonizer::VERSION > vskl) {
+            if (showingMsg) {
+              std::cout << "Skeletonization forced by upgrade" << std::endl;
+            }
+            delete tree;
+            tree = NULL;
+          }
+        }
+      }
+    }
+
+    if (tree && showingMsg) {
+      if (m_forceUpdate) {
+        std::cout << "The skeleton is up to date." << std::endl;
+      } else {
+        std::cout << "Skip overwriting existing skeleton." << std::endl;
+      }
+    }
+
+    return tree;
+  };
+
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
@@ -1280,45 +1393,47 @@ int ZCommandLine::skeletonizeDvid()
       std::cout << "Skeletonizer version: "
                 << ZStackSkeletonizer::VERSION << std::endl;
       ZSwcTree *tree = NULL;
-      QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
+      QFileInfo outputFileInfo(
+            outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
 
 
 //      if (!m_forceUpdate || mid >= 0) { //mutation ID available or no force update
+
+      const int64_t mid = bodyReader->readBodyMutationId(bodyId);
+
       if (savingToFile) {
         if (outputFileInfo.exists()) {
           tree = new ZSwcTree;
           tree->load(outputFileInfo.absoluteFilePath().toStdString());
+          tree = validate_swc(tree, mid, true);
+        }
+        if (tree) {
+          saveSwc = save_swc_ignore;
+        } else {
+          saveSwc = save_swc_to_file;
         }
       } else {
-        tree = reader.readSwc(bodyId);
-      }
+        tree = writer.getDvidReader().readSwc(bodyId);
+        tree = validate_swc(tree, mid, true);
 
-      const int64_t mid = bodyReader->readBodyMutationId(bodyId);
-
-      if (tree) {
-        const int64_t sid = flyem::GetMutationId(tree);
-        if (mid >= 0 && mid != sid) {
-          std::cout << "Skeletonization required ("
-                    << sid << "->" << mid << ")" << std::endl;
-          delete tree;
-          tree = NULL;
+        if (tree) {
+          saveSwc = save_swc_ignore;
+        } else {
+          saveSwc = save_swc_to_dvid;
         }
       }
 
-      if (tree) {
-        if (m_forceUpdate) {
-          if (mid < 0) {
-            std::cout << "Skeletonization forced (no mutation ID)" << std::endl;
-            delete tree;
-            tree = NULL;
+      if (tree == nullptr) { //Check swc from DVID source
+        if (ZDvidUrl(writer.getDvidTarget()).getSkeletonUrl() !=
+            ZDvidUrl(reader.getDvidTarget()).getSkeletonUrl()) {
+          std::cout << "Checking source skeleton ..." << std::endl;
+          tree = reader.readSwc(bodyId);
+          if (tree) {
+            tree = validate_swc(tree, mid, true);
           } else {
-            int vskl = flyem::GetSkeletonVersion(*tree);
-            if (ZStackSkeletonizer::VERSION > vskl) {
-              std::cout << "Skeletonization forced by upgrade" << std::endl;
-              delete tree;
-              tree = NULL;
-            }
+            std::cout << "No source skeleton found." << std::endl;
           }
+
         }
       }
 
@@ -1343,42 +1458,19 @@ int ZCommandLine::skeletonizeDvid()
         tree = skeletonizer.makeSkeleton(obj);
 
 
-        if (tree != NULL) {
+        if (tree) {
           if (mid >= 0) {
             flyem::SetMutationId(tree, mid);
           }
-          if (savingToFile) {
-            tree->save(outputFileInfo.absoluteFilePath().toStdString());
-          } else {
-            /*
-            if (mid >= 0) {
-              const int64_t latestMid = bodyReader->readBodyMutationId(bodyId);
-
-              if (mid != latestMid) {
-                LWARN() << bodyId << ":" << mid << "->" << latestMid
-                        <<  "The body has been changed during skeletonization. "
-                            "No skeleton will be updated.";
-                delete tree;
-                tree = NULL;
-              }
-            }
-            */
-            if (tree != NULL) {
-              writer.writeSwc(bodyId, tree);
-            }
-          }
         } else {
           LWARN() << "Skeletonization failed for" << bodyId;
-        }
-      } else {
-        if (m_forceUpdate) {
-          std::cout << "The skeleton is up to date." << std::endl;
-        } else {
-          std::cout << "Skip overwriting existing skeleton." << std::endl;
+          return 1;
         }
       }
 
-      if (tree != NULL) {
+      if (tree) {
+        saveSwc(tree, bodyId);
+
         if (stream.is_open()) {
           if (m_outputFlag == "thickness") {
             stream << bodyId << " "
@@ -1500,7 +1592,7 @@ int ZCommandLine::skeletonizeFile()
   return 0;
 }
 
-int ZCommandLine::run(int argc, char *argv[])
+int ZCommandLine::run(int argc, char *argv[], QCoreApplication &app)
 {
   static const char *Spec[] = {
     "--command",
@@ -1528,8 +1620,9 @@ int ZCommandLine::run(int argc, char *argv[])
 
   Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
-  QCoreApplication app(argc, argv, false);
+//  QCoreApplication app(argc, argv, false);
   std::string applicationDir = app.applicationDirPath().toStdString();
+//  NeutubeConfig::getInstance().setApplicationDir(applicationDir);
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << "Executable directory: " << applicationDir << std::endl;
@@ -1642,7 +1735,16 @@ int ZCommandLine::run(int argc, char *argv[])
 
   if (Is_Arg_Matched(const_cast<char*>("--bodyid"))) {
     ZString bodyIdStr(Get_String_Arg(const_cast<char*>("--bodyid")));
-    m_bodyIdArray = bodyIdStr.toUint64Array();
+
+    if (bodyIdStr.endsWith("txt", ZString::CASE_INSENSITIVE)) {
+      importBodies(bodyIdStr);
+    } else {
+      m_bodyIdArray = bodyIdStr.toUint64Array();
+      if (m_bodyIdArray.empty()) {
+        _error("No valid body ID specified. Abort!");
+        return 1;
+      }
+    }
   }
 
   if (command == UNKNOWN_COMMAND) {

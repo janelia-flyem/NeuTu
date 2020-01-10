@@ -51,7 +51,7 @@ public:
   void setFromSourceString(
       const std::string &sourceString, dvid::EDataType dataType);
 
-  void setFromUrl(const std::string &url);
+  void setFromUrl_deprecated(const std::string &url);
 
   inline const std::string& getAddress() const {
     return m_node.getAddress();
@@ -157,6 +157,9 @@ public:
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
+
+  void setScheme(const std::string &scheme);
+  std::string getScheme() const;
 
   void setMock(bool on);
   bool isMock() const;
@@ -322,6 +325,10 @@ public:
 
   bool usingMulitresBodylabel() const;
 
+  void setAdminToken(const std::string &token);
+  std::string getAdminToken() const;
+  bool hasAdminToken() const;
+
   bool isInferred() const;
   void setInferred(bool status);
 
@@ -409,6 +416,7 @@ public:
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;
   const static char* m_proofreadingKey;
+  const static char* m_adminTokenKey;
 
 private:
   ZDvidNode m_node;
@@ -426,6 +434,7 @@ private:
   std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
+  std::string m_adminToken;
 
   std::map<std::string, TileConfig> m_tileConfig; //used when m_multiscale2dName is empty
 //  ZJsonObject m_tileConfig;

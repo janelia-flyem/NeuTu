@@ -1,6 +1,8 @@
 #ifndef ZCOMMANDLINE_H
 #define ZCOMMANDLINE_H
 
+#include <QCoreApplication>
+
 #include <string>
 #include <vector>
 #include <set>
@@ -30,7 +32,7 @@ public:
     UNKNOWN_COMMAND
   };
 
-  int run(int argc, char *argv[]);
+  int run(int argc, char *argv[], QCoreApplication &app);
 
 
   friend class ZTest;
@@ -90,6 +92,11 @@ private:
   void loadInputJson();
 
   ZDvidTarget getInputDvidTarget() const;
+
+  void importBodies(const std::string &filePath);
+
+  void _warn(const std::string &msg, bool formatted = false) const;
+  void _error(const std::string &msg, bool formatted = false) const;
 
 private:
   std::vector<std::string> m_input;

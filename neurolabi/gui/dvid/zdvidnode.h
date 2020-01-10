@@ -38,7 +38,7 @@ public:
   void setFromSourceString(const std::string &sourceString);
   bool setFromSourceToken(const std::vector<std::string> &tokens);
 
-  void setFromUrl(const std::string &url);
+  void setFromUrl_deprecated(const std::string &url);
 
   inline int getPort() const {
     return m_port;
@@ -85,7 +85,7 @@ public:
    * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
   std::string getSourceString(
-      bool withHttpPrefix = true, size_t uuidBrief = 0) const;
+      bool withScheme = true, size_t uuidBrief = 0) const;
 
 
   /*!
@@ -106,12 +106,16 @@ public:
   bool operator == (const ZDvidNode &node) const;
   bool operator != (const ZDvidNode &node) const;
 
+  std::string getScheme() const;
+  void setScheme(const std::string &scheme);
+
 private:
   std::string m_address;
   std::string m_uuid;
   std::string m_originalUuid;
   int m_port = -1;
-  bool m_isMocked = false; //Mocked node if true
+  std::string m_scheme;
+//  bool m_isMocked = false; //Mocked node if true
 
   const static char* m_addressKey;
   const static char* m_portKey;

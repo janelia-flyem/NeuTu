@@ -113,7 +113,7 @@ ZBodySplitCommand::parseSignalPath(
 
     if (m_bodyId > 0) {
       ZDvidTarget target;
-      target.setFromUrl(signalPath);
+      target.setFromUrl_deprecated(signalPath);
 
       KINFO << signalPath;
 //      KINFO << QString("Start splitting %1").arg(m_bodyId);

@@ -23357,7 +23357,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
+  QUrl url("mock://emdata4.int.janelia.org:8900?"
+           "uuid=52a1&segmentation=segmentation&admintoken=xxx");
+  qDebug() << url.scheme();
+  qDebug() << url.host();
+  qDebug() << url.port();
+
+  QUrlQuery query(url);
+  qDebug() << query.queryItemValue("segmentation", QUrl::FullyDecoded);
+  qDebug() << query.queryItemValue("admintoken", QUrl::FullyDecoded);
+
+#endif
+
+#if 0
 //  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
   QUrl url("/test/test");
   qDebug() << url.scheme();
@@ -23371,11 +23384,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::string path =
-      "dvid://emdata1.int.janelia.org:8100/api/node/ef20/dataname?x1=1&y1=1&z1=1";
-  ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+  QString path =
+      "http://emdata1.int.janelia.org:8100/api/node/ef20/dataname?x1=1&y1=1&z1=1";
 
-  qDebug() << target.toJsonObject().dumpString(2);
+
+//  ZDvidTarget target = dvid::MakeTargetFromUrl(path);
+
+//  qDebug() << target.toJsonObject().dumpString(2);
 #endif
 
 #if 0
@@ -30749,6 +30764,15 @@ void ZTest::test(MainWindow *host)
   std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
 
   obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
+#endif
+
+#if 1
+  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(
+        "http://127.0.0.1:1600?uuid=4280&segmentation=segmentation&admintoken=test");
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.setAdmin(true);
+  writer.deleteSkeleton(1505851998);
 #endif
 
   std::cout << "Done." << std::endl;

@@ -31,20 +31,11 @@ int main(int argc, char *argv[])
 
 #include "ztest.h"
 #include "qfonticon.h"
-#include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
 #include "zglobal.h"
 #include "logging/zlog.h"
-
-namespace {
-std::string get_machine_info()
-{
-  return GET_SOFTWARE_NAME + " " + neutu::GetVersionString() +
-      " @{" + QSysInfo::prettyProductName().toStdString() + "}";
-}
-}
 
 int main(int argc, char *argv[])
 {
@@ -70,14 +61,16 @@ int main(int argc, char *argv[])
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
   // init the logging mechanism
-  init_log();
+//  init_log();
 
   if (mainConfig.runCommandLine) {
     NeutubeConfig::getInstance().setCliSoftwareName("cli");
 //    ZGlobal::InitKafkaTracer();
 //    KLog::SetOperationName("cli");
-    LINFO() << "BEGIN " + get_machine_info();
+//    LINFO() << "BEGIN " + get_machine_info();
     return run_command_line(argc, argv);
+  } else {
+    init_log();
   }
 
   if (mainConfig.isGuiEnabled()) {

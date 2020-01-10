@@ -5,6 +5,7 @@
 
 #include "dvid/zdvidwriter.h"
 #include "flyem/flyemdatawriter.h"
+#include "zdvidutil.h"
 
 ZUploadRoiCommand::ZUploadRoiCommand()
 {
@@ -20,11 +21,12 @@ int ZUploadRoiCommand::run(
   }
 
 
-  ZDvidTarget target;
-  target.setFromSourceString(output);
+  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(output);
+//  target.setFromSourceString(output);
 
   ZDvidWriter writer;
   if (writer.open(target)) {
+    writer.setAdmin(true);
     QDir dir(input[0].c_str());
     qDebug() << "Input data: " << dir;
 

@@ -16,12 +16,15 @@ class ZDvidUrl
 public:
   ZDvidUrl();
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
-  ZDvidUrl(const ZDvidTarget &target);
-  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid);
+  ZDvidUrl(const ZDvidTarget &target, bool admin = false);
+  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid, bool replacing);
 
 
   void setDvidTarget(const ZDvidTarget &target);
-  void setDvidTarget(const ZDvidTarget &target, const std::string &uuid);
+  void setDvidTarget(
+      const ZDvidTarget &target, const std::string &uuid, bool replacing = true);
+
+  void setAdmin(bool admin);
 
   std::string getApiLoadUrl() const;
   std::string getNodeUrl() const;
@@ -312,6 +315,8 @@ public:
   std::string getSynapseLabelszThresholdUrl(
       int threshold, dvid::ELabelIndexType indexType, int offset, int number) const;
 
+  std::string applyAdminToken(const std::string &url) const;
+
 public:
   static std::string GetPath(const std::string &url);
   static std::string GetFullUrl(
@@ -337,6 +342,32 @@ public:
 //  std::string getTestTaskUrl() const;
 
 //  static bool IsSplitTask(const std::string &url);
+
+  static std::string AppendQuery(const std::string &url, const std::string query);
+  static std::string AppendQuery(
+        const std::string &url, const std::pair<std::string,std::string> &query);
+  static std::string AppendQuery(
+      const std::string &url, const std::pair<std::string, bool> &query);
+
+
+  template<typename T>
+  static std::string AppendQuery(
+        const std::string &url, const std::pair<std::string,T> &query)
+  {
+    if (!query.first.empty()) {
+      std::string qstr = query.first + "=" + std::to_string(query.second);
+      return ZDvidUrl::AppendQuery(url, qstr);
+    }
+
+    return url;
+  }
+
+  template<typename T>
+  static std::string AppendQuery(
+        const std::string &url, const std::string &name, const T &value)
+  {
+    return ZDvidUrl::AppendQuery(url, std::pair<std::string,T>(name, value));
+  }
 
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
@@ -369,6 +400,7 @@ public:
 
 private:
   ZDvidTarget m_dvidTarget;
+  bool m_admin = false;
 
   static const std::string m_keyCommand;
   static const std::string m_keysCommand;

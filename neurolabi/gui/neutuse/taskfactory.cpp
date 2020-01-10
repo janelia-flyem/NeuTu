@@ -26,6 +26,9 @@ Task TaskFactory::MakeDvidTask(
   dvidJson.setEntry("port", target.getPort());
   dvidJson.setEntry("uuid", target.getUuid());
   dvidJson.setEntry("body_label", target.getBodyLabelName());
+  if (target.hasAdminToken()) {
+    dvidJson.setEntry("admin_token", target.getAdminToken());
+  }
   config.setEntry("dvid", dvidJson);
   task.setConfig(config);
 

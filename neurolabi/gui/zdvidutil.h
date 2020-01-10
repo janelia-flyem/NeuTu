@@ -85,7 +85,30 @@ ZJsonObject GetDataInstances(const std::string &type);
 dvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
 dvid::EDataType GetDataType(const std::string &typeName);
 
-ZDvidTarget MakeTargetFromUrl(const std::string path);
+/*!
+ * \brief Make target from a url (DEPRECATED)
+ *
+ * This function is kept for compatibility.
+ */
+ZDvidTarget MakeTargetFromUrl_deprecated(const std::string &path);
+
+/*!
+ * \brief Make DVID target from URL specification
+ *
+ * pattern: [http|https|dvid|mock]://<base_address>?uuid=xxx&<field>=<value>
+ *
+ * <field> will be passed to set the properties of the target:
+ *   segmentation: segmentation data
+ *   grayscale: grayscale data
+ *   admintoken: admin token
+ *   readonly: set the target to readonly
+ *
+ * Note it also supports the source string which has pattern like
+ * "http:<address>".
+ *
+ * \param path Input url
+ */
+ZDvidTarget MakeTargetFromUrlSpec(const std::string &path);
 
 bool IsValidDvidUrl(const std::string &url);
 

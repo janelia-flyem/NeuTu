@@ -111,7 +111,7 @@ void ZDvidBufferReader::read(
 //  qDebug() << "Using libdvidcpp";
 
   ZDvidTarget target;
-  target.setFromUrl(url.toStdString());
+  target.setFromUrl_deprecated(url.toStdString());
 
   if (target.isValid()) {
     try {
@@ -210,7 +210,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidTarget target;
-  target.setFromUrl(url.toStdString());
+  target.setFromUrl_deprecated(url.toStdString());
 
   if (target.isValid()) {
     try {

@@ -35,6 +35,7 @@ const char* ZDvidTarget::m_todoListNameKey = "todo";
 const char* ZDvidTarget::m_defaultSettingKey = "default";
 const char* ZDvidTarget::m_sourceConfigKey = "@source";
 const char* ZDvidTarget::m_proofreadingKey = "proofreading";
+const char* ZDvidTarget::m_adminTokenKey = "admin_token";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -152,7 +153,7 @@ void ZDvidTarget::setPort(int port)
   m_node.setPort(port);
 }
 
-void ZDvidTarget::setFromUrl(const std::string &url)
+void ZDvidTarget::setFromUrl_deprecated(const std::string &url)
 {
   clear();
   if (url.empty()) {
@@ -311,6 +312,16 @@ std::string ZDvidTarget::getAddressWithPort() const
   return address;
 }
 
+void ZDvidTarget::setScheme(const std::string &scheme)
+{
+  m_node.setScheme(scheme);
+}
+
+std::string ZDvidTarget::getScheme() const
+{
+  return m_node.getScheme();
+}
+
 void ZDvidTarget::setMock(bool on)
 {
   m_node.setMock(on);
@@ -388,6 +399,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setNonEmptyEntry(m_roiNameKey, m_roiName);
   obj.setNonEmptyEntry(m_todoListNameKey, m_todoListName);
   obj.setEntry(m_proofreadingKey, !m_readOnly);
+  obj.setNonEmptyEntry(m_adminTokenKey, m_adminToken);
 
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
@@ -694,6 +706,7 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
     m_readOnly = !ZJsonParser::booleanValue(
           obj[m_proofreadingKey], /*default=*/true);
+    m_adminToken = ZJsonParser::stringValue(obj[m_adminTokenKey]);
     updateData(obj);
   }
 }
@@ -764,7 +777,10 @@ std::string ZDvidTarget::getOriginalUuid() const
 std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ERole::BODY_LABEL);
+    if (getSegmentationType() != ZDvidData::EType::LABELBLK) {
+      return getSegmentationName();
+    }
+//    return ZDvidData::GetName(ZDvidData::ERole::BODY_LABEL);
   } else if (ZDvidData::IsNullName(m_bodyLabelName)) {
     return "";
   }
@@ -1136,8 +1152,9 @@ std::string ZDvidTarget::getBookmarkKeyName() const
 
 std::string ZDvidTarget::getSkeletonName() const
 {
-  return ZDvidData::GetName(ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
-                            getBodyLabelName());
+  return ZDvidData::GetName(
+        ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
+        getBodyLabelName());
 }
 
 std::string ZDvidTarget::getMeshName() const
@@ -1252,6 +1269,21 @@ void ZDvidTarget::setSource(const char *key, const ZDvidNode &node)
 void ZDvidTarget::setGrayScaleSource(const ZDvidNode &node)
 {
   setSource(m_grayScaleNameKey, node);
+}
+
+void ZDvidTarget::setAdminToken(const std::string &token)
+{
+  m_adminToken = token;
+}
+
+std::string ZDvidTarget::getAdminToken() const
+{
+  return m_adminToken;
+}
+
+bool ZDvidTarget::hasAdminToken() const
+{
+  return !m_adminToken.empty();
 }
 
 ZDvidNode ZDvidTarget::getSource(const char *key) const

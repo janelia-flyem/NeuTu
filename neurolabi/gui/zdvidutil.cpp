@@ -1,7 +1,9 @@
 #include "zdvidutil.h"
 
-#include <QUrl>
 #include <cmath>
+
+#include <QUrl>
+#include <QUrlQuery>
 
 #include "neutubeconfig.h"
 #include "zjsonvalue.h"
@@ -457,15 +459,44 @@ dvid::EDataType dvid::GetDataTypeFromInfo(const ZJsonObject &obj)
 bool dvid::IsValidDvidUrl(const std::string &url)
 {
   ZDvidTarget target;
-  target.setFromUrl(url);
+  target.setFromUrl_deprecated(url);
 
   return target.isValid();
 }
 
-ZDvidTarget dvid::MakeTargetFromUrl(const std::string path)
+ZDvidTarget dvid::MakeTargetFromUrlSpec(const std::string &path)
 {
   ZDvidTarget target;
-  target.setFromUrl(path);
+  if (ZString(path).startsWith("http:") && !ZString(path).startsWith("http://")) {
+    target.setFromSourceString(path);
+  } else {
+    QUrl url(path.c_str());
+    QUrlQuery query(url);
+
+
+    target.setScheme(url.scheme().toStdString());
+    target.set(url.host().toStdString(),
+               query.queryItemValue("uuid").toStdString(),
+               url.port());
+
+    std::string segmentation =
+        query.queryItemValue("segmentation").toStdString();
+    if (!segmentation.empty()) {
+      target.setSegmentationType(ZDvidData::EType::LABELMAP);
+      target.setSegmentationName(segmentation);
+    }
+    target.setGrayScaleName(query.queryItemValue("grayscale").toStdString());
+    target.setAdminToken(query.queryItemValue("admintoken").toStdString());
+  }
+
+  return target;
+}
+
+
+ZDvidTarget dvid::MakeTargetFromUrl_deprecated(const std::string &path)
+{
+  ZDvidTarget target;
+  target.setFromUrl_deprecated(path);
   return target;
 
 #if 0

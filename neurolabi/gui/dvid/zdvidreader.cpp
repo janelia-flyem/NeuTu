@@ -1268,7 +1268,7 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
   std::tuple<QByteArray, std::string> result;
 
   ZDvidTarget target;
-  target.setFromUrl(url);
+  target.setFromUrl_deprecated(url);
   if (target.getAddressWithPort() != getDvidTarget().getAddressWithPort() ||
       target.getUuid() != getDvidTarget().getUuid()) {
     LWARN() << "Unmatched target";
@@ -5791,7 +5791,7 @@ bool ZDvidReader::ReadMasterListBuffer(
       usingOldUrl = true;
     }
 
-    ZDvidUrl dvidUrl(target, rootNode);
+    ZDvidUrl dvidUrl(target, rootNode, true);
     std::string url;
 
     if (!usingOldUrl) {

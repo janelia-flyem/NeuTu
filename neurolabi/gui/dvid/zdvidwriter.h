@@ -41,6 +41,8 @@ public:
 
   bool openRaw(const ZDvidTarget &target);
 
+  void setAdmin(bool admin);
+
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {
@@ -324,6 +326,7 @@ private:
   ZJsonObject m_jsonOutput;
   int m_statusCode;
   QString m_statusErrorMessage;
+  bool m_admin = false;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> m_service;

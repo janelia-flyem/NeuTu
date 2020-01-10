@@ -52,17 +52,28 @@ bool ZDvidNode::hasDvidUuid() const
   return true;
 }
 
+std::string ZDvidNode::getScheme() const
+{
+  return m_scheme.empty() ? "http" : m_scheme;
+}
+
+void ZDvidNode::setScheme(const std::string &scheme)
+{
+  m_scheme = scheme;
+}
+
 void ZDvidNode::setMock(bool on)
 {
-  m_isMocked = on;
+  m_scheme = on ? "mock" : "";
+//  m_isMocked = on;
 }
 
 bool ZDvidNode::isMock() const
 {
-  return m_isMocked;
+  return getScheme() == "mock";
 }
 
-std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) const
+std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 {
   std::string source;
 
@@ -77,12 +88,8 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) co
     }
 
     source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;
-    if (withHttpPrefix) {
-      if (isMock()) {
-        source = "mock:" + source;
-      } else {
-        source = "http:" + source;
-      }
+    if (withScheme) {
+      source = getScheme() + ":" + source;
     }
   }
 
@@ -92,13 +99,13 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) co
 bool ZDvidNode::operator ==(const ZDvidNode &node) const
 {
   return m_address == node.m_address && m_port == node.m_port &&
-      m_uuid == node.m_uuid && m_isMocked == node.m_isMocked;
+      m_uuid == node.m_uuid && getScheme() == node.getScheme();
 }
 
 bool ZDvidNode::operator !=(const ZDvidNode &node) const
 {
   return m_address != node.m_address || m_port != node.m_port ||
-      m_uuid != node.m_uuid || m_isMocked != node.m_isMocked;
+      m_uuid != node.m_uuid || getScheme() != node.getScheme();
 }
 
 
@@ -111,9 +118,11 @@ void ZDvidNode::set(
     bool hasPrefix = false;
     if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
       hasPrefix = true;
+      setScheme("http");
     } else if (s.startsWith("mock://", ZString::CASE_INSENSITIVE)) {
       hasPrefix = true;
-      setMock(true);
+      setScheme("mock");
+//      setMock(true);
     }
     if (hasPrefix) {
       s = s.substr(7);
@@ -167,9 +176,10 @@ void ZDvidNode::setServer(const std::string &address)
 
     if (addressObj.startsWith("http://")) {
       addressObj = address.substr(7);
+      setScheme("http");
     } else if (addressObj.startsWith("mock://")) {
       addressObj = address.substr(7);
-      setMock(true);
+      setScheme("mock");
     } else if (ZString(address).startsWith("//")) {
       addressObj = address.substr(2);
     } else {
@@ -242,7 +252,7 @@ void ZDvidNode::setPort(int port)
   m_port = port;
 }
 
-void ZDvidNode::setFromUrl(const std::string &url)
+void ZDvidNode::setFromUrl_deprecated(const std::string &url)
 {
   clear();
   if (url.empty()) {
@@ -252,6 +262,7 @@ void ZDvidNode::setFromUrl(const std::string &url)
   ZString zurl(url);
   if (zurl.startsWith("http:")) {
     zurl.replace("http://", "");
+    setScheme("http");
   } else if (zurl.startsWith("mock://")) {
     zurl.replace("mock://", "");
     setMock(true);
@@ -304,9 +315,7 @@ bool ZDvidNode::setFromSourceToken(const std::vector<std::string> &tokens)
       }
     }
     set(tokens[1], tokens[3], port);
-    if (tokens[0] == "mock") {
-      setMock(true);
-    }
+    setScheme(tokens[0]);
     succ = true;
   }
 
@@ -341,11 +350,7 @@ std::string ZDvidNode::getUrl() const
 {
   ZString url = "";
   if (isValid()) {
-    if (isMock()) {
-      url = "mock://" + m_address;
-    } else {
-      url = "http://" + m_address;
-    }
+    url = getScheme() + "://" + m_address;
     if (m_port >= 0) {
       url += ":";
       url.appendNumber(m_port);
