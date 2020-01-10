@@ -20,7 +20,7 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     // currently hard-coded, but we expect to get from some config source later
 
     // must not end with / character!  enforce that when we un-hard-code it
-    m_assignments.setServer("http://flyem-assignment.int.janelia.org");
+    m_client.setServer("http://flyem-assignment.int.janelia.org");
 
 
     // UI connections
@@ -40,7 +40,7 @@ bool OrphanLinkProtocol::initialize() {
     //  for me;
 
 
-    QMap<QString, int> projects = m_assignments.getProjectsForProtocol(ProtocolAssignmentClient::ORPHAN_LINK);
+    QMap<QString, int> projects = m_client.getProjectsForProtocol(ProtocolAssignmentClient::ORPHAN_LINK);
 
     if (projects.size() == 0) {
         showError("No projects!", "No projects were found for the orphan link protocol!");
@@ -58,7 +58,7 @@ bool OrphanLinkProtocol::initialize() {
     QString projectName = inputDialog.getProject();
 
 
-    int assignmentID = m_assignments.generateAssignment(projectName);
+    int assignmentID = m_client.generateAssignment(projectName);
 
     // what's the error condition?  ID < 0?
     if (assignmentID <= 0) {
@@ -67,7 +67,7 @@ bool OrphanLinkProtocol::initialize() {
     }
 
 
-    bool status = m_assignments.startAssignment(assignmentID);
+    bool status = m_client.startAssignment(assignmentID);
 
 
     if (!status) {

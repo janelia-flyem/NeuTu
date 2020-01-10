@@ -42,7 +42,7 @@ private:
     void showError(QString title, QString message);
 
     Ui::OrphanLinkProtocol *ui;
-    ProtocolAssignmentClient m_assignments;
+    ProtocolAssignmentClient m_client;
 
 };
 
