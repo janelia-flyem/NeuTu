@@ -64,7 +64,7 @@ Struct_Element *Make_Disc_Se(int r);
 Struct_Element *Make_Ring_Se(int ri, int ro);
 Struct_Element *Make_Cuboid_Se(int width, int height, int depth);
 Struct_Element *Make_Rect_Se(int width, int height);
-Struct_Element *Make_Cross_Se(BOOL is_2d);
+Struct_Element *Make_Cross_Se(_BOOL_ is_2d);
 Struct_Element *Make_Zline_Se(int length);
 
 /***************** Erode and Dilate *************************************
@@ -197,7 +197,7 @@ Stack *Stack_Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
 
 typedef struct _Stack_Seed_Workspace {
   int method;
-  BOOL with_boundary;
+  _BOOL_ with_boundary;
   Stack *seed_mask;
   Stack *seed_dist;
   Stack *weight;
@@ -254,7 +254,7 @@ Stack* Stack_Bwshrink(const Stack *stack, Stack *out);
  */
 Stack* Stack_Bwshrink_Z3(const Stack *stack, Stack *out);
 
-BOOL Stack_Has_Hole_Z3(const Stack *stack, Stack *out);
+_BOOL_ Stack_Has_Hole_Z3(const Stack *stack, Stack *out);
 
 /* Thinning */
 typedef enum { NORMAL_THINNING, REMOVE_ARC } Stack_Bwpeel_Option_t;

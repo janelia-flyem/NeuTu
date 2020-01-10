@@ -21,8 +21,7 @@
 #include "ui_mainwindow.h"
 
 #include "logging/zlog.h"
-#include "tz_darray.h"
-#include "tz_math.h"
+
 #include "mvc/zstackframe.h"
 #include "mvc/zstackdoc.h"
 #include "mvc/zstackview.h"
@@ -31,9 +30,7 @@
 
 #include "zinteractivecontext.h"
 
-//itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "imgproc/zstackprocessor.h"
-//#include "tz_error.h"
 
 #include "zstack.hxx"
 
@@ -130,8 +127,7 @@
 #include "zstackdoclabelstackfactory.h"
 #include "common/zsharedpointer.h"
 #include "zsparseobject.h"
-#include "dialogs/zflyemnewbodysplitprojectdialog.h"
-#include "dialogs/flyembodysplitprojectdialog.h"
+//#include "dialogs/zflyemnewbodysplitprojectdialog.h"
 #include "zsparsestack.h"
 #include "ztest.h"
 #include "dialogs/dvidskeletonizedialog.h"
@@ -162,7 +158,6 @@
 #include "dialogs/settingdialog.h"
 
 #include "zstackviewmanager.h"
-#include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
 #include "flyem/zflyemhackathonconfigdlg.h"
 #include "flyem/zflyemmisc.h"
@@ -355,9 +350,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+  /*
   if (m_bodySplitProjectDialog != NULL) {
     m_bodySplitProjectDialog->clear();
   }
+*/
 
   if (m_roiDlg != NULL) {
     m_roiDlg->clear();
@@ -462,14 +459,14 @@ void MainWindow::initDialog()
   m_testOptionDlg = new ZTestOptionDialog(this);
 
 #if defined(_FLYEM_)
-  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
-  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
+//  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
+//  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  m_flyemProjectManager = new ZFlyEmProjectManager(this);
+//  m_flyemProjectManager = new ZFlyEmProjectManager(this);
 
   //m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
-  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
-  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
+//  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
+//  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
   //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
 //  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
@@ -477,8 +474,8 @@ void MainWindow::initDialog()
 
 //  m_mergeBodyDlg->restoreGeometry(
 //        getSettings().value("BodyMergeProjectGeometry").toByteArray());
-  m_bodySplitProjectDialog->restoreGeometry(
-          getSettings().value("BodySplitProjectGeometry").toByteArray());
+//  m_bodySplitProjectDialog->restoreGeometry(
+//          getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
         getSettings().value("RoiProjectGeometry").toByteArray());
   m_shapePaperDlg->restoreGeometry(
@@ -496,7 +493,7 @@ void MainWindow::initDialog()
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
-  m_bodySplitProjectDialog = NULL;
+//  m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
 //  m_mergeBodyDlg = NULL;
   m_dvidOpDlg = NULL;
@@ -1517,7 +1514,7 @@ void MainWindow::advanceProgress(double dp)
 {
   if (m_progress->value() < m_progress->maximum()) {
     int range = m_progress->maximum() - m_progress->minimum();
-    m_progress->setValue(m_progress->value() + iround(dp * range));
+    m_progress->setValue(m_progress->value() + neutu::iround(dp * range));
   }
 }
 
@@ -1997,11 +1994,12 @@ void MainWindow::importImageSequence()
     qApp->processEvents();
     //m_progress->repaint();
 
-
-    if (frame->importImageSequence(fileName.toStdString().c_str()) == SUCCESS) {
+    try {
+      frame->importImageSequence(fileName.toStdString().c_str());
       addStackFrame(frame);
       presentStackFrame(frame);
-    } else{
+    } catch (std::exception &e) {
+      frame->notifyUser(e.what());
       delete frame;
     }
 
@@ -2164,8 +2162,8 @@ void MainWindow::writeSettings()
 #if defined(_FLYEM_)
 //  getSettings().setValue(
 //        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
-  getSettings().setValue(
-        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
+//  getSettings().setValue(
+//        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
         "RoiProjectGeometry", m_roiDlg->saveGeometry());
   getSettings().setValue("ShapePaperDialogGeometry",
@@ -2487,11 +2485,11 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
         ZOUT(LTRACE(), 5) << frame->document()->getStack()->min(i) <<
                     ' ' << frame->document()->getStack()->max(i) << "\n";
 
-        m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
-                          iround(frame->displayGreyMax(i)), i);
+        m_bcDlg->setValue(neutu::iround(frame->displayGreyMin(i)),
+                          neutu::iround(frame->displayGreyMax(i)), i);
 
         ZOUT(LTRACE(), 5) << frame->displayGreyMin(i) << ' ' <<
-                    iround(frame->displayGreyMax(i)) << "\n";
+                    neutu::iround(frame->displayGreyMax(i)) << "\n";
       }
     }
   }
@@ -3993,7 +3991,7 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
     int layerArray[11];
     for (int i = 0; i < 11; ++i) {
       layerArray[i] = mLayerStart +
-          iround(layerPercent[i] * (mLayerEnd - mLayerStart) / 100.0);
+          neutu::iround(layerPercent[i] * (mLayerEnd - mLayerStart) / 100.0);
     }
     //input.resize(5);
 
@@ -6267,20 +6265,24 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
 
             if (grayStack != NULL) {
-              TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
-              if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
-                size_t voxelNumber = stack->getVoxelNumber();
-                uint8_t *maskArray = stack->array8();
-                uint8_t *signalArray = grayStack->array8();
-                for (size_t i = 0; i < voxelNumber; ++i) {
-                  if (maskArray[i] > 0) {
-                    if (signalArray[i] < 255) {
-                      maskArray[i] = signalArray[i] + 1;
-                    } else {
-                      maskArray[i] = 255;
+              if (grayStack->kind() == GREY) {
+//              TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+                if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+                  size_t voxelNumber = stack->getVoxelNumber();
+                  uint8_t *maskArray = stack->array8();
+                  uint8_t *signalArray = grayStack->array8();
+                  for (size_t i = 0; i < voxelNumber; ++i) {
+                    if (maskArray[i] > 0) {
+                      if (signalArray[i] < 255) {
+                        maskArray[i] = signalArray[i] + 1;
+                      } else {
+                        maskArray[i] = 255;
+                      }
                     }
                   }
                 }
+              } else {
+                ZDialogFactory::Warn("Data Error", "Unexpected grayscale type", this);
               }
               //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
               delete grayStack;
@@ -6511,14 +6513,17 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
 
 void MainWindow::on_actionBody_Split_Project_triggered()
 {
+#if 0
   if (m_newBsProjectDialog->exec()) {
     m_bodySplitProjectDialog->setDvidTarget(
           m_newBsProjectDialog->getDvidTarget());
     m_bodySplitProjectDialog->setBodyId(m_newBsProjectDialog->getBodyId());
     m_bodySplitProjectDialog->show();
   }
+#endif
 }
 
+#if 0
 bool MainWindow::initBodySplitProject()
 {
   bool succ = false;
@@ -6591,6 +6596,7 @@ void MainWindow::on_actionSplit_Body_triggered()
   m_bodySplitProjectDialog->show();
   m_bodySplitProjectDialog->raise();
 }
+#endif
 
 void MainWindow::on_actionCreate_Databundle_triggered()
 {
@@ -6716,7 +6722,7 @@ void MainWindow::on_actionOne_Column_triggered()
 
       ZJsonObject tbarJson(
             synapseJson["T-bar"], ZJsonObject::SET_INCREASE_REF_COUNT);
-      json_array_set(tbarJson["location"], 1, json_integer(iround(y)));
+      json_array_set(tbarJson["location"], 1, json_integer(neutu::iround(y)));
 //      ZJsonArray tbarLocationJson(
 //            tbarJson["location"], ZJsonObject::SET_INCREASE_REF_COUNT);
 
@@ -6749,7 +6755,8 @@ void MainWindow::on_actionOne_Column_triggered()
           bodyIdSet.insert(partner.getBodyId());
 
           ZJsonObject partnerJson = partner.toJsonObject();
-          json_array_set(partnerJson["location"], 1, json_integer(iround(y)));
+          json_array_set(
+                partnerJson["location"], 1, json_integer(neutu::iround(y)));
 
           newPartnerArrayJson.append(partnerJson);
         }
@@ -7054,10 +7061,13 @@ void MainWindow::showAndRaise()
   raise();
 }
 
+
+/*
 void MainWindow::launchSplit(const QString &str)
 {
   m_bodySplitProjectDialog->startSplit(str);
 }
+*/
 
 void MainWindow::on_actionProof_triggered()
 {

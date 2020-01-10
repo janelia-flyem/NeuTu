@@ -41,6 +41,7 @@ public:
   void setSynonym(const std::string &v);
   void setClonalUnit(const std::string &v);
   void setAutoType(const std::string &v);
+  void setProperty(const std::string &v);
 
   void setStatus(const std::string &status);
 
@@ -57,6 +58,7 @@ public:
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
   std::string getStatus() const;
+  std::string getProperty() const;
   std::string getAutoType() const;
   std::string getClonalUnit() const;
   bool isInstanceChanged() const;
@@ -64,6 +66,7 @@ public:
   void setDefaultStatusList(const QList<QString> statusList);
   void addAdminStatus(const QString &status);
   void updateStatusBox();
+  void updatePropertyBox();
 
 private:
   void hideFinalizedStatus();
@@ -71,6 +74,7 @@ private:
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
   void processUnknownStatus(const std::string &status);
+  void processUnknownProperty(const std::string &property);
   void initNullStatusItem();
 
 private slots:

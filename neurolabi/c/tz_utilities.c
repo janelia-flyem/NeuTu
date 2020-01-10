@@ -509,7 +509,7 @@ int tz_isinf(double x)
   return (x == Infinity) || (x == -Infinity);
 }
 
-BOOL Is_Integer_Value(double x)
+_BOOL_ Is_Integer_Value(double x)
 {
   return x == (double) (int) x;
 }
@@ -805,22 +805,22 @@ void rmpath(const char *path)
 }
 
 
-BOOL eqstr(const char *str1, const char *str2)
+_BOOL_ eqstr(const char *str1, const char *str2)
 {
   if ((str1 == NULL) && (str2 == NULL)) {
-    return TRUE;
+    return _TRUE_;
   } else if ((str1 == NULL) || (str2 == NULL)) {
-    return FALSE;
+    return _FALSE_;
   } else {
     if (strcmp(str1, str2) == 0) {
-      return TRUE;
+      return _TRUE_;
     }
   }
    
-  return FALSE;
+  return _FALSE_;
 }
 
-BOOL Is_Valid_Array_Index(size_t index)
+_BOOL_ Is_Valid_Array_Index(size_t index)
 {
   return (index != INVALID_ARRAY_INDEX);
 }

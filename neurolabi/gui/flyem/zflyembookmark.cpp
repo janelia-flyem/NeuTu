@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 
+#include "common/math.h"
 #include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
 #include "zjsonobject.h"
-#include "tz_math.h"
 #include "zpainter.h"
 #include "zstring.h"
 #include "zjsonparser.h"
@@ -69,9 +69,9 @@ void ZFlyEmBookmark::print() const
 
 QString ZFlyEmBookmark::getDvidKey() const
 {
-  return QString("%1_%2_%3").arg(iround(getCenter().x())).
-      arg(iround(getCenter().y())).
-      arg(iround(getCenter().z()));
+  return QString("%1_%2_%3").arg(neutu::iround(getCenter().x())).
+      arg(neutu::iround(getCenter().y())).
+      arg(neutu::iround(getCenter().z()));
 }
 
 ZJsonObject ZFlyEmBookmark::toDvidAnnotationJson() const
@@ -200,9 +200,9 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
     obj.setEntry("status", m_status.toStdString());
   }
   int location[3];
-  location[0] = iround(getCenter().x());
-  location[1] = iround(getCenter().y());
-  location[2] = iround(getCenter().z());
+  location[0] = neutu::iround(getCenter().x());
+  location[1] = neutu::iround(getCenter().y());
+  location[2] = neutu::iround(getCenter().z());
 
 
   /*

@@ -50,6 +50,11 @@ void CypherQuery::appendLimit(int n)
   }
 }
 
+void CypherQuery::setPrefix(const QString &prefix)
+{
+  m_prefix = prefix;
+}
+
 void CypherQuery::setReturn(const QString &pattern)
 {
   m_return = pattern;
@@ -75,12 +80,13 @@ void CypherQuery::appendQuery(const QString &keyword, const QString &pattern)
 
 QString CypherQuery::getQueryString() const
 {
-  QString query;
+  QString query = m_prefix;
 
-  if (!m_query.isEmpty()) {
-    for (const auto& p : m_query) {
-      AppendQuery(query, p.first, p.second);
-    }
+  for (const auto& p : m_query) {
+    AppendQuery(query, p.first, p.second);
+  }
+
+  if (!query.isEmpty()) {
     AppendQuery(query, KW_RETURN, m_return);
     if (!m_postProc.isEmpty()) {
       query += " " + m_postProc;
@@ -93,6 +99,13 @@ QString CypherQuery::getQueryString() const
 CypherQueryBuilder::operator CypherQuery() const
 {
   return m_query;
+}
+
+CypherQueryBuilder& CypherQueryBuilder::init(const QString &startString)
+{
+  m_query.setPrefix(startString);
+
+  return *this;
 }
 
 CypherQueryBuilder& CypherQueryBuilder::match(
@@ -150,4 +163,22 @@ CypherQueryBuilder& CypherQueryBuilder::ret(const QString &pattern)
   m_query.setReturn(pattern);
 
   return *this;
+}
+
+QString CypherQueryBuilder::OrEqualClause(
+    const QString &var, const QList<QString> &valueList)
+{
+  QString clause;
+  if (!var.isEmpty()) {
+    clause = var;
+    if (!valueList.isEmpty()) {
+      clause += " = " + valueList.front();
+    }
+
+    for (int i = 1; i < valueList.size(); ++i) {
+      clause += " OR " + var + " = " + valueList[i];
+    }
+  }
+
+  return clause;
 }

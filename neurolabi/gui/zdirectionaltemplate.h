@@ -41,7 +41,7 @@ public:
                                          double step = 0.5) = 0;
     virtual Local_Neuroseg* toLocalNeuroseg() const = 0;
     virtual void flip() = 0;
-    virtual BOOL hitTest(double x, double y, double z) = 0;
+    virtual bool hitTest(double x, double y, double z) = 0;
     virtual ZPoint bottom() = 0;
     virtual ZPoint center() = 0;
     virtual ZPoint top() = 0;

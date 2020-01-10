@@ -32,7 +32,7 @@ public:
     m_color[0] = r; m_color[1] = g; m_color[2] = b;
   }
 
-  void set(const std::string &line);
+//  void set(const std::string &line);
 
   inline void setName(const std::string &name) { m_name = name; }
   inline void setComment(const std::string &comment) { m_comment = comment; }

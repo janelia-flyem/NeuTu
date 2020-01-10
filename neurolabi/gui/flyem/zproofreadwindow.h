@@ -4,8 +4,7 @@
 #include <QMainWindow>
 #include <QPalette>
 
-#include "tz_stdint.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
@@ -24,6 +23,8 @@ class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
 class ZFlyEmBodySplitDialog;
+class FlyEmAuthTokenDialog;
+class ProtocolAssignmentDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -95,6 +96,9 @@ public slots:
   void loadDatabase();
   void loadDatabaseFromUrl();
 
+  void showAuthTokenDialog();
+  void showProtocolAssignmentDialog();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
@@ -147,6 +151,8 @@ private:
   QAction *m_neuprintAction = nullptr;
   QAction *m_loadDvidAction = nullptr;
   QAction *m_loadDvidUrlAction = nullptr;
+  QAction *m_openAuthDialogAction = nullptr;
+  QAction *m_openProtocolAssignmentDialogAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
@@ -175,6 +181,10 @@ private:
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
   ZFlyEmBodySplitDialog *m_bodySplitDlg;
+  FlyEmAuthTokenDialog *m_authTokenDlg;
+  ProtocolAssignmentDialog * m_protocolAssignmentDlg;
+
+
 };
 
 

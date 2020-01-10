@@ -6,6 +6,7 @@
 #include "neutubeconfig.h"
 #include "zobject3d.h"
 #include "zstackdocaccessor.h"
+#include "zswctree.h"
 
 #ifdef _USE_GTEST_
 TEST(ZStackDoc, Basic)

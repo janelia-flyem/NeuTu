@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include "zvaa3dmarker.h"
 #include "zvaa3dapo.h"
 
@@ -15,7 +16,7 @@ public:
   ZFileParser();
 
 public:
-  static std::map<int, std::string> loadBodyList(std::string filePath,
+  static std::map<uint64_t, std::string> loadBodyList(std::string filePath,
                                                  std::string workDir = "");
   static bool writeVaa3dMakerFile(std::string filePath,
                                   const std::vector<ZVaa3dMarker> &markerArray);

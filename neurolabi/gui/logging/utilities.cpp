@@ -2,7 +2,7 @@
 
 #include "zlog.h"
 #include "zqslog.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zwidgetmessage.h"
 
 namespace neutu {

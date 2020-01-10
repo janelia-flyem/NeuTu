@@ -1,7 +1,8 @@
 #ifndef ZJSONARRAY_H
 #define ZJSONARRAY_H
 
-#include "tz_stdint.h"
+#include <cstdlib>
+
 #include "zjsonvalue.h"
 #include "zuncopyable.h"
 
@@ -17,17 +18,17 @@ public:
   virtual ~ZJsonArray();
 
 public:
-  ::size_t size() const;
-  json_t* at(::size_t index);
-  const json_t* at(::size_t index) const;
+  size_t size() const;
+  json_t* at(size_t index);
+  const json_t* at(size_t index) const;
 
-  ZJsonValue value(::size_t index) const;
+  ZJsonValue value(size_t index) const;
 
   /*!
    * \brief Append an element
    */
   void append(const ZJsonValue &obj);
-  void setValue(::size_t i, const ZJsonValue &obj);
+  void setValue(size_t i, const ZJsonValue &obj);
 
   void append(int v);
   void append(int64_t v);
@@ -39,7 +40,7 @@ public:
 
   void concat(ZJsonArray &array);
 
-  void remove(::size_t index);
+  void remove(size_t index);
 
   /*!
    * \brief Append an element.

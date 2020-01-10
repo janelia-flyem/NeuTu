@@ -439,26 +439,26 @@ double Stack_Point_Sampling(const Stack *stack, double x, double y, double z)
 #define STACK_POINT_HIT_MASK2(stack_array)				\
   {									\
     stack_array += offset;						\
-    if (*(stack_array++)) { return TRUE; }                              \
-    if (*(stack_array)) { return TRUE; }                              \
+    if (*(stack_array++)) { return _TRUE_; }                              \
+    if (*(stack_array)) { return _TRUE_; }                              \
     stack_array += width;					\
-    if (*(stack_array--)) { return TRUE; }                              \
-    if (*(stack_array)) { return TRUE; }                              \
+    if (*(stack_array--)) { return _TRUE_; }                              \
+    if (*(stack_array)) { return _TRUE_; }                              \
     stack_array += area;						\
-    if (*(stack_array++)) { return TRUE; }                              \
-    if (*(stack_array)) { return TRUE; }                              \
+    if (*(stack_array++)) { return _TRUE_; }                              \
+    if (*(stack_array)) { return _TRUE_; }                              \
     stack_array -= width;					\
-    if (*(stack_array--)) { return TRUE; }                              \
-    if (*(stack_array)) { return TRUE; }                              \
-    return FALSE; \
+    if (*(stack_array--)) { return _TRUE_; }                              \
+    if (*(stack_array)) { return _TRUE_; }                              \
+    return _FALSE_; \
   }
 
 #define STACK_POINT_HIT_MASK(stack_array)				\
   {									\
-    if (stack_array[offset]) { return TRUE; }				\
+    if (stack_array[offset]) { return _TRUE_; }				\
   }
 
-BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
+_BOOL_ Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
 {
   int x_low = (int)(x + 0.5);
   int y_low = (int)(y + 0.5);
@@ -468,7 +468,7 @@ BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
   if ((x_low >= stack->width) || (x_low < 0) || 
       (y_low >= stack->height) || (y_low < 0) || 
       (z_low >= stack->depth) || (z_low < 0)) {
-    return FALSE;
+    return _FALSE_;
   } else {
     /* Get weights of surrounded voxels. */
     size_t area = stack->width * stack->height;
@@ -494,7 +494,7 @@ BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
     }
   }
 
-  return FALSE;
+  return _FALSE_;
 }
 
 double Stack_Point_Sampling_Grey(const uint8_t *array, int width, int height, int depth, double x, double y, double z)

@@ -1,4 +1,7 @@
 #include "zobject3dfactory.h"
+
+#include <unordered_map>
+
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "zobject3d.h"
@@ -346,6 +349,8 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   ZObject3dScanArray *result = NULL;
 
   if (!stackArray.empty()) {
+    std::unordered_map<uint64_t, ZObject3dScan*> objMap;
+
     stackArray.sort(zstack::DsIntvGreaterThan());
     ZStackPtr stack = stackArray[0];
 
@@ -371,10 +376,17 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
       ZObject3dScan *obj = iter->second;
-      if (iter->first > 0) {
-        obj->setLabel(iter->first);
+      uint64_t label =iter->first;
+      if (label > 0) {
+        obj->setLabel(label);
         obj->setDsIntv(0);
-        result->append(obj);
+        if (objMap.count(label) > 0) {
+          objMap[label]->concat(*obj);
+          delete obj;
+        } else {
+          result->append(obj);
+          objMap[label] = obj;
+        }
       } else {
         delete obj;
       }

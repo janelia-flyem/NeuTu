@@ -2,31 +2,34 @@
 
 #include <iostream>
 #include <string.h>
-#include "c_stack.h"
-#include "zswctree.h"
+#include <cmath>
+
 #include "tz_stack_lib.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_objlabel.h"
-#include "zspgrowparser.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
+#include "tz_stack_threshold.h"
+
+#include "common/math.h"
+#include "c_stack.h"
+#include "zswctree.h"
+#include "zspgrowparser.h"
 #include "zswcforest.h"
 #include "swctreenode.h"
 #include "zswcgenerator.h"
-#include "tz_error.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "zerror.h"
-#include "tz_math.h"
 #include "swc/zswcresampler.h"
-#include "tz_stack_threshold.h"
 #include "geometry/zintcuboid.h"
 #include "zstackarray.h"
 
 using namespace std;
 
 const size_t ZStackSkeletonizer::m_sizeLimit = neutu::ONEGIGA;
+const int ZStackSkeletonizer::VERSION = 1;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
@@ -144,6 +147,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   return tree;
 }
 
+double ZStackSkeletonizer::getLengthThreshold(double s) const
+{
+  return std::max(m_finalLengthThreshold, m_lengthThreshold / s);
+}
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 {
@@ -276,10 +283,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
         m_downsampleInterval[1] == m_downsampleInterval[2]) {
       linScale = m_downsampleInterval[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
-    double lengthThreshold = m_lengthThreshold / linScale;
+//    double lengthThreshold = m_lengthThreshold / linScale;
+    double lengthThreshold = getLengthThreshold(linScale);
     if (objSize == 1) {
       if (m_keepingSingleObject || lengthThreshold <= 1) {
         int x = 0;
@@ -525,9 +533,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     int thre = 0;
     if (m_autoGrayThreshold) {
       int thre1 =
-          Stack_Find_Threshold_RC(stackData, 0, iround(maxMaskIntensity));
+          Stack_Find_Threshold_RC(stackData, 0, neutu::iround(maxMaskIntensity));
       int thre2 = Stack_Find_Threshold_Locmax(
-            stackData, 0, iround(maxMaskIntensity));
+            stackData, 0, neutu::iround(maxMaskIntensity));
 
       thre = imax2(thre1, thre2);
     }
@@ -586,8 +594,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
   Default_Objlabel_Workspace(&ow);
   ow.conn = 26;
   ow.chord = NULL;
-  ow.init_chord = TRUE;
-  ow.inc_label = TRUE;
+  ow.init_chord = _TRUE_;
+  ow.inc_label = _TRUE_;
 
   int nobj = Stack_Label_Large_Objects_W(stackData, 1, 2, minObjSize, &ow);
   /*
@@ -653,10 +661,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
     if (dsIntv[0] == dsIntv[1] && dsIntv[1] == dsIntv[2]) {
       linScale = dsIntv[0] + 1;
     } else {
-      linScale = Cube_Root(dsVol);
+      linScale = std::cbrt(dsVol);
     }
 
-    double lengthThreshold = m_lengthThreshold / linScale;
+//    double lengthThreshold = m_lengthThreshold / linScale;
+    double lengthThreshold = getLengthThreshold(linScale);
     if (objSize == 1) {
       if (m_keepingSingleObject || lengthThreshold <= 1) {
         int x = 0;
@@ -809,7 +818,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
         Swc_Tree_Node *tmptn = NULL;
         while ((tmptn = Swc_Tree_Next(subtree)) != NULL) {
           if (!SwcTreeNode::isRoot(tmptn)) {
-            TZ_ASSERT(SwcTreeNode::length(tmptn) > 0.0, "duplicating nodes");
+            assert(SwcTreeNode::length(tmptn) > 0.0);
           }
         }
 
@@ -885,9 +894,11 @@ std::string ZStackSkeletonizer::toSwcComment(const int *intv) const
       dsJson.append(intv[i]);
     }
     infoJson.setEntry("ds_intv", dsJson);
-    infoJson.setEntry("min_length", m_lengthThreshold);
-    comment = "<json>" + infoJson.dumpString(0) + "</json>";
   }
+  infoJson.setEntry("min_length", m_lengthThreshold);
+  infoJson.setEntry("final_min_length", m_finalLengthThreshold);
+  infoJson.setEntry("vskl", VERSION);
+  comment = "$" + infoJson.dumpString(0);
 
   return comment;
 }
@@ -950,6 +961,11 @@ void ZStackSkeletonizer::configure(const ZJsonObject &config)
   const json_t *value = config["minimalLength"];
   if (ZJsonParser::IsNumber(value)) {
     setLengthThreshold(ZJsonParser::numberValue(value));
+  }
+
+  value = config["finalMinimalLength"];
+  if (ZJsonParser::IsNumber(value)) {
+    setFinalLengthThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["maximalDistance"];

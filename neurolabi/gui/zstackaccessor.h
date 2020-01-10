@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
-#include "tz_stdint.h"
 #include "tz_stack_lib.h"
 
 class ZStack;

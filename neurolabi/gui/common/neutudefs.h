@@ -4,9 +4,7 @@
 #include <limits>
 #include <functional>
 #include <string>
-
-
-#include "tz_stdint.h"
+#include <cstdint>
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
@@ -232,6 +230,12 @@ using TProgressFunc = std::function<void(size_t, size_t)>;
 #  define DEBUG_OUT std::cout
 #else
 #  define DEBUG_OUT if (1) {} else std::cout
+#endif
+
+#if defined(__clang__) || defined (__GNUC__)
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS
 #endif
 
 #endif // NEUTUBE_DEF_H

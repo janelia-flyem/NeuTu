@@ -82,15 +82,15 @@ Neuroseg_Ellipse* Neuroseg_Ellipse_Fread(Neuroseg_Ellipse *seg, FILE *fp)
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
 
   if (seg == NULL) {
     seg = New_Neuroseg_Ellipse();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
   
   if (fread(seg, sizeof(Neuroseg_Ellipse), 1, fp) != 1) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Neuroseg_Ellipse(seg);
     }
     seg = NULL;

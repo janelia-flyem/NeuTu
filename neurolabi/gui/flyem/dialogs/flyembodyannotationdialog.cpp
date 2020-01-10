@@ -123,6 +123,7 @@ void FlyEmBodyAnnotationDialog::setAutoType(const std::string &v)
   ui->autoTypeLineEdit->setText(QString::fromStdString(v));
 }
 
+
 uint64_t FlyEmBodyAnnotationDialog::getBodyId() const
 {
   return m_bodyId;
@@ -200,6 +201,16 @@ std::string FlyEmBodyAnnotationDialog::getStatus() const
   return "";
 }
 
+std::string FlyEmBodyAnnotationDialog::getProperty() const
+{
+  if (ui->propertyComboBox->currentIndex() > 0) {
+    return ui->propertyComboBox->currentText().toStdString();
+  }
+
+  return "";
+}
+
+
 std::string FlyEmBodyAnnotationDialog::getAutoType() const
 {
   return ui->autoTypeLineEdit->text().toStdString();
@@ -233,6 +244,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setSynonym(annotation.getSynonym());
   setClonalUnit(annotation.getClonalUnit());
   setAutoType(annotation.getAutoType());
+  setProperty(annotation.getProperty());
 //  setInstance(annotation.get);
 }
 
@@ -261,6 +273,7 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setSynonym(getSynonym());
   annotation.setClonalUnit(getClonalUnit());
   annotation.setAutoType(getAutoType());
+  annotation.setProperty(getProperty());
 
   return annotation;
 }
@@ -318,6 +331,21 @@ void FlyEmBodyAnnotationDialog::setStatus(const std::string &status)
   }
 }
 
+
+void FlyEmBodyAnnotationDialog::setProperty(const std::string &v)
+{
+  int index = 0;
+  if (!v.empty()) {
+    index = ui->propertyComboBox->findText(v.c_str(), Qt::MatchExactly);
+  }
+
+  if (index >= 0) {
+    ui->propertyComboBox->setCurrentIndex(index);
+  } else {
+    processUnknownProperty(v);
+  }
+}
+
 void FlyEmBodyAnnotationDialog::showFinalizedStatus()
 {
   int index = ui->statusComboBox->findText(FINALIZED_TEXT);
@@ -343,6 +371,13 @@ void FlyEmBodyAnnotationDialog::updateStatusBox()
   ui->statusComboBox->addItems(m_defaultStatusList);
 }
 
+void FlyEmBodyAnnotationDialog::updatePropertyBox()
+{
+  ui->propertyComboBox->clear();
+  ui->propertyComboBox->addItem("---");
+  ui->propertyComboBox->addItem("Distinct");
+}
+
 void FlyEmBodyAnnotationDialog::freezeFinalizedStatus()
 {
   showFinalizedStatus();
@@ -361,6 +396,13 @@ void FlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
       ui->statusComboBox->setEnabled(m_isAdmin);
     }
   }
+}
+
+void FlyEmBodyAnnotationDialog::processUnknownProperty(
+    const std::string &property)
+{
+  ui->propertyComboBox->addItem(property.c_str());
+  ui->propertyComboBox->setCurrentIndex(ui->propertyComboBox->count() - 1);
 }
 
 void FlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)

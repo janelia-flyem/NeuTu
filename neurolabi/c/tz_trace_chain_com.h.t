@@ -95,7 +95,7 @@ void Write_<1T>_Chain(const char *file_path, <1T>_Chain *chain);
 int <1T>_Chain_Length(<1T>_Chain *chain);
 double <1T>_Chain_Geolen(<1T>_Chain *chain);
 
-BOOL <1T>_Chain_Is_Empty(<1T>_Chain *chain);
+_BOOL_ <1T>_Chain_Is_Empty(<1T>_Chain *chain);
 
 /**@}*/
 
@@ -183,7 +183,7 @@ void <1T>_Chain_Trace_Np(const Stack *stack, double z_scale,
 <1T>_Node* <1T>_Chain_Peek_Prev(const <1T>_Chain *chain);
 
 
-BOOL <1T>_Chain_Has_More(const <1T>_Chain *chain);
+_BOOL_ <1T>_Chain_Has_More(const <1T>_Chain *chain);
 
 <1T>_Node* <1T>_Chain_Head(<1T>_Chain *chain);
 <1T>_Node* <1T>_Chain_Tail(<1T>_Chain *chain);
@@ -260,7 +260,7 @@ void Set_<1T>_Trace_Record(<2T> *<1t>, const Trace_Record *tr);
  * segment in \a chain2. The strenth of connection is \a conn->strength. 
  * \a ws is the workspace, which should be NULL in the current version.
  */
-BOOL <1T>_Chain_Connection_Test(<1T>_Chain *chain1, <1T>_Chain *chain2,
+_BOOL_ <1T>_Chain_Connection_Test(<1T>_Chain *chain1, <1T>_Chain *chain2,
 				const Stack *stack, double z_scale, 
 				Neurocomp_Conn *conn, 
 				Connection_Test_Workspace *ws);
@@ -270,7 +270,7 @@ int <1T>_Chain_Hit_Test(<1T>_Chain *chain, Dlist_Direction_e d,
 int <1T>_Chain_Hit_Test_Seg(<1T>_Chain *chain,
 			    const <2T> *<1t>);
 
-BOOL <1T>_Chain_Touched(<1T>_Chain *chain1, <1T>_Chain *chain2);
+_BOOL_ <1T>_Chain_Touched(<1T>_Chain *chain1, <1T>_Chain *chain2);
 
 Geo3d_Circle* <1T>_Chain_To_Geo3d_Circle_Array(<1T>_Chain *chain,
 						 Geo3d_Circle *circle, int *n);

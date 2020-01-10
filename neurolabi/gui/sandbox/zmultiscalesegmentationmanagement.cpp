@@ -18,7 +18,7 @@
 #include "zobject3dscanarray.h"
 #include "mvc/zstackframe.h"
 #include "zsandbox.h"
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "imgproc/zstackprocessor.h"
 #include "imgproc/zwatershedmst.h"
 #include "mvc/zstackdoc.h"

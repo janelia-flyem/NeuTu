@@ -8,7 +8,7 @@
 #include <QThread>
 
 #include "common/zsharedpointer.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "logging/zloggable.h"
 //#include "zwidgetmessage.h"
 

@@ -1,12 +1,12 @@
 #include "zspgrowparser.h"
 
 #include <iostream>
+#include <stdexcept>
 
 #include "assert.h"
 #include "tz_stack_lib.h"
 #include "geometry/zpoint.h"
 #include "tz_stack_utils.h"
-#include "tz_error.h"
 #include "c_stack.h"
 #include "tz_stack_neighborhood.h"
 
@@ -101,10 +101,11 @@ double index_distance(ssize_t index1, ssize_t index2, int width, int area)
              indexDiff == area - width - 1 || indexDiff == area -width + 1) {
     return 1.73205080757;
   } else {
-    TZ_ERROR(ERROR_DATA_VALUE);
+    throw std::invalid_argument("Invalid input indices");
+//    TZ_ERROR(ERROR_DATA_VALUE);
   }
 
-  return 0.0;
+//  return 0.0;
 }
 
 double ZSpGrowParser::pathLength(ssize_t index, bool masked)
@@ -287,7 +288,7 @@ static double DistanceWeight(double v)
   return sqrt(v);
 }
 
-vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
+vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double minLength,
                                                   Stack *ballStack)
 {
   bool isPathAvailable = true;
@@ -296,7 +297,7 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
   const double skeletonRadius = 3.0;
 
   //Calibrate
-  lengthThreshold -= maskExpansionRadius;
+  minLength -= maskExpansionRadius;
 
   vector<ZVoxelArray> pathArray;
 
@@ -307,13 +308,13 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
     ZVoxelArray path = extractLongestPath(&length, true);
 
     cout << "Path: length = " << length << "; size = " << path.size()
-         << "; Threshold = " << lengthThreshold << std::endl;
+         << "; Threshold = " << minLength << std::endl;
 //    if (path.size() == 1) {
 //      cout << "Debug here." << endl;
 //    }
 
 
-    if (length < lengthThreshold || path.isEmpty()) {
+    if (length < minLength || path.isEmpty()) {
       isPathAvailable = false;
     } else {
       pathArray.push_back(path);

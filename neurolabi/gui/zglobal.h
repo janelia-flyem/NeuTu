@@ -77,7 +77,7 @@ public:
   QString getNeuPrintAuth() const;
 
   NeuPrintReader* makeNeuPrintReader();
-  NeuPrintReader* makeNeuPrintReader(const QString &uuid);
+  NeuPrintReader* makeNeuPrintReaderFromUuid(const QString &uuid);
 
   static void InitKafkaTracer(std::string serviceName = "");
 

@@ -3,8 +3,9 @@
 
 #include <iostream>
 #include <sstream>
+
 #include "neutubeconfig.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #define RECORD_ERROR(condition, msg)					\
 {                                                       \

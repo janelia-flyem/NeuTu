@@ -1,5 +1,8 @@
 #include "zswcfactory.h"
 
+#include <cmath>
+
+#include "common/math.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
@@ -16,7 +19,6 @@
 #include "zstack.hxx"
 #include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
-#include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
 #include "zstackfactory.h"
@@ -523,7 +525,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 {
   ZIntCuboid box = obj.getBoundBox();
 
-  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+  int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                     ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
@@ -632,14 +634,14 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
   ZIntCuboid box = obj.getBoundBox();
 //  size_t voxelNumber = obj.getVoxelNumber();
 
-  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
-                                    ZObject3dScan::MAX_SPAN_HINT)));
+  int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
+                                           ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
       ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    intv = (neutu::iround(std::cbrt(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
     /*
     if (intv < 0) {
       intv = 0;
@@ -655,8 +657,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
-    intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
-                                  ZObject3dScan::MAX_SPAN_HINT)));
+    intv = neutu::iround(std::cbrt(round(double(obj2.getSegmentNumber()) /
+                                         ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       obj2.downsampleMax(intv, intv, intv);
     }
@@ -664,7 +666,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
     dsIntv = obj2.getDsIntv();
     stack = obj2.toStackObjectWithMargin(1, 1);
   } else {
-    intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+    intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       ZObject3dScan obj2 = obj;
@@ -752,13 +754,14 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
 
 int ZSwcFactory::GetIntv(int segNumber, const ZIntCuboid &box)
 {
-  int intv = iround(Cube_Root(round(segNumber / ZObject3dScan::MAX_SPAN_HINT)));
+  int intv = neutu::iround(std::cbrt(
+                             round(segNumber / ZObject3dScan::MAX_SPAN_HINT)));
 
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
       ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    intv = (neutu::iround(std::cbrt(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
   }
 
   return intv;

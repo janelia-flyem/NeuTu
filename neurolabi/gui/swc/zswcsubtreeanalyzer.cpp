@@ -1,8 +1,10 @@
 #include "zswcsubtreeanalyzer.h"
+
+#include <cassert>
+
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zswctreenodearray.h"
-#include "tz_error.h"
 
 ZSwcSubtreeAnalyzer::ZSwcSubtreeAnalyzer() :
   m_minLength(100.0), m_maxLength(1000.0)
@@ -28,7 +30,8 @@ int ZSwcSubtreeAnalyzer::labelSubtree(ZSwcTree *tree) const
               << SwcTreeNode::weight(tn) << std::endl;
 #endif
     if (SwcTreeNode::weight(tn) >= m_minLength && SwcTreeNode::isRegular(tn)) {
-      TZ_ASSERT(SwcTreeNode::label(tn) == 0, "Invalid label");
+      assert(SwcTreeNode::label(tn) == 0);
+//      TZ_ASSERT(SwcTreeNode::label(tn) == 0, "Invalid label");
       //tree->addLabelSubtree(tn, 1);
        ++subtreeId;
 #ifdef _DEBUG_2
@@ -78,7 +81,8 @@ int ZSwcSubtreeAnalyzer::decompose(ZSwcTree *tree) const
               << SwcTreeNode::weight(tn) << std::endl;
 #endif
     if (SwcTreeNode::weight(tn) >= m_minLength && SwcTreeNode::isRegular(tn)) {
-      TZ_ASSERT(SwcTreeNode::label(tn) == 0, "Invalid label");
+      assert(SwcTreeNode::label(tn) == 0);
+//      TZ_ASSERT(SwcTreeNode::label(tn) == 0, "Invalid label");
       //tree->addLabelSubtree(tn, 1);
        ++subtreeId;
 #ifdef _DEBUG_2

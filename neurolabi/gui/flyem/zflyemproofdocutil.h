@@ -5,13 +5,14 @@
 #include <QString>
 #include <QList>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZDvidLabelSlice;
 class ZFlyEmProofDoc;
 class ZIntCuboid;
 class ZFlyEmBookmark;
 class ZDvidGraySlice;
+class ZObject3dScan;
 
 class ZFlyEmProofDocUtil
 {

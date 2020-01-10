@@ -7,7 +7,7 @@
 #include <map>
 
 #include "tz_swc_tree.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zpoint.h"
 

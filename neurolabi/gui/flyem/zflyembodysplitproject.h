@@ -84,6 +84,7 @@ public:
   void commitResultFunc(
       ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
       size_t minObjSize, bool checkingIsolation);
+  void previewResult();
 
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
@@ -140,6 +141,8 @@ public:
 
   void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
+  bool hasFinalSplitResult() const;
+
 public: //Obsolete functions
   ZFlyEmNeuron getFlyEmNeuron() const;
 
@@ -176,7 +179,7 @@ public: //Obsolete functions
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
 
-  void waitResultQuickView();
+  void waitSplitVis3d();
 //  void downloadBodyMask();
 
 signals:
@@ -186,6 +189,7 @@ signals:
   void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);
   void resultCommitted();
+  void splitVis3dCanceled();
 
   void progressStarted(const QString &title, int nticks);
   void progressDone();
@@ -196,25 +200,28 @@ signals:
   void rasingResultQuickView();
   void rasingBodyQuickView();
   void splitListGenerated();
+  void proceedingToUpload();
+  void proceedingToPreview();
+  void proceedingToExport();
 
 public slots:
-  void start();
+//  void start();
   void showDataFrame() const;
   void showDataFrame3d();
 //  void showResult3d();
-  void showResultQuickView();
+  void showSplit3d();
 //  void showBookmark(bool visible);
   void runSplit();
   void runFullSplit();
   void runLocalSplit();
-  void updateResult3dQuick();
+//  void updateResult3dQuick();
   void backupSeed();
 //  void startBodyQuickView();
-  void startResultQuickView();
+//  void startResultQuickView();
   void startQuickView(Z3DWindow *window);
 //  void raiseBodyQuickView();
   void raiseResultQuickView();
-  void updateSplitQuick();
+  void updateSplitVis3d();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -231,13 +238,16 @@ public slots:
   void update3DViewPlane();
 
   void updateSplitDocument();
+  void uploadSplitList();
 
 private slots:
   void resetQuickResultWindow();
   void updateSplitQuickFunc();
-  void invalidateSplitQuick();
-  void uploadSplitList();
+  void resetSplitVis3d();
+  void newSplitVis3d();
   void resetStatusAfterUpload();
+  void previewSplitList();
+  void resetSplitCancel();
 
 private:
   QWidget* getParentWidget() const;
@@ -255,11 +265,12 @@ private:
 //  void showBodyQuickView();
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
-  void result3dQuickFunc();
-  void quitResultUpdate();
-  void cancelResultUpdate();
+//  void result3dQuickFunc();
+  void shutdownSplitVis3dUpdate();
+  void cancelSplitVis3d();
   void uploadSplitListFunc();
   bool splitVerified() const;
+  void cancelSplitQuick();
 
   size_t getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
@@ -269,10 +280,16 @@ private:
   ZIntCuboid getSeedBoundBox() const;
 
   void updateBodyId();
+
+  void makeFinalResult(
+      ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
+      size_t minObjSize, bool checkingIsolation,
+      std::function<void(double)> progress);
+
   void processSmallBodyGroup(
       ZObject3dScan *body, size_t minObjSize, ZObject3dScan *smallBodyGroup);
   void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
-      QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
+      QVector<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
       const ZObject3dScan *obj, size_t minIsolationSize);
   void isolateSmallObjects(
       ZObject3dScan &body, ZObject3dScan&smallBodyGroup, size_t minObjSize);
@@ -316,10 +333,10 @@ private:
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
-  ZSharedPointer<ZStackDoc> m_quickResultDoc;
+  ZSharedPointer<ZStackDoc> m_splitVis3dDoc;
 //  Z3DWindow *m_bodyWindow;
 //  Z3DWindow *m_resultWindow; //Result window with split volumes * obsolete
-  Z3DWindow *m_quickResultWindow; //Result window with split surfaces
+  Z3DWindow *m_splitVis3dWindow; //Result window with split surfaces
 //  Z3DWindow *m_quickViewWindow; //Obsolete
 
   size_t m_minObjSize;
@@ -338,15 +355,16 @@ private:
   QTimer *m_timer;
 
   QMutex m_splitWindowMutex;
-  bool m_cancelSplitQuick = false;
-  bool m_splitUpdated = false;
+  bool m_cancelSplitVis3d = false;
+  bool m_splitVis3dSyncHandled = false;
+  bool m_splitReady = false;
 
-  QList<ZObject3dScan> m_splitList;
+  QVector<ZObject3dScan> m_splitList;
   QList<uint64_t> m_oldBodyIdList;
 
   ZProgressSignal *m_progressSignal;
 
-  static const char* THREAD_RESULT_QUICK;
+  static const char* THREAD_SPLIT_VIS3D;
 };
 
 template <typename T>

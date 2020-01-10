@@ -67,20 +67,20 @@ Local_Neuroseg_Plane* Local_Neuroseg_Plane_Fread(Local_Neuroseg_Plane *locnp,
     return NULL;
   }
 
-  BOOL is_local_alloc = FALSE;
+  _BOOL_ is_local_alloc = _FALSE_;
   if (locnp == NULL) {
     locnp = New_Local_Neuroseg_Plane();
-    is_local_alloc = TRUE;
+    is_local_alloc = _TRUE_;
   }
 
   if (Neuroseg_Plane_Fread(&(locnp->np), fp) == NULL) {
-    if (is_local_alloc == TRUE) {
+    if (is_local_alloc == _TRUE_) {
       Delete_Local_Neuroseg_Plane(locnp);
     }
     locnp = NULL;
   } else {
     if (Neuropos_Fread(locnp->pos, fp) == NULL) {
-      if (is_local_alloc == TRUE) {
+      if (is_local_alloc == _TRUE_) {
 	Delete_Local_Neuroseg_Plane(locnp);
       }
       locnp = NULL;

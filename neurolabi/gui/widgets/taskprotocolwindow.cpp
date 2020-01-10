@@ -12,7 +12,7 @@
 #include <QShortcut>
 
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
@@ -49,13 +49,18 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // prefetch queue, setup
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
-    m_prefetchThread = new QThread();
+
+    //Let m_body3dDoc manage the life cycle of prefetching thread
+    //because it needs to wait for the thread to quit
+    m_prefetchThread = new QThread(m_body3dDoc);
     m_prefetchQueue->setDocument(m_body3dDoc);
+    m_body3dDoc->addClearance([&]() {
+      m_prefetchThread->quit();
+    });
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
-    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
 
     // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
@@ -1007,12 +1012,12 @@ void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRem
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
-  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
-           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
-           << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
-           << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
-           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
-           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
+    LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+             << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+             << "m_bodyMeshesAddedExpected =" << m_bodyMeshesAddedExpected << ";"
+             << "m_bodyMeshesAddedReceived =" << m_bodyMeshesAddedReceived << ";"
+             << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+             << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived;
     if ((m_bodyRecycledExpected <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected <= m_bodyMeshLoadedReceived)) {
@@ -1041,10 +1046,10 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
         //  as long as there is one and it's not the current one
         // and start prefetching when control returns to the UI after reenabling it
         QTimer::singleShot(0, this, [=]() {
-          int nextTaskIndex = getNext();
-          if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-              prefetchForTaskIndex(nextTaskIndex);
-          }
+            int nextTaskIndex = getNext();
+            if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+                prefetchForTaskIndex(nextTaskIndex);
+            }
         });
     }
 }

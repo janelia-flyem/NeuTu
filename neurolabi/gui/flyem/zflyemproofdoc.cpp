@@ -4,6 +4,7 @@
 #include <QList>
 #include <QTimer>
 #include <QDir>
+#include <QDateTime>
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QElapsedTimer>
@@ -22,7 +23,6 @@
 #include "zsleeper.h"
 #include "zstroke2d.h"
 #include "zwidgetmessage.h"
-#include "flyem/zflyemsupervisor.h"
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
 
@@ -53,18 +53,18 @@
 #include "zflyembodymanager.h"
 #include "zflyembodystatus.h"
 #include "zflyemroimanager.h"
+#include "zflyemsupervisor.h"
+#include "zflyemmisc.h"
 
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
 
-#include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
 #include "imgproc/zstackwatershed.h"
 
-#include "zstackdocdatabuffer.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
 #include "zdvidutil.h"
-#include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
@@ -73,6 +73,7 @@
 
 #include "zmesh.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
 #include "flyemdatareader.h"
@@ -91,8 +92,10 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
 
 ZFlyEmProofDoc::~ZFlyEmProofDoc()
 {
-  m_futureMap.waitForFinished();
-  endWorkThread();
+//  m_futureMap.waitForFinished();
+//  endWorkThread();
+
+  clearToDestroy();
 
   for (auto &p: m_grayscaleReaderMap) {
     delete p.second;
@@ -224,7 +227,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
   connect(this, SIGNAL(bodyUnmerged()),
           this, SLOT(saveMergeOperation()));
   connect(getMergeProject(), SIGNAL(mergeUploaded()),
-          this, SIGNAL(bodyMergeUploaded()));
+          this, SLOT(processBodyMergeUploaded()));
+//          this, SIGNAL(bodyMergeUploaded()));
   connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
 
@@ -2041,6 +2045,8 @@ void ZFlyEmProofDoc::setTodoItemChecked(int x, int y, int z, bool checking)
     if (item.isValid()) {
       if (checking != item.isChecked()) {
         item.setChecked(checking);
+        item.addProperty("checked updated by", neutu::GetCurrentUserName());
+        item.addProperty("checked updated at", QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString());
         td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
         bufferObjectModified(td);
         modified = true;
@@ -2941,7 +2947,8 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 
 void ZFlyEmProofDoc::processExternalBodyMergeUpload()
 {
-  getMergeProject()->clearBodyMerger();
+//  getMergeProject()->clearBodyMerger();
+  clearBodyMerger();
   refreshDvidLabelBuffer(2000);
   updateDvidLabelObjectSliently();
 
@@ -2986,6 +2993,8 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool usingCenterCut, bool sv)
 {
+  QMutexLocker locker(&m_workWriterMutex);
+
   const ZDvidReader *reader = nullptr;
   if (sv) {
     if (!m_supervoxelWorkReader.good()) {
@@ -4336,15 +4345,22 @@ void ZFlyEmProofDoc::notifyBodyLock(uint64_t bodyId, bool locking)
 
 void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
 {
+  QMutexLocker locker(&m_workWriterMutex);
+
   if (delay > 0) {
     ZSleeper::msleep(delay);
   }
+
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
-    if (!slice->refreshReaderBuffer()) {
+    if (slice->refreshReaderBuffer()) {
+      slice->forceUpdate(false);
+    } else {
       notify(ZWidgetMessage("Failed to refresh labels.", neutu::EMessageType::WARNING));
     }
   }
+
+  m_workWriter.getDvidReader().refreshLabelBuffer();
 }
 
 void ZFlyEmProofDoc::updateMeshForSelected()
@@ -4526,7 +4542,8 @@ void ZFlyEmProofDoc::runSplitFunc(
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
-  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  ZStackDocAccessor::RemoveObject(this, ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 //  m_isSegmentationReady = false;
   setSegmentationReady(false);
 
@@ -4567,8 +4584,11 @@ void ZFlyEmProofDoc::runSplitFunc(
     container.run();
 
     setHadSegmentationSampled(container.computationDowsampled());
-    ZObject3dScanArray result;
-    container.makeSplitResult(1, &result, NULL);
+    ZObject3dScanArray *result = new ZObject3dScanArray;
+
+    container.makeSplitResult(1, result, NULL);
+    ZStackDocAccessor::ConsumeSplitResult(this, result);
+#if 0
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
@@ -4578,9 +4598,9 @@ void ZFlyEmProofDoc::runSplitFunc(
     getDataBuffer()->deliver();
 
     result.shallowClear();
-
-    setSegmentationReady(true);
-    emit segmentationUpdated();
+#endif
+//    setSegmentationReady(true);
+//    emit segmentationUpdated();
 
     ZOUT(LINFO(), 3) << "Segmentation ready";
 
@@ -4681,8 +4701,8 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 
   if (rect != NULL) {
     if (rect->isValid()) {
-      int sz = iround(sqrt(rect->getWidth() * rect->getWidth() +
-                           rect->getHeight() * rect->getHeight()) / 2.0);
+      int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
+                                  rect->getHeight() * rect->getHeight()) / 2.0);
       roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
       roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
     } else if (appending) {
@@ -5752,9 +5772,9 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   for (QList<ZFlyEmBookmark*>::iterator iter = bookmarkList.begin();
        iter != bookmarkList.end(); ++iter) {
     bookmark = *iter;
-    if (iround(bookmark->getCenter().x()) == x &&
-        iround(bookmark->getCenter().y()) == y &&
-        iround(bookmark->getCenter().z()) == z) {
+    if (neutu::iround(bookmark->getCenter().x()) == x &&
+        neutu::iround(bookmark->getCenter().y()) == y &&
+        neutu::iround(bookmark->getCenter().z()) == z) {
       break;
     }
     bookmark = NULL;
@@ -5766,6 +5786,24 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 void ZFlyEmProofDoc::makeKeyProcessor()
 {
   m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
+}
+
+void ZFlyEmProofDoc::exportGrayscale(
+    const ZIntCuboid &box, int dsIntv, const QString &fileName) const
+{
+  if (m_mainGrayscaleReader->hasGrayscale()) {
+    ZStack *stack = m_mainGrayscaleReader->readGrayScale(box);
+
+    if (stack) {
+      stack->downsampleMean(dsIntv, dsIntv, dsIntv);
+      stack->save(fileName.toStdString());
+      delete stack;
+    } else {
+      throw std::runtime_error("Failed to read grayscale from DVID.");
+    }
+  } else {
+    throw std::runtime_error("No grayscale data found.");
+  }
 }
 
 bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
@@ -5794,6 +5832,14 @@ bool ZFlyEmProofDoc::_loadFile(const QString &filePath)
   }
 
   return false;
+}
+
+void ZFlyEmProofDoc::processBodyMergeUploaded()
+{
+  clearBodyForSplit();
+  refreshDvidLabelBuffer(2000);
+  undoStack()->clear();
+  emit bodyMergeUploaded();
 }
 
 void ZFlyEmProofDoc::diagnose() const

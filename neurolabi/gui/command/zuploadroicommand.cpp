@@ -53,6 +53,7 @@ int ZUploadRoiCommand::run(
     }
   } else {
     qWarning() << "Invalid DVID settings:" << input[0].c_str();
+    return 1;
   }
 
   return 0;

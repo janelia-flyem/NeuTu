@@ -51,40 +51,6 @@ QString ZNeuroglancerPathFactory::MakePath(
   ZDvidEnv env;
   env.setMainTarget(target);
   return MakePath(env, voxelSize, position, bookmarkList);
-
-  /*
-  ZNeuroglancerPath gpath;
-
-  ZNeuroglancerNavigation nav;
-  nav.setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
-  nav.setCoordinates(position.getX(), position.getY(), position.getZ());
-  gpath.setNavigation(nav);
-
-  gpath.addLayer(
-        ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(target));
-
-  std::string segLayer = "";
-  if (target.hasSegmentation()) {
-    gpath.addLayer(
-          ZNeuroglancerLayerSpecFactory::MakeSegmentationLayer(target));
-    segLayer = "segmentation";
-
-//    gpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(target));
-  }
-
-  std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
-      ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
-        target, segLayer);
-  annotLayer->setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
-  gpath.addLayer(
-        std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);
-
-  for (const ZFlyEmBookmark *bookmark : bookmarkList) {
-    annotLayer->addAnnotation(make_bookmark_annotation_json(*bookmark));
-  }
-
-  return QString(QUrl(gpath.getPath().c_str()).toEncoded());
-  */
 }
 
 QString ZNeuroglancerPathFactory::MakePath(
@@ -117,14 +83,25 @@ QString ZNeuroglancerPathFactory::MakePath(
 
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> annotLayer =
       ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
-        target, segLayer);
-  annotLayer->setVoxelSize(voxelSize.getX(), voxelSize.getY(), voxelSize.getZ());
+        target, ZDvidData::ERole::BOOKMARK, segLayer);
+  annotLayer->setVoxelSize(voxelSize);
   gpath.addLayer(
         std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(annotLayer), true);
 
   for (const ZFlyEmBookmark *bookmark : bookmarkList) {
     annotLayer->addAnnotation(make_bookmark_annotation_json(*bookmark));
   }
+
+  if (target.hasSynapse()) {
+    std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> synapseLayer =
+        ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+          target, ZDvidData::ERole::SYNAPSE, segLayer);
+    synapseLayer->setVoxelSize(voxelSize);
+    gpath.addLayer(
+          std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(synapseLayer), false);
+  }
+
+
 
   return QString(QUrl(gpath.getPath().c_str()).toEncoded());
 }

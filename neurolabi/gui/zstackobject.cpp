@@ -5,20 +5,17 @@
 #include <QCoreApplication>
 #endif
 
-#include "tz_cdefs.h"
-//#include "zswctree.h"
 #include "geometry/zintcuboid.h"
 #include "common/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_hitProtocal(EHitProtocol::HIT_DATA_POS), m_projectionVisible(true),
+ZStackObject::ZStackObject() : m_hitProtocal(EHitProtocol::HIT_DATA_POS),
   m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
-  m_usingCosmeticPen(false), m_zScale(1.0),
+  m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutu::display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutu::display::VE_NONE)
 {
   m_type = EType::UNIDENTIFIED;
   setSliceAxis(neutu::EAxis::Z);

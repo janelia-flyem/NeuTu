@@ -1,5 +1,6 @@
 #include "zneuroglancerlayerspecfactory.h"
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "zneuroglancerlayerspec.h"
 #include "zneuroglancerannotationlayerspec.h"
@@ -59,22 +60,42 @@ ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(const ZDvidTarget &target)
 }
 
 std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
-ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(const ZDvidTarget &target,
+ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
+    const ZDvidTarget &target, ZDvidData::ERole dataRole,
     const std::string &linkedSegmentationLayer)
 {
   std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> layer;
 
-  layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
-  layer->setName("annotation");
-  layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
-  layer->setLinkedSegmentation(linkedSegmentationLayer);
-  layer->setTool("annotateIntPoint");
-  std::string source = "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
-      "/" + target.getBookmarkName();
-  if (!target.getSegmentationName().empty()) {
-    source += "?label=" + target.getSegmentationName();
+  if (dataRole == ZDvidData::ERole::BOOKMARK ||
+      dataRole == ZDvidData::ERole::SYNAPSE) {
+    layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
+    layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
+    layer->setLinkedSegmentation(linkedSegmentationLayer);
+    std::string dataName = target.getBookmarkName();
+    std::string queryString;
+
+    switch (dataRole) {
+    case ZDvidData::ERole::BOOKMARK:
+      layer->setName("annotation");
+      layer->setTool("annotatePoint");
+      layer->setColor(255, 0, 0);
+      queryString = "?usertag=true&user=" + NeutubeConfig::GetUserName();
+      break;
+    case ZDvidData::ERole::SYNAPSE:
+      dataName = target.getSynapseName();
+      layer->setColor(255, 255, 0);
+      layer->setName("synapse");
+      break;
+    default:
+      break;
+    }
+
+    std::string source =
+        "dvid://http://" + target.getAddressWithPort() + "/" + target.getUuid() +
+        "/" + dataName + queryString;
+
+    layer->setSource(source);
   }
-  layer->setSource(source);
 
   return layer;
 }

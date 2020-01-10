@@ -1,6 +1,5 @@
 #include "zflyemdatainfo.h"
 #include "zerror.h"
-#include "tz_error.h"
 #include "zstring.h"
 #include "dvid/zdvidinfo.h"
 

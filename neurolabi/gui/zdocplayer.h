@@ -6,8 +6,7 @@
 #include <QMutex>
 
 #include <vector>
-#include "tz_utilities.h"
-#include "tz_cdefs.h"
+
 #include "zstackobject.h"
 #include "c_stack.h"
 #include "zuncopyable.h"

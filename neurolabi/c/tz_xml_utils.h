@@ -42,10 +42,10 @@ xmlNodePtr Xml_Doc_Root_Element(const xmlDocPtr doc);
 
 /**@brief Test if an XML node is a certain element.
  *
- * Xml_Node_Is_Element() returns TRUE if <node> has name <str>; Otherwise it
- * returns FALSE.
+ * Xml_Node_Is_Element() returns _TRUE_ if <node> has name <str>; Otherwise it
+ * returns _FALSE_.
  */
-BOOL Xml_Node_Is_Element(const xmlNodePtr node, const char *str);
+_BOOL_ Xml_Node_Is_Element(const xmlNodePtr node, const char *str);
 
 /**@brief Get the string value of an XML node.
  *

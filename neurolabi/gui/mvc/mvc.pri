@@ -2,6 +2,7 @@ HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
     $$PWD/zpositionmapper.h \
+    $$PWD/zstackdocobjectupdate.h \
     $$PWD/zstackview.h \
     $$PWD/zstackdoc.h \
     $$PWD/zstackpresenter.h \
@@ -11,12 +12,14 @@ HEADERS += \
     $$PWD/mvcdef.h \
     $$PWD/zstackdocutil.h \
     $$PWD/zstackviewrecorder.h \
+    $$PWD/zstackdocdatabuffer.h \
     $$PWD/dialogs/zstackviewrecorddialog.h
 
 SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/utilities.cpp \
     $$PWD/zpositionmapper.cpp \
+    $$PWD/zstackdocobjectupdate.cpp \
     $$PWD/zstackview.cpp \
     $$PWD/zstackdoc.cpp \
     $$PWD/zstackpresenter.cpp \
@@ -26,6 +29,7 @@ SOURCES += \
     $$PWD/mvcdef.cpp \
     $$PWD/zstackdocutil.cpp \
     $$PWD/zstackviewrecorder.cpp \
+    $$PWD/zstackdocdatabuffer.cpp \
     $$PWD/dialogs/zstackviewrecorddialog.cpp
 
 FORMS +=  \

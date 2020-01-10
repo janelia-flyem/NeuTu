@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <unordered_set>
+
 #include <QList>
 #include <QSet>
 #include <QColor>
@@ -10,7 +12,7 @@
 #include <QVector>
 #include <QString>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "dvid/libdvidheader.h"
 #include "common/zsharedpointer.h"
 
@@ -157,6 +159,16 @@ ZObject3dScan* LoadRoiFromJson(
  */
 bool HasConnecion(
     const QString &name, uint64_t input, uint64_t output,
+    neutu::EBiDirection d);
+
+bool HasConnecion(const QString &name, const QString &splitter,
+    const std::unordered_set<uint64_t> &first,
+    const std::unordered_set<uint64_t> &second);
+
+bool HasConnecion(
+    const QString &name,
+    const std::unordered_set<uint64_t> &input,
+    const std::unordered_set<uint64_t> &output,
     neutu::EBiDirection d);
 
 namespace MB6Paper {

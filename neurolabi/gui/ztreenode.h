@@ -1,8 +1,9 @@
 #ifndef ZTREENODE_H
 #define ZTREENODE_H
 
+#include <cstddef>
 #include <vector>
-#include "tz_cdefs.h"
+
 #include "zuncopyable.h"
 
 template<typename T>

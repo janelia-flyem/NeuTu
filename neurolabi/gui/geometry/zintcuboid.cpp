@@ -2,7 +2,6 @@
 #include <cmath>
 #include <sstream>
 
-#include "tz_utilities.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zpoint.h"
@@ -303,6 +302,37 @@ bool ZIntCuboid::isEmpty() const
 {
   return getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0;
 }
+
+int ZIntCuboid::getFirstX() const
+{
+  return m_firstCorner.getX();
+}
+
+int ZIntCuboid::getLastX() const
+{
+  return m_lastCorner.getX();
+}
+
+int ZIntCuboid::getFirstY() const
+{
+  return m_firstCorner.getY();
+}
+
+int ZIntCuboid::getLastY() const
+{
+  return m_lastCorner.getY();
+}
+
+int ZIntCuboid::getFirstZ() const
+{
+  return m_firstCorner.getZ();
+}
+
+int ZIntCuboid::getLastZ() const
+{
+  return m_lastCorner.getZ();
+}
+
 
 void ZIntCuboid::setFirstX(int x)
 {

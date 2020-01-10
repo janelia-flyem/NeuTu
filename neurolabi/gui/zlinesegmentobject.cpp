@@ -3,7 +3,7 @@
 #include <QPen>
 #include <cmath>
 
-#include "tz_utilities.h"
+#include "common/utilities.h"
 #include "zpainter.h"
 
 ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0)
@@ -201,8 +201,8 @@ void ZLineSegmentObject::computePlaneInersection(
   double lowerLineZ = lowerEnd.z();
   double upperLineZ = upperEnd.z();
 
-  if ((IS_IN_OPEN_RANGE(lowerLineZ, lowerZ, upperZ) &&
-       IS_IN_OPEN_RANGE(upperLineZ, lowerZ, upperZ))) {
+  if ((neutu::WithinOpenRange(lowerLineZ, lowerZ, upperZ) &&
+       neutu::WithinOpenRange(upperLineZ, lowerZ, upperZ))) {
     visible = true;
     lineStart.setX(segment.getStartPoint().x());
     lineStart.setY(segment.getStartPoint().y());

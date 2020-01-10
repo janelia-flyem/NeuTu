@@ -3,7 +3,7 @@
 
 #include "zcommandmodule.h"
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZDvidReader;
 class ZStack;

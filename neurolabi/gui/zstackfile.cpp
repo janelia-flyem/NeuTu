@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string.h>
+#include <cassert>
 
 #include "zstack.hxx"
 #include "tz_image_io.h"
@@ -12,10 +13,11 @@
 #if defined(_QT_GUI_USED_)
 #include "zxmldoc.h"
 #endif
-#include "tz_error.h"
+
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
+#include "filesystem/utilities.h"
 
 using namespace std;
 
@@ -39,7 +41,7 @@ ZStackFile::ZStackFile(const ZStackFile &file)
 */
 void ZStackFile::loadStackDocument(const Stack_Document *doc)
 {
-  TZ_ASSERT(doc != NULL, "Null pointer");
+  assert(doc != NULL);
 
 #ifdef _DEBUG_
   cout << "Loading stack document ..." << endl;
@@ -111,8 +113,7 @@ string ZStackFile::firstUrl() const
 void ZStackFile::retrieveAttribute(
     int *kind, int *width, int *height, int *depth) const
 {
-  TZ_ASSERT(kind != NULL && width != NULL && height != NULL && depth != NULL,
-            "Null pointer");
+  assert(kind != NULL && width != NULL && height != NULL && depth != NULL);
 
   std::string filePath = firstUrl();
 
@@ -461,7 +462,7 @@ ZFileList* ZStackFile::toFileList() const
     break;
   case IMAGE_SERIES:
     fileList = new ZFileList;
-    fileList->load(filePath.dirPath(), filePath.toFileExt(),
+    fileList->load(filePath.dirPath(), neutu::FileExtension(filePath),
                    ZFileList::SORT_BY_LAST_NUMBER);
     break;
   case FILE_BUNDLE:
@@ -592,7 +593,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       ZFileList fileList;
       ZString str(m_urlList[0]);
-      fileList.load(str.dirPath(), str.toFileExt(),
+      fileList.load(str.dirPath(), neutu::FileExtension(str),
                     ZFileList::SORT_BY_LAST_NUMBER);
 
       if (fileList.size() > 0) {
@@ -800,7 +801,9 @@ void ZStackFile::print() const
 {
   if (m_urlList.empty()) {
     cout << "No file associated." << endl;
+    return;
   }
+
   switch(m_type) {
   case SINGLE_FILE:
     cout << m_urlList[0] << endl;

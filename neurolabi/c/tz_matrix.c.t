@@ -868,7 +868,7 @@ void <2T>_Write(const char* filename,const <2T>* dm)
   size_t offset = Sub_To_Ind(dm->dim, dm->ndim, start);
   ndim_t cur_dim = 0;
   ndim_t lastdim = dm->ndim - 1;
-  BOOL overflow = FALSE;
+  _BOOL_ overflow = _FALSE_;
 
   max_value = dm->array[offset];
 
@@ -892,7 +892,7 @@ void <2T>_Write(const char* filename,const <2T>* dm)
       i[cur_dim] = start[cur_dim];
       cur_dim++;
       if (cur_dim > lastdim) {
-	overflow = TRUE;
+	overflow = _TRUE_;
 	break;
       } else {
 	i[cur_dim]++;

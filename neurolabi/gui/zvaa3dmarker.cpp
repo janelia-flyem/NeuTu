@@ -2,8 +2,6 @@
 #include <sstream>
 #include <string.h>
 
-#include "tz_error.h"
-
 using namespace std;
 
 ZVaa3dMarker::ZVaa3dMarker()
@@ -51,6 +49,7 @@ string ZVaa3dMarker::toString() const
   return stream.str();
 }
 
+/*
 void ZVaa3dMarker::set(const string &line)
 {
   TZ_ERROR(ERROR_PART_FUNC);
@@ -59,3 +58,4 @@ void ZVaa3dMarker::set(const string &line)
   free(str);
 
 }
+*/

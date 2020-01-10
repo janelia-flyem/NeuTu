@@ -2,10 +2,9 @@
 
 #include <iostream>
 #include <sstream>
-#include <string.h>
+#include <string>
 #include <cstdarg>
 
-#include "tz_error.h"
 #include "zjsonparser.h"
 #include "c_json.h"
 #include "zerror.h"

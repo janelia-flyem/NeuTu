@@ -10,8 +10,7 @@
 
 #include "zstackball.h"
 #include "tz_swc_cell.h"
-#include "tz_math.h"
-//#include "geometry/zpoint.h"
+
 #include "zvaa3dmarker.h"
 #include "zjsonobject.h"
 

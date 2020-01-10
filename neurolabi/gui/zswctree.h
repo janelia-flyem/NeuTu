@@ -317,9 +317,9 @@ public:
    * \return
    */
   int updateIterator(int option = SWC_TREE_ITERATOR_DEPTH_FIRST,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
   int updateIterator(int option, const std::set<Swc_Tree_Node*> &blocker,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
   /*!
    * \brief Update iterator with a starting node.
    *
@@ -331,7 +331,7 @@ public:
    * \param indexing Indexing the nodes or not.
    * \return
    */
-  int updateIterator(int option, Swc_Tree_Node *start, BOOL indexing) const;
+  int updateIterator(int option, Swc_Tree_Node *start, _BOOL_ indexing) const;
 
   /*!
    * \brief Update iterator with a start and blocked branches.
@@ -348,7 +348,7 @@ public:
    */
   int updateIterator(int option, Swc_Tree_Node *start,
                      const std::set<Swc_Tree_Node*> &blocker,
-                     BOOL indexing = FALSE) const;
+                     _BOOL_ indexing = _FALSE_) const;
 
   inline Swc_Tree_Node* begin() {
     return const_cast<const ZSwcTree*>(this)->begin();

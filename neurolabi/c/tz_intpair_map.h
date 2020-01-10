@@ -45,10 +45,10 @@ int Intpair_Map_Value(const Intpair_Map *map, int x, int y);
 
 /**@brief Add up value to an entry.
  *
- * If the pair does not exist, nothing will be done and return FALSE; otherwise
- * the value of (x, y) is set to (v+dv) and it returns TRUE.
+ * If the pair does not exist, nothing will be done and return _FALSE_; otherwise
+ * the value of (x, y) is set to (v+dv) and it returns _TRUE_.
  */
-BOOL Intpair_Map_Add_Value(const Intpair_Map *map, int x, int y, int v);
+_BOOL_ Intpair_Map_Add_Value(const Intpair_Map *map, int x, int y, int v);
 
 int Intpair_Map_Add(Intpair_Map *map, int x, int y, int value);
 int Intpair_Map_Remove(Intpair_Map *map, int x, int y);

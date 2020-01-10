@@ -1157,7 +1157,7 @@ void ZStackPresenter::updateLeftMenu()
     traceOnFlag = true;
   }
 
-  if (interactiveContext().markPuncta()) {
+  if (interactiveContext().markingPuncta()) {
     if (traceOnFlag) {
       updateLeftMenu(getAction(ZActionFactory::ACTION_PUNCTA_MARK), false);
     } else {
@@ -1353,7 +1353,8 @@ void ZStackPresenter::moveImageToMouse(
   moveViewPortTo(iround(x), iround(y));
 #endif
 
-  buddyView()->move(QPoint(iround(srcX), iround(srcY)), QPointF(mouseX, mouseY));
+  buddyView()->move(
+        QPoint(neutu::iround(srcX), neutu::iround(srcY)), QPointF(mouseX, mouseY));
 
   /*
   int x, y;
@@ -1835,7 +1836,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 
   case Qt::Key_M:
     if (m_interactiveContext.isStackSliceView()) {
-      if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
+      if (interactiveContext().markingPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->getStack()->isVirtual())) {
         QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
@@ -2807,7 +2808,7 @@ void ZStackPresenter::copyLabelId()
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getLabelId(
-        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()));
 
   ZGlobal::CopyToClipboard(std::to_string(id));
 
@@ -2821,7 +2822,7 @@ void ZStackPresenter::copySupervoxelId()
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getSupervoxelId(
-        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()));
 
   ZGlobal::CopyToClipboard(std::to_string(id));
 
@@ -3765,7 +3766,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_SWC_LOCATE_FOCUS:
     if (op.getHitObject<Swc_Tree_Node>() != NULL) {
-      int sliceIndex = iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
+      int sliceIndex =
+          neutu::iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
@@ -3893,8 +3895,8 @@ void ZStackPresenter::acceptActiveStroke()
         int source[3] = {0, 0, 0};
         int target[3] = {0, 0, 0};
         for (int i = 0; i < 3; ++i) {
-          source[i] = iround(start[i]);
-          target[i] = iround(end[i]);
+          source[i] = neutu::iround(start[i]);
+          target[i] = neutu::iround(end[i]);
         }
 
         ZStack *signal = ZStackFactory::makeSlice(

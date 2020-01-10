@@ -9,7 +9,7 @@
 #include "zobject3dscan.h"
 #include "swctreenode.h"
 #include "c_json.h"
-#include "tz_error.h"
+
 #include "zhdf5reader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
@@ -760,8 +760,10 @@ ZFlyEmNeuronAxis ZFlyEmNeuron::getAxis() const
           ZSwcTree::Z_SORT_ITERATOR);
 
     if (!nodeArray.empty()) {
-      TZ_ASSERT(SwcTreeNode::isRegular(nodeArray[0]), "Unexpected virtual node");
-
+//      TZ_ASSERT(SwcTreeNode::isRegular(nodeArray[0]), "Unexpected virtual node");
+      if (!SwcTreeNode::isRegular(nodeArray[0])) {
+        throw std::logic_error("Unexpected virtual node");
+      }
       //Build axis
       ZPoint center;
       double currentZ = SwcTreeNode::z(nodeArray[0]);

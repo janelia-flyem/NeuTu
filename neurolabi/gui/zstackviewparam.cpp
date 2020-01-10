@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "geometry/zgeometry.h"
-#include "tz_math.h"
 #include "zarbsliceviewparam.h"
 #include "zjsonobject.h"
 

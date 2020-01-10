@@ -106,8 +106,8 @@ void Graph_Workspace_Reload(Graph_Workspace *gw, const Graph *graph)
 
 void Graph_Workspace_Prepare(Graph_Workspace *gw, int field_id)
 {
-  if ((Graph_Workspace_Ready(gw, field_id) == FALSE) && 
-      (Graph_Workspace_Allocated(gw, field_id) == FALSE)) {
+  if ((Graph_Workspace_Ready(gw, field_id) == _FALSE_) && 
+      (Graph_Workspace_Allocated(gw, field_id) == _FALSE_)) {
     switch (field_id) {
     case GRAPH_WORKSPACE_CONNECTION:
       FREE_2D_ARRAY(gw->connection, gw->connection_psize);
@@ -188,24 +188,29 @@ void Graph_Workspace_Alloc(Graph_Workspace *gw, int field_id)
   }
 }
 
-BOOL Graph_Workspace_Allocated(const Graph_Workspace *gw, int field_id)
+_BOOL_ Graph_Workspace_Allocated(const Graph_Workspace *gw, int field_id)
 {
   return Bitmask_Get_Bit(gw->allocated, field_id);
 }
 
-BOOL Graph_Workspace_Ready(const Graph_Workspace *gw, int field_id)
+_BOOL_ Graph_Workspace_Ready(const Graph_Workspace *gw, int field_id)
 {
   return Bitmask_Get_Bit(gw->ready, field_id);
 }
 
+_BOOL_ Graph_Workspace_Not_Ready(const Graph_Workspace *gw, int field_id)
+{
+  return Bitmask_Get_Bit(gw->ready, field_id) == _FALSE_;
+}
+
 void Graph_Workspace_Set_Readiness(Graph_Workspace *gw, int field_id, 
-				   BOOL status)
+				   _BOOL_ status)
 {
   Bitmask_Set_Bit(field_id, status, &(gw->ready));
 }
 
 void Graph_Workspace_Set_Allocation(Graph_Workspace *gw, int field_id, 
-				    BOOL status)
+				    _BOOL_ status)
 {
   Bitmask_Set_Bit(field_id, status, &(gw->allocated));
 }

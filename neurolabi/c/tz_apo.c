@@ -202,7 +202,7 @@ double Point_Frustum_Cone_Distance(double x, double y, double z, Swc_Node* tn, S
 double Point_Tree_Distance(double x, double y, double z, Swc_Tree* tree, double zScale, Swc_Tree_Node** refNode)
 {
   double min_dist = DBL_MAX;
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (!Swc_Tree_Node_Is_Virtual(tn) && !Swc_Tree_Node_Is_Root(tn)) {
@@ -218,12 +218,12 @@ double Point_Tree_Distance(double x, double y, double z, Swc_Tree* tree, double 
 }
 
 double Puncta_Tree_Distance(double x, double y, double z, double r, Swc_Tree* tree, double pixelperumxy, double pixelperumz,
-                            BOOL bmask,
+                            _BOOL_ bmask,
                             double maskextendbyum, Swc_Tree_Node** refNode)
 {
   double min_dist = DBL_MAX;
   double zscale = pixelperumxy/pixelperumz;
-  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (!Swc_Tree_Node_Is_Virtual(tn) && !Swc_Tree_Node_Is_Root(tn) && tn->node.type != 1) {

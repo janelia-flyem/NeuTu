@@ -68,15 +68,17 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(meshViewTriggered()));
 //  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
 //          this, SIGNAL(splitViewTriggered()));
-  connect(ui->loadBodyPushButton, SIGNAL(clicked()),
-          this, SLOT(changeSplit()));
+//  connect(ui->loadBodyPushButton, SIGNAL(clicked()),
+//          this, SLOT(changeSplit()));
 //  connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
   connect(ui->saveSeedPushButton, SIGNAL(clicked()),
           this, SIGNAL(savingSeed()));
   connect(ui->commitPushButton, SIGNAL(clicked()),
           this, SLOT(commitResult()));
-  connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
-          this, SLOT(changeSplit()));
+  connect(ui->previewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(previewingResult()));
+//  connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
+//          this, SLOT(changeSplit()));
 //  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
 //          this, SLOT(loadBookmark()));
 //  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
@@ -229,7 +231,7 @@ void FlyEmSplitControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
 }
 
 
-
+/*
 void FlyEmSplitControlForm::changeSplit()
 {
   emit changingSplit((uint64_t) ui->bodyIdSpinBox->value());
@@ -240,6 +242,7 @@ void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
   ui->bodyIdSpinBox->setValue(bodyId);
   m_currentBodyId = bodyId;
 }
+*/
 
 void FlyEmSplitControlForm::goToPosition()
 {
@@ -348,7 +351,7 @@ void FlyEmSplitControlForm::loadBookmark()
 
 void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 {
-  setSplit(bodyId);
+//  setSplit(bodyId);
   QString text;
   if (bodyId == 0) {
     text += "<p>No body loaded.</p>";

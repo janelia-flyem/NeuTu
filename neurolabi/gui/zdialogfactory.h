@@ -58,6 +58,9 @@ public:
       const QString &caption, const QString &filePath, QWidget *parent);
   static QString GetSaveFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetSaveFileName(
+      const QString &caption, const QString &filePath, const QString &filter,
+      QWidget *parent);
 
   static void Notify3DDisabled(QWidget *parent);
 

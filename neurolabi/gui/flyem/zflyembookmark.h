@@ -1,13 +1,14 @@
 #ifndef ZFLYEMBOOKMARK_H
 #define ZFLYEMBOOKMARK_H
 
+#include <string>
+#include <cstdint>
+
 #include <QString>
 #include <QStringList>
-#include <string>
 
 #include "geometry/zintpoint.h"
 
-#include "tz_stdint.h"
 #include "zstackball.h"
 #include "zjsonobject.h"
 

@@ -1,7 +1,7 @@
 #ifndef ZDVIDBODYHELPER_H
 #define ZDVIDBODYHELPER_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "geometry/zintcuboid.h"
 
 class ZDvidReader;

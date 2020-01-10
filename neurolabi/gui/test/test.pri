@@ -1,8 +1,13 @@
 HEADERS += \
     $$PWD/commontest.h \
+    $$PWD/flyemutilitiestest.h \
+    $$PWD/miscutilitytest.h \
+    $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
     $$PWD/znetworkutilstest.h \
+    $$PWD/zstackdocobjectupdatetest.h \
+    $$PWD/zstringbuildtest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \

@@ -21,6 +21,10 @@ public:
   void setConfig(const ZJsonObject &config);
   void setPriority(int p);
 
+  std::string getType() const;
+  std::string getName() const;
+  int getPriority() const;
+
 public:
   static const std::string KEY_TYPE;
   static const std::string KEY_NAME;

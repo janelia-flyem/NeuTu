@@ -1,23 +1,21 @@
 #include "zstackprocessor.h"
-#include "zstack.hxx"
+
 #include "tz_stack_attribute.h"
 #include "tz_stack_bwmorph.h"
-#include "zspgrowparser.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
-#include "tz_utilities.h"
-#include "tz_math.h"
-#if _QS_LOG_AVAILABLE_
-#  include "logging/zqslog.h"
-#endif
 #include "tz_stack.h"
 #include "tz_stack_math.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_objdetect.h"
 #include "tz_int_histogram.h"
+
+#include "common/math.h"
 #include "geometry/zintcuboid.h"
 #include "geometry/zpoint.h"
+#include "zstack.hxx"
+#include "zspgrowparser.h"
 #include "zstackfactory.h"
 
 ZStackProcessor::ZStackProcessor()
@@ -885,7 +883,7 @@ void ZStackProcessor::removeIsolatedObject(ZStack *stack, int r, int dr)
 
   Kill_Struct_Element(se);
 
-  int minSize = iround(TZ_PI * (r + dr) * (r + dr));
+  int minSize = neutu::iround(TZ_PI * (r + dr) * (r + dr));
 
   Stack *out2 = Stack_Remove_Small_Object(out, NULL, minSize, 8);
 
@@ -972,7 +970,7 @@ ZStack* ZStackProcessor::Rgb2Gray(const ZStack *stack)
     size_t volume = stack->getVoxelNumber();
     for (size_t i = 0; i < volume; ++i) {
       int v =
-          iround(0.2126 * arrayR[i] + 0.7152 * arrayG[i] + 0.0722 * arrayB[i]);
+          neutu::iround(0.2126 * arrayR[i] + 0.7152 * arrayG[i] + 0.0722 * arrayB[i]);
       if (v < 0) {
         v = 0;
       } else if (v > 255) {
@@ -1068,7 +1066,7 @@ ZStack* ZStackProcessor::Intepolate(
     uint8_t *outArray = out->array8();
     while (offset--) {
       outArray[offset] =
-          iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+          neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
     }
   } else {
     return NULL;
@@ -1084,7 +1082,7 @@ static void interpolateArray(
   for (int x = x0; x < x1; ++x) {
     int offset = yOffset + x;
     outArray[offset] =
-        iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+        neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
   }
 }
 
@@ -1201,7 +1199,7 @@ static void interpolateArray(
     int offset = yOffset1 + x;
     int offset2 = yOffset2 + x / scale;
     outArray[offset] =
-        iround(array1[offset] * (1.0 - lambda) + array2[offset2] * lambda);
+        neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset2] * lambda);
   }
 }
 

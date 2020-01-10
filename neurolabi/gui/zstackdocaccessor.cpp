@@ -1,8 +1,10 @@
 #include "zstackdocaccessor.h"
 
 #include <QsLog.h>
+
 #include "mvc/zstackdoc.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
 #include "neutubeconfig.h"
 
@@ -181,13 +183,34 @@ void ZStackDocAccessor::SetObjectVisible(
     ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
 {
   if (doc != NULL) {
-    QMutexLocker locker(doc->getObjectGroup().getMutex());
-    TStackObjectList objList =
-        doc->getObjectGroup().findSameSourceUnsync(type, source);
-    for (ZStackObject *obj : objList) {
-      if (obj->isVisible() != on) {
-        obj->setVisible(on);
-        doc->bufferObjectVisibilityChanged(obj);
+    { //Enclose mutex to avoid dead lock
+      QMutexLocker locker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList =
+          doc->getObjectGroup().findSameSourceUnsync(type, source);
+      for (ZStackObject *obj : objList) {
+        if (obj->isVisible() != on) {
+          obj->setVisible(on);
+          doc->bufferObjectVisibilityChanged(obj);
+        }
+      }
+    }
+    doc->processObjectModified();
+  }
+}
+
+void ZStackDocAccessor::SetObjectVisible(
+    ZStackDoc *doc, ZStackObject::EType type,
+    std::function<bool (const ZStackObject *)> pred, bool on)
+{
+  if (doc != NULL) {
+    {
+      QMutexLocker locker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
+      for (ZStackObject *obj : objList) {
+        if ((obj->isVisible() != on) && pred(obj)) {
+          obj->setVisible(on);
+          doc->bufferObjectVisibilityChanged(obj);
+        }
       }
     }
     doc->processObjectModified();
@@ -245,5 +268,41 @@ void ZStackDocAccessor::ParseWatershedContainer(
 
     AddObject(doc, objList);
     result.shallowClear();
+  }
+}
+
+void ZStackDocAccessor::UpdateSplitResult(
+    ZStackDoc *doc, const QList<ZObject3dScan *> &result)
+{
+  if (doc) {
+    ZObject3dScanArray *sa = new ZObject3dScanArray;
+    for (ZObject3dScan *obj : result) {
+      sa->append(obj);
+    }
+    ConsumeSplitResult(doc, sa);
+  }
+}
+
+void ZStackDocAccessor::ConsumeSplitResult(
+    ZStackDoc *doc, ZObject3dScanArray *result)
+{
+  if (doc) {
+    doc->getDataBuffer()->addUpdate([=]() {
+      doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+      for (ZObject3dScan *obj : *result) {
+        ZStackWatershedContainer::ConfigureResult(obj);
+        doc->addObject(obj, false);
+      }
+      result->shallowClear();
+      delete result;
+
+#ifdef _DEBUG_
+      LINFO() << "Split consumed";
+#endif
+
+      doc->setSegmentationReady(true);
+      doc->notifySegmentationUpdated();
+    });
+    doc->getDataBuffer()->deliver();
   }
 }

@@ -11,7 +11,7 @@
 #include <QVector>
 #include <QKeyEvent>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zviewproj.h"
 
 class QPaintEvent;

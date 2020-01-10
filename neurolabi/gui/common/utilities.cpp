@@ -3,9 +3,28 @@
 #include <cstdlib>
 #include <chrono>
 #include <sstream>
+#include <fstream>
 #include <regex>
+#include <cstdio>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
+
+/*
+bool neutu::FileExists(const std::string &path)
+{
+  if (path.empty()) {
+    return false;
+  }
+
+  FILE* fp = fopen(path.c_str(), "r");
+  if (fp != NULL) {
+    fclose(fp);
+    return true;
+  }
+
+  return false;
+}
+*/
 
 bool neutu::HasEnv(const std::string &name, const std::string &value)
 {
@@ -42,3 +61,57 @@ bool neutu::UsingLocalHost(const std::string &url)
 
   return std::regex_match(url, reg);
 }
+
+void neutu::RangePartitionProcess(
+    int x0, int x1, int n, std::function<void(int, int)> f)
+{
+  if (f) {
+    if (x1 >= x0) {
+      if (n > 0) {
+        int currentMin = x0;
+        int length = x1 - x0 + 1;
+        int dx = length / n;
+        int remain = length % n;
+        if (dx == 0) {
+          n = remain;
+        }
+        int currentMax = x0 + dx - 1;
+        for (int i = 0; i < n; i++) {
+          if (i < remain) {
+            currentMax += 1;
+          }
+          f(currentMin, currentMax);
+          currentMin = currentMax + 1;
+          currentMax += dx;
+        }
+      }
+    }
+  }
+}
+
+/*
+void neutu::RangePartitionProcess(
+    int x0, int x1, int block, int n, std::function<void(int, int)> f)
+{
+  if (f) {
+    if (x1 >= x0) {
+      if (n > 0) {
+        int currentMin = x0;
+        int length = (x1 - x0 + 1);
+        x0 =
+        int dx = (length / n / block) * block;
+
+        int currentMax = x0 + dx - 1;
+        for (int i = 0; i < n; i++) {
+          if (i < remain) {
+            currentMax += 1;
+          }
+          f(currentMin, currentMax);
+          currentMin = currentMax + 1;
+          currentMax += dx;
+        }
+      }
+    }
+  }
+}
+*/

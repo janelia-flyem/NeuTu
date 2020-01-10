@@ -1,13 +1,14 @@
 #ifndef ZFLYEMBODYMERGEPROJECT_H
 #define ZFLYEMBODYMERGEPROJECT_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QList>
 #include <QMap>
 
 #include "neutube.h"
 #include "common/zsharedpointer.h"
-#include "tz_stdint.h"
 #include "zstackobjectselector.h"
 //#include "zstackviewparam.h"
 
@@ -42,7 +43,7 @@ class ZFlyEmBodyMergeProject : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmBodyMergeProject(QObject *parent = 0);
+  explicit ZFlyEmBodyMergeProject(QObject *parent = nullptr);
   ~ZFlyEmBodyMergeProject();
 
   void test();
@@ -214,7 +215,7 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray,
       ZWidgetMessage &warnMsg);
   void updateSelection(const std::set<uint64_t> &newBodySet);
-  void refreshSegmentationView();
+//  void refreshSegmentationView();
   void unlockBody(const std::set<uint64_t> &bodySet);
   void unlockBody(uint64_t bodyId);
   void unlockBody(const std::vector<uint64_t> &bodyArray);
@@ -225,7 +226,7 @@ private:
   bool preserved(uint64_t bodyId) const;
   bool hasName(uint64_t bodyId) const;
 
-  void clearUndoStack();
+//  void clearUndoStack();
 
   QList<QString> getBodyStatusList(
       std::function<bool(const ZFlyEmBodyStatus&)> pred) const;

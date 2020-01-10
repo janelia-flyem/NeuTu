@@ -9,8 +9,9 @@
 #include <QMetaType>
 #include <QSharedPointer>
 #include <QMap>
+#include <QElapsedTimer>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zthreadfuturemap.h"
 #include "zwindowfactory.h"
 #include "zactionfactory.h"
@@ -113,6 +114,8 @@ public:
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam) override;
+
+  void recordEnd();
 
   ZFlyEmSupervisor* getSupervisor() const;
 
@@ -269,6 +272,7 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
+  void previewCurrentSplit();
   bool locateBody(uint64_t bodyId, bool appending);
   bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
@@ -642,6 +646,8 @@ private:
 
   QString makeSkeletonizationServiceMissingMessage() const;
 
+  bool requestingSplitResult(const QString &title);
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -730,6 +736,7 @@ protected:
   bool m_3dEnabled = true;
 
   QTimer *m_profileTimer = nullptr;
+  QElapsedTimer m_sessionTimer;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
@@ -835,6 +842,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(changingSplit(uint64_t)), this,
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
+  connect(panel, SIGNAL(previewingResult()), this, SLOT(previewCurrentSplit()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
   connect(panel, SIGNAL(loadingBookmark(QString)),
           this, SLOT(loadBookmark(QString)));

@@ -4,13 +4,13 @@ set -e
 
 if test $# -eq 0
 then
-  echo './neutu_qt_prepare <install_dir>'
+  echo './neutu_qt_prepare <install_dir> [<env>]'
   exit
 fi
 
 install_dir=$1
 
-ENV_NAME=neutu-env
+ENV_NAME=${2-neutu-env}
 ./setup_conda_for_neutu $install_dir $ENV_NAME
 
 CONDA_DIR=$install_dir/miniconda

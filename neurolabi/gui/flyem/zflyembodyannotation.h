@@ -1,10 +1,9 @@
 #ifndef ZFLYEMBODYANNOTATION_H
 #define ZFLYEMBODYANNOTATION_H
 
+#include <cstdint>
 #include <string>
 #include <functional>
-
-#include "tz_stdint.h"
 
 class ZJsonObject;
 
@@ -33,6 +32,7 @@ public:
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
   std::string getClonalUnit() const;
+  std::string getProperty() const;
 
   std::string getName() const;
 
@@ -63,6 +63,7 @@ public:
   void setSynonym(const std::string &v);
   void setClonalUnit(const std::string &v);
   void setAutoType(const std::string &v);
+  void setProperty(const std::string &v);
 
   /*!
    * \brief Load the data from a json string
@@ -122,6 +123,7 @@ public:
   static const char *KEY_SYNONYM;
   static const char *KEY_CLONAL_UNIT;
   static const char *KEY_AUTO_TYPE;
+  static const char *KEY_PROPERTY;
 
 private:
   static std::string GetOldFormatKey(const ZJsonObject &obj);
@@ -136,6 +138,7 @@ private:
   std::string m_namingUser;
 
   std::string m_instance;
+  std::string m_property;
   std::string m_majorInput;
   std::string m_majorOutput;
   std::string m_primaryNeurite;

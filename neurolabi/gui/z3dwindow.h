@@ -234,6 +234,7 @@ signals:
 
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
+  void settingDoneItemVisible(bool);
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
@@ -344,8 +345,11 @@ public slots:
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
   void hideSelectedPuncta();
+  void hideUnselectedPuncta();
+  void showUnselectedPuncta();
   void showSelectedPuncta();
   void setSelectPunctaVisible(bool on);
+  void setUnselectPunctaVisible(bool on);
   void addPunctaSelection();
 
   void saveSplitTask();
@@ -394,6 +398,7 @@ public slots:
   void deselectBody();
   void copyPosition();
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void updateTodoVisibility();
   void toggleSetting();
   void toggleObjects();

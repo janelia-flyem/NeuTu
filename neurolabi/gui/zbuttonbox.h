@@ -1,16 +1,17 @@
 #ifndef ZBUTTONBOX_H
 #define ZBUTTONBOX_H
 
+#include <cstdint>
+
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QPushButton>
-#include "tz_stdint.h"
 
 class ZButtonBox : public QWidget
 {
   Q_OBJECT
 public:
-  explicit ZButtonBox(QWidget *parent = 0);
+  explicit ZButtonBox(QWidget *parent = nullptr);
 
   typedef uint32_t TRole;
   const static TRole ROLE_NONE;

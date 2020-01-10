@@ -6,11 +6,12 @@
 #include <string.h>
 #include <fstream>
 #include <algorithm>
+
 #include "tz_stack_attribute.h"
-#include "tz_error.h"
 #include "tz_voxel_graphics.h"
 #include "tz_tvoxel.h"
-#include "tz_math.h"
+
+#include "common/math.h"
 #include "c_stack.h"
 #include "zobject3darray.h"
 #include "zstack.hxx"
@@ -140,10 +141,12 @@ void ZObject3d::setLine(ZPoint start, ZPoint end)
   Voxel_t startVoxel;
   Voxel_t endVoxel;
 
-  Set_Tvoxel(startVoxel,
-             iround(start.x()), iround(start.y()), iround(start.z()));
-  Set_Tvoxel(endVoxel,
-             iround(end.x()), iround(end.y()), iround(end.z()));
+  Set_Tvoxel(
+        startVoxel,
+        neutu::iround(start.x()), neutu::iround(start.y()), neutu::iround(start.z()));
+  Set_Tvoxel(
+        endVoxel,
+        neutu::iround(end.x()), neutu::iround(end.y()), neutu::iround(end.z()));
 
   Object_3d *obj = Line_To_Object_3d(startVoxel, endVoxel);
 
@@ -184,7 +187,7 @@ void ZObject3d::display(
 #if _QT_GUI_USED_
   painter.save();
 //  z -= iround(painter.getOffset().z());
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
   painter.setPen(pen);
@@ -288,7 +291,8 @@ void ZObject3d::labelStack(Stack *stack, int label) const
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 
@@ -340,7 +344,8 @@ void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) cons
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 
@@ -386,7 +391,8 @@ void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz,
     }
     break;
   default:
-    TZ_ERROR(ERROR_DATA_TYPE);
+    throw std::invalid_argument("Unsupported stack kind");
+//    TZ_ERROR(ERROR_DATA_TYPE);
   }
 }
 
@@ -934,8 +940,8 @@ bool ZObject3d::hit(double x, double y)
     return false;
   }
 
-  int ix = iround(x);
-  int iy = iround(y);
+  int ix = neutu::iround(x);
+  int iy = neutu::iround(y);
 
   for (size_t i = 0; i < size(); ++i) {
     if (ix == getX(i) && iy == getY(i)) {
@@ -955,9 +961,9 @@ bool ZObject3d::hit(double x, double y, double z)
     return false;
   }
 
-  int ix = iround(x);
-  int iy = iround(y);
-  int iz = iround(z);
+  int ix = neutu::iround(x);
+  int iy = neutu::iround(y);
+  int iz = neutu::iround(z);
 
   for (size_t i = 0; i < size(); ++i) {
     if (ix == getX(i) && iy == getY(i) && iz == getZ(i)) {

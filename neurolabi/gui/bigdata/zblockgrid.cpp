@@ -1,5 +1,4 @@
 #include "zblockgrid.h"
-#include "tz_utilities.h"
 #include "geometry/zgeometry.h"
 
 ZBlockGrid::ZBlockGrid()

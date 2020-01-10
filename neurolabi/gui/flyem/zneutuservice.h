@@ -5,9 +5,10 @@
 #include <vector>
 #include <stdint.h>
 #include <set>
+#include <cstdint>
+
 #include <QMutex>
 
-#include "tz_stdint.h"
 #include "common/zsharedpointer.h"
 
 class ZDvidTarget;

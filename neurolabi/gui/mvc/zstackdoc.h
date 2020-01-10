@@ -7,6 +7,8 @@
 
 #include <set>
 #include <memory>
+#include <functional>
+#include <cassert>
 
 #include <QString>
 #include <QList>
@@ -29,7 +31,6 @@
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
-#include "tz_error.h"
 
 #include "zprogressreporter.h"
 #include "zreportable.h"
@@ -110,6 +111,9 @@ struct ZRescaleSwcSetting;
  *
  * Each document has at most one main stack, which defines some context of other
  * data (e.g. resolution).
+ *
+ * For any derived class, it is highly recommended to call dispose() in its
+ * destructor.
  */
 class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 {
@@ -353,6 +357,10 @@ public: //attributes
   const ZUndoCommand* getLastUndoCommand() const;
   //const ZUndoCommand* getLastCommand() const;
 
+  using Clearance = std::function<void()>;
+
+  void addClearance(const Clearance &c);
+
 public: //swc tree edit
   // move soma (first root) to new location
   void swcTreeTranslateRootTo(double x, double y, double z);
@@ -457,6 +465,7 @@ public:
       ZStackObject::EType type, bool deleteObject = false);
   void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
   void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -775,6 +784,9 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
+  template<typename T>
+  void processObjectList(std::function<void(T*)> proc);
+
   inline const ZDocPlayerList& getPlayerList() const {
     return m_playerList;
   }
@@ -821,8 +833,8 @@ public:
   void selectObject(ZStackObject *obj, bool appending);
   void selectObject(ZStackObject *obj, neutu::ESelectOption option);
 
-  const TStackObjectSet& getSelected(ZStackObject::EType type) const;
-  TStackObjectSet &getSelected(ZStackObject::EType type);
+//  const TStackObjectSet& getSelected(ZStackObject::EType type) const;
+  TStackObjectSet getSelected(ZStackObject::EType type) const;
 
   bool hasSelectedObject() const;
 
@@ -896,10 +908,12 @@ public:
     m_hadSegmentationDownsampled = on;
   }
 
+  void notifySegmentationUpdated();
+
 public:
   void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg);
-  void emitMessage(const QString &msg, neutu::EMessageType type);
+  void emitWarning(const QString &msg) const;
+  void emitMessage(const QString &msg, neutu::EMessageType type) const;
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1296,9 +1310,9 @@ public slots:
 
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
-  void messageGenerated(const QString &message, bool appending = true);
+  void messageGenerated(const QString &message, bool appending = true) const;
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&);
+  void messageGenerated(const ZWidgetMessage&) const;
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -1388,6 +1402,7 @@ protected:
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
+  void clearToDestroy();
 
   virtual bool _loadFile(const QString &filePath);
 
@@ -1425,8 +1440,6 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
-
-  void removeTakenObject(ZStackObject *obj, bool deleteObject);
 
 private slots:
   void shortcutTest();
@@ -1471,11 +1484,6 @@ private:
   //Actions
   //  Undo/Redo
   QUndoStack *m_undoStack;
-//  QAction *m_undoAction;
-//  QAction *m_redoAction;
-
-  //  Action map
-//  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1504,12 +1512,6 @@ private:
   ZStackObjectInfoSet m_objectModifiedBuffer;
   QMutex m_objectModifiedBufferMutex;
 
-//  QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
-//  QMutex m_objectModifiedTargetBufferMutex;
-//  QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
-//  QMutex m_objectModifiedTypeBufferMutex;
-//  ZStackObjectRole m_objectModifiedRoleBuffer;
-//  QMutex m_objectModifiedRoleBufferMutex;
 
   QStack<EObjectModifiedMode> m_objectModifiedMode;
   QMutex m_objectModifiedModeMutex;
@@ -1522,6 +1524,8 @@ private:
 
   ZWorker *m_worker = NULL;
   ZWorkThread *m_workThread = NULL;
+
+  QList<Clearance> m_clearanceList;
 
 protected:
   ZObjectColorScheme m_objColorSheme;
@@ -1667,16 +1671,27 @@ QList<T*> ZStackDoc::getObjectList() const
   return m_objectGroup.getObjectList<T>();
 }
 
+template<typename T>
+void ZStackDoc::processObjectList(std::function<void(T*)> proc)
+{
+  QList<T*> objList = getObjectList<T>();
+  for (auto obj : objList) {
+    proc(obj);
+  }
+
+  processObjectModified();
+}
+
 template <typename T>
 QList<T*> ZStackDoc::getSelectedObjectList(ZStackObject::EType type) const
 {
   QList<T*> objList;
-  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+  TStackObjectSet objSet = getSelected(type);
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     T *obj = dynamic_cast<T*>(*iter);
-    TZ_ASSERT(obj != NULL, "Unmatched type");
+//    TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.append(obj);
     }
@@ -1689,12 +1704,13 @@ template <typename T>
 std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
 {
   std::set<T*> objList;
-  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+  TStackObjectSet objSet = getSelected(type);
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
     T *obj = dynamic_cast<T*>(*iter);
-    TZ_ASSERT(obj != NULL, "Unmatched type");
+    assert(obj != nullptr);
+//    TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.insert(obj);
     }

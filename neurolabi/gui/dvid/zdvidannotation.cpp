@@ -4,7 +4,7 @@
 #include <sstream>
 #include <QColor>
 
-#include "tz_math.h"
+#include "common/math.h"
 #include "geometry/zcuboid.h"
 #include "zjsonarray.h"
 #include "zpainter.h"
@@ -539,7 +539,7 @@ bool ZDvidAnnotation::isSliceVisible(int z, neutu::EAxis sliceAxis) const
     break;
   }
 
-  return dz < iround(getRadius());
+  return dz < neutu::iround(getRadius());
 }
 
 double ZDvidAnnotation::getRadius(int z, neutu::EAxis sliceAxis) const

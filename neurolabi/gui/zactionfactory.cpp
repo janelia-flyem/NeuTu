@@ -227,6 +227,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_UNVERIFY:
     action = new QAction("Unverify", parent);
+    action->setIcon(QFontIcon::icon(0xf056, Qt::red));
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
@@ -240,7 +241,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
-    action->setIcon(QIcon(":/images/move.png"));
+//    action->setIcon(QIcon(":/images/move.png"));
+    action->setIcon(QFontIcon::icon(0xf0b2, Qt::darkGreen));
 //    action->setShortcut(Qt::Key_V);
     action->setStatusTip("Move a synapse with mouse click");
     break;
@@ -274,7 +276,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_REPAIR:
     action = new QAction("Repair Synapses", parent);
-    action->setIcon(QIcon(":/images/repair.png"));
+//    action->setIcon(QIcon(":/images/repair.png"));
+    action->setIcon(QFontIcon::icon(0xf0ad, Qt::darkGreen));
     action->setStatusTip("Repair selected synapses");
     break;
   case ACTION_TOGGLE_SWC_SKELETON:
@@ -443,7 +446,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
-    action->setIcon(QFontIcon::icon(0x2727, Qt::green));
+    action->setIcon(QFontIcon::icon(0x2727, Qt::darkGreen));
     break;
   case ACTION_ADD_TODO_MERGE:
     action = new QAction("To merge here", parent);
@@ -484,6 +487,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SHOW_NORMAL_TODO:
     action = new QAction("Show normal todo", parent);
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
+  case ACTION_SHOW_DONE:
+    action = new QAction("Show done", parent);
     action->setCheckable(true);
     action->setChecked(true);
     break;
@@ -530,12 +538,23 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_HIDE_SELECTED:
     action = new QAction("Hide Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8863, Qt::red));
     break;
   case ACTION_PUNCTA_SHOW_SELECTED:
     action = new QAction("Show Selected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10695, Qt::darkGreen));
+    break;
+  case ACTION_PUNCTA_HIDE_UNSELECTED:
+    action = new QAction("Hide Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(8861, Qt::red));
+    break;
+  case ACTION_PUNCTA_SHOW_UNSELECTED:
+    action = new QAction("Show Unselected Puncta", parent);
+    action->setIcon(QFontIcon::icon(10686, Qt::darkGreen));
     break;
   case ACTION_PUNCTA_ADD_SELECTION:
     action = new QAction("Add Puncta Selection", parent);
+    action->setIcon(QFontIcon::icon(9754, Qt::darkGreen));
     break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite Segmentation", parent);

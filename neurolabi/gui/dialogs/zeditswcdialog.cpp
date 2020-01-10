@@ -1,16 +1,18 @@
+#include "zeditswcdialog.h"
+
+#include <cmath>
+
 #ifdef _QT5_
 #include <QtWidgets>
 #else
 #include <QtGui>
 #endif
-#include "zeditswcdialog.h"
+
 
 #include <stdio.h>
 #include "tz_stack_lib.h"
 #include "tz_swc_tree.h"
-#include "tz_utilities.h"
-#include "tz_error.h"
-#include "tz_math.h"
+
 #include "tz_darray.h"
 #include "tz_u8array.h"
 #include "tz_iarray.h"
@@ -18,6 +20,7 @@
 #include "tz_random.h"
 #include "tz_geo3d_utils.h"
 
+#include "common/math.h"
 #include "zswctree.h"
 
 ZEditSwcDialog::ZEditSwcDialog(QWidget *parent) : QDialog(parent)
@@ -894,7 +897,7 @@ void ZEditSwcDialog::runOperations()
         tmp_node.z = field->points[i][2];
         tmp_node.id = i + 1;
         tmp_node.parent_id = -1;
-        tmp_node.d = Cube_Root(0.75 / TZ_PI * field->values[i]);
+        tmp_node.d = std::cbrt(0.75 / TZ_PI * field->values[i]);
         Swc_Node_Fprint(fp, &tmp_node);
       }
       fclose(fp);
@@ -963,7 +966,7 @@ void ZEditSwcDialog::runOperations()
     }
 
     Kill_Swc_Tree(tree2);
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_searchCheckBox->isChecked()) {
@@ -989,7 +992,7 @@ void ZEditSwcDialog::runOperations()
     int ncut = cutList.size();
 
     for (int i = 0; i < ncut; i++) {
-      Swc_Tree_Iterator_Start(tree, 2, TRUE);
+      Swc_Tree_Iterator_Start(tree, 2, _TRUE_);
       Swc_Tree_Node *tn = NULL;
       while ((tn = Swc_Tree_Next(tree)) != NULL) {
         if (Swc_Tree_Node_Id(tn) == cutList[i]) {
@@ -1019,12 +1022,12 @@ void ZEditSwcDialog::runOperations()
     root[2] = m_rootZSpinBox->value();
     Swc_Tree_Node *tn = Swc_Tree_Closest_Node(tree, root);
     Swc_Tree_Node_Set_Root(tn);
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_cleanRootCheckBox->isChecked()) {
     Swc_Tree_Clean_Root(tree);
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_removeOvershootCheckBox->isChecked()) {
@@ -1033,13 +1036,13 @@ void ZEditSwcDialog::runOperations()
 
   if (m_tuneForkCheckBox->isChecked()) {
     Swc_Tree_Tune_Fork(tree);
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_typeCheckBox->isChecked()) {
     int type = m_typeSpinBox->value();
 
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
 
     if (m_rangeCheckBox->isChecked()) {
       Swc_Tree_Node *begin = Swc_Tree_Query_Node(
@@ -1078,7 +1081,7 @@ void ZEditSwcDialog::runOperations()
     double x = m_translateXSpinBox->value();
     double y = m_translateYSpinBox->value();
     double z = m_translateZSpinBox->value();
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
     Swc_Tree_Node *tn = tree->root;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -1097,7 +1100,7 @@ void ZEditSwcDialog::runOperations()
     int total = 0;
     if (Swc_Tree_Node_Is_Virtual(tn)) {
       Swc_Tree_Node *child = tn->first_child;
-      TZ_ASSERT(Swc_Tree_Node_Is_Regular(child), "virtual");
+//      TZ_ASSERT(Swc_Tree_Node_Is_Regular(child), "virtual");
       tn = child;
       while (tn != NULL) {
         total++;
@@ -1124,14 +1127,14 @@ void ZEditSwcDialog::runOperations()
     //printf("%g\n", Swc_Tree_Overall_Length(tree));
     QMessageBox::information(this, tr("result"),
                              QString("%1 trees removed from %2 trees. \n %3\n").arg(n).arg(total).arg(Swc_Tree_Overall_Length(tree)));
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_resizeCheckBox->isChecked()) {
     double x_scale = m_resizeXScaleSpinBox->value();
     double y_scale = m_resizeYScaleSpinBox->value();
     double z_scale = m_resizeZScaleSpinBox->value();
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
     Swc_Tree_Node *tn = tree->root;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Is_Regular(tn)) {
@@ -1145,7 +1148,7 @@ void ZEditSwcDialog::runOperations()
 
   if (m_mergeCheckBox->isChecked()) {
     Swc_Tree_Merge_Close_Node(tree, m_mergeThresholdSpinBox->value());
-    node_changed = TRUE;
+    node_changed = _TRUE_;
   }
 
   if (m_singleCheckBox->isChecked()) {
@@ -1169,7 +1172,7 @@ void ZEditSwcDialog::runOperations()
 
   if (m_mtCheckBox->isChecked()) {
     Swc_Tree_Label_Main_Trunk_L(tree, 5, 300.0, 1600.0);
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
     Swc_Tree_Node *tn;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Data(tn)->label == 5) {
@@ -1181,7 +1184,7 @@ void ZEditSwcDialog::runOperations()
   if (m_somaCheckBox->isChecked()) {
     /* under development */
     //Swc_Tree_Label_Soma(tree, 6, 300.0, 1600.0);
-    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
     Swc_Tree_Node *tn;
     while ((tn = Swc_Tree_Next(tree)) != NULL) {
       if (Swc_Tree_Node_Data(tn)->label == 6) {
@@ -1196,8 +1199,8 @@ void ZEditSwcDialog::runOperations()
     Swc_Tree_Grow_Soma(tree, 1);
     soma_tree = Copy_Swc_Tree(tree);
     out_tree = Copy_Swc_Tree(tree);
-    Swc_Tree_Resort_Pyramidal(tree, FALSE, TRUE);
-    Swc_Tree_Resort_Pyramidal(out_tree, FALSE, FALSE);
+    Swc_Tree_Resort_Pyramidal(tree, _FALSE_, _TRUE_);
+    Swc_Tree_Resort_Pyramidal(out_tree, _FALSE_, _FALSE_);
     Swc_Tree_Set_Type_As_Label(tree);
     Swc_Tree_Set_Type_As_Label(out_tree);
     Swc_Tree_Resort_Id(tree);
@@ -1208,17 +1211,17 @@ void ZEditSwcDialog::runOperations()
 
 
 
-  if (node_changed == TRUE) {
+  if (node_changed == _TRUE_) {
     Swc_Tree_Resort_Id(tree);
   }
 
   if (!outputFileName.isEmpty()) {
     if (m_decomposeCheckBox->isChecked()) {
-      Swc_Tree_Iterator_Start(tree, 1, FALSE);
+      Swc_Tree_Iterator_Start(tree, 1, _FALSE_);
       Swc_Tree_Node *tn = tree->root;
       int index = 0;
       char filepath1[500];
-      BOOL start = TRUE;
+      bool start = true;
       int length = 0;
       FILE *fp = NULL;
       while ((tn = Swc_Tree_Next(tree)) != NULL) {
@@ -1229,7 +1232,7 @@ void ZEditSwcDialog::runOperations()
             }
             sprintf(filepath1, "%s%0*d.swc", outfilepath,  4, index);
             fp = fopen(filepath1, "w");
-            start = FALSE;
+            start = _FALSE_;
             if (Swc_Tree_Node_Is_Branch_Point(tn->parent)) {
               tn->parent->node.parent_id = -1;
               Swc_Node_Fprint(fp, &(tn->parent->node));
@@ -1243,12 +1246,12 @@ void ZEditSwcDialog::runOperations()
           length++;
 
           if (Swc_Tree_Node_Is_Leaf(tn)) {
-            start = TRUE;
+            start = _TRUE_;
             index++;
           } else {
             if (length > 1) {
               if (Swc_Tree_Node_Is_Branch_Point(tn)) {
-                start = TRUE;
+                start = _TRUE_;
                 index++;
               }
             }
@@ -1263,7 +1266,7 @@ void ZEditSwcDialog::runOperations()
         ws->max_vx = SVG_VIEW_MAX_X;
         ws->max_vy = SVG_VIEW_MAX_Y;
         if (m_lengthCheckBox->isChecked()) {
-          ws->showing_length = TRUE;
+          ws->showing_length = _TRUE_;
         }
         int napo = m_apoFileNames.size();
         int *puncta_number = iarray_malloc(napo);
@@ -1291,16 +1294,17 @@ void ZEditSwcDialog::runOperations()
           }
 
           if (m_shuffleCheckBox->isChecked()) {
-            ws->shuffling = TRUE;
+            ws->shuffling = _TRUE_;
           }
 
           if (m_pcountCheckBox->isChecked()) {
-            ws->showing_count = TRUE;
+            ws->showing_count = _TRUE_;
           }
 
           if ((soma_tree != NULL) && (ws->puncta != NULL)) {
             if (ws->puncta->size > 0) {
-              GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, BOOL);
+              Swc_Tree_Svg_Workspace_Adjust_OnRoot_Size(ws);
+//              GUARDED_CALLOC_ARRAY(ws->on_root, ws->puncta->size, BOOL);
               Swc_Tree_Identify_Puncta(soma_tree, ws->puncta, 1, ws->on_root);
             }
           }
@@ -1335,11 +1339,11 @@ void ZEditSwcDialog::runOperations()
           puncta = Geo3d_Scalar_Field_Import_Apo(tmpba.data());
           Swc_Tree_Puncta_Feature(tree, puncta);
           Kill_Geo3d_Scalar_Field(puncta);
-          Swc_Tree_Iterator_Start(tree, 2, FALSE);
+          Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
           int color_map[] = { 1, 3, 5, 7, 6, 8, 2 };
           Swc_Tree_Node *tn = NULL;
           while ((tn = Swc_Tree_Next(tree)) != NULL) {
-            int new_type = iround(tn->feature);
+            int new_type = neutu::iround(tn->feature);
             if (new_type > 6) {
               new_type = 6;
             }
@@ -1356,11 +1360,11 @@ void ZEditSwcDialog::runOperations()
           Swc_Tree_Intensity_Feature_E(tree, signal, NULL, margin);
           double fmin, fmax;
           Swc_Tree_Feature_Range(tree, &fmin, &fmax);
-          Swc_Tree_Iterator_Start(tree, 2, FALSE);
+          Swc_Tree_Iterator_Start(tree, 2, _FALSE_);
           int color_map[] = { 1, 3, 5, 7, 6, 8, 2 };
           Swc_Tree_Node *tn = NULL;
           while ((tn = Swc_Tree_Next(tree)) != NULL) {
-            int new_type = iround((tn->feature - fmin) / (fmax - fmin) * 6.0);
+            int new_type = neutu::iround((tn->feature - fmin) / (fmax - fmin) * 6.0);
             if (new_type > 6) {
               new_type = 6;
             }

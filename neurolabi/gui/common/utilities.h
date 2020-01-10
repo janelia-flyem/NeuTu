@@ -4,12 +4,17 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
+#include <functional>
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
 
 namespace neutu
 {
+
+//bool FileExists(const std::string &path);
+
 template<typename T>
 void read(std::istream &stream, T &v)
 {
@@ -102,16 +107,6 @@ int numDigits(T number)
   return digits;
 }
 
-template<typename U, typename T>
-U UnsignedCrop(T v)
-{
-  if (v < 0) {
-    v = 0;
-  }
-
-  return U(v);
-}
-
 bool HasEnv(const std::string &name, const std::string &value);
 
 std::string GetVersionString();
@@ -146,7 +141,67 @@ ValueType GetValue(const Container<KeyType, ValueType> &m,
   return defaultValue;
 }
 
+template<typename T,
+         typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+inline bool IsIntegerValue(T v)
+{
+  return v == std::floor(v);
 }
+
+template<typename T>
+inline bool WithinOpenRange(const T &x, const T &minv, const T &maxv)
+{
+  return (x > minv) && (x < maxv);
+}
+
+template<typename T>
+inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
+{
+  return (x >= minv) && (x <= maxv);
+}
+
+template<typename T>
+inline T ClipValue(const T &v, const T &lower, const T&upper)
+{
+  return (v < lower) ? lower : (v > upper) ? upper : v;
+}
+
+template<typename T>
+inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
+{
+  if (x0 <= x1) {
+    if (x0 <= upper && x1 >= lower) {
+      if (x0 < lower) {
+        x0 = lower;
+      }
+      if (x1 > upper) {
+        x1 = upper;
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*!
+ * \brief Process partitions of a range
+ *
+ * The behavior of this function is undefined if x0 > x1 or n <= 0.
+ *
+ * \param x0 Min value of the range.
+ * \param x1 Max value of the range.
+ * \param n Number of partitions.
+ * \param f Function to process the partition. It takes min and max of a partition
+ *          as its parameters.
+ */
+void RangePartitionProcess(
+    int x0, int x1, int n, std::function<void(int, int)> f);
+
+//void RangePartitionProcess(
+//    int x0, int x1, int block, int n, std::function<void(int, int)> f);
+
+} //namespace neutu
 
 //template<>
 //int numDigits(int32_t x);

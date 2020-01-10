@@ -1,7 +1,7 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
@@ -49,7 +49,7 @@ public:
   ZStackObject();
   virtual ~ZStackObject();
 
-  enum class EType { //#Review-TZ: Consier moving types to a separate file with namespace zstackobject
+  enum class EType { //#Review-TZ: Consider moving types to a separate file with namespace zstackobject
     UNIDENTIFIED = 0, //Unidentified type
     SWC,
     PUNCTUM,
@@ -390,18 +390,13 @@ public:
   static T* CastVoidPointer(void *p);
 
 protected:
-  bool m_selected;
-  bool m_isSelectable;
-  bool m_isVisible;
-//  bool m_isHittable;
   EHitProtocol m_hitProtocal;
-  bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
   double m_basePenWidth;
-  bool m_usingCosmeticPen;
+
   double m_zScale;
   std::string m_source;
   std::string m_objectClass;
@@ -417,11 +412,17 @@ protected:
 
   neutu::display::TVisualEffect m_visualEffect;
 
-  mutable int m_prevDisplaySlice;
+  mutable int m_prevDisplaySlice = -1;
 //  static const char *m_nodeAdapterId;
 
   std::vector<CallBack> m_callbacks_on_selection;
   std::vector<CallBack> m_callbacks_on_deselection;
+
+  bool m_selected = false;
+  bool m_isSelectable = true;
+  bool m_isVisible = true;
+  bool m_projectionVisible = true;
+  bool m_usingCosmeticPen = false;
 };
 
 

@@ -3,6 +3,7 @@ include(widgets/widgets.pri)
 include(neuroglancer/neuroglancer.pri)
 
 FORMS += \
+    $$PWD/auth/flyemauthtokendialog.ui \
     $$PWD/flyemdataframeoptiondialog.ui \
     $$PWD/flyemorthocontrolform.ui \
     $$PWD/flyemproofcontrolform.ui \
@@ -13,6 +14,10 @@ FORMS += \
     $$PWD/zflyemhackathonconfigdlg.ui
 
 HEADERS += \
+    $$PWD/auth/flyemauthserverclient.h \
+    $$PWD/auth/flyemauthtokendialog.h \
+    $$PWD/auth/flyemauthtokenhandler.h \
+    $$PWD/auth/flyemauthtokenstorage.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
     $$PWD/flyemorthocontrolform.h \
@@ -134,6 +139,10 @@ HEADERS += \
     $$PWD/zflyemproofdockeyprocessor.h
 
 SOURCES += \
+    $$PWD/auth/flyemauthserverclient.cpp \
+    $$PWD/auth/flyemauthtokendialog.cpp \
+    $$PWD/auth/flyemauthtokenhandler.cpp \
+    $$PWD/auth/flyemauthtokenstorage.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \

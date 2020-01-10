@@ -1,8 +1,10 @@
 #ifndef FLYEMPROOFCONTROLFORM_H
 #define FLYEMPROOFCONTROLFORM_H
 
+#include <cstdint>
+
 #include <QWidget>
-#include "tz_stdint.h"
+
 #include "zflyembookmarklistmodel.h"
 
 class QMenu;

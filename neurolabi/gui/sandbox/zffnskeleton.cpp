@@ -5,10 +5,10 @@
 #include <QMessageBox>
 #include "zsandbox.h"
 #include "mvc/zstackdoc.h"
+#include "mvc/zstackdocdatabuffer.h"
 #include "mainwindow.h"
 #include "zstroke2d.h"
 #include "zobject3dscanarray.h"
-#include "zstackdocdatabuffer.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "widgets/zpythonprocess.h"

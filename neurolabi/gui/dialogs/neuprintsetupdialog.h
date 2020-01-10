@@ -19,6 +19,9 @@ public:
 
   void setUuid(const QString &uuid);
   QString getAuthToken() const;
+  QString getDataset() const {
+    return m_dataset;
+  }
 
 private slots:
   bool apply();
@@ -27,6 +30,7 @@ private slots:
 private:
   Ui::NeuprintSetupDialog *ui;
   QString m_uuid;
+  QString m_dataset;
 };
 
 #endif // NEUPRINTSETUPDIALOG_H

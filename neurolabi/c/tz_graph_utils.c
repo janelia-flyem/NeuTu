@@ -257,7 +257,7 @@ int Graph_Mst_From_Adjmat(double **graph, Graph_Edge_t *min_span_tree, int n,
   return(0);
 }
 
-BOOL Is_Adjmat_Connected(int **conn, int n)
+_BOOL_ Is_Adjmat_Connected(int **conn, int n)
 {
   int i;
   int *mask = iarray_malloc(n);
@@ -327,7 +327,7 @@ int* Adjmat_Isolate(int **conn, int n, int *nnbr)
 #define ADJMAT_HUNGARIAN_IS_ZERO(x) ((x) < 1e-5)
 #define ADJMAT_HUNGARIAN_IS_EQUAL(x, y) (Compare_Float(x, y, 1e-5)==0)
 #define ADJMAT_HUNGARIAN_COMPARE(x, y) (Compare_Float(x, y, 1e-5))
-double Adjmat_Hungarian(double **weight, int m, int n, BOOL **result)
+double Adjmat_Hungarian(double **weight, int m, int n, _BOOL_ **result)
 {
   int i,j;
   int size1 = m;
@@ -352,7 +352,7 @@ double Adjmat_Hungarian(double **weight, int m, int n, BOOL **result)
 
   for (i=0;i<size1;++i)
     for (j=0;j<size2;++j)
-      result[i][j]=FALSE;
+      result[i][j]=_FALSE_;
 
   // Begin subtract column minima in order to start with lots of zeroes 12
   printf("Using heuristic\n");
@@ -525,7 +525,7 @@ done:
   // End Hungarian algorithm 18
 
   for (i=0;i<m;++i) {
-    result[i][col_mate[i]]=TRUE;
+    result[i][col_mate[i]]=_TRUE_;
     /*TRACE("%d - %d\n", i, col_mate[i]);*/
   }
   for (k=0;k<m;++k) {

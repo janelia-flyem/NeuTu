@@ -152,6 +152,7 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     ZStackObject *obj = *iter;
     getSelector()->setSelection(obj, selected);
     //obj->setSelected(selected);
+    //Bug???
     getSelectedSetUnsync(obj->getType()).insert(obj);
   }
 
@@ -707,10 +708,10 @@ const TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType typ
         const_cast<ZStackObjectGroup&>(*this).getObjectList(type));
 }
 
-TStackObjectSet& ZStackObjectGroup::getSelectedSet(ZStackObject::EType type)
+TStackObjectSet ZStackObjectGroup::getSelectedSet(ZStackObject::EType type) const
 {
   if (!m_selectedSet.contains(type)) {
-    m_selectedSet[type] = TStackObjectSet();
+    return TStackObjectSet();
   }
 
   return  m_selectedSet[type];
@@ -726,12 +727,14 @@ TStackObjectSet& ZStackObjectGroup::getSelectedSetUnsync(
   return  m_selectedSet[type];
 }
 
+/*
 const TStackObjectSet& ZStackObjectGroup::getSelectedSet(
     ZStackObject::EType type) const
 {
   return dynamic_cast<const TStackObjectSet&>(
         const_cast<ZStackObjectGroup&>(*this).getSelectedSet(type));
 }
+*/
 
 const TStackObjectSet& ZStackObjectGroup::getSelectedSetUnsync(
     ZStackObject::EType type) const

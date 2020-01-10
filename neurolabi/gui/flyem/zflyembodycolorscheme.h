@@ -1,9 +1,10 @@
 #ifndef ZFLYEMBODYCOLORSCHEME_H
 #define ZFLYEMBODYCOLORSCHEME_H
 
+#include <cstdint>
+
 #include <QHash>
 #include "zobjectcolorscheme.h"
-#include "tz_stdint.h"
 
 class ZFlyEmBodyColorScheme : public ZObjectColorScheme
 {

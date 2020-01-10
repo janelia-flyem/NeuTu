@@ -7,7 +7,7 @@
 #include <QString>
 #include <QByteArray>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZWidgetMessage;
 

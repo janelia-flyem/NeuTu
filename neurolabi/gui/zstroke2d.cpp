@@ -3,8 +3,9 @@
 #include <QPainter>
 #include <QPen>
 #include <QBitmap>
+
+#include "common/math.h"
 #include "neutubeconfig.h"
-#include "tz_math.h"
 #include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
@@ -159,7 +160,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
-  int z = slice + iround(painter.getZOffset());
+  int z = slice + painter.getZOffset();
 
   if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
@@ -367,12 +368,12 @@ ZStack* ZStroke2d::toLabelStack(int label) const
   }
 
   Cuboid_I boundBox;
-  int r = iround(m_width / 2);
-  boundBox.cb[0] = iround(x0) - margin - r;
-  boundBox.cb[1] = iround(y0) - margin - r;
+  int r = neutu::iround(m_width / 2);
+  boundBox.cb[0] = neutu::iround(x0) - margin - r;
+  boundBox.cb[1] = neutu::iround(y0) - margin - r;
   boundBox.cb[2] = m_z;
-  boundBox.ce[0] = iround(x1) + margin + r;
-  boundBox.ce[1] = iround(y1) + margin + r;
+  boundBox.ce[0] = neutu::iround(x1) + margin + r;
+  boundBox.ce[1] = neutu::iround(y1) + margin + r;
   boundBox.ce[2] = m_z;
 
   int width = Cuboid_I_Width(&boundBox);
@@ -569,8 +570,8 @@ bool ZStroke2d::getLastPoint(int *x, int *y) const
     return false;
   }
 
-  *x = iround(m_pointArray.back().x());
-  *y = iround(m_pointArray.back().y());
+  *x = neutu::iround(m_pointArray.back().x());
+  *y = neutu::iround(m_pointArray.back().y());
 
   return true;
 }
@@ -634,7 +635,7 @@ void ZStroke2d::translate(const ZPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.x(), offset.y());
   }
-  m_z += iround(offset.z());
+  m_z += neutu::iround(offset.z());
 }
 
 void ZStroke2d::translate(const ZIntPoint &offset)
@@ -644,7 +645,7 @@ void ZStroke2d::translate(const ZIntPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.getX(), offset.getY());
   }
-  m_z += iround(offset.getZ());
+  m_z += offset.getZ();
 }
 
 void ZStroke2d::scale(double sx, double sy, double sz)
@@ -655,7 +656,7 @@ void ZStroke2d::scale(double sx, double sy, double sz)
     pt.setX(pt.x() * sx);
     pt.setY(pt.y() * sy);
   }
-  m_z = iround(m_z * sz);
+  m_z = neutu::iround(m_z * sz);
   m_width *= std::sqrt(sx * sy);
 }
 
@@ -966,7 +967,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 
   zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
-  if (iround(z) == m_z) {
+  if (neutu::iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());
   }
 

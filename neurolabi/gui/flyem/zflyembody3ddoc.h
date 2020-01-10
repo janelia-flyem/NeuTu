@@ -12,7 +12,7 @@
 #include <QTime>
 #include <QThreadStorage>
 
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -178,7 +178,7 @@ public:
   void processEventFunc();
   void cancelEventThread();
 
-  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 //  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;
@@ -265,15 +265,11 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
-  virtual bool executeDeleteSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeDeleteSwcNodeCommand() override;
   virtual bool executeDeleteUnselectedSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeConnectSwcNodeCommand() override {
-    return false;
-  }
+  virtual bool executeConnectSwcNodeCommand() override;
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
     return false;
   }
@@ -288,9 +284,7 @@ public:
   virtual bool executeSmartConnectSwcNodeCommand() override {
     return false;
   }
-  virtual bool executeBreakSwcConnectionCommand() override {
-    return false;
-  }
+  virtual bool executeBreakSwcConnectionCommand() override;
   virtual bool executeMergeSwcNodeCommand() override {
     return false;
   }
@@ -348,6 +342,7 @@ public:
   ZStackDoc3dHelper* getHelper() const;
 
   void addSynapseSelection(const QString &filter);
+  void addSynapseSelection(const QStringList &filter);
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -360,6 +355,7 @@ public slots:
   void updateSynapse(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
+  void setDoneItemVisible(bool visible);
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();

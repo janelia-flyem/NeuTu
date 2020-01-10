@@ -7,8 +7,8 @@
 #include <QtConcurrent>
 #endif
 
+#include "common/math.h"
 #include "zutils.h"
-#include "tz_math.h"
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
 #include "zobject3dfactory.h"
@@ -957,9 +957,9 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
       }
     }
   } else {
-    int nx = iround(x);
-    int ny = iround(y);
-    int nz = iround(z);
+    int nx = neutu::iround(x);
+    int ny = neutu::iround(y);
+    int nz = neutu::iround(z);
 
 //    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
 

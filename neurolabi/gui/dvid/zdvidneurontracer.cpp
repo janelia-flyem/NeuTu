@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "geometry/zintcuboid.h"
-#include "tz_math.h"
+
 #include "tz_locseg_chain.h"
 #include "zswctree.h"
 #include "zstack.hxx"

@@ -1,10 +1,10 @@
 #ifndef FLYEMBODYIDDIALOG_H
 #define FLYEMBODYIDDIALOG_H
 
+#include <cstdint>
+
 #include <QDialog>
 #include <QVector>
-
-#include "tz_stdint.h"
 
 namespace Ui {
 class FlyEmBodyIdDialog;
@@ -15,7 +15,7 @@ class FlyEmBodyIdDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit FlyEmBodyIdDialog(QWidget *parent = 0);
+  explicit FlyEmBodyIdDialog(QWidget *parent = nullptr);
   ~FlyEmBodyIdDialog();
 
   int getBodyId() const;

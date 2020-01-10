@@ -3,7 +3,7 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
-#include "common/neutube_def.h"
+#include "common/neutudefs.h"
 
 class ZJsonArray;
 
@@ -52,6 +52,13 @@ public:
   void set(int x1, int y1, int z1, int x2, int y2, int z2);
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   //void set(const int *corner);
+
+  int getFirstX() const;
+  int getLastX() const;
+  int getFirstY() const;
+  int getLastY() const;
+  int getFirstZ() const;
+  int getLastZ() const;
 
   void setFirstX(int x);
   void setLastX(int x);

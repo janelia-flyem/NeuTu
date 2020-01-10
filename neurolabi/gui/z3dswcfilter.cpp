@@ -1948,7 +1948,7 @@ glm::vec4 Z3DSwcFilter::getColorByDirection(Swc_Tree_Node *tn)
   int axisIndex[2] = { 0, 0 };
   for (int k = 0; k < 4; ++k) {
     angle[k] = Vector_Angle2(
-          vec.x(), vec.y(), axis[k].x(), axis[k].y(), TRUE);
+          vec.x(), vec.y(), axis[k].x(), axis[k].y(), _TRUE_);
   }
 
   double minAngle = angle[0];

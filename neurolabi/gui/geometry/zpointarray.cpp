@@ -243,7 +243,7 @@ ZGraph* ZPointArray::computeDistanceGraph(double maxDist) const
       const ZPoint &pt2 = (*this)[j];
       double d = pt1.distanceTo(pt2);
       if (d <= maxDist) {
-        graph->addEdgeFast(i, j, d);
+        graph->addEdgeFast(int(i), int(j), d);
       }
     }
   }

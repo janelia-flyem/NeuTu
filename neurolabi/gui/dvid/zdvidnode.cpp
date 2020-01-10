@@ -72,7 +72,7 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) co
       uuid = uuid.substr(0, uuidBrief);
     } else if (int(uuid.size()) < uuidBrief) {
 #if defined(_QT_APPLICATION_)
-      LWARN() << "Out-of bound uuid brief (" << uuidBrief << ") for" << uuid;
+      LWARN() << "Out-of-bound uuid brief (" << uuidBrief << ") for" << uuid;
 #endif
     }
 

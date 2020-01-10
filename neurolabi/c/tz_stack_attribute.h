@@ -59,18 +59,18 @@ size_t Stack_Array_Bsize(const Stack *stack);
  * Stack_Contain_Point() returns TRUE if (<x>, <y>, <z>) is within the bounding
  * box of <stack>.
  */
-BOOL Stack_Contain_Point(const Stack *stack, int x, int y, int z);
+_BOOL_ Stack_Contain_Point(const Stack *stack, int x, int y, int z);
 
 /**@brief Test if a stack is empty.
  *
  * Stack_Is_Empty() returns TURE if \a stack is not empty, otherwise it returns
  * FALSE. NULL is considered as non-empty.
  */
-BOOL Stack_Is_Empty(const Stack *stack);
+_BOOL_ Stack_Is_Empty(const Stack *stack);
 
 /**@} */
 
-BOOL Stack_Is_Dark(const Stack *stack);
+_BOOL_ Stack_Is_Dark(const Stack *stack);
 
 __END_DECLS
 
