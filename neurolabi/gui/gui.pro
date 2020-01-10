@@ -600,8 +600,6 @@ HEADERS += mainwindow.h \
     protocols/todoreviewinputdialog.h \
     protocols/orphanlinkprotocol.h \
     protocols/orphanlinkinputdialog.h \
-    protocols/protocolassignmentclient.h \
-    protocols/protocolassignmenturl.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -1117,8 +1115,6 @@ SOURCES += main.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/orphanlinkprotocol.cpp \
     protocols/orphanlinkinputdialog.cpp \
-    protocols/protocolassignmentclient.cpp \
-    protocols/protocolassignmenturl.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
