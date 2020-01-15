@@ -307,6 +307,7 @@ HEADERS += mainwindow.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
     dialogs/neuprintdatasetdialog.h \
+    protocols/protocolchooseassignmentdialog.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -599,7 +600,6 @@ HEADERS += mainwindow.h \
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
     protocols/orphanlinkprotocol.h \
-    protocols/orphanlinkinputdialog.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -773,6 +773,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdviddialog.ui \
     dialogs/flyembodyfilterdialog.ui \
     protocols/protocolassignmentdialog.ui \
+    protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
@@ -803,7 +804,6 @@ FORMS += dialogs/settingdialog.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/orphanlinkprotocol.ui \
-    protocols/orphanlinkinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
@@ -844,6 +844,7 @@ SOURCES += main.cpp \
     protocols/protocolassignmentclient.cpp \
     protocols/protocolassignmenttask.cpp \
     protocols/protocolassignmenturl.cpp \
+    protocols/protocolchooseassignmentdialog.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
@@ -1114,7 +1115,6 @@ SOURCES += main.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/orphanlinkprotocol.cpp \
-    protocols/orphanlinkinputdialog.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \

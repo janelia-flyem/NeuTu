@@ -2,6 +2,7 @@
 #define PROTOCOLASSIGNMENTTASK_H
 
 #include <QJsonObject>
+#include <QJsonValue>
 
 class ProtocolAssignmentTask
 {
@@ -18,6 +19,12 @@ public:
     QString disposition;
     QString start_date;
     QString completion_date;
+
+    bool has(QString key);
+    QJsonValue get(QString key);
+
+private:
+    QJsonObject m_data;
 };
 
 #endif // PROTOCOLASSIGNMENTTASK_H

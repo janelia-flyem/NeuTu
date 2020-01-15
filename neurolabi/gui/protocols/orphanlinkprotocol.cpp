@@ -6,7 +6,7 @@
 
 #include <QMessageBox>
 
-#include "orphanlinkinputdialog.h"
+#include "protocolchooseassignmentdialog.h"
 
 #include "zjsonparser.h"
 
@@ -36,44 +36,35 @@ const int OrphanLinkProtocol::fileVersion = 1;
 
 bool OrphanLinkProtocol::initialize() {
 
-    // Qt really really wants network calls to be asynchronous, which is a real pain
-    //  for me;
-
-
-    QMap<QString, int> projects = m_client.getProjectsForProtocol(ProtocolAssignmentClient::ORPHAN_LINK);
-
-    if (projects.size() == 0) {
-        showError("No projects!", "No projects were found for the orphan link protocol!");
+    // the protocol is not in the business of generating or starting assignments; that's the
+    //  responsibility of the ProtocolAssignmentDialog (green inbox icon); we grab the started
+    //  assignments and have the user pick an appropriate one for this protocol
+    QList<ProtocolAssignment> assignments;
+    for (ProtocolAssignment a: m_client.getStartedAssignments()) {
+        if (a.protocol == "orphan_link") {
+            assignments << a;
+        }
+    }
+    if (assignments.size() == 0) {
+        showError("No assignments!", "There are no started assignments for this protocol!");
         return false;
     }
 
-    OrphanLinkInputDialog inputDialog(QStringList(projects.keys()));
-    int ans = inputDialog.exec();
+    ProtocolChooseAssignmentDialog dialog(assignments);
+    int ans = dialog.exec();
     if (ans == QDialog::Rejected) {
         return false;
     }
-
-
-    // get the user's chosen project; generate the assignment and start it
-    QString projectName = inputDialog.getProject();
-
-
-    int assignmentID = m_client.generateAssignment(projectName);
-
-    // what's the error condition?  ID < 0?
-    if (assignmentID <= 0) {
-        showError("Assignment generation failed!", "Could not generate an assignment for project " + projectName);
+    ProtocolAssignment assignment = dialog.getAssignment();
+    if (assignment.id == -1) {
+        showError("No chosen assignment!", "You didn't choose an assignment!");
         return false;
     }
 
 
-    bool status = m_client.startAssignment(assignmentID);
+    // testing
+    return false;
 
-
-    if (!status) {
-        showError("Assignment start failed!", "Assigment ID " + QString::number(assignmentID) + " did not start correctly!");
-        return false;
-    }
 
 
     // get all the tasks?  or just the number of tasks and the next one?  not

@@ -5,9 +5,9 @@
  * the assignment manager; all the actual functionality is
  * in the PAClient
  *
- * this class only contains a useful subset of the data fields!
- * many fields are omitted, especially those that can be found in
- * the task's assignment
+ * this class only provides a useful subset of the data fields
+ * as class members; the rest, many of which may vary depending on
+ * the protocol, must be accessed from the data json object
  */
 ProtocolAssignmentTask::ProtocolAssignmentTask(QJsonObject data)
 {
@@ -42,6 +42,16 @@ ProtocolAssignmentTask::ProtocolAssignmentTask(QJsonObject data)
         completion_date = "";
     }
 
+    // keep all the data
+    m_data = data;
+}
+
+bool ProtocolAssignmentTask::has(QString key) {
+    return m_data.contains(key);
+}
+
+QJsonValue ProtocolAssignmentTask::get(QString key) {
+    return m_data[key];
 }
 
 const QString ProtocolAssignmentTask::DISPOSITION_SKIPPED = "Skipped";
