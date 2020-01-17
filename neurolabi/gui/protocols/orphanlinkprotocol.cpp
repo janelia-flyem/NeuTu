@@ -7,6 +7,7 @@
 #include <QMessageBox>
 
 #include "protocolchooseassignmentdialog.h"
+#include "protocolassignment.h"
 
 #include "zjsonparser.h"
 
@@ -31,7 +32,8 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 
 // constants
 const std::string OrphanLinkProtocol::KEY_VERSION = "version";
-const std::string OrphanLinkProtocol::KEY_PARAMETERS = "parameters";
+const std::string OrphanLinkProtocol::KEY_ASSIGNMENT_ID = "assignment ID";
+const std::string OrphanLinkProtocol::KEY_COMMENTS = "comments";
 const int OrphanLinkProtocol::fileVersion = 1;
 
 bool OrphanLinkProtocol::initialize() {
@@ -61,23 +63,58 @@ bool OrphanLinkProtocol::initialize() {
         return false;
     }
 
-
-    // testing
-    return false;
+    m_assignmentID = assignment.id;
 
 
+    // save state and start work
+    saveState();
 
-    // get all the tasks?  or just the number of tasks and the next one?  not
-    //  clear what we intend at this point
+    loadTasks();
+    updateTable();
+    updateLabels();
 
-    // init UI
+    // onFirstButton();
 
-
-    // advance to first task
 
 
 
     return true;
+}
+
+void OrphanLinkProtocol::updateTable() {
+
+    // should tasks be sorted first, or should we just hook up a sorter and let the user have a say?
+    // probably ought to do it right...but note it's not so easy, if we also have "go to first
+    //  pending task", right?  maybe just sort by ID initially and force that order?
+
+
+
+}
+
+void OrphanLinkProtocol::updateLabels() {
+    updateCurrentLabel();
+    updateProgressLabel();
+}
+
+void OrphanLinkProtocol::updateCurrentLabel() {
+
+
+}
+
+void OrphanLinkProtocol::updateProgressLabel() {
+    int nComplete = 0;
+    for (ProtocolAssignmentTask task: m_tasks) {
+        if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+            nComplete++;
+        }
+    }
+    float percent = 100 * float(nComplete) / m_tasks.size();
+    ui->progressLabel->setText(QString("%1/%2 (%3%)").arg(nComplete).arg(m_tasks.size()).arg(percent, 1, 'f', 1));
+}
+
+void OrphanLinkProtocol::loadTasks() {
+    ProtocolAssignment assignment = m_client.getAssignment(m_assignmentID);
+    m_tasks = m_client.getAssignmentTasks(assignment);
 }
 
 void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
@@ -101,17 +138,25 @@ void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
     // convert old versions to current version here, when it becomes necessary
 
 
-    // load data here
-
-
-
+    // load data here; assignment ID and comments
+    m_assignmentID = ZJsonParser::integerValue(data[KEY_ASSIGNMENT_ID.c_str()]);
+    ZJsonObject comments(data.value(KEY_COMMENTS.c_str()));
+    for (std::string key: comments.getAllKey()) {
+        int taskID = std::stoi(key);
+        m_comments[taskID] = QString::fromStdString(ZJsonParser::stringValue(comments[key.c_str()]));
+    }
 
 
     // if, in the future, you need to update to a new save version,
-    //  remember to do a save here
+    //  remember to do a saveState() here
 
 
     // start work
+    loadTasks();
+    updateTable();
+    updateLabels();
+
+    // onFirstButton();
 
 }
 
@@ -121,12 +166,13 @@ void OrphanLinkProtocol::saveState() {
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), fileVersion);
 
-
-
-
-
-
-
+    // only assignment ID and comments right now
+    data.setEntry(KEY_ASSIGNMENT_ID.c_str(), m_assignmentID);
+    ZJsonObject comments;
+    for (int taskID: m_comments.keys()) {
+        comments.setEntry(std::to_string(taskID).c_str(), m_comments[taskID].toStdString().c_str());
+    }
+    data.setEntry(KEY_COMMENTS.c_str(), comments);
 
     emit requestSaveProtocol(data);
 }

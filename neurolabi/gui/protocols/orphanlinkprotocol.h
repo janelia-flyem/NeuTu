@@ -5,6 +5,7 @@
 
 #include "protocoldialog.h"
 #include "protocolassignmentclient.h"
+#include "protocolassignmenttask.h"
 
 #include "zjsonobject.h"
 
@@ -35,14 +36,27 @@ private slots:
 
 private:
     static const std::string KEY_VERSION;
-    static const std::string KEY_PARAMETERS;
+    static const std::string KEY_ASSIGNMENT_ID;
+    static const std::string KEY_COMMENTS;
+
     static const int fileVersion;
+
+    Ui::OrphanLinkProtocol *ui;
+    ProtocolAssignmentClient m_client;
+
+    int m_assignmentID;
+    QMap<int, QString> m_comments;
+    QList<ProtocolAssignmentTask> m_tasks;
 
     void saveState();
     void showError(QString title, QString message);
 
-    Ui::OrphanLinkProtocol *ui;
-    ProtocolAssignmentClient m_client;
+    void loadTasks();
+
+    void updateTable();
+    void updateLabels();
+    void updateCurrentLabel();
+    void updateProgressLabel();
 
 };
 
