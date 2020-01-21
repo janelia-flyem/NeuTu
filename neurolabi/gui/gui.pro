@@ -302,6 +302,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
     dialogs/neuprintdatasetdialog.h \
+    dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -474,7 +475,6 @@ HEADERS += mainwindow.h \
     dialogs/zspinboxdialog.h \
     zbuttonbox.h \
     zkeyeventswcmapper.h \
-    dialogs/zflyemroidialog.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
     dialogs/shapepaperdialog.h \
@@ -768,7 +768,6 @@ FORMS += dialogs/settingdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
-    dialogs/zflyemroidialog.ui \
     newprojectmainwindow.ui \
     dialogs/shapepaperdialog.ui \
     dialogs/dvidoperatedialog.ui \
@@ -828,6 +827,7 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     dialogs/neuprintdatasetdialog.cpp \
+    dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
@@ -978,7 +978,6 @@ SOURCES += main.cpp \
     dialogs/zspinboxdialog.cpp \
     zbuttonbox.cpp \
     zkeyeventswcmapper.cpp \
-    dialogs/zflyemroidialog.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \

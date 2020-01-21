@@ -356,9 +356,11 @@ MainWindow::~MainWindow()
   }
 */
 
+  /*
   if (m_roiDlg != NULL) {
     m_roiDlg->clear();
   }
+  */
 
   /*
   if (m_mergeBodyDlg != NULL) {
@@ -443,7 +445,7 @@ void MainWindow::initDialog()
 
 
   m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
-  m_roiDlg = new ZFlyEmRoiDialog(this);
+//  m_roiDlg = new ZFlyEmRoiDialog(this);
   m_shapePaperDlg = new ShapePaperDialog(this);
 
   m_segmentationDlg = new ZSegmentationProjectDialog(this);
@@ -476,8 +478,8 @@ void MainWindow::initDialog()
 //        getSettings().value("BodyMergeProjectGeometry").toByteArray());
 //  m_bodySplitProjectDialog->restoreGeometry(
 //          getSettings().value("BodySplitProjectGeometry").toByteArray());
-  m_roiDlg->restoreGeometry(
-        getSettings().value("RoiProjectGeometry").toByteArray());
+//  m_roiDlg->restoreGeometry(
+//        getSettings().value("RoiProjectGeometry").toByteArray());
   m_shapePaperDlg->restoreGeometry(
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
@@ -1362,11 +1364,13 @@ bool MainWindow::okToContinue()
     }
   }
 
+  /*
   if (m_roiDlg->isVisible()) {
     if (!m_roiDlg->close()) {
       return false;
     }
   }
+  */
 
   return true;
 }
@@ -2164,8 +2168,8 @@ void MainWindow::writeSettings()
 //        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
 //  getSettings().setValue(
 //        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
-  getSettings().setValue(
-        "RoiProjectGeometry", m_roiDlg->saveGeometry());
+//  getSettings().setValue(
+//        "RoiProjectGeometry", m_roiDlg->saveGeometry());
   getSettings().setValue("ShapePaperDialogGeometry",
                          m_shapePaperDlg->saveGeometry());
 #endif

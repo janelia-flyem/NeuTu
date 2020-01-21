@@ -95,5 +95,6 @@
 #include "test/neutusetest.h"
 #include "test/flyemutilitiestest.h"
 #include "test/zdvidtargettest.h"
+#include "test/zdvidtargetfactorytest.h"
 
 #endif // ZTESTALL_H

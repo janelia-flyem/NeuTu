@@ -26479,6 +26479,36 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZStack grayscale;
+  grayscale.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.tif");
+
+  ZStack segmentation;
+  segmentation.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1/bin.tif");
+
+  uint8_t *array = segmentation.array8();
+  for (size_t i = 0; i < segmentation.getVoxelNumber(); ++i) {
+    if (array[i] > 0) {
+      array[i] = 255;
+    }
+  }
+
+  ZStack *cgray = ZStackFactory::MakeZeroStack(GREY, grayscale.getBoundBox(), 3);
+  ZStack *cmask = ZStackFactory::MakeZeroStack(GREY, segmentation.getBoundBox(), 3);
+
+  for (int c = 0; c < 3; ++c) {
+    cgray->copyValueFrom(grayscale.array8(), grayscale.getVoxelNumber(), c);
+  }
+  cmask->copyValueFrom(segmentation.array8(), segmentation.getVoxelNumber(), 0);
+
+  ZStackBlender blender;
+  blender.setBlendingMode(ZStackBlender::BLEND_NO_BLACK);
+  ZStack *out = blender.blend(*cgray, *cmask, 0.5);
+
+  out->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+
 #if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "0667", 8700);
@@ -30766,7 +30796,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target = dvid::MakeTargetFromUrlSpec(
         "http://127.0.0.1:1600?uuid=4280&segmentation=segmentation&admintoken=test");
   ZDvidWriter writer;

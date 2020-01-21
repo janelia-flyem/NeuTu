@@ -19,6 +19,7 @@ TEST(ZDvidTarget, Basic)
     ASSERT_FALSE(target.hasSegmentation());
     ASSERT_FALSE(target.hasLabelMapData());
     ASSERT_TRUE(target.getSkeletonName().empty());
+    ASSERT_TRUE(target.isValid());
 
     target.setSegmentationName("test");
     ASSERT_EQ("test", target.getSegmentationName());
@@ -34,6 +35,9 @@ TEST(ZDvidTarget, Basic)
     ASSERT_EQ("test_annotations", target.getBodyAnnotationName());
     ASSERT_EQ("test_meshes", target.getMeshName());
 
+    ASSERT_EQ(dvid::ENodeStatus::OFFLINE, target.getNodeStatus());
+    target.setNodeStatus(dvid::ENodeStatus::NORMAL);
+    ASSERT_EQ(dvid::ENodeStatus::NORMAL, target.getNodeStatus());
 
   }
 
@@ -50,6 +54,7 @@ TEST(ZDvidTarget, Basic)
     ASSERT_TRUE(ZDvidTarget::Test());
 
     ZDvidTarget target;
+    ASSERT_FALSE(target.isValid());
     target.setServer("http://emdata2.int.janelia.org:9000");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(9000, target.getPort());

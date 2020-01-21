@@ -36,7 +36,7 @@ public:
    *
    * The old settings will be cleared after the call.
    *
-   * \param sourceString Format: http:host:port:node:segmentation_name.
+   * \param sourceString Format: http:host:port:node:segmentation_name:grayscale.
    */
   void setFromSourceString(const std::string &sourceString);
 
@@ -119,13 +119,13 @@ public:
   std::string getGrayscaleSourceString() const;
 
   /*!
-   * \brief getBodyPath
+   * \brief Get the API path of a given body
    *
    * The functions does not check if a body exists.
    *
    * \return The path of a certain body.
    */
-  std::string getBodyPath(uint64_t bodyId) const;
+//  std::string getBodyPath(uint64_t bodyId) const;
 
   /*!
    * \brief Test if the target is valid
@@ -173,10 +173,12 @@ public:
     m_localFolder = folder;
   }
 
+  /*
   std::string getLocalLowResGrayScalePath(
       int xintv, int yintv, int zintv) const;
   std::string getLocalLowResGrayScalePath(
       int xintv, int yintv, int zintv, int z) const;
+*/
 
   inline int getBgValue() const {
     return m_bgValue;

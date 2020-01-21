@@ -86,8 +86,8 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix, int uuidBrief) con
     }
   }
 */
-  if (!m_bodyLabelName.empty()) {
-    source += ":" + m_bodyLabelName;
+  if (!getBodyLabelName().empty()) {
+    source += ":" + getBodyLabelName();
   }
 
   return source;
@@ -362,10 +362,12 @@ dvid::ENodeStatus ZDvidTarget::getNodeStatus() const
   return m_nodeStatus;
 }
 
+/*
 std::string ZDvidTarget::getBodyPath(uint64_t bodyId) const
 {
   return getSourceString() + ":" + ZString::num2str(bodyId);
 }
+*/
 
 namespace {
 template<typename T>
@@ -716,6 +718,7 @@ std::string ZDvidTarget::getUrl() const
   return m_node.getUrl();
 }
 
+/*
 std::string ZDvidTarget::getLocalLowResGrayScalePath(
     int xintv, int yintv, int zintv) const
 {
@@ -750,6 +753,7 @@ std::string ZDvidTarget::getLocalLowResGrayScalePath(
 
   return path;
 }
+*/
 
 bool ZDvidTarget::isInferred() const
 {
