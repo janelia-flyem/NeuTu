@@ -2,6 +2,9 @@
 #define ORPHANLINKPROTOCOL_H
 
 #include <QDialog>
+#include <QStandardItemModel>
+#include <QModelIndex>
+#include <QSortFilterProxyModel>
 
 #include "protocoldialog.h"
 #include "protocolassignmentclient.h"
@@ -33,6 +36,7 @@ public slots:
 private slots:
     void onExitButton();
     void onCompleteButton();
+    void onCommentButton();
 
 private:
     static const std::string KEY_VERSION;
@@ -41,7 +45,16 @@ private:
 
     static const int fileVersion;
 
+    enum TableColumns {
+        TASK_ID_COLUMN,
+        BODY_ID_COLUMN,
+        STATUS_COLUMN,
+        COMMENT_COLUMN
+    };
+
     Ui::OrphanLinkProtocol *ui;
+    QStandardItemModel * m_model;
+    QSortFilterProxyModel * m_proxy;
     ProtocolAssignmentClient m_client;
 
     int m_assignmentID;
@@ -52,7 +65,9 @@ private:
     void showError(QString title, QString message);
 
     void loadTasks();
+    static bool compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2);
 
+    void setHeaders(QStandardItemModel *model);
     void updateTable();
     void updateLabels();
     void updateCurrentLabel();

@@ -19,14 +19,24 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 
 
     // currently hard-coded, but we expect to get from some config source later
-
     // must not end with / character!  enforce that when we un-hard-code it
     m_client.setServer("http://flyem-assignment.int.janelia.org");
+
+
+    m_model = new QStandardItemModel(0, 3, ui->tableView);
+    // setHeaders(m_model);
+
+    m_proxy = new QSortFilterProxyModel(this);
+    m_proxy->setSourceModel(m_model);
+    ui->tableView->setModel(m_proxy);
+    m_proxy->setFilterKeyColumn(TASK_ID_COLUMN);
+
 
 
     // UI connections
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+    connect(ui->commentButton, SIGNAL(clicked(bool)), this, SLOT(onCommentButton()));
 
 }
 
@@ -82,13 +92,32 @@ bool OrphanLinkProtocol::initialize() {
 }
 
 void OrphanLinkProtocol::updateTable() {
+    m_model->clear();
+    setHeaders(m_model);
 
-    // should tasks be sorted first, or should we just hook up a sorter and let the user have a say?
-    // probably ought to do it right...but note it's not so easy, if we also have "go to first
-    //  pending task", right?  maybe just sort by ID initially and force that order?
+    int row = 0;
+    for (ProtocolAssignmentTask task: m_tasks) {
+        QStandardItem * taskIDItem = new QStandardItem();
+        taskIDItem->setData(task.id, Qt::DisplayRole);
+        m_model->setItem(row, TASK_ID_COLUMN, taskIDItem);
 
+        // body ID: for orphan link protocol, the body ID is stored in "key_text":
+        QStandardItem * bodyIDItem = new QStandardItem();
+        bodyIDItem->setData(task.get("key_text"), Qt::DisplayRole);
+        m_model->setItem(row, BODY_ID_COLUMN, bodyIDItem);
 
+        QStandardItem * statusItem = new QStandardItem();
+        statusItem->setData(task.disposition, Qt::DisplayRole);
+        m_model->setItem(row, STATUS_COLUMN, statusItem);
 
+        QStandardItem * commentItem = new QStandardItem();
+        commentItem->setData(m_comments[task.id], Qt::DisplayRole);
+        m_model->setItem(row, COMMENT_COLUMN, commentItem);
+
+        row++;
+    }
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(COMMENT_COLUMN, QHeaderView::Stretch);
 }
 
 void OrphanLinkProtocol::updateLabels() {
@@ -115,6 +144,12 @@ void OrphanLinkProtocol::updateProgressLabel() {
 void OrphanLinkProtocol::loadTasks() {
     ProtocolAssignment assignment = m_client.getAssignment(m_assignmentID);
     m_tasks = m_client.getAssignmentTasks(assignment);
+    std::sort(m_tasks.begin(), m_tasks.end(), compareTasks);
+}
+
+bool OrphanLinkProtocol::compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2) {
+    // compare by ID:
+    return task1.id < task2.id;
 }
 
 void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
@@ -194,6 +229,22 @@ void OrphanLinkProtocol::onCompleteButton() {
         // saveState();
         emit protocolCompleting();
     }
+}
+
+void OrphanLinkProtocol::onCommentButton() {
+
+
+    // m_comment[selected task] = ui->commentEntry->text();
+
+    // saveState();
+
+}
+
+void OrphanLinkProtocol::setHeaders(QStandardItemModel *model) {
+    model->setHorizontalHeaderItem(TASK_ID_COLUMN, new QStandardItem(QString("Task ID")));
+    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
+    model->setHorizontalHeaderItem(STATUS_COLUMN, new QStandardItem(QString("Status")));
+    model->setHorizontalHeaderItem(COMMENT_COLUMN, new QStandardItem(QString("Comment")));
 }
 
 /*
