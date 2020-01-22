@@ -38,12 +38,15 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->commentButton, SIGNAL(clicked(bool)), this, SLOT(onCommentButton()));
 
+    connect(ui->tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
+
 }
 
 // constants
 const std::string OrphanLinkProtocol::KEY_VERSION = "version";
 const std::string OrphanLinkProtocol::KEY_ASSIGNMENT_ID = "assignment ID";
 const std::string OrphanLinkProtocol::KEY_COMMENTS = "comments";
+const QString OrphanLinkProtocol::TASK_KEY_BODY_ID = "key_text";
 const int OrphanLinkProtocol::fileVersion = 1;
 
 bool OrphanLinkProtocol::initialize() {
@@ -91,6 +94,36 @@ bool OrphanLinkProtocol::initialize() {
     return true;
 }
 
+void OrphanLinkProtocol::onCommentButton() {
+
+
+    // m_comment[selected task] = ui->commentEntry->text();
+
+    // saveState();
+
+}
+
+void OrphanLinkProtocol::onClickedTable(QModelIndex index) {
+    if (hasSelection()) {
+        updateCurrentBodyLabel();
+    }
+}
+
+bool OrphanLinkProtocol::hasSelection() {
+    return ui->tableView->selectionModel()->hasSelection();
+}
+
+ProtocolAssignmentTask OrphanLinkProtocol::getSelectedTask() {
+    QModelIndex index = ui->tableView->selectionModel()->currentIndex();
+    if (index.isValid()) {
+        QModelIndex modelIndex = m_proxy->mapToSource(index);
+        return m_tasks[modelIndex.row()];
+    } else {
+        QJsonObject empty;
+        return ProtocolAssignmentTask(empty);
+    }
+}
+
 void OrphanLinkProtocol::updateTable() {
     m_model->clear();
     setHeaders(m_model);
@@ -101,9 +134,8 @@ void OrphanLinkProtocol::updateTable() {
         taskIDItem->setData(task.id, Qt::DisplayRole);
         m_model->setItem(row, TASK_ID_COLUMN, taskIDItem);
 
-        // body ID: for orphan link protocol, the body ID is stored in "key_text":
         QStandardItem * bodyIDItem = new QStandardItem();
-        bodyIDItem->setData(task.get("key_text"), Qt::DisplayRole);
+        bodyIDItem->setData(task.get(TASK_KEY_BODY_ID), Qt::DisplayRole);
         m_model->setItem(row, BODY_ID_COLUMN, bodyIDItem);
 
         QStandardItem * statusItem = new QStandardItem();
@@ -121,13 +153,13 @@ void OrphanLinkProtocol::updateTable() {
 }
 
 void OrphanLinkProtocol::updateLabels() {
-    updateCurrentLabel();
+    updateCurrentBodyLabel();
     updateProgressLabel();
 }
 
-void OrphanLinkProtocol::updateCurrentLabel() {
-
-
+void OrphanLinkProtocol::updateCurrentBodyLabel() {
+    ProtocolAssignmentTask task = getSelectedTask();
+    ui->currentBodyLabel->setText(task.get(TASK_KEY_BODY_ID).toString());
 }
 
 void OrphanLinkProtocol::updateProgressLabel() {
@@ -229,15 +261,6 @@ void OrphanLinkProtocol::onCompleteButton() {
         // saveState();
         emit protocolCompleting();
     }
-}
-
-void OrphanLinkProtocol::onCommentButton() {
-
-
-    // m_comment[selected task] = ui->commentEntry->text();
-
-    // saveState();
-
 }
 
 void OrphanLinkProtocol::setHeaders(QStandardItemModel *model) {

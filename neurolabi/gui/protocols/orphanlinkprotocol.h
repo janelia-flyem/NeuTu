@@ -37,11 +37,13 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onCommentButton();
+    void onClickedTable(QModelIndex index);
 
 private:
     static const std::string KEY_VERSION;
     static const std::string KEY_ASSIGNMENT_ID;
     static const std::string KEY_COMMENTS;
+    static const QString TASK_KEY_BODY_ID;
 
     static const int fileVersion;
 
@@ -67,10 +69,13 @@ private:
     void loadTasks();
     static bool compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2);
 
+    bool hasSelection();
+    ProtocolAssignmentTask getSelectedTask();
+
     void setHeaders(QStandardItemModel *model);
     void updateTable();
     void updateLabels();
-    void updateCurrentLabel();
+    void updateCurrentBodyLabel();
     void updateProgressLabel();
 
 };
