@@ -208,7 +208,7 @@ void <2T>_Copy_Block(<2T> *des, const dim_type des_offset[], const <2T> *src,
 
   ndim_t i;
   dim_t state[MAX_DIM];
-  for (i = 0; i < MAX_DIM; i++) {
+  for (i = 0; i < src->ndim; i++) {
     state[i] = src_offset[i];
   }
 

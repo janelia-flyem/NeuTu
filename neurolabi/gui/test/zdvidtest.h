@@ -90,7 +90,7 @@ TEST(ZDvidTest, Util)
         "http://emdata4.int.janelia.org:8900?uuid=52a1&"
         "segmentation=seg&grayscale=gs&admintoken=mytoken");
 
-  ASSERT_EQ("http:emdata4.int.janelia.org:8900:52a1", target.getSourceString());
+  ASSERT_EQ("http:emdata4.int.janelia.org:8900:52a1:seg", target.getSourceString());
   ASSERT_EQ("seg", target.getSegmentationName());
   ASSERT_EQ("gs", target.getGrayScaleName());
   ASSERT_EQ("mytoken", target.getAdminToken());

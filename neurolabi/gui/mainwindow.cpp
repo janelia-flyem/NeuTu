@@ -8166,3 +8166,11 @@ void MainWindow::on_actionUpdate_Body_Info_triggered()
 {
   runNeuTuPaper();
 }
+
+void MainWindow::on_actionSubtract_Background_Adaptive_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame) {
+    frame->subtractBackgroundAdaptive();
+  }
+}

@@ -233,6 +233,19 @@ void ZNeuronTracer::init()
   m_greyOffset = 0.0;
   m_preferredSignalChannel = 0;
 
+  _preprocess = [this](Stack *stack) {
+    if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
+      double maxValue = C_Stack::max(stack);
+      Stack_Csub(stack, maxValue);
+      m_diag.setInfo("background", "bright");
+    }
+
+    int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+    m_diag.setInfo("bgsub", bgsub);
+
+    m_diag.save(stack, "bgsub");
+  };
+
   m_config = ZNeuronTracerConfig::getInstance();
 
   configure();
@@ -357,6 +370,15 @@ void ZNeuronTracer::setIntensityField(ZStack *stack)
   m_stack = stack;
 }
 
+void ZNeuronTracer::bindSource(ZStack *stack)
+{
+  if (m_stack) {
+    throw ZNeuronTracerException("The tracer has already been bound");
+  }
+
+  m_stack = stack;
+}
+
 void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
 {
   if (m_traceWorkspace != NULL) {
@@ -380,17 +402,40 @@ void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
   }
 }
 
+void ZNeuronTracer::addTraceMask(const Stack *stack)
+{
+  if (stack && m_traceWorkspace) {
+    if (C_Stack::HasSameSize(getIntensityData(), stack)) {
+      if (m_traceWorkspace->trace_mask == NULL) {
+        initTraceMask(true);
+      }
+      size_t offset = C_Stack::voxelNumber(stack);
+      uint8_t *srcArray = C_Stack::array8(stack);
+      uint8_t *dstArray = C_Stack::array8(m_traceWorkspace->trace_mask);
+      for (size_t i = 0; i < offset; ++i) {
+        if (dstArray[i] == 0) {
+          dstArray[i] = srcArray[i];
+        }
+      }
+    } else {
+      throw ZNeuronTracerException("Unable to add mask with a wrong size.");
+    }
+  }
+}
+
 void ZNeuronTracer::initTraceMask(bool clearing)
 {
-  if (m_traceWorkspace->trace_mask == NULL) {
-    m_traceWorkspace->trace_mask =
-        C_Stack::make(GREY16, getStack()->width(), getStack()->height(),
-                      getStack()->depth());
-    clearing = true;
-  }
+  if (getStack()) {
+    if (getTraceWorkspace()->trace_mask == NULL) {
+      getTraceWorkspace()->trace_mask =
+          C_Stack::make(GREY16, getStack()->width(), getStack()->height(),
+                        getStack()->depth());
+      clearing = true;
+    }
 
-  if (clearing) {
-    Zero_Stack(m_traceWorkspace->trace_mask);
+    if (clearing) {
+      Zero_Stack(getTraceWorkspace()->trace_mask);
+    }
   }
 }
 
@@ -1275,6 +1320,11 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
+ZSwcTree* ZNeuronTracer::trace()
+{
+  return trace(m_stack, true);
+}
+
 ZSwcTree* ZNeuronTracer::trace(const ZStack *stack, bool doResampleAfterTracing)
 {
   ZSwcTree *tree = NULL;
@@ -1522,51 +1572,42 @@ Stack* ZNeuronTracer::computeSeedMask(Stack *stack)
   return mask;
 }
 
+Stack* ZNeuronTracer::getTraceMask() const
+{
+  if (m_traceWorkspace) {
+    if (m_traceWorkspace->trace_mask) {
+      return m_traceWorkspace->trace_mask;
+    }
+  }
+
+  return nullptr;
+}
+
+bool ZNeuronTracer::traceMasked(int x, int y, int z) const
+{
+  Stack *traceMask = getTraceMask();
+  if (traceMask) {
+    return (C_Stack::value(traceMask, x, y, z) > 0);
+  }
+
+  return false;
+}
+
 int ZNeuronTracer::getMinSeedObjSize(double seedDensity) const
 {
   int s = 0;
 
   if (m_screeningSeed) {
-    if (seedDensity > 0.00015) {
-      s = 125;
-    } else if (seedDensity > 0.00005) {
-      s = 64;
-    }
+//    if (seedDensity > 0.00005) { //>1 seed in every 20x20x20 block
+    s = int(seedDensity * 1000000); //heuristic threshold estimate
+//    }
   }
 
   return s;
 }
 
-ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
+Stack* ZNeuronTracer::makeMask(const Stack *stack)
 {
-  startProgress();
-
-  m_diag.setDir(getDiagnosisDir());
-//  ZNeuronTracer::Diagnosis diag(getDiagnosisDir());
-  m_diag.saveConfig(*this);
-
-  ZSwcTree *tree = NULL;
-
-  initTraceMask(false);
-
-  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
-    double maxValue = C_Stack::max(stack);
-    Stack_Csub(stack, maxValue);
-    m_diag.setInfo("background", "bright");
-  }
-
-  int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
-  m_diag.setInfo("bgsub", bgsub);
-
-  m_diag.save(stack, "bgsub");
-#ifdef _DEBUG_2
-  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
-#endif
-
-  //Extract seeds
-  //First mask
-  log("Binarizing ...");
-
   /* <bw> allocated */
   Stack *bw = binarize(stack);
   C_Stack::translate(bw, GREY, 1);
@@ -1622,6 +1663,55 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     C_Stack::kill(mask2);
     mask2 = NULL;
   }
+  advanceProgress(0.05);
+
+  return mask;
+}
+
+ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
+{
+  startProgress();
+
+  m_diag.setDir(getDiagnosisDir());
+//  ZNeuronTracer::Diagnosis diag(getDiagnosisDir());
+  m_diag.saveConfig(*this);
+
+  ZSwcTree *tree = NULL;
+
+  initTraceMask(false);
+
+  if (_preprocess) {
+    _preprocess(stack);
+  }
+
+  /*
+  if (m_backgroundType == neutu::EImageBackground::BRIGHT) {
+    double maxValue = C_Stack::max(stack);
+    Stack_Csub(stack, maxValue);
+    m_diag.setInfo("background", "bright");
+  }
+
+  int bgsub = ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+  m_diag.setInfo("bgsub", bgsub);
+
+  m_diag.save(stack, "bgsub");
+  */
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
+
+  //Extract seeds
+  //First mask
+  log("Binarizing ...");
+
+  Stack *mask = nullptr;
+
+  if (_makeMask) {
+    mask = _makeMask(stack);
+  } else {
+    mask = makeMask(stack);
+  }
+
   advanceProgress(0.05);
 
   //Trace each seed
@@ -1861,6 +1951,24 @@ void ZNeuronTracer::prepareTraceScoreThreshold(ETracingMode mode)
   }
 }
 
+Trace_Workspace* ZNeuronTracer::getTraceWorkspace()
+{
+  if (m_traceWorkspace == nullptr) {
+    initTraceWorkspace(getStack());
+  }
+
+  return m_traceWorkspace;
+}
+
+Connection_Test_Workspace* ZNeuronTracer::getConnectionTestWorkspace()
+{
+  if (m_connWorkspace == nullptr) {
+    initConnectionTestWorkspace();
+  }
+
+  return m_connWorkspace;
+}
+
 void ZNeuronTracer::initTraceWorkspace(Stack *stack)
 {
   m_traceWorkspace =
@@ -1890,12 +1998,17 @@ void ZNeuronTracer::initTraceWorkspace(Stack *stack)
 
 void ZNeuronTracer::initTraceWorkspace(ZStack *stack)
 {
+  if (stack) {
+    initTraceWorkspace(stack->c_stack());
+  }
+  /*
   if (stack == NULL || stack->channelNumber() != 1) {
     Stack *nstack = NULL;
     initTraceWorkspace(nstack);
   } else {
     initTraceWorkspace(stack->c_stack());
   }
+  */
 }
 
 void ZNeuronTracer::updateTraceWorkspaceResolution(

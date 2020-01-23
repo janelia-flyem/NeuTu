@@ -271,6 +271,14 @@ double sum(const Stack *stack);
 int* hist(const Stack *stack);
 
 /*!
+ * \brief Test if two stacks have the same size.
+ *
+ * It returns true iff \a stack1 and \a stack2 are not NULL and they have the
+ * same dimensions.
+ */
+bool HasSameSize(const Stack *stack1, const Stack *stack2);
+
+/*!
  * \brief Get the histogram of a stack.
  *
  * The function computes the histogram of \a stack. It stores the result in

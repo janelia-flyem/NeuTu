@@ -522,7 +522,7 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 //  jsonString.replace(" ", "");
   jsonString.replace("\"", "\"\"\"");
 
-  return jsonString;
+  return std::move(jsonString);
 }
 
 void ZDvidWriter::syncAnnotationToLabel(

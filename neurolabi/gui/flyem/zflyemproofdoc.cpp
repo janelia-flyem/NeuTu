@@ -141,6 +141,15 @@ void ZFlyEmProofDoc::startTimer()
   }
 }
 
+const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+{
+  if (!m_workWriter.good()) {
+    m_workWriter.open(getDvidTarget());
+  }
+
+  return m_workWriter.getDvidReader();
+}
+
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
 {
   if (m_annotationMap.contains(bodyId)) {
@@ -1395,6 +1404,9 @@ void ZFlyEmProofDoc::updateDataConfig()
 {
   m_dataConfig = FlyEmDataReader::ReadDataConfig(getDvidReader());
   m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
+
+  ZJsonObject obj = getDvidReader().readJsonObjectFromKey("neutu_config", "meta");
+  m_meta.loadJsonObject(obj);
 }
 
 const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
@@ -1698,6 +1710,22 @@ bool ZFlyEmProofDoc::test()
   std::cout << slice->isSupervoxel() << std::endl;
 
   return true;
+}
+
+void ZFlyEmProofDoc::trace(const ZPoint &pt)
+{
+  if (!m_tracingHelper.isReady()) {
+    m_tracingHelper.setDocument(this);
+  }
+  m_tracingHelper.trace(pt);
+}
+
+void ZFlyEmProofDoc::testSlot()
+{
+  if (!m_tracingHelper.isReady()) {
+    m_tracingHelper.setDocument(this);
+  }
+  m_tracingHelper.trace(339, 123, 186);
 }
 
 ZDvidLabelSlice* ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
@@ -3004,10 +3032,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     }
     reader = &m_supervoxelWorkReader;
   } else {
-    if (!m_workWriter.good()) {
-      m_workWriter.open(getDvidTarget());
-    }
-    reader = &m_workWriter.getDvidReader();
+    reader = &getWorkReader();
   }
 
   ZArray *array = NULL;

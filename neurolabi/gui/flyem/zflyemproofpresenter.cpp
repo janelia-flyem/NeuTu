@@ -103,6 +103,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SYNAPSE_HLPSD:
       connect(action, SIGNAL(triggered(bool)), this, SLOT(highlightPsd(bool)));
       break;
+    case ZActionFactory::ACTION_TRACE:
+      connect(action, &QAction::triggered, this, &ZFlyEmProofPresenter::trace);
+      break;
     case ZActionFactory::ACTION_ADD_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
       break;
@@ -860,6 +863,15 @@ ZPoint ZFlyEmProofPresenter::getLastMouseReleasePosition(
   ZPoint pt = event.getDataPosition();
 
   return pt;
+}
+
+void ZFlyEmProofPresenter::trace()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::EAction::RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  getCompleteDocument()->trace(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem()

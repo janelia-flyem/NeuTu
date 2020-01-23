@@ -13,7 +13,7 @@
 #include "widgets/zparameterarray.h"
 #include "zfilelist.h"
 #include "zstack.hxx"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zstring.h"
 #include "flyem/zflyemdataframe.h"
 #include "zframefactory.h"

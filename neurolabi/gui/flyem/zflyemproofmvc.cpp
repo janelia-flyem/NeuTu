@@ -3323,6 +3323,11 @@ void ZFlyEmProofMvc::testBodyVis()
   }
 }
 
+void ZFlyEmProofMvc::testSlot()
+{
+  getCompleteDocument()->testSlot();
+}
+
 
 void ZFlyEmProofMvc::testBodyMerge()
 {

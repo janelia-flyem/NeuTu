@@ -20,7 +20,7 @@
 #include "zcurve.h"
 #include "z3dwindow.h"
 #include "zstackfile.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zfiletype.h"
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"
@@ -1552,6 +1552,11 @@ void ZStackFrame::subtractBackground()
   if (m_doc->hasStackData()) {
     m_doc->subtractBackground();
   }
+}
+
+void ZStackFrame::subtractBackgroundAdaptive()
+{
+  m_doc->subtractBackgroundAdaptive();
 }
 
 void ZStackFrame::detachParentFrame()

@@ -323,7 +323,17 @@ int LZW_Decoder(unsigned char *stream, unsigned char *decode)
         code |= ((*byte) >> (8-bit));		\
       }
 
-      READ_CODE
+      { int lo = bit + codelen - 8;		
+        code = (*byte++ & lowbits[bit]) << lo;	
+        if (lo < 8)				
+          bit = lo;				
+        else					
+          { bit = lo-8;				
+            code |= ((*byte++) << bit);		
+          }
+        if (code == LZW_EOI_CODE) break;        
+        code |= ((*byte) >> (8-bit));
+      }
 
       if (code == LZW_EOI_CODE) break;
 

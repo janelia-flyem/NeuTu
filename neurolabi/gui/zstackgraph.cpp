@@ -4,7 +4,6 @@
 
 #include "c_stack.h"
 #include "tz_stack_neighborhood.h"
-#include "tz_darray.h"
 #include "tz_stack_utils.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_graph.h"

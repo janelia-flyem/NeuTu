@@ -2,12 +2,15 @@
 
 #include <cmath>
 
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
+
 #include "common/math.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "geometry/zpointarray.h"
 #include "geometry/zlinesegmentarray.h"
 #include "geometry/zintcuboidface.h"
@@ -17,10 +20,8 @@
 #include "zobject3d.h"
 #include "zobject3dscan.h"
 #include "zstack.hxx"
-#include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
 #include "zclosedcurve.h"
-#include "tz_stack_neighborhood.h"
 #include "zstackfactory.h"
 #include "geometry/zintcuboid.h"
 #include "zlocsegchain.h"

@@ -115,7 +115,7 @@
 #include "widgets/zparameterarray.h"
 #include "zviewproj.h"
 #include "zswcnetwork.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswcbranchingtrunkanalyzer.h"
 #include "flyem/zflyemroiproject.h"
@@ -131,7 +131,6 @@
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
-#include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
 #include "flyem/zflyembodyannotation.h"
@@ -151,7 +150,6 @@
 #include "misc/zmarchingcube.h"
 #include "zxmldoc.h"
 #include "neutubeconfig.h"
-#include "tz_darray.h"
 #include "zhdf5writer.h"
 #include "zmesh.h"
 #include "zmeshio.h"
@@ -30333,6 +30331,14 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("light");
+  ZJsonObject obj;
+  obj.setEntry("tracing", true);
+  writer->writeJson("neutu_config", "meta", obj);
+#endif
+
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   ZObject3dScan obj;
@@ -30657,6 +30663,11 @@ void ZTest::test(MainWindow *host)
   if (s.startsWith("<json>") && s.endsWith("</json>")) {
     std::cout << s.substr(6, s.length() - 13).c_str() << std::endl;
   }
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/tracing/30_18_10.tif");
 #endif
 
 #if 0

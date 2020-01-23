@@ -13,7 +13,7 @@
 #include "c_json.h"
 #include "zlinesegmentobject.h"
 #include "dvid/zdvidannotation.h"
-#include "tz_constant.h"
+//#include "tz_constant.h"
 #include "dvid/zdvidreader.h"
 #include "zvaa3dmarker.h"
 #include "flyem/zflyemmisc.h"

@@ -36,7 +36,6 @@
 #include "tz_voxel_graphics.h"
 #include "tz_stack_sampling.h"
 #include "tz_stack_utils.h"
-#include "tz_darray.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
 #include "tz_local_rpi_neuroseg.h"
@@ -388,7 +387,7 @@ void ZStackDoc::initNeuronTracer()
     LINFO_NLN() << str;
   });
 
-  getNeuronTracer().initTraceWorkspace(getStack());
+//  getNeuronTracer().initTraceWorkspace(getStack());
   getNeuronTracer().initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
@@ -1797,6 +1796,11 @@ void ZStackDoc::loadReaderResult()
 #endif
 
   emit stackLoaded();
+}
+
+bool ZStackDoc::allowingTracing() const
+{
+  return m_meta.allowingTracing();
 }
 
 QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
@@ -5169,6 +5173,20 @@ bool ZStackDoc::subtractBackground()
     ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
     notifyStackModified(false);
     return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::subtractBackgroundAdaptive()
+{
+  if (hasStackData()) {
+    ZStack *mainStack = getStack();
+    if (mainStack != NULL) {
+      ZStackProcessor::SubtractBackgroundAdaptive(mainStack, 5, 3);
+      notifyStackModified(false);
+      return true;
+    }
   }
 
   return false;

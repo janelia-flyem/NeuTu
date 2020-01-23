@@ -117,6 +117,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   ZFlyEmProofDoc *doc = presenter->getCompleteDocument();
 
   ZMenuConfig config;
+
   if (presenter->isSplitOn()) {
     config.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
     config.append(ZActionFactory::ACTION_BODY_CHOP);
@@ -132,6 +133,11 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_SELECT_BODY_IN_RECT);
       config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
     } else {
+      if (doc->allowingTracing()) {
+        config.append(ZActionFactory::ACTION_TRACE);
+      }
+      config.appendSeparator();
+
       std::set<uint64_t> selectedOriginal =
           doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 

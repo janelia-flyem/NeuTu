@@ -1,8 +1,10 @@
 #include "zspinboxdialog.h"
+
+#include <limits>
 #include <QHBoxLayout>
+
 #include "zwidgetfactory.h"
 #include "zbuttonbox.h"
-#include "tz_constant.h"
 
 ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   QDialog(parent), m_isSkipped(false), m_skippedValue(-1)
@@ -17,7 +19,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
 
   m_spinBox = new QSpinBox(this);
   m_spinBox->setMinimum(0);
-  m_spinBox->setMaximum(MAX_INT32);
+  m_spinBox->setMaximum(std::numeric_limits<int32_t>::max());
   m_spinBox->setValue(0);
   spinBoxLayout->addWidget(m_spinBox);
 

@@ -1,11 +1,12 @@
 #include "zswcpruner.h"
+
+#include "neurolabi/zdoublevector.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zswcbranch.h"
 #include "zswcforest.h"
 #include "zswcdisttrunkanalyzer.h"
-#include "zdoublevector.h"
 
 ZSwcPruner::ZSwcPruner() : m_minLength(100.0), m_removingOrphan(false)
 {

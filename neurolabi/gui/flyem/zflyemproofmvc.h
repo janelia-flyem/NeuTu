@@ -422,6 +422,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
+  void testSlot() override;
+
   void testBodyMerge();
   void testBodyVis();
   void testBodySplit();

@@ -151,6 +151,7 @@ public slots:
   void zoomInRectRoi();
   void refreshSegmentation();
   void refreshData();
+  void trace();
 
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);

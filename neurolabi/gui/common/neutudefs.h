@@ -46,6 +46,10 @@ enum class EImageBackground {
   BRIGHT, DARK
 };
 
+enum class EDataType {
+  UNKNOWN, EM, LIGHT_DARK, LIGHT_BRIGHT
+};
+
 enum class ESizeHintOption {
   DEFAULT, CURRENT_BEST, TAKING_SPACE
 };
@@ -202,6 +206,7 @@ static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 //static const int DIM_INVALID_INDEX = -2147483647;
 //#endif
 
+//static const int MAX_INT32 = std::numeric_limits<int32_t>::max();
 static const int DIM_INVALID_INDEX = std::numeric_limits<int32_t>::min();
 
 static const uint64_t LABEL_ID_SELECTION =

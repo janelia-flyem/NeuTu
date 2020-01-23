@@ -7,7 +7,7 @@
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "geometry/zpointarray.h"
 #include "geometry/zlinesegmentarray.h"
 #include "geometry/zintcuboidface.h"

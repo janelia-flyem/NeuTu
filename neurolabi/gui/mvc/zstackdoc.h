@@ -48,6 +48,8 @@
 #include "zactionfactory.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
+
+#include "zstackdocmeta.h"
 //#include "mvc/mvcdef.h"
 
 class ZStackFrame;
@@ -194,6 +196,8 @@ public: //attributes
 
   template <typename T>
   T* getObject(const std::string &source) const;
+
+  bool allowingTracing() const;
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
@@ -534,6 +538,7 @@ public: //Image processing
   bool watershed();
   bool invert();
   bool subtractBackground();
+  bool subtractBackgroundAdaptive();
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
@@ -1097,6 +1102,8 @@ public:
     return m_progressSignal;
   }
 
+  void addTask(ZTask *task);
+
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
@@ -1399,7 +1406,6 @@ protected:
 //  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 //  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
-  void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void clearToDestroy();
@@ -1533,6 +1539,8 @@ protected:
   ZThreadFutureMap m_futureMap;
   ZStackDocDataBuffer *m_dataBuffer;
   ZSharedPointer<ZActionLibrary> m_actionLibrary;
+
+  ZStackDocMeta m_meta;
 };
 
 template <typename InputIterator>

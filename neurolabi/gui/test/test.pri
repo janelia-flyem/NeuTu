@@ -8,6 +8,7 @@ HEADERS += \
     $$PWD/zdvidtargettest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
     $$PWD/znetworkutilstest.h \
+    $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
     $$PWD/zstringbuildtest.h \
     test/zswctreetest.h \

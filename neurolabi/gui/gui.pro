@@ -272,7 +272,6 @@ include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
 include(command/command.pri)
-include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
 include(logging/logging.pri)
@@ -281,6 +280,7 @@ include(vis3d.pri)
 include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
+include(tracing/tracing.pri)
 
 # Input
 win32 {
@@ -1123,13 +1123,13 @@ SOURCES += main.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \
     zglobal.cpp \
     dvid/zdvidresultservice.cpp \
     zstackgarbagecollector.cpp \
-    dialogs/zflyembodysplitdialog.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     zstackdockeyprocessor.cpp \

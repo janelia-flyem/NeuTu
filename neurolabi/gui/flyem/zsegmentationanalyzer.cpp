@@ -5,16 +5,16 @@
 #include <sys/stat.h>
 
 #include "tz_int_histogram.h"
-#include "tz_iarray.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_code.h"
 #include "tz_stack_utils.h"
 #include "tz_geo3d_utils.h"
 
+#include "neurolabi/numericarray.h"
 #include "common/math.h"
 #include "c_stack.h"
-#include "tz_constant.h"
+//#include "tz_constant.h"
 #include "geometry/zpoint.h"
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
@@ -114,7 +114,7 @@ vector<double> flyem::ZSegmentationAnalyzer::computeTouchFeature(
   int histLength = Int_Histogram_Length(hist);
   if (histLength > 2) {
     size_t index;
-    int maxArea = iarray_max(histValue + 1, min(histLength - 1, 10), &index);
+    int maxArea = neutu::array::Max(histValue + 1, min(histLength - 1, 10), &index);
     feat.push_back(sqrt(maxArea) - sqrt(histValue[1]));
     feat.push_back(feat.back() / (index + 1));
     feat.push_back(maxArea - histValue[1]);

@@ -171,12 +171,20 @@
       <addaction name="actionAnisotropic_Diffusion"/>
       <addaction name="actionMexican_Hat"/>
      </widget>
-     <addaction name="actionBinarize"/>
+     <widget class="QMenu" name="menuIntensity">
+      <property name="title">
+       <string>Intensity</string>
+      </property>
+      <addaction name="actionBinarize"/>
+      <addaction name="actionInvert"/>
+      <addaction name="separator"/>
+      <addaction name="actionSubtract_Background"/>
+      <addaction name="actionSubtract_Background_Adaptive"/>
+     </widget>
      <addaction name="actionUpdate"/>
      <addaction name="actionExtract_Channel"/>
-     <addaction name="actionInvert"/>
      <addaction name="actionMake_Projection"/>
-     <addaction name="actionSubtract_Background"/>
+     <addaction name="menuIntensity"/>
      <addaction name="menuFilter"/>
      <addaction name="menuBinary_Morphology"/>
      <addaction name="menuSegmentation"/>
@@ -1574,6 +1582,11 @@
   <action name="actionUpdate_Body_Info">
    <property name="text">
     <string>Update Body Info</string>
+   </property>
+  </action>
+  <action name="actionSubtract_Background_Adaptive">
+   <property name="text">
+    <string>Subtract Background (Adaptive)</string>
    </property>
   </action>
  </widget>
