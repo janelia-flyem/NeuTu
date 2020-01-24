@@ -5648,28 +5648,7 @@ ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
 {
-  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-  if (reader.isReady()) {
-    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
-    if (bodyId > 0) {
-//      ZDvidLabelSlice *slice = getDvidLabelSlice();
-      QList<ZDvidLabelSlice*> sliceList =
-          getCompleteDocument()->getFrontDvidLabelSliceList();
-      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-           iter != sliceList.end(); ++iter) {
-        ZDvidLabelSlice *slice = *iter;
-        if (slice != NULL) {
-          slice->recordSelection();
-          slice->addSelection(
-                slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
-                neutu::ELabelSource::ORIGINAL);
-          slice->processSelection();
-        }
-      }
-      getCompleteDocument()->notifyBodySelectionChanged();
-//      updateBodySelection();
-    }
-  }
+  getCompleteDocument()->addSelectionAt(x, y, z);
 }
 
 void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
@@ -5952,14 +5931,14 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
     ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
           getCompleteDocument(), neutu::EAxis::Z);
     if (slice != NULL) {
-      slice->recordSelection();
+      slice->startSelection();
       slice->clearSelection();
       foreach(uint64_t bodyId, bodyIdList) {
         slice->addSelection(
               slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
               neutu::ELabelSource::MAPPED);
       }
-      slice->processSelection();
+      slice->endSelection();
 //      processLabelSliceSelectionChange();
     }
 //    updateBodySelection();
@@ -5979,14 +5958,14 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
         ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
               getCompleteDocument());
         if (slice != NULL) {
-          slice->recordSelection();
+          slice->startSelection();
           if (!appending) {
             slice->clearSelection();
           }
           slice->addSelection(
                 slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
                 neutu::ELabelSource::MAPPED);
-          slice->processSelection();
+          slice->endSelection();
 //          processLabelSliceSelectionChange(); //will be called in updateBodySelection
         }
 //        updateBodySelection();

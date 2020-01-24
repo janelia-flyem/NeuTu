@@ -152,7 +152,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QHBoxLayout" name="queryLayout">
      <item>
       <widget class="QPushButton" name="findSimilarPushButton">
        <property name="text">
@@ -174,7 +174,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QFrame" name="frame">
+      <widget class="QFrame" name="queryFrame">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>

@@ -1,4 +1,5 @@
 #include "zinteractionevent.h"
+#include "common/neutudefs.h"
 
 ZInteractionEvent::ZInteractionEvent() : m_event(ZInteractionEvent::EVENT_NULL)
 {
@@ -35,11 +36,12 @@ QString ZInteractionEvent::getMessage() const
     break;
   case EVENT_SWC_NODE_TOGGLED_ON:
     message = "Click mouse at the desired position to add node. "
-        "Ctrl/Cmd+E for automatically adjust node size based on local signal";
+        CTRL_KEY_NAME
+        "+E for automatically adjust node size based on local signal";
     break;
   case EVENT_SWC_NODE_EXTENDED:
     message = "Node extended. You can click to extend more. "
-        "Tip: Ctrl/Cmd+Click for extending with a single node";
+        "Tip: " CTRL_KEY_NAME "+Click for extending with a single node";
     break;
   case EVENT_VIEW_PROJECTION:
     message = "Switch to projection view.";

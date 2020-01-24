@@ -249,6 +249,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(const T &flag)
   FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, m_parent);
   dlg->setNeuprintDataset(m_neuprintDataset);
   dlg->dvidTargetChanged(m_parent->getDvidTarget());
+
   QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
                    dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   QObject::connect(dlg, SIGNAL(bodyActivated(uint64_t)),
@@ -257,11 +258,12 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(const T &flag)
                    m_parent, SLOT(addLocateBody(uint64_t)));
   QObject::connect(dlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
                    m_parent, SLOT(selectBody(QList<uint64_t>)));
-  QObject::connect(dlg, SIGNAL(pointDisplayRequested(int,int,int)),
-                   m_parent, SLOT(zoomTo(int,int,int)));
-
+  QObject::connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
+                   m_parent, SLOT(prepareBodyMap(ZJsonValue)));
   QObject::connect(dlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
                    m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+  QObject::connect(dlg, SIGNAL(pointDisplayRequested(int,int,int)),
+                   m_parent, SLOT(zoomTo(int,int,int)));
 
   return dlg;
 }
@@ -270,24 +272,28 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 {
   if (isNull(m_bodyInfoDlg)) {
     KINFO << "Creating sequencer dialog";
+//    m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER);
+
+
     m_bodyInfoDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
     m_bodyInfoDlg->setNeuprintDataset(m_neuprintDataset);
 
+    QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+                     m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
                      m_parent, SLOT(locateBody(uint64_t)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
                      m_parent, SLOT(addLocateBody(uint64_t)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
                      m_parent, SLOT(selectBody(QList<uint64_t>)));
-    QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-                     m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
                      m_parent, SLOT(prepareBodyMap(ZJsonValue)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
                      m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
                      m_parent, SLOT(zoomTo(int,int,int)));
+
   }
 
   return m_bodyInfoDlg;

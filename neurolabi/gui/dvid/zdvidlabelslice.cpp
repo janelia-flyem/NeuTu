@@ -1294,12 +1294,12 @@ void ZDvidLabelSlice::mapSelection()
   m_selectedOriginal = getSelected(neutu::ELabelSource::MAPPED);
 }
 
-void ZDvidLabelSlice::recordSelection()
+void ZDvidLabelSlice::startSelection()
 {
   m_prevSelectedOriginal = m_selectedOriginal;
 }
 
-void ZDvidLabelSlice::processSelection()
+void ZDvidLabelSlice::endSelection()
 {
   m_selector.reset(m_selectedOriginal, m_prevSelectedOriginal);
 

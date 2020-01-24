@@ -136,8 +136,8 @@ public:
   void setCenterCut(int width, int height);
 
   //Selection events
-  void recordSelection();
-  void processSelection();
+  void startSelection();
+  void endSelection();
 
   const ZSelector<uint64_t>& getSelector() const {
     return m_selector;

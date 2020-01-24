@@ -162,6 +162,8 @@ public:
   void addSelectedBody(
       const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
 
+  void addSelectionAt(int x, int y, int z);
+
   bool isSplittable(uint64_t bodyId) const;
 
   ZFlyEmBodyMerger* getBodyMerger() {

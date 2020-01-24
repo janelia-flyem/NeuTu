@@ -2354,7 +2354,8 @@ bool ZStackPresenter::enterSwcExtendMode()
   if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
-      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
+      notifyUser("Left click to extend. Path calculation is off when '"
+                 CTRL_KEY_NAME "' is pressed."
                  "Right click to exit extending mode.");
 
 //      m_stroke.setFilled(false);
@@ -3441,9 +3442,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
-      labelSlice->recordSelection();
+      labelSlice->startSelection();
       labelSlice->selectHit();
-      labelSlice->processSelection();
+      labelSlice->endSelection();
       SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
@@ -3455,9 +3456,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
-      labelSlice->recordSelection();
+      labelSlice->startSelection();
       labelSlice->selectHit(true);
-      labelSlice->processSelection();
+      labelSlice->endSelection();
       SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
@@ -3470,9 +3471,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     } else {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       if (labelSlice != NULL) {
-        labelSlice->recordSelection();
+        labelSlice->startSelection();
         labelSlice->toggleHitSelection(true);
-        labelSlice->processSelection();
+        labelSlice->endSelection();
         SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
@@ -3496,11 +3497,11 @@ bool ZStackPresenter::process(ZStackOperator &op)
         buddyDocument()->deselectAllSwcTreeNodes();
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
         ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
-        labelSlice->recordSelection();
+        labelSlice->startSelection();
         labelSlice->toggleHitSelection(
               labelSlice->hasVisualEffect(
                 neutu::display::LabelField::VE_HIGHLIGHT_SELECTED));
-        labelSlice->processSelection();
+        labelSlice->endSelection();
         SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);

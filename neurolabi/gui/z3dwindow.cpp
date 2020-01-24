@@ -2609,12 +2609,15 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
+    notifyUser("Left click to extend. Path calculation is off when '"
+               CTRL_KEY_NAME "' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
     } else {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
     }
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);

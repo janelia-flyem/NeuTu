@@ -399,9 +399,9 @@ void ZFlyEmProofDoc::setSelectedBody(
       for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
            iter != sliceList.end(); ++iter) {
         ZDvidLabelSlice *slice = *iter;
-        slice->recordSelection();
+        slice->startSelection();
         slice->setSelection(selected, labelType);
-        slice->processSelection();
+        slice->endSelection();
       }
 
       notifyBodySelectionChanged();
@@ -415,6 +415,30 @@ void ZFlyEmProofDoc::setSelectedBody(
   std::set<uint64_t> selected;
   selected.insert(bodyId);
   setSelectedBody(selected, labelType);
+}
+
+void ZFlyEmProofDoc::addSelectionAt(int x, int y, int z)
+{
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
+    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
+    if (bodyId > 0) {
+//      ZDvidLabelSlice *slice = getDvidLabelSlice();
+      QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        if (slice != NULL) {
+          slice->startSelection();
+          slice->addSelection(
+                slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
+                neutu::ELabelSource::ORIGINAL);
+          slice->endSelection();
+        }
+      }
+      notifyBodySelectionChanged();
+    }
+  }
 }
 
 void ZFlyEmProofDoc::toggleBodySelection(
@@ -5169,7 +5193,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 {
   ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
-    slice->recordSelection();
+    slice->startSelection();
   }
 }
 
@@ -5177,7 +5201,7 @@ void ZFlyEmProofDoc::processBodySelection()
 {
   ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
-    slice->processSelection();
+    slice->endSelection();
   }
 }
 

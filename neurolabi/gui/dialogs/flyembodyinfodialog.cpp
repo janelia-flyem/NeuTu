@@ -30,6 +30,8 @@
 
 #include "logging/zlog.h"
 
+#include "qt/gui/utilities.h"
+
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
@@ -264,10 +266,12 @@ void FlyEmBodyInfoDialog::prepareWidget()
   }
 
   if (m_mode != EMode::NEUPRINT) {
-    ui->queryNamePushButton->hide();
-    ui->queryStatusPushButton->hide();
-    ui->findSimilarPushButton->hide();
-    ui->queryRoiPushButton->hide();
+    neutu::HideLayout(ui->queryLayout, true);
+    delete ui->queryLayout;
+//    ui->queryNamePushButton->hide();
+//    ui->queryStatusPushButton->hide();
+//    ui->findSimilarPushButton->hide();
+//    ui->queryRoiPushButton->hide();
   }
 //  ui->allNamedPushButton->hide(); //obsolete
 }
@@ -1468,6 +1472,10 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
   qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
   QStandardItem * bodyIDItem = new QStandardItem();
   bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+  bodyIDItem->setToolTip(
+        "Double click to locate the body;\n"
+        CTRL_KEY_NAME
+        "+double click to append the body to the current selection");
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
   std::string primaryNeurite = get_annotation_primary_neurite(bkmk);
