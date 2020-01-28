@@ -61,6 +61,7 @@
 #include "tz_stack_objlabel.h"
 #include "tz_stack_threshold.h"
 #include "tz_color.h"
+#include "tz_swc_tree.h"
 
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
@@ -30760,6 +30761,20 @@ void ZTest::test(MainWindow *host)
   std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
 
   obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/_test.swc");
+
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+
+  ZStack *stack = ZStackFactory::MakeZeroStack(GREY16, 512, 512, 60, 1);
+
+  Swc_Tree_Label_Stack(tree.data(), stack->c_stack(), &workspace);
+
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
   std::cout << "Done." << std::endl;

@@ -8767,9 +8767,17 @@ void ZStackDoc::updateTraceMask()
        iter != treeList.end(); ++iter) {
     const ZSwcTree *tree = *iter;
 
+#ifdef _DEBUG_
+    const_cast<ZSwcTree*>(tree)->save(GET_TEST_DATA_DIR + "/_test.swc");
+#endif
+
     Swc_Tree_Label_Stack(
           tree->data(), getTraceWorkspace()->trace_mask, &workspace);
   }
+
+#ifdef _DEBUG_
+    C_Stack::write(GET_TEST_DATA_DIR + "/_test.tif", getTraceWorkspace()->trace_mask);
+#endif
 }
 
 
