@@ -241,6 +241,11 @@ public:
 public:
   void test();
 
+public: //pipeline functions
+  std::function<void(Stack*)> _preprocess;
+  std::function<Stack*(Stack*)> _makeMask;
+  std::function<Geo3d_Scalar_Field*(Stack*)> _extractSeedFromMask;
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack, Stack *out = NULL);
@@ -271,6 +276,8 @@ private:
 
   int getMinSeedObjSize(double seedDensity) const;
   bool traceMasked(int x, int y, int z) const;
+
+  Geo3d_Scalar_Field* removeTracedSeed(Geo3d_Scalar_Field *seedArray);
 
   std::string getDiagnosisDir() const;
   void log(const std::string &str);
@@ -342,10 +349,6 @@ private:
   Diagnosis m_diag;
   std::function<void(const std::string)> m_log =
       [](const std::string &str) { std::cout << str << std::endl; };
-
-  std::function<void(Stack*)> _preprocess;
-  std::function<Stack*(Stack*)> _makeMask;
-  std::function<Geo3d_Scalar_Field*(Stack*)> _extractSeedFromMask;
 
   /*
   static const char *m_levelKey;

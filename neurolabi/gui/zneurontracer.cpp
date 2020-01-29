@@ -254,24 +254,6 @@ void ZNeuronTracer::init()
 
     seedPointArray = removeNoisySeed(seedPointArray, mask);
 
-    Stack *traceMask = getTraceMask();
-    if (traceMask) {
-      ZWeightedPointArray ptArray;
-      for (int i = 0; i < seedPointArray->size; ++i) {
-        int x = int(seedPointArray->points[i][0]);
-        int y = int(seedPointArray->points[i][1]);
-        int z = int(seedPointArray->points[i][2]);
-
-        if (C_Stack::value(traceMask, x, y, z) == 0.0) {
-          ptArray.append(x, y, z, seedPointArray->values[i]);
-        }
-      }
-      Kill_Geo3d_Scalar_Field(seedPointArray);
-      seedPointArray = ptArray.toScalarField();
-    }
-
-    m_diag.save(seedPointArray, "seed_point");
-
     return seedPointArray;
   };
 
@@ -1419,6 +1401,28 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
   return result;
 }
 
+Geo3d_Scalar_Field* ZNeuronTracer::removeTracedSeed(
+    Geo3d_Scalar_Field *seedPointArray)
+{
+  Stack *traceMask = getTraceMask();
+  if (traceMask) {
+    ZWeightedPointArray ptArray;
+    for (int i = 0; i < seedPointArray->size; ++i) {
+      int x = int(seedPointArray->points[i][0]);
+      int y = int(seedPointArray->points[i][1]);
+      int z = int(seedPointArray->points[i][2]);
+
+      if (C_Stack::value(traceMask, x, y, z) == 0.0) {
+        ptArray.append(x, y, z, seedPointArray->values[i]);
+      }
+    }
+    Kill_Geo3d_Scalar_Field(seedPointArray);
+    seedPointArray = ptArray.toScalarField();
+  }
+
+  return seedPointArray;
+}
+
 std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
     const Stack *stack)
 {
@@ -1485,6 +1489,8 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
 
     /* <seedPointArray> allocated */
     Geo3d_Scalar_Field *seedPointArray = _extractSeedFromMask(mask);
+    seedPointArray = removeTracedSeed(seedPointArray);
+//    m_diag.save(seedPointArray, "seed_point");
 
     /*
     int minSeedSize = 0;
@@ -1805,6 +1811,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   /* <seedPointArray> allocated */
   Geo3d_Scalar_Field *seedPointArray = _extractSeedFromMask(mask);
+  seedPointArray = removeTracedSeed(seedPointArray);
+  m_diag.save(seedPointArray, "seed_point");
 
   advanceProgress(0.05);
 
