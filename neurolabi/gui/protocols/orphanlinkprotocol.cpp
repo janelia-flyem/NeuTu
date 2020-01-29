@@ -41,6 +41,7 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     connect(ui->gotoCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onGotoCurrentButton()));
 
     connect(ui->tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
+    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickedTable(QModelIndex)));
 
 }
 
@@ -122,6 +123,11 @@ void OrphanLinkProtocol::onCommentButton() {
 void OrphanLinkProtocol::onClickedTable(QModelIndex /*index*/) {
     updateCurrentBodyLabel();
     updateCommentField();
+}
+
+void OrphanLinkProtocol::onDoubleClickedTable(QModelIndex /*index*/) {
+    // this works because the double-click will also select the table row
+    gotoCurrentBody();
 }
 
 bool OrphanLinkProtocol::hasSelection() {

@@ -40,6 +40,7 @@ private slots:
     void onGotoCurrentButton();
     void onCommentButton();
     void onClickedTable(QModelIndex index);
+    void onDoubleClickedTable(QModelIndex index);
 
 private:
     static const std::string KEY_VERSION;
