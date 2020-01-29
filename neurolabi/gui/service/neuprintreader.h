@@ -50,8 +50,9 @@ public:
 
   QList<QString> getRoiList();
 
-private:
   QString getNeuronLabel(char quote = '\0') const;
+
+private:
   QString getUuidKey(const QString &uuid);
   QString getCustomUrl() const;
   ZJsonObject getQueryJsonObject(const QString &query);

@@ -719,23 +719,26 @@ void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
 }
 
 void FlyEmBodyInfoDialog::setIOBodyHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("instance")));
-    model->setHorizontalHeaderItem(IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
+    model->setHorizontalHeaderItem(
+          IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
+    model->setHorizontalHeaderItem(
+          IOBODY_NAME_COLUMN, new QStandardItem(QString("instance")));
+    model->setHorizontalHeaderItem(
+          IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
 }
 
 void FlyEmBodyInfoDialog::setConnectionsHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(CONNECTIONS_X_COLUMN, new QStandardItem(QString("x")));
-    model->setHorizontalHeaderItem(CONNECTIONS_Y_COLUMN, new QStandardItem(QString("y")));
-    model->setHorizontalHeaderItem(CONNECTIONS_Z_COLUMN, new QStandardItem(QString("z")));
+    model->setHorizontalHeaderItem(
+          CONNECTIONS_X_COLUMN, new QStandardItem(QString("x")));
+    model->setHorizontalHeaderItem(
+          CONNECTIONS_Y_COLUMN, new QStandardItem(QString("y")));
+    model->setHorizontalHeaderItem(
+          CONNECTIONS_Z_COLUMN, new QStandardItem(QString("z")));
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
   if (m_mode == EMode::SEQUENCER) {
     label = "<font color=\"#008000\">" + label + "</font>";
-//    QPixmap pixmap(":/images/document.png");
-//    pixmap = pixmap.scaled(16, 16);
-//    ui->bodiesLabel->setPixmap(pixmap);
   }
 
   ui->bodiesLabel->setText(label);
@@ -749,9 +752,11 @@ void FlyEmBodyInfoDialog::clearStatusLabel()
 void FlyEmBodyInfoDialog::updateStatusLabel() {
     qlonglong nPre = 0;
     qlonglong nPost = 0;
-    for (qlonglong i=0; i<m_bodyProxy->rowCount(); i++) {
-        nPre += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPRE_COLUMN)).toLongLong();
-        nPost += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPOST_COLUMN)).toLongLong();
+    for (int i=0; i<m_bodyProxy->rowCount(); i++) {
+        nPre += m_bodyProxy->data(
+              m_bodyProxy->index(i, BODY_NPRE_COLUMN)).toLongLong();
+        nPost += m_bodyProxy->data(
+              m_bodyProxy->index(i, BODY_NPOST_COLUMN)).toLongLong();
     }
     QString label = QString(
           "Bodies (%1/%2) shown; %3/%4 pre-syn, %5/%6 post-syn").
@@ -1389,9 +1394,11 @@ void FlyEmBodyInfoDialog::onQueryByStatusButton()
   }
 }
 
+/*
 namespace { //To be removed when the custom query dialog is ready
 QString last_query = "MATCH (n:`hemibrain-Neuron` \n";
 }
+*/
 
 void FlyEmBodyInfoDialog::onCustomQuery()
 {
@@ -1399,12 +1406,16 @@ void FlyEmBodyInfoDialog::onCustomQuery()
   if (reader) {
     bool ok;
 
+    QString label = reader->getNeuronLabel('`');
+
+    static QString lastQuery = "MATCH (n:" + label + " \n";
+
     QString text = QInputDialog::getMultiLineText(
           this, tr("Find Bodies"),
-          tr("Cypher Query:\n(n:`hemibrain-Neuron` must exist in MATCH)"),
-          last_query, &ok);
+          "Cypher Query:\n(n:" + label + " must exist in MATCH)",
+          lastQuery, &ok);
     if (ok) {
-      last_query = text;
+      lastQuery = text;
       if (!text.isEmpty()) {
         prepareQuery();
 
