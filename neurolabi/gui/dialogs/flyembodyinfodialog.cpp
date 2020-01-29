@@ -92,12 +92,10 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     // office phone number = random seed
     qsrand(2094656);
-    m_quitting = false;
-    m_cancelLoading = false;
-    m_connectionsLoading = false;
-
 
     // top body list stuff
+
+    initBodyColumnHeader();
 
     // first table manages list of bodies
     m_bodyModel = new QStandardItemModel(
@@ -112,15 +110,9 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     m_bodyProxy->setFilterKeyColumn(-1);
     ui->bodyTableView->setModel(m_bodyProxy);
 
-    // store body names for later use, plus the bodies
-    //  we know don't have names
-    m_bodyNames = QMap<uint64_t, QString>();
-    m_namelessBodies = QSet<uint64_t>();
-
     // max body menu; not used by all data load methods; it's
     //  populated when appropriate
     ui->maxBodiesMenu->addItem("n/a");
-    m_currentMaxBodies = 0;
 
     // color filter stuff
 
@@ -231,6 +223,18 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
     connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
     prepareWidget();
+}
+
+void FlyEmBodyInfoDialog::initBodyColumnHeader()
+{
+  m_bodyColumnHeaderList = QVector<QString>(BODY_TABLE_COLUMN_COUNT);
+  m_bodyColumnHeaderList[BODY_ID_COLUMN] = "Body ID";
+  m_bodyColumnHeaderList[BODY_PRIMARY_NEURITE] = "CBF";
+  m_bodyColumnHeaderList[BODY_TYPE_COLUMN] = "type";
+  m_bodyColumnHeaderList[BODY_NAME_COLUMN] = "instance";
+  m_bodyColumnHeaderList[BODY_NPRE_COLUMN] = "# pre";
+  m_bodyColumnHeaderList[BODY_NPOST_COLUMN] = "# post";
+  m_bodyColumnHeaderList[BODY_STATUS_COLUMN] = "status";
 }
 
 void FlyEmBodyInfoDialog::prepareWidget()
@@ -689,6 +693,11 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 }
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
+  for (int i = 0; i < m_bodyColumnHeaderList.size(); ++i) {
+    model->setHorizontalHeaderItem(
+          i, new QStandardItem(m_bodyColumnHeaderList[i]));
+  }
+  /*
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
     model->setHorizontalHeaderItem(
           BODY_PRIMARY_NEURITE, new QStandardItem("CBF"));
@@ -697,6 +706,7 @@ void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
     model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem("# post"));
     model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem("status"));
+    */
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {

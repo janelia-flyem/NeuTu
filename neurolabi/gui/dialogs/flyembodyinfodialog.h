@@ -197,8 +197,8 @@ private:
     QMap<QString, QList<uint64_t>> m_groupIdMap;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
-    bool m_quitting;
-    bool m_cancelLoading;
+    bool m_quitting = false;
+    bool m_cancelLoading = false;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
     ZDvidReader m_sequencerReader;
@@ -206,14 +206,15 @@ private:
     bool m_hasLabelsz = false;
     bool m_hasBodyAnnotation = false;
     std::string m_defaultSynapseLabelsz;
-    int m_currentMaxBodies;
-    bool m_connectionsLoading;
+    int m_currentMaxBodies = 0;
+    bool m_connectionsLoading = false;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
     qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
     std::string m_neuprintDataset; //temp hack
+    QVector<QString> m_bodyColumnHeaderList;
 
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;
@@ -272,6 +273,7 @@ private:
     void updateColorScheme(const QString &name, const QColor &color);
     QString getTableColorName(int index) const;
     QColor getTableColor(int index) const;
+    void initBodyColumnHeader();
     void adjustBodyTableColumn();
 };
 
