@@ -65,7 +65,7 @@ signals:
   void ioBodiesLoaded();
   void ioBodyLoadFailed();
   void ioNoBodiesLoaded();
-  void ioConnectionsLoaded();
+//  void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
   /*!
    * \brief appendingData
@@ -119,6 +119,7 @@ private slots:
     void onExportConnections();
     void onSaveColorMap();
     void onLoadColorMap();
+    void onLoadCompleted();
     void onMoveUp();
     void onMoveDown();
     void onColorMapLoaded(ZJsonValue colors);
@@ -135,6 +136,7 @@ private slots:
     void onIOConnectionsSelectionChanged(
         QItemSelection selected, QItemSelection deselected);
     void onCopySelectedConnections();
+    void changeDataset(const QString &dataset);
 
 private:
     enum Tabs {
@@ -270,6 +272,7 @@ private:
     void updateColorScheme(const QString &name, const QColor &color);
     QString getTableColorName(int index) const;
     QColor getTableColor(int index) const;
+    void adjustBodyTableColumn();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

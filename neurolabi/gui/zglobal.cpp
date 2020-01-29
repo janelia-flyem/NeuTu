@@ -183,6 +183,10 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader()
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
     reader->authorize(getNeuPrintToken());
+    if (!reader->isConnected()) {
+      delete reader;
+      reader = nullptr;
+    }
   }
 
   return reader;

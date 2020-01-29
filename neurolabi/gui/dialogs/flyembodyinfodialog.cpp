@@ -213,11 +213,13 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
     // data update connects
     // register our type so we can signal/slot it across threads:
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+    connect(this, SIGNAL(dataChanged(ZJsonValue)),
+            this, SIGNAL(namedBodyChanged(ZJsonValue)));
     connect(this, SIGNAL(appendingData(ZJsonValue, int)),
             this, SLOT(appendModel(ZJsonValue, int)));
     //Review-TZ: consider merging these two in onLoadCompleted()
-    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
-    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(onLoadCompleted()));
+//    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
 //    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateColorScheme()));
 //    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateFilterIdMap()));
     connect(this, SIGNAL(filterIdMapUpdated()), this, SLOT(updateColorScheme()));
@@ -265,9 +267,13 @@ void FlyEmBodyInfoDialog::prepareWidget()
 //    ui->iconLabel->setMask(pixmap.mask());
   }
 
-  if (m_mode != EMode::NEUPRINT) {
+  if (m_mode == EMode::NEUPRINT) {
+    connect(ui->datasetComboBox, SIGNAL(currentTextChanged(const QString &)),
+            this, SLOT(changeDataset(const QString &)));
+  } else {
     neutu::HideLayout(ui->queryLayout, true);
     delete ui->queryLayout;
+    ui->datasetComboBox->hide();
 //    ui->queryNamePushButton->hide();
 //    ui->queryStatusPushButton->hide();
 //    ui->findSimilarPushButton->hide();
@@ -598,7 +604,8 @@ void FlyEmBodyInfoDialog::loadData()
           if (reader) {
             ui->bodyFilterField->clear();
             setStatusLabel("Loading...");
-            setBodyList(reader->queryAllNamedNeuron());
+            ZJsonArray bodyList = reader->queryAllNamedNeuron();
+            setBodyList(bodyList);
           }
         } else {
           if (ui->maxBodiesMenu->count() == 0) {
@@ -684,7 +691,7 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
     model->setHorizontalHeaderItem(
-          BODY_PRIMARY_NEURITE, new QStandardItem("primary neurite"));
+          BODY_PRIMARY_NEURITE, new QStandardItem("CBF"));
     model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
     model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("instance"));
     model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
@@ -804,6 +811,13 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
         return false;
     }
     return true;
+}
+
+void FlyEmBodyInfoDialog::changeDataset(const QString &dataset)
+{
+  m_neuprintDataset = dataset.toStdString();
+  m_neuPrintReader->setCurrentDataset(dataset);
+  onRefreshButton();
 }
 
 void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index)
@@ -976,7 +990,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             while (keyIter.hasNext()) {
                 keyIter.next();
 //                QString bodyIDstr = keyIter.next();
-                keyIter.next();
+//                keyIter.next();
                 ZJsonObject bodyData = annIter.next();
                 std::string name = get_annotation_name(bodyData);
 //                bool hasName = false;
@@ -1236,6 +1250,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
             }
         }
 
+//        emit dataChanged(bodies);
         emit appendingData(bodies, -1);
 
         fullTime = fullTimer.elapsed();
@@ -1421,13 +1436,29 @@ void FlyEmBodyInfoDialog::onCloseButton() {
     close();
 }
 
+//state: 0: first batch; reset; -1: end; 1: reset and end
+
+namespace  {
+const int STATE_BATCH_START = 0;
+const int STATE_BATCH_END = -1;
+const int STATE_BATCH_SINGLE = -2;
+}
+
+void FlyEmBodyInfoDialog::adjustBodyTableColumn()
+{
+  ui->bodyTableView->resizeColumnsToContents();
+  ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 180);
+  ui->bodyTableView->setColumnWidth(BODY_PRIMARY_NEURITE, 80);
+  ui->bodyTableView->setColumnWidth(BODY_TYPE_COLUMN, 120);
+}
+
 void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
 {
 #ifdef _DEBUG_
   std::cout << "Batch: " << state << std::endl;
 #endif
 
-  if (state == 0) {
+  if (state == STATE_BATCH_START || state == STATE_BATCH_SINGLE) { //reset
     m_bodyModel->clear();
     setBodyHeaders(m_bodyModel);
     m_totalPre = 0;
@@ -1445,17 +1476,15 @@ void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
       m_bodyModel->appendRow(itemList);
     }
 
-    if (state == 0) {
-      ui->bodyTableView->resizeColumnsToContents();
-      ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    if (state == STATE_BATCH_START || state == STATE_BATCH_SINGLE) {
+      adjustBodyTableColumn();
     }
     // currently initially sorting on # pre-synaptic sites
 //    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
   }
 
-  if (state == -1) {
-    ui->bodyTableView->resizeColumnsToContents();
-    ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+  if (state == STATE_BATCH_END || state == STATE_BATCH_SINGLE) { //append end
+    adjustBodyTableColumn();
     ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
     emit loadCompleted();
   }
@@ -1546,46 +1575,54 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
  *    }
  */
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
-    m_bodyModel->clear();
-    setBodyHeaders(m_bodyModel);
+  ui->bodyTableView->setEnabled(false);
 
-    m_totalPre = 0;
-    m_totalPost = 0;
+  appendModel(data, STATE_BATCH_SINGLE);
 
-    ZJsonArray bookmarks(data);
+#if 0
+  m_bodyModel->clear();
+  setBodyHeaders(m_bodyModel);
 
-    logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
+  m_totalPre = 0;
+  m_totalPost = 0;
 
-    m_bodyModel->setRowCount(int(bookmarks.size()));
-    m_bodyModel->blockSignals(true);
-    for (size_t i = 0; i < bookmarks.size(); ++i) {
-        ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+  ZJsonArray bookmarks(data);
 
-        QList<QStandardItem*> itemList = getBodyItemList(bkmk);
-        for (int j = 0; j < itemList.size(); ++j) {
-          m_bodyModel->setItem(i, j, itemList[j]);
-          /* //Doesn't seem necessary here (TZ)
+  logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
+
+  m_bodyModel->setRowCount(int(bookmarks.size()));
+  m_bodyModel->blockSignals(true);
+  for (size_t i = 0; i < bookmarks.size(); ++i) {
+    ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+
+    QList<QStandardItem*> itemList = getBodyItemList(bkmk);
+    for (int j = 0; j < itemList.size(); ++j) {
+      m_bodyModel->setItem(i, j, itemList[j]);
+      /* //Doesn't seem necessary here (TZ)
           if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
             m_bodyModel->blockSignals(false);
           }
           */
-        }
     }
-    m_bodyModel->blockSignals(false);
+  }
+  m_bodyModel->blockSignals(false);
 
-    //Review-TZ: Consider moving this to updateBodyTableView() to reduce
-    //           code redundancy.
-    // the resize isn't reliable, so set the name column wider by hand
-    ui->bodyTableView->resizeColumnsToContents();
-    ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+  //Review-TZ: Consider moving this to updateBodyTableView() to reduce
+  //           code redundancy.
+  // the resize isn't reliable, so set the name column wider by hand
+  ui->bodyTableView->resizeColumnsToContents();
+  ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
 
-    // currently initially sorting on # pre-synaptic sites
-    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
+  // currently initially sorting on # pre-synaptic sites
+  ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
 
-    //Review-TZ: loadCompleted() signal seems unnecessary unless there's a
-    //           possiblity of calling updateModel in a separate thread.
-    //           Consider calling sth like onLoadCompleted() directly.
-    emit loadCompleted();
+  //Review-TZ: loadCompleted() signal seems unnecessary unless there's a
+  //           possiblity of calling updateModel in a separate thread.
+  //           Consider calling sth like onLoadCompleted() directly.
+  emit loadCompleted();
+#endif
+
+  ui->bodyTableView->setEnabled(true);
 }
 
 void FlyEmBodyInfoDialog::onjsonLoadBookmarksError(QString message) {
@@ -1736,6 +1773,12 @@ void FlyEmBodyInfoDialog::onLoadColorMap()
             "Error opening or parsing color map file " + filename);
     }
   }
+}
+
+void FlyEmBodyInfoDialog::onLoadCompleted()
+{
+  updateStatusAfterLoading();
+  updateBodyFilterAfterLoading();
 }
 
 bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
@@ -2815,6 +2858,18 @@ NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
     setWindowTitle("Body Infomation @ NeuPrint:" +
                    getNeuPrintReader()->getServer() + ":" +
                    m_neuprintDataset.c_str());
+
+    if (m_neuPrintReader) {
+      ui->datasetComboBox->clear();
+      auto datasets = m_neuPrintReader->getDatasetList();
+#ifdef _DEBUG_
+      std::cout << "#datasets: " << datasets.size() << std::endl;
+#endif
+      for (const QString &dataset : datasets) {
+        ui->datasetComboBox->addItem(dataset);
+      }
+      ui->datasetComboBox->setCurrentText(m_neuprintDataset.c_str());
+    }
 
 //            m_reader.getDvidTarget().getUuid().c_str()));
   }

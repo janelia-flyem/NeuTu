@@ -78,7 +78,7 @@ private:
 
 private:
   template<typename T>
-  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag, bool initTarget);
 
 private:
   ZFlyEmProofMvc *m_parent = nullptr;

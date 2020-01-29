@@ -243,12 +243,15 @@ FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()
 }
 
 template<typename T>
-FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(const T &flag)
+FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
+    const T &flag, bool initTarget)
 {
 //  KINFO << "Creating FlyEmBodyInfoDialog";
   FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, m_parent);
   dlg->setNeuprintDataset(m_neuprintDataset);
-  dlg->dvidTargetChanged(m_parent->getDvidTarget());
+  if (initTarget) {
+    dlg->dvidTargetChanged(m_parent->getDvidTarget());
+  }
 
   QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
                    dlg, SLOT(dvidTargetChanged(ZDvidTarget)));
@@ -272,9 +275,9 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 {
   if (isNull(m_bodyInfoDlg)) {
     KINFO << "Creating sequencer dialog";
-//    m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER);
+    m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER, false);
 
-
+/*
     m_bodyInfoDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
     m_bodyInfoDlg->setNeuprintDataset(m_neuprintDataset);
@@ -293,6 +296,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
                      m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
     QObject::connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
                      m_parent, SLOT(zoomTo(int,int,int)));
+                     */
 
   }
 
@@ -312,7 +316,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 {
   if (isNull(m_bodyQueryDlg)) {
     KINFO << "Creating body query dialog";
-    m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY);
+    m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY, true);
     QObject::connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             m_parent, SLOT(showBodyConnection()));
   }
@@ -329,7 +333,8 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
 
     switch (status) {
     case neutu::EServerStatus::NORMAL:
-      m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
+      m_neuprintBodyDlg = makeBodyInfoDlg(
+            FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
       m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
       break;
     case neutu::EServerStatus::NOSUPPORT:

@@ -194,7 +194,7 @@ QStringList NeuPrintReader::getDatasetList() const
 
 namespace {
 const char* BODY_QUERY_RETURN =
-    "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.primaryNeurite";
+    "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.cellBodyFiber";
 const char* BODY_QUERY_SYNAPSE_COUNT = "(n.pre + n.post)";
 
 //Assuming the following order: ID, type name, status, pre, post
