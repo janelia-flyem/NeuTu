@@ -36,6 +36,8 @@ public slots:
 private slots:
     void onExitButton();
     void onCompleteButton();
+
+    void onGotoCurrentButton();
     void onCommentButton();
     void onClickedTable(QModelIndex index);
 
@@ -71,6 +73,8 @@ private:
 
     bool hasSelection();
     ProtocolAssignmentTask getSelectedTask();
+
+    void gotoCurrentBody();
 
     void setHeaders(QStandardItemModel *model);
     void updateTable();

@@ -36,7 +36,9 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     // UI connections
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+
     connect(ui->commentButton, SIGNAL(clicked(bool)), this, SLOT(onCommentButton()));
+    connect(ui->gotoCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onGotoCurrentButton()));
 
     connect(ui->tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
@@ -94,6 +96,10 @@ bool OrphanLinkProtocol::initialize() {
     return true;
 }
 
+void OrphanLinkProtocol::onGotoCurrentButton() {
+    gotoCurrentBody();
+}
+
 void OrphanLinkProtocol::onCommentButton() {
     if (hasSelection()) {
         ProtocolAssignmentTask selectedTask = getSelectedTask();
@@ -130,6 +136,16 @@ ProtocolAssignmentTask OrphanLinkProtocol::getSelectedTask() {
     } else {
         QJsonObject empty;
         return ProtocolAssignmentTask(empty);
+    }
+}
+
+void OrphanLinkProtocol::gotoCurrentBody() {
+    QString bodyIDString = getSelectedTask().get(TASK_KEY_BODY_ID).toString();
+
+    bool ok;
+    uint64_t bodyID = bodyIDString.toLong(&ok);
+    if (ok) {
+        emit requestDisplayBody(bodyID);
     }
 }
 
