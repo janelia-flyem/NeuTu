@@ -95,18 +95,27 @@ bool OrphanLinkProtocol::initialize() {
 }
 
 void OrphanLinkProtocol::onCommentButton() {
+    if (hasSelection()) {
+        ProtocolAssignmentTask selectedTask = getSelectedTask();
+        if (selectedTask.id > 0) {
+            m_comments[selectedTask.id] = ui->commentEntry->text();
+            saveState();
 
+            // update just the single item instead of rebuilding the table;
+            //  I've had trouble with this before, let's see if I can make it work:
 
-    // m_comment[selected task] = ui->commentEntry->text();
-
-    // saveState();
-
+            // this duplicates code in getSelectedTask(); if we get this far,
+            //  the index is always valid (because the selected task above is valid)
+            QModelIndex index = ui->tableView->selectionModel()->currentIndex();
+            QModelIndex modelIndex = m_proxy->mapToSource(index);
+            m_model->item(modelIndex.row(), COMMENT_COLUMN)->setData(m_comments[selectedTask.id], Qt::DisplayRole);
+        }
+    }
 }
 
-void OrphanLinkProtocol::onClickedTable(QModelIndex index) {
-    if (hasSelection()) {
-        updateCurrentBodyLabel();
-    }
+void OrphanLinkProtocol::onClickedTable(QModelIndex /*index*/) {
+    updateCurrentBodyLabel();
+    updateCommentField();
 }
 
 bool OrphanLinkProtocol::hasSelection() {
@@ -158,8 +167,13 @@ void OrphanLinkProtocol::updateLabels() {
 }
 
 void OrphanLinkProtocol::updateCurrentBodyLabel() {
-    ProtocolAssignmentTask task = getSelectedTask();
-    ui->currentBodyLabel->setText(task.get(TASK_KEY_BODY_ID).toString());
+    QString text;
+    if (hasSelection()) {
+        text = getSelectedTask().get(TASK_KEY_BODY_ID).toString();
+    } else {
+        text = "";
+    }
+    ui->currentBodyLabel->setText(text);
 }
 
 void OrphanLinkProtocol::updateProgressLabel() {
@@ -171,6 +185,14 @@ void OrphanLinkProtocol::updateProgressLabel() {
     }
     float percent = 100 * float(nComplete) / m_tasks.size();
     ui->progressLabel->setText(QString("%1/%2 (%3%)").arg(nComplete).arg(m_tasks.size()).arg(percent, 1, 'f', 1));
+}
+
+void OrphanLinkProtocol::updateCommentField() {
+    if (hasSelection()) {
+        ui->commentEntry->setText(m_comments[getSelectedTask().id]);
+    } else {
+        ui->commentEntry->clear();
+    }
 }
 
 void OrphanLinkProtocol::loadTasks() {

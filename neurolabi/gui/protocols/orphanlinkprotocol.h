@@ -77,6 +77,7 @@ private:
     void updateLabels();
     void updateCurrentBodyLabel();
     void updateProgressLabel();
+    void updateCommentField();
 
 };
 
