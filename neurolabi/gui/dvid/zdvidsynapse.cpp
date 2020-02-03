@@ -571,7 +571,7 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
   return MakeRelJson(pt, rel);
 }
 
-ZDvidAnnotation::EKind ZDvidSynapse::getParterKind(size_t i) const
+ZDvidAnnotation::EKind ZDvidSynapse::getPartnerKind(size_t i) const
 {
   EKind kind = EKind::KIND_INVALID;
   if (i < m_partnerKind.size()) {

@@ -1,42 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NeuprintSetupDialog</class>
- <widget class="QDialog" name="NeuprintSetupDialog">
+ <class>UserFeedbackDialog</class>
+ <widget class="QDialog" name="UserFeedbackDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>288</height>
+    <width>495</width>
+    <height>415</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>NeuPrint Setup</string>
+   <string>Any Feedback Is Welcome</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>NeuPrint Server</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="serverLineEdit"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Auth Token</string>
+      <string>Getting frustrated by NeuTu? 
+Please provide feedbacks/complaints below and send them to the developers. 
+The message will ONLY be checked by NeuTu developers to determine 
+the priority of future improvements. 
+You can send the same comment again and again to emphasize your need. </string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="tokenTextEdit"/>
+    <widget class="QPlainTextEdit" name="feedbackTextEdit">
+     <property name="placeholderText">
+      <string>Type any comments here, e.g. I hate to remember too many shortcuts.</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -44,7 +38,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -55,7 +49,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>NeuprintSetupDialog</receiver>
+   <receiver>UserFeedbackDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -71,7 +65,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>NeuprintSetupDialog</receiver>
+   <receiver>UserFeedbackDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -77,6 +77,10 @@ public:
     Interact() : Category("INTERACT") {}
   };
 
+  struct Feedback: public Category {
+    Feedback(): Category("FEEDBACK") {}
+  };
+
   struct Duration : public Tag {
     static const char *KEY;
     Duration(int64_t t) : Tag(KEY, t) {}
@@ -151,7 +155,7 @@ class KLog : public ZLog
 {
 public:
   KLog(EDestination dest = EDestination::KAFKA);
-  ~KLog();
+  ~KLog() override;
 
   void start() override;
   void log(const std::string &key, const neuopentracing::Value &value,

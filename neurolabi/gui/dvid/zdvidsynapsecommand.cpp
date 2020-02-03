@@ -72,7 +72,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::addRemoval(
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
       for (size_t i = 0; i < partnerArray.size(); ++i) {
         const ZIntPoint &pt = partnerArray[i];
-        if (synapse.getParterKind(i) == ZDvidAnnotation::EKind::KIND_POST_SYN) {
+        if (synapse.getPartnerKind(i) == ZDvidAnnotation::EKind::KIND_POST_SYN) {
           m_synapseSet.insert(pt);
         }
       }

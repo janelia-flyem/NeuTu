@@ -57,7 +57,7 @@ public:
 
   void updatePartnerProperty(ZDvidReader &reader);
 
-  EKind getParterKind(size_t i) const;
+  EKind getPartnerKind(size_t i) const;
 
   void updateProperty(const ZJsonObject &propJson);
 

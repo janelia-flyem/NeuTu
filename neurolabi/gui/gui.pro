@@ -302,6 +302,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
     dialogs/neuprintdatasetdialog.h \
+    dialogs/userfeedbackdialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -722,6 +723,7 @@ HEADERS += mainwindow.h \
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
     dialogs/neuprintdatasetdialog.ui \
+    dialogs/userfeedbackdialog.ui \
     mainwindow.ui \
     dialogs/traceoutputdialog.ui \
     dialogs/bcadjustdialog.ui \
@@ -827,6 +829,7 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     dialogs/neuprintdatasetdialog.cpp \
+    dialogs/userfeedbackdialog.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     protocols/taskprotocolmocktask.cpp \

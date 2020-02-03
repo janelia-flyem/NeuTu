@@ -181,11 +181,11 @@ private:
     EMode m_mode = EMode::SEQUENCER;
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
-    QStandardItemModel* m_filterModel;
+    QStandardItemModel* m_bodyGroupModel;
     QStandardItemModel* m_ioBodyModel;
     QStandardItemModel* m_connectionsModel;
     QSortFilterProxyModel* m_bodyProxy;
-    QSortFilterProxyModel* m_filterProxy;
+    QSortFilterProxyModel* m_bodyGroupProxy;
     QSortFilterProxyModel* m_schemeBuilderProxy;
     QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_connectionsProxy;
@@ -219,6 +219,8 @@ private:
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;
 
+    static const char* THREAD_ID_BODY_LOADING;
+
 private:
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
@@ -228,6 +230,7 @@ private:
     bool labelszPresent();
     void importBodiesDvid();
     void importBodiesDvid2();
+    void importBodiesNeuPrint();
     /*!
      * \brief Set status label
      *
@@ -275,6 +278,9 @@ private:
     QColor getTableColor(int index) const;
     void initBodyColumnHeader();
     void adjustBodyTableColumn();
+    std::vector<ZIntPoint> getSiteList(
+        const std::vector<ZDvidSynapse> &synapses) const;
+    void cancelBodyLoading();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

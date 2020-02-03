@@ -7012,4 +7012,3 @@ bool ZFlyEmProofMvc::showingAnnotations()
   return s_showAnnotations;
 }
 
-

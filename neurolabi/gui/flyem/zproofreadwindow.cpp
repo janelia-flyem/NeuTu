@@ -26,6 +26,7 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "mvc/zstackpresenter.h"
+#include "zactionlibrary.h"
 
 #include "widgets/zflyembookmarkview.h"
 #include "zflyemdataloader.h"
@@ -42,12 +43,18 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+#include "dialogs/userfeedbackdialog.h"
 
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
 {
   init();
+}
+
+ZProofreadWindow::~ZProofreadWindow()
+{
+  delete m_actionLibrary;
 }
 
 template <typename T>
@@ -168,6 +175,7 @@ void ZProofreadWindow::init()
 //  m_progressSignal->connectProgress(m_mainMvc->getProgressSignal());
   m_progressSignal->connectSlot(this);
 
+  m_actionLibrary = new ZActionLibrary(this);
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
@@ -261,7 +269,7 @@ QProgressDialog* ZProofreadWindow::getProgressDialog()
     m_progressDlg = new QProgressDialog(this);
     m_progressDlg->setWindowModality(Qt::WindowModal);
     m_progressDlg->setAutoClose(true);
-    m_progressDlg->setCancelButton(0);
+    m_progressDlg->setCancelButton(nullptr);
   }
 
   return m_progressDlg;
@@ -481,6 +489,12 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
   m_toolMenu->addAction(recorderAction);
 
+  QAction *feedbackAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_USER_FEEDBACK, this, SLOT(processFeedback()));
+  m_toolMenu->addAction(feedbackAction);
+
+  feedbackAction->setVisible(neutu::HasEnv("NEUTU_USER_FEEDBACK", "yes"));
+
   menuBar()->addMenu(m_toolMenu);
 
   m_advancedMenu = new QMenu("Advanced", this);
@@ -620,6 +634,9 @@ void ZProofreadWindow::createToolbar()
 
   m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
+
+  m_toolBar->addAction(
+        m_actionLibrary->getAction(ZActionFactory::ACTION_USER_FEEDBACK));
 
   addSynapseActionToToolbar();
 }
@@ -1019,3 +1036,24 @@ void ZProofreadWindow::loadDatabaseFromUrl()
   */
 
 }
+
+void ZProofreadWindow::sendFeedback(const QString &fb, const QString &action)
+{
+  QString tfb = fb.trimmed();
+  if (!tfb.isEmpty()) {
+    KLog() << ZLog::Feedback() << ZLog::Action(action.toStdString())
+           << ZLog::Description(tfb.toStdString());
+
+    dump("Thank you for your feedback!");
+  }
+}
+
+void ZProofreadWindow::processFeedback()
+{
+  UserFeedbackDialog dlg;
+  if (dlg.exec()) {
+    sendFeedback(dlg.getFeedback(), dlg.getAction());
+  }
+}
+
+

@@ -19,7 +19,7 @@ NeuprintSetupDialog::NeuprintSetupDialog(QWidget *parent) :
   ui->setupUi(this);
 
   ui->serverLineEdit->setText(ZGlobal::GetInstance().getNeuPrintServer());
-  ui->tokenTextEdit->setText(ZGlobal::GetInstance().getNeuPrintAuth());
+  ui->tokenTextEdit->setPlainText(ZGlobal::GetInstance().getNeuPrintAuth());
   connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),
           this, SLOT(processButtonClick(QAbstractButton*)));
 }
