@@ -24,7 +24,7 @@ ZWorker::~ZWorker()
 
 void ZWorker::quit()
 {
-  addTask(NULL);
+  addTask(nullptr);
   m_quiting = true;
 //  LDEBUG() << "Quit worker";
 }
@@ -40,7 +40,7 @@ void ZWorker::process()
       break;
     }
 
-    if (task != NULL) {
+    if (task) {
       task->run();
     } else {
       break;

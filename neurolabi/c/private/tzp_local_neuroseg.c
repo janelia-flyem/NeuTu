@@ -158,7 +158,7 @@ static void local_neuroseg_stack_position(const double position[3], int c[3],
 
 
 
-PRIVATE double neuroseg_correlation(double *filter, uint8 *signal, int length)
+static double neuroseg_correlation(double *filter, uint8 *signal, int length)
 {
   double score = 0.0;
   int i;
@@ -170,7 +170,7 @@ PRIVATE double neuroseg_correlation(double *filter, uint8 *signal, int length)
   return score;
 }
 
-PRIVATE double neuroseg_overlap(double *filter, uint8 *signal, int length)
+static double neuroseg_overlap(double *filter, uint8 *signal, int length)
 {
   double score = 0.0;
   int i;
@@ -184,7 +184,7 @@ PRIVATE double neuroseg_overlap(double *filter, uint8 *signal, int length)
   return score;
 }
 
-PRIVATE double neuroseg_significance(double *filter, uint8 *signal, 
+static double neuroseg_significance(double *filter, uint8 *signal, 
 				     int length)
 {
   double sig = 0.0;
@@ -223,7 +223,7 @@ PRIVATE double neuroseg_significance(double *filter, uint8 *signal,
   return sig;
 }
 
-PRIVATE double neuroseg_fit_statistic(double *filter, double *signal, 
+static double neuroseg_fit_statistic(double *filter, double *signal, 
 				      int length)
 {
   double stat = 0.0;

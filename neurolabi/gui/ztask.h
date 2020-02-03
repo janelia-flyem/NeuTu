@@ -14,7 +14,7 @@ public:
   explicit ZTask(QObject *parent = nullptr);
   virtual ~ZTask();
 
-  void run();
+  void run() override;
   virtual void execute() = 0;
   virtual void prepare() {}
 
@@ -53,11 +53,15 @@ public:
       std::function<void()> f, std::function<void()> dispose = VOID_FUNC,
       QObject *parent = nullptr);
   ~ZFunctionTask() override {
-    m_dispose();
+    if (m_dispose) {
+      m_dispose();
+    }
   }
 
   void execute() override {
-    m_f();
+    if (m_f) {
+      m_f();
+    }
   }
 
 private:

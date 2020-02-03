@@ -201,6 +201,21 @@ void RangePartitionProcess(
 //void RangePartitionProcess(
 //    int x0, int x1, int block, int n, std::function<void(int, int)> f);
 
+class ApplyOnce {
+public:
+  ApplyOnce(std::function<void()> startFunc, std::function<void()> endFunc) {
+    startFunc();
+    m_endFunc = endFunc;
+  }
+
+  ~ApplyOnce() {
+    m_endFunc();
+  }
+
+private:
+  std::function<void()> m_endFunc;
+};
+
 } //namespace neutu
 
 //template<>

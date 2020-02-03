@@ -7,11 +7,11 @@
 ZTask::ZTask(QObject *parent) : QObject(parent)
 {
   setAutoDelete(false);
-  if (parent == nullptr) {
-    connect(this, &ZTask::finished, this, &ZTask::deleteLater);
-    connect(this, &ZTask::aborted, this, &ZTask::deleteLater);
+//  if (parent == nullptr) {
+  connect(this, &ZTask::finished, this, &ZTask::deleteLater);
+  connect(this, &ZTask::aborted, this, &ZTask::deleteLater);
 //    connect(this, &ZTask::finished, this, &ZTask::slotTest);
-  }
+//  }
 }
 
 ZTask::~ZTask()

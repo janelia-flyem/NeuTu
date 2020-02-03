@@ -229,6 +229,9 @@ public:
   Stack* computeSeedMask();
   Stack* computeSeedMask(Stack *stack);
 
+  Geo3d_Scalar_Field* removeNoisySeed(Geo3d_Scalar_Field *seedPointArray,
+      Stack *mask);
+
   ZNeuronTracerConfig* getConfigRef() {
     return &m_config;
   }
@@ -237,6 +240,11 @@ public:
 
 public:
   void test();
+
+public: //pipeline functions
+  std::function<void(Stack*)> _preprocess;
+  std::function<Stack*(Stack*)> _makeMask;
+  std::function<Geo3d_Scalar_Field*(Stack*)> _extractSeedFromMask;
 
 private:
   //Helper functions
@@ -269,6 +277,8 @@ private:
   int getMinSeedObjSize(double seedDensity) const;
   bool traceMasked(int x, int y, int z) const;
 
+  Geo3d_Scalar_Field* removeTracedSeed(Geo3d_Scalar_Field *seedArray);
+
   std::string getDiagnosisDir() const;
   void log(const std::string &str);
 
@@ -279,21 +289,23 @@ private:
 
     void reset();
     void setDir(const std::string &dir);
+    void setPrefix(const std::string &prefix);
     std::string getDir() const;
-    void saveConfig(const ZNeuronTracer &tracer);
-    void save(const ZStack *stack, const std::string &name);
-    void save(const Stack *stack, const std::string &name);
-    void save(const Geo3d_Scalar_Field *field, const std::string &name);
+    std::string getPrefix() const;
+    void saveConfig(const ZNeuronTracer &tracer) const;
+    void save(const ZStack *stack, const std::string &name) const;
+    void save(const Stack *stack, const std::string &name) const;
+    void save(const Geo3d_Scalar_Field *field, const std::string &name) const;
     void save(const std::vector<Locseg_Chain*> &chainArray,
-              const std::string &name);
-    void save(ZSwcTree *tree, const std::string &name);
-    void saveInfo();
+              const std::string &name) const;
+    void save(ZSwcTree *tree, const std::string &name) const;
+    void saveInfo() const;
     void setInfo(const std::string &key, const std::string &value);
     void setInfo(const std::string &key, int value);
-
   private:
     std::string m_dir;
     ZJsonObject m_info;
+    std::string m_prefix;
   };
 
 private:
@@ -337,9 +349,6 @@ private:
   Diagnosis m_diag;
   std::function<void(const std::string)> m_log =
       [](const std::string &str) { std::cout << str << std::endl; };
-
-  std::function<void(Stack*)> _preprocess;
-  std::function<Stack*(Stack*)> _makeMask;
 
   /*
   static const char *m_levelKey;
