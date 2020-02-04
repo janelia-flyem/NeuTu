@@ -138,6 +138,14 @@ public:
     Window(const std::string &value) : Tag("window", value) {}
   };
 
+  struct User: public Tag {
+    User(const std::string &value): Tag("user", value) {}
+  };
+
+  struct AnonymousUser: public User {
+    AnonymousUser(): User("****") {}
+  };
+
   ZLog& operator << (const Tag &tag);
   ZLog& operator << (const std::function<void(ZLog&)> f);
 

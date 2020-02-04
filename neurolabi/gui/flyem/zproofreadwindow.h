@@ -121,7 +121,6 @@ private:
 //  void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);
-  void sendFeedback(const QString &fb, const QString &action);
 
 private slots:
   void processFeedback();

@@ -1043,22 +1043,13 @@ void ZProofreadWindow::loadDatabaseFromUrl()
 
 }
 
-void ZProofreadWindow::sendFeedback(const QString &fb, const QString &action)
-{
-  QString tfb = fb.trimmed();
-  if (!tfb.isEmpty()) {
-    KLog() << ZLog::Feedback() << ZLog::Action(action.toStdString())
-           << ZLog::Description(tfb.toStdString());
-
-    dump("Thank you for your feedback!");
-  }
-}
-
 void ZProofreadWindow::processFeedback()
 {
   UserFeedbackDialog dlg;
   if (dlg.exec()) {
-    sendFeedback(dlg.getFeedback(), dlg.getAction());
+    dlg.send([this](const QString &msg) {
+      this->dump(msg);
+    });
   }
 }
 
