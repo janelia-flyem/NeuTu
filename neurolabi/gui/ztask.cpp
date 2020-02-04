@@ -8,17 +8,24 @@ ZTask::ZTask(QObject *parent) : QObject(parent)
 {
   setAutoDelete(false);
 //  if (parent == nullptr) {
-  connect(this, &ZTask::finished, this, &ZTask::deleteLater);
-  connect(this, &ZTask::aborted, this, &ZTask::deleteLater);
+//  connect(this, &ZTask::finished, this, &ZTask::deleteLater, Qt::QueuedConnection);
+//  connect(this, &ZTask::aborted, this, &ZTask::deleteLater, Qt::QueuedConnection);
 //    connect(this, &ZTask::finished, this, &ZTask::slotTest);
 //  }
 }
 
 ZTask::~ZTask()
 {
-#ifdef _DEBUG_2
-  std::cout << "ZTask destroyed." << std::endl;
+#ifdef _DEBUG_
+  std::cout << "ZTask destroyed: " << this << std::endl;
 #endif
+}
+
+void ZTask::disableAutoDelete()
+{
+  setAutoDelete(false);
+//  disconnect(this, &ZTask::finished, this, &ZTask::deleteLater);
+//  disconnect(this, &ZTask::aborted, this, &ZTask::deleteLater);
 }
 
 void ZTask::run()
@@ -28,14 +35,32 @@ void ZTask::run()
 
 void ZTask::abort()
 {
-  emit aborted();
+#ifdef _DEBUG_
+  std::cout << "ZTask aborted: " << this << std::endl;
+#endif
+
+  emit aborted(this);
+}
+
+void ZTask::invalidate()
+{
+  m_isValid = false;
 }
 
 void ZTask::executeSlot()
 {
-  execute();
+  if (m_isValid) {
+    execute();
 
-  emit finished();
+#ifdef _DEBUG_
+  std::cout << "ZTask finished: " << this << std::endl;
+#endif
+
+    emit finished(this);
+    m_isValid = false;
+  } else {
+    abort();
+  }
 }
 
 void ZTask::setDelay(int delay)
@@ -72,15 +97,13 @@ ZSquareTask::ZSquareTask(QObject *parent) :
 {
 }
 
-void ZSquareTask::run()
+void ZSquareTask::execute()
 {
 #if _DEBUG_
   std::cout << "Compute " << m_value << std::endl;
 #endif
 
   m_result = m_value * m_value;
-
-  emit finished();
 
 #if _DEBUG_2
   std::cout << "finished() emitted from ZSquareTask::run() " << std::endl;

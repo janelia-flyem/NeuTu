@@ -18,7 +18,7 @@ public:
   ZMultiTaskManager(QObject *parent = NULL);
   ~ZMultiTaskManager();
 
-  void addTask(ZTask *task = NULL);
+  void addTask(ZTask *task = nullptr);
   void start();
   void waitForDone();
 

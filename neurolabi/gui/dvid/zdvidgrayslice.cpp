@@ -491,6 +491,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->setDelay(100);
     task->setDoc(doc);
     task->setHandle(getSource());
+    task->setName(this->getSource().c_str());
   }
 
   return task;

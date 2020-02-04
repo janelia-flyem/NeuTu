@@ -73,8 +73,9 @@ void ZMultiTaskManager::addTask(ZTask *task)
 {
   m_taskArray.append(task);
   task->setParent(this);
+  task->disableAutoDelete();
   task->prepare();
-  connect(task, SIGNAL(finished()), this, SLOT(process()));
+  connect(task, SIGNAL(finished(ZTask*)), this, SLOT(process()));
 #ifdef _DEBUG_2
   connect(task, SIGNAL(finished()), task, SLOT(test()));
 #endif
@@ -117,7 +118,7 @@ void ZSquareTaskManager::postProcess()
   foreach (ZTask *task, m_taskArray) {
     ZSquareTask *matchTask =
         dynamic_cast<ZSquareTask*>(task);
-    if (matchTask != NULL) {
+    if (matchTask) {
       m_result += matchTask->getResult();
     }
   }

@@ -189,6 +189,7 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
       task->setDelay(100);
       task->setDoc(doc);
       task->setSupervoxel(getDvidTarget().isSupervoxelView());
+      task->setName(this->getSource().c_str());
     }
   }
 

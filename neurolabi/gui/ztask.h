@@ -27,16 +27,32 @@ public:
 
   void abort();
 
+  void disableAutoDelete();
+  void invalidate();
+
+  QString getName() const {
+    return m_name;
+  }
+
+  void setName(const QString &name) {
+    m_name = name;
+  }
+
 public slots:
   void executeSlot();
   void slotTest();
+//  virtual void dispose();
 
 signals:
-  void finished();
-  void aborted();
+//  void finished();
+//  void aborted();
+  void finished(ZTask*);
+  void aborted(ZTask*);
 
 private:
   int m_delay = 0;
+  bool m_isValid = true;
+  QString m_name;
 };
 
 namespace {
@@ -77,7 +93,9 @@ class ZSquareTask : public ZTask
 public:
   ZSquareTask(QObject *parent = nullptr);
 
-  void run();
+//  void run();
+
+  void execute() override;
 
   inline void setValue(double value) {
     m_value = value;
