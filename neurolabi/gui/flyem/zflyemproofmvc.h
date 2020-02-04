@@ -168,8 +168,9 @@ public:
   }
 
   bool hasSequencer();
-
   void disableSequencer();
+
+  bool hasProfileTask() const;
 
   void notifyStateUpdate();
 

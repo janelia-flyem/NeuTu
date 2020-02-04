@@ -516,9 +516,14 @@ void ZProofreadWindow::createMenu()
   connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
   m_advancedMenu->addAction(settingAction);
 
-  QAction *profileAction = new QAction("Profile", this);
-  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
-  m_advancedMenu->addAction(profileAction);
+//  QAction *profileAction = new QAction("Profile", this);
+  QAction *profileAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_PROFILE, this, SLOT(profile()));
+//  profileAction->setEnabled(neutu::HasEnv("NEUTU_PROFILE", "yes"));
+//  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  if (neutu::HasEnv("NEUTU_PROFILE", "yes")) {
+    m_advancedMenu->addAction(profileAction);
+  }
 
   QAction *testAction = new QAction("Test", this);
   connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
@@ -552,6 +557,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_tuneContrastAction->setEnabled(on);
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
+  m_actionLibrary->getAction(ZActionFactory::ACTION_PROFILE)->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()

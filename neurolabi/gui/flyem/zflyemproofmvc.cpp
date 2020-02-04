@@ -3232,6 +3232,11 @@ void ZFlyEmProofMvc::disableSequencer()
   }
 }
 
+bool ZFlyEmProofMvc::hasProfileTask() const
+{
+  return false;
+}
+
 void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
