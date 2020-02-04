@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMap>
 #include <QString>
+#include <QMutex>
 
 class ZTaskQueue;
 class ZTask;
