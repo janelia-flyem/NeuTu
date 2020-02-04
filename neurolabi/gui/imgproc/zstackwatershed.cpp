@@ -3,10 +3,9 @@
 #include <iostream>
 
 #include "tz_cuboid_i.h"
+#include "zstack.hxx"
 
 #include "neutubeconfig.h"
-
-#include "zstack.hxx"
 #include "geometry/zintcuboid.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
