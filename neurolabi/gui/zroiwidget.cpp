@@ -16,6 +16,7 @@
 #include <QColorDialog>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QLineEdit>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
@@ -23,6 +24,8 @@
 #include "z3dwindow.h"
 #include "z3dsurfacefilter.h"
 #include "zroiwidget.h"
+#include "flyem/roi/zroimesh.h"
+#include "qfonticon.h"
 //#include "flyem/zflyemproofdoc.h"
 //
 ZROIObjsModel::ZROIObjsModel(QObject *parent) : ZObjsModel(parent)
@@ -85,23 +88,34 @@ void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
 
 void ZROIWidget::loadROIs(Z3DWindow *window,
 //                         const ZDvidInfo &dvidInfo,
-                         std::vector<std::string> roiList,
-                         std::vector<ZSharedPointer<ZMesh> > loadedROIs,
-                         std::vector<std::string> roiSourceList)
+                         const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
 {
     //
     m_window = window;
 //    m_dvidInfo =  dvidInfo;
-    loadROIs(roiList, loadedROIs, roiSourceList);
+    loadROIs(roiList);
 }
 
-void ZROIWidget::loadROIs(std::vector<std::string> roiList,
-                          std::vector<ZSharedPointer<ZMesh> > loadedROIs,
-                          std::vector<std::string> roiSourceList)
+void ZROIWidget::loadROIs(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
 {
+  m_roiList = roiList;
+  /*
   m_roiList = roiList;
   m_loadedROIs = loadedROIs;
   m_roiSourceList = roiSourceList;
+  */
+
+  /*
+  m_roiList.resize(roiList.size());
+  for (size_t i = 0; i < roiList.size(); ++i) {
+    ZRoiMesh *roiMesh = new ZRoiMesh;
+    roiMesh->setName(roiList[i]);
+    if (loadedROIs.size() > i) {
+      roiMesh->setMesh(loadedROIs[i]);
+    }
+    m_roiList[i] = std::shared_ptr<ZRoiMesh>(roiMesh);
+  }
+  */
 
   if (m_window != NULL) {
     m_colorModified.resize(m_roiList.size(), false);
@@ -114,7 +128,7 @@ void ZROIWidget::setCheckStatus(int row, bool on)
   if (row >= 0 && row < (int) m_checkStatus.size()) {
     m_checkStatus[row] = on;
 
-    QTableWidgetItem *item = tw_ROIs->item(row, 0);
+    QTableWidgetItem *item = m_roiTableView->item(row, 0);
     item->setCheckState(on ? Qt::Checked : Qt::Unchecked);
   }
 }
@@ -129,11 +143,12 @@ void ZROIWidget::toggleCheckStatus(int row)
 
 void ZROIWidget::updateRoiTable()
 {
-  tw_ROIs->clear();
+  m_roiTableView->clear();
   size_t roiCount = m_roiList.size();
   for (std::size_t i = 0; i < roiCount; ++i)
   {
-    QTableWidgetItem *roiNameItem = new QTableWidgetItem(m_roiList[i].c_str());
+    QTableWidgetItem *roiNameItem = new QTableWidgetItem(
+          m_roiList[i]->getName().c_str());
     roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
     roiNameItem->setCheckState(Qt::Unchecked);
 
@@ -150,10 +165,10 @@ void ZROIWidget::updateRoiTable()
     //colorItem->setBackgroundColor(defaultColor);
     colorItem->setForeground(brush);
 
-    int row = tw_ROIs->rowCount();
-    tw_ROIs->insertRow(row);
-    tw_ROIs->setItem(row, 0, roiNameItem);
-    tw_ROIs->setItem(row, 1, colorItem);
+    int row = m_roiTableView->rowCount();
+    m_roiTableView->insertRow(row);
+    m_roiTableView->setItem(row, 0, roiNameItem);
+    m_roiTableView->setItem(row, 1, colorItem);
 
 //    bool checked = false;
 //    m_checkStatus.push_back(checked);
@@ -169,6 +184,9 @@ void ZROIWidget::makeGUI()
     //
     m_selectAll = new QCheckBox("Select All");
     m_selectAll->setChecked(false);
+
+    m_toggleButton = new QPushButton("Toggle");
+    m_toggleButton->setIcon(QFontIcon::icon(0xf06e, Qt::darkGreen));
 
     //
     double alpha = m_window->getFilter(neutu3d::ERendererLayer::ROI)->opacity();
@@ -190,22 +208,22 @@ void ZROIWidget::makeGUI()
     horizontalGroupBox->setLayout(hLayout);
 
     //
-    tw_ROIs = new QTableWidget(0, 2);
-    tw_ROIs->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_roiTableView = new QTableWidget(0, 2);
+    m_roiTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     QStringList labels;
     labels << tr("ROI Name") << tr("Color");
-    tw_ROIs->setHorizontalHeaderLabels(labels);
+    m_roiTableView->setHorizontalHeaderLabels(labels);
 
 #ifdef _QT5_
-    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    m_roiTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 #else
-    tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    m_roiTableView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
 #endif
 //    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 
-    tw_ROIs->verticalHeader()->hide();
-    tw_ROIs->setShowGrid(false);
+    m_roiTableView->verticalHeader()->hide();
+    m_roiTableView->setShowGrid(false);
 
     //
     //QBrush brush(defaultColor);
@@ -215,11 +233,18 @@ void ZROIWidget::makeGUI()
 
     QHBoxLayout *controlLayout = new QHBoxLayout();
 
-    controlLayout->addWidget(m_selectAll);
+    controlLayout->addWidget(m_toggleButton);
     controlLayout->addWidget(horizontalGroupBox);
 
     layout->addLayout(controlLayout);
-    layout->addWidget(tw_ROIs);
+
+    m_filterEdit = new QLineEdit(this);
+    m_filterEdit->setPlaceholderText("Filter ROIs...");
+    connect(m_filterEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(filterRoi(const QString &)));
+    layout->addWidget(m_filterEdit);
+
+    layout->addWidget(m_roiTableView);
 
     QGroupBox *group = new QGroupBox();
     group->setLayout(layout);
@@ -232,11 +257,12 @@ void ZROIWidget::makeGUI()
 
     //
     //connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
-    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)),
+    connect(m_roiTableView, SIGNAL(cellDoubleClicked(int,int)),
             this, SLOT(updateROIColors(int,int)));
-    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)),
+    connect(m_roiTableView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(updateROISelections(QModelIndex)));
     connect(m_selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
+    connect(m_toggleButton, SIGNAL(clicked()), this, SLOT(toggleSelection()));
     connect(m_opacitySlider,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
     connect(m_window->getFilter(neutu3d::ERendererLayer::ROI), SIGNAL(opacityChanged(double)),
             this,SLOT(updateOpacity(double)));
@@ -287,21 +313,50 @@ int ZROIWidget::getDsIntv() const
 //  return m_dsIntvWidget->value();
 }
 
+void ZROIWidget::toggleSelection()
+{
+  QString filterString = m_filterEdit->text();
+  std::vector<QTableWidgetItem*> itemList;
+  for(int i = 0; i < m_roiTableView->rowCount(); i++) {
+    if (filterString.isEmpty() || getRoiName(i).contains(filterString)) {
+      itemList.push_back(m_roiTableView->item(i, 0));
+    }
+  }
+
+  size_t checkedCount = 0;
+  for (QTableWidgetItem *item : itemList) {
+    if (item->checkState() == Qt::Checked) {
+      ++checkedCount;
+    }
+  }
+
+  Qt::CheckState newCheckState = Qt::Unchecked;
+  if (checkedCount * 2 < itemList.size()) {
+    newCheckState = Qt::Checked;
+  }
+
+  for (QTableWidgetItem *item : itemList) {
+    item->setCheckState(newCheckState);
+  }
+
+  updateROIs();
+}
+
 void ZROIWidget::updateSelection()
 {
     if(m_selectAll->isChecked())
     {
-        for(int i=0; i<tw_ROIs->rowCount(); i++)
+        for(int i=0; i<m_roiTableView->rowCount(); i++)
         {
-            QTableWidgetItem *item = tw_ROIs->item(i, 0);
+            QTableWidgetItem *item = m_roiTableView->item(i, 0);
             item->setCheckState(Qt::Checked);
         }
     }
     else
     {
-        for(int i=0; i<tw_ROIs->rowCount(); i++)
+        for(int i=0; i<m_roiTableView->rowCount(); i++)
         {
-            QTableWidgetItem *item = tw_ROIs->item(i, 0);
+            QTableWidgetItem *item = m_roiTableView->item(i, 0);
             item->setCheckState(Qt::Unchecked);
         }
     }
@@ -309,22 +364,67 @@ void ZROIWidget::updateSelection()
     updateROIs();
 }
 
+QTableWidgetItem* ZROIWidget::getRoiItem(int index) const
+{
+  return m_roiTableView->item(index, 0);
+}
+
+QColor ZROIWidget::getRoiColor(int index) const
+{
+  return m_roiTableView->item(index,1)->foreground().color();
+}
+
+bool ZROIWidget::isRoiChecked(int index) const
+{
+  return getRoiItem(index)->checkState() == Qt::Checked;
+}
+
+QString ZROIWidget::getRoiName(int index) const
+{
+  return getRoiItem(index)->text();
+}
+/*
+void ZROIWidget::filterRoi()
+{
+  filterRoi(m_filterEdit->text());
+}
+*/
+
+ZMesh* ZROIWidget::getRoiMesh(int index) const
+{
+  if (index >= 0 && size_t(index) < m_roiList.size()) {
+    return  m_roiList[size_t(index)]->getMesh();
+  }
+
+  return nullptr;
+}
+
+void ZROIWidget::filterRoi(const QString &filterString)
+{
+  for(int i = 0; i < m_roiTableView->rowCount(); ++i) {
+    if (filterString.isEmpty()) {
+      m_roiTableView->setRowHidden(i, false);
+    } else {
+      m_roiTableView->setRowHidden(i, !getRoiName(i).contains(filterString));
+    }
+  }
+}
+
 void ZROIWidget::updateSelectedROIs()
 {
   // render selected ROIs
   if (m_window != NULL) {
     m_window->getDocument()->blockSignals(true);
-    for(int i=0; i<tw_ROIs->rowCount(); i++)
-    {
-      QTableWidgetItem *it = tw_ROIs->item(i, 0);
-
-      if(it->checkState()==Qt::Checked)
-      {
-        QColor color = tw_ROIs->item(i,1)->foreground().color();
-        ZMesh *mesh = new ZMesh(*m_loadedROIs.at(i));
-        mesh->setColor(color);
-        mesh->pushObjectColor();
-        m_window->getDocument()->addObject(mesh);
+    for(int i=0; i<m_roiTableView->rowCount(); i++) {
+      if(isRoiChecked(i)) {
+        ZMesh *sourceMesh = getRoiMesh(i);
+        if (sourceMesh) {
+          QColor color = getRoiColor(i);
+          ZMesh *mesh = new ZMesh(*sourceMesh);
+          mesh->setColor(color);
+          mesh->pushObjectColor();
+          m_window->getDocument()->addObject(mesh);
+        }
 
 //        ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
 //              m_loadedROIs.at(i), color, getDsIntv());
@@ -347,19 +447,21 @@ void ZROIWidget::updateROIs()
 
   // render selected ROIs
 //    m_window->getDocument()->blockSignals(true);
-    for(int i=0; i<tw_ROIs->rowCount(); i++) {
-      QTableWidgetItem *it = tw_ROIs->item(i, 0);
+    for(int i=0; i<m_roiTableView->rowCount(); i++) {
+      QTableWidgetItem *it = m_roiTableView->item(i, 0);
+
+      auto roiMesh = m_roiList[i];
 
 #ifdef _DEBUG_
-      std::cout << "Updating ROI: " << m_roiList[i] << std::endl;
+      std::cout << "Updating ROI: " << roiMesh->getName() << std::endl;
 #endif
 
       ZStackObject *obj = m_window->getDocument()->getObject(
-            ZStackObject::EType::MESH, m_roiSourceList[i]);
+            ZStackObject::EType::MESH, roiMesh->getSourceName());
       ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
       if(it->checkState()==Qt::Checked) { //visible meshes
-        QColor color = tw_ROIs->item(i,1)->foreground().color();
+        QColor color = m_roiTableView->item(i,1)->foreground().color();
 
         bool addingMesh = false;
         bool meshUpdated = false;
@@ -367,8 +469,9 @@ void ZROIWidget::updateROIs()
 //        colorModified[i] = false;
 
         if (mesh == NULL) {
-          mesh = new ZMesh(*m_loadedROIs.at(i));
-          mesh->setSource(m_roiSourceList[i]);
+          mesh = roiMesh->makeMesh();
+//          mesh = new ZMesh(*m_loadedROIs.at(i));
+//          mesh->setSource(m_roiSourceList[i]);
           addingMesh = true;
         }
 
@@ -407,7 +510,7 @@ void ZROIWidget::updateROIs()
 
 void ZROIWidget::updateROISelections(int row, int column)
 {
-    QTableWidgetItem *item = tw_ROIs->item(row, 0);
+    QTableWidgetItem *item = m_roiTableView->item(row, 0);
 
     if(column==0)
     {
@@ -433,7 +536,7 @@ void ZROIWidget::updateROISelections(int row, int column)
 
 void ZROIWidget::updateROIColors(int row, int column)
 {
-    QTableWidgetItem *item = tw_ROIs->item(row, 1);
+    QTableWidgetItem *item = m_roiTableView->item(row, 1);
 
     if(column==1)
     {
@@ -471,7 +574,7 @@ void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
     ZOUT(LTRACE(), 5)<<"to render ROI: "<<item->text()<<item->checkState();
 
 
-    ZOUT(LTRACE(), 5)<<tw_ROIs->selectedItems();
+    ZOUT(LTRACE(), 5)<<m_roiTableView->selectedItems();
 }
 
 void ZROIWidget::updateSlider(int v)

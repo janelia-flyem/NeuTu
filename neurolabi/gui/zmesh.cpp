@@ -1739,6 +1739,12 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
 }
 
+void ZMesh::pushObjectColor(const QColor &color)
+{
+  setColor(color);
+  pushObjectColor();
+}
+
 void ZMesh::pushObjectColor()
 {
   m_colors.resize(m_vertices.size());

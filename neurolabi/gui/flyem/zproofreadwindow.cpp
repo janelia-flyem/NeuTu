@@ -1048,7 +1048,9 @@ void ZProofreadWindow::processFeedback()
   UserFeedbackDialog dlg;
   if (dlg.exec()) {
     dlg.send([this](const QString &msg) {
-      this->dump(msg);
+      this->dump(
+            ZWidgetMessage(msg, neutu::EMessageType::INFORMATION,
+                           ZWidgetMessage::TARGET_TEXT_APPENDING));
     });
   }
 }

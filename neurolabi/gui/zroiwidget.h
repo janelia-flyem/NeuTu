@@ -1,6 +1,8 @@
 #ifndef ZROIWIDGET_H
 #define ZROIWIDGET_H
 
+#include <memory>
+
 #include <QTableWidget>
 #include <QDockWidget>
 
@@ -17,7 +19,10 @@ class QDoubleSpinBox;
 class QPushButton;
 class QTableWidget;
 class QTableWidgetItem;
+class QLineEdit;
 QT_END_NAMESPACE
+
+class ZRoiMesh;
 
 //
 class ZROIObjsModel : public ZObjsModel
@@ -47,13 +52,8 @@ public:
 
 public:
     void loadROIs(Z3DWindow *window,
-//                  const ZDvidInfo &dvidInfo,
-                  std::vector<std::string> roiList,
-                  std::vector<ZSharedPointer<ZMesh> > loadedROIs,
-                  std::vector<std::string> roiSourceList);
-    void loadROIs(std::vector<std::string> roiList,
-                  std::vector<ZSharedPointer<ZMesh> > loadedROIs,
-                  std::vector<std::string> roiSourceList);
+                  const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
+    void loadROIs(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
 
     Z3DWindow* getParentWindow() const {
       return m_window;
@@ -68,10 +68,12 @@ public slots:
     void updateROIColors(int row, int column);
     void updateROIRendering(QTableWidgetItem* item);
     void updateSelection();
+    void toggleSelection();
     void updateROISelections(QModelIndex idx);
     void updateSelectedROIs();
     void updateOpacity(double v);
     void updateSlider(int v);
+//    void filterRoi();
 
 
 protected:
@@ -84,28 +86,39 @@ private:
     void toggleCheckStatus(int row);
     void updateRoiTable();
     void updateOpacityLabel(double v);
+    QTableWidgetItem* getRoiItem(int index) const;
+    QColor getRoiColor(int index) const;
+    QString getRoiName(int index) const;
+    bool isRoiChecked(int index) const;
+    ZMesh* getRoiMesh(int index) const;
 
-public:
+private slots:
+    void filterRoi(const QString &filterString);
+
+private:
     //
     Z3DWindow *m_window;
 //    ZDvidInfo m_dvidInfo;
 
     //
-    std::vector<std::string> m_roiList;
-    std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
+    std::vector<std::shared_ptr<ZRoiMesh>> m_roiList;
+//    std::vector<std::string> m_roiList;
+//    std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
     QColor m_defaultColor;
-    std::vector<std::string> m_roiSourceList;
+//    std::vector<std::string> m_roiSourceList;
     std::vector<bool> m_colorModified;
     std::vector<bool> m_checkStatus;
 
     //
     QCheckBox *m_selectAll;
+    QPushButton *m_toggleButton = nullptr;
 
 //    QSpinBox *m_dsIntvWidget = NULL;
 //    QPushButton *m_updateButton;
     QLabel *m_opacityLabel;
     QSlider *m_opacitySlider;
-    QTableWidget *tw_ROIs;
+    QLineEdit *m_filterEdit;
+    QTableWidget *m_roiTableView;
 
     //
 //    ZROIObjsModel *m_objmodel;

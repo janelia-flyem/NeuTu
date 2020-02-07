@@ -67,6 +67,7 @@ class ZFlyEmSequencerColorScheme;
 class ZFlyEmBookmark;
 class ZFlyEmBookmarkListModel;
 class ZDvidEnv;
+class ZRoiMesh;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -723,10 +724,11 @@ protected:
 //  ZDvidInfo m_labelInfo;
   bool m_ROILoaded;
 
-  std::vector<std::string> m_roiList;
-  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
+  std::vector<std::shared_ptr<ZRoiMesh>> m_roiMeshList;
+//  std::vector<std::string> m_roiList;
+//  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
 //  std::vector<ZObject3dScan> m_loadedROIs;
-  std::vector<std::string> m_roiSourceList;
+//  std::vector<std::string> m_roiSourceList;
 
   std::map<EViewButton, QPushButton*> m_viewButtons;
 

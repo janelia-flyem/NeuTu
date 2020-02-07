@@ -4991,6 +4991,11 @@ bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
   return getRectRoi().contains(screenPos.x(), screenPos.y());
 }
 
+void Z3DWindow::initRois(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
+{
+  getROIsDockWidget()->loadROIs(this, roiList);
+}
+
 void Z3DWindow::deleteSelected()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();

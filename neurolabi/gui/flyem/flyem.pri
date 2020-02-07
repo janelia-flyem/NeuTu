@@ -1,6 +1,7 @@
 include(dialogs/dialogs.pri)
 include(widgets/widgets.pri)
 include(neuroglancer/neuroglancer.pri)
+include(roi/roi.pri)
 
 FORMS += \
     $$PWD/flyemdataframeoptiondialog.ui \

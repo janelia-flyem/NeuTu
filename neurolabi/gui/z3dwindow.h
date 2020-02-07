@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <memory>
 
 #include <QMainWindow>
 #include <QTabWidget>
@@ -70,6 +71,7 @@ class ZObject3d;
 class ZWidgetMessage;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoFilterDialog;
+class ZRoiMesh;
 
 class Z3DWindow : public QMainWindow
 {
@@ -168,6 +170,8 @@ public:
   void removeRectRoi();
 
   bool isProjectedInRectRoi(const ZIntPoint &pt) const;
+
+  void initRois(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
 
 public: //controls
   void createToolBar();

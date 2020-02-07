@@ -333,6 +333,7 @@ public:
   void scale(double sx, double sy, double sz);
 
   void pushObjectColor();
+  void pushObjectColor(const QColor &color);
 
   std::vector<ZPoint> intersectLineSeg(
       const ZPoint &start, const ZPoint &end) const;

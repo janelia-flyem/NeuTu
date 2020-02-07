@@ -87,6 +87,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 
+#include "roi/zroimesh.h"
 #include "zflyembodystatus.h"
 #include "flyemmvcdialogmanager.h"
 #include "zflyembookmarklistmodel.h"
@@ -1121,9 +1122,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_coarseBodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-      m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
-            m_coarseBodyWindow, m_roiList,
-            m_loadedROIs, m_roiSourceList);
+      m_coarseBodyWindow->initRois(m_roiMeshList);
     }
   }
 }
@@ -1157,9 +1156,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
           m_bodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_bodyWindow->getROIsDockWidget()->loadROIs(
-              m_bodyWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_bodyWindow->initRois(m_roiMeshList);
   }
 }
 
@@ -1204,9 +1201,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
             m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
       if(m_ROILoaded) {
-        m_meshWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_meshWindow->initRois(m_roiMeshList);
       }
     }
   }
@@ -1241,9 +1236,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_skeletonWindow->initRois(m_roiMeshList);
     }
   }
 
@@ -1319,10 +1312,13 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
     flyem::Decorate3dBodyWindow(
           window, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-    if(m_ROILoaded) {
+    if (m_ROILoaded) {
+      window->initRois(m_roiMeshList);
+      /*
         window->getROIsDockWidget()->loadROIs(
               window, m_roiList, m_loadedROIs,
               m_roiSourceList);
+              */
     }
   }
 }
@@ -1360,9 +1356,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_skeletonWindow->initRois(m_roiMeshList);
     }
   }
 }
@@ -1388,9 +1382,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 
     if(m_ROILoaded)
-        m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
-              m_externalNeuronWindow, m_roiList,
-              m_loadedROIs, m_roiSourceList);
+        m_externalNeuronWindow->initRois(m_roiMeshList);
   }
 }
 
@@ -6650,12 +6642,17 @@ void ZFlyEmProofMvc::loadRoiMesh(ZMesh *mesh, const std::string &roiName)
     std::cout << "ROI mesh: " << mesh->vertices().size()
               << " vertices." << std::endl;
 #endif
-    std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-    mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+//    std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+//    mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+//    mesh->setSource(source);
     mesh->addRole(ZStackObjectRole::ROLE_ROI);
-    m_loadedROIs.emplace_back(mesh);
-    m_roiList.push_back(roiName);
-    m_roiSourceList.push_back(source);
+    ZRoiMesh *roiMesh = new ZRoiMesh;
+    roiMesh->setMesh(roiName, mesh);
+    m_roiMeshList.emplace_back(roiMesh);
+
+//    m_loadedROIs.emplace_back(mesh);
+//    m_roiList.push_back(roiName);
+//    m_roiSourceList.push_back(source);
   }
 }
 
@@ -6698,6 +6695,8 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 {
   QElapsedTimer timer;
   timer.start();
+
+#if 1
   ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(
         reader, roiName, [this](const std::string &msg) { this->warn(msg); }
   );
@@ -6711,6 +6710,10 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 
     loadRoiMesh(mesh, roiName);
   }
+#else
+  m_roiList.push_back(roiName);
+#endif
+
 
 #ifdef _DEBUG_2
   std::cout << "Load ROIs from ROI data" << std::endl;
@@ -6758,9 +6761,11 @@ void ZFlyEmProofMvc::loadROIFunc()
 
   //
 //  ZDvidReader reader;
-  m_roiList.clear();
-  m_loadedROIs.clear();
-  m_roiSourceList.clear();
+//  m_roiList.clear();
+//  m_loadedROIs.clear();
+//  m_roiSourceList.clear();
+
+  m_roiMeshList.clear();
 
   //
   ZDvidReader reader;
@@ -6788,15 +6793,20 @@ void ZFlyEmProofMvc::loadROIFunc()
 
 void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
 {
-  widget->loadROIs(win, m_roiList, m_loadedROIs, m_roiSourceList);
+  widget->loadROIs(win, m_roiMeshList);
 }
 
 void ZFlyEmProofMvc::updateRoiWidget(Z3DWindow *win) const
 {
   if (win) {
+    win->initRois(m_roiMeshList);
+  }
+  /*
+  if (win) {
     win->getROIsDockWidget()->loadROIs(
           win, m_roiList, m_loadedROIs, m_roiSourceList);
   }
+  */
 }
 
 void ZFlyEmProofMvc::updateRoiWidget()
@@ -6807,48 +6817,6 @@ void ZFlyEmProofMvc::updateRoiWidget()
   updateRoiWidget(m_skeletonWindow);
   updateRoiWidget(m_meshWindow);
   updateRoiWidget(m_coarseMeshWindow);
-#if 0
-  //
-  if(m_coarseBodyWindow)
-  {
-    m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
-          m_coarseBodyWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_bodyWindow)
-  {
-    m_bodyWindow->getROIsDockWidget()->loadROIs(
-          m_bodyWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_externalNeuronWindow)
-  {
-    m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
-          m_externalNeuronWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_skeletonWindow)
-  {
-    m_skeletonWindow->getROIsDockWidget()->loadROIs(
-          m_skeletonWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if (m_meshWindow) {
-    m_meshWindow->getROIsDockWidget()->loadROIs(
-          m_meshWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if (m_coarseMeshWindow) {
-    m_coarseMeshWindow->getROIsDockWidget()->loadROIs(
-          m_coarseMeshWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-#endif
 }
 
 void ZFlyEmProofMvc::showInfoDialog()

@@ -14,7 +14,7 @@ class ZObjsModel : public QAbstractItemModel
 {
   Q_OBJECT
 public:
-  ZObjsModel(QObject *parent = 0);
+  ZObjsModel(QObject *parent = nullptr);
   ~ZObjsModel();
 
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
