@@ -516,6 +516,8 @@ void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
 
 void ZStackDoc::addTask(ZTask *task)
 {
+  addTaskSlot(task);
+  /*
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
   if (m_worker != NULL) {
     if (task->getDelay() > 0) {
@@ -530,14 +532,18 @@ void ZStackDoc::addTask(ZTask *task)
       addTaskSlot(task);
     }
   }
+  */
 }
 
 void ZStackDoc::addTaskSlot(ZTask *task)
 {
-//  task->moveToThread(m_worker->thread());
-  if (m_worker != NULL) {
-    m_worker->addTask(task);
+  if (m_workThread) {
+    m_workThread->addTask(task);
   }
+//  task->moveToThread(m_worker->thread());
+//  if (m_worker != NULL) {
+//    m_worker->addTask(task);
+//  }
 }
 
 void ZStackDoc::autoSaveSwc()

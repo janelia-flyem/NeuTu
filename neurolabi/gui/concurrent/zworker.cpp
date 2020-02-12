@@ -26,6 +26,8 @@ ZWorker::~ZWorker()
 
 void ZWorker::quit()
 {
+  disconnect(this, SIGNAL(schedulingTask(ZTask*)),
+             this, SLOT(processTask(ZTask*)));
   addTask(nullptr);
   m_quiting = true;
 //  LDEBUG() << "Quit worker";
@@ -65,7 +67,16 @@ void ZWorker::processTask(ZTask *task)
 
 void ZWorker::scheduleTask(ZTask *task)
 {
-  emit schedulingTask(task);
+  if (m_taskQueue) {
+    m_taskQueue->add(task);
+  } else {
+    connect(task, SIGNAL(finished(ZTask*)),
+            this, SLOT(disposeTask(ZTask*)), Qt::QueuedConnection);
+    connect(task, SIGNAL(aborted(ZTask*)),
+            this, SLOT(disposeTask(ZTask*)), Qt::QueuedConnection);
+
+    emit schedulingTask(task);
+  }
 }
 
 void ZWorker::invalidateNamedTask(ZTask *task, QMutex *mutex)
@@ -112,40 +123,40 @@ void ZWorker::disposeTask(ZTask *task)
 void ZWorker::addNamedTask(ZTask *task)
 {
   if (task) {
-    if (!task->getName().isEmpty()) {
+    QString name = task->getName();
+    if (!name.isEmpty()) {
 #ifdef _DEBUG_
       std::cout << "Add named task: " << task << std::endl;
 #endif
       QMutexLocker locker(&m_nameTaskMapLock);
-      invalidateNamedTask(task->getName(), nullptr);
-      m_namedTaskMap[task->getName()] = task;
+      if (m_namedTaskMap.contains(task->getName())) {
+        if (task->skippingUponNameDuplicate()) {
+          task->invalidate();
+        } else {
+          invalidateNamedTask(name, nullptr);
+        }
+      }
+      if (task->isValid()) {
+        m_namedTaskMap[name] = task;
+      }
     }
   }
 }
 
 void ZWorker::addTask(ZTask *task)
 {
-  addNamedTask(task);
-
-  if (m_taskQueue) {
-    m_taskQueue->add(task);
-  } else {
-    if (task) {
+  if (task) {
+    addNamedTask(task);
+    if (m_taskQueue == nullptr) {
       task->moveToThread(thread());
       task->setParent(this);
-      connect(task, SIGNAL(finished(ZTask*)),
-              this, SLOT(disposeTask(ZTask*)), Qt::QueuedConnection);
-      connect(task, SIGNAL(aborted(ZTask*)),
-              this, SLOT(disposeTask(ZTask*)), Qt::QueuedConnection);
-
-//      task->moveToThread(thread());
-      if (task->getDelay() > 0) {
-        QTimer::singleShot(task->getDelay(), this, [=]() {
-          scheduleTask(task);
-        });
-      } else {
-        emit schedulingTask(task);
-      }
+    }
+    if (task->getDelay() > 0) {
+      QTimer::singleShot(task->getDelay(), this, [=]() {
+        scheduleTask(task);
+      });
+    } else {
+      scheduleTask(task);
     }
   }
 }

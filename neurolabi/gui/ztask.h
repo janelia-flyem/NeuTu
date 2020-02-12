@@ -12,7 +12,7 @@ class ZTask : public QObject, public QRunnable
 
 public:
   explicit ZTask(QObject *parent = nullptr);
-  virtual ~ZTask();
+  virtual ~ZTask() override;
 
   void run() override;
   virtual void execute() = 0;
@@ -25,8 +25,11 @@ public:
   void setDelay(int delay);
   int getDelay() const;
 
-  void abort();
+  bool isValid() const {
+    return m_isValid;
+  }
 
+  void abort();
   void disableAutoDelete();
   void invalidate();
 
@@ -38,14 +41,19 @@ public:
     m_name = name;
   }
 
+  bool skippingUponNameDuplicate() const {
+    return m_skipUponNameDuplicate;
+  }
+
+  void skipUponNameDuplicate(bool on) {
+    m_skipUponNameDuplicate = on;
+  }
+
 public slots:
   void executeSlot();
   void slotTest();
-//  virtual void dispose();
 
 signals:
-//  void finished();
-//  void aborted();
   void finished(ZTask*);
   void aborted(ZTask*);
 
@@ -53,6 +61,7 @@ private:
   int m_delay = 0;
   bool m_isValid = true;
   QString m_name;
+  bool m_skipUponNameDuplicate = false;
 };
 
 namespace {

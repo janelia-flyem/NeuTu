@@ -186,7 +186,7 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
       task->setZoom(getHelper()->getZoom());
       task->setCenterCut(
             getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-      task->setDelay(100);
+      task->setDelay(50);
       task->setDoc(doc);
       task->setSupervoxel(getDvidTarget().isSupervoxelView());
       task->setName(this->getSource().c_str());

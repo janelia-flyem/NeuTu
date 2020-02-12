@@ -1299,6 +1299,21 @@ void Z3DWindow::saveAllVisibleMesh()
   }
 }
 
+void Z3DWindow::zoomToRoiMesh(const QString &name)
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc) {
+    ZBBox<glm::dvec3> boundingBox;
+    ZMesh *mesh = doc->getRoiMesh(name);
+    if (mesh) {
+      boundingBox.expand(getMeshFilter()->meshBound(mesh));
+    }
+    if (!boundingBox.empty()) {
+      m_view->gotoPosition(boundingBox, 0);
+    }
+  }
+}
+
 void Z3DWindow::zoomToSelectedMeshes()
 {
   const TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::EType::MESH);
@@ -4991,9 +5006,25 @@ bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
   return getRectRoi().contains(screenPos.x(), screenPos.y());
 }
 
+/*
 void Z3DWindow::initRois(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
 {
   getROIsDockWidget()->loadROIs(this, roiList);
+}
+*/
+
+void Z3DWindow::initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider)
+{
+  getROIsDockWidget()->initRoiView(this, roiProvider);
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc) {
+    connect(getROIsDockWidget(), &ZROIWidget::roiUpdated,
+            doc, &ZFlyEmBody3dDoc::updateRoiMesh);
+    connect(getROIsDockWidget(), &ZROIWidget::roiListUpdated,
+            doc, &ZFlyEmBody3dDoc::updateRoiMeshList);
+    connect(getROIsDockWidget(), &ZROIWidget::locatingRoiMesh,
+            this, &Z3DWindow::zoomToRoiMesh);
+  }
 }
 
 void Z3DWindow::deleteSelected()

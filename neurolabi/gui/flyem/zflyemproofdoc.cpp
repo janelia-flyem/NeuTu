@@ -25,6 +25,7 @@
 #include "zwidgetmessage.h"
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
+#include "zjsonobjectparser.h"
 
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -81,6 +82,8 @@
 #include "misc/miscutility.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
+#include "roi/zroiprovider.h"
+#include "roi/zdvidroifactory.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -940,6 +943,62 @@ bool ZFlyEmProofDoc::isAdmin() const
   return m_isAdmin;
 }
 
+void ZFlyEmProofDoc::initRoiProvider()
+{
+  if (getDvidReader().isReady() && !m_roiProvider) {
+    m_roiProvider = std::shared_ptr<ZRoiProvider>(new ZRoiProvider);
+    ZDvidRoiFactory *factory = new ZDvidRoiFactory;
+    factory->setDvidTarget(getDvidTarget());
+    m_roiProvider->setRoiFactory(factory);
+
+    //Initialize ROI list
+    std::vector<std::string> nameList;
+
+    QString roiDataName = ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str();
+    QStringList keyList = getDvidReader().readKeys(roiDataName);
+
+    QList<ZJsonObject> infoList = getDvidReader().readJsonObjectsFromKeys(
+          roiDataName, keyList);
+    if (!keyList.isEmpty()) {
+      ZJsonObjectParser parser;
+      for (int i = 0; i < keyList.size(); ++i) {
+        bool visible = parser.getValue(infoList[i], "visible", true);
+        if (visible) {
+          nameList.push_back(keyList[i].toStdString());
+        }
+      }
+      factory->setSource(ZDvidRoiFactory::ESource::MESH);
+    } else {
+      ZJsonValue datains = m_infoJson.value("DataInstances");
+      if(datains.isObject()) {
+        ZJsonObject insList(datains);
+        std::vector<std::string> keys = insList.getAllKey();
+
+        for(std::size_t i=0; i<keys.size(); i++) {
+          std::string roiName = keys.at(i);
+          ZJsonObject roiJson(insList.value(roiName.c_str()));
+          if (roiJson.hasKey("Base")) {
+            ZJsonObject baseJson(roiJson.value("Base"));
+            std::string typeName =
+                ZJsonParser::stringValue(baseJson["TypeName"]);
+            if (typeName != "roi") {
+              nameList.push_back(roiName);
+            }
+          }
+        }
+      }
+      factory->setSource(ZDvidRoiFactory::ESource::ROI);
+    }
+    m_roiProvider->setRoiList(nameList);
+
+    m_roiProvider->startWorkThread();
+    addClearance([&]() {
+      m_roiProvider->endWorkThread();
+    });
+  }
+}
+
+
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
   if (!m_bookmarkReader.isReady()) {
@@ -1267,6 +1326,8 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_roiManager = new ZFlyEmRoiManager(this);
     m_roiManager->setDvidTarget(getDvidTarget());
     m_roiManager->loadRoiList();
+
+    initRoiProvider();
 
     KDEBUG << ZLog::Diagnostic(flowInfo.str());
 
@@ -5832,9 +5893,26 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   return bookmark;
 }
 
+
+
+ZMesh* ZFlyEmProofDoc::makeRoiMesh(const QString &name)
+{
+  ZMesh *mesh = nullptr;
+  if (m_roiProvider) {
+    mesh = m_roiProvider->makeRoiMesh(name.toStdString());
+  }
+
+  return mesh;
+}
+
 void ZFlyEmProofDoc::makeKeyProcessor()
 {
   m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
+}
+
+std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::getRoiProvider() const
+{
+  return m_roiProvider;
 }
 
 void ZFlyEmProofDoc::exportGrayscale(

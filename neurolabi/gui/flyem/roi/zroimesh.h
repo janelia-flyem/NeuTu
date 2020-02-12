@@ -4,6 +4,8 @@
 #include <string>
 #include <memory>
 
+#include <QColor>
+
 class ZMesh;
 
 /*!
@@ -18,6 +20,8 @@ class ZRoiMesh
 {
 public:
   ZRoiMesh();
+  ZRoiMesh(const std::string &name);
+  ZRoiMesh(const std::string &name, const QColor &color);
   ~ZRoiMesh();
 
   enum class EStatus {
@@ -28,6 +32,7 @@ public:
   void setMesh(const std::shared_ptr<ZMesh> &mesh);
   void setMesh(const std::string &name, const std::shared_ptr<ZMesh> &mesh);
   void setMesh(const std::string &name, ZMesh *mesh);
+
   ZMesh* getMesh() const;
   ZMesh* makeMesh() const;
 
@@ -35,16 +40,22 @@ public:
   std::string getSourceName() const;
   void setName(const std::string &name);
 
+  QColor getColor() const;
+  void setColor(const QColor &color);
+
   bool isLoaded() const;
   bool isVisible() const;
+  void setVisible(bool on);
 
   EStatus getStatus() const;
 
 private:
-  void updateMeshSource();
+  void updateMeshProperty();
 
 private:
   std::string m_name;
+  QColor m_color;
+  bool m_isVisible = false;
   std::shared_ptr<ZMesh> m_mesh;
 };
 

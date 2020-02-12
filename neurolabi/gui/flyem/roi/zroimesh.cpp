@@ -5,7 +5,17 @@
 
 ZRoiMesh::ZRoiMesh()
 {
+}
 
+ZRoiMesh::ZRoiMesh(const std::string &name)
+{
+  m_name = name;
+}
+
+ZRoiMesh::ZRoiMesh(const std::string &name, const QColor &color)
+{
+  m_name = name;
+  m_color = color;
 }
 
 ZRoiMesh::~ZRoiMesh()
@@ -15,19 +25,21 @@ ZRoiMesh::~ZRoiMesh()
 void ZRoiMesh::setMesh(ZMesh *mesh)
 {
   m_mesh = std::shared_ptr<ZMesh>(mesh);
-  updateMeshSource();
+  updateMeshProperty();
 }
 
 void ZRoiMesh::setMesh(const std::shared_ptr<ZMesh> &mesh)
 {
   m_mesh = mesh;
-  updateMeshSource();
+  updateMeshProperty();
 }
 
-void ZRoiMesh::updateMeshSource()
+void ZRoiMesh::updateMeshProperty()
 {
   if (m_mesh) {
+    m_mesh->addRole(ZStackObjectRole::ROLE_ROI);
     m_mesh->setSource(getSourceName());
+    m_mesh->pushObjectColor(m_color);
   }
 }
 
@@ -66,18 +78,22 @@ bool ZRoiMesh::isLoaded() const
 
 bool ZRoiMesh::isVisible() const
 {
+  return m_isVisible;
+}
+
+void ZRoiMesh::setVisible(bool on)
+{
   ZMesh *mesh = getMesh();
   if (mesh) {
-    return mesh->isVisible();
+    mesh->setVisible(on);
   }
-
-  return false;
+  m_isVisible = on;
 }
 
 void ZRoiMesh::setName(const std::string &name)
 {
   m_name = name;
-  updateMeshSource();
+  updateMeshProperty();
 }
 
 std::string ZRoiMesh::getName() const
@@ -103,3 +119,18 @@ ZRoiMesh::EStatus ZRoiMesh::getStatus() const
 
   return EStatus::PENDING;
 }
+
+QColor ZRoiMesh::getColor() const
+{
+  return m_color;
+}
+
+void ZRoiMesh::setColor(const QColor &color)
+{
+  m_color = color;
+  ZMesh *mesh = getMesh();
+  if (mesh) {
+    mesh->setColor(color);
+  }
+}
+

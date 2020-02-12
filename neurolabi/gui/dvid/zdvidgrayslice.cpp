@@ -488,7 +488,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->setViewParam(getHelper()->getViewParam());
     task->setZoom(getHelper()->getZoom());
     task->useCenterCut(false);
-    task->setDelay(100);
+    task->setDelay(50);
     task->setDoc(doc);
     task->setHandle(getSource());
     task->setName(this->getSource().c_str());

@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <memory>
 
 #include <QString>
 #include <QMetaType>
@@ -152,6 +153,7 @@ public:
 
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
+
 
   static void showAnnotations(bool show);
   static bool showingAnnotations();
@@ -651,6 +653,8 @@ private:
   QString makeSkeletonizationServiceMissingMessage() const;
 
   bool requestingSplitResult(const QString &title);
+
+  void prepareWindow(Z3DWindow *window);
 
 protected:
   bool m_showSegmentation;

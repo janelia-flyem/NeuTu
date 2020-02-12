@@ -42,6 +42,7 @@ class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
+class ZRoiProvider;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -518,6 +519,8 @@ public:
   ZDvidReader* getCurrentGrayscaleReader() const;
   ZDvidReader* getCurrentBodyGrayscaleReader();
 
+  ZMesh* makeRoiMesh(const QString &name);
+
   bool test();
 
 public:
@@ -527,6 +530,8 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   void toggleGrayscale(neutu::EAxis axis);
+
+  std::shared_ptr<ZRoiProvider> getRoiProvider() const;
 
 signals:
   void bodyMerged();
@@ -768,6 +773,8 @@ private:
 
   ZDvidReader& getBookmarkReader();
 
+  void initRoiProvider();
+
 private slots:
   void processBodyMergeUploaded();
 
@@ -847,6 +854,8 @@ protected:
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  std::shared_ptr<ZRoiProvider> m_roiProvider;
 
   static const char *THREAD_SPLIT;
 };

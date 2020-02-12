@@ -2702,7 +2702,8 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 #endif
 }
 
-QList<QByteArray> ZDvidReader::readKeyValues(const QString &dataName, const QStringList &keyList) const
+QList<QByteArray> ZDvidReader::readKeyValues(
+    const QString &dataName, const QStringList &keyList) const
 {
 
     ZDvidUrl url(getDvidTarget());
@@ -2714,7 +2715,8 @@ QList<QByteArray> ZDvidReader::readKeyValues(const QString &dataName, const QStr
     QByteArray payload = doc.toJson();
 
     // make call with json keylist
-    bufferReader.read(QString::fromStdString(url.getKeyValuesUrl(dataName.toStdString())),
+    bufferReader.read(QString::fromStdString(
+                        url.getKeyValuesUrl(dataName.toStdString())),
         payload,
         "GET",
         isVerbose());

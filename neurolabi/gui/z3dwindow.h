@@ -72,6 +72,8 @@ class ZWidgetMessage;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoFilterDialog;
 class ZRoiMesh;
+class ZRoiProvider;
+class ZFlyEmBody3dDoc;
 
 class Z3DWindow : public QMainWindow
 {
@@ -171,7 +173,8 @@ public:
 
   bool isProjectedInRectRoi(const ZIntPoint &pt) const;
 
-  void initRois(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
+//  void initRois(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
+  void initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider);
 
 public: //controls
   void createToolBar();
@@ -279,6 +282,7 @@ public slots:
   { m_view->resetCameraClippingRange(); }
 
   void zoomToSelectedMeshes();
+  void zoomToRoiMesh(const QString &name);
   void selectMeshByID();
   void selectAllMeshes();
 
