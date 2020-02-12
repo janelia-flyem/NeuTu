@@ -33,15 +33,20 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 
 
 
+
     // UI connections
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
     connect(ui->commentButton, SIGNAL(clicked(bool)), this, SLOT(onCommentButton()));
-    connect(ui->gotoCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onGotoCurrentButton()));
+    connect(ui->gotoSelectedButton, SIGNAL(clicked(bool)), this, SLOT(onGotoSelectedButton()));
 
     connect(ui->tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickedTable(QModelIndex)));
+
+    connect(ui->nextTaskButton, SIGNAL(clicked(bool)), this, SLOT(onNextTaskButton()));
+    connect(ui->startTaskButton, SIGNAL(clicked(bool)), this, SLOT(onStartTaskButton()));
+    connect(ui->completeTaskButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteTaskButton()));
 
 }
 
@@ -89,16 +94,81 @@ bool OrphanLinkProtocol::initialize() {
     updateTable();
     updateLabels();
 
-    // onFirstButton();
-
-
-
+    startProtocol();
 
     return true;
 }
 
-void OrphanLinkProtocol::onGotoCurrentButton() {
-    gotoCurrentBody();
+void OrphanLinkProtocol::startProtocol() {
+    if (hasPendingTasks()) {
+        m_allTasksCompleted = false;
+
+        // no selection yet, so disable start/complete
+        enable(NEXT_TASK_BUTTON);
+        disable(START_TASK_BUTTON);
+        disable(COMPLETE_TASK_BUTTON);
+
+
+        // do nothing at start?  or immediately go to next?
+
+
+
+    } else {
+        allTasksCompleted();
+    }
+}
+
+void OrphanLinkProtocol::onNextTaskButton() {
+
+    // this should not happen; next button should be disabled if no tasks
+    if (!hasPendingTasks()) {
+        allTasksCompleted();
+        return;
+    }
+
+    ProtocolAssignmentTask next = findNextTask();
+    if (next.id < 0) {
+        // no valid task; we're done (also should not happen)
+        allTasksCompleted();
+    } else {
+        // valid not completed task
+        disable(COMPLETE_TASK_BUTTON);
+        if (getSelectedTask().disposition == ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+            disable(START_TASK_BUTTON);
+        } else {
+            enable(START_TASK_BUTTON);
+        }
+
+        // select task in table programmatically; if that doesn't autotrigger, hit taskSelected()
+
+
+
+    }
+}
+
+void OrphanLinkProtocol::onStartTaskButton() {
+    // if task selected:
+    // check not started or completed
+    // start task
+    // disable start buttons
+    // update task disposition
+    // update table, label
+
+}
+
+void OrphanLinkProtocol::onCompleteTaskButton() {
+    // if task selected:
+    // check that task is started
+    // complete task
+    // update table
+
+    // check all tasks complete? if so, disable all buttons
+    // otherwise enable next button, click select
+
+}
+
+void OrphanLinkProtocol::onGotoSelectedButton() {
+    gotoSelectedBody();
 }
 
 void OrphanLinkProtocol::onCommentButton() {
@@ -121,13 +191,12 @@ void OrphanLinkProtocol::onCommentButton() {
 }
 
 void OrphanLinkProtocol::onClickedTable(QModelIndex /*index*/) {
-    updateCurrentBodyLabel();
-    updateCommentField();
+    taskSelected();
 }
 
 void OrphanLinkProtocol::onDoubleClickedTable(QModelIndex /*index*/) {
     // this works because the double-click will also select the table row
-    gotoCurrentBody();
+    gotoSelectedBody();
 }
 
 bool OrphanLinkProtocol::hasSelection() {
@@ -145,7 +214,37 @@ ProtocolAssignmentTask OrphanLinkProtocol::getSelectedTask() {
     }
 }
 
-void OrphanLinkProtocol::gotoCurrentBody() {
+/*
+ * called when a task is selected either via click or programmatically
+ */
+void OrphanLinkProtocol::taskSelected() {
+    if (!hasPendingTasks()) {
+        allTasksCompleted();
+    } else {
+        ProtocolAssignmentTask task = getSelectedTask();
+        if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
+                task.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
+            disable(START_TASK_BUTTON);
+            disable(COMPLETE_TASK_BUTTON);
+        } else if (task.disposition == ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+            disable(START_TASK_BUTTON);
+            enable(COMPLETE_TASK_BUTTON);
+        } else {
+            // must be not started, which doesn't have a disposition
+            enable(START_TASK_BUTTON);
+            disable(COMPLETE_TASK_BUTTON);
+        }
+    }
+
+    // whether all tasks are completed or or not:
+    updateSelectedBodyLabel();
+    updateCommentField();
+}
+
+/*
+ * in NeuTu, go to the body in the selected task
+ */
+void OrphanLinkProtocol::gotoSelectedBody() {
     QString bodyIDString = getSelectedTask().get(TASK_KEY_BODY_ID).toString();
 
     bool ok;
@@ -153,6 +252,54 @@ void OrphanLinkProtocol::gotoCurrentBody() {
     if (ok) {
         emit requestDisplayBody(bodyID);
     }
+}
+
+bool OrphanLinkProtocol::hasPendingTasks() {
+    for (ProtocolAssignmentTask task: m_tasks) {
+        if (task.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void OrphanLinkProtocol::allTasksCompleted() {
+    if (!m_allTasksCompleted) {
+        m_allTasksCompleted = true;
+
+        disable(NEXT_TASK_BUTTON);
+        disable(START_TASK_BUTTON);
+        disable(COMPLETE_TASK_BUTTON);
+
+        // dialog (once only)
+        showMessage("All tasks completed!", "All tasks have been completed. You may now complete the protocol.");
+    }
+}
+
+/*
+ * returns next not complete task; if there are none, returns
+ * invalid task (you should just check before calling that there
+ * are pending tasks)
+ */
+ProtocolAssignmentTask OrphanLinkProtocol::findNextTask() {
+
+    // we're going to allow sorting, so make sure this behaves correctly when sorted differently
+
+
+    // what to return if no pending tasks?  invalid task; you should check before calling anyway
+
+
+    // if no selection: find first task not complete (started or unstarted)
+    // if selection: find next task not complete (started or unstarted)
+
+
+
+
+
+    // testing: always return second task
+    return m_tasks[1];
+
+
 }
 
 void OrphanLinkProtocol::updateTable() {
@@ -184,11 +331,11 @@ void OrphanLinkProtocol::updateTable() {
 }
 
 void OrphanLinkProtocol::updateLabels() {
-    updateCurrentBodyLabel();
+    updateSelectedBodyLabel();
     updateProgressLabel();
 }
 
-void OrphanLinkProtocol::updateCurrentBodyLabel() {
+void OrphanLinkProtocol::updateSelectedBodyLabel() {
     QString text;
     if (hasSelection()) {
         text = getSelectedTask().get(TASK_KEY_BODY_ID).toString();
@@ -231,18 +378,12 @@ bool OrphanLinkProtocol::compareTasks(const ProtocolAssignmentTask task1, const 
 void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
     // check version of saved data here
     if (!data.hasKey(KEY_VERSION.c_str())) {
-
-        // report error
-
+        showError("Error parsing protocol information!", "The protocol information in DVID is missing its version information!  Data could not be loaded.");
         return;
     }
     int version = ZJsonParser::integerValue(data[KEY_VERSION.c_str()]);
     if (version > fileVersion) {
-
-
-        // report error
-
-
+        showError("Newer version required!", "The protocol information in DVID from a newer version of NeuTu!  Data could not be loaded.");
         return;
     }
 
@@ -267,7 +408,7 @@ void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
     updateTable();
     updateLabels();
 
-    // onFirstButton();
+    startProtocol();
 
 }
 
@@ -307,11 +448,52 @@ void OrphanLinkProtocol::onCompleteButton() {
     }
 }
 
+void OrphanLinkProtocol::enable(DisenableElements element) {
+    switch (element) {
+    case NEXT_TASK_BUTTON:
+        ui->nextTaskButton->setEnabled(true);
+        break;
+    case START_TASK_BUTTON:
+        ui->startTaskButton->setEnabled(true);
+        break;
+    case COMPLETE_TASK_BUTTON:
+        ui->completeTaskButton->setEnabled(true);
+        break;
+    }
+}
+
+void OrphanLinkProtocol::disable(DisenableElements element) {
+    switch (element) {
+    case NEXT_TASK_BUTTON:
+        ui->nextTaskButton->setEnabled(false);
+        break;
+    case START_TASK_BUTTON:
+        ui->startTaskButton->setEnabled(false);
+        break;
+    case COMPLETE_TASK_BUTTON:
+        ui->completeTaskButton->setEnabled(false);
+        break;
+    }
+}
+
 void OrphanLinkProtocol::setHeaders(QStandardItemModel *model) {
     model->setHorizontalHeaderItem(TASK_ID_COLUMN, new QStandardItem(QString("Task ID")));
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(STATUS_COLUMN, new QStandardItem(QString("Status")));
     model->setHorizontalHeaderItem(COMMENT_COLUMN, new QStandardItem(QString("Comment")));
+}
+
+/*
+ * input: title and message fordialog
+ * effect: shows dialog (convenience function)
+ */
+void OrphanLinkProtocol::showMessage(QString title, QString message) {
+    QMessageBox messageBox;
+    messageBox.setText(title);
+    messageBox.setInformativeText(message);
+    messageBox.setStandardButtons(QMessageBox::Ok);
+    messageBox.setIcon(QMessageBox::Information);
+    messageBox.exec();
 }
 
 /*

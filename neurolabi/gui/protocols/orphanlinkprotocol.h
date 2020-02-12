@@ -37,10 +37,14 @@ private slots:
     void onExitButton();
     void onCompleteButton();
 
-    void onGotoCurrentButton();
+    void onGotoSelectedButton();
     void onCommentButton();
     void onClickedTable(QModelIndex index);
     void onDoubleClickedTable(QModelIndex index);
+
+    void onNextTaskButton();
+    void onStartTaskButton();
+    void onCompleteTaskButton();
 
 private:
     static const std::string KEY_VERSION;
@@ -57,6 +61,12 @@ private:
         COMMENT_COLUMN
     };
 
+    enum DisenableElements {
+        NEXT_TASK_BUTTON,
+        START_TASK_BUTTON,
+        COMPLETE_TASK_BUTTON
+    };
+
     Ui::OrphanLinkProtocol *ui;
     QStandardItemModel * m_model;
     QSortFilterProxyModel * m_proxy;
@@ -65,22 +75,33 @@ private:
     int m_assignmentID;
     QMap<int, QString> m_comments;
     QList<ProtocolAssignmentTask> m_tasks;
+    bool m_allTasksCompleted;
 
     void saveState();
     void showError(QString title, QString message);
+    void showMessage(QString title, QString message);
 
     void loadTasks();
     static bool compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2);
 
+    void startProtocol();
+
     bool hasSelection();
     ProtocolAssignmentTask getSelectedTask();
+    void taskSelected();
+    void gotoSelectedBody();
 
-    void gotoCurrentBody();
+    ProtocolAssignmentTask findNextTask();
+    bool hasPendingTasks();
+    void allTasksCompleted();
+
+    void enable(DisenableElements element);
+    void disable(DisenableElements element);
 
     void setHeaders(QStandardItemModel *model);
     void updateTable();
     void updateLabels();
-    void updateCurrentBodyLabel();
+    void updateSelectedBodyLabel();
     void updateProgressLabel();
     void updateCommentField();
 

@@ -24,7 +24,7 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Actions</string>
+          <string>Task actions</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -40,88 +40,48 @@
           <number>20</number>
          </property>
          <item>
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="firstButton">
+          <widget class="QPushButton" name="nextTaskButton">
            <property name="text">
-            <string>First unreviewed</string>
+            <string>Next</string>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="nextxButton">
+          <widget class="QLabel" name="label">
            <property name="text">
-            <string>Next unreviewed</string>
+            <string>==&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <spacer name="horizontalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="gotoCurrentButton">
+          <widget class="QPushButton" name="startTaskButton">
            <property name="text">
-            <string>Go to current</string>
+            <string>Start</string>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="markButton">
+          <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Mark reviewed</string>
+            <string>==&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_7">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="completeTaskButton">
+           <property name="text">
+            <string>Complete</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
+           <property name="autoDefault">
+            <bool>false</bool>
            </property>
-          </spacer>
+          </widget>
          </item>
         </layout>
        </item>
@@ -130,7 +90,7 @@
          <item>
           <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>Current body:</string>
+            <string>Body for selected task:</string>
            </property>
           </widget>
          </item>
@@ -154,6 +114,16 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QPushButton" name="gotoSelectedButton">
+           <property name="text">
+            <string>Go to</string>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -165,6 +135,9 @@
           <widget class="QPushButton" name="commentButton">
            <property name="text">
             <string>Set comment</string>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -221,7 +194,7 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Bodies</string>
+          <string>Tasks</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
