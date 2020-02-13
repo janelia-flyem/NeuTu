@@ -5900,12 +5900,12 @@ ZFlyEmToDoItem ZDvidReader::readToDoItem(int x, int y, int z) const
 }
 */
 
-ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z)
+ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z) const
 {
   return readAnnotationJson(getDvidTarget().getTodoListName(), x, y, z);
 }
 
-ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
+ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt) const
 {
   return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
 }

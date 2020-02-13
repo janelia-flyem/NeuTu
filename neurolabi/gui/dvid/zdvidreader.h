@@ -554,8 +554,8 @@ public:
 
 //  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
 //  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
-  ZJsonObject readToDoItemJson(int x, int y, int z);
-  ZJsonObject readToDoItemJson(const ZIntPoint &pt);
+  ZJsonObject readToDoItemJson(int x, int y, int z) const;
+  ZJsonObject readToDoItemJson(const ZIntPoint &pt) const;
 
   ZJsonObject readContrastProtocal() const;
 //  ZJsonArray readBodyStatusList() const;

@@ -487,7 +487,8 @@ void Z3DView::init()
     connect(m_doc, &ZStackDoc::cube3dModified, this, &Z3DView::surfaceDataChanged);
 #endif
 
-    connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
+    connect(m_doc, &ZStackDoc::objectSelectionChanged,
+            this, &Z3DView::objectSelectionChanged);
 //    connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
