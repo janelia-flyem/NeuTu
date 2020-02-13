@@ -47,6 +47,7 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     connect(ui->nextTaskButton, SIGNAL(clicked(bool)), this, SLOT(onNextTaskButton()));
     connect(ui->startTaskButton, SIGNAL(clicked(bool)), this, SLOT(onStartTaskButton()));
     connect(ui->completeTaskButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteTaskButton()));
+    connect(ui->skipTaskButton, SIGNAL(clicked(bool)), this, SLOT(onSkipTaskButton()));
 
 }
 
@@ -106,7 +107,7 @@ void OrphanLinkProtocol::startProtocol() {
         // no selection yet, so disable start/complete
         enable(NEXT_TASK_BUTTON);
         disable(START_TASK_BUTTON);
-        disable(COMPLETE_TASK_BUTTON);
+        disable(COMPLETE_SKIP_TASK_BUTTONS);
 
 
         // do nothing at start?  or immediately go to next?
@@ -119,7 +120,6 @@ void OrphanLinkProtocol::startProtocol() {
 }
 
 void OrphanLinkProtocol::onNextTaskButton() {
-
     // this should not happen; next button should be disabled if no tasks
     if (!hasPendingTasks()) {
         allTasksCompleted();
@@ -130,41 +130,130 @@ void OrphanLinkProtocol::onNextTaskButton() {
     if (next.id < 0) {
         // no valid task; we're done (also should not happen)
         allTasksCompleted();
-    } else {
-        // valid not completed task
-        disable(COMPLETE_TASK_BUTTON);
-        if (getSelectedTask().disposition == ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
-            disable(START_TASK_BUTTON);
-        } else {
-            enable(START_TASK_BUTTON);
+        return;
+    }
+
+    // select task in table programmatically
+    // m_tasks.indexOf(next) doesn't work for stupid C++ reasons
+    int nextRow = -1;
+    for (int i=0; i<m_tasks.size(); i++) {
+        if (m_tasks[i].id == next.id) {
+            nextRow = i;
+            break;
         }
+    }
+    if (nextRow < 0) {
+        // not found, should be impossible
+        return;
+    }
 
-        // select task in table programmatically; if that doesn't autotrigger, hit taskSelected()
-
-
-
+    QModelIndex nextModelIndex = m_model->index(nextRow, 0);
+    QModelIndex viewIndex = m_proxy->mapFromSource(nextModelIndex);
+    if (viewIndex.isValid()) {
+        ui->tableView->selectionModel()->setCurrentIndex(viewIndex, QItemSelectionModel::ClearAndSelect|QItemSelectionModel::Rows);
+        taskSelected();
     }
 }
 
 void OrphanLinkProtocol::onStartTaskButton() {
-    // if task selected:
-    // check not started or completed
-    // start task
-    // disable start buttons
-    // update task disposition
-    // update table, label
+    ProtocolAssignmentTask task = getSelectedTask();
+    if (task.id < 0) {
+        return;
+    }
 
+    // should be impossible:
+    if (task.disposition == ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS ||
+            task.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED ||
+            task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+        return;
+    }
+
+    bool status = m_client.startTask(task);
+    if (!status) {
+        showError("Error starting task!", "Task could not be started!");
+        return;
+    }
+
+
+    // update task disposition in memory
+    // (we have the task, not a copy, right?)
+    task.disposition = ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS;
+
+
+    disable(START_TASK_BUTTON);
+    enable(COMPLETE_SKIP_TASK_BUTTONS);
+
+    updateTable();
+    updateLabels();
 }
 
 void OrphanLinkProtocol::onCompleteTaskButton() {
-    // if task selected:
-    // check that task is started
-    // complete task
-    // update table
+    ProtocolAssignmentTask task = getSelectedTask();
+    if (task.id < 0) {
+        return;
+    }
 
-    // check all tasks complete? if so, disable all buttons
-    // otherwise enable next button, click select
+    // should be impossible:
+    if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+        return;
+    }
 
+    bool status = m_client.completeTask(task);
+    if (!status) {
+        showError("Error completing task!", "Task could not be completed!");
+        return;
+    }
+
+    // update task disposition in memory
+    // (we have the task, not a copy, right?)
+    task.disposition = ProtocolAssignmentTask::DISPOSITION_COMPLETE;
+
+    if (hasPendingTasks()) {
+        disable(START_TASK_BUTTON);
+        enable(COMPLETE_SKIP_TASK_BUTTONS);
+    } else {
+        allTasksCompleted();
+    }
+
+    updateTable();
+    updateLabels();
+}
+
+void OrphanLinkProtocol::onSkipTaskButton() {
+    ProtocolAssignmentTask task = getSelectedTask();
+    if (task.id < 0) {
+        return;
+    }
+
+    // should be impossible:
+    if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+        return;
+    }
+
+    bool status = m_client.completeTask(task);
+    if (!status) {
+        showError("Error skipping task!", "Task could not be skipped!");
+        return;
+    }
+
+    // update task disposition in memory
+    // (we have the task, not a copy, right?)
+    task.disposition = ProtocolAssignmentTask::DISPOSITION_SKIPPED;
+
+    // you're supposed to provide a comment on skips:
+    if (m_comments[task.id].size() == 0) {
+        showMessage("Add comment!", "Please add a comment if you skip a task!");
+    }
+
+    if (hasPendingTasks()) {
+        disable(START_TASK_BUTTON);
+        enable(COMPLETE_SKIP_TASK_BUTTONS);
+    } else {
+        allTasksCompleted();
+    }
+
+    updateTable();
+    updateLabels();
 }
 
 void OrphanLinkProtocol::onGotoSelectedButton() {
@@ -225,14 +314,14 @@ void OrphanLinkProtocol::taskSelected() {
         if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
                 task.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
             disable(START_TASK_BUTTON);
-            disable(COMPLETE_TASK_BUTTON);
+            disable(COMPLETE_SKIP_TASK_BUTTONS);
         } else if (task.disposition == ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
             disable(START_TASK_BUTTON);
-            enable(COMPLETE_TASK_BUTTON);
+            enable(COMPLETE_SKIP_TASK_BUTTONS);
         } else {
             // must be not started, which doesn't have a disposition
             enable(START_TASK_BUTTON);
-            disable(COMPLETE_TASK_BUTTON);
+            disable(COMPLETE_SKIP_TASK_BUTTONS);
         }
     }
 
@@ -269,7 +358,7 @@ void OrphanLinkProtocol::allTasksCompleted() {
 
         disable(NEXT_TASK_BUTTON);
         disable(START_TASK_BUTTON);
-        disable(COMPLETE_TASK_BUTTON);
+        disable(COMPLETE_SKIP_TASK_BUTTONS);
 
         // dialog (once only)
         showMessage("All tasks completed!", "All tasks have been completed. You may now complete the protocol.");
@@ -456,8 +545,9 @@ void OrphanLinkProtocol::enable(DisenableElements element) {
     case START_TASK_BUTTON:
         ui->startTaskButton->setEnabled(true);
         break;
-    case COMPLETE_TASK_BUTTON:
+    case COMPLETE_SKIP_TASK_BUTTONS:
         ui->completeTaskButton->setEnabled(true);
+        ui->skipTaskButton->setEnabled(true);
         break;
     }
 }
@@ -470,8 +560,9 @@ void OrphanLinkProtocol::disable(DisenableElements element) {
     case START_TASK_BUTTON:
         ui->startTaskButton->setEnabled(false);
         break;
-    case COMPLETE_TASK_BUTTON:
+    case COMPLETE_SKIP_TASK_BUTTONS:
         ui->completeTaskButton->setEnabled(false);
+        ui->skipTaskButton->setEnabled(false);
         break;
     }
 }

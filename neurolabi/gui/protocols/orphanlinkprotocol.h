@@ -45,6 +45,7 @@ private slots:
     void onNextTaskButton();
     void onStartTaskButton();
     void onCompleteTaskButton();
+    void onSkipTaskButton();
 
 private:
     static const std::string KEY_VERSION;
@@ -64,7 +65,7 @@ private:
     enum DisenableElements {
         NEXT_TASK_BUTTON,
         START_TASK_BUTTON,
-        COMPLETE_TASK_BUTTON
+        COMPLETE_SKIP_TASK_BUTTONS
     };
 
     Ui::OrphanLinkProtocol *ui;

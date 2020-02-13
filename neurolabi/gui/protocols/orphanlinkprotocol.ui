@@ -74,14 +74,31 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="completeTaskButton">
-           <property name="text">
-            <string>Complete</string>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="rightMargin">
+            <number>20</number>
            </property>
-           <property name="autoDefault">
-            <bool>false</bool>
-           </property>
-          </widget>
+           <item>
+            <widget class="QPushButton" name="completeTaskButton">
+             <property name="text">
+              <string>Complete</string>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="skipTaskButton">
+             <property name="text">
+              <string>Skip</string>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
