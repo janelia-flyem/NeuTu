@@ -1213,9 +1213,9 @@ QString TaskBodyMerge::readResult()
       std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
       ZJsonObject valueObj = reader.readJsonObjectFromKey(instance.c_str(), key.c_str());
       if (valueObj.isObject()){
-        const char *resultKey = KEY_RESULT.toLatin1().data();
-        if (valueObj.hasKey(resultKey)) {
-          ZJsonValue resultValue = valueObj.value(resultKey);
+//        const char *resultKey = KEY_RESULT.toLatin1().data();
+        if (valueObj.hasKey(KEY_RESULT.toStdString())) {
+          ZJsonValue resultValue = valueObj.value(KEY_RESULT.toStdString());
           if (resultValue.isString()) {
             return QString(resultValue.toString().c_str());
           }
