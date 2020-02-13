@@ -1570,35 +1570,46 @@ void ZMesh::append(const ZMesh &mesh)
   std::cout << "Appending mesh:" << m_indices.size() << " " << mesh.m_indices.size() << std::endl;
 #endif
 
-  if (m_ttype == GL_TRIANGLES && mesh.m_ttype == GL_TRIANGLES) {
-    size_t count = m_vertices.size();
+  if (!mesh.empty()) {
+    if (m_ttype == GL_TRIANGLES && mesh.m_ttype == GL_TRIANGLES) {
+      size_t count = m_vertices.size();
 
-    m_vertices.insert(
-          m_vertices.end(), mesh.m_vertices.begin(), mesh.m_vertices.end());
-    std::vector<GLuint> newIndices = mesh.m_indices;
-    for (auto &index : newIndices) {
-      index += count;
-    }
-    m_indices.insert(m_indices.end(), newIndices.begin(), newIndices.end());
+      m_vertices.insert(
+            m_vertices.end(), mesh.m_vertices.begin(), mesh.m_vertices.end());
+      std::vector<GLuint> newIndices = mesh.m_indices;
+      for (auto &index : newIndices) {
+        index += count;
+      }
+      m_indices.insert(m_indices.end(), newIndices.begin(), newIndices.end());
 
-    m_1DTextureCoordinates.insert(
-          m_1DTextureCoordinates.end(), mesh.m_1DTextureCoordinates.begin(),
-          mesh.m_1DTextureCoordinates.end());
-    m_2DTextureCoordinates.insert(
-          m_2DTextureCoordinates.end(), mesh.m_2DTextureCoordinates.begin(),
-          mesh.m_2DTextureCoordinates.end());
-    m_3DTextureCoordinates.insert(
-          m_3DTextureCoordinates.end(), mesh.m_3DTextureCoordinates.begin(),
-          mesh.m_3DTextureCoordinates.end());
-    m_normals.insert(
-          m_normals.end(), mesh.m_normals.begin(), mesh.m_normals.end());
-    m_colors.insert(
-          m_colors.end(), mesh.m_colors.begin(), mesh.m_colors.end());
+      m_1DTextureCoordinates.insert(
+            m_1DTextureCoordinates.end(), mesh.m_1DTextureCoordinates.begin(),
+            mesh.m_1DTextureCoordinates.end());
+      m_2DTextureCoordinates.insert(
+            m_2DTextureCoordinates.end(), mesh.m_2DTextureCoordinates.begin(),
+            mesh.m_2DTextureCoordinates.end());
+      m_3DTextureCoordinates.insert(
+            m_3DTextureCoordinates.end(), mesh.m_3DTextureCoordinates.begin(),
+            mesh.m_3DTextureCoordinates.end());
+      m_normals.insert(
+            m_normals.end(), mesh.m_normals.begin(), mesh.m_normals.end());
+      m_colors.insert(
+            m_colors.end(), mesh.m_colors.begin(), mesh.m_colors.end());
 
-  } else {
-    std::vector<glm::uvec3> indices = mesh.triangleIndices();
-    for (const auto &index : indices) {
-      appendTriangle(mesh, index);
+      invalidateCachedProperties();
+    } else {
+      if (m_ttype == GL_TRIANGLES) {
+        std::vector<glm::uvec3> indices = mesh.triangleIndices();
+        for (const auto &index : indices) {
+          appendTriangle(mesh, index);
+        }
+      } else {
+        ZMesh bufferMesh = *this;
+        clear();
+        m_ttype = GL_TRIANGLES;
+        append(bufferMesh);
+        append(mesh);
+      }
     }
   }
 }

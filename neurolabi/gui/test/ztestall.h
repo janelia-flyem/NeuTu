@@ -97,5 +97,6 @@
 #include "test/zdvidtargettest.h"
 #include "test/zdvidtargetfactorytest.h"
 #include "test/zneurontracertest.h"
+#include "test/zmeshtest.h"
 
 #endif // ZTESTALL_H
