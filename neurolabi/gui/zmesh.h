@@ -116,7 +116,7 @@ public:
   { return m_vertices; }
 
   void setVertices(const std::vector<glm::vec3>& vertices)
-  { m_vertices = vertices; validateObbTree(false);}
+  { m_vertices = vertices; invalidateCachedProperties();}
 
   std::vector<glm::dvec3> doubleVertices() const;
 
@@ -158,7 +158,7 @@ public:
   { return m_indices; }
 
   void setIndices(const std::vector<GLuint>& indices)
-  { m_indices = indices; validateObbTree(false);}
+  { m_indices = indices; invalidateCachedProperties();}
 
   bool hasIndices() const
   { return !m_indices.empty(); }
@@ -393,6 +393,11 @@ private:
 
   vtkSmartPointer<vtkOBBTree> getObbTree() const;
 
+  void invalidateCachedProperties() {
+    validateObbTree(false);
+    m_boundBox.reset();
+  }
+
 private:
   friend class ZMeshIO;
 
@@ -407,6 +412,7 @@ private:
   std::vector<GLuint> m_indices;
 //  uint64_t m_label = 0;
 
+  mutable ZBBox<glm::dvec3> m_boundBox;
   mutable ObbTreeData m_obbTreeData;
 //  mutable bool m_isObbTreeValid = false;
 //  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;

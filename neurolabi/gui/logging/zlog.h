@@ -233,6 +233,11 @@ public:
 #define ZINFO KInfo(ZLog::EDestination::AUTO)
 #define ZWARN KWarn(ZLog::EDestination::AUTO)
 #define ZERROR KError(ZLog::EDestination::AUTO)
+#if defined(_DEBUG_)
+#  define ZDEBUG ZINFO
+#else
+#  define ZDEBUG if (1) {} else ZINFO
+#endif
 
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()

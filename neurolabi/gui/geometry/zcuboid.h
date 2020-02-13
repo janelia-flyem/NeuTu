@@ -12,7 +12,7 @@ class ZLineSegment;
  *
  *        4________5       z / front
  *       /|        /|       /
- *    0 /_______1 / |       x---> right
+ *    0 /_______1 / |       -x--> right
  *     |  .      |  |     y |
  *     |  |      |  |       v up
  *     | 6._ . _ |_ |7
@@ -83,6 +83,7 @@ public:
   void joinY(double y);
   void joinZ(double z);
 
+  void join(double x, double y, double z);
   void join(const ZCuboid &box);
 
   /*!

@@ -124,6 +124,7 @@ private:
 
 private slots:
   void processFeedback();
+  void postDvidReady();
 
 private:
   ZFlyEmProofMvc *m_mainMvc;

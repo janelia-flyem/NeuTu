@@ -116,6 +116,7 @@ void ZFlyEmProofDoc::init()
   m_analyzer.setDvidReader(&m_synapseReader);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
+  m_roiManager = new ZFlyEmRoiManager(this);
 
   m_routineCheck = false;
 
@@ -943,7 +944,7 @@ bool ZFlyEmProofDoc::isAdmin() const
   return m_isAdmin;
 }
 
-void ZFlyEmProofDoc::initRoiProvider()
+std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
 {
   if (getDvidReader().isReady() && !m_roiProvider) {
     m_roiProvider = std::shared_ptr<ZRoiProvider>(new ZRoiProvider);
@@ -996,6 +997,8 @@ void ZFlyEmProofDoc::initRoiProvider()
       m_roiProvider->endWorkThread();
     });
   }
+
+  return m_roiProvider;
 }
 
 
@@ -1323,11 +1326,10 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
       }
     }
 
-    m_roiManager = new ZFlyEmRoiManager(this);
     m_roiManager->setDvidTarget(getDvidTarget());
     m_roiManager->loadRoiList();
 
-    initRoiProvider();
+//    initRoiProvider();
 
     KDEBUG << ZLog::Diagnostic(flowInfo.str());
 

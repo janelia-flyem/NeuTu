@@ -55,7 +55,7 @@ public:
 signals:
 //  void roiUpdated(const QString &name);
   void roiLoaded(const QString &name);
-//  void roiUpdated();
+  void roiUpdated();
   void roiListUpdated();
 
 public slots:

@@ -99,7 +99,7 @@ protected:
 private:
     int getDsIntv() const;
 //    void makeGUI();
-    void makeNewGui();
+    void makeGui();
 //    void setCheckStatus(int row, bool on);
 //    void toggleCheckStatus(int row);
     int getSourceModelIndex(int row) const;

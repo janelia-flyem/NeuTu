@@ -315,6 +315,13 @@ ZPoint ZCuboid::center() const
                 (m_firstCorner.z() + m_lastCorner.z()) / 2.0);
 }
 
+void ZCuboid::join(double x, double y, double z)
+{
+  joinX(x);
+  joinY(y);
+  joinZ(z);
+}
+
 void ZCuboid::joinX(double x)
 {
   if (m_firstCorner.x() > x) {

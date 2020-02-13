@@ -5013,17 +5013,26 @@ void Z3DWindow::initRois(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
 }
 */
 
+void Z3DWindow::registerRoiWidget(ZROIWidget *widget)
+{
+  if (widget) {
+    ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+    if (doc) {
+      connect(widget, &ZROIWidget::roiUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMesh);
+      connect(widget, &ZROIWidget::roiListUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMeshList);
+      connect(widget, &ZROIWidget::locatingRoiMesh,
+              this, &Z3DWindow::zoomToRoiMesh);
+    }
+  }
+}
+
 void Z3DWindow::initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider)
 {
-  getROIsDockWidget()->initRoiView(this, roiProvider);
-  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
-  if (doc) {
-    connect(getROIsDockWidget(), &ZROIWidget::roiUpdated,
-            doc, &ZFlyEmBody3dDoc::updateRoiMesh);
-    connect(getROIsDockWidget(), &ZROIWidget::roiListUpdated,
-            doc, &ZFlyEmBody3dDoc::updateRoiMeshList);
-    connect(getROIsDockWidget(), &ZROIWidget::locatingRoiMesh,
-            this, &Z3DWindow::zoomToRoiMesh);
+  if (roiProvider) {
+    getROIsDockWidget()->initRoiView(this, roiProvider);
+    registerRoiWidget(getROIsDockWidget());
   }
 }
 

@@ -16,6 +16,7 @@ class BodyPrefetchQueue : public QObject
     Q_OBJECT
 public:
     explicit BodyPrefetchQueue(QObject *parent = nullptr);
+    ~BodyPrefetchQueue() override;
 
     uint64_t get();
     bool isEmpty();

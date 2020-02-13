@@ -531,6 +531,7 @@ public:
 
   void toggleGrayscale(neutu::EAxis axis);
 
+  std::shared_ptr<ZRoiProvider> initRoiProvider();
   std::shared_ptr<ZRoiProvider> getRoiProvider() const;
 
 signals:
@@ -772,8 +773,6 @@ private:
   void warnSynapseReadonly();
 
   ZDvidReader& getBookmarkReader();
-
-  void initRoiProvider();
 
 private slots:
   void processBodyMergeUploaded();

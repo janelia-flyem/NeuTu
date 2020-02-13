@@ -1110,7 +1110,7 @@ void ZFlyEmProofMvc::prepareWindow(Z3DWindow *window)
     flyem::Decorate3dBodyWindow(
           window, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-    window->initRoiView(getCompleteDocument()->getRoiProvider());
+    window->initRoiView(getCompleteDocument()->initRoiProvider());
     /*
     if(m_ROILoaded) {
       m_coarseBodyWindow->initRois(m_roiMeshList);
@@ -2090,8 +2090,9 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     getViewButton(EViewButton::GOTO_POSITION)->show();
   }
 
-  updateRoiWidget();
+//  updateRoiWidget();
 }
+
 
 #if 0
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
@@ -6848,7 +6849,7 @@ void ZFlyEmProofMvc::loadROIFunc()
 void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
 {
   if (widget) {
-    widget->initRoiView(win, getCompleteDocument()->getRoiProvider());
+    widget->initRoiView(win, getCompleteDocument()->initRoiProvider());
 //    widget->loadROIs(win, m_roiMeshList);
   }
 }
@@ -6857,7 +6858,7 @@ void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
 void ZFlyEmProofMvc::updateRoiWidget(Z3DWindow *win) const
 {
   if (win) {
-    win->initRoiView(getCompleteDocument()->getRoiProvider());
+    win->initRoiView(getCompleteDocument()->initRoiProvider());
 //    updateRoiWidget(win->getROIsDockWidget(), win);
   }
   /*

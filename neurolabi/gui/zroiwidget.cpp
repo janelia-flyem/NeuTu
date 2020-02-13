@@ -115,8 +115,11 @@ void ZROIWidget::initRoiView(
     m_roiTable->sortByColumn(ZRoiItemModel::COLUMN_NAME, Qt::AscendingOrder);
 
     m_window = window;
+    if (m_window) {
+      m_window->registerRoiWidget(this);
+    }
 
-    makeNewGui();
+    makeGui();
   }
 }
 
@@ -232,7 +235,7 @@ void ZROIWidget::updateRoiTable()
 }
 */
 
-void ZROIWidget::makeNewGui()
+void ZROIWidget::makeGui()
 {
   m_toggleButton = new QPushButton("");
   m_toggleButton->setToolTip("Toggle all in the current list");

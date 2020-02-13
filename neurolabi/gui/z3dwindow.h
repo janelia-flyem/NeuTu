@@ -175,6 +175,7 @@ public:
 
 //  void initRois(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
   void initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider);
+  void registerRoiWidget(ZROIWidget *widget);
 
 public: //controls
   void createToolBar();

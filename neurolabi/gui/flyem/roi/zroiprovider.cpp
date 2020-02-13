@@ -17,7 +17,7 @@ const char* ZRoiProvider::ROI_STATUS_PENDING = "Pending";
 ZRoiProvider::ZRoiProvider(QObject *parent) : QObject(parent)
 {
   m_colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
-  connect(this, SIGNAL(roiUpdated(const QString&)), this, SIGNAL(roiUpdated()));
+//  connect(this, SIGNAL(roiLoaded(const QString&)), this, SIGNAL(roiUpdated()));
 }
 
 ZRoiProvider::~ZRoiProvider()
@@ -265,7 +265,8 @@ ZMesh *ZRoiProvider::makeRoiMesh(const std::string &name)
   ZRoiMesh *roiMesh = getRoiMesh(name);
   if (roiMesh) {
     if (roiMesh->getStatus() == ZRoiMesh::EStatus::READY) {
-      mesh = new ZMesh(*roiMesh->getMesh());
+      mesh = new ZMesh;
+      *mesh = (*roiMesh->getMesh());
     }
   } else {
     requestRoi(name);
