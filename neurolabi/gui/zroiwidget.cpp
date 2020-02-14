@@ -29,6 +29,7 @@
 #include "flyem/roi/zroimesh.h"
 #include "qfonticon.h"
 #include "flyem/roi/zroiitemmodel.h"
+#include "zwidgetfactory.h"
 //#include "flyem/zflyemproofdoc.h"
 //
 
@@ -266,9 +267,9 @@ void ZROIWidget::makeGui()
 //  QGroupBox *horizontalGroupBox = new QGroupBox();
 //  horizontalGroupBox->setLayout(hLayout);
 
-  QVBoxLayout *layout = new QVBoxLayout();
+  QVBoxLayout *widgetLayout = new QVBoxLayout();
 
-  layout->addLayout(hLayout);
+  widgetLayout->addLayout(hLayout);
 
 //  QHBoxLayout *controlLayout = new QHBoxLayout();
 
@@ -290,6 +291,7 @@ void ZROIWidget::makeGui()
 
 
   QHBoxLayout *hlayout2 = new QHBoxLayout();
+  hlayout2->addWidget(new QLabel("Visibility:", this));
   hlayout2->addWidget(m_toggleButton);
   hlayout2->addWidget(m_showAllButton);
   hlayout2->addWidget(m_hideAllButton);
@@ -298,19 +300,28 @@ void ZROIWidget::makeGui()
   hlayout3->addWidget(m_filterEdit);
   hlayout3->addWidget(m_filterRegexCheckBox);
 
-  layout->addLayout(hlayout2);
-  layout->addLayout(hlayout3);
+  widgetLayout->addLayout(hlayout2);
+  widgetLayout->addLayout(hlayout3);
 
-  layout->addWidget(m_roiTable);
+  widgetLayout->addWidget(m_roiTable);
+  QGroupBox *group = new QGroupBox(this);
+  group->setLayout(widgetLayout);
 
-  QGroupBox *group = new QGroupBox();
-  group->setLayout(layout);
+  QHBoxLayout *mainLayout = new QHBoxLayout;
+  mainLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
+  mainLayout->addWidget(group);
+  mainLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
+
+
+  QWidget *mainWidget = new QWidget(this);
+  mainWidget->setLayout(mainLayout);
 
 #ifdef _DEBUG_
   std::cout << "Set ROI widget" << std::endl;
 #endif
 
-  this->setWidget(group);
+  this->setWidget(mainWidget);
+//  this->setWidget(group);
 
   connect(m_roiTable, SIGNAL(doubleClicked(const QModelIndex&)),
           this, SLOT(handleRoiTableDoubleClick(const QModelIndex&)));
@@ -808,7 +819,7 @@ void ZROIWidget::updateROIColors(int row, int column)
 
 void ZROIWidget::updateOpacityLabel(double v)
 {
-  m_opacityLabel->setText(tr(" Opacity: %1").arg(v, 0, 'f', 2, '0'));
+  m_opacityLabel->setText(tr("Opacity: %1").arg(v, 0, 'f', 2, '0'));
 }
 
 /*
