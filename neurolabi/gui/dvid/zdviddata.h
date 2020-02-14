@@ -16,9 +16,9 @@ public:
   ZDvidData();
 
   enum class ERole {
-    GRAY_SCALE, //Grayscale data
-    BODY_LABEL, //Individual body data (sparsevol)
-    LABEL_BLOCK, //Segmentation data
+    GRAYSCALE, //Grayscale data
+    SEGMENTATION, //Segmentation data
+    SPARSEVOL, //Individual body data (sparsevol)
     ROI_CURVE, //ROI curve
     BODY_ANNOTATION, //Body Annnotation
     BOUND_BOX, //Bounding boxes of bodies

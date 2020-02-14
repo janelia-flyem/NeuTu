@@ -6565,6 +6565,30 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
   }
 }
 
+void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
+{
+  bool processed = false;
+
+  if (!getDvidTarget().isValid()) {
+    QList<QUrl> urls = event->mimeData()->urls();
+
+    if (urls.size() == 1) {
+      const QUrl &url = urls[0];
+      QString filePath = neutu::GetFilePath(url);
+      if (ZFileType::FileType(filePath.toStdString())
+          == ZFileType::EFileType::JSON) {
+        setDvidFromJson(filePath.toStdString());
+
+        processed = true;
+      }
+    }
+  }
+
+  if (!processed) {
+    ZStackMvc::dropEvent(event);
+  }
+}
+
 #if 0
 void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 {

@@ -17,6 +17,10 @@ public:
 
   void setText(const QString &text);
 
+private slots:
+  void save() const;
+  void copyToClipBoard() const;
+
 private:
   Ui::ZInfoDialog *ui;
 };

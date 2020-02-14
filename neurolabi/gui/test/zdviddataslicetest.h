@@ -9,7 +9,7 @@
 
 TEST(ZDvidDataSliceHelper, Basic)
 {
-  ZDvidDataSliceHelper helper(ZDvidData::ERole::GRAY_SCALE);
+  ZDvidDataSliceHelper helper(ZDvidData::ERole::GRAYSCALE);
 
   ZStackViewParam viewParam;
   viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));

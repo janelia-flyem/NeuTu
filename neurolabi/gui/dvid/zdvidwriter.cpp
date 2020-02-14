@@ -249,7 +249,7 @@ void ZDvidWriter::writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     writeJsonString(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        getDvidTarget().getBodyLabelName()),
                     ZString::num2str(bodyId).c_str(),
                     obj.dumpString(0).c_str());

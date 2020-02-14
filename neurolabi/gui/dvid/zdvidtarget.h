@@ -54,7 +54,7 @@ public:
   void setFromUrl_deprecated(const std::string &url);
 
   inline const std::string& getAddress() const {
-    return m_node.getAddress();
+    return m_node.getHost();
   }
 
   /*!
@@ -429,7 +429,7 @@ private:
   std::string m_bodyLabelName;
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
-  std::string m_grayScaleName;
+  std::string m_grayscaleName;
   bool m_hasSynapseLabelsz = true;
   std::string m_synapseLabelszName;
   std::string m_roiName;

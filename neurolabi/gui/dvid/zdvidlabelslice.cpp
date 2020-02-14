@@ -68,7 +68,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::LABEL_BLOCK);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::SEGMENTATION);
   getHelper()->setMaxSize(maxWidth, maxHeight);
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;

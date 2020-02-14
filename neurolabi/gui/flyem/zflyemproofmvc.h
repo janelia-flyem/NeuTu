@@ -497,6 +497,7 @@ protected:
 //  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg) override;
+  void dropEvent(QDropEvent *event) override;
 
   void warn(const std::string &msg);
   void warn(const char *msg);

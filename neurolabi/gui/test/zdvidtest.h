@@ -146,13 +146,13 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getDataUrl("test"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAYSCALE));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
-                               ZDvidData::ERole::BODY_LABEL, "bodies"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAYSCALE,
+                               ZDvidData::ERole::SPARSEVOL, "bodies"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_grayscale",
-            dvidUrl.getDataUrl(ZDvidData::ERole::GRAY_SCALE,
-                               ZDvidData::ERole::BODY_LABEL, "bodies2"));
+            dvidUrl.getDataUrl(ZDvidData::ERole::GRAYSCALE,
+                               ZDvidData::ERole::SPARSEVOL, "bodies2"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/info",
             dvidUrl.getInfoUrl("test"));
 

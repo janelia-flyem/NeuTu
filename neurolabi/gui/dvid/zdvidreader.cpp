@@ -2607,7 +2607,7 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
 {
   QStringList annotationList = readKeys(
         ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            getDvidTarget().getBodyLabelName()).c_str());
 
   std::set<uint64_t> bodySet;
@@ -3208,7 +3208,7 @@ ZJsonObject ZDvidReader::readSkeletonConfig() const
   ZJsonObject config;
 
   std::string skeletonName = ZDvidData::GetName(
-        ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
+        ZDvidData::ERole::SKELETON, ZDvidData::ERole::SPARSEVOL,
         getDvidTarget().getBodyLabelName());
 
   if (!skeletonName.empty()) {
