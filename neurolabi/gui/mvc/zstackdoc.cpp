@@ -1243,8 +1243,26 @@ DEFINE_NOTIFY_SELECTION_CHANGED(Swc_Tree_Node, swcTreeNodeSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZSwcTree, swcSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZPunctum, punctaSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZLocsegChain, chainSelectionChanged)
-DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
+//DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZMesh, meshSelectionChanged)
+
+void ZStackDoc::notifySelectionChanged(
+    const QList<ZStackObject*> &selected,
+    const QList<ZStackObject*> &deselected)
+{
+  ZStackObjectInfoSet selectedInfo;
+  ZStackObjectInfoSet deselectedInfo;
+
+  for (ZStackObject *obj : selected) {
+    selectedInfo.add(*obj);
+  }
+
+  for (ZStackObject *obj : deselected) {
+    deselectedInfo.add(*obj);
+  }
+
+  emit objectSelectionChanged(selectedInfo, deselectedInfo);
+}
 
 void ZStackDoc::selectHitSwcTreeNodeConnection(ZSwcTree *tree)
 {
@@ -3935,34 +3953,6 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
   }
 
   removeObject(removeSet, deleteObject);
-/*
-  if (deleteObject) {
-    m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::KILL);
-  } else {
-    m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::EXPEL);
-  }
-
-  m_dataBuffer->deliver();
-  */
-//  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
-
-//  notifyObjectModified();
-
-//  blockSignals(true);
-//  for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
-//       iter != removeSet.end(); ++iter) {
-//    removeObject(*iter, deleteObject);
-//  }
-//  blockSignals(false);
-
-  /*
-  if (!removeSet.empty()) {
-    notifyObjectModified();
-    notifyPlayerChanged(role);
-  }
-  */
 }
 
 template <class InputIterator>

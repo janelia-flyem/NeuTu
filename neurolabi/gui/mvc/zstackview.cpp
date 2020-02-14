@@ -2333,6 +2333,21 @@ void ZStackView::paintActiveTile()
   }
 }
 
+void ZStackView::paintObject(const ZStackObjectInfoSet &selected,
+                             const ZStackObjectInfoSet &deselected)
+{
+
+  if (selected.getTarget().count(ZStackObject::ETarget::OBJECT_CANVAS) > 0 ||
+      deselected.getTarget().count(ZStackObject::ETarget::OBJECT_CANVAS) > 0) {
+    paintObjectBuffer();
+  } else if (selected.getTarget().count(ZStackObject::ETarget::STACK_CANVAS) > 0 ||
+             deselected.getTarget().count(ZStackObject::ETarget::STACK_CANVAS) > 0) {
+    paintStackBuffer();
+  }
+
+  updateImageScreen(EUpdateOption::QUEUED);
+}
+
 void ZStackView::paintObject(
     QList<ZStackObject *> selected,
     QList<ZStackObject *> deselected)

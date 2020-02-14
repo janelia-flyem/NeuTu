@@ -391,6 +391,7 @@ TStackObjectList ZStackObjectGroup::takeUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+        getSelector()->removeObject(obj);
         objList.append(obj);
       }
     }

@@ -525,6 +525,8 @@ public slots:
   void paintObject();
   void paintObject(QList<ZStackObject *> selected,
                    QList<ZStackObject *> deselected);
+  void paintObject(const ZStackObjectInfoSet &selected,
+                   const ZStackObjectInfoSet &deselected);
   void paintActiveDecoration();
   void paintActiveTile();
 

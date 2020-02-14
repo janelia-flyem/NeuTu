@@ -371,9 +371,12 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
           m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(objectSelectionChanged(
-                                QList<ZStackObject*>,QList<ZStackObject*>)),
-          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)),
+  connectAction(m_doc.get(),
+                SIGNAL(objectSelectionChanged(
+                         const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                m_view,
+                SLOT(paintObject(
+                       const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
                 Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           m_view, SLOT(paintObject()), Qt::AutoConnection);

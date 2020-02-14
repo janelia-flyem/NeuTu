@@ -1353,8 +1353,10 @@ signals:
   void swcNetworkModified();
   void activeViewModified();
 
-  void objectSelectionChanged(QList<ZStackObject*> selected,
-                              QList<ZStackObject*> deselected);
+  void objectSelectionChanged(const ZStackObjectInfoSet &selected,
+                              const ZStackObjectInfoSet &deselected);
+//  void objectSelectionChanged(QList<ZStackObject*> selected,
+//                              QList<ZStackObject*> deselected);
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);
   void meshSelectionChanged(QList<ZMesh*> selected,
