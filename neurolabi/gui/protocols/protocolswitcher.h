@@ -10,13 +10,14 @@
 #include "protocolmetadata.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidwriter.h"
 
 
 class ProtocolSwitcher : public QObject
 {
     Q_OBJECT
 public:
-    explicit ProtocolSwitcher(QWidget *parent = 0);
+    explicit ProtocolSwitcher(QWidget *parent = nullptr);
 
     static QStringList protocolNames;
 
@@ -75,7 +76,8 @@ private:
     static const std::string PROTOCOL_COMPLETE_SUFFIX;
 
     QWidget * m_parent;
-    ZDvidTarget m_currentDvidTarget;
+    ZDvidWriter m_dvidWriter;
+//    ZDvidTarget m_currentDvidTarget;
     ProtocolChooser * m_chooser;
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;

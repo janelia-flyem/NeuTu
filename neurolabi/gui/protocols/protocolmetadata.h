@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "dvid/zdvidtarget.h"
-
+#include "dvid/zdvidwriter.h"
 
 class ProtocolMetadata
 {
@@ -29,11 +29,12 @@ private:
     static const std::string KEY_VERSION;
     static const int fileVersion;
 
-    ZDvidTarget m_dvidTarget;
+//    ZDvidTarget m_dvidTarget;
+    ZDvidWriter m_dvidWriter;
     std::string m_dvidDataName;
     std::string m_metadataKey;
     bool m_isActive;
-    bool m_ioSuccessful;
+    bool m_ioSuccessful = false;
     std::string m_activeProtocolName;
     std::string m_activeProtocolKey;
 

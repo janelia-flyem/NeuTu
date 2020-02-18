@@ -53,6 +53,10 @@ public:
     return m_reader;
   }
 
+  ZDvidReader& getDvidReader() {
+    return m_reader;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 

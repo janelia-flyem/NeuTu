@@ -25,7 +25,7 @@ ProtocolMetadata::ProtocolMetadata(std::string dataName, ZDvidTarget target)
 {
     // note that the constructor doesn't read the metadata; you call
     //  read, or fill in values yourself
-    m_dvidTarget = target;
+//    m_dvidTarget = target;
     m_dvidDataName = dataName;
 
     m_metadataKey = GetUserMetadataKey();
@@ -33,7 +33,9 @@ ProtocolMetadata::ProtocolMetadata(std::string dataName, ZDvidTarget target)
     clearActive();
 
     // holds the success status of most recent read/write
-    m_ioSuccessful = true;
+    if (m_dvidWriter.open(target)) {
+      m_ioSuccessful = true;
+    }
 
 }
 
@@ -51,7 +53,8 @@ const int ProtocolMetadata::fileVersion = 1;
  * check ioSuccessful() for whether there's an error or not;
  * if error, isActive() will be false
  */
-ProtocolMetadata ProtocolMetadata::ReadProtocolMetadata(std::string dataName, ZDvidTarget target)
+ProtocolMetadata ProtocolMetadata::ReadProtocolMetadata(
+    std::string dataName, ZDvidTarget target)
 {
     ProtocolMetadata metadata(dataName, target);
     metadata.read();
@@ -68,8 +71,8 @@ std::string ProtocolMetadata::GetUserMetadataKey(std::string username) {
 }
 
 void ProtocolMetadata::read() {
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
+    const ZDvidReader &reader = m_dvidWriter.getDvidReader();
+    if (reader.isReady()) {
         const QByteArray &rawData = reader.readKeyValue(QString::fromStdString(m_dvidDataName),
             QString::fromStdString(m_metadataKey));
         ZJsonObject data;
@@ -98,8 +101,8 @@ void ProtocolMetadata::read() {
 
 void ProtocolMetadata::write()
 {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+//    ZDvidWriter writer;
+    if (m_dvidWriter.good()) {
         ZJsonObject data;
         data.setEntry(KEY_PROTOCOL_NAME, getActiveProtocolName());
         data.setEntry(KEY_PROTOCOL_KEY, getActiveProtocolKey());
@@ -107,7 +110,7 @@ void ProtocolMetadata::write()
         // always version your output files!
         data.setEntry(KEY_VERSION.c_str(), fileVersion);
 
-        writer.writeJson(m_dvidDataName, m_metadataKey, data);
+        m_dvidWriter.writeJson(m_dvidDataName, m_metadataKey, data);
     } else {
         m_ioSuccessful = false;
     }

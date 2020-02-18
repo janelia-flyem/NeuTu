@@ -8,6 +8,8 @@
 #include <QObject>
 #include <QMessageBox>
 
+#include "common/utilities.h"
+
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
@@ -90,7 +92,7 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
-    if (!m_currentDvidTarget.isValid()) {
+    if (!m_dvidWriter.good()) {
         return;
     }
 
@@ -135,23 +137,25 @@ void ProtocolSwitcher::completeProtocolRequested() {
     // when we complete a protocol, we resave the data under a new key;
     //  it's the old one plus the completion suffix
 
-    ZDvidReader reader;
+    const ZDvidReader &reader = m_dvidWriter.getDvidReader();
     ZJsonObject data;
-    if (reader.open(m_currentDvidTarget)) {
-        const QByteArray &rawData = reader.readKeyValue(QString::fromStdString(PROTOCOL_DATA_NAME),
-            QString::fromStdString(m_activeMetadata.getActiveProtocolKey()));
+    if (reader.good()) {
+        const QByteArray &rawData =
+            reader.readKeyValue(
+              QString::fromStdString(PROTOCOL_DATA_NAME),
+              QString::fromStdString(m_activeMetadata.getActiveProtocolKey()));
         data.decodeString(rawData.data());
     } else {
         warningDialog("Complete failed", "Couldn't read saved data from DVID; completion failed!");
         return;
     }
 
-    ZDvidWriter writer;
-    if (writer.open(m_currentDvidTarget)) {
+//    ZDvidWriter writer;
+    if (m_dvidWriter.good()) {
         std::string incompleteKey = m_activeMetadata.getActiveProtocolKey();
         std::string completeKey = m_activeMetadata.getActiveProtocolKey() + PROTOCOL_COMPLETE_SUFFIX;
-        writer.writeJson(PROTOCOL_DATA_NAME, completeKey, data);
-        writer.deleteKey(QString::fromStdString(PROTOCOL_DATA_NAME), QString::fromStdString(incompleteKey));
+        m_dvidWriter.writeJson(PROTOCOL_DATA_NAME, completeKey, data);
+        m_dvidWriter.deleteKey(QString::fromStdString(PROTOCOL_DATA_NAME), QString::fromStdString(incompleteKey));
     } else {
         warningDialog("Complete failed", "Couldn't write complete data to DVID; completion failed!");
         return;
@@ -162,25 +166,28 @@ void ProtocolSwitcher::completeProtocolRequested() {
 }
 
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
-    m_currentDvidTarget = target;
+  //    m_currentDvidTarget = target;
 
-    // check for active protocol here and start loading
-    //  even before user decides to open the dialog
-    // in separate thread?
-    m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(PROTOCOL_DATA_NAME, target);
+  // check for active protocol here and start loading
+  //  even before user decides to open the dialog
+  // in separate thread?
+  if (m_dvidWriter.open(target)) {
+    m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(
+          PROTOCOL_DATA_NAME, target);
     if (!m_activeMetadata.ioSuccessful()) {
-        // error reading metadata; in principle, we should probably do *something*
-        //  here, but popping a dialog would be too intrusive
-        return;
+      // error reading metadata; in principle, we should probably do *something*
+      //  here, but popping a dialog would be too intrusive
+      return;
     }
     if (m_activeMetadata.isActive()) {
-        loadProtocolRequested();
+      loadProtocolRequested();
     } else {
-        m_protocolStatus = PROTOCOL_INACTIVE;
-        // nothing else to do here; we can't set up the protocol
-        //  chooser because the information about which protocols
-        //  can be initiated or loaded can change over time
+      m_protocolStatus = PROTOCOL_INACTIVE;
+      // nothing else to do here; we can't set up the protocol
+      //  chooser because the information about which protocols
+      //  can be initiated or loaded can change over time
     }
+  }
 }
 
 // start a new protocol
@@ -301,9 +308,9 @@ void ProtocolSwitcher::loadProtocolRequested() {
     connectProtocolSignals();
 
     // load data from dvid and send to protocol
-    ZDvidReader reader;
+    const ZDvidReader &reader = m_dvidWriter.getDvidReader();
     ZJsonObject data;
-    if (reader.open(m_currentDvidTarget)) {
+    if (reader.good()) {
         const QByteArray &rawData = reader.readKeyValue(QString::fromStdString(PROTOCOL_DATA_NAME),
             QString::fromStdString(m_activeMetadata.getActiveProtocolKey()));
         data.decodeString(rawData.data());
@@ -328,9 +335,10 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
 
     // check if node still unlocked?
 
-    ZDvidWriter writer;
-    if (writer.open(m_currentDvidTarget)) {
-        writer.writeJson(PROTOCOL_DATA_NAME, m_activeMetadata.getActiveProtocolKey(), data);
+//    ZDvidWriter writer;
+    if (m_dvidWriter.good()) {
+        m_dvidWriter.writeJson(
+              PROTOCOL_DATA_NAME, m_activeMetadata.getActiveProtocolKey(), data);
     } else {
         warningDialog("Save failed", "Failed to open DVID for writing");
     }
@@ -387,7 +395,7 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
         m_activeProtocol->installEventFilter(parent());
       }
 
-      m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+      m_activeProtocol->setDvidTarget(m_dvidWriter.getDvidTarget());
       connect(m_activeProtocol, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
               this, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)));
     }
@@ -417,33 +425,33 @@ void ProtocolSwitcher::deactivateProtocolColorMap() {
  */
 QStringList ProtocolSwitcher::getUserProtocolKeys(QString username, bool showComplete) {
 
-    QStringList keyList;
+  QStringList keyList;
 
-    ZDvidReader reader;
-    if (reader.open(m_currentDvidTarget)) {
-        // read all keys; filter to current user
-        // (not really tested in presence of other users' data yet)
-        QStringList keyList = reader.readKeys(QString::fromStdString(PROTOCOL_DATA_NAME));
-        keyList = keyList.filter(QRegExp(QString::fromStdString("^" + username.toStdString())));
+  const ZDvidReader &reader = m_dvidWriter.getDvidReader();
+  if (reader.good()) {
+    // read all keys; filter to current user
+    // (not really tested in presence of other users' data yet)
+    QStringList keyList = reader.readKeys(QString::fromStdString(PROTOCOL_DATA_NAME));
+    keyList = keyList.filter(QRegExp(QString::fromStdString("^" + username.toStdString())));
 
-        // remove metadata key
-        keyList.removeAll(QString::fromStdString(ProtocolMetadata::GetUserMetadataKey(username.toStdString())));
+    // remove metadata key
+    keyList.removeAll(QString::fromStdString(ProtocolMetadata::GetUserMetadataKey(username.toStdString())));
 
-        // remove "complete" keys
-        if (!showComplete) {
-            QRegExp reComplete(QString::fromStdString("*" + PROTOCOL_COMPLETE_SUFFIX));
-            reComplete.setPatternSyntax(QRegExp::Wildcard);
-            QStringList completeList = keyList.filter(reComplete);
-            for (int i=0; i<completeList.size(); i++) {
-                keyList.removeAll(completeList.at(i));
-            }
-        }
-
-        return keyList;
-    } else {
-        // empty results on error
-        return keyList;
+    // remove "complete" keys
+    if (!showComplete) {
+      QRegExp reComplete(QString::fromStdString("*" + PROTOCOL_COMPLETE_SUFFIX));
+      reComplete.setPatternSyntax(QRegExp::Wildcard);
+      QStringList completeList = keyList.filter(reComplete);
+      for (int i=0; i<completeList.size(); i++) {
+        keyList.removeAll(completeList.at(i));
+      }
     }
+
+    return keyList;
+  } else {
+    // empty results on error
+    return keyList;
+  }
 }
 
 /*
@@ -468,8 +476,8 @@ bool ProtocolSwitcher::askProceedIfNodeLocked() {
  * return true if it's ok
  */
 bool ProtocolSwitcher::askProceedIfKeyExists(std::string key) {
-    ZDvidReader reader;
-    if (reader.open(m_currentDvidTarget)) {
+    const ZDvidReader &reader = m_dvidWriter.getDvidReader();
+    if (reader.good()) {
         if (reader.hasKey(QString::fromStdString(PROTOCOL_DATA_NAME), QString::fromStdString(key))) {
             int ans = QMessageBox::question(m_parent, "Key exists",
                 QString("There is data already stored at key %1; overwrite?").arg(QString::fromStdString(key)),
@@ -500,27 +508,32 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
     //  (a) quick and (b) necessary or we can't proceed?  let's go with that
 
     // does it exist?  if not, create
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_currentDvidTarget)) {
+
+    ZDvidReader &reader = m_dvidWriter.getDvidReader();
+    {
+      neutu::ApplyOnce ao(
+            [&]() { reader.setVerbose(false); },
+            [&]() { reader.setVerbose(true); }
+      );
+      if (reader.good()) {
         if (!reader.hasData(PROTOCOL_DATA_NAME)) {
-            ZDvidWriter writer;
-            if (writer.open(m_currentDvidTarget)) {
-                writer.createKeyvalue(PROTOCOL_DATA_NAME);
-                // did it actually create?  I'm only going to try once
-                if (reader.hasData(PROTOCOL_DATA_NAME)) {
-                    return true;
-                } else {
-                    return false;
-                }
+          if (m_dvidWriter.good()) {
+            m_dvidWriter.createKeyvalue(PROTOCOL_DATA_NAME);
+            // did it actually create?  I'm only going to try once
+            if (reader.hasData(PROTOCOL_DATA_NAME)) {
+              return true;
             } else {
-                return false;
+              return false;
             }
+          } else {
+            return false;
+          }
         } else {
-            return true;
+          return true;
         }
-    } else {
+      } else {
         return false;
+      }
     }
 }
 

@@ -678,7 +678,7 @@ protected:
   ZPaintLabelWidget *m_paintLabelWidget;
   ZActionLibrary *m_actionLibrary = nullptr;
 
-  ProtocolSwitcher *m_protocolSwitcher;
+  ProtocolSwitcher *m_protocolSwitcher = nullptr;
 
 //  std::unique_ptr<FlyEmMvcDialogManager> m_dlgManager; //unique ptr doesn't work well with Qt Creator
   friend class FlyEmMvcDialogManager;
