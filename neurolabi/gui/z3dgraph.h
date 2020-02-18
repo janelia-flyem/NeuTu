@@ -56,6 +56,8 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  ZCuboid getBoundBox() const;
+
   void print();
 
 private:
@@ -191,6 +193,8 @@ public:
   void save(const std::string &filePath);
 
   ZJsonObject toJsonObject() const;
+
+  ZCuboid getBoundBox() const override;
 
   void print();
 

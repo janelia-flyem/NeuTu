@@ -220,7 +220,8 @@ public:
   ZIntPoint getHitVoxel() const;
 
   void boundBox(ZIntCuboid *box) const;
-  ZIntCuboid getBoundBox() const;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
 private:
   int m_conn;

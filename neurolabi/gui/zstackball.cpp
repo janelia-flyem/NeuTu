@@ -11,6 +11,7 @@
 
 #include "common/math.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zcuboid.h"
 #include "zpainter.h"
 
 ZStackBall::ZStackBall()
@@ -79,6 +80,14 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 //  display(&painter, n, style);
 //#endif
 //}
+
+ZCuboid ZStackBall::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getCenter() - getRadius(), getCenter() + getRadius());
+
+  return box;
+}
 
 bool ZStackBall::display(
     QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,

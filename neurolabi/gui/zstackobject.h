@@ -10,6 +10,7 @@
 
 class ZPainter;
 class ZIntCuboid;
+class ZCuboid;
 
 
 /*!
@@ -199,6 +200,7 @@ public:
    * returning the result.
    */
   virtual void boundBox(ZIntCuboid *box) const;
+  virtual ZCuboid getBoundBox() const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);

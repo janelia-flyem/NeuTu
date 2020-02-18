@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "zintpoint.h"
 #include "zintcuboid.h"
@@ -16,8 +17,10 @@
 
 using namespace std;
 
-ZCuboid::ZCuboid() : m_firstCorner(), m_lastCorner()
+ZCuboid::ZCuboid()
 {
+  m_firstCorner.set(std::numeric_limits<double>::infinity());
+  m_lastCorner.set(-std::numeric_limits<double>::infinity());
 }
 
 ZCuboid::ZCuboid(double x1, double y1, double z1,
@@ -53,6 +56,14 @@ void ZCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
   m_firstCorner.set(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ());
   m_lastCorner.set(lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+}
+
+void ZCuboid::set(const ZIntCuboid &cuboid)
+{
+  if (!cuboid.isEmpty()) {
+    set(cuboid.getFirstCorner().toPoint() - 0.5,
+        cuboid.getLastCorner().toPoint() + 0.5);
+  }
 }
 
 void ZCuboid::set(const double *corner)
@@ -273,6 +284,12 @@ void ZCuboid::scale(double s)
   m_lastCorner *= s;
 }
 
+void ZCuboid::scale(double sx, double sy, double sz)
+{
+  m_firstCorner *= ZPoint(sx, sy, sz);
+  m_lastCorner *= ZPoint(sx, sy, sz);
+}
+
 void ZCuboid::expand(double margin)
 {
   m_firstCorner -= margin;
@@ -354,6 +371,13 @@ void ZCuboid::join(const ZCuboid &box)
   if (box.isValid()) {
     include(box.firstCorner());
     include(box.lastCorner());
+  }
+}
+
+void ZCuboid::join(const ZIntCuboid &box)
+{
+  if (!box.isEmpty()) {
+    join(FromIntCuboid(box));
   }
 }
 
@@ -664,6 +688,13 @@ ZIntCuboid ZCuboid::toIntCuboid() const
                        std::ceil(m_lastCorner.getZ()));
 
   return cuboid;
+}
+
+ZCuboid ZCuboid::FromIntCuboid(const ZIntCuboid &cuboid)
+{
+  ZCuboid result;
+  result.set(cuboid);
+  return result;
 }
 
 double ZCuboid::getDiagonalLength() const

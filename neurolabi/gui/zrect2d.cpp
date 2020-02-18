@@ -9,6 +9,8 @@
 #include "geometry/zgeometry.h"
 #include "zpainter.h"
 #include "zsttransform.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZRect2d::ZRect2d()
 {
@@ -43,6 +45,13 @@ void ZRect2d::set(int x0, int y0, int width, int height)
   m_y0 = y0;
   m_width = width;
   m_height = height;
+}
+
+ZCuboid ZRect2d::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getFirstX(), getFirstY(), getZ(),
+                   getLastX(), getLastY(), getZ()));
 }
 
 bool ZRect2d::isValid() const

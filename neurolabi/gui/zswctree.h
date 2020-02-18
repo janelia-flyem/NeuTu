@@ -218,7 +218,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis axis) const;
+                       neutu::EAxis axis) const override;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -393,10 +393,12 @@ public:
    *
    * \return The bound box.
    */
-   ZCuboid getBoundBox() const;
+   ZCuboid getBoundBox() const override;
 //   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
-   void boundBox(ZIntCuboid *box) const;
+   void boundBox(ZIntCuboid *box) const override;
+
+   ZCuboid getSelectedNodeBoundBox() const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);

@@ -5,6 +5,7 @@
 #include "zlocsegchain.h"
 #include "zstack.hxx"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZDirectionalTemplateChain::ZDirectionalTemplateChain()
 {
@@ -121,6 +122,17 @@ int ZDirectionalTemplateChain::hitTest(double x, double y, double z)
   }
 
   return 0;
+}
+
+ZCuboid ZDirectionalTemplateChain::getBoundBox() const
+{
+  ZCuboid box;
+
+  for (ZDirectionalTemplate *t : m_chain) {
+    box.join(t->getBoundBox());
+  }
+
+  return box;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)

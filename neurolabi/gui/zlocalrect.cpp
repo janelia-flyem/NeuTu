@@ -4,6 +4,7 @@
 
 #include "common/mathdefs.h"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZLocalRect::ZLocalRect()
 {
@@ -37,6 +38,13 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
 
   return locseg;
 }
+
+ZCuboid ZLocalRect::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
 
 void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
                          neutu::EAxis sliceAxis) const

@@ -11,6 +11,7 @@
 #include "c_stack.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+#include "geometry/zcuboid.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -70,7 +71,7 @@ ZStack* ZDvidSparseStack::makeSlice(int z) const
   if (objectMask != NULL) {
     ZObject3dScan slice = objectMask->getSlice(z);
     if (!slice.isEmpty()) {
-      ZIntCuboid box = slice.getBoundBox();
+      ZIntCuboid box = slice.getIntBoundBox();
       stack = new ZStack(GREY, box, 1);
       stack->setZero();
 
@@ -188,14 +189,21 @@ void ZDvidSparseStack::setCancelFillValue(bool flag)
   m_cancelingValueFill = flag;
 }
 
-ZIntCuboid ZDvidSparseStack::getBoundBox() const
+ZIntCuboid ZDvidSparseStack::getIntBoundBox() const
 {
   ZIntCuboid box;
   ZObject3dScan *obj = const_cast<ZDvidSparseStack&>(*this).getObjectMask();
   if (obj != NULL) {
-    box = obj->getBoundBox();
+    box = obj->getIntBoundBox();
   }
 
+  return box;
+}
+
+ZCuboid ZDvidSparseStack::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
   return box;
 }
 
@@ -840,7 +848,7 @@ ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range, bool preservingBord
 {
   ZStack *stack = NULL;
 
-  if (range.contains(getBoundBox()) || range.isEmpty()) {
+  if (range.contains(getIntBoundBox()) || range.isEmpty()) {
     stack = getStack()->clone();
   } else {
     runFillValueFunc(range, true, false);

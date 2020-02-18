@@ -4916,7 +4916,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
   if (originalStack != NULL) {
     if (!roi.isEmpty()) {
       if (m_splitSource.get() != NULL) {
-        if (!roi.equals(m_splitSource->getBoundBox())) {
+        if (!roi.equals(m_splitSource->getIntBoundBox())) {
           m_splitSource.reset();
         }
       }

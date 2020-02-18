@@ -48,6 +48,7 @@ public:
   }
 
   void boundBox(ZIntCuboid *box) const;
+  ZCuboid getBoundBox() const override;
 
   void join(const ZIntCuboid &cuboid);
 

@@ -6,7 +6,7 @@
 
 #include "zpainter.h"
 #include "geometry/zintpoint.h"
-
+#include "geometry/zcuboid.h"
 
 ZIntCuboidObj::ZIntCuboidObj()
 {
@@ -211,6 +211,11 @@ void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
   if (box != NULL) {
     *box = getCuboid();
   }
+}
+
+ZCuboid ZIntCuboidObj::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(m_cuboid);
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

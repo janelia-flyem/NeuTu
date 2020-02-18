@@ -296,13 +296,14 @@ MainConfig get_program_config(int argc, char *argv[])
 
 int run_command_line(int argc, char *argv[])
 {
-#if defined(_FLYEM_)
   NeutubeConfig &config = NeutubeConfig::getInstance();
   QFileInfo fileInfo(argv[0]);
   QCoreApplication app(argc, argv, false);
 
   std::string appDir = app.applicationDirPath().toStdString();
   config.setApplicationDir(appDir);
+
+  #if defined(_FLYEM_)
   LoadFlyEmConfig("", config, false);
 #endif
 

@@ -35,7 +35,7 @@ int ZBodyExportCommand::run(
         if (reader->getDvidTarget().getMaxLabelZoom() > 0) {
           ZObject3dScan coarseObj = reader->readCoarseBody(bodyId);
           ZDvidInfo dvidInfo = reader->readLabelInfo();
-          ZIntCuboid box =coarseObj.getBoundBox();
+          ZIntCuboid box =coarseObj.getIntBoundBox();
           box.setWidth(box.getWidth() * dvidInfo.getBlockSize().getX());
           box.setHeight(box.getHeight() * dvidInfo.getBlockSize().getY());
           box.setDepth(box.getDepth() * dvidInfo.getBlockSize().getZ());
@@ -54,7 +54,7 @@ int ZBodyExportCommand::run(
         if (!obj.isEmpty()) {
           if (needDownsampling) {
             int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                  obj.getBoundBox(), neutu::ONEGIGA, false);
+                  obj.getIntBoundBox(), neutu::ONEGIGA, false);
             obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
           }
           ZStack *stack = obj.toStackObject();

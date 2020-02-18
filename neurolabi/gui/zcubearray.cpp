@@ -1,6 +1,6 @@
 #include "zcubearray.h"
 #include "zmesh.h"
-
+#include "geometry/zcuboid.h"
 //
 Mesh::Mesh()
 {
@@ -420,6 +420,11 @@ bool ZCubeArray::isEmpty() const
   return false;
 }
 
+ZCuboid ZCubeArray::getBoundBox() const
+{
+  return m_mesh->getBoundBox();
+}
+
 #if 0
 bool ZCubeArray::isEmpty() const
 {
@@ -499,6 +504,7 @@ void ZCubeArray::clear()
 {
   m_cubeArray.clear();
 }
+
 #endif
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)

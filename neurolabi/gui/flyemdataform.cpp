@@ -871,7 +871,7 @@ uint64_t FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 
           ZFlyEmNeuronBodyInfo bodyInfo;
           bodyInfo.setBodySize(body.getVoxelNumber());
-          bodyInfo.setBoundBox(body.getBoundBox());
+          bodyInfo.setBoundBox(body.getIntBoundBox());
           writer.writeBodyInfo(neuron->getId(), bodyInfo.toJsonObject());
 
           C_Stack::kill(stack);

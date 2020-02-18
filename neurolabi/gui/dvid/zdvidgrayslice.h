@@ -90,7 +90,8 @@ public:
 //  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
 //  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
 
-  ZRect2d getBoundBox() const;
+  ZCuboid getBoundBox() const override;
+//  ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void setBoundBox(const ZRect2d &rect);
