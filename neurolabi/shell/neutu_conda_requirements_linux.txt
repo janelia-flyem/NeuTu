@@ -1,5 +1,6 @@
 gxx_linux-64
 cmake
+libneucore=0.1.2*
 qt=5.9*
 fftw=3.3*
 jansson=2.7*

@@ -339,7 +339,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
 #include "dvid/zdvidurl.h"
-//#include "neulib/core/utilities.h"
+#include "neulib/core/utilities.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30743,7 +30743,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   int x;
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
