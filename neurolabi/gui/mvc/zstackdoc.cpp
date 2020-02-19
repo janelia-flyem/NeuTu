@@ -5381,7 +5381,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -5408,7 +5408,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -10531,6 +10531,16 @@ void ZStackDoc::clearSelectedSet()
 {
   deselectAllSwcTreeNodes();
   m_objectGroup.setSelected(false);
+}
+
+ZCuboid ZStackDoc::getSelectedBoundBox() const
+{
+  ZCuboid box = m_objectGroup.getSelectedBoundBox();
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (ZSwcTree *tree : treeList) {
+    box.join(tree->getSelectedNodeBoundBox());
+  }
+  return box;
 }
 
 ZRect2d ZStackDoc::getRect2dRoi() const

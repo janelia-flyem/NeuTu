@@ -492,7 +492,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcGenerator::createSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  size_t volume = obj.getBoundBox().getVolume();
+  size_t volume = obj.getIntBoundBox().getVolume();
 
   int intv = 0;
   if (volume > MAX_INT32) {

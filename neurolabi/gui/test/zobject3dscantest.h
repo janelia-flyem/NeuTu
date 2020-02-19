@@ -827,7 +827,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   createObject(&obj);
 //  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  ZIntCuboid box = obj.getBoundBox();
+  ZIntCuboid box = obj.getIntBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
   ASSERT_EQ(box.getFirstCorner().getY(), 0);
   ASSERT_EQ(box.getFirstCorner().getZ(), 0);
@@ -841,7 +841,7 @@ TEST(ZObject3dScan, TestGetProperty) {
 
   obj.canonize();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  box = obj.getBoundBox();
+  box = obj.getIntBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
   ASSERT_EQ(box.getFirstCorner().getY(), 0);
   ASSERT_EQ(box.getFirstCorner().getZ(), 0);
@@ -856,7 +856,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   createObject2(&obj);
 //  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  box = obj.getBoundBox();
+  box = obj.getIntBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
   ASSERT_EQ(box.getFirstCorner().getY(), 0);
   ASSERT_EQ(box.getFirstCorner().getZ(), 0);
@@ -872,7 +872,7 @@ TEST(ZObject3dScan, TestGetProperty) {
   obj.canonize();
   obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  box = obj.getBoundBox();
+  box = obj.getIntBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
   ASSERT_EQ(box.getFirstCorner().getY(), 0);
   ASSERT_EQ(box.getFirstCorner().getZ(), 0);
@@ -886,7 +886,7 @@ TEST(ZObject3dScan, TestGetProperty) {
 
   createObject3(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  box = obj.getBoundBox();
+  box = obj.getIntBoundBox();
   ASSERT_EQ(box.getFirstCorner().getX(), 0);
   ASSERT_EQ(box.getFirstCorner().getY(), 0);
   ASSERT_EQ(box.getFirstCorner().getZ(), 0);

@@ -739,7 +739,7 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
     container.setName(getName() + "_refiner" + std::to_string(index++));
 
     std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
-          *stack, *boundaryStack, subbound.getBoundBox());
+          *stack, *boundaryStack, subbound.getIntBoundBox());
     //          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
     for (ZObject3d *seed : newSeeds) {
       container.consumeSeed(seed);
@@ -894,7 +894,7 @@ ZIntCuboid ZStackWatershedContainer::GetSeedRange(
 {
   ZIntCuboid box;
   for (ZObject3d *obj : seedArray) {
-    box.join(obj->getBoundBox());
+    box.join(obj->getIntBoundBox());
   }
 
   return box;

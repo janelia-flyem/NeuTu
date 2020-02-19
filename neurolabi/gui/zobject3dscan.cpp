@@ -34,6 +34,7 @@
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
 #include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
 #include "common/memorystream.h"
@@ -1399,8 +1400,8 @@ bool ZObject3dScan::isAdjacentTo(
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
   box1.expand(1, 1, 1);
   if (!box1.hasOverlap(box2)) {
     return false;
@@ -1495,8 +1496,8 @@ bool ZObject3dScan::isAdjacentToOld(const ZObject3dScan &obj) const
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
 
   box1.expand(1, 1, 1);
 
@@ -1559,7 +1560,7 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
     offset[0] = boundBox.getFirstCorner().getX();
     offset[1] = boundBox.getFirstCorner().getY();
@@ -1602,7 +1603,7 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
     offset[0] = boundBox.getFirstCorner().getX() - margin;
     offset[1] = boundBox.getFirstCorner().getY() - margin;
@@ -1671,7 +1672,7 @@ ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
 
 ZStack* ZObject3dScan::toVirtualStack() const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
 
   ZStack *stack = new ZStack(GREY, box.getWidth(), box.getHeight(),
                              box.getDepth(), 1, true);
@@ -1682,7 +1683,15 @@ ZStack* ZObject3dScan::toVirtualStack() const
   return stack;
 }
 
-ZIntCuboid ZObject3dScan::getBoundBox() const
+ZCuboid ZObject3dScan::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
+
+  return box;
+}
+
+ZIntCuboid ZObject3dScan::getIntBoundBox() const
 {
   ZIntCuboid boundBox;
 
@@ -1714,9 +1723,9 @@ ZIntCuboid ZObject3dScan::getBoundBox() const
   return boundBox;
 }
 
-void ZObject3dScan::getBoundBox(Cuboid_I *box) const
+void ZObject3dScan::getIntBoundBox(Cuboid_I *box) const
 {
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
 
   Cuboid_I_Set_S(box, boundBox.getFirstCorner().getX(),
                  boundBox.getFirstCorner().getY(),
@@ -1728,7 +1737,7 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
 void ZObject3dScan::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
-    *box = getBoundBox();
+    *box = getIntBoundBox();
   }
 }
 
@@ -2514,7 +2523,7 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         }
 
 
-        ZIntCuboid box = slice1.getBoundBox().join(slice2.getBoundBox());
+        ZIntCuboid box = slice1.getIntBoundBox().join(slice2.getIntBoundBox());
         box.expandX(1);
         box.expandY(1);
 //        box.setFirstX(box.getFirstCorner().getX() - 1);
@@ -2633,7 +2642,7 @@ void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
 void ZObject3dScan::exportImageSlice(
     int minZ, int maxZ, const std::string outputFolder) const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
   if (!box.isEmpty()) {
     for (int i = minZ; i <= maxZ; ++i) {
       std::cout << "Saving " << i << std::endl;
@@ -3142,7 +3151,7 @@ bool ZObject3dScan::equalsLiterally(const ZObject3dScan &obj) const
 ZObject3dScan ZObject3dScan::getComplementObject()
 {
   ZObject3dScan fullObj;
-  ZObject3dFactory::MakeBoxObject3dScan(getBoundBox(), &fullObj);
+  ZObject3dFactory::MakeBoxObject3dScan(getIntBoundBox(), &fullObj);
 
 #ifdef _DEBUG_2
   fullObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -3257,7 +3266,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
       compObj.getConnectedComponent(ACTION_CANONIZE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
@@ -3265,7 +3274,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
     subobj.print();
 #endif
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       obj.unify(subobj);
@@ -3286,12 +3295,12 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
       compObj.getConnectedComponent(ACTION_NONE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       subobj.canonize();
@@ -4395,7 +4404,7 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->setSliceAxis(m_sliceAxis);
   }
 
-  if (box.contains(getBoundBox())) {
+  if (box.contains(getIntBoundBox())) {
     *result = *this;
     return result;
   }
@@ -4461,7 +4470,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
 
   if (!isEmpty()) {
     Cuboid_I boundBox;
-    getBoundBox(&boundBox);
+    getIntBoundBox(&boundBox);
 
     double xMean = 0.0;
     double yMean = 0.0;

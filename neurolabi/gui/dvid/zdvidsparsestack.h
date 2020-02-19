@@ -88,7 +88,8 @@ public:
   void setGrayscaleReader(const ZDvidReader &reader);
   void setGrayscaleReader(const ZDvidReader *reader);
 
-  ZIntCuboid getBoundBox() const;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   /*!

@@ -111,7 +111,7 @@ void ZStackDocReader::loadStack(const QString &filePath)
       //addSparseObject(sobj);
 //      sobj->setColor(128, 0, 0, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       m_stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       m_stack->setOffset(cuboid.getFirstCorner());

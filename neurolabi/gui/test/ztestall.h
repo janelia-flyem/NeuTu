@@ -98,5 +98,6 @@
 #include "test/zdvidtargetfactorytest.h"
 #include "test/zneurontracertest.h"
 #include "test/zmeshtest.h"
+#include "test/zlocalneurosegtest.h"
 
 #endif // ZTESTALL_H

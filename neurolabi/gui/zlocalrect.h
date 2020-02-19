@@ -24,6 +24,7 @@ public:
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+  ZCuboid getBoundBox() const override;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);

@@ -1,12 +1,29 @@
-#include"zsegmentationnodewrapper.h"
-#include"zpainter.h"
-
+#include "zsegmentationnodewrapper.h"
+#include "zpainter.h"
+#include "geometry/zcuboid.h"
 
 bool ZSegmentationNodeWrapper::hit(double x, double y, double z){
   if(!isSelectable()){
     return false;
   }
   return m_tree->contains(m_id,x,y,z);
+}
+
+ZCuboid ZSegmentationNodeWrapper::getBoundBox() const
+{
+  ZIntCuboid box;
+
+  vector<shared_ptr<ZSegmentationEncoder>> vec_encoders;
+
+  for(auto id: m_tree->getLeavesIDs(m_id)){
+    vec_encoders.push_back(m_tree->getEncoder(id));
+  }
+
+  for(auto encoder: vec_encoders){
+    box.join(encoder->getBoundBox());
+  }
+
+  return ZCuboid::FromIntCuboid(box);
 }
 
 

@@ -862,6 +862,8 @@ public:
   ZRect2d getRect2dRoi() const;
   ZIntCuboid getCuboidRoi() const;
 
+  ZCuboid getSelectedBoundBox() const;
+
   virtual void selectSwcNode(const ZRect2d &roi);
 
   void setStackBc(double factor, double offset, int channel);

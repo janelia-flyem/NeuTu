@@ -124,6 +124,7 @@ public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
   void gotoPosition(const ZPoint& position, double radius);
   void zoomToSelectedSwcNodes();
+  void zoomToSelected();
 
 public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() {

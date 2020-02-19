@@ -1110,9 +1110,9 @@ int ZStack::getIntValue(size_t index, int c) const
   case GREY16:
     return ima.array16[offset];
   case FLOAT32:
-    return ima.array32[offset];
+    return neutu::iround(ima.array32[offset]);
   case FLOAT64:
-    return ima.array64[offset];
+    return neutu::iround(ima.array64[offset]);
   }
 
   return 0;

@@ -750,12 +750,12 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       }
 
       Cuboid_I boundBox;
-      objArray[0].getBoundBox(&boundBox);
+      objArray[0].getIntBoundBox(&boundBox);
 
       //Get Bound box
       for (size_t i = 1; i < objArray.size(); i++) {
         Cuboid_I subBoundBox;
-        objArray[i].getBoundBox(&subBoundBox);
+        objArray[i].getIntBoundBox(&subBoundBox);
         Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
       }
 

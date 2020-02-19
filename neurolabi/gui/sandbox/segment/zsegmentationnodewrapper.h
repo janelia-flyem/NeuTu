@@ -24,6 +24,7 @@ public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const;
   virtual bool hit(double x, double y, double z);
   string getNodeID()const{return m_id;}
+  ZCuboid getBoundBox() const override;
 
 private:
   shared_ptr<ZSegmentationTree> m_tree;

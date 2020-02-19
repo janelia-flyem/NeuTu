@@ -23,6 +23,7 @@
 
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "zlocalneuroseg.h"
 
 #include "imgproc/zstackbinarizer.h"
 #include "imgproc/zstackprocessor.h"
@@ -117,7 +118,13 @@ Stack* ZNeuronTraceSeeder::sortSeed(
     Local_Neuroseg_Optimize_W(&(m_seedArray[i]), signal, z_scale, 0, fws);
 
     if (ws->trace_mask != NULL) {
-      Local_Neuroseg &seg = m_seedArray[i];
+//      Local_Neuroseg &seg = m_seedArray[i];
+      ZLocalNeuroseg seg(&(m_seedArray[i]), false);
+      if (seg.hitMask(ws->trace_mask)) {
+        m_seedScoreArray[i] = 0;
+        continue;
+      }
+#if 0
       int v = C_Stack::value(
             ws->trace_mask,
             neutu::iround(seg.pos[0]), neutu::iround(seg.pos[1]), neutu::iround(seg.pos[2]));
@@ -125,6 +132,7 @@ Stack* ZNeuronTraceSeeder::sortSeed(
         m_seedScoreArray[i] = 0;
         continue;
       }
+#endif
     }
 
     m_seedScoreArray[i] = fws->sws->fs.scores[1];

@@ -14,6 +14,8 @@
 #include "common/zsharedpointer.h"
 //#include "flyem/zflyemtodoitem.h"
 
+class ZCuboid;
+
 /*!
  * \brief The aggregate class of ZStackObject
  *
@@ -175,6 +177,8 @@ public:
 
   TStackObjectSet getSelectedSet(ZStackObject::EType type) const;
 //  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
+
+  ZCuboid getSelectedBoundBox() const;
 
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 

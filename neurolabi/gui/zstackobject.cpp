@@ -7,6 +7,7 @@
 
 #include "geometry/zintcuboid.h"
 #include "common/utilities.h"
+#include "geometry/zcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
@@ -384,6 +385,11 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   if (box != NULL) {
     *box = ZIntCuboid();
   }
+}
+
+ZCuboid ZStackObject::getBoundBox() const
+{
+  return ZCuboid();
 }
 
 void ZStackObject::addVisualEffect(neutu::display::TVisualEffect ve)

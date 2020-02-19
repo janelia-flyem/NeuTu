@@ -724,7 +724,7 @@ void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
     if (!obj.isEmpty()) {
       ZFlyEmNeuronBodyInfo bodyInfo;
       bodyInfo.setBodySize(obj.getVoxelNumber());
-      bodyInfo.setBoundBox(obj.getBoundBox());
+      bodyInfo.setBoundBox(obj.getIntBoundBox());
       ZJsonObject obj = bodyInfo.toJsonObject();
       ZDvidUrl dvidUrl(getDvidTarget(), m_admin);
       writeJson(dvidUrl.getBodyInfoUrl(

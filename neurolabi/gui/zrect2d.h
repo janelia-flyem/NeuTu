@@ -87,6 +87,8 @@ public:
       const QRectF &sourceRectIn, const QRectF &sourceRectOut,
       const QRectF &targetRectIn);
 
+  ZCuboid getBoundBox() const override;
+
 private:
   void init(int x0, int y0, int width, int height);
   void preparePen(QPen &pen) const;

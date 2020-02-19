@@ -1115,10 +1115,7 @@ SOURCES += main.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
-    dialogs/zdvidbodypositiondialog.cpp \
     zcubearraymovieactor.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp \
-    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
@@ -1127,6 +1124,9 @@ SOURCES += main.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dialogs/zflyembodysplitdialog.cpp \
+    dialogs/zdvidbodypositiondialog.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \
