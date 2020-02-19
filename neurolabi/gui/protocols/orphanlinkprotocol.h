@@ -40,7 +40,6 @@ private slots:
     void onGotoSelectedButton();
     void onCommentButton();
     void onClickedTable(QModelIndex index);
-    void onDoubleClickedTable(QModelIndex index);
 
     void onNextTaskButton();
     void onStartTaskButton();

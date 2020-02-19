@@ -42,7 +42,6 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
     connect(ui->gotoSelectedButton, SIGNAL(clicked(bool)), this, SLOT(onGotoSelectedButton()));
 
     connect(ui->tableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
-    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickedTable(QModelIndex)));
 
     connect(ui->nextTaskButton, SIGNAL(clicked(bool)), this, SLOT(onNextTaskButton()));
     connect(ui->startTaskButton, SIGNAL(clicked(bool)), this, SLOT(onStartTaskButton()));
@@ -283,11 +282,6 @@ void OrphanLinkProtocol::onClickedTable(QModelIndex /*index*/) {
     taskSelected();
 }
 
-void OrphanLinkProtocol::onDoubleClickedTable(QModelIndex /*index*/) {
-    // this works because the double-click will also select the table row
-    gotoSelectedBody();
-}
-
 bool OrphanLinkProtocol::hasSelection() {
     return ui->tableView->selectionModel()->hasSelection();
 }
@@ -324,6 +318,8 @@ void OrphanLinkProtocol::taskSelected() {
             disable(COMPLETE_SKIP_TASK_BUTTONS);
         }
     }
+
+    gotoSelectedBody();
 
     // whether all tasks are completed or or not:
     updateSelectedBodyLabel();
