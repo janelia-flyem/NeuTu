@@ -30844,7 +30844,7 @@ void ZTest::test(MainWindow *host)
   Print_Geo3d_Scalar_Field(field);
 #endif
 
-#if 1
+#if 0
   ZStack *stack = ZStackFactory::MakeZeroStack(512, 512, 512);
   double x = 10.0;
   double y = 20.0;
