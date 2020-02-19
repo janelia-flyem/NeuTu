@@ -53,66 +53,40 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     m_username = QString::fromStdString(neutu::GetCurrentUserName());
 }
 
-const QString ProtocolAssignmentDialog::ASSIGNMENT_APPLICATION_NAME = "assignment-manager";
-
-bool ProtocolAssignmentDialog::checkForTokens() {
-    // check for master token
-    FlyEmAuthTokenHandler handler;
-    if (!handler.hasMasterToken()) {
-        showError("No authentication token!",
-            "NeuTu needs your Fly EM services authentication token! Open the authentication dialog via the yellow key icon on the toolbar and follow the instructions, then try this action again.");
-        return false;
-    }
-
-    // if present, try to get application token
-    QString applicationName = ASSIGNMENT_APPLICATION_NAME;
-    QString token = handler.getApplicationToken(applicationName);
-    if (token.isEmpty()) {
-        showError("No application token!", "Could not retrieve application token for " + applicationName);
-        return false;
-    }
-    m_client.setToken(token);
-    return true;
-}
-
 void ProtocolAssignmentDialog::onRefreshButton() {
-    if (checkForTokens()) {
-        loadAssignments();
-        updateAssignmentsTable();
-    }
+    loadAssignments();
+    updateAssignmentsTable();
 }
 
 void ProtocolAssignmentDialog::onGetNewButton() {
-    if (checkForTokens()) {
-        QMap<QString, QString> projects = m_client.getEligibleProjects();
-        if (projects.size() == 0) {
-            showMessage("No projects!", "No eligible projects found!");
-            return;
-        }
+    QMap<QString, QString> projects = m_client.getEligibleProjects();
+    if (projects.size() == 0) {
+        showMessage("No projects!", "No eligible projects found!");
+        return;
+    }
 
-        // show dialog: user chooses a project from list of "project name (procotol)"
-        QStringList options;
-        QStringList nameList;
-        for (QString projectName: projects.keys()) {
-            nameList << projectName;
-            options << projectName + " (" + projects[projectName] + ")";
-        }
+    // show dialog: user chooses a project from list of "project name (procotol)"
+    QStringList options;
+    QStringList nameList;
+    for (QString projectName: projects.keys()) {
+        nameList << projectName;
+        options << projectName + " (" + projects[projectName] + ")";
+    }
 
-        bool ok;
-        QString choice = QInputDialog::getItem(this, "Get assignment",
-            "Choose a project to get an assignment from:", options, 0, false, &ok);
-        if (ok && !choice.isEmpty()) {
-            QString projectName = nameList[options.indexOf(choice)];
-            int assignmentID = m_client.generateAssignment(projectName);
+    bool ok;
+    QString choice = QInputDialog::getItem(this, "Get assignment",
+        "Choose a project to get an assignment from:", options, 0, false, &ok);
+    if (ok && !choice.isEmpty()) {
+        QString projectName = nameList[options.indexOf(choice)];
+        int assignmentID = m_client.generateAssignment(projectName);
 
 
-            // check success
-            if (assignmentID == -1) {
-                showMessage("No assignment", "Failed to start an assignment for project " + projectName);
-            } else {
-                loadAssignments();
-                updateAssignmentsTable();
-            }
+        // check success
+        if (assignmentID == -1) {
+            showMessage("No assignment", "Failed to start an assignment for project " + projectName);
+        } else {
+            loadAssignments();
+            updateAssignmentsTable();
         }
     }
 }

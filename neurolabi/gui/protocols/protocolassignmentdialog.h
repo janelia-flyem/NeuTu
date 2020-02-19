@@ -42,16 +42,12 @@ private:
         STARTED_COLUMN
     };
 
-    static const QString ASSIGNMENT_APPLICATION_NAME;
-
     QStandardItemModel * m_model;
     QSortFilterProxyModel * m_proxy;
     ProtocolAssignmentClient m_client;
     QString m_username;
     QList<ProtocolAssignment> m_assignments;
     int m_savedSelectedAssignmentID;
-
-    bool checkForTokens();
 
     void loadAssignments();
     bool completeTask(ProtocolAssignmentTask task);

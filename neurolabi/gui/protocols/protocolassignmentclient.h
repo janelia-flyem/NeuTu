@@ -21,8 +21,10 @@ public:
         ORPHAN_LINK
     };
 
+    static const QString ASSIGNMENT_APPLICATION_NAME;
+
     void setServer(QString server);
-    void setToken(QString token);
+    bool checkForTokens();
 
     QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
     QMap<QString, QString> getEligibleProjects();
