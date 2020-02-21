@@ -8,6 +8,7 @@
 #include "zdialogfactory.h"
 
 #include "zflyemproofmvc.h"
+#include "service/neuprintreader.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -327,35 +328,42 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
 {
   if (isNull(m_neuprintBodyDlg)) {
-    getNeuprintSetupDlg()->exec();
-    m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
-    neutu::EServerStatus status = m_parent->getNeuPrintStatus();
+    if (getNeuprintSetupDlg()->exec()) {
+      std::unique_ptr<NeuPrintReader> reader =
+          getNeuprintSetupDlg()->takeNeuPrintReader();
 
-    switch (status) {
-    case neutu::EServerStatus::NORMAL:
-      m_neuprintBodyDlg = makeBodyInfoDlg(
-            FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
-      m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
-      break;
-    case neutu::EServerStatus::NOSUPPORT:
-      ZDialogFactory::Error(
-            "NeuPrint Not Supported",
-            "Cannot use NeuPrint because this dataset is not supported by the server.",
-            m_parent);
-      break;
-    case neutu::EServerStatus::NOAUTH:
-      ZDialogFactory::Error(
-            "NeuPrint Not Authorized",
-            "Cannot use NeuPrint because the token is not accepted.",
-            m_parent);
-      break;
-    case neutu::EServerStatus::OFFLINE:
-      ZDialogFactory::Error(
-            "NeuPrint Not Connected",
-            "Cannot use NeuPrint because the server cannot be connected.",
-            m_parent);
-      break;
-    }
+      if (reader) {
+        neutu::EServerStatus status = reader->getStatus();
+//      m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
+        //      neutu::EServerStatus status = m_parent->getNeuPrintStatus();
+
+        switch (status) {
+        case neutu::EServerStatus::NORMAL:
+          m_neuprintBodyDlg = makeBodyInfoDlg(
+                FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
+          m_neuprintBodyDlg->setNeuPrintReader(std::move(reader));
+          //        m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
+          break;
+        case neutu::EServerStatus::NOSUPPORT:
+          ZDialogFactory::Error(
+                "NeuPrint Not Supported",
+                "Cannot use NeuPrint because this dataset is not supported by the server.",
+                m_parent);
+          break;
+        case neutu::EServerStatus::NOAUTH:
+          ZDialogFactory::Error(
+                "NeuPrint Not Authorized",
+                "Cannot use NeuPrint because the token is not accepted.",
+                m_parent);
+          break;
+        case neutu::EServerStatus::OFFLINE:
+          ZDialogFactory::Error(
+                "NeuPrint Not Connected",
+                "Cannot use NeuPrint because the server cannot be connected.",
+                m_parent);
+          break;
+        }
+      }
 
     /*
     neutu::EServerStatus status = m_parent->getNeuPrintStatus();
@@ -381,6 +389,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
       break;
     }
     */
+    }
   }
 
   return m_neuprintBodyDlg;

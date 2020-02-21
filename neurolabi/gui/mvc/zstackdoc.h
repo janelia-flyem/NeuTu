@@ -1268,6 +1268,7 @@ public slots: //undoable commands
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
+  void updateStack(ZStack *stack);
   void selectAllSwcTreeNode();
   void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
@@ -1318,6 +1319,7 @@ public slots:
   void addMessageTask(const ZWidgetMessage &msg);
 
 signals:
+  void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true) const;
   void errorGenerated(const QString &message, bool appending = true);
@@ -1413,6 +1415,7 @@ protected:
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void clearToDestroy();
+  void requestStackUpdate(ZStack *stack);
 
   virtual bool _loadFile(const QString &filePath);
 

@@ -45,6 +45,7 @@ public:
   }
 
   std::string getNeuprintUuid() const;
+  void setNeuPrintReader(std::unique_ptr<NeuPrintReader> &&reader);
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);

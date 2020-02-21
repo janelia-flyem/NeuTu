@@ -9,7 +9,7 @@ class ZFlyEmOrthoMvc : public ZFlyEmProofMvc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmOrthoMvc(QWidget *parent = 0);
+  explicit ZFlyEmOrthoMvc(QWidget *parent = nullptr);
 
   static ZFlyEmOrthoMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
@@ -33,6 +33,10 @@ public:
 //  void syncView(const ZIntPoint &center, double zoomRatio);
 
   void setCrossHairCenter(double x, double y);
+  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
+  void setAutoReload(bool on) {
+    m_autoReload = on;
+  }
 
 signals:
   void crossHairChanged();
@@ -43,6 +47,9 @@ public slots:
 
 private:
   void init();
+
+private:
+  bool m_autoReload = false;
 
 };
 

@@ -1272,22 +1272,24 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
 
-    flowInfo << "->Prepare DVID data instances";
-    initData(getDvidTarget());
-    if (getSupervisor() != NULL) {
-      flowInfo << "->Prepare librarian";
-      getSupervisor()->setDvidTarget(getDvidTarget());
-      if (!getSupervisor()->isEmpty() &&
-          !getDvidTarget().readOnly()) {
-        int statusCode = getSupervisor()->testServer();
-        if (statusCode != 200) {
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("WARNING: Failed to connect to the librarian %1. "
-                          "Please do NOT proofread segmentation "
-                          "until you fix the problem.").
-                  arg(getSupervisor()->getMainUrl().c_str()),
-                  neutu::EMessageType::WARNING));
+    if (getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      flowInfo << "->Prepare DVID data instances";
+      initData(getDvidTarget());
+      if (getSupervisor() != NULL) {
+        flowInfo << "->Prepare librarian";
+        getSupervisor()->setDvidTarget(getDvidTarget());
+        if (!getSupervisor()->isEmpty() &&
+            !getDvidTarget().readOnly()) {
+          int statusCode = getSupervisor()->testServer();
+          if (statusCode != 200) {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("WARNING: Failed to connect to the librarian %1. "
+                            "Please do NOT proofread segmentation "
+                            "until you fix the problem.").
+                    arg(getSupervisor()->getMainUrl().c_str()),
+                    neutu::EMessageType::WARNING));
+          }
         }
       }
     }
@@ -1311,18 +1313,20 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     const_cast<ZDvidTarget&>(target).setReadOnly(true);
 #endif
 
-    //Run check anyway to get around a strange bug of showing grayscale
-    flowInfo << "->Check proofreading data instances";
-    int missing = getDvidReader().checkProofreadingData();
-    if (!getDvidTarget().readOnly()) {
-      if (missing > 0) {
-        emit messageGenerated(
-              ZWidgetMessage(
-                QString("WARNING: Some data for proofreading are missing in "
-                        "the database. "
-                        "Please do NOT proofread segmentation "
-                        "until you fix the problem."),
-                neutu::EMessageType::WARNING));
+    if (getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      //Run check anyway to get around a strange bug of showing grayscale
+      flowInfo << "->Check proofreading data instances";
+      int missing = getDvidReader().checkProofreadingData();
+      if (!getDvidTarget().readOnly()) {
+        if (missing > 0) {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("WARNING: Some data for proofreading are missing in "
+                          "the database. "
+                          "Please do NOT proofread segmentation "
+                          "until you fix the problem."),
+                  neutu::EMessageType::WARNING));
+        }
       }
     }
 

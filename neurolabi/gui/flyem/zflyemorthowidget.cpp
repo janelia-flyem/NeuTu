@@ -135,6 +135,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SLOT(setSmoothDisplay(bool)));
   connect(m_controlForm, SIGNAL(showingCrosshair(bool)),
           this, SLOT(showCrosshair(bool)));
+  connect(m_controlForm, SIGNAL(autoReloadChecked(bool)),
+          this, SLOT(toggleAutoReload(bool)));
 
   connect(getDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
@@ -323,6 +325,13 @@ void ZFlyEmOrthoWidget::showCrosshair(bool on)
   getDocument()->getCrossHair()->setVisible(on);
   foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
     mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::DIRECT);
+  }
+}
+
+void ZFlyEmOrthoWidget::toggleAutoReload(bool on)
+{
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    mvc->setAutoReload(on);
   }
 }
 

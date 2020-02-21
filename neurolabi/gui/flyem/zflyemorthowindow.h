@@ -44,6 +44,9 @@ public slots:
 //  void updateSequencerBodyMap(ZFlyEmBodyColorOption::EColorOption type);
 //  void notifyBodyMergeEdited();
 
+protected:
+//  void closeEvent(QCloseEvent *event);
+
 private:
   void initWidget();
 

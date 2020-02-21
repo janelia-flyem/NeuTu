@@ -2885,9 +2885,35 @@ std::string FlyEmBodyInfoDialog::getNeuprintUuid() const {
   return m_reader.getDvidTarget().getUuid();
 }
 
+void FlyEmBodyInfoDialog::setNeuPrintReader(
+    std::unique_ptr<NeuPrintReader> &&reader)
+{
+  m_neuPrintReader = std::move(reader);
+  if (m_neuPrintReader) {
+    setWindowTitle("Body Infomation @ NeuPrint:" +
+                   m_neuPrintReader->getServer() + ":" +
+                   m_neuprintDataset.c_str());
+
+    ui->datasetComboBox->clear();
+    auto datasets = m_neuPrintReader->getDatasetList();
+#ifdef _DEBUG_
+    std::cout << "#datasets: " << datasets.size() << std::endl;
+#endif
+    for (const QString &dataset : datasets) {
+      ui->datasetComboBox->addItem(dataset);
+    }
+    ui->datasetComboBox->setCurrentText(m_neuprintDataset.c_str());
+
+  } else {
+    setStatusLabel("<font color=\"#800000\">Oops! "
+                   "Cannot connect NeuPrint!</font>");
+  }
+}
 
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
+  return m_neuPrintReader.get();
+#if 0
   if (!m_neuPrintReader) {
     if (!m_neuprintDataset.empty()) {
       m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
@@ -2923,6 +2949,7 @@ NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
   }
 
   return m_neuPrintReader.get();
+#endif
 }
 
 NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()

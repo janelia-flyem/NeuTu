@@ -12,7 +12,7 @@ HEADERS += \
     $$PWD/znetworkutilstest.h \
     $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
-    $$PWD/zstringbuildtest.h \
+#    $$PWD/zstringbuildtest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \

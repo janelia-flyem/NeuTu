@@ -4521,7 +4521,7 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 #endif
 
 namespace {
-void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
+void ShowDialog(QDialog *dlg)
 {
   if (dlg) {
     dlg->show();
@@ -4532,7 +4532,7 @@ void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
 
 void ZFlyEmProofMvc::openNeuPrint()
 {
-  ShowNeuPrintBodyDlg(getNeuPrintBodyDlg());
+  ShowDialog(getNeuPrintBodyDlg());
 
 //  NeuPrintReader *reader = getNeuPrintReader();
 //  if (reader) {

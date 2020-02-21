@@ -6,14 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>261</width>
-    <height>96</height>
+    <width>305</width>
+    <height>140</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dataset Selection</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="hintLabel">
+     <property name="text">
+      <string>Select a dataset to continue:</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>

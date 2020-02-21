@@ -207,6 +207,11 @@ void ZStackDoc::clearToDestroy()
   m_clearanceList.clear();
 }
 
+void ZStackDoc::requestStackUpdate(ZStack *stack)
+{
+  emit updatingStack(stack);
+}
+
 void ZStackDoc::addClearance(const Clearance &c)
 {
   m_clearanceList.append(c);
@@ -464,6 +469,7 @@ void ZStackDoc::connectSignalSlot()
           this, SLOT(advanceProgressSlot(double)));
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
+  connect(this, &ZStackDoc::updatingStack, this, &ZStackDoc::updateStack);
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)
@@ -1798,6 +1804,13 @@ void ZStackDoc::loadStack(ZStack *zstack)
 //    emit stackBoundBoxChanged();
 
     notifyStackModified(!oldBox.equals(getDataRange()));
+  }
+}
+
+void ZStackDoc::updateStack(ZStack *stack)
+{
+  if (stack) {
+    loadStack(stack);
   }
 }
 
