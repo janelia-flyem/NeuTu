@@ -982,7 +982,7 @@ std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
             ZJsonObject baseJson(roiJson.value("Base"));
             std::string typeName =
                 ZJsonParser::stringValue(baseJson["TypeName"]);
-            if (typeName != "roi") {
+            if (typeName == "roi") {
               nameList.push_back(roiName);
             }
           }
