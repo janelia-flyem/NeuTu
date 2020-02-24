@@ -790,6 +790,9 @@ public:
   QList<T*> getObjectList() const;
 
   template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
+  template<typename T>
   void processObjectList(std::function<void(T*)> proc);
 
   inline const ZDocPlayerList& getPlayerList() const {
@@ -1684,6 +1687,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList(QMutex *mutex) const
+{
+  return m_objectGroup.getObjectList<T>(mutex);
 }
 
 template<typename T>

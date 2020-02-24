@@ -93,6 +93,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     ui->setupUi(this);
 
+    setAttribute(Qt::WA_DeleteOnClose, true);
+
     // office phone number = random seed
     qsrand(2094656);
 
@@ -158,6 +160,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+    connect(ui->hideButton, SIGNAL(clicked()), this, SLOT(onHideButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
 //    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
     connect(ui->queryNamePushButton, SIGNAL(clicked()),
@@ -261,10 +264,12 @@ void FlyEmBodyInfoDialog::prepareWidget()
     if (m_mode == EMode::NEUPRINT) {
       setWindowTitle("Body Information (NeuPrint)");
       ui->refreshButton->hide();
+      ui->closeButton->setDefault(false);
     } else {
       ui->maxBodiesLabel->hide();
       ui->maxBodiesMenu->hide();
       ui->namedCheckBox->hide();
+      ui->closeButton->hide();
     }
   } else {
     setWindowTitle("Body Information (Sequencer)");
@@ -1464,7 +1469,11 @@ void FlyEmBodyInfoDialog::onFindSimilarButton()
 }
 
 void FlyEmBodyInfoDialog::onCloseButton() {
-    close();
+  close();
+}
+
+void FlyEmBodyInfoDialog::onHideButton() {
+  hide();
 }
 
 //state: 0: first batch; reset; -1: end; 1: reset and end

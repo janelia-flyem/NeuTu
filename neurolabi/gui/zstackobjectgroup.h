@@ -172,6 +172,9 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
+  template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
@@ -433,6 +436,14 @@ template<typename T>
 QList<T*> ZStackObjectGroup::getObjectList() const
 {
   QMutexLocker locker(&m_mutex);
+
+  return getObjectListUnsync<T>();
+}
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList(QMutex *mutex) const
+{
+  QMutexLocker locker(mutex);
 
   return getObjectListUnsync<T>();
 }

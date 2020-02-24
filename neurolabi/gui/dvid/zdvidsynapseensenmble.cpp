@@ -1013,6 +1013,19 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
   }
 }
 
+void ZDvidSynapseEnsemble::updateRadiusUnsync()
+{
+  for (auto &s : m_synapseEnsemble) {
+    s.updateRadius();
+  }
+}
+
+void ZDvidSynapseEnsemble::updateRadius()
+{
+  QMutexLocker locker(&m_dataMutex);
+  updateRadiusUnsync();
+}
+
 void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
 {
   QMutexLocker locker(&m_dataMutex);
@@ -1219,6 +1232,13 @@ ZDvidSynapseEnsemble::SynapseMap::SynapseMap(EDataStatus status)
   m_status = status;
 }
 
+void ZDvidSynapseEnsemble::SynapseMap::updateRadius()
+{
+  for (auto &s : *this) {
+    s.setDefaultRadius();
+  }
+}
+
 ///////////////////////////////////////////
 ZDvidSynapseEnsemble::SynapseMap ZDvidSynapseEnsemble::SynapseSlice::m_emptyMap(
     ZDvidSynapseEnsemble::EDataStatus::NONE);
@@ -1273,6 +1293,13 @@ void ZDvidSynapseEnsemble::SynapseSlice::setDataRect(const QRect &rect)
 bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
 {
   return isReady(rect, m_dataRect);
+}
+
+void ZDvidSynapseEnsemble::SynapseSlice::updateRadius()
+{
+  for (auto &s : *this) {
+    s.updateRadius();
+  }
 }
 
 

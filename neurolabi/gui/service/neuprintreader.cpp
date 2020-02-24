@@ -33,8 +33,15 @@ void NeuPrintReader::setServer(const QString &server)
 
 void NeuPrintReader::authorize(const QString &token)
 {
-  if (!token.isEmpty()) {
-    m_bufferReader.setRequestHeader("Authorization", QString("Bearer ") + token);
+  if (m_token != token) {
+    m_dataset.clear();
+
+    m_token = token;
+    if (!token.isEmpty()) {
+      m_bufferReader.setRequestHeader("Authorization", QString("Bearer ") + token);
+    } else {
+      m_bufferReader.removeRequestHeader("Authorization");
+    }
   }
 }
 
@@ -62,6 +69,11 @@ void NeuPrintReader::authorizeFromFile(const QString &filePath)
       authorizeFromJson(stream.readAll());
     }
   }
+}
+
+QString NeuPrintReader::getToken() const
+{
+  return m_token;
 }
 
 void NeuPrintReader::readDatasets()

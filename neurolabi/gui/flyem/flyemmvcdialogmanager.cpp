@@ -31,6 +31,7 @@
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/tipdetectordialog.h"
+#include "dialogs/zsynapsepropertydialog.h"
 //#include "dialogs/zstackviewrecorddialog.h"
 
 /** Implementation details
@@ -41,7 +42,12 @@
  */
 
 FlyEmMvcDialogManager::FlyEmMvcDialogManager(ZFlyEmProofMvc *parent) :
+  QObject(parent),
   m_parent(parent)
+{
+}
+
+FlyEmMvcDialogManager::~FlyEmMvcDialogManager()
 {
 }
 
@@ -272,12 +278,27 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
   return dlg;
 }
 
+void FlyEmMvcDialogManager::detachBodyInfoDlg()
+{
+  m_bodyInfoDlg = nullptr;
+}
+
+void FlyEmMvcDialogManager::detachBodyQueryDlg()
+{
+  m_bodyQueryDlg = nullptr;
+}
+
+void FlyEmMvcDialogManager::detachNeuprintBodyDlg()
+{
+  m_neuprintBodyDlg = nullptr;
+}
+
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 {
   if (isNull(m_bodyInfoDlg)) {
     KINFO << "Creating sequencer dialog";
     m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER, false);
-
+    connect(m_bodyInfoDlg, SIGNAL(destroyed()), this, SLOT(detachBodyInfoDlg()));
 /*
     m_bodyInfoDlg = new FlyEmBodyInfoDialog(
           FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
@@ -313,6 +334,23 @@ TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
     return m_tipDetectorDlg;
 }
 
+ZSynapsePropertyDialog* FlyEmMvcDialogManager::getSynpasePropertyDlg()
+{
+  if (isNull(m_synpaseDlg)) {
+    KINFO << "Creating tip detector dialog";
+    m_synpaseDlg = new ZSynapsePropertyDialog(m_parent);
+    connect(m_synpaseDlg, SIGNAL(synapseRadiusChanged(double, double)),
+            m_parent, SLOT(updateSynapseDefaultRadius(double, double)));
+  }
+
+  return m_synpaseDlg;
+}
+
+void FlyEmMvcDialogManager::showSynpasePropertyDlg()
+{
+  getSynpasePropertyDlg()->show();
+}
+
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 {
   if (isNull(m_bodyQueryDlg)) {
@@ -320,6 +358,8 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
     m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY, true);
     QObject::connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             m_parent, SLOT(showBodyConnection()));
+    connect(m_bodyQueryDlg, SIGNAL(destroyed()),
+            this, SLOT(detachBodyQueryDlg()));
   }
 
   return m_bodyQueryDlg;
@@ -342,6 +382,8 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
           m_neuprintBodyDlg = makeBodyInfoDlg(
                 FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
           m_neuprintBodyDlg->setNeuPrintReader(std::move(reader));
+          connect(m_neuprintBodyDlg, SIGNAL(destroyed()),
+                  this, SLOT(detachNeuprintBodyDlg()));
           //        m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
           break;
         case neutu::EServerStatus::NOSUPPORT:

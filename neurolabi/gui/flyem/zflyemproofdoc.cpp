@@ -3775,6 +3775,12 @@ void ZFlyEmProofDoc::refreshSynapse()
   processObjectModified();
 }
 
+void ZFlyEmProofDoc::updateSynapseDefaultRadius(
+    double preRadius, double postRadius)
+{
+  ZStackDocAccessor::UpdateSynapseDefaultRadius(this, preRadius, postRadius);
+}
+
 void ZFlyEmProofDoc::downloadTodoList()
 {
   ZFlyEmToDoList *todoList = new ZFlyEmToDoList;

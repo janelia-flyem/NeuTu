@@ -18,6 +18,8 @@ public:
   QString getServer() const;
   void setServer(const QString &server);
 
+  QString getToken() const;
+
   void authorize(const QString &token);
   void authorizeFromFile(const QString &filePath);
   void authorizeFromJson(const QString &auth);
@@ -64,6 +66,7 @@ private:
 
 private:
   QString m_server;
+  QString m_token;
   ZNetBufferReader m_bufferReader;
   ZJsonObject m_dataset;
   QString m_currentDataset;

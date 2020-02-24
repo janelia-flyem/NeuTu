@@ -32,7 +32,11 @@ public:
 private slots:
   bool apply();
   void processButtonClick(QAbstractButton*);
+
+private:
+  bool makeNeuPrintReader(const QString &normalizedServer, const QString &token);
   QString getDefaultAuthToken() const;
+  void storeToken(const QString &server, const QString &token);
 
 private:
   Ui::NeuprintSetupDialog *ui;

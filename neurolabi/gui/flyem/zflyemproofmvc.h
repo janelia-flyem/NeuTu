@@ -247,6 +247,8 @@ public slots:
 
   void setSegmentationVisible(bool visible);
 
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
+
   void launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
@@ -304,6 +306,7 @@ public slots:
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
   void showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId);
+  void showSynapsePropertyDlg();
 
   void closeSkeletonWindow();
 

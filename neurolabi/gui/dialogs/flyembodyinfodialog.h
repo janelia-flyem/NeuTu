@@ -30,7 +30,7 @@ public:
     SEQUENCER, QUERY, NEUPRINT
   };
 
-  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
+  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = nullptr);
   ~FlyEmBodyInfoDialog();
 
   void simplify();
@@ -89,6 +89,7 @@ private:
 
 private slots:
     void onCloseButton();
+    void onHideButton();
     void onRefreshButton();
     void onAllNamedButton();
     void onQueryByNameButton();
