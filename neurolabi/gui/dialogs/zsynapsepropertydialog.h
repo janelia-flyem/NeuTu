@@ -15,6 +15,8 @@ public:
   explicit ZSynapsePropertyDialog(QWidget *parent = nullptr);
   ~ZSynapsePropertyDialog();
 
+  void setRadius(double pre, double post);
+
 public slots:
   void notifyRadiusChanged();
 

@@ -9,6 +9,7 @@
 
 #include "zflyemproofmvc.h"
 #include "service/neuprintreader.h"
+#include "dvid/zdvidannotation.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -336,14 +337,14 @@ TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
 
 ZSynapsePropertyDialog* FlyEmMvcDialogManager::getSynpasePropertyDlg()
 {
-  if (isNull(m_synpaseDlg)) {
-    KINFO << "Creating tip detector dialog";
-    m_synpaseDlg = new ZSynapsePropertyDialog(m_parent);
-    connect(m_synpaseDlg, SIGNAL(synapseRadiusChanged(double, double)),
+  if (createIfNecessary(m_synapseDlg)) {
+    m_synapseDlg->setRadius(ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS,
+                            ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS);
+    connect(m_synapseDlg, SIGNAL(synapseRadiusChanged(double, double)),
             m_parent, SLOT(updateSynapseDefaultRadius(double, double)));
   }
 
-  return m_synpaseDlg;
+  return m_synapseDlg;
 }
 
 void FlyEmMvcDialogManager::showSynpasePropertyDlg()

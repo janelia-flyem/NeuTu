@@ -119,7 +119,7 @@ private:
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
-  ZSynapsePropertyDialog *m_synpaseDlg = nullptr;
+  ZSynapsePropertyDialog *m_synapseDlg = nullptr;
   std::string m_neuprintDataset; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
