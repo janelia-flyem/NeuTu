@@ -125,7 +125,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
-    ZIntCuboid box = obj.getBoundBox();
+    ZIntCuboid box = obj.getIntBoundBox();
     ZIntPoint originalDsIntv = newObj.getDsIntv();
 
     downsampleToSizeLimit(&newObj, box);

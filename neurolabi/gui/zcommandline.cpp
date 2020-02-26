@@ -405,12 +405,12 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Computing bound box ..." << std::endl;
   for (int i = 0; i < objArray1.size(); ++i) {
-    objArray1[i].getBoundBox(&(boundBoxArray1[i]));
+    objArray1[i].getIntBoundBox(&(boundBoxArray1[i]));
   }
 
   std::cout << "Computing bound box ..." << std::endl;
   for (int i = 0; i < objArray2.size(); ++i) {
-    objArray2[i].getBoundBox(&(boundBoxArray2[i]));
+    objArray2[i].getIntBoundBox(&(boundBoxArray2[i]));
   }
 
   int index1 = 0;

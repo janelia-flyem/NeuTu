@@ -72,7 +72,8 @@ public:
 
 //  void attachView(ZStackView *view);
 
-  ZRect2d getBoundBox() const;
+  ZCuboid getBoundBox() const override;
+//  ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 //  void setImageData(const uint8_t *data, int width, int height);

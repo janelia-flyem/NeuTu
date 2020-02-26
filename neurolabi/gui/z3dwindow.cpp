@@ -271,6 +271,11 @@ void Z3DWindow::configureMenuForNeu3()
   m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
+void Z3DWindow::zoomToSelected()
+{
+  gotoPosition(m_doc->getSelectedBoundBox());
+}
+
 void Z3DWindow::zoomToSelectedSwcNodes()
 {
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
@@ -2822,7 +2827,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F:
     if (event->modifiers() == Qt::ShiftModifier) {
-      zoomToSelectedSwcNodes();
+//      zoomToSelectedSwcNodes();
+      zoomToSelected();
     }
     break;
   case Qt::Key_Period:
@@ -4984,13 +4990,15 @@ void Z3DWindow::setColorMode(
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
-  ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
-                                  bound.firstCorner().y(),
-                                  bound.firstCorner().z()),
-                       glm::dvec3(bound.lastCorner().x(),
-                                  bound.lastCorner().y(),
-                                  bound.lastCorner().z()));
-  m_view->gotoPosition(bd);
+  if (bound.isValid()) {
+    ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
+                                    bound.firstCorner().y(),
+                                    bound.firstCorner().z()),
+                         glm::dvec3(bound.lastCorner().x(),
+                                    bound.lastCorner().y(),
+                                    bound.lastCorner().z()));
+    m_view->gotoPosition(bd);
+  }
 }
 
 void Z3DWindow::gotoPosition(const ZPoint &position, double radius)

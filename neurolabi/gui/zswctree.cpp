@@ -3778,6 +3778,15 @@ void ZSwcTree::inverseSelection()
   }
 }
 
+ZCuboid ZSwcTree::getSelectedNodeBoundBox() const
+{
+  ZCuboid box;
+  for (Swc_Tree_Node *tn : m_selectedNode) {
+    box.join(SwcTreeNode::boundBox(tn));
+  }
+  return box;
+}
+
 void ZSwcTree::deselectAllNode()
 {
   m_selectedNode.clear();

@@ -2,7 +2,9 @@
 
 #include "zjsonarray.h"
 #include "geometry/zintpoint.h"
-#include "common/zstringbuilder.h"
+
+#include "neulib/core/stringbuilder.h"
+//#include "common/zstringbuilder.h"
 
 ZNeuroglancerAnnotationLayerSpec::ZNeuroglancerAnnotationLayerSpec()
 {
@@ -18,7 +20,7 @@ ZJsonObject ZNeuroglancerAnnotationLayerSpec::toJsonObject() const
   rootObj.setEntry("annotationFillOpacity", m_opacity);
   if (m_color.size() == 3) {
 
-    std::string colorStr = ZStringBuilder("rgba(").
+    std::string colorStr = neulib::StringBuilder("rgba(").
         append(m_color[0]).append(",").
         append(m_color[1]).append(",").
         append(m_color[2]).append(",1.0)");

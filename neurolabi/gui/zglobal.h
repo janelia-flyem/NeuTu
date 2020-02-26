@@ -73,7 +73,7 @@ public:
   NeuPrintReader *getNeuPrintReader();
   QString getNeuPrintServer() const;
   void setNeuPrintServer(const QString &server);
-  QString getNeuPrintToken() const;
+  QString getNeuPrintToken(const std::string &key) const;
   QString getNeuPrintAuth() const;
 
   NeuPrintReader* makeNeuPrintReader();

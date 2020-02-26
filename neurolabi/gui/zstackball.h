@@ -47,6 +47,8 @@ public:
 //  virtual const std::string& className() const;
 
 public:
+  ZCuboid getBoundBox() const override;
+
   virtual void display(ZPainter &painter, int slice,
                        EDisplayStyle option, neutu::EAxis sliceAxis) const;
   virtual bool display(QPainter *painter, int z, EDisplayStyle option,

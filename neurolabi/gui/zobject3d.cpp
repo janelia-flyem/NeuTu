@@ -1006,12 +1006,20 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
   }
 }
 
-ZIntCuboid ZObject3d::getBoundBox() const
+ZIntCuboid ZObject3d::getIntBoundBox() const
 {
   ZIntCuboid cuboid;
   boundBox(&cuboid);
 
   return cuboid;
+}
+
+ZCuboid ZObject3d::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
+
+  return box;
 }
 
 ZIntPoint ZObject3d::getCentralVoxel() const

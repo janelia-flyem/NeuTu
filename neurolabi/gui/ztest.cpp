@@ -339,7 +339,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
 #include "dvid/zdvidurl.h"
-//#include "neulib/core/utilities.h"
+#include "neulib/core/utilities.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30743,7 +30743,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   int x;
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
@@ -30829,6 +30829,56 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Label_Stack(tree.data(), stack->c_stack(), &workspace);
 
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 2.0;
+  Set_Local_Neuroseg(
+        locseg,  r + r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+  Geo3d_Scalar_Field *field = Local_Neuroseg_Field_Sp(locseg, NULL, NULL);
+  Print_Geo3d_Scalar_Field(field);
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(512, 512, 512);
+  double x = 10.0;
+  double y = 20.0;
+  double z = 30.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 5.0;
+//  Set_Local_Neuroseg(
+//        locseg,  r, 0.1, NEUROSEG_DEFAULT_H, 1.0, 1.0, 0.0, 2.0, 3.0,
+//        x, y, z);
+
+  Set_Local_Neuroseg(
+        locseg,  r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+
+  ZLocalNeuroseg s(locseg);
+
+  tic();
+  for (size_t i = 0; i < 10000; ++i) {
+    ZPointArray points = s.sample(1.0, 1.0);
+    for (const ZPoint &pt : points) {
+      stack->getIntValue(neutu::iround(pt.x()), neutu::iround(pt.y()),
+                         neutu::iround(pt.z()));
+    }
+  }
+  ptoc();
+//  points.print();
+
+//  ZSwcTree tree;
+//  tree.forceVirtualRoot();
+//  for (ZPoint pt : points) {
+//    SwcTreeNode::MakePointer(pt.x(), pt.y(), pt.z(), 0.1, tree.root());
+//  }
+
+//  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

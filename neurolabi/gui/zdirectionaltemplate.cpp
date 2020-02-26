@@ -1,6 +1,7 @@
 #include "zdirectionaltemplate.h"
 #include "tz_trace_utils.h"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZDirectionalTemplate::ZDirectionalTemplate()
 {
@@ -17,6 +18,13 @@ ZDirectionalTemplate::ZDirectionalTemplate(const ZDirectionalTemplate &dt) :
 {
   *this = dt;
 }
+
+ZCuboid ZDirectionalTemplate::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
 
 ZDirectionalTemplate& ZDirectionalTemplate::operator =(
     const ZDirectionalTemplate &dt)

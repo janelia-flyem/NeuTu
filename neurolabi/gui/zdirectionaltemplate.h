@@ -46,6 +46,8 @@ public:
     virtual ZPoint center() = 0;
     virtual ZPoint top() = 0;
 
+    ZCuboid getBoundBox() const override;
+
     ZDirectionalTemplate& operator=(const ZDirectionalTemplate &dt);
 
     virtual void save(const char *) {}

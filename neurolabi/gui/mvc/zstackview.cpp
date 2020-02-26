@@ -642,9 +642,13 @@ void ZStackView::updateSlider()
   if (stackData() != NULL) {
     ZIntCuboid box = getViewBoundBox();
 
-    int value = m_depthControl->value();
+//    int value = m_depthControl->value();
     m_depthControl->setRangeQuietly(0, box.getDepth() - 1);
-    if (value >= box.getDepth()) {
+
+    int z = getZ(neutu::ECoordinateSystem::STACK);
+    if (z < box.getFirstZ()) {
+      m_depthControl->setValueQuietly(0);
+    } else if (z > box.getLastZ()) {
       m_depthControl->setValueQuietly(box.getDepth() - 1);
     }
 
@@ -1147,9 +1151,16 @@ void ZStackView::updateStackRange()
   LDEBUG() << "Updating stack range";
   ZIntCuboid stackRange = getViewBoundBox();
   if (stackRange != getCurrentStackRange()) {
-    resetViewProj();
     updateSlider();
-    setSliceIndexQuietly(m_depthControl->maximum() / 2);
+//    if (stackRange.getWidth() != getCurrentStackRange().getWidth() ||
+//        stackRange.getHeight() != getCurrentStackRange().getHeight() ||
+//        stackRange.getDepth() != getCurrentStackRange().getDepth()) {
+      resetViewProj();
+      setSliceIndexQuietly(m_depthControl->maximum() / 2);
+//    }
+
+
+//    setSliceIndexQuietly(m_depthControl->maximum() / 2);
     m_currentStackRange = stackRange;
 
     updateObjectCanvas();
@@ -2062,7 +2073,7 @@ void ZStackView::paintStackBuffer()
 
   updateImageCanvas();
 
-  if (buddyPresenter() != NULL) {
+  if (buddyPresenter() != nullptr && m_image != nullptr) {
     if (!buddyPresenter()->interactiveContext().isProjectView()) {
       if (!stack->isVirtual() && showImage) {
         if (stack->channelNumber() == 1) {   //grey

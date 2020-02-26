@@ -17,6 +17,7 @@ public:
 
   void setDatasetList(const QStringList &datasets);
   QString getDataset() const;
+  void setHintLabel(const QString &label);
 
 private:
   Ui::NeuprintDatasetDialog *ui;

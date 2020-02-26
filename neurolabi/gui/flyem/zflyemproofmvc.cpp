@@ -145,7 +145,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   recordEnd();
 
-  delete m_dlgManager;
+//  delete m_dlgManager;
   delete m_actionLibrary;
   m_quitting = true;
   m_futureMap.waitForFinished();
@@ -1816,6 +1816,16 @@ void ZFlyEmProofMvc::redo()
   }
 }
 */
+
+void ZFlyEmProofMvc::updateSynapseDefaultRadius(
+    double preRadius, double postRadius)
+{
+  getCompleteDocument()->updateSynapseDefaultRadius(preRadius, postRadius);
+  if (m_orthoWindow) {
+    m_orthoWindow->getDocument()->updateSynapseDefaultRadius(
+          preRadius, postRadius);
+  }
+}
 
 void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
 {
@@ -4443,6 +4453,8 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
 {
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   if (reader) {
+    return reader->getStatus();
+#if 0
     if (!reader->hasAuthCode()) {
       return neutu::EServerStatus::NOAUTH;
     }
@@ -4483,6 +4495,7 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
     }
 
     return neutu::EServerStatus::NORMAL;
+#endif
   }
 
   return neutu::EServerStatus::OFFLINE;
@@ -4521,7 +4534,7 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 #endif
 
 namespace {
-void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
+void ShowDialog(QDialog *dlg)
 {
   if (dlg) {
     dlg->show();
@@ -4532,7 +4545,7 @@ void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
 
 void ZFlyEmProofMvc::openNeuPrint()
 {
-  ShowNeuPrintBodyDlg(getNeuPrintBodyDlg());
+  ShowDialog(getNeuPrintBodyDlg());
 
 //  NeuPrintReader *reader = getNeuPrintReader();
 //  if (reader) {
@@ -4979,6 +4992,11 @@ void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &/*pt*/, uint64_t bod
     inputDialog->setDvidTarget(getDvidTarget());
     // inputDialog->exec();
     inputDialog->show();
+}
+
+void ZFlyEmProofMvc::showSynapsePropertyDlg()
+{
+  m_dlgManager->showSynpasePropertyDlg();
 }
 
 void ZFlyEmProofMvc::closeSkeletonWindow()

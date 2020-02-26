@@ -88,7 +88,7 @@
 #include "test/commontest.h"
 #include "test/zflyembodyannotationprotocaltest.h"
 #include "test/taskprotocoltasktest.h"
-#include "test/zstringbuildtest.h"
+//#include "test/zstringbuildtest.h"
 #include "test/zstackdocobjectupdatetest.h"
 #include "test/zinteractivecontexttest.h"
 #include "test/miscutilitytest.h"
@@ -98,5 +98,6 @@
 #include "test/zdvidtargetfactorytest.h"
 #include "test/zneurontracertest.h"
 #include "test/zmeshtest.h"
+#include "test/zlocalneurosegtest.h"
 
 #endif // ZTESTALL_H

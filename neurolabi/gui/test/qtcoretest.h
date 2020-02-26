@@ -14,6 +14,8 @@ TEST(qtcore, utilities) {
             toStdString());
   ASSERT_EQ("http://test.com", neutu::NormalizeServerAddress("test.com", "http").
             toStdString());
+  ASSERT_EQ("http://test.com", neutu::NormalizeServerAddress("test.com").
+            toStdString());
 
   ASSERT_EQ("https://test.com",
             neutu::NormalizeServerAddress("https://test.com", "https").
@@ -25,11 +27,14 @@ TEST(qtcore, utilities) {
   ASSERT_EQ("https://test.com",
             neutu::NormalizeServerAddress(" https://test.com/test", "https").toStdString());
 
-  ASSERT_EQ("https://test.com:8080", neutu::NormalizeServerAddress("https://test.com:8080", "https").
+  ASSERT_EQ("https://test.com:8080",
+            neutu::NormalizeServerAddress("https://test.com:8080", "https").
             toStdString());
-  ASSERT_EQ("https://test.com:8080", neutu::NormalizeServerAddress("test.com:8080", "https").
+  ASSERT_EQ("https://test.com:8080",
+            neutu::NormalizeServerAddress("test.com:8080", "https").
             toStdString());
-  ASSERT_EQ("http://test.com:8080", neutu::NormalizeServerAddress("test.com:8080", "http").
+  ASSERT_EQ("http://test.com:8080",
+            neutu::NormalizeServerAddress("test.com:8080", "http").
             toStdString());
 
   ASSERT_EQ("https://test.com:8080",

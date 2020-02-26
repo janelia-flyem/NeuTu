@@ -378,8 +378,9 @@ public:
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
-  ZIntCuboid getBoundBox() const;
-  void getBoundBox(Cuboid_I *box) const;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
+  void getIntBoundBox(Cuboid_I *box) const;
   void boundBox(ZIntCuboid *box) const;
 
   template<class T>

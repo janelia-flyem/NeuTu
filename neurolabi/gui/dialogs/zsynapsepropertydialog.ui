@@ -1,40 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NeuprintDatasetDialog</class>
- <widget class="QDialog" name="NeuprintDatasetDialog">
+ <class>ZSynapsePropertyDialog</class>
+ <widget class="QDialog" name="ZSynapsePropertyDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>305</width>
-    <height>140</height>
+    <width>243</width>
+    <height>150</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dataset Selection</string>
+   <string>Default Settings for Synapse Display</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="hintLabel">
-     <property name="text">
-      <string>Select a dataset to continue:</string>
-     </property>
-    </widget>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Dataset</string>
+        <string>PreSyn Radius </string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="datasetComboBox"/>
+      <widget class="QDoubleSpinBox" name="preSynRadiusDoubleSpinBox">
+       <property name="minimum">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>PostSyn Radius</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="postSynRadiusDoubleSpinBox">
+       <property name="minimum">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -54,7 +82,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>
@@ -65,7 +93,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>NeuprintDatasetDialog</receiver>
+   <receiver>ZSynapsePropertyDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -81,7 +109,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>NeuprintDatasetDialog</receiver>
+   <receiver>ZSynapsePropertyDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

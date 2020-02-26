@@ -15,6 +15,8 @@
 #include "zdvidutil.h"
 
 const char* ZDvidAnnotation::KEY_COMMENT = "comment";
+double ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS = 7.0;
+double ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS = 3.0;
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -158,14 +160,14 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case EKind::KIND_POST_SYN:
-    return 3.0;
+    return DEFAULT_POST_SYN_RADIUS;
   case EKind::KIND_PRE_SYN:
-    return 7.0;
+    return DEFAULT_PRE_SYN_RADIUS;
   default:
     break;
   }
 
-  return 7.0;
+  return DEFAULT_PRE_SYN_RADIUS;
 }
 
 void ZDvidAnnotation::setDefaultRadius()

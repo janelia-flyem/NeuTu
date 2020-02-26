@@ -30,6 +30,9 @@ public:
     void prepend(ZDirectionalTemplate* dt);
     int hitTest(double x, double y, double z);
     ZLocsegChain* toLocsegChain();
+
+    ZCuboid getBoundBox() const override;
+
 private:
     QList<ZDirectionalTemplate*> m_chain;
 };

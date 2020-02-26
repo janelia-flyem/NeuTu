@@ -207,6 +207,11 @@ void ZStackDoc::clearToDestroy()
   m_clearanceList.clear();
 }
 
+void ZStackDoc::requestStackUpdate(ZStack *stack)
+{
+  emit updatingStack(stack);
+}
+
 void ZStackDoc::addClearance(const Clearance &c)
 {
   m_clearanceList.append(c);
@@ -464,6 +469,7 @@ void ZStackDoc::connectSignalSlot()
           this, SLOT(advanceProgressSlot(double)));
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
+  connect(this, &ZStackDoc::updatingStack, this, &ZStackDoc::updateStack);
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)
@@ -1798,6 +1804,13 @@ void ZStackDoc::loadStack(ZStack *zstack)
 //    emit stackBoundBoxChanged();
 
     notifyStackModified(!oldBox.equals(getDataRange()));
+  }
+}
+
+void ZStackDoc::updateStack(ZStack *stack)
+{
+  if (stack) {
+    loadStack(stack);
   }
 }
 
@@ -5381,7 +5394,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -5408,7 +5421,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -10531,6 +10544,16 @@ void ZStackDoc::clearSelectedSet()
 {
   deselectAllSwcTreeNodes();
   m_objectGroup.setSelected(false);
+}
+
+ZCuboid ZStackDoc::getSelectedBoundBox() const
+{
+  ZCuboid box = m_objectGroup.getSelectedBoundBox();
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (ZSwcTree *tree : treeList) {
+    box.join(tree->getSelectedNodeBoundBox());
+  }
+  return box;
 }
 
 ZRect2d ZStackDoc::getRect2dRoi() const

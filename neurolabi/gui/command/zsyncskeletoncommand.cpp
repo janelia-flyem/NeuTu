@@ -6,8 +6,10 @@
 #include <QDebug>
 #include <QUrl>
 
+#include "neulib/core/stringbuilder.h"
+
 #include "zstring.h"
-#include "common/zstringbuilder.h"
+//#include "common/zstringbuilder.h"
 
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
@@ -82,7 +84,7 @@ void process_body(uint64_t bodyId, int index, int totalCount,
     } else if (bodyMod >= 0) { //mutation ID must be available
       int64_t swcMod = flyem::GetMutationId(tree.get());
       if (bodyMod != swcMod) {
-        reason = ZStringBuilder("").
+        reason = neulib::StringBuilder("").
             append(swcMod).append("->").append(bodyMod);
         syncing = true;
       }

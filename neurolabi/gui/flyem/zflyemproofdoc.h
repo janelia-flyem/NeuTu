@@ -617,7 +617,6 @@ public slots:
   void updateDvidLabelObjectSliently();
   void updateDvidLabelObject(neutu::EAxis axis);
 
-
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -625,6 +624,7 @@ public slots:
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void refreshSynapse();
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
 
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();

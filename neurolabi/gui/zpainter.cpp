@@ -316,8 +316,8 @@ void ZPainter::drawActivePixmap(
   QRectF newTargetRect = targetRect;
 
   if (!image.isFullyActive()) {
-    newSourceRect =
-        newSourceRect.intersected(image.getActiveArea(neutu::ECoordinateSystem::WORLD_2D));
+    newSourceRect = newSourceRect.intersected(
+          image.getActiveArea(neutu::ECoordinateSystem::WORLD_2D));
     if (!newSourceRect.isEmpty()) {
       newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
     }

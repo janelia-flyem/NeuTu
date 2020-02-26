@@ -83,13 +83,13 @@ ZIntCuboid ZObject3dScanArray::getBoundBox() const
   ZObject3dScanArray::const_iterator iter = begin();
   if (iter != end()) {
     const ZObject3dScan *obj = *iter;
-    cuboid = obj->getBoundBox();
+    cuboid = obj->getIntBoundBox();
     ++iter;
   }
 
   for (; iter != end(); ++iter) {
     const ZObject3dScan &obj = **iter;
-    cuboid.join(obj.getBoundBox());
+    cuboid.join(obj.getIntBoundBox());
   }
 
 #ifdef _DEBUG_2

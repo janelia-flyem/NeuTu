@@ -790,6 +790,9 @@ public:
   QList<T*> getObjectList() const;
 
   template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
+  template<typename T>
   void processObjectList(std::function<void(T*)> proc);
 
   inline const ZDocPlayerList& getPlayerList() const {
@@ -861,6 +864,8 @@ public:
 
   ZRect2d getRect2dRoi() const;
   ZIntCuboid getCuboidRoi() const;
+
+  ZCuboid getSelectedBoundBox() const;
 
   virtual void selectSwcNode(const ZRect2d &roi);
 
@@ -1266,6 +1271,7 @@ public slots: //undoable commands
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
+  void updateStack(ZStack *stack);
   void selectAllSwcTreeNode();
   void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
@@ -1316,6 +1322,7 @@ public slots:
   void addMessageTask(const ZWidgetMessage &msg);
 
 signals:
+  void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true) const;
   void errorGenerated(const QString &message, bool appending = true);
@@ -1411,6 +1418,7 @@ protected:
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void clearToDestroy();
+  void requestStackUpdate(ZStack *stack);
 
   virtual bool _loadFile(const QString &filePath);
 
@@ -1679,6 +1687,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList(QMutex *mutex) const
+{
+  return m_objectGroup.getObjectList<T>(mutex);
 }
 
 template<typename T>

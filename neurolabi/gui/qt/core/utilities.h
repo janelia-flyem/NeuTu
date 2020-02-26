@@ -5,7 +5,8 @@
 
 namespace neutu {
 
-QString NormalizeServerAddress(const QString &address, const QString &scheme);
+QString NormalizeServerAddress(
+    const QString &address, const QString &scheme = "http");
 
 }
 

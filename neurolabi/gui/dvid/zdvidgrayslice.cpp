@@ -577,6 +577,14 @@ void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 //  getDvidReader().open(target);
 }
 
+ZCuboid ZDvidGraySlice::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getX(), getY(), getZ(),
+                   getX() + getWidth(), getY() + getHeight(), getZ()));
+}
+
+/*
 ZRect2d ZDvidGraySlice::getBoundBox() const
 {
   ZRect2d rect;
@@ -584,3 +592,4 @@ ZRect2d ZDvidGraySlice::getBoundBox() const
 
   return rect;
 }
+*/

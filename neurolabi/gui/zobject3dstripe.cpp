@@ -579,7 +579,7 @@ void ZObject3dStripe::drawStack(
       //      assert(x1 < C_Stack::width(stack));
 
 
-      if (neutu::ClipRange(0, cwidth, x0, x1)) {
+      if (neulib::ClipRange(0, cwidth, x0, x1)) {
         for (int x = x0; x <= x1; ++x) {
           ima.arrayc[x][0] = red;
           ima.arrayc[x][1] = green;

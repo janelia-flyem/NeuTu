@@ -303,6 +303,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     dialogs/neuprintdatasetdialog.h \
     dialogs/userfeedbackdialog.h \
+    dialogs/zsynapsepropertydialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -724,6 +725,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
     dialogs/neuprintdatasetdialog.ui \
     dialogs/userfeedbackdialog.ui \
+    dialogs/zsynapsepropertydialog.ui \
     mainwindow.ui \
     dialogs/traceoutputdialog.ui \
     dialogs/bcadjustdialog.ui \
@@ -830,6 +832,7 @@ FORMS += dialogs/settingdialog.ui \
 SOURCES += main.cpp \
     dialogs/neuprintdatasetdialog.cpp \
     dialogs/userfeedbackdialog.cpp \
+    dialogs/zsynapsepropertydialog.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     protocols/taskprotocolmocktask.cpp \
@@ -1115,10 +1118,7 @@ SOURCES += main.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
-    dialogs/zdvidbodypositiondialog.cpp \
     zcubearraymovieactor.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp \
-    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
@@ -1127,6 +1127,9 @@ SOURCES += main.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dialogs/zflyembodysplitdialog.cpp \
+    dialogs/zdvidbodypositiondialog.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \

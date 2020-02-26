@@ -12,7 +12,7 @@ class ZInfoDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit ZInfoDialog(QWidget *parent = 0);
+  explicit ZInfoDialog(QWidget *parent = nullptr);
   ~ZInfoDialog();
 
   void setText(const QString &text);

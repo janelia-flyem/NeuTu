@@ -69,6 +69,9 @@ public:
   static void ConsumeSplitResult(
       ZStackDoc *doc, ZObject3dScanArray *result);
 
+  static void UpdateSynapseDefaultRadius(
+      ZStackDoc *doc, double preRadius, double postRadius);
+
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);
 };

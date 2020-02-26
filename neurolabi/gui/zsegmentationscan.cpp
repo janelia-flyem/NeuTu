@@ -218,9 +218,9 @@ ZIntCuboid ZSegmentationScan::getStackForegroundBoundBox(ZStack *stack)
 //int i = 1000;
 void ZSegmentationScan::fromObject3DScan(ZObject3dScan *obj)
 {
-  ZIntCuboid box = obj->getBoundBox();
+  ZIntCuboid box = obj->getIntBoundBox();
   ZStack * stack = new ZStack(GREY,box.getWidth(),box.getHeight(),box.getDepth(),1);
-  stack->setOffset(obj->getBoundBox().getFirstCorner());
+  stack->setOffset(obj->getIntBoundBox().getFirstCorner());
   obj->drawStack(stack,1);
   //stack->save((QString("/home/deli/")+QString::number(i++)+".tif").toStdString());
   fromStack(stack);

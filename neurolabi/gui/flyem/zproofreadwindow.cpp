@@ -413,11 +413,18 @@ void ZProofreadWindow::createMenu()
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showExternalNeuronWindow()));
 
+  QMenu *viewControlMenu = new QMenu("Controls", this);
+  QAction *synpasePropertyControlAction = new QAction("Synapses", this);
+  connect(synpasePropertyControlAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showSynapsePropertyDlg()));
+  viewControlMenu->addAction(synpasePropertyControlAction);
+
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addAction(m_viewRoiAction);
+  m_viewMenu->addMenu(viewControlMenu);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
