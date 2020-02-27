@@ -3,8 +3,8 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSTACKVIEW_H_
-#define _ZSTACKVIEW_H_
+#ifndef ZSTACKVIEW_H_
+#define ZSTACKVIEW_H_
 
 #include <QImage>
 #include <QWidget>

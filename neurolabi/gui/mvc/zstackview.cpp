@@ -3266,10 +3266,10 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 
     if (redrawing) {
       if (depthChanged) {
-        targetSet.insert(ZStackObject::ETarget::OBJECT_CANVAS);
-        targetSet.insert(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
         paintStackBuffer();
       }
+      targetSet.insert(ZStackObject::ETarget::OBJECT_CANVAS);
+      targetSet.insert(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
 
       std::string painted;
       foreach (ZStackObject::ETarget target, targetSet) {
