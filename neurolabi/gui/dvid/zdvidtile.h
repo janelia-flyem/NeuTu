@@ -24,7 +24,7 @@ class ZDvidTile : public ZStackObject
 {
 public:
   ZDvidTile();
-  ~ZDvidTile();
+  ~ZDvidTile() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_TILE;
@@ -32,7 +32,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
   void clear();
 
   void update(int z);

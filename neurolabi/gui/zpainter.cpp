@@ -245,6 +245,11 @@ QRectF ZPainter::getCanvasRange() const
   return m_canvasRange;
 }
 
+double ZPainter::getScale(neutu::EAxis axis) const
+{
+  return m_transform.getScale(axis);
+}
+
 void ZPainter::drawImage(
     const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect)
 {
@@ -553,8 +558,35 @@ void ZPainter::drawLines(const QLine *lines, int lineCount)
 void ZPainter::drawLines(const std::vector<QLine> &lineArray)
 {
   if (!lineArray.empty()) {
-    drawLines(&(lineArray[0]), lineArray.size());
+    drawLines(&(lineArray[0]), int(lineArray.size()));
   }
+}
+
+void ZPainter::drawLines(
+    const std::vector<QLine> &lineArray, double x0, double y0,
+    int width, int height, double xScale, double yScale)
+{
+  ZPixmap buffer(width, height);
+  buffer.setOffset(-x0, -y0);
+  ZPainter painter(&buffer);
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  painter.setCompositionMode(QPainter::CompositionMode_Source);
+  painter.setPen(getPainter()->pen());
+  painter.drawLines(lineArray);
+
+  //Get pixmap -> world transform
+  ZStTransform canvasToWorldTransform;
+  canvasToWorldTransform.setScale(xScale, yScale, 1.0);
+  canvasToWorldTransform.setOffset(x0 * xScale, y0 * yScale, 0.0);
+
+  //Compute projection rect
+  QRectF worldRect = canvasToWorldTransform.transform(buffer.rect());
+//  QRectF targetRect = m_transform.transform(worldRect);
+  drawPixmap(worldRect, buffer);
+//  drawPixmapNt(buffer);
+#ifdef _DEBUG_2
+  buffer.save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
+#endif
 }
 
 void ZPainter::drawEllipse(const QRectF & rectangle)

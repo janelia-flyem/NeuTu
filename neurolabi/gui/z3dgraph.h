@@ -161,7 +161,7 @@ public:
   void clear();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
 //  const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);

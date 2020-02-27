@@ -101,7 +101,7 @@ public:
 
   ZBBox<glm::dvec3> boundBox(const glm::mat4& transform) const;
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
   using ZStackObject::boundBox;
 

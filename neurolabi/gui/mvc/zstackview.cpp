@@ -2017,6 +2017,7 @@ ZPainter* ZStackView::getTileCanvasPainter()
 ZPainter* ZStackView::getObjectCanvasPainter()
 {
   prepareCanvasPainter(m_objectCanvas, m_objectCanvasPainter);
+  m_objectCanvasPainter.setRenderHint(QPainter::Antialiasing, false);
 
   return &m_objectCanvasPainter;
 }
@@ -3279,6 +3280,12 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     }
 
     notifyViewChanged(getViewParameter()); //?
+
+#ifdef _DEBUG_
+    if (m_objectCanvas) {
+      m_objectCanvas->save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
+    }
+#endif
   }
 }
 

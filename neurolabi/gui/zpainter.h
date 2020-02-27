@@ -113,6 +113,7 @@ public:
   void drawPixmap(int x, int y, const ZPixmap &image);
   //ignore transformation
   void drawPixmapNt(const ZPixmap &image);
+//  void drawPixmapNt(const QRectF &targetRect, const ZPixmap &image);
 
   void drawPixmap(const ZPixmap &image);
 
@@ -153,6 +154,9 @@ public:
   void drawLine(const QPointF &pt1, const QPointF &pt2);
   void drawLines(const QLine *lines, int lineCount);
   void drawLines(const std::vector<QLine> &lineArray);
+  void drawLines(
+      const std::vector<QLine> &lineArray, double x0, double y0,
+      int width, int height, double xScale, double yScale);
 
   void drawEllipse(const QRectF & rectangle);
   void drawEllipse(const QRect & rectangle);
@@ -193,6 +197,7 @@ public:
   QRectF getCanvasRange() const;
 #endif
 
+  double getScale(neutu::EAxis axis) const;
   /*
   const QRect& getFieldOfView() const {
     return m_projRegion;

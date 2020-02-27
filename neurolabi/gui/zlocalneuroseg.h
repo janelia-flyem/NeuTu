@@ -2,8 +2,8 @@
  * @brief Local neuroseg
  * @author Ting Zhao
  */
-#ifndef _ZLOCALNEUROSEG_H_
-#define _ZLOCALNEUROSEG_H_
+#ifndef ZLOCALNEUROSEG_H_
+#define ZLOCALNEUROSEG_H_
 
 #if defined(_QT_GUI_USED_)
 #include <QFuture>
@@ -36,7 +36,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis axis) const;
+               neutu::EAxis axis) const override;
   void display(QImage *image, int n, Palette_Color color,
                EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0) const;
   void display(ZPainter &painter, int sliceIndex, EDisplayStyle option,

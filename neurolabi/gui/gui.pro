@@ -26,6 +26,12 @@ DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
 #This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
+
+#A way to remove 'empty directory' warnings
+OBJECTS_DIR = buildqt create
+MOC_DIR = build
+UI_DIR = build
+
 message("Objs dir: $${OBJECTS_DIR}")
 
 #DEFINES+=_CLI_VERSION
@@ -622,11 +628,8 @@ HEADERS += mainwindow.h \
     zscrollslicestrategy.h \
     dvid/zdvidgrayslicescrollstrategy.h \
     zviewproj.h \
-    dialogs/zflyemgrayscaledialog.h \
     dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
-    dialogs/zcomboeditdialog.h \
-    dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
     zglobal.h \
     dvid/zdvidresultservice.h \
@@ -703,6 +706,9 @@ HEADERS += mainwindow.h \
     protocols/taskmergereview.h \
     dialogs/zflyemtodoannotationdialog.h \
     main.h \
+    dialogs/zflyemgrayscaledialog.h \
+    dialogs/zcomboeditdialog.h \
+    dialogs/zflyembodycomparisondialog.h \
     dialogs/zflyemsplituploadoptiondialog.h \
     dialogs/zflyembodychopdialog.h \
     dialogs/ztestoptiondialog.h \

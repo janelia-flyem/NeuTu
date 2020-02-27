@@ -1619,49 +1619,6 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
   appendModel(data, STATE_BATCH_SINGLE);
 
-#if 0
-  m_bodyModel->clear();
-  setBodyHeaders(m_bodyModel);
-
-  m_totalPre = 0;
-  m_totalPost = 0;
-
-  ZJsonArray bookmarks(data);
-
-  logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
-
-  m_bodyModel->setRowCount(int(bookmarks.size()));
-  m_bodyModel->blockSignals(true);
-  for (size_t i = 0; i < bookmarks.size(); ++i) {
-    ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-
-    QList<QStandardItem*> itemList = getBodyItemList(bkmk);
-    for (int j = 0; j < itemList.size(); ++j) {
-      m_bodyModel->setItem(i, j, itemList[j]);
-      /* //Doesn't seem necessary here (TZ)
-          if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
-            m_bodyModel->blockSignals(false);
-          }
-          */
-    }
-  }
-  m_bodyModel->blockSignals(false);
-
-  //Review-TZ: Consider moving this to updateBodyTableView() to reduce
-  //           code redundancy.
-  // the resize isn't reliable, so set the name column wider by hand
-  ui->bodyTableView->resizeColumnsToContents();
-  ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
-
-  // currently initially sorting on # pre-synaptic sites
-  ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
-
-  //Review-TZ: loadCompleted() signal seems unnecessary unless there's a
-  //           possiblity of calling updateModel in a separate thread.
-  //           Consider calling sth like onLoadCompleted() directly.
-  emit loadCompleted();
-#endif
-
   ui->bodyTableView->setEnabled(true);
 }
 

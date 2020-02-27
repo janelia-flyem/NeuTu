@@ -2043,6 +2043,17 @@ void ZObject3dScan::translate(int dx, int dy, int dz)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+void ZObject3dScan::scale(int sx, int sy, int sz)
+{
+  zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    m_stripeArray[i].scale(sx, sy, sz);
+  }
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
+}
+
 void ZObject3dScan::translate(const ZIntPoint &dp)
 {
   translate(dp.getX(), dp.getY(), dp.getZ());
@@ -2139,33 +2150,85 @@ void ZObject3dScan::displaySolid(
   //  size_t lineIndex = 0;
   //int offsetX = iround(painter.getOffset().x());
   //int offsetY = iround(painter.getOffset().y());
-  for (size_t i = 0; i < stripeNumber; i += stride) {
-    const ZObject3dStripe &stripe = slice.getStripe(i);
-    if (stripe.getZ() == z || isProj) {
-      int nseg = stripe.getSegmentNumber();
-      for (int j = 0; j < nseg; ++j) {
-        int x0 = stripe.getSegmentStart(j);// - offsetX;
-        int x1 = stripe.getSegmentEnd(j);// - offsetX;
-        int y = stripe.getY();// - offsetY;
+//  double scale = painter.getScale(neutu::EAxis::X);
 
-        if (!m_dsIntv.isZero()) {
-          x0 *= (m_dsIntv.getX() + 1);
-          x1 *= (m_dsIntv.getX() + 1);
-          y *= m_dsIntv.getY() + 1;
+//  if (scale > 0.5) {
+    ZIntCuboid box;
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          /*
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          */
+
+          //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
+          //        for (int x = x0; x <= x1; ++x) {
+          //          pointArray.push_back(QPoint(x, y));
+          //          pointArray[pointIndex++] = QPoint(x, y);
+          //        }
+          box.join(x0, y, 1);
+          box.join(x1, y, 1);
+          lineArray.push_back(QLine(x0, y, x1, y));
         }
-
-        //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
-        //        for (int x = x0; x <= x1; ++x) {
-        //          pointArray.push_back(QPoint(x, y));
-        //          pointArray[pointIndex++] = QPoint(x, y);
-        //        }
-        lineArray.push_back(QLine(x0, y, x1, y));
       }
     }
+    painter.drawLines(lineArray, box.getFirstX(), box.getFirstY(),
+                      box.getWidth(), box.getHeight(),
+                      m_dsIntv.getX() + 1, m_dsIntv.getY() + 1);
+//    painter.drawLines(lineArray);
+#if 0
+  } else {
+    ZObject3dScan processedSlice;
+
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          processedSlice.addSegment(z, y, x0, x1);
+        }
+      }
+    }
+    int intv = neutu::floor(1.0 / scale) - 1;
+    processedSlice.downsampleMax(intv, intv, 0);
+    ConstSegmentIterator iter(&processedSlice);
+    ZIntCuboid box;
+    while (iter.hasNext()) {
+      const ZObject3dScan::Segment &seg = iter.next();
+
+      lineArray.push_back(
+            QLine(seg.getStart(), seg.getY(), seg.getEnd(), seg.getY()));
+      box.join(seg.getStart(), seg.getY(), 1);
+      box.join(seg.getEnd(), seg.getY(), 1);
+    }
+    painter.drawLines(lineArray, box.getFirstX(), box.getFirstY(),
+                      box.getWidth(), box.getHeight(), intv + 1);
   }
+#endif
+#ifdef _DEBUG_
+  std::cout << "Painter scale: " << painter.getScale(neutu::EAxis::X) << std::endl;
+#endif
 
 
-  painter.drawLines(lineArray);
 #endif
 
 //  if (!lineArray.empty()) {
@@ -2265,6 +2328,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
+  pen.setCosmetic(false);
 
 
   if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
@@ -2294,7 +2358,13 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
       if (isSelected()) {
         displaySolid(painter, z, isProj, 1);
       } else {
+#ifdef _DEBUG_
+        tic();
+#endif
         displaySolid(painter, z, isProj, 1);
+#ifdef _DEBUG_
+        std::cout << "ZObject3dScan painting time " << toc() << std::endl;
+#endif
       }
     }
   }

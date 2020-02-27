@@ -24,7 +24,7 @@ public:
 
 public:
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                         neutu::EAxis sliceAxis) const;
+                         neutu::EAxis sliceAxis) const override;
     void trace(const ZStack *stack, Trace_Workspace *tws);
     void append(ZDirectionalTemplate* dt);
     void prepend(ZDirectionalTemplate* dt);

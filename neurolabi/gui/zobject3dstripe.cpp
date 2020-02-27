@@ -125,6 +125,15 @@ void ZObject3dStripe::translate(int dx, int dy, int dz)
   }
 }
 
+void ZObject3dStripe::scale(int sx, int sy, int sz)
+{
+  m_y *= sy;
+  m_z *= sz;
+  for (size_t i = 0; i < m_segmentArray.size(); ++i) {
+    m_segmentArray[i] *= sx;
+  }
+}
+
 void ZObject3dStripe::fillIntArray(int *array) const
 {
   if (array != NULL) {

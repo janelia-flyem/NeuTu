@@ -16,14 +16,14 @@ class ZDvidSparseStack : public ZStackObject
 {
 public:
   ZDvidSparseStack();
-  ~ZDvidSparseStack();
+  ~ZDvidSparseStack() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_SPARSE_STACK;
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
 
 //  const std::string& className() const;
 
@@ -102,7 +102,7 @@ public:
 
   void loadBodyAsync(uint64_t bodyId);
   void setMaskColor(const QColor &color);
-  void setLabel(uint64_t bodyId);
+  void setLabel(uint64_t bodyId) override;
 
   void loadBody(
       uint64_t bodyId, const ZIntCuboid &range,
@@ -123,8 +123,8 @@ public:
 
 //  void downloadBodyMask(ZDvidReader &reader);
 
-  bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutu::EAxis axis);
+  bool hit(double x, double y, double z) override;
+  bool hit(double x, double y, neutu::EAxis axis) override;
 
   bool isEmpty() const;
 

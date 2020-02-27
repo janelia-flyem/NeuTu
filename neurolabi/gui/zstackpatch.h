@@ -11,11 +11,11 @@ class ZStackPatch : public ZStackObject
 {
 public:
   ZStackPatch(ZStack *stack = NULL);
-  ~ZStackPatch();
+  ~ZStackPatch() override;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
 
 //  virtual const std::string& className() const;
 

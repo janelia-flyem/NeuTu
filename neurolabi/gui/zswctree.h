@@ -3,8 +3,8 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSWCTREE_H_
-#define _ZSWCTREE_H_
+#ifndef ZSWCTREE_H_
+#define ZSWCTREE_H_
 
 #include "zqtheader.h"
 
@@ -125,7 +125,7 @@ public:
   /*!
    * \brief Deconstructor.
    */
-  ~ZSwcTree();
+  ~ZSwcTree() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::SWC;
@@ -433,8 +433,8 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   /*!
    * \brief Selecte a node
@@ -935,4 +935,4 @@ void ZSwcTree::selectNode(
     selectNode(tn, true);
   }
 }
-#endif /* _ZSWCTREE_H_ */
+#endif /* ZSWCTREE_H_ */
