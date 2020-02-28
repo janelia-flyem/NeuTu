@@ -347,9 +347,17 @@ ZSynapsePropertyDialog* FlyEmMvcDialogManager::getSynpasePropertyDlg()
   return m_synapseDlg;
 }
 
+void FlyEmMvcDialogManager::Show(QDialog *dlg)
+{
+  if (dlg) {
+    dlg->show();
+    dlg->raise();
+  }
+}
+
 void FlyEmMvcDialogManager::showSynpasePropertyDlg()
 {
-  getSynpasePropertyDlg()->show();
+  Show(getSynpasePropertyDlg());
 }
 
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()

@@ -5,6 +5,7 @@
 
 #include <QObject>
 
+class QDialog;
 class ZFlyEmProofMvc;
 class NeuprintSetupDialog;
 class ZContrastProtocalDialog;
@@ -91,6 +92,8 @@ private:
   template <typename T>
   bool createIfNecessary(T* &dlg);
 //  bool creationRequired(void *dlg) const;
+
+  static void Show(QDialog *dlg);
 
 private:
   template<typename T>

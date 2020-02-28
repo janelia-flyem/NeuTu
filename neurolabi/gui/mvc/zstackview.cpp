@@ -1151,11 +1151,11 @@ void ZStackView::updateStackRange()
   LDEBUG() << "Updating stack range";
   ZIntCuboid stackRange = getViewBoundBox();
   if (stackRange != getCurrentStackRange()) {
-    updateSlider();
 //    if (stackRange.getWidth() != getCurrentStackRange().getWidth() ||
 //        stackRange.getHeight() != getCurrentStackRange().getHeight() ||
 //        stackRange.getDepth() != getCurrentStackRange().getDepth()) {
       resetViewProj();
+      updateSlider();
       setSliceIndexQuietly(m_depthControl->maximum() / 2);
 //    }
 
@@ -3281,7 +3281,7 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 
     notifyViewChanged(getViewParameter()); //?
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (m_objectCanvas) {
       m_objectCanvas->save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
     }
