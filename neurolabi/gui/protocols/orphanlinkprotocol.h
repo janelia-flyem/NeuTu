@@ -94,6 +94,7 @@ private:
     ProtocolAssignmentTask findNextTask();
     bool hasPendingTasks();
     void allTasksCompleted();
+    int findTaskIndex(ProtocolAssignmentTask task);
 
     void enable(DisenableElements element);
     void disable(DisenableElements element);

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <QMessageBox>
+#include <QAbstractItemModel>
 
 #include "protocolchooseassignmentdialog.h"
 #include "protocolassignment.h"
@@ -108,11 +109,8 @@ void OrphanLinkProtocol::startProtocol() {
         disable(START_TASK_BUTTON);
         disable(COMPLETE_SKIP_TASK_BUTTONS);
 
-
-        // do nothing at start?  or immediately go to next?
-
-
-
+        // do nothing at start; we could immediately go to next,
+        //  but let's have the user do that explicity for now
     } else {
         allTasksCompleted();
     }
@@ -133,14 +131,7 @@ void OrphanLinkProtocol::onNextTaskButton() {
     }
 
     // select task in table programmatically
-    // m_tasks.indexOf(next) doesn't work for stupid C++ reasons
-    int nextRow = -1;
-    for (int i=0; i<m_tasks.size(); i++) {
-        if (m_tasks[i].id == next.id) {
-            nextRow = i;
-            break;
-        }
-    }
+    int nextRow = findTaskIndex(next);
     if (nextRow < 0) {
         // not found, should be impossible
         return;
@@ -367,24 +358,68 @@ void OrphanLinkProtocol::allTasksCompleted() {
  * are pending tasks)
  */
 ProtocolAssignmentTask OrphanLinkProtocol::findNextTask() {
+    QJsonObject empty;
+    if (!hasPendingTasks()) {
+        // should never happen
+        return ProtocolAssignmentTask(empty);
+    }
+    // now we can assume there is always an incomplete task to find
 
-    // we're going to allow sorting, so make sure this behaves correctly when sorted differently
+    // this cycles through the table in view order, even if the sort
+    //  order is changed; I *believe* it will work with filtering, too,
+    //  but we don't have that currently, and it has not been tested
 
+    // start at the top or the task after the selected task
+    QModelIndex startIndex = m_proxy->index(0, TASK_ID_COLUMN);
+    if (hasSelection()) {
+        QModelIndex selectedIndex = ui->tableView->selectionModel()->currentIndex();
+        if (selectedIndex.isValid()) {
+            startIndex = selectedIndex.sibling(selectedIndex.row() + 1, TASK_ID_COLUMN);
+            if (!startIndex.isValid()) {
+                // back to top again
+                startIndex = m_proxy->index(0, TASK_ID_COLUMN);
+            }
+        }
+        // if it's invalid, it's probably off the bottom, but in any case,
+        //  if it's invalid, stick with the top of the list
+    }
 
-    // what to return if no pending tasks?  invalid task; you should check before calling anyway
+    QModelIndex currentIndex = startIndex;
+    int n = 0;
+    while (m_tasks[m_proxy->mapToSource(currentIndex).row()].disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+        // qDebug() << "view row " << currentIndex.row();
+        // qDebug() << "model row " << m_proxy->mapToSource(currentIndex).row();
+        // qDebug() << "ID: " << m_tasks[m_proxy->mapToSource(currentIndex).row()].id;
+        // increment the index
+        currentIndex = currentIndex.sibling(currentIndex.row() + 1, TASK_ID_COLUMN);
+        if (!currentIndex.isValid()) {
+            // again assuming invalid = off the bottom
+            currentIndex = startIndex.sibling(0, TASK_ID_COLUMN);
+        }
+        n++;
+        if (n > m_tasks.size() + 1) {
+            // shouldn't happen unless something goes very wrong
+            return ProtocolAssignmentTask(empty);
+        }
+    }
 
+    // qDebug() << "next task: ID = " << m_tasks[m_proxy->mapToSource(currentIndex).row()].id;
+    return m_tasks[m_proxy->mapToSource(currentIndex).row()];
+}
 
-    // if no selection: find first task not complete (started or unstarted)
-    // if selection: find next task not complete (started or unstarted)
-
-
-
-
-
-    // testing: always return second task
-    return m_tasks[1];
-
-
+/*
+ * given a task, return its index in the task list
+ */
+int OrphanLinkProtocol::findTaskIndex(ProtocolAssignmentTask task) {
+    // you can't just use m_tasks.indexof() for stupid C++ reasons
+    int index = -1;
+    for (int i=0; i<m_tasks.size(); i++) {
+        if (m_tasks[i].id == task.id) {
+            index = i;
+            break;
+        }
+    }
+    return index;
 }
 
 void OrphanLinkProtocol::updateTable() {
@@ -532,6 +567,7 @@ void OrphanLinkProtocol::onCompleteButton() {
         emit protocolCompleting();
     }
 }
+
 
 void OrphanLinkProtocol::enable(DisenableElements element) {
     switch (element) {
