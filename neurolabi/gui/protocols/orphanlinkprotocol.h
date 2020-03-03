@@ -82,6 +82,7 @@ private:
     void showMessage(QString title, QString message);
 
     void loadTasks();
+    void updateTask(ProtocolAssignmentTask task);
     static bool compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2);
 
     void startProtocol();

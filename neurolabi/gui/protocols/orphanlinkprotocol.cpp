@@ -166,9 +166,8 @@ void OrphanLinkProtocol::onStartTaskButton() {
 
 
     // update task disposition in memory
-    // (we have the task, not a copy, right?)
     task.disposition = ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS;
-
+    updateTask(task);
 
     disable(START_TASK_BUTTON);
     enable(COMPLETE_SKIP_TASK_BUTTONS);
@@ -195,8 +194,8 @@ void OrphanLinkProtocol::onCompleteTaskButton() {
     }
 
     // update task disposition in memory
-    // (we have the task, not a copy, right?)
     task.disposition = ProtocolAssignmentTask::DISPOSITION_COMPLETE;
+    updateTask(task);
 
     if (hasPendingTasks()) {
         disable(START_TASK_BUTTON);
@@ -227,8 +226,8 @@ void OrphanLinkProtocol::onSkipTaskButton() {
     }
 
     // update task disposition in memory
-    // (we have the task, not a copy, right?)
     task.disposition = ProtocolAssignmentTask::DISPOSITION_SKIPPED;
+    updateTask(task);
 
     // you're supposed to provide a comment on skips:
     if (m_comments[task.id].size() == 0) {
@@ -488,6 +487,15 @@ void OrphanLinkProtocol::loadTasks() {
     ProtocolAssignment assignment = m_client.getAssignment(m_assignmentID);
     m_tasks = m_client.getAssignmentTasks(assignment);
     std::sort(m_tasks.begin(), m_tasks.end(), compareTasks);
+}
+
+/*
+ * given a task object, find the (probably stale) task object with
+ * the same ID in the task list and replace it with the new object
+ */
+void OrphanLinkProtocol::updateTask(ProtocolAssignmentTask task) {
+    int index = findTaskIndex(task);
+    m_tasks.replace(index, task);
 }
 
 bool OrphanLinkProtocol::compareTasks(const ProtocolAssignmentTask task1, const ProtocolAssignmentTask task2) {
