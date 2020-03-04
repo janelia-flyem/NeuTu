@@ -188,7 +188,7 @@ void OrphanLinkProtocol::onCompleteTaskButton() {
         return;
     }
 
-    bool status = m_client.completeTask(task);
+    bool status = m_client.completeTask(task, false, m_comments[task.id]);
     if (!status) {
         showError("Error completing task!", "Task could not be completed!");
         return;
@@ -227,7 +227,7 @@ void OrphanLinkProtocol::onSkipTaskButton() {
     }
 
 
-    bool status = m_client.completeTask(task);
+    bool status = m_client.completeTask(task, true, m_comments[task.id]);
     if (!status) {
         showError("Error skipping task!", "Task could not be skipped!");
         return;
@@ -250,13 +250,30 @@ void OrphanLinkProtocol::onSkipTaskButton() {
 }
 
 void OrphanLinkProtocol::onGotoSelectedButton() {
-    gotoSelectedBody();
+    // if the user is explicitly pressing the go to button, we need to
+    //  be explicit about why it might not be working
+    ProtocolAssignmentTask task = getSelectedTask();
+    if (task.id > 0) {
+        if (!hasBody(getTaskBodyID(task))) {
+            showError("No such body!", "Selected body no longer exists!");
+            return;
+        }
+    }
+    gotoSelectedTaskBody();
 }
 
 void OrphanLinkProtocol::onCommentButton() {
     if (hasSelection()) {
         ProtocolAssignmentTask selectedTask = getSelectedTask();
         if (selectedTask.id > 0) {
+            if (selectedTask.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED ||
+                selectedTask.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+                // reset to the saved comment
+                ui->commentEntry->setText(m_comments[selectedTask.id]);
+                showError("Can't update completed task!", "You can't change the comment on a completed or skipped task.");
+                return;
+            }
+
             m_comments[selectedTask.id] = ui->commentEntry->text();
             saveState();
 
@@ -295,10 +312,10 @@ ProtocolAssignmentTask OrphanLinkProtocol::getSelectedTask() {
  * called when a task is selected either via click or programmatically
  */
 void OrphanLinkProtocol::taskSelected() {
+    ProtocolAssignmentTask task = getSelectedTask();
     if (!hasPendingTasks()) {
         allTasksCompleted();
     } else {
-        ProtocolAssignmentTask task = getSelectedTask();
         if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
                 task.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
             disable(START_TASK_BUTTON);
@@ -313,23 +330,67 @@ void OrphanLinkProtocol::taskSelected() {
         }
     }
 
-    gotoSelectedBody();
+    // check that the body still exists:
+    if (hasBody(getTaskBodyID(task))) {
+        gotoSelectedTaskBody();
+    } else {
+        skipNoBodyTask(task);
+    }
 
     // whether all tasks are completed or or not:
     updateSelectedBodyLabel();
     updateCommentField();
 }
 
-/*
- * in NeuTu, go to the body in the selected task
- */
-void OrphanLinkProtocol::gotoSelectedBody() {
-    QString bodyIDString = getSelectedTask().get(TASK_KEY_BODY_ID).toString();
+void OrphanLinkProtocol::skipNoBodyTask(ProtocolAssignmentTask task) {
+    if (task.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE &&
+            task.disposition != ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
+
+        qDebug() << "skipNoBodyTask()";
+
+        if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
+            m_client.startTask(task);
+        }
+
+        // set "no body" comment, then hand off to usual skip routine for completion and updates
+        m_comments[task.id] = "body doesn't exist";
+        onSkipTaskButton();
+
+        showMessage("No body!", "Body doesn't exist!  The task has been skipped.");
+    }
+}
+
+uint64_t OrphanLinkProtocol::getTaskBodyID(ProtocolAssignmentTask task) {
+    QString bodyIDString = task.get(TASK_KEY_BODY_ID).toString();
 
     bool ok;
     uint64_t bodyID = bodyIDString.toLong(&ok);
     if (ok) {
-        emit requestDisplayBody(bodyID);
+        return bodyID;
+    } else {
+        return 0;
+    }
+}
+
+bool OrphanLinkProtocol::hasBody(uint64_t bodyID) {
+    const ZDvidReader &reader = m_dvidReader;
+    if (reader.good()) {
+        return reader.hasBody(bodyID);
+    } else {
+        return false;
+    }
+}
+
+/*
+ * in NeuTu, go to the body in the selected task
+ */
+void OrphanLinkProtocol::gotoSelectedTaskBody() {
+    ProtocolAssignmentTask selectedTask = getSelectedTask();
+    if (selectedTask.id > 0) {
+        uint64_t bodyID = getTaskBodyID(selectedTask);
+        if (bodyID > 0) {
+            emit requestDisplayBody(bodyID);
+        }
     }
 }
 
@@ -389,7 +450,8 @@ ProtocolAssignmentTask OrphanLinkProtocol::findNextTask() {
 
     QModelIndex currentIndex = startIndex;
     int n = 0;
-    while (m_tasks[m_proxy->mapToSource(currentIndex).row()].disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+    while (m_tasks[m_proxy->mapToSource(currentIndex).row()].disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
+           m_tasks[m_proxy->mapToSource(currentIndex).row()].disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
         // qDebug() << "view row " << currentIndex.row();
         // qDebug() << "model row " << m_proxy->mapToSource(currentIndex).row();
         // qDebug() << "ID: " << m_tasks[m_proxy->mapToSource(currentIndex).row()].id;

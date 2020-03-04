@@ -351,10 +351,16 @@ bool ProtocolAssignmentClient::startTask(ProtocolAssignmentTask task) {
  * input: task
  * output: boolean success
  */
-bool ProtocolAssignmentClient::completeTask(ProtocolAssignmentTask task) {
+bool ProtocolAssignmentClient::completeTask(ProtocolAssignmentTask task, bool skipped, QString note) {
     QString url = ProtocolAssignmentUrl::CompleteTask(m_server, task.id);
-    QJsonObject empty;
-    QNetworkReply * reply = post(url, empty);
+    QJsonObject data;
+    if (skipped) {
+        data["disposition"] = ProtocolAssignmentTask::DISPOSITION_SKIPPED;
+    }
+    if (!note.isEmpty()) {
+        data["note"] = note;
+    }
+    QNetworkReply * reply = post(url, data);
     if (hadError(reply)) {
         QString error = getErrorString(reply);
         showError("Error!", "Error completing task: " + error);

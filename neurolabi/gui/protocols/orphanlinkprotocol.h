@@ -89,8 +89,12 @@ private:
 
     bool hasSelection();
     ProtocolAssignmentTask getSelectedTask();
+    bool hasBody(uint64_t bodyID);
+    uint64_t getTaskBodyID(ProtocolAssignmentTask task);
+    void gotoSelectedTaskBody();
+
     void taskSelected();
-    void gotoSelectedBody();
+    void skipNoBodyTask(ProtocolAssignmentTask task);
 
     ProtocolAssignmentTask findNextTask();
     bool hasPendingTasks();

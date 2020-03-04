@@ -39,7 +39,7 @@ public:
 
     QList<ProtocolAssignmentTask> getAssignmentTasks(ProtocolAssignment assignment);
     bool startTask(ProtocolAssignmentTask task);
-    bool completeTask(ProtocolAssignmentTask task);
+    bool completeTask(ProtocolAssignmentTask task, bool skipped=false, QString note="");
 
     QString getLocalUsername(QString janeliaUsername);
 
