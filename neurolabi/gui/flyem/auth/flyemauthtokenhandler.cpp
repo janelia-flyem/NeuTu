@@ -57,6 +57,10 @@ void FlyEmAuthTokenHandler::saveMasterToken(QString token) {
         // it didn't parse; it's just the bare token already
         bareToken = token;
     }
+    // when you save the master token, we assume that it's new, and that
+    //  all of the application tokens that go with it are no longer valid;
+    //  so clear them before saving the new master token
+    m_storage.clearTokens(getServer());
     m_storage.saveToken(bareToken, getServer(), MASTER_TOKEN_APPLICATION);
     if (m_storage.status() != FlyEmAuthTokenStorage::OK) {
         showError("Token error!", "Token could not be saved to NeuTu settings directory!");

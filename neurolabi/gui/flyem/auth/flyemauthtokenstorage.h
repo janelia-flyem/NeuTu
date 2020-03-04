@@ -19,6 +19,7 @@ public:
     bool hasToken(QString server, QString application);
     QString getToken(QString server, QString application);
     void saveToken(QString token, QString server, QString application);
+    void clearTokens(QString server);
 
 
 private:

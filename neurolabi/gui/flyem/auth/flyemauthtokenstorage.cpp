@@ -52,6 +52,11 @@ QString FlyEmAuthTokenStorage::getToken(QString server, QString application) {
     }
 }
 
+void FlyEmAuthTokenStorage::clearTokens(QString server) {
+    QJsonObject empty;
+    m_data[server] = empty;
+}
+
 void FlyEmAuthTokenStorage::saveToken(QString token, QString server, QString application) {
     QJsonObject serverData;
     if (!m_data.contains(server)) {
