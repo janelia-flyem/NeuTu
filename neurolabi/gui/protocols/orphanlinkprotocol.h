@@ -76,6 +76,7 @@ private:
     QMap<int, QString> m_comments;
     QList<ProtocolAssignmentTask> m_tasks;
     bool m_allTasksCompleted;
+    int m_savedTaskID;
 
     void saveState();
     void showError(QString title, QString message);
@@ -100,9 +101,13 @@ private:
     bool hasPendingTasks();
     void allTasksCompleted();
     int findTaskIndex(ProtocolAssignmentTask task);
+    int findTaskIndex(int taskID);
 
     void enable(DisenableElements element);
     void disable(DisenableElements element);
+
+    void saveSelection();
+    void restoreSelection();
 
     void setHeaders(QStandardItemModel *model);
     void updateTable();

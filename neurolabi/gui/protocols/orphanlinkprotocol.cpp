@@ -473,13 +473,12 @@ ProtocolAssignmentTask OrphanLinkProtocol::findNextTask() {
 }
 
 /*
- * given a task, return its index in the task list
+ * given a task ID, return its task's index in the task list
  */
-int OrphanLinkProtocol::findTaskIndex(ProtocolAssignmentTask task) {
-    // you can't just use m_tasks.indexof() for stupid C++ reasons
+int OrphanLinkProtocol::findTaskIndex(int taskID) {
     int index = -1;
     for (int i=0; i<m_tasks.size(); i++) {
-        if (m_tasks[i].id == task.id) {
+        if (m_tasks[i].id == taskID) {
             index = i;
             break;
         }
@@ -487,7 +486,16 @@ int OrphanLinkProtocol::findTaskIndex(ProtocolAssignmentTask task) {
     return index;
 }
 
+/*
+ * given a task, return its index in the task list
+ */
+int OrphanLinkProtocol::findTaskIndex(ProtocolAssignmentTask task) {
+    return findTaskIndex(task.id);
+}
+
 void OrphanLinkProtocol::updateTable() {
+    saveSelection();
+
     m_model->clear();
     setHeaders(m_model);
 
@@ -513,6 +521,8 @@ void OrphanLinkProtocol::updateTable() {
     }
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(COMMENT_COLUMN, QHeaderView::Stretch);
+
+    restoreSelection();
 }
 
 void OrphanLinkProtocol::updateLabels() {
@@ -642,6 +652,30 @@ void OrphanLinkProtocol::onCompleteButton() {
     }
 }
 
+void OrphanLinkProtocol::saveSelection() {
+    m_savedTaskID = getSelectedTask().id;
+}
+
+void OrphanLinkProtocol::restoreSelection() {
+    if (m_savedTaskID > 0) {
+
+        // this is adapted from onNextTaskButton(); factor some of the
+        //  code out at some point?
+
+        int nextRow = findTaskIndex(m_savedTaskID);
+        if (nextRow < 0) {
+            // not found, should be impossible?
+            return;
+        }
+
+        QModelIndex nextModelIndex = m_model->index(nextRow, 0);
+        QModelIndex viewIndex = m_proxy->mapFromSource(nextModelIndex);
+        if (viewIndex.isValid()) {
+            ui->tableView->selectionModel()->setCurrentIndex(viewIndex, QItemSelectionModel::ClearAndSelect|QItemSelectionModel::Rows);
+            // since we're restoring selection, do NOT trigger taskSelected();
+        }
+    }
+}
 
 void OrphanLinkProtocol::enable(DisenableElements element) {
     switch (element) {
