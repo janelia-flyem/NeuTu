@@ -219,6 +219,13 @@ void OrphanLinkProtocol::onSkipTaskButton() {
         return;
     }
 
+    // you must provide a comment on skips
+    if (m_comments[task.id].size() == 0) {
+        showMessage("Add comment!", "You must add a comment if you skip a task!");
+        return;
+    }
+
+
     bool status = m_client.completeTask(task);
     if (!status) {
         showError("Error skipping task!", "Task could not be skipped!");
@@ -229,10 +236,6 @@ void OrphanLinkProtocol::onSkipTaskButton() {
     task.disposition = ProtocolAssignmentTask::DISPOSITION_SKIPPED;
     updateTask(task);
 
-    // you're supposed to provide a comment on skips:
-    if (m_comments[task.id].size() == 0) {
-        showMessage("Add comment!", "Please add a comment if you skip a task!");
-    }
 
     if (hasPendingTasks()) {
         disable(START_TASK_BUTTON);
