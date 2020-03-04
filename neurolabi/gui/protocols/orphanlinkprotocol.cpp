@@ -87,7 +87,6 @@ bool OrphanLinkProtocol::initialize() {
 
     m_assignmentID = assignment.id;
 
-
     // save state and start work
     saveState();
 
@@ -102,6 +101,8 @@ bool OrphanLinkProtocol::initialize() {
 
 void OrphanLinkProtocol::startProtocol() {
     if (hasPendingTasks()) {
+        ui->assignmentIDLabel->setText("Assignment ID: " + QString::number(m_assignmentID));
+
         m_allTasksCompleted = false;
 
         // no selection yet, so disable start/complete

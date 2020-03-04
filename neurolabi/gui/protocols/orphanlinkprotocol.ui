@@ -161,6 +161,13 @@
         </layout>
        </item>
        <item>
+        <widget class="QLabel" name="assignmentIDLabel">
+         <property name="text">
+          <string>Assignment ID: </string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <widget class="QLabel" name="label_6">
