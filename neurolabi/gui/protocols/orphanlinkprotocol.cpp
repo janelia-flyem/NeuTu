@@ -543,7 +543,8 @@ void OrphanLinkProtocol::updateSelectedBodyLabel() {
 void OrphanLinkProtocol::updateProgressLabel() {
     int nComplete = 0;
     for (ProtocolAssignmentTask task: m_tasks) {
-        if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+        if (task.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
+            task.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
             nComplete++;
         }
     }

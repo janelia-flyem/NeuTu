@@ -309,7 +309,8 @@ void ProtocolAssignmentDialog::updateSelectedInfo(ProtocolAssignment assignment)
     QList<ProtocolAssignmentTask> tasks = m_client.getAssignmentTasks(assignment);
     int nCompleted = 0;
     for (ProtocolAssignmentTask t: tasks) {
-        if (t.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+        if (t.disposition == ProtocolAssignmentTask::DISPOSITION_COMPLETE ||
+            t.disposition == ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
             nCompleted++;
         }
     }
