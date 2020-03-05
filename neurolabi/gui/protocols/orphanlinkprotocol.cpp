@@ -405,7 +405,8 @@ void OrphanLinkProtocol::gotoSelectedTaskBody() {
 
 bool OrphanLinkProtocol::hasPendingTasks() {
     for (ProtocolAssignmentTask task: m_tasks) {
-        if (task.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE) {
+        if (task.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE &&
+            task.disposition != ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
             return true;
         }
     }
