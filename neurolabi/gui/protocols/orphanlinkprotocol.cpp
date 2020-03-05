@@ -198,10 +198,8 @@ void OrphanLinkProtocol::onCompleteTaskButton() {
     task.disposition = ProtocolAssignmentTask::DISPOSITION_COMPLETE;
     updateTask(task);
 
-    if (hasPendingTasks()) {
-        disable(START_TASK_BUTTON);
-        enable(COMPLETE_SKIP_TASK_BUTTONS);
-    } else {
+    disable(COMPLETE_SKIP_TASK_BUTTONS);
+    if (!hasPendingTasks()) {
         allTasksCompleted();
     }
 
