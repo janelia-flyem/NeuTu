@@ -26,7 +26,6 @@ public:
     void setServer(QString server);
     bool checkForTokens();
 
-    QMap<QString, int> getProjectsForProtocol(AssigmentProtocols protocol);
     QMap<QString, QString> getEligibleProjects();
 
     ProtocolAssignment getAssignment(int assignmentID);

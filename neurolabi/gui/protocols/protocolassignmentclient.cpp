@@ -74,59 +74,6 @@ bool ProtocolAssignmentClient::checkForTokens() {
 }
 
 /*
- * retrieves projects for a protocol
- *
- * endpoint: get /project/{protocol}
- * input: protocol (from enum)
- * output: map of project name: project id
- */
-QMap<QString, int> ProtocolAssignmentClient::getProjectsForProtocol(AssigmentProtocols protocol) {
-
-    QMap<QString, int> projects;
-
-
-    /*
-
-
-    // not updated for new error handling!
-
-
-
-    // this call needs to restrict the returned list to those the user is allowed to generate;
-    //  /projects/eligible is the endpoint for that, returning list of projects (name or id?)
-
-    // currently that endpoint needs an auth token (that's where it gets the username from),
-    //  so we can't do that yet
-
-
-    // construct url
-    QString url;
-    if (protocol == ORPHAN_LINK) {
-        url = ProtocolAssignmentUrl::GetProjectsForProtocol(m_server, "orphan_link");
-    } else {
-        showError("Unknown protocol", "Unknown protocol!");
-        return projects;
-    }
-
-    // make call
-    QJsonObject result = get(url);
-    QJsonObject restData = result["rest"].toObject();
-
-    if (restData["error"].toBool()) {
-        showError("Error getting projects", "Error in retrieving projects: " + restData["message"].toString());
-    } else {
-        QJsonArray data = result["data"].toArray();
-        for (QJsonValue val: data) {
-            QJsonObject valObj = val.toObject();
-            projects[valObj["name"].toString()] = valObj["id"].toInt();
-        }
-    }
-    */
-
-    return projects;
-}
-
-/*
  * retrieve eligible projects for a user
  *
  * endpoint: get /projects/eligible
