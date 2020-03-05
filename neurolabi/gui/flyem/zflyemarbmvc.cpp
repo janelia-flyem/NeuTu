@@ -75,7 +75,7 @@ ZFlyEmArbPresenter* ZFlyEmArbMvc::getCompletePresenter() const
 
 void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating arb slice view: " << "Z=" << param.getZ() << std::endl;
 #endif
   getCompletePresenter()->setViewParam(param);

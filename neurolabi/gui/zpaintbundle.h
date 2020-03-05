@@ -1,7 +1,9 @@
 #ifndef ZPAINTBUNDLE_H
 #define ZPAINTBUNDLE_H
 
+#include <memory>
 #include <QList>
+#include <QMutex>
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -15,6 +17,7 @@
 #include "zswctree.h"
 #include "geometry/zintpoint.h"
 #include "zstackobjectsourcefactory.h"
+#include "zstackviewparam.h"
 
 namespace impl {
 
@@ -46,15 +49,16 @@ public:
       if (pos == Begin) {
         m_listIdx = 0;
 //        m_swcNodeIter = m_bundle->m_swcNodes->begin();
-        while (m_listIdx < m_bundle->m_objLists.size() &&
-               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < 1 &&
+               m_drawableIdx >= m_bundle->m_objList.size()) {
           ++m_listIdx;
         }
-        if (m_listIdx == m_bundle->m_objLists.size()) {
+//        if (m_listIdx == m_bundle->m_objLists.size()) {
 //          setSwcNodeAdaptor();
-        }
+//        }
       } else if (pos == End) {
-        m_listIdx = m_bundle->m_objLists.size();
+//        m_listIdx = m_bundle->m_objLists.size();
+        m_listIdx = 1;
 //        m_swcNodeIter = m_bundle->m_swcNodes->end();
       }
     }
@@ -89,17 +93,17 @@ private:
     if (!m_bundle) {
       return;
     }
-    if (m_listIdx < m_bundle->m_objLists.size()) {
-      if (++m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+    if (m_listIdx < 1) {
+      if (++m_drawableIdx >= m_bundle->m_objList.size()) {
         ++m_listIdx;
         m_drawableIdx = 0;
-        while (m_listIdx < m_bundle->m_objLists.size() &&
-               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < 1 &&
+               m_drawableIdx >= m_bundle->m_objList.size()) {
           ++m_listIdx;
         }
-        if (m_listIdx == m_bundle->m_objLists.size()) { // move out of list, return first item of node set
+//        if (m_listIdx == 1) { // move out of list, return first item of node set
 //          setSwcNodeAdaptor();
-        }
+//        }
       }
     }/* else if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // inside node set, move to next
       ++m_swcNodeIter;
@@ -109,8 +113,8 @@ private:
 
   TStackDrawablePtr dereference() const
   {
-    return m_listIdx < m_bundle->m_objLists.size() ?
-          m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
+    return m_listIdx < 1 ?
+          m_bundle->m_objList.at(m_drawableIdx) :
           dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
@@ -160,7 +164,8 @@ public:
   typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
   typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
-  ZPaintBundle(neutu::EAxis sliceAxis = neutu::EAxis::Z);
+  ZPaintBundle();
+  ~ZPaintBundle();
 
   inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
   inline const_iterator end() const { return const_iterator(this, const_iterator::End); }
@@ -168,27 +173,32 @@ public:
   inline iterator begin() { return iterator(this, iterator::Begin); }
   inline iterator end() { return iterator(this, iterator::End); }
 
-  inline void clearAllDrawableLists() {
-    m_objLists.clear();
-    m_otherDrawables.clear();
-    m_objLists.push_back(&m_otherDrawables);
-  }
+  void clearAllDrawableLists();
 
-  inline void addDrawable(ZStackObject* obj) { if (obj) m_otherDrawables.push_back(obj); }
-  inline void removeDrawable(ZStackObject* obj) { m_otherDrawables.removeAll(obj); }
-  inline void addDrawableList(const QList<ZStackObject*>* lst) { if (lst) m_objLists.push_back(lst); }
-  inline void removeDrawableList(const QList<ZStackObject*>* lst) { m_objLists.removeAll(lst); }
+//  inline void addDrawable(ZStackObject* obj) {
+//    if (obj) m_otherDrawables.push_back(obj); }
+//  inline void removeDrawable(ZStackObject* obj) {
+//    m_otherDrawables.removeAll(obj); }
+  void addDrawableList(const QList<ZStackObject*>& lst);
+//  inline void removeDrawableList(const QList<ZStackObject*>* lst) {
+//    m_objLists.removeAll(lst); }
 
+  void addDynamicObject(ZStackObject *obj);
+//  void cloneDynamicObject(ZStackObject *obj);
+  void clearDynamicObjectList();
 //  inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
 //  inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
 
-  inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
-  inline int sliceIndex() const { return m_sliceIndex; }
+//  inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
+  inline int sliceIndex() const { return m_viewParam.getSliceIndex(); }
+  void setViewParam(const ZStackViewParam &param);
 
-  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
+//  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
+  neutu::EAxis getSliceAxis() const;
 
   inline int getZ() const {
-    return m_sliceIndex + m_stackOffset.getZ();//.getSliceCoord(m_sliceAxis);
+    return m_viewParam.getZ();
+//    return m_sliceIndex + m_stackOffset.getZ();//.getSliceCoord(m_sliceAxis);
   }
 
   inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
@@ -205,20 +215,29 @@ public:
     return m_stackOffset;
   }
 
+  QList<ZStackObject*> getVisibleObjectList() const;
+  QList<std::shared_ptr<ZStackObject> > getVisibleDynamicObjectList() const;
+  void alignToCutPlane(const QList<std::shared_ptr<ZStackObject>> &objList) const;
+  bool hasDynamicObject() const;
 
 private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
 
-  QList<const QList<ZStackObject*>*> m_objLists;
+  QList<ZStackObject*> m_objList;
+//  QList<const QList<ZStackObject*>*> m_objLists;
 //  const std::set<Swc_Tree_Node*>* m_swcNodes;
-  int m_sliceIndex;
+//  int m_sliceIndex;
   ZStackObject::EDisplayStyle m_style;
 
-  QList<ZStackObject*> m_otherDrawables; // collect single input
+//  QList<ZStackObject*> m_otherDrawables; // collect single input
+  QList<std::shared_ptr<ZStackObject>> m_dynamicObjectList; //Dynamically changing object; owned by the painter itself
+  mutable QMutex m_dynamicObjectListMutex;
 //  std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
+  ZStackViewParam m_viewParam;
   ZIntPoint m_stackOffset;
-  neutu::EAxis m_sliceAxis;
+//  neutu::EAxis m_sliceAxis;
+  ZStackObject::ETarget m_target = ZStackObject::ETarget::WIDGET;
 };
 
 #endif // ZPAINTBUNDLE_H

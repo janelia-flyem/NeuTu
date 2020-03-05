@@ -86,6 +86,30 @@ TEST(ZGeometry, ZPlane)
     p2.set(ZPoint(0, 1, 1), ZPoint(0, 1, 10));
     ASSERT_TRUE(plane.onSamePlane(p2));
   }
+
+  {
+    ZPlane plane;
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_DOUBLE_EQ(0.0, plane.computeSignedDistance(0, 0, 0));
+    ASSERT_DOUBLE_EQ(1.0, plane.computeSignedDistance(0, 0, 1));
+    ASSERT_DOUBLE_EQ(1.0, plane.computeSignedDistance(1, 0, 1));
+    ASSERT_DOUBLE_EQ(-1.0, plane.computeSignedDistance(1, 0, -1));
+  }
+
+  {
+    ZPlane plane;
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ZPoint pt = plane.align(ZPoint(1, 2, 3));
+    ASSERT_DOUBLE_EQ(1.0, pt.getX());
+    ASSERT_DOUBLE_EQ(2.0, pt.getY());
+    ASSERT_DOUBLE_EQ(3.0, pt.getZ());
+
+    plane.set(ZPoint(0, 0, 1), ZPoint(1, 0, 0));
+    pt = plane.align(ZPoint(1, 2, 3));
+    ASSERT_DOUBLE_EQ(3.0, pt.getX());
+    ASSERT_DOUBLE_EQ(1.0, pt.getY());
+    ASSERT_DOUBLE_EQ(2.0, pt.getZ());
+  }
 }
 
 TEST(ZGeometry, ZAffinePlane)
@@ -96,6 +120,11 @@ TEST(ZGeometry, ZAffinePlane)
     ASSERT_TRUE(ap.contains(ZPoint(0, 0, 0)));
     ASSERT_FALSE(ap.contains(ZPoint(0, 0, 1)));
 
+    ap.setOffset(ZPoint(1, 2, 3));
+    ASSERT_DOUBLE_EQ(0.0, ap.computeSignedDistance(1, 2, 3));
+    ASSERT_DOUBLE_EQ(1.0, ap.computeSignedDistance(1, 2, 4));
+    ASSERT_DOUBLE_EQ(-1.0, ap.computeSignedDistance(1, 2, 2));
+
     ap.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0), ZPoint(0, 0, 1));
     ASSERT_TRUE(ap.contains(ZPoint(1, 0, 0)));
     ASSERT_TRUE(ap.contains(ZPoint(1, 0, 1)));
@@ -104,6 +133,11 @@ TEST(ZGeometry, ZAffinePlane)
     ZAffinePlane ap2;
     ap2.set(ZPoint(1, 2, 3), ZPoint(0, 1, 0), ZPoint(0, 0, 1));
     ASSERT_TRUE(ap.onSamePlane(ap2));
+
+    ZPoint pt = ap2.align(ZPoint(2, 4, 6));
+    ASSERT_DOUBLE_EQ(2.0, pt.getX());
+    ASSERT_DOUBLE_EQ(3.0, pt.getY());
+    ASSERT_DOUBLE_EQ(1.0, pt.getZ());
 
     ap2.setOffset(ZPoint(2, 0, 0));
     ASSERT_FALSE(ap.onSamePlane(ap2));

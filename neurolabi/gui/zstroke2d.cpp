@@ -290,7 +290,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   //z -= iround(painter.getOffset().z());
 
   QColor color = m_color;
-  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_SINGLE && m_z != z) {
+  if (sliceMode == EDisplaySliceMode::SINGLE && m_z != z) {
     if (isEraser()) {
       return painted;
     }

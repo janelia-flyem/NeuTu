@@ -307,6 +307,7 @@ unix {
 RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
+    concurrent/zworkerwrapper.h \
     dialogs/neuprintdatasetdialog.h \
     dialogs/userfeedbackdialog.h \
     dialogs/zsynapsepropertydialog.h \
@@ -836,6 +837,7 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
+    concurrent/zworkerwrapper.cpp \
     dialogs/neuprintdatasetdialog.cpp \
     dialogs/userfeedbackdialog.cpp \
     dialogs/zsynapsepropertydialog.cpp \

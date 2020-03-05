@@ -212,10 +212,6 @@
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidinfo.h"
-#include "dvid/zdvidroi.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
@@ -240,8 +236,6 @@
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
-#include "dvid/zdvidtile.h"
-#include "dvid/zdvidtileinfo.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "flyem/zflyemneurondensitymatcher.h"
 #include "flyem/zflyemneurondensity.h"
@@ -257,40 +251,43 @@
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
 #include "zsleeper.h"
-#include "dvid/zdvidtileensemble.h"
-#include "dvid/zdvidsynapse.h"
-#include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
 #include "mvc/zstackmvc.h"
 //#include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemorthomvc.h"
-#include "flyem/zflyemorthodoc.h"
-#include "flyem/zflyemorthowindow.h"
-#include "flyem/zneutuservice.h"
-#include "zdvidutil.h"
-#include "flyem/zflyemroiproject.h"
-#include "dvid/libdvidheader.h"
+
 #include "dialogs/zflyemsplituploadoptiondialog.h"
-#include "flyem/zflyemmisc.h"
-#include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
-#include "flyem/zdvidtileupdatetaskmanager.h"
+
 #include "zflyemutilities.h"
-#include "dvid/zdvidgrayslice.h"
 #include "dialogs/zcomboeditdialog.h"
-#include "dvid/zdvidneurontracer.h"
 #include "zlocalneuroseg.h"
 #include "dialogs/zflyembodycomparisondialog.h"
-#include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackreader.h"
-#include "dvid/zdvidpath.h"
-#include "flyem/zstackwatershedcontainer.h"
-#include "flyem/zserviceconsumer.h"
+
 #include "qt/network/znetworkutils.h"
+#include "zdvidutil.h"
+#include "dvid/libdvidheader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidpath.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidtile.h"
+#include "dvid/zdvidtileinfo.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidinfo.h"
+#include "dvid/zdvidroi.h"
+#include "dvid/zdvidtargetfactory.h"
+#include "dvid/zdvidneurontracer.h"
+#include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidbodyhelper.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidstackblockfactory.h"
+#include "dvid/zdvidneurontracer.h"
 
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
@@ -302,13 +299,9 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
-#include "flyem/zflyemarbmvc.h"
 #include "zmenuconfig.h"
-#include "flyem/zglobaldvidrepo.h"
-#include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
 #include "zarrayfactory.h"
-#include "dvid/zdvidstackblockfactory.h"
 #include "zstackblocksource.h"
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
@@ -318,10 +311,6 @@
 #include "service/neuprintreader.h"
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
-#include "flyem/zflyembodystatus.h"
-#include "flyem/zflyembodyannotationprotocol.h"
-#include "flyem/zflyemroimanager.h"
-#include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
@@ -330,16 +319,33 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
-#include "dvid/zdvidneurontracer.h"
+#include "zsysteminfo.h"
+#include "neulib/core/utilities.h"
+
+#include "flyem/zglobaldvidrepo.h"
+#include "flyem/zflyemarbmvc.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationprotocol.h"
+#include "flyem/zflyemroimanager.h"
+#include "flyem/flyemdatawriter.h"
 #include "flyem/zflyemmeshfactory.h"
 #include "flyem/neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpath.h"
 #include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
-#include "zsysteminfo.h"
-#include "dvid/zdvidurl.h"
-#include "neulib/core/utilities.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemorthomvc.h"
+#include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemorthowindow.h"
+#include "flyem/zneutuservice.h"
+#include "flyem/zstackwatershedcontainer.h"
+#include "flyem/zserviceconsumer.h"
+#include "flyem/zflyemroiproject.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/dialogs/flyembodyannotationdialog.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
+#include "flyem/zflyemarbdoc.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30879,6 +30885,32 @@ void ZTest::test(MainWindow *host)
 //  }
 
 //  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "http://127.0.0.1:1600?uuid=c315&segmentation=segmentation&"
+        "grayscale=grayscale");
+
+  ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(ZDvidEnv(target));
+  mvc->getCompleteDocument()->downloadBookmark();
+
+  /*
+  ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+  bookmark->setCenter(1232, 1117, 1023);
+  bookmark->setZScale(4);
+  mvc->getCompleteDocument()->addObject(bookmark);
+  */
+
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(1352, 1319, 890);
+  ZPoint v1 = ZPoint(1, 1, 0);
+  ZPoint v2 = ZPoint(-1, 1, 0);
+
+  viewParam.setPlane(v1, v2);
+  mvc->show();
+  mvc->updateViewParam(viewParam);
 #endif
 
   std::cout << "Done." << std::endl;

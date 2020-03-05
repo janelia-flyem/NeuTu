@@ -22,6 +22,10 @@ public:
 
   bool onSamePlane(const ZAffinePlane &ap) const;
   bool contains(const ZPoint &pt) const;
+  double computeSignedDistance(const ZPoint &pt) const;
+  double computeSignedDistance(double x, double y, double z) const;
+
+  ZPoint align(const ZPoint &pt) const;
 
 private:
   ZPoint m_offset;

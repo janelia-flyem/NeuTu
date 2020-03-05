@@ -23,6 +23,7 @@
 #include "zmultiscalepixmap.h"
 #include "zarbsliceviewparam.h"
 #include "mvc/mvcdef.h"
+#include "concurrent/zworkerwrapper.h"
 
 //#include "zstackdoc.h"
 
@@ -66,13 +67,13 @@ class ZStackViewRecordDialog;
  * represented by the ZStackFrame class (and its derivatives) or the
  * ZStackMvc class.
  */
-class ZStackView : public QWidget {
+class ZStackView : public QWidget, ZWorkerWrapper {
   Q_OBJECT
 
 public:
-  explicit ZStackView(ZStackFrame *parent = 0);
-  explicit ZStackView(QWidget *parent = 0);
-  virtual ~ZStackView();
+  explicit ZStackView(ZStackFrame *parent = nullptr);
+  explicit ZStackView(QWidget *parent = nullptr);
+  ~ZStackView() override;
 
 public:
   /*!
@@ -95,15 +96,6 @@ public:
     DIRECT //Update immediately
   };
 
-//  enum class ViewInfoFlag {
-//    NONE = 0,
-//    RAW_STACK_COORD = BIT_FLAG(1),
-//    DATA_COORD = BIT_FLAG(2),
-//    WINDOW_SCALE = BIT_FLAG(3),
-//    IMAGE_VALUE = BIT_FLAG(4)
-//  };
-
-//   Q_DECLARE_FLAGS(ViewInfoFlags, ViewInfoFlag)
 
   bool viewingInfo(neutu::mvc::ViewInfoFlags f) const;
   void setViewInfoFlag(neutu::mvc::ViewInfoFlags f);
@@ -115,6 +107,13 @@ public:
    * Update the screen by assuming that all the canvas buffers are ready.
    */
   void updateImageScreen(EUpdateOption option);
+
+  struct RefreshConfig {
+    EUpdateOption updateOption = EUpdateOption::QUEUED;
+    bool widgetCanvasUpdateRequired = true;
+  };
+
+  void refreshScreen(const RefreshConfig &config);
 
   /*!
    * \brief Restore the view from a bad setting
@@ -140,7 +139,7 @@ public:
   ZSharedPointer<ZStackDoc> buddyDocument() const;
   ZStackPresenter* buddyPresenter() const;
 
-  QSize sizeHint() const;
+  QSize sizeHint() const override;
 
   /*!
    * \brief Get the widget of data display
@@ -206,8 +205,8 @@ public:
    */
   void prepareDocument();
 
-  virtual void resizeEvent(QResizeEvent *event);
-  virtual void showEvent(QShowEvent *event);
+  virtual void resizeEvent(QResizeEvent *event) override;
+  virtual void showEvent(QShowEvent *event) override;
 
   /*!
    * \brief Get the information of the view as a list of strings.
@@ -450,7 +449,7 @@ protected:
   void updateTileCanvas();
   void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
-  void updatePaintBundle();
+  void updatePaintBundle(bool requestingWidgetCanvasUpdate = true);
   void updateCanvas(ZStackObject::ETarget target);
 
   ZPainter* getTileCanvasPainter();
@@ -579,6 +578,7 @@ public slots:
 
   void enableCustomCheckBox(
       int index, const QString &text, QObject *receiver, const char *slot);
+  void processWidgetCanvasUpdate(ZPixmap *canvas);
 
 signals:
 //  void currentSliceChanged(int);
@@ -590,6 +590,8 @@ signals:
   void sliceSliderReleased();
   void closingChildFrame();
   void autoTracing();
+  void widgetCanvasUpdated(ZPixmap *canvas);
+//  void widgetCanvasUpdated(ZImage *canvas);
 
 private:
   void hideLayout(QLayout *layout, bool removing);
@@ -615,6 +617,11 @@ private:
   void logViewParam();
 //  void setCentralView(int width, int height);
   void syncArbViewCenter();
+
+  void requestWidgetCanvasUpdate();
+  void addWidgetCanvasTask();
+  void notifyWidgetCanvasUpdate(ZPixmap *canvas);
+//  void notifyWidgetCanvasUpdate(ZImage *canvas);
 
   class ViewParamRecordOnce {
   public:

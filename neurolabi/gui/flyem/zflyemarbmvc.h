@@ -12,7 +12,7 @@ class ZFlyEmArbMvc : public ZFlyEmProofMvc
   Q_OBJECT
 
 public:
-  explicit ZFlyEmArbMvc(QWidget *parent = 0);
+  explicit ZFlyEmArbMvc(QWidget *parent = nullptr);
 
   static ZFlyEmArbMvc* Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> doc);
   static ZFlyEmArbMvc* Make(const ZDvidEnv &env);

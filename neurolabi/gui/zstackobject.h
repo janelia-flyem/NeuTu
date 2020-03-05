@@ -3,10 +3,9 @@
 
 #include "common/neutudefs.h"
 #include "zqtheader.h"
-//#include "zpainter.h"
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
-//#include "common/zsharedpointer.h"
+#include "geometry/zaffineplane.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -103,12 +102,12 @@ public:
   enum class ETarget {
     NONE,
     STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
-    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D
+    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS
   };
 
   enum class EDisplaySliceMode {
-    DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
-    DISPLAY_SLICE_SINGLE      //Display a cross section of the object
+    PROJECTION, //Display Z-projection of the object
+    SINGLE      //Display a cross section of the object
   };
 
   enum class EHitProtocol {
@@ -121,6 +120,8 @@ public:
    * This function is mainly used for debugging.
    */
   std::string getTypeName() const;
+
+  virtual ZStackObject* clone() const;
 
 //  virtual const std::string& className() const = 0;
 
@@ -172,6 +173,16 @@ public:
       QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
+  struct DisplayConfig {
+     neutu::EAxis sliceAxis = neutu::EAxis::Z;
+     ZAffinePlane cutPlane;
+     int cutSlice = 0;
+     EDisplayStyle style = EDisplayStyle::SOLID;
+     EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;
+  };
+
+  virtual void display(ZPainter &painter, const DisplayConfig &config) const;
+
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
   inline void toggleVisible() { m_isVisible = !m_isVisible; }
@@ -183,6 +194,8 @@ public:
   inline void setTarget(ETarget target) { m_target = target; }
 
   virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
+  virtual bool isSliceVisible(
+      int z, neutu::EAxis axis, const ZAffinePlane &plane) const;
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
@@ -301,7 +314,8 @@ public:
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
-    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+    template<typename ZStackObjectPtr>
+    bool operator() (const ZStackObjectPtr &obj1, const ZStackObjectPtr &obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
     }
   };

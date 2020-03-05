@@ -189,6 +189,7 @@ public:
   void fillRect(const QRect &r, const QBrush &brush);
   void setOpacity(double alpha);
   void setCanvasRange(const QRectF &r) { m_canvasRange = r; }
+  void normalizeCanvasRange();
 
   bool isVisible(const QRectF &rect) const;
   bool isVisible(const QRect &rect) const;

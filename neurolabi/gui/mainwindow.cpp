@@ -1544,7 +1544,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
     ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
-    if (ZFileType::isNeutubeOpenable(fileType)) {
+    if (ZFileType::IsNeutubeOpenable(fileType)) {
       neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
         tag = neutu::Document::ETag::BIOCYTIN_STACK;
@@ -1573,7 +1573,7 @@ void MainWindow::openFileFunc(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
-  if (ZFileType::isNeutubeOpenable(fileType)) {
+  if (ZFileType::IsNeutubeOpenable(fileType)) {
     neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
     if (GET_APPLICATION_NAME == "Biocytin") {
       tag = neutu::Document::ETag::BIOCYTIN_STACK;
