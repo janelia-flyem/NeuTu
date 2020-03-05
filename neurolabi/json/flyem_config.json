@@ -4,6 +4,8 @@
   "neutu_server": "neutuse:http://emdata2.int.janelia.org:2018",
   "task server": "http://zhaot-ws1:9000/api/node/194d",
   "neuroglancer server": "localhost:8080",
+  "authentication server": "https://emdata1.int.janelia.org:15000",
+  "assignment manager": "http://flyem-assignment.int.janelia.org",
   "dvid root": {
     "@MB6": "@99ef",
     "@@FIB19": "752d",

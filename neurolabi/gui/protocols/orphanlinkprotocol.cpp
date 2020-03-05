@@ -7,6 +7,8 @@
 #include <QMessageBox>
 #include <QAbstractItemModel>
 
+#include "neutubeconfig.h"
+
 #include "protocolchooseassignmentdialog.h"
 #include "protocolassignment.h"
 
@@ -18,11 +20,8 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-    // currently hard-coded, but we expect to get from some config source later
     // must not end with / character!  enforce that when we un-hard-code it
-    m_client.setServer("http://flyem-assignment.int.janelia.org");
-
+    m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
 
     m_model = new QStandardItemModel(0, 3, ui->tableView);
     // setHeaders(m_model);

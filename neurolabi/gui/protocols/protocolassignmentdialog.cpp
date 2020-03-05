@@ -11,6 +11,7 @@
 #include <QStandardItem>
 
 #include "neutube.h"
+#include "neutubeconfig.h"
 
 #include "flyem/auth/flyemauthtokenhandler.h"
 
@@ -47,8 +48,7 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
 
 
     // server setup
-    // eventually this will be taken from a config; hardcode for now
-    m_client.setServer("http://flyem-assignment.int.janelia.org");
+    m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
 
     m_username = QString::fromStdString(neutu::GetCurrentUserName());
 }
