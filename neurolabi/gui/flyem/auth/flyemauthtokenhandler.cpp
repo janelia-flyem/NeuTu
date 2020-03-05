@@ -5,6 +5,8 @@
 
 #include <QMessageBox>
 
+#include "neutubeconfig.h"
+
 /*
  * this class is the authentication token middleman; it handles all the tasks
  * involved in getting tokens and handing them around; it talks to the auth server
@@ -14,9 +16,7 @@
 FlyEmAuthTokenHandler::FlyEmAuthTokenHandler()
 {
 
-    // hard coding this for now; will
-    //  be retrieved from some kind of config later
-    m_server = "https://emdata1.int.janelia.org:15000";
+    m_server = QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAuthenticationServer());
 
     // the handler knows the auth server name, but the client
     //  will do all of the actual talking to it
