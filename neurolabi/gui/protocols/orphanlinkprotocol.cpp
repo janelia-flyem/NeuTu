@@ -332,7 +332,7 @@ void OrphanLinkProtocol::taskSelected() {
     if (hasBody(getTaskBodyID(task))) {
         gotoSelectedTaskBody();
     } else {
-        skipNoBodyTask(task);
+        skipNoBodyTask();
     }
 
     // whether all tasks are completed or or not:
@@ -340,18 +340,29 @@ void OrphanLinkProtocol::taskSelected() {
     updateCommentField();
 }
 
-void OrphanLinkProtocol::skipNoBodyTask(ProtocolAssignmentTask task) {
+/*
+ * called when the body for the selected task doesn't exist
+ */
+void OrphanLinkProtocol::skipNoBodyTask() {
+    ProtocolAssignmentTask task = getSelectedTask();
+    if (task.id == 0) {
+        // no selected task, should never happen
+        return;
+    }
+
     if (task.disposition != ProtocolAssignmentTask::DISPOSITION_COMPLETE &&
             task.disposition != ProtocolAssignmentTask::DISPOSITION_SKIPPED) {
 
-        qDebug() << "skipNoBodyTask()";
-
+        // we're basically just triggering the routines the user would trigger
+        //  from the UI; this will ensure everything gets updated correctly;
+        //  note that this relies on the selected task remaining selected
+        //  through the whole process, which ought to be the case
         if (task.disposition != ProtocolAssignmentTask::DISPOSITION_IN_PROGRESS) {
-            m_client.startTask(task);
+            onStartTaskButton();
         }
 
-        // set "no body" comment, then hand off to usual skip routine for completion and updates
-        m_comments[task.id] = "body doesn't exist";
+        ui->commentEntry->setText("body doesn't exist");
+        onCommentButton();
         onSkipTaskButton();
 
         showMessage("No body!", "Body doesn't exist!  The task has been skipped.");

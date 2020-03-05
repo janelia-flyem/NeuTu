@@ -95,7 +95,7 @@ private:
     void gotoSelectedTaskBody();
 
     void taskSelected();
-    void skipNoBodyTask(ProtocolAssignmentTask task);
+    void skipNoBodyTask();
 
     ProtocolAssignmentTask findNextTask();
     bool hasPendingTasks();
