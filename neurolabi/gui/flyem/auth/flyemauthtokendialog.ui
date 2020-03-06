@@ -47,9 +47,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="copyLoginURLButton">
+      <widget class="QPushButton" name="openLoginButton">
        <property name="text">
-        <string>Copy URL</string>
+        <string>Open in browser</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
@@ -57,9 +57,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="openLoginButton">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Open in browser</string>
+        <string>or</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="copyLoginURLButton">
+       <property name="text">
+        <string>Copy URL</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
@@ -91,9 +98,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="copyTokenUrlButton">
+      <widget class="QPushButton" name="openTokenButton">
        <property name="text">
-        <string>Copy URL</string>
+        <string>Open in Browser</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
@@ -101,9 +108,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="openTokenButton">
+      <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Open in Browser</string>
+        <string>or</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="copyTokenUrlButton">
+       <property name="text">
+        <string>Copy URL</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
