@@ -63,6 +63,7 @@ public:
 
 //  virtual void setDvidTarget(const ZDvidTarget &target);
   virtual bool setDvid(const ZDvidEnv &env);
+  virtual bool supervisorNeeded() const;
 
 //  virtual void updateTileData();
 

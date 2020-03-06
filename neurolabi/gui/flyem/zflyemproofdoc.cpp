@@ -1225,6 +1225,11 @@ void ZFlyEmProofDoc::prepareGrayscaleReader()
 #endif
 }
 
+bool ZFlyEmProofDoc::supervisorNeeded() const
+{
+  return true;
+}
+
 bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 {
   m_originalEnv = env;
@@ -1272,7 +1277,7 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
 
-    if (getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+    if (supervisorNeeded()) {
       flowInfo << "->Prepare DVID data instances";
       initData(getDvidTarget());
       if (getSupervisor() != NULL) {
