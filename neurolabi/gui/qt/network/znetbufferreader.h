@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QByteArray>
 #include <QNetworkReply>
+#include <QMap>
 
 #include "common/neutudefs.h"
 
@@ -37,6 +38,7 @@ public:
 
   void setRequestHeader(const QString &key, const QString &value);
   bool hasRequestHeader(const QString &key) const;
+  void removeRequestHeader(const QString &key);
 
 signals:
 
@@ -76,7 +78,7 @@ private:
   neutu::EReadStatus m_status = neutu::EReadStatus::NONE;
   int m_statusCode = 0;
   int m_maxSize = 0;
-  std::map<QString, QString> m_header;
+  QMap<QString, QString> m_header;
 };
 
 #endif // ZNETBUFFERREADER_H

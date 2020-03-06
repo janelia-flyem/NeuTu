@@ -6,6 +6,7 @@
 
 //#include "widgets/zimagewidget.h"
 #include "neutubeconfig.h"
+#include "geometry/zcuboid.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "zdvidreader.h"
@@ -379,12 +380,20 @@ int ZDvidTile::getZ() const
   return m_z;
 }
 
+ZCuboid ZDvidTile::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getX(), getY(), getZ(),
+                   getX() + getWidth(), getY() + getHeight(), getZ()));
+}
+
 /*
 void ZDvidTile::attachView(ZStackView *view)
 {
   m_view = view;
 }
 */
+/*
 ZRect2d ZDvidTile::getBoundBox() const
 {
   ZRect2d rect;
@@ -392,5 +401,5 @@ ZRect2d ZDvidTile::getBoundBox() const
 
   return rect;
 }
-
+*/
 

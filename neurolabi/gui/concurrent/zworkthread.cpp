@@ -1,6 +1,10 @@
 #include "zworkthread.h"
 //#include "logging/zqslog.h"
+
+#include <QTimer>
+
 #include "zworker.h"
+#include "ztask.h"
 
 ZWorkThread::ZWorkThread(ZWorker *worker, QObject *parent) : QThread(parent)
 {
@@ -13,6 +17,15 @@ ZWorkThread::~ZWorkThread()
 }
 
 
+void ZWorkThread::addTask(ZTask *task)
+{
+  if (m_worker) {
+    m_worker->addTask(task);
+  } else {
+    delete task;
+  }
+}
+
 void ZWorkThread::setWorker(ZWorker *worker)
 {
   m_worker = worker;
@@ -23,4 +36,13 @@ void ZWorkThread::setWorker(ZWorker *worker)
   }
 
   connect(this, SIGNAL(finished()), m_worker, SLOT(deleteLater()));
+}
+
+void ZWorkThread::cancelAndQuit()
+{
+  if (m_worker) {
+    m_worker->quit();
+  }
+  quit();
+  wait();
 }

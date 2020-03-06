@@ -12,7 +12,7 @@
 #include "zstring.h"
 #include "zbcfset.h"
 #include "zmatrix.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 
 #include "neutubeconfig.h"
 

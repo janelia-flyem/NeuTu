@@ -9,6 +9,7 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "cypherquery.h"
+#include "qt/core/utilities.h"
 
 NeuPrintReader::NeuPrintReader(const QString &server) : m_server(server)
 {
@@ -21,6 +22,8 @@ QString NeuPrintReader::getServer() const
 
 void NeuPrintReader::setServer(const QString &server)
 {
+  QString normalizedServer = neutu::NormalizeServerAddress(server);
+
   if (server != m_server) {
     m_server = server;
     m_dataset.clear();
@@ -30,8 +33,15 @@ void NeuPrintReader::setServer(const QString &server)
 
 void NeuPrintReader::authorize(const QString &token)
 {
-  if (!token.isEmpty()) {
-    m_bufferReader.setRequestHeader("Authorization", QString("Bearer ") + token);
+  if (m_token != token) {
+    m_dataset.clear();
+
+    m_token = token;
+    if (!token.isEmpty()) {
+      m_bufferReader.setRequestHeader("Authorization", QString("Bearer ") + token);
+    } else {
+      m_bufferReader.removeRequestHeader("Authorization");
+    }
   }
 }
 
@@ -61,6 +71,11 @@ void NeuPrintReader::authorizeFromFile(const QString &filePath)
   }
 }
 
+QString NeuPrintReader::getToken() const
+{
+  return m_token;
+}
+
 void NeuPrintReader::readDatasets()
 {
   m_dataset.clear();
@@ -68,6 +83,17 @@ void NeuPrintReader::readDatasets()
 
   if (m_bufferReader.getStatus() == neutu::EReadStatus::OK) {
     m_dataset.decode(m_bufferReader.getBuffer().toStdString());
+    if (m_dataset.isEmpty()) {
+      m_status = neutu::EServerStatus::NOSUPPORT;
+    } else {
+      m_status = neutu::EServerStatus::NORMAL;
+    }
+  } else {
+    if (m_bufferReader.getStatusCode() == 401) { //unauthorized
+      m_status = neutu::EServerStatus::NOAUTH;
+    } else {
+      m_status = neutu::EServerStatus::OFFLINE;
+    }
   }
 
   if (m_dataset.isEmpty()) {
@@ -81,13 +107,24 @@ bool NeuPrintReader::hasAuthCode() const
   return m_bufferReader.hasRequestHeader("Authorization");
 }
 
+neutu::EServerStatus NeuPrintReader::getStatus() const
+{
+  if (m_status == neutu::EServerStatus::NORMAL) {
+    if (m_dataset.hasKey(m_currentDataset.toStdString()) == false) {
+      return neutu::EServerStatus::NOSUPPORT;
+    }
+  }
+
+   return m_status;
+ }
+
 bool NeuPrintReader::isConnected()
 {
   if (m_dataset.isEmpty()) {
     readDatasets();
   }
 
-  return !m_dataset.isEmpty();
+  return (m_status == neutu::EServerStatus::NORMAL);
 }
 
 bool NeuPrintReader::connect()
@@ -194,7 +231,7 @@ QStringList NeuPrintReader::getDatasetList() const
 
 namespace {
 const char* BODY_QUERY_RETURN =
-    "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.primaryNeurite";
+    "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.cellBodyFiber";
 const char* BODY_QUERY_SYNAPSE_COUNT = "(n.pre + n.post)";
 
 //Assuming the following order: ID, type name, status, pre, post
@@ -311,38 +348,46 @@ ZJsonArray NeuPrintReader::queryTopNeuron(int n)
 
 ZJsonArray NeuPrintReader::findSimilarNeuron(const uint64_t bodyId)
 {
-  QString url = m_server + "/api/custom/custom";
-  ZJsonObject dataObj;
-  dataObj.setEntry("dataset", m_currentDataset.toStdString());
-  dataObj.setEntry("bodyId", bodyId);
+  if (isReady()) {
+    QString url = m_server + "/api/custom/custom";
+    ZJsonObject dataObj;
+    dataObj.setEntry("dataset", m_currentDataset.toStdString());
+    dataObj.setEntry("bodyId", bodyId);
 
-  CypherQuery query = CypherQueryBuilder().
-      match("(m:Meta{dataset:'" + m_currentDataset + "'})").
-      with("m.superLevelRois", "rois").
-      match(QString("(n:%1{bodyId:%2})").arg(getNeuronLabel('`')).arg(bodyId)).
-      with("n.clusterName AS cn, rois").
-      match(QString("(n:%1{clusterName:cn})").arg(getNeuronLabel('`'))).
-      ret(BODY_QUERY_RETURN);
-
-#ifdef _DEBUG_2
-  std::cout << "Query: " << query.getQueryString().toStdString() << std::endl;
-#endif
-
-  dataObj.setEntry("cypher", query.getQueryString().toStdString());
-
+    CypherQuery query = CypherQueryBuilder().
+        match("(m:Meta{dataset:'" + m_currentDataset + "'})").
+        with("m.superLevelRois", "rois").
+        match(QString("(n:%1{bodyId:%2})").arg(getNeuronLabel('`')).arg(bodyId)).
+        with("n.clusterName AS cn, rois").
+        match(QString("(n:%1{clusterName:cn})").arg(getNeuronLabel('`'))).
+        ret(BODY_QUERY_RETURN);
 
 #ifdef _DEBUG_2
-  dataObj.print();
+    std::cout << "Query: " << query.getQueryString().toStdString() << std::endl;
 #endif
-  KINFO << "Query:" << dataObj.dumpString(0);
 
-  m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+    dataObj.setEntry("cypher", query.getQueryString().toStdString());
 
-  return extract_body_info(m_bufferReader.getBuffer());
+
+#ifdef _DEBUG_2
+    dataObj.print();
+#endif
+    KINFO << "Query:" << dataObj.dumpString(0);
+
+    m_bufferReader.post(url, dataObj.dumpString(0).c_str());
+
+    return extract_body_info(m_bufferReader.getBuffer());
+  }
+
+  return ZJsonArray();
 }
 
 ZJsonArray NeuPrintReader::queryAllNamedNeuron()
 {
+  if (!isReady()) {
+    return ZJsonArray();
+  }
+
   QString url = m_server + "/api/custom/custom";
   ZJsonObject dataObj;
   dataObj.setEntry("dataset", m_currentDataset.toStdString());
@@ -383,6 +428,10 @@ ZJsonObject NeuPrintReader::getQueryJsonObject(const QString &query)
 
 ZJsonArray NeuPrintReader::queryNeuron(const QString &query)
 {
+  if (!isReady()) {
+    return ZJsonArray();
+  }
+
   ZJsonObject dataObj = getQueryJsonObject(query);
 
   KINFO << "Query:" << dataObj.dumpString(0);
@@ -502,30 +551,34 @@ ZJsonObject NeuPrintReader::customQuery(const ZJsonObject &json)
 QList<uint64_t> NeuPrintReader::queryNeuron(
     const QList<QString> &inputRoiList, const QList<QString> &outputRoiList)
 {
-  QString url = m_server + "/api/npexplorer/findneurons";
+  if (isReady()) {
+    QString url = m_server + "/api/npexplorer/findneurons";
 
-  ZJsonObject dataObj;
-  dataObj.setEntry("dataset", m_currentDataset.toStdString());
-  ZJsonArray inputRoiJson;
-  for (const QString &inputRoi : inputRoiList) {
-    inputRoiJson.append(inputRoi.toStdString());
+    ZJsonObject dataObj;
+    dataObj.setEntry("dataset", m_currentDataset.toStdString());
+    ZJsonArray inputRoiJson;
+    for (const QString &inputRoi : inputRoiList) {
+      inputRoiJson.append(inputRoi.toStdString());
+    }
+    dataObj.setEntry("input_ROIs", inputRoiJson);
+
+    ZJsonArray outputRoiJson;
+    for (const QString &outputRoi : outputRoiList) {
+      outputRoiJson.append(outputRoi.toStdString());
+    }
+    dataObj.setEntry("output_ROIs", outputRoiJson);
+
+    dataObj.setEntry("pre_threshold", 2);
+
+    std::string queryStr = dataObj.dumpString(0);
+    m_bufferReader.post(url, queryStr.c_str());
+
+    KINFO << queryStr;
+
+    return extract_body_list(m_bufferReader.getBuffer());
   }
-  dataObj.setEntry("input_ROIs", inputRoiJson);
 
-  ZJsonArray outputRoiJson;
-  for (const QString &outputRoi : outputRoiList) {
-    outputRoiJson.append(outputRoi.toStdString());
-  }
-  dataObj.setEntry("output_ROIs", outputRoiJson);
-
-  dataObj.setEntry("pre_threshold", 2);
-
-  std::string queryStr = dataObj.dumpString(0);
-  m_bufferReader.post(url, queryStr.c_str());
-
-  KINFO << queryStr;
-
-  return extract_body_list(m_bufferReader.getBuffer());
+  return QList<uint64_t>();
 }
 
 

@@ -67,7 +67,7 @@ ZFlyEmNeuronBodyInfo FlyEmDataReader::ReadBodyInfo(
 
   QByteArray byteArray = reader.readKeyValue(
         ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            reader.getDvidTarget().getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {

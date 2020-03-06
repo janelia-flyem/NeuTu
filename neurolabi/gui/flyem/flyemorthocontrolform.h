@@ -38,6 +38,7 @@ signals:
   void settingSmooth(bool on);
   void showingCrosshair(bool on);
   void reloading();
+  void autoReloadChecked(bool on);
 
 public slots:
   void dump(const ZWidgetMessage &message);

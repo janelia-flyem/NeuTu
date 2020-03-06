@@ -116,7 +116,7 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap()
     if (m_reader.getDvidTarget().isValid()) {
       QStringList annotationList = m_reader.readKeys(
             ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                               ZDvidData::ERole::BODY_LABEL,
+                               ZDvidData::ERole::SPARSEVOL,
                                m_reader.getDvidTarget().getBodyLabelName()).c_str());
       foreach (const QString &idStr, annotationList) {
         uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();

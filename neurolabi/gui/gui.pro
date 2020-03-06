@@ -26,6 +26,12 @@ DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
 #This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
+
+#A way to remove 'empty directory' warnings
+OBJECTS_DIR = buildqt create
+MOC_DIR = build
+UI_DIR = build
+
 message("Objs dir: $${OBJECTS_DIR}")
 
 #DEFINES+=_CLI_VERSION
@@ -272,7 +278,6 @@ include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
 include(command/command.pri)
-include(trace/trace.pri)
 include(neutuse/neutuse.pri)
 include(service/service.pri)
 include(logging/logging.pri)
@@ -281,6 +286,7 @@ include(vis3d.pri)
 include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
+include(tracing/tracing.pri)
 
 # Input
 win32 {
@@ -308,6 +314,9 @@ HEADERS += mainwindow.h \
     protocols/protocolassignmenturl.h \
     dialogs/neuprintdatasetdialog.h \
     protocols/protocolchooseassignmentdialog.h \
+    dialogs/userfeedbackdialog.h \
+    dialogs/zsynapsepropertydialog.h \
+    dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -480,7 +489,6 @@ HEADERS += mainwindow.h \
     dialogs/zspinboxdialog.h \
     zbuttonbox.h \
     zkeyeventswcmapper.h \
-    dialogs/zflyemroidialog.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
     dialogs/shapepaperdialog.h \
@@ -627,11 +635,8 @@ HEADERS += mainwindow.h \
     zscrollslicestrategy.h \
     dvid/zdvidgrayslicescrollstrategy.h \
     zviewproj.h \
-    dialogs/zflyemgrayscaledialog.h \
     dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
-    dialogs/zcomboeditdialog.h \
-    dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
     zglobal.h \
     dvid/zdvidresultservice.h \
@@ -708,6 +713,9 @@ HEADERS += mainwindow.h \
     protocols/taskmergereview.h \
     dialogs/zflyemtodoannotationdialog.h \
     main.h \
+    dialogs/zflyemgrayscaledialog.h \
+    dialogs/zcomboeditdialog.h \
+    dialogs/zflyembodycomparisondialog.h \
     dialogs/zflyemsplituploadoptiondialog.h \
     dialogs/zflyembodychopdialog.h \
     dialogs/ztestoptiondialog.h \
@@ -729,6 +737,8 @@ HEADERS += mainwindow.h \
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
     dialogs/neuprintdatasetdialog.ui \
+    dialogs/userfeedbackdialog.ui \
+    dialogs/zsynapsepropertydialog.ui \
     mainwindow.ui \
     dialogs/traceoutputdialog.ui \
     dialogs/bcadjustdialog.ui \
@@ -777,7 +787,6 @@ FORMS += dialogs/settingdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
-    dialogs/zflyemroidialog.ui \
     newprojectmainwindow.ui \
     dialogs/shapepaperdialog.ui \
     dialogs/dvidoperatedialog.ui \
@@ -838,6 +847,9 @@ FORMS += dialogs/settingdialog.ui \
 
 SOURCES += main.cpp \
     dialogs/neuprintdatasetdialog.cpp \
+    dialogs/userfeedbackdialog.cpp \
+    dialogs/zsynapsepropertydialog.cpp \
+    dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     protocols/protocolassignment.cpp \
     protocols/protocolassignmentdialog.cpp \
@@ -994,7 +1006,6 @@ SOURCES += main.cpp \
     dialogs/zspinboxdialog.cpp \
     zbuttonbox.cpp \
     zkeyeventswcmapper.cpp \
-    dialogs/zflyemroidialog.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \
@@ -1130,10 +1141,7 @@ SOURCES += main.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
-    dialogs/zdvidbodypositiondialog.cpp \
     zcubearraymovieactor.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp \
-    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
@@ -1141,13 +1149,16 @@ SOURCES += main.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
+    dialogs/zdvidbodypositiondialog.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \
     zglobal.cpp \
     dvid/zdvidresultservice.cpp \
     zstackgarbagecollector.cpp \
-    dialogs/zflyembodysplitdialog.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     zstackdockeyprocessor.cpp \

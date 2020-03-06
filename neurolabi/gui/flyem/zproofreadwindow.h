@@ -25,6 +25,7 @@ class ZFlyEmBodyScreenshotDialog;
 class ZFlyEmBodySplitDialog;
 class FlyEmAuthTokenDialog;
 class ProtocolAssignmentDialog;
+class ZActionLibrary;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -33,9 +34,10 @@ class ZProofreadWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  explicit ZProofreadWindow(QWidget *parent = 0);
+  explicit ZProofreadWindow(QWidget *parent = nullptr);
+  ~ZProofreadWindow();
 
-  static ZProofreadWindow* Make(QWidget *parent = 0);
+  static ZProofreadWindow* Make(QWidget *parent = nullptr);
   static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
   QProgressDialog* getProgressDialog();
@@ -88,6 +90,7 @@ public slots:
   void stressTestSlot();
   void diagnose();
   void profile();
+  void testSlot();
 
   void showSettings();
 
@@ -124,6 +127,10 @@ private:
 
   void displayActiveHint(bool on);
 
+private slots:
+  void processFeedback();
+  void postDvidReady();
+
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
@@ -158,6 +165,9 @@ private:
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
   QAction *m_openRoi3dAction;
+
+  ZActionLibrary *m_actionLibrary = nullptr;
+
 //  QAction *m_queryTableAction;
 
   QAction *m_dvidOperateAction;

@@ -3,8 +3,8 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSTACKVIEW_H_
-#define _ZSTACKVIEW_H_
+#ifndef ZSTACKVIEW_H_
+#define ZSTACKVIEW_H_
 
 #include <QImage>
 #include <QWidget>
@@ -525,6 +525,8 @@ public slots:
   void paintObject();
   void paintObject(QList<ZStackObject *> selected,
                    QList<ZStackObject *> deselected);
+  void paintObject(const ZStackObjectInfoSet &selected,
+                   const ZStackObjectInfoSet &deselected);
   void paintActiveDecoration();
   void paintActiveTile();
 

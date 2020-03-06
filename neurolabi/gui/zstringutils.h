@@ -37,4 +37,8 @@ public:
   }
 };
 
+inline std::string _TS(const QString &str) {
+  return str.toStdString();
+}
+
 #endif // ZSTRINGUTILS_H

@@ -155,7 +155,7 @@ public:
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
-  bool isAdmin() const;
+//  bool isAdmin() const;
   const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
@@ -344,6 +344,8 @@ public:
   void addSynapseSelection(const QString &filter);
   void addSynapseSelection(const QStringList &filter);
 
+  ZMesh* getRoiMesh(const QString &name) const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -396,6 +398,12 @@ public slots:
 
   void startBodyAnnotation();
   void showMeshForSplitOnly(bool on);
+
+//  void updateRoiMesh(const QString &name);
+  void updateRoiMesh(const QString &name, bool visible, const QColor &color);
+  void updateRoiMeshList(
+      const QList<QString> &nameList, const QList<bool> &visibleList,
+      const QList<QColor> &colorList);
 //  void updateCurrentTask(const QString &taskType);
 
 signals:

@@ -1,6 +1,7 @@
 include(dialogs/dialogs.pri)
 include(widgets/widgets.pri)
 include(neuroglancer/neuroglancer.pri)
+include(roi/roi.pri)
 
 FORMS += \
     $$PWD/auth/flyemauthtokendialog.ui \
@@ -136,7 +137,8 @@ HEADERS += \
     $$PWD/zflyemproofdocutil.h \
     $$PWD/zdvidlabelslicehighrestaskfactory.h \
     $$PWD/flyembodyselectionmanager.h \
-    $$PWD/zflyemproofdockeyprocessor.h
+    $$PWD/zflyemproofdockeyprocessor.h \
+    $$PWD/zflyemproofdoctracinghelper.h
 
 SOURCES += \
     $$PWD/auth/flyemauthserverclient.cpp \
@@ -260,4 +262,5 @@ SOURCES += \
     $$PWD/zflyemproofdocutil.cpp \
     $$PWD/zdvidlabelslicehighrestaskfactory.cpp \
     $$PWD/flyembodyselectionmanager.cpp \
-    $$PWD/zflyemproofdockeyprocessor.cpp
+    $$PWD/zflyemproofdockeyprocessor.cpp \
+    $$PWD/zflyemproofdoctracinghelper.cpp

@@ -174,7 +174,7 @@ macx {
   LIBS += -framework AGL -framework OpenGL
 }
 
-#LIBS += -lneucore
+LIBS += -lneucore
 #unix:!macx {
 #  LIBS += -lGL -lGLU
 #}

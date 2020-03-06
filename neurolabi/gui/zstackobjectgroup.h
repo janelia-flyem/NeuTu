@@ -14,6 +14,8 @@
 #include "common/zsharedpointer.h"
 //#include "flyem/zflyemtodoitem.h"
 
+class ZCuboid;
+
 /*!
  * \brief The aggregate class of ZStackObject
  *
@@ -170,11 +172,16 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
+  template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
   TStackObjectSet getSelectedSet(ZStackObject::EType type) const;
 //  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
+
+  ZCuboid getSelectedBoundBox() const;
 
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 
@@ -391,6 +398,8 @@ TStackObjectList ZStackObjectGroup::takeUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+        getSelectedSetUnsync(obj->getType()).remove(obj);
+        getSelector()->removeObject(obj);
         objList.append(obj);
       }
     }
@@ -427,6 +436,14 @@ template<typename T>
 QList<T*> ZStackObjectGroup::getObjectList() const
 {
   QMutexLocker locker(&m_mutex);
+
+  return getObjectListUnsync<T>();
+}
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList(QMutex *mutex) const
+{
+  QMutexLocker locker(mutex);
 
   return getObjectListUnsync<T>();
 }

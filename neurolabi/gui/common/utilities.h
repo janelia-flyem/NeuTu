@@ -7,6 +7,8 @@
 #include <cmath>
 #include <functional>
 
+#include "neulib/core/utilities.h"
+
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
 
@@ -45,32 +47,6 @@ std::ostream& operator << (
     const T &v)
 {
   return stream << static_cast<typename std::underlying_type<T>::type>(v);
-}
-
-template<typename T>
-struct ToUnsignedType {
-};
-
-template<>
-struct ToUnsignedType<int>
-{
-  using type = unsigned int;
-};
-
-template<>
-struct ToUnsignedType<int64_t>
-{
-  using type = uint64_t;
-};
-
-template <typename T>
-typename ToUnsignedType<T>::type UnsignedCrop(const T &v)
-{
-  if (v < 0) {
-    return typename ToUnsignedType<T>::type(0);
-  }
-
-  return typename ToUnsignedType<T>::type(v);
 }
 
 template<typename T>
@@ -160,6 +136,7 @@ inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
   return (x >= minv) && (x <= maxv);
 }
 
+/*
 template<typename T>
 inline T ClipValue(const T &v, const T &lower, const T&upper)
 {
@@ -183,6 +160,7 @@ inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
 
   return false;
 }
+*/
 
 /*!
  * \brief Process partitions of a range
@@ -200,6 +178,21 @@ void RangePartitionProcess(
 
 //void RangePartitionProcess(
 //    int x0, int x1, int block, int n, std::function<void(int, int)> f);
+
+class ApplyOnce {
+public:
+  ApplyOnce(std::function<void()> startFunc, std::function<void()> endFunc) {
+    startFunc();
+    m_endFunc = endFunc;
+  }
+
+  ~ApplyOnce() {
+    m_endFunc();
+  }
+
+private:
+  std::function<void()> m_endFunc;
+};
 
 } //namespace neutu
 

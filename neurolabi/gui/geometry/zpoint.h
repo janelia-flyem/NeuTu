@@ -28,6 +28,11 @@ public:
   inline void set(const ZPoint &pt) {
     set(pt.x(), pt.y(), pt.z());
   }
+
+  inline void set(double v) {
+    set(v, v, v);
+  }
+
   inline double x() const { return m_x; }
   inline double y() const { return m_y; }
   inline double z() const { return m_z; }

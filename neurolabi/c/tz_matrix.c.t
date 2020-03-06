@@ -210,7 +210,7 @@ void <2T>_Copy_Block(<2T> *des, const dim_type des_offset[], const <2T> *src,
 
   ndim_t i;
   dim_t state[TZ_MATRIX_MAX_DIM];
-  for (i = 0; i < TZ_MATRIX_MAX_DIM; i++) {
+  for (i = 0; i < src->ndim; i++) {
     state[i] = src_offset[i];
   }
 

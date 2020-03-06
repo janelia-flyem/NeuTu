@@ -13,3 +13,15 @@ int neutu::iround<double>(const double &v);
 
 template
 int neutu::iround<float>(const float &v);
+
+template<typename T>
+int neutu::floor(const T &v)
+{
+  return int(std::floor(v));
+}
+
+template
+int neutu::floor<double>(const double &v);
+
+template
+int neutu::floor<float>(const float &v);

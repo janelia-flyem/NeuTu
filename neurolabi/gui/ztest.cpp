@@ -61,6 +61,7 @@
 #include "tz_stack_objlabel.h"
 #include "tz_stack_threshold.h"
 #include "tz_color.h"
+#include "tz_swc_tree.h"
 
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
@@ -115,7 +116,7 @@
 #include "widgets/zparameterarray.h"
 #include "zviewproj.h"
 #include "zswcnetwork.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswcbranchingtrunkanalyzer.h"
 #include "flyem/zflyemroiproject.h"
@@ -131,7 +132,6 @@
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
-#include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
 #include "flyem/zflyembodyannotation.h"
@@ -151,7 +151,6 @@
 #include "misc/zmarchingcube.h"
 #include "zxmldoc.h"
 #include "neutubeconfig.h"
-#include "tz_darray.h"
 #include "zhdf5writer.h"
 #include "zmesh.h"
 #include "zmeshio.h"
@@ -340,7 +339,7 @@
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
 #include "zsysteminfo.h"
 #include "dvid/zdvidurl.h"
-//#include "neulib/core/utilities.h"
+#include "neulib/core/utilities.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -23357,7 +23356,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
+  QUrl url("mock://emdata4.int.janelia.org:8900?"
+           "uuid=52a1&segmentation=segmentation&admintoken=xxx");
+  qDebug() << url.scheme();
+  qDebug() << url.host();
+  qDebug() << url.port();
+
+  QUrlQuery query(url);
+  qDebug() << query.queryItemValue("segmentation", QUrl::FullyDecoded);
+  qDebug() << query.queryItemValue("admintoken", QUrl::FullyDecoded);
+
+#endif
+
+#if 0
 //  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
   QUrl url("/test/test");
   qDebug() << url.scheme();
@@ -23371,11 +23383,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::string path =
-      "dvid://emdata1.int.janelia.org:8100/api/node/ef20/dataname?x1=1&y1=1&z1=1";
-  ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+  QString path =
+      "http://emdata1.int.janelia.org:8100/api/node/ef20/dataname?x1=1&y1=1&z1=1";
 
-  qDebug() << target.toJsonObject().dumpString(2);
+
+//  ZDvidTarget target = dvid::MakeTargetFromUrl(path);
+
+//  qDebug() << target.toJsonObject().dumpString(2);
 #endif
 
 #if 0
@@ -26463,6 +26477,36 @@ void ZTest::test(MainWindow *host)
   out->save(GET_TEST_DATA_DIR + "/_flyem/art/blend.tif");
 
 #endif
+
+#if 1
+  ZStack grayscale;
+  grayscale.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.tif");
+
+  ZStack segmentation;
+  segmentation.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1/bin.tif");
+
+  uint8_t *array = segmentation.array8();
+  for (size_t i = 0; i < segmentation.getVoxelNumber(); ++i) {
+    if (array[i] > 0) {
+      array[i] = 255;
+    }
+  }
+
+  ZStack *cgray = ZStackFactory::MakeZeroStack(GREY, grayscale.getBoundBox(), 3);
+  ZStack *cmask = ZStackFactory::MakeZeroStack(GREY, segmentation.getBoundBox(), 3);
+
+  for (int c = 0; c < 3; ++c) {
+    cgray->copyValueFrom(grayscale.array8(), grayscale.getVoxelNumber(), c);
+  }
+  cmask->copyValueFrom(segmentation.array8(), segmentation.getVoxelNumber(), 0);
+
+  ZStackBlender blender;
+  blender.setBlendingMode(ZStackBlender::BLEND_NO_BLACK);
+  ZStack *out = blender.blend(*cgray, *cmask, 0.5);
+
+  out->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
 
 #if 0
   ZDvidTarget target;
@@ -30288,6 +30332,14 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("light");
+  ZJsonObject obj;
+  obj.setEntry("tracing", true);
+  writer->writeJson("neutu_config", "meta", obj);
+#endif
+
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemibran-production");
   ZObject3dScan obj;
@@ -30615,6 +30667,11 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/tracing/30_18_10.tif");
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   ZDvidRoi roi;
   std::string roiName = "FB-column3";
@@ -30686,7 +30743,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   int x;
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
@@ -30749,6 +30806,79 @@ void ZTest::test(MainWindow *host)
   std::cout << "#Voxels: " << obj.getVoxelNumber() << std::endl;
 
   obj.save(GET_TEST_DATA_DIR + "/_test2.sobj");
+#endif
+
+#if 0
+  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(
+        "http://127.0.0.1:1600?uuid=4280&segmentation=segmentation&admintoken=test");
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.setAdmin(true);
+  writer.deleteSkeleton(1505851998);
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/_test.swc");
+
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+
+  ZStack *stack = ZStackFactory::MakeZeroStack(GREY16, 512, 512, 60, 1);
+
+  Swc_Tree_Label_Stack(tree.data(), stack->c_stack(), &workspace);
+
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 2.0;
+  Set_Local_Neuroseg(
+        locseg,  r + r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+  Geo3d_Scalar_Field *field = Local_Neuroseg_Field_Sp(locseg, NULL, NULL);
+  Print_Geo3d_Scalar_Field(field);
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(512, 512, 512);
+  double x = 10.0;
+  double y = 20.0;
+  double z = 30.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 5.0;
+//  Set_Local_Neuroseg(
+//        locseg,  r, 0.1, NEUROSEG_DEFAULT_H, 1.0, 1.0, 0.0, 2.0, 3.0,
+//        x, y, z);
+
+  Set_Local_Neuroseg(
+        locseg,  r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+
+  ZLocalNeuroseg s(locseg);
+
+  tic();
+  for (size_t i = 0; i < 10000; ++i) {
+    ZPointArray points = s.sample(1.0, 1.0);
+    for (const ZPoint &pt : points) {
+      stack->getIntValue(neutu::iround(pt.x()), neutu::iround(pt.y()),
+                         neutu::iround(pt.z()));
+    }
+  }
+  ptoc();
+//  points.print();
+
+//  ZSwcTree tree;
+//  tree.forceVirtualRoot();
+//  for (ZPoint pt : points) {
+//    SwcTreeNode::MakePointer(pt.x(), pt.y(), pt.z(), 0.1, tree.root());
+//  }
+
+//  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

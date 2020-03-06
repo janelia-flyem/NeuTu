@@ -54,8 +54,8 @@ ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::~RemoveItem()
 
 void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
 {
-  ZDvidReader reader;
-  if (reader.open(m_doc->getDvidTarget())) {
+  const ZDvidReader &reader = m_doc->getDvidReader();
+  if (reader.isReady()) {
     m_backup = reader.readToDoItemJson(m_item);
     m_doc->removeTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
     m_doc->notifyTodoEdited(m_item);

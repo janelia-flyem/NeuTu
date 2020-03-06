@@ -1625,12 +1625,12 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   if (m_bodyDoc->usingOldMeshesTars()) {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   } else {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 

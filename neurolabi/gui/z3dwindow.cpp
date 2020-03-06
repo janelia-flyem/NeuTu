@@ -271,6 +271,11 @@ void Z3DWindow::configureMenuForNeu3()
   m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
+void Z3DWindow::zoomToSelected()
+{
+  gotoPosition(m_doc->getSelectedBoundBox());
+}
+
 void Z3DWindow::zoomToSelectedSwcNodes()
 {
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
@@ -1296,6 +1301,21 @@ void Z3DWindow::saveAllVisibleMesh()
 
   if (!fileName.isEmpty()) {
     ZStackDocProxy::SaveVisibleMesh(getDocument(), fileName);
+  }
+}
+
+void Z3DWindow::zoomToRoiMesh(const QString &name)
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc) {
+    ZBBox<glm::dvec3> boundingBox;
+    ZMesh *mesh = doc->getRoiMesh(name);
+    if (mesh) {
+      boundingBox.expand(getMeshFilter()->meshBound(mesh));
+    }
+    if (!boundingBox.empty()) {
+      m_view->gotoPosition(boundingBox, 0);
+    }
   }
 }
 
@@ -2609,12 +2629,15 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
+    notifyUser("Left click to extend. Path calculation is off when '"
+               CTRL_KEY_NAME "' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
     } else {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
     }
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
@@ -2804,7 +2827,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F:
     if (event->modifiers() == Qt::ShiftModifier) {
-      zoomToSelectedSwcNodes();
+//      zoomToSelectedSwcNodes();
+      zoomToSelected();
     }
     break;
   case Qt::Key_Period:
@@ -4966,13 +4990,15 @@ void Z3DWindow::setColorMode(
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
-  ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
-                                  bound.firstCorner().y(),
-                                  bound.firstCorner().z()),
-                       glm::dvec3(bound.lastCorner().x(),
-                                  bound.lastCorner().y(),
-                                  bound.lastCorner().z()));
-  m_view->gotoPosition(bd);
+  if (bound.isValid()) {
+    ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
+                                    bound.firstCorner().y(),
+                                    bound.firstCorner().z()),
+                         glm::dvec3(bound.lastCorner().x(),
+                                    bound.lastCorner().y(),
+                                    bound.lastCorner().z()));
+    m_view->gotoPosition(bd);
+  }
 }
 
 void Z3DWindow::gotoPosition(const ZPoint &position, double radius)
@@ -4986,6 +5012,36 @@ bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
         pt.getX(), pt.getY(), pt.getZ(), neutu3d::ERendererLayer::SWC);
 
   return getRectRoi().contains(screenPos.x(), screenPos.y());
+}
+
+/*
+void Z3DWindow::initRois(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
+{
+  getROIsDockWidget()->loadROIs(this, roiList);
+}
+*/
+
+void Z3DWindow::registerRoiWidget(ZROIWidget *widget)
+{
+  if (widget) {
+    ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+    if (doc) {
+      connect(widget, &ZROIWidget::roiUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMesh);
+      connect(widget, &ZROIWidget::roiListUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMeshList);
+      connect(widget, &ZROIWidget::locatingRoiMesh,
+              this, &Z3DWindow::zoomToRoiMesh);
+    }
+  }
+}
+
+void Z3DWindow::initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider)
+{
+  if (roiProvider) {
+    getROIsDockWidget()->initRoiView(this, roiProvider);
+    registerRoiWidget(getROIsDockWidget());
+  }
 }
 
 void Z3DWindow::deleteSelected()

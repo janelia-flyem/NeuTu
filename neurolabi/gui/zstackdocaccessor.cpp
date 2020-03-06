@@ -7,6 +7,8 @@
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidannotation.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZStackDocAccessor::ZStackDocAccessor()
 {
@@ -243,6 +245,24 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
           objList, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     doc->getDataBuffer()->deliver();
   }
+}
+
+void ZStackDocAccessor::UpdateSynapseDefaultRadius(
+    ZStackDoc *doc, double preRadius, double postRadius)
+{
+  ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS = preRadius;
+  ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS = postRadius;
+  {
+    QMutex *mutex = doc->getObjectGroup().getMutex();
+    QMutexLocker locker(mutex);
+    QList<ZDvidSynapseEnsemble*> seList =
+        doc->getObjectList<ZDvidSynapseEnsemble>(nullptr);
+    for (ZDvidSynapseEnsemble *se : seList) {
+      se->updateRadius();
+      doc->bufferObjectModified(se);
+    }
+  }
+  doc->processObjectModified();
 }
 
 //Parse watershed results

@@ -26,6 +26,7 @@
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
 #include "flyemdataconfig.h"
+#include "zflyemproofdoctracinghelper.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -41,6 +42,7 @@ class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
+class ZRoiProvider;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -61,6 +63,7 @@ public:
 
 //  virtual void setDvidTarget(const ZDvidTarget &target);
   virtual bool setDvid(const ZDvidEnv &env);
+  virtual bool supervisorNeeded() const;
 
 //  virtual void updateTileData();
 
@@ -160,6 +163,8 @@ public:
 
   void addSelectedBody(
       const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
+
+  void addSelectionAt(int x, int y, int z);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -261,6 +266,8 @@ public:
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
   }
+
+  const ZDvidReader &getWorkReader();
 
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
@@ -399,6 +406,9 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
+public: //tracing
+  void trace(const ZPoint &pt);
+
 public:
   bool isDataValid(const std::string &data) const;
 
@@ -510,6 +520,8 @@ public:
   ZDvidReader* getCurrentGrayscaleReader() const;
   ZDvidReader* getCurrentBodyGrayscaleReader();
 
+  ZMesh* makeRoiMesh(const QString &name);
+
   bool test();
 
 public:
@@ -519,6 +531,9 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   void toggleGrayscale(neutu::EAxis axis);
+
+  std::shared_ptr<ZRoiProvider> initRoiProvider();
+  std::shared_ptr<ZRoiProvider> getRoiProvider() const;
 
 signals:
   void bodyMerged();
@@ -603,7 +618,6 @@ public slots:
   void updateDvidLabelObjectSliently();
   void updateDvidLabelObject(neutu::EAxis axis);
 
-
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -611,6 +625,7 @@ public slots:
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void refreshSynapse();
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
 
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
@@ -657,6 +672,8 @@ public slots:
                        bool usingCenterCut, const std::string &source);
 
   void setTodoItemChecked(int x, int y, int z, bool checking);
+
+  void testSlot();
 
 protected:
   void autoSave() override;
@@ -832,9 +849,13 @@ protected:
 
   ZFlyEmRoiManager *m_roiManager = nullptr;
 
+  ZFlyEmProofDocTracingHelper m_tracingHelper;
+
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  std::shared_ptr<ZRoiProvider> m_roiProvider;
 
   static const char *THREAD_SPLIT;
 };

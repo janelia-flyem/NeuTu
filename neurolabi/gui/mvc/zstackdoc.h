@@ -48,6 +48,8 @@
 #include "zactionfactory.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
+
+#include "zstackdocmeta.h"
 //#include "mvc/mvcdef.h"
 
 class ZStackFrame;
@@ -194,6 +196,8 @@ public: //attributes
 
   template <typename T>
   T* getObject(const std::string &source) const;
+
+  bool allowingTracing() const;
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
@@ -534,6 +538,7 @@ public: //Image processing
   bool watershed();
   bool invert();
   bool subtractBackground();
+  bool subtractBackgroundAdaptive();
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
@@ -785,6 +790,9 @@ public:
   QList<T*> getObjectList() const;
 
   template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
+  template<typename T>
   void processObjectList(std::function<void(T*)> proc);
 
   inline const ZDocPlayerList& getPlayerList() const {
@@ -856,6 +864,8 @@ public:
 
   ZRect2d getRect2dRoi() const;
   ZIntCuboid getCuboidRoi() const;
+
+  ZCuboid getSelectedBoundBox() const;
 
   virtual void selectSwcNode(const ZRect2d &roi);
 
@@ -1097,6 +1107,8 @@ public:
     return m_progressSignal;
   }
 
+  void addTask(ZTask *task);
+
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
@@ -1259,6 +1271,7 @@ public slots: //undoable commands
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
+  void updateStack(ZStack *stack);
   void selectAllSwcTreeNode();
   void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
@@ -1309,6 +1322,7 @@ public slots:
   void addMessageTask(const ZWidgetMessage &msg);
 
 signals:
+  void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true) const;
   void errorGenerated(const QString &message, bool appending = true);
@@ -1346,8 +1360,10 @@ signals:
   void swcNetworkModified();
   void activeViewModified();
 
-  void objectSelectionChanged(QList<ZStackObject*> selected,
-                              QList<ZStackObject*> deselected);
+  void objectSelectionChanged(const ZStackObjectInfoSet &selected,
+                              const ZStackObjectInfoSet &deselected);
+//  void objectSelectionChanged(QList<ZStackObject*> selected,
+//                              QList<ZStackObject*> deselected);
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);
   void meshSelectionChanged(QList<ZMesh*> selected,
@@ -1399,10 +1415,10 @@ protected:
 //  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 //  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
-  void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void clearToDestroy();
+  void requestStackUpdate(ZStack *stack);
 
   virtual bool _loadFile(const QString &filePath);
 
@@ -1533,6 +1549,8 @@ protected:
   ZThreadFutureMap m_futureMap;
   ZStackDocDataBuffer *m_dataBuffer;
   ZSharedPointer<ZActionLibrary> m_actionLibrary;
+
+  ZStackDocMeta m_meta;
 };
 
 template <typename InputIterator>
@@ -1669,6 +1687,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList(QMutex *mutex) const
+{
+  return m_objectGroup.getObjectList<T>(mutex);
 }
 
 template<typename T>

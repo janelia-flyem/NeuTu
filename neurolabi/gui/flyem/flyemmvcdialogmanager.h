@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include <QObject>
+
+class QDialog;
 class ZFlyEmProofMvc;
 class NeuprintSetupDialog;
 class ZContrastProtocalDialog;
@@ -22,6 +25,7 @@ class TipDetectorDialog;
 class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
+class ZSynapsePropertyDialog;
 //class ZStackViewRecordDialog;
 
 /*!
@@ -30,10 +34,13 @@ class NeuPrintQueryDialog;
  * This class is not expected to be used by other classes except ZFlyEmProofMvc
  * and its derivatives.
  */
-class FlyEmMvcDialogManager
+class FlyEmMvcDialogManager : public QObject
 {
+  Q_OBJECT
+
 public:
-  FlyEmMvcDialogManager(ZFlyEmProofMvc *parent);
+  FlyEmMvcDialogManager(ZFlyEmProofMvc *parent = nullptr);
+  virtual ~FlyEmMvcDialogManager();
 
   ZDvidTargetProviderDialog* getDvidDlg();
   FlyEmBodyInfoDialog* getBodyInfoDlg();
@@ -55,6 +62,9 @@ public:
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
   TipDetectorDialog* getTipDetectorDlg();
+  ZSynapsePropertyDialog* getSynpasePropertyDlg();
+
+  void showSynpasePropertyDlg();
 //  ZStackViewRecordDialog* getRecordDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
@@ -63,9 +73,16 @@ public:
   bool isBodyInfoDlgReady() const;
   bool isSplitUploadDlgReady() const;
 
+  /*
   void setNeuprintDataset(const std::string &dataset) {
     m_neuprintDataset = dataset;
   }
+  */
+
+private slots:
+  void detachBodyInfoDlg();
+  void detachNeuprintBodyDlg();
+  void detachBodyQueryDlg();
 
 private:
   inline bool isNull(void *dlg) const {
@@ -76,9 +93,11 @@ private:
   bool createIfNecessary(T* &dlg);
 //  bool creationRequired(void *dlg) const;
 
+  static void Show(QDialog *dlg);
+
 private:
   template<typename T>
-  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag, bool initTarget);
 
 private:
   ZFlyEmProofMvc *m_parent = nullptr;
@@ -103,6 +122,7 @@ private:
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
+  ZSynapsePropertyDialog *m_synapseDlg = nullptr;
   std::string m_neuprintDataset; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 

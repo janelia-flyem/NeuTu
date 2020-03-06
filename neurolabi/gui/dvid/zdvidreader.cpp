@@ -1268,7 +1268,7 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
   std::tuple<QByteArray, std::string> result;
 
   ZDvidTarget target;
-  target.setFromUrl(url);
+  target.setFromUrl_deprecated(url);
   if (target.getAddressWithPort() != getDvidTarget().getAddressWithPort() ||
       target.getUuid() != getDvidTarget().getUuid()) {
     LWARN() << "Unmatched target";
@@ -2607,7 +2607,7 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
 {
   QStringList annotationList = readKeys(
         ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            getDvidTarget().getBodyLabelName()).c_str());
 
   std::set<uint64_t> bodySet;
@@ -2702,7 +2702,8 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 #endif
 }
 
-QList<QByteArray> ZDvidReader::readKeyValues(const QString &dataName, const QStringList &keyList) const
+QList<QByteArray> ZDvidReader::readKeyValues(
+    const QString &dataName, const QStringList &keyList) const
 {
 
     ZDvidUrl url(getDvidTarget());
@@ -2714,7 +2715,8 @@ QList<QByteArray> ZDvidReader::readKeyValues(const QString &dataName, const QStr
     QByteArray payload = doc.toJson();
 
     // make call with json keylist
-    bufferReader.read(QString::fromStdString(url.getKeyValuesUrl(dataName.toStdString())),
+    bufferReader.read(QString::fromStdString(
+                        url.getKeyValuesUrl(dataName.toStdString())),
         payload,
         "GET",
         isVerbose());
@@ -3206,7 +3208,7 @@ ZJsonObject ZDvidReader::readSkeletonConfig() const
   ZJsonObject config;
 
   std::string skeletonName = ZDvidData::GetName(
-        ZDvidData::ERole::SKELETON, ZDvidData::ERole::BODY_LABEL,
+        ZDvidData::ERole::SKELETON, ZDvidData::ERole::SPARSEVOL,
         getDvidTarget().getBodyLabelName());
 
   if (!skeletonName.empty()) {
@@ -5791,7 +5793,7 @@ bool ZDvidReader::ReadMasterListBuffer(
       usingOldUrl = true;
     }
 
-    ZDvidUrl dvidUrl(target, rootNode);
+    ZDvidUrl dvidUrl(target, rootNode, true);
     std::string url;
 
     if (!usingOldUrl) {
@@ -5898,12 +5900,12 @@ ZFlyEmToDoItem ZDvidReader::readToDoItem(int x, int y, int z) const
 }
 */
 
-ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z)
+ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z) const
 {
   return readAnnotationJson(getDvidTarget().getTodoListName(), x, y, z);
 }
 
-ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
+ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt) const
 {
   return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
 }

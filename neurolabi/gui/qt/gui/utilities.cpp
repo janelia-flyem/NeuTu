@@ -133,14 +133,16 @@ void neutu::HideLayout(QLayout *layout, bool removing)
 {
   if (layout) {
     for (int i = 0; i < layout->count(); ++i) {
-      QWidget *widget = layout->itemAt(i)->widget();
-      if (widget != NULL) {
+      QLayoutItem *item = layout->itemAt(i);
+      QWidget *widget = item->widget();
+      if (widget) {
         widget->hide();
+      }
+      if (removing) {
+        layout->removeItem(item);
       }
     }
 
-    if (removing) {
-      layout->removeItem(layout);
-    }
+    layout->setSizeConstraint(QLayout::SetNoConstraint);
   }
 }

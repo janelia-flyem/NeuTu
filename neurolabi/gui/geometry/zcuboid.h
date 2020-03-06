@@ -12,7 +12,7 @@ class ZLineSegment;
  *
  *        4________5       z / front
  *       /|        /|       /
- *    0 /_______1 / |       x---> right
+ *    0 /_______1 / |       -x--> right
  *     |  .      |  |     y |
  *     |  |      |  |       v up
  *     | 6._ . _ |_ |7
@@ -37,6 +37,7 @@ public:
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
   void set(const ZPoint &firstCorner, const ZPoint &lastCorner);
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
+  void set(const ZIntCuboid &cuboid);
   void set(const double *corner);
 
   void setFirstCorner(const ZPoint &pt);
@@ -77,13 +78,16 @@ public:
   double estimateSeparateScale(const ZCuboid &cuboid, const ZPoint &vec) const;
 
   void scale(double s);
+  void scale(double sx, double sy, double sz);
   void expand(double margin);
 
   void joinX(double x);
   void joinY(double y);
   void joinZ(double z);
 
+  void join(double x, double y, double z);
   void join(const ZCuboid &box);
+  void join(const ZIntCuboid &box);
 
   /*!
    * \brief Expand the box minimally to include a point.
@@ -118,6 +122,7 @@ public:
       const ZPoint &p0, const ZPoint &slope, ZLineSegment *seg) const;
 
   ZIntCuboid toIntCuboid() const;
+  static ZCuboid FromIntCuboid(const ZIntCuboid &cuboid);
   double getDiagonalLength() const;
 
   std::vector<double> toCornerVector() const;

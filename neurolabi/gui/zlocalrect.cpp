@@ -1,7 +1,10 @@
 #include "zlocalrect.h"
 #include "zlocalneuroseg.h"
 #include "tz_r2_rect.h"
+
+#include "common/mathdefs.h"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZLocalRect::ZLocalRect()
 {
@@ -35,6 +38,13 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
 
   return locseg;
 }
+
+ZCuboid ZLocalRect::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
 
 void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
                          neutu::EAxis sliceAxis) const
@@ -133,8 +143,8 @@ ZDirectionalTemplate* ZLocalRect::extend(Dlist_Direction_e direction,
 {
   ZLocalRect *extension = NULL;
   double vec[2];
-  vec[0] = cos(m_template.transform.theta + TZ_PI_2);
-  vec[1] = sin(m_template.transform.theta + TZ_PI_2);
+  vec[0] = cos(m_template.transform.theta + neutu::HALF_PI);
+  vec[1] = sin(m_template.transform.theta + neutu::HALF_PI);
 
   switch (direction) {
   case DL_FORWARD:

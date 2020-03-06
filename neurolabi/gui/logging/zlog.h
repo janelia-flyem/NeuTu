@@ -77,6 +77,10 @@ public:
     Interact() : Category("INTERACT") {}
   };
 
+  struct Feedback: public Category {
+    Feedback(): Category("FEEDBACK") {}
+  };
+
   struct Duration : public Tag {
     static const char *KEY;
     Duration(int64_t t) : Tag(KEY, t) {}
@@ -134,6 +138,14 @@ public:
     Window(const std::string &value) : Tag("window", value) {}
   };
 
+  struct User: public Tag {
+    User(const std::string &value): Tag("user", value) {}
+  };
+
+  struct AnonymousUser: public User {
+    AnonymousUser(): User("****") {}
+  };
+
   ZLog& operator << (const Tag &tag);
   ZLog& operator << (const std::function<void(ZLog&)> f);
 
@@ -151,7 +163,7 @@ class KLog : public ZLog
 {
 public:
   KLog(EDestination dest = EDestination::KAFKA);
-  ~KLog();
+  ~KLog() override;
 
   void start() override;
   void log(const std::string &key, const neuopentracing::Value &value,
@@ -221,6 +233,11 @@ public:
 #define ZINFO KInfo(ZLog::EDestination::AUTO)
 #define ZWARN KWarn(ZLog::EDestination::AUTO)
 #define ZERROR KError(ZLog::EDestination::AUTO)
+#if defined(_DEBUG_)
+#  define ZDEBUG ZINFO
+#else
+#  define ZDEBUG if (1) {} else ZINFO
+#endif
 
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()

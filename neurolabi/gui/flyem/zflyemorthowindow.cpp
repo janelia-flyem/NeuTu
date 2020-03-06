@@ -90,3 +90,9 @@ void ZFlyEmOrthoWindow::processMessage(const ZWidgetMessage &message)
 {
   m_orthoWidget->processMessage(message);
 }
+
+/*
+void ZFlyEmOrthoWindow::closeEvent(QCloseEvent *event)
+{
+}
+*/

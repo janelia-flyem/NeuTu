@@ -68,7 +68,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::LABEL_BLOCK);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::SEGMENTATION);
   getHelper()->setMaxSize(maxWidth, maxHeight);
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;
@@ -186,9 +186,10 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
       task->setZoom(getHelper()->getZoom());
       task->setCenterCut(
             getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-      task->setDelay(100);
+      task->setDelay(50);
       task->setDoc(doc);
       task->setSupervoxel(getDvidTarget().isSupervoxelView());
+      task->setName(this->getSource().c_str());
     }
   }
 
@@ -1294,12 +1295,12 @@ void ZDvidLabelSlice::mapSelection()
   m_selectedOriginal = getSelected(neutu::ELabelSource::MAPPED);
 }
 
-void ZDvidLabelSlice::recordSelection()
+void ZDvidLabelSlice::startSelection()
 {
   m_prevSelectedOriginal = m_selectedOriginal;
 }
 
-void ZDvidLabelSlice::processSelection()
+void ZDvidLabelSlice::endSelection()
 {
   m_selector.reset(m_selectedOriginal, m_prevSelectedOriginal);
 

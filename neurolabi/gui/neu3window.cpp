@@ -187,7 +187,9 @@ void Neu3Window::initialize()
 
   connectSignalSlot();
 
-  m_dataContainer->retrieveRois();
+  updateRoiWidget();
+
+//  m_dataContainer->retrieveRois();
 }
 
 QAction* Neu3Window::getAction(ZActionFactory::EAction key)
@@ -270,7 +272,7 @@ void Neu3Window::connectSignalSlot()
 //  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
 //          this, &Neu3Window::syncBodyListModel);
 
-  connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
+//  connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
 
@@ -338,7 +340,7 @@ bool Neu3Window::loadDvidTarget()
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
     QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
                       ZDvidEnv(dlg->getDvidTarget()));
-//    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
+//    m_dataContainer->setDvid(ZDvidEnv(dlg->getDvidTarget()));
 
     m_dataContainer->hide();
     succ = true;

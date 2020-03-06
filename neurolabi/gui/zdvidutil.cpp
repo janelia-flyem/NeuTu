@@ -1,15 +1,19 @@
 #include "zdvidutil.h"
 
-#include <QUrl>
 #include <cmath>
 
+#include <QUrl>
+#include <QUrlQuery>
+
 #include "neutubeconfig.h"
+#include "geometry/zintcuboid.h"
 #include "zjsonvalue.h"
 #include "zstring.h"
-#include "dvid/zdvidtarget.h"
 #include "zjsonparser.h"
+#include "logging/zlog.h"
+
 #include "dvid/zdvidversiondag.h"
-#include "geometry/zintcuboid.h"
+#include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidreader.h"
 
@@ -157,6 +161,8 @@ bool dvid::HasHead(const std::string &url)
 ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
+  ZINFO << "Make DVIDNodeService: " + web_addr;
+
   return ZSharedPointer<libdvid::DVIDNodeService>(
         new libdvid::DVIDNodeService(
           web_addr, uuid, GET_FLYEM_CONFIG.getUserName(),
@@ -174,6 +180,7 @@ ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const libdvid::DVIDNodeService *service)
 {
   if (service != NULL) {
+    ZINFO << "Copy DVIDNodeService";
     return ZSharedPointer<libdvid::DVIDNodeService>(
           new libdvid::DVIDNodeService(*service));
   }
@@ -185,6 +192,7 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address, const std::string &user, const std::string &app)
 {
   try {
+    ZINFO << "Make DVIDConnection: " + address;
     return ZSharedPointer<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(address, user, app));
   } catch (std::exception &e) {
@@ -197,6 +205,7 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address)
 {
   try {
+    ZINFO << "Make DVIDConnection: " + address;
     return ZSharedPointer<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(
             address, GET_FLYEM_CONFIG.getUserName(),
@@ -211,6 +220,7 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const libdvid::DVIDConnection *conn)
 {
   if (conn != NULL) {
+    ZINFO << "Copy DVIDConnection";
     return ZSharedPointer<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(*conn));
   }
@@ -222,6 +232,8 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &target)
 {
+  ZINFO << "Make lowtis::ImageService: " + target.getSourceString();
+
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
@@ -234,6 +246,8 @@ ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &
 
 lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 {
+  ZINFO << "Make lowtis::ImageService: " + target.getSourceString();
+
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
@@ -457,15 +471,44 @@ dvid::EDataType dvid::GetDataTypeFromInfo(const ZJsonObject &obj)
 bool dvid::IsValidDvidUrl(const std::string &url)
 {
   ZDvidTarget target;
-  target.setFromUrl(url);
+  target.setFromUrl_deprecated(url);
 
   return target.isValid();
 }
 
-ZDvidTarget dvid::MakeTargetFromUrl(const std::string path)
+ZDvidTarget dvid::MakeTargetFromUrlSpec(const std::string &path)
 {
   ZDvidTarget target;
-  target.setFromUrl(path);
+  if (ZString(path).startsWith("http:") && !ZString(path).startsWith("http://")) {
+    target.setFromSourceString(path);
+  } else {
+    QUrl url(path.c_str());
+    QUrlQuery query(url);
+
+
+    target.setScheme(url.scheme().toStdString());
+    target.set(url.host().toStdString(),
+               query.queryItemValue("uuid").toStdString(),
+               url.port());
+
+    std::string segmentation =
+        query.queryItemValue("segmentation").toStdString();
+    if (!segmentation.empty()) {
+      target.setSegmentationType(ZDvidData::EType::LABELMAP);
+      target.setSegmentationName(segmentation);
+    }
+    target.setGrayScaleName(query.queryItemValue("grayscale").toStdString());
+    target.setAdminToken(query.queryItemValue("admintoken").toStdString());
+  }
+
+  return target;
+}
+
+
+ZDvidTarget dvid::MakeTargetFromUrl_deprecated(const std::string &path)
+{
+  ZDvidTarget target;
+  target.setFromUrl_deprecated(path);
   return target;
 
 #if 0

@@ -187,7 +187,7 @@ void ZFlyEmConfig::loadConfig()
           target.loadJsonObject(dvidObj);
           if (target.getGrayScaleName().empty()) {
             //Use default name for back compatibility
-            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ERole::GRAY_SCALE));
+            target.setGrayScaleName(ZDvidData::GetName(ZDvidData::ERole::GRAYSCALE));
           }
 //          std::string mapped = getDvidRootNode(target.getUuid());
 //          if (!mapped.empty()) {

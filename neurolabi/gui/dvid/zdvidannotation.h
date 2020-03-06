@@ -231,6 +231,8 @@ private:
 
 public:
   static const char* KEY_COMMENT;
+  static double DEFAULT_POST_SYN_RADIUS;
+  static double DEFAULT_PRE_SYN_RADIUS;
 
 protected:
   ZIntPoint m_position;

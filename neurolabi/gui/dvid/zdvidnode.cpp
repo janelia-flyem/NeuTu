@@ -14,8 +14,10 @@
 #include "zjsonparser.h"
 
 const char* ZDvidNode::m_addressKey = "address";
+const char* ZDvidNode::m_hostKey = "host";
 const char* ZDvidNode::m_portKey = "port";
 const char* ZDvidNode::m_uuidKey = "uuid";
+const char* ZDvidNode::m_schemeKey = "scheme";
 
 /* Implementation details
  *
@@ -52,21 +54,32 @@ bool ZDvidNode::hasDvidUuid() const
   return true;
 }
 
+std::string ZDvidNode::getScheme() const
+{
+  return m_scheme.empty() ? "http" : m_scheme;
+}
+
+void ZDvidNode::setScheme(const std::string &scheme)
+{
+  m_scheme = scheme;
+}
+
 void ZDvidNode::setMock(bool on)
 {
-  m_isMocked = on;
+  m_scheme = on ? "mock" : "";
+//  m_isMocked = on;
 }
 
 bool ZDvidNode::isMock() const
 {
-  return m_isMocked;
+  return getScheme() == "mock";
 }
 
-std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) const
+std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 {
   std::string source;
 
-  if (!getAddress().empty()) {
+  if (!getHost().empty()) {
     std::string uuid = getUuid();
     if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
       uuid = uuid.substr(0, uuidBrief);
@@ -76,13 +89,9 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) co
 #endif
     }
 
-    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;
-    if (withHttpPrefix) {
-      if (isMock()) {
-        source = "mock:" + source;
-      } else {
-        source = "http:" + source;
-      }
+    source = getHost() + ":" + ZString::num2str(getPort()) + ":" + uuid;
+    if (withScheme) {
+      source = getScheme() + ":" + source;
     }
   }
 
@@ -91,14 +100,14 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix, size_t uuidBrief) co
 
 bool ZDvidNode::operator ==(const ZDvidNode &node) const
 {
-  return m_address == node.m_address && m_port == node.m_port &&
-      m_uuid == node.m_uuid && m_isMocked == node.m_isMocked;
+  return m_host == node.m_host && m_port == node.m_port &&
+      m_uuid == node.m_uuid && getScheme() == node.getScheme();
 }
 
 bool ZDvidNode::operator !=(const ZDvidNode &node) const
 {
-  return m_address != node.m_address || m_port != node.m_port ||
-      m_uuid != node.m_uuid || m_isMocked != node.m_isMocked;
+  return m_host != node.m_host || m_port != node.m_port ||
+      m_uuid != node.m_uuid || getScheme() != node.getScheme();
 }
 
 
@@ -111,9 +120,11 @@ void ZDvidNode::set(
     bool hasPrefix = false;
     if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
       hasPrefix = true;
+      setScheme("http");
     } else if (s.startsWith("mock://", ZString::CASE_INSENSITIVE)) {
       hasPrefix = true;
-      setMock(true);
+      setScheme("mock");
+//      setMock(true);
     }
     if (hasPrefix) {
       s = s.substr(7);
@@ -144,7 +155,7 @@ void ZDvidNode::set(
     }
   }
 
-  setServer(pureAddress);
+  setHost(pureAddress);
   setPort(port);
   setUuid(uuid);
 }
@@ -158,18 +169,19 @@ void ZDvidNode::clear()
   */
 }
 
-void ZDvidNode::setServer(const std::string &address)
+void ZDvidNode::setHost(const std::string &address)
 {
-  m_address = address;
+  m_host = address;
 
   if (!address.empty()) {
     ZString addressObj(address);
 
     if (addressObj.startsWith("http://")) {
       addressObj = address.substr(7);
+      setScheme("http");
     } else if (addressObj.startsWith("mock://")) {
       addressObj = address.substr(7);
-      setMock(true);
+      setScheme("mock");
     } else if (ZString(address).startsWith("//")) {
       addressObj = address.substr(2);
     } else {
@@ -189,10 +201,10 @@ void ZDvidNode::setServer(const std::string &address)
       }
     }
 
-    m_address = strArray[0];
+    m_host = strArray[0];
 
 #if defined(_FLYEM_)
-    m_address = GET_FLYEM_CONFIG.mapAddress(m_address);
+    m_host = GET_FLYEM_CONFIG.mapAddress(m_host);
 #endif
   }
 }
@@ -242,7 +254,7 @@ void ZDvidNode::setPort(int port)
   m_port = port;
 }
 
-void ZDvidNode::setFromUrl(const std::string &url)
+void ZDvidNode::setFromUrl_deprecated(const std::string &url)
 {
   clear();
   if (url.empty()) {
@@ -252,6 +264,7 @@ void ZDvidNode::setFromUrl(const std::string &url)
   ZString zurl(url);
   if (zurl.startsWith("http:")) {
     zurl.replace("http://", "");
+    setScheme("http");
   } else if (zurl.startsWith("mock://")) {
     zurl.replace("mock://", "");
     setMock(true);
@@ -304,9 +317,7 @@ bool ZDvidNode::setFromSourceToken(const std::vector<std::string> &tokens)
       }
     }
     set(tokens[1], tokens[3], port);
-    if (tokens[0] == "mock") {
-      setMock(true);
-    }
+    setScheme(tokens[0]);
     succ = true;
   }
 
@@ -320,15 +331,15 @@ bool ZDvidNode::hasPort() const
 
 bool ZDvidNode::isValid() const
 {
-  return !getAddress().empty() && !getUuid().empty();
+  return !getHost().empty() && !getUuid().empty();
 }
 
 std::string ZDvidNode::getAddressWithPort() const
 {
   std::string address;
 
-  if (!getAddress().empty()) {
-    address = getAddress();
+  if (!getHost().empty()) {
+    address = getHost();
     if (hasPort()) {
       address += ":" + ZString::num2str(getPort());
     }
@@ -341,11 +352,7 @@ std::string ZDvidNode::getUrl() const
 {
   ZString url = "";
   if (isValid()) {
-    if (isMock()) {
-      url = "mock://" + m_address;
-    } else {
-      url = "http://" + m_address;
-    }
+    url = getScheme() + "://" + m_host;
     if (m_port >= 0) {
       url += ":";
       url.appendNumber(m_port);
@@ -370,13 +377,18 @@ void ZDvidNode::loadJsonObject(const ZJsonObject &obj)
 
 
   if (isValidJson) {
-    setServer(ZJsonParser::stringValue(obj[m_addressKey]));
+    if (obj.hasKey(m_hostKey)) {
+      setHost(ZJsonParser::stringValue(obj[m_hostKey]));
+    } else {
+      setHost(ZJsonParser::stringValue(obj[m_addressKey]));
+    }
     if (obj.hasKey(m_portKey)) {
       setPort(int(ZJsonParser::integerValue(obj[m_portKey])));
     } else {
       setPort(-1);
     }
     setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
+    setScheme(ZJsonParser::stringValue(obj[m_schemeKey]));
   }
 }
 
@@ -387,8 +399,11 @@ ZJsonObject ZDvidNode::toJsonObject() const
     obj.setEntry(m_portKey, m_port);
   }
 
-  obj.setEntry(m_addressKey, m_address);
+  obj.setEntry(m_hostKey, m_host);
   obj.setEntry(m_uuidKey, m_uuid);
+  if (!m_scheme.empty()) {
+    obj.setEntry(m_scheme, m_scheme);
+  }
 
   return obj;
 }

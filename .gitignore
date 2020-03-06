@@ -16,6 +16,7 @@
 *.xcf
 *.pyc
 *.log
+.vscode
 TAGS
 devnull
 doc/doxfiles/
@@ -40,6 +41,7 @@ obj64/
 release/
 /neurolabi/app/
 /neurolabi/lib/genelib/src/*.c
+/neurolabi/lib/genelib/build
 /neurolabi/c/config.log
 /neurolabi/lib/genelib/src/config.log
 neuTube*/

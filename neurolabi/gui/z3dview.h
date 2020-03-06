@@ -244,6 +244,8 @@ private:
 //  void surfaceDataChanged();
   void objectSelectionChanged(const QList<ZStackObject*>& selected,
                               const QList<ZStackObject*>& deselected);
+  void processObjectSelectionChanged(const ZStackObjectInfoSet &selected,
+                                     const ZStackObjectInfoSet &deselected);
 
   void initVolumeFilter();
   void initPunctaFilter();

@@ -508,10 +508,12 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+/*
 bool ZFlyEmBody3dDoc::isAdmin() const
 {
   return getDataDocument()->isAdmin();
 }
+*/
 
 const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
 {
@@ -1328,6 +1330,64 @@ void ZFlyEmBody3dDoc::showMeshForSplitOnly(bool on)
   }
 }
 
+ZMesh* ZFlyEmBody3dDoc::getRoiMesh(const QString &name) const
+{
+  return getObject<ZMesh>(
+        ZStackObjectSourceFactory::MakeFlyEmRoiSource(name.toStdString()));
+
+}
+
+void ZFlyEmBody3dDoc::updateRoiMeshList(
+    const QList<QString> &nameList, const QList<bool> &visibleList,
+    const QList<QColor> &colorList)
+{
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+
+  for (int i = 0; i < nameList.size(); ++i) {
+    updateRoiMesh(nameList[i], visibleList[i], colorList[i]);
+  }
+
+  endObjectModifiedMode();
+
+  processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::updateRoiMesh(
+    const QString &name, bool visible, const QColor &color)
+{
+  ZMesh *mesh = getRoiMesh(name);
+
+  if (mesh == nullptr) {
+    mesh = getDataDocument()->makeRoiMesh(name);
+    if (mesh) {
+      mesh->setVisible(visible);
+      if (color != mesh->getColor()) {
+        mesh->pushObjectColor(color);
+      }
+      addObject(mesh);
+    }
+  } else if (mesh) {
+    mesh->setVisible(visible);
+    if (color != mesh->getColor()) {
+      mesh->pushObjectColor(color);
+    }
+    processObjectModified(mesh);
+  }
+}
+
+/*
+void ZFlyEmBody3dDoc::updateRoiMesh(const QString &name)
+{
+  ZMesh *mesh = getRoiMesh(name);
+
+  if (mesh == nullptr) {
+    mesh = getDataDocument()->makeRoiMesh(name);
+    if (mesh) {
+      addObject(mesh);
+    }
+  }
+}
+*/
 
 void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
 {

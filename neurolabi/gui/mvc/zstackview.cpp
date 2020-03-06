@@ -642,9 +642,13 @@ void ZStackView::updateSlider()
   if (stackData() != NULL) {
     ZIntCuboid box = getViewBoundBox();
 
-    int value = m_depthControl->value();
+//    int value = m_depthControl->value();
     m_depthControl->setRangeQuietly(0, box.getDepth() - 1);
-    if (value >= box.getDepth()) {
+
+    int z = getZ(neutu::ECoordinateSystem::STACK);
+    if (z < box.getFirstZ()) {
+      m_depthControl->setValueQuietly(0);
+    } else if (z > box.getLastZ()) {
       m_depthControl->setValueQuietly(box.getDepth() - 1);
     }
 
@@ -1147,9 +1151,16 @@ void ZStackView::updateStackRange()
   LDEBUG() << "Updating stack range";
   ZIntCuboid stackRange = getViewBoundBox();
   if (stackRange != getCurrentStackRange()) {
-    resetViewProj();
-    updateSlider();
-    setSliceIndexQuietly(m_depthControl->maximum() / 2);
+//    if (stackRange.getWidth() != getCurrentStackRange().getWidth() ||
+//        stackRange.getHeight() != getCurrentStackRange().getHeight() ||
+//        stackRange.getDepth() != getCurrentStackRange().getDepth()) {
+      resetViewProj();
+      updateSlider();
+      setSliceIndexQuietly(m_depthControl->maximum() / 2);
+//    }
+
+
+//    setSliceIndexQuietly(m_depthControl->maximum() / 2);
     m_currentStackRange = stackRange;
 
     updateObjectCanvas();
@@ -2006,6 +2017,7 @@ ZPainter* ZStackView::getTileCanvasPainter()
 ZPainter* ZStackView::getObjectCanvasPainter()
 {
   prepareCanvasPainter(m_objectCanvas, m_objectCanvasPainter);
+  m_objectCanvasPainter.setRenderHint(QPainter::Antialiasing, false);
 
   return &m_objectCanvasPainter;
 }
@@ -2062,7 +2074,7 @@ void ZStackView::paintStackBuffer()
 
   updateImageCanvas();
 
-  if (buddyPresenter() != NULL) {
+  if (buddyPresenter() != nullptr && m_image != nullptr) {
     if (!buddyPresenter()->interactiveContext().isProjectView()) {
       if (!stack->isVirtual() && showImage) {
         if (stack->channelNumber() == 1) {   //grey
@@ -2331,6 +2343,21 @@ void ZStackView::paintActiveTile()
   if (paintTileCanvasBuffer()) {
     updateImageScreen(EUpdateOption::QUEUED);
   }
+}
+
+void ZStackView::paintObject(const ZStackObjectInfoSet &selected,
+                             const ZStackObjectInfoSet &deselected)
+{
+
+  if (selected.getTarget().count(ZStackObject::ETarget::OBJECT_CANVAS) > 0 ||
+      deselected.getTarget().count(ZStackObject::ETarget::OBJECT_CANVAS) > 0) {
+    paintObjectBuffer();
+  } else if (selected.getTarget().count(ZStackObject::ETarget::STACK_CANVAS) > 0 ||
+             deselected.getTarget().count(ZStackObject::ETarget::STACK_CANVAS) > 0) {
+    paintStackBuffer();
+  }
+
+  updateImageScreen(EUpdateOption::QUEUED);
 }
 
 void ZStackView::paintObject(
@@ -3239,10 +3266,10 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 
     if (redrawing) {
       if (depthChanged) {
-        targetSet.insert(ZStackObject::ETarget::OBJECT_CANVAS);
-        targetSet.insert(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
         paintStackBuffer();
       }
+      targetSet.insert(ZStackObject::ETarget::OBJECT_CANVAS);
+      targetSet.insert(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
 
       std::string painted;
       foreach (ZStackObject::ETarget target, targetSet) {
@@ -3253,6 +3280,12 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     }
 
     notifyViewChanged(getViewParameter()); //?
+
+#ifdef _DEBUG_2
+    if (m_objectCanvas) {
+      m_objectCanvas->save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
+    }
+#endif
   }
 }
 

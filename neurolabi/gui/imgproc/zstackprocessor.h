@@ -40,6 +40,10 @@ public:
   static void SubtractBackground(ZStack *stack);
   static void SubtractBackground(ZStack *stack, double minFr, int maxIter);
   static int SubtractBackground(Stack *stack, double minFr, int maxIter);
+
+  static void SubtractBackgroundAdaptive(Stack *stack, int nsample, int stride);
+  static void SubtractBackgroundAdaptive(ZStack *stack, int nsample, int stride);
+
   static void MexihatFilter(ZStack *stack, double sigma = 1.0);
   static void GaussianSmooth(ZStack *stack, double sigma = 1.0);
   static void GaussianSmooth(ZStack *stack, double sx, double sy, double sz);

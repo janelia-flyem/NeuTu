@@ -17,6 +17,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
+      <widget class="QComboBox" name="datasetComboBox"/>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_6">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -152,7 +155,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QHBoxLayout" name="queryLayout">
      <item>
       <widget class="QPushButton" name="findSimilarPushButton">
        <property name="text">
@@ -174,7 +177,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QFrame" name="frame">
+      <widget class="QFrame" name="queryFrame">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -592,6 +595,19 @@
       <widget class="QPushButton" name="closeButton">
        <property name="text">
         <string>Close</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="hideButton">
+       <property name="text">
+        <string>HIde</string>
        </property>
        <property name="default">
         <bool>true</bool>

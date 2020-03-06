@@ -728,6 +728,14 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Take Screenshot", parent);
     action->setIcon(QIcon(":/images/screenshot_toolbar.png"));
     break;
+  case ACTION_USER_FEEDBACK:
+    action = new QAction("User Feedback", parent);
+    action->setIcon(QFontIcon::icon(0xf086, Qt::darkGreen));
+    break;
+  case ACTION_PROFILE:
+    action = new QAction("Profile", parent);
+    action->setIcon(QFontIcon::icon(0xf080, Qt::darkGreen));
+    break;
   default:
     break;
   }

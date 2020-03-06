@@ -188,9 +188,9 @@ void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
     if (slice != NULL) {
-      slice->recordSelection();
+      slice->startSelection();
       slice->deselectAll();
-      slice->processSelection();
+      slice->endSelection();
     }
   }
   doc->clearBodyAnnotationMap();

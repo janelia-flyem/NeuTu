@@ -28,6 +28,7 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "mvc/zstackpresenter.h"
+#include "zactionlibrary.h"
 
 #include "widgets/zflyembookmarkview.h"
 #include "zflyemdataloader.h"
@@ -46,12 +47,18 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+#include "dialogs/userfeedbackdialog.h"
 
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
 {
   init();
+}
+
+ZProofreadWindow::~ZProofreadWindow()
+{
+  delete m_actionLibrary;
 }
 
 template <typename T>
@@ -154,6 +161,7 @@ void ZProofreadWindow::init()
 
   connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
           this, SLOT(showAndRaise()));
+  connect(m_mainMvc, SIGNAL(dvidReady()), this, SLOT(postDvidReady()));
 
   setCentralWidget(widget);
 
@@ -172,6 +180,7 @@ void ZProofreadWindow::init()
 //  m_progressSignal->connectProgress(m_mainMvc->getProgressSignal());
   m_progressSignal->connectSlot(this);
 
+  m_actionLibrary = new ZActionLibrary(this);
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
@@ -253,6 +262,11 @@ void ZProofreadWindow::profile()
   m_mainMvc->profile();
 }
 
+void ZProofreadWindow::testSlot()
+{
+  m_mainMvc->testSlot();
+}
+
 void ZProofreadWindow::showSettings()
 {
   m_mainMvc->showSetting();
@@ -264,7 +278,7 @@ QProgressDialog* ZProofreadWindow::getProgressDialog()
     m_progressDlg = new QProgressDialog(this);
     m_progressDlg->setWindowModality(Qt::WindowModal);
     m_progressDlg->setAutoClose(true);
-    m_progressDlg->setCancelButton(0);
+    m_progressDlg->setCancelButton(nullptr);
   }
 
   return m_progressDlg;
@@ -407,11 +421,18 @@ void ZProofreadWindow::createMenu()
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showExternalNeuronWindow()));
 
+  QMenu *viewControlMenu = new QMenu("Controls", this);
+  QAction *synpasePropertyControlAction = new QAction("Synapses", this);
+  connect(synpasePropertyControlAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showSynapsePropertyDlg()));
+  viewControlMenu->addAction(synpasePropertyControlAction);
+
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addAction(m_viewRoiAction);
+  m_viewMenu->addMenu(viewControlMenu);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
@@ -494,6 +515,12 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
   m_toolMenu->addAction(recorderAction);
 
+  QAction *feedbackAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_USER_FEEDBACK, this, SLOT(processFeedback()));
+  m_toolMenu->addAction(feedbackAction);
+
+  feedbackAction->setVisible(neutu::HasEnv("NEUTU_USER_FEEDBACK", "yes"));
+
   menuBar()->addMenu(m_toolMenu);
 
   m_advancedMenu = new QMenu("Advanced", this);
@@ -503,9 +530,9 @@ void ZProofreadWindow::createMenu()
           this, SIGNAL(showingMainWindow()));
   m_advancedMenu->addAction(mainWindowAction);
 
-  QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
-  m_advancedMenu->addAction(testAction);
+  QAction *stressTestAction = new QAction("Stress Test", this);
+  connect(stressTestAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
+  m_advancedMenu->addAction(stressTestAction);
 
   QAction *diagnoseAction = new QAction("Diagnose", this);
   connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
@@ -515,9 +542,18 @@ void ZProofreadWindow::createMenu()
   connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
   m_advancedMenu->addAction(settingAction);
 
-  QAction *profileAction = new QAction("Profile", this);
-  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
-  m_advancedMenu->addAction(profileAction);
+//  QAction *profileAction = new QAction("Profile", this);
+  QAction *profileAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_PROFILE, this, SLOT(profile()));
+//  profileAction->setEnabled(neutu::HasEnv("NEUTU_PROFILE", "yes"));
+//  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  if (neutu::HasEnv("NEUTU_PROFILE", "yes")) {
+    m_advancedMenu->addAction(profileAction);
+  }
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  m_advancedMenu->addAction(testAction);
 
 
 //  m_viewMenu->setEnabled(false);
@@ -549,6 +585,7 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_loadDvidUrlAction->setEnabled(!on);
   m_openAuthDialogAction->setEnabled(on);
   m_openProtocolAssignmentDialogAction->setEnabled(on);
+  m_actionLibrary->getAction(ZActionFactory::ACTION_PROFILE)->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -633,6 +670,9 @@ void ZProofreadWindow::createToolbar()
 
   m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
+
+  m_toolBar->addAction(
+        m_actionLibrary->getAction(ZActionFactory::ACTION_USER_FEEDBACK));
 
   addSynapseActionToToolbar();
 }
@@ -1042,3 +1082,22 @@ void ZProofreadWindow::loadDatabaseFromUrl()
   */
 
 }
+
+void ZProofreadWindow::postDvidReady()
+{
+  getMainMvc()->updateRoiWidget();
+}
+
+void ZProofreadWindow::processFeedback()
+{
+  UserFeedbackDialog dlg;
+  if (dlg.exec()) {
+    dlg.send([this](const QString &msg) {
+      this->dump(
+            ZWidgetMessage(msg, neutu::EMessageType::INFORMATION,
+                           ZWidgetMessage::TARGET_TEXT_APPENDING));
+    });
+  }
+}
+
+

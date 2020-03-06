@@ -17,7 +17,7 @@ void ZStackViewLocator::setCanvasSize(int w, int h)
 
 void ZStackViewLocator::setSceneRatio(double ratio)
 {
-  m_sceneRatio = neutu::ClipValue(ratio, 0.01, 1.0);
+  m_sceneRatio = neulib::ClipValue(ratio, 0.01, 1.0);
 }
 
 int ZStackViewLocator::getZoomRatio(int viewPortWidth, int viewPortHeight) const

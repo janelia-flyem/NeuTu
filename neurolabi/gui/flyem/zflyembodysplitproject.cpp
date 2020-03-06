@@ -2899,14 +2899,14 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {
   return ZDvidData::GetName(
-        ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
+        ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::SPARSEVOL,
         getDvidTarget().getBodyLabelName());
 }
 
 std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 {
   return ZDvidData::GetName(ZDvidData::ERole::SPLIT_LABEL,
-                            ZDvidData::ERole::BODY_LABEL,
+                            ZDvidData::ERole::SPARSEVOL,
                             getDvidTarget().getBodyLabelName());
 }
 
@@ -3059,7 +3059,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     }
 
     std::string splitStatusName =  ZDvidData::GetName(
-          ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::BODY_LABEL,
+          ZDvidData::ERole::SPLIT_STATUS, ZDvidData::ERole::SPARSEVOL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
       message.appendMessage(("Incomplete split database: data \"" + splitStatusName +

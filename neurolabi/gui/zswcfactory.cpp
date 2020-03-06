@@ -2,12 +2,15 @@
 
 #include <cmath>
 
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
+
 #include "common/math.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "geometry/zpointarray.h"
 #include "geometry/zlinesegmentarray.h"
 #include "geometry/zintcuboidface.h"
@@ -17,10 +20,8 @@
 #include "zobject3d.h"
 #include "zobject3dscan.h"
 #include "zstack.hxx"
-#include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
 #include "zclosedcurve.h"
-#include "tz_stack_neighborhood.h"
 #include "zstackfactory.h"
 #include "geometry/zintcuboid.h"
 #include "zlocsegchain.h"
@@ -523,7 +524,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  ZIntCuboid box = obj.getBoundBox();
+  ZIntCuboid box = obj.getIntBoundBox();
 
   int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                     ZObject3dScan::MAX_SPAN_HINT)));
@@ -631,7 +632,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
     const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree)
 {
-  ZIntCuboid box = obj.getBoundBox();
+  ZIntCuboid box = obj.getIntBoundBox();
 //  size_t voxelNumber = obj.getVoxelNumber();
 
   int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
@@ -702,8 +703,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
 std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
       const ZObject3dScan &obj1, const ZObject3dScan &obj2)
 {
-  ZIntCuboid box = obj1.getBoundBox();
-  box.join(obj2.getBoundBox());
+  ZIntCuboid box = obj1.getIntBoundBox();
+  box.join(obj2.getIntBoundBox());
 
   int segNumber = obj1.getSegmentNumber() + obj2.getSegmentNumber();
 
@@ -715,8 +716,8 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
   ZObject3dScan obj4 = obj2;
   obj4.downsampleMax(intv, intv, intv);
 
-  box = obj3.getBoundBox();
-  box.join(obj4.getBoundBox());
+  box = obj3.getIntBoundBox();
+  box.join(obj4.getIntBoundBox());
   box.expand(1, 1, 1);
 
   ZStack *stack = ZStackFactory::MakeZeroStack(GREY, box);

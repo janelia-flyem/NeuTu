@@ -3,6 +3,7 @@
 #include <QMutexLocker>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
 
 #include "zstackobjectsourcefactory.h"
 #include "zmesh.h"
@@ -27,6 +28,11 @@ BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 
     clear();
 
+}
+
+BodyPrefetchQueue::~BodyPrefetchQueue()
+{
+  ZINFO << "Destroying BodyPrefetchQueue";
 }
 
 /*

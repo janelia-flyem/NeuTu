@@ -15,6 +15,7 @@
 #include "zcommandline.h"
 #include "zneurontracerconfig.h"
 #include "flyem/zglobaldvidrepo.h"
+#include "common/utilities.h"
 
 #if 0
 #ifdef _QT5_
@@ -65,6 +66,13 @@ static std::string UserName;
 }
 
 namespace {
+
+std::string get_machine_info()
+{
+  return GET_SOFTWARE_NAME + " " + neutu::GetVersionString() +
+      " @{" + QSysInfo::prettyProductName().toStdString() + "}";
+}
+
 
 void sync_log_dir(const std::string &srcDir, const std::string &destDir)
 {
@@ -288,18 +296,22 @@ MainConfig get_program_config(int argc, char *argv[])
 
 int run_command_line(int argc, char *argv[])
 {
-#if defined(_FLYEM_)
   NeutubeConfig &config = NeutubeConfig::getInstance();
   QFileInfo fileInfo(argv[0]);
-  std::string appDir = fileInfo.absoluteDir().absolutePath().toStdString();
+  QCoreApplication app(argc, argv, false);
+
+  std::string appDir = app.applicationDirPath().toStdString();
   config.setApplicationDir(appDir);
+
+  #if defined(_FLYEM_)
   LoadFlyEmConfig("", config, false);
 #endif
 
   init_log();
+  LINFO() << "BEGIN " + get_machine_info();
 
   ZCommandLine cmd;
-  return cmd.run(argc, argv);
+  return cmd.run(argc, argv, app);
 }
 
 void init_gui()

@@ -8,6 +8,12 @@
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
+#if defined(__APPLE__)
+#  define CTRL_KEY_NAME "Cmd"
+#else
+#  define CTRL_KEY_NAME "Ctrl"
+#endif
+
 namespace neutu {
 
 static constexpr uint64_t ONEGIGA = 1073741824;
@@ -44,6 +50,10 @@ enum class EExploreAction {
 
 enum class EImageBackground {
   BRIGHT, DARK
+};
+
+enum class EDataType {
+  UNKNOWN, EM, LIGHT_DARK, LIGHT_BRIGHT
 };
 
 enum class ESizeHintOption {
@@ -202,6 +212,7 @@ static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 //static const int DIM_INVALID_INDEX = -2147483647;
 //#endif
 
+//static const int MAX_INT32 = std::numeric_limits<int32_t>::max();
 static const int DIM_INVALID_INDEX = std::numeric_limits<int32_t>::min();
 
 static const uint64_t LABEL_ID_SELECTION =
@@ -210,6 +221,7 @@ static const uint64_t LABEL_ID_SELECTION =
 static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
 static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 static const size_t BIG_STACK_VOLUME_HINT = 923741823;
+
 }
 
 

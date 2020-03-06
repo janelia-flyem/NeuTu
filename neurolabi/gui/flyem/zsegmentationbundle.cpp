@@ -8,7 +8,6 @@
 #include "flyem/zsegmentationanalyzer.h"
 
 #include "tz_stack_utils.h"
-#include "tz_iarray.h"
 
 using namespace std;
 

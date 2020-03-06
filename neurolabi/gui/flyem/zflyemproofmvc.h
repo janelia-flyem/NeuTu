@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <memory>
 
 #include <QString>
 #include <QMetaType>
@@ -67,6 +68,7 @@ class ZFlyEmSequencerColorScheme;
 class ZFlyEmBookmark;
 class ZFlyEmBookmarkListModel;
 class ZDvidEnv;
+class ZRoiMesh;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -152,6 +154,7 @@ public:
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
+
   static void showAnnotations(bool show);
   static bool showingAnnotations();
 
@@ -168,8 +171,9 @@ public:
   }
 
   bool hasSequencer();
-
   void disableSequencer();
+
+  bool hasProfileTask() const;
 
   void notifyStateUpdate();
 
@@ -243,6 +247,8 @@ public slots:
 
   void setSegmentationVisible(bool visible);
 
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
+
   void launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode);
 //  void processMessageSlot(const QString &message);
   void processMessage(const ZWidgetMessage &msg);
@@ -300,6 +306,7 @@ public slots:
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
   void showTipDetectorWindow(const ZIntPoint &pt, uint64_t bodyId);
+  void showSynapsePropertyDlg();
 
   void closeSkeletonWindow();
 
@@ -422,6 +429,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
+  void testSlot() override;
+
   void testBodyMerge();
   void testBodyVis();
   void testBodySplit();
@@ -491,6 +500,7 @@ protected:
 //  virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
   virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg) override;
+  void dropEvent(QDropEvent *event) override;
 
   void warn(const std::string &msg);
   void warn(const char *msg);
@@ -648,6 +658,8 @@ private:
 
   bool requestingSplitResult(const QString &title);
 
+  void prepareWindow(Z3DWindow *window);
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -669,7 +681,7 @@ protected:
   ZPaintLabelWidget *m_paintLabelWidget;
   ZActionLibrary *m_actionLibrary = nullptr;
 
-  ProtocolSwitcher *m_protocolSwitcher;
+  ProtocolSwitcher *m_protocolSwitcher = nullptr;
 
 //  std::unique_ptr<FlyEmMvcDialogManager> m_dlgManager; //unique ptr doesn't work well with Qt Creator
   friend class FlyEmMvcDialogManager;
@@ -720,10 +732,11 @@ protected:
 //  ZDvidInfo m_labelInfo;
   bool m_ROILoaded;
 
-  std::vector<std::string> m_roiList;
-  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
+  std::vector<std::shared_ptr<ZRoiMesh>> m_roiMeshList;
+//  std::vector<std::string> m_roiList;
+//  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
 //  std::vector<ZObject3dScan> m_loadedROIs;
-  std::vector<std::string> m_roiSourceList;
+//  std::vector<std::string> m_roiSourceList;
 
   std::map<EViewButton, QPushButton*> m_viewButtons;
 

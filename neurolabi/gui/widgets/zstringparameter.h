@@ -23,6 +23,7 @@ signals:
 
 protected:
   void setContent(const QString& str);
+  void setContentQuietly(const QString &str);
 
   virtual QWidget* actualCreateWidget(QWidget* parent) override;
 

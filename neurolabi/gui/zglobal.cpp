@@ -151,7 +151,7 @@ QString ZGlobal::getNeuPrintAuth() const
   return auth;
 }
 
-QString ZGlobal::getNeuPrintToken() const
+QString ZGlobal::getNeuPrintToken(const std::string &key) const
 {
 //  QString auth = qgetenv("NEUPRINT_AUTH");
 //  if (auth.isEmpty()) {
@@ -162,7 +162,12 @@ QString ZGlobal::getNeuPrintToken() const
 
   ZJsonObject obj;
   obj.decode(getNeuPrintAuth().toStdString());
-  std::string token = ZJsonParser::stringValue(obj["token"]);
+  std::string token;
+  if (obj.hasKey(key)) {
+    token = ZJsonParser::stringValue(obj[key.c_str()]);
+  } else {
+    token = ZJsonParser::stringValue(obj["token"]);
+  }
 
   return QString::fromStdString(token);
 }
@@ -182,7 +187,11 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader()
   QString server = qgetenv("NEUPRINT");
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
-    reader->authorize(getNeuPrintToken());
+    reader->authorize(getNeuPrintToken(reader->getServer().toStdString()));
+    if (!reader->isConnected()) {
+      delete reader;
+      reader = nullptr;
+    }
   }
 
   return reader;
@@ -194,7 +203,7 @@ NeuPrintReader* ZGlobal::makeNeuPrintReaderFromUuid(const QString &uuid)
   QString server = qgetenv("NEUPRINT");
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
-    reader->authorize(getNeuPrintToken());
+    reader->authorize(getNeuPrintToken(reader->getServer().toStdString()));
     reader->updateCurrentDatasetFromUuid(uuid);
     if (!reader->isReady()) {
       delete reader;
@@ -274,7 +283,7 @@ T* ZGlobal::getIODeviceFromUrl(
   QUrl url(path.c_str());
   if (url.scheme() == "http" || url.scheme() == "dvid" ||
       url.scheme() == "mock") {
-    ZDvidTarget target = dvid::MakeTargetFromUrl(path);
+    ZDvidTarget target = dvid::MakeTargetFromUrl_deprecated(path);
     return getIODevice(target, ioMap, key);
 //    device = getIODevice(target.getSourceString(true), ioMap);
   }

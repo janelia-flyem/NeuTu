@@ -78,6 +78,7 @@ QVariant ZDvidVersionModel::data(
       }
       break;
     }
+    break;
   default:
     break;
   }

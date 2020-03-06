@@ -4,10 +4,10 @@
 #include <algorithm>
 #include <cassert>
 
+#include "neurolabi/numericarray.h"
 #include "common/math.h"
 #include "swctreenode.h"
 #include "zswctree.h"
-#include "tz_darray.h"
 #include "tz_sp_grow.h"
 #include "zspgrowparser.h"
 #include "tz_int_arraylist.h"
@@ -143,14 +143,14 @@ void ZSwcPath::smooth(bool fixingTerminal)
   vector<double> zSmoothed(size());
   vector<double> rSmoothed(size());
 
-  darray_medfilter(&(xArray[0]), size(), 1, &(xSmoothed[0]));
-  darray_avgsmooth(&(xSmoothed[0]), size(), 3, &(xArray[0]));
+  neutu::array::MedianFilter(&(xArray[0]), size(), 1, &(xSmoothed[0]));
+  neutu::array::AverageSmooth(&(xSmoothed[0]), size(), 3, &(xArray[0]));
 
-  darray_medfilter(&(yArray[0]), size(), 1, &(ySmoothed[0]));
-  darray_avgsmooth(&(ySmoothed[0]), size(), 3, &(yArray[0]));
+  neutu::array::MedianFilter(&(yArray[0]), size(), 1, &(ySmoothed[0]));
+  neutu::array::AverageSmooth(&(ySmoothed[0]), size(), 3, &(yArray[0]));
 
-  darray_medfilter(&(zArray[0]), size(), 1, &(zSmoothed[0]));
-  darray_avgsmooth(&(zSmoothed[0]), size(), 3, &(zArray[0]));
+  neutu::array::MedianFilter(&(zArray[0]), size(), 1, &(zSmoothed[0]));
+  neutu::array::AverageSmooth(&(zSmoothed[0]), size(), 3, &(zArray[0]));
 
 //  darray_medfilter(&(rArray[0]), size(), 1, &(rSmoothed[0]));
 //  darray_avgsmooth(&(rSmoothed[0]), size(), 3, &(rArray[0]));
@@ -176,8 +176,8 @@ void ZSwcPath::smoothZ()
 
   vector<double> smoothed(size());
 
-  darray_medfilter(&(zArray[0]), size(), 5, &(smoothed[0]));
-  darray_avgsmooth(&(smoothed[0]), size(), 3, &(zArray[0]));
+  neutu::array::MedianFilter(&(zArray[0]), size(), 5, &(smoothed[0]));
+  neutu::array::AverageSmooth(&(smoothed[0]), size(), 3, &(zArray[0]));
 
 
   for (size_t index = 0; index < size(); ++index) {
@@ -194,8 +194,8 @@ void ZSwcPath::smoothRadius(bool excludingBranchPoint)
 
   vector<double> smoothed(size());
 
-  darray_medfilter(&(valueArray[0]), size(), 5, &(smoothed[0]));
-  darray_avgsmooth(&(smoothed[0]), size(), 3, &(valueArray[0]));
+  neutu::array::MedianFilter(&(valueArray[0]), size(), 5, &(smoothed[0]));
+  neutu::array::AverageSmooth(&(smoothed[0]), size(), 3, &(valueArray[0]));
 
 
   for (size_t index = 0; index < size(); ++index) {

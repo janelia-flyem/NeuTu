@@ -6737,14 +6737,242 @@ void Swc_Tree_Node_Label_Stack(const Swc_Tree_Node *tn, Stack *stack,
   }
 }
 
+//#include "private/tzp_local_neuroseg.c"
+
 void Swc_Tree_Label_Stack(Swc_Tree *tree, Stack *stack,
     Swc_Tree_Node_Label_Workspace *ws)
 {
   Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
   Swc_Tree_Node *tn = NULL;
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
+    //printf("Node test: \n");
+    //Print_Swc_Tree_Node(tn);
+    Swc_Tree_Node *currentIter = tree->iterator;
     Swc_Tree_Node_Label_Stack(tn, stack, ws);
+    tree->iterator = currentIter; //temp hack for a very strange bug
   }
+
+#if 0
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, _FALSE_);
+  Swc_Tree_Node *tn = NULL;
+  while ((tn = Swc_Tree_Next(tree)) != NULL) {
+#ifdef _DEBUG_
+    printf("Node: \n");
+    Print_Swc_Tree_Node(tn);
+    Swc_Tree_Node *currentIter = tree->iterator;
+    printf("%p\n", currentIter);
+#endif
+      if (Swc_Tree_Node_Is_Regular(tn)) {
+    if (ws->label_mode == SWC_TREE_LABEL_ALL ||
+        ws->label_mode == SWC_TREE_LABEL_CONNECTION) {
+      Local_Neuroseg locseg;
+      Local_Neuroseg *tmpseg = NULL;
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("aftertmpseg: %p\n", tree->iterator);
+    }
+#endif
+      if (ws->z_proj == _TRUE_) {
+        tmpseg = Swc_Tree_Node_To_Locseg_P(tn, &locseg);
+      } else {
+        tmpseg = Swc_Tree_Node_To_Locseg(tn, &locseg);
+      }
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after0: %p\n", tree->iterator);
+    }
+#endif
+
+      if (tmpseg != NULL) {
+        color_t color;
+        color[0] = ws->sdw.color.r;
+        color[1] = ws->sdw.color.g;
+        color[2] = ws->sdw.color.b;
+        Local_Neuroseg_Translate(&locseg, ws->offset);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after1: %p\n", tree->iterator);
+    }
+#endif
+{
+  Local_Neuroseg *seg = &locseg;
+  if (stack == NULL) {
+    PRINT_EXCEPTION("Null pointer", "Null stack.");
+    THROW(ERROR_POINTER_NULL);
+  }
+
+  if (seg == NULL) {
+    PRINT_EXCEPTION("Null pointer", "Null local segment.");
+    THROW(ERROR_POINTER_NULL);
+  }
+  
+  /*
+  if((stack->kind != COLOR)) {
+    THROW(ERROR_DATA_TYPE);
+  }
+  */
+
+  double bottom_position[3];
+
+  Local_Neuroseg_Bottom(seg, bottom_position);
+
+  double offpos[3];
+  int c[3];          /* position of the original point in filter range */
+
+  double z_scale = 1.0;
+  local_neuroseg_stack_position(bottom_position, c, offpos, z_scale);
+
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+
+  Field_Range range;
+{
+  /* alloc <field> */
+  Geo3d_Scalar_Field *field = Neuroseg_Field_S(&seg->seg, NULL, NULL);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+  if (field == NULL)
+    return;
+  coordinate_3d_t bound[2];
+  Geo3d_Scalar_Field_Boundbox(field, bound);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+  
+  range.first_corner[0] = (int) (bound[0][0] - 1.5);
+  range.first_corner[1] = (int) (bound[0][1] - 1.5);
+  range.first_corner[2] = (int) (bound[0][2] * z_scale - 1.5);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+
+  range.size[0] = (int) (bound[1][0] - range.first_corner[0] + 1.5);
+  range.size[1] = (int) (bound[1][1] - range.first_corner[1] + 1.5);
+  range.size[2] = (int) (bound[1][2]* z_scale - range.first_corner[2] 
+			  + 1.5);
+
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+
+#ifdef _DEBUG_2
+  print_field_range(range);
+#endif
+
+  /* free <field> */
+  Kill_Geo3d_Scalar_Field(field);
+}
+  //Neuroseg_Field_Range(&(seg->seg), &range, z_scale);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+
+  double *filter = Neurofilter(&(seg->seg), NULL, NULL, 
+			       &range, offpos, z_scale);
+
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+  int i;
+  int region_corner[3];
+  
+  for (i = 0; i < 3; i++) {
+    region_corner[i] = range.first_corner[i] + c[i];
+  }
+
+  Stack *filter_stack = Scale_Double_Stack(filter, range.size[0], 
+					   range.size[1], 
+					   range.size[2], GREY);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+  int point[3];
+  int offset = 0;
+  //uint8 pixel[3];
+  
+  int j, k;
+  for (k = 0; k < filter_stack->depth; k++) {
+    point[2] = region_corner[2] + k;
+    for (j = 0; j < filter_stack->height; j++) {
+      point[1] = region_corner[1] + j;
+      for (i = 0; i < filter_stack->width; i++) {
+	point[0] = region_corner[0] + i;
+	if ((point[0] >= 0) && (point[0] < stack->width) &&
+	    (point[1] >= 0) && (point[1] < stack->height) &&
+	    (point[2] >= 0) && (point[2] < stack->depth) &&
+	    (filter[offset] > 0)) {
+	  Set_Stack_Pixel(stack, point[0], point[1], point[2], 0, color[0]);
+          if (Stack_Kind(stack) == COLOR) {
+            Set_Stack_Pixel(stack, point[0], point[1], point[2], 1, color[1]);
+            Set_Stack_Pixel(stack, point[0], point[1], point[2], 2, color[2]);
+          }
+	}
+	offset++;
+      }
+    }
+  }     
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+  
+  free(filter);
+  Kill_Stack(filter_stack);    
+}
+
+//        Local_Neuroseg_Label_C(&locseg, stack, 1.0, color);
+      }
+    }
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after %d: %p\n", __LINE__, tree->iterator);
+    }
+#endif
+
+    if (ws->label_mode == SWC_TREE_LABEL_NODE ||
+        ws->label_mode == SWC_TREE_LABEL_ALL) {
+      Geo3d_Ball_Label_Workspace ball_ws;
+      Default_Geo3d_Ball_Label_Workspace(&ball_ws);
+      ball_ws.sdw = ws->sdw;
+      Geo3d_Ball ball;
+      ball.r = tn->node.d;
+      ball.center[0] = tn->node.x + ws->offset[0];
+      ball.center[1] = tn->node.y + ws->offset[1];
+      if (ws->z_proj == _TRUE_) {
+        ball.center[2] = 0.0 + ws->offset[2];
+      } else {
+        ball.center[2] = tn->node.z + ws->offset[2];
+      }
+      Geo3d_Ball_Label_Stack(&ball, stack, &ball_ws);
+    }
+  }
+    //Swc_Tree_Node_Label_Stack(tn, stack, ws);
+#ifdef _DEBUG_
+    if (currentIter != tree->iterator) {
+      printf("after: %p\n", tree->iterator);
+    }
+#endif
+  }
+#endif
 }
 
 void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)

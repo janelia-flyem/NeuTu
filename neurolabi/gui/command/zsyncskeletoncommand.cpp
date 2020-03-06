@@ -6,12 +6,15 @@
 #include <QDebug>
 #include <QUrl>
 
+#include "neulib/core/stringbuilder.h"
+
 #include "zstring.h"
-#include "common/zstringbuilder.h"
+//#include "common/zstringbuilder.h"
 
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
 
+#include "zdvidutil.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 
@@ -81,7 +84,7 @@ void process_body(uint64_t bodyId, int index, int totalCount,
     } else if (bodyMod >= 0) { //mutation ID must be available
       int64_t swcMod = flyem::GetMutationId(tree.get());
       if (bodyMod != swcMod) {
-        reason = ZStringBuilder("").
+        reason = neulib::StringBuilder("").
             append(swcMod).append("->").append(bodyMod);
         syncing = true;
       }
@@ -113,8 +116,8 @@ int ZSyncSkeletonCommand::run(
 
   QUrl outputUrl(output.c_str());
 
-  ZDvidTarget target;
-  target.setFromSourceString(input[0]);
+  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(input[0]);
+//  target.setFromSourceString(input[0]);
 
   std::function<void(uint64_t)> processBody;
   neutuse::TaskFactory taskFactory;
@@ -161,8 +164,9 @@ int ZSyncSkeletonCommand::run(
 
   ZDvidReader reader;
   if (reader.open(target)) {
+    target = reader.getDvidTarget();
     reader.setVerbose(false);
-    if (reader.hasData(target.getSkeletonName())) {
+    if (reader.hasData(reader.getDvidTarget().getSkeletonName())) {
       std::set<std::string> statusSet;
       if (config.hasKey("bodyStatus")) {
         ZJsonArray statusJson(config.value("bodyStatus"));
@@ -200,7 +204,8 @@ int ZSyncSkeletonCommand::run(
                 bodyId, i + 1, predefinedBodyList.size(), reader, processBody);
         }
       } else {
-        QStringList annotList = reader.readKeys(target.getBodyAnnotationName().c_str());
+        QStringList annotList =
+            reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
         int index = 1;
         for (const QString &bodyStr : annotList) {
           uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();

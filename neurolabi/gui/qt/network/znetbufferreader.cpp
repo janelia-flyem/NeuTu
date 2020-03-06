@@ -61,7 +61,7 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
 
   resetNetworkReply();
   QNetworkRequest req = QNetworkRequest(url);
-  foreach (const auto &p, m_header) {
+  for (const auto &p : m_header.toStdMap()) {
     req.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
   }
   m_networkReply = getNetworkAccessManager()->get(req);
@@ -138,7 +138,7 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
   startReading();
   QNetworkRequest request(url);
   QString headInfo;
-  foreach (const auto &p, m_header) {
+  for (const auto &p : m_header.toStdMap()) {
     request.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
     headInfo += p.first + ":" + p.second.left(10) + "; ";
   }
@@ -266,6 +266,11 @@ void ZNetBufferReader::clearBuffer()
 bool ZNetBufferReader::hasRequestHeader(const QString &key) const
 {
   return m_header.count(key) > 0;
+}
+
+void ZNetBufferReader::removeRequestHeader(const QString &key)
+{
+  m_header.remove(key);
 }
 
 void ZNetBufferReader::setRequestHeader(const QString &key, const QString &value)

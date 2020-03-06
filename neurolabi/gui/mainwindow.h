@@ -54,7 +54,7 @@ class ZDvidTargetProviderDialog;
 class FlyEmBodyFilterDialog;
 class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
-class ZFlyEmRoiDialog;
+//class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
@@ -522,6 +522,8 @@ private slots:
 
   void on_actionUpdate_Body_Info_triggered();
 
+  void on_actionSubtract_Background_Adaptive_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -745,7 +747,7 @@ private:
 //  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
-  ZFlyEmRoiDialog *m_roiDlg;
+//  ZFlyEmRoiDialog *m_roiDlg;
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;

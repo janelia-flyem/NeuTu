@@ -30,7 +30,7 @@ public:
     SEQUENCER, QUERY, NEUPRINT
   };
 
-  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
+  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = nullptr);
   ~FlyEmBodyInfoDialog();
 
   void simplify();
@@ -45,6 +45,7 @@ public:
   }
 
   std::string getNeuprintUuid() const;
+  void setNeuPrintReader(std::unique_ptr<NeuPrintReader> &&reader);
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -65,7 +66,7 @@ signals:
   void ioBodiesLoaded();
   void ioBodyLoadFailed();
   void ioNoBodiesLoaded();
-  void ioConnectionsLoaded();
+//  void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
   /*!
    * \brief appendingData
@@ -88,6 +89,7 @@ private:
 
 private slots:
     void onCloseButton();
+    void onHideButton();
     void onRefreshButton();
     void onAllNamedButton();
     void onQueryByNameButton();
@@ -119,6 +121,7 @@ private slots:
     void onExportConnections();
     void onSaveColorMap();
     void onLoadColorMap();
+    void onLoadCompleted();
     void onMoveUp();
     void onMoveDown();
     void onColorMapLoaded(ZJsonValue colors);
@@ -135,6 +138,7 @@ private slots:
     void onIOConnectionsSelectionChanged(
         QItemSelection selected, QItemSelection deselected);
     void onCopySelectedConnections();
+    void changeDataset(const QString &dataset);
 
 private:
     enum Tabs {
@@ -179,11 +183,11 @@ private:
     EMode m_mode = EMode::SEQUENCER;
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
-    QStandardItemModel* m_filterModel;
+    QStandardItemModel* m_bodyGroupModel;
     QStandardItemModel* m_ioBodyModel;
     QStandardItemModel* m_connectionsModel;
     QSortFilterProxyModel* m_bodyProxy;
-    QSortFilterProxyModel* m_filterProxy;
+    QSortFilterProxyModel* m_bodyGroupProxy;
     QSortFilterProxyModel* m_schemeBuilderProxy;
     QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_connectionsProxy;
@@ -195,8 +199,8 @@ private:
     QMap<QString, QList<uint64_t>> m_groupIdMap;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
-    bool m_quitting;
-    bool m_cancelLoading;
+    bool m_quitting = false;
+    bool m_cancelLoading = false;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
     ZDvidReader m_sequencerReader;
@@ -204,17 +208,20 @@ private:
     bool m_hasLabelsz = false;
     bool m_hasBodyAnnotation = false;
     std::string m_defaultSynapseLabelsz;
-    int m_currentMaxBodies;
-    bool m_connectionsLoading;
+    int m_currentMaxBodies = 0;
+    bool m_connectionsLoading = false;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
     qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
     std::string m_neuprintDataset; //temp hack
+    QVector<QString> m_bodyColumnHeaderList;
 
     NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
     std::unique_ptr<NeuPrintReader> m_neuPrintReader;
+
+    static const char* THREAD_ID_BODY_LOADING;
 
 private:
     void setBodyHeaders(QStandardItemModel*);
@@ -225,6 +232,7 @@ private:
     bool labelszPresent();
     void importBodiesDvid();
     void importBodiesDvid2();
+    void importBodiesNeuPrint();
     /*!
      * \brief Set status label
      *
@@ -270,6 +278,11 @@ private:
     void updateColorScheme(const QString &name, const QColor &color);
     QString getTableColorName(int index) const;
     QColor getTableColor(int index) const;
+    void initBodyColumnHeader();
+    void adjustBodyTableColumn();
+    std::vector<ZIntPoint> getSiteList(
+        const std::vector<ZDvidSynapse> &synapses) const;
+    void cancelBodyLoading();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

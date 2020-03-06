@@ -25,6 +25,7 @@
 #include "zwidgetmessage.h"
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
+#include "zjsonobjectparser.h"
 
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -81,6 +82,8 @@
 #include "misc/miscutility.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
+#include "roi/zroiprovider.h"
+#include "roi/zdvidroifactory.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -113,6 +116,7 @@ void ZFlyEmProofDoc::init()
   m_analyzer.setDvidReader(&m_synapseReader);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
+  m_roiManager = new ZFlyEmRoiManager(this);
 
   m_routineCheck = false;
 
@@ -139,6 +143,15 @@ void ZFlyEmProofDoc::startTimer()
   if (m_routineCheck) {
     m_routineTimer->start();
   }
+}
+
+const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+{
+  if (!m_workWriter.good()) {
+    m_workWriter.open(getDvidTarget());
+  }
+
+  return m_workWriter.getDvidReader();
 }
 
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
@@ -390,9 +403,9 @@ void ZFlyEmProofDoc::setSelectedBody(
       for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
            iter != sliceList.end(); ++iter) {
         ZDvidLabelSlice *slice = *iter;
-        slice->recordSelection();
+        slice->startSelection();
         slice->setSelection(selected, labelType);
-        slice->processSelection();
+        slice->endSelection();
       }
 
       notifyBodySelectionChanged();
@@ -406,6 +419,30 @@ void ZFlyEmProofDoc::setSelectedBody(
   std::set<uint64_t> selected;
   selected.insert(bodyId);
   setSelectedBody(selected, labelType);
+}
+
+void ZFlyEmProofDoc::addSelectionAt(int x, int y, int z)
+{
+  const ZDvidReader &reader = getDvidReader();
+  if (reader.isReady()) {
+    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
+    if (bodyId > 0) {
+//      ZDvidLabelSlice *slice = getDvidLabelSlice();
+      QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        if (slice != NULL) {
+          slice->startSelection();
+          slice->addSelection(
+                slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
+                neutu::ELabelSource::ORIGINAL);
+          slice->endSelection();
+        }
+      }
+      notifyBodySelectionChanged();
+    }
+  }
 }
 
 void ZFlyEmProofDoc::toggleBodySelection(
@@ -907,6 +944,64 @@ bool ZFlyEmProofDoc::isAdmin() const
   return m_isAdmin;
 }
 
+std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
+{
+  if (getDvidReader().isReady() && !m_roiProvider) {
+    m_roiProvider = std::shared_ptr<ZRoiProvider>(new ZRoiProvider);
+    ZDvidRoiFactory *factory = new ZDvidRoiFactory;
+    factory->setDvidTarget(getDvidTarget());
+    m_roiProvider->setRoiFactory(factory);
+
+    //Initialize ROI list
+    std::vector<std::string> nameList;
+
+    QString roiDataName = ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str();
+    QStringList keyList = getDvidReader().readKeys(roiDataName);
+
+    QList<ZJsonObject> infoList = getDvidReader().readJsonObjectsFromKeys(
+          roiDataName, keyList);
+    if (!keyList.isEmpty()) {
+      ZJsonObjectParser parser;
+      for (int i = 0; i < keyList.size(); ++i) {
+        bool visible = parser.getValue(infoList[i], "visible", true);
+        if (visible) {
+          nameList.push_back(keyList[i].toStdString());
+        }
+      }
+      factory->setSource(ZDvidRoiFactory::ESource::MESH);
+    } else {
+      ZJsonValue datains = m_infoJson.value("DataInstances");
+      if(datains.isObject()) {
+        ZJsonObject insList(datains);
+        std::vector<std::string> keys = insList.getAllKey();
+
+        for(std::size_t i=0; i<keys.size(); i++) {
+          std::string roiName = keys.at(i);
+          ZJsonObject roiJson(insList.value(roiName.c_str()));
+          if (roiJson.hasKey("Base")) {
+            ZJsonObject baseJson(roiJson.value("Base"));
+            std::string typeName =
+                ZJsonParser::stringValue(baseJson["TypeName"]);
+            if (typeName == "roi") {
+              nameList.push_back(roiName);
+            }
+          }
+        }
+      }
+      factory->setSource(ZDvidRoiFactory::ESource::ROI);
+    }
+    m_roiProvider->setRoiList(nameList);
+
+    m_roiProvider->startWorkThread();
+    addClearance([&]() {
+      m_roiProvider->endWorkThread();
+    });
+  }
+
+  return m_roiProvider;
+}
+
+
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
   if (!m_bookmarkReader.isReady()) {
@@ -1130,6 +1225,11 @@ void ZFlyEmProofDoc::prepareGrayscaleReader()
 #endif
 }
 
+bool ZFlyEmProofDoc::supervisorNeeded() const
+{
+  return true;
+}
+
 bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 {
   m_originalEnv = env;
@@ -1177,22 +1277,24 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
 
-    flowInfo << "->Prepare DVID data instances";
-    initData(getDvidTarget());
-    if (getSupervisor() != NULL) {
-      flowInfo << "->Prepare librarian";
-      getSupervisor()->setDvidTarget(getDvidTarget());
-      if (!getSupervisor()->isEmpty() &&
-          !getDvidTarget().readOnly()) {
-        int statusCode = getSupervisor()->testServer();
-        if (statusCode != 200) {
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("WARNING: Failed to connect to the librarian %1. "
-                          "Please do NOT proofread segmentation "
-                          "until you fix the problem.").
-                  arg(getSupervisor()->getMainUrl().c_str()),
-                  neutu::EMessageType::WARNING));
+    if (supervisorNeeded()) {
+      flowInfo << "->Prepare DVID data instances";
+      initData(getDvidTarget());
+      if (getSupervisor() != NULL) {
+        flowInfo << "->Prepare librarian";
+        getSupervisor()->setDvidTarget(getDvidTarget());
+        if (!getSupervisor()->isEmpty() &&
+            !getDvidTarget().readOnly()) {
+          int statusCode = getSupervisor()->testServer();
+          if (statusCode != 200) {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("WARNING: Failed to connect to the librarian %1. "
+                            "Please do NOT proofread segmentation "
+                            "until you fix the problem.").
+                    arg(getSupervisor()->getMainUrl().c_str()),
+                    neutu::EMessageType::WARNING));
+          }
         }
       }
     }
@@ -1216,24 +1318,27 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     const_cast<ZDvidTarget&>(target).setReadOnly(true);
 #endif
 
-    //Run check anyway to get around a strange bug of showing grayscale
-    flowInfo << "->Check proofreading data instances";
-    int missing = getDvidReader().checkProofreadingData();
-    if (!getDvidTarget().readOnly()) {
-      if (missing > 0) {
-        emit messageGenerated(
-              ZWidgetMessage(
-                QString("WARNING: Some data for proofreading are missing in "
-                        "the database. "
-                        "Please do NOT proofread segmentation "
-                        "until you fix the problem."),
-                neutu::EMessageType::WARNING));
+    if (getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+      //Run check anyway to get around a strange bug of showing grayscale
+      flowInfo << "->Check proofreading data instances";
+      int missing = getDvidReader().checkProofreadingData();
+      if (!getDvidTarget().readOnly()) {
+        if (missing > 0) {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("WARNING: Some data for proofreading are missing in "
+                          "the database. "
+                          "Please do NOT proofread segmentation "
+                          "until you fix the problem."),
+                  neutu::EMessageType::WARNING));
+        }
       }
     }
 
-    m_roiManager = new ZFlyEmRoiManager(this);
     m_roiManager->setDvidTarget(getDvidTarget());
     m_roiManager->loadRoiList();
+
+//    initRoiProvider();
 
     KDEBUG << ZLog::Diagnostic(flowInfo.str());
 
@@ -1395,6 +1500,9 @@ void ZFlyEmProofDoc::updateDataConfig()
 {
   m_dataConfig = FlyEmDataReader::ReadDataConfig(getDvidReader());
   m_mergeProject->setBodyStatusProtocol(m_dataConfig.getBodyStatusProtocol());
+
+  ZJsonObject obj = getDvidReader().readJsonObjectFromKey("neutu_config", "meta");
+  m_meta.loadJsonObject(obj);
 }
 
 const ZContrastProtocol& ZFlyEmProofDoc::getContrastProtocol() const
@@ -1698,6 +1806,22 @@ bool ZFlyEmProofDoc::test()
   std::cout << slice->isSupervoxel() << std::endl;
 
   return true;
+}
+
+void ZFlyEmProofDoc::trace(const ZPoint &pt)
+{
+  if (!m_tracingHelper.isReady()) {
+    m_tracingHelper.setDocument(this);
+  }
+  m_tracingHelper.trace(pt);
+}
+
+void ZFlyEmProofDoc::testSlot()
+{
+  if (!m_tracingHelper.isReady()) {
+    m_tracingHelper.setDocument(this);
+  }
+  m_tracingHelper.trace(339, 123, 186);
 }
 
 ZDvidLabelSlice* ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
@@ -3004,10 +3128,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     }
     reader = &m_supervoxelWorkReader;
   } else {
-    if (!m_workWriter.good()) {
-      m_workWriter.open(getDvidTarget());
-    }
-    reader = &m_workWriter.getDvidReader();
+    reader = &getWorkReader();
   }
 
   ZArray *array = NULL;
@@ -3657,6 +3778,12 @@ void ZFlyEmProofDoc::refreshSynapse()
   }
 
   processObjectModified();
+}
+
+void ZFlyEmProofDoc::updateSynapseDefaultRadius(
+    double preRadius, double postRadius)
+{
+  ZStackDocAccessor::UpdateSynapseDefaultRadius(this, preRadius, postRadius);
 }
 
 void ZFlyEmProofDoc::downloadTodoList()
@@ -4804,7 +4931,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
   if (originalStack != NULL) {
     if (!roi.isEmpty()) {
       if (m_splitSource.get() != NULL) {
-        if (!roi.equals(m_splitSource->getBoundBox())) {
+        if (!roi.equals(m_splitSource->getIntBoundBox())) {
           m_splitSource.reset();
         }
       }
@@ -5144,7 +5271,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 {
   ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
-    slice->recordSelection();
+    slice->startSelection();
   }
 }
 
@@ -5152,7 +5279,7 @@ void ZFlyEmProofDoc::processBodySelection()
 {
   ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
   if (slice != NULL) {
-    slice->processSelection();
+    slice->endSelection();
   }
 }
 
@@ -5783,9 +5910,26 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
   return bookmark;
 }
 
+
+
+ZMesh* ZFlyEmProofDoc::makeRoiMesh(const QString &name)
+{
+  ZMesh *mesh = nullptr;
+  if (m_roiProvider) {
+    mesh = m_roiProvider->makeRoiMesh(name.toStdString());
+  }
+
+  return mesh;
+}
+
 void ZFlyEmProofDoc::makeKeyProcessor()
 {
   m_keyProcessor = new ZFlyEmProofDocKeyProcessor(this);
+}
+
+std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::getRoiProvider() const
+{
+  return m_roiProvider;
 }
 
 void ZFlyEmProofDoc::exportGrayscale(

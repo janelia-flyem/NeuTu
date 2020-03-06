@@ -2,6 +2,8 @@
 
 #include "zstack.hxx"
 #include "zpainter.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
@@ -104,6 +106,14 @@ void ZStackPatch::setFinalOffset(double dx, double dy)
 {
   m_stack->setOffset(0, 0, 0);
   m_offset.set(dx, dy, m_offset.z());
+}
+
+ZCuboid ZStackPatch::getBoundBox() const
+{
+  ZCuboid box = ZCuboid::FromIntCuboid(getStack()->getBoundBox());
+  box.scale(m_sx, m_sy, 1.0);
+  box.translate(m_offset);
+  return box;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)

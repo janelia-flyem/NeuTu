@@ -36,7 +36,6 @@
 #include "tz_voxel_graphics.h"
 #include "tz_stack_sampling.h"
 #include "tz_stack_utils.h"
-#include "tz_darray.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
 #include "tz_local_rpi_neuroseg.h"
@@ -206,6 +205,11 @@ void ZStackDoc::clearToDestroy()
     clearToProceed();
   }
   m_clearanceList.clear();
+}
+
+void ZStackDoc::requestStackUpdate(ZStack *stack)
+{
+  emit updatingStack(stack);
 }
 
 void ZStackDoc::addClearance(const Clearance &c)
@@ -388,7 +392,7 @@ void ZStackDoc::initNeuronTracer()
     LINFO_NLN() << str;
   });
 
-  getNeuronTracer().initTraceWorkspace(getStack());
+//  getNeuronTracer().initTraceWorkspace(getStack());
   getNeuronTracer().initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
@@ -465,6 +469,7 @@ void ZStackDoc::connectSignalSlot()
           this, SLOT(advanceProgressSlot(double)));
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
+  connect(this, &ZStackDoc::updatingStack, this, &ZStackDoc::updateStack);
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)
@@ -517,6 +522,8 @@ void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
 
 void ZStackDoc::addTask(ZTask *task)
 {
+  addTaskSlot(task);
+  /*
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
   if (m_worker != NULL) {
     if (task->getDelay() > 0) {
@@ -531,14 +538,18 @@ void ZStackDoc::addTask(ZTask *task)
       addTaskSlot(task);
     }
   }
+  */
 }
 
 void ZStackDoc::addTaskSlot(ZTask *task)
 {
-//  task->moveToThread(m_worker->thread());
-  if (m_worker != NULL) {
-    m_worker->addTask(task);
+  if (m_workThread) {
+    m_workThread->addTask(task);
   }
+//  task->moveToThread(m_worker->thread());
+//  if (m_worker != NULL) {
+//    m_worker->addTask(task);
+//  }
 }
 
 void ZStackDoc::autoSaveSwc()
@@ -1238,8 +1249,26 @@ DEFINE_NOTIFY_SELECTION_CHANGED(Swc_Tree_Node, swcTreeNodeSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZSwcTree, swcSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZPunctum, punctaSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZLocsegChain, chainSelectionChanged)
-DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
+//DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZMesh, meshSelectionChanged)
+
+void ZStackDoc::notifySelectionChanged(
+    const QList<ZStackObject*> &selected,
+    const QList<ZStackObject*> &deselected)
+{
+  ZStackObjectInfoSet selectedInfo;
+  ZStackObjectInfoSet deselectedInfo;
+
+  for (ZStackObject *obj : selected) {
+    selectedInfo.add(*obj);
+  }
+
+  for (ZStackObject *obj : deselected) {
+    deselectedInfo.add(*obj);
+  }
+
+  emit objectSelectionChanged(selectedInfo, deselectedInfo);
+}
 
 void ZStackDoc::selectHitSwcTreeNodeConnection(ZSwcTree *tree)
 {
@@ -1778,6 +1807,13 @@ void ZStackDoc::loadStack(ZStack *zstack)
   }
 }
 
+void ZStackDoc::updateStack(ZStack *stack)
+{
+  if (stack) {
+    loadStack(stack);
+  }
+}
+
 void ZStackDoc::loadReaderResult()
 {
   deprecate(EComponent::STACK);
@@ -1797,6 +1833,11 @@ void ZStackDoc::loadReaderResult()
 #endif
 
   emit stackLoaded();
+}
+
+bool ZStackDoc::allowingTracing() const
+{
+  return m_meta.allowingTracing();
 }
 
 QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
@@ -3925,34 +3966,6 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
   }
 
   removeObject(removeSet, deleteObject);
-/*
-  if (deleteObject) {
-    m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::KILL);
-  } else {
-    m_dataBuffer->addUpdate(
-          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::EAction::EXPEL);
-  }
-
-  m_dataBuffer->deliver();
-  */
-//  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
-
-//  notifyObjectModified();
-
-//  blockSignals(true);
-//  for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
-//       iter != removeSet.end(); ++iter) {
-//    removeObject(*iter, deleteObject);
-//  }
-//  blockSignals(false);
-
-  /*
-  if (!removeSet.empty()) {
-    notifyObjectModified();
-    notifyPlayerChanged(role);
-  }
-  */
 }
 
 template <class InputIterator>
@@ -5174,6 +5187,20 @@ bool ZStackDoc::subtractBackground()
   return false;
 }
 
+bool ZStackDoc::subtractBackgroundAdaptive()
+{
+  if (hasStackData()) {
+    ZStack *mainStack = getStack();
+    if (mainStack != NULL) {
+      ZStackProcessor::SubtractBackgroundAdaptive(mainStack, 5, 3);
+      notifyStackModified(false);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackDoc::enhanceLine()
 {
   ZStack *mainStack = getStack();
@@ -5367,7 +5394,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -5394,7 +5421,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
-      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
@@ -8749,9 +8776,17 @@ void ZStackDoc::updateTraceMask()
        iter != treeList.end(); ++iter) {
     const ZSwcTree *tree = *iter;
 
+#ifdef _DEBUG_
+    const_cast<ZSwcTree*>(tree)->save(GET_TEST_DATA_DIR + "/_test.swc");
+#endif
+
     Swc_Tree_Label_Stack(
           tree->data(), getTraceWorkspace()->trace_mask, &workspace);
   }
+
+#ifdef _DEBUG_
+    C_Stack::write(GET_TEST_DATA_DIR + "/_test.tif", getTraceWorkspace()->trace_mask);
+#endif
 }
 
 
@@ -10509,6 +10544,16 @@ void ZStackDoc::clearSelectedSet()
 {
   deselectAllSwcTreeNodes();
   m_objectGroup.setSelected(false);
+}
+
+ZCuboid ZStackDoc::getSelectedBoundBox() const
+{
+  ZCuboid box = m_objectGroup.getSelectedBoundBox();
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (ZSwcTree *tree : treeList) {
+    box.join(tree->getSelectedNodeBoundBox());
+  }
+  return box;
 }
 
 ZRect2d ZStackDoc::getRect2dRoi() const

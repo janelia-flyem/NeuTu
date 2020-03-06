@@ -47,8 +47,10 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   m_colors.swap(rhs.m_colors);
   m_indices.swap(rhs.m_indices);
 
-  rhs.validateObbTree(false);
-  validateObbTree(false);
+  rhs.invalidateCachedProperties();
+  invalidateCachedProperties();
+//  rhs.validateObbTree(false);
+//  validateObbTree(false);
 }
 
 /*
@@ -87,7 +89,8 @@ void ZMesh::load(const QString& filename)
 {
   ZMeshIO::instance().load(filename, *this);
   setSource(qUtf8Printable(filename));
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 void ZMesh::save(const QString& filename, const std::string& format) const
@@ -112,11 +115,14 @@ QByteArray ZMesh::writeToMemory(const std::string &format) const
 
 ZBBox<glm::dvec3> ZMesh::boundBox() const
 {
-  ZBBox<glm::dvec3> result;
-  for (size_t i = 0; i < m_vertices.size(); ++i) {
-    result.expand(glm::dvec3(m_vertices[i]));
+//  ZBBox<glm::dvec3> result;
+  if (m_boundBox.empty()) {
+    for (size_t i = 0; i < m_vertices.size(); ++i) {
+      m_boundBox.expand(glm::dvec3(m_vertices[i]));
+    }
+//    m_boundBox = result;
   }
-  return result;
+  return m_boundBox;
 }
 
 ZCuboid ZMesh::getBoundBox() const
@@ -176,7 +182,8 @@ void ZMesh::setVertices(const std::vector<glm::dvec3>& vertices)
     m_vertices.push_back(glm::vec3(v));
   }
 
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 void ZMesh::setNormals(const std::vector<glm::dvec3>& normals)
@@ -261,7 +268,8 @@ void ZMesh::interpolate(const ZMesh& ref)
     }
   }
 
-  validateObbTree(false);
+  invalidateCachedProperties();
+//  validateObbTree(false);
 }
 
 void ZMesh::clear()
@@ -273,7 +281,8 @@ void ZMesh::clear()
   m_normals.clear();
   m_colors.clear();
   m_indices.clear();
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 size_t ZMesh::numTriangles() const
@@ -414,7 +423,8 @@ void ZMesh::transformVerticesByMatrix(const glm::mat4& tfmat)
     m_vertices[i] = glm::applyMatrix(tfmat, m_vertices[i]);
   }
 
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 std::vector<ZMesh> ZMesh::split(size_t numTriangle) const
@@ -1560,35 +1570,46 @@ void ZMesh::append(const ZMesh &mesh)
   std::cout << "Appending mesh:" << m_indices.size() << " " << mesh.m_indices.size() << std::endl;
 #endif
 
-  if (m_ttype == GL_TRIANGLES && mesh.m_ttype == GL_TRIANGLES) {
-    size_t count = m_vertices.size();
+  if (!mesh.empty()) {
+    if (m_ttype == GL_TRIANGLES && mesh.m_ttype == GL_TRIANGLES) {
+      size_t count = m_vertices.size();
 
-    m_vertices.insert(
-          m_vertices.end(), mesh.m_vertices.begin(), mesh.m_vertices.end());
-    std::vector<GLuint> newIndices = mesh.m_indices;
-    for (auto &index : newIndices) {
-      index += count;
-    }
-    m_indices.insert(m_indices.end(), newIndices.begin(), newIndices.end());
+      m_vertices.insert(
+            m_vertices.end(), mesh.m_vertices.begin(), mesh.m_vertices.end());
+      std::vector<GLuint> newIndices = mesh.m_indices;
+      for (auto &index : newIndices) {
+        index += count;
+      }
+      m_indices.insert(m_indices.end(), newIndices.begin(), newIndices.end());
 
-    m_1DTextureCoordinates.insert(
-          m_1DTextureCoordinates.end(), mesh.m_1DTextureCoordinates.begin(),
-          mesh.m_1DTextureCoordinates.end());
-    m_2DTextureCoordinates.insert(
-          m_2DTextureCoordinates.end(), mesh.m_2DTextureCoordinates.begin(),
-          mesh.m_2DTextureCoordinates.end());
-    m_3DTextureCoordinates.insert(
-          m_3DTextureCoordinates.end(), mesh.m_3DTextureCoordinates.begin(),
-          mesh.m_3DTextureCoordinates.end());
-    m_normals.insert(
-          m_normals.end(), mesh.m_normals.begin(), mesh.m_normals.end());
-    m_colors.insert(
-          m_colors.end(), mesh.m_colors.begin(), mesh.m_colors.end());
+      m_1DTextureCoordinates.insert(
+            m_1DTextureCoordinates.end(), mesh.m_1DTextureCoordinates.begin(),
+            mesh.m_1DTextureCoordinates.end());
+      m_2DTextureCoordinates.insert(
+            m_2DTextureCoordinates.end(), mesh.m_2DTextureCoordinates.begin(),
+            mesh.m_2DTextureCoordinates.end());
+      m_3DTextureCoordinates.insert(
+            m_3DTextureCoordinates.end(), mesh.m_3DTextureCoordinates.begin(),
+            mesh.m_3DTextureCoordinates.end());
+      m_normals.insert(
+            m_normals.end(), mesh.m_normals.begin(), mesh.m_normals.end());
+      m_colors.insert(
+            m_colors.end(), mesh.m_colors.begin(), mesh.m_colors.end());
 
-  } else {
-    std::vector<glm::uvec3> indices = mesh.triangleIndices();
-    for (const auto &index : indices) {
-      appendTriangle(mesh, index);
+      invalidateCachedProperties();
+    } else {
+      if (m_ttype == GL_TRIANGLES) {
+        std::vector<glm::uvec3> indices = mesh.triangleIndices();
+        for (const auto &index : indices) {
+          appendTriangle(mesh, index);
+        }
+      } else {
+        ZMesh bufferMesh = *this;
+        clear();
+        m_ttype = GL_TRIANGLES;
+        append(bufferMesh);
+        append(mesh);
+      }
     }
   }
 }
@@ -1608,7 +1629,8 @@ void ZMesh::appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle)
   m_vertices.push_back(mesh.m_vertices[triangle[1]]);
   m_vertices.push_back(mesh.m_vertices[triangle[2]]);
 
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 
   if (mesh.num1DTextureCoordinates() > 0) {
     m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[0]]);
@@ -1739,6 +1761,12 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
 }
 
+void ZMesh::pushObjectColor(const QColor &color)
+{
+  setColor(color);
+  pushObjectColor();
+}
+
 void ZMesh::pushObjectColor()
 {
   m_colors.resize(m_vertices.size());
@@ -1768,7 +1796,8 @@ void ZMesh::swapXZ()
       }
     }
   }
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 
   m_normals.clear();
   generateNormals();
@@ -1788,7 +1817,8 @@ void ZMesh::translate(double x, double y, double z)
     vertex[1] += y;
     vertex[2] += z;
   }
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 void ZMesh::scale(double sx, double sy, double sz)
@@ -1798,7 +1828,8 @@ void ZMesh::scale(double sx, double sy, double sz)
     vertex[1] *= sy;
     vertex[2] *= sz;
   }
-  validateObbTree(false);
+//  validateObbTree(false);
+  invalidateCachedProperties();
 }
 
 vtkSmartPointer<vtkOBBTree> ZMesh::getObbTree() const

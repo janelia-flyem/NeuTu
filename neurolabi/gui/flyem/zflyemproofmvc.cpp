@@ -87,6 +87,7 @@
 #include "neutuse/task.h"
 #include "neutuse/taskfactory.h"
 
+#include "roi/zroimesh.h"
 #include "zflyembodystatus.h"
 #include "flyemmvcdialogmanager.h"
 #include "zflyembookmarklistmodel.h"
@@ -102,6 +103,7 @@
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
 #include "zflyemproofutil.h"
+#include "roi/zroiprovider.h"
 
 #include "neuroglancer/zneuroglancerpathparser.h"
 
@@ -143,7 +145,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   recordEnd();
 
-  delete m_dlgManager;
+//  delete m_dlgManager;
   delete m_actionLibrary;
   m_quitting = true;
   m_futureMap.waitForFinished();
@@ -161,47 +163,8 @@ void ZFlyEmProofMvc::init()
 //  m_dlgManager = std::make_unique<FlyEmMvcDialogManager>(this);
   m_dlgManager = new FlyEmMvcDialogManager(this);
 
-//  m_dvidDlg = NULL;
-
-  // temporarily disable sequencer:
-//  if (neutu::HasEnv("USE_SEQUENCER", "yes")) {
-//    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-//          FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
-//  } else {
-//    m_bodyInfoDlg = NULL;
-//  }
-
   m_protocolSwitcher = new ProtocolSwitcher(this);
-//  m_protocolSwitcher->useParentEventFilter(true);
-//  m_supervisor = new ZFlyEmSupervisor(this);
-//  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
-//  m_todoDlg = new FlyEmTodoDialog(this);
-//  m_roiDlg = new ZFlyEmRoiToolDialog(this);
-//  m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
-//  m_mergeUploadDlg = new ZFlyEmMergeUploadDialog(this);
-//  m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
-//  m_infoDlg = new ZInfoDialog(this);
-//  m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
-//  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
-//  m_bodyIdDialog = new FlyEmBodyIdDialog(this);
-//  m_settingDlg = new ZFlyEmProofSettingDialog(this);
 
-
-  /*
-  connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
-  connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
-  connect(m_roiDlg, SIGNAL(showing3DRoiCurve()), this, SLOT(showRoi3dWindow()));
-  connect(m_roiDlg, SIGNAL(goingToSlice(int)), this, SLOT(goToSlice(int)));
-  connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
-  connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
-  connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
-  connect(m_roiDlg, SIGNAL(movingPlane(double,double)),
-          this, SLOT(movePlaneRoi(double, double)));
-  connect(m_roiDlg, SIGNAL(rotatingPlane(double)),
-          this, SLOT(rotatePlaneRoi(double)));
-  connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
-          this, SLOT(scalePlaneRoi(double,double)));
-*/
   m_actionLibrary = new ZActionLibrary(this);
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -555,8 +518,8 @@ void ZFlyEmProofMvc::initBodyWindow()
           m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
   connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
-  connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
-          this, SLOT(retrieveRois()));
+//  connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
+//          this, SLOT(retrieveRois()));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -634,7 +597,7 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(suppressObjectVisible()));
   connect(getView(), SIGNAL(sliceSliderReleased()),
           this, SLOT(recoverObjectVisible()));
-  connect(this, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
+//  connect(this, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
           m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
   connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
@@ -949,6 +912,12 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           doc, SLOT(processBodySelectionChange()));
 
+  if (getCompleteDocument()->getRoiProvider()) {
+    connect(getCompleteDocument()->getRoiProvider().get(),
+            SIGNAL(roiUpdated(const QString&)),
+            doc, SLOT(updateRoiMesh(const QString&)));
+  }
+
 //  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   return doc;
@@ -1096,6 +1065,21 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 }
 
+void ZFlyEmProofMvc::prepareWindow(Z3DWindow *window)
+{
+  if (window && m_doc->getParentMvc()) {
+    flyem::Decorate3dBodyWindow(
+          window, getDvidInfo(),
+          m_doc->getParentMvc()->getView()->getViewParameter());
+    window->initRoiView(getCompleteDocument()->initRoiProvider());
+    /*
+    if(m_ROILoaded) {
+      m_coarseBodyWindow->initRois(m_roiMeshList);
+    }
+    */
+  }
+}
+
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   log3DWindowEvent("coarse_sphere", "make");
@@ -1116,16 +1100,17 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   m_coarseBodyWindow->setWindowType(neutu3d::EWindowType::COARSE_BODY);
   m_coarseBodyWindow->readSettings();
 
+  prepareWindow(m_coarseBodyWindow);
+  /*
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           m_coarseBodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-      m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
-            m_coarseBodyWindow, m_roiList,
-            m_loadedROIs, m_roiSourceList);
+      m_coarseBodyWindow->initRois(m_roiMeshList);
     }
   }
+  */
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
@@ -1152,15 +1137,20 @@ void ZFlyEmProofMvc::makeBodyWindow()
   m_bodyWindow->readSettings();
   m_bodyWindow->getMeshFilter()->setStayOnTop(true);
 
+  prepareWindow(m_bodyWindow);
+
+  /*
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           m_bodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-    if(m_ROILoaded)
-        m_bodyWindow->getROIsDockWidget()->loadROIs(
-              m_bodyWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+    if (getCompleteDocument()->getRoiProvider()) {
+      m_bodyWindow->initRoiView(getCompleteDocument()->getRoiProvider());
+    }
+//    if(m_ROILoaded)
+//        m_bodyWindow->initRois(m_roiMeshList);
   }
+  */
 }
 
 ZWindowFactory ZFlyEmProofMvc::makeExternalWindowFactory(
@@ -1197,6 +1187,11 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   m_meshWindow->readSettings();
   m_meshWindow->syncAction();
 
+  if (windowType != neutu3d::EWindowType::NEU3) {
+    prepareWindow(m_meshWindow);
+  }
+
+  /*(
   if (m_doc->getParentMvc() != NULL) {
     if (windowType != neutu3d::EWindowType::NEU3) {
       flyem::Decorate3dBodyWindow(
@@ -1204,12 +1199,11 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
             m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
       if(m_ROILoaded) {
-        m_meshWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_meshWindow->initRois(m_roiMeshList);
       }
     }
   }
+  */
 
   prepareBodyWindowSignalSlot(m_meshWindow, doc);
 
@@ -1236,16 +1230,17 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
   m_skeletonWindow->readSettings();
   m_skeletonWindow->syncAction();
 
+  prepareWindow(m_skeletonWindow);
+  /*
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_skeletonWindow->initRois(m_roiMeshList);
     }
   }
+  */
 
   prepareBodyWindowSignalSlot(m_skeletonWindow, doc);
 
@@ -1315,16 +1310,23 @@ void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
   window->setWindowType(neutu3d::EWindowType::MESH);
   window->readSettings();
 
+  prepareWindow(window);
+#if 0
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           window, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-    if(m_ROILoaded) {
+    if (m_ROILoaded) {
+      window->initRois(m_roiMeshList);
+      /*
         window->getROIsDockWidget()->loadROIs(
               window, m_roiList, m_loadedROIs,
               m_roiSourceList);
+              */
     }
   }
+#endif
+
 }
 
 void ZFlyEmProofMvc::makeMeshWindow()
@@ -1355,16 +1357,17 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   m_skeletonWindow->setWindowType(neutu3d::EWindowType::SKELETON);
   m_skeletonWindow->readSettings();
 
+  prepareWindow(m_skeletonWindow);
+  /*
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
-              m_roiSourceList);
+        m_skeletonWindow->initRois(m_roiMeshList);
     }
   }
+  */
 }
 
 void ZFlyEmProofMvc::makeExternalNeuronWindow()
@@ -1382,16 +1385,17 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 //  doc->showSynapse(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 //  doc->showTodo(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
+  prepareWindow(m_externalNeuronWindow);
+  /*
   if (m_doc->getParentMvc() != NULL) {
     flyem::Decorate3dBodyWindow(
           m_externalNeuronWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
 
     if(m_ROILoaded)
-        m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
-              m_externalNeuronWindow, m_roiList,
-              m_loadedROIs, m_roiSourceList);
+        m_externalNeuronWindow->initRois(m_roiMeshList);
   }
+  */
 }
 
 void ZFlyEmProofMvc::roiToggled(bool on)
@@ -1774,6 +1778,16 @@ void ZFlyEmProofMvc::redo()
 }
 */
 
+void ZFlyEmProofMvc::updateSynapseDefaultRadius(
+    double preRadius, double postRadius)
+{
+  getCompleteDocument()->updateSynapseDefaultRadius(preRadius, postRadius);
+  if (m_orthoWindow) {
+    m_orthoWindow->getDocument()->updateSynapseDefaultRadius(
+          preRadius, postRadius);
+  }
+}
+
 void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
 {
   m_showSegmentation = visible;
@@ -2046,7 +2060,10 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     }
     getViewButton(EViewButton::GOTO_POSITION)->show();
   }
+
+//  updateRoiWidget();
 }
+
 
 #if 0
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
@@ -3234,6 +3251,11 @@ void ZFlyEmProofMvc::disableSequencer()
   }
 }
 
+bool ZFlyEmProofMvc::hasProfileTask() const
+{
+  return false;
+}
+
 void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
@@ -3323,6 +3345,11 @@ void ZFlyEmProofMvc::testBodyVis()
 
     locateBody(bodyId, appending);
   }
+}
+
+void ZFlyEmProofMvc::testSlot()
+{
+  getCompleteDocument()->testSlot();
 }
 
 
@@ -4389,6 +4416,8 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
 {
   NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
   if (reader) {
+    return reader->getStatus();
+#if 0
     if (!reader->hasAuthCode()) {
       return neutu::EServerStatus::NOAUTH;
     }
@@ -4429,6 +4458,7 @@ neutu::EServerStatus ZFlyEmProofMvc::getNeuPrintStatus() const
     }
 
     return neutu::EServerStatus::NORMAL;
+#endif
   }
 
   return neutu::EServerStatus::OFFLINE;
@@ -4467,7 +4497,7 @@ NeuPrintReader* ZFlyEmProofMvc::getNeuPrintReader()
 #endif
 
 namespace {
-void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
+void ShowDialog(QDialog *dlg)
 {
   if (dlg) {
     dlg->show();
@@ -4478,7 +4508,7 @@ void ShowNeuPrintBodyDlg(FlyEmBodyInfoDialog *dlg)
 
 void ZFlyEmProofMvc::openNeuPrint()
 {
-  ShowNeuPrintBodyDlg(getNeuPrintBodyDlg());
+  ShowDialog(getNeuPrintBodyDlg());
 
 //  NeuPrintReader *reader = getNeuPrintReader();
 //  if (reader) {
@@ -4925,6 +4955,11 @@ void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &/*pt*/, uint64_t bod
     inputDialog->setDvidTarget(getDvidTarget());
     // inputDialog->exec();
     inputDialog->show();
+}
+
+void ZFlyEmProofMvc::showSynapsePropertyDlg()
+{
+  m_dlgManager->showSynpasePropertyDlg();
 }
 
 void ZFlyEmProofMvc::closeSkeletonWindow()
@@ -5645,28 +5680,7 @@ ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
 {
-  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-  if (reader.isReady()) {
-    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
-    if (bodyId > 0) {
-//      ZDvidLabelSlice *slice = getDvidLabelSlice();
-      QList<ZDvidLabelSlice*> sliceList =
-          getCompleteDocument()->getFrontDvidLabelSliceList();
-      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-           iter != sliceList.end(); ++iter) {
-        ZDvidLabelSlice *slice = *iter;
-        if (slice != NULL) {
-          slice->recordSelection();
-          slice->addSelection(
-                slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
-                neutu::ELabelSource::ORIGINAL);
-          slice->processSelection();
-        }
-      }
-      getCompleteDocument()->notifyBodySelectionChanged();
-//      updateBodySelection();
-    }
-  }
+  getCompleteDocument()->addSelectionAt(x, y, z);
 }
 
 void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
@@ -5949,14 +5963,14 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
     ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
           getCompleteDocument(), neutu::EAxis::Z);
     if (slice != NULL) {
-      slice->recordSelection();
+      slice->startSelection();
       slice->clearSelection();
       foreach(uint64_t bodyId, bodyIdList) {
         slice->addSelection(
               slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
               neutu::ELabelSource::MAPPED);
       }
-      slice->processSelection();
+      slice->endSelection();
 //      processLabelSliceSelectionChange();
     }
 //    updateBodySelection();
@@ -5976,14 +5990,14 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
         ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
               getCompleteDocument());
         if (slice != NULL) {
-          slice->recordSelection();
+          slice->startSelection();
           if (!appending) {
             slice->clearSelection();
           }
           slice->addSelection(
                 slice->getMappedLabel(bodyId, neutu::ELabelSource::ORIGINAL),
                 neutu::ELabelSource::MAPPED);
-          slice->processSelection();
+          slice->endSelection();
 //          processLabelSliceSelectionChange(); //will be called in updateBodySelection
         }
 //        updateBodySelection();
@@ -6532,6 +6546,30 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
   }
 }
 
+void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
+{
+  bool processed = false;
+
+  if (!getDvidTarget().isValid()) {
+    QList<QUrl> urls = event->mimeData()->urls();
+
+    if (urls.size() == 1) {
+      const QUrl &url = urls[0];
+      QString filePath = neutu::GetFilePath(url);
+      if (ZFileType::FileType(filePath.toStdString())
+          == ZFileType::EFileType::JSON) {
+        setDvidFromJson(filePath.toStdString());
+
+        processed = true;
+      }
+    }
+  }
+
+  if (!processed) {
+    ZStackMvc::dropEvent(event);
+  }
+}
+
 #if 0
 void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 {
@@ -6663,12 +6701,17 @@ void ZFlyEmProofMvc::loadRoiMesh(ZMesh *mesh, const std::string &roiName)
     std::cout << "ROI mesh: " << mesh->vertices().size()
               << " vertices." << std::endl;
 #endif
-    std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-    mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+//    std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+//    mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+//    mesh->setSource(source);
     mesh->addRole(ZStackObjectRole::ROLE_ROI);
-    m_loadedROIs.emplace_back(mesh);
-    m_roiList.push_back(roiName);
-    m_roiSourceList.push_back(source);
+    ZRoiMesh *roiMesh = new ZRoiMesh;
+    roiMesh->setMesh(roiName, mesh);
+    m_roiMeshList.emplace_back(roiMesh);
+
+//    m_loadedROIs.emplace_back(mesh);
+//    m_roiList.push_back(roiName);
+//    m_roiSourceList.push_back(source);
   }
 }
 
@@ -6711,6 +6754,8 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 {
   QElapsedTimer timer;
   timer.start();
+
+#if 1
   ZMesh *mesh = FlyEmDataReader::ReadRoiMesh(
         reader, roiName, [this](const std::string &msg) { this->warn(msg); }
   );
@@ -6724,6 +6769,10 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 
     loadRoiMesh(mesh, roiName);
   }
+#else
+  m_roiList.push_back(roiName);
+#endif
+
 
 #ifdef _DEBUG_2
   std::cout << "Load ROIs from ROI data" << std::endl;
@@ -6771,9 +6820,11 @@ void ZFlyEmProofMvc::loadROIFunc()
 
   //
 //  ZDvidReader reader;
-  m_roiList.clear();
-  m_loadedROIs.clear();
-  m_roiSourceList.clear();
+//  m_roiList.clear();
+//  m_loadedROIs.clear();
+//  m_roiSourceList.clear();
+
+  m_roiMeshList.clear();
 
   //
   ZDvidReader reader;
@@ -6799,17 +6850,33 @@ void ZFlyEmProofMvc::loadROIFunc()
   }
 }
 
+
 void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
 {
-  widget->loadROIs(win, m_roiList, m_loadedROIs, m_roiSourceList);
+  if (widget) {
+    widget->initRoiView(win, getCompleteDocument()->initRoiProvider());
+//    widget->loadROIs(win, m_roiMeshList);
+  }
 }
+
 
 void ZFlyEmProofMvc::updateRoiWidget(Z3DWindow *win) const
 {
   if (win) {
+    win->initRoiView(getCompleteDocument()->initRoiProvider());
+//    updateRoiWidget(win->getROIsDockWidget(), win);
+  }
+  /*
+  if (win) {
+    win->initRois(m_roiMeshList);
+  }
+  */
+  /*
+  if (win) {
     win->getROIsDockWidget()->loadROIs(
           win, m_roiList, m_loadedROIs, m_roiSourceList);
   }
+  */
 }
 
 void ZFlyEmProofMvc::updateRoiWidget()
@@ -6820,48 +6887,6 @@ void ZFlyEmProofMvc::updateRoiWidget()
   updateRoiWidget(m_skeletonWindow);
   updateRoiWidget(m_meshWindow);
   updateRoiWidget(m_coarseMeshWindow);
-#if 0
-  //
-  if(m_coarseBodyWindow)
-  {
-    m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
-          m_coarseBodyWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_bodyWindow)
-  {
-    m_bodyWindow->getROIsDockWidget()->loadROIs(
-          m_bodyWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_externalNeuronWindow)
-  {
-    m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
-          m_externalNeuronWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if(m_skeletonWindow)
-  {
-    m_skeletonWindow->getROIsDockWidget()->loadROIs(
-          m_skeletonWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if (m_meshWindow) {
-    m_meshWindow->getROIsDockWidget()->loadROIs(
-          m_meshWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-
-  if (m_coarseMeshWindow) {
-    m_coarseMeshWindow->getROIsDockWidget()->loadROIs(
-          m_coarseMeshWindow, m_roiList, m_loadedROIs,
-          m_roiSourceList);
-  }
-#endif
 }
 
 void ZFlyEmProofMvc::showInfoDialog()
@@ -7029,5 +7054,4 @@ bool ZFlyEmProofMvc::showingAnnotations()
 {
   return s_showAnnotations;
 }
-
 

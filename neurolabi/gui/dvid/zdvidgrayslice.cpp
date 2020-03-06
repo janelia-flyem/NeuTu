@@ -24,7 +24,7 @@ ZDvidGraySlice::ZDvidGraySlice()
 //  m_maxWidth = 512;
 //  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAYSCALE);
   getHelper()->useCenterCut(false);
 }
 
@@ -488,9 +488,10 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->setViewParam(getHelper()->getViewParam());
     task->setZoom(getHelper()->getZoom());
     task->useCenterCut(false);
-    task->setDelay(100);
+    task->setDelay(50);
     task->setDoc(doc);
     task->setHandle(getSource());
+    task->setName(this->getSource().c_str());
   }
 
   return task;
@@ -576,6 +577,14 @@ void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 //  getDvidReader().open(target);
 }
 
+ZCuboid ZDvidGraySlice::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getX(), getY(), getZ(),
+                   getX() + getWidth(), getY() + getHeight(), getZ()));
+}
+
+/*
 ZRect2d ZDvidGraySlice::getBoundBox() const
 {
   ZRect2d rect;
@@ -583,3 +592,4 @@ ZRect2d ZDvidGraySlice::getBoundBox() const
 
   return rect;
 }
+*/

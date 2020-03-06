@@ -4,6 +4,7 @@
 #include <map>
 #include <iostream>
 #include <functional>
+#include <stdexcept>
 
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
@@ -57,7 +58,7 @@ private:
   Stack *m_signal;
 };
 
-
+using ZNeuronTracerException = std::runtime_error;
 
 class ZNeuronTracer : public ZProgressable
 {
@@ -69,7 +70,22 @@ public:
   ZSwcPath trace(double x, double y, double z);
   ZSwcTree* trace(double x, double y, double z, ZSwcTree *host);
   void updateMask(const ZSwcPath &branch);
+
+  /*!
+   * \brief Set intensity field
+   * DEPRECATED. Use bindSource() instead.
+   */
   void setIntensityField(ZStack *stack);
+
+  /*!
+   * \brief Bind the source stack to the tracer.
+   *
+   * \a stack will be used as the initial input stack for the tracing pipleine.
+   * Note that the source can only be bound once. It will throw
+   * ZNeuronTracerException if the binding fails.
+   */
+  void bindSource(ZStack *stack);
+
   Stack* getIntensityData() const;
   inline const ZStack *getStack() const { return m_stack; }
   inline ZStack *getStack() { return m_stack; }
@@ -122,6 +138,8 @@ public:
 
   ZSwcTree* trace(const ZStack *stack, bool doResampleAfterTracing = true);
 
+  ZSwcTree* trace();
+
   ZSwcTree* connectBranch(const ZSwcPath &branch, ZSwcTree *host);
 
   //Autotrace configuration
@@ -135,15 +153,27 @@ public:
       const ZPoint &innerCenter, double innerRadius,
       const Stack *stack);
 
-  inline Trace_Workspace* getTraceWorkspace() const {
-    return m_traceWorkspace;
-  }
-
-  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
-    return m_connWorkspace;
-  }
+  Trace_Workspace* getTraceWorkspace();
+  Connection_Test_Workspace* getConnectionTestWorkspace();
 
   void initTraceMask(bool clearing);
+
+  /*!
+   * \brief Add more masked regions to the tracing mask.
+   *
+   * The functions sets the background of the current mask to the corresponding
+   * values in \a stack. Nothing will be done if \a stack is NULL or the tracer
+   * has no workspace set up. It throws a ZNeuronTracerException if the size of
+   * \a stack does not match the size of the bound signal stack or its kind is
+   * not GREY.
+   *
+   * Note that this function will create the tracing mask if it does not exist
+   * yet.
+   */
+  void addTraceMask(const Stack *stack);
+
+  Stack* getTraceMask() const;
+
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -199,6 +229,9 @@ public:
   Stack* computeSeedMask();
   Stack* computeSeedMask(Stack *stack);
 
+  Geo3d_Scalar_Field* removeNoisySeed(Geo3d_Scalar_Field *seedPointArray,
+      Stack *mask);
+
   ZNeuronTracerConfig* getConfigRef() {
     return &m_config;
   }
@@ -207,6 +240,11 @@ public:
 
 public:
   void test();
+
+public: //pipeline functions
+  std::function<void(Stack*)> _preprocess;
+  std::function<Stack*(Stack*)> _makeMask;
+  std::function<Geo3d_Scalar_Field*(Stack*)> _extractSeedFromMask;
 
 private:
   //Helper functions
@@ -230,11 +268,16 @@ private:
   std::vector<Locseg_Chain*> screenChain(const Stack *stack,
                                          std::vector<Locseg_Chain*> &chainArray);
 
+  Stack* makeMask(const Stack *stack);
+
   void clearBuffer();
 
   void init();
 
   int getMinSeedObjSize(double seedDensity) const;
+  bool traceMasked(int x, int y, int z) const;
+
+  Geo3d_Scalar_Field* removeTracedSeed(Geo3d_Scalar_Field *seedArray);
 
   std::string getDiagnosisDir() const;
   void log(const std::string &str);
@@ -246,21 +289,23 @@ private:
 
     void reset();
     void setDir(const std::string &dir);
+    void setPrefix(const std::string &prefix);
     std::string getDir() const;
-    void saveConfig(const ZNeuronTracer &tracer);
-    void save(const ZStack *stack, const std::string &name);
-    void save(const Stack *stack, const std::string &name);
-    void save(const Geo3d_Scalar_Field *field, const std::string &name);
+    std::string getPrefix() const;
+    void saveConfig(const ZNeuronTracer &tracer) const;
+    void save(const ZStack *stack, const std::string &name) const;
+    void save(const Stack *stack, const std::string &name) const;
+    void save(const Geo3d_Scalar_Field *field, const std::string &name) const;
     void save(const std::vector<Locseg_Chain*> &chainArray,
-              const std::string &name);
-    void save(ZSwcTree *tree, const std::string &name);
-    void saveInfo();
+              const std::string &name) const;
+    void save(ZSwcTree *tree, const std::string &name) const;
+    void saveInfo() const;
     void setInfo(const std::string &key, const std::string &value);
     void setInfo(const std::string &key, int value);
-
   private:
     std::string m_dir;
     ZJsonObject m_info;
+    std::string m_prefix;
   };
 
 private:
@@ -304,6 +349,7 @@ private:
   Diagnosis m_diag;
   std::function<void(const std::string)> m_log =
       [](const std::string &str) { std::cout << str << std::endl; };
+
   /*
   static const char *m_levelKey;
   static const char *m_minimalScoreKey;
