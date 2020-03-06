@@ -13,6 +13,8 @@
 #include <QMimeData>
 #include <QInputDialog>
 
+#include "qfonticon.h"
+
 #include "common/math.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
@@ -37,6 +39,8 @@
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
+#include "flyem/auth/flyemauthtokendialog.h"
+#include "protocols/protocolassignmentdialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -225,6 +229,10 @@ void ZProofreadWindow::createDialog()
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
+
+  m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+  m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
+
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -472,6 +480,16 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
+  m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::yellow));
+  connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
+  m_toolMenu->addAction(m_openAuthDialogAction);
+
+  m_openProtocolAssignmentDialogAction = new QAction("Open Assignment Dialog", this);
+  m_openProtocolAssignmentDialogAction->setIcon(QFontIcon::icon(0xf01c, Qt::darkGreen));
+  connect(m_openProtocolAssignmentDialogAction, SIGNAL(triggered()), this, SLOT(showProtocolAssignmentDialog()));
+  m_toolMenu->addAction(m_openProtocolAssignmentDialogAction);
+
   m_tuneContrastAction = new QAction("Tune Contrast", this);
   connect(m_tuneContrastAction, &QAction::triggered,
           m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
@@ -565,6 +583,8 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_tuneContrastAction->setEnabled(on);
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
+  m_openAuthDialogAction->setEnabled(on);
+  m_openProtocolAssignmentDialogAction->setEnabled(on);
   m_actionLibrary->getAction(ZActionFactory::ACTION_PROFILE)->setEnabled(!on);
 }
 
@@ -645,6 +665,8 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
   m_toolBar->addAction(m_roiToolAction);
+  m_toolBar->addAction(m_openAuthDialogAction);
+  m_toolBar->addAction(m_openProtocolAssignmentDialogAction);
 
   m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
@@ -669,6 +691,16 @@ void ZProofreadWindow::operateDvid()
 {
   m_dvidOpDlg->show();
   m_dvidOpDlg->raise();
+}
+
+void ZProofreadWindow::showAuthTokenDialog() {
+    m_authTokenDlg->show();
+    m_authTokenDlg->raise();
+}
+
+void ZProofreadWindow::showProtocolAssignmentDialog() {
+    m_protocolAssignmentDlg->show();
+    m_protocolAssignmentDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)

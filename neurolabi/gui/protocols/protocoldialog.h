@@ -36,6 +36,7 @@ signals:
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
     void requestDisplayPoint(int x, int y, int z);
+    void requestDisplayBody(uint64_t bodyID);
     void requestColorMapChange(ZFlyEmSequencerColorScheme scheme);
     void requestActivateColorMap();
     void requestDeactivateColorMap();
