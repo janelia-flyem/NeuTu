@@ -11,8 +11,8 @@ class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmOrthoDoc(QObject *parent = 0);
-  explicit ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent = 0);
+  explicit ZFlyEmOrthoDoc(QObject *parent = nullptr);
+  explicit ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent = nullptr);
 
   void updateStack(const ZIntPoint &center);
   void prepareDvidData(const ZDvidEnv &env);

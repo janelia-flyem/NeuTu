@@ -163,47 +163,8 @@ void ZFlyEmProofMvc::init()
 //  m_dlgManager = std::make_unique<FlyEmMvcDialogManager>(this);
   m_dlgManager = new FlyEmMvcDialogManager(this);
 
-//  m_dvidDlg = NULL;
-
-  // temporarily disable sequencer:
-//  if (neutu::HasEnv("USE_SEQUENCER", "yes")) {
-//    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-//          FlyEmBodyInfoDialog::EMode::SEQUENCER, this);
-//  } else {
-//    m_bodyInfoDlg = NULL;
-//  }
-
   m_protocolSwitcher = new ProtocolSwitcher(this);
-//  m_protocolSwitcher->useParentEventFilter(true);
-//  m_supervisor = new ZFlyEmSupervisor(this);
-//  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
-//  m_todoDlg = new FlyEmTodoDialog(this);
-//  m_roiDlg = new ZFlyEmRoiToolDialog(this);
-//  m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
-//  m_mergeUploadDlg = new ZFlyEmMergeUploadDialog(this);
-//  m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
-//  m_infoDlg = new ZInfoDialog(this);
-//  m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
-//  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
-//  m_bodyIdDialog = new FlyEmBodyIdDialog(this);
-//  m_settingDlg = new ZFlyEmProofSettingDialog(this);
 
-
-  /*
-  connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
-  connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
-  connect(m_roiDlg, SIGNAL(showing3DRoiCurve()), this, SLOT(showRoi3dWindow()));
-  connect(m_roiDlg, SIGNAL(goingToSlice(int)), this, SLOT(goToSlice(int)));
-  connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
-  connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
-  connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
-  connect(m_roiDlg, SIGNAL(movingPlane(double,double)),
-          this, SLOT(movePlaneRoi(double, double)));
-  connect(m_roiDlg, SIGNAL(rotatingPlane(double)),
-          this, SLOT(rotatePlaneRoi(double)));
-  connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
-          this, SLOT(scalePlaneRoi(double,double)));
-*/
   m_actionLibrary = new ZActionLibrary(this);
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
