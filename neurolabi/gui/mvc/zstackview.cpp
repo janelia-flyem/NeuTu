@@ -1171,6 +1171,7 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 
       LDEBUG() << "Slice center:" << m_sliceViewParam.getCenter().toString();
     }
+    updatePaintBundle();
 
     processViewChange(true, false);
 

@@ -30904,7 +30904,7 @@ void ZTest::test(MainWindow *host)
 
   ZArbSliceViewParam viewParam;
   viewParam.setSize(1024, 1024);
-  viewParam.setCenter(1352, 1319, 890);
+  viewParam.setCenter(1415, 1105, 1027);
   ZPoint v1 = ZPoint(1, 1, 0);
   ZPoint v2 = ZPoint(-1, 1, 0);
 

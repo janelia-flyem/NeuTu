@@ -115,3 +115,4 @@ double ZPlane::computeSignedDistance(const ZPoint &pt) const
   ZPoint normal = getNormal();
   return pt.dot(normal);
 }
+

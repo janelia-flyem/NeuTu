@@ -61,13 +61,6 @@ void ZPaintBundle::addDrawableList(const QList<ZStackObject*>& lst)
     } else {
       m_objList.append(obj);
     }
-    /*
-    if (obj->getType() != ZStackObject::EType::FLYEM_BOOKMARK) {
-      m_objList.append(obj);
-    } else {
-      addDynamicObject(ZStackObjectHelper::Clone(obj));
-    }
-    */
   }
 }
 
