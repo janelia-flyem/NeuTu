@@ -59,14 +59,19 @@ bool ProtocolAssignmentClient::checkForTokens() {
     FlyEmAuthTokenHandler handler;
     if (!handler.hasMasterToken()) {
         showError("No authentication token!",
-            "NeuTu needs your Fly EM services authentication token! Open the authentication dialog via the yellow key icon on the toolbar and follow the instructions, then try this action again.");
+            "NeuTu needs your Fly EM services authentication token! "
+            "Open the authentication dialog via the yellow key icon "
+            "on the toolbar and follow the instructions, "
+            "then try this action again.");
         return false;
     }
 
     // if present, try to get application token
     QString token = handler.getApplicationToken(ASSIGNMENT_APPLICATION_NAME);
     if (token.isEmpty()) {
-        showError("No application token!", "Could not retrieve application token for " + ASSIGNMENT_APPLICATION_NAME);
+        showError("No application token!",
+                  "Could not retrieve application token for " +
+                  ASSIGNMENT_APPLICATION_NAME);
         return false;
     }
     m_token = token;

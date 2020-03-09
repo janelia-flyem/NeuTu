@@ -79,18 +79,33 @@ const ZMouseEvent& ZMouseEventProcessor::process(
     */
 
   ZPoint dataPos = stackPosition;
+
   switch (getSliceAxis()) {
   case neutu::EAxis::X:
   case neutu::EAxis::Y:
     dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
     break;
   case neutu::EAxis::ARB:
-    dataPos = ZPositionMapper::StackToData(stackPosition, m_arbSlice);
+  {
+    QPoint viewPortCenter = viewProj.getViewPortCenter();
+    dataPos = ZPositionMapper::StackToData(
+          stackPosition,
+          ZPoint(viewPortCenter.x(), viewPortCenter.y(), stackPosition.getZ()),
+          m_arbSlice);
+  }
     break;
   default:
     break;
   }
-  zevent.setDataPositoin(dataPos);
+  zevent.setDataPosition(dataPos);
+
+#ifdef _DEBUG_
+  if (action == ZMouseEvent::EAction::RELEASE) {
+    std::cout << "Stack pos r: " << stackPosition << std::endl;
+    std::cout << "Data pos r: " << dataPos << std::endl;
+    std::cout << "Arb plane r: " << m_arbSlice.getOffset().toString() << std::endl;
+  }
+#endif
 
 #ifdef _DEBUG_2
   std::cout << "Processing mouse event: Z= " << z << std::endl;

@@ -82,6 +82,11 @@ void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
   getView()->updateViewParam(param);
 }
 
+//void ZFlyEmArbMvc::updateViewParam(const ZStackViewParam &param)
+//{
+//  getCompletePresenter()->setViewParam(param.getSliceViewParam());
+//}
+
 void ZFlyEmArbMvc::resetViewParam(const ZArbSliceViewParam &param)
 {
   getCompletePresenter()->setViewParam(param);
@@ -90,6 +95,7 @@ void ZFlyEmArbMvc::resetViewParam(const ZArbSliceViewParam &param)
 
 void ZFlyEmArbMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
+  getCompletePresenter()->setViewParam(viewParam.getSliceViewParam());
   emit sliceViewChanged(viewParam.getSliceViewParam());
 }
 

@@ -33,6 +33,9 @@ signals:
 protected:
   void createPresenter() override;
 
+//private slots:
+//  void updateViewParam(const ZStackViewParam &param);
+
 private:
   void init();
 };
