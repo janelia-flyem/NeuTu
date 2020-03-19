@@ -45,6 +45,7 @@ private:
     QStandardItemModel * m_model;
     QSortFilterProxyModel * m_proxy;
     ProtocolAssignmentClient m_client;
+    bool m_clientServerSet;
     QString m_username;
     QList<ProtocolAssignment> m_assignments;
     int m_savedSelectedAssignmentID;

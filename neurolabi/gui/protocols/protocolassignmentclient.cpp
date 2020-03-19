@@ -66,7 +66,8 @@ bool ProtocolAssignmentClient::checkForTokens() {
     // if present, try to get application token
     QString token = handler.getApplicationToken(ASSIGNMENT_APPLICATION_NAME);
     if (token.isEmpty()) {
-        showError("No application token!", "Could not retrieve application token for " + ASSIGNMENT_APPLICATION_NAME);
+        showError("No application token!", "Could not retrieve application token for " + ASSIGNMENT_APPLICATION_NAME +
+                  "; functions requiring authentication may not work.");
         return false;
     }
     m_token = token;
