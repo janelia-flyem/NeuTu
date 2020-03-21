@@ -2,6 +2,7 @@
 #define ZAFFINERECT_H
 
 #include "zaffineplane.h"
+#include "zlinesegment.h"
 
 class ZAffineRect
 {
@@ -17,9 +18,16 @@ public:
   ZPoint getV2() const;
   ZPoint getCenter() const;
 
+  ZPoint getCorner(int index) const;
+  ZLineSegment getSide(int index) const;
+
   void setCenter(const ZPoint &offset);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
   void setSize(int width, int height);
+
+  ZAffinePlane getAffinePlane() const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r);
 
 private:
   ZAffinePlane m_ap;

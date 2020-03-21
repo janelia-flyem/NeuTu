@@ -308,7 +308,13 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
+    protocols/protocolassignment.h \
+    protocols/protocolassignmentdialog.h \
+    protocols/protocolassignmentclient.h \
+    protocols/protocolassignmenttask.h \
+    protocols/protocolassignmenturl.h \
     dialogs/neuprintdatasetdialog.h \
+    protocols/protocolchooseassignmentdialog.h \
     dialogs/userfeedbackdialog.h \
     dialogs/zsynapsepropertydialog.h \
     dvid/zdvidtargetfactory.h \
@@ -602,6 +608,7 @@ HEADERS += mainwindow.h \
     protocols/connectionvalidationprotocol.h \ 
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
+    protocols/orphanlinkprotocol.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -776,6 +783,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyiddialog.ui \
     dialogs/zdviddialog.ui \
     dialogs/flyembodyfilterdialog.ui \
+    protocols/protocolassignmentdialog.ui \
+    protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
@@ -804,6 +813,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/connectionvalidationprotocol.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
+    protocols/orphanlinkprotocol.ui \
     protocols/protocoldialog.ui \
     dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
@@ -843,6 +853,12 @@ SOURCES += main.cpp \
     dialogs/zsynapsepropertydialog.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
+    protocols/protocolassignment.cpp \
+    protocols/protocolassignmentdialog.cpp \
+    protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenttask.cpp \
+    protocols/protocolassignmenturl.cpp \
+    protocols/protocolchooseassignmentdialog.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
@@ -1111,6 +1127,7 @@ SOURCES += main.cpp \
     protocols/connectionvalidationprotocol.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
+    protocols/orphanlinkprotocol.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \

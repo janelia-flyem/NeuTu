@@ -34,7 +34,7 @@ bool ZFlyEmArbDoc::setDvid(const ZDvidEnv &env)
     addObject(bookmark);
 #endif
 
-//    downloadBookmark();
+    downloadBookmark();
 
     return true;
   }else {

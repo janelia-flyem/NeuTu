@@ -1,5 +1,8 @@
 #include "zbodyexportcommand.h"
 
+#include <iostream>
+
+#include "common/math.h"
 #include "geometry/zintcuboid.h"
 #include "dvid/zdvidreader.h"
 
@@ -9,6 +12,10 @@
 #include "zglobal.h"
 #include "misc/miscutility.h"
 #include "dvid/zdvidurl.h"
+#include "zfiletype.h"
+#include "zmeshfactory.h"
+#include "zmesh.h"
+#include "dvid/zdvidtargetfactory.h"
 
 ZBodyExportCommand::ZBodyExportCommand()
 {
@@ -24,7 +31,9 @@ int ZBodyExportCommand::run(
   uint64_t bodyId = ZDvidUrl::GetBodyId(inputPath);
 
   if (bodyId > 0) {
-    ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
+    ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(inputPath);
+
+    ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
     reader->updateMaxLabelZoom();
     if (reader != NULL) {
       if (reader->isReady()) {
@@ -36,12 +45,21 @@ int ZBodyExportCommand::run(
           ZObject3dScan coarseObj = reader->readCoarseBody(bodyId);
           ZDvidInfo dvidInfo = reader->readLabelInfo();
           ZIntCuboid box =coarseObj.getIntBoundBox();
+
+          /*
+          size_t bodySize = 0;
+          size_t blockCount = 0;
+          ZIntCuboid box;
+          std::tie(bodySize, blockCount, box) = reader->readBodySizeInfo(
+                bodyId, neutu::EBodyLabelType::BODY);
+                */
+
           box.setWidth(box.getWidth() * dvidInfo.getBlockSize().getX());
           box.setHeight(box.getHeight() * dvidInfo.getBlockSize().getY());
           box.setDepth(box.getDepth() * dvidInfo.getBlockSize().getZ());
           int dsIntv = misc::getIsoDsIntvFor3DVolume(
                 box, neutu::ONEGIGA, true);
-          int scale = std::log2(dsIntv + 1);
+          int scale = neutu::iround(std::log2(dsIntv + 1));
           if (scale > reader->getDvidTarget().getMaxLabelZoom()) {
             scale = reader->getDvidTarget().getMaxLabelZoom();
             needDownsampling = true;
@@ -57,9 +75,27 @@ int ZBodyExportCommand::run(
                   obj.getIntBoundBox(), neutu::ONEGIGA, false);
             obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
           }
-          ZStack *stack = obj.toStackObject();
-          stack->save(output);
-          delete stack;
+
+          switch (ZFileType::FileType(output)) {
+          case ZFileType::EFileType::TIFF:
+          {
+            ZStack *stack = obj.toStackObject();
+            stack->save(output);
+            delete stack;
+          }
+            break;
+          case ZFileType::EFileType::OBJECT_SCAN:
+            obj.save(output);
+            break;
+          case ZFileType::EFileType::MESH:
+          {
+            ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+            mesh->save(output);
+          }
+            break;
+          default:
+            break;
+          }
         }
       }
     }

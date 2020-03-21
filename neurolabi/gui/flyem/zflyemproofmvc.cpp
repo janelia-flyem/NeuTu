@@ -2742,6 +2742,8 @@ void ZFlyEmProofMvc::customInit()
             m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
             this, SLOT(zoomToL1(int,int,int)));
+    connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
+            this, SLOT(locateBody(uint64_t)));
     connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
             getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
     connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
@@ -6944,12 +6946,17 @@ void ZFlyEmProofMvc::onAnnotationTraced()
 //  getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
 }
 
-void ZFlyEmProofMvc::initViewButton()
+void ZFlyEmProofMvc::makeViewButtons()
 {
   makeViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
   makeViewButton(EViewButton::ANNOTATE_TRACED);
   makeViewButton(EViewButton::GOTO_BODY);
   makeViewButton(EViewButton::GOTO_POSITION);
+}
+
+void ZFlyEmProofMvc::initViewButton()
+{
+  makeViewButtons();
   for (auto b : m_viewButtons) {
     getView()->addToolButton(b.second);
     b.second->hide();

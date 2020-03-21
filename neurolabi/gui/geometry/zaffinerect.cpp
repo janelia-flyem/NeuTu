@@ -56,6 +56,59 @@ void ZAffineRect::setSize(int width, int height)
   m_height = height;
 }
 
+ZAffinePlane ZAffineRect::getAffinePlane() const
+{
+  return m_ap;
+}
+
+ZPoint ZAffineRect::getCorner(int index) const
+{
+  ZPoint pt;
+  pt.invalidate();
+
+  switch (index) {
+  case 0:
+    pt = m_ap.getOffset() + m_ap.getV1() * m_width + m_ap.getV2() * m_height;
+    break;
+  case 1:
+    m_ap.getOffset() - m_ap.getV1() * m_width + m_ap.getV2() * m_height;
+    break;
+  case 2:
+    m_ap.getOffset() - m_ap.getV1() * m_width - m_ap.getV2() * m_height;
+    break;
+  case 3:
+    m_ap.getOffset() + m_ap.getV1() * m_width - m_ap.getV2() * m_height;
+    break;
+  }
+
+  return pt;
+}
+
+ZLineSegment ZAffineRect::getSide(int index) const
+{
+  if (index >= 0) {
+    int c1 = index;
+    int c2 = index + 1;
+    if (index <= 3) {
+      if (index == 3) {
+        c2 = 0;
+      }
+      return ZLineSegment(getCorner(c1), getCorner(c2));
+    }
+  }
+
+
+  return ZLineSegment(ZPoint::INVALID_POINT, ZPoint::INVALID_POINT);
+}
+
+std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r)
+{
+  stream << r.getAffinePlane()
+         << " [" << r.getWidth() << "x" << r.getHeight() << "]";
+
+  return stream;
+}
+
 /////////////////////////////////////
 
 ZAffineRectBuilder::ZAffineRectBuilder()

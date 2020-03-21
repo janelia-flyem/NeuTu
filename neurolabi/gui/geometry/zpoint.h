@@ -160,8 +160,15 @@ public:
 
   double getSliceCoord(neutu::EAxis axis) const;
 
+  void invalidate();
+  bool isValid() const;
+
 public:
   const static double MIN_DIST;
+  const static ZPoint INVALID_POINT;
+
+private:
+  static ZPoint InvalidPoint();
 
 private:
   double m_x;

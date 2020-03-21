@@ -116,3 +116,9 @@ double ZPlane::computeSignedDistance(const ZPoint &pt) const
   return pt.dot(normal);
 }
 
+std::ostream& operator<<(std::ostream& stream, const ZPlane &p)
+{
+  stream << p.getV1() << " x " << p.getV2();
+
+  return stream;
+}

@@ -41,13 +41,15 @@ public:
   double computeSignedDistance(double x, double y, double z) const;
 
   /*!
-   * \brief Aligh a point with plane
+   * \brief Align a point with plane
    *
    * It aligns a point by tranforming it to the plane coordinate system.
    *
    * \return Transformed point.
    */
   ZPoint align(const ZPoint &pt) const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZPlane &p);
 
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);

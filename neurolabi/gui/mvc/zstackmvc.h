@@ -102,7 +102,7 @@ public slots:
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
 
-  void zoomTo(const ZIntPoint &pt);
+  virtual void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomToL1(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);

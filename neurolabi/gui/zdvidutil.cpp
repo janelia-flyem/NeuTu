@@ -172,7 +172,7 @@ ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
 ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const ZDvidTarget &target)
 {
-  return MakeDvidNodeService(target.getAddressWithPort(),
+  return MakeDvidNodeService(target.getRootUrl(),
                              target.getUuid());
 }
 
@@ -236,7 +236,7 @@ ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
-  config.dvid_server = target.getAddressWithPort();
+  config.dvid_server = target.getRootUrl();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
 
@@ -250,7 +250,7 @@ lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
-  config.dvid_server = target.getAddressWithPort();
+  config.dvid_server = target.getRootUrl();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
   config.supervoxelview = target.isSupervoxelView();

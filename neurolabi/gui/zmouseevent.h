@@ -35,7 +35,7 @@ public:
   void setRawStackPosition(double x, double y, double z);
 
   void setStackPosition(const ZPoint &pt);
-  void setDataPositoin(const ZPoint &pt);
+  void setDataPosition(const ZPoint &pt);
 
   void setPressEvent(QMouseEvent *event, int z);
   void setReleaseEvent(QMouseEvent *event, int z);

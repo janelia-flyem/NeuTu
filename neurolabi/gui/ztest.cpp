@@ -63,6 +63,7 @@
 #include "tz_color.h"
 #include "tz_swc_tree.h"
 
+#include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
 #include "zopencv_header.h"
@@ -30887,13 +30888,14 @@ void ZTest::test(MainWindow *host)
 //  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
         "http://127.0.0.1:1600?uuid=c315&segmentation=segmentation&"
         "grayscale=grayscale");
 
   ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(ZDvidEnv(target));
   mvc->getCompleteDocument()->downloadBookmark();
+//  mvc->getCompleteDocument()->downloadBookmark();
 
   /*
   ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
@@ -30911,6 +30913,53 @@ void ZTest::test(MainWindow *host)
   viewParam.setPlane(v1, v2);
   mvc->show();
   mvc->updateViewParam(viewParam);
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+  std::cout << rect << std::endl;
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+
+  ZCuboid box(1, 2, 3, 11, 22, 33);
+  std::cout << zgeom::Intersects(rect, box) << std::endl;
+
+  std::cout << neutu::ToString(rect) << std::endl;
+
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+#endif
+
+#if 0
+  ZDvidNode node;
+  node.setHost("https://neuroglancer.janelia.org");
+  std::cout << node.getSourceString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid.janelia.org", "a89e", -1);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.readGrayScaleLowtis(2610, 2354, 3197, 512, 512, 1);
+
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "abdd", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.readLabels64Lowtis(
+          17152, 22592, 19328, 1024, 1024, 1);
+
 #endif
 
   std::cout << "Done." << std::endl;

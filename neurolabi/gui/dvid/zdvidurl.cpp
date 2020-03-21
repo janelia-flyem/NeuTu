@@ -135,7 +135,11 @@ std::string ZDvidUrl::getInfoUrl(const std::string &dataName) const
 std::string ZDvidUrl::getApiUrl() const
 {
   if (!m_dvidTarget.getAddress().empty()) {
-    return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    if (m_dvidTarget.getScheme().empty()) {
+      return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    } else {
+      return m_dvidTarget.getRootUrl() + "/api";
+    }
   }
 
   return "";

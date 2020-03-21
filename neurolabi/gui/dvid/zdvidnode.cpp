@@ -117,17 +117,20 @@ void ZDvidNode::set(
   ZString s(address);
   std::string pureAddress = address;
   if (port < 0) { //parsing address
-    bool hasPrefix = false;
+    size_t prefixLength = 0;
     if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
-      hasPrefix = true;
+      prefixLength = 7;
       setScheme("http");
     } else if (s.startsWith("mock://", ZString::CASE_INSENSITIVE)) {
-      hasPrefix = true;
+      prefixLength = 7;
       setScheme("mock");
 //      setMock(true);
+    } else if (s.startsWith("https://", ZString::CASE_INSENSITIVE)) {
+      prefixLength = 8;
+      setScheme("https");
     }
-    if (hasPrefix) {
-      s = s.substr(7);
+    if (prefixLength > 0) {
+      s = s.substr(prefixLength);
       std::vector<std::string> tokenArray = s.tokenize(':');
       if (tokenArray.empty()) {
         pureAddress = "";
@@ -169,6 +172,24 @@ void ZDvidNode::clear()
   */
 }
 
+std::string ZDvidNode::getHostWithScheme() const
+{
+  if (m_scheme.empty()) {
+    return getHost();
+  }
+
+  return m_scheme + "://" + getHost();
+}
+
+std::string ZDvidNode::getRootUrl() const
+{
+  if (m_scheme.empty()) {
+    return getAddressWithPort();
+  }
+
+  return m_scheme + "://" + getAddressWithPort();
+}
+
 void ZDvidNode::setHost(const std::string &address)
 {
   m_host = address;
@@ -176,7 +197,10 @@ void ZDvidNode::setHost(const std::string &address)
   if (!address.empty()) {
     ZString addressObj(address);
 
-    if (addressObj.startsWith("http://")) {
+    if (addressObj.startsWith("https://")) {
+      addressObj = address.substr(8);
+      setScheme("https");
+    } else if (addressObj.startsWith("http://")) {
       addressObj = address.substr(7);
       setScheme("http");
     } else if (addressObj.startsWith("mock://")) {
@@ -202,6 +226,12 @@ void ZDvidNode::setHost(const std::string &address)
     }
 
     m_host = strArray[0];
+
+#ifdef _DEBUG_
+    if (m_host == "https") {
+      std::cout << "Invalid host" << std::endl;
+    }
+#endif
 
 #if defined(_FLYEM_)
     m_host = GET_FLYEM_CONFIG.mapAddress(m_host);
@@ -402,7 +432,7 @@ ZJsonObject ZDvidNode::toJsonObject() const
   obj.setEntry(m_hostKey, m_host);
   obj.setEntry(m_uuidKey, m_uuid);
   if (!m_scheme.empty()) {
-    obj.setEntry(m_scheme, m_scheme);
+    obj.setEntry(m_schemeKey, m_scheme);
   }
 
   return obj;

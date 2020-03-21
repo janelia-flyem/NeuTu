@@ -116,6 +116,8 @@ public slots:
   bool allowingSplit(uint64_t bodyId) const;
   bool cleaving() const;
 
+  void gotoPosition(double x, double y, double z);
+
 signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);

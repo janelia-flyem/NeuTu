@@ -572,6 +572,9 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   case EConfigItem::NEUPRINT_AUTH:
     return ZString::fullPath(NeutubeConfig::getInstance().getPath(
           NeutubeConfig::EConfigItem::WORKING_DIR), "neuprint_auth.json");
+  case EConfigItem::FLYEM_SERVICES_AUTH:
+    return ZString::fullPath(NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR), "flyem_services_auth.json");
   case EConfigItem::CONFIG_DIR:
     return ZString::fullPath(getApplicatinDir(), _CONFIG_FOLDER_);
   default:

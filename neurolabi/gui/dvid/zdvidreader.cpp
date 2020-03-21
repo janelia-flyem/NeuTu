@@ -114,7 +114,7 @@ bool ZDvidReader::startService()
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
     m_service = dvid::MakeDvidNodeService(getDvidTarget());
-    m_connection = dvid::MakeDvidConnection(getDvidTarget().getAddressWithPort());
+    m_connection = dvid::MakeDvidConnection(getDvidTarget().getRootUrl());
     m_bufferReader.setService(getDvidTarget());
   } catch (std::exception &e) {
     m_service.reset();
@@ -1269,7 +1269,7 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
 
   ZDvidTarget target;
   target.setFromUrl_deprecated(url);
-  if (target.getAddressWithPort() != getDvidTarget().getAddressWithPort() ||
+  if (target.getRootUrl() != getDvidTarget().getRootUrl() ||
       target.getUuid() != getDvidTarget().getUuid()) {
     LWARN() << "Unmatched target";
     return result;
@@ -2381,8 +2381,9 @@ ZDvidInfo ZDvidReader::readDataInfo(const std::string &dataName) const
 
   if (!obj.isEmpty()) {
     dvidInfo.set(obj);
-    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
-                         getDvidTarget().getUuid());
+    dvidInfo.setDvidNode(
+          getDvidTarget().getRootUrl(), getDvidTarget().getPort(),
+          getDvidTarget().getUuid());
   }
 
   return dvidInfo;
@@ -3613,7 +3614,7 @@ template<typename T>
 void ZDvidReader::configureLowtis(T *config, const std::string &dataName) const
 {
   config->username = neutu::GetCurrentUserName();
-  config->dvid_server = getDvidTarget().getAddressWithPort();
+  config->dvid_server = getDvidTarget().getRootUrl();
   config->dvid_uuid = getDvidTarget().getUuid();
   config->datatypename = dataName;
   config->enableprefetch = NeutubeConfig::LowtisPrefetching();
@@ -5353,7 +5354,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 
   if (!url.empty()) {
     ZDvidBufferReader &bufferReader = m_bufferReader;
-    if (ZString(url).startsWith("http:")) {
+    if (ZString(url).startsWith("http:") || ZString(url).startsWith("https:")) {
       bufferReader.read(url.c_str(), isVerbose());
     } else {
       bufferReader.readFromPath(url.c_str(), isVerbose());

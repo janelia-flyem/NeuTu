@@ -4,6 +4,7 @@ include(neuroglancer/neuroglancer.pri)
 include(roi/roi.pri)
 
 FORMS += \
+    $$PWD/auth/flyemauthtokendialog.ui \
     $$PWD/flyemdataframeoptiondialog.ui \
     $$PWD/flyemorthocontrolform.ui \
     $$PWD/flyemproofcontrolform.ui \
@@ -14,11 +15,18 @@ FORMS += \
     $$PWD/zflyemhackathonconfigdlg.ui
 
 HEADERS += \
+    $$PWD/auth/flyemauthserverclient.h \
+    $$PWD/auth/flyemauthtokendialog.h \
+    $$PWD/auth/flyemauthtokenhandler.h \
+    $$PWD/auth/flyemauthtokenstorage.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
     $$PWD/flyemorthocontrolform.h \
     $$PWD/flyemproofcontrolform.h \
     $$PWD/flyemsplitcontrolform.h \
+    $$PWD/flyemtodoblockgrid.h \
+    $$PWD/flyemtodochunk.h \
+    $$PWD/flyemtodosource.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
     $$PWD/zdvidgrayslicehighrestask.h \
@@ -136,10 +144,17 @@ HEADERS += \
     $$PWD/zflyemproofdoctracinghelper.h
 
 SOURCES += \
+    $$PWD/auth/flyemauthserverclient.cpp \
+    $$PWD/auth/flyemauthtokendialog.cpp \
+    $$PWD/auth/flyemauthtokenhandler.cpp \
+    $$PWD/auth/flyemauthtokenstorage.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \
     $$PWD/flyemsplitcontrolform.cpp \
+    $$PWD/flyemtodoblockgrid.cpp \
+    $$PWD/flyemtodochunk.cpp \
+    $$PWD/flyemtodosource.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \
     $$PWD/zdvidgrayslicehighrestask.cpp \

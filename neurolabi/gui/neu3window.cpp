@@ -220,6 +220,8 @@ void Neu3Window::initGrayscaleWidget()
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
             this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
+    connect(m_sliceWidget, SIGNAL(locating(double, double, double)),
+            this, SLOT(browse(double, double, double)));
 
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
@@ -747,6 +749,11 @@ void Neu3Window::browseInPlace(double x, double y, double z)
   getBodyDocument()->updateArbGraySlice(getSliceViewParam(x, y, z));
 }
 */
+
+void Neu3Window::gotoPosition(double x, double y, double z)
+{
+  browse(x, y, z);
+}
 
 void Neu3Window::browse(double x, double y, double z)
 {

@@ -149,6 +149,7 @@ void ZStackView::init()
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
   m_secondTopLayout->addLayout(m_toolLayout);
+  m_secondTopLayout->addStretch();
   m_secondTopLayout->addWidget(m_stackLabel);
 //  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
@@ -276,7 +277,7 @@ void ZStackView::setDynamicObjectAlpha(int alpha)
   } else if (alpha > 255) {
     m_dynamicObjectOpacity = 1;
   } else {
-    m_dynamicObjectOpacity = (double) alpha / 255.0;
+    m_dynamicObjectOpacity = double(alpha) / 255.0;
   }
 }
 
@@ -623,7 +624,9 @@ void ZStackView::configure(EMode mode)
 #ifndef _DEBUG_
 //    hideLayout(m_topLayout);
 #endif
-    hideLayout(m_secondTopLayout, true);
+    m_secondTopLayout->removeWidget(m_stackLabel);
+    m_secondTopLayout->removeWidget(m_progress);
+//    hideLayout(m_secondTopLayout, true);
     hideLayout(m_zControlLayout, true);
     m_imageWidget->hideZoomHint();
     break;
@@ -3511,7 +3514,7 @@ void ZStackView::enableCustomCheckBox(
   m_customCheckBoxList[index] = widget;
   widget->setText(text);
   connect(widget, SIGNAL(toggled(bool)), receiver, slot);
-  m_topLayout->addWidget(widget);
+  m_secondTopLayout->addWidget(widget);
 }
 
 void ZStackView::addHorizontalWidget(QWidget *widget)

@@ -53,9 +53,12 @@ public:
 
   void setFromUrl_deprecated(const std::string &url);
 
-  inline const std::string& getAddress() const {
+  std::string getAddress() const {
     return m_node.getHost();
   }
+
+  std::string getHostWithScheme() const;
+  std::string getRootUrl() const;
 
   /*!
    * \brief Get the address with port

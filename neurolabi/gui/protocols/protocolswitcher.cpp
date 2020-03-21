@@ -16,6 +16,7 @@
 #include "connectionvalidationprotocol.h"
 #include "synapsepredictionprotocol.h"
 #include "synapsereviewprotocol.h"
+#include "orphanlinkprotocol.h"
 #include "todoreviewprotocol.h"
 
 #include "doNthingsprotocol.h"
@@ -80,7 +81,7 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
 
         << "synapse_prediction_body"
         << "synapse_prediction_region"
-
+        << "orphan_link"
         << "connection_validation";
 
 
@@ -368,6 +369,8 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(
               m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    } else if (protocolName == "orphan_link") {
+        m_activeProtocol = new OrphanLinkProtocol(m_parent);
     } else if (protocolName == "connection_validation") {
         m_activeProtocol = new ConnectionValidationProtocol(m_parent);
 
@@ -403,6 +406,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
 
 void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {
     emit requestDisplayPoint(x, y, z);
+}
+
+void ProtocolSwitcher::displayBodyRequested(uint64_t bodyID) {
+    emit requestDisplayBody(bodyID);
 }
 
 void ProtocolSwitcher::updateColorMapRequested(ZFlyEmSequencerColorScheme scheme) {
@@ -596,6 +603,7 @@ void ProtocolSwitcher::connectProtocolSignals() {
 
     // interaction connects
     connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
+    connect(m_activeProtocol, SIGNAL(requestDisplayBody(uint64_t)), this, SLOT(displayBodyRequested(uint64_t)));
     connect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
         this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     connect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
@@ -611,6 +619,7 @@ void ProtocolSwitcher::disconnectProtocolSignals() {
 
     // interaction connects
     disconnect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
+    disconnect(m_activeProtocol, SIGNAL(requestDisplayBody(uint64_t)), this, SLOT(displayBodyRequested(uint64_t)));
     disconnect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
         this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     disconnect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));

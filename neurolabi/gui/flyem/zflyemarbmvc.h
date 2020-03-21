@@ -29,9 +29,17 @@ public:
 
 signals:
   void sliceViewChanged(const ZArbSliceViewParam &param);
+  void locating(double x, double y, double z);
+
+public slots:
+  void zoomTo(const ZIntPoint &pt) override;
 
 protected:
   void createPresenter() override;
+  void makeViewButtons() override;
+
+//private slots:
+//  void updateViewParam(const ZStackViewParam &param);
 
 private:
   void init();
