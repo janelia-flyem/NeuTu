@@ -193,12 +193,18 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
 #endif
 }
 
-void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
+void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
 {
   m_statusCode = 0;
 
+  QString url = inputUrl;
+
   if (url.isEmpty()) {
     return;
+  }
+
+  if (!url.contains("://")) {
+    url = "http://" + url;
   }
 
   if (outputingUrl) {

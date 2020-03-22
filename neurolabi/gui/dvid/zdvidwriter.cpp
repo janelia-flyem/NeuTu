@@ -67,7 +67,7 @@ bool ZDvidWriter::startService()
           getDvidTarget().getAddressWithPort());
   } catch (std::exception &e) {
     m_service.reset();
-    std::cout << e.what() << std::endl;
+    LKWARN << e.what();
     return false;
   }
 #endif

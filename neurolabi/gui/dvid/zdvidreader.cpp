@@ -119,7 +119,7 @@ bool ZDvidReader::startService()
   } catch (std::exception &e) {
     m_service.reset();
     m_errorMsg = e.what();
-    STD_COUT << e.what() << std::endl;
+    LERROR() <<  e.what();
     return false;
   }
 #endif
@@ -1040,7 +1040,7 @@ QByteArray ZDvidReader::readDataFromEndpoint(
       m_statusCode = 0;
     }
   } catch (libdvid::DVIDException &e) {
-    STD_COUT << e.what() << std::endl;
+    LERROR() <<  e.what();
     m_statusCode = e.getStatus();
   }
 #endif
@@ -2242,10 +2242,10 @@ ZStack* ZDvidReader::readGrayScale(
 
     setStatusCode(200);
   } catch (libdvid::DVIDException &e) {
-    STD_COUT << e.what() << std::endl;
+    LERROR() << e.what();
     setStatusCode(e.getStatus());
   } catch (std::exception &e) {
-    STD_COUT << e.what() << std::endl;
+    LERROR() << e.what();
     setStatusCode(0);
   }
 
@@ -5354,11 +5354,14 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 
   if (!url.empty()) {
     ZDvidBufferReader &bufferReader = m_bufferReader;
-    if (ZString(url).startsWith("http:") || ZString(url).startsWith("https:")) {
-      bufferReader.read(url.c_str(), isVerbose());
-    } else {
-      bufferReader.readFromPath(url.c_str(), isVerbose());
-    }
+
+    bufferReader.read(url.c_str(), isVerbose());
+//    if (ZString(url).startsWith("http:") || ZString(url).startsWith("https:")) {
+
+//    } else {
+
+//      bufferReader.readFromPath(url.c_str(), isVerbose());
+//    }
     setStatusCode(bufferReader.getStatusCode());
     const QByteArray &buffer = bufferReader.getBuffer();
     if (!buffer.isEmpty()) {
