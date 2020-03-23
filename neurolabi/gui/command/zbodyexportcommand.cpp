@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <QFileInfo>
+
 #include "common/math.h"
 #include "geometry/zintcuboid.h"
 #include "dvid/zdvidreader.h"
@@ -9,6 +11,7 @@
 #include "neutubeconfig.h"
 #include "zstack.hxx"
 #include "zjsonobject.h"
+#include "zjsonobjectparser.h"
 #include "zglobal.h"
 #include "misc/miscutility.h"
 #include "dvid/zdvidurl.h"
@@ -24,7 +27,7 @@ ZBodyExportCommand::ZBodyExportCommand()
 
 int ZBodyExportCommand::run(
     const std::vector<std::string> &input, const std::string &output,
-    const ZJsonObject &/*config*/)
+    const ZJsonObject &config)
 {
   std::string inputPath = input.front();
 
@@ -33,9 +36,32 @@ int ZBodyExportCommand::run(
   if (bodyId > 0) {
     ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(inputPath);
 
+    ZJsonObjectParser parser;
+    bool checkingMutationId = parser.getValue(config, "mutation", false);
     ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
-    reader->updateMaxLabelZoom();
-    if (reader != NULL) {
+
+    int64_t mutationId = -1;
+
+    if (reader) {
+      if (checkingMutationId) {
+        mutationId = reader->readBodyMutationId(bodyId);
+        if (mutationId >= 0) {
+          if (QFileInfo(output.c_str()).exists() &&
+              QFileInfo((output + ".json").c_str()).exists()) {
+            ZJsonObject obj;
+            obj.load(output + ".json");
+            int64_t savedMutationId =
+                parser.getValue(obj, "mutation id", int64_t(-1));
+            if (mutationId == savedMutationId) {
+              reader = nullptr;
+            }
+          }
+        }
+      }
+    }
+
+    if (reader) {
+      reader->updateMaxLabelZoom();
       if (reader->isReady()) {
         ZObject3dScan obj;
         bool needDownsampling = true;
@@ -95,6 +121,11 @@ int ZBodyExportCommand::run(
             break;
           default:
             break;
+          }
+          if (checkingMutationId) {
+            ZJsonObject obj;
+            obj.setEntry("mutation id", mutationId);
+            obj.dump(output + ".json");
           }
         }
       }
