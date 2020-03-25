@@ -51,6 +51,7 @@ void FlyEmAuthTokenDialog::onSaveTokenButton() {
     if (!token.isEmpty()) {
         // note that the token in in json form at this point: {"token": "....."}
         m_handler.saveMasterToken(token);
+        emit requestUpdateAuthIcon();
     }
 }
 

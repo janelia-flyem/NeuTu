@@ -40,6 +40,7 @@
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
 #include "flyem/auth/flyemauthtokendialog.h"
+#include "flyem/auth/flyemauthtokenhandler.h"
 #include "protocols/protocolassignmentdialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
@@ -231,6 +232,7 @@ void ZProofreadWindow::createDialog()
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
 
   m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+  connect(m_authTokenDlg, SIGNAL(requestUpdateAuthIcon()), this, SLOT(updateAuthTokenIcon()));
   m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
 
 }
@@ -481,7 +483,7 @@ void ZProofreadWindow::createMenu()
   m_toolMenu->addAction(m_openProtocolsAction);
 
   m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
-  m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::yellow));
+  updateAuthTokenIcon();
   connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
   m_toolMenu->addAction(m_openAuthDialogAction);
 
@@ -696,6 +698,15 @@ void ZProofreadWindow::operateDvid()
 void ZProofreadWindow::showAuthTokenDialog() {
     m_authTokenDlg->show();
     m_authTokenDlg->raise();
+}
+
+void ZProofreadWindow::updateAuthTokenIcon() {
+    FlyEmAuthTokenHandler handler;
+    if (!handler.hasMasterToken()) {
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf023, Qt::red));
+    } else {
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::yellow));
+    }
 }
 
 void ZProofreadWindow::showProtocolAssignmentDialog() {
