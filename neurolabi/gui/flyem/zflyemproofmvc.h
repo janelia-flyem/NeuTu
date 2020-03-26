@@ -495,6 +495,14 @@ protected slots:
 //  void notifyBookmarkDeleted();
 
 protected:
+  enum class EViewButton {
+    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+  };
+
+  virtual void makeViewButtons();
+  void makeViewButton(EViewButton option);
+  void initViewButton();
+  QPushButton* getViewButton(EViewButton option);
   void customInit() override;
   void createPresenter() override;
 //  virtual void dropEvent(QDropEvent *event);
@@ -642,14 +650,7 @@ private:
   void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
 
-  enum class EViewButton {
-    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
-  };
-
-  QPushButton* getViewButton(EViewButton option);
-  void makeViewButton(EViewButton option);
   void makeViewButton(EViewButton option, const QString &name, const char *slot);
-  void initViewButton();
   void updateViewButton();
 
   void updateRoiWidget(Z3DWindow *win) const;

@@ -142,12 +142,18 @@ void ZFlyEmConfig::loadConfig()
         setDefaultTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
       }
 
-      if (obj.hasKey(AUTHENTICATION_SERVER_KEY)) {
-        setDefaultAuthenticationServer(ZJsonParser::stringValue(obj[AUTHENTICATION_SERVER_KEY]));
+      if (const char *authServer = std::getenv("AUTHENTICATION_SERVER")) {
+        setDefaultAuthenticationServer(authServer);
+      } else if (obj.hasKey(AUTHENTICATION_SERVER_KEY)) {
+        setDefaultAuthenticationServer(
+              ZJsonParser::stringValue(obj[AUTHENTICATION_SERVER_KEY]));
       }
 
-      if (obj.hasKey(ASSIGNMENT_MANAGER_KEY)) {
-        setDefaultAssignmentManager(ZJsonParser::stringValue(obj[ASSIGNMENT_MANAGER_KEY]));
+      if (const char *assigmentManager = std::getenv("ASSIGNMENT_MANAGER")) {
+        setDefaultAssignmentManager(assigmentManager);
+      } else if (obj.hasKey(ASSIGNMENT_MANAGER_KEY)) {
+        setDefaultAssignmentManager(
+              ZJsonParser::stringValue(obj[ASSIGNMENT_MANAGER_KEY]));
       }
 
       if (obj.hasKey(NEUTU_SERVER_KEY)) {

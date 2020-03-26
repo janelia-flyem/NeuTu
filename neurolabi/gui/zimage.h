@@ -34,6 +34,8 @@ public:
   ZImage();
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
+  ZImage(const QSize &size,
+         QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
   ZImage(const ZImage &image);
 
@@ -202,6 +204,9 @@ public:
   bool isVisible() const;
 
   bool isIndexed8() const;
+
+  ZStTransform getWorldTransform() const;
+  ZStTransform getProjectionTransform() const;
 
 
 private:

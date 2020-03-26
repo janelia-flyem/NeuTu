@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 
+#include "common/utilities.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
 #include "zlinesegment.h"
@@ -717,3 +718,12 @@ std::vector<double> ZCuboid::toCornerVector() const
   return corner;
 }
 
+bool ZCuboid::contains(const ZPoint &pt) const
+{
+  ZPoint minCorner = firstCorner();
+  ZPoint maxCorner = lastCorner();
+
+  return neutu::WithinOpenRange(pt.x(), minCorner.x(), maxCorner.x()) &&
+      neutu::WithinOpenRange(pt.y(), minCorner.y(), maxCorner.y()) &&
+      neutu::WithinOpenRange(pt.z(), minCorner.z(), maxCorner.z());
+}

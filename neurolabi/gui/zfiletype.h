@@ -23,12 +23,12 @@ public:
   static EFileType FileType(const std::string &filePath);
   static std::string TypeName(EFileType type);
 
-  static bool isImageFile(const std::string &filePath);
-  static bool isObjectFile(const std::string &filePath);
-  static bool isImageFile(EFileType type);
-  static bool isObjectFile(EFileType type);
-  static bool isNeutubeOpenable(EFileType type);
-  static bool isNeutubeOpenable(const std::string &filePath);
+  static bool IsImageFile(const std::string &filePath);
+  static bool IsObjectFile(const std::string &filePath);
+  static bool IsImageFile(EFileType type);
+  static bool IsObjectFile(EFileType type);
+  static bool IsNeutubeOpenable(EFileType type);
+  static bool IsNeutubeOpenable(const std::string &filePath);
 };
 
 #endif // ZFILETYPE_H

@@ -166,6 +166,9 @@ void ZDvidTarget::setFromUrl_deprecated(const std::string &url)
   } else if (zurl.startsWith("mock://")) {
     zurl.replace("mock://", "");
     setMock(true);
+  } else if (zurl.startsWith("https://")) {
+    zurl.replace("https://", "");
+    setScheme("https");
   }
 
   std::vector<std::string> tokens = zurl.tokenize('/');
@@ -310,6 +313,16 @@ std::string ZDvidTarget::getAddressWithPort() const
   }
 
   return address;
+}
+
+std::string ZDvidTarget::getHostWithScheme() const
+{
+  return m_node.getHostWithScheme();
+}
+
+std::string ZDvidTarget::getRootUrl() const
+{
+  return m_node.getRootUrl();
 }
 
 void ZDvidTarget::setScheme(const std::string &scheme)

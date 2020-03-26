@@ -23,6 +23,18 @@ ZDvidAnnotation::ZDvidAnnotation()
   init();
 }
 
+ZDvidAnnotation::ZDvidAnnotation(const ZDvidAnnotation &annotation)
+{
+  m_position = annotation.m_position;
+  m_kind = annotation.m_kind;
+  m_radius = annotation.m_radius;
+  m_bodyId = annotation.m_bodyId;
+  m_status = annotation.m_status;
+  m_partnerHint = annotation.m_partnerHint;
+  m_propertyJson = ZJsonObject(m_propertyJson.clone());
+  m_relJson = ZJsonArray(m_relJson.clone());
+}
+
 void ZDvidAnnotation::init()
 {
   m_type = GetType();
@@ -32,6 +44,11 @@ void ZDvidAnnotation::init()
   m_status = EStatus::NORMAL;
   setDefaultRadius();
   setDefaultColor();
+}
+
+ZDvidAnnotation* ZDvidAnnotation::clone() const
+{
+  return new ZDvidAnnotation(*this);
 }
 
 void ZDvidAnnotation::setRadius(double r)

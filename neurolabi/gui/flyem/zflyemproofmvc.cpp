@@ -6946,12 +6946,17 @@ void ZFlyEmProofMvc::onAnnotationTraced()
 //  getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
 }
 
-void ZFlyEmProofMvc::initViewButton()
+void ZFlyEmProofMvc::makeViewButtons()
 {
   makeViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
   makeViewButton(EViewButton::ANNOTATE_TRACED);
   makeViewButton(EViewButton::GOTO_BODY);
   makeViewButton(EViewButton::GOTO_POSITION);
+}
+
+void ZFlyEmProofMvc::initViewButton()
+{
+  makeViewButtons();
   for (auto b : m_viewButtons) {
     getView()->addToolButton(b.second);
     b.second->hide();

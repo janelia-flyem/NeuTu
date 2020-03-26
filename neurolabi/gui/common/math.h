@@ -13,13 +13,13 @@ extern template
 int iround<float>(const float &v);
 
 template<typename T>
-int floor(const T &v);
+int ifloor(const T &v);
 
 extern template
-int floor<double>(const double &v);
+int ifloor<double>(const double &v);
 
 extern template
-int floor<float>(const float &v);
+int ifloor<float>(const float &v);
 
 }
 

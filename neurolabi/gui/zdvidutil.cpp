@@ -11,6 +11,7 @@
 #include "zstring.h"
 #include "zjsonparser.h"
 #include "logging/zlog.h"
+#include "logging/zqslog.h"
 
 #include "dvid/zdvidversiondag.h"
 #include "dvid/zdvidtarget.h"
@@ -54,7 +55,7 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
     statusCode = connection.make_request(
           "/.." + path, connMethod, payload, results, error_msg, type);
   } catch (libdvid::DVIDException &e) {
-    std::cout << e.what() << std::endl;
+    LWARN() << e.what();
     statusCode = e.getStatus();
   }
 
@@ -80,6 +81,9 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
   }
 
   QUrl qurl(url.c_str());
+  if (qurl.scheme().isEmpty()) {
+    qurl.setUrl(("http://" + url).c_str());
+  }
 //  qurl.setScheme("http");
   ZString address = qurl.host();
   if (qurl.port() >= 0) {
@@ -104,7 +108,7 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
     statusCode =
         connection.make_request("/.." + path, connMethod, payload, results, error_msg, type);
   } catch (libdvid::DVIDException &e)  {
-    std::cout << e.what() << std::endl;
+    LWARN() << e.what();
     statusCode = e.getStatus();
   }
 
@@ -172,7 +176,7 @@ ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
 ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const ZDvidTarget &target)
 {
-  return MakeDvidNodeService(target.getAddressWithPort(),
+  return MakeDvidNodeService(target.getRootUrl(),
                              target.getUuid());
 }
 
@@ -196,7 +200,7 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     return ZSharedPointer<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(address, user, app));
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
+    LWARN() << e.what();
     return ZSharedPointer<libdvid::DVIDConnection>();
   }
 }
@@ -211,7 +215,7 @@ ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
             address, GET_FLYEM_CONFIG.getUserName(),
             NeutubeConfig::GetSoftwareName()));
   } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
+    LWARN() << e.what();
     return ZSharedPointer<libdvid::DVIDConnection>();
   }
 }
@@ -236,7 +240,7 @@ ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
-  config.dvid_server = target.getAddressWithPort();
+  config.dvid_server = target.getRootUrl();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
 
@@ -250,7 +254,7 @@ lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
-  config.dvid_server = target.getAddressWithPort();
+  config.dvid_server = target.getRootUrl();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getSegmentationName();
   config.supervoxelview = target.isSupervoxelView();

@@ -74,7 +74,7 @@ ZImage ZStackPatch::getImage(int z) const
       ZImage image(m_stack->width(), m_stack->height());
       switch (m_stack->kind()) {
       case GREY:
-        image.setData((uint8_t*) m_stack->getDataPointer(0, slice), -1);
+        image.setData((uint8_t*) (m_stack->getDataPointer(0, slice)), -1);
         break;
       case GREY16:
       {

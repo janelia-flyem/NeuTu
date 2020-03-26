@@ -193,7 +193,7 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
 void ZDvidDialog::setServer(const ZDvidTarget &dvidTarget, int index)
 {
   ui->readOnlyCheckBox->setChecked(dvidTarget.readOnly());
-  ui->dvidSourceWidget->setAddress(dvidTarget.getAddress());
+  ui->dvidSourceWidget->setAddress(dvidTarget.getHostWithScheme());
   ui->dvidSourceWidget->setPort(dvidTarget.getPort());
   ui->dvidSourceWidget->setUuid(dvidTarget.getUuid());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());

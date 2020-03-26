@@ -24,6 +24,9 @@ HEADERS += \
     $$PWD/flyemorthocontrolform.h \
     $$PWD/flyemproofcontrolform.h \
     $$PWD/flyemsplitcontrolform.h \
+    $$PWD/flyemtodoblockgrid.h \
+    $$PWD/flyemtodochunk.h \
+    $$PWD/flyemtodosource.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
     $$PWD/zdvidgrayslicehighrestask.h \
@@ -149,6 +152,9 @@ SOURCES += \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \
     $$PWD/flyemsplitcontrolform.cpp \
+    $$PWD/flyemtodoblockgrid.cpp \
+    $$PWD/flyemtodochunk.cpp \
+    $$PWD/flyemtodosource.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \
     $$PWD/zdvidgrayslicehighrestask.cpp \

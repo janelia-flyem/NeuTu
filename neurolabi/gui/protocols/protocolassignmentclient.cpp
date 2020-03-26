@@ -59,7 +59,10 @@ bool ProtocolAssignmentClient::checkForTokens() {
     FlyEmAuthTokenHandler handler;
     if (!handler.hasMasterToken()) {
         showError("No authentication token!",
-            "NeuTu needs your Fly EM services authentication token! Open the authentication dialog via the yellow key icon on the toolbar and follow the instructions, then try this action again.");
+            "NeuTu needs your Fly EM services authentication token! "
+            "Open the authentication dialog via the yellow key icon "
+            "on the toolbar and follow the instructions, "
+            "then try this action again.");
         return false;
     }
 

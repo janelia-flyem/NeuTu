@@ -49,10 +49,11 @@ public:
 public:
   ZCuboid getBoundBox() const override;
 
-  virtual void display(ZPainter &painter, int slice,
-                       EDisplayStyle option, neutu::EAxis sliceAxis) const override;
-  virtual bool display(QPainter *painter, int z, EDisplayStyle option,
+  void display(ZPainter &painter, int slice,
+               EDisplayStyle option, neutu::EAxis sliceAxis) const override;
+  bool display(QPainter *painter, int z, EDisplayStyle option,
                        EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+  void display(ZPainter &painter, const DisplayConfig &config) const override;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
@@ -62,6 +63,8 @@ public:
       neutu::EAxis sliceAxis) const;
 
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
+  bool isSliceVisible(
+        int z, neutu::EAxis axis, const ZAffinePlane &plane) const override;
 
   /*!
    * \brief Test if a circle is cut by a plane.

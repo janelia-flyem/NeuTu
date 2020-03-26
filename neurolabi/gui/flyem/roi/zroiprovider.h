@@ -10,6 +10,7 @@
 #include <QMutex>
 
 #include "zcolorscheme.h"
+#include "concurrent/zworkerwrapper.h"
 
 class ZAbstractRoiFactory;
 class ZRoiMesh;
@@ -18,7 +19,7 @@ class ZWorkThread;
 class ZTask;
 class ZMesh;
 
-class ZRoiProvider : public QObject
+class ZRoiProvider : public QObject, public ZWorkerWrapper
 {
   Q_OBJECT
 
@@ -26,8 +27,8 @@ public:
   ZRoiProvider(QObject *parent = nullptr);
   ~ZRoiProvider() override;
 
-  void startWorkThread();
-  void endWorkThread();
+//  void startWorkThread();
+//  void endWorkThread();
 
   void setRoiFactory(ZAbstractRoiFactory *factory);
   void setRoiList(const std::vector<std::string> &roiNameList);
@@ -68,7 +69,7 @@ public:
   static const char* ROI_STATUS_PENDING;
 
 private:
-  void addTask(ZTask *task);
+//  void addTask(ZTask *task);
   void requestRoi(const std::string &name);
   void requestRoi(const std::shared_ptr<ZRoiMesh> &roiMesh);
   void emitRoiLoaded(const QString &name);
@@ -80,8 +81,8 @@ private:
 
   QMutex m_roiListMutex;
 
-  ZWorker *m_worker = nullptr;
-  ZWorkThread *m_workThread = nullptr;
+//  ZWorker *m_worker = nullptr;
+//  ZWorkThread *m_workThread = nullptr;
 };
 
 #endif // ZROIPROVIDER_H

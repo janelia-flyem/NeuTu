@@ -231,10 +231,11 @@ void ZProofreadWindow::createDialog()
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
 
-  m_authTokenDlg = new FlyEmAuthTokenDialog(this);
-  connect(m_authTokenDlg, SIGNAL(requestUpdateAuthIcon()), this, SLOT(updateAuthTokenIcon()));
-  m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
-
+  if (!GET_FLYEM_CONFIG.getDefaultAssignmentManager().empty()) {
+    m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+    connect(m_authTokenDlg, SIGNAL(requestUpdateAuthIcon()), this, SLOT(updateAuthTokenIcon()));
+    m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
+  }
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -483,13 +484,14 @@ void ZProofreadWindow::createMenu()
   m_toolMenu->addAction(m_openProtocolsAction);
 
   m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
-  updateAuthTokenIcon();
   connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
+  updateAuthTokenIcon();
   m_toolMenu->addAction(m_openAuthDialogAction);
 
   m_openProtocolAssignmentDialogAction = new QAction("Open Assignment Dialog", this);
   m_openProtocolAssignmentDialogAction->setIcon(QFontIcon::icon(0xf01c, Qt::darkGreen));
-  connect(m_openProtocolAssignmentDialogAction, SIGNAL(triggered()), this, SLOT(showProtocolAssignmentDialog()));
+  connect(m_openProtocolAssignmentDialogAction, SIGNAL(triggered()),
+          this, SLOT(showProtocolAssignmentDialog()));
   m_toolMenu->addAction(m_openProtocolAssignmentDialogAction);
 
   m_tuneContrastAction = new QAction("Tune Contrast", this);
@@ -585,8 +587,10 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_tuneContrastAction->setEnabled(on);
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
-  m_openAuthDialogAction->setEnabled(on);
-  m_openProtocolAssignmentDialogAction->setEnabled(on);
+  m_openAuthDialogAction->setEnabled(
+        on && !GET_FLYEM_CONFIG.getDefaultAuthenticationServer().empty());
+  m_openProtocolAssignmentDialogAction->setEnabled(
+        on && !GET_FLYEM_CONFIG.getDefaultAssignmentManager().empty());
   m_actionLibrary->getAction(ZActionFactory::ACTION_PROFILE)->setEnabled(!on);
 }
 

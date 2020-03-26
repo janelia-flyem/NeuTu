@@ -1,10 +1,15 @@
 #include "zgeometry.h"
 #include <cmath>
+
+#include"common/utilities.h"
+#include "common/math.h"
+
 #include "zpoint.h"
 #include "zaffinerect.h"
 #include "zintcuboid.h"
 #include "zintpoint.h"
-
+#include "zcuboid.h"
+#include "zlinesegment.h"
 
 std::vector<ZAffineRect> zgeom::Partition(
     const ZAffineRect &rect, int row, int col)
@@ -288,4 +293,132 @@ void zgeom::CopyToArray(const ZIntPoint &pt, int v[])
   v[0] = pt.getX();
   v[1] = pt.getY();
   v[2] = pt.getZ();
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZPlane &plane, const ZLineSegment &seg)
+{
+  ZPoint v0 = plane.align(seg.getStartPoint());
+  ZPoint v1 = plane.align(seg.getEndPoint());
+
+  ZPoint intersection;
+  intersection.invalidate();
+
+  if ((v0.getZ() > 0.0 && v1.getZ() < 0.0) ||
+      (v0.getZ() < 0.0 && v1.getZ() > 0.0)) {
+    double lambda = std::fabs(v0.getZ()) /
+        (std::fabs(v0.getZ()) + std::fabs(v1.getZ()));
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+}
+
+bool zgeom::Intersects(
+    const ZAffineRect &rect, double x, double y, double z, double r)
+{
+  ZPoint pt = rect.getAffinePlane().align(ZPoint(x, y, z));
+
+  double halfWidth = rect.getWidth() * 0.5;
+  double halfHeight = rect.getHeight() * 0.5;
+
+  return neutu::WithinOpenRange(pt.x(), -halfWidth - r, halfWidth + r) &&
+      neutu::WithinOpenRange(pt.y(), -halfHeight - r, halfHeight + r) &&
+      neutu::WithinOpenRange(pt.z(), -r, r);
+}
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZLineSegment &seg)
+{
+  ZPoint v0 = rect.getAffinePlane().align(seg.getStartPoint());
+  ZPoint v1 = rect.getAffinePlane().align(seg.getEndPoint());
+
+  ZPoint intersection = zgeom::ComputeIntersectionPoint(
+        ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0)), ZLineSegment(v0, v1));
+  if (intersection.isValid()) {
+    double halfWidth = rect.getWidth() * 0.5;
+    double halfHeight = rect.getHeight() * 0.5;
+    return neutu::WithinCloseRange(intersection.x(), -halfWidth, halfWidth) &&
+        neutu::WithinCloseRange(intersection.y(), -halfHeight, halfHeight);
+  }
+
+  return false;
+}
+
+bool zgeom::Intersects(const ZAffineRect &r1, const ZAffineRect &r2)
+{
+  for (int index = 0; index <= 3; ++index) {
+    if (zgeom::Intersects(r1, r2.getSide(index))) {
+      return true;
+    }
+    if (zgeom::Intersects(r2, r1.getSide(index))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+namespace {
+
+ZAffineRect get_face(const ZCuboid &box, int index)
+{
+  ZAffineRect rect;
+  switch (index) {
+  case 0:
+    rect.setCenter((box.corner(0) + box.corner(3)) * 0.5);
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
+    break;
+  case 1:
+    rect.setCenter((box.corner(4) + box.corner(7)) * 0.5);
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
+    break;
+  case 2:
+    rect.setCenter(((box.corner(0) + box.corner(6)) * 0.5));
+    rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
+    break;
+  case 3:
+    rect.setCenter(((box.corner(1) + box.corner(7)) * 0.5));
+    rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
+    break;
+  case 4:
+    rect.setCenter(((box.corner(0) + box.corner(5)) * 0.5));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
+    break;
+  case 5:
+    rect.setCenter(((box.corner(2) + box.corner(7)) * 0.5));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
+    break;
+  default:
+    break;
+  }
+
+  return rect;
+}
+
+}
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZCuboid &box)
+{
+  if (box.isValid()) {
+    for (int i = 0; i < 4; ++i) {
+      if(box.contains(rect.getCorner(i))) {
+        return true;
+      }
+    }
+
+    for (int i = 0; i < 6; ++i) {
+      ZAffineRect r = get_face(box, i);
+      if (Intersects(rect, r)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }

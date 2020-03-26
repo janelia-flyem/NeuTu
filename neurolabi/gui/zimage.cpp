@@ -36,6 +36,11 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
   init();
 }
 
+ZImage::ZImage(const QSize &size, QImage::Format format) : QImage(size, format)
+{
+  init();
+}
+
 ZImage::ZImage(const ZImage &image) : QImage(image)
 {
   m_transform = image.m_transform;
@@ -1938,6 +1943,16 @@ const ZStTransform& ZImage::getTransform() const
 void ZImage::setTransform(const ZStTransform &transform)
 {
   m_transform = transform;
+}
+
+ZStTransform ZImage::getWorldTransform() const
+{
+  return m_transform;
+}
+
+ZStTransform ZImage::getProjectionTransform() const
+{
+  return m_projTransform;
 }
 
 void ZImage::setScale(double sx, double sy)

@@ -30,6 +30,7 @@ class ZDvidAnnotation : public ZStackObject
 {
 public:
   ZDvidAnnotation();
+  ZDvidAnnotation(const ZDvidAnnotation &annotation);
 
   enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
@@ -40,8 +41,10 @@ public:
     return ZStackObject::EType::DVID_ANNOTATION;
   }
 
+  ZDvidAnnotation* clone() const override;
+
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);

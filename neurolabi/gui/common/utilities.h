@@ -4,6 +4,7 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <functional>
 
@@ -90,6 +91,9 @@ std::string GetVersionString();
 uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
+
+template<typename T>
+std::string ToString(const T &v);
 
 bool UsingLocalHost(const std::string &url);
 
@@ -223,6 +227,14 @@ void neutu::assign(T *out, const T &v)
   if (out != NULL) {
     *out = v;
   }
+}
+
+template<typename T>
+std::string neutu::ToString(const T &v)
+{
+  std::ostringstream stream;
+  stream << v;
+  return stream.str();
 }
 
 #endif // UTILITIES_H

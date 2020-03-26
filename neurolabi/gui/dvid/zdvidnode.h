@@ -57,6 +57,9 @@ public:
     return m_host;
   }
 
+  std::string getHostWithScheme() const;
+  std::string getRootUrl() const;
+
   /*!
    * \brief Get the address with port
    *

@@ -67,7 +67,7 @@ bool ZDvidWriter::startService()
           getDvidTarget().getAddressWithPort());
   } catch (std::exception &e) {
     m_service.reset();
-    std::cout << e.what() << std::endl;
+    LKWARN << e.what();
     return false;
   }
 #endif
@@ -623,21 +623,6 @@ void ZDvidWriter::createData(
         obj, m_statusCode);
 //  post(url, obj);
   std::cout << obj.dumpString(2) << std::endl;
-#endif
-
-#if 0
-  QString command = QString(
-        "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
-      arg(getJsonStringForCurl(obj).c_str()).
-      arg(url.c_str());
-  /*
-  qDebug() << command;
-
-  QProcess::execute(command);
-  */
-
-
-  runCommand(command);
 #endif
 
   if (isStatusOk()) {

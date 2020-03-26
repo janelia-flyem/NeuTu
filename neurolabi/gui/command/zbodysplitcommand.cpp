@@ -541,7 +541,7 @@ void ZBodySplitCommand::processResult(
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result, NULL);
 
-      if (ZFileType::isImageFile(output)) {
+      if (ZFileType::IsImageFile(output)) {
         ZStack *labelStack = result.toColorField();
 
         writer.write(output, labelStack);

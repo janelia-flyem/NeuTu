@@ -171,6 +171,12 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
               ZPoint(stackPos.x(), stackPos.y(),
                      view->getZ(neutu::ECoordinateSystem::STACK)),
               view->getViewCenter().toPoint(), view->getAffinePlane());
+#ifdef _DEBUG_
+        std::cout << "Stack pos: " << stackPos.x() << ", " << stackPos.y() << std::endl;
+        std::cout << "Data pos: " << dataPos.toString() << std::endl;
+        std::cout << "Arb plane: " << view->getAffinePlane().getOffset() << std::endl;
+        std::cout << std::endl;
+#endif
         info += QString("(%1, %2, %3)").
             arg(neutu::iround(dataPos.getX())).
             arg(neutu::iround(dataPos.getY())).

@@ -12,6 +12,9 @@ class ZPoint;
 class ZAffineRect;
 class ZIntCuboid;
 class ZIntPoint;
+class ZCuboid;
+class ZPlane;
+class ZLineSegment;
 
 namespace zgeom
 {
@@ -44,6 +47,21 @@ int GetZoomLevel(int scale);
 
 void CopyToArray(const ZIntPoint &pt, int v[]);
 
+/*!
+ * \brief Compute intersection point
+ *
+ * \param plane
+ * \param seg
+ * \return
+ */
+ZPoint ComputeIntersectionPoint(
+    const ZPlane &plane, const ZLineSegment &seg);
+
+bool Intersects(
+    const ZAffineRect &rect, double x, double y, double z, double r);
+bool Intersects(const ZAffineRect &rect, const ZCuboid &box);
+bool Intersects(const ZAffineRect &rect, const ZLineSegment &seg);
+bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
 }
 
 

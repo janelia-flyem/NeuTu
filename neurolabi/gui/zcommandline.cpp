@@ -62,6 +62,7 @@
 #include "command/zuploadroicommand.h"
 #include "command/zneurontracecommand.h"
 #include "command/zsyncskeletoncommand.h"
+#include "command/zbodyprocesscommand.h"
 
 #if defined(_FLYEM_)
 #include "command/zsplittaskuploadcommand.h"
@@ -126,6 +127,7 @@ void ZCommandLine::registerModule()
 #if defined(_FLYEM_)
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
   registerModule<ZSyncSkeletonCommand>("sync_skeleton");
+  registerModule<ZBodyProcessCommand>("process_body");
 #endif
 }
 
