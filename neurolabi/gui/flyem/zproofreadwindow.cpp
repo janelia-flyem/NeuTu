@@ -707,9 +707,11 @@ void ZProofreadWindow::showAuthTokenDialog() {
 void ZProofreadWindow::updateAuthTokenIcon() {
     FlyEmAuthTokenHandler handler;
     if (!handler.hasMasterToken()) {
-        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf023, Qt::red));
+        // medium dark red, halfway between Qt::red and Qt::darkRed
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf023, QColor(192, 0, 0, 255)));
     } else {
-        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::yellow));
+        // medium dark yellow, halfway between Qt::yellow and Qt::darkYellow
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, QColor(192, 192, 0, 255)));
     }
 }
 
