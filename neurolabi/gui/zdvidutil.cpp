@@ -81,7 +81,12 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
   }
 
   QUrl qurl(url.c_str());
-  if (qurl.scheme().isEmpty()) {
+#ifdef _DEBUG_
+  qDebug() << "Scheme: " << qurl.scheme();
+#endif
+  if (qurl.scheme().isEmpty() ||
+      !QString::fromStdString(url).trimmed().startsWith(
+        qurl.scheme() + "://", Qt::CaseInsensitive)) {
     qurl.setUrl(("http://" + url).c_str());
   }
 //  qurl.setScheme("http");

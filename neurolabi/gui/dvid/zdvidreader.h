@@ -291,6 +291,8 @@ public:
   std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
                                 const ZIntPoint &lastCorner,
                                 bool ignoringZero = true);
+  std::set<uint64_t> readBodyId(
+      const ZIntCuboid &range, int zoom, bool ignoringZero = true);
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
@@ -357,6 +359,11 @@ public:
   //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+
+  ZArray* readLabels64Lowtis(int x0, int y0, int z0,
+                             int width, int height, int depth, int zoom ) const;
+
+  ZArray* readLabels64Lowtis(const ZIntCuboid &range, int zoom ) const;
 
   ZArray* readLabels64Lowtis(
       int x0, int y0, int z0,
@@ -445,6 +452,8 @@ public:
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
+  int getMaxLabelZoom();
+
   void updateMaxLabelZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
   void updateMaxGrayscaleZoom();
@@ -724,6 +733,8 @@ protected:
 
 //  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
+
+  bool m_maxLabelZoomUpdated = false;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> m_service;

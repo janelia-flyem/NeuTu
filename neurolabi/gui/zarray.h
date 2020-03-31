@@ -29,6 +29,7 @@ public:
 
   size_t getElementNumber() const;
   size_t getByteNumber() const;
+  size_t getBytePerElement() const;
 
   bool isEmpty() const;
 
@@ -52,6 +53,13 @@ public:
    */
   void copyDataFrom(const void *data);
 
+  /*!
+   * \brief Copy data from memory buffer within certain range
+   *
+   * Copy \a elementCount elements in \a data into the array at \a elementOffset.
+   */
+  void copyDataFrom(const void *data, size_t elementOffset, size_t elementCount);
+
   void printInfo() const;
 
   static size_t getValueTypeSize(Value_Type valueType);
@@ -60,6 +68,10 @@ public:
 
   template<typename T>
   T* getDataPointer() const;
+
+
+  template<typename T>
+  T getValue(size_t index) const;
 
   template<typename T>
   void setValue(const T &v);
@@ -101,14 +113,27 @@ private:
 template<typename T>
 T* ZArray::getDataPointer() const
 {
-  return (T*) m_data->data;
+  return (T*) (m_data->data);
 }
+
+template<typename T>
+T ZArray::getValue(size_t index) const
+{
+  if (index >= getElementNumber()) {
+    return 0;
+  }
+
+  T *array = getDataPointer<T>();
+
+  return array[index];
+}
+
 
 template<typename T>
 void ZArray::setValue(const T &v)
 {
   T* data = getDataPointer<T>();
-  size_t n= getElementNumber();
+  size_t n = getElementNumber();
   for (size_t i = 0; i < n; ++i) {
     data[i] = v;
   }

@@ -2491,6 +2491,28 @@ std::set<uint64_t> ZDvidReader::readBodyId(
   return bodySet;
 }
 
+std::set<uint64_t> ZDvidReader::readBodyId(
+    const ZIntCuboid &range, int zoom, bool ignoringZero)
+{
+  ZArray *array = nullptr;
+
+  if (getDvidTarget().hasMultiscaleSegmentation()) {
+    array = readLabels64Lowtis(range, zoom);
+  } else {
+    array = readLabels64(range, zoom);
+  }
+
+  uint64_t *dataArray = array->getDataPointer<uint64_t>();
+  std::set<uint64_t> bodySet;
+  for (size_t i = 0; i < array->getElementNumber(); ++i) {
+    if (!ignoringZero || dataArray[i] > 0) {
+      bodySet.insert(dataArray[i]);
+    }
+  }
+
+  return bodySet;
+}
+
 #if 0
 std::set<uint64_t> ZDvidReader::readBodyId(const QString /*sizeRange*/)
 {
@@ -4183,6 +4205,51 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 {
   return readLabels64Lowtis(x0, y0, z0, width, height, zoom, 256, 256, true);
 }
+
+ZArray* ZDvidReader::readLabels64Lowtis(const ZIntCuboid &range, int zoom) const
+{
+  if (range.isEmpty()) {
+    return nullptr;
+  }
+
+  return readLabels64Lowtis(
+        range.getFirstX(), range.getFirstY(), range.getFirstZ(),
+        range.getWidth(), range.getHeight(), range.getDepth(), zoom);
+}
+
+ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
+                           int width, int height, int depth, int zoom) const
+{
+  mylib::Dimn_Type arrayDims[3];
+  int scale = int(pow(2, zoom));
+  arrayDims[0] = std::max(1, width / scale);
+  arrayDims[1] = std::max(1, height / scale);
+  arrayDims[2] = std::max(1, depth / scale);
+
+  size_t area = size_t(arrayDims[0] * arrayDims[1]);
+
+  ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+  array->setStartCoordinate(0, x0 / scale);
+  array->setStartCoordinate(1, y0 / scale);
+  array->setStartCoordinate(2, z0 / scale);
+
+  size_t offset = 0;
+  for (int dz = 0; dz < depth; dz += scale) {
+    int z = z0 + dz;
+    ZArray *subArray = readLabels64Lowtis(x0, y0, z, width, height, zoom);
+    if (subArray) {
+      array->copyDataFrom(
+            subArray->getDataPointer<void>(), offset, area);
+      offset += area;
+    } else {
+      break;
+    }
+  }
+
+  return array;
+}
+
+
 #endif
 
 bool ZDvidReader::hasSparseVolume() const
@@ -4566,6 +4633,15 @@ void ZDvidReader::updateMaxGrayscaleZoom()
 #endif
 }
 
+int ZDvidReader::getMaxLabelZoom()
+{
+  if (m_maxLabelZoomUpdated == false) {
+    updateMaxLabelZoom();
+  }
+
+  return getDvidTarget().getMaxLabelZoom();
+}
+
 void ZDvidReader::updateMaxLabelZoom(
     const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
 {
@@ -4582,6 +4658,7 @@ void ZDvidReader::updateMaxLabelZoom(
       ++level;
     }
     m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
+    m_maxLabelZoomUpdated = true;
   }
 }
 
@@ -4593,6 +4670,7 @@ void ZDvidReader::updateMaxLabelZoom()
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
       if (!v.isEmpty()) {
         m_dvidTarget.setMaxLabelZoom(v.toInteger());
+        m_maxLabelZoomUpdated = true;
       }
 #if 0
       else { //temporary hack!!!

@@ -145,7 +145,7 @@ public:
     return m_partnerHint;
   }
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
 //  void setProperty(ZJsonObject propJson);
 

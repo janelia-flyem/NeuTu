@@ -30950,7 +30950,7 @@ void ZTest::test(MainWindow *host)
 //  stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("https://hemibrain-dvid2.janelia.org", "abdd", -1);
   target.setSegmentationName("segmentation");
@@ -30961,6 +30961,21 @@ void ZTest::test(MainWindow *host)
           17152, 22592, 19328, 1024, 1024, 1);
 
 #endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxLabelZoom();
+
+  ZDvidInfo dvidInfo =
+      reader->readDataInfo(reader->getDvidTarget().getSegmentationName());
+
+  std::set<uint64_t> bodySet = reader->readBodyId(
+        dvidInfo.getDataRange(), 2);
+  std::cout << bodySet.size() << std::endl;
+
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

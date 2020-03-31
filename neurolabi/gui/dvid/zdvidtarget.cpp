@@ -968,6 +968,10 @@ std::string ZDvidTarget::getValidSegmentationName(int zoom) const
     return "";
   }
 
+  if (hasMultiscaleSegmentation()) {
+    return getSegmentationName();
+  }
+
   return getSegmentationName(zoom);
 }
 
