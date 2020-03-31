@@ -100,6 +100,7 @@ public slots:
   void loadDatabaseFromUrl();
 
   void showAuthTokenDialog();
+  void updateAuthTokenIcon();
   void showProtocolAssignmentDialog();
 
 protected:

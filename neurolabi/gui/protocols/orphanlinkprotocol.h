@@ -103,6 +103,8 @@ private:
     int findTaskIndex(ProtocolAssignmentTask task);
     int findTaskIndex(int taskID);
 
+    void setAssignmentServer();
+
     void enable(DisenableElements element);
     void disable(DisenableElements element);
 

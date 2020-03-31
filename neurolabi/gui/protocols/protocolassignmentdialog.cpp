@@ -47,8 +47,8 @@ ProtocolAssignmentDialog::ProtocolAssignmentDialog(QWidget *parent) :
     connect(ui->assignmentTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 
 
-    // server setup
-    m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
+    // set up the server later
+    m_clientServerSet = false;
 
     m_username = QString::fromStdString(neutu::GetCurrentUserName());
 }
@@ -393,6 +393,14 @@ void ProtocolAssignmentDialog::setHeaders(QStandardItemModel *model) {
 
 void ProtocolAssignmentDialog::showEvent(QShowEvent* event) {
     QWidget::showEvent(event);
+
+    // set the server the first time the dialog is shown; we do this late
+    //  because we want errors to be shown when the action is taken, not much
+    //  earlier when the dialog is actually instantiated
+    if (!m_clientServerSet) {
+        m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
+        m_clientServerSet = true;
+    }
 
     // refresh the started assignment list when the dialog is shown
     onRefreshButton();
