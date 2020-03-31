@@ -40,6 +40,7 @@
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
 #include "flyem/auth/flyemauthtokendialog.h"
+#include "flyem/auth/flyemauthtokenhandler.h"
 #include "protocols/protocolassignmentdialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
@@ -232,6 +233,7 @@ void ZProofreadWindow::createDialog()
 
   if (!GET_FLYEM_CONFIG.getDefaultAssignmentManager().empty()) {
     m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+    connect(m_authTokenDlg, SIGNAL(requestUpdateAuthIcon()), this, SLOT(updateAuthTokenIcon()));
     m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
   }
 }
@@ -482,9 +484,8 @@ void ZProofreadWindow::createMenu()
   m_toolMenu->addAction(m_openProtocolsAction);
 
   m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
-  m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, Qt::darkYellow));
-  connect(m_openAuthDialogAction, SIGNAL(triggered()),
-          this, SLOT(showAuthTokenDialog()));
+  connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
+  updateAuthTokenIcon();
   m_toolMenu->addAction(m_openAuthDialogAction);
 
   m_openProtocolAssignmentDialogAction = new QAction("Open Assignment Dialog", this);
@@ -701,6 +702,17 @@ void ZProofreadWindow::operateDvid()
 void ZProofreadWindow::showAuthTokenDialog() {
     m_authTokenDlg->show();
     m_authTokenDlg->raise();
+}
+
+void ZProofreadWindow::updateAuthTokenIcon() {
+    FlyEmAuthTokenHandler handler;
+    if (!handler.hasMasterToken()) {
+        // medium dark red, halfway between Qt::red and Qt::darkRed
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf023, QColor(192, 0, 0, 255)));
+    } else {
+        // medium dark yellow, halfway between Qt::yellow and Qt::darkYellow
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, QColor(192, 192, 0, 255)));
+    }
 }
 
 void ZProofreadWindow::showProtocolAssignmentDialog() {

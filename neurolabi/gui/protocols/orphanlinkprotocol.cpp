@@ -20,9 +20,6 @@ OrphanLinkProtocol::OrphanLinkProtocol(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // must not end with / character!  enforce that when we un-hard-code it
-    m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
-
     m_model = new QStandardItemModel(0, 3, ui->tableView);
     // setHeaders(m_model);
 
@@ -58,6 +55,9 @@ const QString OrphanLinkProtocol::TASK_KEY_BODY_ID = "key_text";
 const int OrphanLinkProtocol::fileVersion = 1;
 
 bool OrphanLinkProtocol::initialize() {
+
+    // do here so any errors happen when the user would expect:
+    setAssignmentServer();
 
     // the protocol is not in the business of generating or starting assignments; that's the
     //  responsibility of the ProtocolAssignmentDialog (green inbox icon); we grab the started
@@ -603,6 +603,8 @@ void OrphanLinkProtocol::loadDataRequested(ZJsonObject data) {
 
     // convert old versions to current version here, when it becomes necessary
 
+    // set server now, so errors happen when the user expects:
+    setAssignmentServer();
 
     // load data here; assignment ID and comments
     m_assignmentID = ZJsonParser::integerValue(data[KEY_ASSIGNMENT_ID.c_str()]);
@@ -660,6 +662,12 @@ void OrphanLinkProtocol::onCompleteButton() {
         // saveState();
         emit protocolCompleting();
     }
+}
+
+void OrphanLinkProtocol::setAssignmentServer() {
+    // we want to control when this happens, because we want any errors to
+    //  happen about when the user does something, not earlier
+    m_client.setServer(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultAssignmentManager()));
 }
 
 void OrphanLinkProtocol::saveSelection() {
