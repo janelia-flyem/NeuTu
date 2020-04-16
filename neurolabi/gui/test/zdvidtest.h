@@ -285,6 +285,8 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getAllKeyUrl("test"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/keyrange/1/3",
             dvidUrl.getKeyRangeUrl("test", "1", "3"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/keyrangevalues/1/3?tar=true",
+            dvidUrl.getKeyValuesUrl("test", "1", "3"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/annotations",
             dvidUrl.getBodyAnnotationUrl("bodies"));

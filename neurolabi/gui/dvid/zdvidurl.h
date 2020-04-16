@@ -152,6 +152,8 @@ public:
       const std::string &key1, const std::string &key2) const;
   std::string getAllKeyUrl(const std::string &name) const;
   std::string getKeyValuesUrl(const std::string &name) const;
+  std::string getKeyValuesUrl(
+      const std::string &name, const std::string &key1, const std::string &key2) const;
 
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(
@@ -327,6 +329,7 @@ public:
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
   static std::string GetKeyValuesCommandUrl(const std::string &dataUrl);
+  static std::string GetKeyRangeValuesCommandUrl(const std::string &dataUrl);
 
   static std::string GetTarfileCommandUrl(const std::string &dataUrl);
 
@@ -406,6 +409,7 @@ private:
   static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_keyValuesCommand;
+  static const std::string m_keyRangeValuesCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;

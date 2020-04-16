@@ -1,5 +1,9 @@
 #include "zbodyprocesscommand.h"
 
+#include <cstdlib>
+#include <QProcess>
+
+#include "neulib/core/stringbuilder.h"
 #include "zjsonobject.h"
 #include "zjsonobjectparser.h"
 #include "zobject3dscan.h"
@@ -128,7 +132,50 @@ int chop_body(
   return ret;
 }
 
+int process_body(
+    uint64_t bodyId, const std::string &action, const ZJsonObject &config,
+    ZDvidWriter *writer)
+{
+  int ret = 0;
+
+  if (action == "decompose") {
+    ret = decompose_body(bodyId, writer);
+  } else if (action == "chop") {
+    ret = chop_body(bodyId, writer, config);
+  } else if (action == "external") {
+    ZJsonObjectParser parser;
+    std::string command = parser.getValue(config, "script", "");
+    if (!command.empty()) {
+      std::system(std::string(neulib::StringBuilder(command + " ").append(bodyId)).c_str());
+      /*
+      //QProcess was blocked for unknown reasons
+      QProcess process;
+      QStringList args;
+      args << QString("%1").arg(bodyId);
+      process.start(command.c_str(), args);
+      if (!process.waitForStarted()){
+        std::cerr << process.errorString().toStdString() << std::endl;
+        ret = 1;
+      } else {
+//        process.waitForFinished(-1);
+        while(!process.waitForFinished()) {
+          std::cout << process.readAllStandardOutput().toStdString() << std::endl;
+          QString error = process.readAllStandardError();
+          if (!error.isEmpty()) {
+            std::cout << error.toStdString() << std::endl;
+          }
+        }
+
+      }
+      */
+    }
+  }
+
+  return ret;
 }
+
+}
+
 
 int ZBodyProcessCommand::run(
     const std::vector<std::string> &input, const std::string &/*output*/,
@@ -149,11 +196,7 @@ int ZBodyProcessCommand::run(
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter(target);
     if (writer) {
       if (bodyId > 0) {
-        if (action == "decompose") {
-          ret = decompose_body(bodyId, writer);
-        } else if (action == "chop") {
-          ret = chop_body(bodyId, writer, config);
-        }
+        ret = process_body(bodyId, action, config, writer);
       } else {
         if (writer->getDvidTarget().hasMultiscaleSegmentation()) {
           ZDvidReader &reader = writer->getDvidReader();
@@ -166,11 +209,7 @@ int ZBodyProcessCommand::run(
           for (uint64_t bodyId : bodySet) {
             std::cout << numProcessed++ << "/" << total << " "
                       << action << ": " << bodyId << std::endl;
-            if (action == "decompose") {
-              ret = decompose_body(bodyId, writer);
-            } else if (action == "chop") {
-              ret = chop_body(bodyId, writer, config);
-            }
+            ret = process_body(bodyId, action, config, writer);
           }
         }
       }

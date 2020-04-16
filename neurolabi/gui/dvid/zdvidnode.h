@@ -119,6 +119,8 @@ public:
   std::string getScheme() const;
   void setScheme(const std::string &scheme);
 
+  std::string getSchemePrefix() const;
+
 private:
   std::string m_host;
   std::string m_uuid;

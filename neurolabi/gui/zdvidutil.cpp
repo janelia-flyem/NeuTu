@@ -91,6 +91,10 @@ libdvid::BinaryDataPtr dvid::MakeRequest(
   }
 //  qurl.setScheme("http");
   ZString address = qurl.host();
+  if (!qurl.scheme().isEmpty()) {
+    address = qurl.scheme().toStdString() + "://" + address;
+  }
+
   if (qurl.port() >= 0) {
     address += ":";
     address.appendNumber(qurl.port());

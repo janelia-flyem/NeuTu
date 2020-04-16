@@ -3976,6 +3976,11 @@ const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
   return m_mainDvidWriter.getDvidReader();
 }
 
+ZDvidWriter& ZFlyEmBody3dDoc::getMainDvidWriter()
+{
+  return m_mainDvidWriter;
+}
+
 const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
 {
   if (!m_workDvidReaderIndices.hasLocalData()) {

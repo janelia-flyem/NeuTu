@@ -30962,7 +30962,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   reader->updateMaxLabelZoom();
 
@@ -30972,7 +30972,37 @@ void ZTest::test(MainWindow *host)
   std::set<uint64_t> bodySet = reader->readBodyId(
         dvidInfo.getDataRange(), 2);
   std::cout << bodySet.size() << std::endl;
+#endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("vnc");
+  int z = 40896;
+  for (int dz = 0; dz < 1000; ++dz) {
+    std::cout << z + dz << std::endl;
+    ZStack *stack =
+        reader->readGrayScaleLowtis(0, 0, z + dz, 42944, 54837, 5, 256, 256, false);
+    delete stack;
+  }
+#endif
+
+#if 1
+//  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+//  reader->getDvidTarget().setUuid("abdd");
+
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "abdd", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  auto response = reader.readKeyValues("neutu_merge_opr", "progress_a", "progress_z");
+  std::cout << response.size() << std::endl;
+
+  for (const auto &entry : response) {
+    ZJsonObject obj;
+    obj.decode(entry.constData());
+    obj.print();
+  }
 
 #endif
 

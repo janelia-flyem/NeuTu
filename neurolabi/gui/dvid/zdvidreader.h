@@ -301,9 +301,12 @@ public:
   bool hasKey(const QString &dataName, const QString &key) const;
 
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
-  QList<QByteArray> readKeyValues(const QString &dataName, const QStringList &keyList) const;
+  QList<QByteArray> readKeyValues(
+      const QString &dataName, const QStringList &keyList) const;
+  QList<QByteArray> readKeyValues(
+      const QString &dataName, const QString &startKey, const QString &endKey) const;
   QStringList readKeys(const QString &dataName) const;
-  QStringList readKeys(const QString &dataName, const QString &minKey);
+  QStringList readKeys(const QString &dataName, const QString &minKey) const;
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
@@ -452,7 +455,7 @@ public:
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
-  int getMaxLabelZoom();
+  int getMaxLabelZoom() const;
 
   void updateMaxLabelZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
@@ -734,7 +737,8 @@ protected:
 //  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
 
-  bool m_maxLabelZoomUpdated = false;
+//  QMutex m_maxLabelZoomMutex;
+  mutable bool m_maxLabelZoomUpdated = false;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> m_service;

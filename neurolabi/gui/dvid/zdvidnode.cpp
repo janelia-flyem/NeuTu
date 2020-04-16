@@ -59,6 +59,11 @@ std::string ZDvidNode::getScheme() const
   return m_scheme.empty() ? "http" : m_scheme;
 }
 
+std::string ZDvidNode::getSchemePrefix() const
+{
+  return getScheme() + "://";
+}
+
 void ZDvidNode::setScheme(const std::string &scheme)
 {
   m_scheme = scheme;
@@ -183,11 +188,11 @@ std::string ZDvidNode::getHostWithScheme() const
 
 std::string ZDvidNode::getRootUrl() const
 {
-  if (m_scheme.empty()) {
-    return getAddressWithPort();
-  }
+//  if (m_scheme.empty()) {
+//    return getAddressWithPort();
+//  }
 
-  return m_scheme + "://" + getAddressWithPort();
+  return getSchemePrefix() + getAddressWithPort();
 }
 
 void ZDvidNode::setHost(const std::string &address)

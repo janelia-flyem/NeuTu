@@ -324,7 +324,7 @@ dvid::ENodeStatus ZDvidReader::getNodeStatus() const
 
 #ifdef _ENABLE_LIBDVIDCPP_
   ZDvidUrl url(getDvidTarget());
-  std::string repoUrl = url.getRepoUrl();
+  std::string repoUrl = url.getRepoUrl() + "/info";
   if (repoUrl.empty()) {
     status = dvid::ENodeStatus::INVALID;
   } else {
@@ -2725,10 +2725,68 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 #endif
 }
 
+namespace {
+
+QList<QByteArray> parse_tar_response(const QByteArray &buffer)
+{
+  QList<QByteArray> ans;
+  struct archive *archive = archive_read_new();
+  archive_read_support_format_all(archive);
+
+  int result = archive_read_open_memory(
+        archive, buffer.constData(), size_t(buffer.size()));
+  if (result != ARCHIVE_OK) {
+      LINFO() << "couldn't expand keyvalue archive";
+      return ans;
+      }
+
+  struct archive_entry *entry;
+  while (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
+      const struct stat *s = archive_entry_stat(entry);
+      size_t size = size_t(s->st_size);
+
+      QByteArray buffer(int(size), 0);
+      archive_read_data(archive, buffer.data(), size);
+      ans.append(buffer);
+  }
+  result = archive_read_free(archive);
+  if (result != ARCHIVE_OK) {
+      LWARN() << "couldn't close keyvalue archive";
+  }
+
+  return ans;
+}
+
+}
+
+QList<QByteArray> ZDvidReader::readKeyValues(
+    const QString &dataName, const QString &startKey, const QString &endKey) const
+{
+  ZDvidUrl url(getDvidTarget());
+  ZDvidBufferReader &bufferReader = m_bufferReader;
+
+  // encode keylist into json payload
+//  QJsonArray keys = QJsonArray::fromStringList(keyList);
+//  QJsonDocument doc(keys);
+//  QByteArray payload = doc.toJson();
+
+  // make call with json keylist
+  bufferReader.read(
+        QString::fromStdString(
+          url.getKeyValuesUrl(
+            dataName.toStdString(), startKey.toStdString(), endKey.toStdString())),
+      isVerbose());
+  setStatusCode(bufferReader.getStatusCode());
+
+  // untar response into list of byte arrays
+  const QByteArray &buffer = m_bufferReader.getBuffer();
+
+  return parse_tar_response(buffer);
+}
+
 QList<QByteArray> ZDvidReader::readKeyValues(
     const QString &dataName, const QStringList &keyList) const
 {
-
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader &bufferReader = m_bufferReader;
 
@@ -2746,8 +2804,11 @@ QList<QByteArray> ZDvidReader::readKeyValues(
     setStatusCode(bufferReader.getStatusCode());
 
     // untar response into list of byte arrays
-    QList<QByteArray> ans;
     const QByteArray &buffer = m_bufferReader.getBuffer();
+
+    return parse_tar_response(buffer);
+    /*
+    QList<QByteArray> ans;
     struct archive *archive = archive_read_new();
     archive_read_support_format_all(archive);
 
@@ -2772,6 +2833,7 @@ QList<QByteArray> ZDvidReader::readKeyValues(
     }
 
     return ans;
+    */
 }
 
 QStringList ZDvidReader::readKeys(const QString &dataName) const
@@ -2805,7 +2867,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName) const
 }
 
 QStringList ZDvidReader::readKeys(
-    const QString &dataName, const QString &minKey)
+    const QString &dataName, const QString &minKey) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -4633,10 +4695,10 @@ void ZDvidReader::updateMaxGrayscaleZoom()
 #endif
 }
 
-int ZDvidReader::getMaxLabelZoom()
+int ZDvidReader::getMaxLabelZoom() const
 {
   if (m_maxLabelZoomUpdated == false) {
-    updateMaxLabelZoom();
+    const_cast<ZDvidReader&>(*this).updateMaxLabelZoom();
   }
 
   return getDvidTarget().getMaxLabelZoom();

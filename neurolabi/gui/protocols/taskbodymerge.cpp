@@ -1,5 +1,6 @@
 #include "taskbodymerge.h"
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
 
@@ -1122,33 +1123,27 @@ void TaskBodyMerge::writeResult()
 
 void TaskBodyMerge::writeResult(const QString &result)
 {
-  ZDvidReader reader;
-  reader.setVerbose(false);
-  if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for reading";
-    return;
-  }
-
-  ZDvidWriter writer;
-  if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for writing";
+  ZDvidWriter &writer = m_bodyDoc->getMainDvidWriter();
+  if (!writer.good()) {
+    LERROR() << "No valid DVID writer found.";
     return;
   }
 
   std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
 
-  if (!reader.hasData(instance)) {
+  if (!writer.getDvidReader().hasData(instance)) {
     writer.createKeyvalue(instance);
   }
-  if (!reader.hasData(instance)) {
+  if (!writer.getDvidReader().hasData(instance)) {
     LERROR() << "TaskBodyCleave::writeResult() could not create DVID instance \"" << instance << "\"";
     return;
   }
 
   QJsonObject json;
   json[KEY_RESULT] = result;
-  if (const char* user = std::getenv("USER")) {
-    json[KEY_USER] = user;
+  std::string user = NeutubeConfig::GetUserName();
+  if (!user.empty()) {
+    json[KEY_USER] = user.c_str();
   }
   json[KEY_SUPERVOXEL_ID1] = QJsonValue(qint64(m_supervoxelId1));
   json[KEY_SUPERVOXEL_ID2] = QJsonValue(qint64(m_supervoxelId2));

@@ -1,7 +1,7 @@
 #ifndef FLYEMDEF_H
 #define FLYEMDEF_H
 
-#include <QChar>
+//#include <QChar>
 
 namespace flyem {
 

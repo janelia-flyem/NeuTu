@@ -145,6 +145,7 @@ public:
 
   const ZDvidReader& getMainDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
+  ZDvidWriter& getMainDvidWriter();
 
   void setDvidTarget(const ZDvidTarget &target);
 
