@@ -31006,7 +31006,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   ZObject3dScan obj = reader->readRoi("AL-DC3(R)");
   ZStack *stack = obj.toStack(ZIntCuboid(0, 0, 0, 1087, 1279, 1343), 255);

@@ -56,12 +56,18 @@ int ZUploadRoiCommand::run(
     qDebug() << "Input data: " << dir;
 
     QStringList fileList =
-        dir.entryList(QStringList() << "*" + DATA_EXT[masterRoiType]);
+        dir.entryList(QStringList() << "*." + DATA_EXT[masterRoiType]);
     qDebug() << fileList;
     for (const QString &masterFileName : fileList) {
+      int extLength = DATA_EXT[masterRoiType].length() + 1;
+      bool hasTifExt = false;
+      if (masterFileName.endsWith(".tif." + DATA_EXT[masterRoiType])) {
+        extLength += 4;
+        hasTifExt = true;
+      }
       QString roiName = masterFileName.left(
-            masterFileName.length() - (".tif." + DATA_EXT[masterRoiType]).length());
-      qDebug() << roiName;
+            masterFileName.length() - extLength);
+      qDebug() << "ROI Name:" << roiName;
 
 //      qDebug() << dir.filePath(meshFilename);
 //      QString roiName = meshFilename.left(
@@ -70,7 +76,11 @@ int ZUploadRoiCommand::run(
       QString meshFilePath;
 
       if (uploadingMesh) {
-        meshFilePath = dir.filePath(roiName + ".tif.obj");
+        meshFilePath = dir.filePath(
+              roiName + (hasTifExt ? ".tif." : ".") + DATA_EXT[ROI_TYPE_MESH]);
+#ifdef _DEBUG_
+        qDebug() << "Mesh file:" << meshFilePath;
+#endif
         if (!QFileInfo(meshFilePath).exists()) {
           qWarning() << meshFilePath << " does not exist. Abort!";
           break;
@@ -80,7 +90,11 @@ int ZUploadRoiCommand::run(
       QString roiFilePath;
 
       if (uploadingData) {
-        roiFilePath= dir.filePath(roiName + ".tif.sobj");
+        roiFilePath= dir.filePath(
+              roiName + (hasTifExt ? ".tif." : ".") + DATA_EXT[ROI_TYPE_DATA]);
+#ifdef _DEBUG_
+        qDebug() << "Data file:" << roiFilePath;
+#endif
         if (!QFileInfo(roiFilePath).exists()) {
           qWarning() << roiFilePath << " does not exist. Abort!";
           break;
