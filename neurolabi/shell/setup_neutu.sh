@@ -66,9 +66,9 @@ cd $downloadDir
 if [ ! -d $condaDir ]
 then
   if [ `uname` = 'Darwin' ]; then
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-x86_64.sh
   else
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-x86_64.sh
   fi
   bash Miniconda-latest-x86_64.sh -b -p $condaDir
 fi
