@@ -375,6 +375,8 @@ public:
 
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
+  ZStack* toStack(const ZIntCuboid &box, int v) const;
+
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 

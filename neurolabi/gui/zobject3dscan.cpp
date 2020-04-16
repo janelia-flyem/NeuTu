@@ -38,6 +38,7 @@
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
 #include "common/memorystream.h"
+#include "zstackfactory.h"
 
 ///////////////////////////////////////////////////
 
@@ -1552,6 +1553,17 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj) const
   }
 
   return false;
+}
+
+ZStack* ZObject3dScan::toStack(const ZIntCuboid &box, int v) const
+{
+  ZStack *stack = nullptr;
+  if (!box.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(box);
+    drawStack(stack, v);
+  }
+
+  return stack;
 }
 
 Stack* ZObject3dScan::toStack(int *offset, int v) const
