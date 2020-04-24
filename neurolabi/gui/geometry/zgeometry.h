@@ -20,6 +20,7 @@ namespace zgeom
 {
 
 std::vector<ZAffineRect> Partition(const ZAffineRect &rect, int row, int col);
+std::vector<ZAffineRect> IntPartition(const ZAffineRect &rect, int row, int col);
 
 /*!
  * \brief Transform a 3D field

@@ -5682,9 +5682,9 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -5823,9 +5823,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   ZCuboid boundBox = hotSpotArray.toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -7183,7 +7183,7 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       ZIntCuboid cuboid = obj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      stack->setOffset(cuboid.getFirstCorner());
+      stack->setOffset(cuboid.getMinCorner());
       frame->document()->loadStack(stack);
 
       addStackFrame(frame);

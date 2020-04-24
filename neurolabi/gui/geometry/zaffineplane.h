@@ -31,6 +31,9 @@ public:
   double computeSignedDistance(const ZPoint &pt) const;
   double computeSignedDistance(double x, double y, double z) const;
 
+  void translate(double dx, double dy, double dz);
+  void translate(const ZPoint &dv);
+
   /*!
    * \brief Align a point with the affine plane
    *

@@ -7,6 +7,7 @@
 #include "mvc/zstackdoc.h"
 #include "geometry/zaffineplane.h"
 #include "mvc/zstackdocutil.h"
+#include "zstackfactory.h"
 
 #ifdef _USE_GTEST_
 
@@ -17,8 +18,8 @@ TEST(ZPositionMapper, WidgetToRawStack)
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
-  viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
-                               box.getFirstCorner().getY(),
+  viewProj.setCanvasRect(QRect(box.getMinCorner().getX(),
+                               box.getMinCorner().getY(),
                                box.getWidth(), box.getHeight()));
   viewProj.setWidgetRect(QRect(0, 0, 100, 200));
 
@@ -56,14 +57,14 @@ TEST(ZPositionMapper, WidgetToRawStackWithOffset)
 {
   ZStackDoc doc;
   ZIntCuboid range;
-  range.setFirstCorner(10, 20, 30);
+  range.setMinCorner(10, 20, 30);
   range.setSize(100, 200, 300);
   doc.loadStack(ZStackFactory::MakeVirtualStack(range));
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
-  viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
-                               box.getFirstCorner().getY(),
+  viewProj.setCanvasRect(QRect(box.getMinCorner().getX(),
+                               box.getMinCorner().getY(),
                                box.getWidth(), box.getHeight()));
   viewProj.setWidgetRect(QRect(0, 0, 100, 200));
 
@@ -101,14 +102,14 @@ TEST(ZPositionMapper, WidgetToStack)
 {
   ZStackDoc doc;
   ZIntCuboid range;
-  range.setFirstCorner(10, 20, 30);
+  range.setMinCorner(10, 20, 30);
   range.setSize(100, 200, 300);
   doc.loadStack(ZStackFactory::MakeVirtualStack(range));
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
-  viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
-                               box.getFirstCorner().getY(),
+  viewProj.setCanvasRect(QRect(box.getMinCorner().getX(),
+                               box.getMinCorner().getY(),
                                box.getWidth(), box.getHeight()));
   viewProj.setWidgetRect(QRect(0, 0, 100, 200));
 
@@ -136,13 +137,13 @@ TEST(ZPositionMapper, WidgetToStack)
   ASSERT_DOUBLE_EQ(60, pt.y());
 
   ZPoint pt2 = ZPositionMapper::WidgetToStack(
-        ZPoint(10, 20, 30), viewProj, box.getFirstCorner().getZ());
+        ZPoint(10, 20, 30), viewProj, box.getMinCorner().getZ());
   ASSERT_DOUBLE_EQ(30, pt2.getX());
   ASSERT_DOUBLE_EQ(60, pt2.getY());
   ASSERT_DOUBLE_EQ(60, pt2.getZ());
 
   pt2 = ZPositionMapper::WidgetToStack(
-        10, 20, viewProj, box.getFirstCorner().getZ());
+        10, 20, viewProj, box.getMinCorner().getZ());
   ASSERT_DOUBLE_EQ(30, pt2.getX());
   ASSERT_DOUBLE_EQ(60, pt2.getY());
   ASSERT_DOUBLE_EQ(30, pt2.getZ());

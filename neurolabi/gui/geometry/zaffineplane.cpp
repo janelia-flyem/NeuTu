@@ -48,6 +48,16 @@ ZPlane ZAffinePlane::getPlane() const
   return m_plane;
 }
 
+void ZAffinePlane::translate(double dx, double dy, double dz)
+{
+  m_offset.translate(dx, dy, dz);
+}
+
+void ZAffinePlane::translate(const ZPoint &dv)
+{
+  m_offset.translate(dv);
+}
+
 double ZAffinePlane::computeSignedDistance(const ZPoint &pt) const
 {
   ZPoint newPt = pt - m_offset;

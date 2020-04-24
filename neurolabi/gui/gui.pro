@@ -1102,13 +1102,13 @@ SOURCES += main.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
     zsurfaceobjsmodel.cpp \
-    dvid/zdvidsynapse.cpp \
-    dvid/zdvidsynapseensenmble.cpp \
     zcubearray.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     dvid/zdvidannotation.cpp \
+    dvid/zdvidsynapse.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
     dialogs/stringlistdialog.cpp \
     zroiwidget.cpp \
     dialogs/flyemtododialog.cpp \

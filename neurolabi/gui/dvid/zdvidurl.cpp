@@ -211,9 +211,26 @@ std::string ZDvidUrl::AppendQuery(
 }
 
 
-std::string ZDvidUrl::getMeshUrl()
+std::string ZDvidUrl::getMeshUrl() const
 {
   return getDataUrl(m_dvidTarget.getMeshName());
+}
+
+std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, EMeshType type) const
+{
+  return applyAdminToken(GetFullUrl(
+        GetKeyCommandUrl(getMeshUrl()),
+        GetMeshKey(bodyId, type)));
+}
+
+std::string ZDvidUrl::getMergedMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::MERGED);
+}
+
+std::string ZDvidUrl::getNgMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::NG);
 }
 
 std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
@@ -729,9 +746,9 @@ std::string ZDvidUrl::AppendRangeQuery(
 {
   std::string newUrl = url;
   if (!url.empty()) {
-    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
-    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
-    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
   }
 
   return newUrl;
@@ -742,9 +759,9 @@ std::string ZDvidUrl::AppendRangeQuery(
 {
   std::string newUrl = url;
   if (!url.empty()) {
-    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
-    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
-    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
   }
 
   newUrl = AppendQuery(newUrl, std::make_pair("exact", exact));
@@ -1472,7 +1489,7 @@ std::string ZDvidUrl::getBookmarkUrl(
 
 std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
 {
-  return getBookmarkUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getBookmarkUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                         box.getDepth());
 }
 
@@ -1703,8 +1720,8 @@ std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const ZIntCuboid &box) const
 {
   return getAnnotationUrl(
-        dataName, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        dataName, box.getMinCorner().getX(), box.getMinCorner().getY(),
+        box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth());
 }
 
@@ -1796,7 +1813,7 @@ std::string ZDvidUrl::getSynapseMoveUrl(
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
 {
-  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getSynapseUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                        box.getDepth());
 }
 
@@ -1854,9 +1871,9 @@ std::string ZDvidUrl::getContrastUrl() const
 
 std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
 {
-  return getTodoListUrl(cuboid.getFirstCorner().getX(),
-                        cuboid.getFirstCorner().getY(),
-                        cuboid.getFirstCorner().getZ(),
+  return getTodoListUrl(cuboid.getMinCorner().getX(),
+                        cuboid.getMinCorner().getY(),
+                        cuboid.getMinCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
 }
@@ -1973,10 +1990,7 @@ void ZDvidUrl::setUuid(const std::string &uuid)
 
 std::string ZDvidUrl::GetBodyKey(uint64_t bodyId)
 {
-  std::ostringstream stream;
-  stream << bodyId;
-
-  return stream.str();
+  return std::to_string(bodyId);
 }
 
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
@@ -1987,10 +2001,24 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   return stream.str();
 }
 
-std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, EMeshType type)
 {
-  return GetBodyKey(bodyId);
+  std::string key = GetBodyKey(bodyId);
+
+  switch (type) {
+  case EMeshType::MERGED:
+    key += ".merge";
+    break;
+  case EMeshType::NG:
+    key += ".ngmesh";
+    break;
+  default:
+    break;
+  }
+
+  return key;
 }
+
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
 {

@@ -18,6 +18,7 @@
 #include "zioutils.h"
 #include "qt/core/zexception.h"
 #include "logging/zqslog.h"
+#include "common/memorystream.h"
 
 namespace {
 
@@ -414,6 +415,8 @@ void ZMeshIO::loadFromMemory(
   try {
     if (format == "drc") {
       readDracoMeshFromMemory(buffer.constData(), buffer.size(), mesh);
+    } else if (format == "ngmesh") {
+      readNgMeshFromMemory(buffer.constData(), buffer.size(), mesh);
     } else {
       mesh.clear();
       mesh.setType(GL_TRIANGLES);
@@ -461,6 +464,8 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
       readAllenAtlasMesh(filename, mesh.m_normals, mesh.m_vertices, mesh.m_indices);
     } else if (filename.endsWith(".drc", Qt::CaseInsensitive)) {
       readDracoMesh(filename, mesh);
+    } else if (filename.endsWith(".ngmesh", Qt::CaseInsensitive)) {
+      readNgMesh(filename, mesh);
     } else {
       Assimp::Importer importer;
       initImporter(importer);
@@ -664,6 +669,82 @@ void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>
   }
 }
 
+void ZMeshIO::readNgMesh(std::istream &stream, ZMesh &mesh) const
+{
+  try {
+    uint32_t numVertices = 0;
+    stream.read(reinterpret_cast<char*>(&numVertices), 4);
+    std::vector<glm::dvec3> vertices;
+    for (uint32_t i = 0; i < numVertices; ++i) {
+      float x = 0;
+      float y = 0;
+      float z = 0;
+      stream.read(reinterpret_cast<char*>(&x), 4);
+      stream.read(reinterpret_cast<char*>(&y), 4);
+      stream.read(reinterpret_cast<char*>(&z), 4);
+      vertices.emplace_back(x, y, z);
+    }
+
+    std::vector<GLuint> indices;
+    while (stream.good()) {
+      uint32_t index = 0;
+      stream.read(reinterpret_cast<char*>(&index), 4);
+      if (stream.good()) {
+        indices.push_back(index);
+      }
+    }
+
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    throw std::runtime_error("Failed to decode NG mesh");
+  }
+}
+
+/*NG mesh format
+ * 4B: #vertices
+ * #vertices * 4 * 3B: vertices with float for each coordinate.
+ *    (x,y,z), (x,y,z), (x,y,z), ...
+ * Remain: indices, each 4 bytes as uint32
+ */
+void ZMeshIO::readNgMeshFromMemory(
+    const char *data, size_t size, ZMesh &mesh) const
+{
+  ZMemoryInputStream stream(data, size);
+  readNgMesh(stream, mesh);
+
+  /*
+  try {
+    ZMemoryInputStream stream(data, size);
+    uint32_t numVertices = 0;
+    stream >> numVertices;
+    std::vector<glm::dvec3> vertices;
+    for (uint32_t i = 0; i < numVertices; ++i) {
+      float x = 0;
+      float y = 0;
+      float z = 0;
+      stream >> x >> y >> z;
+      vertices.emplace_back(x, y, z);
+    }
+
+    size_t numIndices = (size - numVertices * 12 - 4) / 4;
+    std::vector<GLuint> indices(numIndices);
+    for (size_t i = 0; i < numIndices; ++i) {
+      uint32_t index = 0;
+      stream >> index;
+      indices[i] = index;
+    }
+
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    throw std::runtime_error("Failed to decode NG mesh");
+  }
+  */
+}
+
 void ZMeshIO::readDracoMeshFromMemory(
     const char *data, size_t size, ZMesh &mesh) const
 {
@@ -790,4 +871,12 @@ void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
   inputFileStream.close();
 
   readDracoMeshFromMemory(data.data(), data.size(), mesh);
+}
+
+void ZMeshIO::readNgMesh(const QString &filename, ZMesh &mesh) const
+{
+  std::ifstream stream;
+  openFileStream(stream, filename, std::ios::in | std::ios::binary);
+
+  readNgMesh(stream, mesh);
 }

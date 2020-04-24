@@ -43,9 +43,9 @@ void ZDvidPatchDataFetcher::fetch(const ZIntCuboid &region)
       }
 
       m_patch->setData(stack->array8());
-      m_patch->setOffset(region.getFirstCorner().getX(),
-                         region.getFirstCorner().getY());
-      m_patch->setZ(region.getFirstCorner().getZ());
+      m_patch->setOffset(region.getMinCorner().getX(),
+                         region.getMinCorner().getY());
+      m_patch->setZ(region.getMinCorner().getZ());
     }
     delete stack;
 
@@ -61,7 +61,7 @@ int ZDvidPatchDataFetcher::receiverCount(const char *signal) const
 bool ZDvidPatchDataFetcher::updatePatch(ZDvidTileEnsemble *slice, int z)
 {
   QMutexLocker locker(&m_dataMutex);
-  if (slice != NULL && m_dataRange.getFirstCorner().getZ() == z) {
+  if (slice != NULL && m_dataRange.getMinCorner().getZ() == z) {
     if (m_patch != NULL) {
       slice->updatePatch(m_patch, m_dataRange);
       return true;

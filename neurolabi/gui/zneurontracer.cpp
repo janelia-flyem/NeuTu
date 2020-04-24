@@ -407,17 +407,17 @@ void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
     }
 
     m_traceWorkspace->trace_range[0] =
-        box.getFirstCorner().getX() - stackOffset.getX();
+        box.getMinCorner().getX() - stackOffset.getX();
     m_traceWorkspace->trace_range[3] =
-        box.getLastCorner().getX() - stackOffset.getX();
+        box.getMaxCorner().getX() - stackOffset.getX();
     m_traceWorkspace->trace_range[1] =
-        box.getFirstCorner().getY() - stackOffset.getY();
+        box.getMinCorner().getY() - stackOffset.getY();
     m_traceWorkspace->trace_range[4] =
-        box.getLastCorner().getY() - stackOffset.getY();
+        box.getMaxCorner().getY() - stackOffset.getY();
     m_traceWorkspace->trace_range[2] =
-        box.getFirstCorner().getZ() - stackOffset.getZ();
+        box.getMinCorner().getZ() - stackOffset.getZ();
     m_traceWorkspace->trace_range[5] =
-        box.getLastCorner().getZ() - stackOffset.getZ();
+        box.getMaxCorner().getZ() - stackOffset.getZ();
   }
 }
 
@@ -779,8 +779,8 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 //  }
 
   Stack *partial = C_Stack::crop(
-        getIntensityData(), box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        getIntensityData(), box.getMinCorner().getX(), box.getMinCorner().getY(),
+        box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth(), NULL);
 
   /*
@@ -805,9 +805,9 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   std::vector<int> path;
 
   if (m_usingEdgePath) {
-    int x0 = box.getFirstCorner().getX();
-    int y0 = box.getFirstCorner().getY();
-    int z0 = box.getFirstCorner().getZ();
+    int x0 = box.getMinCorner().getX();
+    int y0 = box.getMinCorner().getY();
+    int z0 = box.getMinCorner().getZ();
 
     int startIndex = C_Stack::indexFromCoord(
           x1 - x0, y1 - y0 , z1 - z0, C_Stack::width(partial),

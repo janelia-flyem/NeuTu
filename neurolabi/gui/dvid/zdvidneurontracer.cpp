@@ -110,8 +110,8 @@ ZStack* ZDvidNeuronTracer::readStack(
   r = std::max(r * 3.0, 16.0);
 
   ZIntCuboid box;
-  box.setFirstCorner(std::floor(x - r), std::floor(y - r), std::floor(z - r));
-  box.setLastCorner(std::ceil(x + r), std::ceil(y + r), std::ceil(z + r));
+  box.setMinCorner(std::floor(x - r), std::floor(y - r), std::floor(z - r));
+  box.setMaxCorner(std::ceil(x + r), std::ceil(y + r), std::ceil(z + r));
 
   return readStack(box);
 }

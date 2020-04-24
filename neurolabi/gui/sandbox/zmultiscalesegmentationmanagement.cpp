@@ -265,14 +265,14 @@ shared_ptr<ZStack> ZMultiscaleSegmentationWindow::_createSuperVoxel(const ZStack
     int height = box.getHeight();
     int depth = box.getDepth();
     if(height >= width && height >= depth){
-      box_a.setLastY(box.getFirstCorner().getY() + height/2);
-      box_b.setFirstY(box.getFirstCorner().getY() + height/2 + 1);
+      box_a.setMaxY(box.getMinCorner().getY() + height/2);
+      box_b.setMinY(box.getMinCorner().getY() + height/2 + 1);
     } else if(width >= height && width >= depth){
-      box_a.setLastX(box.getFirstCorner().getX() + width/2);
-      box_b.setFirstX(box.getFirstCorner().getX() + width/2 + 1);
+      box_a.setMaxX(box.getMinCorner().getX() + width/2);
+      box_b.setMinX(box.getMinCorner().getX() + width/2 + 1);
     } else {
-      box_a.setLastZ(box.getFirstCorner().getZ() + depth/2);
-      box_b.setFirstZ(box.getFirstCorner().getZ() + depth /2 + 1);
+      box_a.setMaxZ(box.getMinCorner().getZ() + depth/2);
+      box_b.setMinZ(box.getMinCorner().getZ() + depth /2 + 1);
     }
     shared_ptr<ZStack> stack_a = shared_ptr<ZStack>(stack.makeCrop(box_a));
     shared_ptr<ZStack> stack_b = shared_ptr<ZStack>(stack.makeCrop(box_b));
@@ -595,12 +595,12 @@ void ZMultiscaleSegmentationWindow::test(){
     for(uint8_t* p = seg->array8(); p < seg->array8() + seg->getVoxelNumber(); ++p){
       if(*p)*p=1;
     }
-    int x0 = seg->getBoundBox().getFirstCorner().getX();
-    int y0 = seg->getBoundBox().getFirstCorner().getY();
-    int z0 = seg->getBoundBox().getFirstCorner().getZ();
-    int x1 = seg->getBoundBox().getLastCorner().getX();
-    int y1 = seg->getBoundBox().getLastCorner().getY();
-    int z1 = seg->getBoundBox().getLastCorner().getZ();
+    int x0 = seg->getBoundBox().getMinCorner().getX();
+    int y0 = seg->getBoundBox().getMinCorner().getY();
+    int z0 = seg->getBoundBox().getMinCorner().getZ();
+    int x1 = seg->getBoundBox().getMaxCorner().getX();
+    int y1 = seg->getBoundBox().getMaxCorner().getY();
+    int z1 = seg->getBoundBox().getMaxCorner().getZ();
 
     clock_t start,end;
 

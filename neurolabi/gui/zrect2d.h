@@ -62,18 +62,18 @@ public:
   /*!
    * \brief Set the last corner of the rectable
    */
-  void setLastCorner(int x, int y);
-  void setFirstCorner(int x, int y);
+  void setMaxCorner(int x, int y);
+  void setMinCorner(int x, int y);
 
   /*!
     * \brief Set size by fixing the first corner.
     */
   void setSize(int width, int height);
 
-  int getFirstX() const;
-  int getFirstY() const;
-  int getLastX() const;
-  int getLastY() const;
+  int getMinX() const;
+  int getMinY() const;
+  int getMaxX() const;
+  int getMaxY() const;
 
   inline void setZ(int z) { m_z = z; }
   inline int getZ() const { return m_z; }

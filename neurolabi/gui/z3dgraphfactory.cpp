@@ -25,17 +25,17 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
 {
   Z3DGraph *graph = new Z3DGraph;
   Z3DGraphNode node(
-        rect.getFirstX(), rect.getFirstY(), rect.getZ(), lineWidth / 2.0);
+        rect.getMinX(), rect.getMinY(), rect.getZ(), lineWidth / 2.0);
   node.setColor(QColor(255, 255, 255));
   graph->addNode(node);
 
-  node.set(rect.getFirstX(), rect.getLastY(), rect.getZ(), node.radius());
+  node.set(rect.getMinX(), rect.getMaxY(), rect.getZ(), node.radius());
   graph->addNode(node);
 
-  node.set(rect.getLastX(), rect.getFirstY(), rect.getZ(), node.radius());
+  node.set(rect.getMaxX(), rect.getMinY(), rect.getZ(), node.radius());
   graph->addNode(node);
 
-  node.set(rect.getLastX(), rect.getLastY(), rect.getZ(), node.radius());
+  node.set(rect.getMaxX(), rect.getMaxY(), rect.getZ(), node.radius());
   graph->addNode(node);
 
   Z3DGraphEdge edge;
@@ -65,10 +65,10 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
   node2.setColor(QColor(v, v, v));
   node1.setRadius(lineWidth / 4.0);
   node2.setRadius(lineWidth / 4.0);
-  node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
-  node2.setCenter(rect.getLastX(), rect.getFirstY(), rect.getZ());
+  node1.setCenter(rect.getMinX(), rect.getMinY(), rect.getZ());
+  node2.setCenter(rect.getMaxX(), rect.getMinY(), rect.getZ());
 
-  for (double y = rect.getFirstY() + interval; y < rect.getLastY();
+  for (double y = rect.getMinY() + interval; y < rect.getMaxY();
        y += interval) {
     node1.setY(y);
     node2.setY(y);
@@ -76,10 +76,10 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
 //    node1.setText(QString("%1").arg(y));
   }
 
-  node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
-  node2.setCenter(rect.getFirstX(), rect.getLastY(), rect.getZ());
+  node1.setCenter(rect.getMinX(), rect.getMinY(), rect.getZ());
+  node2.setCenter(rect.getMinX(), rect.getMaxY(), rect.getZ());
 
-  for (double x = rect.getFirstX() + interval; x < rect.getLastX();
+  for (double x = rect.getMinX() + interval; x < rect.getMaxX();
        x += interval) {
     node1.setX(x);
     node2.setX(x);

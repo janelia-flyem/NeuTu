@@ -43,9 +43,9 @@ ZArray* ZArrayFactory::MakeArray(const ZIntCuboid box, mylib::Value_Type type)
     dims[2] = box.getDepth();
 
     array = new ZArray(type, ndims, dims);
-    array->setStartCoordinate(0, box.getFirstCorner().getX());
-    array->setStartCoordinate(1, box.getFirstCorner().getY());
-    array->setStartCoordinate(2, box.getFirstCorner().getZ());
+    array->setStartCoordinate(0, box.getMinCorner().getX());
+    array->setStartCoordinate(1, box.getMinCorner().getY());
+    array->setStartCoordinate(2, box.getMinCorner().getZ());
   }
 
   return array;

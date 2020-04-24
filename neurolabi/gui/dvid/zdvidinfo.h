@@ -101,6 +101,8 @@ public:
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;
 
+  int getBlockLevel() const;
+
   bool isValidBlockIndex(const ZIntPoint &pt);
 
   int getMinZ() const;

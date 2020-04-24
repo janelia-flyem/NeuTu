@@ -31013,6 +31013,56 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/AL-DC3(R).tif");
 #endif
 
+#if 0
+  ZStackObject *obj = new ZFlyEmBookmark;
+  ZStackObject *obj2 = obj->clone();
+
+  ZFlyEmBookmark bookmark;
+  ZFlyEmBookmark* obj3 = bookmark.clone();
+#endif
+
+#if 0
+  ZMesh mesh;
+  ZMeshIO meshIO;
+
+  meshIO.load(
+        (GET_TEST_DATA_DIR + "/_benchmark/mesh/1282274661.ngmesh").c_str(), mesh);
+
+  mesh.save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5813023304.ngmesh");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5901310807.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "793a", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZMesh *mesh = reader.readMesh("segmentation_meshes", "1003672833.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  std::vector<uint64_t> bodyArray =
+      reader->readConsistentMergedMeshKeys("5901278576.merge");
+
+  std::cout << neutu::ToString(bodyArray, ", ") << std::endl;
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

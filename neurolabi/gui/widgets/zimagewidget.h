@@ -38,7 +38,7 @@ class ZImageWidget : public QWidget {
 
 public:
   ZImageWidget(QWidget *parent);
-  virtual ~ZImageWidget();
+  virtual ~ZImageWidget() override;
 
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
@@ -136,8 +136,8 @@ public:
   void setCanvasRegion(int x0, int y0, int w, int h);
 
   //void setData(const uchar *data, int width, int height, QImage::Format format);
-  QSize minimumSizeHint() const;
-  QSize sizeHint() const;
+  QSize minimumSizeHint() const override;
+  QSize sizeHint() const override;
 //  bool isColorTableRequired();
   void addColorTable();
 
@@ -160,7 +160,7 @@ public:
   QPointF canvasCoordinate(QPoint widgetCoord) const;
 
 
-  void paintEvent(QPaintEvent *event);
+  void paintEvent(QPaintEvent *event) override;
 
   bool popLeftMenu(const QPoint &pos);
   bool popRightMenu(const QPoint &pos);

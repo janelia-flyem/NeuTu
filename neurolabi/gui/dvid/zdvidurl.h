@@ -57,7 +57,14 @@ public:
 
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
-  std::string getMeshUrl();
+  enum class EMeshType {
+    NORAML, MERGED, NG
+  };
+
+  std::string getMeshUrl() const;
+  std::string getMeshUrl(uint64_t bodyId, EMeshType type) const;
+  std::string getMergedMeshUrl(uint64_t bodyId) const;
+  std::string getNgMeshUrl(uint64_t bodyId) const;
   std::string getMeshUrl(uint64_t bodyId, int zoom);
   std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
   static std::string GetMeshInfoUrl(const std::string &meshUrl);
@@ -294,7 +301,8 @@ public:
 
   static std::string GetBodyKey(uint64_t bodyId);
   static std::string GetSkeletonKey(uint64_t bodyId);
-  static std::string GetMeshKey(uint64_t bodyId);
+  static std::string GetMeshKey(
+      uint64_t bodyId, EMeshType type = EMeshType::NORAML);
   static std::string GetMeshInfoKey(uint64_t bodyId);
   static std::string GetTaskKey();
 

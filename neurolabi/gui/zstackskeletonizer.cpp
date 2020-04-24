@@ -139,7 +139,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 
     if (tree != NULL) {
       addSwcComment(tree, finalDsIntv);
-      const ZIntPoint pt = box.getFirstCorner();
+      const ZIntPoint pt = box.getMinCorner();
       tree->translate(pt * (originalDsIntv + 1));
     }
   }

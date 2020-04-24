@@ -469,12 +469,12 @@ void ZDvidWriter::mergeBody(
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 {
   ZJsonArray obj;
-  obj.append(cuboid.getFirstCorner().getX());
-  obj.append(cuboid.getFirstCorner().getY());
-  obj.append(cuboid.getFirstCorner().getZ());
-  obj.append(cuboid.getLastCorner().getX());
-  obj.append(cuboid.getLastCorner().getY());
-  obj.append(cuboid.getLastCorner().getZ());
+  obj.append(cuboid.getMinCorner().getX());
+  obj.append(cuboid.getMinCorner().getY());
+  obj.append(cuboid.getMinCorner().getZ());
+  obj.append(cuboid.getMaxCorner().getX());
+  obj.append(cuboid.getMaxCorner().getY());
+  obj.append(cuboid.getMaxCorner().getZ());
 
   std::string url = ZDvidUrl(getDvidTarget(), m_admin).getBoundBoxUrl(z);
   writeJson(url, obj);
@@ -1897,12 +1897,12 @@ void ZDvidWriter::changeLabel(
   if (reader.good()) {
     ZDvidInfo dvidInfo = reader.readLabelInfo();
     ZIntCuboid alignedBox;
-    alignedBox.setFirstCorner(
+    alignedBox.setMinCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-    alignedBox.setLastCorner(
+            dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+    alignedBox.setMaxCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+            dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
     ZArray *label = reader.readLabels64(alignedBox);
 
@@ -1931,12 +1931,12 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
   if (reader.open(getDvidTarget())) {
     ZDvidInfo dvidInfo = reader.readLabelInfo();
     ZIntCuboid alignedBox;
-    alignedBox.setFirstCorner(
+    alignedBox.setMinCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-    alignedBox.setLastCorner(
+            dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+    alignedBox.setMaxCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+            dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
     ZArray *label = reader.readLabels64(alignedBox);
 
@@ -1987,12 +1987,12 @@ void ZDvidWriter::refreshLabel(
     if (reader.open(getDvidTarget())) {
       ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
       ZIntCuboid alignedBox;
-      alignedBox.setFirstCorner(
+      alignedBox.setMinCorner(
             dvidInfo.getBlockBox(
-              dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-      alignedBox.setLastCorner(
+              dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+      alignedBox.setMaxCorner(
             dvidInfo.getBlockBox(
-              dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+              dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
       ZArray *label = reader.readLabels64(alignedBox);
 

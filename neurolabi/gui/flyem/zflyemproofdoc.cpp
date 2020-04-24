@@ -3151,8 +3151,8 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 
       if (!box.isEmpty()) {
         array = reader->readLabels64Lowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
+              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
@@ -3186,8 +3186,8 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
               viewParam.getViewPort(), viewParam.getZ());
 
         array = workReader.readGrayScaleLowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
+              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
@@ -4830,10 +4830,10 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
     if (rect->isValid()) {
       int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
                                   rect->getHeight() * rect->getHeight()) / 2.0);
-      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
-      roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ() - sz);
+      roi->setLastCorner(rect->getMaxX(), rect->getMaxY(), rect->getZ() + sz);
     } else if (appending) {
-      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ());
+      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ());
       roi->setLastCorner(roi->getFirstCorner());
     }
   }
@@ -5174,7 +5174,7 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
     ZDvidReader &reader = getDvidReader();
     if (reader.good()) {
       std::set<uint64_t> bodySet = reader.readBodyId(
-            rect.getFirstX(), rect.getFirstY(), z,
+            rect.getMinX(), rect.getMinY(), z,
             rect.getWidth(), rect.getHeight(), 1);
       if (appending) {
         addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);

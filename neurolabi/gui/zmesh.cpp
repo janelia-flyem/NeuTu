@@ -129,8 +129,8 @@ ZCuboid ZMesh::getBoundBox() const
 {
   ZCuboid box;
   ZBBox<glm::dvec3> bbox = boundBox();
-  box.setFirstCorner(bbox.minCorner().x, bbox.minCorner().y, bbox.minCorner().z);
-  box.setLastCorner(bbox.maxCorner().x, bbox.maxCorner().y, bbox.maxCorner().z);
+  box.setMinCorner(bbox.minCorner().x, bbox.minCorner().y, bbox.minCorner().z);
+  box.setMaxCorner(bbox.maxCorner().x, bbox.maxCorner().y, bbox.maxCorner().z);
 
   return box;
 }
@@ -556,12 +556,12 @@ ZMesh ZMesh::CreateCuboidFaceMesh(
     const ZIntCuboid &cf, const std::vector<bool> &visible, const QColor &color)
 {
   std::vector<glm::vec3> coordLlfs;
-  coordLlfs.emplace_back(cf.getFirstCorner().getX(), cf.getFirstCorner().getY(),
-                         cf.getFirstCorner().getZ());
+  coordLlfs.emplace_back(cf.getMinCorner().getX(), cf.getMinCorner().getY(),
+                         cf.getMinCorner().getZ());
 
   std::vector<glm::vec3> coordUrbs;
-  coordUrbs.emplace_back(cf.getLastCorner().getX(), cf.getLastCorner().getY(),
-                         cf.getLastCorner().getZ());
+  coordUrbs.emplace_back(cf.getMaxCorner().getX(), cf.getMaxCorner().getY(),
+                         cf.getMaxCorner().getZ());
 
   std::vector<std::vector<bool> > faceVisbility;
   faceVisbility.push_back(visible);

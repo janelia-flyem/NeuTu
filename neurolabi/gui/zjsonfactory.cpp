@@ -66,13 +66,13 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
 ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
 {
   ZJsonArray array;
-  array.append(box.getFirstCorner().getX());
-  array.append(box.getFirstCorner().getY());
-  array.append(box.getFirstCorner().getZ());
+  array.append(box.getMinCorner().getX());
+  array.append(box.getMinCorner().getY());
+  array.append(box.getMinCorner().getZ());
 
-  array.append(box.getLastCorner().getX());
-  array.append(box.getLastCorner().getY());
-  array.append(box.getLastCorner().getZ());
+  array.append(box.getMaxCorner().getX());
+  array.append(box.getMaxCorner().getY());
+  array.append(box.getMaxCorner().getZ());
 
   return array;
 }

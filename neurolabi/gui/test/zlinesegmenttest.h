@@ -37,6 +37,15 @@ TEST(ZLineSegment, Flip)
   ASSERT_EQ(ZPoint(1, 2, 3), seg.getStartPoint());
 }
 
+TEST(ZLineSegment, Compare)
+{
+  ZLineSegment seg(1, 2, 3, 4, 5, 6);
+  ASSERT_TRUE(seg.approxEquals(ZLineSegment(1, 2, 3, 4, 5, 6)));
+  ASSERT_TRUE(seg.approxEquals(ZLineSegment(4, 5, 6,1, 2, 3)));
+  ASSERT_FALSE(seg.approxEquals(ZLineSegment(1, 2, 3, 7, 8, 9)));
+
+}
+
 #endif
 
 

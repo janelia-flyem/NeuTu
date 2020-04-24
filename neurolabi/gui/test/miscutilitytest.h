@@ -44,8 +44,8 @@ TEST(miscutility, GetBoundBox)
   array.setStartCoordinate(1, 2, 3);
 
   ZIntCuboid box = misc::GetBoundBox(&array);
-  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getFirstCorner());
-  ASSERT_EQ(ZIntPoint(3, 5, 7), box.getLastCorner());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(3, 5, 7), box.getMaxCorner());
 }
 
 TEST(miscutility, EstimateSplitRoi)
@@ -54,8 +54,8 @@ TEST(miscutility, EstimateSplitRoi)
         ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(512, 512, 128)));
   std::cout << box.toString() << std::endl;
   std::cout << box.getVolume() << std::endl;
-  ASSERT_EQ(ZIntPoint(-314, -314, -101), box.getFirstCorner());
-  ASSERT_EQ(ZIntPoint(826, 826, 229), box.getLastCorner());
+  ASSERT_EQ(ZIntPoint(-314, -314, -101), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(826, 826, 229), box.getMaxCorner());
 }
 
 

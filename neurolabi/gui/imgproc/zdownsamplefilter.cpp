@@ -42,7 +42,7 @@ ZStack* ZDownsampleFilter::filterStack(const ZSparseStack& spStack)
   int z=(depth+m_dsZ-1)/m_dsZ;
 
   ZStack* rv=new ZStack(GREY,x,y,z,1);
-  ZIntPoint offset=box.getFirstCorner();
+  ZIntPoint offset=box.getMinCorner();
   rv->setOffset(offset.m_x/m_dsX,offset.m_y/m_dsY,offset.m_z/m_dsZ);
   rv->setDsIntv(m_dsX-1,m_dsY-1,m_dsZ-1);
 

@@ -4,6 +4,7 @@ HEADERS += \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
+  $$PWD/zaffinerecttest.h \
     $$PWD/zdvidtargetfactorytest.h \
     $$PWD/zdvidtargettest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \

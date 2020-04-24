@@ -103,12 +103,12 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
     range.scale(s);
 
     range.set(
-          ZIntPoint(AdjustMinCorner(range.getFirstCorner().getX(), scale.getX()),
-                    AdjustMinCorner(range.getFirstCorner().getY(), scale.getY()),
-                    AdjustMinCorner(range.getFirstCorner().getZ(), scale.getZ())),
-          ZIntPoint(AdjustMaxCorner(range.getLastCorner().getX(), scale.getX()),
-                    AdjustMaxCorner(range.getLastCorner().getY(), scale.getY()),
-                    AdjustMaxCorner(range.getLastCorner().getZ(), scale.getZ())));
+          ZIntPoint(AdjustMinCorner(range.getMinCorner().getX(), scale.getX()),
+                    AdjustMinCorner(range.getMinCorner().getY(), scale.getY()),
+                    AdjustMinCorner(range.getMinCorner().getZ(), scale.getZ())),
+          ZIntPoint(AdjustMaxCorner(range.getMaxCorner().getX(), scale.getX()),
+                    AdjustMaxCorner(range.getMaxCorner().getY(), scale.getY()),
+                    AdjustMaxCorner(range.getMaxCorner().getZ(), scale.getZ())));
   }
 
   return range;

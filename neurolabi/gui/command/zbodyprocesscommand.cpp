@@ -118,7 +118,7 @@ int chop_body(
       while(d > dz) {
         ZObject3dScan remain;
         ZObject3dScan subobj;
-        wholeBody.chop(currentBox.getFirstZ() + dz, sliceAxis, &remain, &subobj);
+        wholeBody.chop(currentBox.getMinZ() + dz, sliceAxis, &remain, &subobj);
         writer->writePartition(wholeBody, subobj, bodyId);
         wholeBody = remain;
         currentBox = wholeBody.getIntBoundBox();

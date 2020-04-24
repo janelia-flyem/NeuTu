@@ -485,7 +485,7 @@ protected:
 
   void setSliceRange(int minSlice, int maxSlice);
 
-  bool event(QEvent *event);
+  bool event(QEvent *event) override;
 
   void enableOffsetAdjustment(bool on);
 

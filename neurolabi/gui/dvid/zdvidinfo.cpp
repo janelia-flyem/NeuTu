@@ -210,6 +210,11 @@ ZIntPoint ZDvidInfo::getBlockSize() const
   return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 }
 
+int ZDvidInfo::getBlockLevel() const
+{
+  return zgeom::GetZoomLevel(m_blockSize[0]);
+}
+
 int ZDvidInfo::CoordToBlockIndex(int x, int s)
 {
   if (x >= 0) {
@@ -283,8 +288,8 @@ bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
 
 ZObject3dScan ZDvidInfo::getBlockIndex(const ZIntCuboid &box) const
 {
-  ZIntPoint startIndex = getBlockIndex(box.getFirstCorner());
-  ZIntPoint endIndex = getBlockIndex(box.getLastCorner());
+  ZIntPoint startIndex = getBlockIndex(box.getMinCorner());
+  ZIntPoint endIndex = getBlockIndex(box.getMaxCorner());
 
 
   return ZObject3dFactory::MakeObject3dScan(ZIntCuboid(startIndex, endIndex));
@@ -393,7 +398,7 @@ ZIntCuboid ZDvidInfo::getBlockBox(int ix, int iy, int iz) const
 {
   ZIntCuboid cuboid;
 
-  cuboid.setFirstCorner(getBlockCoord(ix, iy, iz));
+  cuboid.setMinCorner(getBlockCoord(ix, iy, iz));
   cuboid.setSize(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 
   return cuboid;

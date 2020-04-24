@@ -99,5 +99,6 @@
 #include "test/zneurontracertest.h"
 #include "test/zmeshtest.h"
 #include "test/zlocalneurosegtest.h"
+#include "test/zaffinerecttest.h"
 
 #endif // ZTESTALL_H

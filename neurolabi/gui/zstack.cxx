@@ -78,7 +78,7 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
 
   m_dealloc = NULL;
   setData(stack, delloc);
-  setOffset(box.getFirstCorner());
+  setOffset(box.getMinCorner());
 }
 
 ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/)
@@ -1962,7 +1962,7 @@ void ZStack::getBoundBox(Cuboid_I *box) const
 ZIntCuboid ZStack::getBoundBox() const
 {
   ZIntCuboid box;
-  box.setFirstCorner(getOffset());
+  box.setMinCorner(getOffset());
   box.setSize(width(), height(), depth());
 
   return box;
@@ -2056,7 +2056,7 @@ ZStack* ZStack::makeCrop(const ZIntCuboid &cuboid) const
         C_Stack::view(m_stack, &stackView, channel);
         C_Stack::view(newStack, &newStackView, channel);
 
-        ZIntPoint startPoint = cuboid.getFirstCorner() - m_offset;
+        ZIntPoint startPoint = cuboid.getMinCorner() - m_offset;
         C_Stack::crop(&stackView, startPoint.getX(), startPoint.getY(),
                       startPoint.getZ(),
                       cuboid.getWidth(), cuboid.getHeight(),
@@ -2068,7 +2068,7 @@ ZStack* ZStack::makeCrop(const ZIntCuboid &cuboid) const
       }
       cropped = new ZStack;
       cropped->setData(newStack);
-      cropped->setOffset(cuboid.getFirstCorner());
+      cropped->setOffset(cuboid.getMinCorner());
     }
   }
 
@@ -2085,7 +2085,7 @@ void ZStack::crop(const ZIntCuboid &cuboid)
     m_stack->width = cuboid.getWidth();
     m_stack->height = cuboid.getHeight();
     m_stack->depth = cuboid.getDepth();
-    m_offset = cuboid.getFirstCorner();
+    m_offset = cuboid.getMinCorner();
   } else {
     if (!cuboid.isEmpty()) {
       int nchannel = channelNumber();
@@ -2099,7 +2099,7 @@ void ZStack::crop(const ZIntCuboid &cuboid)
         C_Stack::view(m_stack, &stackView, channel);
         C_Stack::view(newStack, &newStackView, channel);
 
-        ZIntPoint startPoint = cuboid.getFirstCorner() - m_offset;
+        ZIntPoint startPoint = cuboid.getMinCorner() - m_offset;
         C_Stack::crop(&stackView, startPoint.getX(), startPoint.getY(),
                       startPoint.getZ(),
                       cuboid.getWidth(), cuboid.getHeight(),
@@ -2109,7 +2109,7 @@ void ZStack::crop(const ZIntCuboid &cuboid)
         C_Stack::write(GET_DATA_DIR + "/test.tif", &newStackView);
 #endif
       }
-      m_offset = cuboid.getFirstCorner();
+      m_offset = cuboid.getMinCorner();
       setData(newStack);
     } else {
       deprecate(MC_STACK);

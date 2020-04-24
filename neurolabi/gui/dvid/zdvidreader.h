@@ -212,10 +212,16 @@ public:
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
 
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
+  ZMesh* readMesh(const std::string &key) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
   std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
       const std::string &url) const;
+
+  std::vector<uint64_t> readMergedMeshKeys(uint64_t bodyId) const;
+  std::vector<uint64_t> readMergedMeshKeys(const std::string &key) const;
+  std::vector<uint64_t> readConsistentMergedMeshKeys(uint64_t bodyId) const;
+  std::vector<uint64_t> readConsistentMergedMeshKeys(const std::string &key) const;
 
   ZMesh* readSupervoxelMesh(uint64_t svId) const;
 
@@ -724,6 +730,8 @@ private:
   void configureLowtis(T *config, const std::string &dataName) const;
 
   std::vector<uint64_t> readBodyIdAt(const ZJsonArray &queryObj) const;
+
+  bool hasConsistentMergedMesh(uint64_t bodyId) const;
 
 protected:
   ZDvidTarget m_dvidTarget;

@@ -79,7 +79,7 @@ int ZBlockGrid::getHashIndex(const ZIntPoint &blockIndex) const
 ZIntCuboid ZBlockGrid::getBlockBox(const ZIntPoint &blockIndex) const
 {
   ZIntCuboid cuboid;
-  cuboid.setFirstCorner(getBlockPosition(blockIndex));
+  cuboid.setMinCorner(getBlockPosition(blockIndex));
   cuboid.setSize(m_blockSize.getX(), m_blockSize.getY(), m_blockSize.getZ());
 
   return cuboid;

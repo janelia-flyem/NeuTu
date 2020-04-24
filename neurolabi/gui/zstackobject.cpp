@@ -16,16 +16,10 @@
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-ZStackObject::ZStackObject() : m_hitProtocal(EHitProtocol::HIT_DATA_POS),
-  m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
-  m_zScale(1.0),
-  m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutu::display::VE_NONE)
+ZStackObject::ZStackObject()
 {
-  m_type = EType::UNIDENTIFIED;
   setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
-  m_timeStamp = 0;
 }
 
 ZStackObject::~ZStackObject()
@@ -50,9 +44,7 @@ ZStackObject::~ZStackObject()
 }
 
 #define RETURN_TYPE_NAME(v, t) \
-  if (v == EType::t) { \
-    return NT_STR(t); \
-  }
+  if (v == EType::t) return NT_STR(t)
 
 std::string ZStackObject::GetTypeName(EType type)
 {
@@ -123,12 +115,12 @@ void ZStackObject::setSelected(bool selected)
   m_selected = selected;
 
   if(m_selected) {
-    for(auto callback: m_callbacks_on_selection)
+    for(auto callback: m_selectionCallbacks)
     {
       callback(this);
     }
   } else {
-    for(auto callback: m_callbacks_on_deselection)
+    for(auto callback: m_deselectionCallbacks)
     {
       callback(this);
     }

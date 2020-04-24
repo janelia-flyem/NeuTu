@@ -31,7 +31,7 @@ class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
 //  ZStroke2d(const ZStroke2d &stroke);
-  virtual ~ZStroke2d();
+  virtual ~ZStroke2d() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::STROKE;
@@ -50,9 +50,9 @@ public:
   virtual bool load(const char *filePath);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
 
   void labelBinary(Stack *stack) const;
 
@@ -78,7 +78,7 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLast(double x, double y);
-  void setLabel(uint64_t label);
+  void setLabel(uint64_t label) override;
 
   /*!
    * \brief Toggle the label.
@@ -89,7 +89,7 @@ public:
 
   bool isEmpty() const;
 
-  ZStroke2d* clone();
+  ZStroke2d* clone() const override;
 
   void addWidth(double dw);
 
@@ -129,7 +129,7 @@ public:
 
   ZStack *toBinaryStack() const;
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
   ZObject3d* toObject3d() const;
 
@@ -142,7 +142,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
@@ -159,10 +159,10 @@ public:
   bool hitTest(double x, double y, double z) const;
 
 //  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
-  void boundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const override;
 
   static QColor GetLabelColor(int label);
 

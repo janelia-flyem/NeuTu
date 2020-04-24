@@ -433,10 +433,10 @@ bool ZDvidSparseStack::fillValue(
 
       size_t stripeNumber = blockObj.getStripeNumber();
       ZIntCuboid blockBox;
-      blockBox.setFirstCorner(
-            m_grayscaleInfo.getBlockIndex(box.getFirstCorner()));
-      blockBox.setLastCorner(
-            m_grayscaleInfo.getBlockIndex(box.getLastCorner()));
+      blockBox.setMinCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMinCorner()));
+      blockBox.setMaxCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMaxCorner()));
 
 #ifdef _DEBUG_2
       objMask->save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -612,10 +612,10 @@ bool ZDvidSparseStack::fillValue(
 
       size_t stripeNumber = blockObj.getStripeNumber();
       ZIntCuboid blockBox;
-      blockBox.setFirstCorner(
-            m_grayscaleInfo.getBlockIndex(box.getFirstCorner()));
-      blockBox.setLastCorner(
-            m_grayscaleInfo.getBlockIndex(box.getLastCorner()));
+      blockBox.setMinCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMinCorner()));
+      blockBox.setMaxCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMaxCorner()));
 
 
 #ifdef _DEBUG_2

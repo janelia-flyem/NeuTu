@@ -438,8 +438,8 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
       ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(viewPort, z);
       if (getSliceAxis() == neutu::EAxis::Z) {
         m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
+              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, getHelper()->getCenterCutWidth(),
               getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
         getHelper()->setActualQuality(
@@ -450,9 +450,9 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
         int width = box.getWidth() / zoomRatio;
         int height = box.getHeight() / zoomRatio;
         int depth = box.getDepth();
-        int x0 = box.getFirstCorner().getX() / zoomRatio;
-        int y0 = box.getFirstCorner().getY() / zoomRatio;
-        int z0 = box.getFirstCorner().getZ();
+        int x0 = box.getMinCorner().getX() / zoomRatio;
+        int y0 = box.getMinCorner().getY() / zoomRatio;
+        int z0 = box.getMinCorner().getZ();
 
         zgeom::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
         zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());

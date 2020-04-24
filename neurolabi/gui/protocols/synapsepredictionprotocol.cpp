@@ -199,7 +199,7 @@ ZIntCuboid SynapsePredictionProtocol::getRange() const
 void SynapsePredictionProtocol::setRange(const ZIntCuboid &range)
 {
   m_protocolRange = range;
-  emit rangeChanged(range.getFirstCorner(), range.getLastCorner());
+  emit rangeChanged(range.getMinCorner(), range.getMaxCorner());
 }
 
 void SynapsePredictionProtocol::setRange(const ZJsonArray &rangeJson)
@@ -432,7 +432,7 @@ void SynapsePredictionProtocol::onGridToggled() {
     //  grid update, and not setRange(), which also changes our local data;
     //  when we hide the grid, we're not actually changing the protocol range
     if (ui->gridCheckBox->isChecked()) {
-        emit rangeChanged(m_protocolRange.getFirstCorner(), m_protocolRange.getLastCorner());
+        emit rangeChanged(m_protocolRange.getMinCorner(), m_protocolRange.getMaxCorner());
     } else {
         emit rangeChanged(ZIntPoint(0, 0, 0), ZIntPoint(-1, -1, -1));
     }
@@ -720,9 +720,9 @@ void SynapsePredictionProtocol::updateSiteListLabel() {
     QString message = "Site list: ";
     if (m_variation == VARIATION_REGION) {
         message += "T-bars within ";
-        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
+        message += QString::fromStdString(m_protocolRange.getMinCorner().toString());
         message += " to ";
-        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
+        message += QString::fromStdString(m_protocolRange.getMaxCorner().toString());
     } else if (m_variation == VARIATION_BODY) {
         if (m_subvariation == SUBVARIATION_BODY_TBAR) {
             message += "T-bars";

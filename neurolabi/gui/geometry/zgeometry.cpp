@@ -16,19 +16,68 @@ std::vector<ZAffineRect> zgeom::Partition(
 {
   std::vector<ZAffineRect> result;
 
-  int subwidth = rect.getWidth() / col;
-  int subheight = rect.getHeight() / row;
-  int heightRemainder = rect.getHeight() % row;
+  double subwidth = rect.getWidth() / col;
+  double subheight = rect.getHeight() / row;
+//  int heightRemainder = rect.getHeight() % row;
 
-  int currentOffsetY = -rect.getHeight() / 2;
+  double currentOffsetY = -rect.getHeight() / 2;
   for (int i = 0; i < row; ++i) {
-    int currentOffsetX = -rect.getWidth() / 2;
-    int height = subheight;
+    double currentOffsetX = -rect.getWidth() / 2;
+    double height = subheight;
+    /*
     if (heightRemainder > 0) {
       ++height;
       --heightRemainder;
     }
     int widthRemainder = rect.getWidth() % col;
+    */
+
+    for (int j = 0; j < col; ++j) {
+      double width = subwidth;
+      /*
+      if (widthRemainder > 0) {
+        ++width;
+        --widthRemainder;
+      }
+      */
+
+      ZAffineRect subrect;
+
+      ZPoint center = rect.getV1() * (currentOffsetX + width / 2) +
+          rect.getV2() * (currentOffsetY + height / 2) + rect.getCenter();
+      subrect.set(center, rect.getV1(), rect.getV2(), width, height);
+
+      result.push_back(subrect);
+
+      currentOffsetX += width;
+    }
+    currentOffsetY += height;
+  }
+
+  return result;
+}
+
+std::vector<ZAffineRect> zgeom::IntPartition(
+    const ZAffineRect &rect, int row, int col)
+{
+  std::vector<ZAffineRect> result;
+
+  int rectWidth = neutu::iround(rect.getWidth());
+  int rectHeight = neutu::iround(rect.getHeight());
+
+  int subwidth = rectWidth / col;
+  int subheight = rectHeight / row;
+  int heightRemainder = rectHeight % row;
+
+  double currentOffsetY = -rectHeight / 2;
+  for (int i = 0; i < row; ++i) {
+    double currentOffsetX = -rectWidth / 2;
+    int height = subheight;
+    if (heightRemainder > 0) {
+      ++height;
+      --heightRemainder;
+    }
+    int widthRemainder = rectWidth % col;
 
     for (int j = 0; j < col; ++j) {
       int width = subwidth;

@@ -60,7 +60,7 @@ TEST(ZDvidTest, ZDvidInfo)
   ASSERT_EQ(ZIntPoint(0, 0, 0), info.getBlockCoord(0, 0, 0));
   ASSERT_EQ(ZIntPoint(16, 32, 64), info.getBlockCoord(1, 1, 1));
   ZIntCuboid box = info.getBlockBox(1, 2, 3);
-  ASSERT_EQ(ZIntPoint(16, 64, 192), box.getFirstCorner());
+  ASSERT_EQ(ZIntPoint(16, 64, 192), box.getMinCorner());
   ASSERT_EQ(16, box.getWidth());
   ASSERT_EQ(32, box.getHeight());
   ASSERT_EQ(64, box.getDepth());
@@ -171,6 +171,16 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getMeshInfoUrl(1, 0));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_2/key/1_info",
             dvidUrl.getMeshInfoUrl(1, 2));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1",
+            dvidUrl.getMeshUrl(1, ZDvidUrl::EMeshType::NORAML));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1.ngmesh",
+            dvidUrl.getMeshUrl(1, ZDvidUrl::EMeshType::NG));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1.merge",
+            dvidUrl.getMeshUrl(1, ZDvidUrl::EMeshType::MERGED));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1.ngmesh",
+            dvidUrl.getNgMeshUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1.merge",
+            dvidUrl.getMergedMeshUrl(1));
 
   ASSERT_EQ("http://emdata.janelia.org/api", dvidUrl.getApiUrl());
 //  std::cout << dvidUrl.getApiUrl() << std::endl;
@@ -528,8 +538,8 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
             dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
 
-  box.setFirstX(0);
-  box.setLastX(-1);
+  box.setMinX(0);
+  box.setMaxX(-1);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?scale=2&miny=20&maxy=50&minz=30&maxz=60",
             dvidUrl4.getSparsevolUrl(1, 2, box));
@@ -537,14 +547,14 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
 
-  box.setFirstY(0);
-  box.setLastY(-1);
+  box.setMinY(0);
+  box.setMaxY(-1);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?scale=2&minz=30&maxz=60",
             dvidUrl4.getSparsevolUrl(1, 2, box));
 
-  box.setFirstZ(0);
-  box.setLastZ(-1);
+  box.setMinZ(0);
+  box.setMaxZ(-1);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?scale=2",
             dvidUrl4.getSparsevolUrl(1, 2, box));
@@ -562,8 +572,8 @@ TEST(ZDvidTest, ZDvidUrl)
             "?scale=0&format=blocks",
             dvidUrl4.getSparsevolUrl(config));
 
-  config.range.setFirstX(1);
-  config.range.setLastX(10);
+  config.range.setMinX(1);
+  config.range.setMaxX(10);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?scale=0&format=blocks&minx=1&maxx=10",
             dvidUrl4.getSparsevolUrl(config));
@@ -573,16 +583,16 @@ TEST(ZDvidTest, ZDvidUrl)
             "?scale=2&format=blocks&minx=1&maxx=10",
             dvidUrl4.getSparsevolUrl(config));
 
-  config.range.setFirstY(2);
-  config.range.setLastY(20);
+  config.range.setMinY(2);
+  config.range.setMaxY(20);
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
             "?scale=2&format=blocks&minx=1&maxx=10&miny=2&maxy=20",
             dvidUrl4.getSparsevolUrl(config));
 
-  ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
-              "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
-  ASSERT_EQ(0, (int) ZDvidUrl::GetBodyId(
-              "http://localhost:8000/api/node/uuid/segname/sparsevol/"));
+  ASSERT_EQ(12345, int(ZDvidUrl::GetBodyId(
+              "http://localhost:8000/api/node/uuid/segname/sparsevol/12345")));
+  ASSERT_EQ(int(0), int(ZDvidUrl::GetBodyId(
+              "http://localhost:8000/api/node/uuid/segname/sparsevol/")));
   ASSERT_EQ(uint64_t(123451234512345L), ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/123451234512345"));
 
@@ -650,6 +660,7 @@ TEST(ZDvidTest, DataType)
   ASSERT_EQ(dvid::EDataType::ROI, dvid::GetDataType("roi"));
   ASSERT_EQ(dvid::EDataType::UINT8BLK, dvid::GetDataType("uint8blk"));
 
+  /*
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e2f0", 7000);
   target.setSegmentationName("segmentation2");
@@ -658,6 +669,7 @@ TEST(ZDvidTest, DataType)
     reader.syncBodyLabelName();
     ASSERT_EQ("segmentation-labelvol", reader.getDvidTarget().getBodyLabelName());
   }
+  */
 }
 
 #endif

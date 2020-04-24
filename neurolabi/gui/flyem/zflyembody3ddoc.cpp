@@ -3640,9 +3640,29 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
       }
     }
   } else {
-    mesh = reader.readMesh(config.getBodyId(), zoom);
-    if (mesh != NULL) {
-      *acturalMeshZoom = zoom;
+    if (!isCoarseLevel(zoom)) { //Skip coarse Level
+      //Checking order: merged mesh -> ngmesh -> normal mesh
+      std::string mergeKey =
+          ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::MERGED);
+      mesh = reader.readMesh(mergeKey);
+      if (mesh) {
+        *acturalMeshZoom = 0;
+      } else {
+        //Skip ngmesh if the merge key exists but is broken
+        if (!reader.hasKey(getDvidTarget().getMeshName().c_str(), mergeKey.c_str())) {
+          mesh = reader.readMesh(
+                ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::NG));
+        }
+      }
+
+      if (mesh) {
+        *acturalMeshZoom = 0;
+      } else {
+        mesh = reader.readMesh(config.getBodyId(), zoom);
+        if (mesh != NULL) {
+          *acturalMeshZoom = zoom;
+        }
+      }
     }
   }
 

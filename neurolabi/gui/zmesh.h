@@ -4,6 +4,7 @@
 #include "z3dgl.h"
 
 #include <vector>
+#include <memory>
 #include <vtkSmartPointer.h>
 
 #include "zbbox.h"
@@ -414,6 +415,7 @@ private:
 
   mutable ZBBox<glm::dvec3> m_boundBox;
   mutable ObbTreeData m_obbTreeData;
+  mutable std::vector<std::shared_ptr<ZMesh>> m_splitMeshList;
 //  mutable bool m_isObbTreeValid = false;
 //  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
 };

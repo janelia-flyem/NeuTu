@@ -1017,8 +1017,8 @@ bool ZDvidAnnotation::AddRelation(
 ZCuboid ZDvidAnnotation::getBoundBox() const
 {
   ZCuboid box;
-  box.setFirstCorner(getPosition().toPoint() - getRadius());
-  box.setLastCorner(getPosition().toPoint() + getRadius());
+  box.setMinCorner(getPosition().toPoint() - getRadius());
+  box.setMaxCorner(getPosition().toPoint() + getRadius());
 
   return box;
 }

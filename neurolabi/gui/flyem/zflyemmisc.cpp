@@ -199,8 +199,8 @@ void flyem::HackathonEvaluator::evalulate()
 Z3DGraph* flyem::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
 {
   ZCuboid box;
-  box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-  box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+  box.setMinCorner(dvidInfo.getStartCoordinates().toPoint());
+  box.setMaxCorner(dvidInfo.getEndCoordinates().toPoint());
   Z3DGraph *graph = Z3DGraphFactory::MakeBox(
         box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
   graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
@@ -218,13 +218,13 @@ Z3DGraph* flyem::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
     if (docHelper.hasCurrentZ()) {
       rect.setZ(docHelper.getCurrentZ());
       //    rect.setZ(getCurrentZ());
-      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+      rect.setMinCorner(dvidInfo.getStartCoordinates().getX(),
                           dvidInfo.getStartCoordinates().getY());
-      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+      rect.setMaxCorner(dvidInfo.getEndCoordinates().getX(),
                          dvidInfo.getEndCoordinates().getY());
       ZCuboid box;
-      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+      box.setMinCorner(dvidInfo.getStartCoordinates().toPoint());
+      box.setMaxCorner(dvidInfo.getEndCoordinates().toPoint());
       double lineWidth = box.depth() / 2000.0;
       graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
@@ -300,7 +300,7 @@ Z3DGraph* flyem::MakeRoiGraph(
             if (!faceArray.empty()) {
               ZIntCuboid box = dvidInfo.getBlockBox(
                     i + startCoord[0], j + startCoord[1], k + startCoord[2]);
-              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+              box.setMaxCorner(box.getMaxCorner() + ZIntPoint(1, 1, 1));
               Z3DGraph *subgraph = factory.makeFaceGraph(box, faceArray);
               graph->append(*subgraph);
               delete subgraph;
@@ -653,17 +653,17 @@ ZMesh* flyem::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv)
             }
             if (visible) {
               ZIntCuboid box;
-              box.setFirstCorner(
+              box.setMinCorner(
                     (i + startCoord[0]) * bw, (j + startCoord[1]) * bh,
                   (k + startCoord[2]) * bd);
-              box.setLastCorner(box.getFirstCorner() + ZIntPoint(bw, bh, bd));
+              box.setMaxCorner(box.getMinCorner() + ZIntPoint(bw, bh, bd));
 
-              coordLlfs.emplace_back(box.getFirstCorner().getX(),
-                                     box.getFirstCorner().getY(),
-                                     box.getFirstCorner().getZ());
-              coordUrbs.emplace_back(box.getLastCorner().getX(),
-                                     box.getLastCorner().getY(),
-                                     box.getLastCorner().getZ());
+              coordLlfs.emplace_back(box.getMinCorner().getX(),
+                                     box.getMinCorner().getY(),
+                                     box.getMinCorner().getZ());
+              coordUrbs.emplace_back(box.getMaxCorner().getX(),
+                                     box.getMaxCorner().getY(),
+                                     box.getMaxCorner().getZ());
               cubeColors.emplace_back(r, g, b, a);
               faceVisbility.push_back(fv);
             }
@@ -737,14 +737,14 @@ ZMesh* flyem::MakeRoiMesh(
             if (visible) {
               ZIntCuboid box = dsInfo.getBlockBox(
                     i + startCoord[0], j + startCoord[1], k + startCoord[2]);
-              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+              box.setMaxCorner(box.getMaxCorner() + ZIntPoint(1, 1, 1));
 
-              coordLlfs.emplace_back(box.getFirstCorner().getX(),
-                                     box.getFirstCorner().getY(),
-                                     box.getFirstCorner().getZ());
-              coordUrbs.emplace_back(box.getLastCorner().getX(),
-                                     box.getLastCorner().getY(),
-                                     box.getLastCorner().getZ());
+              coordLlfs.emplace_back(box.getMinCorner().getX(),
+                                     box.getMinCorner().getY(),
+                                     box.getMinCorner().getZ());
+              coordUrbs.emplace_back(box.getMaxCorner().getX(),
+                                     box.getMaxCorner().getY(),
+                                     box.getMaxCorner().getZ());
               cubeColors.emplace_back(r, g, b, a);
               faceVisbility.push_back(fv);
             }
@@ -770,13 +770,13 @@ void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidIn
     ZRect2d rect;
     rect.setZ(viewParam.getZ());
     //    rect.setZ(getCurrentZ());
-    rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+    rect.setMinCorner(dvidInfo.getStartCoordinates().getX(),
                         dvidInfo.getStartCoordinates().getY());
-    rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+    rect.setMaxCorner(dvidInfo.getEndCoordinates().getX(),
                        dvidInfo.getEndCoordinates().getY());
     ZCuboid box;
-    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    box.setMinCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setMaxCorner(dvidInfo.getEndCoordinates().toPoint());
 //    double lineWidth = box.depth() / 2000.0;
     double lineWidth = 4.0;
     Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
@@ -792,8 +792,8 @@ void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidIn
       double y = viewParam.getViewPort().center().y();
 
       double width = lineWidth * 0.5;
-      node1.set(x, rect.getFirstY(), rect.getZ(), width);
-      node2.set(x, rect.getLastY(), rect.getZ(), width);
+      node1.set(x, rect.getMinY(), rect.getZ(), width);
+      node2.set(x, rect.getMaxY(), rect.getZ(), width);
 
       double edgeWidth = NeutubeConfig::Get3DCrossWidth();
       graph->addNode(node1);
@@ -802,8 +802,8 @@ void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidIn
 
       node1.setColor(QColor(255, 0, 0));
       node2.setColor(QColor(255, 0, 0));
-      node1.set(rect.getFirstX(), y, rect.getZ(), width);
-      node2.set(rect.getLastX(), y, rect.getZ(), width);
+      node1.set(rect.getMinX(), y, rect.getZ(), width);
+      node2.set(rect.getMaxX(), y, rect.getZ(), width);
 
       graph->addNode(node1);
       graph->addNode(node2);
@@ -838,8 +838,8 @@ void flyem::Decorate3dBodyWindow(
   if (window != NULL) {
     Decorate3dBodyWindowPlane(window, dvidInfo, viewParam, visible);
     ZCuboid box;
-    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    box.setMinCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setMaxCorner(dvidInfo.getEndCoordinates().toPoint());
     double radius =
         dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0);
     if (!visible) {

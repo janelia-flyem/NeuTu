@@ -356,12 +356,12 @@ libdvid::BinaryDataPtr ZDvid::Post(
 ZIntCuboid dvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
 {
   ZIntCuboid alignedBox;
-  alignedBox.setFirstCorner(
+  alignedBox.setMinCorner(
         dvidInfo.getBlockBox(
-          dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-  alignedBox.setLastCorner(
+          dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+  alignedBox.setMaxCorner(
         dvidInfo.getBlockBox(
-          dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+          dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
   return alignedBox;
 }
@@ -372,7 +372,7 @@ ZIntCuboid dvid::GetZoomBox(const ZIntCuboid &box, int zoom)
   ZIntCuboid zoomBox;
 
   int zoomRatio = pow(2, zoom);
-  zoomBox.setFirstCorner(box.getFirstCorner() / zoomRatio);
+  zoomBox.setMinCorner(box.getMinCorner() / zoomRatio);
   zoomBox.setWidth(box.getWidth() / zoomRatio);
   zoomBox.setHeight(box.getHeight() / zoomRatio);
 

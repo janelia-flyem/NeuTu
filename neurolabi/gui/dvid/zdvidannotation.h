@@ -46,6 +46,8 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
 
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
+
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
 
@@ -85,9 +87,9 @@ public:
   int getY() const;
   int getZ() const;
 
-  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+//  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   void loadJsonObject(
       const ZJsonObject &obj,
@@ -226,7 +228,6 @@ public: //Json APIs
   static EKind GetKind(const ZJsonObject &json);
 
 protected:
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
   double getRadius(int z, neutu::EAxis sliceAxis) const;
 
 private:

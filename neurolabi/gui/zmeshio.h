@@ -56,6 +56,9 @@ private:
   void readDracoMeshFromMemory(const char *data, size_t size, ZMesh &mesh) const;
   void loadMesh(const aiScene *scene, ZMesh &mesh) const;
   void initImporter(Assimp::Importer &importer) const;
+  void readNgMeshFromMemory(const char *data, size_t size, ZMesh &mesh) const;
+  void readNgMesh(const QString& filename, ZMesh& mesh) const;
+  void readNgMesh(std::istream &stream, ZMesh &mesh) const;
 
 private:
   QStringList m_readExts;

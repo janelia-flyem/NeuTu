@@ -4225,13 +4225,13 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 #endif
       const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
       ZCuboid rbox;
-      rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
-      rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+      rbox.setMinCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+      rbox.setMaxCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
 
       if (getVolumeFilter()->isSubvolume()) {
         const auto& zoomInBound = getVolumeFilter()->zoomInBound();
-        rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
-        rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+        rbox.setMinCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+        rbox.setMaxCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
       }
 
       ZLineSegment stackSeg;
@@ -4483,9 +4483,9 @@ std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
 #endif
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
     ZCuboid rbox;
-    rbox.setFirstCorner(
+    rbox.setMinCorner(
           boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-    rbox.setLastCorner(
+    rbox.setMaxCorner(
           boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
 
     ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
@@ -4570,9 +4570,9 @@ ZCuboid cut_box(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result;
 
-  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
-                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
-                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+  result.setMinCorner(box1.getMinCorner().x() - box2.getMinCorner().getX(),
+                        box1.getMinCorner().y() - box2.getMinCorner().getY(),
+                        box1.getMinCorner().z() - box2.getMinCorner().getZ());
 
   result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
 
@@ -4587,13 +4587,13 @@ ZCuboid Z3DWindow::getRayBoundbox() const
   if (m_doc->hasStack()) {
     const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
 
-    rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
-    rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+    rbox.setMinCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+    rbox.setMaxCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
 
     if (getVolumeFilter()->isSubvolume()) {
       const auto& zoomInBound = getVolumeFilter()->zoomInBound();
-      rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
-      rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+      rbox.setMinCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+      rbox.setMaxCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
     } else {
       ZIntCuboid cutBox = getVolumeFilter()->cutBox();
       //      cutBox.translate(m_doc->getStackOffset());
@@ -4601,9 +4601,9 @@ ZCuboid Z3DWindow::getRayBoundbox() const
     }
   } else {
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
-    rbox.setFirstCorner(
+    rbox.setMinCorner(
           boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-    rbox.setLastCorner(
+    rbox.setMaxCorner(
           boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
   }
 
@@ -4991,12 +4991,12 @@ void Z3DWindow::setColorMode(
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
   if (bound.isValid()) {
-    ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
-                                    bound.firstCorner().y(),
-                                    bound.firstCorner().z()),
-                         glm::dvec3(bound.lastCorner().x(),
-                                    bound.lastCorner().y(),
-                                    bound.lastCorner().z()));
+    ZBBox<glm::dvec3> bd(glm::dvec3(bound.getMinCorner().x(),
+                                    bound.getMinCorner().y(),
+                                    bound.getMinCorner().z()),
+                         glm::dvec3(bound.getMaxCorner().x(),
+                                    bound.getMaxCorner().y(),
+                                    bound.getMaxCorner().z()));
     m_view->gotoPosition(bd);
   }
 }

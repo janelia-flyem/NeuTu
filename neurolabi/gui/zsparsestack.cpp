@@ -631,8 +631,8 @@ ZStack* ZSparseStack::getMip() const
   ZStack *stack = NULL;
   if (m_objectMask != NULL) {
     ZIntCuboid box = m_objectMask->getIntBoundBox();
-    box.setFirstZ(0);
-    box.setLastZ(0);
+    box.setMinZ(0);
+    box.setMaxZ(0);
     stack = new ZStack(GREY, box, 1);
     ZObject3dScan::ConstSegmentIterator iterator(m_objectMask);
     while (iterator.hasNext()) {

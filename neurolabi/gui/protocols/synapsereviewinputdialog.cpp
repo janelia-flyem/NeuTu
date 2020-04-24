@@ -29,7 +29,7 @@ QString SynapseReviewInputDialog::getBodyID() {
 
 ZIntCuboid SynapseReviewInputDialog::getVolume() {
     ZIntCuboid box;
-    box.setFirstCorner(ui->xSpinBox->value(), ui->ySpinBox->value(),
+    box.setMinCorner(ui->xSpinBox->value(), ui->ySpinBox->value(),
         ui->zSpinBox->value());
     box.setSize(ui->widthSpinBox->value(), ui->heightSpinBox->value(),
         ui->depthSpinBox->value());

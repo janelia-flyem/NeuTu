@@ -146,7 +146,7 @@ void ZDvidSynapseEnsemble::syncedFetch(
       slice.setStatus(EDataStatus::READY);
     } else {
       slice.setDataRect(
-            QRect(dataBox.getFirstCorner().getX(), dataBox.getFirstCorner().getY(),
+            QRect(dataBox.getMinCorner().getX(), dataBox.getMinCorner().getY(),
                   dataBox.getWidth(), box.getHeight()));
       slice.setStatus(EDataStatus::PARTIAL_READY);
     }
@@ -168,14 +168,14 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
   ZIntCuboid blockBox =
       m_dvidInfo.getBlockBox(blockIndex, blockIndex, blockIndex);
   blockBox.shiftSliceAxis(m_sliceAxis);
-  int startZ = blockBox.getFirstCorner().getZ();
-  int endZ = blockBox.getLastCorner().getZ();
+  int startZ = blockBox.getMinCorner().getZ();
+  int endZ = blockBox.getMaxCorner().getZ();
 
   if (currentArea > 0 && currentArea <= m_maxPartialArea) {
     QRect viewPort = m_view->getViewParameter().getViewPort();
     ZIntCuboid box(
-          viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
-          viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
+          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
+          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     if (m_dataFetcher == NULL /*|| getSliceAxis() == neutube::Z_AXIS*/) {
       syncedFetch(box, startZ, endZ, false);
@@ -201,8 +201,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
@@ -278,8 +278,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
@@ -296,12 +296,12 @@ void ZDvidSynapseEnsemble::setReadyUnsync(const ZIntCuboid &box)
 {
   ZIntCuboid shiftedBox = box;
   shiftedBox.shiftSliceAxis(getSliceAxis());
-  for (int cz = shiftedBox.getFirstCorner().getZ();
-       cz <= shiftedBox.getLastCorner().getZ(); ++cz) {
+  for (int cz = shiftedBox.getMinCorner().getZ();
+       cz <= shiftedBox.getMaxCorner().getZ(); ++cz) {
     SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
     slice.setDataRect(
-          QRect(shiftedBox.getFirstCorner().getX(),
-                shiftedBox.getFirstCorner().getY(),
+          QRect(shiftedBox.getMinCorner().getX(),
+                shiftedBox.getMinCorner().getY(),
                 shiftedBox.getWidth(), shiftedBox.getHeight()));
     slice.setStatus(EDataStatus::PARTIAL_READY);
   }
@@ -715,8 +715,8 @@ void ZDvidSynapseEnsemble::display(
       ZIntCuboid range = m_dataRange;
       range.shiftSliceAxis(getSliceAxis());
 
-      rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
-                                  range.getFirstCorner().getY()));
+      rangeRect.setTopLeft(QPoint(range.getMinCorner().getX(),
+                                  range.getMinCorner().getY()));
       rangeRect.setSize(QSize(range.getWidth(), range.getHeight()));
     }
 

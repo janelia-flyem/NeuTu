@@ -408,7 +408,7 @@ void ZDvidDataSliceHelper::invalidateViewParam()
 ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
 {
   ZIntCuboid box;
-  box.setFirstCorner(viewPort.left(), viewPort.top(), z);
+  box.setMinCorner(viewPort.left(), viewPort.top(), z);
   box.setSize(viewPort.width(), viewPort.height(), 1);
 
   return box;

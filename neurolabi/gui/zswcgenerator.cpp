@@ -76,7 +76,7 @@ ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)
 {
   ZCuboid cuboid;
-  cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
+  cuboid.setMinCorner(ZPoint(box.getMinCorner().toPoint()));
   cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
 
   return createBoxSwc(cuboid, radius);

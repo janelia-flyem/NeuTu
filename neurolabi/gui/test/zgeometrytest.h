@@ -12,7 +12,7 @@
 #ifdef _USE_GTEST_
 TEST(ZGeometry, Util)
 {
-  ASSERT_EQ(0, zgeom::GetZoomLevel(1));
+  ASSERT_EQ(int(0), zgeom::GetZoomLevel(1));
   ASSERT_EQ(1, zgeom::GetZoomLevel(2));
   ASSERT_EQ(2, zgeom::GetZoomLevel(4));
   ASSERT_EQ(3, zgeom::GetZoomLevel(8));
@@ -146,63 +146,8 @@ TEST(ZGeometry, ZAffinePlane)
   }
 }
 
-TEST(ZGeometry, ZAffineRect)
+TEST(ZGeometry, Intersect)
 {
-  {
-    ZAffineRect rect;
-    rect.set(ZPoint(0, 0, 0), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 512, 1024);
-
-    ASSERT_EQ(512, rect.getWidth());
-    ASSERT_EQ(ZPoint(1, 0, 0), rect.getV1());
-
-    std::vector<ZAffineRect> rectArray = zgeom::Partition(rect, 1, 1);
-
-    ASSERT_EQ(1, (int) rectArray.size());
-    ASSERT_EQ(512, rect.getWidth());
-    ASSERT_EQ(ZPoint(0, 0, 0), rectArray[0].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[0].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[0].getV2());
-    ASSERT_EQ(512, rectArray[0].getWidth());
-    ASSERT_EQ(1024, rectArray[0].getHeight());
-
-    rectArray = zgeom::Partition(rect, 1, 2);
-    ASSERT_EQ(2, (int) rectArray.size());
-    ASSERT_EQ(ZPoint(-128, 0, 0), rectArray[0].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[0].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[0].getV2());
-    ASSERT_EQ(256, rectArray[0].getWidth());
-    ASSERT_EQ(1024, rectArray[0].getHeight());
-
-    rectArray = zgeom::Partition(rect, 2, 2);
-    ASSERT_EQ(4, (int) rectArray.size());
-    ASSERT_EQ(ZPoint(-128, -256, 0), rectArray[0].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[0].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[0].getV2());
-    ASSERT_EQ(256, rectArray[0].getWidth());
-    ASSERT_EQ(512, rectArray[0].getHeight());
-
-    ASSERT_EQ(ZPoint(128, 256, 0), rectArray[3].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[3].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[3].getV2());
-    ASSERT_EQ(256, rectArray[3].getWidth());
-    ASSERT_EQ(512, rectArray[3].getHeight());
-
-    rect.set(ZPoint(0, 0, 0), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 511, 1025);
-    rectArray = zgeom::Partition(rect, 2, 2);
-    ASSERT_EQ(4, (int) rectArray.size());
-    ASSERT_EQ(ZPoint(-127, -256, 0), rectArray[0].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[0].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[0].getV2());
-    ASSERT_EQ(256, rectArray[0].getWidth());
-    ASSERT_EQ(513, rectArray[0].getHeight());
-
-    ASSERT_EQ(ZPoint(128, 257, 0), rectArray[3].getCenter());
-    ASSERT_EQ(ZPoint(1, 0, 0), rectArray[3].getV1());
-    ASSERT_EQ(ZPoint(0, 1, 0), rectArray[3].getV2());
-    ASSERT_EQ(255, rectArray[3].getWidth());
-    ASSERT_EQ(512, rectArray[3].getHeight());
-  }
-
   {
     ZAffineRect rect;
     rect.setCenter(ZPoint(0, 0, 0));
@@ -295,14 +240,83 @@ TEST(ZGeometry, ZAffineRect)
   }
 
   {
-    ZCuboid box(1, 2, 3, 11, 22, 33);
-
     ZAffineRect rect;
     rect.set(ZPoint(1, 2, 4), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
 
+    ZLineSegment seg(1, 2, 0, 1, 2, 10);
+    ASSERT_TRUE(zgeom::Intersects(rect, seg));
+    ASSERT_FALSE(zgeom::Intersects(rect, ZLineSegment(20, 30, 0, 20, 30, 10)));
+
+    {
+      ZAffineRect rect2;
+      rect2.set(ZPoint(1, 2, 4), ZPoint(0, 1, 0), ZPoint(0, 0, 1), 30, 40);
+      ASSERT_TRUE(zgeom::Intersects(rect, rect2));
+    }
+
+    {
+      ZAffineRect rect2;
+      rect2.set(ZPoint(15, 2, 4), ZPoint(0, 1, 0), ZPoint(0, 0, 1), 30, 40);
+      ASSERT_FALSE(zgeom::Intersects(rect, rect2));
+    }
+
+    {
+      ZAffineRect rect2;
+      rect2.set(ZPoint(1, 20, 4), ZPoint(0, 1, 0), ZPoint(0, 0, 1), 30, 40);
+      ASSERT_TRUE(zgeom::Intersects(rect, rect2));
+    }
+
+    {
+      ZAffineRect rect2;
+      rect2.set(ZPoint(150, 200, 4), ZPoint(0, 1, 0), ZPoint(0, 0, 1), 30, 40);
+      ASSERT_FALSE(zgeom::Intersects(rect, rect2));
+    }
+
+    ZCuboid box(1, 2, 3, 11, 22, 33);
     ASSERT_TRUE(zgeom::Intersects(rect, box));
 
-//    std::cout << zgeom::Intersects(rect, box) << std::endl;
+    box.set(-10, -20, -30, 10, 20, 30);
+    rect.setSize(4, 4);
+    rect.setCenter(10, 0, 0);
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(-10, -20, 0);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(-10, 20, 0);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(10, 20, 0);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(10, -20, 0);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(0, 0, 0);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(-15, -20, 0);
+    ASSERT_FALSE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(-15, 20, 0);
+    ASSERT_FALSE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(15, 20, 0);
+    ASSERT_FALSE(zgeom::Intersects(rect, box));
+
+    rect.setCenter(15, -20, 0);
+    ASSERT_FALSE(zgeom::Intersects(rect, box));
+
+    rect.setPlane(ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+    rect.setCenter(0, 20, 30);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+    rect.setCenter(0, -20, 30);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+    rect.setCenter(0, 20, -30);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+    rect.setCenter(0, -20, -30);
+    ASSERT_TRUE(zgeom::Intersects(rect, box));
+
   }
 }
 

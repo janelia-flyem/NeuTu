@@ -632,12 +632,12 @@ void ZFlyEmBodySplitProject::showSplit3d()
 
       if (!box.isEmpty()) {
         m_splitVis3dWindow->gotoPosition(
-              ZCuboid(box.getFirstCorner().getX(),
-                      box.getFirstCorner().getY(),
-                      box.getFirstCorner().getZ(),
-                      box.getLastCorner().getX(),
-                      box.getLastCorner().getY(),
-                      box.getLastCorner().getZ()));
+              ZCuboid(box.getMinCorner().getX(),
+                      box.getMinCorner().getY(),
+                      box.getMinCorner().getZ(),
+                      box.getMaxCorner().getX(),
+                      box.getMaxCorner().getY(),
+                      box.getMaxCorner().getZ()));
       }
 
       if (!m_timer->isActive()) {

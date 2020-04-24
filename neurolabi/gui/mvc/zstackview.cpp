@@ -285,7 +285,7 @@ void ZStackView::resetViewProj()
 {
   ZIntCuboid box = getViewBoundBox();
   m_imageWidget->resetViewProj(
-        box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        box.getMinCorner().getX(), box.getMinCorner().getY(),
         box.getWidth(), box.getHeight(), m_defaultViewPort);
 }
 
@@ -654,17 +654,17 @@ void ZStackView::updateSlider()
     m_depthControl->setRangeQuietly(0, box.getDepth() - 1);
 
     int z = getZ(neutu::ECoordinateSystem::STACK);
-    if (z < box.getFirstZ()) {
+    if (z < box.getMinZ()) {
       m_depthControl->setValueQuietly(0);
-    } else if (z > box.getLastZ()) {
+    } else if (z > box.getMaxZ()) {
       m_depthControl->setValueQuietly(box.getDepth() - 1);
     }
 
     m_sliceStrategy->setRange(
           m_depthControl->minimum(), m_depthControl->maximum());
 
-    m_zSpinBox->setRange(box.getFirstCorner().getZ(),
-                         box.getLastCorner().getZ());
+    m_zSpinBox->setRange(box.getMinCorner().getZ(),
+                         box.getMaxCorner().getZ());
   }
 }
 
@@ -803,7 +803,7 @@ int ZStackView::getZ0() const
 ZIntPoint ZStackView::getStackOffset() const
 {
   return ZStackDocUtil::GetStackSpaceRange(
-        *buddyDocument(), getSliceAxis()).getFirstCorner();
+        *buddyDocument(), getSliceAxis()).getMinCorner();
 }
 
 int ZStackView::getCurrentZ() const
@@ -1249,8 +1249,8 @@ void ZStackView::redraw(EUpdateOption option)
 #endif
 
   m_imageWidget->setCanvasRegion(
-        box.getFirstCorner().getX(),
-        box.getFirstCorner().getY(),
+        box.getMinCorner().getX(),
+        box.getMinCorner().getY(),
         box.getWidth(), box.getHeight());
 
   paintStackBuffer();
@@ -1605,9 +1605,9 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
     if (canvas->width() != box.getWidth() ||
         canvas->height() != box.getHeight() ||
         neutu::iround(canvas->getTransform().getTx()) !=
-        -box.getFirstCorner().getX() ||
+        -box.getMinCorner().getX() ||
         neutu::iround(canvas->getTransform().getTy()) !=
-        -box.getFirstCorner().getY()) {
+        -box.getMinCorner().getY()) {
       if (painter != NULL) {
         painter->end();
       }
@@ -1636,8 +1636,8 @@ void ZStackView::updateImageCanvas()
   if (buddyDocument()->hasStackPaint()) {
     ZIntCuboid box = getViewBoundBox();
     if (m_image != NULL) {
-      m_image->setOffset(-box.getFirstCorner().getX(),
-                         -box.getFirstCorner().getY());
+      m_image->setOffset(-box.getMinCorner().getX(),
+                         -box.getMinCorner().getY());
       if ((m_image->width() != box.getWidth()) ||
           (m_image->height() != box.getHeight())) {
         clearCanvas();
@@ -1657,8 +1657,8 @@ void ZStackView::updateImageCanvas()
 
       updateContrastProtocal();
 
-      m_image->setOffset(-box.getFirstCorner().getX(),
-                         -box.getFirstCorner().getY());
+      m_image->setOffset(-box.getMinCorner().getX(),
+                         -box.getMinCorner().getY());
 //      m_image->setScale(scale, scale);
 //      m_imagePainter.begin(m_image);
 //      m_imagePainter.setZOffset(box.getFirstCorner().getZ());
@@ -1741,8 +1741,8 @@ void ZStackView::resetCanvasWithStack(
 
   ZIntCuboid box = getViewBoundBox();
 
-  int tx = -box.getFirstCorner().getX();
-  int ty = -box.getFirstCorner().getY();
+  int tx = -box.getMinCorner().getX();
+  int ty = -box.getMinCorner().getY();
 
   if (canvas.getWidth() != canvasSize.width() ||
       canvas.getHeight() != canvasSize.height() ||
@@ -1752,7 +1752,7 @@ void ZStackView::resetCanvasWithStack(
     canvas.setSize(canvasSize);
     canvas.setOffset(QPoint(tx, ty));
     if (painter != NULL) {
-      painter->setZOffset(box.getFirstCorner().getZ());
+      painter->setZOffset(box.getMinCorner().getZ());
     }
   }
 }
@@ -2866,7 +2866,7 @@ QRect ZStackView::getViewPort(neutu::ECoordinateSystem coordSys) const
   if (coordSys == neutu::ECoordinateSystem::RAW_STACK) {
     ZIntCuboid box = getViewBoundBox();
     rect.translate(
-          QPoint(-box.getFirstCorner().getX(), -box.getLastCorner().getY()));
+          QPoint(-box.getMinCorner().getX(), -box.getMaxCorner().getY()));
     /*
     rect.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
                           -buddyDocument()->getStackOffset().getY()));
@@ -3214,14 +3214,14 @@ void ZStackView::setView(const ZStackViewParam &param)
     switch (param.getCoordinateSystem()) {
     case neutu::ECoordinateSystem::RAW_STACK:
     {
-      viewProj.move(box.getFirstCorner().getX(),
-                    box.getFirstCorner().getY());
+      viewProj.move(box.getMinCorner().getX(),
+                    box.getMinCorner().getY());
     }
       break;
     case neutu::ECoordinateSystem::STACK:
     {
 //      QRect viewPort = param.getViewPort();
-      slice -= box.getFirstCorner().getZ();
+      slice -= box.getMinCorner().getZ();
 //      setSliceIndexQuietly(param.getZ() - box.getFirstCorner().getZ());
     }
       break;

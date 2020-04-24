@@ -185,7 +185,7 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
-              pos, vp, box.getFirstCorner().getZ()), axis);
+              pos, vp, box.getMinCorner().getZ()), axis);
       if (view->viewingInfo(neutu::mvc::ViewInfoFlag::RAW_STACK_COORD)) {
         info += QString("(%1, %2, %3)").arg(pos.x()).arg(pos.y()).arg(z);
       }
@@ -211,7 +211,7 @@ ZPoint neutu::mvc::MapWidgetPosToData(
 
   ZStackDoc *doc = view->buddyDocument().get();
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(*doc, axis);
-  int z0 = box.getFirstCorner().getZ();
+  int z0 = box.getMinCorner().getZ();
   ZPoint stackPos = ZPositionMapper::WidgetToStack(widgetPos, vp, z0);
 
   ZPoint dataPos;

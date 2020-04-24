@@ -235,7 +235,7 @@ void ZFlyEmProofPresenter::zoomInRectRoi()
   ZRect2d rect = buddyDocument()->getRect2dRoi();
 
   if (rect.isValid()) {
-    buddyView()->setViewPort(QRect(rect.getFirstX(), rect.getFirstY(),
+    buddyView()->setViewPort(QRect(rect.getMinX(), rect.getMinY(),
                                rect.getWidth(), rect.getHeight()));
     buddyDocument()->executeRemoveRectRoiCommand();
   }

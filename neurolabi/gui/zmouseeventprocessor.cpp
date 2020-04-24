@@ -66,7 +66,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   int z0 = ZStackDocUtil::GetStackSpaceRange(
-        *m_doc, getSliceAxis()).getFirstCorner().getZ();
+        *m_doc, getSliceAxis()).getMinCorner().getZ();
   ZPoint stackPosition = ZPositionMapper::WidgetToStack(
         pt, viewProj, z0);
   zevent.setStackPosition(stackPosition);

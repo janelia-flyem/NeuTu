@@ -546,11 +546,9 @@ bool ZStroke2d::isEmpty() const
   return m_pointArray.empty();
 }
 
-ZStroke2d* ZStroke2d::clone()
+ZStroke2d *ZStroke2d::clone() const
 {
-  ZStroke2d *stroke = new ZStroke2d(*this);
-
-  return stroke;
+  return new ZStroke2d(*this);
 }
 
 
@@ -988,7 +986,7 @@ void ZStroke2d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     ZCuboid cuboid = getBoundBox();
-    box->setFirstCorner(cuboid.firstCorner().toIntPoint());
-    box->setLastCorner(cuboid.lastCorner().toIntPoint());
+    box->setMinCorner(cuboid.getMinCorner().toIntPoint());
+    box->setMaxCorner(cuboid.getMaxCorner().toIntPoint());
   }
 }

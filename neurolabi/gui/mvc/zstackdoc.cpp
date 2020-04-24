@@ -5399,7 +5399,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
-        stack->setOffset(cuboid.getFirstCorner());
+        stack->setOffset(cuboid.getMinCorner());
         loadStack(stack);
       }
     }
@@ -5426,7 +5426,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
-        stack->setOffset(cuboid.getFirstCorner());
+        stack->setOffset(cuboid.getMinCorner());
         loadStack(stack);
       } else  {
         succ = false;
@@ -9822,32 +9822,32 @@ ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
           checkObj->boundBox(&checkBox);
           int boxDist;
           if (!checkBox.isEmpty()) {
-            if (box.contains(checkBox.getLastCorner()) ||
-                box.contains(checkBox.getFirstCorner())) {
+            if (box.contains(checkBox.getMaxCorner()) ||
+                box.contains(checkBox.getMinCorner())) {
               boxDist = 0;
             } else {
               ZIntPoint cornerDiff =
-                  box.getFirstCorner() - checkBox.getFirstCorner();
+                  box.getMinCorner() - checkBox.getMinCorner();
 
               boxDist = imax3(std::abs(cornerDiff.getX()),
                               std::abs(cornerDiff.getY()),
                               std::abs(cornerDiff.getZ()));
-              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMinCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMinCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getLastCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMaxCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getLastCorner() - checkBox.getFirstCorner();
+              cornerDiff = box.getMaxCorner() - checkBox.getMinCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
@@ -10619,13 +10619,13 @@ ZIntCuboid ZStackDoc::getCuboidRoi() const
           ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource()));
   if (rectObj != NULL) {
-    box.setFirstCorner(
-          rectObj->getFirstX(), rectObj->getFirstY(), rectObj->getZ());
-    box.setLastCorner(
-          rectObj->getLastX(), rectObj->getLastY(), rectObj->getZ());
+    box.setMinCorner(
+          rectObj->getMinX(), rectObj->getMinY(), rectObj->getZ());
+    box.setMaxCorner(
+          rectObj->getMaxX(), rectObj->getMaxY(), rectObj->getZ());
     if (rectObj->getZSpan() > 0) {
-      box.setFirstZ(box.getFirstCorner().getZ() - rectObj->getZSpan());
-      box.setLastZ(box.getLastCorner().getZ() + rectObj->getZSpan());
+      box.setMinZ(box.getMinCorner().getZ() - rectObj->getZSpan());
+      box.setMaxZ(box.getMaxCorner().getZ() + rectObj->getZSpan());
     }
   } else {
     ZIntCuboidObj *obj = dynamic_cast<ZIntCuboidObj*>(
