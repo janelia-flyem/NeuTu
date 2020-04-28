@@ -100,5 +100,6 @@
 #include "test/zmeshtest.h"
 #include "test/zlocalneurosegtest.h"
 #include "test/zaffinerecttest.h"
+#include "test/zdvidurltest.h"
 
 #endif // ZTESTALL_H

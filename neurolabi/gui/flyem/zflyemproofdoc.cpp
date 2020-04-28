@@ -145,13 +145,18 @@ void ZFlyEmProofDoc::startTimer()
   }
 }
 
-const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+ZDvidWriter& ZFlyEmProofDoc::getWorkWriter()
 {
   if (!m_workWriter.good()) {
     m_workWriter.open(getDvidTarget());
   }
 
-  return m_workWriter.getDvidReader();
+  return m_workWriter;
+}
+
+const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+{
+  return getWorkWriter().getDvidReader();
 }
 
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
@@ -4487,7 +4492,7 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
     }
   }
 
-  m_workWriter.getDvidReader().refreshLabelBuffer();
+  getWorkReader().refreshLabelBuffer();
 }
 
 void ZFlyEmProofDoc::updateMeshForSelected()
@@ -5930,6 +5935,24 @@ void ZFlyEmProofDoc::makeKeyProcessor()
 std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::getRoiProvider() const
 {
   return m_roiProvider;
+}
+
+void ZFlyEmProofDoc::addUploadTask(
+    const std::string &dataName, const std::string &key, const QByteArray &data)
+{
+  ZFunctionTask *task = new ZFunctionTask([dataName, key, data, this] {
+    QMutexLocker locker(&m_workWriterMutex);
+    getWorkWriter().writeDataToKeyValue(dataName, key, data);
+  });
+  addTask(task);
+}
+
+void ZFlyEmProofDoc::addUploadTask(std::function<void(ZDvidWriter &writer)> f)
+{
+  addTask([f, this] {
+    QMutexLocker locker(&m_workWriterMutex);
+    f(getWorkWriter());
+  });
 }
 
 void ZFlyEmProofDoc::exportGrayscale(

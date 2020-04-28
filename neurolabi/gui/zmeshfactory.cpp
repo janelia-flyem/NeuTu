@@ -152,8 +152,7 @@ ZMesh* ZMeshFactory::MakeMesh(
   ZObject3dScan dsObj = obj;
 
   if (dsIntv == 0) {
-    ZIntCuboid box = dsObj.getIntBoundBox();
-    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutu::ONEGIGA / 2, false);
+    dsIntv = ZStackObjectHelper::GetDsIntv(dsObj.getIntBoundBox());
   }
 
   if (dsIntv > 0) {

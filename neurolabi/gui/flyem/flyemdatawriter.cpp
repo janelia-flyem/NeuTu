@@ -298,3 +298,23 @@ void FlyEmDataWriter::TransferRoi(
   //Transfer ROI mesh
   TransferRoiRef(reader, sourceRoiName, writer, targetRoiName, errorMsgHandler);
 }
+
+void FlyEmDataWriter::WriteMeshMerge(
+    ZDvidWriter &writer, uint64_t targetId,
+    const std::vector<uint64_t> &bodyIdArray)
+{
+  if (writer.good()) {
+    if (!bodyIdArray.empty()) {
+      ZJsonArray json;
+      json.append(targetId);
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != targetId) {
+          json.append(bodyId);
+        }
+      }
+      writer.writeJson(
+            writer.getDvidTarget().getMeshName(),
+            ZDvidUrl::GetMeshKey(targetId, ZDvidUrl::EMeshType::MERGED), json);
+    }
+  }
+}

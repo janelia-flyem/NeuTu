@@ -2,12 +2,15 @@
 
 #include <cstdlib>
 #include <QProcess>
+#include <QString>
 
 #include "neulib/core/stringbuilder.h"
 #include "zjsonobject.h"
 #include "zjsonobjectparser.h"
 #include "zobject3dscan.h"
 #include "logging/zqslog.h"
+#include "common/utilities.h"
+#include "ztextlinecompositer.h"
 
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidtargetfactory.h"
@@ -169,6 +172,79 @@ int process_body(
       }
       */
     }
+  } else if (action == "info") {
+    const ZDvidReader &reader = writer->getDvidReader();
+    ZTextLineCompositer text;
+    text.appendLine(neulib::StringBuilder("Info for ").append(bodyId));
+    if (reader.hasBody(bodyId)) {
+      size_t voxelCount = 0;
+      size_t blockCount = 0;
+      ZIntCuboid box;
+      std::tie(voxelCount, blockCount, box) =
+          reader.readBodySizeInfo(bodyId, neutu::EBodyLabelType::BODY);
+      text.appendLine(neulib::StringBuilder("#Voxels: ").append(voxelCount), 1);
+      text.appendLine(neulib::StringBuilder("#Blocks: ").append(blockCount), 1);
+      text.appendLine("#Boundbox: " + box.toString(), 1);
+
+      auto mergedKeys = reader.readMergedMeshKeys(bodyId);
+      text.appendLine("Merged: " + neutu::ToString(mergedKeys, ", "), 1);
+
+      if (!mergedKeys.empty() &&
+          reader.readConsistentMergedMeshKeys(bodyId).empty()) {
+        text.appendLine("Incomplete", 2);
+      }
+
+      {
+        std::string meshDataName = reader.getDvidTarget().getMeshName();
+        QStringList keyList = reader.readKeys(
+              meshDataName.c_str(),
+              QString("%1_0").arg(bodyId), QString("%1_z").arg(bodyId));
+        text.appendLine("Mesh:", 1);
+        for (const auto &key : keyList) {
+          text.appendLine(key.toStdString(), 2);
+        }
+
+        std::string meshKey =
+            ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::DEFAULT);
+        if (reader.hasKey(meshDataName.c_str(), meshKey.c_str())) {
+          text.appendLine(meshKey, 2);
+        }
+
+        meshKey = ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::DRACO);
+        if (reader.hasKey(meshDataName.c_str(), meshKey.c_str())) {
+          text.appendLine(meshKey, 2);
+        }
+
+        meshKey = ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::NG);
+        if (reader.hasKey(meshDataName.c_str(), meshKey.c_str())) {
+          text.appendLine(meshKey, 2);
+        }
+      }
+
+      {
+        std::string skeletonDataName = reader.getDvidTarget().getSkeletonName();
+        std::string key = ZDvidUrl::GetSkeletonKey(bodyId);
+        text.appendLine("Skeleton:", 1);
+        if (reader.hasKey(skeletonDataName.c_str(), key.c_str())) {
+          text.appendLine(key, 2);
+        }
+      }
+    } else {
+      text.appendLine("Does not exist", 1);
+    }
+
+    text.print(2);
+  } else if (action == "remove_derived") {
+    if (config.hasKey("derived")) {
+      ZJsonArray derivedJson(config.value("derived"));
+      derivedJson.forEachString([&](const std::string &str) {
+        if (str == "mesh") {
+          writer->deleteMesh(bodyId);
+        } else if (str == "skeleton") {
+          writer->deleteSkeleton(bodyId);
+        }
+      });
+    }
   }
 
   return ret;
@@ -213,6 +289,8 @@ int ZBodyProcessCommand::run(
           }
         }
       }
+    } else {
+      std::cout << "Command Failed: Failed to open " << inputPath << std::endl;
     }
   }
 

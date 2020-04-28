@@ -520,6 +520,11 @@ void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
   addTask(task);
 }
 
+void ZStackDoc::addTask(std::function<void()> f)
+{
+  addTask(new ZFunctionTask(f));
+}
+
 void ZStackDoc::addTask(ZTask *task)
 {
   addTaskSlot(task);

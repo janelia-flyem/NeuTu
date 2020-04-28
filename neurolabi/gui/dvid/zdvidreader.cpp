@@ -1275,9 +1275,13 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
     return result;
   }
 
-  std::string format = "obj";
+  std::string format = "";
   if (ZString(url).endsWith(".ngmesh", ZString::CASE_INSENSITIVE)) {
     format = "ngmesh";
+  } else if (ZString(url).endsWith(".drc", ZString::CASE_INSENSITIVE)) {
+    format = "drc";
+  } else if (ZString(url).endsWith(".obj", ZString::CASE_INSENSITIVE)) {
+    format = "obj";
   } else {
     ZJsonObject infoJson = readJsonObject(ZDvidUrl::GetMeshInfoUrl(url));
     if (infoJson.hasKey("format")) {
@@ -3522,39 +3526,46 @@ ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 {
   ZIntCuboid box;
 
-  setStatusCode(0);
+  if (getDvidTarget().getSegmentationType() == ZDvidData::EType::LABELMAP) {
+    size_t voxelCount;
+    size_t blockCount;
+    std::tie(voxelCount, blockCount, box) =
+        readBodySizeInfo(bodyId, neutu::EBodyLabelType::BODY);
+  } else {
+    setStatusCode(0);
 #if defined(_ENABLE_LIBDVIDCPP_)
-  if (m_service.get() != NULL) {
-    try {
-      libdvid::PointXYZ coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 0, true);
-      box.setMinX(coord.x);
+    if (m_service.get() != NULL) {
+      try {
+        libdvid::PointXYZ coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 0, true);
+        box.setMinX(coord.x);
 
-      coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 0, false);
-      box.setMaxX(coord.x);
+        coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 0, false);
+        box.setMaxX(coord.x);
 
-      coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 1, true);
-      box.setMinY(coord.y);
+        coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 1, true);
+        box.setMinY(coord.y);
 
-      coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 1, false);
-      box.setMaxY(coord.y);
+        coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 1, false);
+        box.setMaxY(coord.y);
 
-      coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 2, true);
-      box.setMinZ(coord.z);
+        coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 2, true);
+        box.setMinZ(coord.z);
 
-      coord = m_service->get_body_extremum(
-            getDvidTarget().getBodyLabelName(), bodyId, 2, false);
-      box.setMaxZ(coord.z);
-      setStatusCode(200);
-    } catch (libdvid::DVIDException &e) {
-      setStatusCode(e.getStatus());
+        coord = m_service->get_body_extremum(
+              getDvidTarget().getBodyLabelName(), bodyId, 2, false);
+        box.setMaxZ(coord.z);
+        setStatusCode(200);
+      } catch (libdvid::DVIDException &e) {
+        setStatusCode(e.getStatus());
+      }
     }
-  }
 #endif
+  }
 
   return box;
 }

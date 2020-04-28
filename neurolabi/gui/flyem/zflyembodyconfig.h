@@ -47,6 +47,10 @@ public:
    */
   void decDsLevel();
 
+  void disableNextDsLevel();
+  void setNextDsLevel(int level);
+  bool hasNextDsLevel(int minLevel) const;
+
   void setBodyColor(const QColor &color);
   void setRange(const ZIntCuboid &range);
 
@@ -86,6 +90,7 @@ private:
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;
+  int m_nextDsLevel = -1; //-1 means normal decrement, -2 means no level for next
   int m_localDsLevel = 0;
 
   bool m_addBuffer = false;

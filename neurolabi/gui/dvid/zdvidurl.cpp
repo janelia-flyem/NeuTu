@@ -236,8 +236,8 @@ std::string ZDvidUrl::getNgMeshUrl(uint64_t bodyId) const
 std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 {
   return applyAdminToken(GetFullUrl(
-        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName(zoom))),
-        GetMeshKey(bodyId)));
+        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName())),
+        GetMeshKey(bodyId, zoom)));
 #if 0
   std::string url;
 
@@ -254,16 +254,19 @@ std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 #endif
 }
 
+/*
 std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 {
   return GetMeshInfoUrl(getMeshUrl(bodyId, zoom));
 }
+*/
 
 std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 {
   //Not a conflict-free of assigning a url, but we'll live with it for now.
   return meshUrl + MESH_INFO_SUFFIX;
 }
+
 
 std::string ZDvidUrl::getMeshesTarsUrl()
 {
@@ -693,14 +696,15 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSparsevolSizeUrl(
     uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
-  ZString url;
+  std::string url;
 
   if (m_dvidTarget.hasSparsevolSizeApi()) {
     url = getDataUrl(m_dvidTarget.getBodyLabelName());
     if (!url.empty()) {
       url += "/" + ZDvidData::GetName(ZDvidData::ERole::SPARSEVOL_SIZE);
       url += "/";
-      url.appendNumber(bodyId);
+      url += std::to_string(bodyId);
+//      url.appendNumber(bodyId);
       if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
         url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
       }
@@ -2001,6 +2005,20 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   return stream.str();
 }
 
+std::string ZDvidUrl::GetBodyKey(uint64_t bodyId, int zoom)
+{
+  std::string key = std::to_string(bodyId);
+  if (zoom > 0) {
+    key += "_" + std::to_string(zoom);
+  }
+  return key;
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom)
+{
+  return GetBodyKey(bodyId, zoom) + ".obj";
+}
+
 std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, EMeshType type)
 {
   std::string key = GetBodyKey(bodyId);
@@ -2012,13 +2030,44 @@ std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, EMeshType type)
   case EMeshType::NG:
     key += ".ngmesh";
     break;
-  default:
+  case EMeshType::DEFAULT:
+    key += ".obj";
+    break;
+  case EMeshType::DRACO:
+    key += ".drc";
     break;
   }
 
   return key;
 }
 
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom, EMeshType type)
+{
+  std::string key;
+
+  if (zoom == 0 || type != EMeshType::MERGED) {
+    key = GetBodyKey(bodyId, zoom);
+  }
+
+  if (!key.empty()) {
+    switch (type) {
+    case EMeshType::MERGED:
+      key += ".merge";
+      break;
+    case EMeshType::NG:
+      key += ".ngmesh";
+      break;
+    case EMeshType::DEFAULT:
+      key += ".obj";
+      break;
+    case EMeshType::DRACO:
+      key += ".drc";
+      break;
+    }
+  }
+
+  return key;
+}
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
 {

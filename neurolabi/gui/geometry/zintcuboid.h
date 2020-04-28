@@ -183,6 +183,14 @@ public:
   ZIntPoint getCenter() const;
   void setCenter(const ZIntPoint &center);
 
+  /*!
+   * \brief Downscale the cuboid.
+   *
+   * The coordinates of the corners are divided by (sx, sy, sz).
+   * The cuboid stays the same if any scale is less than 1.
+   */
+  void downScale(int sx, int sy, int sz);
+  void downScale(int s);
 
   /*!
    * \brief Turn the cuboid into a JSON array

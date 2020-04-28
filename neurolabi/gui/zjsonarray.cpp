@@ -3,7 +3,7 @@
 
 #include "common/utilities.h"
 #include "zjsonparser.h"
-#include "zerror.h"
+//#include "zerror.h"
 
 
 using namespace std;
@@ -229,7 +229,7 @@ bool ZJsonArray::decode(const string &str)
       parser.printError();
     } else {
       json_decref(obj);
-      RECORD_ERROR_UNCOND("Not a json array");
+//      RECORD_ERROR_UNCOND("Not a json array");
     }
 
     return false;
@@ -250,4 +250,11 @@ std::string ZJsonArray::dumpJanssonString(size_t flags) const
 ZJsonValue ZJsonArray::value(size_t index) const
 {
   return ZJsonValue(at(index), ZJsonValue::SET_INCREASE_REF_COUNT);
+}
+
+void ZJsonArray::forEachString(std::function<void(const std::string &str)>f)
+{
+  for (size_t i = 0; i < size(); ++i) {
+    f(ZJsonParser::stringValue(at(i)));
+  }
 }

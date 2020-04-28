@@ -270,7 +270,7 @@ public:
   std::string getBookmarkKeyName() const;
   std::string getSkeletonName() const;
   std::string getMeshName() const;
-  std::string getMeshName(int zoom) const;
+//  std::string getMeshName(int zoom) const;
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;

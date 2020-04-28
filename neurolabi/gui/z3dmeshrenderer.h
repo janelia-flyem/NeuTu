@@ -67,7 +67,7 @@ private:
 protected:
   Z3DShaderGroup m_meshShaderGrp;
 
-  std::vector<ZMesh*>* m_meshPt;
+  std::vector<ZMesh*> *m_meshPt;
   std::vector<glm::vec4>* m_meshColorsPt;
   std::vector<glm::vec4>* m_meshPickingColorsPt;
   std::vector<ZMesh*>* m_origMeshPt;

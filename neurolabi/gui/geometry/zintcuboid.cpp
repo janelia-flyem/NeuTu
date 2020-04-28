@@ -572,6 +572,22 @@ bool ZIntCuboid::operator !=(const ZIntCuboid &box) const
       m_maxCorner != box.m_maxCorner;
 }
 
+void ZIntCuboid::downScale(int sx, int sy, int sz)
+{
+  if (sx > 0 && sy > 0 && sz > 0) {
+    m_minCorner /= ZIntPoint(sx, sy, sz);
+    m_maxCorner /= ZIntPoint(sx, sy, sz);
+  }
+}
+
+void ZIntCuboid::downScale(int s)
+{
+  if (s > 1) {
+    m_minCorner /= s;
+    m_maxCorner /= s;
+  }
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

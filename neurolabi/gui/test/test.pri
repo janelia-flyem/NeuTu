@@ -7,6 +7,7 @@ HEADERS += \
   $$PWD/zaffinerecttest.h \
     $$PWD/zdvidtargetfactorytest.h \
     $$PWD/zdvidtargettest.h \
+  $$PWD/zdvidurltest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
     $$PWD/zlocalneurosegtest.h \
     $$PWD/zmeshtest.h \

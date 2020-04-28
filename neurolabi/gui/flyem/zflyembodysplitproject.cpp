@@ -822,7 +822,7 @@ void ZFlyEmBodySplitProject::chopBody(
             std::vector<uint64_t> bodyArray;
             bodyArray.push_back(getBodyId());
             bodyArray.push_back(newBodyId);
-            updateBodyDep(bodyArray);
+            updateBodyDep(getBodyId(), bodyArray, writer);
 
 //            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
 //                  getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -910,7 +910,7 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg
             }
             emitMessage(msg);
 
-            updateBodyDep(getBodyId(), newBodyId);
+            updateBodyDep(getBodyId(), newBodyId, writer);
             /*
             GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
                   getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -989,7 +989,7 @@ void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
           }
           emitMessage(msg);
 
-          updateBodyDep(getBodyId(), newBodyId);
+          updateBodyDep(getBodyId(), newBodyId, writer);
 
           /*
           GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
@@ -1103,8 +1103,8 @@ void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
 
 #if defined(_FLYEM_)
   if (!newBodyIdList.isEmpty()) {
-    updateBodyDep(wholeBody->getLabel());
-    updateBodyDep(updateBodyArray);
+    updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
+//    updateBodyDep(updateBodyArray);
     /*
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
           getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
@@ -1239,8 +1239,8 @@ void ZFlyEmBodySplitProject::updateSplitDocument()
 
 void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
 {
-  ZDvidWriter writer;
-  if (writer.open(getDvidTarget())) {
+  ZDvidWriter &writer = getMainWriter();
+  if (writer.good()) {
     emitMessage("Uploading crop result ...");
     uint64_t bodyId = writer.writeCoarseSplit(
           splitPart, getBodyId());
@@ -1250,7 +1250,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            arg(getBodyId()),
                            neutu::EMessageType::ERROR));
     } else {
-      updateBodyDep(getBodyId(), bodyId);
+      updateBodyDep(getBodyId(), bodyId, writer);
 #if defined(_FLYEM_2)
       GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
             getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -1343,25 +1343,29 @@ ZDvidWriter& ZFlyEmBodySplitProject::getMainWriter()
   return m_writer;
 }
 
-void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId1, uint64_t bodyId2)
+void ZFlyEmBodySplitProject::updateBodyDep(
+    uint64_t bodyId1, uint64_t bodyId2, ZDvidWriter &writer)
 {
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(bodyId1);
+//  bodyArray.push_back(bodyId1);
   bodyArray.push_back(bodyId2);
-  updateBodyDep(bodyArray);
+  updateBodyDep(bodyId1, bodyArray, writer);
 }
 
-void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId)
+void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId, ZDvidWriter &writer)
 {
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(bodyId);
-  updateBodyDep(bodyArray);
+//  bodyArray.push_back(bodyId);
+  updateBodyDep(bodyId, bodyArray, writer);
 }
 
 template<template<class...> class C>
-void ZFlyEmBodySplitProject::updateBodyDep(const C<uint64_t> &bodyArray)
+void ZFlyEmBodySplitProject::updateBodyDep(
+    uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer)
 {
 #if defined(_FLYEM_)
+  writer.deleteMesh(originalBody);
+  bodyArray.push_back(originalBody);
   if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
     for (uint64_t bodyId : bodyArray) {
       neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -1787,9 +1791,9 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 
     if (!newBodyIdList.isEmpty()) {
       QString bodyMessage = QString("Body %1 split: ").arg(wholeBody->getLabel());
-      QVector<uint64_t> bodyArray = updateBodyArray;
-      bodyArray.push_back(wholeBody->getLabel());
-      updateBodyDep(bodyArray);
+//      QVector<uint64_t> bodyArray = updateBodyArray;
+//      bodyArray.push_back(wholeBody->getLabel());
+      updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
 
       bodyMessage += "<font color=#007700>";
       foreach (uint64_t bodyId, newBodyIdList) {
@@ -2165,8 +2169,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!newBodyIdList.isEmpty()) {
     QString bodyMessage = QString("Body %1 split: ").arg(wholeBody->getLabel());
 
-    updateBodyDep(wholeBody->getLabel());
-    updateBodyDep(updateBodyArray);
+//    updateBodyDep(wholeBody->getLabel());
+    updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
 
 #if defined(_FLYEM_2)
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(

@@ -1,9 +1,11 @@
 #include "data3d/zstackobjecthelper.h"
 
 #include "geometry/zaffineplane.h"
+#include "geometry/zintcuboid.h"
 #include "zstackobject.h"
 #include "zswctree.h"
 #include "flyem/zflyembookmark.h"
+#include "misc/miscutility.h"
 
 ZStackObjectHelper::ZStackObjectHelper()
 {
@@ -20,6 +22,21 @@ void ZStackObjectHelper::SetOverSize(ZStackObject *obj)
   if (obj != NULL) {
     obj->setObjectId("oversize");
   }
+}
+
+int ZStackObjectHelper::GetDsIntv(const ZIntCuboid &box)
+{
+  return misc::getIsoDsIntvFor3DVolume(box, neutu::ONEGIGA / 2, false);
+}
+
+bool ZStackObjectHelper::IsOverSize(ZIntCuboid box, int zoom)
+{
+  int scale = zgeom::GetZoomScale(zoom);
+  box.downScale(scale);
+
+  int dsIntv = GetDsIntv(box);
+
+  return (dsIntv > 0);
 }
 
 bool ZStackObjectHelper::IsEmptyTree(const ZStackObject *obj)

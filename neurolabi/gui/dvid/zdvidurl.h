@@ -58,7 +58,7 @@ public:
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
   enum class EMeshType {
-    NORAML, MERGED, NG
+    DEFAULT, MERGED, NG, DRACO
   };
 
   std::string getMeshUrl() const;
@@ -66,7 +66,7 @@ public:
   std::string getMergedMeshUrl(uint64_t bodyId) const;
   std::string getNgMeshUrl(uint64_t bodyId) const;
   std::string getMeshUrl(uint64_t bodyId, int zoom);
-  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
+//  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
   static std::string GetMeshInfoUrl(const std::string &meshUrl);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
@@ -300,9 +300,12 @@ public:
   std::string getContrastUrl() const;
 
   static std::string GetBodyKey(uint64_t bodyId);
+  static std::string GetBodyKey(uint64_t bodyId, int zoom);
   static std::string GetSkeletonKey(uint64_t bodyId);
   static std::string GetMeshKey(
-      uint64_t bodyId, EMeshType type = EMeshType::NORAML);
+      uint64_t bodyId, EMeshType type = EMeshType::DEFAULT);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom, EMeshType type);
   static std::string GetMeshInfoKey(uint64_t bodyId);
   static std::string GetTaskKey();
 

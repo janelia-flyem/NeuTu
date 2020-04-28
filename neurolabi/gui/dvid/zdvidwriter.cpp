@@ -168,11 +168,33 @@ void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
     QByteArray payload = mesh.writeToMemory("obj");
     post(url, payload, false);
 
+    /*
     url = ZDvidUrl::GetMeshInfoUrl(url);
     ZJsonObject infoJson;
     infoJson.setEntry("format", "obj");
     post(url, infoJson.dumpString(0), true);
+    */
   }
+}
+
+void ZDvidWriter::deleteMesh(uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  dvidUrl.setAdmin(m_admin);
+
+  std::string meshName = getDvidTarget().getMeshName();
+  QStringList keyList = getDvidReader().readKeys(
+        meshName.c_str(),
+        (std::to_string(bodyId) + "_0").c_str(),
+        (std::to_string(bodyId) + "_z").c_str());
+
+  for (const QString &key : keyList) {
+    deleteKey(meshName, key.toStdString());
+  }
+
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::DEFAULT));
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::NG));
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::MERGED));
 }
 
 void ZDvidWriter::writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId)
@@ -318,8 +340,10 @@ void ZDvidWriter::writeData(const std::string &dest, const QByteArray &data)
 void ZDvidWriter::writeDataToKeyValue(
     const std::string &dataName, const std::string &key, const QByteArray &data)
 {
-  ZDvidUrl url(getDvidTarget(), m_admin);
-  writeData(url.getKeyUrl(dataName, key), data);
+  if (!dataName.empty() && !key.empty()) {
+    ZDvidUrl url(getDvidTarget(), m_admin);
+    writeData(url.getKeyUrl(dataName, key), data);
+  }
 }
 
 #if 0
@@ -682,11 +706,13 @@ void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
             ZDvidUrl::GetSkeletonKey(bodyId));
 }
 
+/*
 void ZDvidWriter::deleteMesh(uint64_t bodyId)
 {
   deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshKey(bodyId));
   deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshInfoKey(bodyId));
 }
+*/
 
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {

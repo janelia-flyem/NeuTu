@@ -60,6 +60,10 @@ private:
   void readNgMesh(const QString& filename, ZMesh& mesh) const;
   void readNgMesh(std::istream &stream, ZMesh &mesh) const;
 
+  void addWriteFormat(
+      const std::string &format, const std::string &ext,
+      const std::string &description);
+
 private:
   QStringList m_readExts;
   QStringList m_writeExts;

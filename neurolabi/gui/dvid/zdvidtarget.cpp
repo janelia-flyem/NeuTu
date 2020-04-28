@@ -1185,6 +1185,7 @@ std::string ZDvidTarget::getMeshName() const
                             getBodyLabelName());
 }
 
+/*
 std::string ZDvidTarget::getMeshName(int zoom) const
 {
   ZString name = getMeshName();
@@ -1195,6 +1196,7 @@ std::string ZDvidTarget::getMeshName(int zoom) const
 
   return name;
 }
+*/
 
 std::string ZDvidTarget::getThumbnailName() const
 {

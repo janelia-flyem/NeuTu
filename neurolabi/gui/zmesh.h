@@ -60,9 +60,9 @@ public:
 
   ZMesh& operator=(ZMesh&&) = default;
 
-  ZMesh(const ZMesh&) = default;
+  ZMesh(const ZMesh&);
 
-  ZMesh& operator=(const ZMesh&) = default;
+  ZMesh& operator=(const ZMesh&);
 
   void swap(ZMesh& rhs) noexcept;
 
@@ -79,6 +79,8 @@ public:
 
 //  void setLabel(uint64_t label) override;
 //  uint64_t getLabel() const;
+
+  ZMesh* clone() const override;
 
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
@@ -341,6 +343,10 @@ public:
 
   void append(const ZMesh &mesh);
 
+  std::vector<std::shared_ptr<ZMesh>> getSplitMeshList(size_t thre) const;
+
+  void printVertices() const;
+
 private:
   enum class BooleanOperationType
   {
@@ -348,6 +354,8 @@ private:
   };
 
   void appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle);
+  void appendTriangleList(
+      const ZMesh& mesh, const std::vector<glm::uvec3>& triangleList);
 
   double signedVolumeOfTriangle(const glm::vec3& v1,
                                 const glm::vec3& v2,
@@ -397,6 +405,9 @@ private:
   void invalidateCachedProperties() {
     validateObbTree(false);
     m_boundBox.reset();
+    m_splitMeshList.clear();
+//    m_splitCount.clear();
+//    m_splitThreshold = 0;
   }
 
 private:
@@ -416,6 +427,8 @@ private:
   mutable ZBBox<glm::dvec3> m_boundBox;
   mutable ObbTreeData m_obbTreeData;
   mutable std::vector<std::shared_ptr<ZMesh>> m_splitMeshList;
+//  mutable std::vector<size_t> m_splitCount;
+//  mutable size_t m_splitThreshold = 0;
 //  mutable bool m_isObbTreeValid = false;
 //  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
 };

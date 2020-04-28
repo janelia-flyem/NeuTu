@@ -31054,13 +31054,66 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   std::vector<uint64_t> bodyArray =
       reader->readConsistentMergedMeshKeys("5901278576.merge");
 
   std::cout << neutu::ToString(bodyArray, ", ") << std::endl;
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5813023304.ngmesh");
+
+  std::cout << "#Triangles: " << mesh->numTriangles() << std::endl;
+
+  auto meshList = mesh->getSplitMeshList(400000);
+  std::cout << meshList.size() << std::endl;
+
+  size_t ntr = 0;
+  size_t index = 0;
+  for (const auto &mesh : meshList) {
+    ntr += mesh->numTriangles();
+    mesh->save(GET_TEST_DATA_DIR + "/_test" + std::to_string(index++) + ".obj");
+  }
+
+  std::cout << "#Triangles (split): " << ntr << std::endl;
+#endif
+
+#if 0
+  ZMesh mesh;
+  mesh.load((GET_BENCHMARK_DIR + "/cube.obj").c_str());
+  mesh.printVertices();
+
+  auto meshList = mesh.getSplitMeshList(6);
+  std::cout << meshList.size() << std::endl;
+  std::cout << "#Triangles: " << mesh.numTriangles() << std::endl;
+
+  size_t ntr = 0;
+  size_t index = 0;
+  for (const auto &mesh : meshList) {
+    ntr += mesh->numTriangles();
+    mesh->save(GET_TEST_DATA_DIR + "/_test" + std::to_string(index++) + ".obj");
+    mesh->printVertices();
+  }
+
+  std::cout << "#Triangles (split): " << ntr << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  writer->deleteMesh(5901278576);
+#endif
+
+#if 1
+  ZMesh mesh;
+  mesh.load((GET_BENCHMARK_DIR + "/cube.obj").c_str());
+  mesh.save((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
+
+  ZMesh mesh2;
+  mesh2.load((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
 #endif
 
   std::cout << "Done." << std::endl;

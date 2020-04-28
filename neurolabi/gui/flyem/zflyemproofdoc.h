@@ -268,6 +268,7 @@ public:
   }
 
   const ZDvidReader &getWorkReader();
+  ZDvidWriter& getWorkWriter();
 
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
@@ -534,6 +535,10 @@ public:
 
   std::shared_ptr<ZRoiProvider> initRoiProvider();
   std::shared_ptr<ZRoiProvider> getRoiProvider() const;
+
+  void addUploadTask(
+      const std::string &dataName, const std::string &key, const QByteArray &data);
+  void addUploadTask(std::function<void(ZDvidWriter &writer)> f);
 
 signals:
   void bodyMerged();

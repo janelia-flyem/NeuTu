@@ -87,6 +87,8 @@ public:
   void denull();
 
   std::string dumpJanssonString(size_t flags) const;
+
+  void forEachString(std::function<void(const std::string &str)>f);
 };
 
 #endif // ZJSONARRAY_H

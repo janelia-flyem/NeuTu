@@ -1108,6 +1108,7 @@ public:
   }
 
   void addTask(ZTask *task);
+  void addTask(std::function<void()> f);
 
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*

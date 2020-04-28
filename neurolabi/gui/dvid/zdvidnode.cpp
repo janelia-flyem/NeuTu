@@ -343,7 +343,8 @@ bool ZDvidNode::setFromSourceToken(const std::vector<std::string> &tokens)
 
  clear();
 
-  if (tokens.size() >= 4 && (tokens[0] == "http" || tokens[0] == "mock")) {
+  if (tokens.size() >= 4 &&
+      (tokens[0] == "http" || tokens[0] == "mock" || tokens[0] == "https")) {
     int port = -1;
     if (!tokens[2].empty()) {
       port = ZString::FirstInteger(tokens[2]);

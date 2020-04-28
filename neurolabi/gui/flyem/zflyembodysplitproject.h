@@ -312,12 +312,13 @@ private:
   ZDvidWriter& getCommitWriter();
   ZDvidWriter& getMainWriter();
 
-  void updateBodyDep(uint64_t bodyId);
-  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
+  void updateBodyDep(uint64_t bodyId, ZDvidWriter &writer);
+  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2, ZDvidWriter &writer);
 //  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
 //  void updateBodyDep(const QVector<uint64_t> &bodyArray);
   template<template<class...> class C>
-  void updateBodyDep(const C<uint64_t> &bodyArray);
+  void updateBodyDep(
+      uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
 
 
 private:
