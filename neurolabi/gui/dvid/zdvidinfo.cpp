@@ -173,7 +173,7 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
 void ZDvidInfo::setFromJsonString(const std::string &str)
 {
   ZJsonObject rootObj;
-  rootObj.decode(str);
+  rootObj.decode(str, false);
   set(rootObj);
 }
 

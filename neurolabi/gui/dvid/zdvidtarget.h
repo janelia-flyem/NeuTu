@@ -154,6 +154,9 @@ public:
    */
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
+
+  void setFromJson(const std::string &jsonSpec);
+
   void updateData(const ZJsonObject &obj);
 
   void loadDvidDataSetting(const ZJsonObject &obj);

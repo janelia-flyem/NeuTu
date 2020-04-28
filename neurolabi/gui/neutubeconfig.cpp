@@ -172,7 +172,7 @@ void NeutubeConfig::updateUserInfo()
     ZNetBufferReader reader;
     reader.read(url.c_str(), true);
     ZJsonObject obj;
-    obj.decode(reader.getBuffer().toStdString());
+    obj.decode(reader.getBuffer().toStdString(), false);
     if (obj.hasKey("config")) {
       ZJsonObject configObj(obj.value("config"));
       m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));

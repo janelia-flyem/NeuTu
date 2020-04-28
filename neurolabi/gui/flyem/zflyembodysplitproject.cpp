@@ -2711,7 +2711,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
           getSplitLabelName().c_str(), seedKey.c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
-      obj.decode(seedData.constData());
+      obj.decode(seedData.constData(), false);
 
       loadSeed(obj);
     }

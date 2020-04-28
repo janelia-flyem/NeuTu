@@ -1840,13 +1840,15 @@ void ZFlyEmProofMvc::setDvidTargetFromDialog()
 void ZFlyEmProofMvc::setDvidFromJsonObject(const std::string &str)
 {
   ZJsonObject obj;
-  obj.decode(str);
+  if (obj.decode(str, true)) {
+    ZDvidEnv env;
+    env.loadJsonObject(obj);
 
-  ZDvidEnv env;
-  env.loadJsonObject(obj);
-
-  if (env.isValid()) {
-    setDvid(env);
+    if (env.isValid()) {
+      setDvid(env);
+    }
+  } else {
+    LKWARN << "Invalid DVID json: " + str;
   }
 }
 

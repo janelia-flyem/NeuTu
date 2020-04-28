@@ -49,7 +49,7 @@ public:
    * \param str Source string.
    * \return true iff the decoding succeeds.
    */
-  bool decode(const std::string &str);
+  bool decode(const std::string &str, bool reportingError);
 
   std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive) const;

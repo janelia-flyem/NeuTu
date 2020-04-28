@@ -49,12 +49,15 @@ void NeuPrintReader::authorizeFromJson(const QString &auth)
 {
   if (!auth.isEmpty()) {
     ZJsonObject obj;
-    obj.decode(auth.toStdString());
-    std::string token = ZJsonParser::stringValue(obj["token"]);
-    if (!token.empty()) {
-      authorize(token.c_str());
+    if (obj.decode(auth.toStdString(), true)) {
+      std::string token = ZJsonParser::stringValue(obj["token"]);
+      if (!token.empty()) {
+        authorize(token.c_str());
+      } else {
+        KWARN << "No NeuPrint token found.";
+      }
     } else {
-      KWARN << "No NeuPrint token found.";
+      LKWARN << "Invalid auth json: " + auth;
     }
   }
 }
@@ -82,7 +85,7 @@ void NeuPrintReader::readDatasets()
   m_bufferReader.read(m_server + "/api/dbmeta/datasets", true);
 
   if (m_bufferReader.getStatus() == neutu::EReadStatus::OK) {
-    m_dataset.decode(m_bufferReader.getBuffer().toStdString());
+    m_dataset.decode(m_bufferReader.getBuffer().toStdString(), true);
     if (m_dataset.isEmpty()) {
       m_status = neutu::EServerStatus::NOSUPPORT;
     } else {
@@ -240,7 +243,7 @@ ZJsonArray extract_body_info(const QByteArray &response)
   ZJsonArray bodies;
 
   ZJsonObject resultObj;
-  resultObj.decode(response.toStdString());
+  resultObj.decode(response.toStdString(), false);
 
   if (resultObj.hasKey("data")) {
     ZJsonArray data(resultObj.value("data"));
@@ -287,7 +290,7 @@ ZJsonArray extract_body_info(const QByteArray &response)
 QList<uint64_t> extract_body_list(const QByteArray &response)
 {
   ZJsonObject resultObj;
-  resultObj.decode(response.toStdString());
+  resultObj.decode(response.toStdString(), false);
 
 //  resultObj.print();
 
@@ -537,7 +540,7 @@ ZJsonObject NeuPrintReader::customQuery(const QString &query)
     QString url = m_server + "/api/custom/custom";
     m_bufferReader.post(url, query.toStdString().c_str());
 
-    resultObj.decode(m_bufferReader.getBuffer().toStdString());
+    resultObj.decode(m_bufferReader.getBuffer().toStdString(), false);
   }
 
   return resultObj;

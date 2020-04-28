@@ -20,7 +20,7 @@ NeuprintSetupDialog::NeuprintSetupDialog(QWidget *parent) :
 
   ui->serverLineEdit->setText(ZGlobal::GetInstance().getNeuPrintServer());
   QString auth = ZGlobal::GetInstance().getNeuPrintAuth();
-  m_auth.decode(auth.toStdString());
+  m_auth.decode(auth.toStdString(), false);
   if (m_auth.isEmpty()) {
     m_auth.setNonEmptyEntry("token", auth.toStdString());
   }

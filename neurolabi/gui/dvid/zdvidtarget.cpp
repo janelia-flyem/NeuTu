@@ -140,6 +140,7 @@ void ZDvidTarget::clear()
 
 void ZDvidTarget::setServer(const std::string &address)
 {
+  m_node.setScheme(""); //default scheme
   m_node.setHost(address);
 }
 
@@ -700,6 +701,13 @@ void ZDvidTarget::updateData(const ZJsonObject &obj)
   if (obj.hasKey(m_sourceConfigKey)) {
     LoadJsonConfig(ZJsonObject(obj.value(m_sourceConfigKey)), m_sourceConfig);
   }
+}
+
+void ZDvidTarget::setFromJson(const std::string &jsonSpec)
+{
+  ZJsonObject obj;
+  obj.decode(jsonSpec, true);
+  loadJsonObject(obj);
 }
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)

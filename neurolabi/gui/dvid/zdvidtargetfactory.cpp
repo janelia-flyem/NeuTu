@@ -98,7 +98,7 @@ ZDvidTarget ZDvidTargetFactory::Make(const ZJsonObject &obj)
 ZDvidTarget ZDvidTargetFactory::MakeFromJsonSpec(const std::string &spec)
 {
   ZJsonObject obj;
-  obj.decode(spec);
+  obj.decode(spec, true);
 
   return Make(obj);
 }

@@ -35,7 +35,7 @@ ZMesh::ZMesh(const QString& filename)
   m_type = GetType();
 }
 
-ZMesh::ZMesh(const ZMesh &rhs)
+ZMesh::ZMesh(const ZMesh &rhs): ZStackObject(rhs)
 {
   m_ttype = rhs.m_ttype;
   m_vertices = rhs.m_vertices;
@@ -49,6 +49,7 @@ ZMesh::ZMesh(const ZMesh &rhs)
 
 ZMesh& ZMesh::operator=(const ZMesh &rhs)
 {
+  ZStackObject::operator=(rhs);
   m_ttype = rhs.m_ttype;
   m_vertices = rhs.m_vertices;
   m_1DTextureCoordinates = rhs.m_1DTextureCoordinates;
@@ -61,6 +62,7 @@ ZMesh& ZMesh::operator=(const ZMesh &rhs)
   return *this;
 }
 
+/*
 void ZMesh::swap(ZMesh& rhs) noexcept
 {
   std::swap(m_ttype, rhs.m_ttype);
@@ -78,6 +80,7 @@ void ZMesh::swap(ZMesh& rhs) noexcept
 //  rhs.validateObbTree(false);
 //  validateObbTree(false);
 }
+*/
 
 ZMesh* ZMesh::clone() const
 {

@@ -36,10 +36,23 @@ TEST(ZMesh, Properties)
     ASSERT_DOUBLE_EQ(3.0, mesh.boundBox().minCorner()[0]);
     ASSERT_DOUBLE_EQ(11.0, mesh.boundBox().maxCorner()[0]);
   }
-
-
 }
 
+TEST(ZMesh, Assign)
+{
+  ZMesh mesh;
+  mesh.setSource("test");
+
+  ZMesh *mesh2 = mesh.clone();
+  ASSERT_EQ("test", mesh2->getSource());
+
+  ZMesh mesh3;
+  mesh3 = mesh;
+  ASSERT_EQ("test", mesh3.getSource());
+
+  ZMesh mesh4(std::move(mesh));
+  ASSERT_EQ("test", mesh4.getSource());
+}
 
 
 #endif

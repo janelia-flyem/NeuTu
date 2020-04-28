@@ -1288,7 +1288,7 @@ void Z3DWindow::pasteView()
   std::string config = ZGlobal::GetInstance().get3DCamera();
   if (!config.empty()) {
     ZJsonObject cameraJson;
-    cameraJson.decode(config);
+    cameraJson.decode(config, false);
     if (!cameraJson.isEmpty()) {
       getCamera()->set(cameraJson);
     }

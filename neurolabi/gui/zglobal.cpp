@@ -19,6 +19,7 @@
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
 #include "logging/neuopentracing.h"
+#include "logging/zlog.h"
 
 class ZGlobalData {
 public:
@@ -160,13 +161,17 @@ QString ZGlobal::getNeuPrintToken(const std::string &key) const
 //    LINFO() << "NeuPrint auth path:" << auth;
 //  }
 
-  ZJsonObject obj;
-  obj.decode(getNeuPrintAuth().toStdString());
   std::string token;
-  if (obj.hasKey(key)) {
-    token = ZJsonParser::stringValue(obj[key.c_str()]);
+
+  ZJsonObject obj;
+  if (obj.decode(getNeuPrintAuth().toStdString(), true)) {
+    if (obj.hasKey(key)) {
+      token = ZJsonParser::stringValue(obj[key.c_str()]);
+    } else {
+      token = ZJsonParser::stringValue(obj["token"]);
+    }
   } else {
-    token = ZJsonParser::stringValue(obj["token"]);
+    LKERROR << "Invalid token: " + key;
   }
 
   return QString::fromStdString(token);
@@ -242,12 +247,17 @@ T* ZGlobal::getIODevice(
 
     if (io == NULL) {
       ZDvidTarget target;
-      target.setFromSourceString(name);
-      if (target.isValid()) {
-        io = new T;
-        if (!io->open(target)) {
-          delete io;
-          io = NULL;
+      ZJsonObject obj;
+      if (obj.decode(name, false)) {
+        target.loadJsonObject(obj);
+      } else {
+        target.setFromSourceString(name);
+        if (target.isValid()) {
+          io = new T;
+          if (!io->open(target)) {
+            delete io;
+            io = NULL;
+          }
         }
       }
     }

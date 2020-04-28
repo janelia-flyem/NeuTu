@@ -683,7 +683,9 @@ void ZCommandLine::loadInputJson()
     if (ZFileType::FileType(jsonInput) == ZFileType::EFileType::JSON) {
       obj.load(jsonInput);
     } else {
-      obj.decode(jsonInput);
+      if (!obj.decode(jsonInput, true)) {
+        std::cerr << "Invalid input json: " << jsonInput << std::endl;
+      }
     }
 
     if (obj.hasKey("position")) {
@@ -916,7 +918,9 @@ int ZCommandLine::runGeneral()
     if (ZFileType::FileType(m_generalConfig) == ZFileType::EFileType::JSON) {
       config.load(m_generalConfig);
     } else {
-      config.decode(m_generalConfig);
+      if (!config.decode(m_generalConfig, true)) {
+        std::cerr << "Invalid config json: " << m_generalConfig << std::endl;
+      }
     }
 
     std::string commandName = ZJsonParser::stringValue(config["command"]);

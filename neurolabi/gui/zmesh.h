@@ -64,7 +64,7 @@ public:
 
   ZMesh& operator=(const ZMesh&);
 
-  void swap(ZMesh& rhs) noexcept;
+//  void swap(ZMesh& rhs) noexcept;
 
 //  virtual const std::string& className() const override;
 

@@ -138,7 +138,7 @@ TEST(ZFlyEmBodyAnnotationProtocal, Basic)
   ZFlyEmBodyAnnotationProtocal protocol;
 
   ZJsonObject obj;
-  obj.decode(json_data);
+  obj.decode(json_data, true);
   protocol.loadJsonObject(obj);
   ASSERT_EQ(15, int(protocol.getStatusList().size()));
   ASSERT_FALSE(protocol.isEmpty());

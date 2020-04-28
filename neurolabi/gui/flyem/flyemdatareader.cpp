@@ -71,7 +71,7 @@ ZFlyEmNeuronBodyInfo FlyEmDataReader::ReadBodyInfo(
                            reader.getDvidTarget().getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {
-    obj.decode(byteArray.constData());
+    obj.decode(byteArray.constData(), false);
   }
 
   ZFlyEmNeuronBodyInfo bodyInfo;

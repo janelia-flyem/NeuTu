@@ -3186,7 +3186,7 @@ ZClosedCurve* ZDvidReader::readRoiCurve(
   QByteArray byteArray = readKeyValue("roi_curve", key.c_str());
   if (!byteArray.isEmpty()) {
     ZJsonObject obj;
-    obj.decode(byteArray.constData());
+    obj.decode(byteArray.constData(), false);
 
     if (!obj.isEmpty()) {
       if (result == NULL) {
@@ -3206,7 +3206,7 @@ ZJsonObject ZDvidReader::readContrastProtocal() const
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
-    config.decode(byteArray.data());
+    config.decode(byteArray.data(), false);
   }
 
   return config;
@@ -3220,7 +3220,7 @@ ZJsonObject ZDvidReader::readBodyStatusV2() const
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
-    config.decode(byteArray.toStdString());
+    config.decode(byteArray.toStdString(), false);
   }
 
   return config;
@@ -4936,7 +4936,7 @@ uint64_t ZDvidReader::readMaxBodyId()
         ZDvidData::GetName<QString>(ZDvidData::ERole::MAX_BODY_ID),
         m_dvidTarget.getBodyLabelName().c_str());
   if (!byteArray.isEmpty()) {
-    obj.decode(byteArray.constData());
+    obj.decode(byteArray.constData(), false);
   }
 
   uint64_t id = MAX_BODY_ID_START;
