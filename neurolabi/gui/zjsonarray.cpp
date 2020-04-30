@@ -1,4 +1,7 @@
 #include "zjsonarray.h"
+
+#include <functional>
+
 #include "c_json.h"
 
 #include "common/utilities.h"
