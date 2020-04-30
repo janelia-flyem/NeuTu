@@ -158,7 +158,7 @@ exists($${CONDA_ENV}) {
     message("Checking libs ...")
     libError = $$system(./check_libdep $${CONDA_ENV})
     !isEmpty(libError) {
-      error($${libError})
+      error("Library error: $${libError}")
     }
   }
 } else {
