@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+  echo "Usage: ./check_libdep <conda_env_path>"
+fi
+
+condaEnvPath=$1
+
+eval "condaEnv=`echo "$condaEnvPath" | sed 's/\(.*\)\/envs\/\([^\/]*\)\/*$/("\1" "\2")/'`"
+if [[ -n "${condaEnv[0]}" ]] && [[ -n "${condaEnv[1]}" ]]
+then
+  source ${condaEnv[0]}/bin/activate ${condaEnv[1]} > /dev/null
+
+  libneucoreFound=false
+  libneucoreVersion="NA"
+
+  while read line
+  do
+    v=($line)
+    if [ ${v[0]} = "libneucore" ]
+    then
+      libneucoreVersion=${v[1]}
+      libneucoreFound=true
+    fi
+  done < <(conda list libneucore)
+
+  if [ ${libneucoreFound} = false ]
+  then
+    echo "Library check failed @$condaEnvPath: libneucore NOT found;"
+  else
+    minVersion="0.1.4"
+    if [[ ${v[1]} < "$minVersion" ]]
+    then
+      echo "Library check failed @$1: libneucore version too old: CURRENT ${v[1]}, REQUIRED >=$minVersion; "
+    fi
+  fi
+else
+  echo "WARNING: unable to check libraries in $condaEnvPath"
+fi
+ 

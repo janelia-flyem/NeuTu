@@ -154,11 +154,18 @@ exists($${CONDA_ENV}) {
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
 
-  unix {
-    message("Checking libs ...")
-    libError = $$system(./check_libdep $${CONDA_ENV})
-    !isEmpty(libError) {
-      error("Library error: $${libError}")
+  !CONFIG(NO_CONDA_LIB_CHECK) {
+    unix {
+      message("Checking libs ...")
+      libError = $$system(./check_conda_lib $${CONDA_ENV})
+      w=$${member(libError, 0)}
+      !isEmpty(libError) {
+        equals(w, "WARNING:") {
+          warning($${libError})
+        } else {
+          error("Library error: $${libError}")
+        }
+      }
     }
   }
 } else {
