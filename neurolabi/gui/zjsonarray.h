@@ -2,6 +2,7 @@
 #define ZJSONARRAY_H
 
 #include <cstdlib>
+#include <functional>
 
 #include "zjsonvalue.h"
 #include "zuncopyable.h"
