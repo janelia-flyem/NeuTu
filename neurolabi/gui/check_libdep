@@ -7,7 +7,7 @@ fi
 
 eval "condaEnv=`echo "$1" | sed 's/\(.*\)\/envs\/\([^\/]*\).*/("\1" "\2")/'`"
 
-source ${condaEnv[0]}/bin/activate ${condaEnv[1]}
+source ${condaEnv[0]}/bin/activate ${condaEnv[1]} > /dev/null
 
 libneucoreFound=false
 libneucoreVersion="NA"
