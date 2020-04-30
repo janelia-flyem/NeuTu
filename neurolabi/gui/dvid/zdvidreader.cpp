@@ -16,6 +16,7 @@
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 
+#include "zglobal.h"
 #include "zjsondef.h"
 #include "zstack.hxx"
 //#include "zdvidbuffer.h"
@@ -333,7 +334,9 @@ dvid::ENodeStatus ZDvidReader::getNodeStatus() const
     if (statusCode != 200) {
       status = dvid::ENodeStatus::OFFLINE;
     } else {
-      ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
+//      ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
+      ZJsonObject obj =
+          ZGlobal::GetInstance().readJsonObjectFromUrl(url.getCommitInfoUrl());
       if (obj.hasKey("Locked")) {
         bool locked = ZJsonParser::booleanValue(obj["Locked"]);
         if (locked) {
@@ -2510,14 +2513,16 @@ ZJsonObject ZDvidReader::readInfo() const
 {
   ZDvidUrl url(getDvidTarget());
 
-  return readJsonObject(url.getInfoUrl());
+  return ZGlobal::GetInstance().readJsonObjectFromUrl(url.getInfoUrl());
+//  return readJsonObject(url.getInfoUrl());
 }
 
 ZJsonObject ZDvidReader::readInfo(const std::string &dataName) const
 {
  std::string url = ZDvidUrl(getDvidTarget()).getInfoUrl(dataName);
 
- return readJsonObject(url);
+ return ZGlobal::GetInstance().readJsonObjectFromUrl(url);
+// return readJsonObject(url);
 }
 
 ZDvidInfo ZDvidReader::readDataInfo(const std::string &dataName) const

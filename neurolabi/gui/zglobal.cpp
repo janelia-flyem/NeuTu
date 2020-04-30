@@ -1,9 +1,13 @@
 #include "zglobal.h"
 
-#include <QUrl>
 #include <map>
+#include <mutex>
+
+#include <QUrl>
 #include <QClipboard>
 #include <QApplication>
+
+#include "neulib/core/utilities.h"
 
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
@@ -20,6 +24,25 @@
 #include "service/neuprintreader.h"
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
+#include "qt/network/znetbufferreader.h"
+
+namespace {
+
+static ZJsonObject read_json(std::string source)
+{
+  ZNetBufferReader reader;
+  reader.read(source.c_str(), true);
+  ZJsonObject obj;
+  obj.decode(reader.getBuffer().toStdString(), false);
+
+  return obj;
+}
+
+static auto read_json_memo = neulib::Memoize(read_json);
+
+//static auto read_json_memo = SingleParameterMemoize(read_json);
+
+}
 
 class ZGlobalData {
 public:
@@ -58,7 +81,6 @@ ZGlobal::ZGlobal()
   m_data = new ZGlobalData;
   m_browserOpener = ZSharedPointer<ZBrowserOpener>(new ZBrowserOpener);
   m_browserOpener->setChromeBrowser();
-//  m_browserOpener->setBrowserPath(ZBrowserOpener::INTERNAL_BROWSER);
 }
 
 ZGlobal::~ZGlobal()
@@ -116,6 +138,11 @@ void ZGlobal::setMainWindow(QMainWindow *win)
 QMainWindow* ZGlobal::getMainWindow() const
 {
   return m_mainWin;
+}
+
+ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
+{
+  return read_json_memo(url);
 }
 
 QString ZGlobal::getNeuPrintServer() const

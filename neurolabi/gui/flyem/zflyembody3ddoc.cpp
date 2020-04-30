@@ -3724,7 +3724,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         timer.start();
         mesh = mf.makeMesh(objArray);
 
-        if (!config.isHybrid() &&
+        if (mesh && !config.isHybrid() &&
             config.getLabelType() == neutu::EBodyLabelType::BODY) {
           std::shared_ptr<ZMesh> meshClone(mesh->clone());
           getDataDocument()->addUploadTask([=](ZDvidWriter &writer) {
@@ -3782,8 +3782,10 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     }
   }
 
-  if (IsOverSize(mesh) && config.getDsLevel() <= 2) {
-    config.disableNextDsLevel();
+  if (mesh) {
+    if (IsOverSize(mesh) && config.getDsLevel() <= 2) {
+      config.disableNextDsLevel();
+    }
   }
 
   return mesh;

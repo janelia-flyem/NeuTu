@@ -17,6 +17,7 @@ class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
 class NeuPrintReader;
+class ZJsonObject;
 
 class ZGlobal
 {
@@ -100,6 +101,8 @@ public:
   ZBrowserOpener* getBrowserOpener() const;
 
   static void CopyToClipboard(const std::string &str);
+
+  ZJsonObject readJsonObjectFromUrl(const std::string& url);
 
 private:
   /*

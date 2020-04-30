@@ -31107,13 +31107,28 @@ void ZTest::test(MainWindow *host)
   writer->deleteMesh(5901278576);
 #endif
 
-#if 1
+#if 0
   ZMesh mesh;
   mesh.load((GET_BENCHMARK_DIR + "/cube.obj").c_str());
   mesh.save((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
 
   ZMesh mesh2;
   mesh2.load((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
+#endif
+
+#if 0
+  try {
+//    http::Request request("http://emdata2.int.janelia.org:2018");
+
+    http::Request request("https://hemibrain-dvid2.janelia.org/api/repos/info");
+
+    http::Response response = request.send("GET");
+    std::string str(response.body.begin(), response.body.end());
+    std::cout << "Code: " << response.code << std::endl;
+    std::cout << response.code << " " << str << std::endl;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

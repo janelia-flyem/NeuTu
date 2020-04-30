@@ -153,6 +153,14 @@ exists($${CONDA_ENV}) {
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
+
+  unix {
+    message("Checking libs ...")
+    libError = $$system(./check_libdep $${CONDA_ENV})
+    !isEmpty(libError) {
+      error($${libError})
+    }
+  }
 } else {
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
   LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco
