@@ -283,8 +283,10 @@ MainConfig get_program_config(int argc, char *argv[])
       }
     }
 
-    if (QString(argv[1]).endsWith(".json")) {
-      config.configPath = argv[1];
+    if (!config.fileList.isEmpty()) {
+      if (config.fileList.front().endsWith(".json")) {
+        config.configPath = config.fileList.front();
+      }
     }
   }
 //  if (config.debugging || config.runCommandLine) {

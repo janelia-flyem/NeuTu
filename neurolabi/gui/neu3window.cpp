@@ -54,6 +54,7 @@
 #include "zrandomgenerator.h"
 #include "zqtbarprogressreporter.h"
 #include "zwidgetmessage.h"
+#include "ztextlinecompositer.h"
 
 #include "dvid/zdvidlabelslice.h"
 
@@ -67,6 +68,7 @@
 #include "dialogs/stringlistdialog.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "dialogs/zneu3sliceviewdialog.h"
+#include "dialogs/informationdialog.h"
 
 //#include "z3dpunctafilter.h"
 
@@ -149,6 +151,7 @@ void Neu3Window::createDialogs()
   connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(setOption()));
 
   m_browseOptionDlg = new ZNeu3SliceViewDialog(this);
+  m_infoDlg = new InformationDialog(this);
 }
 
 void Neu3Window::initialize()
@@ -1297,6 +1300,19 @@ void Neu3Window::diagnose()
 {
   m_bodyListWidget->diagnose();
 //  getBodyDocument()->logInfo();
+
+
+  ZTextLineCompositer text;
+  text.appendLine("Server information:");
+  text.appendLine(
+        "Cleave: " + ZGlobal::GetInstance().getCleaveServer().toStdString(), 2);
+  text.appendLine(
+        "NeuPrint: " + ZGlobal::GetInstance().getNeuPrintServer().toStdString(), 2);
+
+  m_infoDlg->setText(text.toString(2));
+
+  m_infoDlg->show();
+  m_infoDlg->raise();
 }
 
 void Neu3Window::on_actionNeuTu_Proofread_triggered()

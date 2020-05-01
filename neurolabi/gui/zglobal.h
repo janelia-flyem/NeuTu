@@ -82,6 +82,8 @@ public:
 
   static void InitKafkaTracer(std::string serviceName = "");
 
+  QString getCleaveServer() const;
+
 public:
   static ZDvidReader* GetDvidReader(
       const std::string &name, const std::string &key = "");

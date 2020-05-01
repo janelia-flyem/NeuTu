@@ -9,6 +9,7 @@
 
 #include "neulib/core/utilities.h"
 
+#include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
@@ -143,6 +144,17 @@ QMainWindow* ZGlobal::getMainWindow() const
 ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
 {
   return read_json_memo(url);
+}
+
+QString ZGlobal::getCleaveServer() const
+{
+  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
+  std::string serverOverride = GET_FLYEM_CONFIG.getCleaveServer();
+  if (!serverOverride.empty()) {
+    server = serverOverride.c_str();
+  }
+
+  return server;
 }
 
 QString ZGlobal::getNeuPrintServer() const

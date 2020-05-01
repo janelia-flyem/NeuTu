@@ -43,14 +43,16 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScan &obj)
   return MakeMesh(obj, m_dsIntv, m_smooth, m_offsetAdjust);
 }
 
-ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
+template<typename InputIterator>
+ZMesh* ZMeshFactory::makeMesh(
+    const InputIterator &first, const InputIterator &last)
 {
   ZMesh *mesh = NULL;
 
   std::vector<ZMesh*> meshArray;
   bool isOverSize = false;
-  for (const ZObject3dScan *obj : objArray) {
-    ZMesh *submesh = makeMesh(*obj);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZMesh *submesh = makeMesh(*(*iter));
 //    mesh->prepareNormals();
     if (submesh != NULL) {
       meshArray.push_back(submesh);
@@ -83,6 +85,18 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
 
   return mesh;
 }
+
+ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
+{
+  return makeMesh(objArray.begin(), objArray.end());
+}
+
+ZMesh* ZMeshFactory::makeMesh(
+    const std::vector<std::shared_ptr<ZObject3dScan>> &objArray)
+{
+  return makeMesh(objArray.begin(), objArray.end());
+}
+
 /*
 ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScanArray &objArray)
 {

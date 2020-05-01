@@ -1,6 +1,8 @@
 #ifndef ZDVIDBODYHELPER_H
 #define ZDVIDBODYHELPER_H
 
+#include <memory>
+
 #include "common/neutudefs.h"
 #include "geometry/zintcuboid.h"
 
@@ -23,7 +25,7 @@ public:
   void setLowresZoom(int zoom);
 
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result = nullptr);
-  std::vector<ZObject3dScan*> readHybridBody(uint64_t bodyId);
+  std::vector<std::shared_ptr<ZObject3dScan>> readHybridBody(uint64_t bodyId);
 
   ZDvidBodyHelper fork() const;
 

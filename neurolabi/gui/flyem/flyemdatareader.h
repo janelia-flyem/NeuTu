@@ -19,6 +19,7 @@ class ZObject3dScan;
 class ZDvidSparseStack;
 class ZDvidTarget;
 class ZDvidSynapse;
+class ZDvidInfo;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -64,6 +65,12 @@ public:
 
   static std::unordered_map<ZIntPoint, uint64_t> ReadSynapseLabel(
       const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray);
+
+  static dvid::ENodeStatus ReadNodeStatus(const ZDvidTarget &target);
+  static ZJsonObject ReadInfo(const ZDvidTarget &target);
+  static ZDvidInfo ReadDataInfo(const ZDvidTarget &target, const std::string &dataName);
+  static ZDvidInfo ReadGrayscaleInfo(const ZDvidTarget &target);
+  static ZDvidInfo ReadSegmentationInfo(const ZDvidTarget &target);
 
 private:
   static ZMesh* LoadRoi(

@@ -3717,8 +3717,8 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         }
 //        helper.setLowresZoom(config.getLocalDsLevel());
 //        helper.setCoarse(true);
-        ZObject3dScanArray objArray = helper.readHybridBody(
-              config.getDecodedBodyId());
+        std::vector<std::shared_ptr<ZObject3dScan>> objArray =
+            helper.readHybridBody(config.getDecodedBodyId());
         ZMeshFactory mf;
         QElapsedTimer timer;
         timer.start();
@@ -4086,7 +4086,8 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
   m_dvidInfo.clear();
 
   if (getMainDvidReader().isReady()) {
-    m_dvidInfo = getMainDvidReader().readLabelInfo();
+//    m_dvidInfo = getMainDvidReader().readLabelInfo();
+    m_dvidInfo = FlyEmDataReader::ReadSegmentationInfo(getDvidTarget());
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {

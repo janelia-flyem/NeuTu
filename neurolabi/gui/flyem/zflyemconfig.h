@@ -68,6 +68,7 @@ public:
 
   void setDefaultAssignmentManager(const std::string &server);
   void setDefaultAuthenticationServer(const std::string &server);
+  void setDefaultCleaveServer(const std::string &server);
 
   void setCustomTaskServer(const std::string &taskServer);
   std::string getTaskServer() const;
@@ -133,7 +134,7 @@ public:
   void setCustomNeuTuServer(const std::string &server);
   std::string getNeuTuServer() const;
   std::string getNeuTuServer(bool usingDefault) const;
-
+  std::string getCleaveServer() const;
 
   std::string getUserName() const;
   /*
@@ -199,6 +200,7 @@ public:
   const static char *NEUTU_SERVER_KEY;
   const static char *NEUROGLANCER_KEY;
   const static char *AUTHENTICATION_SERVER_KEY;
+  const static char *CLEAVE_SERVER_KEY;
   const static char *ASSIGNMENT_MANAGER_KEY;
   const static char *CENTERCUT_KEY;
   const static char *UI_KEY;
@@ -238,6 +240,7 @@ private:
   std::string m_defaultTaskServer;
   std::string m_defaultAuthenticationServer;
   std::string m_defaultAssignmentManager;
+  std::string m_defaultCleaveServer;
   std::string m_uiStyleSheet;
 
   bool m_analyzingMb6;

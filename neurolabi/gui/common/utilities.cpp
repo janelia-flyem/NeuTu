@@ -37,6 +37,16 @@ bool neutu::HasEnv(const std::string &name, const std::string &value)
   return result;
 }
 
+std::string neutu::GetEnv(const std::string &name)
+{
+  std::string result;
+  if (const char* setting = std::getenv(name.c_str())) {
+    result = std::string(setting);
+  }
+
+  return result;
+}
+
 std::string neutu::GetVersionString()
 {
   return std::string(neutu::VERSION) + " (" + neutu::PKG_VERSION + ")";

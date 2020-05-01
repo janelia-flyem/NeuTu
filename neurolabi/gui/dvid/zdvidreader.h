@@ -129,7 +129,7 @@ public:
     return m_bufferReader;
   }
 
-  std::vector<std::string> readDataInstances(const std::string &type);
+//  std::vector<std::string> readDataInstances(const std::string &type);
   void updateDataStatus();
 
   //ZSwcTree* readSwc(const QString &key);

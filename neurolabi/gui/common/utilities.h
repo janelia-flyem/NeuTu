@@ -85,6 +85,7 @@ int numDigits(T number)
 }
 
 bool HasEnv(const std::string &name, const std::string &value);
+std::string GetEnv(const std::string &name);
 
 std::string GetVersionString();
 

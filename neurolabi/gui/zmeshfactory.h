@@ -1,6 +1,8 @@
 #ifndef ZMESHFACTORY_H
 #define ZMESHFACTORY_H
 
+#include <memory>
+
 class ZMesh;
 class ZObject3dScan;
 class ZIntPoint;
@@ -25,7 +27,12 @@ public:
 
   ZMesh* makeMesh(const ZObject3dScan &obj);
   ZMesh* makeMesh(const ZObject3dScanArray &objArray);
+  ZMesh* makeMesh(const std::vector<std::shared_ptr<ZObject3dScan>> &objArray);
 //  static ZMesh* MakeMesh(const ZObject3dScan &obj, const ZIntPoint &dsIntv, int smooth);
+
+private:
+  template<typename InputIterator>
+  ZMesh* makeMesh(const InputIterator &first, const InputIterator &last);
 
 private:
   int m_dsIntv = 0;

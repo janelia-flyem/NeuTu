@@ -31,6 +31,7 @@ class ZNeu3SliceViewDialog;
 class ZFlyEmMessageWidget;
 class ZWidgetMessage;
 class ZFlyEmBodyColorScheme;
+class InformationDialog;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -241,6 +242,7 @@ private:
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
   ZNeu3SliceViewDialog *m_browseOptionDlg = nullptr;
+  InformationDialog *m_infoDlg = nullptr;
 
   QDockWidget *m_webSliceDock = nullptr;
 #if defined(_USE_WEBENGINE_)

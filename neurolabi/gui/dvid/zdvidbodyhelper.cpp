@@ -114,9 +114,10 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
   return range;
 }
 
-std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
+std::vector<std::shared_ptr<ZObject3dScan> >
+ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 {
-  std::vector<ZObject3dScan*> result;
+  std::vector<std::shared_ptr<ZObject3dScan>> result;
 
   ZIntCuboid range = getAdjustedRange();
 
@@ -136,7 +137,12 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 //  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
 
   if (highResObj != NULL) {
-    result.push_back(highResObj);
+    if (!highResObj->isEmpty()) {
+      result.emplace_back(highResObj);
+    } else {
+      delete highResObj;
+      ZWARN << "Failed to read highres object";
+    }
   }
 
   if (!range.isEmpty()) { //load low res parts
@@ -176,7 +182,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 //      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";
       lowResObj->setDsIntv(scale - 1);
 
-      result.push_back(lowResObj);
+      result.emplace_back(lowResObj);
     }
   }
 
