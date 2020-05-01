@@ -64,7 +64,7 @@ bool ZDvidWriter::startService()
   try {
     m_service = dvid::MakeDvidNodeService(getDvidTarget());
     m_connection = dvid::MakeDvidConnection(
-          getDvidTarget().getAddressWithPort());
+          getDvidTarget().getRootUrl());
   } catch (std::exception &e) {
     m_service.reset();
     LKWARN << e.what();
