@@ -2,6 +2,7 @@
 #define ZMESHFACTORY_H
 
 #include <memory>
+#include <vector>
 
 class ZMesh;
 class ZObject3dScan;

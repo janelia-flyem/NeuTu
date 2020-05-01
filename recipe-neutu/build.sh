@@ -9,7 +9,7 @@ else
     cd $(dirname ${CC}) && ln -s $(basename ${CC}) gcc && cd -
     cd $(dirname ${CXX}) && ln -s $(basename ${CXX}) g++ && cd -
     cd $(dirname ${LD}) && ln -s $(basename ${LD}) ld && cd -
-    additional_qflag='$additional_qflag LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include'
+    additional_qflag="$additional_qflag LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include"
 fi
 
 if [ $(uname) == 'Darwin' ]; then
