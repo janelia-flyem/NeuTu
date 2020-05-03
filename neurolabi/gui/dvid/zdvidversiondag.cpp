@@ -318,23 +318,10 @@ void ZDvidVersionDag::print() const
   }
 }
 
-void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
+void ZDvidVersionDag::load(const ZJsonObject &jsonObj)
 {
   clear();
-
-  std::vector<std::string> keyList = obj.getAllKey();
-  std::string fullUuid;
-  for (std::vector<std::string>::const_iterator iter = keyList.begin();
-       iter != keyList.end(); ++iter) {
-    ZString key = *iter;
-    if (key.startsWith(uuid)) {
-      fullUuid = key;
-      break;
-    }
-  }
-
-  ZJsonObject dagJson =
-      ZJsonObject(ZJsonObject(obj.value(fullUuid.c_str())).value("DAG"));
+  ZJsonObject dagJson(jsonObj.value("DAG"));
   if (!dagJson.isEmpty()) {
     std::queue<std::string> uuidQueue;
 
@@ -394,6 +381,24 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
       }
     }
   }
+}
+
+void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
+{
+  std::vector<std::string> keyList = obj.getAllKey();
+  std::string fullUuid;
+  for (std::vector<std::string>::const_iterator iter = keyList.begin();
+       iter != keyList.end(); ++iter) {
+    ZString key = *iter;
+    if (key.startsWith(uuid)) {
+      fullUuid = key;
+      break;
+    }
+  }
+
+  ZJsonObject dagJson = ZJsonObject(obj.value(fullUuid.c_str()));
+
+  load(dagJson);
 }
 
 void ZDvidVersionDag::lock(const std::string &uuid)

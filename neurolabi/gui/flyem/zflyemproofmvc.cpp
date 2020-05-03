@@ -6717,6 +6717,7 @@ void ZFlyEmProofMvc::loadRoiMesh(ZMesh *mesh, const std::string &roiName)
   }
 }
 
+/*
 void ZFlyEmProofMvc::loadRoiFromRoiData(const ZDvidReader &reader)
 {
   ZJsonObject meta = reader.readInfo();
@@ -6750,7 +6751,9 @@ void ZFlyEmProofMvc::loadRoiFromRoiData(const ZDvidReader &reader)
     }
   }
 }
+*/
 
+/*
 void ZFlyEmProofMvc::loadRoiFromRefData(
     const ZDvidReader &reader, const std::string &roiName)
 {
@@ -6813,7 +6816,9 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
   }
 #endif
 }
+*/
 
+/*
 void ZFlyEmProofMvc::loadROIFunc()
 {
   //
@@ -6851,7 +6856,7 @@ void ZFlyEmProofMvc::loadROIFunc()
     emit roiLoaded();
   }
 }
-
+*/
 
 void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
 {
@@ -6900,6 +6905,7 @@ void ZFlyEmProofMvc::showInfoDialog()
   dlg->raise();
 }
 
+#if 0
 void ZFlyEmProofMvc::retrieveRois()
 {
 #ifdef _DEBUG_2
@@ -6915,6 +6921,7 @@ void ZFlyEmProofMvc::retrieveRois()
     m_futureMap[threadId] = future;
   }
 }
+#endif
 
 void ZFlyEmProofMvc::processSynapseVerification(int x, int y, int z, bool verified)
 {

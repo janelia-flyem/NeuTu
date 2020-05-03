@@ -310,8 +310,8 @@ std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
 
 std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
 {
-  return applyAdminToken(GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
-                    GetBodyKey(bodyId)));
+  return applyAdminToken(
+        GetFullUrl(getTarSupervoxelsUrl(), "supervoxel", GetBodyKey(bodyId)));
 }
 
 std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
@@ -1001,7 +1001,7 @@ std::string ZDvidUrl::getOldMasterUrl() const
 
 std::string ZDvidUrl::getMasterUrl() const
 {
-  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
+  return GetFullUrl(getRepoUrl(), "branch-versions", "master");
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const
@@ -1532,9 +1532,14 @@ std::string ZDvidUrl::getTileUrl(
   return url;
 }
 
-std::string ZDvidUrl::getRepoInfoUrl() const
+std::string ZDvidUrl::getReposInfoUrl() const
 {
   return GetFullUrl(getApiUrl(), "/repos/info");
+}
+
+std::string ZDvidUrl::getRepoInfoUrl() const
+{
+  return GetFullUrl(getRepoUrl(), "info");
 }
 
 std::string ZDvidUrl::getLockUrl() const
@@ -1556,7 +1561,9 @@ std::string ZDvidUrl::GetPath(const std::string &url)
   if (markerPos != std::string::npos) {
     markerPos += marker.size();
     std::string::size_type uuidPos = url.find('/', markerPos);
-    return url.substr(uuidPos);
+    if (uuidPos != std::string::npos) {
+      return url.substr(uuidPos);
+    }
   }
 
   return url;

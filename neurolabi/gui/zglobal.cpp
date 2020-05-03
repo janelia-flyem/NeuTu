@@ -7,8 +7,6 @@
 #include <QClipboard>
 #include <QApplication>
 
-#include "neulib/core/utilities.h"
-
 #include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
@@ -26,24 +24,9 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "qt/network/znetbufferreader.h"
+#include "qt/network/znetworkutils.h"
+#include "dvid/zdvidglobal.h"
 
-namespace {
-
-static ZJsonObject read_json(std::string source)
-{
-  ZNetBufferReader reader;
-  reader.read(source.c_str(), true);
-  ZJsonObject obj;
-  obj.decode(reader.getBuffer().toStdString(), false);
-
-  return obj;
-}
-
-static auto read_json_memo = neulib::Memoize(read_json);
-
-//static auto read_json_memo = SingleParameterMemoize(read_json);
-
-}
 
 class ZGlobalData {
 public:
@@ -143,7 +126,7 @@ QMainWindow* ZGlobal::getMainWindow() const
 
 ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
 {
-  return read_json_memo(url);
+  return ZNetworkUtils::ReadJsonObjectMemo(url);
 }
 
 QString ZGlobal::getCleaveServer() const

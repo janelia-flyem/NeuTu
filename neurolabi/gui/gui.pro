@@ -517,7 +517,6 @@ HEADERS += mainwindow.h \
     zrect2d.h \
     zobjectcolorscheme.h \
     dialogs/synapseimportdialog.h \
-    dialogs/flyembodymergeprojectdialog.h \
     zstackdvidgrayscalefactory.h \
     zstackdocreader.h \
     dialogs/flyemprojectdialog.h \
@@ -793,7 +792,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/shapepaperdialog.ui \
     dialogs/dvidoperatedialog.ui \
     dialogs/synapseimportdialog.ui \
-    dialogs/flyembodymergeprojectdialog.ui \
     dialogs/zsegmentationprojectdialog.ui \
     dialogs/zmarkswcsomadialog.ui \
     dialogs/swcexportdialog.ui \
@@ -1036,7 +1034,6 @@ SOURCES += main.cpp \
     zrect2d.cpp \
     zobjectcolorscheme.cpp \
     dialogs/synapseimportdialog.cpp \
-    dialogs/flyembodymergeprojectdialog.cpp \
     zstackdvidgrayscalefactory.cpp \
     zstackdocreader.cpp \
     dialogs/flyemprojectdialog.cpp \

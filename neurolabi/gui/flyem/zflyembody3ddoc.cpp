@@ -23,6 +23,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidglobal.h"
 
 #include "zswcfactory.h"
 #include "zstackobjectsourcefactory.h"
@@ -4087,7 +4088,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (getMainDvidReader().isReady()) {
 //    m_dvidInfo = getMainDvidReader().readLabelInfo();
-    m_dvidInfo = FlyEmDataReader::ReadSegmentationInfo(getDvidTarget());
+    m_dvidInfo = ZDvidGlobal::Memo::ReadSegmentationInfo(getDvidTarget());
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {

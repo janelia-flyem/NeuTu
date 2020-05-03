@@ -4812,6 +4812,11 @@ int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
   return mutId;
 }
 
+void ZDvidReader::updateMaxGrayscaleZoom(int zoom)
+{
+   m_dvidTarget.setMaxGrayscaleZoom(zoom);
+}
+
 void ZDvidReader::updateMaxGrayscaleZoom(
     const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
 {
@@ -4827,7 +4832,7 @@ void ZDvidReader::updateMaxGrayscaleZoom(
       }
       ++level;
     }
-    m_dvidTarget.setMaxGrayscaleZoom(maxLabelLevel);
+    updateMaxGrayscaleZoom(maxLabelLevel);
   }
 }
 
@@ -4882,9 +4887,16 @@ void ZDvidReader::updateMaxLabelZoom(
       }
       ++level;
     }
-    m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
-    m_maxLabelZoomUpdated = true;
+    updateMaxLabelZoom(maxLabelLevel);
+//    m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
+//    m_maxLabelZoomUpdated = true;
   }
+}
+
+void ZDvidReader::updateMaxLabelZoom(int zoom)
+{
+  m_dvidTarget.setMaxLabelZoom(zoom);
+  m_maxLabelZoomUpdated = true;
 }
 
 void ZDvidReader::updateMaxLabelZoom()
@@ -4894,8 +4906,7 @@ void ZDvidReader::updateMaxLabelZoom()
       ZJsonObject infoJson = readInfo(getDvidTarget().getSegmentationName());
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
       if (!v.isEmpty()) {
-        m_dvidTarget.setMaxLabelZoom(v.toInteger());
-        m_maxLabelZoomUpdated = true;
+        updateMaxLabelZoom(v.toInteger());
       }
 #if 0
       else { //temporary hack!!!
@@ -5092,7 +5103,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   ZDvidUrl dvidUrl(getDvidTarget());
 
   ZDvidBufferReader &bufferReader = m_bufferReader;
-  bufferReader.read(dvidUrl.getRepoInfoUrl().c_str(), isVerbose());
+  bufferReader.read(dvidUrl.getReposInfoUrl().c_str(), isVerbose());
   setStatusCode(bufferReader.getStatusCode());
 
   QString str(bufferReader.getBuffer().data());

@@ -3,8 +3,6 @@
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 
-#include "zdvidinfo.h"
-#include "zdvidreader.h"
 #include "zpainter.h"
 #include "zimage.h"
 #include "neutubeconfig.h"
@@ -12,6 +10,10 @@
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "geometry/zcuboid.h"
+
+#include "zdvidinfo.h"
+#include "zdvidreader.h"
+#include "zdvidglobal.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -101,7 +103,9 @@ void ZDvidSparseStack::initBlockGrid()
 {
   ZDvidReader &reader = getGrayscaleReader();
   if (reader.good()) {
-    m_grayscaleInfo = reader.readGrayScaleInfo();
+//    m_grayscaleInfo = reader.readGrayScaleInfo();
+    m_grayscaleInfo =
+        ZDvidGlobal::Memo::ReadGrayscaleInfo(reader.getDvidTarget());
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     m_sparseStack.setGreyScale(grid);
 //    grid->setMinPoint(dvidInfo.getStartCoordinates());

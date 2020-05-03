@@ -2,8 +2,29 @@
 
 #include <regex>
 
+#include "neulib/core/utilities.h"
+
 #include "znetbufferreaderthread.h"
 #include "znetbufferreader.h"
+#include "zjsonobject.h"
+
+namespace {
+
+static ZJsonObject read_json(std::string source)
+{
+  ZJsonObject obj;
+  if (!source.empty()) {
+    ZNetBufferReader reader;
+    reader.read(source.c_str(), true);
+    obj.decode(reader.getBuffer().toStdString(), false);
+  }
+
+  return obj;
+}
+
+static auto read_json_memo = neulib::Memoize(read_json);
+}
+
 
 ZNetworkUtils::ZNetworkUtils()
 {
@@ -55,4 +76,9 @@ QByteArray ZNetworkUtils::Post(
   thread.wait();
 
   return thread.getData();
+}
+
+ZJsonObject ZNetworkUtils::ReadJsonObjectMemo(const std::string& url)
+{
+  return read_json_memo(url);
 }

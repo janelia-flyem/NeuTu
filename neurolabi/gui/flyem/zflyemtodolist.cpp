@@ -3,8 +3,11 @@
 #include "common/math.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
+
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidglobal.h"
+
 #include "mvc/zstackview.h"
 #include "flyemdatareader.h"
 
@@ -30,7 +33,8 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   if (m_reader.open(target)) {
     m_writer.open(target);
-    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_dvidInfo = ZDvidGlobal::Memo::ReadGrayscaleInfo(m_reader.getDvidTarget());
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
   }
 }

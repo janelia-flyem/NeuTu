@@ -44,6 +44,7 @@
 #include "dvid/zdvidgraysliceensemble.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidenv.h"
+#include "dvid/zdvidglobal.h"
 
 #include "zflyembookmark.h"
 #include "zsynapseannotationarray.h"
@@ -1185,7 +1186,9 @@ void ZFlyEmProofDoc::prepareGrayscaleReader(
     ZDvidReader *reader = new ZDvidReader;
     std::string key = target.getGrayscaleSourceString();
     if (reader->open(target)) {
-      reader->updateMaxGrayscaleZoom();
+      reader->updateMaxGrayscaleZoom(
+            ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget()));
+//      reader->updateMaxGrayscaleZoom();
       setGrayscaleReader(readerMap, key, reader, updatingMainReader);
 //      setGrayscaleReader(key, reader);
       if (updatingMainReader) {
@@ -1553,7 +1556,8 @@ const ZFlyEmBodyAnnotationProtocal& ZFlyEmProofDoc::getBodyStatusProtocol() cons
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-  getDvidReader().updateMaxLabelZoom();
+  getDvidReader().updateMaxLabelZoom(
+        ZDvidGlobal::Memo::ReadMaxLabelZoom(getDvidReader().getDvidTarget()));
 //  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
@@ -1567,7 +1571,9 @@ void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 void ZFlyEmProofDoc::readInfo()
 {
   for (const auto &p : m_grayscaleReaderMap) {
-    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
+    m_dvidInfoMap[p.first] =ZDvidGlobal::Memo::ReadGrayscaleInfo(
+          p.second->getDvidTarget());
+//    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
   }
 
 
@@ -1577,8 +1583,11 @@ void ZFlyEmProofDoc::readInfo()
   }
   */
 //  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
-  m_labelInfo = getDvidReader().readLabelInfo();
-  m_versionDag = getDvidReader().readVersionDag();
+//  m_labelInfo = getDvidReader().readLabelInfo();
+//  m_versionDag = getDvidReader().readVersionDag();
+  m_labelInfo = ZDvidGlobal::Memo::ReadDataInfo(
+        getDvidTarget(), getDvidTarget().getSegmentationName());
+  m_versionDag = ZDvidGlobal::Memo::ReadVersionDag(getDvidTarget());
 
 #ifdef _DEBUG_2
   std::cout << "Label Info:" << std::endl;
@@ -1589,7 +1598,8 @@ void ZFlyEmProofDoc::readInfo()
   m_versionDag.print();
 #endif
 
-  m_infoJson = getDvidReader().readInfo();
+  m_infoJson = ZDvidGlobal::Memo::ReadInfo(getDvidReader().getDvidTarget());
+//  m_infoJson = getDvidReader().readInfo();
 
   std::string startLog = "Start using UUID " +
       getDvidTarget().getUuid() + "@" +
@@ -1644,6 +1654,7 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
   }
 }
 
+/*
 void ZFlyEmProofDoc::loadRoiFunc()
 {
   if (!getDvidTarget().getRoiName().empty()) {
@@ -1656,6 +1667,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
     addRoiMask(obj);
   }
 }
+*/
 
 /*
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
@@ -1724,8 +1736,8 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
     loadStack(stack);
 
     //Download ROI
-    m_futureMap["loadRoiFunc"] =
-        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
+//    m_futureMap["loadRoiFunc"] =
+//        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
   }
 
 

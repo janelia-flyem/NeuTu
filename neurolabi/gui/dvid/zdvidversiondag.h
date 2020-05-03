@@ -76,6 +76,7 @@ public:
 
   bool isAncester(const std::string &uuid, const std::string &ancester) const;
 
+  void load(const ZJsonObject &jsonObj);
   void load(const ZJsonObject &obj, const std::string &uuid);
 
   void lock(const std::string &uuid);

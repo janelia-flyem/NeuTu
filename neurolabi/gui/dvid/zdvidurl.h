@@ -221,6 +221,7 @@ public:
       const std::string &dataName, int resLevel,
       int xi0, int yi0, int z0) const;
 
+  std::string getReposInfoUrl() const;
   std::string getRepoInfoUrl() const;
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
@@ -331,9 +332,28 @@ public:
   std::string applyAdminToken(const std::string &url) const;
 
 public:
+  /*!
+   * \brief Get DVID path (after /api/node/<node>)
+   */
   static std::string GetPath(const std::string &url);
+
+  /*!
+   * \brief Compose a full url
+   *
+   * It returns empty if any input component is empty.
+   */
   static std::string GetFullUrl(
       const std::string &prefix, const std::string &path);
+  template<typename... Args>
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &path, Args... args) {
+    if (prefix.empty() || path.empty()) {
+      return "";
+    }
+
+    return GetFullUrl(GetFullUrl(prefix, path), args...);
+  }
+
   /*!
    * \brief Get entry point of getting key value entries
    */

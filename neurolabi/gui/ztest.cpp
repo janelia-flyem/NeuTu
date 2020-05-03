@@ -289,6 +289,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidstackblockfactory.h"
 #include "dvid/zdvidneurontracer.h"
+#include "dvid/zdvidglobal.h"
 
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
@@ -31129,6 +31130,19 @@ void ZTest::test(MainWindow *host)
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidVersionDag dag = reader->readVersionDag();
+  dag.print();
+
+  ZDvidGlobal::Memo::ReadVersionDag(reader->getDvidTarget());
+
+  std::cout << ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget())
+            << std::endl;
+  std::cout << ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget())
+            << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

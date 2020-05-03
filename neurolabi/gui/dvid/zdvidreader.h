@@ -461,11 +461,13 @@ public:
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
+  void updateMaxLabelZoom(int zoom);
   int getMaxLabelZoom() const;
 
   void updateMaxLabelZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
   void updateMaxGrayscaleZoom();
+  void updateMaxGrayscaleZoom(int zoom);
   void updateMaxGrayscaleZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
@@ -617,8 +619,12 @@ public:
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> getService() const {
+  std::shared_ptr<libdvid::DVIDNodeService> getService() const {
     return m_service;
+  }
+
+  std::shared_ptr<libdvid::DVIDConnection> getConnection() const {
+    return m_connection;
   }
 #endif
 
@@ -744,7 +750,6 @@ protected:
 
 //  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
-
 //  QMutex m_maxLabelZoomMutex;
   mutable bool m_maxLabelZoomUpdated = false;
 
@@ -756,9 +761,9 @@ protected:
 
 #if defined(_ENABLE_LOWTIS_)
   mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
-  mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
+  mutable std::shared_ptr<lowtis::ImageService> m_lowtisService;
   mutable lowtis::DVIDGrayblkConfig m_lowtisConfigGray;
-  mutable ZSharedPointer<lowtis::ImageService> m_lowtisServiceGray;
+  mutable std::shared_ptr<lowtis::ImageService> m_lowtisServiceGray;
 #endif
 
 };

@@ -55,6 +55,7 @@
 #include "misc/miscutility.h"
 #include "zmeshfactory.h"
 #include "zflyembodyannotation.h"
+#include "flyemdatareader.h"
 
 void flyem::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -859,6 +860,7 @@ void flyem::Decorate3dBodyWindow(
   }
 }
 
+#if 0
 void flyem::Decorate3dBodyWindowRoi(
     Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
 {
@@ -887,7 +889,9 @@ void flyem::Decorate3dBodyWindowRoi(
     }
   }
 }
+#endif
 
+#if 0
 void flyem::Decorate3dBodyWindowRoiCube(
     Z3DWindow *window, const ZDvidInfo &/*dvidInfo*/, const ZDvidTarget &dvidTarget)
 {
@@ -912,75 +916,38 @@ void flyem::Decorate3dBodyWindowRoiCube(
         }
 */
 //    if (!dvidTarget.getRoiName().empty()) {
-      ZDvidReader reader;
-      if (reader.open(dvidTarget)) {
+//      ZDvidReader reader;
+//      if (reader.open(dvidTarget)) {
 
           // test
-          ZJsonObject meta = reader.readInfo();
-//          std::vector<std::string> keys = meta.getAllKey();
+//          ZJsonObject meta = reader.readInfo();
+    ZJsonObject meta = FlyEmDataReader::ReadInfo(dvidTarget);
 
-//          for(int i=0; i<keys.size(); i++)
-//          {
-//              qDebug()<<keys.at(i);
-//          }
-//          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+    ZJsonValue datains = meta.value("DataInstances");
+    qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
 
+    if(datains.isObject()) {
+      ZJsonObject insList(datains);
+      std::vector<std::string> keys = insList.getAllKey();
 
-          ZJsonValue datains = meta.value("DataInstances");
-          qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
-
-          if(datains.isObject())
-          {
-              ZJsonObject insList(datains);
-              std::vector<std::string> keys = insList.getAllKey();
-
-              for(size_t i=0; i<keys.size(); i++)
-              {
-                  //qDebug()<<keys.at(i);
+      for(size_t i=0; i<keys.size(); i++)
+      {
+        //qDebug()<<keys.at(i);
 
 
-                  std::size_t found = keys.at(i).find("roi");
+        std::size_t found = keys.at(i).find("roi");
 
-                  if(found!=std::string::npos)
-                  {
-                    qDebug()<<" rois: "<<keys.at(i);
-                  }
-
-
-//                  ZJsonObject submeta(insList.value(keys.at(i).c_str()));
-//                  std::vector<std::string> subkeys = submeta.getAllKey();
-
-//                  for(int j=0; j<subkeys.size(); j++)
-//                  {
-//                      qDebug()<<" ... "<<subkeys.at(i);
-//                  }
-
-
-
-
-
-
-              }
-              qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
-          }
-
-
-
-
-
-
-//       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
-//        if (!roi.isEmpty()) {
-//          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
-//          cubes->setSource(
-//                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
-//                  dvidTarget.getRoiName()));
-//          window->getDocument()->addObject(cubes, true);
-//        }
+        if(found!=std::string::npos)
+        {
+          qDebug()<<" rois: "<<keys.at(i);
+        }
       }
+      qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
     }
+  }
 //  }
 }
+#endif
 
 void flyem::SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,

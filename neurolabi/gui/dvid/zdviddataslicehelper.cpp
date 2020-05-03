@@ -3,6 +3,7 @@
 #include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "zarbsliceviewparam.h"
+#include "zdvidglobal.h"
 
 ZDvidDataSliceHelper::ZDvidDataSliceHelper(ZDvidData::ERole role) :
   m_dataRole(role)
@@ -30,11 +31,15 @@ void ZDvidDataSliceHelper::updateMaxZoom()
 {
   switch (m_dataRole) {
   case ZDvidData::ERole::GRAYSCALE:
-    m_reader.updateMaxGrayscaleZoom();
+    m_reader.updateMaxGrayscaleZoom(
+          ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(m_reader.getDvidTarget()));
+//    m_reader.updateMaxGrayscaleZoom();
     break;
   case ZDvidData::ERole::SEGMENTATION:
   case ZDvidData::ERole::SPARSEVOL:
-    m_reader.updateMaxLabelZoom();
+    m_reader.updateMaxLabelZoom(
+          ZDvidGlobal::Memo::ReadMaxLabelZoom(m_reader.getDvidTarget()));
+//    m_reader.updateMaxLabelZoom();
     break;
   default:
     break;

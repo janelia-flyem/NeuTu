@@ -137,7 +137,7 @@
 
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/synapseimportdialog.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/zsegmentationprojectdialog.h"
 #include "dialogs/zsubtractswcsdialog.h"
 #include "dialogs/zautotracedialog.h"

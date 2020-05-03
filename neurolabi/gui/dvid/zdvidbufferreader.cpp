@@ -58,7 +58,7 @@ void ZDvidBufferReader::_init()
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 void ZDvidBufferReader::setService(
-    const ZSharedPointer<libdvid::DVIDNodeService> &service)
+    const std::shared_ptr<libdvid::DVIDNodeService> &service)
 {
   m_service = service;
 }
@@ -138,7 +138,7 @@ void ZDvidBufferReader::read(
         libdvid::DVIDNodeService service(
               target.getAddressWithPort(), target.getUuid());
 #endif
-        ZSharedPointer<libdvid::DVIDNodeService> service =
+        std::shared_ptr<libdvid::DVIDNodeService> service =
             dvid::MakeDvidNodeService(target);
         data = service->custom_request(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
@@ -226,7 +226,7 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
         data = m_service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
-        ZSharedPointer<libdvid::DVIDNodeService> service =
+        std::shared_ptr<libdvid::DVIDNodeService> service =
             dvid::MakeDvidNodeService(target);
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);

@@ -171,79 +171,79 @@ bool dvid::HasHead(const std::string &url)
   return (statusCode == 200);
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
   ZINFO << "Make DVIDNodeService: " + web_addr;
 
-  return ZSharedPointer<libdvid::DVIDNodeService>(
+  return std::shared_ptr<libdvid::DVIDNodeService>(
         new libdvid::DVIDNodeService(
           web_addr, uuid, GET_FLYEM_CONFIG.getUserName(),
           NeutubeConfig::GetSoftwareName()));
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const ZDvidTarget &target)
 {
   return MakeDvidNodeService(target.getRootUrl(),
                              target.getUuid());
 }
 
-ZSharedPointer<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const libdvid::DVIDNodeService *service)
 {
   if (service != NULL) {
     ZINFO << "Copy DVIDNodeService";
-    return ZSharedPointer<libdvid::DVIDNodeService>(
+    return std::shared_ptr<libdvid::DVIDNodeService>(
           new libdvid::DVIDNodeService(*service));
   }
 
-  return ZSharedPointer<libdvid::DVIDNodeService>();
+  return std::shared_ptr<libdvid::DVIDNodeService>();
 }
 
-ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address, const std::string &user, const std::string &app)
 {
   try {
     ZINFO << "Make DVIDConnection: " + address;
-    return ZSharedPointer<libdvid::DVIDConnection>(
+    return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(address, user, app));
   } catch (std::exception &e) {
     LWARN() << e.what();
-    return ZSharedPointer<libdvid::DVIDConnection>();
+    return std::shared_ptr<libdvid::DVIDConnection>();
   }
 }
 
-ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address)
 {
   try {
     ZINFO << "Make DVIDConnection: " + address;
-    return ZSharedPointer<libdvid::DVIDConnection>(
+    return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(
             address, GET_FLYEM_CONFIG.getUserName(),
             NeutubeConfig::GetSoftwareName()));
   } catch (std::exception &e) {
     LWARN() << e.what();
-    return ZSharedPointer<libdvid::DVIDConnection>();
+    return std::shared_ptr<libdvid::DVIDConnection>();
   }
 }
 
-ZSharedPointer<libdvid::DVIDConnection> dvid::MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const libdvid::DVIDConnection *conn)
 {
   if (conn != NULL) {
     ZINFO << "Copy DVIDConnection";
-    return ZSharedPointer<libdvid::DVIDConnection>(
+    return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(*conn));
   }
 
-  return ZSharedPointer<libdvid::DVIDConnection>();
+  return std::shared_ptr<libdvid::DVIDConnection>();
 }
 
 
 #if defined(_ENABLE_LOWTIS_)
-ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &target)
+std::shared_ptr<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &target)
 {
   ZINFO << "Make lowtis::ImageService: " + target.getSourceString();
 
@@ -254,7 +254,7 @@ ZSharedPointer<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &
   config.datatypename = target.getSegmentationName();
 
 
-  return ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
+  return std::shared_ptr<lowtis::ImageService>(new lowtis::ImageService(config));
 }
 
 lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)

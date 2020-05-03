@@ -27,6 +27,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidversiondag.h"
 
 #include "zdvidutil.h"
 
@@ -344,68 +345,6 @@ bool FlyEmDataReader::IsSkeletonSynced(
   return true;
 }
 
-ZDvidInfo FlyEmDataReader::ReadDataInfo(
-    const ZDvidTarget &target, const std::string &dataName)
-{
-  std::string url = ZDvidUrl(target).getInfoUrl(dataName);
-
-  ZJsonObject obj = ZGlobal::GetInstance().readJsonObjectFromUrl(url);
-
-  ZDvidInfo dvidInfo;
-
-  if (!obj.isEmpty()) {
-    dvidInfo.set(obj);
-    dvidInfo.setDvidNode(
-          target.getRootUrl(), target.getPort(), target.getUuid());
-  }
-
-  return dvidInfo;
-}
-
-dvid::ENodeStatus FlyEmDataReader::ReadNodeStatus(const ZDvidTarget &target)
-{
-  dvid::ENodeStatus status = dvid::ENodeStatus::NORMAL;
-
-  ZDvidUrl url(target);
-  std::string repoUrl = url.getRepoUrl() + "/info";
-  if (repoUrl.empty()) {
-    status = dvid::ENodeStatus::INVALID;
-  } else {
-    int statusCode = 0;
-    dvid::MakeHeadRequest(repoUrl, statusCode);
-    if (statusCode != 200) {
-      status = dvid::ENodeStatus::OFFLINE;
-    } else {
-      ZJsonObject obj =
-          ZGlobal::GetInstance().readJsonObjectFromUrl(url.getCommitInfoUrl());
-      if (obj.hasKey("Locked")) {
-        bool locked = ZJsonParser::booleanValue(obj["Locked"]);
-        if (locked) {
-          status = dvid::ENodeStatus::LOCKED;
-        }
-      }
-    }
-  }
-
-  return status;
-}
-
-ZJsonObject FlyEmDataReader::ReadInfo(const ZDvidTarget &target)
-{
-  ZDvidUrl url(target);
-
-  return ZGlobal::GetInstance().readJsonObjectFromUrl(url.getInfoUrl());
-}
-
-ZDvidInfo FlyEmDataReader::ReadGrayscaleInfo(const ZDvidTarget &target)
-{
-  return ReadDataInfo(target, target.getGrayScaleName());
-}
-
-ZDvidInfo FlyEmDataReader::ReadSegmentationInfo(const ZDvidTarget &target)
-{
-  return ReadDataInfo(target, target.getSegmentationName());
-}
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

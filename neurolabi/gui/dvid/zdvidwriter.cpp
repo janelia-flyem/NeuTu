@@ -58,6 +58,7 @@ void ZDvidWriter::init()
   m_statusErrorMessage.clear();
 }
 
+/*
 bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -74,6 +75,7 @@ bool ZDvidWriter::startService()
 
   return true;
 }
+*/
 
 bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
@@ -95,9 +97,12 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   std::cout << "Opening dvid writer." << std::endl;
 #endif
 
-  m_reader.open(target);
+  bool succ = m_reader.open(target);
 
-  return startService();
+  m_service = m_reader.getService();
+  m_connection = m_reader.getConnection();
+
+  return succ;
 }
 
 bool ZDvidWriter::openRaw(const ZDvidTarget &target)
@@ -106,9 +111,14 @@ bool ZDvidWriter::openRaw(const ZDvidTarget &target)
     return false;
   }
 
-  m_reader.openRaw(target);
+  bool succ = m_reader.openRaw(target);
 
-  return startService();
+  m_service = m_reader.getService();
+  m_connection = m_reader.getConnection();
+
+  return succ;
+
+//  return startService();
 }
 
 void ZDvidWriter::clear()

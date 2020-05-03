@@ -322,7 +322,7 @@ private:
 
   void parseStandardOutput();
   void init();
-  bool startService();
+//  bool startService();
 
 private:
 //  QEventLoop *m_eventLoop;
