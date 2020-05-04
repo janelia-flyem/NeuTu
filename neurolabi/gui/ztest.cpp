@@ -323,6 +323,7 @@
 #include "logging/utilities.h"
 #include "zsysteminfo.h"
 #include "neulib/core/utilities.h"
+#include "bigdata/zblockgrid.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -31132,7 +31133,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidVersionDag dag = reader->readVersionDag();
   dag.print();
@@ -31143,6 +31144,22 @@ void ZTest::test(MainWindow *host)
             << std::endl;
   std::cout << ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget())
             << std::endl;
+#endif
+
+#if 1
+  ZBlockGrid grid;
+  grid.setGridSize(3, 3, 3);
+  grid.setBlockSize(32, 32, 32);
+
+  ZAffineRect rect;
+  rect.setCenter(16, 16, 16 + 32);
+  rect.setSize(100, 100);
+  rect.setPlane(ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+
+  grid.forEachIntersectedBlock(rect, [&](int i, int j, int k) {
+    ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
+    std::cout << box.toString() << std::endl;
+  });
 #endif
 
   std::cout << "Done." << std::endl;

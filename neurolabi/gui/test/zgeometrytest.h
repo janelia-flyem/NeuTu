@@ -8,6 +8,7 @@
 #include "geometry/zaffineplane.h"
 #include "geometry/zlinesegment.h"
 #include "geometry/zcuboid.h"
+#include "geometry/zintpoint.h"
 
 #ifdef _USE_GTEST_
 TEST(ZGeometry, Util)
@@ -316,6 +317,69 @@ TEST(ZGeometry, Intersect)
     ASSERT_TRUE(zgeom::Intersects(rect, box));
     rect.setCenter(0, -20, -30);
     ASSERT_TRUE(zgeom::Intersects(rect, box));
+
+  }
+}
+
+TEST(ZGeometry, Raster)
+{
+  {
+    std::vector<ZIntPoint> nbrs;
+    zgeom::raster::ForEachNeighbor(1, 2, 3, 1, 1, 1, [&](int x, int y, int z) {
+      nbrs.push_back(ZIntPoint(x, y, z));
+    });
+
+    ASSERT_EQ(26, nbrs.size());
+    ASSERT_EQ(ZIntPoint(0, 1, 2), nbrs[0]);
+    ASSERT_EQ(ZIntPoint(2, 3, 4), nbrs[25]);
+  }
+
+  {
+    std::vector<ZIntPoint> nbrs;
+    zgeom::raster::ForEachNeighbor<1>(1, 2, 3, [&](int x, int y, int z) {
+      nbrs.push_back(ZIntPoint(x, y, z));
+    });
+
+    ASSERT_EQ(6, nbrs.size());
+    ASSERT_EQ(ZIntPoint(0, 2, 3), nbrs[0]);
+    ASSERT_EQ(ZIntPoint(2, 2, 3), nbrs[1]);
+  }
+
+  {
+    std::vector<ZIntPoint> nbrs;
+    zgeom::raster::ForEachNeighbor<3>(0, 0, 0, [&](int x, int y, int z) {
+      nbrs.push_back(ZIntPoint(x, y, z));
+    });
+
+    ASSERT_EQ(26, nbrs.size());
+    ASSERT_EQ(ZIntPoint(-1, 0, 0), nbrs[0]);
+    ASSERT_EQ(ZIntPoint(1, 0, 0), nbrs[1]);
+    ASSERT_EQ(ZIntPoint(0, -1, 0), nbrs[2]);
+    ASSERT_EQ(ZIntPoint(0, 1, 0), nbrs[3]);
+    ASSERT_EQ(ZIntPoint(0, 0, -1), nbrs[4]);
+    ASSERT_EQ(ZIntPoint(0, 0, 1), nbrs[5]);
+
+    ASSERT_EQ(ZIntPoint(-1, -1, 0), nbrs[6]);
+    ASSERT_EQ(ZIntPoint(1, -1, 0), nbrs[7]);
+    ASSERT_EQ(ZIntPoint(-1, 1, 0), nbrs[8]);
+    ASSERT_EQ(ZIntPoint(1, 1, 0), nbrs[9]);
+    ASSERT_EQ(ZIntPoint(-1, 0, -1), nbrs[10]);
+    ASSERT_EQ(ZIntPoint(1, 0, -1), nbrs[11]);
+    ASSERT_EQ(ZIntPoint(-1, 0, 1), nbrs[12]);
+    ASSERT_EQ(ZIntPoint(1, 0, 1), nbrs[13]);
+    ASSERT_EQ(ZIntPoint(0, -1, -1), nbrs[14]);
+    ASSERT_EQ(ZIntPoint(0, 1, -1), nbrs[15]);
+    ASSERT_EQ(ZIntPoint(0, -1, 1), nbrs[16]);
+    ASSERT_EQ(ZIntPoint(0, 1, 1), nbrs[17]);
+
+    ASSERT_EQ(ZIntPoint(-1, -1, -1), nbrs[18]);
+    ASSERT_EQ(ZIntPoint(1, -1, -1), nbrs[19]);
+    ASSERT_EQ(ZIntPoint(- 1, 1, -1), nbrs[20]);
+    ASSERT_EQ(ZIntPoint(1, 1, -1), nbrs[21]);
+    ASSERT_EQ(ZIntPoint(-1, -1, 1), nbrs[22]);
+    ASSERT_EQ(ZIntPoint(1, -1, 1), nbrs[23]);
+    ASSERT_EQ(ZIntPoint(-1, 1, 1), nbrs[24]);
+    ASSERT_EQ(ZIntPoint(1, 1, 1), nbrs[25]);
 
   }
 }

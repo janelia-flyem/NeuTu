@@ -5,7 +5,7 @@
 #include "zqtheader.h"
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
-#include "geometry/zaffineplane.h"
+#include "geometry/zaffinerect.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -85,6 +85,7 @@ public:
     DVID_ANNOTATION,
     FLYEM_TODO_ITEM,
     FLYEM_TODO_LIST,
+    FLYEM_TODO_ENSEMBLE,
     CROSS_HAIR,
     SEGMENTATION_ENCODER
   };
@@ -177,7 +178,7 @@ public:
 
   struct DisplayConfig {
      neutu::EAxis sliceAxis = neutu::EAxis::Z;
-     ZAffinePlane cutPlane;
+     ZAffineRect cutPlane;
      int cutSlice = 0;
      EDisplayStyle style = EDisplayStyle::SOLID;
      EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;

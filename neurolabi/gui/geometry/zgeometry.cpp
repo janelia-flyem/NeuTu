@@ -471,3 +471,71 @@ bool zgeom::Intersects(const ZAffineRect &rect, const ZCuboid &box)
 
   return false;
 }
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZIntCuboid &box)
+{
+  return Intersects(rect, ZCuboid::FromIntCuboid(box));
+}
+
+void zgeom::raster::ForEachNeighbor(
+    int x, int y, int z, int nsx, int nsy, int nsz,
+    std::function<void(int,int,int)> f)
+{
+  for (int k = -nsz; k <= nsz; ++k) {
+    for (int j = -nsy; j <= nsy; ++j) {
+      for (int i = -nsx; i <= nsx; ++i) {
+        if (i != 0 || j != 0 || k != 0) {
+          f(x + i, y + j, z + k);
+        }
+      }
+    }
+  }
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  f(x - 1, y, z);
+  f(x + 1, y, z);
+  f(x, y - 1, z);
+  f(x, y + 1, z);
+  f(x, y, z - 1);
+  f(x, y, z + 1);
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  ForEachNeighbor<1>(x, y, z, f);
+
+  f(x - 1, y - 1, z);
+  f(x + 1, y - 1, z);
+  f(x - 1, y + 1, z);
+  f(x + 1, y + 1, z);
+  f(x - 1, y, z -1);
+  f(x + 1, y, z - 1);
+  f(x - 1, y, z + 1);
+  f(x + 1, y, z + 1);
+  f(x, y - 1, z - 1);
+  f(x, y + 1, z - 1);
+  f(x, y - 1, z + 1);
+  f(x, y + 1, z + 1);
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  ForEachNeighbor<2>(x, y, z, f);
+
+  f(x - 1, y - 1, z - 1);
+  f(x + 1, y - 1, z - 1);
+  f(x - 1, y + 1, z - 1);
+  f(x + 1, y + 1, z - 1);
+  f(x - 1, y - 1, z + 1);
+  f(x + 1, y - 1, z + 1);
+  f(x - 1, y + 1, z + 1);
+  f(x + 1, y + 1, z + 1);
+}

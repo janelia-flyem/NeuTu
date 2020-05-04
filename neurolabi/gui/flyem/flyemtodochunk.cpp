@@ -2,6 +2,8 @@
 
 #include "neulib/core/stringbuilder.h"
 
+#include "geometry/zintpoint.h"
+
 FlyEmTodoChunk::FlyEmTodoChunk()
 {
 
@@ -21,6 +23,11 @@ std::string FlyEmTodoChunk::GetItemKey(int x, int y, int z)
 {
   return neulib::StringBuilder("").
       append(x).append("_").append(y).append("_").append(z);
+}
+
+std::string FlyEmTodoChunk::GetItemKey(const ZIntPoint &pos)
+{
+  return GetItemKey(pos.getX(), pos.getY(), pos.getZ());
 }
 
 bool FlyEmTodoChunk::hasItem(int x, int y, int z) const
@@ -46,4 +53,25 @@ std::vector<ZFlyEmToDoItem> FlyEmTodoChunk::getItemList() const
   }
 
   return itemList;
+}
+
+void FlyEmTodoChunk::forEachItem(std::function<void (const ZFlyEmToDoItem &)> f)
+{
+  for (auto item : m_itemMap) {
+    f(item.second);
+  }
+}
+
+void FlyEmTodoChunk::addItem(const ZFlyEmToDoItem &item)
+{
+  if (item.isValid()) {
+    m_itemMap[GetItemKey(item.getPosition())] = item;
+  }
+}
+
+void FlyEmTodoChunk::addItem(const std::vector<ZFlyEmToDoItem> &itemList)
+{
+  for (const auto &item : itemList) {
+    addItem(item);
+  }
 }

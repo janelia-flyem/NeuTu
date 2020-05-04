@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <utility>
+#include <functional>
+#include <cmath>
 
 #include "zgeo3dtransform.h"
 #include "zgeo3dscalarfield.h"
@@ -61,8 +63,44 @@ ZPoint ComputeIntersectionPoint(
 bool Intersects(
     const ZAffineRect &rect, double x, double y, double z, double r);
 bool Intersects(const ZAffineRect &rect, const ZCuboid &box);
+bool Intersects(const ZAffineRect &rect, const ZIntCuboid &box);
 bool Intersects(const ZAffineRect &rect, const ZLineSegment &seg);
 bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
+
+namespace raster {
+
+void ForEachNeighbor(
+    int x, int y, int z, int nsx, int nsy, int nsz,
+    std::function<void(int,int,int)> f);
+
+template<int N>
+void ForEachNeighbor(int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+}
+
 }
 
 

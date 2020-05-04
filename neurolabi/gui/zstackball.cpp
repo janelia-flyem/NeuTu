@@ -131,7 +131,7 @@ void ZStackBall::display(
 #if _QT_GUI_USED_
   if (config.sliceAxis == neutu::EAxis::ARB) {
     ZStackBall alignedBall = *this;
-    alignedBall.setCenter(config.cutPlane.align(getCenter()));
+    alignedBall.setCenter(config.cutPlane.getAffinePlane().align(getCenter()));
     DisplayConfig newConfig = config;
     newConfig.sliceAxis = neutu::EAxis::Z;
     alignedBall.display(painter, newConfig);

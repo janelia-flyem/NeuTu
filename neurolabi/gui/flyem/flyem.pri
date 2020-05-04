@@ -26,6 +26,8 @@ HEADERS += \
     $$PWD/flyemsplitcontrolform.h \
     $$PWD/flyemtodoblockgrid.h \
     $$PWD/flyemtodochunk.h \
+    $$PWD/flyemtododvidsource.h \
+    $$PWD/flyemtodoensemble.h \
     $$PWD/flyemtodosource.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
@@ -154,6 +156,8 @@ SOURCES += \
     $$PWD/flyemsplitcontrolform.cpp \
     $$PWD/flyemtodoblockgrid.cpp \
     $$PWD/flyemtodochunk.cpp \
+    $$PWD/flyemtododvidsource.cpp \
+    $$PWD/flyemtodoensemble.cpp \
     $$PWD/flyemtodosource.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \

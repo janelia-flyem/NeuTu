@@ -11,6 +11,7 @@
 class ZArbSliceViewParam;
 class ZJsonObject;
 class ZAffinePlane;
+class ZAffineRect;
 
 /*!
  * \brief The class of stack view parameter
@@ -104,6 +105,7 @@ public:
   void moveSlice(int step);
 
   ZAffinePlane getArbSlicePlane() const;
+  ZAffineRect getSliceRect() const;
 
   bool onSamePlane(const ZStackViewParam &param) const;
 

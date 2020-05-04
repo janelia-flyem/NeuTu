@@ -5,6 +5,8 @@
 
 #include "geometry/zgeometry.h"
 #include "geometry/zaffineplane.h"
+#include "geometry/zaffinerect.h"
+
 #include "zarbsliceviewparam.h"
 #include "zjsonobject.h"
 
@@ -265,6 +267,23 @@ void ZStackViewParam::moveSlice(int step)
     ZPoint dp = m_v1.cross(m_v2) * step;
     m_center += dp.toIntPoint();
   }
+}
+
+ZAffineRect ZStackViewParam::getSliceRect() const
+{
+  ZAffinePlane plane = getArbSlicePlane();
+  ZAffineRect rect;
+  rect.setPlane(plane.getV1(), plane.getV2());
+  ZIntPoint center = m_center;
+  QRect viewPort = getViewPort();
+  if (m_sliceAxis != neutu::EAxis::ARB) {
+    center.set(viewPort.center().x(), viewPort.center().y(), m_z);
+    center.shiftSliceAxis(m_sliceAxis);
+  }
+  rect.setCenter(center.toPoint());
+  rect.setSize(viewPort.width(), viewPort.height());
+
+  return rect;
 }
 
 ZAffinePlane ZStackViewParam::getArbSlicePlane() const
