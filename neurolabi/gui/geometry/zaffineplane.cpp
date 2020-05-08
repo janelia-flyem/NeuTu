@@ -7,6 +7,12 @@ ZAffinePlane::ZAffinePlane()
 
 }
 
+ZAffinePlane::ZAffinePlane(
+    const ZPoint &offset, const ZPoint &v1, const ZPoint &v2)
+{
+  set(offset, v1, v2);
+}
+
 ZPoint ZAffinePlane::getV1() const
 {
   return m_plane.getV1();
@@ -58,6 +64,11 @@ void ZAffinePlane::translate(const ZPoint &dv)
   m_offset.translate(dv);
 }
 
+void ZAffinePlane::translateDepth(double d)
+{
+  translate(getNormal() * d);
+}
+
 double ZAffinePlane::computeSignedDistance(const ZPoint &pt) const
 {
   ZPoint newPt = pt - m_offset;
@@ -93,6 +104,12 @@ std::string ZAffinePlane::toString() const
   std::ostringstream stream;
   stream << *this;
   return stream.str();
+}
+
+bool ZAffinePlane::approxEquals(const ZAffinePlane &plane) const
+{
+  return m_plane.approxEquals(plane.m_plane) &&
+      m_offset.approxEquals(plane.m_offset);
 }
 
 std::ostream& operator<<(std::ostream& stream, const ZAffinePlane &p)

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "geometry/zaffineplane.h"
+#include "geometry/zaffinerect.h"
 
 ZArbSliceViewParam::ZArbSliceViewParam()
 {
@@ -113,6 +114,14 @@ ZAffinePlane ZArbSliceViewParam::getAffinePlane() const
   ap.setPlane(getPlaneV1(), getPlaneV2());
 
   return ap;
+}
+
+ZAffineRect ZArbSliceViewParam::getAffineRect() const
+{
+  ZAffineRect rect;
+  rect.set(getCenter().toPoint(), getPlaneV1(), getPlaneV2(), getWidth(), getHeight());
+
+  return rect;
 }
 
 void ZArbSliceViewParam::move(double dx, double dy, double dz)

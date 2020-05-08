@@ -42,8 +42,10 @@ void FlyEmTodoBlockGrid::setSource(std::shared_ptr<FlyEmTodoSource> source)
   m_source = source;
 }
 
+/*
 std::vector<ZFlyEmToDoItem> FlyEmTodoBlockGrid::getIntersectTodoList(
     const ZAffineRect &plane) const
 {
 
 }
+*/

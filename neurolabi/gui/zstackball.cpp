@@ -202,7 +202,61 @@ void ZStackBall::display(ZPainter &painter, int slice,
   }
   displayHelper(&painter, slice, style, sliceAxis);
 
-  m_prevDisplaySlice = slice;
+  setPrevZ(painter.getZ(slice));
+//  painter.setPen(oldPen);
+//  painter.setBrush(oldBrush);
+
+//  painter.restore();
+#endif
+}
+
+void ZStackBall::viewSpaceAlignedDisplay(
+    QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const
+{
+  if (!isVisible()) {
+    return;
+  }
+
+
+#if _QT_GUI_USED_
+  painter->save();
+
+  QPen pen(m_color, getPenWidth());
+  pen.setCosmetic(m_usingCosmeticPen);
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_DASH_PATTERN)) {
+    pen.setStyle(Qt::DotLine);
+  }
+
+  painter->setPen(pen);
+
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL)) {
+    QRadialGradient gradient(50, 50, 50, 50, 50);
+    gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
+    gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
+
+    /*
+    QBrush brush(gradient);
+    brush.setColor(m_color);
+    brush.setStyle(Qt::RadialGradientPattern);
+    painter.setBrush(brush);
+    */
+    painter->setBrush(m_color);
+    painter->setBrush(QBrush(m_color, Qt::RadialGradientPattern));
+  } else {
+    if (hasVisualEffect(neutu::display::Sphere::VE_NO_FILL)) {
+      painter->setBrush(Qt::NoBrush);
+    }
+  }
+
+  ZPainter zpainter;
+  zpainter.attachPainter(painter);
+  zpainter.setZOffset(config.z);
+  displayHelper(&zpainter, 0, config.style, neutu::EAxis::Z);
+  zpainter.detachPainter();
+
+  setPrevZ(config.z);
 
 //  painter.setPen(oldPen);
 //  painter.setBrush(oldBrush);
@@ -358,8 +412,8 @@ void ZStackBall::displayHelper(
     color.setAlphaF(alpha);
     pen.setColor(color);
     pen.setCosmetic(true);
-    if (!visible && slice >= 0 && m_prevDisplaySlice >= 0) {
-      double prevdc = fabs(painter->getZ(m_prevDisplaySlice) - shiftedCenter.z());
+    if (!visible && slice >= 0 && m_displayTrace.isValid) {
+      double prevdc = fabs(m_displayTrace.prevZ - shiftedCenter.z());
       double dc  = fabs(painter->getZ(slice) - shiftedCenter.z());
       if (prevdc > dc) {
         pen.setWidthF(pen.widthF() + 1.0);
@@ -414,6 +468,24 @@ void ZStackBall::displayHelper(
     painter->drawRect(rect);
   }
 #endif
+}
+
+ZStackBall* ZStackBall::aligned(
+    const ZAffinePlane &plane, neutu::EAxis sliceAxis) const
+{
+  ZStackBall *ball = new ZStackBall(*this);
+
+  if (sliceAxis != neutu::EAxis::Z) {
+    ZPoint newCenter = getCenter();
+    if (sliceAxis == neutu::EAxis::ARB) {
+      newCenter = plane.align(newCenter);
+    } else {
+      newCenter.shiftSliceAxis(sliceAxis);
+    }
+    ball->setCenter(newCenter);
+  }
+
+  return ball;
 }
 
 void ZStackBall::save(const char */*filePath*/)

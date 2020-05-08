@@ -247,14 +247,26 @@ double ZStackObject::getPenWidth() const
 void ZStackObject::display(ZPainter &painter, const DisplayConfig &config) const
 {
 #if defined(_QT_GUI_USED_)
-  int slice = config.cutSlice - painter.getZOffset();
-  display(painter, slice, config.style, config.sliceAxis);
+  int slice = config.getSlice(painter.getZOffset());
+  display(painter, slice, config.alignedConfig.style, config.sliceAxis);
 #endif
 }
 
 bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
 {
   return isVisible();
+}
+
+void ZStackObject::viewSpaceAlignedDisplay(
+      QPainter */*painter*/, const ViewSpaceAlignedDisplayConfig &/*config*/) const
+{
+
+}
+
+ZStackObject *ZStackObject::aligned(
+    const ZAffinePlane &/*plane*/, neutu::EAxis /*sliceAxis*/) const
+{
+  return nullptr;
 }
 
 bool ZStackObject::isSliceVisible(
@@ -410,3 +422,10 @@ bool ZStackObject::hasVisualEffect(neutu::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }
+
+void ZStackObject::setPrevZ(int z) const
+{
+  m_displayTrace.prevZ = z;
+  m_displayTrace.isValid = true;
+}
+

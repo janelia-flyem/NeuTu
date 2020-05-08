@@ -283,6 +283,7 @@ include(service/service.pri)
 include(logging/logging.pri)
 include(mvc/mvc.pri)
 include(vis3d.pri)
+include(vis2d/vis2d.pri)
 include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
@@ -316,8 +317,6 @@ HEADERS += mainwindow.h \
     protocols/protocolassignmenturl.h \
     dialogs/neuprintdatasetdialog.h \
     protocols/protocolchooseassignmentdialog.h \
-    dialogs/userfeedbackdialog.h \
-    dialogs/zsynapsepropertydialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -327,6 +326,8 @@ HEADERS += mainwindow.h \
     zinteractivecontext.h \
     ztraceproject.h \
     zpunctum.h \
+    dialogs/userfeedbackdialog.h \
+    dialogs/zsynapsepropertydialog.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
     dialogs/traceoutputdialog.h \
@@ -554,7 +555,6 @@ HEADERS += mainwindow.h \
     dvid/zdvidversiondag.h \
     dvid/zdvidversion.h \
     dvid/zdvidversionnode.h \
-    zsttransform.h \
     zpixmap.h \
     dvid/zdvidgrayslice.h \
     dvid/zdvidsparsestack.h \
@@ -621,20 +621,20 @@ HEADERS += mainwindow.h \
     zstackreader.h \
     dvid/zdvidpath.h \
     dialogs/zcontrastprotocaldialog.h \
-    dvid/zdvidsynapsecommand.h \
-    dvid/zdvidannotation.hpp \
     dialogs/zflyemroitooldialog.h \
     dvid/zdvidpatchdatafetcher.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
+    dvid/zdvidsynapsecommand.h \
+    dvid/zdvidannotation.hpp \
+    dvid/zdvidgrayslicescrollstrategy.h \
     zcubearraymovieactor.h \
     dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
     dvid/zdvidgrayscale.h \
     zscrollslicestrategy.h \
-    dvid/zdvidgrayslicescrollstrategy.h \
     zviewproj.h \
     dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
@@ -661,19 +661,19 @@ HEADERS += mainwindow.h \
     zmeshobjsmodel.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
-    dialogs/dvidbranchdialog.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
-    protocols/taskbodyhistory.h \
-    protocols/taskbodycleave.h \
     dialogs/zflyemproofsettingdialog.h \
+    dialogs/dvidbranchdialog.h \
     zstackdocptr.h \
     zstackdoc3dhelper.h \
     zstackobjectinfo.h \
@@ -690,8 +690,6 @@ HEADERS += mainwindow.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
-    data3d/zstackobjecthelper.h \
-    data3d/utilities.h \
     zmenuconfig.h \
     protocols/taskbodymerge.h \
     zobjsmodelmanager.h \
@@ -706,7 +704,6 @@ HEADERS += mainwindow.h \
     zstackblocksource.h \
     protocols/protocoltaskfactory.h \
     protocols/protocoltaskconfig.h \
-    data3d/zstackobjectconfig.h \
     protocols/taskfalsesplitreview.h \
     protocols/taskprotocoltaskfactory.h \
     dvid/zdvidblockstream.h \
@@ -1071,7 +1068,6 @@ SOURCES += main.cpp \
     zflyemcontrolform.cpp \
     dvid/zdvidtileensemble.cpp \
     dvid/zdvidlabelslice.cpp \
-    zsttransform.cpp \
     zpixmap.cpp \
     dvid/zdvidgrayslice.cpp \
     dvid/zdvidsparsestack.cpp \
@@ -1204,8 +1200,6 @@ SOURCES += main.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
     zstackdocnullmenufactory.cpp \
-    data3d/zstackobjecthelper.cpp \
-    data3d/utilities.cpp \
     zmenuconfig.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
@@ -1221,7 +1215,6 @@ SOURCES += main.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     protocols/taskmergereview.cpp \
     protocols/taskutils.cpp \
-    data3d/zstackobjectconfig.cpp \
     dvid/zdvidbodyhelper.cpp \
     dvid/zdviddataslicetaskfactory.cpp \
     dvid/zdviddataslicetask.cpp \

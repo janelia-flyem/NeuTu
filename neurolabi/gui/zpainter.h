@@ -11,7 +11,7 @@
 #endif
 
 #include "geometry/zpoint.h"
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 
 class ZIntPoint;
 class ZImage;
@@ -65,11 +65,13 @@ public:
   void setStackOffset(const ZPoint &offset);
   void setZOffset(int z);
 
-  inline int getZOffset() { return m_z; }
+  inline int getZOffset() const { return m_z; }
 
-  inline int getZ(int slice) {
+  inline int getZ(int slice) const {
     return getZOffset() + slice;
   }
+
+//  int getSlice(int z) const;
 
   void setPainted(bool painted) {
     m_isPainted = painted;

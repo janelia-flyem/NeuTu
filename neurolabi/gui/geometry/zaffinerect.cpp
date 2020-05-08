@@ -55,6 +55,11 @@ void ZAffineRect::setPlane(const ZPoint &v1, const ZPoint &v2)
   m_ap.setPlane(v1, v2);
 }
 
+void ZAffineRect::setPlane(const ZAffinePlane &plane)
+{
+  m_ap = plane;
+}
+
 void ZAffineRect::setSize(double width, double height)
 {
   m_width = width;

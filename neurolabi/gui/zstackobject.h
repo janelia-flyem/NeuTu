@@ -176,15 +176,43 @@ public:
       QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
+  struct ViewSpaceAlignedDisplayConfig {
+    int z = 0;
+    EDisplayStyle style = EDisplayStyle::SOLID;
+    EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;
+  };
+
   struct DisplayConfig {
      neutu::EAxis sliceAxis = neutu::EAxis::Z;
      ZAffineRect cutPlane;
-     int cutSlice = 0;
-     EDisplayStyle style = EDisplayStyle::SOLID;
-     EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;
+     ViewSpaceAlignedDisplayConfig alignedConfig;
+
+     int getZ() const {
+       return alignedConfig.z;
+     }
+
+     int getSlice(int z0) const {
+       return alignedConfig.sliceMode ==
+           EDisplaySliceMode::SINGLE ? (getZ() - z0) : -1;
+     }
+
+     EDisplayStyle getStyle() const {
+       return alignedConfig.style;
+     }
   };
 
   virtual void display(ZPainter &painter, const DisplayConfig &config) const;
+
+  virtual void viewSpaceAlignedDisplay(
+      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
+
+  /*!
+   * \brief Get an aligned object if possible.
+   *
+   * The caller is responsible to manage the memory of the returned pointer.
+   */
+  virtual ZStackObject* aligned(
+      const ZAffinePlane &plane, neutu::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -409,9 +437,18 @@ public:
   static T* CastVoidPointer(void *p);
 
 protected:
-  static double m_defaultPenWidth;
+  struct DisplayTrace {
+    int prevZ = 0;
+    bool isValid = false;
+  };
+  void setPrevZ(int z) const;
 
 protected:
+  static double m_defaultPenWidth;
+
+
+
+//protected:
   EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
   EDisplayStyle m_style = EDisplayStyle::SOLID;
   QColor m_color;
@@ -436,7 +473,8 @@ protected:
   std::vector<CallBack> m_selectionCallbacks;
   std::vector<CallBack> m_deselectionCallbacks;
 
-  mutable int m_prevDisplaySlice = -1;
+//  mutable int m_prevDisplaySlice = -1;
+  mutable DisplayTrace m_displayTrace;
 
   bool m_selected = false;
   bool m_isSelectable = true;

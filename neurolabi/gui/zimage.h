@@ -7,7 +7,7 @@
 #include "tz_image_lib_defs.h"
 #include "zglmutils.h"
 #include "geometry/zintpoint.h"
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 #include "neutube.h"
 #include "zcontrastprotocol.h"
 

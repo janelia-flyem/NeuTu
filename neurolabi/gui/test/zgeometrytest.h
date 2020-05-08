@@ -68,6 +68,9 @@ TEST(ZGeometry, ZPlane)
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     ASSERT_TRUE(plane.getNormal().approxEquals(ZPoint(0, 0, 1)));
 
+    ASSERT_TRUE(plane.approxEquals(ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0))));
+    ASSERT_FALSE(plane.approxEquals(ZPlane(ZPoint(0, 1, 0), ZPoint(1, 0, 0))));
+
 //    ASSERT_TRUE()
   }
 
@@ -137,6 +140,13 @@ TEST(ZGeometry, ZAffinePlane)
     ap2.set(ZPoint(1, 2, 3), ZPoint(0, 1, 0), ZPoint(0, 0, 1));
     ASSERT_TRUE(ap.onSamePlane(ap2));
 
+    ASSERT_TRUE(
+          ap2.approxEquals(
+            ZAffinePlane(ZPoint(1, 2, 3), ZPoint(0, 1, 0), ZPoint(0, 0, 1))));
+    ASSERT_FALSE(
+          ap2.approxEquals(
+            ZAffinePlane(ZPoint(1.1, 2, 3), ZPoint(0, 1, 0), ZPoint(0, 0, 1))));
+
     ZPoint pt = ap2.align(ZPoint(2, 4, 6));
     ASSERT_DOUBLE_EQ(2.0, pt.getX());
     ASSERT_DOUBLE_EQ(3.0, pt.getY());
@@ -149,6 +159,38 @@ TEST(ZGeometry, ZAffinePlane)
 
 TEST(ZGeometry, Intersect)
 {
+  {
+    ZPlane plane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+
+    ASSERT_DOUBLE_EQ(0.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 0), ZPoint(0, 0, 0)));
+    ASSERT_DOUBLE_EQ(0.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 0), ZPoint(0, 0, 1)));
+    ASSERT_DOUBLE_EQ(0.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 0), ZPoint(1, 1, 0)));
+    ASSERT_DOUBLE_EQ(1.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 1), ZPoint(0, 0, 0)));
+
+    ASSERT_DOUBLE_EQ(0.5, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, -1), ZPoint(0, 0, 1)));
+    ASSERT_DOUBLE_EQ(0.5, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, -1), ZPoint(10, 10, 1)));
+    ASSERT_DOUBLE_EQ(0.1, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, -1), ZPoint(0, 0, 9)));
+    ASSERT_DOUBLE_EQ(0.5, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 1), ZPoint(0, 0, -1)));
+    ASSERT_DOUBLE_EQ(0.5, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 1), ZPoint(10, 10, -1)));
+    ASSERT_DOUBLE_EQ(0.9, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 9), ZPoint(0, 0, -1)));
+    ASSERT_DOUBLE_EQ(2.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 2), ZPoint(0, 0, 1)));
+    ASSERT_DOUBLE_EQ(-1.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, 1), ZPoint(0, 0, 2)));
+    ASSERT_DOUBLE_EQ(-1.0, zgeom::ComputeIntersection(
+                       plane, ZPoint(0, 0, -1), ZPoint(0, 0, -2)));
+  }
+
   {
     ZAffineRect rect;
     rect.setCenter(ZPoint(0, 0, 0));

@@ -22,8 +22,10 @@ public:
 
   void setSource(std::shared_ptr<FlyEmTodoSource> source);
 
+  /*
   std::vector<ZFlyEmToDoItem> getIntersectTodoList(
       const ZAffineRect &plane) const;
+      */
 
 private:
   static std::string GetChunkKey(int i, int j, int k);

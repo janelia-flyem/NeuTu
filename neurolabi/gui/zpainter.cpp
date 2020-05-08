@@ -815,4 +815,11 @@ void ZPainter::setOpacity(double alpha)
 {
   getPainter()->setOpacity(alpha);
 }
+
+/*
+int ZPainter::getSlice(int z) const
+{
+  return z - getZOffset();
+}
+*/
 #endif

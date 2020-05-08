@@ -87,6 +87,8 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
     //  item.toJsonObject().print();
     ASSERT_EQ(neutu::EToDoAction::TO_MERGE, item.getAction());
 
+    ZFlyEmToDoItem item2(item);
+    ASSERT_EQ(neutu::EToDoAction::TO_MERGE, item2.getAction());
 
     std::string mergeTag = std::string(ZFlyEmToDoItem::KEY_ACTION) + ":"
         + ZFlyEmToDoItem::ACTION_MERGE_TAG;

@@ -269,6 +269,7 @@
 #include "zstackreader.h"
 
 #include "qt/network/znetworkutils.h"
+#include "qt/gui/utilities.h"
 #include "zdvidutil.h"
 #include "dvid/libdvidheader.h"
 #include "dvid/zdvidsparsestack.h"
@@ -349,6 +350,7 @@
 #include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemarbdoc.h"
+#include "vis2d/zslicepainter.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -31146,7 +31148,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1
+#if 0
   ZBlockGrid grid;
   grid.setGridSize(3, 3, 3);
   grid.setBlockSize(32, 32, 32);
@@ -31160,6 +31162,178 @@ void ZTest::test(MainWindow *host)
     ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
     std::cout << box.toString() << std::endl;
   });
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(8, 6, 1);
+  for (int j = 0; j < stack->height(); j++) {
+    for (int i = 0; i < stack->width(); i++) {
+      stack->setIntValue(i, j, 0, 0, (i % 2 == j % 2) ? 0 : 255);
+    }
+  }
+  stack->save(
+        GET_BENCHMARK_DIR + "/checkboard" +
+        std::to_string(stack->width()) + "x" +
+        std::to_string(stack->height()) + ".tif");
+#endif
+
+#if 1
+  ZStack *stack = ZStackFactory::MakeZeroStack(32, 16, 1);
+  for (int j = 0; j < stack->height(); j++) {
+    for (int i = 0; i < stack->width(); i++) {
+      stack->setIntValue(i, j, 0, 0, (i % 2 == j % 2) ? 0 : 255);
+    }
+  }
+
+  QImage image(
+        stack->array8(), stack->width(), stack->height(), stack->width(),
+        QImage::Format_Grayscale8);
+
+  QPixmap pixmap(QSize(800, 600));
+  pixmap.fill(Qt::gray);
+  QPainter painter(&pixmap);
+
+  double zoomRatio = std::min(
+        double(pixmap.width()) / image.width(),
+        double(pixmap.height()) / image.height());
+
+  double sourceX = image.width() / 2.0;
+  double sourceY = image.height() / 2.0;
+  double targetX = pixmap.width() / 2.0;
+  double targetY = pixmap.height() / 2.0;
+
+  double dX = targetX - sourceX * zoomRatio;
+  double dY = targetY - sourceY * zoomRatio;
+
+  ZViewPlaneTransform t;
+  t.set(dX, dY, zoomRatio);
+
+  ZSlice2dPainter slicePainter;
+  slicePainter.setViewPlaneTransform(t);
+  slicePainter.drawImage(&painter, image);
+
+  QPen pen(Qt::red);
+  pen.setCosmetic(true);
+  painter.setPen(pen);
+  slicePainter.drawPoint(&painter, 1.8, 1.8);
+  slicePainter.drawCircle(&painter, 1.8, 1.8, 1);
+  slicePainter.drawRect(&painter, 1.8, 1.8, 1);
+
+  ZSlice3dPainter s3Painter;
+  s3Painter.setViewPlaneTransform(t);
+  s3Painter.drawBall(&painter, 5, 6, 0.0, 3, 1.0, 1.0);
+  s3Painter.drawBall(&painter, 5, 6, 1.0, 3, 1.0, 1.0);
+  s3Painter.drawBall(&painter, 5, 6, 2.0, 3, 1.0, 0.0);
+  s3Painter.drawBall(&painter, 5, 6, 3.0, 3, 1.0, 1.0);
+
+  s3Painter.drawBall(&painter, 10, 6, 0.0, 3, 2.0, 1.0);
+  s3Painter.drawBall(&painter, 10, 6, 1.0, 3, 2.0, 1.0);
+  s3Painter.drawBall(&painter, 10, 6, 2.0, 3, 2.0, 1.0);
+  s3Painter.drawBall(&painter, 10, 6, 3.0, 3, 2.0, 1.0);
+  s3Painter.drawBall(&painter, 10, 6, 5.0, 3, 2.0, 0.5);
+
+  pen.setWidth(3);
+  painter.setPen(pen);
+
+  s3Painter.drawLine(
+        &painter, ZLineSegment(ZPoint(1, 1, 1), ZPoint(10, 10, -1)));
+
+  std::cout << painter.pen().isCosmetic() << std::endl;
+
+  neutu::SetPenColor(&painter, Qt::yellow);
+
+//  slicePainter.drawRect(&painter, 5, 6, 3);
+
+  s3Painter.drawBoundBox(&painter, 5, 6, 3, 1.0, 1.0);
+
+  neutu::SetPenColor(&painter, Qt::red);
+  s3Painter.setCutPlane(neutu::EAxis::X, 0);
+  s3Painter.drawLine(
+        &painter, ZLineSegment(ZPoint(-1, 2, 3), ZPoint(1, 11, 12)));
+
+
+  pixmap.save((GET_TEST_DATA_DIR + "/test.png").c_str());
+#endif
+
+#if 0
+//  ZStack stack;
+//  stack.load(GET_BENCHMARK_DIR + "/checkboard8x6.tif");
+
+  ZStack *stack = ZStackFactory::MakeZeroStack(32, 16, 1);
+  for (int j = 0; j < stack->height(); j++) {
+    for (int i = 0; i < stack->width(); i++) {
+      stack->setIntValue(i, j, 0, 0, (i % 2 == j % 2) ? 0 : 255);
+    }
+  }
+
+  QImage image(
+        stack->array8(), stack->width(), stack->height(), stack->width(),
+        QImage::Format_Grayscale8);
+
+//  image.save((GET_TEST_DATA_DIR + "/test.png").c_str());
+
+  QPixmap pixmap(QSize(800, 400));
+  pixmap.fill(Qt::gray);
+  QPainter painter(&pixmap);
+
+
+  double zoomRatio = std::min(
+        double(pixmap.width()) / image.width(),
+        double(pixmap.height()) / image.height());
+
+  double sourceX = image.width() / 2.0;
+  double sourceY = image.height() / 2.0;
+  double targetX = pixmap.width() / 2.0;
+  double targetY = pixmap.height() / 2.0;
+
+  double dX = targetX - sourceX * zoomRatio;
+  double dY = targetY - sourceY * zoomRatio;
+
+  ZViewProj viewProj;
+  viewProj.setOffset(0, 0);
+  viewProj.setZoom(zoomRatio);
+
+
+  QTransform transform = viewProj.getViewWidgetTransform();
+//  transform.setMatrix(zoomRatio, 0, 0, 0, zoomRatio, 0, dX, dY, 1);
+//  transform.scale(zoomRatio, zoomRatio);
+//  transform.translate(dX, dY);
+  painter.setTransform(transform);
+
+  painter.drawImage(0, 0, image);
+  painter.setRenderHint(QPainter::RenderHint::Antialiasing);
+  QPen pen(Qt::red);
+  pen.setWidthF(3.0);
+  pen.setCosmetic(true);
+  painter.setPen(pen);
+  painter.setBrush(Qt::transparent);
+//  painter.drawEllipse(QRectF(3, 3, 1, 1));
+
+  neutu::DrawCircle(painter, 3, 3, 2, neutu::PixelCentered(true));
+
+  neutu::DrawLine(painter, 3, 3, 4, 4, neutu::PixelCentered(true));
+
+  /*
+  tic();
+  for (int i = 0; i < 1000; ++i) {
+    painter.save();
+    QTransform transform;
+  //  transform.translate(10, 10);
+    transform.scale(100, 100);
+    painter.setTransform(transform);
+
+    painter.drawImage(0, 0, image);
+    painter.restore();
+
+//    painter.drawImage(
+//          QRectF(0, 0, 800, 600), image,
+//          QRectF(0, 0, 8, 6));
+  }
+  ptoc();
+  */
+
+  pixmap.save((GET_TEST_DATA_DIR + "/test.png").c_str());
+
 #endif
 
   std::cout << "Done." << std::endl;

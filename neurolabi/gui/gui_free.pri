@@ -7,6 +7,7 @@ include($${PWD}/swc/swc.pri)
 include($${PWD}/interface/interface.pri)
 include($${PWD}/filesystem/filesystem.pri)
 include($${PWD}/neurolabi/neurolabi.pri)
+include($${PWD}/data3d/data3d.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \

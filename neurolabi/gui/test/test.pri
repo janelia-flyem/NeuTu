@@ -15,6 +15,7 @@ HEADERS += \
     $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
 #    $$PWD/zstringbuildtest.h \
+  $$PWD/zworldviewtranformtest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \

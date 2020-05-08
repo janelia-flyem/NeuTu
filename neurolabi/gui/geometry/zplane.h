@@ -51,6 +51,8 @@ public:
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPlane &p);
 
+  bool approxEquals(const ZPlane &plane) const;
+
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);
 

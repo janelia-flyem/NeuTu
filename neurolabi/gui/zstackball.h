@@ -55,6 +55,9 @@ public:
                        EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
   void display(ZPainter &painter, const DisplayConfig &config) const override;
 
+  void viewSpaceAlignedDisplay(
+        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const override;
+
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
@@ -65,6 +68,9 @@ public:
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
   bool isSliceVisible(
         int z, neutu::EAxis axis, const ZAffinePlane &plane) const override;
+
+  ZStackBall *aligned(
+      const ZAffinePlane &plane, neutu::EAxis sliceAxis) const override;
 
   /*!
    * \brief Test if a circle is cut by a plane.

@@ -8,6 +8,7 @@ class ZPoint;
 class QPointF;
 class QPoint;
 class QRectF;
+class QTransform;
 
 /*!
  * \brief The ZStTransform class

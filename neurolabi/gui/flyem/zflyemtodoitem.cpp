@@ -8,6 +8,7 @@
 #include "zjsonparser.h"
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
+#include "common/math.h"
 
 const char* ZFlyEmToDoItem::KEY_ACTION = "action";
 const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
@@ -319,14 +320,163 @@ void ZFlyEmToDoItem::PaintOutline(
   }
 }
 
-void ZFlyEmToDoItem::display(ZPainter &painter, const DisplayConfig &config) const
+void ZFlyEmToDoItem::viewSpaceAlignedDisplayC(
+      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config,
+      const ZPoint &center) const
 {
+  bool visible = true;
+  int z = config.z;
 
+  if (config.sliceMode == EDisplaySliceMode::PROJECTION) {
+    visible = isProjectionVisible();
+  } else {
+    visible = isSliceVisible(z, neutu::EAxis::Z);
+  }
+
+  double radius = getRadius(z, neutu::EAxis::Z);
+
+//  ZIntPoint center = getPosition();
+
+  bool isFocused = (z == neutu::iround(center.getZ()));
+
+  double basePenWidth = getBasePenWidth();
+
+  QPen pen = painter->pen();
+  pen.setCosmetic(m_usingCosmeticPen);
+
+  if (visible) {
+    QColor color = getDisplayColor();
+    if (!isFocused) {
+      double alpha = radius / getRadius();
+      alpha *= alpha * 0.5;
+      alpha += 0.1;
+      color.setAlphaF(alpha * color.alphaF());
+    }
+
+    pen.setColor(color);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+
+    if (radius > 0.0) {
+      double x = center.getX();
+      double y = center.getY();
+      pen.setWidthF(basePenWidth * 0.5);
+      painter->setPen(pen);
+
+      std::vector<QPointF> vertexArray(5);
+      vertexArray[0] = QPointF(x - radius, y);
+      vertexArray[1] = QPointF(x, y - radius);
+      vertexArray[2] = QPointF(x + radius, y);
+      vertexArray[3] = QPointF(x, y + radius);
+      vertexArray[4] = vertexArray[0];
+
+      painter->drawLine(vertexArray[0], vertexArray[2]);
+      painter->drawLine(vertexArray[1], vertexArray[3]);
+
+      pen.setWidthF(basePenWidth);
+      painter->setPen(pen);
+
+      QList<std::vector<QPointF>> outline = makeOutlineDecoration(x, y, radius);
+      if (hasSomaAction()) {
+        outline.append(vertexArray);
+      }
+
+      for(const auto &polyline : outline) {
+        painter->drawPolyline(polyline.data(), polyline.size());
+      }
+
+      if (getPriority() > 0) {
+        painter->save();
+        double p = double(getPriority()) / 9;
+
+        painter->drawEllipse(
+              QPointF(x, y - ((0.5 - p) * radius)), radius * 0.05, radius * 0.05);
+
+        painter->restore();
+
+      }
+    }
+
+  }
+
+  bool drawingBoundBox = false;
+
+  if (isSelected()) {
+    drawingBoundBox = true;
+    QColor color;
+    color.setRgb(255, 255, 0);
+    pen.setColor(color);
+    pen.setCosmetic(true);
+  } else if (hasVisualEffect(neutu::display::Sphere::VE_BOUND_BOX)) {
+    drawingBoundBox = true;
+    pen.setStyle(Qt::SolidLine);
+    pen.setCosmetic(m_usingCosmeticPen);
+  }
+
+  if (drawingBoundBox) {
+    QRectF rect;
+    double halfSize = getRadius();
+    if (m_usingCosmeticPen) {
+      halfSize += 0.5;
+    }
+    rect.setLeft(center.getX() - halfSize);
+    rect.setTop(center.getY() - halfSize);
+    rect.setWidth(halfSize * 2);
+    rect.setHeight(halfSize * 2);
+
+    painter->setBrush(Qt::NoBrush);
+    pen.setWidthF(basePenWidth * 0.5);
+    if (visible) {
+      pen.setStyle(Qt::SolidLine);
+    } else {
+      pen.setStyle(Qt::DotLine);
+    }
+    painter->setPen(pen);
+    painter->drawRect(rect);
+  }
 }
 
-void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
+
+void ZFlyEmToDoItem::viewSpaceAlignedDisplay(
+      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const
+{
+  viewSpaceAlignedDisplayC(painter, config, getPosition().toPoint());
+}
+
+void ZFlyEmToDoItem::display(ZPainter &painter, const DisplayConfig &config) const
+{
+  if (config.sliceAxis == neutu::EAxis::ARB) {
+    ZIntPoint center = getPosition();
+    viewSpaceAlignedDisplayC(
+          painter.getPainter(), config.alignedConfig,
+          config.cutPlane.getAffinePlane().align(center.toPoint()));
+  } else {
+    display(painter, config.getSlice(painter.getZOffset()),
+            config.getStyle(), config.sliceAxis);
+  }
+}
+
+void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle option,
                            neutu::EAxis sliceAxis) const
 {
+  ViewSpaceAlignedDisplayConfig config;
+  config.z = painter.getZ(slice);
+  config.style = option;
+  config.sliceMode =
+      slice < 0 ? EDisplaySliceMode::PROJECTION : EDisplaySliceMode::SINGLE;
+
+  if (sliceAxis == neutu::EAxis::Z) {
+    viewSpaceAlignedDisplay(painter.getPainter(), config);
+  } else {
+    if (sliceAxis != neutu::EAxis::ARB) {
+      ZFlyEmToDoItem aligned(*this);
+      ZIntPoint center = getPosition();
+      center.shiftSliceAxis(sliceAxis);
+      aligned.viewSpaceAlignedDisplayC(
+            painter.getPainter(), config, center.toPoint());
+    }
+  }
+#if 0
   bool visible = true;
   int z = painter.getZ(slice);
 
@@ -459,6 +609,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     painter.setPen(pen);
     painter.drawRect(rect);
   }
+#endif
 }
 
 

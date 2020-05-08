@@ -17,6 +17,7 @@ class ZIntPoint;
 class ZCuboid;
 class ZPlane;
 class ZLineSegment;
+class ZAffinePlane;
 
 namespace zgeom
 {
@@ -51,14 +52,28 @@ int GetZoomLevel(int scale);
 void CopyToArray(const ZIntPoint &pt, int v[]);
 
 /*!
- * \brief Compute intersection point
+ * \brief Compute intersectin ratio for a line segment intersecting with a plane
+ */
+double ComputeIntersection(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd);
+
+double ComputeIntersection(const ZPlane &plane, const ZLineSegment &seg);
+double ComputeIntersection(const ZAffinePlane &plane, const ZLineSegment &seg);
+
+/*!
+ * \brief Compute intersection point between a plane and a line segment
  *
- * \param plane
- * \param seg
- * \return
+ * It returns an invalid point if there is no intersection
  */
 ZPoint ComputeIntersectionPoint(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd);
+
+ZPoint ComputeIntersectionPoint(
     const ZPlane &plane, const ZLineSegment &seg);
+
+
+ZPoint ComputeIntersectionPoint(
+    const ZAffinePlane &plane, const ZLineSegment &seg);
 
 bool Intersects(
     const ZAffineRect &rect, double x, double y, double z, double r);

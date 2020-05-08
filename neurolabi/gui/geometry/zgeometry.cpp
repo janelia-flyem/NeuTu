@@ -344,9 +344,51 @@ void zgeom::CopyToArray(const ZIntPoint &pt, int v[])
   v[2] = pt.getZ();
 }
 
+double zgeom::ComputeIntersection(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd)
+{
+  ZPoint v0 = plane.align(lineStart);
+  ZPoint v1 = plane.align(lineEnd);
+
+  double lambda = 0.0;
+  double sz = v0.getZ() - v1.getZ();
+  if (std::fabs(sz) > ZPoint::MIN_DIST) {
+    lambda = v0.getZ() / sz;
+  }
+
+  return lambda;
+}
+
+double zgeom::ComputeIntersection(const ZPlane &plane, const ZLineSegment &seg)
+{
+  return ComputeIntersection(plane, seg.getStartPoint(), seg.getEndPoint());
+}
+
+double zgeom::ComputeIntersection(const ZAffinePlane &plane, const ZLineSegment &seg)
+{
+  return ComputeIntersection(plane.getPlane(), seg - plane.getOffset());
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd)
+{
+  return ComputeIntersectionPoint(plane, ZLineSegment(lineStart, lineEnd));
+}
+
 ZPoint zgeom::ComputeIntersectionPoint(
     const ZPlane &plane, const ZLineSegment &seg)
 {
+  double lambda = ComputeIntersection(plane, seg);
+
+  ZPoint intersection;
+  intersection.invalidate();
+  if (lambda > 0.0 && lambda < 1.0) {
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+
+  /*
   ZPoint v0 = plane.align(seg.getStartPoint());
   ZPoint v1 = plane.align(seg.getEndPoint());
 
@@ -357,6 +399,25 @@ ZPoint zgeom::ComputeIntersectionPoint(
       (v0.getZ() < 0.0 && v1.getZ() > 0.0)) {
     double lambda = std::fabs(v0.getZ()) /
         (std::fabs(v0.getZ()) + std::fabs(v1.getZ()));
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+  */
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZAffinePlane &plane, const ZLineSegment &seg)
+{
+  ZPoint v0 = seg.getStartPoint();
+  ZPoint v1 = seg.getEndPoint();
+  v0 -= plane.getOffset();
+  v1 -= plane.getOffset();
+  double lambda = ComputeIntersection(plane.getPlane(), seg);
+
+  ZPoint intersection;
+  intersection.invalidate();
+  if (lambda > 0.0 && lambda < 1.0) {
     intersection = seg.getIntercept(lambda);
   }
 

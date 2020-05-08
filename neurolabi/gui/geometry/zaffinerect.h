@@ -34,6 +34,7 @@ public:
   void setCenter(const ZPoint &offset);
   void setCenter(double x, double y, double z);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
+  void setPlane(const ZAffinePlane &plane);
   void setSize(double width, double height);
 
   void translate(double dx, double dy, double dz);

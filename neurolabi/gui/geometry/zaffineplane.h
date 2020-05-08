@@ -13,6 +13,7 @@ class ZAffinePlane
 {
 public:
   ZAffinePlane();
+  ZAffinePlane(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2);
 
   void set(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
@@ -33,6 +34,7 @@ public:
 
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &dv);
+  void translateDepth(double d);
 
   /*!
    * \brief Align a point with the affine plane
@@ -45,6 +47,8 @@ public:
   friend std::ostream& operator<<(std::ostream& stream, const ZAffinePlane &p);
 
   std::string toString() const;
+
+  bool approxEquals(const ZAffinePlane &plane) const;
 
 private:
   ZPoint m_offset;

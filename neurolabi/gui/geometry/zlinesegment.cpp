@@ -156,6 +156,38 @@ bool ZLineSegment::approxEquals(const ZLineSegment &seg) const
       m_end.approxEquals(flipped.m_end);
 }
 
+bool ZLineSegment::operator==(const ZLineSegment &seg) const
+{
+  return (m_start == seg.m_start) && (m_end == seg.m_end);
+}
+
+ZLineSegment& ZLineSegment::operator -= (const ZPoint &pt)
+{
+  m_start -= pt;
+  m_end -= pt;
+
+  return *this;
+}
+
+ZLineSegment& ZLineSegment::operator += (const ZPoint &pt)
+{
+  m_start += pt;
+  m_end += pt;
+
+  return *this;
+}
+
+ZLineSegment operator+ (const ZLineSegment &seg, const ZPoint &pt)
+{
+  return ZLineSegment(seg.getStartPoint() + pt, seg.getEndPoint() + pt);
+}
+
+ZLineSegment operator- (const ZLineSegment &seg, const ZPoint &pt)
+{
+  return  ZLineSegment(seg.getStartPoint() - pt, seg.getEndPoint() - pt);
+}
+
+
 std::ostream& operator <<(std::ostream &stream, const ZLineSegment &seg)
 {
   stream << "[" << seg.getStartPoint() << ", " << seg.getEndPoint() << "]";

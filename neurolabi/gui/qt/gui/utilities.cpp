@@ -42,6 +42,7 @@ void neutu::SetHtmlIcon(QPushButton *button, const QString &text)
 }
 
 namespace {
+
 QSize get_canvas_size(const QStringList &text)
 {
   int maxLength = 0;
@@ -127,6 +128,106 @@ void neutu::DrawText(QPainter &painter, const QPoint &pos, const QStringList &te
       painter.restore();
     }
   }
+}
+
+namespace {
+
+inline void pixel_centered_adjust(const QPainter &painter, double &x, double &y)
+{
+  x += 0.5;
+  y += 0.5;
+  if (painter.pen().isCosmetic()) { //may have no effect due to subpixel limitation of qt painting
+    x -= 0.5 / painter.transform().m11();
+    y -= 0.5 / painter.transform().m22();
+  }
+}
+
+template<typename T, typename... Args>
+inline void pixel_centered_adjust(const QPainter &painter, T &x, T&y, Args&... args)
+{
+  pixel_centered_adjust(painter, x, y);
+  pixel_centered_adjust(painter, args...);
+}
+
+}
+
+void neutu::ReviseBrush(
+    QPainter *painter, std::function<void(QBrush &brush)> revise)
+{
+  if (painter) {
+    QBrush brush = painter->brush();
+    revise(brush);
+    painter->setBrush(brush);
+  }
+}
+
+void neutu::RevisePen(QPainter *painter, std::function<void(QPen &pen)> revise)
+{
+  if (painter) {
+    QPen pen = painter->pen();
+    revise(pen);
+    painter->setPen(pen);
+  }
+}
+
+void neutu::SetPenColor(QPainter *painter, QColor color)
+{
+  if (painter) {
+    QPen pen = painter->pen();
+    pen.setColor(color);
+    painter->setPen(pen);
+  }
+}
+
+void neutu::ScalePenAlpha(QPainter *painter, double s)
+{
+  RevisePen(painter, [&](QPen &pen) {
+    QColor color = pen.color();
+    color.setAlphaF(color.alphaF() * s);
+    pen.setColor(color);
+  });
+}
+
+void neutu::DrawPoint(
+    QPainter &painter, double x, double y, const PixelCentered p)
+{
+  if (p) {
+    pixel_centered_adjust(painter, x, y);
+  }
+
+  painter.drawPoint(QPointF(x, y));
+}
+
+void neutu::DrawCircle(
+    QPainter &painter, double cx, double cy, double r, const PixelCentered p)
+{
+  if (p) {
+    pixel_centered_adjust(painter, cx, cy);
+  }
+
+  painter.drawEllipse(QRectF(cx - r, cy - r, r + r, r + r));
+}
+
+void neutu::DrawLine(
+    QPainter &painter, double x0, double y0, double x1, double y1,
+    const PixelCentered p)
+{
+  if (p) {
+    pixel_centered_adjust(painter, x0, y0, x1, y1);
+  }
+
+  painter.drawLine(QPointF(x0, y0), QPointF(x1, y1));
+}
+
+void neutu::DrawRect(
+    QPainter &painter, double x0, double y0, double x1, double y1,
+    const PixelCentered p)
+{
+  if (p) {
+    pixel_centered_adjust(painter, x0, y0, x1, y1);
+  }
+
+  painter.drawRect(QRectF(QPointF(x0, y0), QPointF(x1, y1)));
 }
 
 void neutu::HideLayout(QLayout *layout, bool removing)

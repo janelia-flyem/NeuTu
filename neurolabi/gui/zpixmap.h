@@ -6,7 +6,7 @@
 #include <QBitmap>
 #include <QFutureWatcher>
 
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 #include "neutube.h"
 
 class ZStack;

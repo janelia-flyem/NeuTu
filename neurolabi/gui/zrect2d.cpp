@@ -8,7 +8,7 @@
 #include "common/math.h"
 #include "geometry/zgeometry.h"
 #include "zpainter.h"
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboid.h"
 

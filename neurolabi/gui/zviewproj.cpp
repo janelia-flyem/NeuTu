@@ -583,3 +583,12 @@ ZJsonObject ZViewProj::toJsonObject() const
 
   return jsonObj;
 }
+
+QTransform ZViewProj::getViewWidgetTransform() const
+{
+  QTransform transform;
+  transform.setMatrix(m_zoom, 0, 0, 0, m_zoom, 0, m_x0, m_y0, 1);
+
+  return transform;
+}
+
