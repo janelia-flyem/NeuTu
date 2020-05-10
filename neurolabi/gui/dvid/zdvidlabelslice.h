@@ -11,7 +11,6 @@
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
-#include "zobjectcolorscheme.h"
 #include "zimage.h"
 #include "zselector.h"
 
@@ -108,8 +107,8 @@ public:
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
 
-  const ZObjectColorScheme& getColorScheme() const {
-    return m_objColorSheme;
+  const std::shared_ptr<ZFlyEmBodyColorScheme> getColorScheme() const {
+    return m_defaultColorSheme;
   }
 
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
@@ -226,7 +225,7 @@ private:
 private:
   ZObject3dScanArray m_objArray;
 
-  ZObjectColorScheme m_objColorSheme;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_defaultColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 
   QVector<int> m_rgbTable;

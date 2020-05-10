@@ -1,4 +1,7 @@
 #include "zcolorscheme.h"
+
+#include <iostream>
+
 #include "zrandomgenerator.h"
 #include "tz_color.h"
 #include "zlabelcolortable.h"
@@ -91,11 +94,11 @@ void ZColorScheme::buildLabelColorTable()
 
 }
 
-void ZColorScheme::buildConvRandomColorTable(int n)
+void ZColorScheme::buildConvRandomColorTable(int n, int seed)
 {
-  m_colorTable.append(Qt::black);
+  m_colorTable.append(Qt::transparent);
 
-  ZRandomGenerator generator(42);
+  ZRandomGenerator generator(seed);
   const int maxInt = 20000;
   for (int i = 1; i < n; ++i) {
     int r = generator.rndint(maxInt)%255;
@@ -131,6 +134,11 @@ void ZColorScheme::buildConvRandomColorTable(int n)
                  color.value());
     m_colorTable.append(color);
   }
+}
+
+void ZColorScheme::buildConvRandomColorTable(int n)
+{
+  buildConvRandomColorTable(n, 42);
 }
 
 void ZColorScheme::buildPunctumColorTable()
@@ -171,4 +179,17 @@ void ZColorScheme::buildUniqueColorTable()
   m_colorTable.push_back(QColor(Qt::darkYellow));
   m_colorTable.push_back(QColor(Qt::white));
   m_colorTable.push_back(QColor(Qt::black));
+}
+
+void ZColorScheme::printColorTable() const
+{
+  if (m_colorTable.isEmpty()) {
+    std::cout << "Empty color table" << std::endl;
+  } else {
+    for (int i = 0; i < m_colorTable.size(); ++i) {
+      const QColor &color = m_colorTable[i];
+      std::cout << "i: (" << color.red() << ", " << color.green() << ", "
+                << color.blue() << ", " << color.alpha() << ")" << std::endl;
+    }
+  }
 }

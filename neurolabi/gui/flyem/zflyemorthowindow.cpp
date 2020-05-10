@@ -77,7 +77,7 @@ void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
 
 void ZFlyEmOrthoWindow::syncBodyColorMap(ZFlyEmProofDoc *doc)
 {
-  getDocument()->updateBodyColor(doc->getActiveBodyColorMap());
+  getDocument()->updateBodyColor(doc->getActiveBodyColorMap(), false);
   getDocument()->setActiveBodyColorMap(doc->getActiveBodyColorMap());
 }
 

@@ -1179,7 +1179,7 @@ void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapse
             m_colorScheme.setBodyColor(bodyList[i], getColor(i));
         }
     }
-    m_colorScheme.buildColorTable();
+//    m_colorScheme.buildColorTable();
     emit requestColorMapChange(m_colorScheme);
 }
 

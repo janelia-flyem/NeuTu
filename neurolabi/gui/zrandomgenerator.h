@@ -28,6 +28,7 @@ public:
   static int Rndint(int maxValue);
   static int Rndint(int minValue, int maxValue);
   static void SetSeed(int seed);
+  static int UniqueSeed();
 
   static int count;
 };

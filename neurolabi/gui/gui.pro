@@ -665,14 +665,14 @@ HEADERS += mainwindow.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
-    protocols/taskbodyhistory.h \
-    protocols/taskbodycleave.h \
     dialogs/zflyemproofsettingdialog.h \
     zstackdocptr.h \
     zstackdoc3dhelper.h \

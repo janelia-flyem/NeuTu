@@ -3891,9 +3891,11 @@ QAction* ZFlyEmProofMvc::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(item, this, SLOT(showInfoDialog()));
     break;
   case ZActionFactory::ACTION_BODY_COLOR_NORMAL:
+  case ZActionFactory::ACTION_BODY_COLOR_RANDOM:
   case ZActionFactory::ACTION_BODY_COLOR_NAME:
   case ZActionFactory::ACTION_BODY_COLOR_PROTOCOL:
   case ZActionFactory::ACTION_BODY_COLOR_SEQUENCER:
+  case ZActionFactory::ACTION_BODY_COLOR_SEQUENCER_NORMAL:
     action = m_actionLibrary->getAction(item);
     break;
     /*
@@ -3960,12 +3962,18 @@ void ZFlyEmProofMvc::addBodyColorMenu(QMenu *menu)
 
   QAction *sequencerColorAction = getAction(
         ZActionFactory::ACTION_BODY_COLOR_SEQUENCER);
+  QAction *sequencerNormalColorAction = getAction(
+        ZActionFactory::ACTION_BODY_COLOR_SEQUENCER_NORMAL);
   QAction *protocolColorAction = getAction(
         ZActionFactory::ACTION_BODY_COLOR_PROTOCOL);
+  m_randomColorAction =
+      getAction(ZActionFactory::ACTION_BODY_COLOR_RANDOM);
 
   colorActionGroup->addAction(normalColorAction);
+  colorActionGroup->addAction(m_randomColorAction);
   colorActionGroup->addAction(nameColorAction);
   colorActionGroup->addAction(sequencerColorAction);
+  colorActionGroup->addAction(sequencerNormalColorAction);
   colorActionGroup->addAction(protocolColorAction);
   colorActionGroup->setExclusive(true);
 
@@ -3974,6 +3982,10 @@ void ZFlyEmProofMvc::addBodyColorMenu(QMenu *menu)
 
   colorMenu->addActions(colorActionGroup->actions());
 
+  /*
+  connect(m_randomColorAction, SIGNAL(triggered()),
+          this, SLOT(updateRandomColorMap()));
+          */
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 }
@@ -6416,6 +6428,13 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
   }
 }
 
+void ZFlyEmProofMvc::updateRandomColorMap()
+{
+  if (m_prevColorMapAction == m_randomColorAction) {
+
+  }
+}
+
 void ZFlyEmProofMvc::changeColorMap(QAction *action)
 {
   m_prevColorMapAction = m_currentColorMapAction;
@@ -6425,7 +6444,11 @@ void ZFlyEmProofMvc::changeColorMap(QAction *action)
 
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {
-  getCompleteDocument()->activateBodyColorMap(option);
+  bool updating = false;
+  if (m_randomColorAction->text() == option) {
+    updating = true;
+  }
+  getCompleteDocument()->activateBodyColorMap(option, updating);
   /*
   if (option == "Name") {
     getCompleteDocument()->useBodyNameMap(true);

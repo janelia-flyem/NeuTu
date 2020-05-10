@@ -9,6 +9,7 @@ HEADERS += \
     $$PWD/zdvidtargettest.h \
   $$PWD/zdvidurltest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
+  $$PWD/zflyembodycolorschemetest.h \
     $$PWD/zlocalneurosegtest.h \
     $$PWD/zmeshtest.h \
     $$PWD/znetworkutilstest.h \
