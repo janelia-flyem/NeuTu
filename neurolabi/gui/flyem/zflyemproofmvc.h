@@ -406,6 +406,7 @@ public slots:
 
   void changeColorMap(const QString &option);
   void changeColorMap(QAction *action);
+  void updateRandomColorMap();
 
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
   void addLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -711,6 +712,7 @@ protected:
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;
+  QAction *m_randomColorAction = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

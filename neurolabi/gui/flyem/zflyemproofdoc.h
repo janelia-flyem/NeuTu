@@ -257,7 +257,7 @@ public:
    */
   void clearBodyAnnotationMap();
 
-  void activateBodyColorMap(const QString &colorMapName);
+  void activateBodyColorMap(const QString &colorMapName, bool updating);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
   ZDvidReader& getDvidReader();
@@ -487,7 +487,8 @@ public:
   }
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
-  void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
+  void updateBodyColor(
+      ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
 
   ZJsonArray getMergeOperation() const;
 
@@ -769,7 +770,8 @@ private:
       const ZFlyEmSequencerColorScheme &colorScheme,
       ZFlyEmBodyColorOption::EColorOption option);
 
-  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
+  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option,
+                            bool updating);
 
   QString getAnnotationNameWarningDetail(
       const QMap<uint64_t, QVector<QString> > &nameMap) const;

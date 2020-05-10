@@ -51,6 +51,7 @@
 #include "zflyemproofdockeyprocessor.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
+#include "zflyemrandombodycolorscheme.h"
 #include "zflyemproofdoccommand.h"
 #include "zflyembodymanager.h"
 #include "zflyembodystatus.h"
@@ -5075,8 +5076,9 @@ void ZFlyEmProofDoc::updateSequencerBodyMap(
 {
   ZSharedPointer<ZFlyEmSequencerColorScheme> colorMap =
       getColorScheme<ZFlyEmSequencerColorScheme>(option);
-  if (colorMap.get() != NULL) {
-    *(colorMap.get()) = colorScheme;
+  if (colorMap) {
+    colorMap->setMainColorScheme(colorScheme);
+//    *(colorMap.get()) = colorScheme;
     if (isActive(option)) {
       updateBodyColor(option);
     }
@@ -5088,6 +5090,8 @@ void ZFlyEmProofDoc::updateSequencerBodyMap(
 {
   updateSequencerBodyMap(colorScheme,
                          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER);
+  updateSequencerBodyMap(
+        colorScheme, ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL);
 }
 
 void ZFlyEmProofDoc::updateProtocolColorMap(
@@ -5125,15 +5129,17 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 #endif
 
 void ZFlyEmProofDoc::updateBodyColor(
-    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
+    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
-    if (colorMap.get() != NULL) {
-      colorMap->update();
+    if (colorMap) {
+      if (updating) {
+        colorMap->update();
+      }
       slice->setCustomColorMap(colorMap);
     } else {
       slice->removeCustomColorMap();
@@ -5149,7 +5155,7 @@ void ZFlyEmProofDoc::updateBodyColor(
 void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 {
   ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
-  updateBodyColor(colorMap);
+  updateBodyColor(colorMap, true);
 }
 
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
@@ -5233,6 +5239,10 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
     case ZFlyEmBodyColorOption::BODY_COLOR_NORMAL:
       m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>();
       break;
+    case ZFlyEmBodyColorOption::BODY_COLOR_RANDOM:
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmRandomBodyColorScheme>(
+            new ZFlyEmRandomBodyColorScheme);
+      break;
     case ZFlyEmBodyColorOption::BODY_COLOR_NAME:
     {
       ZFlyEmNameBodyColorScheme *colorScheme = new ZFlyEmNameBodyColorScheme;
@@ -5241,6 +5251,17 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
           ZSharedPointer<ZFlyEmBodyColorScheme>(colorScheme);
     }
       break;
+    case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL:
+    {
+      auto scheme =new ZFlyEmSequencerColorScheme;
+
+      auto defaultScheme = std::shared_ptr<ZFlyEmBodyColorScheme>(
+            new ZFlyEmRandomBodyColorScheme());
+      scheme->setDefaultColorScheme(defaultScheme);
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>(scheme);
+    }
+
+      break;
     case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER:
     case ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL:
       m_colorMapConfig[type] =
@@ -5248,6 +5269,12 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
       break;
     }
   }
+
+#ifdef _DEBUG_2
+  if (m_colorMapConfig[ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER]->getColorNumber() < 65535) {
+    std::cout << "debug here" << m_colorMapConfig[type]->getColorNumber() << std::endl;
+  }
+#endif
 
   return m_colorMapConfig[type];
 }
@@ -5264,15 +5291,16 @@ ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(
   return ZSharedPointer<T>();
 }
 
-void ZFlyEmProofDoc::activateBodyColorMap(const QString &colorMapName)
+void ZFlyEmProofDoc::activateBodyColorMap(const QString &colorMapName, bool updating)
 {
-  activateBodyColorMap(ZFlyEmBodyColorOption::GetColorOption(colorMapName));
+  activateBodyColorMap(
+        ZFlyEmBodyColorOption::GetColorOption(colorMapName), updating);
 }
 
 void ZFlyEmProofDoc::activateBodyColorMap(
-    ZFlyEmBodyColorOption::EColorOption option)
+    ZFlyEmBodyColorOption::EColorOption option, bool updating)
 {
-  if (!isActive(option)) {
+  if (!isActive(option) || updating) {
     updateBodyColor(option);
     m_activeBodyColorMap = getColorScheme(option);
     emit bodyColorUpdated(this);

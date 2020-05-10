@@ -20,19 +20,24 @@ public:
 
   QColor getColor(int index) const;
   QColor getColor(uint64_t index) const;
-  int getColorNumber() const { return m_colorTable.size(); }
+  virtual int getColorNumber() const { return m_colorTable.size(); }
 
   virtual void setColorScheme(EColorScheme scheme);
 
+  /*
   const QVector<QColor>& getColorTable() const {
     return m_colorTable;
   }
+  */
 
   void setStartIndex(int startIndex);
+
+  void printColorTable() const;
 
 protected:
   void buildRandomColorTable(int n);
   void buildConvRandomColorTable(int n);
+  void buildConvRandomColorTable(int n, int seed);
   void buildPunctumColorTable();
   void buildUniqueColorTable();
   void buildLabelColorTable();

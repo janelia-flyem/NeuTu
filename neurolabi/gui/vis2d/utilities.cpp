@@ -2,7 +2,7 @@
 
 #include <QtGui>
 
-#include "zviewplanetransform.h"
+#include "data3d/zviewplanetransform.h"
 
 QTransform neutu::vis2d::GetPainterTransform(const ZViewPlaneTransform &t)
 {

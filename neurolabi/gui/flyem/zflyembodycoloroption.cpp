@@ -12,9 +12,11 @@ ZFlyEmBodyColorOption::InitColorMap()
 {
   QMap<QString, ZFlyEmBodyColorOption::EColorOption> colorMap;
   colorMap["Normal"] = BODY_COLOR_NORMAL;
+  colorMap["Random"] = BODY_COLOR_RANDOM;
   colorMap["Name"] = BODY_COLOR_NAME;
   colorMap["Sequencer"] = BODY_COLOR_SEQUENCER;
   colorMap["Protocol"] = BODY_COLOR_PROTOCOL;
+  colorMap["Sequencer+Normal"] = BODY_COLOR_SEQUENCER_NORMAL;
 
   return colorMap;
 }

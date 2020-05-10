@@ -102,5 +102,6 @@
 #include "test/zaffinerecttest.h"
 #include "test/zdvidurltest.h"
 #include "test/zworldviewtranformtest.h"
+#include "test/zflyembodycolorschemetest.h"
 
 #endif // ZTESTALL_H

@@ -101,6 +101,7 @@ HEADERS += \
     $$PWD/zflyemproofutil.h \
     $$PWD/zflyemqualityanalyzertask.h \
     $$PWD/zflyemqualityanalyzertaskmanager.h \
+    $$PWD/zflyemrandombodycolorscheme.h \
     $$PWD/zflyemroimanager.h \
     $$PWD/zflyemroiobjsmodel.h \
     $$PWD/zflyemroiproject.h \
@@ -231,6 +232,7 @@ SOURCES += \
     $$PWD/zflyemproofutil.cpp \
     $$PWD/zflyemqualityanalyzertask.cpp \
     $$PWD/zflyemqualityanalyzertaskmanager.cpp \
+    $$PWD/zflyemrandombodycolorscheme.cpp \
     $$PWD/zflyemroimanager.cpp \
     $$PWD/zflyemroiobjsmodel.cpp \
     $$PWD/zflyemroiproject.cpp \

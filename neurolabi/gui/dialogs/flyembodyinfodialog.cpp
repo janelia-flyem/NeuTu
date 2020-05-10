@@ -2239,7 +2239,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
 //      updateFilterColorScheme(filterString, color);
 //    }
   }
-  m_colorScheme.buildColorTable();
+//  m_colorScheme.buildColorTable();
 
   emit colorMapChanged(m_colorScheme);
 

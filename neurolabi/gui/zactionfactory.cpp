@@ -658,6 +658,14 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = CreateColorAction(
           ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, parent);
     break;
+  case ACTION_BODY_COLOR_SEQUENCER_NORMAL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL, parent);
+    break;
+  case ACTION_BODY_COLOR_RANDOM:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_RANDOM, parent);
+    break;
   case ACTION_BODY_COLOR_PROTOCOL:
     action = CreateColorAction(
           ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, parent);
