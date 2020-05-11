@@ -232,6 +232,11 @@ QStringList NeuPrintReader::getDatasetList() const
   return dataList;
 }
 
+QString NeuPrintReader::getCurrentDataset() const
+{
+  return m_currentDataset;
+}
+
 namespace {
 const char* BODY_QUERY_RETURN =
     "n.bodyId, n.type, n.instance, n.status, n.pre, n.post, n.cellBodyFiber";
